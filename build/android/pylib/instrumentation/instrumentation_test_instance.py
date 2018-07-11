@@ -685,8 +685,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._enable_java_deobfuscation = args.enable_java_deobfuscation
     self._store_tombstones = args.store_tombstones
     self._symbolizer = stack_symbolizer.Symbolizer(
-        self.apk_under_test.path if self.apk_under_test else None,
-        args.non_native_packed_relocations)
+        self.apk_under_test.path if self.apk_under_test else None)
 
   def _initializeEditPrefsAttributes(self, args):
     if not hasattr(args, 'shared_prefs_file') or not args.shared_prefs_file:

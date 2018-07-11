@@ -328,10 +328,6 @@ template("write_build_config") {
       }
     }
 
-    if (defined(invoker.non_native_packed_relocations) &&
-        invoker.non_native_packed_relocations) {
-      args += [ "--non-native-packed-relocations" ]
-    }
     if (defined(invoker.java_sources_file)) {
       args += [
         "--java-sources-file",
@@ -601,10 +597,6 @@ template("test_runner_script") {
           _apk_under_test = "@FileArg($_rebased_apk_under_test_build_config:deps_info:incremental_apk_path)"
         }
         test_runner_args += [ "--apk-under-test=$_apk_under_test" ]
-        test_runner_args += [
-          "--non-native-packed-relocations",
-          "@FileArg($_rebased_apk_under_test_build_config:deps_info:non_native_packed_relocations)",
-        ]
       }
       if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
         test_runner_args += [ "--enable-java-deobfuscation" ]
@@ -776,9 +768,6 @@ template("stack_script") {
 }
 
 if (enable_java_templates) {
-  import("//build/config/zip.gni")
-  import("//third_party/android_platform/config.gni")
-
   android_sdk_jar = "$android_sdk/android.jar"
   android_default_aapt_path = "$android_sdk_build_tools/aapt"
   android_default_aapt2_path = "$android_sdk_build_tools/aapt2"
@@ -2807,9 +2796,6 @@ if (enable_java_templates) {
   #  incremental_install_json_path: If incremental_allowed, path to the output
   #    incremental install json configuration file.
   #  proguard_output_jar_path: Path to .jar file produced from ProGuard step.
-  #  non_native_packed_relocations: Optional. True if the target Android
-  #    system does not support compressed relocations in native shared
-  #    libraries.
   #  shared_libraries_runtime_deps_file: Optional. Path to a file listing the
   #    native shared libraries required at runtime by the APK.
   #  secondary_abi_shared_libraries_runtime_deps_file:
@@ -3020,7 +3006,6 @@ if (enable_java_templates) {
               "incremental_allowed",
               "incremental_apk_path",
               "incremental_install_json_path",
-              "non_native_packed_relocations",
               "proto_resources_path",
               "secondary_abi_shared_libraries_runtime_deps_file",
               "shared_libraries_runtime_deps_file",
@@ -3292,42 +3277,6 @@ if (enable_java_templates) {
           data_deps += [ ":${_main_target_name}__analysis" ]
         }
       }
-    }
-  }
-
-  template("pack_relocation_section") {
-    assert(defined(invoker.file_list_json))
-    assert(defined(invoker.libraries_filearg))
-    action(target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "deps",
-                               "public_deps",
-                               "inputs",
-                               "testonly",
-                             ])
-      script = "//build/android/gyp/pack_relocations.py"
-      depfile = "$target_gen_dir/$target_name.d"
-      _packed_libraries_dir = "$target_gen_dir/$target_name/packed-libs"
-      outputs = [
-        invoker.file_list_json,
-      ]
-      deps += [ relocation_packer_target ]
-
-      args = [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-        "--enable-packing=1",
-        "--android-pack-relocations",
-        rebase_path(relocation_packer_exe, root_build_dir),
-        "--stripped-libraries-dir",
-        rebase_path(root_build_dir, root_build_dir),
-        "--packed-libraries-dir",
-        rebase_path(_packed_libraries_dir, root_build_dir),
-        "--libraries=${invoker.libraries_filearg}",
-        "--filelistjson",
-        rebase_path(invoker.file_list_json, root_build_dir),
-      ]
     }
   }
 }

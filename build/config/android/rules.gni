@@ -10,6 +10,7 @@ import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/compute_inputs_for_analyze.gni")
 import("//build/config/dcheck_always_on.gni")
+import("//build/config/zip.gni")
 import("//build/toolchain/toolchain.gni")
 
 assert(is_android)
@@ -2039,8 +2040,6 @@ if (enable_java_templates) {
 
     _use_chromium_linker =
         defined(invoker.use_chromium_linker) && invoker.use_chromium_linker
-    _pack_relocations =
-        defined(invoker.pack_relocations) && invoker.pack_relocations
 
     _load_library_from_apk =
         defined(invoker.load_library_from_apk) && invoker.load_library_from_apk
@@ -2049,13 +2048,6 @@ if (enable_java_templates) {
 
     assert(_use_chromium_linker || true)  # Mark as used.
     assert(_requires_sdk_api_level_23 || true)
-    assert(!_pack_relocations || !use_lld,
-           "Use //build/config/android:lld_pack_relocations to pack " +
-               "relocations when use_lld=true.")
-    assert(!_pack_relocations || _use_chromium_linker ||
-               _requires_sdk_api_level_23,
-           "pack_relocations requires either use_chromium_linker " +
-               "or requires_sdk_api_level_23")
     assert(!_load_library_from_apk || _use_chromium_linker ||
                _requires_sdk_api_level_23,
            "load_library_from_apk requires use_chromium_linker " +
@@ -2393,7 +2385,6 @@ if (enable_java_templates) {
         }
         proguard_output_jar_path = _proguard_output_jar_path
       }
-      non_native_packed_relocations = _pack_relocations
 
       # Don't depend on the runtime_deps target in order to avoid having to
       # build the native libraries just to create the .build_config file.
@@ -2519,49 +2510,6 @@ if (enable_java_templates) {
     assert(_secondary_abi_native_libs_file_arg != "" &&
            _secondary_abi_native_libs_file_arg_dep != "")  # Mark as used.
 
-    if (_native_libs_deps != [] && _pack_relocations) {
-      _prepare_native_target_name = "${_template_name}__prepare_native"
-      _native_libs_json = "$_gen_dir/packed-libs/filelist.json"
-      _rebased_native_libs_json = rebase_path(_native_libs_json, root_build_dir)
-      _native_libs_file_arg_dep = ":$_prepare_native_target_name"
-      _native_libs_file_arg = "@FileArg($_rebased_native_libs_json:files)"
-
-      pack_relocation_section(_prepare_native_target_name) {
-        file_list_json = _native_libs_json
-        libraries_filearg =
-            "@FileArg(${_rebased_build_config}:native:libraries)"
-        inputs = [
-          _build_config,
-        ]
-
-        deps = _native_libs_deps
-        deps += [ ":$_build_config_target" ]
-      }
-      if (_secondary_abi_native_libs_deps != []) {
-        _prepare_native_target_name =
-            "${_template_name}_secondary_abi__prepare_native"
-        _native_libs_json =
-            "$_gen_dir/packed-libs/$android_secondary_abi_cpu/filelist.json"
-        _rebased_native_libs_json =
-            rebase_path(_native_libs_json, root_build_dir)
-        _secondary_abi_native_libs_file_arg_dep =
-            ":$_prepare_native_target_name"
-        _secondary_abi_native_libs_file_arg =
-            "@FileArg($_rebased_native_libs_json:files)"
-
-        pack_relocation_section(_prepare_native_target_name) {
-          file_list_json = _native_libs_json
-          libraries_filearg = "@FileArg(${_rebased_build_config}:native:secondary_abi_libraries)"
-          inputs = [
-            _build_config,
-          ]
-
-          deps = _secondary_abi_native_libs_deps
-          deps += [ ":$_build_config_target" ]
-        }
-      }
-    }
-
     _extra_native_libs_even_when_incremental = []
     if (_native_libs_deps != []) {
       _create_stack_script_rule_name = "${_template_name}__stack_script"
@@ -2569,10 +2517,6 @@ if (enable_java_templates) {
       stack_script(_create_stack_script_rule_name) {
         stack_target_name = invoker.target_name
         deps = _native_libs_deps
-        if (_native_libs_deps != [] && _pack_relocations) {
-          packed_libraries = _native_libs_file_arg
-          deps += [ _native_libs_file_arg_dep ]
-        }
       }
     }
 

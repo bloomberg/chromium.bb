@@ -332,12 +332,6 @@ Path to the JSON file with per-apk details for incremental install.
 See `build/android/gyp/incremental/write_installer_json.py` for more
 details about its content.
 
-* `deps_info['non_native_packed_relocations']`:
-A string that is either "True" or "False" (why a string?). True to indicate
-that this uses packed relocations that may not be supported by the target
-Android system for this build (this generally requires the Chromium linker
-to be used to load the native libraries).
-
 * `deps_info['dist_jar']['all_interface_jars']`:
 For `android_apk` and `dist_jar` targets, a list of all interface jar files
 that will be merged into the final `.jar` file for distribution.
@@ -834,10 +828,6 @@ def main(argv):
   parser.add_option('--secondary-abi-shared-libraries-runtime-deps',
                     help='Path to file containing runtime deps for secondary '
                          'abi shared libraries.')
-  parser.add_option('--non-native-packed-relocations',
-                    action='store_true', default=False,
-                    help='Whether relocation packing was applied using the '
-                         'Android relocation_packer tool.')
   parser.add_option('--uncompress-shared-libraries', default=False,
                     action='store_true',
                     help='Whether to store native libraries uncompressed')
@@ -1049,8 +1039,6 @@ def main(argv):
       deps_info['incremental_apk_path'] = options.incremental_apk_path
       deps_info['incremental_install_json_path'] = (
           options.incremental_install_json_path)
-      deps_info['non_native_packed_relocations'] = str(
-          options.non_native_packed_relocations)
 
   if options.type == 'android_assets':
     all_asset_sources = []

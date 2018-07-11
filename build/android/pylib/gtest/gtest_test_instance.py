@@ -294,7 +294,7 @@ class GtestTestInstance(test_instance.TestInstance):
     self._shard_timeout = args.shard_timeout
     self._store_tombstones = args.store_tombstones
     self._suite = args.suite_name[0]
-    self._symbolizer = stack_symbolizer.Symbolizer(None, False)
+    self._symbolizer = stack_symbolizer.Symbolizer(None)
     self._total_external_shards = args.test_launcher_total_shards
     self._wait_for_java_debugger = args.wait_for_java_debugger
 
