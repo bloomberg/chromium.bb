@@ -261,6 +261,19 @@ void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
                         explicit_hosts, scriptable_hosts));
 }
 
+void ScriptingPermissionsModifier::RemoveAllGrantedHostPermissions() {
+  DCHECK(CanAffectExtension());
+
+  std::unique_ptr<const PermissionSet> granted =
+      extension_prefs_->GetRuntimeGrantedPermissions(extension_->id());
+  PermissionsUpdater(browser_context_)
+      .RevokeRuntimePermissions(
+          *extension_,
+          PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                        granted->explicit_hosts(),
+                        granted->scriptable_hosts()));
+}
+
 // static
 void ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
     const Extension& extension,
