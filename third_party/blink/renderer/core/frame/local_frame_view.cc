@@ -2220,15 +2220,6 @@ void LocalFrameView::UpdateAllLifecyclePhases() {
       DocumentLifecycle::kPaintClean);
 }
 
-bool LocalFrameView::UpdateLifecycleToPrePaintClean() {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    return UpdateAllLifecyclePhasesExceptPaint();
-  } else {
-    return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhasesInternal(
-        DocumentLifecycle::kPrePaintClean);
-  }
-}
-
 // TODO(chrishtr): add a scrolling update lifecycle phase.
 bool LocalFrameView::UpdateLifecycleToCompositingCleanPlusScrolling() {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
