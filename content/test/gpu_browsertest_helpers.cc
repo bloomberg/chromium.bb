@@ -67,7 +67,7 @@ scoped_refptr<ui::ContextProviderCommandBuffer> GpuBrowsertestCreateContext(
       content::kGpuStreamIdDefault, content::kGpuStreamPriorityDefault,
       gpu::kNullSurfaceHandle, GURL(), automatic_flushes, support_locking,
       support_grcontext, gpu::SharedMemoryLimits(), attributes,
-      ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING);
+      ui::command_buffer_metrics::ContextType::FOR_TESTING);
 }
 
 }  // namespace content

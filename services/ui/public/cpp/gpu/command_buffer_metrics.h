@@ -12,21 +12,24 @@
 namespace ui {
 namespace command_buffer_metrics {
 
-enum ContextType {
-  DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT,
-  BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT,
-  BROWSER_WORKER_CONTEXT,
-  RENDER_COMPOSITOR_CONTEXT,
-  RENDER_WORKER_CONTEXT,
-  RENDERER_MAINTHREAD_CONTEXT,
-  GPU_VIDEO_ACCELERATOR_CONTEXT,
-  OFFSCREEN_VIDEO_CAPTURE_CONTEXT,
-  OFFSCREEN_CONTEXT_FOR_WEBGL,
-  CONTEXT_TYPE_UNKNOWN,
-  MEDIA_CONTEXT,
-  MUS_CLIENT_CONTEXT,
-  UI_COMPOSITOR_CONTEXT,
-  OFFSCREEN_CONTEXT_FOR_TESTING = CONTEXT_TYPE_UNKNOWN,
+// A rough classification for what the context is used for. These enum types
+// correspond to the GPU.ContextLost UMA suffixes. Make sure to update
+// UmaRecordContextLost() and tools/metrics/histograms/histograms.xml when
+// adding a new value here.
+enum class ContextType {
+  BROWSER_COMPOSITOR,
+  BROWSER_MAIN_THREAD,
+  BROWSER_WORKER,
+  RENDER_COMPOSITOR,
+  RENDER_WORKER,
+  RENDERER_MAIN_THREAD,
+  VIDEO_ACCELERATOR,
+  VIDEO_CAPTURE,
+  WEBGL,
+  MEDIA,
+  MUS_CLIENT,
+  UNKNOWN,
+  FOR_TESTING,
 };
 
 std::string ContextTypeToString(ContextType type);
