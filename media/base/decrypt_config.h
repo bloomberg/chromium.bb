@@ -72,6 +72,8 @@ class MEDIA_EXPORT DecryptConfig {
     return encryption_pattern_;
   };
 
+  std::unique_ptr<DecryptConfig> Clone();
+
   // Returns whether this config has EncryptionPattern set or not.
   bool HasPattern() const;
 
@@ -82,6 +84,8 @@ class MEDIA_EXPORT DecryptConfig {
   std::ostream& Print(std::ostream& os) const;
 
  private:
+  DecryptConfig(const DecryptConfig& other);
+
   const EncryptionMode encryption_mode_;
   const std::string key_id_;
 
@@ -95,7 +99,7 @@ class MEDIA_EXPORT DecryptConfig {
   // Only specified if |encryption_mode_| requires a pattern.
   base::Optional<EncryptionPattern> encryption_pattern_;
 
-  DISALLOW_COPY_AND_ASSIGN(DecryptConfig);
+  DISALLOW_ASSIGN(DecryptConfig);
 };
 
 }  // namespace media
