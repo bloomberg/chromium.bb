@@ -224,6 +224,9 @@ void KeyboardController::ActivateKeyboardInContainer(aura::Window* parent) {
   // Observe changes to root window bounds.
   parent_container_->GetRootWindow()->AddObserver(this);
 
+  // TODO(https://crbug.com/845780): Investigate whether this does anything.
+  OnTextInputStateChanged(ui_->GetInputMethod()->GetTextInputClient());
+
   if (GetKeyboardWindow()) {
     DCHECK(!GetKeyboardWindow()->parent());
     parent_container_->AddChild(GetKeyboardWindow());
@@ -504,12 +507,6 @@ void KeyboardController::ShowKeyboardInDisplay(
     const display::Display& display) {
   set_keyboard_locked(true);
   ShowKeyboardInternal(display);
-}
-
-void KeyboardController::OnWindowHierarchyChanged(
-    const HierarchyChangeParams& params) {
-  if (params.new_parent && params.target == GetKeyboardWindow())
-    OnTextInputStateChanged(GetTextInputClient());
 }
 
 void KeyboardController::OnWindowAddedToRootWindow(aura::Window* window) {
