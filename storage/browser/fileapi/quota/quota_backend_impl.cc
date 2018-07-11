@@ -35,41 +35,40 @@ QuotaBackendImpl::QuotaBackendImpl(
 
 QuotaBackendImpl::~QuotaBackendImpl() = default;
 
-void QuotaBackendImpl::ReserveQuota(const GURL& origin,
+void QuotaBackendImpl::ReserveQuota(const url::Origin& origin,
                                     FileSystemType type,
                                     int64_t delta,
                                     const ReserveQuotaCallback& callback) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(origin.is_valid());
+  DCHECK(!origin.unique());
   if (!delta) {
     callback.Run(base::File::FILE_OK, 0);
     return;
   }
   DCHECK(quota_manager_proxy_.get());
   quota_manager_proxy_->GetUsageAndQuota(
-      file_task_runner_.get(), url::Origin::Create(origin),
-      FileSystemTypeToQuotaStorageType(type),
+      file_task_runner_.get(), origin, FileSystemTypeToQuotaStorageType(type),
       base::BindOnce(&QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota,
                      weak_ptr_factory_.GetWeakPtr(),
                      QuotaReservationInfo(origin, type, delta), callback));
 }
 
-void QuotaBackendImpl::ReleaseReservedQuota(const GURL& origin,
+void QuotaBackendImpl::ReleaseReservedQuota(const url::Origin& origin,
                                             FileSystemType type,
                                             int64_t size) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(origin.is_valid());
+  DCHECK(!origin.unique());
   DCHECK_LE(0, size);
   if (!size)
     return;
   ReserveQuotaInternal(QuotaReservationInfo(origin, type, -size));
 }
 
-void QuotaBackendImpl::CommitQuotaUsage(const GURL& origin,
+void QuotaBackendImpl::CommitQuotaUsage(const url::Origin& origin,
                                         FileSystemType type,
                                         int64_t delta) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(origin.is_valid());
+  DCHECK(!origin.unique());
   if (!delta)
     return;
   ReserveQuotaInternal(QuotaReservationInfo(origin, type, delta));
@@ -80,10 +79,10 @@ void QuotaBackendImpl::CommitQuotaUsage(const GURL& origin,
   DCHECK(result);
 }
 
-void QuotaBackendImpl::IncrementDirtyCount(const GURL& origin,
+void QuotaBackendImpl::IncrementDirtyCount(const url::Origin& origin,
                                            FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(origin.is_valid());
+  DCHECK(!origin.unique());
   base::FilePath path;
   if (GetUsageCachePath(origin, type, &path) != base::File::FILE_OK)
     return;
@@ -91,10 +90,10 @@ void QuotaBackendImpl::IncrementDirtyCount(const GURL& origin,
   file_system_usage_cache_->IncrementDirty(path);
 }
 
-void QuotaBackendImpl::DecrementDirtyCount(const GURL& origin,
+void QuotaBackendImpl::DecrementDirtyCount(const url::Origin& origin,
                                            FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(origin.is_valid());
+  DCHECK(!origin.unique());
   base::FilePath path;
   if (GetUsageCachePath(origin, type, &path) != base::File::FILE_OK)
     return;
@@ -109,7 +108,7 @@ void QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota(
     int64_t usage,
     int64_t quota) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(info.origin.is_valid());
+  DCHECK(!info.origin.unique());
   DCHECK_LE(0, usage);
   DCHECK_LE(0, quota);
   if (status != blink::mojom::QuotaStatusCode::kOk) {
@@ -139,29 +138,29 @@ void QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota(
 
 void QuotaBackendImpl::ReserveQuotaInternal(const QuotaReservationInfo& info) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(info.origin.is_valid());
+  DCHECK(!info.origin.unique());
   DCHECK(quota_manager_proxy_.get());
   quota_manager_proxy_->NotifyStorageModified(
-      storage::QuotaClient::kFileSystem, url::Origin::Create(info.origin),
+      storage::QuotaClient::kFileSystem, info.origin,
       FileSystemTypeToQuotaStorageType(info.type), info.delta);
 }
 
 base::File::Error QuotaBackendImpl::GetUsageCachePath(
-    const GURL& origin,
+    const url::Origin& origin,
     FileSystemType type,
     base::FilePath* usage_file_path) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(origin.is_valid());
+  DCHECK(!origin.unique());
   DCHECK(usage_file_path);
   base::File::Error error = base::File::FILE_OK;
   *usage_file_path =
       SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
-          obfuscated_file_util_, origin, type, &error);
+          obfuscated_file_util_, origin.GetURL(), type, &error);
   return error;
 }
 
 QuotaBackendImpl::QuotaReservationInfo::QuotaReservationInfo(
-    const GURL& origin,
+    const url::Origin& origin,
     FileSystemType type,
     int64_t delta)
     : origin(origin), type(type), delta(delta) {}

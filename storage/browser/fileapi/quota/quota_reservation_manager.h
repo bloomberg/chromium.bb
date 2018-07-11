@@ -18,10 +18,13 @@
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "url/gurl.h"
 
 namespace content {
 class QuotaReservationManagerTest;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace storage {
@@ -48,26 +51,26 @@ class STORAGE_EXPORT QuotaReservationManager {
     // Invokes |callback| upon completion with an error code.
     // |callback| should return false if it can't accept the reservation, in
     // that case, the backend should roll back the reservation.
-    virtual void ReserveQuota(const GURL& origin,
+    virtual void ReserveQuota(const url::Origin& origin,
                               FileSystemType type,
                               int64_t delta,
                               const ReserveQuotaCallback& callback) = 0;
 
     // Reclaims |size| of quota for |origin| and |type|.
-    virtual void ReleaseReservedQuota(const GURL& origin,
+    virtual void ReleaseReservedQuota(const url::Origin& origin,
                                       FileSystemType type,
                                       int64_t size) = 0;
 
     // Updates disk usage of |origin| and |type|.
     // Invokes |callback| upon completion with an error code.
-    virtual void CommitQuotaUsage(const GURL& origin,
+    virtual void CommitQuotaUsage(const url::Origin& origin,
                                   FileSystemType type,
                                   int64_t delta) = 0;
 
-    virtual void IncrementDirtyCount(const GURL& origin,
-                                    FileSystemType type) = 0;
-    virtual void DecrementDirtyCount(const GURL& origin,
-                                    FileSystemType type) = 0;
+    virtual void IncrementDirtyCount(const url::Origin& origin,
+                                     FileSystemType type) = 0;
+    virtual void DecrementDirtyCount(const url::Origin& origin,
+                                     FileSystemType type) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(QuotaBackend);
@@ -78,34 +81,35 @@ class STORAGE_EXPORT QuotaReservationManager {
 
   // The entry point of the quota reservation.  Creates new reservation object
   // for |origin| and |type|.
-  scoped_refptr<QuotaReservation> CreateReservation(
-      const GURL& origin,
-      FileSystemType type);
+  scoped_refptr<QuotaReservation> CreateReservation(const url::Origin& origin,
+                                                    FileSystemType type);
 
  private:
   using ReservationBufferByOriginAndType =
-      std::map<std::pair<GURL, FileSystemType>, QuotaReservationBuffer*>;
+      std::map<std::pair<url::Origin, FileSystemType>, QuotaReservationBuffer*>;
 
   friend class QuotaReservation;
   friend class QuotaReservationBuffer;
   friend class content::QuotaReservationManagerTest;
 
-  void ReserveQuota(const GURL& origin,
+  void ReserveQuota(const url::Origin& origin,
                     FileSystemType type,
                     int64_t delta,
                     const ReserveQuotaCallback& callback);
 
-  void ReleaseReservedQuota(const GURL& origin,
+  void ReleaseReservedQuota(const url::Origin& origin,
                             FileSystemType type,
                             int64_t size);
 
-  void CommitQuotaUsage(const GURL& origin, FileSystemType type, int64_t delta);
+  void CommitQuotaUsage(const url::Origin& origin,
+                        FileSystemType type,
+                        int64_t delta);
 
-  void IncrementDirtyCount(const GURL& origin, FileSystemType type);
-  void DecrementDirtyCount(const GURL& origin, FileSystemType type);
+  void IncrementDirtyCount(const url::Origin& origin, FileSystemType type);
+  void DecrementDirtyCount(const url::Origin& origin, FileSystemType type);
 
   scoped_refptr<QuotaReservationBuffer> GetReservationBuffer(
-      const GURL& origin,
+      const url::Origin& origin,
       FileSystemType type);
   void ReleaseReservationBuffer(QuotaReservationBuffer* reservation_pool);
 

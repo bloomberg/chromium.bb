@@ -18,7 +18,9 @@
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
 
-class GURL;
+namespace url {
+class Origin;
+}
 
 namespace storage {
 
@@ -59,7 +61,7 @@ class STORAGE_EXPORT QuotaReservation
   int64_t remaining_quota() const { return remaining_quota_; }
 
   QuotaReservationManager* reservation_manager();
-  const GURL& origin() const;
+  const url::Origin& origin() const;
   FileSystemType type() const;
 
  private:

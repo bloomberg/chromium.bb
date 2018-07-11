@@ -67,7 +67,7 @@ QuotaReservationManager* QuotaReservation::reservation_manager() {
   return reservation_buffer_->reservation_manager();
 }
 
-const GURL& QuotaReservation::origin() const {
+const url::Origin& QuotaReservation::origin() const {
   return reservation_buffer_->origin();
 }
 

@@ -29,7 +29,7 @@ namespace content {
 
 namespace {
 
-const char kOrigin[] = "http://example.com";
+const url::Origin kOrigin(url::Origin::Create(GURL("http://example.com")));
 
 bool DidReserveQuota(bool accepted,
                      base::File::Error* error_out,
@@ -115,16 +115,17 @@ class QuotaBackendImplTest : public testing::Test {
   }
 
  protected:
-  void InitializeForOriginAndType(const GURL& origin,
+  void InitializeForOriginAndType(const url::Origin& origin,
                                   storage::FileSystemType type) {
-    ASSERT_TRUE(file_util_->InitOriginDatabase(origin, true /* create */));
+    ASSERT_TRUE(
+        file_util_->InitOriginDatabase(origin.GetURL(), true /* create */));
     ASSERT_TRUE(file_util_->origin_database_ != NULL);
 
     std::string type_string =
         SandboxFileSystemBackendDelegate::GetTypeString(type);
     base::File::Error error = base::File::FILE_ERROR_FAILED;
     base::FilePath path = file_util_->GetDirectoryForOriginAndType(
-        origin, type_string, true /* create */, &error);
+        origin.GetURL(), type_string, true /* create */, &error);
     ASSERT_EQ(base::File::FILE_OK, error);
 
     ASSERT_TRUE(file_system_usage_cache_.UpdateUsage(
@@ -135,7 +136,7 @@ class QuotaBackendImplTest : public testing::Test {
     return base::ThreadTaskRunnerHandle::Get().get();
   }
 
-  base::FilePath GetUsageCachePath(const GURL& origin,
+  base::FilePath GetUsageCachePath(const url::Origin& origin,
                                    storage::FileSystemType type) {
     base::FilePath path;
     base::File::Error error = backend_->GetUsageCachePath(origin, type, &path);
@@ -158,14 +159,14 @@ class QuotaBackendImplTest : public testing::Test {
 
 TEST_F(QuotaBackendImplTest, ReserveQuota_Basic) {
   storage::FileSystemType type = storage::kFileSystemTypeTemporary;
-  InitializeForOriginAndType(GURL(kOrigin), type);
+  InitializeForOriginAndType(kOrigin, type);
   quota_manager_proxy_->set_quota(10000);
 
   int64_t delta = 0;
 
   const int64_t kDelta1 = 1000;
   base::File::Error error = base::File::FILE_ERROR_FAILED;
-  backend_->ReserveQuota(GURL(kOrigin), type, kDelta1,
+  backend_->ReserveQuota(kOrigin, type, kDelta1,
                          base::Bind(&DidReserveQuota, true, &error, &delta));
   EXPECT_EQ(base::File::FILE_OK, error);
   EXPECT_EQ(kDelta1, delta);
@@ -173,7 +174,7 @@ TEST_F(QuotaBackendImplTest, ReserveQuota_Basic) {
 
   const int64_t kDelta2 = -300;
   error = base::File::FILE_ERROR_FAILED;
-  backend_->ReserveQuota(GURL(kOrigin), type, kDelta2,
+  backend_->ReserveQuota(kOrigin, type, kDelta2,
                          base::Bind(&DidReserveQuota, true, &error, &delta));
   EXPECT_EQ(base::File::FILE_OK, error);
   EXPECT_EQ(kDelta2, delta);
@@ -184,14 +185,14 @@ TEST_F(QuotaBackendImplTest, ReserveQuota_Basic) {
 
 TEST_F(QuotaBackendImplTest, ReserveQuota_NoSpace) {
   storage::FileSystemType type = storage::kFileSystemTypeTemporary;
-  InitializeForOriginAndType(GURL(kOrigin), type);
+  InitializeForOriginAndType(kOrigin, type);
   quota_manager_proxy_->set_quota(100);
 
   int64_t delta = 0;
 
   const int64_t kDelta = 1000;
   base::File::Error error = base::File::FILE_ERROR_FAILED;
-  backend_->ReserveQuota(GURL(kOrigin), type, kDelta,
+  backend_->ReserveQuota(kOrigin, type, kDelta,
                          base::Bind(&DidReserveQuota, true, &error, &delta));
   EXPECT_EQ(base::File::FILE_OK, error);
   EXPECT_EQ(100, delta);
@@ -202,14 +203,14 @@ TEST_F(QuotaBackendImplTest, ReserveQuota_NoSpace) {
 
 TEST_F(QuotaBackendImplTest, ReserveQuota_Revert) {
   storage::FileSystemType type = storage::kFileSystemTypeTemporary;
-  InitializeForOriginAndType(GURL(kOrigin), type);
+  InitializeForOriginAndType(kOrigin, type);
   quota_manager_proxy_->set_quota(10000);
 
   int64_t delta = 0;
 
   const int64_t kDelta = 1000;
   base::File::Error error = base::File::FILE_ERROR_FAILED;
-  backend_->ReserveQuota(GURL(kOrigin), type, kDelta,
+  backend_->ReserveQuota(kOrigin, type, kDelta,
                          base::Bind(&DidReserveQuota, false, &error, &delta));
   EXPECT_EQ(base::File::FILE_OK, error);
   EXPECT_EQ(kDelta, delta);
@@ -220,13 +221,13 @@ TEST_F(QuotaBackendImplTest, ReserveQuota_Revert) {
 
 TEST_F(QuotaBackendImplTest, ReleaseReservedQuota) {
   storage::FileSystemType type = storage::kFileSystemTypeTemporary;
-  InitializeForOriginAndType(GURL(kOrigin), type);
+  InitializeForOriginAndType(kOrigin, type);
   const int64_t kInitialUsage = 2000;
   quota_manager_proxy_->set_usage(kInitialUsage);
   quota_manager_proxy_->set_quota(10000);
 
   const int64_t kSize = 1000;
-  backend_->ReleaseReservedQuota(GURL(kOrigin), type, kSize);
+  backend_->ReleaseReservedQuota(kOrigin, type, kSize);
   EXPECT_EQ(kInitialUsage - kSize, quota_manager_proxy_->usage());
 
   EXPECT_EQ(1, quota_manager_proxy_->storage_modified_count());
@@ -234,19 +235,19 @@ TEST_F(QuotaBackendImplTest, ReleaseReservedQuota) {
 
 TEST_F(QuotaBackendImplTest, CommitQuotaUsage) {
   storage::FileSystemType type = storage::kFileSystemTypeTemporary;
-  InitializeForOriginAndType(GURL(kOrigin), type);
+  InitializeForOriginAndType(kOrigin, type);
   quota_manager_proxy_->set_quota(10000);
-  base::FilePath path = GetUsageCachePath(GURL(kOrigin), type);
+  base::FilePath path = GetUsageCachePath(kOrigin, type);
 
   const int64_t kDelta1 = 1000;
-  backend_->CommitQuotaUsage(GURL(kOrigin), type, kDelta1);
+  backend_->CommitQuotaUsage(kOrigin, type, kDelta1);
   EXPECT_EQ(kDelta1, quota_manager_proxy_->usage());
   int64_t usage = 0;
   EXPECT_TRUE(file_system_usage_cache_.GetUsage(path, &usage));
   EXPECT_EQ(kDelta1, usage);
 
   const int64_t kDelta2 = -300;
-  backend_->CommitQuotaUsage(GURL(kOrigin), type, kDelta2);
+  backend_->CommitQuotaUsage(kOrigin, type, kDelta2);
   EXPECT_EQ(kDelta1 + kDelta2, quota_manager_proxy_->usage());
   usage = 0;
   EXPECT_TRUE(file_system_usage_cache_.GetUsage(path, &usage));
@@ -257,15 +258,15 @@ TEST_F(QuotaBackendImplTest, CommitQuotaUsage) {
 
 TEST_F(QuotaBackendImplTest, DirtyCount) {
   storage::FileSystemType type = storage::kFileSystemTypeTemporary;
-  InitializeForOriginAndType(GURL(kOrigin), type);
-  base::FilePath path = GetUsageCachePath(GURL(kOrigin), type);
+  InitializeForOriginAndType(kOrigin, type);
+  base::FilePath path = GetUsageCachePath(kOrigin, type);
 
-  backend_->IncrementDirtyCount(GURL(kOrigin), type);
+  backend_->IncrementDirtyCount(kOrigin, type);
   uint32_t dirty = 0;
   ASSERT_TRUE(file_system_usage_cache_.GetDirty(path, &dirty));
   EXPECT_EQ(1u, dirty);
 
-  backend_->DecrementDirtyCount(GURL(kOrigin), type);
+  backend_->DecrementDirtyCount(kOrigin, type);
   ASSERT_TRUE(file_system_usage_cache_.GetDirty(path, &dirty));
   EXPECT_EQ(0u, dirty);
 }
