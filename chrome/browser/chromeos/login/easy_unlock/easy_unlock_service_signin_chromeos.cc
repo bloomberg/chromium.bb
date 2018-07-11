@@ -521,6 +521,12 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
       continue;
     }
 
+    std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>
+        software_features;
+    software_features[cryptauth::SoftwareFeature::EASY_UNLOCK_HOST] =
+        device.unlock_key ? cryptauth::SoftwareFeatureState::kEnabled
+                          : cryptauth::SoftwareFeatureState::kNotSupported;
+
     std::vector<cryptauth::BeaconSeed> beacon_seeds;
     if (!device.serialized_beacon_seeds.empty()) {
       PA_LOG(INFO) << "Deserializing BeaconSeeds: "
@@ -532,10 +538,8 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
 
     cryptauth::RemoteDevice remote_device(
         account_id.GetUserEmail(), std::string() /* name */, decoded_public_key,
-        decoded_psk /* persistent_symmetric_key */, device.unlock_key,
-        false /* supports_mobile_hotspot */, 0L /* last_update_time_millis */,
-        std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>(),
-        beacon_seeds);
+        decoded_psk /* persistent_symmetric_key */,
+        0L /* last_update_time_millis */, software_features, beacon_seeds);
 
     remote_devices.push_back(remote_device);
     PA_LOG(INFO) << "Loaded Remote Device:\n"
@@ -577,7 +581,11 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
   std::string local_device_id;
 
   for (const auto& remote_device : remote_devices) {
-    if (remote_device.unlock_key) {
+    if (base::ContainsKey(remote_device.software_features,
+                          cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) &&
+        remote_device.software_features.at(
+            cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) ==
+            cryptauth::SoftwareFeatureState::kEnabled) {
       if (!unlock_key_id.empty()) {
         PA_LOG(ERROR) << "Only one of the devices should be an unlock key.";
         SetHardlockStateForUser(account_id,

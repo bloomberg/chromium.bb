@@ -56,8 +56,6 @@ TEST(DeviceSyncMojomStructTraitsTest, RemoteDevice) {
   input.name = "name";
   input.public_key = "publicKey";
   input.persistent_symmetric_key = "persistentSymmetricKey";
-  input.unlock_key = true;
-  input.supports_mobile_hotspot = true;
   input.last_update_time_millis = 3L;
   input.software_features = software_features;
   input.beacon_seeds = {CreateTestBeaconSeed()};
@@ -70,8 +68,6 @@ TEST(DeviceSyncMojomStructTraitsTest, RemoteDevice) {
   EXPECT_EQ("name", output.name);
   EXPECT_EQ("publicKey", output.public_key);
   EXPECT_EQ("persistentSymmetricKey", output.persistent_symmetric_key);
-  EXPECT_TRUE(output.unlock_key);
-  EXPECT_TRUE(output.supports_mobile_hotspot);
   EXPECT_EQ(3L, output.last_update_time_millis);
   EXPECT_EQ(software_features, output.software_features);
   ASSERT_EQ(1u, output.beacon_seeds.size());

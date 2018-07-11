@@ -129,7 +129,6 @@ void RemoteDeviceLoader::OnPSKDerived(
 
   RemoteDevice remote_device(
       user_id_, device.friendly_device_name(), device.public_key(), psk,
-      device.unlock_key(), device.mobile_hotspot_supported(),
       device.last_update_time_millis(), GetSoftwareFeatureToStateMap(device),
       beacon_seeds);
 

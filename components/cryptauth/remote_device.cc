@@ -39,18 +39,13 @@ std::string RemoteDevice::GenerateDeviceId(const std::string& public_key) {
   return device_id;
 }
 
-RemoteDevice::RemoteDevice()
-    : unlock_key(false),
-      supports_mobile_hotspot(false),
-      last_update_time_millis(0L) {}
+RemoteDevice::RemoteDevice() : last_update_time_millis(0L) {}
 
 RemoteDevice::RemoteDevice(
     const std::string& user_id,
     const std::string& name,
     const std::string& public_key,
     const std::string& persistent_symmetric_key,
-    bool unlock_key,
-    bool supports_mobile_hotspot,
     int64_t last_update_time_millis,
     const std::map<SoftwareFeature, SoftwareFeatureState>& software_features,
     const std::vector<BeaconSeed>& beacon_seeds)
@@ -58,8 +53,6 @@ RemoteDevice::RemoteDevice(
       name(name),
       public_key(public_key),
       persistent_symmetric_key(persistent_symmetric_key),
-      unlock_key(unlock_key),
-      supports_mobile_hotspot(supports_mobile_hotspot),
       last_update_time_millis(last_update_time_millis),
       software_features(software_features),
       beacon_seeds(beacon_seeds) {}
@@ -76,8 +69,6 @@ bool RemoteDevice::operator==(const RemoteDevice& other) const {
   return user_id == other.user_id && name == other.name &&
          public_key == other.public_key &&
          persistent_symmetric_key == other.persistent_symmetric_key &&
-         unlock_key == other.unlock_key &&
-         supports_mobile_hotspot == other.supports_mobile_hotspot &&
          last_update_time_millis == other.last_update_time_millis &&
          software_features == other.software_features &&
          AreBeaconSeedsEqual(beacon_seeds, other.beacon_seeds);

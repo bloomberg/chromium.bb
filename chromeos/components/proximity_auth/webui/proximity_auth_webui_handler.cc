@@ -616,9 +616,14 @@ ProximityAuthWebUIHandler::ExternalDeviceInfoToDictionary(
                         device_info.friendly_device_name());
   dictionary->SetString(kExternalDeviceBluetoothAddress,
                         device_info.bluetooth_address());
-  dictionary->SetBoolean(kExternalDeviceUnlockKey, device_info.unlock_key());
-  dictionary->SetBoolean(kExternalDeviceMobileHotspot,
-                         device_info.mobile_hotspot_supported());
+  dictionary->SetBoolean(
+      kExternalDeviceUnlockKey,
+      base::ContainsValue(device_info.enabled_software_features(),
+                          cryptauth::SoftwareFeature::EASY_UNLOCK_HOST));
+  dictionary->SetBoolean(
+      kExternalDeviceMobileHotspot,
+      base::ContainsValue(device_info.supported_software_features(),
+                          cryptauth::SoftwareFeature::MAGIC_TETHER_HOST));
   dictionary->SetBoolean(kExternalDeviceIsArcPlusPlusEnrollment,
                          device_info.arc_plus_plus());
   dictionary->SetBoolean(kExternalDeviceIsPixelPhone,
@@ -691,9 +696,14 @@ ProximityAuthWebUIHandler::RemoteDeviceToDictionary(
   dictionary->SetString(kExternalDevicePublicKeyTruncated,
                         remote_device.GetTruncatedDeviceIdForLogs());
   dictionary->SetString(kExternalDeviceFriendlyName, remote_device.name());
-  dictionary->SetBoolean(kExternalDeviceUnlockKey, remote_device.unlock_key());
+  dictionary->SetBoolean(kExternalDeviceUnlockKey,
+                         remote_device.GetSoftwareFeatureState(
+                             cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) ==
+                             cryptauth::SoftwareFeatureState::kEnabled);
   dictionary->SetBoolean(kExternalDeviceMobileHotspot,
-                         remote_device.supports_mobile_hotspot());
+                         remote_device.GetSoftwareFeatureState(
+                             cryptauth::SoftwareFeature::MAGIC_TETHER_HOST) ==
+                             cryptauth::SoftwareFeatureState::kSupported);
   dictionary->SetString(kExternalDeviceConnectionStatus,
                         kExternalDeviceDisconnected);
 

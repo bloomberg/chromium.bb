@@ -76,18 +76,6 @@ StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
   return remote_device.persistent_symmetric_key;
 }
 
-bool StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
-                  cryptauth::RemoteDevice>::
-    unlock_key(const cryptauth::RemoteDevice& remote_device) {
-  return remote_device.unlock_key;
-}
-
-bool StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
-                  cryptauth::RemoteDevice>::
-    supports_mobile_hotspot(const cryptauth::RemoteDevice& remote_device) {
-  return remote_device.supports_mobile_hotspot;
-}
-
 base::Time StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
                         cryptauth::RemoteDevice>::
     last_update_time(const cryptauth::RemoteDevice& remote_device) {
@@ -123,8 +111,6 @@ bool StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
     return false;
   }
 
-  out->unlock_key = in.unlock_key();
-  out->supports_mobile_hotspot = in.supports_mobile_hotspot();
   out->last_update_time_millis = last_update_time.ToJavaTime();
 
   return true;
