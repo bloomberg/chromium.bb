@@ -1373,12 +1373,17 @@ std::unique_ptr<ReferenceReader> DisassemblerDex::MakeReadCodeToRelCode32(
   auto mapper = base::BindRepeating(
       [](DisassemblerDex* dis, offset_t location) {
         // Address is relative to the current instruction, which begins 1 unit
-        // before |location|. This needs to be subtracted out.
-        int32_t unsafe_delta = dis->image_.read<int32_t>(location);
-        offset_t unsafe_target = static_cast<offset_t>(
-            location + (unsafe_delta - 1) * kInstrUnitSize);
+        // before |location|. This needs to be subtracted out. Use int64_t to
+        // avoid underflow and overflow.
+        int64_t unsafe_delta = dis->image_.read<int32_t>(location);
+        int64_t unsafe_target = location + (unsafe_delta - 1) * kInstrUnitSize;
+
         // TODO(huangs): Check that |unsafe_target| stays within code item.
-        return unsafe_target;
+        offset_t checked_unsafe_target =
+            static_cast<offset_t>(base::CheckedNumeric<offset_t>(unsafe_target)
+                                      .ValueOrDefault(kInvalidOffset));
+        return checked_unsafe_target < kOffsetBound ? checked_unsafe_target
+                                                    : kInvalidOffset;
       },
       base::Unretained(this));
   return std::make_unique<InstructionReferenceReader>(
