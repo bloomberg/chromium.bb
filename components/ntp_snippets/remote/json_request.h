@@ -48,7 +48,8 @@ enum class FetchResult {
   // DEPRECATED_INTERACTIVE_QUOTA_ERROR = 7,
   // DEPRECATED_NON_INTERACTIVE_QUOTA_ERROR = 8,
   MISSING_API_KEY = 9,
-  RESULT_MAX = 10
+  HTTP_ERROR_UNAUTHORIZED = 10,
+  RESULT_MAX = 11,
 };
 
 // A single request to query remote suggestions. On success, the suggestions are
