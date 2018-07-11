@@ -732,7 +732,10 @@ test("content_browsertests") {
     "../browser/download/mhtml_generation_browsertest.cc",
     "../browser/download/save_package_browsertest.cc",
     "../browser/fileapi/file_system_browsertest.cc",
-    "../browser/fileapi/file_system_url_loader_factory_browsertest.cc",
+
+    # These tests have incorrect threading (https://crbug.com/860547).
+    #"../browser/fileapi/file_system_url_loader_factory_browsertest.cc",
+
     "../browser/fileapi/fileapi_browsertest.cc",
     "../browser/find_request_manager_browsertest.cc",
     "../browser/frame_host/blocked_scheme_navigation_browsertest.cc",
