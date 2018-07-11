@@ -27,15 +27,13 @@ TEST(ResourceCoordinatorUsageClock, UsageClock) {
 
 #if defined(OS_CHROMEOS)
     // On ChromeOS, UsageClock behaves like a normal clock.
-    UsageClock session_clock;
-    EXPECT_EQ(session_clock.GetTotalUsageTime(), base::TimeDelta());
+    UsageClock usage_clock;
+    EXPECT_EQ(usage_clock.GetTotalUsageTime(), base::TimeDelta());
 
     clock.Advance(base::TimeDelta::FromMinutes(1));
-    EXPECT_EQ(session_clock.GetTotalUsageTime(),
-              base::TimeDelta::FromMinutes(1));
+    EXPECT_EQ(usage_clock.GetTotalUsageTime(), base::TimeDelta::FromMinutes(1));
     clock.Advance(base::TimeDelta::FromMinutes(1));
-    EXPECT_EQ(session_clock.GetTotalUsageTime(),
-              base::TimeDelta::FromMinutes(2));
+    EXPECT_EQ(usage_clock.GetTotalUsageTime(), base::TimeDelta::FromMinutes(2));
 #else
     // On non-ChromeOS, UsageClock advances when
     // DesktopSessionDurationTracker::in_session() is true.
@@ -46,35 +44,34 @@ TEST(ResourceCoordinatorUsageClock, UsageClock) {
     tracker->OnUserEvent();
     EXPECT_TRUE(tracker->in_session());
 
-    UsageClock session_clock;
-    EXPECT_EQ(session_clock.GetTotalUsageTime(), base::TimeDelta());
+    UsageClock usage_clock;
+    EXPECT_EQ(usage_clock.GetTotalUsageTime(), base::TimeDelta());
+    EXPECT_TRUE(tracker->in_session());
+    EXPECT_TRUE(usage_clock.IsInUse());
 
     // Verify that time advances when Chrome is in use.
     clock.Advance(base::TimeDelta::FromMinutes(1));
-    EXPECT_EQ(session_clock.GetTotalUsageTime(),
-              base::TimeDelta::FromMinutes(1));
+    EXPECT_EQ(usage_clock.GetTotalUsageTime(), base::TimeDelta::FromMinutes(1));
     clock.Advance(base::TimeDelta::FromMinutes(1));
-    EXPECT_EQ(session_clock.GetTotalUsageTime(),
-              base::TimeDelta::FromMinutes(2));
+    EXPECT_EQ(usage_clock.GetTotalUsageTime(), base::TimeDelta::FromMinutes(2));
 
     // Verify that time is updated when Chrome stops being used.
     clock.Advance(base::TimeDelta::FromMinutes(1));
     tracker->OnVisibilityChanged(false, base::TimeDelta());
     EXPECT_FALSE(tracker->in_session());
-    EXPECT_EQ(session_clock.GetTotalUsageTime(),
-              base::TimeDelta::FromMinutes(3));
+    EXPECT_FALSE(usage_clock.IsInUse());
+    EXPECT_EQ(usage_clock.GetTotalUsageTime(), base::TimeDelta::FromMinutes(3));
 
     // Verify that time stays still when Chrome is not in use.
     clock.Advance(base::TimeDelta::FromMinutes(1));
-    EXPECT_EQ(session_clock.GetTotalUsageTime(),
-              base::TimeDelta::FromMinutes(3));
+    EXPECT_EQ(usage_clock.GetTotalUsageTime(), base::TimeDelta::FromMinutes(3));
 
     // Verify that time advances again when Chrome is in use.
     tracker->OnVisibilityChanged(true, base::TimeDelta());
     EXPECT_TRUE(tracker->in_session());
+    EXPECT_TRUE(usage_clock.IsInUse());
     clock.Advance(base::TimeDelta::FromMinutes(1));
-    EXPECT_EQ(session_clock.GetTotalUsageTime(),
-              base::TimeDelta::FromMinutes(4));
+    EXPECT_EQ(usage_clock.GetTotalUsageTime(), base::TimeDelta::FromMinutes(4));
 #endif  // defined(OS_CHROMEOS)
   }
 

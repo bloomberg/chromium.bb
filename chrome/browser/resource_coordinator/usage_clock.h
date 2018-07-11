@@ -38,6 +38,9 @@ class UsageClock
   // Returns the amount of Chrome usage time since this was instantiated.
   base::TimeDelta GetTotalUsageTime() const;
 
+  // Returns true if Chrome is currently considered to be in use.
+  bool IsInUse() const;
+
  private:
 #if !defined(OS_CHROMEOS)
   void OnSessionStarted(base::TimeTicks session_start) override;
