@@ -79,7 +79,7 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
     return;
   }
 
-  const uint32 destination_pixel_format =
+  const uint32_t destination_pixel_format =
       (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR
                                                    : libyuv::FOURCC_ARGB;
 
@@ -89,7 +89,7 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
                           frame->stride(media::VideoFrame::kUPlane),
                           frame->visible_data(media::VideoFrame::kVPlane),
                           frame->stride(media::VideoFrame::kVPlane),
-                          static_cast<uint8*>(pixmap.writable_addr()),
+                          static_cast<uint8_t*>(pixmap.writable_addr()),
                           pixmap.width() * 4, pixmap.width(), pixmap.height(),
                           destination_pixel_format);
 
@@ -98,7 +98,7 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
     // This function copies any plane into the alpha channel of an ARGB image.
     libyuv::ARGBCopyYToAlpha(frame->visible_data(media::VideoFrame::kAPlane),
                              frame->stride(media::VideoFrame::kAPlane),
-                             static_cast<uint8*>(pixmap.writable_addr()),
+                             static_cast<uint8_t*>(pixmap.writable_addr()),
                              pixmap.width() * 4, pixmap.width(),
                              pixmap.height());
   }

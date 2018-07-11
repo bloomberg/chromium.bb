@@ -171,7 +171,7 @@ void CanvasCaptureHandler::SendNewFrame(
       (pixmap.alphaType() == kUnpremul_SkAlphaType || image->isOpaque())) {
     const base::TimeTicks timestamp = base::TimeTicks::Now();
     SendFrame(ConvertToYUVFrame(image->isOpaque(), false,
-                                static_cast<const uint8*>(pixmap.addr(0, 0)),
+                                static_cast<const uint8_t*>(pixmap.addr(0, 0)),
                                 gfx::Size(pixmap.width(), pixmap.height()),
                                 pixmap.rowBytes(), pixmap.colorType()),
               timestamp);
@@ -402,10 +402,10 @@ scoped_refptr<media::VideoFrame> CanvasCaptureHandler::ConvertToYUVFrame(
     return nullptr;
   }
 
-  int (*ConvertToI420)(const uint8* src_argb, int src_stride_argb, uint8* dst_y,
-                       int dst_stride_y, uint8* dst_u, int dst_stride_u,
-                       uint8* dst_v, int dst_stride_v, int width, int height) =
-      nullptr;
+  int (*ConvertToI420)(const uint8_t* src_argb, int src_stride_argb,
+                       uint8_t* dst_y, int dst_stride_y, uint8_t* dst_u,
+                       int dst_stride_u, uint8_t* dst_v, int dst_stride_v,
+                       int width, int height) = nullptr;
   switch (source_color_type) {
     case kRGBA_8888_SkColorType:
       ConvertToI420 = libyuv::ABGRToI420;

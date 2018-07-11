@@ -250,7 +250,7 @@ class CopyOutputScalingPixelTest
                                          kPremul_SkAlphaType));
     const int error_code = libyuv::I420ToARGB(
         y_data.get(), y_stride, u_data.get(), u_stride, v_data.get(), v_stride,
-        static_cast<uint8*>(bitmap.getPixels()), bitmap.rowBytes(),
+        static_cast<uint8_t*>(bitmap.getPixels()), bitmap.rowBytes(),
         result_width, result_height);
     CHECK_EQ(0, error_code);
 
