@@ -15,6 +15,9 @@
   const _CANVAS_RADIUS = 40;
 
   class Infocard {
+    /**
+     * @param {string} id
+     */
     constructor(id) {
       this._infocard = document.getElementById(id);
       /** @type {HTMLHeadingElement} */
@@ -29,6 +32,7 @@
       /**
        * Last symbol type displayed.
        * Tracked to avoid re-cloning the same icon.
+       * @type {string}
        */
       this._lastType = '';
     }
@@ -42,12 +46,12 @@
      * @param {GetSize} getSizeLabel
      */
     _updateSize(node, getSizeLabel) {
-      const {title, element} = getSizeLabel(
-        node.size,
+      const {description, element} = getSizeLabel(
+        node,
         state.get('byteunit', {default: 'MiB', valid: _BYTE_UNITS_SET})
       );
       const sizeFragment = dom.createFragment([
-        document.createTextNode(`${title} (`),
+        document.createTextNode(`${description} (`),
         element,
         document.createTextNode(')'),
       ]);
@@ -226,34 +230,39 @@
     /**
      * Update a row in the breakdown table with the given values.
      * @param {HTMLTableRowElement} row
-     * @param {number} size Total size of the symbols of a given type in a
-     * container.
+     * @param {{size:number,count:number} | null} stats Total size of the
+     * symbols of a given type in a container.
      * @param {number} percentage How much the size represents in relation to
      * the total size of the symbols in the container.
      */
-    _updateBreakdownRow(row, size, percentage) {
-      if (size === 0) {
+    _updateBreakdownRow(row, stats, percentage) {
+      if (stats == null || stats.size === 0) {
         if (row.parentElement != null) {
           this._tableBody.removeChild(row);
         }
         return;
       }
 
+      const countColumn = row.querySelector('.count');
       const sizeColumn = row.querySelector('.size');
       const percentColumn = row.querySelector('.percent');
 
-      const sizeString = size.toLocaleString(undefined, {
+      const countString = stats.count.toLocaleString(_LOCALE, {
+        useGrouping: true,
+      });
+      const sizeString = stats.size.toLocaleString(_LOCALE, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
         useGrouping: true,
       });
-      const percentString = percentage.toLocaleString(undefined, {
+      const percentString = percentage.toLocaleString(_LOCALE, {
         style: 'percent',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });
 
       // Update DOM
+      countColumn.textContent = countString;
       sizeColumn.textContent = sizeString;
       percentColumn.textContent = percentString;
       this._tableBody.appendChild(row);
@@ -266,25 +275,25 @@
      */
     _updateInfocard(containerNode, getSizeLabel) {
       const extraRows = {...this._infoRows};
-      const sizeEntries = Object.entries(containerNode.childSizes).sort(
-        (a, b) => b[1] - a[1]
+      const statsEntries = Object.entries(containerNode.childStats).sort(
+        (a, b) => b[1].size - a[1].size
       );
 
       // Update DOM
       super._updateInfocard(containerNode, getSizeLabel);
       let angleStart = 0;
-      for (const [type, size] of sizeEntries) {
+      for (const [type, stats] of statsEntries) {
         delete extraRows[type];
         const {color} = getIconStyle(type);
-        const percentage = size / containerNode.size;
+        const percentage = stats.size / containerNode.size;
 
         angleStart = this._drawSlice(angleStart, percentage, color);
-        this._updateBreakdownRow(this._infoRows[type], size, percentage);
+        this._updateBreakdownRow(this._infoRows[type], stats, percentage);
       }
 
       // Hide unused types
       for (const row of Object.values(extraRows)) {
-        this._updateBreakdownRow(row, 0, 0);
+        this._updateBreakdownRow(row, null, 0);
       }
     }
   }

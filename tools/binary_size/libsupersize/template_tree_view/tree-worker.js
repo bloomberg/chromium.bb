@@ -83,7 +83,7 @@ function sortTree(node) {
 
 /**
  * Make a node with some default arguments
- * @param {{idPath:string,type:string,shortName?:string,size?:number}} options
+ * @param {Partial<TreeNode> & {shortName?:string}} options
  * Values to use for the node. If a value is
  * omitted, a default will be used instead.
  * @param {string} sep Path seperator, such as '/'. Used for creating a default
@@ -91,11 +91,17 @@ function sortTree(node) {
  * @returns {TreeNode}
  */
 function createNode(options, sep) {
-  const {idPath, type, shortName = basename(idPath, sep), size = 0} = options;
+  const {
+    idPath,
+    type,
+    shortName = basename(idPath, sep),
+    size = 0,
+    childStats = {},
+  } = options;
   return {
     children: [],
     parent: null,
-    childSizes: {},
+    childStats,
     idPath,
     shortNameIndex: idPath.lastIndexOf(shortName),
     size,
@@ -150,21 +156,18 @@ class TreeBuilder {
    * @param {(symbolNode: TreeNode) => boolean} options.filterTest Called to see
    * if a symbol should be included. If a symbol fails the test, it will not be
    * attached to the tree.
-   * @param {string} options.sep Path seperator used to find parent names.
-   * @param {boolean} options.methodCountMode If true, return number of dex
-   * methods instead of size.
+   * @param {string} options.sep Path seperator used to find parent names.=
    */
   constructor(options) {
     this._getPath = options.getPath;
     this._filterTest = options.filterTest;
     this._sep = options.sep || _PATH_SEP;
-    this._methodCountMode = options.methodCountMode || false;
 
     this.rootNode = createNode(
       {
         idPath: this._sep,
         shortName: this._sep,
-        type: _CONTAINER_TYPES.DIRECTORY,
+        type: this._containerType(this._sep),
       },
       this._sep
     );
@@ -189,24 +192,43 @@ class TreeBuilder {
     parent.children.push(node);
     node.parent = parent;
 
-    // Update the size of all ancestors
-    const {size} = node;
-    const symbolType = node.type.slice(-1);
-    const validSymbol = _SYMBOL_TYPE_SET.has(symbolType);
-    while (node != null && node.parent != null) {
-      // Only add symbol types to `childSizes`
-      if (validSymbol) {
-        const {childSizes} = node.parent;
-        const [containerType, lastBiggestType] = node.parent.type;
+    const additionalSize = node.size;
+    const additionalStats = Object.entries(node.childStats);
 
-        childSizes[symbolType] = size + (childSizes[symbolType] || 0);
-        if (childSizes[symbolType] > (childSizes[lastBiggestType] || 0)) {
-          node.parent.type = containerType + symbolType;
+    // Update the size and childStats of all ancestors
+    while (node != null && node.parent != null) {
+      const [containerType, lastBiggestType] = node.parent.type;
+      let {size: lastBiggestSize = 0} =
+        node.parent.childStats[lastBiggestType] || {};
+      for (const [type, stat] of additionalStats) {
+        const parentStat = node.parent.childStats[type] || {size: 0, count: 0};
+
+        parentStat.size += stat.size;
+        parentStat.count += stat.count;
+        node.parent.childStats[type] = parentStat;
+
+        if (parentStat.size > lastBiggestSize) {
+          node.parent.type = `${containerType}${type}`;
         }
       }
 
-      node.parent.size += size;
+      node.parent.size += additionalSize;
       node = node.parent;
+    }
+  }
+
+  /**
+   * Returns the container type for a parent node.
+   * @param {string} childIdPath
+   * @private
+   */
+  _containerType(childIdPath) {
+    const useAlternateType =
+      childIdPath.lastIndexOf(this._sep) > childIdPath.lastIndexOf(_PATH_SEP);
+    if (useAlternateType) {
+      return _CONTAINER_TYPES.COMPONENT;
+    } else {
+      return _CONTAINER_TYPES.DIRECTORY;
     }
   }
 
@@ -214,14 +236,14 @@ class TreeBuilder {
    * Helper to return the parent of the given node. The parent is determined
    * based in the idPath and the path seperator. If the parent doesn't yet
    * exist, one is created and stored in the parents map.
-   * @param {TreeNode} node
+   * @param {TreeNode} childNode
    * @private
    */
-  _getOrMakeParentNode(node) {
+  _getOrMakeParentNode(childNode) {
     // Get idPath of this node's parent.
     let parentPath;
-    if (node.idPath === '') parentPath = _NO_NAME;
-    else parentPath = dirname(node.idPath, this._sep);
+    if (childNode.idPath === '') parentPath = _NO_NAME;
+    else parentPath = dirname(childNode.idPath, this._sep);
 
     // check if parent exists
     let parentNode;
@@ -232,21 +254,16 @@ class TreeBuilder {
       // get parent from cache if it exists, otherwise create it
       parentNode = this._parents.get(parentPath);
       if (parentNode == null) {
-        let type = _CONTAINER_TYPES.DIRECTORY;
-        if (
-          node.idPath.lastIndexOf(this._sep) >
-          node.idPath.lastIndexOf(_PATH_SEP)
-        ) {
-          type = _CONTAINER_TYPES.COMPONENT;
-        }
-
-        parentNode = createNode({idPath: parentPath, type}, this._sep);
+        parentNode = createNode(
+          {idPath: parentPath, type: this._containerType(childNode.idPath)},
+          this._sep
+        );
         this._parents.set(parentPath, parentNode);
       }
     }
 
     // attach node to the newly found parent
-    TreeBuilder._attachToParent(node, parentNode);
+    TreeBuilder._attachToParent(childNode, parentNode);
     return parentNode;
   }
 
@@ -272,17 +289,20 @@ class TreeBuilder {
     );
     // build child nodes for this file's symbols and attach to self
     for (const symbol of fileEntry[_KEYS.FILE_SYMBOLS]) {
+      const size = symbol[_KEYS.SIZE];
+      // Turn all unknown types into other.
+      const type = _SYMBOL_TYPE_SET.has(symbol[_KEYS.TYPE])
+        ? symbol[_KEYS.TYPE]
+        : _OTHER_SYMBOL_TYPE;
+
       const symbolNode = createNode(
         {
           // Join file path to symbol name with a ":"
           idPath: `${idPath}:${symbol[_KEYS.SYMBOL_NAME]}`,
           shortName: symbol[_KEYS.SYMBOL_NAME],
-          // Method count mode just counts number of dex method symbols.
-          size: this._methodCountMode ? 1 : symbol[_KEYS.SIZE],
-          // Turn all unknown types into other.
-          type: _SYMBOL_TYPE_SET.has(symbol[_KEYS.TYPE])
-            ? symbol[_KEYS.TYPE]
-            : _OTHER_SYMBOL_TYPE,
+          size,
+          type,
+          childStats: {[type]: {size, count: 1}},
         },
         this._sep
       );
@@ -449,7 +469,7 @@ function parseOptions(options) {
   /** @type {Set<string>} */
   let typeFilter;
   if (methodCountMode) {
-    typeFilter = new Set('m');
+    typeFilter = new Set(_DEX_METHOD_SYMBOL_TYPE);
   } else {
     typeFilter = new Set(types(params.getAll(_TYPE_STATE_KEY)));
     if (typeFilter.size === 0) {
@@ -481,7 +501,7 @@ function parseOptions(options) {
     return filters.every(fn => fn(symbolNode));
   }
 
-  return {groupBy, methodCountMode, filterTest};
+  return {groupBy, filterTest};
 }
 
 /** @type {TreeBuilder | null} */
@@ -491,10 +511,10 @@ const fetcher = new DataFetcher('data.ndjson');
 /**
  * Assemble a tree when this worker receives a message.
  * @param {string} options Query string containing options for the builder.
- * @param {(msg: object) => void} callback
+ * @param {(msg: TreeProgress) => void} callback
  */
 async function buildTree(options, callback) {
-  const {groupBy, methodCountMode, filterTest} = parseOptions(options);
+  const {groupBy, filterTest} = parseOptions(options);
 
   /** Object from the first line of the data file */
   let meta = null;
@@ -515,7 +535,6 @@ async function buildTree(options, callback) {
 
   builder = new TreeBuilder({
     sep: sepMap[groupBy],
-    methodCountMode,
     getPath: getPathMap[groupBy],
     filterTest,
   });
@@ -536,14 +555,11 @@ async function buildTree(options, callback) {
       }
     }
 
-    let sizeHeader = methodCountMode ? 'Methods' : 'Size';
-    if (meta && meta.diff_mode) sizeHeader += ' diff';
-
     const message = {
       id: 0,
       root: formatNode(data.root || builder.rootNode),
       percent,
-      sizeHeader,
+      diffMode: meta && meta.diff_mode,
     };
     if (data.error) {
       message.error = data.error.message;
@@ -597,7 +613,8 @@ const actions = {
 };
 
 /**
- * Assemble a tree when this worker receives a message.
+ * Call the requested action function with the given data. If an error is thrown
+ * or rejected, post the error message to the UI thread.
  * @param {MessageEvent} event Event for when this worker receives a message.
  */
 self.onmessage = async event => {

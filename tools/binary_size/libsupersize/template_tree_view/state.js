@@ -124,8 +124,6 @@ class TreeWorker {
 /** Build utilities for working with the state. */
 function _initState() {
   const _DEFAULT_FORM = new FormData(form);
-  /** @type {HTMLCollectionOf<HTMLInputElement>} */
-  const typeCheckboxes = form.elements.namedItem(_TYPE_STATE_KEY);
 
   /**
    * State is represented in the query string and
@@ -244,26 +242,11 @@ function _initState() {
     }
   }
 
-  function readFormState() {
+  // Update the state when the form changes.
+  form.addEventListener('change', () => {
     const modifiedForm = new FormData(form);
     _filterParams = new URLSearchParams(onlyChangedEntries(modifiedForm));
     history.replaceState(null, null, state.toString());
-  }
-
-  // Update the state when the form changes.
-  form.addEventListener('change', readFormState);
-  document.getElementById('type-all').addEventListener('click', () => {
-    for (const checkbox of typeCheckboxes) {
-      checkbox.checked = true;
-    }
-    readFormState();
-    form.dispatchEvent(new Event('submit'));
-  });
-  document.getElementById('type-none').addEventListener('click', () => {
-    for (const checkbox of typeCheckboxes) {
-      checkbox.checked = false;
-    }
-    readFormState();
   });
 
   return state;
@@ -278,6 +261,10 @@ function _startListeners() {
   const methodCountInput = form.elements.namedItem('method_count');
   /** @type {HTMLFieldSetElement} */
   const byteunit = form.elements.namedItem('byteunit');
+  /** @type {HTMLCollectionOf<HTMLInputElement>} */
+  const typeCheckboxes = form.elements.namedItem(_TYPE_STATE_KEY);
+  /** @type {HTMLSpanElement} */
+  const sizeHeader = document.getElementById('size-header');
 
   /**
    * The settings dialog on the side can be toggled on and off by elements with
@@ -302,13 +289,28 @@ function _startListeners() {
     if (methodCountInput.checked) {
       byteunit.setAttribute('disabled', '');
       typesFilterContainer.setAttribute('disabled', '');
+      sizeHeader.textContent = 'Methods';
     } else {
       byteunit.removeAttribute('disabled');
       typesFilterContainer.removeAttribute('disabled');
+      sizeHeader.textContent = 'Size';
     }
   }
   setMethodCountModeUI();
   methodCountInput.addEventListener('change', setMethodCountModeUI);
+
+  document.getElementById('type-all').addEventListener('click', () => {
+    for (const checkbox of typeCheckboxes) {
+      checkbox.checked = true;
+    }
+    form.dispatchEvent(new Event('change'));
+  });
+  document.getElementById('type-none').addEventListener('click', () => {
+    for (const checkbox of typeCheckboxes) {
+      checkbox.checked = false;
+    }
+    form.dispatchEvent(new Event('change'));
+  });
 }
 
 function _makeIconTemplateGetter() {
