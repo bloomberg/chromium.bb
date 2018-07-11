@@ -190,9 +190,10 @@ void DocumentTimeline::ScheduleNextService() {
 }
 
 void DocumentTimeline::DocumentTimelineTiming::WakeAfter(double duration) {
-  if (timer_.IsActive() && timer_.NextFireInterval() < duration)
+  TimeDelta duration_delta = TimeDelta::FromSecondsD(duration);
+  if (timer_.IsActive() && timer_.NextFireInterval() < duration_delta)
     return;
-  timer_.StartOneShot(duration, FROM_HERE);
+  timer_.StartOneShot(duration_delta, FROM_HERE);
 }
 
 void DocumentTimeline::DocumentTimelineTiming::ServiceOnNextFrame() {

@@ -98,7 +98,9 @@ class SecureTextTimer final : public TimerBase {
   void RestartWithNewText(unsigned last_typed_character_offset) {
     last_typed_character_offset_ = last_typed_character_offset;
     if (Settings* settings = layout_text_->GetDocument().GetSettings()) {
-      StartOneShot(settings->GetPasswordEchoDurationInSeconds(), FROM_HERE);
+      StartOneShot(
+          TimeDelta::FromSecondsD(settings->GetPasswordEchoDurationInSeconds()),
+          FROM_HERE);
     }
   }
   void Invalidate() { last_typed_character_offset_ = -1; }
