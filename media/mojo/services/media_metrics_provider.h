@@ -11,6 +11,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/mojo/interfaces/media_metrics_provider.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
+#include "media/mojo/services/video_decode_perf_history.h"
 #include "url/origin.h"
 
 namespace media {
@@ -20,12 +21,12 @@ class VideoDecodePerfHistory;
 class MEDIA_MOJO_EXPORT MediaMetricsProvider
     : public mojom::MediaMetricsProvider {
  public:
-  explicit MediaMetricsProvider(VideoDecodePerfHistory* perf_history);
+  explicit MediaMetricsProvider(VideoDecodePerfHistory::SaveCallback save_cb);
   ~MediaMetricsProvider() override;
 
   // Creates a MediaMetricsProvider, |perf_history| may be nullptr if perf
   // history database recording is disabled.
-  static void Create(VideoDecodePerfHistory* perf_history,
+  static void Create(VideoDecodePerfHistory::SaveCallback save_cb,
                      mojom::MediaMetricsProviderRequest request);
 
  private:
@@ -62,7 +63,7 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   base::TimeDelta time_to_first_frame_ = kNoTimestamp;
   base::TimeDelta time_to_play_ready_ = kNoTimestamp;
 
-  VideoDecodePerfHistory* const perf_history_;
+  const VideoDecodePerfHistory::SaveCallback save_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaMetricsProvider);
 };

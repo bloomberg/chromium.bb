@@ -52,7 +52,8 @@ class WatchTimeRecorderTest : public testing::Test {
                        kDiscardedWatchTimeAudioVideoMse,
                        kDiscardedWatchTimeAudioVideoEme}) {
     ResetMetricRecorders();
-    MediaMetricsProvider::Create(nullptr, mojo::MakeRequest(&provider_));
+    MediaMetricsProvider::Create(VideoDecodePerfHistory::SaveCallback(),
+                                 mojo::MakeRequest(&provider_));
   }
 
   ~WatchTimeRecorderTest() override { base::RunLoop().RunUntilIdle(); }

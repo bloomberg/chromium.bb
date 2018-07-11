@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "media/capabilities/video_decode_stats_db.h"
@@ -187,6 +188,20 @@ class VideoDecodePerfHistoryTest : public testing::Test {
     return targets;
   }
 
+  void SavePerfRecord(const url::Origin& untrusted_top_frame_origin,
+                      bool is_top_frame,
+                      mojom::PredictionFeatures features,
+                      mojom::PredictionTargets targets,
+                      uint64_t player_id) {
+    // Null saved done CB. Save is verified separately via GetPerfInfo() after
+    // save completes.
+    base::OnceClosure save_done_cb;
+
+    perf_history_->GetSaveCallback().Run(untrusted_top_frame_origin,
+                                         is_top_frame, features, targets,
+                                         player_id, std::move(save_done_cb));
+  }
+
  protected:
   using VideoDescKey = VideoDecodeStatsDB::VideoDescKey;
   using DecodeStatsEntry = VideoDecodeStatsDB::DecodeStatsEntry;
@@ -238,18 +253,16 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_Smooth) {
       kFramesDecoded * kMaxSmoothDroppedFramesPercent + 1;
 
   // Add the entries.
-  perf_history_->SavePerfRecord(
-      kOrigin, kIsTopFrame,
-      MakeFeatures(kKnownProfile, kKownSize, kSmoothFrameRate),
-      MakeTargets(kFramesDecoded, kSmoothFramesDropped,
-                  kNotPowerEfficientFramesDecoded),
-      kPlayerId);
-  perf_history_->SavePerfRecord(
-      kOrigin, kIsTopFrame,
-      MakeFeatures(kKnownProfile, kKownSize, kNotSmoothFrameRate),
-      MakeTargets(kFramesDecoded, kNotSmoothFramesDropped,
-                  kNotPowerEfficientFramesDecoded),
-      kPlayerId);
+  SavePerfRecord(kOrigin, kIsTopFrame,
+                 MakeFeatures(kKnownProfile, kKownSize, kSmoothFrameRate),
+                 MakeTargets(kFramesDecoded, kSmoothFramesDropped,
+                             kNotPowerEfficientFramesDecoded),
+                 kPlayerId);
+  SavePerfRecord(kOrigin, kIsTopFrame,
+                 MakeFeatures(kKnownProfile, kKownSize, kNotSmoothFrameRate),
+                 MakeTargets(kFramesDecoded, kNotSmoothFramesDropped,
+                             kNotPowerEfficientFramesDecoded),
+                 kPlayerId);
 
   // Verify perf history returns is_smooth = true for the smooth entry.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsNotPowerEfficient));
@@ -318,19 +331,19 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_PowerEfficient) {
       kFramesDecoded * kMaxSmoothDroppedFramesPercent + 1;
 
   // Add the entries.
-  perf_history_->SavePerfRecord(
+  SavePerfRecord(
       kOrigin, kIsTopFrame,
       MakeFeatures(kPowerEfficientProfile, kKownSize, kSmoothFrameRate),
       MakeTargets(kFramesDecoded, kSmoothFramesDropped,
                   kPowerEfficientFramesDecoded),
       kPlayerId);
-  perf_history_->SavePerfRecord(
+  SavePerfRecord(
       kOrigin, kIsTopFrame,
       MakeFeatures(kNotPowerEfficientProfile, kKownSize, kSmoothFrameRate),
       MakeTargets(kFramesDecoded, kSmoothFramesDropped,
                   kNotPowerEfficientFramesDecoded),
       kPlayerId);
-  perf_history_->SavePerfRecord(
+  SavePerfRecord(
       kOrigin, kIsTopFrame,
       MakeFeatures(kPowerEfficientProfile, kKownSize, kNotSmoothFrameRate),
       MakeTargets(kFramesDecoded, kNotSmoothFramesDropped,
@@ -426,7 +439,7 @@ TEST_P(VideoDecodePerfHistoryParamTest, AppendAndDestroyStats) {
   const int kFramesDecoded = 1000;
   const int kManyFramesDropped = kFramesDecoded / 2;
   const int kFramesPowerEfficient = kFramesDecoded;
-  perf_history_->SavePerfRecord(
+  SavePerfRecord(
       kOrigin, kIsTopFrame, MakeFeatures(kProfile, kSize, kFrameRate),
       MakeTargets(kFramesDecoded, kManyFramesDropped, kFramesPowerEfficient),
       kPlayerId);
@@ -509,7 +522,7 @@ TEST_F(VideoDecodePerfHistoryTest, AppendWhileDestroying) {
 
   // With DB reinitialization still pending, save a record that indicates
   // NOT smooth performance.
-  perf_history_->SavePerfRecord(
+  SavePerfRecord(
       kOrigin, kIsTopFrame, MakeFeatures(kProfile, kSize, kFrameRate),
       MakeTargets(kFramesDecoded, kManyFramesDropped, kFramesPowerEfficient),
       kPlayerId);

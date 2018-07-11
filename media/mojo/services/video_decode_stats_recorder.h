@@ -12,12 +12,11 @@
 #include "media/base/video_codecs.h"
 #include "media/mojo/interfaces/video_decode_stats_recorder.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
+#include "media/mojo/services/video_decode_perf_history.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "url/gurl.h"
 
 namespace media {
-
-class VideoDecodePerfHistory;
 
 // See mojom::VideoDecodeStatsRecorder for documentation.
 class MEDIA_MOJO_EXPORT VideoDecodeStatsRecorder
@@ -29,7 +28,7 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsRecorder
   VideoDecodeStatsRecorder(const url::Origin& untrusted_top_frame_origin,
                            bool is_top_frame,
                            uint64_t player_id,
-                           VideoDecodePerfHistory* perf_history);
+                           VideoDecodePerfHistory::SaveCallback save_cb);
   ~VideoDecodeStatsRecorder() override;
 
   // mojom::VideoDecodeStatsRecorder implementation:
@@ -43,7 +42,7 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsRecorder
 
   const url::Origin untrusted_top_frame_origin_;
   const bool is_top_frame_;
-  VideoDecodePerfHistory* const perf_history_;
+  const VideoDecodePerfHistory::SaveCallback save_cb_;
   const uint64_t player_id_;
 
   mojom::PredictionFeatures features_;

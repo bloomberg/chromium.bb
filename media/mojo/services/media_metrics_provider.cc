@@ -4,6 +4,7 @@
 
 #include "media/mojo/services/media_metrics_provider.h"
 
+#include "base/logging.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
 #include "media/mojo/services/watch_time_recorder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -16,8 +17,9 @@ constexpr char kInvalidInitialize[] = "Initialize() was not called correctly.";
 
 static uint64_t g_player_id = 0;
 
-MediaMetricsProvider::MediaMetricsProvider(VideoDecodePerfHistory* perf_history)
-    : player_id_(g_player_id++), perf_history_(perf_history) {}
+MediaMetricsProvider::MediaMetricsProvider(
+    VideoDecodePerfHistory::SaveCallback save_cb)
+    : player_id_(g_player_id++), save_cb_(save_cb) {}
 
 MediaMetricsProvider::~MediaMetricsProvider() {
   // UKM may be unavailable in content_shell or other non-chrome/ builds; it
@@ -49,10 +51,11 @@ MediaMetricsProvider::~MediaMetricsProvider() {
 }
 
 // static
-void MediaMetricsProvider::Create(VideoDecodePerfHistory* perf_history,
+void MediaMetricsProvider::Create(VideoDecodePerfHistory::SaveCallback save_cb,
                                   mojom::MediaMetricsProviderRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<MediaMetricsProvider>(perf_history),
-                          std::move(request));
+  mojo::MakeStrongBinding(
+      std::make_unique<MediaMetricsProvider>(std::move(save_cb)),
+      std::move(request));
 }
 
 void MediaMetricsProvider::Initialize(bool is_mse,
@@ -118,9 +121,14 @@ void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
     return;
   }
 
+  if (save_cb_.is_null()) {
+    DVLOG(3) << __func__ << " Ignoring request, SaveCallback is null";
+    return;
+  }
+
   mojo::MakeStrongBinding(
       std::make_unique<VideoDecodeStatsRecorder>(
-          untrusted_top_origin_, is_top_frame_, player_id_, perf_history_),
+          untrusted_top_origin_, is_top_frame_, player_id_, save_cb_),
       std::move(request));
 }
 

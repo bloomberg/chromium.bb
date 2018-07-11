@@ -169,6 +169,11 @@ void VideoDecodePerfHistory::OnGotStatsForRequest(
   std::move(got_info_cb).Run(is_smooth, is_power_efficient);
 }
 
+VideoDecodePerfHistory::SaveCallback VideoDecodePerfHistory::GetSaveCallback() {
+  return base::BindRepeating(&VideoDecodePerfHistory::SavePerfRecord,
+                             weak_ptr_factory_.GetWeakPtr());
+}
+
 void VideoDecodePerfHistory::SavePerfRecord(
     const url::Origin& untrusted_top_frame_origin,
     bool is_top_frame,

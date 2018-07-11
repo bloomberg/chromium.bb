@@ -357,7 +357,8 @@ class WebMediaPlayerImplTest : public testing::Test {
         RendererFactorySelector::FactoryType::DEFAULT);
 
     mojom::MediaMetricsProviderPtr provider;
-    MediaMetricsProvider::Create(nullptr, mojo::MakeRequest(&provider));
+    MediaMetricsProvider::Create(VideoDecodePerfHistory::SaveCallback(),
+                                 mojo::MakeRequest(&provider));
 
     // Initialize provider since none of the tests below actually go through the
     // full loading/pipeline initialize phase. If this ever changes the provider
