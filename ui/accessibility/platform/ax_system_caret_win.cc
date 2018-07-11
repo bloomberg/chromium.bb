@@ -65,15 +65,6 @@ const AXNodeData& AXSystemCaretWin::GetData() const {
   return data_;
 }
 
-const AXTreeData& AXSystemCaretWin::GetTreeData() const {
-  CR_DEFINE_STATIC_LOCAL(AXTreeData, empty_data, ());
-  return empty_data;
-}
-
-gfx::NativeWindow AXSystemCaretWin::GetTopLevelWidget() {
-  return nullptr;
-}
-
 gfx::NativeViewAccessible AXSystemCaretWin::GetParent() {
   if (!event_target_)
     return nullptr;
@@ -87,14 +78,6 @@ gfx::NativeViewAccessible AXSystemCaretWin::GetParent() {
   return nullptr;
 }
 
-int AXSystemCaretWin::GetChildCount() {
-  return 0;
-}
-
-gfx::NativeViewAccessible AXSystemCaretWin::ChildAtIndex(int index) {
-  return nullptr;
-}
-
 gfx::Rect AXSystemCaretWin::GetClippedScreenBoundsRect() const {
   // We could optionally add clipping here if ever needed.
   return ToEnclosingRect(data_.location);
@@ -104,88 +87,13 @@ gfx::Rect AXSystemCaretWin::GetUnclippedScreenBoundsRect() const {
   return ToEnclosingRect(data_.location);
 }
 
-gfx::NativeViewAccessible AXSystemCaretWin::HitTestSync(int x, int y) {
-  return nullptr;
-}
-
-gfx::NativeViewAccessible AXSystemCaretWin::GetFocus() {
-  return nullptr;
-}
-
 gfx::AcceleratedWidget
 AXSystemCaretWin::GetTargetForNativeAccessibilityEvent() {
   return event_target_;
 }
 
-int AXSystemCaretWin::GetTableRowCount() const {
-  return 0;
-}
-
-int AXSystemCaretWin::GetTableColCount() const {
-  return 0;
-}
-
-std::vector<int32_t> AXSystemCaretWin::GetColHeaderNodeIds() const {
-  return {};
-}
-
-std::vector<int32_t> AXSystemCaretWin::GetColHeaderNodeIds(
-    int32_t col_index) const {
-  return {};
-}
-
-std::vector<int32_t> AXSystemCaretWin::GetRowHeaderNodeIds() const {
-  return {};
-}
-
-std::vector<int32_t> AXSystemCaretWin::GetRowHeaderNodeIds(
-    int32_t row_index) const {
-  return {};
-}
-
-int32_t AXSystemCaretWin::GetCellId(int32_t row_index,
-                                    int32_t col_index) const {
-  return 0;
-}
-
-int32_t AXSystemCaretWin::CellIdToIndex(int32_t cell_id) const {
-  return -1;
-}
-
-int32_t AXSystemCaretWin::CellIndexToId(int32_t cell_index) const {
-  return 0;
-}
-
-bool AXSystemCaretWin::AccessibilityPerformAction(const AXActionData& data) {
-  return false;
-}
-
-int AXSystemCaretWin::GetIndexInParent() const {
-  return -1;
-}
-
-AXPlatformNode* AXSystemCaretWin::GetFromNodeID(int32_t id) {
-  return nullptr;
-}
-
 bool AXSystemCaretWin::ShouldIgnoreHoveredStateForTesting() {
   return false;
-}
-
-bool AXSystemCaretWin::IsOffscreen() const {
-  return false;
-}
-
-std::set<int32_t> AXSystemCaretWin::GetReverseRelations(
-    ax::mojom::IntAttribute attr,
-    int32_t dst_id) {
-  return std::set<int32_t>();
-}
-
-std::set<int32_t> AXSystemCaretWin::GetReverseRelations(
-    ax::mojom::IntListAttribute attr,
-    int32_t dst_id) {
-  return std::set<int32_t>();
 }
 
 const ui::AXUniqueId& AXSystemCaretWin::GetUniqueId() const {

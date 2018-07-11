@@ -13,7 +13,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
-#include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -30,7 +30,7 @@ class Widget;
 // This class owns the AXPlatformNode, which implements those native APIs.
 class VIEWS_EXPORT NativeViewAccessibilityBase
     : public ViewAccessibility,
-      public ui::AXPlatformNodeDelegate {
+      public ui::AXPlatformNodeDelegateBase {
  public:
   ~NativeViewAccessibilityBase() override;
 
@@ -40,7 +40,6 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
 
   // ui::AXPlatformNodeDelegate
   const ui::AXNodeData& GetData() const override;
-  const ui::AXTreeData& GetTreeData() const override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   gfx::NativeWindow GetTopLevelWidget() override;
@@ -50,26 +49,11 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
-  int GetIndexInParent() const override;
-  gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
-  int GetTableRowCount() const override;
-  int GetTableColCount() const override;
-  std::vector<int32_t> GetColHeaderNodeIds() const override;
-  std::vector<int32_t> GetColHeaderNodeIds(int32_t col_index) const override;
-  std::vector<int32_t> GetRowHeaderNodeIds() const override;
-  std::vector<int32_t> GetRowHeaderNodeIds(int32_t row_index) const override;
-  int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
-  int32_t CellIdToIndex(int32_t cell_id) const override;
-  int32_t CellIndexToId(int32_t cell_index) const override;
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
   const ui::AXUniqueId& GetUniqueId()
       const override;  // Also in ViewAccessibility
-  std::set<int32_t> GetReverseRelations(ax::mojom::IntAttribute attr,
-                                        int32_t dst_id) override;
-  std::set<int32_t> GetReverseRelations(ax::mojom::IntListAttribute attr,
-                                        int32_t dst_id) override;
 
  protected:
   explicit NativeViewAccessibilityBase(View* view);

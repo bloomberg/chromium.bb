@@ -15,7 +15,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
-#include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -31,9 +31,8 @@ namespace {
 // object. Every time we create an accessibility object for a View, we add its
 // top-level widget to a vector so we can return the list of all top-level
 // windows as children of this application object.
-class AuraLinuxApplication
-    : public ui::AXPlatformNodeDelegate,
-      public WidgetObserver {
+class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
+                             public WidgetObserver {
  public:
   // Get the single instance of this class.
   static AuraLinuxApplication* GetInstance() {
@@ -73,17 +72,6 @@ class AuraLinuxApplication
 
   const ui::AXNodeData& GetData() const override { return data_; }
 
-  const ui::AXTreeData& GetTreeData() const override {
-    CR_DEFINE_STATIC_LOCAL(ui::AXTreeData, empty_data, ());
-    return empty_data;
-  }
-
-  gfx::NativeWindow GetTopLevelWidget() override { return nullptr; }
-
-  gfx::NativeViewAccessible GetParent() override {
-    return nullptr;
-  }
-
   int GetChildCount() override {
     return static_cast<int>(widgets_.size());
   }
@@ -95,72 +83,6 @@ class AuraLinuxApplication
     Widget* widget = widgets_[index];
     CHECK(widget);
     return widget->GetRootView()->GetNativeViewAccessible();
-  }
-
-  gfx::Rect GetClippedScreenBoundsRect() const override { return gfx::Rect(); }
-  gfx::Rect GetUnclippedScreenBoundsRect() const override {
-    return gfx::Rect();
-  }
-
-  gfx::NativeViewAccessible HitTestSync(int x, int y) override {
-    return nullptr;
-  }
-
-  gfx::NativeViewAccessible GetFocus() override {
-    return nullptr;
-  }
-
-  bool IsOffscreen() const override {
-    // TODO: need to implement.
-    return false;
-  }
-
-  int GetIndexInParent() const override { return -1; }
-
-  ui::AXPlatformNode* GetFromNodeID(int32_t id) override { return nullptr; }
-
-  gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override {
-    return gfx::kNullAcceleratedWidget;
-  }
-
-  int GetTableRowCount() const override { return 0; }
-
-  int GetTableColCount() const override { return 0; }
-
-  std::vector<int32_t> GetColHeaderNodeIds() const override { return {}; }
-
-  std::vector<int32_t> GetColHeaderNodeIds(int32_t col_index) const override {
-    return {};
-  }
-
-  std::vector<int32_t> GetRowHeaderNodeIds() const override { return {}; }
-
-  std::vector<int32_t> GetRowHeaderNodeIds(int32_t row_index) const override {
-    return {};
-  }
-
-  int32_t GetCellId(int32_t row_index, int32_t col_index) const override {
-    return -1;
-  }
-
-  int32_t CellIdToIndex(int32_t cell_id) const override { return -1; }
-
-  int32_t CellIndexToId(int32_t cell_index) const override { return -1; }
-
-  bool AccessibilityPerformAction(const ui::AXActionData& data) override {
-    return false;
-  }
-
-  bool ShouldIgnoreHoveredStateForTesting() override { return false; }
-
-  std::set<int32_t> GetReverseRelations(ax::mojom::IntAttribute attr,
-                                        int32_t dst_id) override {
-    return std::set<int32_t>();
-  }
-
-  std::set<int32_t> GetReverseRelations(ax::mojom::IntListAttribute attr,
-                                        int32_t dst_id) override {
-    return std::set<int32_t>();
   }
 
  private:

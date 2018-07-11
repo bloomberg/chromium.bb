@@ -81,10 +81,6 @@ const AXTreeData& TestAXNodeWrapper::GetTreeData() const {
   return tree_->data();
 }
 
-gfx::NativeWindow TestAXNodeWrapper::GetTopLevelWidget() {
-  return nullptr;
-}
-
 gfx::NativeViewAccessible TestAXNodeWrapper::GetParent() {
   TestAXNodeWrapper* parent_wrapper = GetOrCreate(tree_, node_->parent());
   return parent_wrapper ?
@@ -145,10 +141,6 @@ gfx::NativeViewAccessible TestAXNodeWrapper::HitTestSync(int x, int y) {
                  : nullptr;
 }
 
-gfx::NativeViewAccessible TestAXNodeWrapper::GetFocus() {
-  return nullptr;
-}
-
 // Walk the AXTree and ensure that all wrappers are created
 void TestAXNodeWrapper::BuildAllWrappers(AXTree* tree, AXNode* node) {
   for (int i = 0; i < node->child_count(); i++) {
@@ -176,11 +168,6 @@ AXPlatformNode* TestAXNodeWrapper::GetFromNodeID(int32_t id) {
 
 int TestAXNodeWrapper::GetIndexInParent() const {
   return node_ ? node_->index_in_parent() : -1;
-}
-
-gfx::AcceleratedWidget
-TestAXNodeWrapper::GetTargetForNativeAccessibilityEvent() {
-  return gfx::kNullAcceleratedWidget;
 }
 
 void TestAXNodeWrapper::ReplaceIntAttribute(int32_t node_id,
@@ -339,10 +326,6 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
 
 bool TestAXNodeWrapper::ShouldIgnoreHoveredStateForTesting() {
   return true;
-}
-
-bool TestAXNodeWrapper::IsOffscreen() const {
-  return false;
 }
 
 std::set<int32_t> TestAXNodeWrapper::GetReverseRelations(
