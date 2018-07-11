@@ -93,7 +93,11 @@ class BluetoothHostPairingNoInputTest : public OobeBaseTest {
         static_cast<bluez::FakeBluetoothDeviceClient*>(
             bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient());
   }
-  ~BluetoothHostPairingNoInputTest() override {}
+
+  ~BluetoothHostPairingNoInputTest() override {
+    service_manager::ServiceContext::ClearGlobalBindersForTesting(
+        device::mojom::kServiceName);
+  }
 
   // OobeBaseTest override:
   void SetUpOnMainThread() override {

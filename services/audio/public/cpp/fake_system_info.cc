@@ -23,6 +23,12 @@ void FakeSystemInfo::OverrideGlobalBinderForAudioService(
                           base::Unretained(fake_system_info)));
 }
 
+// static
+void FakeSystemInfo::ClearGlobalBinderForAudioService() {
+  service_manager::ServiceContext::ClearGlobalBindersForTesting(
+      mojom::kServiceName);
+}
+
 void FakeSystemInfo::GetInputStreamParameters(
     const std::string& device_id,
     GetInputStreamParametersCallback callback) {

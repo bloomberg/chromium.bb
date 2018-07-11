@@ -2358,8 +2358,13 @@ class KioskVirtualKeyboardTestSoundsManagerTestImpl
 class KioskVirtualKeyboardTest : public KioskTest,
                                  public audio::FakeSystemInfo {
  public:
-  KioskVirtualKeyboardTest() {}
-  ~KioskVirtualKeyboardTest() override = default;
+  KioskVirtualKeyboardTest() {
+    audio::FakeSystemInfo::OverrideGlobalBinderForAudioService(this);
+  }
+
+  ~KioskVirtualKeyboardTest() override {
+    audio::FakeSystemInfo::ClearGlobalBinderForAudioService();
+  }
 
  protected:
   // KioskVirtualKeyboardTest overrides:
@@ -2399,7 +2404,6 @@ IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, RestrictFeatures) {
   mock_audio_manager_ = std::make_unique<media::MockAudioManager>(
       std::make_unique<media::TestAudioThread>());
   mock_audio_manager_->SetHasInputDevices(true);
-  audio::FakeSystemInfo::OverrideGlobalBinderForAudioService(this);
 
   set_test_app_id(kTestVirtualKeyboardKioskApp);
   set_test_app_version("0.1");

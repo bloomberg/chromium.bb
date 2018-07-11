@@ -4,7 +4,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -42,15 +41,24 @@ using device::FakeSensorProvider;
 
 class GenericSensorBrowserTest : public ContentBrowserTest {
  public:
-  GenericSensorBrowserTest()
-      : io_loop_finished_event_(
-            base::WaitableEvent::ResetPolicy::AUTOMATIC,
-            base::WaitableEvent::InitialState::NOT_SIGNALED) {
+  GenericSensorBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
         {features::kGenericSensor, features::kGenericSensorExtraClasses}, {});
+
+    // Because Device Service also runs in this process (browser process), here
+    // we can directly set our binder to intercept interface requests against
+    // it.
+    service_manager::ServiceContext::SetGlobalBinderForTesting(
+        device::mojom::kServiceName, device::mojom::SensorProvider::Name_,
+        base::BindRepeating(
+            &GenericSensorBrowserTest::BindSensorProviderRequest,
+            base::Unretained(this)));
   }
 
-  ~GenericSensorBrowserTest() override {}
+  ~GenericSensorBrowserTest() override {
+    service_manager::ServiceContext::ClearGlobalBindersForTesting(
+        device::mojom::kServiceName);
+  }
 
   void SetUpOnMainThread() override {
     https_embedded_test_server_.reset(
@@ -62,32 +70,12 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
     https_embedded_test_server_->ServeFilesFromSourceDirectory(
         "content/test/data/generic_sensor");
     https_embedded_test_server_->StartAcceptingConnections();
-
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&GenericSensorBrowserTest::SetBinderOnIOThread,
-                       base::Unretained(this)));
-
-    io_loop_finished_event_.Wait();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // HTTPS server only serves a valid cert for localhost, so this is needed
     // to load pages from other hosts without an error.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
-  }
-
-  void SetBinderOnIOThread() {
-    // Because Device Service also runs in this process(browser process), here
-    // we can directly set our binder to intercept interface requests against
-    // it.
-    service_manager::ServiceContext::SetGlobalBinderForTesting(
-        device::mojom::kServiceName, device::mojom::SensorProvider::Name_,
-        base::BindRepeating(
-            &GenericSensorBrowserTest::BindSensorProviderRequest,
-            base::Unretained(this)));
-
-    io_loop_finished_event_.Signal();
   }
 
   void BindSensorProviderRequest(
@@ -115,7 +103,6 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::WaitableEvent io_loop_finished_event_;
   bool sensor_provider_available_ = true;
   std::unique_ptr<FakeSensorProvider> fake_sensor_provider_;
 

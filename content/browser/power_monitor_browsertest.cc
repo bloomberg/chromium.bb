@@ -93,17 +93,18 @@ class MockPowerMonitorMessageBroadcaster : public device::mojom::PowerMonitor {
 
 class PowerMonitorTest : public ContentBrowserTest {
  public:
-  PowerMonitorTest() = default;
-
-  void SetUp() override {
+  PowerMonitorTest() {
     // Because Device Service also runs in this process(browser process), we can
     // set our binder to intercept requests for PowerMonitor interface to it.
     service_manager::ServiceContext::SetGlobalBinderForTesting(
         device::mojom::kServiceName, device::mojom::PowerMonitor::Name_,
         base::Bind(&PowerMonitorTest::BindPowerMonitor,
                    base::Unretained(this)));
+  }
 
-    ContentBrowserTest::SetUp();
+  ~PowerMonitorTest() override {
+    service_manager::ServiceContext::ClearGlobalBindersForTesting(
+        device::mojom::kServiceName);
   }
 
   void BindPowerMonitor(const std::string& interface_name,
