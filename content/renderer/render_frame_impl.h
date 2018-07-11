@@ -528,6 +528,7 @@ class CONTENT_EXPORT RenderFrameImpl
       base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
       mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
+      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
       CommitNavigationCallback callback) override;
   void CommitFailedNavigation(
@@ -1620,6 +1621,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // document loader for this frame is actually created (where this is
   // consumed to initialize a subresource loader).
   mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info_;
+
+  // Set on CommitNavigation when Network Service is enabled, and used
+  // by FrameURLLoaderFactory for prefetch requests.
+  network::mojom::URLLoaderFactoryPtr prefetch_loader_factory_;
 
   // URLLoaderFactory instances used for subresource loading.
   // Depending on how the frame was created, |loader_factories_| could be:

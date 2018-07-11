@@ -65,7 +65,6 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
-#include "third_party/blink/public/mojom/loader/prefetch_url_loader_service.mojom.h"
 #include "third_party/blink/public/platform/dedicated_worker_factory.mojom.h"
 #include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
@@ -1066,9 +1065,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void CreateDedicatedWorkerHostFactory(
       blink::mojom::DedicatedWorkerFactoryRequest request);
-
-  void ConnectToPrefetchURLLoaderService(
-      blink::mojom::PrefetchURLLoaderServiceRequest request);
 
   // Callback for connection error on the media::mojom::InterfaceFactory client.
   void OnMediaInterfaceFactoryConnectionError();

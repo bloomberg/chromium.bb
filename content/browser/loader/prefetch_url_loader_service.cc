@@ -47,14 +47,14 @@ void PrefetchURLLoaderService::InitializeResourceContext(
   request_context_getter_ = request_context_getter;
 }
 
-void PrefetchURLLoaderService::ConnectToService(
-    blink::mojom::PrefetchURLLoaderServiceRequest request,
+void PrefetchURLLoaderService::GetFactory(
+    network::mojom::URLLoaderFactoryRequest request,
     int frame_tree_node_id,
     std::unique_ptr<URLLoaderFactoryBundleInfo> factories) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto factory_bundle =
       base::MakeRefCounted<URLLoaderFactoryBundle>(std::move(factories));
-  service_bindings_.AddBinding(
+  loader_factory_bindings_.AddBinding(
       this, std::move(request),
       std::make_unique<BindContext>(frame_tree_node_id, factory_bundle));
 }
@@ -93,14 +93,6 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
 }
 
 PrefetchURLLoaderService::~PrefetchURLLoaderService() = default;
-
-void PrefetchURLLoaderService::GetFactory(
-    network::mojom::URLLoaderFactoryRequest request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  loader_factory_bindings_.AddBinding(
-      this, std::move(request),
-      std::make_unique<BindContext>(service_bindings_.dispatch_context()));
-}
 
 void PrefetchURLLoaderService::CreateLoaderAndStart(
     network::mojom::URLLoaderRequest request,

@@ -164,6 +164,7 @@
 #include "net/http/http_util.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -947,9 +948,18 @@ class RenderFrameImpl::FrameURLLoaderFactory
       frame_->GetFrameHost()->IssueKeepAliveHandle(
           mojo::MakeRequest(&keep_alive_handle));
     }
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory =
+        frame_->GetLoaderFactoryBundle();
+    if (request.GetRequestContext() == WebURLRequest::kRequestContextPrefetch &&
+        frame_->prefetch_loader_factory_) {
+      // The frame should be alive when this factory is used.
+      loader_factory =
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              frame_->prefetch_loader_factory_.get());
+    }
     return std::make_unique<WebURLLoaderImpl>(
         RenderThreadImpl::current()->resource_dispatcher(),
-        std::move(task_runner), frame_->GetLoaderFactoryBundle(),
+        std::move(task_runner), std::move(loader_factory),
         std::move(keep_alive_handle));
   }
 
@@ -3054,6 +3064,7 @@ void RenderFrameImpl::CommitNavigation(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
+    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
     CommitNavigationCallback callback) {
   DCHECK(!IsRendererDebugURL(common_params.url));
@@ -3071,6 +3082,7 @@ void RenderFrameImpl::CommitNavigation(
   }
 
   controller_service_worker_info_ = std::move(controller_service_worker_info);
+  prefetch_loader_factory_ = std::move(prefetch_loader_factory);
 
   // If the request was initiated in the context of a user gesture then make
   // sure that the navigation also executes in the context of a user gesture.

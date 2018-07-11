@@ -3393,14 +3393,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(SpeechRecognitionDispatcherHost::Create,
                           GetProcess()->GetID(), routing_id_),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
-
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    registry_->AddInterface(
-        base::BindRepeating(
-            &RenderFrameHostImpl::ConnectToPrefetchURLLoaderService,
-            base::Unretained(this)),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
-  }
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {
@@ -3793,8 +3785,26 @@ void RenderFrameHostImpl::CommitNavigation(
       }
     }
 
-    if (subresource_loader_factories)
+    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory;
+    if (subresource_loader_factories) {
       SaveSubresourceFactories(std::move(subresource_loader_factories));
+
+      // Also set-up URLLoaderFactory for prefetch using the same loader
+      // factories. TODO(kinuko): Consider setting this up only when prefetch
+      // is used. Currently we have this here to make sure we have non-racy
+      // situation (https://crbug.com/849929).
+      DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+      auto* storage_partition = static_cast<StoragePartitionImpl*>(
+          BrowserContext::GetStoragePartition(
+              GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&PrefetchURLLoaderService::GetFactory,
+                         storage_partition->GetPrefetchURLLoaderService(),
+                         mojo::MakeRequest(&prefetch_loader_factory),
+                         frame_tree_node_->frame_tree_node_id(),
+                         CloneSubresourceFactories()));
+    }
 
     if (IsPerNavigationMojoInterfaceEnabled() && navigation_request_ &&
         navigation_request_->GetCommitNavigationClient()) {
@@ -3802,13 +3812,13 @@ void RenderFrameHostImpl::CommitNavigation(
           head, common_params, request_params,
           std::move(url_loader_client_endpoints), CloneSubresourceFactories(),
           std::move(subresource_overrides), std::move(controller),
-          devtools_navigation_token);
+          std::move(prefetch_loader_factory), devtools_navigation_token);
     } else {
       GetNavigationControl()->CommitNavigation(
           head, common_params, request_params,
           std::move(url_loader_client_endpoints), CloneSubresourceFactories(),
           std::move(subresource_overrides), std::move(controller),
-          devtools_navigation_token,
+          std::move(prefetch_loader_factory), devtools_navigation_token,
           navigation_request_
               ? base::BindOnce(
                     &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
@@ -4679,32 +4689,6 @@ void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
   content::CreateDedicatedWorkerHostFactory(process_->GetID(), routing_id_,
                                             last_committed_origin_,
                                             std::move(request));
-}
-
-void RenderFrameHostImpl::ConnectToPrefetchURLLoaderService(
-    blink::mojom::PrefetchURLLoaderServiceRequest request) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
-  auto* storage_partition =
-      static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
-          GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
-  auto subresource_factories = CloneSubresourceFactories();
-  // Temporary for https://crbug.com/849929.
-  CHECK(subresource_factories);
-  // Make sure that file: URL is available only when the origin of the last
-  // commited URL is for file:. This should be always true as far as
-  // SaveSubresourceFactories() is called appropriately whenever the set of
-  // available subresource factories is updated. (Using CHECK as breaking this
-  // could break our security assumptions)
-  CHECK(subresource_factories->factories_info().find(url::kFileScheme) ==
-            subresource_factories->factories_info().end() ||
-        last_committed_url_.SchemeIsFile());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&PrefetchURLLoaderService::ConnectToService,
-                     storage_partition->GetPrefetchURLLoaderService(),
-                     std::move(request), frame_tree_node_->frame_tree_node_id(),
-                     std::move(subresource_factories)));
 }
 
 void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {

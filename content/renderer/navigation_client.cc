@@ -22,6 +22,7 @@ void NavigationClient::CommitNavigation(
     base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
+    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token) {
   // TODO(ahemery): The reset should be done when the navigation did commit
   // (meaning at a later stage). This is not currently possible because of
@@ -32,7 +33,8 @@ void NavigationClient::CommitNavigation(
       head, common_params, request_params,
       std::move(url_loader_client_endpoints), std::move(subresource_loaders),
       std::move(subresource_overrides),
-      std::move(controller_service_worker_info), devtools_navigation_token,
+      std::move(controller_service_worker_info),
+      std::move(prefetch_loader_factory), devtools_navigation_token,
       mojom::FrameNavigationControl::CommitNavigationCallback());
 }
 
