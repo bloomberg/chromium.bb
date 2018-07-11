@@ -173,12 +173,12 @@ void ExtractAndUpdateAdvertisementData(
   if (!advertised_uuids)
     return;
 
-  // TODO(https://crbug.com/821766): Implement extraction of service data,
-  // manufacturer data and tx power.
-  device->UpdateAdvertisementData(rssi, std::move(*advertised_uuids),
-                                  BluetoothDevice::ServiceDataMap(),
-                                  BluetoothDevice::ManufacturerDataMap(),
-                                  nullptr /* tx_power */, nullptr /* flags */);
+  // TODO(https://crbug.com/821766): Implement extraction of flags, tx power,
+  // service data and manufacturer data.
+  device->UpdateAdvertisementData(
+      rssi, base::nullopt /* flags */, std::move(*advertised_uuids),
+      base::nullopt /* tx_power */, BluetoothDevice::ServiceDataMap(),
+      BluetoothDevice::ManufacturerDataMap());
 }
 
 }  // namespace
