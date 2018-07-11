@@ -219,6 +219,10 @@ static_library("renderer") {
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl",
     ]
+
+    if (is_linux) {
+      deps += [ "//components/services/font/public/cpp" ]
+    }
   }
 
   if (safe_browsing_mode != 0) {
