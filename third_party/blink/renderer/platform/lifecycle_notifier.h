@@ -43,12 +43,12 @@ class LifecycleNotifier : public GarbageCollectedMixin {
   void AddObserver(LifecycleObserverBase*);
   void RemoveObserver(LifecycleObserverBase*);
 
-  // notifyContextDestroyed() should be explicitly dispatched from an
-  // observed context to detach its observers, and if the observer kind
-  // requires it, notify each observer by invoking contextDestroyed().
+  // NotifyContextDestroyed() should be explicitly dispatched from an
+  // observed context to detach its observers and, if the observer kind
+  // requires it, notify each observer by invoking ContextDestroyed().
   //
-  // When contextDestroyed() is called, it is supplied the context as
-  // an argument, but the observer's lifecycleContext() is still valid
+  // When ContextDestroyed() is called, it is supplied the context as
+  // an argument, but the observer's LifecycleContext() is still valid
   // and safe to use while handling the notification.
   virtual void NotifyContextDestroyed();
 
@@ -70,7 +70,6 @@ class LifecycleNotifier : public GarbageCollectedMixin {
     kAllowingAddition = 1,
     kAllowingRemoval = 2,
     kNotIterating = kAllowingAddition | kAllowingRemoval,
-    kAllowPendingRemoval = 4,
   };
 
   // Iteration state is recorded while iterating the observer set,
@@ -155,12 +154,6 @@ inline void LifecycleNotifier<T, Observer>::AddObserver(
 template <typename T, typename Observer>
 inline void LifecycleNotifier<T, Observer>::RemoveObserver(
     LifecycleObserverBase* observer) {
-  // If immediate removal isn't currently allowed,
-  // |observer| is recorded for pending removal.
-  if (iteration_state_ & kAllowPendingRemoval) {
-    observers_.insert(observer);
-    return;
-  }
   CHECK(iteration_state_ & kAllowingRemoval);
   observers_.erase(observer);
 }
