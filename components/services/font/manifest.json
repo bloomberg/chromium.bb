@@ -6,6 +6,9 @@
     "service_manager:connector": {
       "provides": {
         "font_service": [ "font_service.mojom.FontService" ]
+      },
+      "requires": {
+        "service_manager": [ "service_manager:all_users" ]
       }
     }
   }
