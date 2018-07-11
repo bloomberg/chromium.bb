@@ -269,12 +269,12 @@ cr.define('extensions', function() {
     computeSourceIndicatorIcon_: function() {
       switch (extensions.getItemSource(this.data)) {
         case SourceType.POLICY:
-          return 'communication:business';
+          return 'extensions-icons:business';
         case SourceType.SIDELOADED:
-          return 'input';
+          return 'extensions-icons:input';
         case SourceType.UNKNOWN:
           // TODO(dpapad): Ask UX for a better icon for this case.
-          return 'input';
+          return 'extensions-icons:input';
         case SourceType.UNPACKED:
           return 'extensions-icons:unpacked';
         case SourceType.WEBSTORE:
