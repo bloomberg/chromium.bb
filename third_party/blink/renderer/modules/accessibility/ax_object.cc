@@ -879,6 +879,7 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
       !!InheritsPresentationalRoleFrom();
   cached_is_ignored_ = ComputeAccessibilityIsIgnored();
   cached_is_editable_root_ = ComputeIsEditableRoot();
+  // TODO(dmazzoni): remove this const_cast.
   cached_live_region_root_ =
       IsLiveRegion()
           ? const_cast<AXObject*>(this)
@@ -886,11 +887,13 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
                                     : nullptr);
   cached_aria_column_index_ = ComputeAriaColumnIndex();
   cached_aria_row_index_ = ComputeAriaRowIndex();
-  // TODO(dmazzoni): remove this const_cast.
   if (cached_is_ignored_ != LastKnownIsIgnoredValue()) {
-    const_cast<AXObject*>(this)->ChildrenChanged();
     last_known_is_ignored_value_ =
         cached_is_ignored_ ? kIgnoreObject : kIncludeObject;
+
+    AXObject* parent = ParentObjectIfExists();
+    if (parent)
+      parent->ChildrenChanged();
   }
 }
 
