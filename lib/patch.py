@@ -2066,6 +2066,8 @@ class GerritPatch(GerritFetchOnlyPatch):
     """
     if self.IsDraft():
       return PatchNotSubmittable(self, 'is a draft.')
+    elif self.IsPrivate():
+      return PatchNotSubmittable(self, 'is marked private still.')
 
     if self.status != 'NEW':
       statuses = {
@@ -2086,8 +2088,6 @@ class GerritPatch(GerritFetchOnlyPatch):
       return PatchNotSubmittable(self, 'is not marked Verified=+1.')
     elif not self.HasApproval('COMR', ('1', '2')):
       return PatchNotSubmittable(self, 'is not marked Commit-Queue>=+1.')
-    elif self.IsPrivate():
-      return PatchNotSubmittable(self, 'is marked private still.')
 
     return None
 

@@ -401,6 +401,15 @@ class ValidationPool(object):
       logging.info('Queried changes: %s', cros_patch.GetChangesAsString(
           changes))
 
+      # Tell users to publish drafts/privates before marking them commit ready.
+      # Do this before we filter out via the ready function below.
+      for change in changes:
+        if change.HasApproval('COMR', ('1', '2')):
+          if change.IsDraft():
+            self.HandleDraftChange(change)
+          elif change.IsPrivate():
+            self.HandlePrivateChange(change)
+
       if ready_fn:
         # The query passed in may include a dictionary of flags to use for
         # revalidating the query results. We need to do this because Gerrit
@@ -408,11 +417,6 @@ class ValidationPool(object):
         changes = [x for x in changes if ready_fn(x)]
         logging.info('Ready changes: %s', cros_patch.GetChangesAsString(
             changes))
-
-      # Tell users to publish drafts before marking them commit ready.
-      for change in changes:
-        if change.HasApproval('COMR', ('1', '2')) and change.IsDraft():
-          self.HandleDraftChange(change)
 
       changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
           changes, git.ManifestCheckout.Cached(self.build_root))
@@ -1736,6 +1740,20 @@ class ValidationPool(object):
     msg = ('%(queue)s could not apply your change because the latest patch '
            'set is not published. Please publish your draft patch set before '
            'marking your commit as ready.')
+    self.SendNotification(change, msg)
+    self.RemoveReady(change)
+
+  def HandlePrivateChange(self, change):
+    """Handler for when the latest patch set of |change| is not public.
+
+    This handler removes the commit ready bit from the specified changes and
+    sends the developer a message explaining why.
+
+    Args:
+      change: GerritPatch instance to operate upon.
+    """
+    msg = ('%(queue)s could not apply your change because the CL is private. '
+           'Please make your CL public before marking your commit as ready.')
     self.SendNotification(change, msg)
     self.RemoveReady(change)
 
