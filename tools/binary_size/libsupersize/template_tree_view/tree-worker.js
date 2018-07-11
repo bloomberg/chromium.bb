@@ -364,39 +364,65 @@ class TreeBuilder {
 }
 
 /**
- * Transforms a binary stream into a newline delimited JSON (.ndjson) stream.
- * Each yielded value corresponds to one line in the stream.
- * @param {Response} response Response to convert.
+ * Wrapper around fetch for requesting the same resource multiple times.
  */
-async function* newlineDelimtedJsonStream(response) {
-  // Are streams supported?
-  if (response.body) {
-    const decoder = new TextDecoder();
-    const decodeOptions = {stream: true};
-    const reader = response.body.getReader();
+class DataFetcher {
+  /**
+   * @param {string} url URL to the resource you want to fetch.
+   */
+  constructor(url) {
+    this._controller = new AbortController();
+    this._url = url;
+  }
 
-    let buffer = '';
-    while (true) {
-      // Read values from the stream
-      const {done, value} = await reader.read();
-      if (done) break;
+  /**
+   * Starts a new request and aborts the previous one.
+   */
+  fetch() {
+    this._controller.abort();
+    this._controller = new AbortController();
+    return fetch(this._url, {
+      credentials: 'same-origin',
+      signal: this._controller.signal,
+    });
+  }
 
-      // Convert binary values to text chunks.
-      const chunk = decoder.decode(value, decodeOptions);
-      buffer += chunk;
-      // Split the chunk base on newlines, and turn each complete line into JSON
-      const lines = buffer.split('\n');
-      [buffer] = lines.splice(lines.length - 1, 1);
+  /**
+   * Transforms a binary stream into a newline delimited JSON (.ndjson) stream.
+   * Each yielded value corresponds to one line in the stream.
+   */
+  async *newlineDelimtedJsonStream() {
+    const response = await this.fetch();
+    // Are streams supported?
+    if (response.body) {
+      const decoder = new TextDecoder();
+      const decodeOptions = {stream: true};
+      const reader = response.body.getReader();
 
-      for (const line of lines) {
-        yield JSON.parse(line);
+      let buffer = '';
+      while (true) {
+        // Read values from the stream
+        const {done, value} = await reader.read();
+        if (done) break;
+
+        // Convert binary values to text chunks.
+        const chunk = decoder.decode(value, decodeOptions);
+        buffer += chunk;
+        // Split the chunk base on newlines,
+        // and turn each complete line into JSON
+        const lines = buffer.split('\n');
+        [buffer] = lines.splice(lines.length - 1, 1);
+
+        for (const line of lines) {
+          yield JSON.parse(line);
+        }
       }
-    }
-  } else {
-    // In-memory version for browsers without stream support
-    const text = await response.text();
-    for (const line of text.split('\n')) {
-      if (line) yield JSON.parse(line);
+    } else {
+      // In-memory version for browsers without stream support
+      const text = await response.text();
+      for (const line of text.split('\n')) {
+        if (line) yield JSON.parse(line);
+      }
     }
   }
 }
@@ -422,10 +448,14 @@ function parseOptions(options) {
 
   /** @type {Set<string>} */
   let typeFilter;
-  if (methodCountMode) typeFilter = new Set('m');
-  else {
-    const types = params.getAll('type');
-    typeFilter = new Set(types.length === 0 ? _SYMBOL_TYPE_SET : types);
+  if (methodCountMode) {
+    typeFilter = new Set('m');
+  } else {
+    typeFilter = new Set(types(params.getAll(_TYPE_STATE_KEY)));
+    if (typeFilter.size === 0) {
+      typeFilter = new Set(_SYMBOL_TYPE_SET);
+      typeFilter.delete('b');
+    }
   }
 
   /** Ensure symbol size is past the minimum */
@@ -456,7 +486,7 @@ function parseOptions(options) {
 
 /** @type {TreeBuilder | null} */
 let builder = null;
-let responsePromise = fetch('data.ndjson');
+const fetcher = new DataFetcher('data.ndjson');
 
 /**
  * Assemble a tree when this worker receives a message.
@@ -507,7 +537,7 @@ async function buildTree(options, callback) {
     }
 
     let sizeHeader = methodCountMode ? 'Methods' : 'Size';
-    if (meta.diff_mode) sizeHeader += ' diff';
+    if (meta && meta.diff_mode) sizeHeader += ' diff';
 
     const message = {
       id: 0,
@@ -525,17 +555,9 @@ async function buildTree(options, callback) {
   /** @type {number} ID from setInterval */
   let interval = null;
   try {
-    let response = await responsePromise;
-    if (response.bodyUsed) {
-      // We start the first request when the worker loads so the response is
-      // ready earlier. Subsequent requests (such as when filters change) must
-      // re-fetch the data file from the cache or network.
-      response = await fetch('data.ndjson');
-    }
-
     // Post partial state every second
     interval = setInterval(postToUi, 1000);
-    for await (const dataObj of newlineDelimtedJsonStream(response)) {
+    for await (const dataObj of fetcher.newlineDelimtedJsonStream()) {
       if (meta == null) {
         meta = dataObj;
         postToUi();
@@ -548,7 +570,11 @@ async function buildTree(options, callback) {
     postToUi({root: builder.build(), percent: 1});
   } catch (error) {
     if (interval != null) clearInterval(interval);
-    console.error(error);
+    if (error.name === 'AbortError') {
+      console.info(error.message);
+    } else {
+      console.error(error);
+    }
     postToUi({error});
   }
 }
