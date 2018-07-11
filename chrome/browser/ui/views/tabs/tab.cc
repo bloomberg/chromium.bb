@@ -219,7 +219,10 @@ gfx::Path GetRefreshInteriorPath(float scale,
   const float left = aligned_bounds.x();
   const float top = aligned_bounds.y() + Tab::GetStrokeHeight();
   const float right = aligned_bounds.right();
-  const float bottom = aligned_bounds.bottom();
+  const float extended_bottom = aligned_bounds.bottom();
+  const float bottom_extension =
+      GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) * scale;
+  const float bottom = extended_bottom - bottom_extension;
 
   // Construct the interior path by intersecting paths representing the left
   // and right halves of the tab.  Compared to computing the full path at once,
@@ -228,8 +231,8 @@ gfx::Path GetRefreshInteriorPath(float scale,
 
   // Bottom right.
   gfx::Path right_path;
-  right_path.moveTo(right, bottom);
-  right_path.rLineTo(-corner_gap, 0);
+  right_path.moveTo(right - corner_gap, extended_bottom);
+  right_path.rLineTo(0, -bottom_extension);
   right_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
                    SkPath::kCW_Direction, right - extension, bottom - radius);
 
@@ -242,7 +245,7 @@ gfx::Path GetRefreshInteriorPath(float scale,
 
   // Top/bottom edges of right side.
   right_path.lineTo(left, top);
-  right_path.lineTo(left, bottom);
+  right_path.lineTo(left, extended_bottom);
   right_path.close();
 
   // Top left.
@@ -257,9 +260,10 @@ gfx::Path GetRefreshInteriorPath(float scale,
   // Bottom left.
   left_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
                   SkPath::kCW_Direction, left + corner_gap, bottom);
+  left_path.rLineTo(0, bottom_extension);
 
   // Bottom/top edges of left side.
-  left_path.lineTo(right, bottom);
+  left_path.lineTo(right, extended_bottom);
   left_path.lineTo(right, top);
   left_path.close();
 
@@ -340,11 +344,15 @@ gfx::Path GetRefreshBorderPath(const gfx::Rect& bounds,
   const float left = aligned_bounds.x();
   const float top = aligned_bounds.y();
   const float right = aligned_bounds.right();
-  const float bottom = aligned_bounds.bottom();
+  const float extended_bottom = aligned_bounds.bottom();
+  const float bottom_extension =
+      GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) * scale;
+  const float bottom = extended_bottom - bottom_extension;
 
   // Bottom left.
   gfx::Path path;
-  path.moveTo(left, bottom);
+  path.moveTo(left, extended_bottom);
+  path.rLineTo(0, -bottom_extension);
   path.rLineTo(0, -stroke_thickness);
   path.rLineTo(corner_gap, 0);
   path.arcTo(outer_radius, outer_radius, 0, SkPath::kSmall_ArcSize,
@@ -382,6 +390,7 @@ gfx::Path GetRefreshBorderPath(const gfx::Rect& bounds,
              bottom - stroke_thickness);
   path.rLineTo(corner_gap, 0);
   path.rLineTo(0, stroke_thickness);
+  path.rLineTo(0, bottom_extension);
 
   // Bottom edge.
   path.close();

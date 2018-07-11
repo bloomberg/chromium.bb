@@ -75,12 +75,14 @@ int GetLayoutConstant(LayoutConstant constant) {
       return touch_optimized_material ? 12 : 16;
     case TAB_HEIGHT: {
       constexpr int kTabHeight[] = {29, 33, 41, 36, 41};
-      return kTabHeight[mode];
+      return kTabHeight[mode] + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
     }
     case TAB_PRE_TITLE_PADDING:
       return newer_material ? 8 : 6;
     case TAB_STACK_DISTANCE:
       return touch_optimized_material ? 4 : 6;
+    case TABSTRIP_TOOLBAR_OVERLAP:
+      return ui::MaterialDesignController::IsRefreshUi() ? 1 : 0;
     case TOOLBAR_ELEMENT_PADDING: {
       constexpr int kPadding[] = {0, 8, 0, 4, 0};
       return kPadding[mode];

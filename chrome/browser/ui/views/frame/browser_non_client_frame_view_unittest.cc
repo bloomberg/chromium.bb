@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -73,9 +74,15 @@ TEST_F(BrowserNonClientFrameViewTabbedTest, HitTestTabstrip) {
 
   // Hits tab strip but not client area.
   EXPECT_TRUE(frame_view_->HitTestRect(
-      gfx::Rect(tabstrip_bounds.x() + 1, tabstrip_bounds.bottom() - 1, 1, 1)));
+      gfx::Rect(tabstrip_bounds.x() + 1,
+                tabstrip_bounds.bottom() -
+                    GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) - 1,
+                1, 1)));
 
   // Hits tab strip and client area.
-  EXPECT_TRUE(frame_view_->HitTestRect(gfx::Rect(
-      tabstrip_bounds.x() + 1, tabstrip_bounds.bottom() - 1, 100, 100)));
+  EXPECT_TRUE(frame_view_->HitTestRect(
+      gfx::Rect(tabstrip_bounds.x() + 1,
+                tabstrip_bounds.bottom() -
+                    GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) - 1,
+                100, 100)));
 }
