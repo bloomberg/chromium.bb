@@ -605,9 +605,9 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
                                    CalculateMinimumBlockSize(end_margin_strut));
 
   // With contain:size we need to ignore all kinds of intrinsic sizing. If block
-  // height was specified as auto, it will always resolve to 0.
+  // height was specified as auto, its content-box size will become 0.
   if (Node().ShouldApplySizeContainment())
-    intrinsic_block_size_ = LayoutUnit();
+    intrinsic_block_size_ = border_scrollbar_padding_.BlockSum();
 
   // Recompute the block-axis size now that we know our content size.
   border_box_size.block_size = ComputeBlockSizeForFragment(
