@@ -49,24 +49,25 @@ void ParentLocalSurfaceIdAllocator::Invalidate() {
 }
 
 const LocalSurfaceId& ParentLocalSurfaceIdAllocator::GenerateId() {
-  if (!is_allocation_suppressed_)
+  if (!is_allocation_suppressed_) {
     ++current_local_surface_id_.parent_sequence_number_;
+    TRACE_EVENT_WITH_FLOW2(
+        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+        "LocalSurfaceId.Embed.Flow",
+        TRACE_ID_GLOBAL(current_local_surface_id_.embed_trace_id()),
+        TRACE_EVENT_FLAG_FLOW_OUT, "step",
+        "ParentLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
+        current_local_surface_id_.ToString());
+    TRACE_EVENT_WITH_FLOW2(
+        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+        "LocalSurfaceId.Submission.Flow",
+        TRACE_ID_GLOBAL(current_local_surface_id_.submission_trace_id()),
+        TRACE_EVENT_FLAG_FLOW_OUT, "step",
+        "ParentLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
+        current_local_surface_id_.ToString());
+  }
   is_invalid_ = false;
 
-  TRACE_EVENT_WITH_FLOW2(
-      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
-      "LocalSurfaceId.Embed.Flow",
-      TRACE_ID_GLOBAL(current_local_surface_id_.embed_trace_id()),
-      TRACE_EVENT_FLAG_FLOW_OUT, "step",
-      "ParentLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
-      current_local_surface_id_.ToString());
-  TRACE_EVENT_WITH_FLOW2(
-      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
-      "LocalSurfaceId.Submission.Flow",
-      TRACE_ID_GLOBAL(current_local_surface_id_.submission_trace_id()),
-      TRACE_EVENT_FLAG_FLOW_OUT, "step",
-      "ParentLocalSurfaceIdAllocator::GenerateId", "local_surface_id",
-      current_local_surface_id_.ToString());
 
   return current_local_surface_id_;
 }

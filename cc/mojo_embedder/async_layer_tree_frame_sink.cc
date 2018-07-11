@@ -152,16 +152,18 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
   else
     hit_test_region_list = client_->BuildHitTestData();
 
-  last_submitted_local_surface_id_ = local_surface_id_;
-  last_submitted_device_scale_factor_ = frame.device_scale_factor();
-  last_submitted_size_in_pixels_ = frame.size_in_pixels();
+  if (last_submitted_local_surface_id_ != local_surface_id_) {
+    last_submitted_local_surface_id_ = local_surface_id_;
+    last_submitted_device_scale_factor_ = frame.device_scale_factor();
+    last_submitted_size_in_pixels_ = frame.size_in_pixels();
 
-  TRACE_EVENT_WITH_FLOW2(
-      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
-      "LocalSurfaceId.Submission.Flow",
-      TRACE_ID_GLOBAL(local_surface_id_.submission_trace_id()),
-      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-      "SubmitCompositorFrame", "surface_id", local_surface_id_.ToString());
+    TRACE_EVENT_WITH_FLOW2(
+        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+        "LocalSurfaceId.Submission.Flow",
+        TRACE_ID_GLOBAL(local_surface_id_.submission_trace_id()),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+        "SubmitCompositorFrame", "surface_id", local_surface_id_.ToString());
+  }
 
   compositor_frame_sink_ptr_->SubmitCompositorFrame(
       local_surface_id_, std::move(frame), std::move(hit_test_region_list),
