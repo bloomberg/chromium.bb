@@ -38,7 +38,9 @@ Polymer({
    * @private
    */
   grouped_: function(siteGroup) {
-    return siteGroup.origins.length != 1;
+    if (siteGroup)
+      return siteGroup.origins.length != 1;
+    return false;
   },
 
   /**
@@ -46,23 +48,22 @@ Polymer({
    * If grouped_() is true and |originIndex| is not provided, returns the eTLD+1
    * for all the origins, otherwise, return the host for that origin.
    * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
-   * @param {!number=} originIndex Optional index of the origin to get a
-   *     user-friendly name for. If not provided, returns the eTLD+1 name, if
-   *     there is one, otherwise defaults to the first origin.
+   * @param {number} originIndex Index of the origin to get a user-friendly name
+   *     for. If -1, returns the eTLD+1 name if any, otherwise defaults to the
+   *     first origin.
    * @return {string} The user-friendly name.
    * @private
    */
   siteRepresentation_: function(siteGroup, originIndex) {
     if (!siteGroup)
       return '';
-    if (this.grouped_(siteGroup) && originIndex === undefined) {
+    if (this.grouped_(siteGroup) && originIndex == -1) {
       if (siteGroup.etldPlus1 != '')
         return siteGroup.etldPlus1;
       // Fall back onto using the host of the first origin, if no eTLD+1 name
       // was computed.
-      return this.toUrl(siteGroup.origins[0]).host;
     }
-    originIndex = originIndex === undefined ? 0 : originIndex;
+    originIndex = this.getIndexBoundToOriginList_(siteGroup, originIndex);
     const url = this.toUrl(siteGroup.origins[originIndex]);
     return url.host;
   },
@@ -72,23 +73,23 @@ Polymer({
    * @private
    */
   onSiteGroupChanged_: function(siteGroup) {
-    this.displayName_ = this.siteRepresentation_(siteGroup);
+    this.displayName_ = this.siteRepresentation_(siteGroup, -1);
   },
 
   /**
    * Returns any non-HTTPS scheme/protocol for the origin corresponding to
    * |originIndex|. Otherwise, returns a empty string.
    * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
-   * @param {!number=} originIndex Optional index of the origin to get the
-   *     non-HTTPS scheme for. If not provided, returns an empty string for
-   *     grouped |siteGroup|s but defaults to 0 for non-grouped.
+   * @param {number} originIndex Index of the origin to get the non-HTTPS scheme
+   *     for. If -1, returns an empty string for the grouped |siteGroup|s but
+   *     defaults to 0 for non-grouped.
    * @return {string} The scheme if non-HTTPS, or empty string if HTTPS.
    * @private
    */
   scheme_: function(siteGroup, originIndex) {
-    if (!siteGroup || (this.grouped_(siteGroup) && originIndex === undefined))
+    if (!siteGroup || (this.grouped_(siteGroup) && originIndex == -1))
       return '';
-    originIndex = originIndex === undefined ? 0 : originIndex;
+    originIndex = this.getIndexBoundToOriginList_(siteGroup, originIndex);
 
     const url = this.toUrl(siteGroup.origins[originIndex]);
     const scheme = url.protocol.replace(new RegExp(':*$'), '');
@@ -151,32 +152,26 @@ Polymer({
     this.$.toggleButton.setAttribute('aria-expanded', collapseChild.opened);
     this.$.expandIcon.toggleClass('icon-expand-more');
     this.$.expandIcon.toggleClass('icon-expand-less');
-  },
+    this.fire('iron-resize');
 
-  /**
-   * Retrieves the overflow menu.
-   * @private
-   */
-  getOverflowMenu_: function() {
-    let menu = /** @type {?CrActionMenuElement} */ (this.$.menu.getIfExists());
-    if (!menu)
-      menu = /** @type {!CrActionMenuElement} */ (this.$.menu.get());
-    return menu;
+    // Make sure the expanded origins can be viewed without further scrolling
+    // (in case |this| is already at the bottom of the viewport).
+    this.scrollIntoViewIfNeeded();
   },
 
   /**
    * Opens the overflow menu at event target.
-   * @param {!{target: Element}} e
+   * @param {!{target: !Element}} e
    * @private
    */
   showOverflowMenu_: function(e) {
-    this.getOverflowMenu_().showAt(e.target);
+    this.$.menu.get().showAt(e.target);
   },
 
   /** @private */
   onCloseDialog_: function(e) {
     e.target.closest('cr-dialog').close();
-    this.getOverflowMenu_().close();
+    this.$.menu.get().close();
   },
 
   /**
@@ -215,5 +210,18 @@ Polymer({
    */
   getFormatString_: function(label, name) {
     return loadTimeData.substituteString(label, name);
+  },
+
+  /**
+   * Returns a valid index for an origin contained in |siteGroup.origins| by
+   * clamping the given |index|. This also replaces undefined |index|es with 0.
+   * Use this to prevent being given out-of-bounds indexes by dom-repeat when
+   * scrolling an iron-list storing these site-entries too quickly.
+   * @param {!number=} index
+   * @return {number}
+   * @private
+   */
+  getIndexBoundToOriginList_: function(siteGroup, index) {
+    return Math.max(0, Math.min(index, siteGroup.origins.length - 1));
   },
 });

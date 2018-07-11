@@ -16,6 +16,11 @@
         flex-direction: row;
       }
 
+      #toggleButton {
+        /** Use the minimum row height as the minimum click-target height. */
+        min-height: var(--settings-row-min-height);
+      }
+
       /* URLs should always be displayed in a LTR embedding - see
        * https://url.spec.whatwg.org/#url-rendering. */
       .url-directionality {
@@ -36,25 +41,23 @@
           </div>
           <div class="site-representation middle text-elide" id="displayName">
             <span class="url-directionality">[[displayName_]]</span>
-            <span class="secondary" hidden$="[[!scheme_(siteGroup)]]">
+            <span class="secondary" hidden$="[[!scheme_(siteGroup, -1)]]">
               &nbsp;$i18nPolymer{siteSettingsSiteRepresentationSeparator}&nbsp;
             </span>
-            <span class="secondary" hidden$="[[!scheme_(siteGroup)]]">
-              [[scheme_(siteGroup)]]
+            <span class="secondary" hidden$="[[!scheme_(siteGroup, -1)]]">
+              [[scheme_(siteGroup, -1)]]
             </span>
           </div>
-          <div hidden$="[[!grouped_(siteGroup)]]">
-            <paper-icon-button-light id="expandIcon" class="icon-expand-more">
-              <button aria-label$="[[displayName_]]"
-                  aria-describedby="displayName"></button>
-            </paper-icon-button-light>
-          </div>
-          <div hidden$="[[grouped_(siteGroup)]]">
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label$="[[displayName_]]"
-                  aria-describedby="displayName"></button>
-            </paper-icon-button-light>
-          </div>
+          <paper-icon-button-light id="expandIcon" class="icon-expand-more"
+              hidden$="[[!grouped_(siteGroup)]]">
+            <button aria-label$="[[displayName_]]"
+                aria-describedby="displayName"></button>
+          </paper-icon-button-light>
+          <paper-icon-button-light class="subpage-arrow"
+              hidden$="[[grouped_(siteGroup)]]">
+            <button aria-label$="[[displayName_]]"
+                aria-describedby="displayName"></button>
+          </paper-icon-button-light>
         </div>
         <div class="row-aligned" hidden$="[[!grouped_(siteGroup)]]">
           <div class="separator"></div>
@@ -71,8 +74,7 @@
           <template is="dom-repeat" items="[[siteGroup.origins]]">
             <div class="settings-box list-item" on-click="onOriginTap_"
                 actionable>
-              <div class="favicon-image"
-                  style$="[[computeSiteIcon(item)]]">
+              <div class="favicon-image" style$="[[computeSiteIcon(item)]]">
               </div>
               <div class="site-representation middle text-elide">
                 <span class="url-directionality">
