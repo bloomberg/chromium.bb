@@ -305,6 +305,25 @@
                 aria-label="$i18n{enablePaymentsIntegrationCheckboxLabel}">
             </cr-toggle>
           </div>
+
+          <template is="dom-if" if="[[unifiedConsentEnabled]]">
+            <div class="layout horizontal list-item"
+                hidden="[[!syncPrefs.userEventsRegistered]]">
+              <div class="start" id="userEventsCheckboxLabel">
+                <div>$i18n{userEventsCheckboxLabel}</div>
+                <div class="secondary">
+                  $i18n{userEventsCheckboxText}
+                </div>
+              </div>
+              <cr-toggle checked="{{syncPrefs.userEventsSynced}}"
+                  on-change="onSingleSyncDataTypeChanged_"
+                  disabled="[[shouldSyncCheckboxBeDisabled_(
+                      syncPrefs.syncAllDataTypes,
+                      syncPrefs.userEventsEnforced)]]"
+                  aria-labelledby="userEventsCheckboxLabel">
+              </cr-toggle>
+            </div>
+          </template>
         </div>
 
         <div id="other-sync-items"

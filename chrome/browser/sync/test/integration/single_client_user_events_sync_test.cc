@@ -287,6 +287,31 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoHistory) {
   EXPECT_TRUE(ExpectUserEvents({testEvent1, consent1, consent2, testEvent3}));
 }
 
+// TODO(http://crbug.com/860616) User events continue to be synced even when
+// USER_EVENTS is disabled.
+IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, DISABLED_NoUserEvents) {
+  const UserEventSpecifics testEvent1 = CreateTestEvent(1);
+  const UserEventSpecifics testEvent2 = CreateTestEvent(2);
+  const UserEventSpecifics testEvent3 = CreateTestEvent(3);
+
+  ASSERT_TRUE(SetupSync());
+  syncer::UserEventService* event_service =
+      browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
+  event_service->RecordUserEvent(testEvent1);
+
+  // Wait until the first two events are committed before disabling sync,
+  // because disabled USER_EVENTS drops all uncommitted consents.
+  ASSERT_TRUE(ExpectUserEvents({testEvent1}));
+  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::USER_EVENTS));
+
+  event_service->RecordUserEvent(testEvent2);
+  ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncer::USER_EVENTS));
+  event_service->RecordUserEvent(testEvent3);
+
+  // No |testEvent2| because it was recorded while history was disabled.
+  EXPECT_TRUE(ExpectUserEvents({testEvent1, testEvent3}));
+}
+
 // Test that events that are logged before sync is enabled don't get lost.
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, LoggedBeforeSyncSetup) {
   const UserEventSpecifics consent1 = CreateUserConsent(1);

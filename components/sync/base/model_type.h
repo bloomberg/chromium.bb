@@ -196,8 +196,7 @@ constexpr const char* kUserSelectableDataTypeNames[] = {
 #if BUILDFLAG(ENABLE_READING_LIST)
     "readingList",
 #endif
-    "tabs",
-};
+    "userEvents",  "tabs"};
 
 // Protocol types are those types that have actual protocol buffer
 // representations. This distinguishes them from Proxy types, which have no
@@ -236,7 +235,7 @@ constexpr ModelTypeSet UserSelectableTypes() {
 #if BUILDFLAG(ENABLE_READING_LIST)
                       READING_LIST,
 #endif
-                      PROXY_TABS);
+                      USER_EVENTS, PROXY_TABS);
 }
 
 constexpr bool IsUserSelectableType(ModelType model_type) {

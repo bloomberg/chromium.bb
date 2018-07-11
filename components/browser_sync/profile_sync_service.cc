@@ -1399,6 +1399,7 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
 #if BUILDFLAG(ENABLE_READING_LIST)
         syncer::user_selectable_type::READING_LIST,
 #endif
+        syncer::user_selectable_type::USER_EVENTS,
         syncer::user_selectable_type::PROXY_TABS,
       };
 
