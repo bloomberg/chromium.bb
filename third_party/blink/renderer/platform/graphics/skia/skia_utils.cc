@@ -41,88 +41,82 @@
 
 namespace blink {
 
-static const struct CompositOpToSkBlendMode {
-  CompositeOperator composit_op;
-  SkBlendMode xfermode_mode;
-} kGMapCompositOpsToSkBlendMode[] = {
-    {kCompositeClear, SkBlendMode::kClear},
-    {kCompositeCopy, SkBlendMode::kSrc},
-    {kCompositeSourceOver, SkBlendMode::kSrcOver},
-    {kCompositeSourceIn, SkBlendMode::kSrcIn},
-    {kCompositeSourceOut, SkBlendMode::kSrcOut},
-    {kCompositeSourceAtop, SkBlendMode::kSrcATop},
-    {kCompositeDestinationOver, SkBlendMode::kDstOver},
-    {kCompositeDestinationIn, SkBlendMode::kDstIn},
-    {kCompositeDestinationOut, SkBlendMode::kDstOut},
-    {kCompositeDestinationAtop, SkBlendMode::kDstATop},
-    {kCompositeXOR, SkBlendMode::kXor},
-    {kCompositePlusLighter, SkBlendMode::kPlus}};
-
-// Keep this array in sync with the BlendMode enum in
-// platform/graphics/graphics_types.h.
-static const SkBlendMode kGMapBlendOpsToSkBlendMode[] = {
-    SkBlendMode::kSrcOver,     // BlendMode::kNormal
-    SkBlendMode::kMultiply,    // BlendMode::kMultiply
-    SkBlendMode::kScreen,      // BlendMode::kScreen
-    SkBlendMode::kOverlay,     // BlendMode::kOverlay
-    SkBlendMode::kDarken,      // BlendMode::kDarken
-    SkBlendMode::kLighten,     // BlendMode::kLighten
-    SkBlendMode::kColorDodge,  // BlendMode::kColorDodge
-    SkBlendMode::kColorBurn,   // BlendMode::kColorBurn
-    SkBlendMode::kHardLight,   // BlendMode::kHardLight
-    SkBlendMode::kSoftLight,   // BlendMode::kSoftLight
-    SkBlendMode::kDifference,  // BlendMode::kDifference
-    SkBlendMode::kExclusion,   // BlendMode::kExclusion
-    SkBlendMode::kHue,         // BlendMode::kHue
-    SkBlendMode::kSaturation,  // BlendMode::kSaturation
-    SkBlendMode::kColor,       // BlendMode::kColor
-    SkBlendMode::kLuminosity   // BlendMode::kLuminosity
-};
-
 SkBlendMode WebCoreCompositeToSkiaComposite(CompositeOperator op,
                                             BlendMode blend_mode) {
-  DCHECK(op == kCompositeSourceOver || blend_mode == BlendMode::kNormal);
   if (blend_mode != BlendMode::kNormal) {
-    if (static_cast<uint8_t>(blend_mode) >=
-        SK_ARRAY_COUNT(kGMapBlendOpsToSkBlendMode)) {
-#ifdef SK_DEBUG
-      SkDebugf(
-          "GraphicsContext::setPlatformCompositeOperation unknown "
-          "BlendMode %d\n",
-          blend_mode);
-#endif
-      return SkBlendMode::kSrcOver;
-    }
-    return kGMapBlendOpsToSkBlendMode[static_cast<uint8_t>(blend_mode)];
+    DCHECK(op == kCompositeSourceOver);
+    return WebCoreBlendModeToSkBlendMode(blend_mode);
   }
 
-  const CompositOpToSkBlendMode* table = kGMapCompositOpsToSkBlendMode;
-  if (static_cast<uint8_t>(op) >=
-      SK_ARRAY_COUNT(kGMapCompositOpsToSkBlendMode)) {
-#ifdef SK_DEBUG
-    SkDebugf(
-        "GraphicsContext::setPlatformCompositeOperation unknown "
-        "CompositeOperator %d\n",
-        op);
-#endif
-    return SkBlendMode::kSrcOver;
+  switch (op) {
+    case kCompositeClear:
+      return SkBlendMode::kClear;
+    case kCompositeCopy:
+      return SkBlendMode::kSrc;
+    case kCompositeSourceOver:
+      return SkBlendMode::kSrcOver;
+    case kCompositeSourceIn:
+      return SkBlendMode::kSrcIn;
+    case kCompositeSourceOut:
+      return SkBlendMode::kSrcOut;
+    case kCompositeSourceAtop:
+      return SkBlendMode::kSrcATop;
+    case kCompositeDestinationOver:
+      return SkBlendMode::kDstOver;
+    case kCompositeDestinationIn:
+      return SkBlendMode::kDstIn;
+    case kCompositeDestinationOut:
+      return SkBlendMode::kDstOut;
+    case kCompositeDestinationAtop:
+      return SkBlendMode::kDstATop;
+    case kCompositeXOR:
+      return SkBlendMode::kXor;
+    case kCompositePlusLighter:
+      return SkBlendMode::kPlus;
   }
-  SkASSERT(table[static_cast<uint8_t>(op)].composit_op == op);
-  return table[static_cast<uint8_t>(op)].xfermode_mode;
+
+  NOTREACHED();
+  return SkBlendMode::kSrcOver;
 }
 
 SkBlendMode WebCoreBlendModeToSkBlendMode(BlendMode blend_mode) {
-  if (static_cast<uint8_t>(blend_mode) >=
-      SK_ARRAY_COUNT(kGMapBlendOpsToSkBlendMode)) {
-#ifdef SK_DEBUG
-    SkDebugf(
-        "GraphicsContext::setPlatformCompositeOperation unknown "
-        "BlendMode %d\n",
-        blend_mode);
-#endif
-    return SkBlendMode::kSrcOver;
+  switch (blend_mode) {
+    case BlendMode::kNormal:
+      return SkBlendMode::kSrcOver;
+    case BlendMode::kMultiply:
+      return SkBlendMode::kMultiply;
+    case BlendMode::kScreen:
+      return SkBlendMode::kScreen;
+    case BlendMode::kOverlay:
+      return SkBlendMode::kOverlay;
+    case BlendMode::kDarken:
+      return SkBlendMode::kDarken;
+    case BlendMode::kLighten:
+      return SkBlendMode::kLighten;
+    case BlendMode::kColorDodge:
+      return SkBlendMode::kColorDodge;
+    case BlendMode::kColorBurn:
+      return SkBlendMode::kColorBurn;
+    case BlendMode::kHardLight:
+      return SkBlendMode::kHardLight;
+    case BlendMode::kSoftLight:
+      return SkBlendMode::kSoftLight;
+    case BlendMode::kDifference:
+      return SkBlendMode::kDifference;
+    case BlendMode::kExclusion:
+      return SkBlendMode::kExclusion;
+    case BlendMode::kHue:
+      return SkBlendMode::kHue;
+    case BlendMode::kSaturation:
+      return SkBlendMode::kSaturation;
+    case BlendMode::kColor:
+      return SkBlendMode::kColor;
+    case BlendMode::kLuminosity:
+      return SkBlendMode::kLuminosity;
   }
-  return kGMapBlendOpsToSkBlendMode[static_cast<uint8_t>(blend_mode)];
+
+  NOTREACHED();
+  return SkBlendMode::kSrcOver;
 }
 
 CompositeOperator CompositeOperatorFromSkBlendMode(SkBlendMode blend_mode) {
