@@ -323,6 +323,7 @@ function _makeIconTemplateGetter() {
   const symbolIcons = {
     D: _icons.querySelector('.foldericon'),
     C: _icons.querySelector('.componenticon'),
+    J: _icons.querySelector('.javaclassicon'),
     F: _icons.querySelector('.fileicon'),
     b: _icons.querySelector('.bssicon'),
     d: _icons.querySelector('.dataicon'),

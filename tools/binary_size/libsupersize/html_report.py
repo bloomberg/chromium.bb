@@ -8,7 +8,6 @@ import codecs
 import json
 import logging
 import os
-import re
 import shutil
 
 import archive
@@ -53,11 +52,6 @@ _SYMBOL_TYPE_DESCRIPTIONS = {
   'P': 'Non-Locale Pak Entries',
   'o': 'Other Entries',
 }
-
-# Capture one of: "::", "../", "./", "/", "#"
-_SPECIAL_CHAR_REGEX = re.compile(r'(::|(?:\.*\/)+|#)')
-# Insert zero-width space after capture group
-_ZERO_WIDTH_SPACE = u'\\1\u200b'
 
 # The display name of the bucket where we put symbols without path.
 _NAME_SMALL_SYMBOL_BUCKET = '(Other)'
@@ -273,12 +267,8 @@ def _MakeTreeViewList(symbols, min_symbol_size):
         }
         file_nodes[path] = file_node
 
-      # Insert zero-width spaces after certain characters to indicate to the
-      # browser it could add a line break there on small screen sizes.
-      symbol_name = _SPECIAL_CHAR_REGEX.sub(_ZERO_WIDTH_SPACE,
-                                            symbol.template_name)
       file_node[_COMPACT_FILE_SYMBOLS_KEY].append({
-        _COMPACT_SYMBOL_NAME_KEY: symbol_name,
+        _COMPACT_SYMBOL_NAME_KEY: symbol.template_name,
         _COMPACT_SYMBOL_TYPE_KEY: symbol_type,
         _COMPACT_SYMBOL_BYTE_SIZE_KEY: symbol_size,
       })
@@ -406,7 +396,7 @@ def Run(args, parser):
     logging.info('Serializing JSON')
     # Write newline-delimited JSON file
     data_file_path = os.path.join(args.report_dir, 'data.ndjson')
-    with codecs.open(data_file_path, 'w', encoding='utf-8') as out_file:
+    with codecs.open(data_file_path, 'w', encoding='ascii') as out_file:
       # Use separators without whitespace to get a smaller file.
       json.dump(meta, out_file, ensure_ascii=False, check_circular=False,
                 separators=(',', ':'))
