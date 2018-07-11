@@ -7,8 +7,8 @@
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -93,20 +93,20 @@ void ServiceWorkerTimeoutTimer::EndEvent(int event_id) {
 
 void ServiceWorkerTimeoutTimer::PushPendingTask(
     base::OnceClosure pending_task) {
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(did_idle_timeout());
   pending_tasks_.emplace(std::move(pending_task));
 }
 
 void ServiceWorkerTimeoutTimer::SetIdleTimerDelayToZero() {
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   zero_idle_timer_delay_ = true;
   if (inflight_events_.empty())
     MaybeTriggerIdleTimer();
 }
 
 void ServiceWorkerTimeoutTimer::UpdateStatus() {
-  if (!ServiceWorkerUtils::IsServicificationEnabled())
+  if (!blink::ServiceWorkerUtils::IsServicificationEnabled())
     return;
 
   base::TimeTicks now = tick_clock_->NowTicks();

@@ -21,6 +21,7 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -104,7 +105,7 @@ class WebServiceWorkerNetworkProviderForFrame
 
     // S13nServiceWorker:
     // We only install our own URLLoader if Servicification is enabled.
-    if (!ServiceWorkerUtils::IsServicificationEnabled())
+    if (!blink::ServiceWorkerUtils::IsServicificationEnabled())
       return nullptr;
 
     // We need SubresourceLoaderFactory populated in order to create our own
@@ -207,7 +208,7 @@ ServiceWorkerNetworkProvider::CreateForSharedWorker(
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
   // S13nServiceWorker: |info| holds info about the precreated provider host.
   if (info) {
-    DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+    DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
     return base::WrapUnique(new ServiceWorkerNetworkProvider(
         std::move(info), std::move(script_loader_factory_info),
         std::move(fallback_loader_factory)));
@@ -233,7 +234,7 @@ ServiceWorkerNetworkProvider*
 ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
     blink::WebServiceWorkerNetworkProvider* provider) {
   if (!provider) {
-    DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+    DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
     return nullptr;
   }
   return static_cast<WebServiceWorkerNetworkProviderForFrame*>(provider)

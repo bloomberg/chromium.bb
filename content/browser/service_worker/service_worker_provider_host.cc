@@ -42,6 +42,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -371,7 +372,7 @@ void ServiceWorkerProviderHost::OnSkippedWaiting(
 
 mojom::ControllerServiceWorkerPtr
 ServiceWorkerProviderHost::GetControllerServiceWorkerPtr() {
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(controller_);
   if (controller_->fetch_handler_existence() ==
       ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST) {
@@ -716,7 +717,7 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
 
   network::mojom::URLLoaderFactoryAssociatedPtrInfo
       script_loader_factory_ptr_info;
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     mojo::MakeStrongAssociatedBinding(
         std::make_unique<ServiceWorkerScriptLoaderFactory>(
             context_, AsWeakPtr(), std::move(loader_factory)),
@@ -807,7 +808,7 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
 
   // S13nServiceWorker: Pass an endpoint for the client to talk to this
   // controller.
-  if (ServiceWorkerUtils::IsServicificationEnabled())
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     controller_info->endpoint = GetControllerServiceWorkerPtr().PassInterface();
 
   // Set the info for the JavaScript ServiceWorkerContainer#controller object.
@@ -1064,7 +1065,7 @@ void ServiceWorkerProviderHost::GetRegistrationForReady(
 void ServiceWorkerProviderHost::StartControllerComplete(
     mojom::ControllerServiceWorkerRequest controller_request,
     blink::ServiceWorkerStatusCode status) {
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   if (status == blink::ServiceWorkerStatusCode::kOk)
     controller_->controller()->Clone(std::move(controller_request));
 }
@@ -1076,7 +1077,7 @@ void ServiceWorkerProviderHost::EnsureControllerServiceWorker(
   if (!IsContextAlive() || !controller_)
     return;
 
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   controller_->RunAfterStartWorker(
       PurposeToEventType(purpose),
       base::BindOnce(&ServiceWorkerProviderHost::StartControllerComplete,
@@ -1085,7 +1086,7 @@ void ServiceWorkerProviderHost::EnsureControllerServiceWorker(
 
 void ServiceWorkerProviderHost::CloneForWorker(
     mojom::ServiceWorkerContainerHostRequest container_host_request) {
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   bindings_for_worker_threads_.AddBinding(this,
                                           std::move(container_host_request));
 }

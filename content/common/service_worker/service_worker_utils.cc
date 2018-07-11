@@ -16,7 +16,6 @@
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -137,11 +136,6 @@ bool ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
       return false;
   }
   return true;
-}
-
-// static
-bool ServiceWorkerUtils::IsServicificationEnabled() {
-  return blink::ServiceWorkerUtils::IsServicificationEnabled();
 }
 
 bool ServiceWorkerUtils::ExtractSinglePartHttpRange(

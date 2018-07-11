@@ -17,11 +17,11 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/child_process_host.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_info.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -188,7 +188,7 @@ CreateProviderHostForServiceWorkerContext(
   host->SetDocumentUrl(hosted_version->script_url());
 
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory;
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     loader_factory = network::SharedURLLoaderFactory::Create(
         std::make_unique<MockSharedURLLoaderFactoryInfo>());
   }

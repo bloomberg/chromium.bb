@@ -10,9 +10,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/tick_clock.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -59,7 +59,7 @@ class ServiceWorkerTimeoutTimerTest : public testing::Test {
 
   void EnableServicification() {
     feature_list_.InitWithFeatures({network::features::kNetworkService}, {});
-    ASSERT_TRUE(ServiceWorkerUtils::IsServicificationEnabled());
+    ASSERT_TRUE(blink::ServiceWorkerUtils::IsServicificationEnabled());
   }
 
   base::TestMockTimeTaskRunner* task_runner() { return task_runner_.get(); }
@@ -273,7 +273,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, SetIdleTimerDelayToZero) {
 }
 
 TEST_F(ServiceWorkerTimeoutTimerTest, NonS13nServiceWorker) {
-  ASSERT_FALSE(ServiceWorkerUtils::IsServicificationEnabled());
+  ASSERT_FALSE(blink::ServiceWorkerUtils::IsServicificationEnabled());
 
   MockEvent event;
   {

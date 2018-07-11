@@ -57,6 +57,7 @@
 #include "storage/common/blob_storage/blob_handle.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
@@ -121,7 +122,7 @@ class WebServiceWorkerNetworkProviderImpl
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
     RenderThreadImpl* render_thread = RenderThreadImpl::current();
     if (render_thread && provider_->script_loader_factory() &&
-        ServiceWorkerUtils::IsServicificationEnabled() &&
+        blink::ServiceWorkerUtils::IsServicificationEnabled() &&
         IsScriptRequest(request)) {
       // TODO(crbug.com/796425): Temporarily wrap the raw
       // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
@@ -213,7 +214,7 @@ void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
   }
   // S13nServiceWorker: The body is provided in |request|.
   else if (request.request_body) {
-    DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+    DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
     // |blob_ptrs| should be empty when Network Service is enabled.
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
            blob_ptrs.empty());
@@ -845,7 +846,7 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   context_->event_dispatcher_binding.Bind(
       std::move(pending_dispatcher_request_));
 
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     context_->controller_impl = std::make_unique<ControllerServiceWorkerImpl>(
         std::move(pending_controller_request_), GetWeakPtr());
   }
@@ -1327,7 +1328,7 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext(
 
   std::unique_ptr<network::SharedURLLoaderFactoryInfo>
       script_loader_factory_info;
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     // TODO(crbug.com/796425): Temporarily wrap the raw
     // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
     script_loader_factory_info =
@@ -1788,7 +1789,7 @@ void ServiceWorkerContextClient::Ping(PingCallback callback) {
 }
 
 void ServiceWorkerContextClient::SetIdleTimerDelayToZero() {
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(context_);
   DCHECK(context_->timeout_timer);
   context_->timeout_timer->SetIdleTimerDelayToZero();

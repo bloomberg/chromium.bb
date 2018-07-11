@@ -15,9 +15,9 @@
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace {
 
@@ -40,7 +40,7 @@ AppCacheNavigationHandleCore::AppCacheNavigationHandleCore(
     : appcache_service_(appcache_service),
       appcache_host_id_(appcache_host_id),
       ui_handle_(ui_handle) {
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     debug_log_ = base::make_optional<std::vector<std::string>>();
     debug_log_->push_back(base::StringPrintf(
         "Ctor:host=%d,ns=%s", appcache_host_id,

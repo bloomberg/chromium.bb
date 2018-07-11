@@ -42,7 +42,6 @@
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/net/record_load_histograms.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -77,6 +76,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -112,7 +112,7 @@ base::LazyInstance<NavigationURLLoaderImpl::BeginNavigationInterceptor>::Leaky
 // of them is enabled.
 bool IsLoaderInterceptionEnabled() {
   return base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-         ServiceWorkerUtils::IsServicificationEnabled() ||
+         blink::ServiceWorkerUtils::IsServicificationEnabled() ||
          signed_exchange_utils::IsSignedExchangeHandlingEnabled();
 }
 
@@ -389,10 +389,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         // S13nServiceWorker: Requests are intercepted by S13nServiceWorker
         // before the default request handler when needed, so we never need to
         // pass |service_worker_navigation_handle_core| here.
-        base::Unretained(ServiceWorkerUtils::IsServicificationEnabled() ||
-                                 was_request_intercepted
-                             ? nullptr
-                             : service_worker_navigation_handle_core),
+        base::Unretained(
+            blink::ServiceWorkerUtils::IsServicificationEnabled() ||
+                    was_request_intercepted
+                ? nullptr
+                : service_worker_navigation_handle_core),
         base::Unretained(was_request_intercepted ? nullptr
                                                  : appcache_handle_core));
   }
@@ -522,7 +523,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // request handling goes through ResourceDispatcherHost which has legacy
     // hooks for service worker (ServiceWorkerRequestInterceptor), so no service
     // worker interception is needed here.
-    if (!ServiceWorkerUtils::IsServicificationEnabled() ||
+    if (!blink::ServiceWorkerUtils::IsServicificationEnabled() ||
         !service_worker_navigation_handle_core) {
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           base::MakeRefCounted<SingleRequestURLLoaderFactory>(
@@ -779,7 +780,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // without NetworkService. We know that the service worker's request
       // interceptor has already intercepted and decided not to handle the
       // request.
-      DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+      DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
       default_loader_used_ = true;
       // Update |request_info_| when following a redirect.
       if (url_chain_.size() > 0) {

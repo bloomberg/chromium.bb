@@ -21,7 +21,6 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/url_loader_factory_bundle.mojom.h"
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,6 +30,7 @@
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "url/gurl.h"
@@ -157,7 +157,7 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   // reconnection to the network service after a crash, but it's probably OK
   // since it's used for a single service worker startup until installation
   // finishes (with the exception of https://crbug.com/719052).
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
     rph->CreateURLLoaderFactory(mojo::MakeRequest(&default_factory_info));
     factory_bundle = std::make_unique<URLLoaderFactoryBundleInfo>();
@@ -169,7 +169,7 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   // chrome-extension:// URLs. For performance, only do this step when the main
   // script URL is non-http(s). We assume an http(s) service worker cannot
   // importScripts a non-http(s) URL.
-  if (ServiceWorkerUtils::IsServicificationEnabled() &&
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled() &&
       !params->script_url.SchemeIsHTTPOrHTTPS()) {
     ContentBrowserClient::NonNetworkURLLoaderFactoryMap factories;
     GetContentClient()
@@ -502,7 +502,7 @@ class EmbeddedWorkerInstance::StartTask {
 
     // S13nServiceWorker: Build the URLLoaderFactory for loading new scripts.
     scoped_refptr<network::SharedURLLoaderFactory> factory_for_new_scripts;
-    if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
       DCHECK(factory_bundle);
       factory_for_new_scripts = base::MakeRefCounted<URLLoaderFactoryBundle>(
           std::move(factory_bundle));
@@ -711,7 +711,7 @@ void EmbeddedWorkerInstance::SendStartWorker(
 }
 
 void EmbeddedWorkerInstance::RequestTermination() {
-  if (!ServiceWorkerUtils::IsServicificationEnabled()) {
+  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     mojo::ReportBadMessage(
         "Invalid termination request: RequestTermination() was called but "
         "S13nServiceWorker is not enabled");
