@@ -31,6 +31,7 @@ void TestPaymentsClient::GetUploadDetails(
     const std::string& pan_first_six,
     const std::vector<const char*>& active_experiments,
     const std::string& app_locale) {
+  upload_details_addresses_ = addresses;
   detected_values_ = detected_values;
   pan_first_six_ = pan_first_six;
   active_experiments_ = active_experiments;
@@ -55,19 +56,6 @@ void TestPaymentsClient::SetSaveDelegate(
 
 void TestPaymentsClient::SetServerIdForCardUpload(std::string server_id) {
   server_id_ = server_id;
-}
-
-int TestPaymentsClient::GetDetectedValuesSetInRequest() const {
-  return detected_values_;
-}
-
-std::string TestPaymentsClient::GetPanFirstSixSetInRequest() const {
-  return pan_first_six_;
-}
-
-std::vector<const char*> TestPaymentsClient::GetActiveExperimentsSetInRequest()
-    const {
-  return active_experiments_;
 }
 
 }  // namespace payments

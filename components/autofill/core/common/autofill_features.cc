@@ -95,6 +95,13 @@ const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs{
     "AutofillSendExperimentIdsInPaymentsRPCs",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// If enabled, only countries of recently-used addresses are sent in the
+// GetUploadDetails call to Payments. If disabled, whole recently-used addresses
+// are sent.
+const base::Feature kAutofillSendOnlyCountryInGetUploadDetails{
+    "AutofillSendOnlyCountryInGetUploadDetails",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether we show warnings in the Dev console for misused autocomplete
 // types.
 const base::Feature kAutofillShowAutocompleteConsoleWarnings{

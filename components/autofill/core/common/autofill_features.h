@@ -25,6 +25,7 @@ extern const base::Feature kAutofillRequireSecureCreditCardContext;
 extern const base::Feature kAutofillResetFullServerCardsOnAuthError;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
 extern const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs;
+extern const base::Feature kAutofillSendOnlyCountryInGetUploadDetails;
 extern const base::Feature kAutofillShowAllSuggestionsOnPrefilledForms;
 extern const base::Feature kAutofillShowAutocompleteConsoleWarnings;
 extern const base::Feature kAutofillShowTypePredictions;
