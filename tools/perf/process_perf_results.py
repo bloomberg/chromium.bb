@@ -206,7 +206,7 @@ def _handle_benchmarks_shard_map(benchmarks_shard_map_file, extra_links):
 def _get_benchmark_name(directory):
   return basename(directory).replace(" benchmark", "")
 
-def _process_perf_results(output_json, configuration_name,
+def process_perf_results(output_json, configuration_name,
                           service_account_file,
                           build_properties, task_output_dir,
                           smoke_test_mode):
@@ -531,7 +531,7 @@ def main():
     raise Exception(
         'Service account file must be specificed for dashboard upload')
 
-  return _process_perf_results(
+  return process_perf_results(
       args.output_json, args.configuration_name,
       args.service_account_file,
       args.build_properties, args.task_output_dir,
