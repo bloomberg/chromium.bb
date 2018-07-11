@@ -161,6 +161,9 @@ BrailleCommandHandler.onEditCommand_ = function(command) {
 
   var isMultiline = AutomationPredicate.multiline(current.start.node);
   switch (command) {
+    case 'forceClickOnCurrentItem':
+      BackgroundKeyboardHandler.sendKeyPress(13);
+      break;
     case 'previousCharacter':
       BackgroundKeyboardHandler.sendKeyPress(37);
       break;
