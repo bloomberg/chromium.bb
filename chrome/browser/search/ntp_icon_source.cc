@@ -48,7 +48,7 @@ namespace {
 const char kSizeParameter[] = "size/";
 
 // Size of the fallback icon (letter + circle), in dp.
-const int kFallbackIconSizeDip = 40;
+const int kFallbackIconSizeDip = 48;
 
 // URL to the server favicon service. "alt=404" means the service will return a
 // 404 if an icon can't be found.
@@ -76,7 +76,7 @@ bool HasSubstringAt(const std::string& path,
 }
 
 // Parses the path after chrome-search://ntpicon/. Example path is
-// "size/16@2x/https://cnn.com".
+// "size/24@2x/https://cnn.com".
 const ParsedNtpIconPath ParseNtpIconPath(const std::string& path) {
   ParsedNtpIconPath parsed;
   parsed.url = GURL();
@@ -96,7 +96,7 @@ const ParsedNtpIconPath ParseNtpIconPath(const std::string& path) {
   if (slash == std::string::npos)
     return parsed;
 
-  // Parse the size spec (e.g. "16@2x")
+  // Parse the size spec (e.g. "24@2x")
   size_t scale_delimiter = path.find("@", parsed_index);
   std::string size_str =
       path.substr(parsed_index, scale_delimiter - parsed_index);
