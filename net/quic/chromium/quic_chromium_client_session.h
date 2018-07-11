@@ -694,6 +694,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Returns true if session is migratable. If not, a task is posted to
   // close the session later if |close_session_if_not_migratable| is true.
   bool IsSessionMigratable(bool close_session_if_not_migratable);
+  // Close non-migratable streams in both directions by sending reset stream to
+  // peer when connection migration attempts to migrate to the alternate
+  // network.
+  void ResetNonMigratableStreams();
   void LogMetricsOnNetworkDisconnected();
   void LogMetricsOnNetworkMadeDefault();
   void LogConnectionMigrationResultToHistogram(

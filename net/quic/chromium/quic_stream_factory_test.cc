@@ -773,8 +773,13 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
 
   // Helper methods for tests of connection migration on write error.
   void TestMigrationOnWriteErrorNonMigratableStream(IoMode write_error_mode);
+  // Migratable stream triggers write error.
+  void TestMigrationOnWriteErrorMixedStreams(IoMode write_error_mode);
+  // Non-migratable stream triggers write error.
+  void TestMigrationOnWriteErrorMixedStreams2(IoMode write_error_mode);
   void TestMigrationOnWriteErrorMigrationDisabled(IoMode write_error_mode);
   void TestMigrationOnWriteError(IoMode write_error_mode);
+  void TestMigrationOnWriteErrorWithMultipleRequests(IoMode write_error_mode);
   void TestMigrationOnWriteErrorNoNewNetwork(IoMode write_error_mode);
   void TestMigrationOnMultipleWriteErrors(
       IoMode write_error_mode_on_old_network,
@@ -2692,7 +2697,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNonMigratableStream) {
   socket_data.AddWrite(
       SYNCHRONOUS,
       client_maker_.MakeRstPacket(2, true, GetNthClientInitiatedStreamId(0),
-                                  quic::QUIC_RST_ACKNOWLEDGEMENT));
+                                  quic::QUIC_STREAM_CANCELLED));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
@@ -2721,7 +2726,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNonMigratableStream) {
 
   // Trigger connection migration. Since there is a non-migratable stream,
   // this should cause a RST_STREAM frame to be emitted with
-  // quic::QUIC_RST_ACKNOWLEDGEMENT error code, and the session will be closed.
+  // quic::QUIC_STREAM_CANCELLED error code, and the session will be closed.
   scoped_mock_network_change_notifier_->mock_network_change_notifier()
       ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
 
@@ -3516,7 +3521,6 @@ void QuicStreamFactoryTestBase::TestMigrateSessionWithDrainingStream(
 
   // The connection should still be alive, and not marked as going away.
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
-  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
 
   // Resume quic data and a connectivity probe response will be read on the new
   // socket.
@@ -3524,7 +3528,8 @@ void QuicStreamFactoryTestBase::TestMigrateSessionWithDrainingStream(
 
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
-  // EXPECT_EQ(1u, session->GetNumActiveStreams());
+  EXPECT_EQ(0u, session->GetNumActiveStreams());
+  EXPECT_EQ(1u, session->GetNumDrainingStreams());
 
   // There should be three pending tasks, the nearest one will complete
   // migration to the new network.
@@ -3562,6 +3567,7 @@ void QuicStreamFactoryTestBase::TestMigrateSessionWithDrainingStream(
   // Verify that the session is still alive.
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
 
   stream.reset();
   EXPECT_TRUE(quic_data1.AllReadDataConsumed());
@@ -4378,6 +4384,406 @@ TEST_P(QuicStreamFactoryTest,
 
 TEST_P(QuicStreamFactoryTest, MigrateSessionOnWriteErrorNoNewNetworkAsync) {
   TestMigrationOnWriteErrorNoNewNetwork(ASYNC);
+}
+
+TEST_P(QuicStreamFactoryTest,
+       MigrateSessionOnWriteErrorWithMultipleRequestsSync) {
+  TestMigrationOnWriteErrorWithMultipleRequests(SYNCHRONOUS);
+}
+
+TEST_P(QuicStreamFactoryTest,
+       MigrateSessionOnWriteErrorWithMultipleRequestsAsync) {
+  TestMigrationOnWriteErrorWithMultipleRequests(ASYNC);
+}
+
+// Sets up a test which verifies that connection migration on write error can
+// eventually succeed and rewrite the packet on the new network with *multiple*
+// migratable streams.
+void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorWithMultipleRequests(
+    IoMode write_error_mode) {
+  InitializeConnectionMigrationV2Test(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockQuicData socket_data;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(
+      SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
+  socket_data.AddWrite(write_error_mode, ERR_ADDRESS_UNREACHABLE);
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  // Set up second socket data provider that is used after
+  // migration. The request is rewritten to this new socket, and the
+  // response to the request is read on this new socket.
+  MockQuicData socket_data1;
+  socket_data1.AddWrite(SYNCHRONOUS, ConstructGetRequestPacket(
+                                         2, GetNthClientInitiatedStreamId(0),
+                                         true, true, &header_stream_offset));
+  socket_data1.AddRead(
+      ASYNC, ConstructOkResponsePacket(1, GetNthClientInitiatedStreamId(0),
+                                       false, false));
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddWrite(SYNCHRONOUS,
+                        client_maker_.MakeAckAndRstPacket(
+                            3, false, GetNthClientInitiatedStreamId(0),
+                            quic::QUIC_STREAM_CANCELLED, 1, 1, 1, true));
+  socket_data1.AddWrite(
+      SYNCHRONOUS,
+      client_maker_.MakeRstPacket(4, false, GetNthClientInitiatedStreamId(1),
+                                  quic::QUIC_STREAM_CANCELLED, 0));
+
+  socket_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request #1 and QuicHttpStream.
+  QuicStreamRequest request1(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request1.Request(host_port_pair_, version_, privacy_mode_,
+                             DEFAULT_PRIORITY, SocketTag(),
+                             /*cert_verify_flags=*/0, url_, net_log_,
+                             &net_error_details_, callback_.callback()));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream1 = CreateStream(&request1);
+  EXPECT_TRUE(stream1.get());
+
+  HttpRequestInfo request_info1;
+  request_info1.method = "GET";
+  request_info1.url = GURL("https://www.example.org/");
+  request_info1.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK,
+            stream1->InitializeStream(&request_info1, true, DEFAULT_PRIORITY,
+                                      net_log_, CompletionOnceCallback()));
+
+  // Second request returns synchronously because it pools to existing session.
+  TestCompletionCallback callback2;
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(OK, request2.Request(host_port_pair_, version_, privacy_mode_,
+                                 DEFAULT_PRIORITY, SocketTag(),
+                                 /*cert_verify_flags=*/0, url_, net_log_,
+                                 &net_error_details_, callback2.callback()));
+  std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
+  EXPECT_TRUE(stream2.get());
+  HttpRequestInfo request_info2;
+  request_info2.method = "GET";
+  request_info2.url = GURL("https://www.example.org/");
+  request_info2.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK,
+            stream2->InitializeStream(&request_info2, true, DEFAULT_PRIORITY,
+                                      net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(2u, session->GetNumActiveStreams());
+
+  // Send GET request on stream. This should cause a write error, which triggers
+  // a connection migration attempt.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream1->SendRequest(request_headers, &response,
+                                     callback_.callback()));
+
+  // Run the message loop so that the migration attempt is executed and
+  // data queued in the new socket is read by the packet reader.
+  base::RunLoop().RunUntilIdle();
+
+  // The session should now be marked as going away. Ensure that
+  // while it is still alive, it is no longer active.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(2u, session->GetNumActiveStreams());
+
+  // Verify that response headers on the migrated socket were delivered to the
+  // stream.
+  EXPECT_EQ(OK, stream1->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+
+  stream1.reset();
+  stream2.reset();
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, MigrateOnWriteErrorWithMixedRequestsSync) {
+  TestMigrationOnWriteErrorMixedStreams(SYNCHRONOUS);
+}
+
+TEST_P(QuicStreamFactoryTest, MigrateOnWriteErrorWithMixedRequestsAsync) {
+  TestMigrationOnWriteErrorMixedStreams(ASYNC);
+}
+
+// Sets up a test that verifies connection migration manages to migrate to
+// alternate network after encountering a SYNC/ASYNC write error based on
+// |write_error_mode| on the original network.
+// Note there are mixed types of unfinished requests before migration: one
+// migratable and one non-migratable. The *migratable* one triggers write
+// error.
+void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMixedStreams(
+    IoMode write_error_mode) {
+  InitializeConnectionMigrationV2Test(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  int packet_number = 1;
+  MockQuicData socket_data;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructInitialSettingsPacket(packet_number++, &header_stream_offset));
+  socket_data.AddWrite(write_error_mode, ERR_ADDRESS_UNREACHABLE);
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  // Set up second socket data provider that is used after
+  // migration. The request is rewritten to this new socket, and the
+  // response to the request is read on this new socket.
+  MockQuicData socket_data1;
+  socket_data1.AddWrite(
+      SYNCHRONOUS, ConstructGetRequestPacket(
+                       packet_number++, GetNthClientInitiatedStreamId(0), true,
+                       true, &header_stream_offset));
+  socket_data1.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeRstPacket(packet_number++, true,
+                                               GetNthClientInitiatedStreamId(1),
+                                               quic::QUIC_STREAM_CANCELLED, 0));
+  socket_data1.AddRead(
+      ASYNC, ConstructOkResponsePacket(1, GetNthClientInitiatedStreamId(0),
+                                       false, false));
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeAckAndRstPacket(
+                       packet_number++, false, GetNthClientInitiatedStreamId(0),
+                       quic::QUIC_STREAM_CANCELLED, 1, 1, 1, true));
+  socket_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request #1 and QuicHttpStream.
+  QuicStreamRequest request1(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request1.Request(host_port_pair_, version_, privacy_mode_,
+                             DEFAULT_PRIORITY, SocketTag(),
+                             /*cert_verify_flags=*/0, url_, net_log_,
+                             &net_error_details_, callback_.callback()));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream1 = CreateStream(&request1);
+  EXPECT_TRUE(stream1.get());
+
+  HttpRequestInfo request_info1;
+  request_info1.method = "GET";
+  request_info1.url = GURL("https://www.example.org/");
+  request_info1.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK,
+            stream1->InitializeStream(&request_info1, true, DEFAULT_PRIORITY,
+                                      net_log_, CompletionOnceCallback()));
+
+  // Second request returns synchronously because it pools to existing session.
+  TestCompletionCallback callback2;
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(OK, request2.Request(host_port_pair_, version_, privacy_mode_,
+                                 DEFAULT_PRIORITY, SocketTag(),
+                                 /*cert_verify_flags=*/0, url_, net_log_,
+                                 &net_error_details_, callback2.callback()));
+  std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
+  EXPECT_TRUE(stream2.get());
+
+  HttpRequestInfo request_info2;
+  request_info2.method = "GET";
+  request_info2.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  request_info2.url = GURL("https://www.example.org/");
+  request_info2.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK,
+            stream2->InitializeStream(&request_info2, true, DEFAULT_PRIORITY,
+                                      net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(2u, session->GetNumActiveStreams());
+
+  // Send GET request on stream 1. This should cause a write error, which
+  // triggers a connection migration attempt.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream1->SendRequest(request_headers, &response,
+                                     callback_.callback()));
+
+  // Run the message loop so that the migration attempt is executed and
+  // data queued in the new socket is read by the packet reader.
+  base::RunLoop().RunUntilIdle();
+
+  // The session should now be marked as going away. Non-migratable stream
+  // should be closed due to migration.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // Verify that response headers on the migrated socket were delivered to the
+  // stream.
+  EXPECT_EQ(OK, stream1->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+
+  stream1.reset();
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, MigrateOnWriteErrorWithMixedRequests2Sync) {
+  TestMigrationOnWriteErrorMixedStreams2(SYNCHRONOUS);
+}
+
+TEST_P(QuicStreamFactoryTest, MigrateOnWriteErrorWithMixedRequests2Async) {
+  TestMigrationOnWriteErrorMixedStreams2(ASYNC);
+}
+
+// The one triggers write error is a non-migratable stream.
+// Sets up a test that verifies connection migration manages to migrate to
+// alternate network after encountering a SYNC/ASYNC write error based on
+// |write_error_mode| on the original network.
+// Note there are mixed types of unfinished requests before migration: one
+// migratable and one non-migratable. The *non-migratable* one triggers write
+// error.
+void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMixedStreams2(
+    IoMode write_error_mode) {
+  InitializeConnectionMigrationV2Test(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  int packet_number = 1;
+  MockQuicData socket_data;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructInitialSettingsPacket(packet_number++, &header_stream_offset));
+  socket_data.AddWrite(write_error_mode,
+                       ERR_ADDRESS_UNREACHABLE);  // Write error.
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  // Set up second socket data provider that is used after
+  // migration. The request is rewritten to this new socket, and the
+  // response to the request is read on this new socket.
+  MockQuicData socket_data1;
+  // The packet triggered writer error will be sent anyway even if the stream
+  // will be cancelled later.
+  socket_data1.AddWrite(
+      SYNCHRONOUS, ConstructGetRequestPacket(
+                       packet_number++, GetNthClientInitiatedStreamId(1), true,
+                       true, &header_stream_offset));
+  socket_data1.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeRstPacket(packet_number++, true,
+                                               GetNthClientInitiatedStreamId(1),
+                                               quic::QUIC_STREAM_CANCELLED, 0));
+  socket_data1.AddWrite(
+      SYNCHRONOUS, ConstructGetRequestPacket(
+                       packet_number++, GetNthClientInitiatedStreamId(0), true,
+                       true, &header_stream_offset));
+  socket_data1.AddRead(
+      ASYNC, ConstructOkResponsePacket(1, GetNthClientInitiatedStreamId(0),
+                                       false, false));
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeAckAndRstPacket(
+                       packet_number++, false, GetNthClientInitiatedStreamId(0),
+                       quic::QUIC_STREAM_CANCELLED, 1, 1, 1, true));
+  socket_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request #1 and QuicHttpStream.
+  QuicStreamRequest request1(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request1.Request(host_port_pair_, version_, privacy_mode_,
+                             DEFAULT_PRIORITY, SocketTag(),
+                             /*cert_verify_flags=*/0, url_, net_log_,
+                             &net_error_details_, callback_.callback()));
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream1 = CreateStream(&request1);
+  EXPECT_TRUE(stream1.get());
+
+  HttpRequestInfo request_info1;
+  request_info1.method = "GET";
+  request_info1.url = GURL("https://www.example.org/");
+  request_info1.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK,
+            stream1->InitializeStream(&request_info1, true, DEFAULT_PRIORITY,
+                                      net_log_, CompletionOnceCallback()));
+
+  // Second request returns synchronously because it pools to existing session.
+  TestCompletionCallback callback2;
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(OK, request2.Request(host_port_pair_, version_, privacy_mode_,
+                                 DEFAULT_PRIORITY, SocketTag(),
+                                 /*cert_verify_flags=*/0, url_, net_log_,
+                                 &net_error_details_, callback2.callback()));
+  std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
+  EXPECT_TRUE(stream2.get());
+
+  HttpRequestInfo request_info2;
+  request_info2.method = "GET";
+  request_info2.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  request_info2.url = GURL("https://www.example.org/");
+  request_info2.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK,
+            stream2->InitializeStream(&request_info2, true, DEFAULT_PRIORITY,
+                                      net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(2u, session->GetNumActiveStreams());
+
+  // Send GET request on stream 2 which is non-migratable. This should cause a
+  // write error, which triggers a connection migration attempt.
+  HttpResponseInfo response2;
+  HttpRequestHeaders request_headers2;
+  EXPECT_EQ(OK, stream2->SendRequest(request_headers2, &response2,
+                                     callback2.callback()));
+
+  // Run the message loop so that the migration attempt is executed and
+  // data queued in the new socket is read by the packet reader. Session will be
+  // marked as going away, non-migratable stream will be closed.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // Send GET request on stream 1.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream1->SendRequest(request_headers, &response,
+                                     callback_.callback()));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that response headers on the migrated socket were delivered to the
+  // stream.
+  EXPECT_EQ(OK, stream1->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+
+  stream1.reset();
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
 }
 
 void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNonMigratableStream(

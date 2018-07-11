@@ -1769,6 +1769,16 @@ void QuicChromiumClientSession::OnProbeNetworkSucceeded(
   writer->set_delegate(this);
   connection()->SetSelfAddress(self_address);
 
+  // Close streams that are not migratable to the probed |network|.
+  // If session then becomes idle, close the connection.
+  ResetNonMigratableStreams();
+  if (GetNumActiveStreams() == 0 && GetNumDrainingStreams() == 0) {
+    CloseSessionOnErrorLater(
+        ERR_NETWORK_CHANGED,
+        quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS);
+    return;
+  }
+
   // Migrate to the probed socket immediately: socket, writer and reader will
   // be acquired by connection and used as default on success.
   if (!MigrateToSocket(std::move(socket), std::move(reader),
@@ -2369,20 +2379,26 @@ bool QuicChromiumClientSession::IsSessionMigratable(
     }
     return false;
   }
-
-  // Do not migrate sessions with non-migratable streams.
-  if (HasNonMigratableStreams()) {
-    if (close_session_if_not_migratable) {
-      HistogramAndLogMigrationFailure(net_log_,
-                                      MIGRATION_STATUS_NON_MIGRATABLE_STREAM,
-                                      connection_id(), "Non-migratable stream");
-      CloseSessionOnErrorLater(
-          ERR_NETWORK_CHANGED,
-          quic::QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM);
-    }
-    return false;
-  }
   return true;
+}
+
+void QuicChromiumClientSession::ResetNonMigratableStreams() {
+  // TODO(zhongyi): may close non-migratable draining streams as well to avoid
+  // sending additional data on alternate networks.
+  auto it = dynamic_streams().begin();
+  // Stream may be deleted when iterating through the map.
+  while (it != dynamic_streams().end()) {
+    QuicChromiumClientStream* stream =
+        static_cast<QuicChromiumClientStream*>(it->second.get());
+    if (!stream->can_migrate()) {
+      // Close the stream in both direction by resetting the stream.
+      // TODO(zhongyi): use a different error code to reset streams for
+      // connection migration.
+      stream->Reset(quic::QUIC_STREAM_CANCELLED);
+    } else {
+      it++;
+    }
+  }
 }
 
 void QuicChromiumClientSession::LogMetricsOnNetworkDisconnected() {
@@ -2606,6 +2622,21 @@ MigrationResult QuicChromiumClientSession::Migrate(
     const NetLogWithSource& migration_net_log) {
   if (!stream_factory_)
     return MigrationResult::FAILURE;
+
+  if (network != NetworkChangeNotifier::kInvalidNetworkHandle) {
+    // This is a migration attempt from connection migration. Close
+    // streams that are not migratable to |network|. If session then becomes
+    // idle, close the connection if |close_session_on_error| is true.
+    ResetNonMigratableStreams();
+    if (GetNumActiveStreams() == 0 && GetNumDrainingStreams() == 0) {
+      if (close_session_on_error) {
+        CloseSessionOnErrorLater(
+            ERR_NETWORK_CHANGED,
+            quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS);
+      }
+      return MigrationResult::FAILURE;
+    }
+  }
 
   // Create and configure socket on |network|.
   std::unique_ptr<DatagramClientSocket> socket(
