@@ -61,6 +61,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/page_importance_signals.h"
+#include "net/base/network_change_notifier.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 
 #if defined(OS_CHROMEOS)
@@ -997,8 +998,7 @@ void TabManager::PerformStateTransitions() {
   // oldest LifecycleUnit and call PerformStateTransitions() again, rather than
   // discarding all LifecycleUnits that have been non-visible for at least
   // GetTimeInBackgroundBeforeProactiveDiscard().
-  if (proactive_freeze_discard_params_.should_proactively_discard &&
-      oldest_discardable_lifecycle_unit) {
+  if (ShouldProactivelyDiscardTabs() && oldest_discardable_lifecycle_unit) {
     const base::TimeDelta time_not_visible =
         now - oldest_discardable_lifecycle_unit->GetLastActiveTime();
     const base::TimeDelta time_until_discard =
@@ -1084,6 +1084,17 @@ void TabManager::OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) {
             GetNumLoadedLifecycleUnits(lifecycle_units_));
 
   SchedulePerformStateTransitions(base::TimeDelta());
+}
+
+bool TabManager::ShouldProactivelyDiscardTabs() {
+  if (!proactive_freeze_discard_params_.should_proactively_discard)
+    return false;
+
+  // Don't proactively discard tabs while offline.
+  if (net::NetworkChangeNotifier::IsOffline())
+    return false;
+
+  return true;
 }
 
 }  // namespace resource_coordinator
