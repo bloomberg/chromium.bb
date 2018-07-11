@@ -346,13 +346,6 @@
       },
     },
   },
-  'cast_unittests': {
-    'remove_from': [
-      # chromium.clang
-      'ToTAndroidCFI',
-      'ToTLinuxThinLTO',
-    ],
-  },
   'checkbins': {
     'remove_from': [
       'Linux x64',
@@ -367,9 +360,9 @@
     ],
     'remove_from': [
       # chromium.clang
-      'ToTAndroidCFI',
+      'ToTAndroidCFI',  # https://crbug.com/862581
       # chromium.memory
-      'Android CFI',
+      'Android CFI',  # https://crbug.com/862581
     ],
     'key_removals': {
       # chromium.android.fyi
