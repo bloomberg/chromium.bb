@@ -31,9 +31,9 @@ const RecorderMsgEnum = {
   START: 'start-recording',
   STOP: 'stop-recording',
   CANCEL: 'cancel-recording',
-  GET_FRAME_CONTEXT: 'get-frame-context',
-  GET_IFRAME_XPATH: 'get-iframe-xpath',
+  GET_IFRAME_NAME: 'get-iframe-name',
   ADD_ACTION: 'record-action',
+  MEMORIZE_PASSWORD_FORM: 'memorize-password-form',
 };
 
 const Local_Storage_Vars = {
