@@ -9,6 +9,8 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
@@ -35,6 +37,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -845,4 +848,110 @@ IN_PROC_BROWSER_TEST_F(ProfileWithoutMediaCacheBrowserTest,
       embedded_test_server()->GetURL("/cachetime"), net::URLRequestStatus(),
       net::LOAD_ONLY_FROM_CACHE);
   url_fetcher_delegate3.WaitForCompletion();
+}
+
+// Create a media cache file, and make sure it's deleted by the time the next
+// test runs.
+IN_PROC_BROWSER_TEST_F(ProfileWithoutMediaCacheBrowserTest,
+                       PRE_DeleteMediaCache) {
+  base::FilePath media_cache_path =
+      browser()->profile()->GetPath().Append(chrome::kMediaCacheDirname);
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  EXPECT_TRUE(base::CreateDirectory(media_cache_path));
+  std::string data = "foo";
+  base::WriteFile(media_cache_path.AppendASCII("foo"), data.c_str(),
+                  data.size());
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileWithoutMediaCacheBrowserTest, DeleteMediaCache) {
+  base::FilePath media_cache_path =
+      browser()->profile()->GetPath().Append(chrome::kMediaCacheDirname);
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  // Wait until the file is deleted. Unfortunately, there's no way to wait until
+  // the deletion itself has run directly, so there are several possible orders
+  // of events that this code must handle:
+  //
+  // * In PRE_DeleteMediaCache, the media cache was deleted before the test
+  // completed, by the task posted on Profile creation.
+  //
+  // * In DeleteMediaCache, the media cache was deleted by the delete media
+  // cache task before starting the FilePathWatcher.
+  //
+  // * In DeleteMediaCache, the media cache was deleted by the delete media
+  // cache task after starting the FilePathWatcher.
+  //
+  // It also may be possible to get a notification of the media cache being
+  // created from the PRE_DeleteMediaCache test, so allow multiple watch events
+  // to happen.
+  while (true) {
+    base::RunLoop run_loop;
+    base::FilePathWatcher watcher;
+    EXPECT_TRUE(watcher.Watch(media_cache_path, false /* recursive */,
+                              base::BindRepeating(
+                                  [](base::RunLoop* run_loop,
+                                     const base::FilePath& path, bool error) {
+                                    EXPECT_FALSE(error);
+                                    run_loop->Quit();
+                                  },
+                                  &run_loop)));
+    if (!base::PathExists(media_cache_path))
+      return;
+    run_loop.Run();
+  }
+}
+
+// Create a media cache file, and make sure it's deleted by initializing an
+// extension browser context.
+IN_PROC_BROWSER_TEST_F(ProfileWithoutMediaCacheBrowserTest,
+                       PRE_DeleteIsolatedAppMediaCache) {
+  scoped_refptr<const extensions::Extension> app =
+      BuildTestApp(browser()->profile());
+  content::StoragePartition* extension_partition =
+      content::BrowserContext::GetStoragePartitionForSite(
+          browser()->profile(),
+          extensions::Extension::GetBaseURLFromExtensionId(app->id()));
+
+  base::FilePath extension_media_cache_path =
+      extension_partition->GetPath().Append(chrome::kMediaCacheDirname);
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  EXPECT_TRUE(base::CreateDirectory(extension_media_cache_path));
+  std::string data = "foo";
+  base::WriteFile(extension_media_cache_path.AppendASCII("foo"), data.c_str(),
+                  data.size());
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileWithoutMediaCacheBrowserTest,
+                       DeleteIsolatedAppMediaCache) {
+  scoped_refptr<const extensions::Extension> app =
+      BuildTestApp(browser()->profile());
+  content::StoragePartition* extension_partition =
+      content::BrowserContext::GetStoragePartitionForSite(
+          browser()->profile(),
+          extensions::Extension::GetBaseURLFromExtensionId(app->id()));
+
+  base::FilePath extension_media_cache_path =
+      extension_partition->GetPath().Append(chrome::kMediaCacheDirname);
+
+  // As with the DeleteMediaCache test, have to allow for a lot of different
+  // deletion orderings here.
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  while (true) {
+    base::RunLoop run_loop;
+    base::FilePathWatcher watcher;
+    EXPECT_TRUE(watcher.Watch(extension_media_cache_path, false /* recursive */,
+                              base::BindRepeating(
+                                  [](base::RunLoop* run_loop,
+                                     const base::FilePath& path, bool error) {
+                                    EXPECT_FALSE(error);
+                                    run_loop->Quit();
+                                  },
+                                  &run_loop)));
+    if (!base::PathExists(extension_media_cache_path))
+      return;
+    run_loop.Run();
+  }
 }
