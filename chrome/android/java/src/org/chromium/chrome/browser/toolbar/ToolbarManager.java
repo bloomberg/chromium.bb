@@ -1271,16 +1271,15 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         long elapsedTime = SystemClock.elapsedRealtime() - activityCreationTimeMs;
         if (elapsedTime < RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS) {
             ThreadUtils.postOnUiThreadDelayed(() -> {
-                // Noop if mOmniboxStartupMetrics is null. ie. ToolbarManager is destroyed. See
-                // https://crbug.com/860449
-                if (mOmniboxStartupMetrics == null) return;
                 onDeferredStartup(activityCreationTimeMs, activityName);
             }, RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS - elapsedTime);
             return;
         }
         RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarFirstDrawTime2." + activityName,
                 mToolbar.getFirstDrawTime() - activityCreationTimeMs, TimeUnit.MILLISECONDS);
-        mOmniboxStartupMetrics.recordHistogram();
+        // mOmniboxStartupMetrics might be null. ie. ToolbarManager is destroyed. See
+        // https://crbug.com/860449
+        if (mOmniboxStartupMetrics != null) mOmniboxStartupMetrics.recordHistogram();
     }
 
     /**
