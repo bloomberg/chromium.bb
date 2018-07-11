@@ -365,6 +365,15 @@ bool AssistantManagerServiceImpl::SupportsModifySettings() {
   return true;
 }
 
+void AssistantManagerServiceImpl::OnNotificationRemoved(
+    const std::string& grouping_key) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &AssistantManagerServiceImpl::OnNotificationRemovedOnMainThread,
+          weak_factory_.GetWeakPtr(), grouping_key));
+}
+
 void AssistantManagerServiceImpl::OnVoiceInteractionSettingsEnabled(
     bool enabled) {
   assistant_enabled_ = enabled;
@@ -583,6 +592,12 @@ void AssistantManagerServiceImpl::OnShowNotificationOnMainThread(
   notification_subscribers_.ForAllPtrs([&notification](auto* ptr) {
     ptr->OnShowNotification(mojo::Clone(notification));
   });
+}
+
+void AssistantManagerServiceImpl::OnNotificationRemovedOnMainThread(
+    const std::string& grouping_key) {
+  notification_subscribers_.ForAllPtrs(
+      [grouping_key](auto* ptr) { ptr->OnRemoveNotification(grouping_key); });
 }
 
 void AssistantManagerServiceImpl::OnRecognitionStateChangedOnMainThread(
