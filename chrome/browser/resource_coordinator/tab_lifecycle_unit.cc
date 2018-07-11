@@ -113,20 +113,15 @@ bool IsValidStateChange(LifecycleUnitState from,
     }
     case LifecycleUnitState::PENDING_DISCARD: {
       switch (to) {
-        // The WebContents is focused or explicitly reloaded.
-        case LifecycleUnitState::ACTIVE: {
-          return reason == StateChangeReason::BROWSER_INITIATED ||
-                 reason == StateChangeReason::RENDERER_INITIATED;
-        }
         // - Discard(kUrgent|kExternal) is called, or,
         // - The proactive discard can be completed because:
         //   - The freeze timeout expires, or,
         //   - The renderer notifies the browser that the page has been frozen.
         case LifecycleUnitState::DISCARDED:
           return reason == StateChangeReason::BROWSER_INITIATED;
-        // The WebContents IS focused.
+        // The WebContents is focused.
         case LifecycleUnitState::PENDING_FREEZE:
-          return reason == StateChangeReason::BROWSER_INITIATED;
+          return reason == StateChangeReason::USER_INITIATED;
         default:
           return false;
       }
@@ -135,7 +130,7 @@ bool IsValidStateChange(LifecycleUnitState from,
       switch (to) {
         // The WebContents is focused.
         case LifecycleUnitState::ACTIVE:
-          return reason == StateChangeReason::BROWSER_INITIATED;
+          return reason == StateChangeReason::USER_INITIATED;
         default:
           return false;
       }
@@ -266,8 +261,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetFocused(bool focused) {
   switch (GetState()) {
     case LifecycleUnitState::DISCARDED: {
       // Reload the tab.
-      SetState(LifecycleUnitState::ACTIVE,
-               StateChangeReason::BROWSER_INITIATED);
+      SetState(LifecycleUnitState::ACTIVE, StateChangeReason::USER_INITIATED);
       bool loaded = Load();
       DCHECK(loaded);
       break;
@@ -283,7 +277,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetFocused(bool focused) {
       // page is focused, unfreeze it and initiate a transition to ACTIVE.
       freeze_timeout_timer_->Stop();
       SetState(LifecycleUnitState::PENDING_FREEZE,
-               StateChangeReason::BROWSER_INITIATED);
+               StateChangeReason::USER_INITIATED);
       break;
     }
 
@@ -810,8 +804,11 @@ void TabLifecycleUnitSource::TabLifecycleUnit::OnLifecycleUnitStateChanged(
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::DidStartLoading() {
-  if (IsDiscardedOrPendingDiscard(GetState()))
-    SetState(LifecycleUnitState::ACTIVE, StateChangeReason::BROWSER_INITIATED);
+  if (IsDiscardedOrPendingDiscard(GetState())) {
+    // This happens when a discarded tab is explicitly reloaded without being
+    // focused first (right-click > Reload).
+    SetState(LifecycleUnitState::ACTIVE, StateChangeReason::USER_INITIATED);
+  }
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::OnVisibilityChanged(

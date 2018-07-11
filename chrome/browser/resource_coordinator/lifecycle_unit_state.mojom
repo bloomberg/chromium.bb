@@ -47,4 +47,6 @@ enum LifecycleUnitStateChangeReason {
   SYSTEM_MEMORY_PRESSURE = 2,
   // Initiated by an extension.
   EXTENSION_INITIATED = 3,
+  // Initiated by a user action (e.g. changing focus, clicking reload).
+  USER_INITIATED = 4,
 };
