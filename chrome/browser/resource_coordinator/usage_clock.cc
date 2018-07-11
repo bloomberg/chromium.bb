@@ -9,21 +9,17 @@
 namespace resource_coordinator {
 
 UsageClock::UsageClock() : current_usage_session_start_time_(NowTicks()) {
-#if !defined(OS_CHROMEOS)
   if (metrics::DesktopSessionDurationTracker::IsInitialized()) {
     auto* tracker = metrics::DesktopSessionDurationTracker::Get();
     tracker->AddObserver(this);
     if (!tracker->in_session())
       current_usage_session_start_time_ = base::TimeTicks();
   }
-#endif  // defined(OS_CHROMEOS)
 }
 
 UsageClock::~UsageClock() {
-#if !defined(OS_CHROMEOS)
   if (metrics::DesktopSessionDurationTracker::IsInitialized())
     metrics::DesktopSessionDurationTracker::Get()->RemoveObserver(this);
-#endif
 }
 
 base::TimeDelta UsageClock::GetTotalUsageTime() const {
@@ -37,7 +33,6 @@ bool UsageClock::IsInUse() const {
   return !current_usage_session_start_time_.is_null();
 }
 
-#if !defined(OS_CHROMEOS)
 void UsageClock::OnSessionStarted(base::TimeTicks session_start) {
   // Ignore |session_start| because it doesn't come from the resource
   // coordinator clock.
@@ -53,6 +48,5 @@ void UsageClock::OnSessionEnded(base::TimeDelta session_length) {
       NowTicks() - current_usage_session_start_time_;
   current_usage_session_start_time_ = base::TimeTicks();
 }
-#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace resource_coordinator
