@@ -155,10 +155,11 @@ TEST_F(ThreadWrapperTest, PostDelayed) {
       MatchMessage(&handler2_, kTestMessage1, data4)))
       .WillOnce(DeleteMessageData());
 
+  base::RunLoop run_loop;
   message_loop_.task_runner()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromMilliseconds(kMaxTestDelay));
-  base::RunLoop().Run();
+  run_loop.Run();
 }
 
 TEST_F(ThreadWrapperTest, Clear) {
@@ -210,10 +211,11 @@ TEST_F(ThreadWrapperTest, ClearDelayed) {
       MatchMessage(&handler2_, kTestMessage1, null_data)))
       .WillOnce(DeleteMessageData());
 
+  base::RunLoop run_loop;
   message_loop_.task_runner()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromMilliseconds(kMaxTestDelay));
-  base::RunLoop().Run();
+  run_loop.Run();
 }
 
 // Verify that the queue is cleared when a handler is destroyed.
