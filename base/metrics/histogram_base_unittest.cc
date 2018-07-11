@@ -186,4 +186,90 @@ TEST_F(HistogramBaseTest, AddKiB) {
   EXPECT_GE(2, samples->GetCount(300));
 }
 
+TEST_F(HistogramBaseTest, AddTimeMillisecondsGranularityOverflow) {
+  const HistogramBase::Sample sample_max =
+      std::numeric_limits<HistogramBase::Sample>::max() / 2;
+  HistogramBase* histogram = LinearHistogram::FactoryGet(
+      "TestAddTimeMillisecondsGranularity1", 1, sample_max, 100, 0);
+  int64_t large_positive = std::numeric_limits<int64_t>::max();
+  // |add_count| is the number of large values that have been added to the
+  // histogram. We consider a number to be 'large' if it cannot be represented
+  // in a HistogramBase::Sample.
+  int add_count = 0;
+  while (large_positive > std::numeric_limits<HistogramBase::Sample>::max()) {
+    // Add the TimeDelta corresponding to |large_positive| milliseconds to the
+    // histogram.
+    histogram->AddTimeMillisecondsGranularity(
+        TimeDelta::FromMilliseconds(large_positive));
+    ++add_count;
+    // Reduce the value of |large_positive|. The choice of 7 here is
+    // arbitrary.
+    large_positive /= 7;
+  }
+  std::unique_ptr<HistogramSamples> samples = histogram->SnapshotSamples();
+  // All of the reported values must have gone into the max overflow bucket.
+  EXPECT_EQ(add_count, samples->GetCount(sample_max));
+
+  // We now perform the analoguous operations, now with negative values with a
+  // large absolute value.
+  histogram = LinearHistogram::FactoryGet("TestAddTimeMillisecondsGranularity2",
+                                          1, sample_max, 100, 0);
+  int64_t large_negative = std::numeric_limits<int64_t>::min();
+  add_count = 0;
+  while (large_negative < std::numeric_limits<HistogramBase::Sample>::min()) {
+    histogram->AddTimeMillisecondsGranularity(
+        TimeDelta::FromMilliseconds(large_negative));
+    ++add_count;
+    large_negative /= 7;
+  }
+  samples = histogram->SnapshotSamples();
+  // All of the reported values must have gone into the min overflow bucket.
+  EXPECT_EQ(add_count, samples->GetCount(0));
+}
+
+TEST_F(HistogramBaseTest, AddTimeMicrosecondsGranularityOverflow) {
+  // Nothing to test if we don't have a high resolution clock.
+  if (!TimeTicks::IsHighResolution())
+    return;
+
+  const HistogramBase::Sample sample_max =
+      std::numeric_limits<HistogramBase::Sample>::max() / 2;
+  HistogramBase* histogram = LinearHistogram::FactoryGet(
+      "TestAddTimeMicrosecondsGranularity1", 1, sample_max, 100, 0);
+  int64_t large_positive = std::numeric_limits<int64_t>::max();
+  // |add_count| is the number of large values that have been added to the
+  // histogram. We consider a number to be 'large' if it cannot be represented
+  // in a HistogramBase::Sample.
+  int add_count = 0;
+  while (large_positive > std::numeric_limits<HistogramBase::Sample>::max()) {
+    // Add the TimeDelta corresponding to |large_positive| microseconds to the
+    // histogram.
+    histogram->AddTimeMicrosecondsGranularity(
+        TimeDelta::FromMicroseconds(large_positive));
+    ++add_count;
+    // Reduce the value of |large_positive|. The choice of 7 here is
+    // arbitrary.
+    large_positive /= 7;
+  }
+  std::unique_ptr<HistogramSamples> samples = histogram->SnapshotSamples();
+  // All of the reported values must have gone into the max overflow bucket.
+  EXPECT_EQ(add_count, samples->GetCount(sample_max));
+
+  // We now perform the analoguous operations, now with negative values with a
+  // large absolute value.
+  histogram = LinearHistogram::FactoryGet("TestAddTimeMicrosecondsGranularity2",
+                                          1, sample_max, 100, 0);
+  int64_t large_negative = std::numeric_limits<int64_t>::min();
+  add_count = 0;
+  while (large_negative < std::numeric_limits<HistogramBase::Sample>::min()) {
+    histogram->AddTimeMicrosecondsGranularity(
+        TimeDelta::FromMicroseconds(large_negative));
+    ++add_count;
+    large_negative /= 7;
+  }
+  samples = histogram->SnapshotSamples();
+  // All of the reported values must have gone into the min overflow bucket.
+  EXPECT_EQ(add_count, samples->GetCount(0));
+}
+
 }  // namespace base
