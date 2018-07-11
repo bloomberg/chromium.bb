@@ -310,6 +310,13 @@ DesktopAutomationHandler.prototype = {
   onChildrenChanged: function(evt) {
     var curRange = ChromeVoxState.instance.currentRange;
 
+    // views::TextField blinks by making its cursor view alternate between
+    // visible and not visible. This results in a children changed event on its
+    // parent (the text field itself). In general, text field feedback should be
+    // given within text field specific events.
+    if (evt.target.role == RoleType.TEXT_FIELD)
+      return;
+
     // Always refresh the braille contents.
     if (curRange && curRange.equals(cursors.Range.fromNode(evt.target))) {
       new Output()
