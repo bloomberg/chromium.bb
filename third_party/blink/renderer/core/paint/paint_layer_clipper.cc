@@ -331,6 +331,7 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
   CalculateBackgroundClipRectWithGeometryMapper(
       context, fragment_data, kRespectOverflowClip, background_rect);
 
+  foreground_rect.Reset();
   if (paint_dirty_rect)
     background_rect.Intersect(*paint_dirty_rect);
 
@@ -482,11 +483,10 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
     ClipRect& output) const {
   DCHECK(use_geometry_mapper_);
 
+  output.Reset();
   bool is_clipping_root = &layer_ == context.root_layer;
-  if (is_clipping_root && !context.ShouldRespectRootLayerClip()) {
-    output.SetRect(FloatClipRect());
+  if (is_clipping_root && !context.ShouldRespectRootLayerClip())
     return;
-  }
 
   PropertyTreeState source_property_tree_state(nullptr, nullptr, nullptr);
   PropertyTreeState destination_property_tree_state(nullptr, nullptr, nullptr);
@@ -524,7 +524,8 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
                                               destination_property_tree_state,
                                               clip_rect, clip_behavior);
     output.SetRect(clip_rect);
-  } else {
+  } else if (source_property_tree_state.Clip() !=
+             destination_property_tree_state.Clip()) {
     const FloatClipRect& clipped_rect_in_root_layer_space =
         GeometryMapper::LocalToAncestorClipRect(
             source_property_tree_state, destination_property_tree_state,
