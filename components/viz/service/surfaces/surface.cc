@@ -15,6 +15,7 @@
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "components/viz/service/surfaces/referenced_surface_tracker.h"
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/service/viz_service_export.h"
@@ -95,6 +96,29 @@ void Surface::RefResources(const std::vector<TransferableResource>& resources) {
 void Surface::UnrefResources(const std::vector<ReturnedResource>& resources) {
   if (surface_client_)
     surface_client_->UnrefResources(resources);
+}
+
+void Surface::UpdateSurfaceReferences() {
+  const base::flat_set<SurfaceId>& existing_referenced_surfaces =
+      surface_manager_->GetSurfacesReferencedByParent(surface_id());
+  base::flat_set<SurfaceId> new_referenced_surfaces(
+      active_referenced_surfaces()->begin(),
+      active_referenced_surfaces()->end(), base::KEEP_FIRST_OF_DUPES);
+
+  // Populate list of surface references to add and remove by getting the
+  // difference between existing surface references and surface references for
+  // latest activated CompositorFrame.
+  std::vector<SurfaceReference> references_to_add;
+  std::vector<SurfaceReference> references_to_remove;
+  GetSurfaceReferenceDifference(surface_id(), existing_referenced_surfaces,
+                                new_referenced_surfaces, &references_to_add,
+                                &references_to_remove);
+
+  // Modify surface references stored in SurfaceManager.
+  if (!references_to_add.empty())
+    surface_manager_->AddSurfaceReferences(references_to_add);
+  if (!references_to_remove.empty())
+    surface_manager_->RemoveSurfaceReferences(references_to_remove);
 }
 
 void Surface::RejectCompositorFramesToFallbackSurfaces() {

@@ -120,9 +120,15 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
     last_activated_surface_id_ = surface->surface_id();
   }
 
-  DCHECK(surface->active_referenced_surfaces());
-  UpdateSurfaceReferences(surface->surface_id().local_surface_id(),
-                          *surface->active_referenced_surfaces());
+  DCHECK(surface->HasActiveFrame());
+  surface->UpdateSurfaceReferences();
+
+  // Check if this is a display root surface and the SurfaceId is changing.
+  if (is_root_ && (!referenced_local_surface_id_ ||
+                   *referenced_local_surface_id_ !=
+                       surface->surface_id().local_surface_id())) {
+    UpdateDisplayRootReference(surface);
+  }
 }
 
 void CompositorFrameSinkSupport::OnFrameTokenChanged(uint32_t frame_token) {
@@ -434,49 +440,6 @@ CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
   return ACCEPTED;
 }
 
-void CompositorFrameSinkSupport::UpdateSurfaceReferences(
-    const LocalSurfaceId& local_surface_id,
-    const std::vector<SurfaceId>& active_referenced_surfaces) {
-  SurfaceId surface_id(frame_sink_id_, local_surface_id);
-
-  const base::flat_set<SurfaceId>& existing_referenced_surfaces =
-      surface_manager_->GetSurfacesReferencedByParent(surface_id);
-
-  base::flat_set<SurfaceId> new_referenced_surfaces(
-      active_referenced_surfaces.begin(), active_referenced_surfaces.end(),
-      base::KEEP_FIRST_OF_DUPES);
-
-  // Populate list of surface references to add and remove by getting the
-  // difference between existing surface references and surface references for
-  // latest activated CompositorFrame.
-  std::vector<SurfaceReference> references_to_add;
-  std::vector<SurfaceReference> references_to_remove;
-  GetSurfaceReferenceDifference(surface_id, existing_referenced_surfaces,
-                                new_referenced_surfaces, &references_to_add,
-                                &references_to_remove);
-
-  // Check if this is a display root surface and the SurfaceId is changing.
-  if (is_root_ && (!referenced_local_surface_id_.has_value() ||
-                   referenced_local_surface_id_.value() != local_surface_id)) {
-    // Make the new SurfaceId reachable from the top-level root.
-    references_to_add.push_back(MakeTopLevelRootReference(surface_id));
-
-    // Make the old SurfaceId unreachable from the top-level root if applicable.
-    if (referenced_local_surface_id_.has_value()) {
-      references_to_remove.push_back(MakeTopLevelRootReference(
-          SurfaceId(frame_sink_id_, referenced_local_surface_id_.value())));
-    }
-
-    referenced_local_surface_id_ = local_surface_id;
-  }
-
-  // Modify surface references stored in SurfaceManager.
-  if (!references_to_add.empty())
-    surface_manager_->AddSurfaceReferences(references_to_add);
-  if (!references_to_remove.empty())
-    surface_manager_->RemoveSurfaceReferences(references_to_remove);
-}
-
 SurfaceReference CompositorFrameSinkSupport::MakeTopLevelRootReference(
     const SurfaceId& surface_id) {
   return SurfaceReference(surface_manager_->GetRootSurfaceId(), surface_id);
@@ -532,6 +495,21 @@ void CompositorFrameSinkSupport::DidRejectCompositorFrame(
     DidPresentCompositorFrame(presentation_token,
                               gfx::PresentationFeedback::Failure());
   }
+}
+
+void CompositorFrameSinkSupport::UpdateDisplayRootReference(
+    const Surface* surface) {
+  // Make the new SurfaceId reachable from the top-level root.
+  surface_manager_->AddSurfaceReferences(
+      {MakeTopLevelRootReference(surface->surface_id())});
+
+  // Make the old SurfaceId unreachable from the top-level root if applicable.
+  if (referenced_local_surface_id_) {
+    surface_manager_->RemoveSurfaceReferences({MakeTopLevelRootReference(
+        SurfaceId(frame_sink_id_, *referenced_local_surface_id_))});
+  }
+
+  referenced_local_surface_id_ = surface->surface_id().local_surface_id();
 }
 
 void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {

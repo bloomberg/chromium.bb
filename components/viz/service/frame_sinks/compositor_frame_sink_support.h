@@ -16,7 +16,6 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "components/viz/service/frame_sinks/referenced_surface_tracker.h"
 #include "components/viz/service/frame_sinks/surface_resource_holder.h"
 #include "components/viz/service/frame_sinks/surface_resource_holder_client.h"
 #include "components/viz/service/frame_sinks/video_capture/capturable_frame_sink.h"
@@ -165,14 +164,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
  private:
   friend class FrameSinkManagerTest;
 
-  // Updates surface references using |active_referenced_surfaces| from the most
-  // recent CompositorFrame. This will add and remove top-level root references
-  // if |is_root_| is true and |local_surface_id| has changed. Modifies surface
-  // references stored in SurfaceManager.
-  void UpdateSurfaceReferences(
-      const LocalSurfaceId& local_surface_id,
-      const std::vector<SurfaceId>& active_referenced_surfaces);
-
   // Creates a surface reference from the top-level root to |surface_id|.
   SurfaceReference MakeTopLevelRootReference(const SurfaceId& surface_id);
 
@@ -183,6 +174,9 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       uint32_t presentation_token,
       bool request_presentation_feedback,
       std::vector<TransferableResource> frame_resource_list);
+
+  // Update the display root reference with |surface|.
+  void UpdateDisplayRootReference(const Surface* surface);
 
   // BeginFrameObserver implementation.
   void OnBeginFrame(const BeginFrameArgs& args) override;
