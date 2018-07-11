@@ -1213,4 +1213,21 @@ void ChromePasswordProtectionService::OnEnterprisePasswordUrlChanged() {
       ->ScheduleEnterprisePasswordURLUpdate();
 }
 
+bool ChromePasswordProtectionService::CanShowInterstitial(
+    RequestOutcome reason,
+    ReusedPasswordType password_type,
+    const GURL& main_frame_url) {
+  // If it's not password alert mode, no need to log any metric.
+  if (reason != PASSWORD_ALERT_MODE ||
+      (password_type != PasswordReuseEvent::SIGN_IN_PASSWORD &&
+       password_type != PasswordReuseEvent::ENTERPRISE_PASSWORD)) {
+    return false;
+  }
+
+  if (!IsURLWhitelistedForPasswordEntry(main_frame_url, &reason))
+    reason = PasswordProtectionService::SUCCEEDED;
+  LogPasswordAlertModeOutcome(reason, password_type);
+  return reason == PasswordProtectionService::SUCCEEDED;
+}
+
 }  // namespace safe_browsing

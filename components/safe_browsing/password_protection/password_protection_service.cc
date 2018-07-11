@@ -496,9 +496,8 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
                  password_field_exists);
   } else {
     MaybeLogPasswordReuseLookupEvent(web_contents, reason, nullptr);
-    if (reason == PASSWORD_ALERT_MODE) {
+    if (CanShowInterstitial(reason, reused_password_type, main_frame_url))
       ShowInterstitial(web_contents, reused_password_type);
-    }
   }
 }
 
@@ -1048,6 +1047,23 @@ void PasswordProtectionService::MigrateCachedVerdicts() {
   UMA_HISTOGRAM_COUNTS_100(
       "PasswordProtection.NumberOfVerdictsMigratedDuringInitialization",
       verdicts_migrated);
+}
+
+void PasswordProtectionService::LogPasswordAlertModeOutcome(
+    RequestOutcome reason,
+    ReusedPasswordType password_type) {
+  DCHECK(password_type == PasswordReuseEvent::SIGN_IN_PASSWORD ||
+         password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD);
+  if (password_type == PasswordReuseEvent::SIGN_IN_PASSWORD) {
+    base::UmaHistogramEnumeration(
+        "PasswordProtection.PasswordAlertModeOutcome.GSuiteSyncPasswordEntry",
+        reason, MAX_OUTCOME);
+  } else {
+    base::UmaHistogramEnumeration(
+        "PasswordProtection.PasswordAlertModeOutcome."
+        "NonGaiaEnterprisePasswordEntry",
+        reason, MAX_OUTCOME);
+  }
 }
 
 }  // namespace safe_browsing

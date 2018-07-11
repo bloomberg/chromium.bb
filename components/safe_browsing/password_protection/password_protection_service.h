@@ -297,11 +297,11 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
  protected:
   friend class PasswordProtectionRequest;
 
-  // Chrome can send password protection ping if it is allowed by Finch config
-  // and if Safe Browsing can compute reputation of |main_frame_url| (e.g.
-  // Safe Browsing is not able to compute reputation of a private IP or
-  // a local host). Update |reason| if sending ping is not allowed.
-  // |password_type| is used for UMA metric recording.
+  // Chrome can send password protection ping if it is allowed by for the
+  // |trigger_type| and if Safe Browsing can compute reputation of
+  // |main_frame_url| (e.g. Safe Browsing is not able to compute reputation of a
+  // private IP or a local host). Update |reason| if sending ping is not
+  // allowed. |password_type| is used for UMA metric recording.
   bool CanSendPing(LoginReputationClientRequest::TriggerType trigger_type,
                    const GURL& main_frame_url,
                    ReusedPasswordType password_type,
@@ -378,6 +378,13 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   void RemoveWarningRequestsByWebContents(content::WebContents* web_contents);
 
   bool IsModalWarningShowingInWebContents(content::WebContents* web_contents);
+
+  virtual bool CanShowInterstitial(RequestOutcome reason,
+                                   ReusedPasswordType password_type,
+                                   const GURL& main_frame_url) = 0;
+
+  void LogPasswordAlertModeOutcome(RequestOutcome reason,
+                                   ReusedPasswordType password_type);
 
  private:
   friend class PasswordProtectionServiceTest;

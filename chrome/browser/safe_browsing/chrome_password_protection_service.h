@@ -257,6 +257,13 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
     sync_password_hash_ = new_password_hash;
   }
 
+  // Determines if we should show chrome://reset-password interstitial based on
+  // previous request outcome, the reused |password_type| and the
+  // |main_frame_url|.
+  bool CanShowInterstitial(RequestOutcome reason,
+                           ReusedPasswordType password_type,
+                           const GURL& main_frame_url) override;
+
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyUserPopulationForPasswordOnFocusPing);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
@@ -279,6 +286,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   FRIEND_TEST_ALL_PREFIXES(
       ChromePasswordProtectionServiceTest,
       VerifyUnhandledSyncPasswordReuseUponClearHistoryDeletion);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyCanShowInterstitial);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceBrowserTest,
                            VerifyCheckGaiaPasswordChange);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceBrowserTest,
