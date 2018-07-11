@@ -2623,41 +2623,6 @@ TEST_F(NetworkContextTest, PreconnectZero) {
   ASSERT_EQ(num_connecting_sockets, 0);
 }
 
-// A negative input to PreconnectSockets is silently casted to a uint32_t,
-// which is then saturated_cast to an int32_t before being passed to the
-// underlying HttpStreamFactory method.
-TEST_F(NetworkContextTest, PreconnectLessThanZero) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-
-  net::EmbeddedTestServer test_server;
-  ConnectionListener connection_listener;
-  test_server.SetConnectionListener(&connection_listener);
-  ASSERT_TRUE(test_server.Start());
-
-  int num_sockets, max_num_sockets;
-  network_context->url_request_context()
-      ->http_transaction_factory()
-      ->GetSession()
-      ->GetTransportSocketPool(
-          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
-      ->GetInfoAsValue("", "", false)
-      ->GetInteger("max_sockets_per_group", &max_num_sockets);
-
-  network_context->PreconnectSockets(-2, test_server.base_url(),
-                                     net::LOAD_NORMAL, true);
-  base::RunLoop().RunUntilIdle();
-
-  network_context->url_request_context()
-      ->http_transaction_factory()
-      ->GetSession()
-      ->GetTransportSocketPool(
-          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
-      ->GetInfoAsValue("", "", false)
-      ->GetInteger("idle_socket_count", &num_sockets);
-  ASSERT_EQ(num_sockets, max_num_sockets);
-}
-
 TEST_F(NetworkContextTest, PreconnectTwo) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
