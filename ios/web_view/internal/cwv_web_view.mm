@@ -252,6 +252,10 @@ static NSString* gUserAgentProduct = nil;
 - (void)webStateDestroyed:(web::WebState*)webState {
   webState->RemoveObserver(_webStateObserver.get());
   _webStateObserver.reset();
+  for (const auto& pair : _scriptCommandCallbacks) {
+    webState->RemoveScriptCommandCallback(pair.first);
+  }
+  _scriptCommandCallbacks.clear();
 }
 
 - (void)webState:(web::WebState*)webState
