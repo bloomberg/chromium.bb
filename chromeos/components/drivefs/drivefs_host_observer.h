@@ -5,8 +5,11 @@
 #ifndef CHROMEOS_COMPONENTS_DRIVEFS_DRIVEFS_HOST_OBSERVER_H_
 #define CHROMEOS_COMPONENTS_DRIVEFS_DRIVEFS_HOST_OBSERVER_H_
 
+#include <vector>
+
 namespace drivefs {
 namespace mojom {
+class FileChange;
 class SyncingStatus;
 }  // namespace mojom
 
@@ -14,6 +17,7 @@ class DriveFsHostObserver {
  public:
   virtual void OnUnmounted() {}
   virtual void OnSyncingStatusUpdate(const mojom::SyncingStatus& status) {}
+  virtual void OnFilesChanged(const std::vector<mojom::FileChange>& changes) {}
 
  protected:
   ~DriveFsHostObserver() = default;

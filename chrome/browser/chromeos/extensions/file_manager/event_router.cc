@@ -390,13 +390,12 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
   explicit DriveFsEventRouterImpl(Profile* profile) : profile_(profile) {}
 
  private:
-  std::set<std::string> GetFileTransfersUpdateEventListenerExtensionIds()
-      override {
+  std::set<std::string> GetEventListenerExtensionIds(
+      const std::string& event_name) override {
     const extensions::EventListenerMap::ListenerList& listeners =
         extensions::EventRouter::Get(profile_)
             ->listeners()
-            .GetEventListenersByName(
-                file_manager_private::OnFileTransfersUpdated::kEventName);
+            .GetEventListenersByName(event_name);
 
     std::set<std::string> extension_ids;
 
@@ -421,15 +420,21 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
     return url;
   }
 
-  void DispatchOnFileTransfersUpdatedEventToExtension(
+  std::string GetDriveFileSystemName() override {
+    return DriveIntegrationServiceFactory::FindForProfile(profile_)
+        ->GetMountPointPath()
+        .BaseName()
+        .value();
+  }
+
+  void DispatchEventToExtension(
       const std::string& extension_id,
-      const file_manager_private::FileTransferStatus& status) override {
+      extensions::events::HistogramValue histogram_value,
+      const std::string& event_name,
+      std::unique_ptr<base::ListValue> event_args) override {
     extensions::EventRouter::Get(profile_)->DispatchEventToExtension(
-        extension_id,
-        std::make_unique<extensions::Event>(
-            extensions::events::FILE_MANAGER_PRIVATE_ON_FILE_TRANSFERS_UPDATED,
-            file_manager_private::OnFileTransfersUpdated::kEventName,
-            file_manager_private::OnFileTransfersUpdated::Create(status)));
+        extension_id, std::make_unique<extensions::Event>(
+                          histogram_value, event_name, std::move(event_args)));
   }
 
   Profile* const profile_;
