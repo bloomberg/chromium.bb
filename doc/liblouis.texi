@@ -679,8 +679,9 @@ begcapsword 6-6
 @opcode{endcapsword, dots}
 The dot pattern which ends a block of capital letters within a word.
 It is used in cases where the block is not terminated automatically
-by a word boundary, a number or punctuation, usually when a small
-letter appears later in the same word.
+by a word boundary, a number or punctuation. A common case is when
+an uppercase block is followed directly by a lowercase letter.
+
 For example:
 
 @example
