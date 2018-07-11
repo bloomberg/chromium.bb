@@ -445,6 +445,10 @@ body.v2 {
   pointer-events: auto;
 }
 
+.v2.preview-animation #categories-list > li {
+  pointer-events: none;
+}
+
 .v2 #categories-list > li > div {
   color: rgb(95, 99, 104);
   font-family: 'Roboto';
@@ -489,7 +493,7 @@ body.v2 {
 }
 
 .v2 .image-picker [role=listitem].first-row {
-  margin-top: 116px;
+  margin-top: 132px;
 }
 
 .v2 .image-picker [role=listitem][selected] {
@@ -612,6 +616,9 @@ body.v2 {
 .v2 .top-header-contents #image-title {
   -webkit-padding-end: 8px;
   color: rgb(32, 33, 36);
+  max-width: 148px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -628,6 +635,10 @@ body.v2 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.v2.daily-wallpaper .top-header-contents #wallpaper-description {
+  max-width: 196px;
 }
 
 .v2.custom-wallpaper .top-header-contents #wallpaper-description {
@@ -670,12 +681,6 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
   padding: 8px 24px;
 }
 
-.v2 .top-header-contents .more-options > div.disabled {
-  background-color: #fff;
-  color: rgb(128, 134, 139);
-  pointer-events: none;
-}
-
 .v2 .top-header-contents .icon {
   -webkit-padding-end: 8px;
   background-repeat: no-repeat;
@@ -684,34 +689,44 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
 
 .v2 .top-header-contents .more-options .center-button,
 .v2 .top-header-contents .more-options .center-cropped-button {
+  -webkit-padding-start: 28px;
+  background-color: #fff;
+  color: rgb(128, 134, 139);
+  z-index: 0;
+}
+
+.v2 .top-header-contents .more-options .center-button.disabled,
+.v2 .top-header-contents .more-options .center-cropped-button.disabled {
   background-color: rgb(232,240,254);
+  color: rgb(66, 133, 244);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .v2 .top-header-contents .more-options .center-button {
-  -webkit-padding-end: 48px;
-  -webkit-padding-start: 32px;
+  -webkit-padding-end: 36px;
 }
 
 .v2 .top-header-contents .more-options .center-cropped-button {
-  -webkit-margin-start: -28px;
+  -webkit-margin-start: -24px;
 }
 
-.v2 .top-header-contents .center-button .icon,
+.v2 .top-header-contents .center-button.disabled .icon,
 .v2 #current-wallpaper-more-options #center .icon {
   background-image: url(../images/ui/center_layout.svg);
 }
 
-.v2 .top-header-contents .center-button.disabled .icon,
+.v2 .top-header-contents .center-button .icon,
 .v2 #current-wallpaper-more-options #center.disabled .icon {
   background-image: url(../images/ui/center_layout_disabled.svg);
 }
 
-.v2 .top-header-contents .center-cropped-button .icon,
+.v2 .top-header-contents .center-cropped-button.disabled .icon,
 .v2 #current-wallpaper-more-options #center-cropped .icon {
   background-image: url(../images/ui/center_cropped_layout.svg);
 }
 
-.v2 .top-header-contents .center-cropped-button.disabled .icon,
+.v2 .top-header-contents .center-cropped-button .icon,
 .v2 #current-wallpaper-more-options #center-cropped.disabled .icon {
   background-image: url(../images/ui/center_cropped_layout_disabled.svg);
 }
@@ -869,13 +884,13 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
 
 .v2 #current-wallpaper-info-bar {
   background-color: #fff;
-  border-bottom: 1px solid;
+  border-bottom: 1px solid rgb(218, 220, 224);
   display: flex;
   flex-direction: row;
   font-family: 'Roboto';
   font-weight: 500;
   height: 100px;
-  padding-bottom: 8px;
+  padding-bottom: 16px;
   position: absolute;
   visibility: hidden;  /* Need this for correct positioning. */
 }
@@ -890,7 +905,7 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
 }
 
 .v2 #current-wallpaper-image {
-  -webkit-margin-end: 32px;
+  -webkit-margin-end: 16px;
   border-radius: 4px;
   height: 100px;
   width: 100px;
@@ -904,24 +919,23 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
 .v2 #current-wallpaper-title {
   color: rgb(32, 33, 36);
   font-size: 14px;
-  padding-top: 14px;
+  padding-top: 9px;
 }
 
 .v2 #current-wallpaper-description {
   color: rgb(32, 33, 36);
   font-size: 12px;
   font-weight: 400;
-  padding-top: 16px;
-  width: 320px;
+  line-height: 14px;
+  padding-top: 14px;
 }
 
 .v2 #current-wallpaper-description.small-font {
   font-size: 11px;
-  padding-top: 8px;
+  padding-top: 4px;
 }
 
-.v2 #current-wallpaper-more-info div {
-  max-width: 250px;
+.v2 #current-wallpaper-more-info {
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -966,7 +980,7 @@ html[dir='rtl'] .v2 #current-wallpaper-more-options {
 }
 
 .v2 #message-container {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   border-radius: 16px;
   bottom: 12px;
   color: #fff;
@@ -979,6 +993,7 @@ html[dir='rtl'] .v2 #current-wallpaper-more-options {
 
 .v2 .progress-bar {
   bottom: 0;
+  height: 4px;
   top: unset;
 }
 
@@ -986,12 +1001,26 @@ html[dir='rtl'] .v2 #current-wallpaper-more-options {
   display: none;
 }
 
-.v2 #spinner {
-  background: url(chrome://resources/images/throbber_medium.svg) center/32px
-      no-repeat;
-  height: 32px;
+.v2 .progress-track {
+  border-radius: 4px;
+}
+
+.v2 #preview-spinner,
+.v2 #current-wallpaper-spinner {
+  background: url(chrome://resources/images/throbber_medium.svg) no-repeat;
   position: absolute;
+}
+
+.v2 #preview-spinner {
+  height: 32px;
   width: 32px;
+}
+
+.v2 #current-wallpaper-spinner {
+  height: 24px;
+  left: 38px;
+  top: 38px;
+  width: 24px;
 }
 
 @keyframes fade-in {
