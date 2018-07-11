@@ -18,7 +18,7 @@ cr.define('extension_manager_tests', function() {
     KioskMode: 'kiosk mode',
   };
 
-  var suiteName = 'ExtensionManagerUnitTest';
+  const suiteName = 'ExtensionManagerUnitTest';
 
   suite(suiteName, function() {
     /** @type {extensions.Manager} */

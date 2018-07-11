@@ -5,24 +5,24 @@
 /** @fileoverview Suite of tests for extension-load-error. */
 cr.define('extension_load_error_tests', function() {
   /** @enum {string} */
-  var TestNames = {
+  const TestNames = {
     RetryError: 'RetryError',
     RetrySuccess: 'RetrySuccess',
     CodeSection: 'Code Section',
   };
 
-  var suiteName = 'ExtensionLoadErrorTests';
+  const suiteName = 'ExtensionLoadErrorTests';
 
   suite(suiteName, function() {
     /** @type {extensions.LoadError} */
-    var loadError;
+    let loadError;
 
     /** @type {MockDelegate} */
-    var mockDelegate;
+    let mockDelegate;
 
-    var fakeGuid = 'uniqueId';
+    const fakeGuid = 'uniqueId';
 
-    var stubLoadError = {
+    const stubLoadError = {
       error: 'error',
       path: 'some/path/',
       retryGuid: fakeGuid,
@@ -38,7 +38,7 @@ cr.define('extension_load_error_tests', function() {
     });
 
     test(assert(TestNames.RetryError), function() {
-      var dialogElement = loadError.$$('cr-dialog').getNative();
+      const dialogElement = loadError.$$('cr-dialog').getNative();
       expectFalse(extension_test_util.isElementVisible(dialogElement));
       loadError.show();
       expectTrue(extension_test_util.isElementVisible(dialogElement));
@@ -54,7 +54,7 @@ cr.define('extension_load_error_tests', function() {
     });
 
     test(assert(TestNames.RetrySuccess), function() {
-      var dialogElement = loadError.$$('cr-dialog').getNative();
+      const dialogElement = loadError.$$('cr-dialog').getNative();
       expectFalse(extension_test_util.isElementVisible(dialogElement));
       loadError.show();
       expectTrue(extension_test_util.isElementVisible(dialogElement));
@@ -68,7 +68,7 @@ cr.define('extension_load_error_tests', function() {
 
     test(assert(TestNames.CodeSection), function() {
       expectTrue(loadError.$.code.$$('#scroll-container').hidden);
-      var loadErrorWithSource = {
+      const loadErrorWithSource = {
         error: 'Some error',
         path: '/some/path',
         source: {

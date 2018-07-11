@@ -5,31 +5,31 @@
 /** @fileoverview Suite of tests for extension-keyboard-shortcuts. */
 cr.define('extension_shortcut_tests', function() {
   /** @enum {string} */
-  var TestNames = {
+  const TestNames = {
     IsValidKeyCode: 'isValidKeyCode',
     KeyStrokeToString: 'keystrokeToString',
     Layout: 'Layout',
     ScopeChange: 'ScopeChange',
   };
 
-  var suiteName = 'ExtensionShortcutTest';
+  const suiteName = 'ExtensionShortcutTest';
 
   suite(suiteName, function() {
     /** @type {extensions.KeyboardShortcuts} */
-    var keyboardShortcuts;
+    let keyboardShortcuts;
     /** @type {chrome.developerPrivate.ExtensionInfo} */
-    var noCommand;
+    let noCommand;
     /** @type {chrome.developerPrivate.ExtensionInfo} */
-    var oneCommand;
+    let oneCommand;
     /** @type {chrome.developerPrivate.ExtensionInfo} */
-    var twoCommands;
+    let twoCommands;
 
     setup(function() {
       PolymerTest.clearBody();
       keyboardShortcuts = new extensions.KeyboardShortcuts();
       keyboardShortcuts.delegate = new extensions.TestService();
 
-      var createInfo = extension_test_util.createExtensionInfo;
+      const createInfo = extension_test_util.createExtensionInfo;
       noCommands = createInfo({id: 'a'.repeat(32)});
       oneCommand = createInfo({
         id: 'b'.repeat(32),
@@ -72,24 +72,24 @@ cr.define('extension_shortcut_tests', function() {
     });
 
     test(assert(TestNames.Layout), function() {
-      var isVisibleOnCard = function(e, s) {
+      const isVisibleOnCard = function(e, s) {
         // We check the light DOM in the card because it's a regular old div,
         // rather than a fancy-schmancy custom element.
         return extension_test_util.isVisible(e, s, true);
       };
-      var cards =
+      const cards =
           keyboardShortcuts.$$('#container').querySelectorAll('.shortcut-card');
       assertEquals(2, cards.length);
 
-      var card1 = cards[0];
+      const card1 = cards[0];
       expectEquals(
           oneCommand.name, card1.querySelector('.card-title span').textContent);
-      var commands = card1.querySelectorAll('.command-entry');
+      let commands = card1.querySelectorAll('.command-entry');
       assertEquals(1, commands.length);
       expectTrue(isVisibleOnCard(commands[0], '.command-name'));
       expectTrue(isVisibleOnCard(commands[0], 'select.md-select'));
 
-      var card2 = cards[1];
+      const card2 = cards[1];
       commands = card2.querySelectorAll('.command-entry');
       assertEquals(2, commands.length);
     });
@@ -113,7 +113,7 @@ cr.define('extension_shortcut_tests', function() {
 
     test(TestNames.KeyStrokeToString, function() {
       // Creating an event with the KeyboardEvent ctor doesn't work. Fake it.
-      var e = {keyCode: 'A'.charCodeAt(0)};
+      const e = {keyCode: 'A'.charCodeAt(0)};
       expectEquals('A', extensions.keystrokeToString(e));
       e.ctrlKey = true;
       expectEquals('Ctrl+A', extensions.keystrokeToString(e));

@@ -5,16 +5,16 @@
 /** @fileoverview Suite of tests for extension-sidebar. */
 cr.define('extension_sidebar_tests', function() {
   /** @enum {string} */
-  var TestNames = {
+  const TestNames = {
     LayoutAndClickHandlers: 'layout and click handlers',
     SetSelected: 'set selected',
   };
 
-  var suiteName = 'ExtensionSidebarTest';
+  const suiteName = 'ExtensionSidebarTest';
 
   suite(suiteName, function() {
     /** @type {extensions.Sidebar} */
-    var sidebar;
+    let sidebar;
 
     setup(function() {
       PolymerTest.clearBody();
@@ -54,7 +54,7 @@ cr.define('extension_sidebar_tests', function() {
     test(assert(TestNames.LayoutAndClickHandlers), function(done) {
       extension_test_util.testIcons(sidebar);
 
-      var testVisible = extension_test_util.testVisible.bind(null, sidebar);
+      const testVisible = extension_test_util.testVisible.bind(null, sidebar);
       testVisible('#sections-extensions', true);
       testVisible('#sections-shortcuts', true);
       testVisible('#more-extensions', true);
@@ -63,7 +63,7 @@ cr.define('extension_sidebar_tests', function() {
       Polymer.dom.flush();
       testVisible('#more-extensions', false);
 
-      var currentPage;
+      let currentPage;
       extensions.navigation.addListener(newPage => {
         currentPage = newPage;
       });

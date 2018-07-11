@@ -5,25 +5,25 @@
 /** @fileoverview Suite of tests for extension-options-dialog. */
 cr.define('extension_options_dialog_tests', function() {
   /** @enum {string} */
-  var TestNames = {
+  const TestNames = {
     Layout: 'Layout',
   };
 
-  var suiteName = 'ExtensionOptionsDialogTests';
+  const suiteName = 'ExtensionOptionsDialogTests';
 
   suite(suiteName, function() {
     /** @type {extensions.OptionsDialog} */
-    var optionsDialog;
+    let optionsDialog;
 
     /** @type {chrome.developerPrivate.ExtensionInfo} */
-    var data;
+    let data;
 
     setup(function() {
       PolymerTest.clearBody();
       optionsDialog = new extensions.OptionsDialog();
       document.body.appendChild(optionsDialog);
 
-      var service = extensions.Service.getInstance();
+      const service = extensions.Service.getInstance();
       return service.getExtensionsInfo().then(function(info) {
         assertEquals(1, info.length);
         data = info[0];
@@ -31,8 +31,8 @@ cr.define('extension_options_dialog_tests', function() {
     });
 
     function isDialogVisible() {
-      var dialogElement = optionsDialog.$.dialog.getNative();
-      var rect = dialogElement.getBoundingClientRect();
+      const dialogElement = optionsDialog.$.dialog.getNative();
+      const rect = dialogElement.getBoundingClientRect();
       return rect.width * rect.height > 0;
     }
 

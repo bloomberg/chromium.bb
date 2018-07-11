@@ -4,7 +4,7 @@
 
 cr.define('extension_navigation_helper_tests', function() {
   /** @enum {string} */
-  var TestNames = {
+  const TestNames = {
     Basic: 'basic',
     Conversions: 'conversions',
     PushAndReplaceState: 'push and replace state',
@@ -25,7 +25,7 @@ cr.define('extension_navigation_helper_tests', function() {
     });
   }
 
-  var suiteName = 'ExtensionNavigationHelperTest';
+  const suiteName = 'ExtensionNavigationHelperTest';
 
   suite(suiteName, function() {
     let navigationHelper;
@@ -37,9 +37,9 @@ cr.define('extension_navigation_helper_tests', function() {
     });
 
     test(assert(TestNames.Basic), function() {
-      var id = 'a'.repeat(32);
-      var mock = new MockMethod();
-      var changePage = function(state) {
+      const id = 'a'.repeat(32);
+      const mock = new MockMethod();
+      const changePage = function(state) {
         mock.recordCall([state]);
       };
 
@@ -47,7 +47,7 @@ cr.define('extension_navigation_helper_tests', function() {
 
       expectDeepEquals({page: Page.LIST}, navigationHelper.getCurrentPage());
 
-      var currentLength = history.length;
+      let currentLength = history.length;
       navigationHelper.updateHistory({page: Page.DETAILS, extensionId: id});
       expectEquals(++currentLength, history.length);
 
@@ -55,14 +55,14 @@ cr.define('extension_navigation_helper_tests', function() {
       expectEquals(++currentLength, history.length);
 
       mock.addExpectation({page: Page.DETAILS, extensionId: id});
-      var waitForPop = getOnPopState();
+      const waitForPop = getOnPopState();
       history.back();
       return waitForPop
           .then(() => {
             mock.verifyMock();
 
             mock.addExpectation({page: Page.LIST});
-            var waitForNextPop = getOnPopState();
+            const waitForNextPop = getOnPopState();
             history.back();
             return waitForNextPop;
           })
@@ -72,8 +72,8 @@ cr.define('extension_navigation_helper_tests', function() {
     });
 
     test(assert(TestNames.Conversions), function() {
-      var id = 'a'.repeat(32);
-      var stateUrlPairs = {
+      const id = 'a'.repeat(32);
+      const stateUrlPairs = {
         extensions: {
           url: 'chrome://extensions/',
           state: {page: Page.LIST},
@@ -116,13 +116,13 @@ cr.define('extension_navigation_helper_tests', function() {
     });
 
     test(assert(TestNames.PushAndReplaceState), function() {
-      var id1 = 'a'.repeat(32);
-      var id2 = 'b'.repeat(32);
+      const id1 = 'a'.repeat(32);
+      const id2 = 'b'.repeat(32);
 
       history.pushState({}, '', 'chrome://extensions/');
       expectDeepEquals({page: Page.LIST}, navigationHelper.getCurrentPage());
 
-      var expectedLength = history.length;
+      let expectedLength = history.length;
 
       // Navigating to a new page pushes new state.
       navigationHelper.updateHistory({page: Page.DETAILS, extensionId: id1});

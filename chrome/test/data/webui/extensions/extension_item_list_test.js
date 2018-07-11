@@ -5,18 +5,18 @@
 /** @fileoverview Suite of tests for extension-item. */
 cr.define('extension_item_list_tests', function() {
   /** @enum {string} */
-  var TestNames = {
+  const TestNames = {
     Filtering: 'item list filtering',
     NoItemsMsg: 'empty item list',
     NoSearchResultsMsg: 'empty item list filtering results',
   };
 
-  var suiteName = 'ExtensionItemListTest';
+  const suiteName = 'ExtensionItemListTest';
 
   suite(suiteName, function() {
     /** @type {extensions.ItemList} */
-    var itemList;
-    var testVisible;
+    let itemList;
+    let testVisible;
 
     // Initialize an extension item before each test.
     setup(function() {
@@ -24,13 +24,13 @@ cr.define('extension_item_list_tests', function() {
       itemList = new extensions.ItemList();
       testVisible = extension_test_util.testVisible.bind(null, itemList);
 
-      var createExt = extension_test_util.createExtensionInfo;
-      var extensionItems = [
+      const createExt = extension_test_util.createExtensionInfo;
+      const extensionItems = [
         createExt({name: 'Alpha', id: 'a'.repeat(32)}),
         createExt({name: 'Bravo', id: 'b'.repeat(32)}),
         createExt({name: 'Charlie', id: 'c'.repeat(32)})
       ];
-      var appItems = [
+      const appItems = [
         createExt({name: 'QQ', id: 'q'.repeat(32)}),
       ];
       itemList.extensions = extensionItems;

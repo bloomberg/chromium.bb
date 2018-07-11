@@ -5,7 +5,7 @@
 /** @fileoverview Suite of tests for extension-pack-dialog. */
 cr.define('extension_pack_dialog_tests', function() {
   /** @enum {string} */
-  var TestNames = {
+  const TestNames = {
     Interaction: 'Interaction',
     PackSuccess: 'PackSuccess',
     PackWarning: 'PackWarning',
@@ -47,14 +47,14 @@ cr.define('extension_pack_dialog_tests', function() {
     },
   };
 
-  var suiteName = 'ExtensionPackDialogTests';
+  const suiteName = 'ExtensionPackDialogTests';
 
   suite(suiteName, function() {
     /** @type {extensions.PackDialog} */
-    var packDialog;
+    let packDialog;
 
     /** @type {MockDelegate} */
-    var mockDelegate;
+    let mockDelegate;
 
     setup(function() {
       PolymerTest.clearBody();
@@ -65,16 +65,16 @@ cr.define('extension_pack_dialog_tests', function() {
     });
 
     test(assert(TestNames.Interaction), function() {
-      var dialogElement = packDialog.$$('cr-dialog').getNative();
+      const dialogElement = packDialog.$$('cr-dialog').getNative();
 
       expectTrue(extension_test_util.isElementVisible(dialogElement));
       expectEquals('', packDialog.$$('#root-dir').value);
       MockInteractions.tap(packDialog.$$('#root-dir-browse'));
       expectTrue(!!mockDelegate.rootPromise);
       expectEquals('', packDialog.$$('#root-dir').value);
-      var kRootPath = 'this/is/a/path';
+      const kRootPath = 'this/is/a/path';
 
-      var promises = [];
+      const promises = [];
       promises.push(mockDelegate.rootPromise.promise.then(function() {
         expectEquals(kRootPath, packDialog.$$('#root-dir').value);
         expectEquals(kRootPath, packDialog.packDirectory_);
@@ -85,7 +85,7 @@ cr.define('extension_pack_dialog_tests', function() {
       MockInteractions.tap(packDialog.$$('#key-file-browse'));
       expectTrue(!!mockDelegate.keyPromise);
       expectEquals('', packDialog.$$('#key-file').value);
-      var kKeyPath = 'here/is/another/path';
+      const kKeyPath = 'here/is/another/path';
 
       promises.push(mockDelegate.keyPromise.promise.then(function() {
         expectEquals(kKeyPath, packDialog.$$('#key-file').value);
@@ -103,13 +103,13 @@ cr.define('extension_pack_dialog_tests', function() {
     });
 
     test(assert(TestNames.PackSuccess), function() {
-      var dialogElement = packDialog.$$('cr-dialog').getNative();
-      var packDialogAlert;
-      var alertElement;
+      const dialogElement = packDialog.$$('cr-dialog').getNative();
+      let packDialogAlert;
+      let alertElement;
 
       expectTrue(extension_test_util.isElementVisible(dialogElement));
 
-      var kRootPath = 'this/is/a/path';
+      const kRootPath = 'this/is/a/path';
       mockDelegate.mockResponse = {
         status: chrome.developerPrivate.PackStatus.SUCCESS
       };
@@ -142,13 +142,13 @@ cr.define('extension_pack_dialog_tests', function() {
     });
 
     test(assert(TestNames.PackError), function() {
-      var dialogElement = packDialog.$$('cr-dialog').getNative();
-      var packDialogAlert;
-      var alertElement;
+      const dialogElement = packDialog.$$('cr-dialog').getNative();
+      let packDialogAlert;
+      let alertElement;
 
       expectTrue(extension_test_util.isElementVisible(dialogElement));
 
-      var kRootPath = 'this/is/a/path';
+      const kRootPath = 'this/is/a/path';
       mockDelegate.mockResponse = {
         status: chrome.developerPrivate.PackStatus.ERROR
       };
@@ -178,13 +178,13 @@ cr.define('extension_pack_dialog_tests', function() {
     });
 
     test(assert(TestNames.PackWarning), function() {
-      var dialogElement = packDialog.$$('cr-dialog').getNative();
-      var packDialogAlert;
-      var alertElement;
+      const dialogElement = packDialog.$$('cr-dialog').getNative();
+      let packDialogAlert;
+      let alertElement;
 
       expectTrue(extension_test_util.isElementVisible(dialogElement));
 
-      var kRootPath = 'this/is/a/path';
+      const kRootPath = 'this/is/a/path';
       mockDelegate.mockResponse = {
         status: chrome.developerPrivate.PackStatus.WARNING,
         item_path: 'item_path',

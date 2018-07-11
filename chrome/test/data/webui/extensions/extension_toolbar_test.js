@@ -5,20 +5,20 @@
 /** @fileoverview Suite of tests for extension-toolbar. */
 cr.define('extension_toolbar_tests', function() {
   /** @enum {string} */
-  var TestNames = {
+  const TestNames = {
     Layout: 'layout',
     ClickHandlers: 'click handlers',
     DevModeToggle: 'dev mode toggle',
     KioskMode: 'kiosk mode button'
   };
 
-  var suiteName = 'ExtensionToolbarTest';
+  const suiteName = 'ExtensionToolbarTest';
   suite(suiteName, function() {
     /** @type {MockDelegate} */
-    var mockDelegate;
+    let mockDelegate;
 
     /** @type {extensions.Toolbar} */
-    var toolbar;
+    let toolbar;
 
     setup(function() {
       toolbar =
@@ -30,7 +30,7 @@ cr.define('extension_toolbar_tests', function() {
     test(assert(TestNames.Layout), function() {
       extension_test_util.testIcons(toolbar);
 
-      var testVisible = extension_test_util.testVisible.bind(null, toolbar);
+      const testVisible = extension_test_util.testVisible.bind(null, toolbar);
       testVisible('#devMode', true);
       assertEquals(toolbar.$.devMode.disabled, false);
       testVisible('#loadUnpacked', false);

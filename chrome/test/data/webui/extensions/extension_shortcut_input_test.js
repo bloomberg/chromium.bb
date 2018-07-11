@@ -13,7 +13,7 @@ cr.define('extension_shortcut_input_tests', function() {
 
   suite(suiteName, function() {
     /** @type {extensions.ShortcutInput} */
-    var input;
+    let input;
     setup(function() {
       PolymerTest.clearBody();
       input = new extensions.ShortcutInput();
