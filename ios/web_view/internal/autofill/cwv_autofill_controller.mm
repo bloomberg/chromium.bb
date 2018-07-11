@@ -16,6 +16,7 @@
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
+#import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
@@ -34,7 +35,8 @@
 
 @interface CWVAutofillController ()<AutofillDriverIOSBridge,
                                     CRWWebStateObserver,
-                                    CWVAutofillClientIOSBridge>
+                                    CWVAutofillClientIOSBridge,
+                                    FormActivityObserver>
 
 @end
 
@@ -63,6 +65,9 @@
   // The current credit card verifier. Can be nil if no verification is pending.
   // Held weak because |_delegate| is responsible for maintaing its lifetime.
   __weak CWVCreditCardVerifier* _verifier;
+
+  std::unique_ptr<autofill::FormActivityObserverBridge>
+      _formActivityObserverBridge;
 }
 
 @synthesize delegate = _delegate;
@@ -84,6 +89,9 @@
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
     _webState->AddObserver(_webStateObserverBridge.get());
+
+    _formActivityObserverBridge =
+        std::make_unique<autofill::FormActivityObserverBridge>(webState, self);
 
     _autofillClient.reset(new autofill::WebViewAutofillClientIOS(
         browserState->GetPrefs(),
@@ -111,6 +119,7 @@
 
 - (void)dealloc {
   if (_webState) {
+    _formActivityObserverBridge.reset();
     _webState->RemoveObserver(_webStateObserverBridge.get());
     _webStateObserverBridge.reset();
     _webState = nullptr;
@@ -332,7 +341,7 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState
-    didRegisterFormActivity:(const web::FormActivityParams&)params {
+    registeredFormActivity:(const web::FormActivityParams&)params {
   DCHECK_EQ(_webState, webState);
 
   [_JSSuggestionManager inject];
@@ -376,9 +385,9 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 }
 
 - (void)webState:(web::WebState*)webState
-    didSubmitDocumentWithFormNamed:(const std::string&)formName
-                     userInitiated:(BOOL)userInitiated
-                       isMainFrame:(BOOL)isMainFrame {
+    submittedDocumentWithFormNamed:(const std::string&)formName
+                    hasUserGesture:(BOOL)userInitiated
+                   formInMainFrame:(BOOL)isMainFrame {
   if ([_delegate respondsToSelector:@selector
                  (autofillController:didSubmitFormWithName:userInitiated
                                        :isMainFrame:)]) {
@@ -391,6 +400,7 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 
 - (void)webStateDestroyed:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
+  _formActivityObserverBridge.reset();
   [_autofillAgent detachFromWebState];
   _autofillClient.reset();
   _webState->RemoveObserver(_webStateObserverBridge.get());

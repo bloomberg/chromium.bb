@@ -213,6 +213,7 @@ ios_web_view_deps = [
   "//components/autofill/core/browser",
   "//components/autofill/core/common",
   "//components/autofill/ios/browser",
+  "//components/autofill/ios/form_util",
   "//components/content_settings/core/browser",
   "//components/flags_ui",
   "//components/image_fetcher/ios",

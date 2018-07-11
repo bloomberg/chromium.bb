@@ -50,6 +50,7 @@ source_set("passwords") {
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
+    "//components/autofill/ios/form_util",
     "//components/browser_sync",
     "//components/image_fetcher/core",
     "//components/image_fetcher/ios",
