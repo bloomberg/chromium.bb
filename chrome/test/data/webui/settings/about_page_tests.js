@@ -287,7 +287,7 @@ cr.define('settings_about_page', function() {
 
         fireStatusChanged(UpdateStatus.FAILED);
         assertEquals(null, icon.src);
-        assertEquals('settings:error', icon.icon);
+        assertEquals('cr:error', icon.icon);
         assertEquals(0, statusMessageEl.textContent.trim().length);
 
         fireStatusChanged(UpdateStatus.DISABLED);
@@ -372,19 +372,19 @@ cr.define('settings_about_page', function() {
 
             fireStatusChanged(UpdateStatus.CHECKING);
             assertEquals(null, icon.src);
-            assertEquals('settings:error', icon.icon);
+            assertEquals('cr:error', icon.icon);
             assertFalse(page.$.deprecationWarning.hidden);
             assertTrue(page.$.updateStatusMessage.hidden);
 
             fireStatusChanged(UpdateStatus.FAILED);
             assertEquals(null, icon.src);
-            assertEquals('settings:error', icon.icon);
+            assertEquals('cr:error', icon.icon);
             assertFalse(page.$.deprecationWarning.hidden);
             assertTrue(page.$.updateStatusMessage.hidden);
 
             fireStatusChanged(UpdateStatus.UPDATED);
             assertEquals(null, icon.src);
-            assertEquals('settings:error', icon.icon);
+            assertEquals('cr:error', icon.icon);
             assertFalse(page.$.deprecationWarning.hidden);
             assertTrue(page.$.updateStatusMessage.hidden);
           });
