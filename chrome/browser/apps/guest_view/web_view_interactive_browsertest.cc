@@ -1165,13 +1165,11 @@ IN_PROC_BROWSER_TEST_F(WebViewBrowserPluginSpecificInteractiveTest,
   content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   content::WebContents* guest_web_contents =
       GetGuestViewManager()->WaitForSingleGuestCreated();
-
-  content::MainThreadFrameObserver embedder_observer(
-      embedder_web_contents->GetMainFrame()->GetView()->GetRenderWidgetHost());
-  content::MainThreadFrameObserver guest_observer(
-      guest_web_contents->GetMainFrame()->GetView()->GetRenderWidgetHost());
-  embedder_observer.Wait();
-  guest_observer.Wait();
+  content::RenderFrameSubmissionObserver embedder_observer(
+      embedder_web_contents);
+  content::RenderFrameSubmissionObserver guest_observer(guest_web_contents);
+  embedder_observer.WaitForMetadataChange();
+  guest_observer.WaitForMetadataChange();
 
   ExtensionTestMessageListener listener{"WebViewTest.WEBVIEW_LOADED", false};
   EXPECT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
