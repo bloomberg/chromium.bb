@@ -8,12 +8,12 @@
 #include <memory>
 #include <vector>
 
+#include "base/task/sequence_manager/test/sequence_manager_for_test.h"
+#include "base/task/sequence_manager/test/test_task_queue.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/base/proto/sequence_manager_test_description.pb.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
 
 namespace base {
 namespace sequence_manager {

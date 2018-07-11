@@ -13,15 +13,15 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
+#include "base/task/sequence_manager/test/mock_time_domain.h"
+#include "base/task/sequence_manager/test/sequence_manager_for_test.h"
+#include "base/task/sequence_manager/test/test_task_queue.h"
+#include "base/task/sequence_manager/test/test_task_time_observer.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/mock_time_domain.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/test_task_time_observer.h"
 
 namespace base {
 namespace sequence_manager {

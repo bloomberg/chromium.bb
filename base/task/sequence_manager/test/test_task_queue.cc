@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
+#include "base/task/sequence_manager/test/test_task_queue.h"
 
 #include "base/task/sequence_manager/task_queue_impl.h"
 

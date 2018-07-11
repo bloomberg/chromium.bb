@@ -19,6 +19,10 @@
 #include "base/task/sequence_manager/real_time_domain.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/task_queue_selector.h"
+#include "base/task/sequence_manager/test/mock_time_domain.h"
+#include "base/task/sequence_manager/test/sequence_manager_for_test.h"
+#include "base/task/sequence_manager/test/test_task_queue.h"
+#include "base/task/sequence_manager/test/test_task_time_observer.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/task/sequence_manager/work_queue.h"
 #include "base/task/sequence_manager/work_queue_sets.h"
@@ -30,11 +34,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/blame_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/mock_time_domain.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/test_count_uses_time_source.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/test_task_time_observer.h"
 
 using testing::AnyNumber;
 using testing::Contains;
@@ -223,6 +222,25 @@ void PostFromNestedRunloop(SingleThreadTaskRunner* runner,
 }
 
 void NopTask() {}
+
+class TestCountUsesTimeSource : public TickClock {
+ public:
+  TestCountUsesTimeSource() = default;
+  ~TestCountUsesTimeSource() override = default;
+
+  TimeTicks NowTicks() const override {
+    now_calls_count_++;
+    // Don't return 0, as it triggers some assertions.
+    return TimeTicks() + TimeDelta::FromSeconds(1);
+  }
+
+  int now_calls_count() const { return now_calls_count_; }
+
+ private:
+  mutable int now_calls_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCountUsesTimeSource);
+};
 
 TEST_P(SequenceManagerTestWithCustomInitialization,
        NowCalledMinimumNumberOfTimesToComputeTaskDurations) {

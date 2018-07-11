@@ -3,9 +3,9 @@
 #include <algorithm>
 #include <string>
 
+#include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 
 namespace base {
 namespace sequence_manager {

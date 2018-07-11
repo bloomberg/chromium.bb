@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/test/lazy_thread_controller_for_test.h"
+#include "base/task/sequence_manager/test/lazy_thread_controller_for_test.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/time/default_tick_clock.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 LazyThreadControllerForTest::LazyThreadControllerForTest()
-    : ThreadControllerImpl(base::MessageLoop::current(),
+    : ThreadControllerImpl(MessageLoop::current(),
                            nullptr,
-                           base::DefaultTickClock::GetInstance()),
-      thread_ref_(base::PlatformThread::CurrentRef()) {
+                           DefaultTickClock::GetInstance()),
+      thread_ref_(PlatformThread::CurrentRef()) {
   if (message_loop_)
     task_runner_ = message_loop_->task_runner();
 }
@@ -25,11 +25,11 @@ void LazyThreadControllerForTest::EnsureMessageLoop() {
   if (message_loop_)
     return;
   DCHECK(RunsTasksInCurrentSequence());
-  message_loop_ = base::MessageLoop::current();
+  message_loop_ = MessageLoop::current();
   DCHECK(message_loop_);
   task_runner_ = message_loop_->task_runner();
   if (pending_observer_) {
-    base::RunLoop::AddNestingObserverOnCurrentThread(this);
+    RunLoop::AddNestingObserverOnCurrentThread(this);
     pending_observer_ = false;
   }
   if (pending_default_task_runner_) {
@@ -43,7 +43,7 @@ bool LazyThreadControllerForTest::HasMessageLoop() {
 }
 
 void LazyThreadControllerForTest::AddNestingObserver(
-    base::RunLoop::NestingObserver* observer) {
+    RunLoop::NestingObserver* observer) {
   // While |observer| _could_ be associated with the current thread regardless
   // of the presence of a MessageLoop, the association is delayed until
   // EnsureMessageLoop() is invoked. This works around a state issue where
@@ -51,7 +51,7 @@ void LazyThreadControllerForTest::AddNestingObserver(
   //   1) blink::scheduler::CreateRendererSchedulerForTests()
   //       -> SequenceManager::SequenceManager()
   //       -> LazySchedulerMessageLoopDelegateForTests::AddNestingObserver()
-  //   2) Any test framework with a base::MessageLoop member (and not caring
+  //   2) Any test framework with a MessageLoop member (and not caring
   //      about the blink scheduler) does:
   //        blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
   //            FROM_HERE, an_init_task_with_a_nested_loop);
@@ -73,24 +73,24 @@ void LazyThreadControllerForTest::AddNestingObserver(
     pending_observer_ = true;
     return;
   }
-  base::RunLoop::AddNestingObserverOnCurrentThread(this);
+  RunLoop::AddNestingObserverOnCurrentThread(this);
 }
 
 void LazyThreadControllerForTest::RemoveNestingObserver(
-    base::RunLoop::NestingObserver* observer) {
+    RunLoop::NestingObserver* observer) {
   ThreadControllerImpl::nesting_observer_ = nullptr;
   if (!HasMessageLoop()) {
     DCHECK(pending_observer_);
     pending_observer_ = false;
     return;
   }
-  if (base::MessageLoop::current() != message_loop_)
+  if (MessageLoop::current() != message_loop_)
     return;
-  base::RunLoop::RemoveNestingObserverOnCurrentThread(this);
+  RunLoop::RemoveNestingObserverOnCurrentThread(this);
 }
 
 bool LazyThreadControllerForTest::RunsTasksInCurrentSequence() {
-  return thread_ref_ == base::PlatformThread::CurrentRef();
+  return thread_ref_ == PlatformThread::CurrentRef();
 }
 
 void LazyThreadControllerForTest::ScheduleWork() {
@@ -98,15 +98,14 @@ void LazyThreadControllerForTest::ScheduleWork() {
   ThreadControllerImpl::ScheduleWork();
 }
 
-void LazyThreadControllerForTest::SetNextDelayedDoWork(
-    base::sequence_manager::LazyNow* lazy_now,
-    base::TimeTicks run_time) {
+void LazyThreadControllerForTest::SetNextDelayedDoWork(LazyNow* lazy_now,
+                                                       TimeTicks run_time) {
   EnsureMessageLoop();
   ThreadControllerImpl::SetNextDelayedDoWork(lazy_now, run_time);
 }
 
 void LazyThreadControllerForTest::SetDefaultTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<SingleThreadTaskRunner> task_runner) {
   if (!HasMessageLoop()) {
     pending_default_task_runner_ = task_runner;
     return;
@@ -116,9 +115,9 @@ void LazyThreadControllerForTest::SetDefaultTaskRunner(
 
 void LazyThreadControllerForTest::RestoreDefaultTaskRunner() {
   pending_default_task_runner_ = nullptr;
-  if (HasMessageLoop() && base::MessageLoop::current() == message_loop_)
+  if (HasMessageLoop() && MessageLoop::current() == message_loop_)
     ThreadControllerImpl::RestoreDefaultTaskRunner();
 }
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base

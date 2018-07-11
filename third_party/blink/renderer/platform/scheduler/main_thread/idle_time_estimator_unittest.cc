@@ -9,12 +9,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue.h"
+#include "base/task/sequence_manager/test/sequence_manager_for_test.h"
+#include "base/task/sequence_manager/test/test_task_queue.h"
+#include "base/task/sequence_manager/test/test_task_time_observer.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/test_task_time_observer.h"
 
 namespace blink {
 namespace scheduler {
