@@ -33,6 +33,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -42,6 +43,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_hints.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
@@ -188,11 +190,13 @@ void Predictor::RegisterProfilePrefs(
 void Predictor::InitNetworkPredictor(PrefService* user_prefs,
                                      IOThread* io_thread,
                                      net::URLRequestContextGetter* getter,
-                                     ProfileIOData* profile_io_data) {
+                                     ProfileIOData* profile_io_data,
+                                     Profile* profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   user_prefs_ = user_prefs;
   url_request_context_getter_ = getter;
+  profile_ = profile;
 
   // Gather the list of hostnames to prefetch on startup.
   std::vector<GURL> urls = GetPredictedUrlListAtStartup(user_prefs);
@@ -687,30 +691,6 @@ void Predictor::PreconnectUrl(const GURL& url,
   }
 }
 
-void Predictor::PreconnectUrlOnIOThread(
-    const GURL& original_url,
-    const GURL& site_for_cookies,
-    UrlInfo::ResolutionMotivation motivation,
-    bool allow_credentials,
-    int count) {
-  // Skip the HSTS redirect.
-  GURL url = GetHSTSRedirectOnIOThread(original_url);
-
-  // TODO(csharrison): The observer should only be notified after the null check
-  // for the URLRequestContextGetter. The predictor tests should be fixed to
-  // allow for this, as they currently expect a callback with no getter.
-  if (observer_) {
-    observer_->OnPreconnectUrl(url, site_for_cookies, motivation, count);
-  }
-
-  net::URLRequestContextGetter* getter = url_request_context_getter_.get();
-  if (!getter)
-    return;
-
-  content::PreconnectUrl(getter, url, site_for_cookies, count,
-                         allow_credentials);
-}
-
 void Predictor::PredictFrameSubresources(const GURL& url,
                                          const GURL& site_for_cookies) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
@@ -758,6 +738,29 @@ enum SubresourceValue {
   TOO_NEW,
   SUBRESOURCE_VALUE_MAX
 };
+
+void Predictor::PreconnectUrlOnIOThread(
+    const GURL& original_url,
+    const GURL& site_for_cookies,
+    UrlInfo::ResolutionMotivation motivation,
+    bool allow_credentials,
+    int count) {
+  // Skip the HSTS redirect.
+  GURL url = GetHSTSRedirectOnIOThread(original_url);
+
+  // TODO(csharrison): The observer should only be notified after the null check
+  // for the URLRequestContextGetter. The predictor tests should be fixed to
+  // allow for this, as they currently expect a callback with no getter.
+  if (observer_) {
+    observer_->OnPreconnectUrl(url, site_for_cookies, motivation, count);
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&Predictor::PreconnectUrlOnUIThread,
+                     ui_weak_factory_->GetWeakPtr(), url, site_for_cookies,
+                     motivation, allow_credentials, count));
+}
 
 void Predictor::PrepareFrameSubresources(const GURL& original_url,
                                          const GURL& site_for_cookies) {
@@ -961,6 +964,26 @@ GURL Predictor::GetHSTSRedirectOnIOThread(const GURL& url) {
 
 //-----------------------------------------------------------------------------
 
+void Predictor::PreconnectUrlOnUIThread(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    UrlInfo::ResolutionMotivation motivation,
+    bool allow_credentials,
+    int count) {
+  bool privacy_mode = false;
+  int load_flags = net::LOAD_NORMAL;
+
+  if (!allow_credentials) {
+    privacy_mode = true;
+    load_flags = net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
+                 net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  }
+
+  content::BrowserContext::GetDefaultStoragePartition(profile_)
+      ->GetNetworkContext()
+      ->PreconnectSockets(count, url, load_flags, privacy_mode);
+}
+
 bool Predictor::PredictorEnabled() const {
   base::AutoLock lock(predictor_enabled_lock_);
   return predictor_enabled_;
@@ -1065,11 +1088,11 @@ GURL Predictor::CanonicalizeUrl(const GURL& url) {
   return GURL(scheme + "://" + url.host() + colon_plus_port);
 }
 
-void SimplePredictor::InitNetworkPredictor(
-    PrefService* user_prefs,
-    IOThread* io_thread,
-    net::URLRequestContextGetter* getter,
-    ProfileIOData* profile_io_data) {
+void SimplePredictor::InitNetworkPredictor(PrefService* user_prefs,
+                                           IOThread* io_thread,
+                                           net::URLRequestContextGetter* getter,
+                                           ProfileIOData* profile_io_data,
+                                           Profile* profile) {
   // Empty function for unittests.
 }
 

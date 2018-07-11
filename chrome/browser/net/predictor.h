@@ -83,10 +83,11 @@ class PredictorObserver {
 
 // Predictor is constructed during Profile construction (on the UI thread),
 // but it is destroyed on the IO thread when ProfileIOData goes away. All of
-// its core state and functionality happens on the IO thread. The only UI
-// methods are initialization / shutdown related (including preconnect
-// initialization), or convenience methods that internally forward calls to
-// the IO thread.
+// its core state and functionality happens on the IO thread.
+// The only UI methods are initialization / shutdown related (including
+// preconnect initialization), convenience methods that internally forward
+// calls to the IO thread, or internal functions that interface with the Network
+// Service.
 class Predictor {
  public:
   // A version number for prefs that are saved. This should be incremented when
@@ -141,7 +142,8 @@ class Predictor {
   virtual void InitNetworkPredictor(PrefService* user_prefs,
                                     IOThread* io_thread,
                                     net::URLRequestContextGetter* getter,
-                                    ProfileIOData* profile_io_data);
+                                    ProfileIOData* profile_io_data,
+                                    Profile* profile);
 
   // The Omnibox has proposed a given url to the user, and if it is a search
   // URL, then it also indicates that this is preconnectable (i.e., we could
@@ -234,23 +236,17 @@ class Predictor {
   // Called from the UI thread in response to the load event.
   void SaveStateForNextStartup();
 
-  // May be called from either the IO or UI thread and will PostTask
-  // to the IO thread if necessary.
+  // ------------- End IO thread methods.
+
+  // The following methods may be called on either the IO or UI threads.
+
+  // Calls |PreconnectUrlOnIOThread()|, posting it to the IO thread if
+  // necessary.
   void PreconnectUrl(const GURL& url,
                      const GURL& site_for_cookies,
                      UrlInfo::ResolutionMotivation motivation,
                      bool allow_credentials,
                      int count);
-
-  void PreconnectUrlOnIOThread(const GURL& url,
-                               const GURL& site_for_cookies,
-                               UrlInfo::ResolutionMotivation motivation,
-                               bool allow_credentials,
-                               int count);
-
-  // ------------- End IO thread methods.
-
-  // The following methods may be called on either the IO or UI threads.
 
   // Instigate pre-connection to any URLs, or pre-resolution of related host,
   // that we predict will be needed after this navigation (typically
@@ -358,6 +354,12 @@ class Predictor {
 
   // ------------- Start IO thread methods.
 
+  void PreconnectUrlOnIOThread(const GURL& original_url,
+                               const GURL& site_for_cookies,
+                               UrlInfo::ResolutionMotivation motivation,
+                               bool allow_credentials,
+                               int count);
+
   // Perform actual resolution or preconnection to subresources now.  This is
   // an internal worker method that is reached via a post task from
   // PredictFrameSubresources().
@@ -404,6 +406,12 @@ class Predictor {
 
   // ------------- End IO thread methods.
 
+  void PreconnectUrlOnUIThread(const GURL& url,
+                               const GURL& site_for_cookies,
+                               UrlInfo::ResolutionMotivation motivation,
+                               bool allow_credentials,
+                               int count);
+
   std::unique_ptr<InitialObserver> initial_observer_;
 
   // Reference to URLRequestContextGetter from the Profile which owns the
@@ -424,6 +432,10 @@ class Predictor {
   // This is set by InitNetworkPredictor and used for calling
   // CanPrefetchAndPrerenderIO and CanPreresolveAndPreconnectIO.
   ProfileIOData* profile_io_data_;
+
+  // This is set by InitNetworkPredictor and used for calling into the Network
+  // Context.
+  Profile* profile_;
 
   // work_queue_ holds a list of names we need to look up.
   HostNameQueue work_queue_;
@@ -510,7 +522,8 @@ class SimplePredictor : public Predictor {
   void InitNetworkPredictor(PrefService* user_prefs,
                             IOThread* io_thread,
                             net::URLRequestContextGetter* getter,
-                            ProfileIOData* profile_io_data) override;
+                            ProfileIOData* profile_io_data,
+                            Profile* profile) override;
   void ShutdownOnUIThread() override;
 
  private:

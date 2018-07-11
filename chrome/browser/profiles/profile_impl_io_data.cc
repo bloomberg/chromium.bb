@@ -250,11 +250,9 @@ ProfileImplIOData::Handle::CreateMainRequestContextGetter(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
           db_task_runner);
 
-  io_data_->predictor_
-      ->InitNetworkPredictor(profile_->GetPrefs(),
-                             io_thread,
-                             main_request_context_getter_.get(),
-                             io_data_);
+  io_data_->predictor_->InitNetworkPredictor(profile_->GetPrefs(), io_thread,
+                                             main_request_context_getter_.get(),
+                                             io_data_, profile_);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
