@@ -8,10 +8,12 @@
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -46,6 +48,9 @@ typedef NS_ENUM(int, TrailingButtonState) {
 // trailing button.
 - (void)startVoiceSearch;
 
+// Displays the long press menu.
+- (void)showLongPressMenu:(UILongPressGestureRecognizer*)sender;
+
 @end
 
 @implementation LocationBarViewController
@@ -65,10 +70,17 @@ typedef NS_ENUM(int, TrailingButtonState) {
   self = [super init];
   if (self) {
     _locationBarSteadyView = [[LocationBarSteadyView alloc] init];
+
     [_locationBarSteadyView.locationButton
                addTarget:self
                   action:@selector(locationBarSteadyViewTapped)
         forControlEvents:UIControlEventTouchUpInside];
+
+    UILongPressGestureRecognizer* recognizer =
+        [[UILongPressGestureRecognizer alloc]
+            initWithTarget:self
+                    action:@selector(showLongPressMenu:)];
+    [_locationBarSteadyView.locationButton addGestureRecognizer:recognizer];
   }
   return self;
 }
@@ -91,9 +103,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
                          : [LocationBarSteadyViewColorScheme standardScheme]];
 }
 
-- (void)setDispatcher:
-    (id<ActivityServiceCommands, BrowserCommands, ApplicationCommands>)
-        dispatcher {
+- (void)setDispatcher:(id<ActivityServiceCommands,
+                          BrowserCommands,
+                          ApplicationCommands,
+                          LoadQueryCommands>)dispatcher {
   _dispatcher = dispatcher;
 }
 
@@ -295,6 +308,42 @@ typedef NS_ENUM(int, TrailingButtonState) {
   [NamedGuide guideWithName:kVoiceSearchButtonGuide view:self.view]
       .constrainedView = self.locationBarSteadyView.trailingButton;
   [self.dispatcher startVoiceSearch];
+}
+
+- (void)showLongPressMenu:(UILongPressGestureRecognizer*)sender {
+  if (sender.state == UIGestureRecognizerStateBegan) {
+    [self.locationBarSteadyView becomeFirstResponder];
+
+    // TODO(crbug.com/862583): Investigate why it's necessary to delay showing
+    // the editing menu in the omnibox until the next runloop. If it's not
+    // delayed by a runloop, the menu appears and is hidden again right away
+    // when it's the first time setting the first responder.
+    dispatch_async(dispatch_get_main_queue(), ^{
+      UIMenuController* menu = [UIMenuController sharedMenuController];
+      UIMenuItem* pasteAndGo = [[UIMenuItem alloc]
+          initWithTitle:l10n_util::GetNSString(IDS_IOS_PASTE_AND_GO)
+                 action:@selector(pasteAndGo:)];
+      [menu setMenuItems:@[ pasteAndGo ]];
+
+      [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
+      [menu setMenuVisible:YES animated:YES];
+    });
+  }
+}
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+  return action == @selector(copy:) ||
+         (action == @selector(pasteAndGo:) &&
+          UIPasteboard.generalPasteboard.string.length > 0);
+}
+
+- (void)copy:(id)sender {
+  [self.delegate locationBarCopyTapped];
+}
+
+- (void)pasteAndGo:(id)sender {
+  [self.dispatcher loadQuery:UIPasteboard.generalPasteboard.string
+                 immediately:YES];
 }
 
 @end

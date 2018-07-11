@@ -33,11 +33,13 @@
 #include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller_impl.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/referrer.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -103,9 +105,9 @@ const int kLocationAuthorizationStatusCount = 4;
   self.viewController = [[LocationBarViewController alloc] init];
   self.viewController.incognito = isIncognito;
   self.viewController.delegate = self;
-  self.viewController.dispatcher = static_cast<
-      id<ActivityServiceCommands, BrowserCommands, ApplicationCommands>>(
-      self.dispatcher);
+  self.viewController.dispatcher =
+      static_cast<id<ActivityServiceCommands, BrowserCommands,
+                     ApplicationCommands, LoadQueryCommands>>(self.dispatcher);
   self.viewController.voiceSearchEnabled = ios::GetChromeBrowserProvider()
                                                ->GetVoiceSearchProvider()
                                                ->IsVoiceSearchEnabled();
@@ -265,6 +267,10 @@ const int kLocationAuthorizationStatusCount = 4;
     // The toolbar is fully visible, focus the omnibox.
     [self focusOmnibox];
   }
+}
+
+- (void)locationBarCopyTapped {
+  StoreURLInPasteboard(self.webState->GetVisibleURL());
 }
 
 #pragma mark - LocationBarConsumer
