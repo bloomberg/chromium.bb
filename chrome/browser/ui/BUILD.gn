@@ -2785,6 +2785,9 @@ split_static_library("ui") {
 
   if (toolkit_views) {
     sources += [
+      "autofill/local_card_migration_bubble.h",
+      "autofill/local_card_migration_bubble_controller_impl.cc",
+      "autofill/local_card_migration_bubble_controller_impl.h",
       "autofill/save_card_bubble_controller_impl.cc",
       "autofill/save_card_bubble_controller_impl.h",
       "autofill/save_card_bubble_view.h",
@@ -2820,6 +2823,8 @@ split_static_library("ui") {
       "views/autofill/autofill_popup_view_views.h",
       "views/autofill/card_unmask_prompt_views.cc",
       "views/autofill/card_unmask_prompt_views.h",
+      "views/autofill/local_card_migration_bubble_views.cc",
+      "views/autofill/local_card_migration_bubble_views.h",
       "views/autofill/save_card_bubble_views.cc",
       "views/autofill/save_card_bubble_views.h",
       "views/autofill/view_util.cc",
@@ -3073,6 +3078,8 @@ split_static_library("ui") {
       sources += [
         "views/accessibility/invert_bubble_view.cc",
         "views/accessibility/invert_bubble_view.h",
+        "views/autofill/local_card_migration_icon_view.cc",
+        "views/autofill/local_card_migration_icon_view.h",
         "views/autofill/save_card_icon_view.cc",
         "views/autofill/save_card_icon_view.h",
         "views/bookmarks/bookmark_bar_instructions_view.cc",

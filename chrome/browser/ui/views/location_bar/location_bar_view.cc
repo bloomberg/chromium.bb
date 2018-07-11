@@ -28,6 +28,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
+#include "chrome/browser/ui/autofill/local_card_migration_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -41,6 +42,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/autofill/local_card_migration_icon_view.h"
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
 #include "chrome/browser/ui/views/chrome_platform_style.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -233,6 +235,11 @@ void LocationBarView::Init() {
   }
   translate_icon_view_ = new TranslateIconView(command_updater(), this);
   page_action_icons_.push_back(translate_icon_view_);
+  if (browser_) {
+    local_card_migration_icon_view_ = new autofill::LocalCardMigrationIconView(
+        command_updater(), browser_, this);
+    page_action_icons_.push_back(local_card_migration_icon_view_);
+  }
 
 #if defined(OS_CHROMEOS)
   if (browser_)
@@ -434,6 +441,8 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
   trailing_width += IncrementalMinimumWidth(translate_icon_view_);
   if (save_credit_card_icon_view_)
     trailing_width += IncrementalMinimumWidth(save_credit_card_icon_view_);
+  if (local_card_migration_icon_view_)
+    trailing_width += IncrementalMinimumWidth(local_card_migration_icon_view_);
   trailing_width += IncrementalMinimumWidth(manage_passwords_icon_view_) +
                     IncrementalMinimumWidth(page_action_icon_container_view_);
 #if defined(OS_CHROMEOS)
@@ -535,6 +544,8 @@ void LocationBarView::Layout() {
   add_trailing_decoration(translate_icon_view_);
   if (save_credit_card_icon_view_)
     add_trailing_decoration(save_credit_card_icon_view_);
+  if (local_card_migration_icon_view_)
+    add_trailing_decoration(local_card_migration_icon_view_);
   add_trailing_decoration(manage_passwords_icon_view_);
   for (ContentSettingViews::const_reverse_iterator i(
            content_setting_views_.rbegin());
@@ -1042,6 +1053,13 @@ void LocationBarView::UpdateManagePasswordsIconAndBubble() {
 
 void LocationBarView::UpdateSaveCreditCardIcon() {
   if (save_credit_card_icon_view_->Update()) {
+    Layout();
+    SchedulePaint();
+  }
+}
+
+void LocationBarView::UpdateLocalCardMigrationIcon() {
+  if (local_card_migration_icon_view_->Update()) {
     Layout();
     SchedulePaint();
   }

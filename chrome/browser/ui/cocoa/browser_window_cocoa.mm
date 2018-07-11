@@ -519,6 +519,16 @@ autofill::SaveCardBubbleView* BrowserWindowCocoa::ShowSaveCreditCardBubble(
                                             controller_, user_gesture);
 }
 
+autofill::LocalCardMigrationBubble*
+BrowserWindowCocoa::ShowLocalCardMigrationBubble(
+    content::WebContents* web_contents,
+    autofill::LocalCardMigrationBubbleController* controller,
+    bool user_gesture) {
+  // TODO(crbug.com/859652): Implement on Mac.
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 ShowTranslateBubbleResult BrowserWindowCocoa::ShowTranslateBubble(
     content::WebContents* contents,
     translate::TranslateStep step,

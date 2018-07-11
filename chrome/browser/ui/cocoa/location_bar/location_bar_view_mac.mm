@@ -201,6 +201,11 @@ void LocationBarViewMac::UpdateSaveCreditCardIcon() {
   OnDecorationsChanged();
 }
 
+void LocationBarViewMac::UpdateLocalCardMigrationIcon() {
+  // TODO(crbug.com/859652): Implement for mac.
+  NOTIMPLEMENTED();
+}
+
 void LocationBarViewMac::UpdateFindBarIconVisibility() {
   // TODO(crbug/651643): Implement for mac.
   NOTIMPLEMENTED();

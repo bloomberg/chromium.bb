@@ -4871,6 +4871,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Save Card
         </message>
        </if>
+      <message name="IDS_TOOLTIP_MIGRATE_LOCAL_CARD" desc="The tooltip for the icon that shows the local card migration bubble">
+        Have your cards in one place
+      </message>
       <message name="IDS_TOOLTIP_TRANSLATE" desc="The tooltip for translate">
         Translate this page
       </message>

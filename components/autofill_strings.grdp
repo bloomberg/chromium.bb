@@ -244,6 +244,16 @@
     This name will also be used when creating your Google payments account.
   </message>
 
+  <!-- Autofill Local card migration bubble or prompt -->
+  <if expr="not is_ios and not is_android">
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_TITLE" desc="Text to show in the Autofill local card migration intermediate bubble.">
+      Do you want to have all your cards in one place?
+    </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL" desc="Text to show in the Autofill local card migration intermediate bubble button.">
+      Continue
+    </message>
+  </if>
+
   <!-- Autofill credit card suggestion popup -->
   <message name="IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR" desc="Abbreviated label for credit card expiration date. [CHAR-LIMIT=32]">
     Exp: <ph name="EXPIRATION_MONTH">$1<ex>06</ex></ph>/<ph name="EXPIRATION_YEAR">$2<ex>17</ex></ph>

@@ -113,6 +113,10 @@ class TestBrowserWindow : public BrowserWindow {
       content::WebContents* contents,
       autofill::SaveCardBubbleController* controller,
       bool user_gesture) override;
+  autofill::LocalCardMigrationBubble* ShowLocalCardMigrationBubble(
+      content::WebContents* contents,
+      autofill::LocalCardMigrationBubbleController* controller,
+      bool user_gesture) override;
   ShowTranslateBubbleResult ShowTranslateBubble(
       content::WebContents* contents,
       translate::TranslateStep step,
@@ -172,6 +176,7 @@ class TestBrowserWindow : public BrowserWindow {
     void UpdateContentSettingsIcons() override {}
     void UpdateManagePasswordsIconAndBubble() override {}
     void UpdateSaveCreditCardIcon() override {}
+    void UpdateLocalCardMigrationIcon() override {}
     void UpdateFindBarIconVisibility() override {}
     void UpdateBookmarkStarVisibility() override {}
     void UpdateLocationBarVisibility(bool visible, bool animate) override {}

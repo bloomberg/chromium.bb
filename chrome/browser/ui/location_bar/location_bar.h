@@ -52,6 +52,9 @@ class LocationBar {
   // Updates the visibility and toggled state of the save credit card icon.
   virtual void UpdateSaveCreditCardIcon() = 0;
 
+  // Updates the visibility and toggled state of the local card migration icon.
+  virtual void UpdateLocalCardMigrationIcon() = 0;
+
   // Updates the visibility of the find bar image icon.
   virtual void UpdateFindBarIconVisibility() = 0;
 

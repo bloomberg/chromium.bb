@@ -347,6 +347,10 @@ class BrowserView : public BrowserWindow,
       content::WebContents* contents,
       autofill::SaveCardBubbleController* controller,
       bool is_user_gesture) override;
+  autofill::LocalCardMigrationBubble* ShowLocalCardMigrationBubble(
+      content::WebContents* contents,
+      autofill::LocalCardMigrationBubbleController* controller,
+      bool is_user_gesture) override;
   ShowTranslateBubbleResult ShowTranslateBubble(
       content::WebContents* contents,
       translate::TranslateStep step,
