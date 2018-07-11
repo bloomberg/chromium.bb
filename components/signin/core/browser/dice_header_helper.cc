@@ -181,6 +181,12 @@ DiceResponseParams DiceHeaderHelper::BuildDiceSignoutResponseParams(
   return params;
 }
 
+bool DiceHeaderHelper::ShouldBuildRequestHeader(
+    const GURL& url,
+    const content_settings::CookieSettings* cookie_settings) {
+  return IsUrlEligibleForRequestHeader(url);
+}
+
 bool DiceHeaderHelper::IsUrlEligibleForRequestHeader(const GURL& url) {
   if (account_consistency_ == AccountConsistencyMethod::kDisabled ||
       account_consistency_ == AccountConsistencyMethod::kMirror) {

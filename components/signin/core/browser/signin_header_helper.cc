@@ -11,7 +11,6 @@
 #include "base/strings/string_split.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
-#include "components/signin/core/browser/cookie_settings_util.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
@@ -137,20 +136,6 @@ SigninHeaderHelper::ParseAccountConsistencyResponseHeader(
                  net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS)});
   }
   return dictionary;
-}
-
-bool SigninHeaderHelper::ShouldBuildRequestHeader(
-    const GURL& url,
-    const content_settings::CookieSettings* cookie_settings) {
-  // If signin cookies are not allowed, don't add the header.
-  if (!SettingsAllowSigninCookies(cookie_settings))
-    return false;
-
-  // Check if url is eligible for the header.
-  if (!IsUrlEligibleForRequestHeader(url))
-    return false;
-
-  return true;
 }
 
 void AppendOrRemoveMirrorRequestHeader(

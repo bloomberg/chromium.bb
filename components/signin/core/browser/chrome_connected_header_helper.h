@@ -42,6 +42,11 @@ class ChromeConnectedHeaderHelper : public SigninHeaderHelper {
                                  const std::string& account_id,
                                  int profile_mode_mask);
 
+  // SigninHeaderHelper implementation:
+  bool ShouldBuildRequestHeader(
+      const GURL& url,
+      const content_settings::CookieSettings* cookie_settings) override;
+
  private:
   // Whether mirror account consistency should be used.
   AccountConsistencyMethod account_consistency_;

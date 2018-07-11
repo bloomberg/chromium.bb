@@ -262,6 +262,21 @@ TEST_F(SigninHeaderHelperTest, TestDiceRequest) {
   CheckDiceHeaderRequest(GURL("https://www.google.com"), "0123456789", "", "");
 }
 
+// When cookies are blocked, only the Dice header is sent.
+TEST_F(SigninHeaderHelperTest, DiceCookiesBlocked) {
+  account_consistency_ = AccountConsistencyMethod::kDice;
+  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
+
+  std::string client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
+  ASSERT_FALSE(client_id.empty());
+  CheckDiceHeaderRequest(
+      GURL("https://accounts.google.com"), "0123456789", "",
+      base::StringPrintf(
+          "version=%s,client_id=%s,device_id=DeviceID,signin_mode=all_accounts,"
+          "signout_mode=show_confirmation",
+          kDiceProtocolVersion, client_id.c_str()));
+}
+
 // Tests that no Dice request is returned when Dice is not enabled.
 TEST_F(SigninHeaderHelperTest, TestNoDiceRequestWhenDisabled) {
   account_consistency_ = AccountConsistencyMethod::kMirror;

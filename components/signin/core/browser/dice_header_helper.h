@@ -44,6 +44,11 @@ class DiceHeaderHelper : public SigninHeaderHelper {
   std::string BuildRequestHeader(const std::string& sync_account_id,
                                  const std::string& device_id);
 
+  // SigninHeaderHelper implementation:
+  bool ShouldBuildRequestHeader(
+      const GURL& url,
+      const content_settings::CookieSettings* cookie_settings) override;
+
  private:
   // SigninHeaderHelper implementation:
   bool IsUrlEligibleForRequestHeader(const GURL& url) override;
