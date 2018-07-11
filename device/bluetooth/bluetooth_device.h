@@ -545,13 +545,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   virtual base::Time GetLastUpdateTime() const;
 
   // Called by BluetoothAdapter when a new Advertisement is seen for this
-  // device. This replaces previously seen Advertisement Data.
+  // device. This replaces previously seen Advertisement Data. The order of
+  // arguments matches the order of their corresponding Data Type specified in
+  // https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile.
   void UpdateAdvertisementData(int8_t rssi,
+                               base::Optional<uint8_t> flags,
                                UUIDList advertised_uuids,
+                               base::Optional<int8_t> tx_power,
                                ServiceDataMap service_data,
-                               ManufacturerDataMap manufacturer_data,
-                               const int8_t* tx_power,
-                               const uint8_t* flags);
+                               ManufacturerDataMap manufacturer_data);
 
   // Called by BluetoothAdapter when it stops discoverying.
   void ClearAdvertisementData();
@@ -688,11 +690,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // Received Signal Strength Indicator of the advertisement received.
   base::Optional<int8_t> inquiry_rssi_;
 
-  // Tx Power advertised by the device.
-  base::Optional<int8_t> inquiry_tx_power_;
-
   // Advertising Data flags of the device.
   base::Optional<uint8_t> advertising_data_flags_;
+
+  // Tx Power advertised by the device.
+  base::Optional<int8_t> inquiry_tx_power_;
 
   // Class that holds the union of Advertised UUIDs and Service UUIDs.
   DeviceUUIDs device_uuids_;

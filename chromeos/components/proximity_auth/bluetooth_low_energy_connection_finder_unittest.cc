@@ -206,9 +206,10 @@ class ProximityAuthBluetoothLowEnergyConnectionFinderTest
     uuid_list.push_back(advertisement_uuid);
     device::BluetoothDevice::ServiceDataMap service_data_map;
     service_data_map[advertisement_uuid] = eid_vector;
-    device_->UpdateAdvertisementData(
-        kRssi, uuid_list, service_data_map, {} /* manufacturer_data */,
-        nullptr /* tx_power */, nullptr /* flags */);
+    device_->UpdateAdvertisementData(kRssi, base::nullopt /* flags */,
+                                     uuid_list, base::nullopt /* tx_power */,
+                                     service_data_map,
+                                     {} /* manufacturer_data */);
   }
 
   scoped_refptr<device::MockBluetoothAdapter> adapter_;

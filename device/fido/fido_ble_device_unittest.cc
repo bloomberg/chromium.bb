@@ -56,18 +56,17 @@ std::vector<std::vector<uint8_t>> ToSerializedFragments(
 void SetAdvertisingDataFlags(BluetoothDevice* device,
                              base::Optional<uint8_t> flags) {
   device->UpdateAdvertisementData(
-      /* rssi */ 0, BluetoothDevice::UUIDList(),
-      BluetoothDevice::ServiceDataMap(), BluetoothDevice::ManufacturerDataMap(),
-      /* tx_power */ nullptr, base::OptionalOrNullptr(flags));
+      0 /* rssi */, std::move(flags), BluetoothDevice::UUIDList(),
+      base::nullopt /* tx_power */, BluetoothDevice::ServiceDataMap(),
+      BluetoothDevice::ManufacturerDataMap());
 }
 
 void SetServiceData(BluetoothDevice* device,
                     BluetoothDevice::ServiceDataMap service_data) {
   device->UpdateAdvertisementData(
-      /* rssi */ 0, BluetoothDevice::UUIDList(), std::move(service_data),
-      BluetoothDevice::ManufacturerDataMap(),
-      /* tx_power */ nullptr,
-      /* flags */ nullptr);
+      0 /* rssi */, base::nullopt /* flags */, BluetoothDevice::UUIDList(),
+      base::nullopt /* tx_power */, std::move(service_data),
+      BluetoothDevice::ManufacturerDataMap());
 }
 
 }  // namespace

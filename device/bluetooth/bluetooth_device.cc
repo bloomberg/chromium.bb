@@ -333,12 +333,12 @@ base::Optional<int8_t> BluetoothDevice::GetInquiryRSSI() const {
   return inquiry_rssi_;
 }
 
-base::Optional<int8_t> BluetoothDevice::GetInquiryTxPower() const {
-  return inquiry_tx_power_;
-}
-
 base::Optional<uint8_t> BluetoothDevice::GetAdvertisingDataFlags() const {
   return advertising_data_flags_;
+}
+
+base::Optional<int8_t> BluetoothDevice::GetInquiryTxPower() const {
+  return inquiry_tx_power_;
 }
 
 void BluetoothDevice::CreateGattConnection(
@@ -416,38 +416,28 @@ std::string BluetoothDevice::GetIdentifier() const { return GetAddress(); }
 
 void BluetoothDevice::UpdateAdvertisementData(
     int8_t rssi,
+    base::Optional<uint8_t> flags,
     UUIDList advertised_uuids,
+    base::Optional<int8_t> tx_power,
     ServiceDataMap service_data,
-    ManufacturerDataMap manufacturer_data,
-    const int8_t* tx_power,
-    const uint8_t* flags) {
+    ManufacturerDataMap manufacturer_data) {
   UpdateTimestamp();
 
   inquiry_rssi_ = rssi;
-
+  advertising_data_flags_ = std::move(flags);
   device_uuids_.ReplaceAdvertisedUUIDs(std::move(advertised_uuids));
+  inquiry_tx_power_ = std::move(tx_power);
   service_data_ = std::move(service_data);
   manufacturer_data_ = std::move(manufacturer_data);
-
-  if (tx_power != nullptr) {
-    inquiry_tx_power_ = *tx_power;
-  } else {
-    inquiry_tx_power_ = base::nullopt;
-  }
-
-  if (flags != nullptr) {
-    advertising_data_flags_ = *flags;
-  } else {
-    advertising_data_flags_.reset();
-  }
 }
 
 void BluetoothDevice::ClearAdvertisementData() {
-  inquiry_rssi_ = base::nullopt;
+  inquiry_rssi_.reset();
+  advertising_data_flags_.reset();
+  inquiry_tx_power_.reset();
   device_uuids_.ClearAdvertisedUUIDs();
   service_data_.clear();
   manufacturer_data_.clear();
-  inquiry_tx_power_ = base::nullopt;
   GetAdapter()->NotifyDeviceChanged(this);
 }
 
