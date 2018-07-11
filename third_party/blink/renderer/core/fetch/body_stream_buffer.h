@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/fetch_data_loader.h"
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -76,7 +75,6 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   bool IsAborted();
 
   void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(stream_);
     visitor->Trace(consumer_);
     visitor->Trace(loader_);
     visitor->Trace(signal_);
@@ -85,14 +83,6 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
 
  private:
   class LoaderClient;
-
-  // We need to keep the wrapper alive in order to make
-  // |Stream()| alive. We can create a wrapper in the constructor, but there is
-  // a chance that GC happens after construction happens before the wrapper is
-  // connected to the value returned to the user in the JS world. This function
-  // posts a task with a ScriptPromise containing the wrapper to avoid that.
-  // TODO(yhirano): Remove this once the unified GC is available.
-  void RetainWrapperUntilV8WrapperGetReturnedToV8(ScriptState*);
 
   BytesConsumer* ReleaseHandle(ExceptionState&);
   void Abort();
@@ -113,10 +103,7 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
                                         ExceptionState&),
       ExceptionState& exception_state);
 
-  static void Noop(ScriptValue) {}
-
   scoped_refptr<ScriptState> script_state_;
-  TraceWrapperV8Reference<v8::Object> stream_;
   Member<BytesConsumer> consumer_;
   // We need this member to keep it alive while loading.
   Member<FetchDataLoader> loader_;

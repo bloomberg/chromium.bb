@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 
@@ -99,7 +100,27 @@ FetchEvent::FetchEvent(ScriptState* script_state,
 
   client_id_ = initializer.clientId();
   is_reload_ = initializer.isReload();
-  request_ = initializer.request();
+  if (initializer.hasRequest()) {
+    ScriptState::Scope scope(script_state);
+    request_ = initializer.request();
+    v8::Local<v8::Value> request = ToV8(request_, script_state);
+    v8::Local<v8::Value> event = ToV8(this, script_state);
+    if (event.IsEmpty()) {
+      // |toV8| can return an empty handle when the worker is terminating.
+      // We don't want the renderer to crash in such cases.
+      // TODO(yhirano): Replace this branch with an assertion when the
+      // graceful shutdown mechanism is introduced.
+      return;
+    }
+    DCHECK(event->IsObject());
+    // Sets a hidden value in order to teach V8 the dependency from
+    // the event to the request.
+    V8PrivateProperty::GetFetchEventRequest(script_state->GetIsolate())
+        .Set(event.As<v8::Object>(), request);
+    // From the same reason as above, setHiddenValue can return false.
+    // TODO(yhirano): Add an assertion that it returns true once the
+    // graceful shutdown mechanism is introduced.
+  }
 }
 
 FetchEvent::~FetchEvent() = default;

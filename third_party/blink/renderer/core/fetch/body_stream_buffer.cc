@@ -16,11 +16,11 @@
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -99,7 +99,10 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
       consumer_(consumer),
       signal_(signal),
       made_from_readable_stream_(false) {
-  RetainWrapperUntilV8WrapperGetReturnedToV8(script_state);
+  v8::Local<v8::Value> body_value = ToV8(this, script_state);
+  DCHECK(!body_value.IsEmpty());
+  DCHECK(body_value->IsObject());
+  v8::Local<v8::Object> body = body_value.As<v8::Object>();
 
   {
     // Leaving an exception pending will cause Blink to crash in the bindings
@@ -112,8 +115,8 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
           ReadableStreamOperations::CreateReadableStream(script_state, this,
                                                          strategy);
       if (!readable_stream.IsEmpty()) {
-        stream_.Set(script_state->GetIsolate(),
-                    readable_stream.V8Value().As<v8::Object>());
+        V8PrivateProperty::GetInternalBodyStream(script_state->GetIsolate())
+            .Set(body, readable_stream.V8Value());
       } else {
         stream_broken_ = true;
       }
@@ -141,11 +144,16 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
       script_state_(script_state),
       signal_(nullptr),
       made_from_readable_stream_(true) {
-  RetainWrapperUntilV8WrapperGetReturnedToV8(script_state);
   DCHECK(ReadableStreamOperations::IsReadableStreamForDCheck(script_state,
                                                              stream));
 
-  stream_.Set(script_state->GetIsolate(), stream.V8Value().As<v8::Object>());
+  v8::Local<v8::Value> body_value = ToV8(this, script_state);
+  DCHECK(!body_value.IsEmpty());
+  DCHECK(body_value->IsObject());
+  v8::Local<v8::Object> body = body_value.As<v8::Object>();
+
+  V8PrivateProperty::GetInternalBodyStream(script_state->GetIsolate())
+      .Set(body, stream.V8Value());
 }
 
 ScriptValue BodyStreamBuffer::Stream() {
@@ -153,8 +161,15 @@ ScriptValue BodyStreamBuffer::Stream() {
   // even if |stream_broken_| is true, so that expected JavaScript attribute
   // behaviour is not changed. User code is still permitted to access the
   // stream even when it has thrown an exception.
-  return ScriptValue(script_state_.get(),
-                     stream_.NewLocal(script_state_->GetIsolate()));
+  ScriptState::Scope scope(script_state_.get());
+  v8::Local<v8::Value> body_value = ToV8(this, script_state_.get());
+  DCHECK(!body_value.IsEmpty());
+  DCHECK(body_value->IsObject());
+  v8::Local<v8::Object> body = body_value.As<v8::Object>();
+  return ScriptValue(
+      script_state_.get(),
+      V8PrivateProperty::GetInternalBodyStream(script_state_->GetIsolate())
+          .GetOrUndefined(body));
 }
 
 scoped_refptr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
@@ -514,15 +529,6 @@ base::Optional<bool> BodyStreamBuffer::BooleanStreamOperation(
     return base::nullopt;
   }
   return result;
-}
-
-void BodyStreamBuffer::RetainWrapperUntilV8WrapperGetReturnedToV8(
-    ScriptState* script_state) {
-  ExecutionContext::From(script_state)
-      ->GetTaskRunner(TaskType::kInternalDefault)
-      ->PostTask(
-          FROM_HERE,
-          WTF::Bind(Noop, ScriptValue(script_state, ToV8(this, script_state))));
 }
 
 BytesConsumer* BodyStreamBuffer::ReleaseHandle(
