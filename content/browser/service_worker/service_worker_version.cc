@@ -44,6 +44,7 @@
 #include "net/http/http_response_info.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -1642,7 +1643,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   // The worker has been idle for longer than a certain period.
   // S13nServiceWorker: The idle timer is implemented on the renderer, so we can
   // skip this check.
-  if (!ServiceWorkerUtils::IsServicificationEnabled() &&
+  if (!blink::ServiceWorkerUtils::IsServicificationEnabled() &&
       GetTickDuration(idle_time_) > kIdleWorkerTimeout) {
     StopWorkerIfIdle(false /* requested_from_renderer */);
     return;
@@ -1678,7 +1679,7 @@ void ServiceWorkerVersion::StopWorkerIfIdle(bool requested_from_renderer) {
     return;
   }
 
-  if (!ServiceWorkerUtils::IsServicificationEnabled()) {
+  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     // StopWorkerIfIdle() may be called for two reasons: "idle-timeout" or
     // "ping-timeout". For idle-timeout (i.e. ping hasn't timed out), check if
     // the worker really is idle.
@@ -1688,7 +1689,7 @@ void ServiceWorkerVersion::StopWorkerIfIdle(bool requested_from_renderer) {
     return;
   }
 
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   // Ping timeout
   if (ping_controller_.IsTimedOut()) {
     DCHECK(!requested_from_renderer);
@@ -1957,13 +1958,13 @@ void ServiceWorkerVersion::CleanUpExternalRequest(
 
 void ServiceWorkerVersion::OnNoWorkInBrowser() {
   DCHECK(!HasWorkInBrowser());
-  if (!ServiceWorkerUtils::IsServicificationEnabled()) {
+  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     for (auto& observer : observers_)
       observer.OnNoWork(this);
     return;
   }
 
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   if (!idle_timer_fired_in_renderer_ &&
       running_status() != EmbeddedWorkerStatus::STOPPED) {
     return;

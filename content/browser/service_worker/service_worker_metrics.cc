@@ -12,11 +12,11 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "net/url_request/url_request.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -507,7 +507,7 @@ void ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
 
   // Don't record .Time if S13nServiceWorker is enabled.
   // https://crbug.com/852664
-  if (ServiceWorkerUtils::IsServicificationEnabled())
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     return;
 
   // Record the preparation time.

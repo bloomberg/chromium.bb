@@ -12,7 +12,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/possibly_associated_wrapper_shared_url_loader_factory.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/url_loader_factory_bundle.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/content_client.h"
@@ -35,6 +34,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -130,7 +130,7 @@ class WebServiceWorkerNetworkProviderForSharedWorker
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
     // S13nServiceWorker:
     // We only install our own URLLoader if Servicification is enabled.
-    if (!ServiceWorkerUtils::IsServicificationEnabled())
+    if (!blink::ServiceWorkerUtils::IsServicificationEnabled())
       return nullptr;
 
     RenderThreadImpl* render_thread = RenderThreadImpl::current();
@@ -368,7 +368,7 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   context->RegisterWorkerClient(std::move(worker_client_ptr));
 
   mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
-  if (ServiceWorkerUtils::IsServicificationEnabled())
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     container_host_ptr_info = context->CloneContainerHostPtrInfo();
 
   // We know |loader_factories_|'s default factory is not a feature like

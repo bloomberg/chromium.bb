@@ -14,7 +14,6 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/service_names.mojom.h"
@@ -30,6 +29,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 
@@ -217,7 +217,7 @@ void WebWorkerFetchContextImpl::InitializeOnWorkerThread() {
   service_worker_worker_client_registry_.Bind(
       std::move(service_worker_worker_client_registry_info_));
 
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     service_worker_container_host_.Bind(
         std::move(service_worker_container_host_info_));
 
@@ -238,7 +238,7 @@ WebWorkerFetchContextImpl::CreateURLLoaderFactory() {
                                            loader_factory_);
   web_loader_factory_ = factory->GetWeakPtr();
 
-  if (ServiceWorkerUtils::IsServicificationEnabled())
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     ResetServiceWorkerURLLoaderFactory();
 
   return factory;
@@ -384,7 +384,7 @@ void WebWorkerFetchContextImpl::OnControllerChanged(
     blink::mojom::ControllerServiceWorkerMode mode) {
   set_is_controlled_by_service_worker(mode);
 
-  if (ServiceWorkerUtils::IsServicificationEnabled())
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     ResetServiceWorkerURLLoaderFactory();
 }
 
@@ -393,7 +393,7 @@ bool WebWorkerFetchContextImpl::Send(IPC::Message* message) {
 }
 
 void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   if (!web_loader_factory_)
     return;
   if (IsControlledByServiceWorker() !=

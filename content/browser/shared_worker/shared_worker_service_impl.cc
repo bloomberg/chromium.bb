@@ -21,7 +21,6 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/shared_worker/shared_worker_client.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -32,6 +31,7 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "url/origin.h"
 
 namespace content {
@@ -289,7 +289,7 @@ void SharedWorkerServiceImpl::CreateWorker(
       service_worker_context_->storage_partition();
   // Bounce to the IO thread to setup service worker support in case the request
   // for the worker script will need to be intercepted by service workers.
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     if (!storage_partition) {
       // The context is shutting down. Just drop the request.
       return;

@@ -14,7 +14,6 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
 #include "content/renderer/service_worker/web_service_worker_impl.h"
@@ -25,6 +24,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_settled_fetch.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
@@ -250,7 +250,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
 
   void EnableServicification() {
     feature_list_.InitWithFeatures({network::features::kNetworkService}, {});
-    ASSERT_TRUE(ServiceWorkerUtils::IsServicificationEnabled());
+    ASSERT_TRUE(blink::ServiceWorkerUtils::IsServicificationEnabled());
   }
 
   // Creates an empty struct to initialize ServiceWorkerProviderContext.

@@ -27,7 +27,6 @@
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
@@ -41,6 +40,7 @@
 #include "net/url_request/url_request.h"
 #include "services/network/throttling/throttling_controller.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -494,7 +494,7 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
       did_complete_(false),
       weak_factory_(this) {
 #if DCHECK_IS_ON()
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     DCHECK((request_body_blob_uuid_.empty() && request_body_blob_size_ == 0 &&
             !request_body_blob_ && client_id_.empty()));
   }
