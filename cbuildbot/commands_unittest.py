@@ -208,8 +208,8 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase,
       commands._SWARMING_ADDITIONAL_TIMEOUT)
   SWARMING_EXPIRATION = str(commands._SWARMING_EXPIRATION)
 
-  WAIT_RETRY_OUTPUT = '''
-ERROR: Encountered swarming internal error
+  WAIT_OUTPUT = '''
+WAIT OUTPUT: Finished.
 '''
 
   CREATE_OUTPUT = '''
@@ -223,9 +223,11 @@ FAKE OUTPUT. Will be filled in later.
     self.temp_json_path = os.path.join(self.tempdir, 'temp_summary.json')
 
     self.create_cmd = None
+    self.wait_cmd = None
 
   def SetCmdResults(self, swarming_cli_cmd='run',
                     create_return_code=0,
+                    wait_return_code=0,
                     args=(),
                     swarming_timeout_secs=SWARMING_TIMEOUT_DEFAULT,
                     swarming_io_timeout_secs=SWARMING_TIMEOUT_DEFAULT,
@@ -236,6 +238,7 @@ FAKE OUTPUT. Will be filled in later.
     Args:
       swarming_cli_cmd: The swarming client command to kick off.
       create_return_code: Return code from create command.
+      wait_return_code: Return code from wait command.
       args: Additional args to pass to create and wait commands.
       swarming_timeout_secs: swarming client timeout.
       swarming_io_timeout_secs: swarming client io timeout.
@@ -277,7 +280,7 @@ FAKE OUTPUT. Will be filled in later.
     args = list(args)
     base_cmd = base_cmd + ['--suite_name', self._suite] + args
 
-    self.create_cmd = base_cmd
+    self.create_cmd = base_cmd + ['--create_and_return']
     create_results = iter([
         self.rc.CmdResult(returncode=create_return_code,
                           output=self.CREATE_OUTPUT,
@@ -286,6 +289,17 @@ FAKE OUTPUT. Will be filled in later.
     self.rc.AddCmdResult(
         self.create_cmd,
         side_effect=lambda *args, **kwargs: create_results.next(),
+    )
+
+    self.wait_cmd = base_cmd + ['--suite_id', 'fake_parent_id']
+    wait_results = iter([
+        self.rc.CmdResult(returncode=wait_return_code,
+                          output=self.WAIT_OUTPUT,
+                          error=''),
+    ])
+    self.rc.AddCmdResult(
+        self.wait_cmd,
+        side_effect=lambda *args, **kwargs: wait_results.next(),
     )
 
   def PatchJson(self, task_outputs):
@@ -310,7 +324,8 @@ FAKE OUTPUT. Will be filled in later.
                         'created_ts': '2015-06-12 12:00:00',
                         'internal_failure': s[1],
                         'state': s[2],
-                        'outputs': [s[0]]}]}
+                        'outputs': [s[0]],
+                        'run_id': s[3]}]}
         return_values.append(j)
       return_values_iter = iter(return_values)
       self.PatchObject(swarming_lib.SwarmingCommandResult, 'LoadJsonSummary',
@@ -329,31 +344,22 @@ FAKE OUTPUT. Will be filled in later.
       finally:
         print(logs.messages)
 
-  def testRunSkylabHWTestSuiteMinimal(self):
-    """Test RunSkylabHWTestSuite without optional arguments."""
-    self.SetCmdResults(swarming_cli_cmd='trigger')
-    # When run without optional arguments, wait and dump_json cmd will not run.
-    self.PatchJson([(self.CREATE_OUTPUT, False, None)])
-
-    with self.OutputCapturer() as output:
-      cmd_result = self.RunSkylabHWTestSuite()
-    self.assertEqual(cmd_result, (None, None))
-    self.assertCommandCalled(self.create_cmd, capture_output=True,
-                             combine_stdout_stderr=True, env=mock.ANY)
-    self.assertIn(self.CREATE_OUTPUT, '\n'.join(output.GetStdoutLines()))
-
-  def testRunSkylabHWTestSuiteWait(self):
+  def testRunSkylabHWTestSuiteWithWait(self):
     """Test RunSkylabHWTestSuite with waiting for results."""
     self.SetCmdResults(swarming_cli_cmd='run')
     # When run without optional arguments, wait and dump_json cmd will not run.
-    self.PatchJson([(self.CREATE_OUTPUT, False, None)])
+    self.PatchJson([(self.CREATE_OUTPUT, False, None, 'fake_parent_id'),
+                    (self.WAIT_OUTPUT, False, None, 'fake_wait_id')])
 
     with self.OutputCapturer() as output:
       cmd_result = self.RunSkylabHWTestSuite(wait_for_results=True)
     self.assertEqual(cmd_result, (None, None))
     self.assertCommandCalled(self.create_cmd, capture_output=True,
                              combine_stdout_stderr=True, env=mock.ANY)
+    self.assertCommandCalled(self.wait_cmd, capture_output=True,
+                             combine_stdout_stderr=True, env=mock.ANY)
     self.assertIn(self.CREATE_OUTPUT, '\n'.join(output.GetStdoutLines()))
+    self.assertIn(self.WAIT_OUTPUT, '\n'.join(output.GetStdoutLines()))
 
 
 class HWLabCommandsTest(cros_test_lib.RunCommandTestCase,

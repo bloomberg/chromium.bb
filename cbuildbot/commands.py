@@ -1045,25 +1045,53 @@ def _GetRunSkylabSuiteArgs(
 # pylint: enable=docstring-missing-args
 
 
-def _SkylabHWTestTriggerOrRun(swarming_cli_cmd, cmd, **kwargs):
-  """Trigger or Run a suite in the HWTest lab with Skylab.
+def _SkylabHWTestCreate(swarming_cli_cmd, cmd, **kwargs):
+  """Create HWTest with Skylab.
 
-  This method runs a command to create the suite.
+  Args:
+    swarming_cli_cmd: Either 'run' if waiting for the results,
+      otherwise, its value should be 'trigger'.
+    cmd: A list of args for proxied run_suite_skylab command.
+    kwargs: args to be passed to RunSwarmingCommand.
+
+  Returns:
+    A string swarming task id, which is regarded as the suite_id.
+  """
+  create_cmd = cmd + ['--create_and_return']
+  logging.info('Suite creation command: \n%s',
+               cros_build_lib.CmdToStr(create_cmd))
+  result = swarming_lib.RunSwarmingCommandWithRetries(
+      max_retry=_MAX_HWTEST_START_CMD_RETRY,
+      error_check=swarming_lib.SwarmingRetriableErrorCheck,
+      cmd=create_cmd, swarming_cli_cmd=swarming_cli_cmd, capture_output=True,
+      combine_stdout_stderr=True, **kwargs)
+  # If the command succeeds, result.task_summary_json will have the right
+  # content. So result.GetValue is able to return valid values from its
+  # json summary.
+  for output in result.GetValue('outputs', ''):
+    sys.stdout.write(output)
+  sys.stdout.flush()
+  return result.GetValue('run_id')
+
+
+def _SkylabHWTestWait(swarming_cli_cmd, cmd, suite_id, **kwargs):
+  """Wait for Skylab HWTest to finish.
 
   Args:
     swarming_cli_cmd: Either 'run' if waiting for the results,
       otherwise, its value should be 'trigger'.
     cmd: Proxied run_suite command.
+    suite_id: The string suite_id to wait for.
     kwargs: args to be passed to RunSwarmingCommand.
   """
-  start_cmd = list(cmd)
-  logging.info('RunSkylabHWTestSuite will run: %s',
-               cros_build_lib.CmdToStr(start_cmd))
+  wait_cmd = list(cmd) + ['--suite_id', str(suite_id)]
+  logging.info('RunSkylabHWTestSuite will wait for suite %s: %s',
+               suite_id, cros_build_lib.CmdToStr(wait_cmd))
   try:
     result = swarming_lib.RunSwarmingCommandWithRetries(
         max_retry=_MAX_HWTEST_START_CMD_RETRY,
         error_check=swarming_lib.SwarmingRetriableErrorCheck,
-        cmd=start_cmd, swarming_cli_cmd=swarming_cli_cmd,
+        cmd=wait_cmd, swarming_cli_cmd=swarming_cli_cmd,
         capture_output=True, combine_stdout_stderr=True,
         **kwargs)
   except cros_build_lib.RunCommandError as e:
@@ -1117,10 +1145,9 @@ def RunSkylabHWTestSuite(
   swarming_args = _CreateSwarmingArgs(build, suite, board, priority_str,
                                       timeout_mins, run_skylab=True)
   try:
+    suite_id = _SkylabHWTestCreate('run', cmd, **swarming_args)
     if wait_for_results:
-      _SkylabHWTestTriggerOrRun('run', cmd, **swarming_args)
-    else:
-      _SkylabHWTestTriggerOrRun('trigger', cmd, **swarming_args)
+      _SkylabHWTestWait('run', cmd, suite_id, **swarming_args)
 
     return HWTestSuiteResult(None, None)
   except cros_build_lib.RunCommandError as e:
