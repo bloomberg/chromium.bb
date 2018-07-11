@@ -80,13 +80,6 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
         mNativeGestureListenerManager = nativeInit(mWebContents);
     }
 
-    /**
-     * Reset the Java object in the native so this class stops receiving events.
-     */
-    public void reset() {
-        if (mNativeGestureListenerManager != 0) nativeReset(mNativeGestureListenerManager);
-    }
-
     private void resetGestureDetection() {
         if (mNativeGestureListenerManager != 0) {
             nativeResetGestureDetection(mNativeGestureListenerManager);
@@ -382,7 +375,6 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     }
 
     private native long nativeInit(WebContentsImpl webContents);
-    private native void nativeReset(long nativeGestureListenerManager);
     private native void nativeResetGestureDetection(long nativeGestureListenerManager);
     private native void nativeSetDoubleTapSupportEnabled(
             long nativeGestureListenerManager, boolean enabled);

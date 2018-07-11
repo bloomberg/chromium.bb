@@ -14,7 +14,4 @@ import org.chromium.content_public.browser.ContentViewCore;
  */
 public class TestContentViewCore implements ContentViewCore {
     public TestContentViewCore(Context context, String productVersion) {}
-
-    @Override
-    public void destroy() {}
 }

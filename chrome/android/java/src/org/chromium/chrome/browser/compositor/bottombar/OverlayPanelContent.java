@@ -376,7 +376,6 @@ public class OverlayPanelContent {
         if (mContentViewCore != null) {
             // Native destroy will call up to destroy the Java WebContents.
             nativeDestroyWebContents(mNativeOverlayPanelContentPtr);
-            mContentViewCore.destroy();
             mContentViewCore = null;
             mWebContents = null;
             if (mWebContentsObserver != null) {

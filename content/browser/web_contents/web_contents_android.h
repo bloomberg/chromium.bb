@@ -240,6 +240,8 @@ class CONTENT_EXPORT WebContentsAndroid
   void SetFocus(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& obj,
                 jboolean focused);
+  bool IsBeingDestroyed(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
 
   // Returns the amount of the top controls height if controls are in the state
   // of shrinking Blink's view size, otherwise 0.

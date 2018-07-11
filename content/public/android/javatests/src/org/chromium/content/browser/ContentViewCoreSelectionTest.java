@@ -404,7 +404,7 @@ public class ContentViewCoreSelectionTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mContentViewCore.destroy();
+                mWebContents.destroy();
             }
         });
         waitForPastePopupStatus(false);

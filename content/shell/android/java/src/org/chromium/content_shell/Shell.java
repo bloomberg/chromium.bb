@@ -125,7 +125,6 @@ public class Shell extends LinearLayout {
     private void onNativeDestroyed() {
         mWindow = null;
         mNativeShell = 0;
-        mContentViewCore.destroy();
         mWebContents = null;
     }
 

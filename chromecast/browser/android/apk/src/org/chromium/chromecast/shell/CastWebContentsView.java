@@ -48,7 +48,6 @@ class CastWebContentsView {
             return () -> {
                 layout.removeView(contentView);
                 layout.removeView(contentViewRenderView);
-                contentViewCore.destroy();
                 contentViewRenderView.destroy();
                 window.destroy();
             };

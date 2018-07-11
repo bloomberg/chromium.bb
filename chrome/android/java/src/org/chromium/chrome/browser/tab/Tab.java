@@ -2448,7 +2448,6 @@ public class Tab
             manager.removeListener(mGestureStateListener);
         }
 
-        mContentViewCore.destroy();
         mContentViewCore = null;
         mWebContents = null;
         mWebContentsDelegate = null;

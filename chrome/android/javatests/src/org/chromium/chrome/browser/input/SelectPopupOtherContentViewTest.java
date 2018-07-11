@@ -97,18 +97,14 @@ public class SelectPopupOtherContentViewTest {
                 WindowAndroid windowAndroid = new ActivityWindowAndroid(activity);
 
                 ContentView cv = ContentView.createContentView(activity, webContents);
-                ContentViewCore contentViewCore = ContentViewCore.create(activity, "", webContents,
+                ContentViewCore.create(activity, "", webContents,
                         ViewAndroidDelegate.createBasicDelegate(cv), cv, windowAndroid);
-                contentViewCore.destroy();
+                webContents.destroy();
             }
         });
 
         // Process some more events to give a chance to the dialog to hide if it were to.
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-
-        // The popup should still be shown.
-        ContentViewCore viewCore =
-                mActivityTestRule.getActivity().getActivityTab().getContentViewCore();
 
         Assert.assertTrue("The select popup got hidden by destroying of unrelated ContentViewCore.",
                 mActivityTestRule.getActivity()

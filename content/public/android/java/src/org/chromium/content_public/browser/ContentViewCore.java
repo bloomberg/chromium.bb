@@ -40,16 +40,4 @@ public interface ContentViewCore {
     public static ContentViewCore fromWebContents(WebContents webContents) {
         return ContentViewCoreImpl.fromWebContents(webContents);
     }
-
-    /**
-     * Destroy the internal state of the ContentView. This method may only be
-     * called after the ContentView has been removed from the view system. No
-     * other methods may be called on this ContentView after this method has
-     * been called.
-     * Warning: destroy() is not guranteed to be called in Android WebView.
-     * Any object that relies solely on destroy() being called to be cleaned up
-     * will leak in Android WebView. If appropriate, consider clean up in
-     * onDetachedFromWindow() which is guaranteed to be called in Android WebView.
-     */
-    void destroy();
 }
