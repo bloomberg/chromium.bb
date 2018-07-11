@@ -62,10 +62,9 @@ base::TimeDelta ExpectedQueueingTimeFromTask(base::TimeTicks task_start,
 
 }  // namespace
 
-QueueingTimeEstimator::QueueingTimeEstimator(
-    QueueingTimeEstimator::Client* client,
-    base::TimeDelta window_duration,
-    int steps_per_window)
+QueueingTimeEstimator::QueueingTimeEstimator(Client* client,
+                                             base::TimeDelta window_duration,
+                                             int steps_per_window)
     : client_(client),
       window_step_width_(window_duration / steps_per_window),
       renderer_backgrounded_(kLaunchingProcessIsBackgrounded),
@@ -240,11 +239,10 @@ void QueueingTimeEstimator::Calculator::AddQueueingTime(
       queueing_time;
 }
 
-void QueueingTimeEstimator::Calculator::EndStep(
-    QueueingTimeEstimator::Client* client) {
+void QueueingTimeEstimator::Calculator::EndStep(Client* client) {
   step_queueing_times_.Add(step_expected_queueing_time_);
 
-  // RendererScheduler reports the queueing time once per disjoint window.
+  // MainThreadSchedulerImpl reports the queueing time once per disjoint window.
   //          |stepEQT|stepEQT|stepEQT|stepEQT|stepEQT|stepEQT|
   // Report:  |-------window EQT------|
   // Discard:         |-------window EQT------|
@@ -304,29 +302,6 @@ base::TimeDelta QueueingTimeEstimator::RunningAverage::GetAverage() const {
 bool QueueingTimeEstimator::RunningAverage::IndexIsZero() const {
   return index_ == 0;
 }
-
-// Keeps track of the queueing time.
-class RecordQueueingTimeClient : public QueueingTimeEstimator::Client {
- public:
-  // QueueingTimeEstimator::Client implementation:
-  void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time,
-                                        bool is_disjoint_window) override {
-    queueing_time_ = queueing_time;
-  }
-
-  void OnReportFineGrainedExpectedQueueingTime(
-      const char* split_description,
-      base::TimeDelta queueing_time) override {}
-
-  base::TimeDelta queueing_time() { return queueing_time_; }
-
-  RecordQueueingTimeClient() = default;
-  ~RecordQueueingTimeClient() override = default;
-
- private:
-  base::TimeDelta queueing_time_;
-  DISALLOW_COPY_AND_ASSIGN(RecordQueueingTimeClient);
-};
 
 }  // namespace scheduler
 }  // namespace blink
