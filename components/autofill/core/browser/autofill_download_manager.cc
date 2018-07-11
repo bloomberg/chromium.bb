@@ -69,12 +69,6 @@ const net::BackoffEntry::Policy kAutofillBackoffPolicy = {
     false,
 };
 
-#if defined(GOOGLE_CHROME_BUILD)
-const char kClientName[] = "Google+Chrome";
-#else
-const char kClientName[] = "Chromium";
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
 const char kDefaultAutofillServerURL[] =
     "https://clients1.google.com/tbproxy/af/";
 
@@ -372,7 +366,7 @@ std::tuple<GURL, net::URLFetcher::RequestType>
 AutofillDownloadManager::GetRequestURLAndMethod(
     const FormRequestData& request_data) const {
   net::URLFetcher::RequestType method = net::URLFetcher::POST;
-  std::string query_str(base::StrCat({"client=", kClientName}));
+  std::string query_str;
 
   if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY) {
     if (request_data.payload.length() <= kMaxQueryGetSize &&
@@ -382,19 +376,18 @@ AutofillDownloadManager::GetRequestURLAndMethod(
       base::Base64UrlEncode(request_data.payload,
                             base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                             &base64_payload);
-      base::StrAppend(&query_str, {"&q=", base64_payload});
+      base::StrAppend(&query_str, {"q=", base64_payload});
     }
     UMA_HISTOGRAM_BOOLEAN("Autofill.Query.Method",
                           (method == net::URLFetcher::GET) ? 0 : 1);
   }
 
   GURL::Replacements replacements;
-  replacements.SetQueryStr(std::move(query_str));
+  replacements.SetQueryStr(query_str);
 
   GURL url = autofill_server_url_
                  .Resolve(RequestTypeToString(request_data.request_type))
                  .ReplaceComponents(replacements);
-
   return std::make_tuple(std::move(url), method);
 }
 
