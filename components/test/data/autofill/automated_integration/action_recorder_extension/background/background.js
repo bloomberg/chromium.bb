@@ -288,26 +288,80 @@
       });
   }
 
-  function getIframeContext(tabId, frameId, iframeLocation) {
+  function getIframeContext(tabId, frameId) {
     return new Promise((resolve, reject) => {
         if (frameId === 0) {
           resolve({ isIframe: false });
         } else {
-          chrome.webNavigation.getFrame(
-              { tabId: tabId, frameId: frameId }, (details) => {
-            if (chrome.runtime.lastError) {
-              reject(`Unable to query for frame info on frame ${frameId}`);
-            } else {
-              sendMessageToTab(tabId, {
-                type: RecorderMsgEnum.GET_IFRAME_XPATH,
-                frameId: frameId,
-                location: iframeLocation
-              }, { frameId: details.parentFrameId }).then((context) => {
-                resolve(context);
-              }).catch((message) => {
-                reject(message);
-              });
+          let context = { isIframe: true };
+          getAllFramesInTab(tabId)
+          .then((details) => {
+            let targetFrame;
+            for (let index = 0; index < details.length; index++) {
+              if (details[index].frameId === frameId) {
+                targetFrame = details[index];
+                break;
+              }
             }
+            // Send a message to the parent frame and see if the iframe has a
+            // 'name' attribute.
+            sendMessageToTab(tabId, {
+              type: RecorderMsgEnum.GET_IFRAME_NAME,
+              url: targetFrame.url
+            }, {
+              frameId: targetFrame.parentFrameId
+            })
+            .then((frameName) => {
+              if (frameName !== '') {
+                context.browserTest = { name: frameName };
+                resolve(context);
+              } else {
+                const targetFrameUrl = new URL(targetFrame.url);
+                // The frame does not have a 'name' attribute. Check if the
+                // frame has a unique combination of scheme, host and port.
+                //
+                // The Captured Site automation framework can identify an
+                // iframe by its scheme + host + port, provided this
+                // information combination is unique. Identifying an iframe
+                // through its scheme + host + port is more preferable than
+                // identifying an iframe through its URL. An URL will
+                // frequently contain parameters, and many websites use random
+                // number generator or date generator to create these
+                // parameters. For example, in the following URL
+                //
+                // https://payment.bhphotovideo.com/static/desktop/v2.0/
+                // index.html
+                // #paypageId=aLGNuLSTJVwgEiCn&cartID=333334444
+                // &receiverID=77777777-7777-4777-b777-777777888888
+                // &uuid=77777777-7777-4777-b777-778888888888
+                //
+                // The site created the parameters cartID, receiverID and uuid
+                // using random number generators. These parameters will have
+                // different values every time the browser loads the page.
+                // Therefore automation will not be able to identify an iframe
+                // that loads this URL.
+                let frameHostAndSchemeIsUnique = true;
+                for (let index = 0; index < details.length; index++) {
+                  const url = new URL(details[index].url);
+                  if (details[index].frameId !== targetFrame.frameId &&
+                      targetFrameUrl.protocol === url.protocol &&
+                      targetFrameUrl.host === url.host) {
+                    frameHostAndSchemeIsUnique = false;
+                    break;
+                  }
+                }
+                if (frameHostAndSchemeIsUnique) {
+                  context.browserTest = {
+                      schemeAndHost:
+                          `${targetFrameUrl.protocol}//${targetFrameUrl.host}`
+                    };
+                  resolve(context);
+                } else {
+                  context.browserTest = { url: targetFrame.url };
+                  resolve(context);
+                }
+              }
+            });
           });
         }
       });
@@ -354,8 +408,14 @@
 
   function startRecordingOnTabAndFrame(tabId, frameId) {
     const ret =
-      sendMessageToTab(tabId, { type: RecorderMsgEnum.START },
-                       { frameId: frameId })
+      getIframeContext(tabId, frameId)
+      .then((context) => {
+        return sendMessageToTab(tabId,
+                                { type: RecorderMsgEnum.START,
+                                  frameContext: context
+                                },
+                                { frameId: frameId });
+      })
       .then((response) => {
         if (!response) {
           return Promise.reject(
@@ -546,9 +606,9 @@
           .then((details) => {
             let recordingStartedOnRootFramePromise;
             details.forEach((frame) => {
-              // Th extension has no need and no permission to inject script
-              // into a blank page.
-              if (frame.url !== 'about:blank') {
+              // The extension has no need and no permission to inject script
+              // into 'about:' pages, such as the 'about:blank' page.
+              if (!frame.url.startsWith('about:')) {
                 const promise =
                     startRecordingOnTabAndFrame(tab.id, frame.frameId);
                 if (frame.frameId === 0) {
@@ -596,10 +656,10 @@
   chrome.webNavigation.onCompleted.addListener((details) => {
     getRecordingTabId().then((tabId) => {
       if (details.tabId === tabId &&
-          // Skip recording on about:blank. No meaningful user interaction will
-          // occur on a blank page. Plus, this extension has no permission to
-          // access about:blank.
-          details.url !== 'about:blank') {
+          // Skip recording on 'about:' pages. No meaningful user interaction
+          // occur on 'about:'' pages such as the blank page. Plus, this
+          // extension has no permission to access 'about:' pages.
+          !details.url.startsWith('about:')) {
         startRecordingOnTabAndFrame(tabId, details.frameId)
         .then(() => getRecordingState())
         .then((state) => {

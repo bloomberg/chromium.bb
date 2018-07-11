@@ -33,12 +33,18 @@
       // local name results in a unique XPath.
       let nodeXPath = buildXPathForSingleNode(node);
       let testXPath = `//${nodeXPath}${xPath}`;
-      if (countNumOfMatches(testXPath) === 1) {
+      let numMatches = countNumberOfMatches(testXPath);
+      if (numMatches === 1) {
         return { isUnique: true, xPath: testXPath };
       }
 
+      // Build a list of potential classifiers using
+      // * The element's explicit attributes.
+      // * The element's text content, if the element contains text.
       let classifiers = [];
-      // Try adding each explicit attribute of the element to the XPath.
+      let attributes = [];
+      let attrRawValues = [];
+      // Populate the attribute list with the element's explicit attributes.
       for (let index = 0; index < node.attributes.length; index++) {
         const attr = node.attributes[index].name;
         if (attr === 'style') {
@@ -55,48 +61,45 @@
           // attribute.
           continue;
         } else {
-          let classifier = buildClassifier(node, `@${attr}`,
-                                           node.attributes[index].value);
-          // Add the classifier and see if it generates a unique XPath.
-          classifiers.push(classifier);
-          nodeXPath = buildXPathForSingleNode(node, classifiers);
-          let testXPath = `//${nodeXPath}${xPath}`;
-          let numMatches = countNumOfMatches(testXPath);
-          if (numMatches === 0) {
-            // The classifier is faulty, log an error and remove the
-            // classifier.
-            console.warn('Encountered faulty classifier: ' +
-                         classifiers.pop());
-          } else if (numMatches === 1) {
-            // The current XPath is unique, exit.
-            return { isUnique: true, xPath: testXPath };
-          }
+          attributes.push(`@${attr}`);
+          attrRawValues.push(node.attributes[index].value);
         }
       }
-
-      // For HTML elements that contains text content, try to construct
-      // an XPath using the text content.
+      // Add the element's text content to the attribute list.
       switch (node.localName) {
         case 'a':
         case 'span':
         case 'button':
-          let classifier = buildClassifier(node, 'text()',
-                                           node.textContent);
-          classifiers.push(classifier);
-          nodeXPath = buildXPathForSingleNode(node, classifiers);
-          let testXPath = `//${nodeXPath}${xPath}`;
-          let numMatches = countNumOfMatches(testXPath);
-          if (numMatches === 0) {
-            // The classifier is faulty, log an error and remove the
-            // classifier.
-            console.warn('Encountered faulty classifier: ' +
-                         classifiers.pop());
-          } else if (numMatches === 1) {
-            // The current XPath is unique, exit.
-            return { isUnique: true, xPath: testXPath };
-          }
+          attributes.push('text()');
+          attrRawValues.push(node.textContent);
           break;
         default:
+      }
+
+      // Iterate through each attribute.
+      for (let index = 0; index < attributes.length; index++) {
+        let classifier = buildClassifier(node, attributes[index],
+                                         attrRawValues[index]);
+        // Add the classifier and see if adding it generates a unique XPath.
+        let numMatchesBefore = numMatches;
+        classifiers.push(classifier);
+        nodeXPath = buildXPathForSingleNode(node, classifiers);
+        testXPath = `//${nodeXPath}${xPath}`;
+        numMatches = countNumberOfMatches(testXPath);
+
+        if (numMatches === 0) {
+          // The classifier is faulty, log an error and remove the classifier.
+          console.warn('Encountered faulty classifier: ' +
+                       classifiers.pop());
+        } else if (numMatches === 1) {
+          // The current XPath is unique, exit.
+          return { isUnique: true, xPath: testXPath };
+        } else if (numMatches === numMatchesBefore) {
+          // Adding this classifier to the XPath does not narrow down the
+          // number of elements this XPath matches. Therefore the XPath does not
+          // need this classifier. Remove the classifier.
+          classifiers.pop();
+        }
       }
 
       // A XPath with the current node as the root is not unique.
@@ -162,7 +165,7 @@
       return xPathSelector;
     }
 
-    function countNumOfMatches(xPath) {
+    function countNumberOfMatches(xPath) {
       const queryResult = document.evaluate(
           `count(${xPath})`, document, null, XPathResult.NUMBER_TYPE, null);
       return queryResult.numberValue;
@@ -172,6 +175,7 @@
   };
 
   let autofillTriggerElementSelector = null;
+  let lastTypingEventTargetValue = null;
   let frameContext;
   let mutationObserver = null;
   let started = false;
@@ -187,6 +191,10 @@
     return (element.localName === 'select') ||
            (element.localName === 'textarea') ||
            canTriggerAutofill(element);
+  }
+
+  function isPasswordInputElement(element) {
+    return element.getAttribute('type') === 'password';
   }
 
   function canTriggerAutofill(element) {
@@ -219,46 +227,87 @@
     });
   }
 
+  function memorizePasswordFormInputs(passwordField) {
+    // Extract the 'form signature' value from the password's 'title'
+    // attribute.
+    const title = passwordField.getAttribute('title');
+    if (!title)
+      return;
+
+    let formSign = null;
+    const attrs = title.split('\n');
+    for (let index = 0; index < attrs.length; index++) {
+      if (attrs[index].startsWith('form signature')) {
+        formSign = attrs[index];
+      }
+    }
+    if (formSign)
+      return;
+
+    // Identify the 'user name' field and grab the field value.
+    const fields = document.querySelectorAll(`*[title*='${formSign}']`);
+    for (let index = 0; index < fields.length; index++) {
+      const field = fields[index];
+      const type = field.getAttribute('autofill-prediction');
+      if (type === 'HTML_TYPE_EMAIL') {
+        // (TODO: uwyiming@) Send the password to the UI content script. A
+        // user may then add password manager events through the Recorder
+        // Extension UI, without having to retype the password.
+        //sendRuntimeMessageToBackgroundScript({
+        //  type: RecorderMsgEnum.MEMORIZE_PASSWORD_FORM,
+        //  password: passwordField.value,
+        //  user:
+        //});
+      }
+    }
+  }
+
   function onInputChangeActionHandler(event) {
     const selector = buildXPathForElement(event.target);
-    if (isAutofillableElement(event.target)) {
-      const autofillPrediction =
-          event.target.getAttribute('autofill-prediction');
-      // If a field that can trigger autofill has previously been
-      // clicked, fire a trigger autofill event.
+    const elementReadyState = automation_helper.getElementState(event.target);
+    const autofillPrediction =
+        event.target.getAttribute('autofill-prediction');
+    let action = {
+      selector: selector,
+      context: frameContext,
+      visibility: elementReadyState
+    };
+
+    if (event.target.localName === 'select') {
+      if (document.activeElement === event.target) {
+        const index = event.target.options.selectedIndex;
+        console.log(`Select detected on: ${selector} with '${index}'`);
+        action.type = 'select';
+        action.index = index;
+        addActionToRecipe(action);
+      } else {
+        action.type = 'validateField';
+        action.expectedValue = event.target.value;
+        if (autofillPrediction) {
+          action.expectedAutofillType = autofillPrediction;
+        }
+        addActionToRecipe(action);
+      }
+    } else if (lastTypingEventTargetValue === event.target.value) {
+      console.log(`Typing detected on: ${selector}`);
+      action.type = 'type';
+      action.value = event.target.value;
+      addActionToRecipe(action);
+    } else {
+      // If the user has previously clicked on a field that can trigger
+      // autofill, add a trigger autofill action.
       if (autofillTriggerElementSelector !== null) {
         console.log(`Triggered autofill on ${autofillTriggerElementSelector}`);
-        addActionToRecipe({
-          selector: selector,
-          context: frameContext,
-          type: 'autofill'
-        });
+        action.type = 'autofill';
+        addActionToRecipe(action);
         autofillTriggerElementSelector = null;
       }
-      addActionToRecipe({
-        selector: selector,
-        context: frameContext,
-        expectedAutofillType: autofillPrediction,
-        expectedValue: event.target.value,
-        type: 'validateField'
-      });
-    } else if (event.target.localName === 'select') {
-      const index = event.target.options.selectedIndex;
-      console.log(`Select detected on: ${selector} with '${index}'`);
-      addActionToRecipe({
-        selector: selector,
-        context: frameContext,
-        index: index,
-        type: 'select'
-      });
-    } else {
-      console.log(`Typing detected on: ${selector}`);
-      addActionToRecipe({
-        selector: selector,
-        context: frameContext,
-        value: event.target.value,
-        type: 'type'
-      });
+      action.type = 'validateField';
+      action.expectedValue = event.target.value;
+      if (autofillPrediction) {
+        action.expectedAutofillType = autofillPrediction;
+      }
+      addActionToRecipe(action);
     }
   }
 
@@ -287,6 +336,8 @@
         // clicks on a scroll bar.
         event.target.localName !== 'html') {
       const element = event.target;
+      const elementReadyState =
+          automation_helper.getElementState(event.target);
       const selector = buildXPathForElement(element);
       console.log(`Left-click detected on: ${selector}`);
 
@@ -300,6 +351,7 @@
       } else {
         addActionToRecipe({
           selector: selector,
+          visibility: elementReadyState,
           context: frameContext,
           type: 'click'
         });
@@ -308,12 +360,23 @@
     } else if (event.button === Buttons.RIGHT_BUTTON) {
       const element = event.target;
       const selector = buildXPathForElement(element);
+      const elementReadyState =
+          automation_helper.getElementState(event.target);
       console.log(`Right-click detected on: ${selector}`);
       addActionToRecipe({
           selector: selector,
+          visibility: elementReadyState,
           context: frameContext,
           type: 'hover'
         });
+    }
+  }
+
+  function onKeyUpActionHandler(event) {
+    if (isEditableInputElement(event.target)) {
+      lastTypingEventTargetValue = event.target.value;
+    } else {
+      lastTypingEventTargetValue = null;
     }
   }
 
@@ -327,7 +390,7 @@
         frameContext = context;
         // Register on change listeners on all the input elements.
         registerOnInputChangeActionListener(document);
-        // Register a mouse up listener on the entire dom.
+        // Register a mouse up listener on the entire document.
         //
         // The content script registers a 'Mouse Up' listener rather than a
         // 'Mouse Down' to correctly handle the following scenario:
@@ -342,6 +405,8 @@
         // To capture the correct sequence of actions, the content script
         // should tie left mouse click actions to the mouseup event.
         document.addEventListener('mouseup', onClickActionHander);
+        // Register a key press listener on the entire document.
+        document.addEventListener('keyup', onKeyUpActionHandler);
         // Setup mutation observer to listen for event on nodes added after
         // recording starts.
         mutationObserver = new MutationObserver((mutations) => {
@@ -367,19 +432,15 @@
     if (started) {
       mutationObserver.disconnect();
       document.removeEventListener('mousedown', onClickActionHander);
+      document.removeEventListener('keyup', onKeyUpActionHandler);
       deRegisterOnInputChangeActionListener(document);
     }
   }
 
-  function queryIframeContext(frameId, frameLocation) {
-    // Check if we cached the XPath for this iframe.
-    if (iframeContextMap[frameId]) {
-      return Promise.resolve(iframeContextMap[frameId]);
-    }
-
+  function queryIframeName(iframeUrl) {
     let iframe = null;
+    const frameLocation = new URL(iframeUrl);
     const iframes = document.querySelectorAll('iframe');
-    let numIframeWithSameSchemeAndHost = 0;
     // Find the target iframe.
     for (let index = 0; index < iframes.length; index++) {
       const url = new URL(iframes[index].src,
@@ -402,51 +463,18 @@
           frameLocation.search === url.search) {
         iframe = iframes[index];
       }
-
-      // Count the number of iframes with the same protocol and the same host.
-      if (frameLocation.protocol === url.protocol &&
-          frameLocation.host === url.host) {
-        numIframeWithSameSchemeAndHost++;
-      }
     }
 
     if (iframe === null) {
       return Promise.reject(
-          new Error('Unable to find iframe with url ' +
-                    `'${frameLocation.href}', for frame ${frameId}`));
+          new Error(`Unable to find iframe with url '${iframeUrl}'!`));
     }
 
-    let context = { isIframe: true, browser_test: {} };
     if (iframe.name) {
-      context.browser_test.name = iframe.name;
-    }
-    else if (numIframeWithSameSchemeAndHost === 1) {
-      // Register the iframe's scheme, host and port.
-      // The Captured Site automation framework can identify an iframe by its
-      // scheme + host + port, provided this information combination is unique.
-      // Identifying an iframe through its scheme + host + port is preferable
-      // than identityfing an iframe through its URL. An URL will frequently
-      // contain parameters, and many websites use random number generator
-      // or date generator to create these parameters. For example, in the
-      // following URL
-      //
-      // https://payment.bhphotovideo.com/static/desktop/v2.0/index.html
-      // #paypageId=aLGNuLSTJVwgEiCn&cartID=333334444
-      // &receiverID=77777777-7777-4777-b777-777777888888
-      // &uuid=77777777-7777-4777-b777-778888888888
-      //
-      // The site created the parameters cartID, receiverID and uuid using
-      // random number generators. These parameters will have different values
-      // every time the browser loads the page. Therefore automation will not
-      // be able to identify an iframe that loads this URL.
-      context.browser_test.schemeAndHost =
-          `${frameLocation.protocol}//${frameLocation.host}`;
+      return Promise.resolve(iframe.name);
     } else {
-      context.browser_test.url = frameLocation.href;
+      return Promise.resolve('');
     }
-
-    iframeContextMap[frameId] = context;
-    return Promise.resolve(context);
   }
 
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -466,8 +494,8 @@
         stopRecording();
         sendResponse(true);
         break;
-      case RecorderMsgEnum.GET_IFRAME_XPATH:
-        queryIframeContext(request.frameId, request.location)
+      case RecorderMsgEnum.GET_IFRAME_NAME:
+        queryIframeName(request.url)
         .then((context) => {
           sendResponse(context);
         }).catch((error) => {
@@ -482,4 +510,57 @@
     // to persist.
     return false;
   });
+
+  if (typeof automation_helper === 'undefined') {
+    var automation_helper = {
+      // An enum specifying the state of an element on the page.
+      DomElementReadyState:
+        Object.freeze({
+            "present": 0,
+            "visible": 1 << 0,
+            "enabled": 1 << 1,
+            "on_top": 1 << 2,
+        }),
+    };
+
+    automation_helper.getElementState = function(element) {
+      let state_flags = this.DomElementReadyState.present;
+      // Check if the element is disabled.
+      if (!element.disabled) {
+        state_flags |= this.DomElementReadyState.enabled;
+      }
+      // Check if the element is visible.
+      if (element.offsetParent !== null &&
+          element.offsetWidth > 0 &&
+          element.offsetHeight > 0) {
+        state_flags |= this.DomElementReadyState.visible;
+
+        // Check if the element is also on top.
+        const rect = element.getBoundingClientRect();
+        const topElement = document.elementFromPoint(
+            // As coordinates, use the center of the element, minus
+            // the window offset in case the element is outside the
+            // view.
+            rect.left + rect.width / 2 - window.pageXOffset,
+            rect.top + rect.height / 2 - window.pageYOffset);
+        if (isSelfOrDescendant(element, topElement)) {
+          state_flags |= this.DomElementReadyState.on_top;
+        }
+      }
+      return state_flags;
+    }
+
+    function isSelfOrDescendant(parent, child) {
+      var node = child;
+      while (node != null) {
+        if (node == parent) {
+          return true;
+        }
+        node = node.parentNode;
+      }
+      return false;
+    }
+
+    return automation_helper;
+  }
 })();
