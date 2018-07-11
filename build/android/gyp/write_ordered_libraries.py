@@ -72,7 +72,6 @@ def main():
   parser.add_option('--exclude-shared-libraries',
       help='List of shared libraries to exclude from the output.')
   parser.add_option('--output', help='Path to the generated .json file.')
-  parser.add_option('--stamp', help='Path to touch on success.')
 
   options, _ = parser.parse_args(build_utils.ExpandFileArgs(sys.argv[1:]))
 
@@ -108,9 +107,6 @@ def main():
       out_json,
       options.output,
       only_if_changed=True)
-
-  if options.stamp:
-    build_utils.Touch(options.stamp)
 
   if options.depfile:
     build_utils.WriteDepfile(options.depfile, options.output, libraries)

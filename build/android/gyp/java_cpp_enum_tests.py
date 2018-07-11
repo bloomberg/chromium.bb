@@ -10,17 +10,12 @@ This test suite containss various tests for the C++ -> Java enum generator.
 
 import collections
 from datetime import date
-import optparse
-import os
-import sys
 import unittest
 
 import java_cpp_enum
 from java_cpp_enum import EnumDefinition, GenerateOutput, GetScriptName
 from java_cpp_enum import HeaderParser
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "gyp"))
-from util import build_utils
 
 class TestPreprocess(unittest.TestCase):
   def testOutput(self):
@@ -746,16 +741,6 @@ public @interface ClassName {
       finally:
         java_cpp_enum.DoParseHeaderFile = original_do_parse
 
-def main(argv):
-  parser = optparse.OptionParser()
-  parser.add_option("--stamp", help="File to touch on success.")
-  options, _ = parser.parse_args(argv)
-
-  suite = unittest.TestLoader().loadTestsFromTestCase(TestPreprocess)
-  unittest.TextTestRunner(verbosity=0).run(suite)
-
-  if options.stamp:
-    build_utils.Touch(options.stamp)
 
 if __name__ == '__main__':
-  main(sys.argv[1:])
+  unittest.main()

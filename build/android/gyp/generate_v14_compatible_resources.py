@@ -20,7 +20,6 @@ Please refer to http://crbug.com/235118 for the details.
 """
 
 import codecs
-import optparse
 import os
 import re
 import shutil
@@ -236,32 +235,6 @@ def GenerateV14StyleResourcesInDir(input_dir, output_v14_dir):
     GenerateV14StyleResource(input_filename, output_v14_filename)
 
 
-def ParseArgs():
-  """Parses command line options.
-
-  Returns:
-    An options object as from optparse.OptionsParser.parse_args()
-  """
-  parser = optparse.OptionParser()
-  parser.add_option('--res-dir',
-                    help='directory containing resources '
-                         'used to generate v14 compatible resources')
-  parser.add_option('--res-v14-compatibility-dir',
-                    help='output directory into which '
-                         'v14 compatible resources will be generated')
-  parser.add_option('--stamp', help='File to touch on success')
-
-  options, args = parser.parse_args()
-
-  if args:
-    parser.error('No positional arguments should be given.')
-
-  # Check that required options have been provided.
-  required_options = ('res_dir', 'res_v14_compatibility_dir')
-  build_utils.CheckOptions(options, parser, required=required_options)
-  return options
-
-
 def GenerateV14Resources(res_dir, res_v14_dir):
   for name in os.listdir(res_dir):
     if not os.path.isdir(os.path.join(res_dir, name)):
@@ -306,22 +279,3 @@ def GenerateV14Resources(res_dir, res_v14_dir):
         GenerateV14StyleResourcesInDir(input_dir, output_v14_dir)
       elif not api_level_qualifier:
         ErrorIfStyleResourceExistsInDir(input_dir)
-
-
-def main():
-  options = ParseArgs()
-
-  res_v14_dir = options.res_v14_compatibility_dir
-
-  build_utils.DeleteDirectory(res_v14_dir)
-  build_utils.MakeDirectory(res_v14_dir)
-
-  GenerateV14Resources(options.res_dir, res_v14_dir)
-
-  if options.stamp:
-    build_utils.Touch(options.stamp)
-
-
-if __name__ == '__main__':
-  sys.exit(main())
-

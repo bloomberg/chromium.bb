@@ -40,7 +40,6 @@ def main(args):
   parser.add_option('--include-path', help='Include path for gcc.')
   parser.add_option('--template', help='Path to template.')
   parser.add_option('--output', help='Path for generated file.')
-  parser.add_option('--stamp', help='Path to touch on success.')
   parser.add_option('--defines', help='Pre-defines macros', action='append')
 
   options, _ = parser.parse_args(args)
@@ -49,9 +48,6 @@ def main(args):
 
   if options.depfile:
     build_utils.WriteDepfile(options.depfile, options.output)
-
-  if options.stamp:
-    build_utils.Touch(options.stamp)
 
 
 if __name__ == '__main__':

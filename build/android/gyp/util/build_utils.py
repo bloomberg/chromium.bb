@@ -553,10 +553,10 @@ def CallAndWriteDepfileIfStale(function, options, record_path=None,
                                output_paths=None, force=False,
                                pass_changes=False, depfile_deps=None,
                                add_pydeps=True):
-  """Wraps md5_check.CallAndRecordIfStale() and also writes dep & stamp files.
+  """Wraps md5_check.CallAndRecordIfStale() and writes a depfile if applicable.
 
-  Depfiles and stamp files are automatically added to output_paths when present
-  in the |options| argument. They are then created after |function| is called.
+  Depfiles are automatically added to output_paths when present in the |options|
+  argument. They are then created after |function| is called.
 
   By default, only python dependencies are added to the depfile. If there are
   other input paths that are not captured by GN deps, then they should be listed
@@ -576,10 +576,6 @@ def CallAndWriteDepfileIfStale(function, options, record_path=None,
     input_paths += python_deps
     output_paths += [options.depfile]
 
-  stamp_file = hasattr(options, 'stamp') and options.stamp
-  if stamp_file:
-    output_paths += [stamp_file]
-
   def on_stale_md5(changes):
     args = (changes,) if pass_changes else ()
     function(*args)
@@ -589,8 +585,6 @@ def CallAndWriteDepfileIfStale(function, options, record_path=None,
         all_depfile_deps.extend(depfile_deps)
       WriteDepfile(options.depfile, output_paths[0], all_depfile_deps,
                    add_pydeps=False)
-    if stamp_file:
-      Touch(stamp_file)
 
   md5_check.CallAndRecordIfStale(
       on_stale_md5,
