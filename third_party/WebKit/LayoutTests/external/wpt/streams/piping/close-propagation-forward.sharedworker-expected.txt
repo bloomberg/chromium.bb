@@ -28,5 +28,6 @@ PASS Closing must be propagated forward: shutdown must not occur until the final
 FAIL Closing must be propagated forward: shutdown must not occur until the final write completes; preventClose = true assert_equals: the pipe must not be complete expected false but got true
 PASS Closing must be propagated forward: shutdown must not occur until the final write completes; becomes closed after first write
 FAIL Closing must be propagated forward: shutdown must not occur until the final write completes; becomes closed after first write; preventClose = true assert_false: the pipe should not complete while the second write is pending expected false got true
+PASS Closing must be propagated forward: erroring the writable while flushing pending writes should error pipeTo
 Harness: the test ran to completion.
 
