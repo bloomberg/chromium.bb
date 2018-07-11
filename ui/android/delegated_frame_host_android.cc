@@ -443,6 +443,11 @@ void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
     return;
   }
 
+  if (!enable_surface_synchronization_) {
+    content_layer_->SetPrimarySurfaceId(
+        other->content_layer_->fallback_surface_id(),
+        cc::DeadlinePolicy::UseDefaultDeadline());
+  }
   content_layer_->SetFallbackSurfaceId(
       other->content_layer_->fallback_surface_id());
 }

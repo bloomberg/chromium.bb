@@ -73,6 +73,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   bool HasDelegatedContent() const;
 
+  cc::SurfaceLayer* content_layer_for_testing() { return content_layer_.get(); }
+
   viz::FrameSinkId GetFrameSinkId() const;
 
   // Should only be called when the host has a content layer. Use this for one-

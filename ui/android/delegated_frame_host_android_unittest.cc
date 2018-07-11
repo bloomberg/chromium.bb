@@ -7,6 +7,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
+#include "cc/layers/surface_layer.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -154,6 +155,30 @@ TEST_F(DelegatedFrameHostAndroidSurfaceSynchronizationTest,
   EXPECT_CALL(compositor_, IsDrawingFirstVisibleFrame()).Times(0);
   EXPECT_CALL(compositor_, DoGetCompositorLock(_, _)).Times(0);
   frame_host_->AttachToCompositor(&compositor_);
+}
+
+// If surface synchronization is off, and we are doing a cross-process
+// navigation, then both the primary and fallback surface IDs need to be
+// updated together.
+TEST_F(DelegatedFrameHostAndroidTest, TakeFallbackContentFromUpdatesPrimary) {
+  EXPECT_FALSE(frame_host_->SurfaceId().is_valid());
+  // Submit a compositor frame to ensure we have delegated content.
+  SubmitCompositorFrame();
+
+  EXPECT_TRUE(frame_host_->SurfaceId().is_valid());
+  std::unique_ptr<DelegatedFrameHostAndroid> other_frame_host =
+      std::make_unique<DelegatedFrameHostAndroid>(
+          &view_, &host_frame_sink_manager_, &client_, viz::FrameSinkId(2, 2),
+          ShouldEnableSurfaceSynchronization());
+
+  EXPECT_FALSE(other_frame_host->SurfaceId().is_valid());
+
+  other_frame_host->TakeFallbackContentFrom(frame_host_.get());
+
+  EXPECT_TRUE(other_frame_host->SurfaceId().is_valid());
+  EXPECT_EQ(
+      other_frame_host->content_layer_for_testing()->primary_surface_id(),
+      other_frame_host->content_layer_for_testing()->fallback_surface_id());
 }
 
 TEST_F(DelegatedFrameHostAndroidTest, CompositorLockDuringFirstFrame) {
