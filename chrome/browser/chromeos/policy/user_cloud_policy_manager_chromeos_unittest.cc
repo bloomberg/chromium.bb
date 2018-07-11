@@ -62,6 +62,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -258,20 +259,6 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     return fetcher;
   }
 
-  void SimulateOAuth2TokenResponse(const std::string& content) {
-    GURL url = GaiaUrls::GetInstance()->oauth2_token_url();
-    ASSERT_TRUE(test_url_loader_factory_.IsPending(url.spec()));
-    ASSERT_EQ(url,
-              (*test_url_loader_factory_.pending_requests())[0].request.url);
-
-    network::TestURLLoaderFactory::PendingRequest request =
-        std::move((*test_url_loader_factory_.pending_requests())[0]);
-    test_url_loader_factory_.pending_requests()->erase(
-        test_url_loader_factory_.pending_requests()->begin());
-    network::TestURLLoaderFactory::SimulateResponse(std::move(request),
-                                                    content);
-  }
-
   // Issues the OAuth2 tokens and returns the device management register job
   // if the flow succeeded.
   MockDeviceManagementJob* IssueOAuthToken(bool has_request_token) {
@@ -310,7 +297,11 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
 
       // Issue the access token. This uses OAuth2AccessTokenFetcher which uses
       // the network service.
-      SimulateOAuth2TokenResponse(kOAuth2AccessTokenData);
+      test_url_loader_factory_.SimulateResponseForPendingRequest(
+          GaiaUrls::GetInstance()->oauth2_token_url(),
+          network::URLLoaderCompletionStatus(net::OK),
+          network::CreateResourceResponseHead(net::HTTP_OK),
+          kOAuth2AccessTokenData);
     } else {
       // Since the refresh token is available, OAuth2TokenService was used
       // to request the access token and not UserCloudPolicyTokenForwarder.

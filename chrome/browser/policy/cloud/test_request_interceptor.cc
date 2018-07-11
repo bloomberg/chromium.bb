@@ -319,7 +319,7 @@ void TestRequestInterceptor::RespondToRegisterWithSuccess(
   status.decoded_body_length = content.size();
 
   network::ResourceResponseHead head =
-      network::TestURLLoaderFactory::CreateResourceResponseHead(net::HTTP_OK);
+      network::CreateResourceResponseHead(net::HTTP_OK);
   head.mime_type = "application/protobuf";
 
   factory->AddResponse(request.url, head, content, status);

@@ -6,11 +6,11 @@
 
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/string_util.h"
 #include "net/http/http_status_code.h"
-#include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/test/test_utils.h"
 
 namespace network {
 
@@ -124,39 +124,55 @@ bool TestURLLoaderFactory::CreateLoaderAndStartInternal(
   if (it == responses_.end())
     return false;
 
-  SimulateResponseImpl(client, it->second.redirects, it->second.head,
-                       it->second.content, it->second.status);
+  SimulateResponse(client, it->second.redirects, it->second.head,
+                   it->second.content, it->second.status);
+  return true;
+}
+
+bool TestURLLoaderFactory::SimulateResponseForPendingRequest(
+    const GURL& url,
+    const network::URLLoaderCompletionStatus& completion_status,
+    const ResourceResponseHead& response_head,
+    const std::string& content,
+    SimulateResponseFlags flags) {
+  if (pending_requests_.empty())
+    return false;
+
+  const bool url_match_prefix = flags & kUrlMatchPrefix;
+  const bool reverse = flags & kMostRecentMatch;
+
+  bool found_request = false;
+  network::TestURLLoaderFactory::PendingRequest request;
+  for (int i = (reverse ? static_cast<int>(pending_requests_.size()) - 1 : 0);
+       reverse ? i >= 0 : i < static_cast<int>(pending_requests_.size());
+       reverse ? --i : ++i) {
+    if (pending_requests_[i].request.url == url ||
+        (url_match_prefix &&
+         base::StartsWith(pending_requests_[i].request.url.spec(), url.spec(),
+                          base::CompareCase::INSENSITIVE_ASCII))) {
+      request = std::move(pending_requests_[i]);
+      pending_requests_.erase(pending_requests_.begin() + i);
+      found_request = true;
+      break;
+    }
+  }
+  if (!found_request)
+    return false;
+
+  // |decoded_body_length| must be set to the right size or the SimpleURLLoader
+  // will fail.
+  network::URLLoaderCompletionStatus status(completion_status);
+  status.decoded_body_length = content.size();
+
+  SimulateResponse(request.client.get(), TestURLLoaderFactory::Redirects(),
+                   response_head, content, status);
+  base::RunLoop().RunUntilIdle();
+
   return true;
 }
 
 // static
 void TestURLLoaderFactory::SimulateResponse(
-    TestURLLoaderFactory::PendingRequest request,
-    std::string content,
-    int net_error,
-    net::HttpStatusCode http_status) {
-  network::URLLoaderCompletionStatus status(net_error);
-  ResourceResponseHead head = CreateResourceResponseHead(http_status);
-  status.decoded_body_length = content.size();
-  SimulateResponseImpl(request.client.get(), TestURLLoaderFactory::Redirects(),
-                       head, content, status);
-  base::RunLoop().RunUntilIdle();
-}
-
-// static
-ResourceResponseHead TestURLLoaderFactory::CreateResourceResponseHead(
-    net::HttpStatusCode http_status) {
-  ResourceResponseHead head;
-  std::string headers(base::StringPrintf(
-      "HTTP/1.1 %d %s\nContent-type: text/html\n\n",
-      static_cast<int>(http_status), net::GetHttpReasonPhrase(http_status)));
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
-  return head;
-}
-
-// static
-void TestURLLoaderFactory::SimulateResponseImpl(
     mojom::URLLoaderClient* client,
     TestURLLoaderFactory::Redirects redirects,
     ResourceResponseHead head,

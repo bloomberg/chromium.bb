@@ -6,6 +6,7 @@
 #define SERVICES_NETWORK_TEST_TEST_URL_LOADER_FACTORY_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -29,6 +30,15 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
 
     mojom::URLLoaderClientPtr client;
     ResourceRequest request;
+  };
+
+  // Bitfield that is used with |SimulateResponseForPendingRequest()|.
+  enum SimulateResponseFlags : uint32_t {
+    kDefault = 0x0,
+    kUrlMatchPrefix = 0x1,   // Whether URLs are a match if they start with the
+                             // URL passed in to
+                             // SimulateResponseForPendingRequest
+    kMostRecentMatch = 0x2,  // Start with the most recent requests.
   };
 
   TestURLLoaderFactory();
@@ -74,15 +84,19 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   // servicing requests themselves, whenever possible.
   std::vector<PendingRequest>* pending_requests() { return &pending_requests_; }
 
-  // Sends a response for |request| that can be retrieved from
-  // pending_requests(). Prefer using AddResponse.
-  static void SimulateResponse(PendingRequest request,
-                               std::string content,
-                               int net_error = net::OK,
-                               net::HttpStatusCode status = net::HTTP_OK);
-
-  static ResourceResponseHead CreateResourceResponseHead(
-      net::HttpStatusCode http_status);
+  // Sends a response for the first (oldest) pending request with URL |url|.
+  // Returns false if no such pending request exists.
+  // |flags| can be used to change the default behavior:
+  // - if kUrlMatchPrefix is set, the pending request is a match if its URL
+  //   starts with |url| (instead of being equal to |url|).
+  // - if kMostRecentMatch is set, the most recent (instead of oldest) pending
+  //   request matching is used.
+  bool SimulateResponseForPendingRequest(
+      const GURL& url,
+      const network::URLLoaderCompletionStatus& completion_status,
+      const ResourceResponseHead& response_head,
+      const std::string& content,
+      SimulateResponseFlags flags = kDefault);
 
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,
@@ -99,11 +113,11 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   bool CreateLoaderAndStartInternal(const GURL& url,
                                     mojom::URLLoaderClient* client);
 
-  static void SimulateResponseImpl(mojom::URLLoaderClient* client,
-                                   Redirects redirects,
-                                   ResourceResponseHead head,
-                                   std::string content,
-                                   URLLoaderCompletionStatus status);
+  static void SimulateResponse(mojom::URLLoaderClient* client,
+                               Redirects redirects,
+                               ResourceResponseHead head,
+                               std::string content,
+                               URLLoaderCompletionStatus status);
 
   struct Response {
     Response();
