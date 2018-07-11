@@ -121,6 +121,11 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   bool needs_sync_tokens() const { return needs_sync_tokens_; }
 
+  // Updates surface references of the surface using the referenced
+  // surfaces from the most recent CompositorFrame.
+  // Modifies surface references stored in SurfaceManager.
+  void UpdateSurfaceReferences();
+
   // Returns false if |frame| is invalid.
   // |frame_rejected_callback| will be called once if the frame will not be
   // displayed.
