@@ -332,6 +332,20 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   void SetPageScheduler(std::unique_ptr<PageScheduler>);
 
+  // Typically, the main frame and Page should both be owned by the embedder,
+  // which must call Page::willBeDestroyed() prior to destroying Page. This
+  // call detaches the main frame and clears this pointer, thus ensuring that
+  // this field only references a live main frame.
+  //
+  // However, there are several locations (InspectorOverlay, SVGImage, and
+  // WebPagePopupImpl) which don't hold a reference to the main frame at all
+  // after creating it. These are still safe because they always create a
+  // Frame with a LocalFrameView. LocalFrameView and Frame hold references to
+  // each other, thus keeping each other alive. The call to willBeDestroyed()
+  // breaks this cycle, so the frame is still properly destroyed once no
+  // longer needed.
+  Member<Frame> main_frame_;
+
   Member<PageAnimator> animator_;
   const Member<AutoscrollController> autoscroll_controller_;
   Member<ChromeClient> chrome_client_;
@@ -349,20 +363,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
       global_root_scroller_controller_;
   const Member<VisualViewport> visual_viewport_;
   const Member<OverscrollController> overscroll_controller_;
-
-  // Typically, the main frame and Page should both be owned by the embedder,
-  // which must call Page::willBeDestroyed() prior to destroying Page. This
-  // call detaches the main frame and clears this pointer, thus ensuring that
-  // this field only references a live main frame.
-  //
-  // However, there are several locations (InspectorOverlay, SVGImage, and
-  // WebPagePopupImpl) which don't hold a reference to the main frame at all
-  // after creating it. These are still safe because they always create a
-  // Frame with a LocalFrameView. LocalFrameView and Frame hold references to
-  // each other, thus keeping each other alive. The call to willBeDestroyed()
-  // breaks this cycle, so the frame is still properly destroyed once no
-  // longer needed.
-  Member<Frame> main_frame_;
 
   Member<PluginData> plugin_data_;
 

@@ -145,6 +145,7 @@ Page* Page::CreateOrdinary(PageClients& page_clients, Page* opener) {
 
 Page::Page(PageClients& page_clients)
     : SettingsDelegate(Settings::Create()),
+      main_frame_(nullptr),
       animator_(PageAnimator::Create(*this)),
       autoscroll_controller_(AutoscrollController::Create(*this)),
       chrome_client_(page_clients.chrome_client),
@@ -161,7 +162,6 @@ Page::Page(PageClients& page_clients)
       visual_viewport_(VisualViewport::Create(*this)),
       overscroll_controller_(
           OverscrollController::Create(GetVisualViewport(), GetChromeClient())),
-      main_frame_(nullptr),
       plugin_data_(nullptr),
       opened_by_dom_(false),
       tab_key_cycles_through_elements_(true),
