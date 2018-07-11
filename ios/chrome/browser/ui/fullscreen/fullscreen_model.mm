@@ -64,6 +64,12 @@ void FullscreenModel::ResetForNavigation() {
   }
 }
 
+void FullscreenModel::IgnoreRemainderOfCurrentScroll() {
+  if (!scrolling_)
+    return;
+  ignoring_current_scroll_ = true;
+}
+
 void FullscreenModel::AnimationEndedWithProgress(CGFloat progress) {
   DCHECK_GE(progress, 0.0);
   DCHECK_LE(progress, 1.0);
@@ -161,6 +167,9 @@ void FullscreenModel::SetScrollViewIsScrolling(bool scrolling) {
     return;
   scrolling_ = scrolling;
   if (!scrolling_) {
+    // Stop ignoring the current scroll.
+    ignoring_current_scroll_ = false;
+    // Notify observers that the scroll event has ended.
     ScopedIncrementer scroll_ended_incrementer(&observer_callback_count_);
     for (auto& observer : observers_) {
       observer.FullscreenModelScrollEventEnded(this);
@@ -213,6 +222,7 @@ FullscreenModel::ScrollAction FullscreenModel::ActionForScrollFromOffset(
   }
 
   // Ignore if:
+  // - explicitly requested via IgnoreRemainderOfCurrentScroll(),
   // - the scroll is a bounce-up animation at the top,
   // - the scroll is a bounce-down animation at the bottom,
   // - the scroll is attempting to scroll content up when it already fits.
@@ -221,7 +231,8 @@ FullscreenModel::ScrollAction FullscreenModel::ActionForScrollFromOffset(
   bool scrolling_past_bottom =
       y_content_offset_ + scroll_view_height_ >= content_height_;
   bool content_fits = content_height_ <= scroll_view_height_ - top_inset_;
-  if ((scrolling_past_top && !scrolling_content_down) ||
+  if (ignoring_current_scroll_ ||
+      (scrolling_past_top && !scrolling_content_down) ||
       (scrolling_past_bottom && scrolling_content_down) ||
       (content_fits && !scrolling_content_down)) {
     return ScrollAction::kIgnore;
