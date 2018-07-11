@@ -4,10 +4,9 @@
 
 mojom = "//mojo/public/mojom/base/file_info.mojom"
 public_headers = [ "//base/files/file.h" ]
-traits_headers = [ "//mojo/public/cpp/base/file_info_mojom_traits.h" ]
+traits_headers = [ "//ipc/ipc_message_utils.h" ]
 public_deps = [
-  "//base",
-  "//mojo/public/cpp/base:shared_typemap_traits",
+  "//ipc",
 ]
 
 type_mappings = [ "mojo_base.mojom.FileInfo=base::File::Info" ]

@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/public/interfaces/bindings/native_struct.mojom.h"
 
 namespace IPC {
 namespace internal {
@@ -94,7 +95,9 @@ class COMPONENT_EXPORT(IPC) MessagePipeReader : public mojom::Channel {
  private:
   // mojom::Channel:
   void SetPeerPid(int32_t peer_pid) override;
-  void Receive(MessageView message_view) override;
+  void Receive(base::span<const uint8_t> data,
+               base::Optional<std::vector<mojo::native::SerializedHandlePtr>>
+                   handles) override;
   void GetAssociatedInterface(
       const std::string& name,
       mojom::GenericInterfaceAssociatedRequest request) override;

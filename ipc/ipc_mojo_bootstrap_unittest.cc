@@ -72,11 +72,14 @@ class PeerPidReceiver : public IPC::mojom::Channel {
     on_peer_pid_set_.Run();
   }
 
-  void Receive(IPC::MessageView message_view) override {
+  void Receive(base::span<const uint8_t> data,
+               base::Optional<std::vector<mojo::native::SerializedHandlePtr>>
+                   handles) override {
     ASSERT_NE(MessageExpectation::kNotExpected, message_expectation_);
     received_message_ = true;
 
-    IPC::Message message(message_view.data(), message_view.size());
+    IPC::Message message(reinterpret_cast<const char*>(data.data()),
+                         static_cast<uint32_t>(data.size()));
     bool expected_valid =
         message_expectation_ == MessageExpectation::kExpectedValid;
     EXPECT_EQ(expected_valid, message.IsValid());
@@ -193,9 +196,7 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
   auto& sender = connection.GetSender();
 
   uint8_t data = 0;
-  sender->Receive(
-      IPC::MessageView(mojo_base::BigBufferView(base::make_span(&data, 0)),
-                       base::nullopt /* handles */));
+  sender->Receive(base::make_span(&data, 0), {});
 
   base::RunLoop run_loop;
   PeerPidReceiver impl(std::move(receiver), run_loop.QuitClosure());
