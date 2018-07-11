@@ -38,9 +38,6 @@ FlagWarningTray::FlagWarningTray(Shelf* shelf) : shelf_(shelf) {
   DCHECK(shelf_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  // Flag warning tray is not currently used in non-MASH environments, because
-  // mus will roll out via experiment/Finch trial and showing the tray would
-  // reveal the experiment state to users.
   DCHECK(!::features::IsAshInBrowserProcess());
   container_ = new TrayContainer(shelf);
   AddChildView(container_);
