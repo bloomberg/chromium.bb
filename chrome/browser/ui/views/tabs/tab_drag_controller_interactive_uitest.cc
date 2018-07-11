@@ -531,6 +531,24 @@ class DetachToBrowserTabDragControllerTest
     return true;
   }
 
+  void ReleaseMouseAfterWindowDetached() {
+    // On macOS, we want to avoid generating the input event [which requires an
+    // associated window] until the window has been detached. Failure to do so
+    // causes odd behavior [e.g. on macOS 10.10, the mouse-up will reactivate
+    // the first window].
+    if (browser_list->size() != 2u) {
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&DetachToBrowserTabDragControllerTest::
+                             ReleaseMouseAfterWindowDetached,
+                         base::Unretained(this)),
+          base::TimeDelta::FromMilliseconds(1));
+      return;
+    }
+
+    ASSERT_TRUE(ReleaseMouseAsync());
+  }
+
   bool ReleaseMouseAsync() {
     return input_source() == INPUT_SOURCE_MOUSE &&
         ui_controls::SendMouseEvents(ui_controls::LEFT, ui_controls::UP);
@@ -934,7 +952,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                   tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
                   base::Bind(&DetachToOwnWindowStep2, this)));
   if (input_source() == INPUT_SOURCE_MOUSE) {
-    ASSERT_TRUE(ReleaseMouseAsync());
+    ReleaseMouseAfterWindowDetached();
     QuitWhenNotDragging();
   }
 
@@ -1008,7 +1026,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
       tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
       base::Bind(&DetachToOwnWindowStep2, this)));
   if (input_source() == INPUT_SOURCE_MOUSE) {
-    ASSERT_TRUE(ReleaseMouseAsync());
+    ReleaseMouseAfterWindowDetached();
     QuitWhenNotDragging();
   }
 
@@ -1077,7 +1095,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                   tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
                   base::Bind(&DetachToOwnWindowStep2, this)));
   if (input_source() == INPUT_SOURCE_MOUSE) {
-    ASSERT_TRUE(ReleaseMouseAsync());
+    ReleaseMouseAfterWindowDetached();
     QuitWhenNotDragging();
   }
 
@@ -1134,7 +1152,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
       tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
       base::Bind(&DetachToOwnWindowStep2, this)));
   if (input_source() == INPUT_SOURCE_MOUSE) {
-    ASSERT_TRUE(ReleaseMouseAsync());
+    ReleaseMouseAfterWindowDetached();
     QuitWhenNotDragging();
   }
 
