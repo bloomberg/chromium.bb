@@ -102,8 +102,8 @@ void Surface::UpdateSurfaceReferences() {
   const base::flat_set<SurfaceId>& existing_referenced_surfaces =
       surface_manager_->GetSurfacesReferencedByParent(surface_id());
   base::flat_set<SurfaceId> new_referenced_surfaces(
-      active_referenced_surfaces()->begin(),
-      active_referenced_surfaces()->end(), base::KEEP_FIRST_OF_DUPES);
+      active_referenced_surfaces().begin(), active_referenced_surfaces().end(),
+      base::KEEP_FIRST_OF_DUPES);
 
   // Populate list of surface references to add and remove by getting the
   // difference between existing surface references and surface references for
@@ -125,8 +125,11 @@ void Surface::RejectCompositorFramesToFallbackSurfaces() {
   const std::vector<SurfaceId>& activation_dependencies =
       GetPendingFrame().metadata.activation_dependencies;
 
-  for (const SurfaceId& surface_id :
+  for (const SurfaceRange& surface_range :
        GetPendingFrame().metadata.referenced_surfaces) {
+    if (!surface_range.start())
+      continue;
+    const SurfaceId& surface_id = *surface_range.start();
     // A surface ID in |referenced_surfaces| that has a corresponding surface
     // ID in |activation_dependencies| with the same frame sink ID is said to
     // be a fallback surface that can be used in place of the primary surface
@@ -335,6 +338,13 @@ void Surface::ActivateFrame(FrameData frame_data,
   base::Optional<FrameData> previous_frame_data = std::move(active_frame_data_);
 
   active_frame_data_ = std::move(frame_data);
+
+  active_referenced_surfaces_.clear();
+  for (SurfaceRange surface_range :
+       active_frame_data_->frame.metadata.referenced_surfaces) {
+    if (surface_range.start())
+      active_referenced_surfaces_.emplace_back(*surface_range.start());
+  }
 
   for (auto& copy_request : old_copy_requests)
     RequestCopyOfOutput(std::move(copy_request));

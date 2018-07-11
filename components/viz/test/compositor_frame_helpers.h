@@ -54,7 +54,7 @@ class CompositorFrameBuilder {
   CompositorFrameBuilder& AddLatencyInfos(
       std::vector<ui::LatencyInfo> latency_info);
   CompositorFrameBuilder& SetReferencedSurfaces(
-      std::vector<SurfaceId> referenced_surfaces);
+      std::vector<SurfaceRange> referenced_surfaces);
   CompositorFrameBuilder& SetActivationDependencies(
       std::vector<SurfaceId> activation_dependencies);
   CompositorFrameBuilder& SetDeadline(const FrameDeadline& deadline);

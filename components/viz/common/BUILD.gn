@@ -136,6 +136,8 @@ viz_component("common") {
     "surfaces/surface_id.h",
     "surfaces/surface_info.cc",
     "surfaces/surface_info.h",
+    "surfaces/surface_range.cc",
+    "surfaces/surface_range.h",
     "switches.cc",
     "switches.h",
     "traced_value.cc",

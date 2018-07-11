@@ -151,7 +151,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
       viz::BeginFrameAck::CreateManualAckWithDamage();
   frame.render_pass_list.push_back(std::move(render_pass));
   frame.metadata.device_scale_factor = device_scale_factor;
-  frame.metadata.referenced_surfaces = child_ids_;
+  frame.metadata.referenced_surfaces = GetChildIdsRanges();
 
   if (!root_id_.is_valid() || viewport != surface_size_ ||
       device_scale_factor != device_scale_factor_) {
@@ -201,7 +201,7 @@ void SurfacesInstance::SetSolidColorRootFrame() {
   // We draw synchronously, so acknowledge a manual BeginFrame.
   frame.metadata.begin_frame_ack =
       viz::BeginFrameAck::CreateManualAckWithDamage();
-  frame.metadata.referenced_surfaces = child_ids_;
+  frame.metadata.referenced_surfaces = GetChildIdsRanges();
   frame.metadata.device_scale_factor = device_scale_factor_;
   support_->SubmitCompositorFrame(root_id_, std::move(frame));
 }
@@ -209,6 +209,13 @@ void SurfacesInstance::SetSolidColorRootFrame() {
 void SurfacesInstance::DidReceiveCompositorFrameAck(
     const std::vector<viz::ReturnedResource>& resources) {
   ReclaimResources(resources);
+}
+
+std::vector<viz::SurfaceRange> SurfacesInstance::GetChildIdsRanges() {
+  std::vector<viz::SurfaceRange> child_ranges;
+  for (const viz::SurfaceId& surface_id : child_ids_)
+    child_ranges.emplace_back(surface_id);
+  return child_ranges;
 }
 
 void SurfacesInstance::OnBeginFrame(const viz::BeginFrameArgs& args) {}

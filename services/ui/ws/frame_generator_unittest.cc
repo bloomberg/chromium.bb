@@ -75,8 +75,9 @@ class TestClientBinding : public viz::mojom::CompositorFrameSink,
     observing_begin_frames_ = needs_begin_frame;
     if (needs_begin_frame) {
       begin_frame_source_->AddObserver(this);
-    } else
+    } else {
       begin_frame_source_->RemoveObserver(this);
+    }
   }
 
   void SetWantsAnimateOnlyBeginFrames() override {}
@@ -215,10 +216,11 @@ TEST_F(FrameGeneratorTest, OnFirstSurfaceActivation) {
   // Verify that the CompositorFrame refers to the window manager's surface via
   // referenced_surfaces.
   const viz::CompositorFrameMetadata& last_metadata = LastMetadata();
-  const std::vector<viz::SurfaceId>& referenced_surfaces =
+  const std::vector<viz::SurfaceRange>& referenced_surfaces =
       last_metadata.referenced_surfaces;
   EXPECT_EQ(1lu, referenced_surfaces.size());
-  EXPECT_EQ(kArbitrarySurfaceId, referenced_surfaces.front());
+  EXPECT_EQ(viz::SurfaceRange(kArbitrarySurfaceId),
+            referenced_surfaces.front());
 
   viz::BeginFrameAck expected_ack(0, 2, true);
   EXPECT_EQ(expected_ack, LastBeginFrameAck());

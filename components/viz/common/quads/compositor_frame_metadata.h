@@ -14,6 +14,7 @@
 #include "components/viz/common/quads/frame_deadline.h"
 #include "components/viz/common/quads/selection.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -92,7 +93,7 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   // determine which surfaces to retain and which to evict. It will likely
   // be unnecessary for the embedder to explicitly specify which surfaces to
   // retain. Thus, this field will likely go away.
-  std::vector<SurfaceId> referenced_surfaces;
+  std::vector<SurfaceRange> referenced_surfaces;
 
   // This is the set of dependent SurfaceIds that should be active in the
   // display compositor before this CompositorFrame can be activated. Note

@@ -27,6 +27,7 @@ mojom("interfaces") {
     "compositing/shared_quad_state.mojom",
     "compositing/surface_id.mojom",
     "compositing/surface_info.mojom",
+    "compositing/surface_range.mojom",
     "compositing/texture_releaser.mojom",
     "compositing/transferable_resource.mojom",
     "compositing/video_detector_observer.mojom",

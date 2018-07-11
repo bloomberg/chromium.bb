@@ -10,6 +10,7 @@
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "services/viz/public/cpp/compositing/begin_frame_args_struct_traits.h"
 #include "services/viz/public/cpp/compositing/frame_deadline_struct_traits.h"
+#include "services/viz/public/cpp/compositing/surface_range_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_metadata.mojom-shared.h"
 
 namespace mojo {
@@ -100,7 +101,7 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.latency_info;
   }
 
-  static const std::vector<viz::SurfaceId>& referenced_surfaces(
+  static const std::vector<viz::SurfaceRange>& referenced_surfaces(
       const viz::CompositorFrameMetadata& metadata) {
     return metadata.referenced_surfaces;
   }

@@ -391,9 +391,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void SetHasCopyRequest(bool has_copy_request);
   bool has_copy_request() const { return has_copy_request_; }
 
-  void AddSurfaceLayerId(const viz::SurfaceId& surface_id);
-  void RemoveSurfaceLayerId(const viz::SurfaceId& surface_id);
-  base::flat_set<viz::SurfaceId> SurfaceLayerIds() const;
+  void AddSurfaceRange(const viz::SurfaceRange& surface_range);
+  void RemoveSurfaceRange(const viz::SurfaceRange& surface_range);
+  base::flat_set<viz::SurfaceRange> SurfaceRanges() const;
 
   void AddLayerShouldPushProperties(Layer* layer);
   void RemoveLayerShouldPushProperties(Layer* layer);
@@ -410,16 +410,16 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   virtual void SetNeedsFullTreeSync();
   bool needs_full_tree_sync() const { return needs_full_tree_sync_; }
 
-  bool needs_surface_ids_sync() const { return needs_surface_ids_sync_; }
-  void set_needs_surface_ids_sync(bool needs_surface_ids_sync) {
-    needs_surface_ids_sync_ = needs_surface_ids_sync;
+  bool needs_surface_ranges_sync() const { return needs_surface_ranges_sync_; }
+  void set_needs_surface_ranges_sync(bool needs_surface_ranges_sync) {
+    needs_surface_ranges_sync_ = needs_surface_ranges_sync;
   }
 
   void SetPropertyTreesNeedRebuild();
 
   void PushPropertyTreesTo(LayerTreeImpl* tree_impl);
   void PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl);
-  void PushSurfaceIdsTo(LayerTreeImpl* tree_impl);
+  void PushSurfaceRangesTo(LayerTreeImpl* tree_impl);
   void PushLayerTreeHostPropertiesTo(LayerTreeHostImpl* host_impl);
 
   MutatorHost* mutator_host() const { return mutator_host_; }
@@ -682,14 +682,15 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   bool needs_full_tree_sync_ = true;
 
-  bool needs_surface_ids_sync_ = false;
+  bool needs_surface_ranges_sync_ = false;
 
   gfx::Vector2dF elastic_overscroll_;
 
   scoped_refptr<HeadsUpDisplayLayer> hud_layer_;
 
-  // The number of SurfaceLayers that have fallback set to viz::SurfaceId.
-  base::flat_map<viz::SurfaceId, int> surface_layer_ids_;
+  // The number of SurfaceRanges that have (fallback,primary) set to
+  // viz::SurfaceRange.
+  base::flat_map<viz::SurfaceRange, int> surface_ranges_;
 
   // Set of layers that need to push properties.
   std::unordered_set<Layer*> layers_that_should_push_properties_;

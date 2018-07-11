@@ -320,7 +320,7 @@ void LayerTreeHost::FinishCommitOnImplThread(
     PushPropertyTreesTo(sync_tree);
     sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kSyncedPropertyTrees);
 
-    PushSurfaceIdsTo(sync_tree);
+    PushSurfaceRangesTo(sync_tree);
     TreeSynchronizer::PushLayerProperties(this, sync_tree);
     sync_tree->lifecycle().AdvanceTo(
         LayerTreeLifecycle::kSyncedLayerProperties);
@@ -1286,27 +1286,27 @@ bool LayerTreeHost::PaintContent(const LayerList& update_layer_list,
   return did_paint_content;
 }
 
-void LayerTreeHost::AddSurfaceLayerId(const viz::SurfaceId& surface_id) {
-  if (++surface_layer_ids_[surface_id] == 1)
-    needs_surface_ids_sync_ = true;
+void LayerTreeHost::AddSurfaceRange(const viz::SurfaceRange& surface_range) {
+  if (++surface_ranges_[surface_range] == 1)
+    needs_surface_ranges_sync_ = true;
 }
 
-void LayerTreeHost::RemoveSurfaceLayerId(const viz::SurfaceId& surface_id) {
-  auto iter = surface_layer_ids_.find(surface_id);
-  if (iter == surface_layer_ids_.end())
+void LayerTreeHost::RemoveSurfaceRange(const viz::SurfaceRange& surface_range) {
+  auto iter = surface_ranges_.find(surface_range);
+  if (iter == surface_ranges_.end())
     return;
 
   if (--iter->second <= 0) {
-    surface_layer_ids_.erase(iter);
-    needs_surface_ids_sync_ = true;
+    surface_ranges_.erase(iter);
+    needs_surface_ranges_sync_ = true;
   }
 }
 
-base::flat_set<viz::SurfaceId> LayerTreeHost::SurfaceLayerIds() const {
-  base::flat_set<viz::SurfaceId> ids;
-  for (auto& map_entry : surface_layer_ids_)
-    ids.insert(map_entry.first);
-  return ids;
+base::flat_set<viz::SurfaceRange> LayerTreeHost::SurfaceRanges() const {
+  base::flat_set<viz::SurfaceRange> ranges;
+  for (auto& map_entry : surface_ranges_)
+    ranges.insert(map_entry.first);
+  return ranges;
 }
 
 void LayerTreeHost::AddLayerShouldPushProperties(Layer* layer) {
@@ -1451,12 +1451,12 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   tree_impl->set_has_ever_been_drawn(false);
 }
 
-void LayerTreeHost::PushSurfaceIdsTo(LayerTreeImpl* tree_impl) {
-  if (needs_surface_ids_sync()) {
-    tree_impl->ClearSurfaceLayerIds();
-    tree_impl->SetSurfaceLayerIds(SurfaceLayerIds());
+void LayerTreeHost::PushSurfaceRangesTo(LayerTreeImpl* tree_impl) {
+  if (needs_surface_ranges_sync()) {
+    tree_impl->ClearSurfaceRanges();
+    tree_impl->SetSurfaceRanges(SurfaceRanges());
     // Reset for next update
-    set_needs_surface_ids_sync(false);
+    set_needs_surface_ranges_sync(false);
   }
 }
 
