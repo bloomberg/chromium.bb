@@ -5278,6 +5278,41 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
                                      "4012888888881881");
 }
 
+TEST_F(AutofillManagerTest, ProfileDisabledDoesNotFillFormData) {
+  autofill_manager_->SetProfileEnabled(false);
+
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  const char guid[] = "00000000-0000-0000-0000-000000000001";
+
+  // Expect no fields filled, no form data sent to renderer.
+  EXPECT_CALL(*autofill_driver_, SendFormDataToRenderer(_, _, _)).Times(0);
+
+  FillAutofillFormData(kDefaultPageID, form, *form.fields.begin(),
+                       MakeFrontendID(std::string(), guid));
+}
+
+TEST_F(AutofillManagerTest, ProfileDisabledDoesNotSuggest) {
+  autofill_manager_->SetProfileEnabled(false);
+
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field;
+  test::CreateTestFormField("Email", "email", "", "email", &field);
+  GetAutofillSuggestions(form, field);
+  // Expect no suggestions as autofill and autocomplete are disabled for
+  // addresses.
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+}
+
 TEST_F(AutofillManagerTest, CreditCardDisabledDoesNotFillFormData) {
   autofill_manager_->SetCreditCardEnabled(false);
 
@@ -5307,8 +5342,7 @@ TEST_F(AutofillManagerTest, CreditCardDisabledDoesNotSuggest) {
   FormsSeen(forms);
 
   FormFieldData field;
-  test::CreateTestFormField("Name on Card", "nameoncard", "pres", "text",
-                            &field);
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
   GetAutofillSuggestions(form, field);
   // Expect no suggestions as autofill and autocomplete are disabled for credit
   // cards.

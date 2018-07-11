@@ -37,6 +37,7 @@ class FormDataImporter {
   // |credit_card_autofill_enabled| is set to |true|, also begins the process to
   // offer local or upload credit card save.
   void ImportFormData(const FormStructure& submitted_form,
+                      bool profile_autofill_enabled,
                       bool credit_card_autofill_enabled);
 
   // Extract credit card from the form structure. This function allows for
@@ -66,6 +67,7 @@ class FormDataImporter {
   // to upload it. Returns |true| if sufficient address or credit card data
   // was found. Exposed for testing.
   bool ImportFormData(const FormStructure& form,
+                      bool profile_autofill_enabled,
                       bool credit_card_autofill_enabled,
                       bool should_return_local_card,
                       std::unique_ptr<CreditCard>* imported_credit_card);
@@ -127,6 +129,10 @@ class FormDataImporter {
                            ImportFormData_OneAddressCreditCardDisabled);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            ImportFormData_OneAddressOneCreditCard);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
+                           ImportFormData_AddressesDisabledOneCreditCard);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
+                           ImportFormData_AddressCreditCardDisabled);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            ImportFormData_TwoAddressesOneCreditCard);
   FRIEND_TEST_ALL_PREFIXES(

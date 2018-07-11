@@ -49,7 +49,8 @@ class TestAutofillManager : public AutofillManager {
 
   // AutofillManager overrides.
   bool IsAutofillEnabled() const override;
-  bool IsCreditCardAutofillEnabled() override;
+  bool IsProfileAutofillEnabled() const override;
+  bool IsCreditCardAutofillEnabled() const override;
   void UploadFormData(const FormStructure& submitted_form,
                       bool observed_submission) override;
   bool MaybeStartVoteUploadProcess(
@@ -78,6 +79,8 @@ class TestAutofillManager : public AutofillManager {
 
   void SetAutofillEnabled(bool autofill_enabled);
 
+  void SetProfileEnabled(bool profile_enabled);
+
   void SetCreditCardEnabled(bool credit_card_enabled);
 
   void SetExpectedSubmittedFieldTypes(
@@ -92,6 +95,7 @@ class TestAutofillManager : public AutofillManager {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   TestFormDataImporter* test_form_data_importer_ = nullptr;
   bool autofill_enabled_ = true;
+  bool profile_enabled_ = true;
   bool credit_card_enabled_ = true;
   bool call_parent_upload_form_data_ = false;
   base::Optional<bool> expected_observed_submission_;
