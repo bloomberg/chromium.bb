@@ -46,7 +46,6 @@ namespace autofill {
 
 class AddressNormalizer;
 class AutofillPopupDelegate;
-class AutofillProfile;
 class AutofillWebDataService;
 class CardUnmaskDelegate;
 class CreditCard;
@@ -125,10 +124,6 @@ class AutofillClient : public RiskDataLoader {
 
   // Causes the Autofill settings UI to be shown.
   virtual void ShowAutofillSettings() = 0;
-
-  // Runs |callback| if the |profile| should be imported as personal data.
-  virtual void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
-                                          base::OnceClosure callback) = 0;
 
   // A user has attempted to use a masked card. Prompt them for further
   // information to proceed.

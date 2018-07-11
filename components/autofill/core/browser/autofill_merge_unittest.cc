@@ -23,7 +23,6 @@
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/common/form_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -182,7 +181,6 @@ class AutofillMergeTest : public DataDrivenTest,
   // Deserializes |str| into a field type.
   ServerFieldType StringToFieldType(const std::string& str);
 
-  TestAutofillClient autofill_client_;
   PersonalDataManagerMock personal_data_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
 
@@ -206,7 +204,7 @@ AutofillMergeTest::~AutofillMergeTest() {
 void AutofillMergeTest::SetUp() {
   test::DisableSystemServices(nullptr);
   form_data_importer_ = std::make_unique<FormDataImporter>(
-      &autofill_client_,
+      /*AutofillClient=*/nullptr,
       /*payments::PaymentsClient=*/nullptr, &personal_data_, "en");
 }
 
