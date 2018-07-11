@@ -150,6 +150,10 @@ NSArray* FindDescendantToolbarItemsForActionName(
 // Clears the current custom accessory view and restores the default.
 - (void)reset;
 
+// Grey view used as the background of the keyboard to fix
+// http://crbug.com/847523
+@property(nonatomic, strong) UIView* grayBackgroundView;
+
 @end
 
 @implementation FormInputAccessoryViewController {
@@ -188,6 +192,8 @@ NSArray* FindDescendantToolbarItemsForActionName(
       _keyboardAccessoryMetricsLogger;
 }
 
+@synthesize grayBackgroundView = _grayBackgroundView;
+
 - (instancetype)initWithWebState:(web::WebState*)webState
                        providers:(NSArray*)providers {
   JsSuggestionManager* suggestionManager =
@@ -215,6 +221,15 @@ NSArray* FindDescendantToolbarItemsForActionName(
     _suggestionsHaveBeenShown = NO;
     _keyboardAccessoryMetricsLogger.reset(
         new autofill::KeyboardAccessoryMetricsLogger());
+    if (IsIPadIdiom()) {
+      _grayBackgroundView = [[UIView alloc] init];
+      // This color was obtained by try and error.
+      _grayBackgroundView.backgroundColor =
+          [[UIColor alloc] initWithRed:206 / 255.f
+                                 green:212 / 255.f
+                                  blue:217 / 255.f
+                                 alpha:1];
+    }
   }
   return self;
 }
@@ -254,6 +269,8 @@ NSArray* FindDescendantToolbarItemsForActionName(
 
 - (void)wasHidden {
   [_customAccessoryView removeFromSuperview];
+  [self.grayBackgroundView removeFromSuperview];
+
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -293,6 +310,7 @@ NSArray* FindDescendantToolbarItemsForActionName(
     // On iPad, there's no inputAccessoryView available, so we attach the custom
     // view directly to the keyboard view instead.
     [_customAccessoryView removeFromSuperview];
+    [self.grayBackgroundView removeFromSuperview];
 
     // If the keyboard isn't visible don't show the custom view.
     if (CGRectIntersection([UIScreen mainScreen].bounds, _keyboardFrame)
@@ -326,6 +344,12 @@ NSArray* FindDescendantToolbarItemsForActionName(
     UIView* keyboardView = [self getKeyboardView];
     DCHECK(keyboardView);
     [keyboardView addSubview:_customAccessoryView];
+
+    if (!self.grayBackgroundView.superview) {
+      [keyboardView addSubview:self.grayBackgroundView];
+      [keyboardView sendSubviewToBack:self.grayBackgroundView];
+    }
+    self.grayBackgroundView.frame = keyboardView.bounds;
   } else {
     // On iPhone, the custom view replaces the default UI of the
     // inputAccessoryView.
@@ -343,6 +367,8 @@ NSArray* FindDescendantToolbarItemsForActionName(
 
 - (void)restoreDefaultInputAccessoryView {
   [_customAccessoryView removeFromSuperview];
+  [self.grayBackgroundView removeFromSuperview];
+
   _customAccessoryView = nil;
   for (UIView* subview in _hiddenOriginalSubviews) {
     subview.hidden = NO;
@@ -586,6 +612,7 @@ NSArray* FindDescendantToolbarItemsForActionName(
     return;
   }
   _keyboardFrame = keyboardFrame;
+  self.grayBackgroundView.frame.size = keyboardFrame.size;
   [_currentProvider resizeAccessoryView];
 }
 
