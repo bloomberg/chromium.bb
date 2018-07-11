@@ -480,6 +480,20 @@ class CaretPositionResolutionAdjuster {
         result_box);
   }
 
+  static bool ShouldUseLegacyUnicodeBidiHack(const AbstractInlineBox& box,
+                                             UnicodeBidi unicode_bidi) {
+    if (!box.IsOldLayout())
+      return false;
+    if (unicode_bidi != UnicodeBidi::kPlaintext)
+      return false;
+    // Even in 'unicode-bidi: plaintext', we still need bidi adjustment at bidi
+    // boundaries.
+    // TODO(editing-dev): The code below may miss some cases of bidi boundaries.
+    const AbstractInlineBox backward_box =
+        TraversalStrategy::BackwardIgnoringLineBreak(box);
+    return backward_box.IsNull() || backward_box.BidiLevel() == box.BidiLevel();
+  }
+
   static AbstractInlineBoxAndSideAffinity AdjustFor(
       const AbstractInlineBox& box,
       UnicodeBidi unicode_bidi) {
@@ -489,9 +503,10 @@ class CaretPositionResolutionAdjuster {
     if (box.Direction() == primary_direction)
       return AdjustForPrimaryDirectionAlgorithm(box);
 
-    // TODO(editing-dev): Legacy adjustment should also check line direction
-    // only, and get rid of hacking with 'unicode-bidi'.
-    if (box.IsOldLayout() && unicode_bidi == UnicodeBidi::kPlaintext)
+    // In legacy layout we don't have a reliable way to get the line direction,
+    // which is different from block direction with 'unicode-bidi: plaintext'.
+    // We do hacky things in this case.
+    if (ShouldUseLegacyUnicodeBidiHack(box, unicode_bidi))
       return UnadjustedCaretPosition(box);
 
     const unsigned char level = box.BidiLevel();

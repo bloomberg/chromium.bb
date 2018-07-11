@@ -22,4 +22,17 @@ TEST_F(SelectionModifierCharacterTest, MoveLeftTowardsListMarkerNoCrash) {
             GetSelectionTextFromBody(modifier.Selection().AsSelection()));
 }
 
+// Regression test for crbug.com/861559
+TEST_F(SelectionModifierCharacterTest, MoveRightInDirAutoBidiTextNoCrash) {
+  const SelectionInDOMTree selection = SetSelectionTextToBody(
+      u8"<pre contenteditable dir=\"auto\">\u05D0$|A$\u05D0</pre>");
+  SelectionModifier modifier(GetFrame(), selection);
+  modifier.Modify(SelectionModifyAlteration::kMove,
+                  SelectionModifyDirection::kRight,
+                  TextGranularity::kCharacter);
+  // Shouldn't crash here.
+  EXPECT_EQ(u8"<pre contenteditable dir=\"auto\">\u05D0|$A$\u05D0</pre>",
+            GetSelectionTextFromBody(modifier.Selection().AsSelection()));
+}
+
 }  // namespace blink
