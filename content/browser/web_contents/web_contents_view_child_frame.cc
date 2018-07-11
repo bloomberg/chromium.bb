@@ -101,9 +101,9 @@ void WebContentsViewChildFrame::RenderViewCreated(RenderViewHost* host) {}
 
 void WebContentsViewChildFrame::RenderViewReady() {}
 
-void WebContentsViewChildFrame::RenderFrameSwappedIn(RenderFrameHost* old_host,
-                                                     RenderFrameHost* new_host,
-                                                     bool is_main_frame) {}
+void WebContentsViewChildFrame::RenderViewHostChanged(
+    RenderViewHost* old_host,
+    RenderViewHost* new_host) {}
 
 void WebContentsViewChildFrame::SetOverscrollControllerEnabled(bool enabled) {
   // This is managed by the outer view.
