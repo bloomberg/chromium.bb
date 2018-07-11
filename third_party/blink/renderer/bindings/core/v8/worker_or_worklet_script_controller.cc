@@ -131,7 +131,7 @@ void WorkerOrWorkletScriptController::DisposeContextIfNeeded() {
 
   if (global_scope_->IsWorkerGlobalScope() ||
       global_scope_->IsThreadedWorkletGlobalScope()) {
-    ScriptState::Scope scope(script_state_.get());
+    ScriptState::Scope scope(script_state_);
     WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(isolate_);
     debugger->ContextWillBeDestroyed(global_scope_->GetThread(),
                                      script_state_->GetContext());
@@ -184,9 +184,9 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
 
   script_state_ = ScriptState::Create(context, world_);
 
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
 
-  InitializeV8ExtrasBinding(script_state_.get());
+  InitializeV8ExtrasBinding(script_state_);
 
   // Associate the global proxy object, the global object and the worker
   // instance (C++ object) as follows.
@@ -268,7 +268,7 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
   if (!InitializeContextIfNeeded(String()))
     return ScriptValue();
 
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
 
   v8::TryCatch block(isolate_);
 
@@ -283,7 +283,7 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
   v8::ScriptCompiler::NoCacheReason no_cache_reason;
   std::tie(compile_options, produce_cache_options, no_cache_reason) =
       V8CodeCache::GetCompileOptions(v8_cache_options, source_code);
-  if (V8ScriptRunner::CompileScript(script_state_.get(), source_code,
+  if (V8ScriptRunner::CompileScript(script_state_, source_code,
                                     kSharableCrossOrigin, compile_options,
                                     no_cache_reason, referrer_info)
           .ToLocal(&compiled_script)) {
@@ -303,9 +303,8 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
     execution_state_->had_exception = true;
     execution_state_->error_message = ToCoreString(message->Get());
     execution_state_->location_ = SourceLocation::FromMessage(
-        isolate_, message, ExecutionContext::From(script_state_.get()));
-    execution_state_->exception =
-        ScriptValue(script_state_.get(), block.Exception());
+        isolate_, message, ExecutionContext::From(script_state_));
+    execution_state_->exception = ScriptValue(script_state_, block.Exception());
     block.Reset();
   } else {
     execution_state_->had_exception = false;
@@ -315,7 +314,7 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
   if (!maybe_result.ToLocal(&result) || result->IsUndefined())
     return ScriptValue();
 
-  return ScriptValue(script_state_.get(), result);
+  return ScriptValue(script_state_, result);
 }
 
 bool WorkerOrWorkletScriptController::Evaluate(
@@ -330,7 +329,7 @@ bool WorkerOrWorkletScriptController::Evaluate(
   if (IsExecutionForbidden())
     return false;
 
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
   if (state.had_exception) {
     if (error_event) {
       if (state.error_event_from_imported_script_) {
@@ -347,7 +346,7 @@ bool WorkerOrWorkletScriptController::Evaluate(
                                state.exception, world_.get());
       }
       V8ErrorHandler::StoreExceptionOnErrorEventWrapper(
-          script_state_.get(), *error_event, state.exception.V8Value(),
+          script_state_, *error_event, state.exception.V8Value(),
           script_state_->GetContext()->Global());
     } else {
       DCHECK(!global_scope_->ShouldSanitizeScriptError(
@@ -399,6 +398,7 @@ void WorkerOrWorkletScriptController::RethrowExceptionFromImportedScript(
 
 void WorkerOrWorkletScriptController::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_scope_);
+  visitor->Trace(script_state_);
 }
 
 }  // namespace blink

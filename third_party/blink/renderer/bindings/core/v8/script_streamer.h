@@ -122,7 +122,7 @@ class CORE_EXPORT ScriptStreamer final
   // What kind of cached data V8 produces during streaming.
   v8::ScriptCompiler::CompileOptions compile_options_;
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
 
   // For recording metrics for different types of scripts separately.
   Type script_type_;

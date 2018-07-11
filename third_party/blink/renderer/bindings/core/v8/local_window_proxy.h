@@ -54,6 +54,8 @@ class LocalWindowProxy final : public WindowProxy {
     return new LocalWindowProxy(isolate, frame, std::move(world));
   }
 
+  void Trace(blink::Visitor*) override;
+
   v8::Local<v8::Context> ContextIfInitialized() const {
     return script_state_ ? script_state_->GetContext()
                          : v8::Local<v8::Context>();
@@ -107,7 +109,7 @@ class LocalWindowProxy final : public WindowProxy {
 
   LocalFrame* GetFrame() const { return ToLocalFrame(WindowProxy::GetFrame()); }
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
 };
 
 DEFINE_TYPE_CASTS(LocalWindowProxy,

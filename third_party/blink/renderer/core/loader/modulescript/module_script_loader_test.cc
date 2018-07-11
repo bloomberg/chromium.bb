@@ -67,10 +67,10 @@ class TestModuleScriptLoaderClient final
 class ModuleScriptLoaderTestModulator final : public DummyModulator {
  public:
   ModuleScriptLoaderTestModulator(
-      scoped_refptr<ScriptState> script_state,
+      ScriptState* script_state,
       scoped_refptr<const SecurityOrigin> security_origin,
       ResourceFetcher* fetcher)
-      : script_state_(std::move(script_state)),
+      : script_state_(script_state),
         security_origin_(std::move(security_origin)),
         fetcher_(fetcher) {}
 
@@ -82,7 +82,7 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
     return KURL(base_url, module_request);
   }
 
-  ScriptState* GetScriptState() override { return script_state_.get(); }
+  ScriptState* GetScriptState() override { return script_state_; }
 
   void SetModuleRequests(const Vector<String>& requests) {
     requests_.clear();
@@ -96,7 +96,7 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
 
   ModuleScriptFetcher* CreateModuleScriptFetcher(
       ModuleScriptCustomFetchType custom_fetch_type) override {
-    auto* execution_context = ExecutionContext::From(script_state_.get());
+    auto* execution_context = ExecutionContext::From(script_state_);
     if (execution_context->IsWorkletGlobalScope()) {
       EXPECT_EQ(ModuleScriptCustomFetchType::kWorkletAddModule,
                 custom_fetch_type);
@@ -113,7 +113,7 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
   void Trace(blink::Visitor*) override;
 
  private:
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   scoped_refptr<const SecurityOrigin> security_origin_;
   Member<ResourceFetcher> fetcher_;
   Vector<ModuleRequest> requests_;
@@ -121,6 +121,7 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
 
 void ModuleScriptLoaderTestModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(fetcher_);
+  visitor->Trace(script_state_);
   DummyModulator::Trace(visitor);
 }
 

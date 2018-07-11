@@ -298,17 +298,17 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
 
 void V8GCController::CollectGarbage(v8::Isolate* isolate, bool only_minor_gc) {
   v8::HandleScope handle_scope(isolate);
-  scoped_refptr<ScriptState> script_state = ScriptState::Create(
+  ScriptState* script_state = ScriptState::Create(
       v8::Context::New(isolate),
       DOMWrapperWorld::Create(isolate,
                               DOMWrapperWorld::WorldType::kGarbageCollector));
-  ScriptState::Scope scope(script_state.get());
+  ScriptState::Scope scope(script_state);
   StringBuilder builder;
   builder.Append("if (gc) gc(");
   builder.Append(only_minor_gc ? "true" : "false");
-  builder.Append(")");
+  builder.Append(");");
   V8ScriptRunner::CompileAndRunInternalScript(
-      isolate, script_state.get(),
+      isolate, script_state,
       ScriptSourceCode(builder.ToString(), ScriptSourceLocationType::kInternal,
                        nullptr, KURL(), TextPosition()));
   script_state->DisposePerContextData();

@@ -8,6 +8,10 @@
 
 namespace blink {
 
+void ScriptFunction::Trace(blink::Visitor* visitor) {
+  visitor->Trace(script_state_);
+}
+
 v8::Local<v8::Function> ScriptFunction::BindToV8Function() {
 #if DCHECK_IS_ON()
   DCHECK(!bind_to_v8_function_already_called_);

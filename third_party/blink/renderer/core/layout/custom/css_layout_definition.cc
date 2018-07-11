@@ -329,6 +329,7 @@ void CSSLayoutDefinition::Trace(Visitor* visitor) {
   visitor->Trace(constructor_.Cast<v8::Value>());
   visitor->Trace(intrinsic_sizes_.Cast<v8::Value>());
   visitor->Trace(layout_.Cast<v8::Value>());
+  visitor->Trace(script_state_);
 }
 
 }  // namespace blink

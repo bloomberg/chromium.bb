@@ -178,7 +178,7 @@ class RejectedPromises::Message final {
     data.GetParameter()->exception_.Clear();
   }
 
-  ScriptState* script_state_;
+  Persistent<ScriptState> script_state_;
   ScopedPersistent<v8::Promise> promise_;
   ScopedPersistent<v8::Value> exception_;
   String error_message_;

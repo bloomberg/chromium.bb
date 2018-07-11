@@ -97,10 +97,10 @@ static const char kIndexedDBAgentEnabled[] = "indexedDBAgentEnabled";
 
 namespace {
 
-static const char kIndexedDBObjectGroup[] = "indexeddb";
-static const char kNoDocumentError[] = "No document for given frame found";
+const char kIndexedDBObjectGroup[] = "indexeddb";
+const char kNoDocumentError[] = "No document for given frame found";
 
-static Response AssertIDBFactory(Document* document, IDBFactory*& result) {
+Response AssertIDBFactory(Document* document, IDBFactory*& result) {
   LocalDOMWindow* dom_window = document->domWindow();
   if (!dom_window)
     return Response::Error("No IndexedDB factory for given frame found");
@@ -151,10 +151,6 @@ class GetDatabaseNamesCallback final : public EventListener {
     request_callback_->sendSuccess(std::move(database_names));
   }
 
-  void Trace(blink::Visitor* visitor) override {
-    EventListener::Trace(visitor);
-  }
-
  private:
   GetDatabaseNamesCallback(
       std::unique_ptr<RequestDatabaseNamesCallback> request_callback,
@@ -189,10 +185,6 @@ class DeleteCallback final : public EventListener {
       return;
     }
     request_callback_->sendSuccess();
-  }
-
-  void Trace(blink::Visitor* visitor) override {
-    EventListener::Trace(visitor);
   }
 
  private:
@@ -273,7 +265,7 @@ class OpenDatabaseCallback final : public EventListener {
  public:
   static OpenDatabaseCallback* Create(
       ExecutableWithDatabase<RequestCallback>* executable_with_database,
-      scoped_refptr<ScriptState> script_state) {
+      ScriptState* script_state) {
     return new OpenDatabaseCallback(executable_with_database, script_state);
   }
 
@@ -300,21 +292,26 @@ class OpenDatabaseCallback final : public EventListener {
     }
 
     IDBDatabase* idb_database = request_result->IdbDatabase();
-    executable_with_database_->Execute(idb_database, script_state_.get());
+    executable_with_database_->Execute(idb_database, script_state_);
     V8PerIsolateData::From(script_state_->GetIsolate())->RunEndOfScopeTasks();
     idb_database->close();
+  }
+
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(script_state_);
+    EventListener::Trace(visitor);
   }
 
  private:
   OpenDatabaseCallback(
       ExecutableWithDatabase<RequestCallback>* executable_with_database,
-      scoped_refptr<ScriptState> script_state)
+      ScriptState* script_state)
       : EventListener(EventListener::kCPPEventListenerType),
         executable_with_database_(executable_with_database),
         script_state_(script_state) {}
   scoped_refptr<ExecutableWithDatabase<RequestCallback>>
       executable_with_database_;
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
 };
 
 template <typename RequestCallback>
@@ -358,7 +355,7 @@ class UpgradeDatabaseCallback final : public EventListener {
       executable_with_database_;
 };
 
-static IDBTransaction* TransactionForDatabase(
+IDBTransaction* TransactionForDatabase(
     ScriptState* script_state,
     IDBDatabase* idb_database,
     const String& object_store_name,
@@ -373,9 +370,8 @@ static IDBTransaction* TransactionForDatabase(
   return idb_transaction;
 }
 
-static IDBObjectStore* ObjectStoreForTransaction(
-    IDBTransaction* idb_transaction,
-    const String& object_store_name) {
+IDBObjectStore* ObjectStoreForTransaction(IDBTransaction* idb_transaction,
+                                          const String& object_store_name) {
   DummyExceptionStateForTesting exception_state;
   IDBObjectStore* idb_object_store =
       idb_transaction->objectStore(object_store_name, exception_state);
@@ -384,8 +380,8 @@ static IDBObjectStore* ObjectStoreForTransaction(
   return idb_object_store;
 }
 
-static IDBIndex* IndexForObjectStore(IDBObjectStore* idb_object_store,
-                                     const String& index_name) {
+IDBIndex* IndexForObjectStore(IDBObjectStore* idb_object_store,
+                              const String& index_name) {
   DummyExceptionStateForTesting exception_state;
   IDBIndex* idb_index = idb_object_store->index(index_name, exception_state);
   if (exception_state.HadException())
@@ -393,8 +389,7 @@ static IDBIndex* IndexForObjectStore(IDBObjectStore* idb_object_store,
   return idb_index;
 }
 
-static std::unique_ptr<KeyPath> KeyPathFromIDBKeyPath(
-    const IDBKeyPath& idb_key_path) {
+std::unique_ptr<KeyPath> KeyPathFromIDBKeyPath(const IDBKeyPath& idb_key_path) {
   std::unique_ptr<KeyPath> key_path;
   switch (idb_key_path.GetType()) {
     case IDBKeyPath::kNullType:
@@ -618,25 +613,23 @@ class OpenCursorCallback final : public EventListener {
       return;
     }
 
-    Document* document =
-        ToDocument(ExecutionContext::From(script_state_.get()));
+    Document* document = ToDocument(ExecutionContext::From(script_state_));
     if (!document)
       return;
-    ScriptState* script_state = script_state_.get();
-    ScriptState::Scope scope(script_state);
-    v8::Local<v8::Context> context = script_state->GetContext();
+    ScriptState::Scope scope(script_state_);
+    v8::Local<v8::Context> context = script_state_->GetContext();
     v8_inspector::StringView object_group =
         ToV8InspectorStringView(kIndexedDBObjectGroup);
     std::unique_ptr<DataEntry> data_entry =
         DataEntry::create()
             .setKey(v8_session_->wrapObject(
-                context, idb_cursor->key(script_state).V8Value(), object_group,
+                context, idb_cursor->key(script_state_).V8Value(), object_group,
                 true /* generatePreview */))
             .setPrimaryKey(v8_session_->wrapObject(
-                context, idb_cursor->primaryKey(script_state).V8Value(),
+                context, idb_cursor->primaryKey(script_state_).V8Value(),
                 object_group, true /* generatePreview */))
             .setValue(v8_session_->wrapObject(
-                context, idb_cursor->value(script_state).V8Value(),
+                context, idb_cursor->value(script_state_).V8Value(),
                 object_group, true /* generatePreview */))
             .build();
     result_->addItem(std::move(data_entry));
@@ -647,6 +640,7 @@ class OpenCursorCallback final : public EventListener {
   }
 
   void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(script_state_);
     EventListener::Trace(visitor);
   }
 
@@ -666,7 +660,7 @@ class OpenCursorCallback final : public EventListener {
   }
 
   v8_inspector::V8InspectorSession* v8_session_;
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   std::unique_ptr<RequestDataCallback> request_callback_;
   int skip_count_;
   unsigned page_size_;
@@ -891,10 +885,6 @@ class DeleteObjectStoreEntriesListener final : public EventListener {
     request_callback_->sendSuccess();
   }
 
-  void Trace(blink::Visitor* visitor) override {
-    EventListener::Trace(visitor);
-  }
-
  private:
   DeleteObjectStoreEntriesListener(
       std::unique_ptr<DeleteObjectStoreEntriesCallback> request_callback)
@@ -999,10 +989,6 @@ class ClearObjectStoreListener final : public EventListener {
     }
 
     request_callback_->sendSuccess();
-  }
-
-  void Trace(blink::Visitor* visitor) override {
-    EventListener::Trace(visitor);
   }
 
  private:

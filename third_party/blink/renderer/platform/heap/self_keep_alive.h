@@ -15,29 +15,27 @@ namespace blink {
 // themselves temporarily alive and cannot rely on there being some
 // external reference in that interval:
 //
-//  class Opener {
-//  public:
-//     ...
-//     void open()
-//     {
-//         // Retain a self-reference while in an open()ed state:
-//         m_keepAlive = this;
-//         ....
-//     }
+//  class Opener : public GarbageCollected<Opener> {
+//   public:
+//    ...
+//    void Open() {
+//      // Retain a self-reference while in an Open()ed state:
+//      keep_alive_ = this;
+//      ....
+//    }
 //
-//     void close()
-//     {
-//         // Clear self-reference that ensured we were kept alive while opened.
-//         m_keepAlive.clear();
-//         ....
-//     }
+//    void Close() {
+//      // Clear self-reference that ensured we were kept alive while opened.
+//      keep_alive_.Clear();
+//      ....
+//    }
 //
-//  private:
-//     ...
-//     SelfKeepAlive m_keepAlive;
+//   private:
+//    ...
+//    SelfKeepAlive<Opener> keep_alive_;
 //  };
 //
-// The responsibility to call clear() in a timely fashion resides with the
+// The responsibility to call Clear() in a timely fashion resides with the
 // implementation of the object.
 //
 //

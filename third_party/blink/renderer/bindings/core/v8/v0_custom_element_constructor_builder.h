@@ -84,7 +84,7 @@ class V0CustomElementConstructorBuilder {
   bool PrototypeIsValid(const AtomicString& type, ExceptionState&) const;
   v8::MaybeLocal<v8::Function> RetrieveCallback(const char* name);
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   const ElementRegistrationOptions& options_;
   v8::Local<v8::Object> prototype_;
   v8::Local<v8::Function> constructor_;

@@ -85,19 +85,19 @@ size_t ReadVersionEnvelope(SerializedScriptValue* serialized_script_value,
 }  // namespace
 
 V8ScriptValueDeserializer::V8ScriptValueDeserializer(
-    scoped_refptr<ScriptState> script_state,
+    ScriptState* script_state,
     UnpackedSerializedScriptValue* unpacked_value,
     const Options& options)
-    : V8ScriptValueDeserializer(std::move(script_state),
+    : V8ScriptValueDeserializer(script_state,
                                 unpacked_value,
                                 unpacked_value->Value(),
                                 options) {}
 
 V8ScriptValueDeserializer::V8ScriptValueDeserializer(
-    scoped_refptr<ScriptState> script_state,
+    ScriptState* script_state,
     scoped_refptr<SerializedScriptValue> value,
     const Options& options)
-    : V8ScriptValueDeserializer(std::move(script_state),
+    : V8ScriptValueDeserializer(script_state,
                                 nullptr,
                                 std::move(value),
                                 options) {
@@ -108,11 +108,11 @@ V8ScriptValueDeserializer::V8ScriptValueDeserializer(
 }
 
 V8ScriptValueDeserializer::V8ScriptValueDeserializer(
-    scoped_refptr<ScriptState> script_state,
+    ScriptState* script_state,
     UnpackedSerializedScriptValue* unpacked_value,
     scoped_refptr<SerializedScriptValue> value,
     const Options& options)
-    : script_state_(std::move(script_state)),
+    : script_state_(script_state),
       unpacked_value_(unpacked_value),
       serialized_script_value_(value),
       deserializer_(script_state_->GetIsolate(),

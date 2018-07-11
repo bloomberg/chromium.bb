@@ -54,13 +54,13 @@ class CORE_EXPORT ScriptFunction
     : public GarbageCollectedFinalized<ScriptFunction> {
  public:
   virtual ~ScriptFunction() = default;
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(blink::Visitor*);
 
  protected:
   explicit ScriptFunction(ScriptState* script_state)
       : script_state_(script_state) {}
 
-  ScriptState* GetScriptState() const { return script_state_.get(); }
+  ScriptState* GetScriptState() const { return script_state_; }
 
   v8::Local<v8::Function> BindToV8Function();
 
@@ -68,7 +68,7 @@ class CORE_EXPORT ScriptFunction
   virtual ScriptValue Call(ScriptValue) = 0;
   static void CallCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
 #if DCHECK_IS_ON()
   // bindToV8Function must not be called twice.
   bool bind_to_v8_function_already_called_ = false;

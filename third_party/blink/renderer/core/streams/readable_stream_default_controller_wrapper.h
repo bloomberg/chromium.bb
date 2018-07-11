@@ -19,7 +19,7 @@ namespace blink {
 class CORE_EXPORT ReadableStreamDefaultControllerWrapper final
     : public GarbageCollectedFinalized<ReadableStreamDefaultControllerWrapper> {
  public:
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) { visitor->Trace(script_state_); }
 
   explicit ReadableStreamDefaultControllerWrapper(ScriptValue controller)
       : script_state_(controller.GetScriptState()),
@@ -36,7 +36,7 @@ class CORE_EXPORT ReadableStreamDefaultControllerWrapper final
   bool IsActive() const { return !js_controller_.IsEmpty(); }
 
   void Close() {
-    ScriptState* script_state = script_state_.get();
+    ScriptState* script_state = script_state_;
     // This will assert that the context is valid; do not call this method when
     // the context is invalidated.
     ScriptState::Scope scope(script_state);
@@ -54,7 +54,7 @@ class CORE_EXPORT ReadableStreamDefaultControllerWrapper final
   }
 
   double DesiredSize() const {
-    ScriptState* script_state = script_state_.get();
+    ScriptState* script_state = script_state_;
     // This will assert that the context is valid; do not call this method when
     // the context is invalidated.
     ScriptState::Scope scope(script_state);
@@ -73,7 +73,7 @@ class CORE_EXPORT ReadableStreamDefaultControllerWrapper final
 
   template <typename ChunkType>
   void Enqueue(ChunkType chunk) const {
-    ScriptState* script_state = script_state_.get();
+    ScriptState* script_state = script_state_;
     // This will assert that the context is valid; do not call this method when
     // the context is invalidated.
     ScriptState::Scope scope(script_state);
@@ -92,7 +92,7 @@ class CORE_EXPORT ReadableStreamDefaultControllerWrapper final
 
   template <typename ErrorType>
   void GetError(ErrorType error) {
-    ScriptState* script_state = script_state_.get();
+    ScriptState* script_state = script_state_;
     // This will assert that the context is valid; do not call this method when
     // the context is invalidated.
     ScriptState::Scope scope(script_state);
@@ -111,7 +111,7 @@ class CORE_EXPORT ReadableStreamDefaultControllerWrapper final
   }
 
  private:
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   ScopedPersistent<v8::Value> js_controller_;
 };
 

@@ -21,18 +21,18 @@
 namespace blink {
 
 ExecutionContext* ModulatorImplBase::GetExecutionContext() const {
-  return ExecutionContext::From(script_state_.get());
+  return ExecutionContext::From(script_state_);
 }
 
-ModulatorImplBase::ModulatorImplBase(scoped_refptr<ScriptState> script_state)
-    : script_state_(std::move(script_state)),
-      task_runner_(ExecutionContext::From(script_state_.get())
+ModulatorImplBase::ModulatorImplBase(ScriptState* script_state)
+    : script_state_(script_state),
+      task_runner_(ExecutionContext::From(script_state_)
                        ->GetTaskRunner(TaskType::kNetworking)),
       map_(ModuleMap::Create(this)),
       tree_linker_registry_(ModuleTreeLinkerRegistry::Create()),
       script_module_resolver_(ScriptModuleResolverImpl::Create(
           this,
-          ExecutionContext::From(script_state_.get()))),
+          ExecutionContext::From(script_state_))),
       dynamic_module_resolver_(DynamicModuleResolver::Create(this)) {
   DCHECK(script_state_);
   DCHECK(task_runner_);
@@ -189,16 +189,16 @@ ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
 }
 
 ScriptValue ModulatorImplBase::InstantiateModule(ScriptModule script_module) {
-  ScriptState::Scope scope(script_state_.get());
-  return script_module.Instantiate(script_state_.get());
+  ScriptState::Scope scope(script_state_);
+  return script_module.Instantiate(script_state_);
 }
 
 Vector<Modulator::ModuleRequest>
 ModulatorImplBase::ModuleRequestsFromScriptModule(ScriptModule script_module) {
-  ScriptState::Scope scope(script_state_.get());
-  Vector<String> specifiers = script_module.ModuleRequests(script_state_.get());
+  ScriptState::Scope scope(script_state_);
+  Vector<String> specifiers = script_module.ModuleRequests(script_state_);
   Vector<TextPosition> positions =
-      script_module.ModuleRequestPositions(script_state_.get());
+      script_module.ModuleRequestPositions(script_state_);
   DCHECK_EQ(specifiers.size(), positions.size());
   Vector<ModuleRequest> requests;
   requests.ReserveInitialCapacity(specifiers.size());
@@ -225,7 +225,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
 
   // Step 4. "Prepare to run script given settings." [spec text]
   // This is placed here to also cover ScriptModule::ReportException().
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
 
   // Step 5. "Let evaluationStatus be null." [spec text]
   // |error| corresponds to "evaluationStatus of [[Type]]: throw".
@@ -244,7 +244,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
     CHECK(!record.IsNull());
 
     // Step 7.2. "Set evaluationStatus to record.Evaluate()." [spec text]
-    error = record.Evaluate(script_state_.get());
+    error = record.Evaluate(script_state_);
 
     // "If Evaluate fails to complete as a result of the user agent aborting the
     // running script, then set evaluationStatus to Completion { [[Type]]:
@@ -261,7 +261,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
 
     // Step 8.2. "Otherwise, report the exception given by
     // evaluationStatus.[[Value]] for script." [spec text]
-    ScriptModule::ReportException(script_state_.get(), error.V8Value());
+    ScriptModule::ReportException(script_state_, error.V8Value());
   }
 
   // Step 9. "Clean up after running script with settings." [spec text]
@@ -270,11 +270,13 @@ ScriptValue ModulatorImplBase::ExecuteModule(
 }
 
 void ModulatorImplBase::Trace(blink::Visitor* visitor) {
-  Modulator::Trace(visitor);
+  visitor->Trace(script_state_);
   visitor->Trace(map_);
   visitor->Trace(tree_linker_registry_);
   visitor->Trace(script_module_resolver_);
   visitor->Trace(dynamic_module_resolver_);
+
+  Modulator::Trace(visitor);
 }
 
 }  // namespace blink

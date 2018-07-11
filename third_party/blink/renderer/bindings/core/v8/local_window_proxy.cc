@@ -66,6 +66,11 @@
 
 namespace blink {
 
+void LocalWindowProxy::Trace(blink::Visitor* visitor) {
+  visitor->Trace(script_state_);
+  WindowProxy::Trace(visitor);
+}
+
 void LocalWindowProxy::DisposeContext(Lifecycle next_status,
                                       FrameReuseStatus frame_reuse_status) {
   DCHECK(next_status == Lifecycle::kGlobalObjectIsDetached ||
@@ -74,13 +79,13 @@ void LocalWindowProxy::DisposeContext(Lifecycle next_status,
   if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
 
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
   v8::Local<v8::Context> context = script_state_->GetContext();
   // The embedder could run arbitrary code in response to the
   // willReleaseScriptContext callback, so all disposing should happen after
   // it returns.
   GetFrame()->Client()->WillReleaseScriptContext(context, world_->GetWorldId());
-  MainThreadDebugger::Instance()->ContextWillBeDestroyed(script_state_.get());
+  MainThreadDebugger::Instance()->ContextWillBeDestroyed(script_state_);
 
   if (next_status == Lifecycle::kGlobalObjectIsDetached) {
     // Clean up state on the global proxy, which will be reused.
@@ -139,7 +144,7 @@ void LocalWindowProxy::Initialize() {
 
   CreateContext();
 
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
   v8::Local<v8::Context> context = script_state_->GetContext();
   if (global_proxy_.IsEmpty()) {
     global_proxy_.Set(GetIsolate(), context->Global());
@@ -170,8 +175,8 @@ void LocalWindowProxy::Initialize() {
   {
     TRACE_EVENT1("v8", "ContextCreatedNotification", "IsMainFrame",
                  GetFrame()->IsMainFrame());
-    MainThreadDebugger::Instance()->ContextCreated(script_state_.get(),
-                                                   GetFrame(), origin);
+    MainThreadDebugger::Instance()->ContextCreated(script_state_, GetFrame(),
+                                                   origin);
     GetFrame()->Client()->DidCreateScriptContext(context, world_->GetWorldId());
   }
 
@@ -239,7 +244,7 @@ void LocalWindowProxy::CreateContext() {
 
   script_state_ = ScriptState::Create(context, world_);
 
-  InitializeV8ExtrasBinding(script_state_.get());
+  InitializeV8ExtrasBinding(script_state_);
 
   DCHECK(lifecycle_ == Lifecycle::kContextIsUninitialized ||
          lifecycle_ == Lifecycle::kGlobalObjectIsDetached);
@@ -277,7 +282,7 @@ void LocalWindowProxy::InstallConditionalFeatures() {
     // for origin trials, which do not apply to extensions). Some conditional
     // bindings cannot be enabled until the execution context is available
     // (e.g. parsing the document, inspecting HTTP headers).
-    InstallOriginTrialFeatures(wrapper_type_info, script_state_.get(),
+    InstallOriginTrialFeatures(wrapper_type_info, script_state_,
                                v8::Local<v8::Object>(),
                                v8::Local<v8::Function>());
   }
@@ -334,7 +339,7 @@ void LocalWindowProxy::UpdateDocumentProperty() {
   TRACE_EVENT1("v8", "LocalWindowProxy::UpdateDocumentProperty", "IsMainFrame",
                GetFrame()->IsMainFrame());
 
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
   v8::Local<v8::Context> context = script_state_->GetContext();
   v8::Local<v8::Value> document_wrapper =
       ToV8(GetFrame()->GetDocument(), context->Global(), GetIsolate());
@@ -514,7 +519,7 @@ void LocalWindowProxy::NamedItemAdded(HTMLDocument* document,
   if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
 
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
   v8::Local<v8::Object> document_wrapper =
       world_->DomDataStore().Get(document, GetIsolate());
   document_wrapper
@@ -538,7 +543,7 @@ void LocalWindowProxy::NamedItemRemoved(HTMLDocument* document,
 
   if (document->HasNamedItem(name))
     return;
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
   v8::Local<v8::Object> document_wrapper =
       world_->DomDataStore().Get(document, GetIsolate());
   document_wrapper

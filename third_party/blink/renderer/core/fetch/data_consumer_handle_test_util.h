@@ -64,7 +64,7 @@ class DataConsumerHandleTestUtil {
 
     WebThreadSupportingGC* GetThread() { return thread_.get(); }
     ExecutionContext* GetExecutionContext() { return execution_context_.Get(); }
-    ScriptState* GetScriptState() { return script_state_.get(); }
+    ScriptState* GetScriptState() { return script_state_; }
     v8::Isolate* GetIsolate() { return isolate_holder_->isolate(); }
 
    private:
@@ -76,7 +76,7 @@ class DataConsumerHandleTestUtil {
     std::unique_ptr<WaitableEvent> waitable_event_;
     Persistent<NullExecutionContext> execution_context_;
     std::unique_ptr<gin::IsolateHolder> isolate_holder_;
-    scoped_refptr<ScriptState> script_state_;
+    Persistent<ScriptState> script_state_;
   };
 
   class ThreadingTestBase : public ThreadSafeRefCounted<ThreadingTestBase> {

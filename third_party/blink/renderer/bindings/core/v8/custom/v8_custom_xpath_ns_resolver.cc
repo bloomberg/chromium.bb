@@ -99,6 +99,7 @@ AtomicString V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix) {
 }
 
 void V8CustomXPathNSResolver::Trace(blink::Visitor* visitor) {
+  visitor->Trace(script_state_);
   XPathNSResolver::Trace(visitor);
 }
 

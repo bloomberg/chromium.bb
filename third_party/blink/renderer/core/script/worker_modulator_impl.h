@@ -17,14 +17,14 @@ class ScriptState;
 // context should be implemented in this class, not in ModulatorImplBase.
 class WorkerModulatorImpl final : public ModulatorImplBase {
  public:
-  static ModulatorImplBase* Create(scoped_refptr<ScriptState>);
+  static ModulatorImplBase* Create(ScriptState*);
 
   // Implements ModulatorImplBase.
   ModuleScriptFetcher* CreateModuleScriptFetcher(
       ModuleScriptCustomFetchType) override;
 
  private:
-  explicit WorkerModulatorImpl(scoped_refptr<ScriptState>);
+  explicit WorkerModulatorImpl(ScriptState*);
 
   // Implements ModulatorImplBase.
   bool IsDynamicImportForbidden(String* reason) override;

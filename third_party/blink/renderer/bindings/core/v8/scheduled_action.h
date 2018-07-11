@@ -62,7 +62,7 @@ class ScheduledAction final
   ~ScheduledAction();
   void Dispose();
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor*);
 
   void Execute(ExecutionContext*);
 
@@ -79,7 +79,7 @@ class ScheduledAction final
   void Execute(WorkerGlobalScope*);
   void CreateLocalHandlesForArgs(Vector<v8::Local<v8::Value>>* handles);
 
-  ScriptStateProtectingContext script_state_;
+  Member<ScriptStateProtectingContext> script_state_;
   ScopedPersistent<v8::Function> function_;
   V8PersistentValueVector<v8::Value> info_;
   String code_;

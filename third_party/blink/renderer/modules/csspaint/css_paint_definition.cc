@@ -75,7 +75,7 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
   float zoom = layout_object.StyleRef().EffectiveZoom();
   const FloatSize specified_size = GetSpecifiedSize(container_size, zoom);
 
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
 
   MaybeCreatePaintInstance();
 
@@ -121,8 +121,7 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
   v8::TryCatch block(isolate);
   block.SetVerbose(true);
 
-  V8ScriptRunner::CallFunction(paint,
-                               ExecutionContext::From(script_state_.get()),
+  V8ScriptRunner::CallFunction(paint, ExecutionContext::From(script_state_),
                                instance, argv.size(), argv.data(), isolate);
 
   // The paint function may have produced an error, in which case produce an
@@ -158,6 +157,7 @@ void CSSPaintDefinition::Trace(Visitor* visitor) {
   visitor->Trace(constructor_.Cast<v8::Value>());
   visitor->Trace(paint_.Cast<v8::Value>());
   visitor->Trace(instance_.Cast<v8::Value>());
+  visitor->Trace(script_state_);
 }
 
 }  // namespace blink

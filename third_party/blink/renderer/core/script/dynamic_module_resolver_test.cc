@@ -51,7 +51,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
 
  private:
   // Implements Modulator:
-  ScriptState* GetScriptState() final { return script_state_.get(); }
+  ScriptState* GetScriptState() final { return script_state_; }
 
   ModuleScript* GetFetchedModuleScript(const KURL& url) final {
     EXPECT_EQ(TestReferrerURL(), url);
@@ -89,17 +89,18 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
                             CaptureEvalErrorFlag capture_error) final {
     EXPECT_EQ(CaptureEvalErrorFlag::kCapture, capture_error);
 
-    ScriptState::Scope scope(script_state_.get());
-    return module_script->Record().Evaluate(script_state_.get());
+    ScriptState::Scope scope(script_state_);
+    return module_script->Record().Evaluate(script_state_);
   }
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   Member<ModuleTreeClient> pending_client_;
   KURL expected_fetch_tree_url_;
   bool fetch_tree_was_called_ = false;
 };
 
 void DynamicModuleResolverTestModulator::Trace(blink::Visitor* visitor) {
+  visitor->Trace(script_state_);
   visitor->Trace(pending_client_);
   DummyModulator::Trace(visitor);
 }

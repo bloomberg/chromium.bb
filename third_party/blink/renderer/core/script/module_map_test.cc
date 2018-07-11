@@ -99,7 +99,7 @@ class ModuleMapTestModulator final : public DummyModulator {
   ScriptModuleResolver* GetScriptModuleResolver() override {
     return resolver_.Get();
   }
-  ScriptState* GetScriptState() override { return script_state_.get(); }
+  ScriptState* GetScriptState() override { return script_state_; }
 
   class TestModuleScriptFetcher final
       : public GarbageCollectedFinalized<TestModuleScriptFetcher>,
@@ -159,7 +159,7 @@ class ModuleMapTestModulator final : public DummyModulator {
   };
   HeapVector<Member<TestRequest>> test_requests_;
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   Member<TestScriptModuleResolver> resolver_;
 };
 
@@ -168,6 +168,7 @@ ModuleMapTestModulator::ModuleMapTestModulator(ScriptState* script_state)
 
 void ModuleMapTestModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_requests_);
+  visitor->Trace(script_state_);
   visitor->Trace(resolver_);
   DummyModulator::Trace(visitor);
 }

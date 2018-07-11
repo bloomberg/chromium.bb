@@ -11,22 +11,6 @@
 
 namespace blink {
 
-scoped_refptr<ScriptStateForTesting> ScriptStateForTesting::Create(
-    v8::Local<v8::Context> context,
-    scoped_refptr<DOMWrapperWorld> world) {
-  scoped_refptr<ScriptStateForTesting> script_state =
-      base::AdoptRef(new ScriptStateForTesting(context, std::move(world)));
-  // This ref() is for keeping this ScriptState alive as long as the v8::Context
-  // is alive.  This is deref()ed in the weak callback of the v8::Context.
-  script_state->AddRef();
-  return script_state;
-}
-
-ScriptStateForTesting::ScriptStateForTesting(
-    v8::Local<v8::Context> context,
-    scoped_refptr<DOMWrapperWorld> world)
-    : ScriptState(context, std::move(world)) {}
-
 V8TestingScope::V8TestingScope()
     : holder_(DummyPageHolder::Create()),
       handle_scope_(GetIsolate()),

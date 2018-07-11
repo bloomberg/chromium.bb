@@ -704,6 +704,7 @@ class IndexPopulator final : public EventListener {
   }
 
   void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(script_state_);
     visitor->Trace(database_);
     EventListener::Trace(visitor);
   }
@@ -730,7 +731,7 @@ class IndexPopulator final : public EventListener {
       return;
     IDB_TRACE("IDBObjectStore::IndexPopulator::handleEvent");
 
-    DCHECK_EQ(ExecutionContext::From(script_state_.get()), execution_context);
+    DCHECK_EQ(ExecutionContext::From(script_state_), execution_context);
     DCHECK_EQ(event->type(), EventTypeNames::success);
     EventTarget* target = event->target();
     IDBRequest* request = static_cast<IDBRequest*>(target);
@@ -738,7 +739,7 @@ class IndexPopulator final : public EventListener {
     if (!database_->Backend())  // If database is stopped?
       return;
 
-    ScriptState::Scope scope(script_state_.get());
+    ScriptState::Scope scope(script_state_);
 
     IDBAny* cursor_any = request->ResultAsAny();
     IDBCursorWithValue* cursor = nullptr;
@@ -752,7 +753,7 @@ class IndexPopulator final : public EventListener {
                        ASSERT_NO_EXCEPTION);
 
       const IDBKey* primary_key = cursor->IdbPrimaryKey();
-      ScriptValue value = cursor->value(script_state_.get());
+      ScriptValue value = cursor->value(script_state_);
 
       WebVector<WebVector<WebIDBKey>> index_keys_list;
       index_keys_list.reserve(1);
@@ -772,7 +773,7 @@ class IndexPopulator final : public EventListener {
     }
   }
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   Member<IDBDatabase> database_;
   const int64_t transaction_id_;
   const int64_t object_store_id_;
