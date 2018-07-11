@@ -404,8 +404,7 @@ def main(args):
                                  options.key_name)
       else:
         shutil.move(tmp_file, options.output_apk)
-
-      tmp_apk.delete = False
+        tmp_apk.delete = False
 
   build_utils.CallAndWriteDepfileIfStale(
       on_stale_md5,
