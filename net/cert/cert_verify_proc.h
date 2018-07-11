@@ -81,6 +81,7 @@ class NET_EXPORT CertVerifyProc
   FRIEND_TEST_ALL_PREFIXES(CertVerifyProcTest, TestHasTooLongValidity);
   FRIEND_TEST_ALL_PREFIXES(CertVerifyProcTest,
                            VerifyRejectsSHA1AfterDeprecationLegacyMode);
+  FRIEND_TEST_ALL_PREFIXES(CertVerifyProcTest, SymantecCertsRejected);
 
   // Performs the actual verification using the desired underlying
   //
@@ -142,6 +143,10 @@ class NET_EXPORT CertVerifyProc
   // Emergency kill-switch for SHA-1 deprecation. Disabled by default.
   static const base::Feature kSHA1LegacyMode;
   const bool sha1_legacy_mode_enabled;
+
+  // Feature flag affecting the Legacy Symantec PKI deprecation, documented
+  // at https://g.co/chrome/symantecpkicerts
+  static const base::Feature kLegacySymantecPKIEnforcement;
 
   DISALLOW_COPY_AND_ASSIGN(CertVerifyProc);
 };
