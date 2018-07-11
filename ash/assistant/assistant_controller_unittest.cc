@@ -7,8 +7,6 @@
 #include <memory>
 
 #include "ash/assistant/assistant_ui_controller.h"
-#include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
@@ -16,10 +14,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/services/assistant/test_support/mock_assistant.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "ui/aura/window.h"
-#include "ui/compositor/layer.h"
-#include "ui/compositor/layer_tree_owner.h"
-#include "ui/compositor/layer_type.h"
 
 namespace ash {
 
@@ -85,39 +79,5 @@ class AssistantControllerTest : public AshTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(AssistantControllerTest);
 };
-
-// Verify that incognito windows are blocked in screenshot.
-TEST_F(AssistantControllerTest, Screenshot) {
-  std::unique_ptr<aura::Window> window1 = CreateToplevelTestWindow(
-      gfx::Rect(0, 0, 200, 200), kShellWindowId_DefaultContainer);
-  std::unique_ptr<aura::Window> window2 = CreateToplevelTestWindow(
-      gfx::Rect(30, 30, 100, 100), kShellWindowId_DefaultContainer);
-
-  ui::Layer* window1_layer = window1->layer();
-  ui::Layer* window2_layer = window2->layer();
-
-  window1->SetProperty(kBlockedForAssistantSnapshotKey, true);
-
-  std::unique_ptr<ui::LayerTreeOwner> layer_owner =
-      controller()->CreateLayerForAssistantSnapshotForTest();
-
-  // Test that windows marked as blocked for assistant snapshot is not included.
-  EXPECT_FALSE(FindLayerWithClosure(
-      layer_owner->root(),
-      base::BindRepeating(
-          [](ui::Layer* target, ui::Layer* layer) { return layer == target; },
-          window1_layer)));
-  EXPECT_TRUE(FindLayerWithClosure(
-      layer_owner->root(),
-      base::BindRepeating(
-          [](ui::Layer* target, ui::Layer* layer) { return layer == target; },
-          window2_layer)));
-
-  // Test that a solid black layer is inserted.
-  EXPECT_TRUE(FindLayerWithClosure(
-      layer_owner->root(), base::BindRepeating([](ui::Layer* layer) {
-        return layer->type() == ui::LayerType::LAYER_SOLID_COLOR;
-      })));
-}
 
 }  // namespace ash

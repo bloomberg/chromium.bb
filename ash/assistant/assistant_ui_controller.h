@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_screen_context_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/caption_bar.h"
@@ -33,6 +34,7 @@ namespace ash {
 class AssistantContainerView;
 class AssistantController;
 class AssistantInteractionController;
+class AssistantScreenContextController;
 
 namespace mojom {
 class AssistantSetup;
@@ -42,6 +44,7 @@ class ASH_EXPORT AssistantUiController
     : public views::WidgetObserver,
       public AssistantControllerObserver,
       public AssistantInteractionModelObserver,
+      public AssistantScreenContextModelObserver,
       public AssistantUiModelObserver,
       public CaptionBarDelegate,
       public DialogPlateObserver,
@@ -57,6 +60,11 @@ class ASH_EXPORT AssistantUiController
   // AssistantController.
   void SetAssistantInteractionController(
       AssistantInteractionController* assistant_interaction_controller);
+
+  // Provides a pointer to the |assistant_screen_context_controller| owned by
+  // AssistantController.
+  void SetAssistantScreenContextController(
+      AssistantScreenContextController* assistant_screen_context_controller);
 
   // Provides a pointer to the |assistant_setup| owned by AssistantController.
   void SetAssistantSetup(mojom::AssistantSetup* assistant_setup);
@@ -77,6 +85,10 @@ class ASH_EXPORT AssistantUiController
   void OnInputModalityChanged(InputModality input_modality) override;
   void OnInteractionStateChanged(InteractionState interaction_state) override;
   void OnMicStateChanged(MicState mic_state) override;
+
+  // AssistantScreenContextModelObserver:
+  void OnScreenContextRequestStateChanged(
+      ScreenContextRequestState request_state) override;
 
   // CaptionBarDelegate:
   bool OnCaptionButtonPressed(CaptionButtonId id) override;
@@ -110,6 +122,10 @@ class ASH_EXPORT AssistantUiController
 
   // Owned by AssistantController.
   AssistantInteractionController* assistant_interaction_controller_ = nullptr;
+
+  // Owned by AssistantController.
+  AssistantScreenContextController* assistant_screen_context_controller_ =
+      nullptr;
 
   // Owned by AssistantController.
   mojom::AssistantSetup* assistant_setup_ = nullptr;
