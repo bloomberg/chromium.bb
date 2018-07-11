@@ -122,12 +122,12 @@ TEST_F(PreviewsContentUtilTest,
 TEST_F(PreviewsContentUtilTest, DetermineEnabledClientPreviewsStateClientLoFi) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine("Previews,ClientLoFi", std::string());
-  EXPECT_EQ(content::CLIENT_LOFI_ON,
-            previews::DetermineEnabledClientPreviewsState(
-                *CreateHttpsRequest(), enabled_previews_decider()));
-  EXPECT_EQ(content::CLIENT_LOFI_ON,
-            previews::DetermineEnabledClientPreviewsState(
-                *CreateRequest(), enabled_previews_decider()));
+  EXPECT_TRUE(content::CLIENT_LOFI_ON &
+              previews::DetermineEnabledClientPreviewsState(
+                  *CreateHttpsRequest(), enabled_previews_decider()));
+  EXPECT_TRUE(content::CLIENT_LOFI_ON &
+              previews::DetermineEnabledClientPreviewsState(
+                  *CreateRequest(), enabled_previews_decider()));
 }
 
 TEST_F(PreviewsContentUtilTest,
@@ -150,13 +150,13 @@ TEST_F(PreviewsContentUtilTest,
   scoped_feature_list.InitFromCommandLine(
       "Previews,ClientLoFi,NoScriptPreviews", std::string());
 
-  // Verify NoScript takes precendence over LoFi (for https).
-  EXPECT_EQ(content::NOSCRIPT_ON,
-            previews::DetermineEnabledClientPreviewsState(
-                *CreateHttpsRequest(), enabled_previews_decider()));
-  EXPECT_EQ(content::NOSCRIPT_ON,
-            previews::DetermineEnabledClientPreviewsState(
-                *CreateRequest(), enabled_previews_decider()));
+  // Verify both are enabled.
+  EXPECT_TRUE((content::NOSCRIPT_ON | content::CLIENT_LOFI_ON) &
+              previews::DetermineEnabledClientPreviewsState(
+                  *CreateHttpsRequest(), enabled_previews_decider()));
+  EXPECT_TRUE((content::NOSCRIPT_ON | content::CLIENT_LOFI_ON) &
+              previews::DetermineEnabledClientPreviewsState(
+                  *CreateRequest(), enabled_previews_decider()));
 
   // Verify non-HTTP[S] URL has no previews enabled.
   std::unique_ptr<net::URLRequest> data_url_request(

@@ -36,8 +36,7 @@
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
 #include "components/offline_pages/core/stub_system_download_manager.h"
-#include "components/previews/core/previews_decider.h"
-#include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_user_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
@@ -244,41 +243,6 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
   bool online_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkChangeNotifier);
-};
-
-class TestPreviewsDecider : public previews::PreviewsDecider {
- public:
-  TestPreviewsDecider() : should_allow_preview_(false) {}
-  ~TestPreviewsDecider() override {}
-
-  bool ShouldAllowPreview(const net::URLRequest& request,
-                          previews::PreviewsType type) const override {
-    return should_allow_preview_;
-  }
-
-  bool ShouldAllowPreviewAtECT(
-      const net::URLRequest& request,
-      previews::PreviewsType type,
-      net::EffectiveConnectionType effective_connection_type_threshold,
-      const std::vector<std::string>& host_blacklist_from_server,
-      bool ignore_long_term_black_list_rules) const override {
-    return should_allow_preview_;
-  }
-
-  bool IsURLAllowedForPreview(const net::URLRequest& request,
-                              previews::PreviewsType type) const override {
-    return should_allow_preview_;
-  }
-
-  bool should_allow_preview() const { return should_allow_preview_; }
-  void set_should_allow_preview(bool should_allow_preview) {
-    should_allow_preview_ = should_allow_preview;
-  }
-
- private:
-  bool should_allow_preview_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPreviewsDecider);
 };
 
 // TODO(jianli, carlosk): This should be removed in favor of using with
@@ -537,17 +501,17 @@ class OfflinePageRequestHandlerTestBase : public testing::Test {
     return is_offline_page_set_in_navigation_data_;
   }
 
-  TestPreviewsDecider* test_previews_decider() {
-    return test_previews_decider_.get();
-  }
-
   bool is_connected_with_good_network() {
     return network_change_notifier_->online() &&
            // Exclude prohibitively slow network.
-           !test_previews_decider_->should_allow_preview() &&
+           !allow_preview() &&
            // Exclude flaky network.
            offline_page_header_.reason != OfflinePageHeader::Reason::NET_ERROR;
   }
+
+  void set_allow_preview(bool allow_preview) { allow_preview_ = allow_preview; }
+
+  bool allow_preview() const { return allow_preview_; }
 
  private:
   static std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
@@ -585,7 +549,7 @@ class OfflinePageRequestHandlerTestBase : public testing::Test {
   // setting the state is done first from one thread and reading this state
   // can be from any other thread later.
   std::unique_ptr<TestNetworkChangeNotifier> network_change_notifier_;
-  std::unique_ptr<TestPreviewsDecider> test_previews_decider_;
+  bool allow_preview_ = false;
 
   // These should only be accessed purely from IO thread.
   base::ScopedTempDir private_archives_temp_base_dir_;
@@ -606,8 +570,7 @@ OfflinePageRequestHandlerTestBase::OfflinePageRequestHandlerTestBase()
       last_offline_id_(0),
       response_(net::ERR_IO_PENDING),
       is_offline_page_set_in_navigation_data_(false),
-      network_change_notifier_(new TestNetworkChangeNotifier),
-      test_previews_decider_(new TestPreviewsDecider) {}
+      network_change_notifier_(new TestNetworkChangeNotifier) {}
 
 void OfflinePageRequestHandlerTestBase::SetUp() {
   // Create a test profile.
@@ -1136,7 +1099,7 @@ void OfflinePageRequestJobBuilder::SetUpNetworkObjectsOnIO() {
 
   // Install the interceptor.
   std::unique_ptr<net::URLRequestInterceptor> interceptor(
-      new OfflinePageRequestInterceptor(test_base_->test_previews_decider()));
+      new OfflinePageRequestInterceptor());
   std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
       new net::URLRequestJobFactoryImpl());
   intercepting_job_factory_.reset(new TestURLRequestInterceptingJobFactory(
@@ -1170,6 +1133,8 @@ std::unique_ptr<net::URLRequest> OfflinePageRequestJobBuilder::CreateRequest(
                                                url_request_delegate_.get());
   request->set_method(method);
 
+  previews::PreviewsUserData::Create(request.get(), 1u);
+
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(),
       is_main_frame ? content::RESOURCE_TYPE_MAIN_FRAME
@@ -1180,7 +1145,9 @@ std::unique_ptr<net::URLRequest> OfflinePageRequestJobBuilder::CreateRequest(
       /*render_frame_id=*/1,
       /*is_main_frame=*/true,
       /*allow_download=*/true,
-      /*is_async=*/true, content::PREVIEWS_OFF,
+      /*is_async=*/true,
+      test_base_->allow_preview() ? content::OFFLINE_PAGE_ON
+                                  : content::PREVIEWS_OFF,
       std::make_unique<ChromeNavigationUIData>());
 
   return request;
@@ -1348,9 +1315,9 @@ void OfflinePageURLLoaderBuilder::InterceptRequestOnIO(
     return;
 
   url_loader_->SetTabIdGetterForTesting(base::BindRepeating(&GetTabId, kTabId));
-  url_loader_->SetShouldAllowPreviewCallbackForTesting(base::BindRepeating(
-      &TestPreviewsDecider::should_allow_preview,
-      base::Unretained(test_base_->test_previews_decider())));
+  url_loader_->SetShouldAllowPreviewCallbackForTesting(
+      base::BindRepeating(&OfflinePageRequestHandlerTestBase::allow_preview,
+                          base::Unretained(test_base_)));
 }
 
 void OfflinePageURLLoaderBuilder::InterceptRequest(
@@ -1525,7 +1492,7 @@ TYPED_TEST(OfflinePageRequestHandlerTest, PageNotFoundOnDisconnectedNetwork) {
 TYPED_TEST(OfflinePageRequestHandlerTest,
            LoadOfflinePageOnProhibitivelySlowNetwork) {
   this->SimulateHasNetworkConnectivity(true);
-  this->test_previews_decider()->set_should_allow_preview(true);
+  this->set_allow_preview(true);
 
   int64_t offline_id = this->SaveInternalPage(kUrl, GURL(), kFilename1,
                                               kFileSize1, std::string());
@@ -1541,7 +1508,7 @@ TYPED_TEST(OfflinePageRequestHandlerTest,
 TYPED_TEST(OfflinePageRequestHandlerTest,
            DontLoadReloadOfflinePageOnProhibitivelySlowNetwork) {
   this->SimulateHasNetworkConnectivity(true);
-  this->test_previews_decider()->set_should_allow_preview(true);
+  this->set_allow_preview(true);
 
   int64_t offline_id = this->SaveInternalPage(kUrl, GURL(), kFilename1,
                                               kFileSize1, std::string());
@@ -1565,7 +1532,7 @@ TYPED_TEST(OfflinePageRequestHandlerTest,
 TYPED_TEST(OfflinePageRequestHandlerTest,
            PageNotFoundOnProhibitivelySlowNetwork) {
   this->SimulateHasNetworkConnectivity(true);
-  this->test_previews_decider()->set_should_allow_preview(true);
+  this->set_allow_preview(true);
 
   int64_t offline_id = this->SaveInternalPage(kUrl, GURL(), kFilename1,
                                               kFileSize1, std::string());
@@ -1902,7 +1869,7 @@ TYPED_TEST(OfflinePageRequestHandlerTest,
 TYPED_TEST(OfflinePageRequestHandlerTest,
            FileSizeMismatchOnProhibitivelySlowNetwork) {
   this->SimulateHasNetworkConnectivity(true);
-  this->test_previews_decider()->set_should_allow_preview(true);
+  this->set_allow_preview(true);
 
   // Save an offline page in public location with mismatched file size.
   int64_t offline_id = this->SavePublicPage(kUrl, GURL(), kFilename1,
@@ -1970,7 +1937,7 @@ TYPED_TEST(OfflinePageRequestHandlerTest, DigestMismatchOnDisconnectedNetwork) {
 TYPED_TEST(OfflinePageRequestHandlerTest,
            DigestMismatchOnProhibitivelySlowNetwork) {
   this->SimulateHasNetworkConnectivity(true);
-  this->test_previews_decider()->set_should_allow_preview(true);
+  this->set_allow_preview(true);
 
   // Save an offline page in public location with mismatched digest.
   int64_t offline_id = this->SavePublicPage(kUrl, GURL(), kFilename1,

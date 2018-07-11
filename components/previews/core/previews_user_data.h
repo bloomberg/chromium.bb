@@ -85,6 +85,12 @@ class PreviewsUserData : public base::SupportsUserData::Data {
     return committed_previews_type_ != previews::PreviewsType::NONE;
   }
 
+  // Whether an offline preview is being served.
+  void set_offline_preview_used(bool offline_preview_used) {
+    offline_preview_used_ = offline_preview_used;
+  }
+  bool offline_preview_used() { return offline_preview_used_; }
+
  private:
   // A session unique ID related to this navigation.
   const uint64_t page_id_;
@@ -92,6 +98,9 @@ class PreviewsUserData : public base::SupportsUserData::Data {
   int data_savings_inflation_percent_ = 0;
   // Whether the origin provided a no-transform directive.
   bool cache_control_no_transform_directive_ = false;
+
+  // Whether an offline preview is being served.
+  bool offline_preview_used_ = false;
 
   // Whether a lite page preview was prevented from being shown due to the
   // blacklist.

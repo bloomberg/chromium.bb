@@ -12,10 +12,6 @@
 #include "chrome/browser/offline_pages/offline_page_request_handler.h"
 #include "net/url_request/url_request_job.h"
 
-namespace previews {
-class PreviewsDecider;
-}
-
 namespace offline_pages {
 
 class OfflinePageRequestHandler;
@@ -27,10 +23,8 @@ class OfflinePageRequestJob : public net::URLRequestJob,
   // Creates and returns a job to serve the offline page. Nullptr is returned if
   // offline page cannot or should not be served. Embedder must gaurantee that
   // |previews_decider| outlives the returned instance.
-  static OfflinePageRequestJob* Create(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      previews::PreviewsDecider* previews_decider);
+  static OfflinePageRequestJob* Create(net::URLRequest* request,
+                                       net::NetworkDelegate* network_delegate);
 
   ~OfflinePageRequestJob() override;
 
@@ -42,8 +36,7 @@ class OfflinePageRequestJob : public net::URLRequestJob,
 
  private:
   OfflinePageRequestJob(net::URLRequest* request,
-                        net::NetworkDelegate* network_delegate,
-                        previews::PreviewsDecider* previews_decider);
+                        net::NetworkDelegate* network_delegate);
 
   // net::URLRequestJob overrides:
   void Start() override;
@@ -67,9 +60,6 @@ class OfflinePageRequestJob : public net::URLRequestJob,
       const override;
   OfflinePageRequestHandler::Delegate::TabIdGetter GetTabIdGetter()
       const override;
-
-  // Used to determine if an URLRequest is eligible for offline previews.
-  previews::PreviewsDecider* previews_decider_;
 
   std::unique_ptr<OfflinePageRequestHandler> request_handler_;
 

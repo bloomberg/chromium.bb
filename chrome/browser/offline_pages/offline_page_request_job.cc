@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
-#include "components/previews/core/previews_decider.h"
+#include "components/previews/core/previews_user_data.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
 #include "net/url_request/url_request.h"
@@ -27,7 +27,8 @@ class OfflinePageRequestInfo : public base::SupportsUserData::Data {
   OfflinePageRequestInfo() : use_default_(false) {}
   ~OfflinePageRequestInfo() override {}
 
-  static OfflinePageRequestInfo* GetFromRequest(net::URLRequest* request) {
+  static OfflinePageRequestInfo* GetFromRequest(
+      const net::URLRequest* request) {
     return static_cast<OfflinePageRequestInfo*>(
         request->GetUserData(&kUserDataKey));
   }
@@ -48,8 +49,7 @@ class OfflinePageRequestInfo : public base::SupportsUserData::Data {
 // static
 OfflinePageRequestJob* OfflinePageRequestJob::Create(
     net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    previews::PreviewsDecider* previews_decider) {
+    net::NetworkDelegate* network_delegate) {
   const content::ResourceRequestInfo* resource_request_info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!resource_request_info)
@@ -81,15 +81,13 @@ OfflinePageRequestJob* OfflinePageRequestJob::Create(
                          std::make_unique<OfflinePageRequestInfo>());
   }
 
-  return new OfflinePageRequestJob(request, network_delegate, previews_decider);
+  return new OfflinePageRequestJob(request, network_delegate);
 }
 
 OfflinePageRequestJob::OfflinePageRequestJob(
     net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    previews::PreviewsDecider* previews_decider)
-    : net::URLRequestJob(request, network_delegate),
-      previews_decider_(previews_decider) {}
+    net::NetworkDelegate* network_delegate)
+    : net::URLRequestJob(request, network_delegate) {}
 
 OfflinePageRequestJob::~OfflinePageRequestJob() {}
 
@@ -164,6 +162,11 @@ void OfflinePageRequestJob::FallbackToDefault() {
   DCHECK(info);
   info->set_use_default(true);
 
+  // Clear info in PreviewsUserData.
+  auto* previews_data = previews::PreviewsUserData::GetData(*request());
+  if (previews_data)
+    previews_data->set_offline_preview_used(false);
+
   net::URLRequestJob::NotifyRestartRequired();
 }
 
@@ -199,9 +202,21 @@ void OfflinePageRequestJob::SetOfflinePageNavigationUIData(
 }
 
 bool OfflinePageRequestJob::ShouldAllowPreview() const {
-  return previews_decider_ &&
-         previews_decider_->ShouldAllowPreview(*(request()),
-                                               previews::PreviewsType::OFFLINE);
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request());
+  auto* previews_data = previews::PreviewsUserData::GetData(*request());
+
+  // Trust PreviewsState, but only when previews_data is created. PreviewsData
+  // is created when the other PreviewsTypes are queried, so it should exist.
+  bool preview_allowed = previews_data && info &&
+                         (info->GetPreviewsState() & content::OFFLINE_PAGE_ON);
+
+  // This takes advantage of the fact that this is only checked when attempting
+  // to serve a preview. This state is cleared if FallbackToDefault is called.
+  if (previews_data)
+    previews_data->set_offline_preview_used(preview_allowed);
+
+  return preview_allowed;
 }
 
 int OfflinePageRequestJob::GetPageTransition() const {

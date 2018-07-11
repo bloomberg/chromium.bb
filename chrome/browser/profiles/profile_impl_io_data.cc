@@ -512,8 +512,7 @@ void ProfileImplIOData::InitializeInternal(
   // Install the Offline Page Interceptor.
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   request_interceptors.push_back(
-      std::make_unique<offline_pages::OfflinePageRequestInterceptor>(
-          previews_decider_impl()));
+      std::make_unique<offline_pages::OfflinePageRequestInterceptor>());
 #endif
 
   // The data reduction proxy interceptor should be as close to the network

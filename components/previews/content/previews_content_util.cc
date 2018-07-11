@@ -34,13 +34,17 @@ content::PreviewsState DetermineEnabledClientPreviewsState(
     previews_state |= content::RESOURCE_LOADING_HINTS_ON;
   }
 
+  if (previews_decider->ShouldAllowPreview(url_request,
+                                           previews::PreviewsType::OFFLINE)) {
+    previews_state |= content::OFFLINE_PAGE_ON;
+  }
+
   // Check for client-side previews in precendence order.
-  // Note: this for for the beginning of navigation so we should not
+  // Note: this is for the beginning of navigation so we should not
   // check for https here (since an http request may redirect to https).
   if (previews_decider->ShouldAllowPreview(url_request,
                                            previews::PreviewsType::NOSCRIPT)) {
     previews_state |= content::NOSCRIPT_ON;
-    return previews_state;
   }
 
   if (previews::params::IsClientLoFiEnabled() &&
@@ -50,7 +54,6 @@ content::PreviewsState DetermineEnabledClientPreviewsState(
           previews::params::GetBlackListedHostsForClientLoFiFieldTrial(),
           false)) {
     previews_state |= content::CLIENT_LOFI_ON;
-    return previews_state;
   }
 
   return previews_state;
@@ -61,6 +64,15 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     content::PreviewsState previews_state,
     const previews::PreviewsDecider* previews_decider) {
   bool is_https = url_request.url().SchemeIs(url::kHttpsScheme);
+
+  previews::PreviewsUserData* previews_user_data =
+      previews::PreviewsUserData::GetData(url_request);
+  // Check if an offline preview was actually served.
+  if (previews_user_data && previews_user_data->offline_preview_used()) {
+    DCHECK(previews_state & content::OFFLINE_PAGE_ON);
+    return content::OFFLINE_PAGE_ON;
+  }
+  previews_state &= ~content::OFFLINE_PAGE_ON;
 
   // If a server preview is set, retain only the bits determined for the server.
   // |previews_state| must already have been updated for server previews from
@@ -73,8 +85,6 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
                              content::SERVER_LOFI_ON | content::CLIENT_LOFI_ON);
   }
 
-  previews::PreviewsUserData* previews_user_data =
-      previews::PreviewsUserData::GetData(url_request);
   if (previews_user_data &&
       previews_user_data->cache_control_no_transform_directive()) {
     if (HasEnabledPreviews(previews_state)) {
@@ -124,6 +134,8 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
 previews::PreviewsType GetMainFramePreviewsType(
     content::PreviewsState previews_state) {
   // The order is important here.
+  if (previews_state & content::OFFLINE_PAGE_ON)
+    return previews::PreviewsType::OFFLINE;
   if (previews_state & content::SERVER_LITE_PAGE_ON)
     return previews::PreviewsType::LITE_PAGE;
   if (previews_state & content::SERVER_LOFI_ON)
