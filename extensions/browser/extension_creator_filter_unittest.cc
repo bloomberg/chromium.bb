@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -27,36 +28,40 @@ class ExtensionCreatorFilterTest : public PlatformTest {
     PlatformTest::SetUp();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    test_dir_ = temp_dir_.GetPath();
+    extension_dir_ = temp_dir_.GetPath();
 
-    filter_ = new extensions::ExtensionCreatorFilter();
+    filter_ = base::MakeRefCounted<extensions::ExtensionCreatorFilter>(
+        extension_dir_);
   }
 
-  base::FilePath CreateEmptyTestFile(const base::FilePath& file_path) {
-    base::FilePath test_file(test_dir_.Append(file_path));
-    base::FilePath temp_file;
-    EXPECT_TRUE(base::CreateTemporaryFileInDir(test_dir_, &temp_file));
-    EXPECT_TRUE(base::Move(temp_file, test_file));
-    return test_file;
+  base::FilePath CreateTestFile(const base::FilePath& file_path) {
+    return CreateRelativeFilePath(file_path);
   }
 
-  base::FilePath CreateEmptyTestFileInDir(
+  // Creates an empty file with the given relative path. Creates parent
+  // directories if needed.
+  base::FilePath CreateRelativeFilePath(
+      const base::FilePath& relative_file_path) {
+    base::FilePath path = extension_dir_.Append(relative_file_path);
+    EXPECT_TRUE(base::CreateDirectory(path.DirName()));
+
+    std::string contents = "test";
+    EXPECT_EQ(static_cast<int>(contents.size()),
+              base::WriteFile(path, contents.c_str(), contents.size()));
+    return path;
+  }
+
+  base::FilePath CreateTestFileInDir(
       const base::FilePath::StringType& file_name,
       const base::FilePath::StringType& dir) {
-    base::FilePath temp_sub_dir(test_dir_.Append(dir));
-    base::FilePath test_file(temp_sub_dir.Append(file_name));
-    EXPECT_TRUE(base::CreateDirectory(temp_sub_dir));
-    base::FilePath temp_file;
-    EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_sub_dir, &temp_file));
-    EXPECT_TRUE(base::Move(temp_file, test_file));
-    return test_file;
+    return CreateRelativeFilePath(base::FilePath(dir).Append(file_name));
   }
 
   scoped_refptr<extensions::ExtensionCreatorFilter> filter_;
 
   base::ScopedTempDir temp_dir_;
 
-  base::FilePath test_dir_;
+  base::FilePath extension_dir_;
 };
 
 struct UnaryBooleanTestData {
@@ -80,13 +85,50 @@ TEST_F(ExtensionCreatorFilterTest, NormalCases) {
       {FILE_PATH_LITERAL("Thumbs.db"), false},
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     base::FilePath input(cases[i].input);
-    base::FilePath test_file(CreateEmptyTestFile(input));
+    base::FilePath test_file(CreateTestFile(input));
     bool observed = filter_->ShouldPackageFile(test_file);
 
     EXPECT_EQ(cases[i].expected, observed)
         << "i: " << i << ", input: " << test_file.value();
+  }
+}
+
+TEST_F(ExtensionCreatorFilterTest, MetadataFolderExcluded) {
+  const struct UnaryBooleanTestData cases[] = {
+      {FILE_PATH_LITERAL("_metadata/foo"), false},
+      {FILE_PATH_LITERAL("_metadata/abc/foo"), false},
+      {FILE_PATH_LITERAL("_metadata/abc/xyz/foo"), false},
+      {FILE_PATH_LITERAL("abc/_metadata/xyz"), true},
+      {FILE_PATH_LITERAL("xyz/_metadata"), true},
+  };
+
+  // Create and test the filepaths.
+  for (size_t i = 0; i < base::size(cases); ++i) {
+    base::FilePath test_file =
+        CreateRelativeFilePath(base::FilePath(cases[i].input));
+    bool observed = filter_->ShouldPackageFile(test_file);
+
+    EXPECT_EQ(cases[i].expected, observed)
+        << "i: " << i << ", input: " << test_file.value();
+  }
+
+  // Also test directories.
+  const struct UnaryBooleanTestData directory_cases[] = {
+      {FILE_PATH_LITERAL("_metadata"), false},
+      {FILE_PATH_LITERAL("_metadata/abc"), false},
+      {FILE_PATH_LITERAL("_metadata/abc/xyz"), false},
+      {FILE_PATH_LITERAL("abc"), true},
+      {FILE_PATH_LITERAL("abc/_metadata"), true},
+      {FILE_PATH_LITERAL("xyz"), true},
+  };
+  for (size_t i = 0; i < base::size(directory_cases); ++i) {
+    base::FilePath directory = extension_dir_.Append(directory_cases[i].input);
+    bool observed = filter_->ShouldPackageFile(directory);
+
+    EXPECT_EQ(directory_cases[i].expected, observed)
+        << "i: " << i << ", input: " << directory.value();
   }
 }
 
@@ -107,9 +149,9 @@ TEST_F(ExtensionCreatorFilterTest, IgnoreFilesInSpecialDir) {
       {FILE_PATH_LITERAL("index.js"), FILE_PATH_LITERAL("scripts"), true},
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     base::FilePath test_file(
-        CreateEmptyTestFileInDir(cases[i].file_name, cases[i].dir));
+        CreateTestFileInDir(cases[i].file_name, cases[i].dir));
     bool observed = filter_->ShouldPackageFile(test_file);
     EXPECT_EQ(cases[i].expected, observed)
         << "i: " << i << ", input: " << test_file.value();
@@ -133,10 +175,10 @@ TEST_F(ExtensionCreatorFilterTest, WindowsHiddenFiles) {
       {FILE_PATH_LITERAL("a-file-that-we-have-not-set-to-hidden"), false, true},
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     base::FilePath input(cases[i].input_char);
     bool should_hide = cases[i].input_bool;
-    base::FilePath test_file(CreateEmptyTestFile(input));
+    base::FilePath test_file(CreateTestFile(input));
 
     if (should_hide) {
       SetFileAttributes(test_file.value().c_str(), FILE_ATTRIBUTE_HIDDEN);

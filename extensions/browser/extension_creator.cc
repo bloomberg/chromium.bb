@@ -189,10 +189,15 @@ bool ExtensionCreator::CreateZip(const base::FilePath& extension_dir,
                                  base::FilePath* zip_path) {
   *zip_path = temp_path.Append(FILE_PATH_LITERAL("extension.zip"));
 
-  scoped_refptr<ExtensionCreatorFilter> filter = new ExtensionCreatorFilter();
-  const base::RepeatingCallback<bool(const base::FilePath&)>& filter_cb =
+  scoped_refptr<ExtensionCreatorFilter> filter =
+      base::MakeRefCounted<ExtensionCreatorFilter>(extension_dir);
+  zip::FilterCallback filter_cb =
       base::BindRepeating(&ExtensionCreatorFilter::ShouldPackageFile, filter);
-  if (!zip::ZipWithFilterCallback(extension_dir, *zip_path, filter_cb)) {
+
+  // TODO(crbug.com/862471): Surface a warning to the user for files excluded
+  // from being packed.
+  if (!zip::ZipWithFilterCallback(extension_dir, *zip_path,
+                                  std::move(filter_cb))) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_FAILED_DURING_PACKAGING);
     return false;
