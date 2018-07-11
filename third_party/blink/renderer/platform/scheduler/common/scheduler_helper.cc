@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/task/sequence_manager/task_queue_impl.h"
+#include "base/task/sequence_manager/task_queue.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"

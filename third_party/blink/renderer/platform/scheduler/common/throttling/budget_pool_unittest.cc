@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/test/null_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"

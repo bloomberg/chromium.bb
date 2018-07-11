@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_NON_MAIN_THREAD_TASK_QUEUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_NON_MAIN_THREAD_TASK_QUEUE_H_
 
-#include "base/task/sequence_manager/task_queue.h"
+#include "base/task/sequence_manager/task_queue_impl.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
