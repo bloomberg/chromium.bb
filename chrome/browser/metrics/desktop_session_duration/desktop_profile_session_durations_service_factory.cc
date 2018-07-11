@@ -11,6 +11,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/browser/browser_context.h"
 
 namespace metrics {
