@@ -258,4 +258,13 @@ function testOrderAndNestItems() {
   assertEquals(NavigationSection.CLOUD, model.item(9).section);
   // provided:prov2.
   assertEquals(NavigationSection.CLOUD, model.item(10).section);
+
+  const myFilesModel = model.item(3);
+  // Re-order again.
+  model.orderAndNestItems_();
+  // Check if My Files continues on the same position.
+  assertEquals(NavigationSection.MY_FILES, model.item(3).section);
+  // Check if My Files model is still the same instance, because DirectoryTree
+  // expects it to be the same instance to be able to find it on the tree.
+  assertEquals(myFilesModel, model.item(3));
 }

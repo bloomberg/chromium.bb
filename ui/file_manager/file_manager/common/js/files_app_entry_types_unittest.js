@@ -175,6 +175,34 @@ function testVolumeEntry() {
   assertFalse(volumeEntry.isFile);
 }
 
+/**
+ * Tests VolumeEntry which initially doesn't have displayRoot.
+ */
+function testVolumeEntryDelayedDisplayRoot(testReportCallback) {
+  let callbackTriggered = false;
+  const fakeRootEntry = createFakeDisplayRoot();
+  // A VolumeInfo without displayRoot.
+  const fakeVolumeInfo = {
+    displayRoot: null,
+    label: 'Fake Filesystem',
+    resolveDisplayRoot: function(successCallback, errorCallback) {
+      setTimeout(() => {
+        successCallback(fakeRootEntry);
+        callbackTriggered = true;
+      }, 0);
+    },
+  };
+
+  const volumeEntry = new VolumeEntry(fakeVolumeInfo);
+  // rootEntry starts as null.
+  assertEquals(null, volumeEntry.rootEntry);
+  reportPromise(
+      waitUntil(() => callbackTriggered).then(() => {
+        // Eventually rootEntry gets the value.
+        assertEquals(fakeRootEntry, volumeEntry.rootEntry);
+      }),
+      testReportCallback);
+}
 /** Tests VolumeEntry.getParent */
 function testVolumeEntryGetParent(testReportCallback) {
   const fakeRootEntry = createFakeDisplayRoot();
