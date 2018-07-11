@@ -274,7 +274,6 @@ public abstract class ChromeFeatureList {
     public static final String WEB_PAYMENTS_RETURN_GOOGLE_PAY_IN_BASIC_CARD =
             "ReturnGooglePayInBasicCard";
     public static final String WEB_PAYMENTS_SINGLE_APP_UI_SKIP = "WebPaymentsSingleAppUiSkip";
-    public static final String WEBVR_AUTOPRESENT_FROM_INTENT = "WebVrAutopresentFromIntent";
 
     private static native boolean nativeIsInitialized();
     private static native boolean nativeIsEnabled(String featureName);

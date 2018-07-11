@@ -2245,10 +2245,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"vr-browsing-tabs-view", flag_descriptions::kVrBrowsingTabsViewName,
      flag_descriptions::kVrBrowsingTabsViewDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kVrBrowsingTabsView)},
-    {"webvr-autopresent-from-intent",
-     flag_descriptions::kWebVrAutopresentFromIntentName,
-     flag_descriptions::kWebVrAutopresentFromIntentDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kWebVrAutopresentFromIntent)},
 #endif  // OS_ANDROID
 #if BUILDFLAG(ENABLE_OCULUS_VR)
     {"oculus-vr", flag_descriptions::kOculusVRName,
