@@ -394,9 +394,9 @@ PASS hyphens uses discrete animation when animating between "manual" and "none" 
 PASS hyphens uses discrete animation when animating between "manual" and "none" with effect easing
 PASS hyphens uses discrete animation when animating between "manual" and "none" with keyframe easing
 PASS image-orientation (type: discrete) has testInterpolation function
-FAIL image-orientation uses discrete animation when animating between "0deg" and "90deg" with linear easing assert_equals: The value should be 90deg at 500ms expected "90deg" but got "0deg"
-FAIL image-orientation uses discrete animation when animating between "0deg" and "90deg" with effect easing assert_equals: The value should be 90deg at 960ms expected "90deg" but got "0deg"
-FAIL image-orientation uses discrete animation when animating between "0deg" and "90deg" with keyframe easing assert_equals: The value should be 90deg at 960ms expected "90deg" but got "0deg"
+FAIL image-orientation uses discrete animation when animating between "none" and "from-image" with linear easing assert_equals: The value should be none at 0ms expected "none" but got "0deg"
+FAIL image-orientation uses discrete animation when animating between "none" and "from-image" with effect easing assert_equals: The value should be none at 0ms expected "none" but got "0deg"
+FAIL image-orientation uses discrete animation when animating between "none" and "from-image" with keyframe easing assert_equals: The value should be none at 0ms expected "none" but got "0deg"
 PASS isolation (type: discrete) has testInterpolation function
 PASS isolation uses discrete animation when animating between "auto" and "isolate" with linear easing
 PASS isolation uses discrete animation when animating between "auto" and "isolate" with effect easing
