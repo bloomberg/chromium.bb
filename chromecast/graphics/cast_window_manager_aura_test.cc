@@ -14,8 +14,7 @@
 
 namespace chromecast {
 namespace test {
-
-using CastWindowManagerAuraTest = aura::test::AuraTestBase;
+namespace {
 
 class CastTestWindowDelegate : public aura::test::TestWindowDelegate {
  public:
@@ -51,6 +50,10 @@ class TestWindow {
 
   DISALLOW_COPY_AND_ASSIGN(TestWindow);
 };
+
+}  // namespace
+
+using CastWindowManagerAuraTest = aura::test::AuraTestBase;
 
 TEST_F(CastWindowManagerAuraTest, InitialWindowId) {
   CastTestWindowDelegate window_delegate;

@@ -13,8 +13,7 @@
 
 namespace chromecast {
 namespace test {
-
-using CastFocusClientAuraTest = aura::test::AuraTestBase;
+namespace {
 
 class TestWindow {
  public:
@@ -32,6 +31,10 @@ class TestWindow {
 
   DISALLOW_COPY_AND_ASSIGN(TestWindow);
 };
+
+}  // namespace
+
+using CastFocusClientAuraTest = aura::test::AuraTestBase;
 
 TEST_F(CastFocusClientAuraTest, FocusableWindows) {
   std::unique_ptr<aura::WindowTreeHost> window_tree_host =
