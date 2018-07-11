@@ -75,13 +75,13 @@ bool DatabasePrefixFilter(const std::string& key_prefix,
 
 }  // namespace
 
-FeedStorageDatabase::FeedStorageDatabase(
-    const base::FilePath& database_folder,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+FeedStorageDatabase::FeedStorageDatabase(const base::FilePath& database_folder)
     : FeedStorageDatabase(
           database_folder,
           std::make_unique<leveldb_proto::ProtoDatabaseImpl<FeedStorageProto>>(
-              task_runner)) {}
+              base::CreateSequencedTaskRunnerWithTraits(
+                  {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                   base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}
 
 FeedStorageDatabase::FeedStorageDatabase(
     const base::FilePath& database_folder,

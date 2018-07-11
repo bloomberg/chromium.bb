@@ -49,9 +49,7 @@ class FeedStorageDatabase {
   using ConfirmationCallback = base::OnceCallback<void(bool)>;
 
   // Initializes the database with |database_folder|.
-  FeedStorageDatabase(
-      const base::FilePath& database_folder,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+  explicit FeedStorageDatabase(const base::FilePath& database_folder);
 
   // Initializes the database with |database_folder|. Creates storage using the
   // given |storage_database| for local storage. Useful for testing.
