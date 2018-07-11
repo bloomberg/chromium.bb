@@ -127,10 +127,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   explicit BrowserMainLoop(const MainFunctionParams& parameters);
   virtual ~BrowserMainLoop();
 
-  // |service_manager_thread| is optional. If set, it will be registered as
-  // BrowserThread::IO in CreateThreads() instead of creating a brand new
-  // thread.
-  void Init(std::unique_ptr<BrowserProcessSubThread> service_manager_thread);
+  void Init();
 
   // Return value is exit status. Anything other than RESULT_CODE_NORMAL_EXIT
   // is considered an error.

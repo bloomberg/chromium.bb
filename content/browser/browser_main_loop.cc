@@ -85,6 +85,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
+#include "content/browser/startup_data_impl.h"
 #include "content/browser/startup_task_runner.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
@@ -557,13 +558,20 @@ BrowserMainLoop::~BrowserMainLoop() {
   g_current_browser_main_loop = nullptr;
 }
 
-void BrowserMainLoop::Init(
-    std::unique_ptr<BrowserProcessSubThread> service_manager_thread) {
+void BrowserMainLoop::Init() {
   TRACE_EVENT0("startup", "BrowserMainLoop::Init");
 
-  // This is always invoked before |io_thread_| is initialized (i.e. never
-  // resets it).
-  io_thread_ = std::move(service_manager_thread);
+  // |startup_data| is optional. If set, the thread owned by the data
+  // will be registered as BrowserThread::IO in CreateThreads() instead of
+  // creating a brand new thread.
+  if (parameters_.startup_data) {
+    StartupDataImpl* startup_data =
+        static_cast<StartupDataImpl*>(parameters_.startup_data);
+    // This is always invoked before |io_thread_| is initialized (i.e. never
+    // resets it).
+    io_thread_ = std::move(startup_data->thread);
+  }
+
   parts_.reset(
       GetContentClient()->browser()->CreateBrowserMainParts(parameters_));
 }

@@ -19,7 +19,6 @@ class ScopedOleInitializer;
 
 namespace content {
 
-class BrowserProcessSubThread;
 class BrowserMainLoop;
 class NotificationServiceImpl;
 
@@ -37,12 +36,6 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
 #endif
   int Run() override;
   void Shutdown() override;
-
-  // Initialize all necessary browser state with a |service_manager_thread|
-  // on which ServiceManager is currently running.
-  int Initialize(
-      const MainFunctionParams& parameters,
-      std::unique_ptr<BrowserProcessSubThread> service_manager_thread);
 
  private:
   // True if we have started to initialize the runner.

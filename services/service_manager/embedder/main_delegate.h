@@ -49,11 +49,6 @@ class SERVICE_MANAGER_EMBEDDER_EXPORT MainDelegate {
   // failure.
   virtual int Initialize(const InitializeParams& params) = 0;
 
-  // Creates an thread and returns the SingleThreadTaskRunner on which
-  // ServiceManager should run.
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-  GetServiceManagerTaskRunnerForEmbedderProcess();
-
   // Indicates whether this (embedder) process should be treated as a subprocess
   // for the sake of some platform-specific environment initialization details.
   virtual bool IsEmbedderSubprocess();

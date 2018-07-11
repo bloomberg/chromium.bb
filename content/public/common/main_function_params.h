@@ -28,6 +28,7 @@ class ScopedNSAutoreleasePool;
 namespace content {
 
 class BrowserMainParts;
+struct StartupData;
 
 using CreatedMainPartsClosure = base::Callback<void(BrowserMainParts*)>;
 
@@ -56,6 +57,10 @@ struct MainFunctionParams {
   // Used by InProcessBrowserTest. If non-null this is Run() after
   // BrowserMainParts has been created and before PreEarlyInitialization().
   CreatedMainPartsClosure* created_main_parts_closure = nullptr;
+
+  // Used by //content, when the embedder yields control back to it, to extract
+  // startup data passed from ContentMainRunner.
+  StartupData* startup_data = nullptr;
 };
 
 }  // namespace content

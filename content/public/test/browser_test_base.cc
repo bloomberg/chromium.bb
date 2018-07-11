@@ -23,7 +23,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/app/content_main.h"
@@ -124,8 +123,7 @@ class InitialNavigationObserver : public WebContentsObserver {
 
 }  // namespace
 
-extern int BrowserMain(const MainFunctionParams&,
-                       std::unique_ptr<BrowserProcessSubThread> io_thread);
+extern int BrowserMain(const MainFunctionParams&);
 
 BrowserTestBase::BrowserTestBase()
     : field_trial_list_(std::make_unique<base::FieldTrialList>(nullptr)),
@@ -324,7 +322,7 @@ void BrowserTestBase::SetUp() {
   params.created_main_parts_closure = created_main_parts_closure.release();
   base::TaskScheduler::Create("Browser");
   // TODO(phajdan.jr): Check return code, http://crbug.com/374738 .
-  BrowserMain(params, nullptr);
+  BrowserMain(params);
 #else
   GetContentMainParams()->ui_task = ui_task.release();
   GetContentMainParams()->created_main_parts_closure =
