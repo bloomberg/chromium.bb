@@ -6,13 +6,9 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "build/build_config.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if !defined(OS_CHROMEOS)
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
-#endif
 
 namespace resource_coordinator {
 
@@ -25,18 +21,6 @@ TEST(ResourceCoordinatorUsageClock, UsageClock) {
     clock.Advance(base::TimeDelta::FromMinutes(42));
     ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing(&clock);
 
-#if defined(OS_CHROMEOS)
-    // On ChromeOS, UsageClock behaves like a normal clock.
-    UsageClock usage_clock;
-    EXPECT_EQ(usage_clock.GetTotalUsageTime(), base::TimeDelta());
-
-    clock.Advance(base::TimeDelta::FromMinutes(1));
-    EXPECT_EQ(usage_clock.GetTotalUsageTime(), base::TimeDelta::FromMinutes(1));
-    clock.Advance(base::TimeDelta::FromMinutes(1));
-    EXPECT_EQ(usage_clock.GetTotalUsageTime(), base::TimeDelta::FromMinutes(2));
-#else
-    // On non-ChromeOS, UsageClock advances when
-    // DesktopSessionDurationTracker::in_session() is true.
     metrics::DesktopSessionDurationTracker::Initialize();
     auto* tracker = metrics::DesktopSessionDurationTracker::Get();
     tracker->SetInactivityTimeoutForTesting(0);
@@ -72,13 +56,10 @@ TEST(ResourceCoordinatorUsageClock, UsageClock) {
     EXPECT_TRUE(usage_clock.IsInUse());
     clock.Advance(base::TimeDelta::FromMinutes(1));
     EXPECT_EQ(usage_clock.GetTotalUsageTime(), base::TimeDelta::FromMinutes(4));
-#endif  // defined(OS_CHROMEOS)
   }
 
-#if !defined(OS_CHROMEOS)
   // Must be after UsageClock destruction.
   metrics::DesktopSessionDurationTracker::CleanupForTesting();
-#endif
 }
 
 }  // namespace resource_coordinator

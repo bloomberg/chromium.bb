@@ -7,11 +7,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
-
-#if !defined(OS_CHROMEOS)
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
-#endif
 
 namespace resource_coordinator {
 
@@ -23,17 +19,11 @@ namespace resource_coordinator {
 // forcing all tests that indirectly depend on this to initialize
 // metrics::DesktopSessionDurationTracker.
 class UsageClock
-#if !defined(OS_CHROMEOS)
     : public metrics::DesktopSessionDurationTracker::Observer
-#endif
 {
  public:
   UsageClock();
-#if defined(OS_CHROMEOS)
-  ~UsageClock();
-#else
   ~UsageClock() override;
-#endif
 
   // Returns the amount of Chrome usage time since this was instantiated.
   base::TimeDelta GetTotalUsageTime() const;
@@ -42,10 +32,8 @@ class UsageClock
   bool IsInUse() const;
 
  private:
-#if !defined(OS_CHROMEOS)
   void OnSessionStarted(base::TimeTicks session_start) override;
   void OnSessionEnded(base::TimeDelta session_length) override;
-#endif
 
   // The total time elapsed in completed usage sessions. The duration of the
   // current usage session, if any, must be added to this to get the total usage
