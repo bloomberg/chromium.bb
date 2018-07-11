@@ -1,9 +1,6 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// A simple wrapper around invalidation::InvalidationClient that
-// handles all the startup/shutdown details and hookups.
 
 #ifndef COMPONENTS_INVALIDATION_IMPL_FCM_SYNC_INVALIDATION_LISTENER_H_
 #define COMPONENTS_INVALIDATION_IMPL_FCM_SYNC_INVALIDATION_LISTENER_H_
@@ -13,31 +10,37 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/invalidation/impl/fcm_sync_network_channel.h"
+#include "components/invalidation/impl/invalidation_client.h"
+#include "components/invalidation/impl/invalidation_listener.h"
+#include "components/invalidation/impl/logger.h"
 #include "components/invalidation/impl/per_user_topic_registration_manager.h"
-#include "components/invalidation/impl/sync_system_resources.h"
 #include "components/invalidation/impl/unacked_invalidation_set.h"
 #include "components/invalidation/public/ack_handler.h"
 #include "components/invalidation/public/invalidation_object_id.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
-#include "google/cacheinvalidation/include/invalidation-listener.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace syncer {
 
 class ObjectIdInvalidationMap;
 
-class INVALIDATION_EXPORT FCMSyncInvalidationListener
-    : public invalidation::InvalidationListener,
-      public SyncNetworkChannel::Observer,
-      public AckHandler {
+// A simple wrapper around PerUserTopicInvalidationClient that
+// handles all the startup/shutdown details and hookups.
+// By implementing the AckHandler interface it tracks the messages
+// which were passed to InvalidationHandlers.
+class FCMSyncInvalidationListener : public InvalidationListener,
+                                    public AckHandler,
+                                    FCMSyncNetworkChannel::Observer {
  public:
-  typedef base::OnceCallback<std::unique_ptr<invalidation::InvalidationClient>(
-      invalidation::SystemResources*,
-      invalidation::InvalidationListener*)>
+  typedef base::OnceCallback<std::unique_ptr<InvalidationClient>(
+      FCMSyncNetworkChannel* network_channel,
+      Logger* logger,
+      InvalidationListener*)>
       CreateInvalidationClientCallback;
 
-  class INVALIDATION_EXPORT Delegate {
+  class Delegate {
    public:
     virtual ~Delegate();
 
@@ -47,7 +50,7 @@ class INVALIDATION_EXPORT FCMSyncInvalidationListener
   };
 
   explicit FCMSyncInvalidationListener(
-      std::unique_ptr<SyncNetworkChannel> network_channel);
+      std::unique_ptr<FCMSyncNetworkChannel> network_channel);
 
   ~FCMSyncInvalidationListener() override;
 
@@ -61,29 +64,26 @@ class INVALIDATION_EXPORT FCMSyncInvalidationListener
   // notifications for. May be called at any time.
   void UpdateRegisteredIds(const ObjectIdSet& ids);
 
-  // invalidation::InvalidationListener implementation.
-  void Ready(invalidation::InvalidationClient* client) override;
-  void Invalidate(invalidation::InvalidationClient* client,
-                  const invalidation::Invalidation& invalidation,
-                  const invalidation::AckHandle& ack_handle) override;
+  // InvalidationListener implementation.
+  void Ready(InvalidationClient* client) override;
+  void Invalidate(InvalidationClient* client,
+                  const invalidation::Invalidation& invalidation) override;
   void InvalidateUnknownVersion(
-      invalidation::InvalidationClient* client,
-      const invalidation::ObjectId& object_id,
-      const invalidation::AckHandle& ack_handle) override;
-  void InvalidateAll(invalidation::InvalidationClient* client,
-                     const invalidation::AckHandle& ack_handle) override;
+      InvalidationClient* client,
+      const invalidation::ObjectId& object_id) override;
+  void InvalidateAll(InvalidationClient* client) override;
   void InformRegistrationStatus(
-      invalidation::InvalidationClient* client,
+      InvalidationClient* client,
       const invalidation::ObjectId& object_id,
-      invalidation::InvalidationListener::RegistrationState reg_state) override;
-  void InformRegistrationFailure(invalidation::InvalidationClient* client,
+      InvalidationListener::RegistrationState reg_state) override;
+  void InformRegistrationFailure(InvalidationClient* client,
                                  const invalidation::ObjectId& object_id,
                                  bool is_transient,
                                  const std::string& error_message) override;
-  void ReissueRegistrations(invalidation::InvalidationClient* client,
+  void ReissueRegistrations(InvalidationClient* client,
                             const std::string& prefix,
                             int prefix_length) override;
-  void InformError(invalidation::InvalidationClient* client,
+  void InformError(InvalidationClient* client,
                    const invalidation::ErrorInfo& error_info) override;
 
   // AckHandler implementation.
@@ -92,8 +92,8 @@ class INVALIDATION_EXPORT FCMSyncInvalidationListener
   void Drop(const invalidation::ObjectId& id,
             const syncer::AckHandle& handle) override;
 
-  // SyncNetworkChannel::Observer implementation.
-  void OnNetworkChannelStateChanged(
+  // FCMSyncNetworkChannel::Observer implementation.
+  void OnFCMSyncNetworkChannelStateChanged(
       InvalidatorState invalidator_state) override;
 
   void DoRegistrationUpdate();
@@ -132,11 +132,11 @@ class INVALIDATION_EXPORT FCMSyncInvalidationListener
   // Generate a Dictionary with all the debugging information.
   std::unique_ptr<base::DictionaryValue> CollectDebugData() const;
 
-  std::unique_ptr<SyncNetworkChannel> sync_network_channel_;
-  SyncSystemResources sync_system_resources_;
+  std::unique_ptr<FCMSyncNetworkChannel> network_channel_;
   UnackedInvalidationsMap unacked_invalidations_map_;
   Delegate* delegate_;
-  std::unique_ptr<invalidation::InvalidationClient> invalidation_client_;
+  Logger logger_;
+  std::unique_ptr<InvalidationClient> invalidation_client_;
 
   // Stored to pass to |per_user_topic_registration_manager_| on start.
   InvalidationObjectIdSet registered_ids_;
