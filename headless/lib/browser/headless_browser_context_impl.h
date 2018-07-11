@@ -21,6 +21,10 @@
 #include "headless/public/headless_browser_context.h"
 #include "headless/public/headless_export.h"
 
+namespace net {
+class NetLog;
+}
+
 namespace headless {
 class HeadlessBrowserImpl;
 class HeadlessResourceContext;
@@ -139,6 +143,7 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
       frame_tree_node_id_to_devtools_frame_token_map_;
 
   std::unique_ptr<content::PermissionManager> permission_manager_;
+  std::unique_ptr<net::NetLog> net_log_;
 
   HeadlessNetworkConditions network_conditions_;
 

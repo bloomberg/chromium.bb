@@ -60,8 +60,6 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
 
   void ResourceDispatcherHostCreated() override;
 
-  net::NetLog* GetNetLog() override;
-
   bool AllowGetCookie(const GURL& url,
                       const GURL& first_party,
                       const net::CookieList& cookie_list,
