@@ -55,9 +55,10 @@ bool AccountInfo::UpdateWith(const AccountInfo& other) {
   return modified;
 }
 
-AccountId AccountInfo::GetAccountId() const {
-  if (IsEmpty())
+AccountId AccountIdFromAccountInfo(const AccountInfo& account_info) {
+  if (account_info.IsEmpty())
     return EmptyAccountId();
-  DCHECK(!email.empty() && !gaia.empty());
-  return AccountId::FromUserEmailGaiaId(email, gaia);
+
+  DCHECK(!account_info.email.empty() && !account_info.gaia.empty());
+  return AccountId::FromUserEmailGaiaId(account_info.email, account_info.gaia);
 }

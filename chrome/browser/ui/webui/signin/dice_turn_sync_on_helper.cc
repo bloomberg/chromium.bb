@@ -251,7 +251,7 @@ void DiceTurnSyncOnHelper::LoadPolicyWithCachedCredentials() {
   policy::UserPolicySigninService* policy_service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
   policy_service->FetchPolicyForSignedInUser(
-      account_info_.GetAccountId(), dm_token_, client_id_,
+      AccountIdFromAccountInfo(account_info_), dm_token_, client_id_,
       profile_->GetRequestContext(),
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetURLLoaderFactoryForBrowserProcess(),

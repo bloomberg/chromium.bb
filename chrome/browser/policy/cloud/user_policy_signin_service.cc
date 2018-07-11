@@ -176,7 +176,7 @@ void UserPolicySigninService::TryInitializeForSignedInUser() {
   }
 
   InitializeForSignedInUser(
-      signin_manager()->GetAuthenticatedAccountInfo().GetAccountId(),
+      AccountIdFromAccountInfo(signin_manager()->GetAuthenticatedAccountInfo()),
       profile_->GetRequestContext(),
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetURLLoaderFactoryForBrowserProcess());
