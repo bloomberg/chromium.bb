@@ -16,9 +16,10 @@ DEVICE_BASE_EXPORT extern const base::Feature kNewUsbBackend;
 DEVICE_BASE_EXPORT extern const base::Feature kNewBLEWinImplementation;
 #endif  // defined(OS_WIN)
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
 DEVICE_BASE_EXPORT extern const base::Feature kNewblueDaemon;
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+DEVICE_BASE_EXPORT extern const base::Feature kUnfilteredBluetoothDevices;
+#endif  // defined(OS_CHROMEOS)
 
 DEVICE_BASE_EXPORT extern const base::Feature kNewCtap2Device;
 

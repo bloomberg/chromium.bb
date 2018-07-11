@@ -3304,6 +3304,10 @@ const char kUiModeTablet[] = "TouchView";
 const char kUiModeClamshell[] = "Clamshell";
 const char kUiModeAuto[] = "Auto (default)";
 
+const char kUnfilteredBluetoothDevicesName[] = "Unfiltered Bluetooth devices";
+const char kUnfilteredBluetoothDevicesDescription[] =
+    "Shows all Bluetooth devices in UI (System Tray/Settings Page.)";
+
 const char kUseMashName[] = "Out-of-process system UI (mash)";
 const char kUseMashDescription[] =
     "Runs the mojo UI service (mus) and the ash window manager and system UI "
