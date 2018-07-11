@@ -9,7 +9,7 @@ specific_include_rules = {
   r"|oauth2_access_token_fetcher_impl_unittest\.cc"
   r"|oauth2_token_service_unittest\.cc"
   r")": [
-    "+services/network/test/test_url_loader_factory.h",
+    "+services/network/test",
     "+mojo/core/embedder",
   ],
 }

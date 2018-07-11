@@ -22,6 +22,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // A testing consumer that retries on error.
@@ -362,25 +363,21 @@ TEST_F(OAuth2TokenServiceTest,
       oauth2_service_->StartRequest(account_id_, scopes1, &consumer2));
   base::RunLoop().RunUntilIdle();
 
-  std::vector<network::TestURLLoaderFactory::PendingRequest>* pending_requests =
-      test_url_loader_factory_->pending_requests();
-  ASSERT_EQ(2U, pending_requests->size());
-  network::TestURLLoaderFactory::PendingRequest second_request =
-      std::move((*pending_requests)[1]);
-  network::TestURLLoaderFactory::PendingRequest first_request =
-      std::move((*pending_requests)[0]);
-  pending_requests->clear();
-
-  network::TestURLLoaderFactory::SimulateResponse(
-      std::move(second_request), GetValidTokenResponse("second token", 3600));
-  base::RunLoop().RunUntilIdle();
+  network::URLLoaderCompletionStatus ok_status(net::OK);
+  network::ResourceResponseHead response_head =
+      network::CreateResourceResponseHead(net::HTTP_OK);
+  EXPECT_TRUE(test_url_loader_factory_->SimulateResponseForPendingRequest(
+      GaiaUrls::GetInstance()->oauth2_token_url(), ok_status, response_head,
+      GetValidTokenResponse("second token", 3600),
+      network::TestURLLoaderFactory::kMostRecentMatch));
   EXPECT_EQ(1, consumer2.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer2.number_of_errors_);
   EXPECT_EQ("second token", consumer2.last_token_);
 
-  network::TestURLLoaderFactory::SimulateResponse(
-      std::move(first_request), GetValidTokenResponse("first token", 3600));
-  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(test_url_loader_factory_->SimulateResponseForPendingRequest(
+      GaiaUrls::GetInstance()->oauth2_token_url(), ok_status, response_head,
+      GetValidTokenResponse("first token", 3600),
+      network::TestURLLoaderFactory::kMostRecentMatch));
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("first token", consumer_.last_token_);
