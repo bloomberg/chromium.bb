@@ -505,6 +505,18 @@ interface NetworkContext {
   // configuration summary written out at the end of the log.
   CreateNetLogExporter(NetLogExporter& exporter);
 
+  // Tries to preconnect to |url|. |num_streams| may be used to request more
+  // than one connection be established in parallel.
+  // |load_flags| is passed into the HttpRequestInfo used to make the request.
+  // See |load_flags.h| for possible values.
+  // |privacy_mode_enabled| is also passed into the HttpRequestInfo class: if
+  // it is true, then the request must be sent over a connection that cannot be
+  // tracked by the server (e.g. without channel id).
+  PreconnectSockets(uint32 num_streams,
+                    url.mojom.Url url,
+                    int32 load_flags,
+                    bool privacy_mode_enabled);
+
   [Sync]
   // Adds explicitly-specified data as if it was processed from an
   // HSTS header.

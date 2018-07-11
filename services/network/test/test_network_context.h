@@ -107,6 +107,10 @@ class TestNetworkContext : public mojom::NetworkContext {
   void SetFailingHttpTransactionForTesting(
       int32_t rv,
       SetFailingHttpTransactionForTestingCallback callback) override {}
+  void PreconnectSockets(uint32_t num_streams,
+                         const GURL& url,
+                         int32_t load_flags,
+                         bool privacy_mode_enabled) override {}
 };
 
 }  // namespace network
