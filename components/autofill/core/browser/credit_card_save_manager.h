@@ -119,7 +119,9 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
   // to |upload_request.profiles|. If any problems are found when determining
   // the candidate set of profiles, sets |upload_decision_metrics_| with the
   // failure reasons. Appends any experiments that were triggered to
-  // |upload_request.active_experiments|.
+  // |upload_request.active_experiments|. Note that if the relevant feature is
+  // enabled, the addresses being assigned to |upload_request.profiles| may only
+  // contain countries.
   void SetProfilesForCreditCardUpload(
       const CreditCard& card,
       payments::PaymentsClient::UploadRequestDetails* upload_request);

@@ -39,6 +39,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/prefs/pref_service.h"
@@ -442,7 +443,9 @@ TEST_F(CreditCardSaveManagerTest, CreditCardDisabledDoesNotSave) {
   histogram_tester.ExpectTotalCount("Autofill.CardUploadDecisionMetric", 0);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FullAddresses) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillSendOnlyCountryInGetUploadDetails);
   personal_data_.ClearCreditCards();
   personal_data_.ClearProfiles();
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
@@ -476,11 +479,88 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard) {
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_THAT(
-      payments_client_->GetActiveExperimentsSetInRequest(),
+      payments_client_->active_experiments_in_request(),
       UnorderedElementsAre(kAutofillUpstreamUpdatePromptExplanation.name));
+
+  // Verify that one profile was saved, and it was included in the upload
+  // details request to payments.
+  EXPECT_EQ(1U, personal_data_.GetProfiles().size());
+  EXPECT_THAT(
+      payments_client_->addresses_in_upload_details(),
+      testing::UnorderedElementsAreArray({*personal_data_.GetProfiles()[0]}));
 
   // Server did not send a server_id, expect copy of card is not stored.
   EXPECT_TRUE(personal_data_.GetCreditCards().empty());
+
+  // Verify that the correct histogram entry (and only that) was logged.
+  ExpectUniqueCardUploadDecision(histogram_tester,
+                                 AutofillMetrics::UPLOAD_OFFERED);
+  // Verify that the correct UKM was logged.
+  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
+  // Verify the histogram entry for recent profile modification.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.HasModifiedProfile.CreditCardFormSubmission", true, 1);
+  // Verify that UMA for "DaysSincePreviousUse" was not logged because we
+  // modified the profile.
+  histogram_tester.ExpectTotalCount(
+      "Autofill.DaysSincePreviousUseAtSubmission.Profile", 0);
+}
+
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_OnlyCountryInAddresses) {
+  // When this feature is enabled, the addresses being sent in the upload
+  // details request will only contain the country.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSendOnlyCountryInGetUploadDetails);
+  personal_data_.ClearCreditCards();
+  personal_data_.ClearProfiles();
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ExpectUniqueFillableFormParsedUkm();
+
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+  ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  base::HistogramTester histogram_tester;
+
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_THAT(
+      payments_client_->active_experiments_in_request(),
+      UnorderedElementsAre(kAutofillUpstreamUpdatePromptExplanation.name));
+
+  // Verify that even though the full address profile was saved, only the
+  // country was included in the upload details request to payments.
+  EXPECT_EQ(1U, personal_data_.GetProfiles().size());
+  AutofillProfile only_country;
+  only_country.SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"), "en-US");
+  EXPECT_EQ(1U, payments_client_->addresses_in_upload_details().size());
+  // AutofillProfile::Compare will ignore the difference in guid between our
+  // actual profile being sent and the expected one constructed here.
+  EXPECT_EQ(0, payments_client_->addresses_in_upload_details()[0].Compare(
+                   only_country));
+
+  // Server did not send a server_id, expect copy of card is not stored.
+  EXPECT_TRUE(personal_data_.GetCreditCards().empty());
+
   // Verify that the correct histogram entry (and only that) was logged.
   ExpectUniqueCardUploadDecision(histogram_tester,
                                  AutofillMetrics::UPLOAD_OFFERED);
@@ -533,7 +613,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FirstAndLastName) {
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_THAT(
-      payments_client_->GetActiveExperimentsSetInRequest(),
+      payments_client_->active_experiments_in_request(),
       UnorderedElementsAre(kAutofillUpstreamUpdatePromptExplanation.name));
 
   // Server did not send a server_id, expect copy of card is not stored.
@@ -619,7 +699,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_LastAndFirstName) {
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_THAT(
-      payments_client_->GetActiveExperimentsSetInRequest(),
+      payments_client_->active_experiments_in_request(),
       UnorderedElementsAre(kAutofillUpstreamUpdatePromptExplanation.name));
 
   // Server did not send a server_id, expect copy of card is not stored.
@@ -1843,7 +1923,7 @@ TEST_F(
   ExpectCardUploadDecision(
       histogram_tester,
       AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
-  EXPECT_TRUE(payments_client_->GetDetectedValuesSetInRequest() &
+  EXPECT_TRUE(payments_client_->detected_values_in_upload_details() &
               CreditCardSaveManager::DetectedValue::USER_PROVIDED_NAME);
 }
 
@@ -1888,7 +1968,7 @@ TEST_F(
   ExpectCardUploadDecision(
       histogram_tester,
       AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
-  EXPECT_TRUE(payments_client_->GetDetectedValuesSetInRequest() &
+  EXPECT_TRUE(payments_client_->detected_values_in_upload_details() &
               CreditCardSaveManager::DetectedValue::USER_PROVIDED_NAME);
 }
 
@@ -1931,7 +2011,7 @@ TEST_F(
   ExpectNoCardUploadDecision(
       histogram_tester,
       AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
-  EXPECT_FALSE(payments_client_->GetDetectedValuesSetInRequest() &
+  EXPECT_FALSE(payments_client_->detected_values_in_upload_details() &
                CreditCardSaveManager::DetectedValue::USER_PROVIDED_NAME);
 }
 
@@ -1981,7 +2061,7 @@ TEST_F(
   ExpectNoCardUploadDecision(
       histogram_tester,
       AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
-  EXPECT_FALSE(payments_client_->GetDetectedValuesSetInRequest() &
+  EXPECT_FALSE(payments_client_->detected_values_in_upload_details() &
                CreditCardSaveManager::DetectedValue::USER_PROVIDED_NAME);
 }
 
@@ -2031,7 +2111,7 @@ TEST_F(
   ExpectNoCardUploadDecision(
       histogram_tester,
       AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
-  EXPECT_FALSE(payments_client_->GetDetectedValuesSetInRequest() &
+  EXPECT_FALSE(payments_client_->detected_values_in_upload_details() &
                CreditCardSaveManager::DetectedValue::USER_PROVIDED_NAME);
 }
 
@@ -2076,7 +2156,7 @@ TEST_F(
   ExpectNoCardUploadDecision(
       histogram_tester,
       AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
-  EXPECT_FALSE(payments_client_->GetDetectedValuesSetInRequest() &
+  EXPECT_FALSE(payments_client_->detected_values_in_upload_details() &
                CreditCardSaveManager::DetectedValue::USER_PROVIDED_NAME);
 }
 
@@ -2121,7 +2201,7 @@ TEST_F(
   ExpectNoCardUploadDecision(
       histogram_tester,
       AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
-  EXPECT_FALSE(payments_client_->GetDetectedValuesSetInRequest() &
+  EXPECT_FALSE(payments_client_->detected_values_in_upload_details() &
                CreditCardSaveManager::DetectedValue::USER_PROVIDED_NAME);
 }
 
@@ -2165,7 +2245,7 @@ TEST_F(CreditCardSaveManagerTest,
   ExpectCardUploadDecision(
       histogram_tester,
       AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME);
-  EXPECT_TRUE(payments_client_->GetDetectedValuesSetInRequest() &
+  EXPECT_TRUE(payments_client_->detected_values_in_upload_details() &
               CreditCardSaveManager::DetectedValue::USER_PROVIDED_NAME);
 }
 #endif
@@ -2320,7 +2400,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_NothingIfNothingFound) {
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(), 0);
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(), 0);
 }
 
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCvc) {
@@ -2341,7 +2421,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCvc) {
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(),
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
             CreditCardSaveManager::DetectedValue::CVC);
 }
 
@@ -2363,7 +2443,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCardholderName) {
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(),
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
             CreditCardSaveManager::DetectedValue::CARDHOLDER_NAME);
 }
 
@@ -2391,7 +2471,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAddressName) {
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(),
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
             CreditCardSaveManager::DetectedValue::ADDRESS_NAME);
 }
 
@@ -2420,7 +2500,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(),
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
             CreditCardSaveManager::DetectedValue::CARDHOLDER_NAME |
                 CreditCardSaveManager::DetectedValue::ADDRESS_NAME);
 }
@@ -2450,7 +2530,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(), 0);
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(), 0);
 }
 
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectPostalCode) {
@@ -2477,7 +2557,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectPostalCode) {
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(),
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
             CreditCardSaveManager::DetectedValue::POSTAL_CODE);
 }
 
@@ -2510,7 +2590,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(), 0);
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(), 0);
 }
 
 TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAddressLine) {
@@ -2537,7 +2617,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAddressLine) {
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(),
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
             CreditCardSaveManager::DetectedValue::ADDRESS_LINE);
 }
 
@@ -2565,7 +2645,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectLocality) {
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(),
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
             CreditCardSaveManager::DetectedValue::LOCALITY);
 }
 
@@ -2593,7 +2673,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectAdministrativeArea) {
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(),
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
             CreditCardSaveManager::DetectedValue::ADMINISTRATIVE_AREA);
 }
 
@@ -2621,7 +2701,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectCountryCode) {
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(),
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
             CreditCardSaveManager::DetectedValue::COUNTRY_CODE);
 }
 
@@ -2649,7 +2729,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(),
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
             CreditCardSaveManager::DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT);
 }
 
@@ -2682,7 +2762,7 @@ TEST_F(CreditCardSaveManagerTest, GetDetectedValues_DetectEverythingAtOnce) {
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(),
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
             CreditCardSaveManager::DetectedValue::CVC |
                 CreditCardSaveManager::DetectedValue::CARDHOLDER_NAME |
                 CreditCardSaveManager::DetectedValue::ADDRESS_NAME |
@@ -2721,7 +2801,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(),
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
             CreditCardSaveManager::DetectedValue::CVC |
                 CreditCardSaveManager::DetectedValue::LOCALITY |
                 CreditCardSaveManager::DetectedValue::POSTAL_CODE |
@@ -2769,7 +2849,7 @@ TEST_F(CreditCardSaveManagerTest,
 
   // Submit the form and check what detected_values for an upload save would be.
   FormSubmitted(credit_card_form);
-  EXPECT_EQ(payments_client_->GetDetectedValuesSetInRequest(),
+  EXPECT_EQ(payments_client_->detected_values_in_upload_details(),
             CreditCardSaveManager::DetectedValue::ADDRESS_LINE |
                 CreditCardSaveManager::DetectedValue::LOCALITY |
                 CreditCardSaveManager::DetectedValue::ADMINISTRATIVE_AREA |
@@ -3292,7 +3372,7 @@ TEST_F(
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_THAT(
-      payments_client_->GetActiveExperimentsSetInRequest(),
+      payments_client_->active_experiments_in_request(),
       UnorderedElementsAre(kAutofillUpstreamUpdatePromptExplanation.name));
 }
 
@@ -3327,7 +3407,7 @@ TEST_F(CreditCardSaveManagerTest,
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_TRUE(payments_client_->GetActiveExperimentsSetInRequest().empty());
+  EXPECT_TRUE(payments_client_->active_experiments_in_request().empty());
 }
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_AddPanFirstSixToRequest) {
@@ -3360,11 +3440,11 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_AddPanFirstSixToRequest) {
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_EQ(payments_client_->GetPanFirstSixSetInRequest(), "444433");
+  EXPECT_EQ(payments_client_->pan_first_six_in_upload_details(), "444433");
   // Confirm that the "send pan first six" experiment flag and enabled
   // UpdatePromptExplanation experiment flag state was sent in the request.
   EXPECT_THAT(
-      payments_client_->GetActiveExperimentsSetInRequest(),
+      payments_client_->active_experiments_in_request(),
       UnorderedElementsAre(kAutofillUpstreamSendPanFirstSix.name,
                            kAutofillUpstreamUpdatePromptExplanation.name));
 }
