@@ -327,11 +327,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
      */
     @Override
     public boolean onBackPressed() {
-        if (mBackendProvider.getSelectionDelegate().isSelectionEnabled()) {
-            mBackendProvider.getSelectionDelegate().clearSelection();
-            return true;
-        }
-        return false;
+        return mSelectableListLayout.onBackPressed();
     }
 
     /**
