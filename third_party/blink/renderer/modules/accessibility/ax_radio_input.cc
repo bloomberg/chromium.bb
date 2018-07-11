@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_radio_input.h"
 
-#include "third_party/blink/renderer/core/dom/accessible_node.h"
+#include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/radio_input_type.h"
 #include "third_party/blink/renderer/core/input_type_names.h"

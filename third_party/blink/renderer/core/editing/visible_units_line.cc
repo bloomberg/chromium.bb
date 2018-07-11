@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 
-#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/inline_box_position.h"
 #include "third_party/blink/renderer/core/editing/ng_flat_tree_shorthands.h"
