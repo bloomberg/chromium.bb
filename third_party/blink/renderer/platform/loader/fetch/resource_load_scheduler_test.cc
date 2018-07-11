@@ -345,28 +345,32 @@ TEST_F(ResourceLoadSchedulerTest, PriorityIsConsidered) {
   EXPECT_FALSE(client3->WasRun());
   EXPECT_TRUE(client4->WasRun());
 
+  // Client 4 does not count against the limit as it was not delayable when it
+  // was created.
   Scheduler()->SetOutstandingLimitForTesting(1);
-
-  EXPECT_FALSE(client1->WasRun());
-  EXPECT_FALSE(client2->WasRun());
-  EXPECT_FALSE(client3->WasRun());
-  EXPECT_TRUE(client4->WasRun());
-
-  Scheduler()->SetOutstandingLimitForTesting(2);
 
   EXPECT_FALSE(client1->WasRun());
   EXPECT_FALSE(client2->WasRun());
   EXPECT_TRUE(client3->WasRun());
   EXPECT_TRUE(client4->WasRun());
 
-  Scheduler()->SetOutstandingLimitForTesting(3);
+  Scheduler()->SetOutstandingLimitForTesting(2);
 
   EXPECT_FALSE(client1->WasRun());
   EXPECT_TRUE(client2->WasRun());
   EXPECT_TRUE(client3->WasRun());
   EXPECT_TRUE(client4->WasRun());
 
+  Scheduler()->SetOutstandingLimitForTesting(3);
+
+  EXPECT_TRUE(client1->WasRun());
+  EXPECT_TRUE(client2->WasRun());
+  EXPECT_TRUE(client3->WasRun());
+  EXPECT_TRUE(client4->WasRun());
+
   // Release the rest.
+  EXPECT_TRUE(Release(id4));
+  EXPECT_TRUE(Release(id3));
   EXPECT_TRUE(Release(id2));
   EXPECT_TRUE(Release(id1));
 }

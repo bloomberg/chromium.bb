@@ -460,7 +460,7 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
   // Check if the request can be throttled.
   ClientIdWithPriority request_info(*id, priority, intra_priority);
   if (!IsClientDelayable(request_info, option)) {
-    Run(*id, client, option == ThrottleOption::kThrottleable);
+    Run(*id, client, false);
     return;
   }
 
