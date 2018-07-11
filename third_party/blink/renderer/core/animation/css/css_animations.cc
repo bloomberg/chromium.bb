@@ -199,24 +199,6 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   return model;
 }
 
-// Sample the given |animation| at the given |inherited_time|. Returns nullptr
-// if the |inherited_time| falls outside of the animation.
-std::unique_ptr<TypedInterpolationValue> SampleAnimation(
-    Animation* animation,
-    double inherited_time) {
-  KeyframeEffect* effect = ToKeyframeEffect(animation->effect());
-  InertEffect* inert_animation_for_sampling = InertEffect::Create(
-      effect->Model(), effect->SpecifiedTiming(), false, inherited_time);
-  Vector<scoped_refptr<Interpolation>> sample;
-  inert_animation_for_sampling->Sample(sample);
-  // Transition animation has only animated a single property or is not in
-  // effect.
-  DCHECK_LE(sample.size(), 1u);
-  if (sample.IsEmpty())
-    return nullptr;
-  return ToTransitionInterpolation(*sample.at(0)).GetInterpolatedValue();
-}
-
 }  // namespace
 
 CSSAnimations::CSSAnimations() = default;
@@ -543,7 +525,8 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
   // be when transitions are retargeted. Instead of triggering complete style
   // recalculation, we find these cases by searching for new transitions that
   // have matching cancelled animation property IDs on the compositor.
-  HashSet<PropertyHandle> retargeted_compositor_transitions;
+  HeapHashMap<PropertyHandle, std::pair<Member<KeyframeEffect>, double>>
+      retargeted_compositor_transitions;
   for (const PropertyHandle& property :
        pending_update_.CancelledTransitions()) {
     DCHECK(transitions_.Contains(property));
@@ -554,7 +537,10 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
         pending_update_.NewTransitions().find(property) !=
             pending_update_.NewTransitions().end() &&
         !animation->Limited()) {
-      retargeted_compositor_transitions.insert(property);
+      retargeted_compositor_transitions.insert(
+          property,
+          std::pair<KeyframeEffect*, double>(
+              effect, animation->StartTimeInternal().value_or(NullValue())));
     }
     animation->cancel();
     // after cancelation, transitions must be downgraded or they'll fail
@@ -592,6 +578,44 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
         new TransitionEventDelegate(element, property);
 
     KeyframeEffectModelBase* model = inert_animation->Model();
+
+    if (retargeted_compositor_transitions.Contains(property)) {
+      const std::pair<Member<KeyframeEffect>, double>& old_transition =
+          retargeted_compositor_transitions.at(property);
+      KeyframeEffect* old_animation = old_transition.first;
+      double old_start_time = old_transition.second;
+      double inherited_time =
+          IsNull(old_start_time)
+              ? 0
+              : element->GetDocument().Timeline().CurrentTimeInternal() -
+                    old_start_time;
+
+      TransitionKeyframeEffectModel* old_effect =
+          ToTransitionKeyframeEffectModel(inert_animation->Model());
+      const KeyframeVector& frames = old_effect->GetFrames();
+
+      TransitionKeyframeVector new_frames;
+      new_frames.push_back(ToTransitionKeyframe(frames[0]->Clone().get()));
+      new_frames.push_back(ToTransitionKeyframe(frames[1]->Clone().get()));
+      new_frames.push_back(ToTransitionKeyframe(frames[2]->Clone().get()));
+
+      InertEffect* inert_animation_for_sampling = InertEffect::Create(
+          old_animation->Model(), old_animation->SpecifiedTiming(), false,
+          inherited_time);
+      Vector<scoped_refptr<Interpolation>> sample;
+      inert_animation_for_sampling->Sample(sample);
+      if (sample.size() == 1) {
+        const TransitionInterpolation& interpolation =
+            ToTransitionInterpolation(*sample.at(0));
+        new_frames[0]->SetValue(interpolation.GetInterpolatedValue());
+        new_frames[0]->SetCompositorValue(
+            interpolation.GetInterpolatedCompositorValue());
+        new_frames[1]->SetValue(interpolation.GetInterpolatedValue());
+        new_frames[1]->SetCompositorValue(
+            interpolation.GetInterpolatedCompositorValue());
+        model = TransitionKeyframeEffectModel::Create(new_frames);
+      }
+    }
 
     KeyframeEffect* transition = KeyframeEffect::Create(
         element, model, inert_animation->SpecifiedTiming(),
@@ -654,7 +678,6 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   }
 
   const RunningTransition* interrupted_transition = nullptr;
-  const RunningTransition* retargeted_compositor_transition = nullptr;
   if (state.active_transitions) {
     TransitionMap::const_iterator active_transition_iter =
         state.active_transitions->find(property);
@@ -666,10 +689,6 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
         return;
       }
       state.update.CancelTransition(property);
-      KeyframeEffect* effect =
-          ToKeyframeEffect(running_transition->animation->effect());
-      if (effect->HasActiveAnimationsOnCompositor())
-        retargeted_compositor_transition = running_transition;
       DCHECK(!state.animating_element->GetElementAnimations() ||
              !state.animating_element->GetElementAnimations()
                   ->IsAnimationStyleChange());
@@ -699,52 +718,22 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
                                state.animating_element->GetDocument());
   CSSInterpolationEnvironment old_environment(map, state.old_style);
   CSSInterpolationEnvironment new_environment(map, state.style);
-  const InterpolationType* transition_type = nullptr;
   InterpolationValue start = nullptr;
   InterpolationValue end = nullptr;
-  if (retargeted_compositor_transition) {
-    double old_start_time =
-        retargeted_compositor_transition->animation->StartTimeInternal()
-            .value_or(NullValue());
-    // TODO(flackr): This should be able to just use
-    // animation->currentTime() / 1000 rather than trying to calculate current
-    // time.
-    double inherited_time = IsNull(old_start_time)
-                                ? 0
-                                : state.animating_element->GetDocument()
-                                          .Timeline()
-                                          .CurrentTimeInternal() -
-                                      old_start_time;
-    std::unique_ptr<TypedInterpolationValue> retargeted_start = SampleAnimation(
-        retargeted_compositor_transition->animation, inherited_time);
-    if (retargeted_start) {
-      const InterpolationType& interpolation_type = retargeted_start->GetType();
-      start = retargeted_start->Value().Clone();
-      end = interpolation_type.MaybeConvertUnderlyingValue(new_environment);
-      if (end &&
-          interpolation_type.MaybeMergeSingles(start.Clone(), end.Clone()))
-        transition_type = &interpolation_type;
-    } else {
-      // If the previous transition was not in effect it is not used for
-      // retargeting.
-      retargeted_compositor_transition = nullptr;
+  const InterpolationType* transition_type = nullptr;
+  for (const auto& interpolation_type : map.Get(property)) {
+    start = interpolation_type->MaybeConvertUnderlyingValue(old_environment);
+    if (!start) {
+      continue;
     }
-  }
-  if (!retargeted_compositor_transition) {
-    for (const auto& interpolation_type : map.Get(property)) {
-      start = interpolation_type->MaybeConvertUnderlyingValue(old_environment);
-      if (!start) {
-        continue;
-      }
-      end = interpolation_type->MaybeConvertUnderlyingValue(new_environment);
-      if (!end) {
-        continue;
-      }
-      // Merge will only succeed if the two values are considered interpolable.
-      if (interpolation_type->MaybeMergeSingles(start.Clone(), end.Clone())) {
-        transition_type = interpolation_type.get();
-        break;
-      }
+    end = interpolation_type->MaybeConvertUnderlyingValue(new_environment);
+    if (!end) {
+      continue;
+    }
+    // Merge will only succeed if the two values are considered interpolable.
+    if (interpolation_type->MaybeMergeSingles(start.Clone(), end.Clone())) {
+      transition_type = interpolation_type.get();
+      break;
     }
   }
 
