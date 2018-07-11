@@ -66,16 +66,11 @@ const CGFloat kLabelMargin = 7;
 - (UILabel*)tabCountLabel {
   if (!_tabCountLabel) {
     _tabCountLabel = [[UILabel alloc] init];
-    _tabCountLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [_tabCountLabel setContentHuggingPriority:UILayoutPriorityDefaultLow
-                                      forAxis:UILayoutConstraintAxisHorizontal];
     [self addSubview:_tabCountLabel];
-    AddSameConstraintsToSidesWithInsets(
-        _tabCountLabel, self.imageView,
-        LayoutSides::kTop | LayoutSides::kBottom | LayoutSides::kLeading |
-            LayoutSides::kTrailing,
-        ChromeDirectionalEdgeInsetsMake(kLabelMargin, kLabelMargin,
-                                        kLabelMargin, kLabelMargin));
+
+    CGRect imageFrame = self.imageView.frame;
+    _tabCountLabel.frame = CGRectInset(imageFrame, kLabelMargin, kLabelMargin);
+
     _tabCountLabel.font = [UIFont systemFontOfSize:kTabGridButtonFontSize
                                             weight:UIFontWeightBold];
     _tabCountLabel.adjustsFontSizeToFitWidth = YES;
@@ -85,6 +80,16 @@ const CGFloat kLabelMargin = 7;
     _tabCountLabel.textColor = self.configuration.buttonsTintColor;
   }
   return _tabCountLabel;
+}
+
+- (void)layoutSubviews {
+  [super layoutSubviews];
+
+  if (!_tabCountLabel)
+    return;
+  CGRect imageFrame = self.imageView.frame;
+  self.tabCountLabel.frame =
+      CGRectInset(imageFrame, kLabelMargin, kLabelMargin);
 }
 
 @end
