@@ -89,9 +89,14 @@ class CronetURLRequestContext {
   // Constructs CronetURLRequestContext using |context_config|. The |callback|
   // is owned by |this| and is deleted on network thread.
   // All |callback| methods are invoked on network thread.
+  // If the network_task_runner is not assigned, a network thread would be
+  // created for network tasks. Otherwise the tasks would be running on the
+  // assigned task runner.
   CronetURLRequestContext(
       std::unique_ptr<URLRequestContextConfig> context_config,
-      std::unique_ptr<Callback> callback);
+      std::unique_ptr<Callback> callback,
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner =
+          nullptr);
 
   // Releases all resources for the request context and deletes the object.
   // Blocks until network thread is destroyed after running all pending tasks.
@@ -281,7 +286,10 @@ class CronetURLRequestContext {
   NetworkTasks* network_tasks_;
 
   // Network thread is destroyed from client thread.
-  base::Thread network_thread_;
+  std::unique_ptr<base::Thread> network_thread_;
+
+  // Task runner that runs network tasks.
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetURLRequestContext);
 };
