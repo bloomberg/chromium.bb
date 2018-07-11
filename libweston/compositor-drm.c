@@ -3392,7 +3392,8 @@ drm_output_propose_state(struct weston_output *output_base,
 		struct drm_plane_state *ps = NULL;
 		bool force_renderer = false;
 		pixman_region32_t clipped_view;
-		bool occluded = false;
+		bool totally_occluded = false;
+		bool overlay_occluded = false;
 
 		/* If this view doesn't touch our output at all, there's no
 		 * reason to do anything with it. */
@@ -3416,8 +3417,8 @@ drm_output_propose_state(struct weston_output *output_base,
 		pixman_region32_init(&surface_overlap);
 		pixman_region32_subtract(&surface_overlap, &clipped_view,
 					 &occluded_region);
-		occluded = !pixman_region32_not_empty(&surface_overlap);
-		if (occluded) {
+		totally_occluded = !pixman_region32_not_empty(&surface_overlap);
+		if (totally_occluded) {
 			pixman_region32_fini(&surface_overlap);
 			pixman_region32_fini(&clipped_view);
 			continue;
@@ -3439,13 +3440,13 @@ drm_output_propose_state(struct weston_output *output_base,
 		pixman_region32_intersect(&surface_overlap, &occluded_region,
 					  &clipped_view);
 		if (pixman_region32_not_empty(&surface_overlap))
-			force_renderer = true;
+			overlay_occluded = true;
 		pixman_region32_fini(&surface_overlap);
 
 		/* The cursor plane is 'special' in the sense that we can still
 		 * place it in the legacy API, and we gate that with a separate
 		 * cursors_are_broken flag. */
-		if (!force_renderer && !b->cursors_are_broken)
+		if (!force_renderer && !overlay_occluded && !b->cursors_are_broken)
 			ps = drm_output_prepare_cursor_view(state, ev);
 
 		/* If sprites are disabled or the view is not fully opaque, we
@@ -3462,7 +3463,8 @@ drm_output_propose_state(struct weston_output *output_base,
 		 * scanout plane. */
 		if (!ps && !force_renderer && !renderer_ok)
 			ps = drm_output_prepare_scanout_view(state, ev, mode);
-		if (!ps && !force_renderer)
+
+		if (!ps && !overlay_occluded && !force_renderer)
 			ps = drm_output_prepare_overlay_view(state, ev, mode);
 
 		if (ps) {
