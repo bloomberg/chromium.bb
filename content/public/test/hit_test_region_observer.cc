@@ -71,11 +71,13 @@ bool SurfaceHitTestReadyNotifier::ContainsSurfaceId(
 
   viz::Surface* container_surface =
       surface_manager_->GetSurfaceForId(container_surface_id);
-  if (!container_surface || !container_surface->active_referenced_surfaces())
+  if (!container_surface ||
+      container_surface->active_referenced_surfaces().empty()) {
     return false;
+  }
 
   for (const viz::SurfaceId& id :
-       *container_surface->active_referenced_surfaces()) {
+       container_surface->active_referenced_surfaces()) {
     if (id == target_view_->GetCurrentSurfaceId() || ContainsSurfaceId(id))
       return true;
   }

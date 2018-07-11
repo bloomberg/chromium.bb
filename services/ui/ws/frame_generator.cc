@@ -162,7 +162,7 @@ viz::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
 
   if (window_manager_surface_info_.is_valid()) {
     frame.metadata.referenced_surfaces.push_back(
-        window_manager_surface_info_.id());
+        viz::SurfaceRange(window_manager_surface_info_.id()));
   }
 
   return frame;

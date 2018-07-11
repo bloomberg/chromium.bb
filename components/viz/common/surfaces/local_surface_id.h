@@ -140,6 +140,10 @@ class VIZ_COMMON_EXPORT LocalSurfaceId {
   // Returns whether this LocalSurfaceId was generated after |other|.
   bool IsNewerThan(const LocalSurfaceId& other) const;
 
+  // Returns whether this LocalSurfaceId was generated after |other| or equal to
+  // it.
+  bool IsSameOrNewerThan(const LocalSurfaceId& other) const;
+
  private:
   friend struct mojo::StructTraits<mojom::LocalSurfaceIdDataView,
                                    LocalSurfaceId>;

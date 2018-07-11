@@ -949,7 +949,7 @@ bool LayerTreeHostImpl::HasDamage() const {
 
   // If the set of referenced surfaces has changed then we must submit a new
   // CompositorFrame to update surface references.
-  if (last_draw_referenced_surfaces_ != active_tree()->SurfaceLayerIds())
+  if (last_draw_referenced_surfaces_ != active_tree()->SurfaceRanges())
     return true;
 
   // If we have a new LocalSurfaceId, we must always submit a CompositorFrame
@@ -1940,10 +1940,10 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
         IsActivelyScrolling() || mutator_host_->NeedsTickAnimations();
   }
 
-  const base::flat_set<viz::SurfaceId>& referenced_surfaces =
-      active_tree_->SurfaceLayerIds();
-  for (auto& surface_id : referenced_surfaces)
-    metadata.referenced_surfaces.push_back(surface_id);
+  const base::flat_set<viz::SurfaceRange>& referenced_surfaces =
+      active_tree_->SurfaceRanges();
+  for (auto& surface_range : referenced_surfaces)
+    metadata.referenced_surfaces.push_back(surface_range);
 
   if (last_draw_referenced_surfaces_ != referenced_surfaces)
     last_draw_referenced_surfaces_ = referenced_surfaces;

@@ -23,6 +23,10 @@ std::ostream& operator<<(std::ostream& out,
   return out << local_surface_id.ToString();
 }
 
+bool LocalSurfaceId::IsSameOrNewerThan(const LocalSurfaceId& other) const {
+  return IsNewerThan(other) || *this == other;
+}
+
 bool LocalSurfaceId::IsNewerThan(const LocalSurfaceId& other) const {
   // Sequence numbers can wrap around so look at their difference instead of
   // their absolute values.

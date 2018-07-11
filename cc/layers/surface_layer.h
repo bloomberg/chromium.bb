@@ -10,6 +10,7 @@
 #include "cc/layers/deadline_policy.h"
 #include "cc/layers/layer.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/common/surfaces/surface_range.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -58,6 +59,9 @@ class CC_EXPORT SurfaceLayer : public Layer {
 
  private:
   ~SurfaceLayer() override;
+
+  // Returns a SurfaceRange corresponding the surface layer.
+  viz::SurfaceRange GetSurfaceRange() const;
 
   viz::SurfaceId primary_surface_id_;
   viz::SurfaceId fallback_surface_id_;

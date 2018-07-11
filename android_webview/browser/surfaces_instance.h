@@ -83,6 +83,8 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   void SetSolidColorRootFrame();
 
+  std::vector<viz::SurfaceRange> GetChildIdsRanges();
+
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
 
   viz::FrameSinkId frame_sink_id_;

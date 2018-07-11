@@ -17,6 +17,7 @@
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "gpu/ipc/common/mailbox_holder_struct_traits.h"
 #include "gpu/ipc/common/mailbox_struct_traits.h"
@@ -47,6 +48,7 @@
 #include "services/viz/public/interfaces/compositing/filter_operations.mojom.h"
 #include "services/viz/public/interfaces/compositing/returned_resource.mojom.h"
 #include "services/viz/public/interfaces/compositing/surface_info.mojom.h"
+#include "services/viz/public/interfaces/compositing/surface_range.mojom.h"
 #include "services/viz/public/interfaces/compositing/transferable_resource.mojom.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "skia/public/interfaces/blur_image_filter_tile_mode_struct_traits.h"
@@ -637,10 +639,10 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   latency_info.AddLatencyNumber(
       ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT);
   std::vector<ui::LatencyInfo> latency_infos = {latency_info};
-  std::vector<SurfaceId> referenced_surfaces;
+  std::vector<SurfaceRange> referenced_surfaces;
   SurfaceId id(FrameSinkId(1234, 4321),
                LocalSurfaceId(5678, base::UnguessableToken::Create()));
-  referenced_surfaces.push_back(id);
+  referenced_surfaces.emplace_back(id);
   std::vector<SurfaceId> activation_dependencies;
   SurfaceId id2(FrameSinkId(4321, 1234),
                 LocalSurfaceId(8765, base::UnguessableToken::Create()));

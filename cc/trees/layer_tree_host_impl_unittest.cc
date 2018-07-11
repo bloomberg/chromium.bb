@@ -4410,12 +4410,15 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
     root->test_properties()->AddChild(std::move(child));
   }
 
-  base::flat_set<viz::SurfaceId> fallback_surfaces_set;
-  for (size_t i = 0; i < fallback_surfaces.size(); ++i)
-    fallback_surfaces_set.insert(fallback_surfaces[i]);
+  base::flat_set<viz::SurfaceRange> surfaces_set;
+  // |fallback_surfaces| and |primary_surfaces| should have same size
+  for (size_t i = 0; i < fallback_surfaces.size(); ++i) {
+    surfaces_set.insert(
+        viz::SurfaceRange(fallback_surfaces[i], primary_surfaces[i]));
+  }
 
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
-  host_impl_->active_tree()->SetSurfaceLayerIds(fallback_surfaces_set);
+  host_impl_->active_tree()->SetSurfaceRanges(std::move(surfaces_set));
   host_impl_->SetFullViewportDamage();
   DrawFrame();
 
@@ -4430,7 +4433,9 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
     EXPECT_THAT(
         metadata.referenced_surfaces,
         testing::UnorderedElementsAre(
-            fallback_surfaces[0], fallback_surfaces[1], fallback_surfaces[2]));
+            viz::SurfaceRange(fallback_surfaces[0], primary_surfaces[0]),
+            viz::SurfaceRange(fallback_surfaces[1], primary_surfaces[1]),
+            viz::SurfaceRange(fallback_surfaces[2], primary_surfaces[2])));
     EXPECT_EQ(2u, metadata.deadline.deadline_in_frames());
     EXPECT_FALSE(metadata.deadline.use_default_lower_bound_deadline());
   }
@@ -4451,7 +4456,9 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
     EXPECT_THAT(
         metadata.referenced_surfaces,
         testing::UnorderedElementsAre(
-            fallback_surfaces[0], fallback_surfaces[1], fallback_surfaces[2]));
+            viz::SurfaceRange(fallback_surfaces[0], primary_surfaces[0]),
+            viz::SurfaceRange(fallback_surfaces[1], primary_surfaces[1]),
+            viz::SurfaceRange(fallback_surfaces[2], primary_surfaces[2])));
     EXPECT_EQ(0u, metadata.deadline.deadline_in_frames());
     EXPECT_FALSE(metadata.deadline.use_default_lower_bound_deadline());
   }
@@ -4468,7 +4475,7 @@ TEST_F(LayerTreeHostImplTest, SurfaceReferencesChangeCausesDamage) {
 
   // Submit an initial CompositorFrame with an empty set of referenced surfaces.
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
-  host_impl_->active_tree()->SetSurfaceLayerIds({});
+  host_impl_->active_tree()->SetSurfaceRanges({});
   host_impl_->SetFullViewportDamage();
   DrawFrame();
 
@@ -4484,14 +4491,14 @@ TEST_F(LayerTreeHostImplTest, SurfaceReferencesChangeCausesDamage) {
   // make any other changes that would cause damage. This mimics updating the
   // SurfaceLayer for an offscreen tab.
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
-  host_impl_->active_tree()->SetSurfaceLayerIds({surface_id});
+  host_impl_->active_tree()->SetSurfaceRanges({viz::SurfaceRange(surface_id)});
   DrawFrame();
 
   {
     const viz::CompositorFrameMetadata& metadata =
         fake_layer_tree_frame_sink->last_sent_frame()->metadata;
     EXPECT_THAT(metadata.referenced_surfaces,
-                testing::UnorderedElementsAre(surface_id));
+                testing::UnorderedElementsAre(viz::SurfaceRange(surface_id)));
   }
 }
 

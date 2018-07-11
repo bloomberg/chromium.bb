@@ -110,7 +110,7 @@ CompositorFrameBuilder& CompositorFrameBuilder::SetDeadline(
 }
 
 CompositorFrameBuilder& CompositorFrameBuilder::SetReferencedSurfaces(
-    std::vector<SurfaceId> referenced_surfaces) {
+    std::vector<SurfaceRange> referenced_surfaces) {
   frame_->metadata.referenced_surfaces = std::move(referenced_surfaces);
   return *this;
 }

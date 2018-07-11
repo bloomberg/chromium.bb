@@ -731,7 +731,7 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   {
     auto frame = CompositorFrameBuilder()
                      .AddDefaultRenderPass()
-                     .SetReferencedSurfaces({surface_id})
+                     .SetReferencedSurfaces({SurfaceRange(surface_id)})
                      .Build();
     support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
     EXPECT_EQ(surface_observer_.last_created_surface_id().local_surface_id(),

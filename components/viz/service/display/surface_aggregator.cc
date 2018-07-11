@@ -1073,7 +1073,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   if (will_draw)
     surface->OnWillBeDrawn();
 
-  for (const auto& surface_id : frame.metadata.referenced_surfaces) {
+  for (const SurfaceId& surface_id : surface->active_referenced_surfaces()) {
     if (!contained_surfaces_.count(surface_id)) {
       result->undrawn_surfaces.insert(surface_id);
       Surface* undrawn_surface = manager_->GetSurfaceForId(surface_id);
@@ -1118,12 +1118,11 @@ void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
       continue;
     if (!surface->HasActiveFrame())
       continue;
-    const CompositorFrame& frame = surface->GetActiveFrame();
     if (!surface->HasCopyOutputRequests()) {
       // Children are not necessarily included in undrawn_surfaces (because
       // they weren't referenced directly from a drawn surface), but may have
       // copy requests, so make sure to check them as well.
-      for (const auto& child_id : frame.metadata.referenced_surfaces) {
+      for (const SurfaceId& child_id : surface->active_referenced_surfaces()) {
         // Don't iterate over the child Surface if it was already listed as a
         // child of a different Surface, or in the case where there's infinite
         // recursion.
@@ -1134,7 +1133,7 @@ void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
       }
     } else {
       referenced_surfaces_.insert(surface_id);
-      CopyPasses(frame, surface);
+      CopyPasses(surface->GetActiveFrame(), surface);
       // CopyPasses may have mutated container, need to re-query to erase.
       referenced_surfaces_.erase(referenced_surfaces_.find(surface_id));
     }

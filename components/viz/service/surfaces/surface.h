@@ -182,10 +182,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   void NotifyAggregatedDamage(const gfx::Rect& damage_rect,
                               base::TimeTicks expected_display_time);
 
-  const std::vector<SurfaceId>* active_referenced_surfaces() const {
-    return active_frame_data_
-               ? &active_frame_data_->frame.metadata.referenced_surfaces
-               : nullptr;
+  const std::vector<SurfaceId>& active_referenced_surfaces() const {
+    return active_referenced_surfaces_;
   }
 
   // Returns the set of dependencies blocking this surface's pending frame
@@ -293,7 +291,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // passes the local_id in the map, then this surface is no longer interested
   // in observing activations for that FrameSinkId.
   base::flat_map<FrameSinkId, SequenceNumbers> frame_sink_id_dependencies_;
-
+  std::vector<SurfaceId> active_referenced_surfaces_;
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };
 

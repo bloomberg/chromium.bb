@@ -53,6 +53,7 @@
 #include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/surfaces/surface_range.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/latency/frame_metrics.h"
 
@@ -1084,7 +1085,7 @@ class CC_EXPORT LayerTreeHostImpl
   uint32_t next_frame_token_ = 1u;
 
   viz::LocalSurfaceId last_draw_local_surface_id_;
-  base::flat_set<viz::SurfaceId> last_draw_referenced_surfaces_;
+  base::flat_set<viz::SurfaceRange> last_draw_referenced_surfaces_;
   base::Optional<RenderFrameMetadata> last_draw_render_frame_metadata_;
   viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;
 

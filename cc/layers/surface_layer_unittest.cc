@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <iostream>
 #include <set>
 #include <vector>
 
@@ -46,7 +47,7 @@ class SurfaceLayerTest : public testing::Test {
   void SynchronizeTrees() {
     TreeSynchronizer::PushLayerProperties(layer_tree_host_.get(),
                                           host_impl_.pending_tree());
-    layer_tree_host_->PushSurfaceIdsTo(host_impl_.pending_tree());
+    layer_tree_host_->PushSurfaceRangesTo(host_impl_.pending_tree());
   }
 
  protected:
@@ -134,24 +135,24 @@ TEST_F(SurfaceLayerTest, PushProperties) {
   layer->SetBackgroundColor(SK_ColorBLUE);
   layer->SetStretchContentToFillBounds(true);
 
-  EXPECT_TRUE(layer_tree_host_->needs_surface_ids_sync());
-  EXPECT_EQ(layer_tree_host_->SurfaceLayerIds().size(), 1u);
+  EXPECT_TRUE(layer_tree_host_->needs_surface_ranges_sync());
+  EXPECT_EQ(layer_tree_host_->SurfaceRanges().size(), 1u);
 
   // Verify that pending tree has no surface ids already.
-  EXPECT_FALSE(host_impl_.pending_tree()->needs_surface_ids_sync());
-  EXPECT_EQ(host_impl_.pending_tree()->SurfaceLayerIds().size(), 0u);
+  EXPECT_FALSE(host_impl_.pending_tree()->needs_surface_ranges_sync());
+  EXPECT_EQ(host_impl_.pending_tree()->SurfaceRanges().size(), 0u);
 
   std::unique_ptr<SurfaceLayerImpl> layer_impl =
       SurfaceLayerImpl::Create(host_impl_.pending_tree(), layer->id());
   SynchronizeTrees();
 
   // Verify that pending tree received the surface id and also has
-  // needs_surface_ids_sync set to true as it needs to sync with active tree.
-  EXPECT_TRUE(host_impl_.pending_tree()->needs_surface_ids_sync());
-  EXPECT_EQ(host_impl_.pending_tree()->SurfaceLayerIds().size(), 1u);
+  // needs_surface_ranges_sync set to true as it needs to sync with active tree.
+  EXPECT_TRUE(host_impl_.pending_tree()->needs_surface_ranges_sync());
+  EXPECT_EQ(host_impl_.pending_tree()->SurfaceRanges().size(), 1u);
 
   // Verify we have reset the state on layer tree host.
-  EXPECT_FALSE(layer_tree_host_->needs_surface_ids_sync());
+  EXPECT_FALSE(layer_tree_host_->needs_surface_ranges_sync());
 
   // Verify that the primary and fallback SurfaceIds are pushed through.
   EXPECT_EQ(primary_id, layer_impl->primary_surface_id());
@@ -164,21 +165,23 @@ TEST_F(SurfaceLayerTest, PushProperties) {
       kArbitraryFrameSinkId,
       viz::LocalSurfaceId(2, base::UnguessableToken::Create()));
   layer->SetFallbackSurfaceId(fallback_id);
+  layer->SetPrimarySurfaceId(fallback_id,
+                             DeadlinePolicy::UseExistingDeadline());
   layer->SetBackgroundColor(SK_ColorGREEN);
   layer->SetStretchContentToFillBounds(false);
 
   // Verify that fallback surface id is not recorded on the layer tree host as
   // surface synchronization is not enabled.
-  EXPECT_TRUE(layer_tree_host_->needs_surface_ids_sync());
-  EXPECT_EQ(layer_tree_host_->SurfaceLayerIds().size(), 1u);
+  EXPECT_TRUE(layer_tree_host_->needs_surface_ranges_sync());
+  EXPECT_EQ(layer_tree_host_->SurfaceRanges().size(), 1u);
 
   SynchronizeTrees();
 
-  EXPECT_EQ(host_impl_.pending_tree()->SurfaceLayerIds().size(), 1u);
+  EXPECT_EQ(host_impl_.pending_tree()->SurfaceRanges().size(), 1u);
 
   // Verify that the primary viz::SurfaceId stays the same and the new
   // fallback viz::SurfaceId is pushed through.
-  EXPECT_EQ(primary_id, layer_impl->primary_surface_id());
+  EXPECT_EQ(fallback_id, layer_impl->primary_surface_id());
   EXPECT_EQ(fallback_id, layer_impl->fallback_surface_id());
   EXPECT_EQ(SK_ColorGREEN, layer_impl->background_color());
   // The deadline resets back to 0 (no deadline) after the first commit.
@@ -218,9 +221,10 @@ TEST_F(SurfaceLayerTest, CheckSurfaceReferencesForClonedLayer) {
   SynchronizeTrees();
 
   // Verify that only |old_surface_id| is going to be referenced.
-  EXPECT_THAT(layer_tree_host_->SurfaceLayerIds(), ElementsAre(old_surface_id));
-  EXPECT_THAT(host_impl_.pending_tree()->SurfaceLayerIds(),
-              ElementsAre(old_surface_id));
+  EXPECT_THAT(layer_tree_host_->SurfaceRanges(),
+              ElementsAre(viz::SurfaceRange(old_surface_id)));
+  EXPECT_THAT(host_impl_.pending_tree()->SurfaceRanges(),
+              ElementsAre(viz::SurfaceRange(old_surface_id)));
 
   const viz::SurfaceId new_surface_id(
       kArbitraryFrameSinkId,
@@ -234,10 +238,12 @@ TEST_F(SurfaceLayerTest, CheckSurfaceReferencesForClonedLayer) {
   SynchronizeTrees();
 
   // Verify that both surface ids are going to be referenced.
-  EXPECT_THAT(layer_tree_host_->SurfaceLayerIds(),
-              ElementsAre(old_surface_id, new_surface_id));
-  EXPECT_THAT(host_impl_.pending_tree()->SurfaceLayerIds(),
-              ElementsAre(old_surface_id, new_surface_id));
+  EXPECT_THAT(layer_tree_host_->SurfaceRanges(),
+              ElementsAre(viz::SurfaceRange(old_surface_id),
+                          viz::SurfaceRange(new_surface_id)));
+  EXPECT_THAT(host_impl_.pending_tree()->SurfaceRanges(),
+              ElementsAre(viz::SurfaceRange(old_surface_id),
+                          viz::SurfaceRange(new_surface_id)));
 
   // Unparent the old layer like it's being destroyed at the end of animation.
   layer1->SetLayerTreeHost(nullptr);
@@ -245,15 +251,16 @@ TEST_F(SurfaceLayerTest, CheckSurfaceReferencesForClonedLayer) {
   SynchronizeTrees();
 
   // Verify that only |new_surface_id| is going to be referenced.
-  EXPECT_THAT(layer_tree_host_->SurfaceLayerIds(), ElementsAre(new_surface_id));
-  EXPECT_THAT(host_impl_.pending_tree()->SurfaceLayerIds(),
-              ElementsAre(new_surface_id));
+  EXPECT_THAT(layer_tree_host_->SurfaceRanges(),
+              ElementsAre(viz::SurfaceRange(new_surface_id)));
+  EXPECT_THAT(host_impl_.pending_tree()->SurfaceRanges(),
+              ElementsAre(viz::SurfaceRange(new_surface_id)));
 
   // Cleanup for destruction.
   layer2->SetLayerTreeHost(nullptr);
 }
 
-// This test verifies LayerTreeHost::needs_surface_ids_sync() is correct when
+// This test verifies LayerTreeHost::needs_surface_ranges_sync() is correct when
 // there are cloned surface layers.
 TEST_F(SurfaceLayerTest, CheckNeedsSurfaceIdsSyncForClonedLayers) {
   const viz::SurfaceId surface_id(
@@ -265,17 +272,17 @@ TEST_F(SurfaceLayerTest, CheckNeedsSurfaceIdsSyncForClonedLayers) {
   layer1->SetPrimarySurfaceId(surface_id, DeadlinePolicy::UseDefaultDeadline());
   layer1->SetFallbackSurfaceId(surface_id);
 
-  // Verify the surface id is in SurfaceLayerIds() and needs_surface_ids_sync()
-  // is true.
-  EXPECT_TRUE(layer_tree_host_->needs_surface_ids_sync());
-  EXPECT_THAT(layer_tree_host_->SurfaceLayerIds(), SizeIs(1));
+  // Verify the surface id is in SurfaceLayerIds() and
+  // needs_surface_ranges_sync() is true.
+  EXPECT_TRUE(layer_tree_host_->needs_surface_ranges_sync());
+  EXPECT_THAT(layer_tree_host_->SurfaceRanges(), SizeIs(1));
 
   std::unique_ptr<SurfaceLayerImpl> layer_impl1 =
       SurfaceLayerImpl::Create(host_impl_.pending_tree(), layer1->id());
   SynchronizeTrees();
 
-  // After syncchronizing trees verify needs_surface_ids_sync() is false.
-  EXPECT_FALSE(layer_tree_host_->needs_surface_ids_sync());
+  // After syncchronizing trees verify needs_surface_ranges_sync() is false.
+  EXPECT_FALSE(layer_tree_host_->needs_surface_ranges_sync());
 
   // Create the second layer that is a clone of the first.
   scoped_refptr<SurfaceLayer> layer2 = SurfaceLayer::Create();
@@ -284,29 +291,30 @@ TEST_F(SurfaceLayerTest, CheckNeedsSurfaceIdsSyncForClonedLayers) {
   layer2->SetFallbackSurfaceId(surface_id);
 
   // Verify that after creating the second layer with the same surface id that
-  // needs_surface_ids_sync() is still false.
-  EXPECT_FALSE(layer_tree_host_->needs_surface_ids_sync());
-  EXPECT_THAT(layer_tree_host_->SurfaceLayerIds(), SizeIs(1));
+  // needs_surface_ranges_sync() is still false.
+  EXPECT_TRUE(layer_tree_host_->needs_surface_ranges_sync());
+  EXPECT_THAT(layer_tree_host_->SurfaceRanges(), SizeIs(1));
 
   std::unique_ptr<SurfaceLayerImpl> layer_impl2 =
       SurfaceLayerImpl::Create(host_impl_.pending_tree(), layer2->id());
   SynchronizeTrees();
 
-  // Verify needs_surface_ids_sync() is still false after synchronizing trees.
-  EXPECT_FALSE(layer_tree_host_->needs_surface_ids_sync());
+  // Verify needs_surface_ranges_sync() is still false after synchronizing
+  // trees.
+  EXPECT_FALSE(layer_tree_host_->needs_surface_ranges_sync());
 
   // Destroy one of the layers, leaving one layer with the surface id.
   layer1->SetLayerTreeHost(nullptr);
 
-  // Verify needs_surface_ids_sync() is still false.
-  EXPECT_FALSE(layer_tree_host_->needs_surface_ids_sync());
+  // Verify needs_surface_ranges_sync() is still false.
+  EXPECT_FALSE(layer_tree_host_->needs_surface_ranges_sync());
 
   // Destroy the last layer, this should change the set of layer surface ids.
   layer2->SetLayerTreeHost(nullptr);
 
-  // Verify SurfaceLayerIds() is empty and needs_surface_ids_sync() is true.
-  EXPECT_TRUE(layer_tree_host_->needs_surface_ids_sync());
-  EXPECT_THAT(layer_tree_host_->SurfaceLayerIds(), SizeIs(0));
+  // Verify SurfaceLayerIds() is empty and needs_surface_ranges_sync() is true.
+  EXPECT_TRUE(layer_tree_host_->needs_surface_ranges_sync());
+  EXPECT_THAT(layer_tree_host_->SurfaceRanges(), SizeIs(0));
 }
 
 }  // namespace

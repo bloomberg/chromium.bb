@@ -180,7 +180,7 @@ class CC_EXPORT LayerTreeImpl {
 
   void PushPropertyTreesTo(LayerTreeImpl* tree_impl);
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
-  void PushSurfaceIdsTo(LayerTreeImpl* tree_impl);
+  void PushSurfaceRangesTo(LayerTreeImpl* tree_impl);
 
   void MoveChangeTrackingToLayers();
 
@@ -375,9 +375,9 @@ class CC_EXPORT LayerTreeImpl {
   void set_needs_full_tree_sync(bool needs) { needs_full_tree_sync_ = needs; }
   bool needs_full_tree_sync() const { return needs_full_tree_sync_; }
 
-  bool needs_surface_ids_sync() const { return needs_surface_ids_sync_; }
-  void set_needs_surface_ids_sync(bool needs_surface_ids_sync) {
-    needs_surface_ids_sync_ = needs_surface_ids_sync;
+  bool needs_surface_ranges_sync() const { return needs_surface_ranges_sync_; }
+  void set_needs_surface_ranges_sync(bool needs_surface_ranges_sync) {
+    needs_surface_ranges_sync_ = needs_surface_ranges_sync;
   }
 
   void ForceRedrawNextActivation() { next_activation_forces_redraw_ = true; }
@@ -405,10 +405,9 @@ class CC_EXPORT LayerTreeImpl {
   void AddToElementLayerList(ElementId element_id);
   void RemoveFromElementLayerList(ElementId element_id);
 
-  void SetSurfaceLayerIds(
-      const base::flat_set<viz::SurfaceId>& surface_layer_ids);
-  const base::flat_set<viz::SurfaceId>& SurfaceLayerIds() const;
-  void ClearSurfaceLayerIds();
+  void SetSurfaceRanges(const base::flat_set<viz::SurfaceRange> surface_ranges);
+  const base::flat_set<viz::SurfaceRange>& SurfaceRanges() const;
+  void ClearSurfaceRanges();
 
   void AddLayerShouldPushProperties(LayerImpl* layer);
   void RemoveLayerShouldPushProperties(LayerImpl* layer);
@@ -666,7 +665,7 @@ class CC_EXPORT LayerTreeImpl {
 
   std::vector<PictureLayerImpl*> picture_layers_;
 
-  base::flat_set<viz::SurfaceId> surface_layer_ids_;
+  base::flat_set<viz::SurfaceRange> surface_layer_ranges_;
 
   // List of render surfaces for the most recently prepared frame.
   RenderSurfaceList render_surface_list_;
@@ -685,7 +684,7 @@ class CC_EXPORT LayerTreeImpl {
   // structural differences relative to the active tree.
   bool needs_full_tree_sync_;
 
-  bool needs_surface_ids_sync_;
+  bool needs_surface_ranges_sync_;
 
   bool next_activation_forces_redraw_;
 

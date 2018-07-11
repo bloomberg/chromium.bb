@@ -1377,7 +1377,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
     AddPasses(&frame.render_pass_list, parent_passes,
               base::size(parent_passes));
 
-    frame.metadata.referenced_surfaces.push_back(embedded_surface_id);
+    frame.metadata.referenced_surfaces.emplace_back(embedded_surface_id);
 
     parent_support->SubmitCompositorFrame(parent_local_surface_id,
                                           std::move(frame));
@@ -1392,10 +1392,10 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
     CompositorFrame frame = MakeEmptyCompositorFrame();
     AddPasses(&frame.render_pass_list, root_passes, base::size(root_passes));
 
-    frame.metadata.referenced_surfaces.push_back(parent_surface_id);
+    frame.metadata.referenced_surfaces.emplace_back(parent_surface_id);
     // Reference to Surface ID of a Surface that doesn't exist should be
     // included in previous_contained_surfaces, but otherwise ignored.
-    frame.metadata.referenced_surfaces.push_back(nonexistent_surface_id);
+    frame.metadata.referenced_surfaces.emplace_back(nonexistent_surface_id);
 
     support_->SubmitCompositorFrame(root_local_surface_id_, std::move(frame));
   }
