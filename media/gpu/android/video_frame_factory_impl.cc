@@ -154,22 +154,35 @@ void GpuVideoFrameFactory::CreateVideoFrame(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   scoped_refptr<VideoFrame> frame;
   std::unique_ptr<AbstractTexture> texture;
+  CodecImage* codec_image = nullptr;
   CreateVideoFrameInternal(std::move(output_buffer), std::move(texture_owner_),
                            timestamp, natural_size,
-                           std::move(promotion_hint_cb), &frame, &texture);
+                           std::move(promotion_hint_cb), &frame, &texture,
+                           &codec_image);
   if (!frame || !texture)
     return;
 
   // Try to render this frame if possible.
   internal::MaybeRenderEarly(&images_);
 
+  // Callback that will notify the CodecImage that the sync token has cleared.
+  // We don't want it to retain any codec buffers after that, since it's unclear
+  // how long it will be until the texture is actually destroyed.  Note that if
+  // the sync token were always correct, then |texture_pool| could just release
+  // the image.  It would save a lot of hoops, but would also make the texture
+  // unrenderable.  That's bad when the sync token isn't up to date.
+  auto sync_token_cb = base::BindOnce(
+      [](CodecImage* codec_image) { codec_image->ReleaseCodecBuffer(); },
+      base::Unretained(codec_image));
+
   // Note that this keeps the pool around while any texture is.
   auto drop_texture_ref = base::BindOnce(
       [](scoped_refptr<TexturePool> texture_pool, AbstractTexture* texture,
-         const gpu::SyncToken& sync_token) {
-        texture_pool->ReleaseTexture(texture, sync_token);
+         base::OnceClosure sync_token_cb, const gpu::SyncToken& sync_token) {
+        texture_pool->ReleaseTexture(texture, sync_token,
+                                     std::move(sync_token_cb));
       },
-      texture_pool_, base::Unretained(texture.get()));
+      texture_pool_, base::Unretained(texture.get()), std::move(sync_token_cb));
   texture_pool_->AddTexture(std::move(texture));
 
   // Guarantee that the AbstractTexture is released even if the VideoFrame is
@@ -187,7 +200,8 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
     gfx::Size natural_size,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
     scoped_refptr<VideoFrame>* video_frame_out,
-    std::unique_ptr<AbstractTexture>* texture_out) {
+    std::unique_ptr<AbstractTexture>* texture_out,
+    CodecImage** codec_image_out) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!MakeContextCurrent(stub_))
     return;
@@ -219,8 +233,9 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
   auto image = base::MakeRefCounted<CodecImage>(
       std::move(output_buffer), texture_owner_, std::move(promotion_hint_cb));
   images_.push_back(image.get());
+  *codec_image_out = image.get();
 
-  // Add |image| to our current image group.  This makes suer that any overlay
+  // Add |image| to our current image group.  This makes sure that any overlay
   // lasts as long as the images.  For TextureOwner, it doesn't do much.
   image_group_->AddCodecImage(image.get());
 
@@ -233,7 +248,8 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
   // TODO(liberato): consider not binding this as a StreamTextureImage if we're
   // using an overlay.  There's no advantage.  We'd likely want to create (and
   // initialize to a 1x1 texture) a 2D texture above in that case, in case
-  // somebody tries to sample from it.
+  // somebody tries to sample from it.  Be sure that promotion hints still
+  // work properly, though -- they might require a stream texture image.
   GLuint texture_owner_service_id =
       texture_owner_ ? texture_owner_->GetTextureId() : 0;
   texture->BindStreamTextureImage(image.get(), texture_owner_service_id);

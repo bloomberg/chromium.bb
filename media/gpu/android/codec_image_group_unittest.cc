@@ -40,7 +40,7 @@ class CodecImageGroupWithDestructionHook : public CodecImageGroup {
   base::OnceClosure destruction_cb_;
 };
 
-// CodecImage with a mocked SurfaceDestroyed.
+// CodecImage with a mocked ReleaseCodecBuffer.
 class MockCodecImage : public CodecImage {
  public:
   MockCodecImage()
@@ -48,7 +48,7 @@ class MockCodecImage : public CodecImage {
                    nullptr,
                    PromotionHintAggregator::NotifyPromotionHintCB()) {}
 
-  MOCK_METHOD0(SurfaceDestroyed, void());
+  MOCK_METHOD0(ReleaseCodecBuffer, void());
 
  protected:
   ~MockCodecImage() override {}
@@ -123,7 +123,7 @@ TEST_F(CodecImageGroupTest, SurfaceBundleWithoutOverlayDoesntCrash) {
   scoped_refptr<CodecImageGroup> image_group =
       base::MakeRefCounted<CodecImageGroup>(gpu_task_runner_, surface_bundle);
   // TODO(liberato): we should also make sure that adding an image doesn't call
-  // SurfaceDestroyed when it's added.
+  // ReleaseCodecBuffer when it's added.
 }
 
 TEST_F(CodecImageGroupTest, ImagesRetainRefToGroup) {
@@ -179,8 +179,8 @@ TEST_F(CodecImageGroupTest, ImageGroupDropsForwardsSurfaceDestruction) {
 
   // Destroy the surface.  All destruction messages should be posted to the
   // gpu thread.
-  EXPECT_CALL(*image_1.get(), SurfaceDestroyed()).Times(0);
-  EXPECT_CALL(*image_2.get(), SurfaceDestroyed()).Times(0);
+  EXPECT_CALL(*image_1.get(), ReleaseCodecBuffer()).Times(0);
+  EXPECT_CALL(*image_2.get(), ReleaseCodecBuffer()).Times(0);
   // Note that we're calling this on the wrong thread, but that's okay.
   rec.overlay()->OnSurfaceDestroyed();
   env_.RunUntilIdle();
@@ -189,8 +189,8 @@ TEST_F(CodecImageGroupTest, ImageGroupDropsForwardsSurfaceDestruction) {
   testing::Mock::VerifyAndClearExpectations(this);
 
   // Now run |gpu_task_runner_| and verify that the callbacks run.
-  EXPECT_CALL(*image_1.get(), SurfaceDestroyed()).Times(1);
-  EXPECT_CALL(*image_2.get(), SurfaceDestroyed()).Times(1);
+  EXPECT_CALL(*image_1.get(), ReleaseCodecBuffer()).Times(1);
+  EXPECT_CALL(*image_2.get(), ReleaseCodecBuffer()).Times(1);
   gpu_task_runner_->RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(this);
 

@@ -97,7 +97,8 @@ class GpuVideoFrameFactory
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
       scoped_refptr<VideoFrame>* video_frame_out,
-      std::unique_ptr<gpu::gles2::AbstractTexture>* texture_out);
+      std::unique_ptr<gpu::gles2::AbstractTexture>* texture_out,
+      CodecImage** codec_image_out);
 
   void OnWillDestroyStub(bool have_context) override;
 

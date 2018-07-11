@@ -230,7 +230,7 @@ bool CodecImage::RenderToOverlay() {
   return true;
 }
 
-void CodecImage::SurfaceDestroyed() {
+void CodecImage::ReleaseCodecBuffer() {
   output_buffer_ = nullptr;
   phase_ = Phase::kInvalidated;
 }
