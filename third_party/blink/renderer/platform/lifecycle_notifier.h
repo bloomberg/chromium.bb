@@ -63,6 +63,25 @@ class LifecycleNotifier : public GarbageCollectedMixin {
 
   T* Context() { return static_cast<T*>(this); }
 
+  // Safely iterate over the registered lifecycle observers.
+  //
+  // Adding or removing observers is not allowed during iteration. The callable
+  // will only be called synchronously inside ForEachObserver().
+  //
+  // Sample usage:
+  //     ForEachObserver([](ObserverType* observer) {
+  //       observer->SomeMethod();
+  //     });
+  template <typename ForEachCallable>
+  void ForEachObserver(const ForEachCallable& callable) const {
+    base::AutoReset<IterationState> scope(&iteration_state_, kAllowingNone);
+    for (LifecycleObserverBase* observer_base : observers_) {
+      Observer* observer = static_cast<Observer*>(observer_base);
+      callable(observer);
+    }
+  }
+
+ private:
   using ObserverSet = HeapHashSet<WeakMember<LifecycleObserverBase>>;
 
   enum IterationState {
@@ -74,7 +93,7 @@ class LifecycleNotifier : public GarbageCollectedMixin {
 
   // Iteration state is recorded while iterating the observer set,
   // optionally barring add or remove mutations.
-  IterationState iteration_state_;
+  mutable IterationState iteration_state_;
   ObserverSet observers_;
 };
 
