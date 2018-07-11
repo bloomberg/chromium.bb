@@ -1,15 +1,14 @@
-bajones@chromium.org
-bshe@chromium.org
-mthiesse@chromium.org
-cjgrant@chromium.org
-vollick@chromium.org
 asimjour@chromium.org
+cjgrant@chromium.org
+mthiesse@chromium.org
 tiborg@chromium.org
+vollick@chromium.org
 
-# WebVR-related
+# WebXR-related.
 klausw@chromium.org
 
-# Browser Test-related
+# Browser Test-related.
 bsheedy@chromium.org
 
+# TEAM: xr-dev@chromium.org
 # COMPONENT: UI>Browser>VR
