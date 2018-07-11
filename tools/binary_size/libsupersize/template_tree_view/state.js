@@ -123,12 +123,21 @@ class TreeWorker {
 
 /** Build utilities for working with the state. */
 function _initState() {
+  const _DEFAULT_FORM = new FormData(form);
+  /** @type {HTMLCollectionOf<HTMLInputElement>} */
+  const typeCheckboxes = form.elements.namedItem(_TYPE_STATE_KEY);
+
   /**
    * State is represented in the query string and
    * can be manipulated by this object. Keys in the query match with
    * input names.
    */
   let _filterParams = new URLSearchParams(location.search.slice(1));
+  const typeList = _filterParams.getAll(_TYPE_STATE_KEY);
+  _filterParams.delete(_TYPE_STATE_KEY);
+  for (const type of types(typeList)) {
+    _filterParams.append(_TYPE_STATE_KEY, type);
+  }
 
   const state = Object.freeze({
     /**
@@ -180,6 +189,15 @@ function _initState() {
     has(key) {
       return _filterParams.has(key);
     },
+    /**
+     * Formats the filter state as a string.
+     */
+    toString() {
+      const copy = new URLSearchParams(_filterParams);
+      const types = [...new Set(copy.getAll(_TYPE_STATE_KEY))];
+      if (types.length > 0) copy.set(_TYPE_STATE_KEY, types.join(''));
+      return `?${copy.toString()}`;
+    },
   });
 
   // Update form inputs to reflect the state from URL.
@@ -204,10 +222,48 @@ function _initState() {
     }
   }
 
+  /**
+   * Yields only entries that have been modified in
+   * comparison to `_DEFAULT_FORM`.
+   * @param {FormData} modifiedForm
+   */
+  function* onlyChangedEntries(modifiedForm) {
+    // Remove default values
+    for (const key of modifiedForm.keys()) {
+      const modifiedValues = modifiedForm.getAll(key);
+      const defaultValues = _DEFAULT_FORM.getAll(key);
+
+      const valuesChanged =
+        modifiedValues.length !== defaultValues.length ||
+        modifiedValues.some((v, i) => v !== defaultValues[i]);
+      if (valuesChanged) {
+        for (const value of modifiedValues) {
+          yield [key, value];
+        }
+      }
+    }
+  }
+
+  function readFormState() {
+    const modifiedForm = new FormData(form);
+    _filterParams = new URLSearchParams(onlyChangedEntries(modifiedForm));
+    history.replaceState(null, null, state.toString());
+  }
+
   // Update the state when the form changes.
-  form.addEventListener('change', event => {
-    _filterParams = new URLSearchParams(new FormData(event.currentTarget));
-    history.replaceState(null, null, '?' + _filterParams.toString());
+  form.addEventListener('change', readFormState);
+  document.getElementById('type-all').addEventListener('click', () => {
+    for (const checkbox of typeCheckboxes) {
+      checkbox.checked = true;
+    }
+    readFormState();
+    form.dispatchEvent(new Event('submit'));
+  });
+  document.getElementById('type-none').addEventListener('click', () => {
+    for (const checkbox of typeCheckboxes) {
+      checkbox.checked = false;
+    }
+    readFormState();
   });
 
   return state;
@@ -216,8 +272,6 @@ function _initState() {
 function _startListeners() {
   const _SHOW_OPTIONS_STORAGE_KEY = 'show-options';
 
-  /** @type {HTMLSpanElement} */
-  const sizeHeader = document.getElementById('size-header');
   /** @type {HTMLFieldSetElement} */
   const typesFilterContainer = document.getElementById('types-filter');
   /** @type {HTMLInputElement} */
@@ -236,7 +290,8 @@ function _startListeners() {
   for (const button of document.getElementsByClassName('toggle-options')) {
     button.addEventListener('click', _toggleOptions);
   }
-  if (localStorage.getItem(_SHOW_OPTIONS_STORAGE_KEY) === 'true') {
+  // Default to open if getItem returns null
+  if (localStorage.getItem(_SHOW_OPTIONS_STORAGE_KEY) !== 'false') {
     document.body.classList.add('show-options');
   }
 

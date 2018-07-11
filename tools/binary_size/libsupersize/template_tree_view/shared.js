@@ -83,10 +83,28 @@ const _SYMBOL_TYPE_SET = new Set('bdrtv*xmpP' + _OTHER_SYMBOL_TYPE);
 /** Name used by a directory created to hold symbols with no name. */
 const _NO_NAME = '(No path)';
 
+/** Key where type is stored in the query string state. */
+const _TYPE_STATE_KEY = 'type';
+
 /**
  * Returns shortName for a tree node.
  * @param {TreeNode} node
  */
 function shortName(node) {
   return node.idPath.slice(node.shortNameIndex);
+}
+
+/**
+ * Iterate through each type in the query string. Types can be expressed as
+ * repeats of the same key in the query string ("type=b&type=p") or as a long
+ * string with multiple characters ("type=bp").
+ * @param {string[]} typesList All values associated with the "type" key in the
+ * query string.
+ */
+function* types(typesList) {
+  for (const typeOrTypes of typesList) {
+    for (const typeChar of typeOrTypes) {
+      yield typeChar;
+    }
+  }
 }
