@@ -113,6 +113,12 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   friend class TabLifecycleUnitSource;
 
  private:
+  // Indicates if an intervention (freezing or discarding) is proactive or not.
+  enum class InterventionType {
+    kProactive,
+    kExternalOrUrgent,
+  };
+
   // Determines if the tab is a media tab, and populates an optional
   // |decision_details| with full details.
   bool IsMediaTabImpl(DecisionDetails* decision_details) const;
@@ -146,11 +152,11 @@ class TabLifecycleUnitSource::TabLifecycleUnit
 
   // Indicates if freezing or discarding this tab would be noticeable by the
   // user even if it isn't brought back to the foreground. Populates
-  // |decision_details| with full details. |urgent_intervention| indicates if
-  // this is for an urgent intervention, in which case some heuristics will be
-  // skipped.
+  // |decision_details| with full details. If |intervention_type| indicates that
+  // this is a proactive intervention then more heuristics will be
+  // applied.
   void CheckIfTabIsUsedInBackground(DecisionDetails* decision_details,
-                                    bool urgent_intervention) const;
+                                    InterventionType intervention_type) const;
 
   // List of observers to notify when the discarded state or the auto-
   // discardable state of this tab changes.

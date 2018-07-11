@@ -47,13 +47,16 @@ class TabLifecycleUnitSource::TabLifecycleUnitHolder
   DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitHolder);
 };
 
-TabLifecycleUnitSource::TabLifecycleUnitSource()
-    : browser_tab_strip_tracker_(this, nullptr, this) {
+TabLifecycleUnitSource::TabLifecycleUnitSource(
+    InterventionPolicyDatabase* intervention_policy_database)
+    : browser_tab_strip_tracker_(this, nullptr, this),
+      intervention_policy_database_(intervention_policy_database) {
   DCHECK(!instance_);
 
   // In unit tests, tabs might already exist when TabLifecycleUnitSource is
   // instantiated. No TabLifecycleUnit is created for these tabs.
 
+  DCHECK(intervention_policy_database_);
   browser_tab_strip_tracker_.Init();
   instance_ = this;
   // TODO(chrisha): Create a ScopedPageSignalObserver helper class to clean up

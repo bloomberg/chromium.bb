@@ -54,6 +54,13 @@ void InterventionPolicyDatabase::InitializeDatabaseWithProtoFile(
                      weak_factory_.GetWeakPtr()));
 }
 
+void InterventionPolicyDatabase::AddOriginPoliciesForTesting(
+    const url::Origin& origin,
+    OriginInterventionPolicies policies) {
+  database_.emplace(SerializeOriginIntoDatabaseKey(origin),
+                    std::move(policies));
+}
+
 // static
 InterventionPolicyDatabase::InterventionsMap
 InterventionPolicyDatabase::ReadDatabaseFromProtoFileOnSequence(

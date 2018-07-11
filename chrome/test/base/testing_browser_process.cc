@@ -432,7 +432,8 @@ resource_coordinator::TabManager* TestingBrowserProcess::GetTabManager() {
   if (!tab_manager_) {
     tab_manager_ = std::make_unique<resource_coordinator::TabManager>();
     tab_lifecycle_unit_source_ =
-        std::make_unique<resource_coordinator::TabLifecycleUnitSource>();
+        std::make_unique<resource_coordinator::TabLifecycleUnitSource>(
+            tab_manager_->intervention_policy_database());
     tab_lifecycle_unit_source_->AddObserver(tab_manager_.get());
   }
   return tab_manager_.get();
