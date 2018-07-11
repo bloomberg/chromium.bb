@@ -1359,8 +1359,7 @@
     },
     {
       name: "WebLocksAPI",
-      origin_trial_feature_name: "WebLocksAPI",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "WebNFC",

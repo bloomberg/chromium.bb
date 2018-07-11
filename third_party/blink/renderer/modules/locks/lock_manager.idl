@@ -8,7 +8,7 @@ callback LockGrantedCallback = any (Lock lock);
 [
     SecureContext,
     Exposed=(Window,Worker),
-    OriginTrialEnabled=WebLocksAPI
+    RuntimeEnabled=WebLocksAPI
 ] interface LockManager {
     [CallWith=ScriptState, RaisesException, Measure] Promise<Lock> request(
         DOMString name,

@@ -6,7 +6,7 @@
 [
     SecureContext,
     Exposed=(Window,Worker),
-    OriginTrialEnabled=WebLocksAPI
+    RuntimeEnabled=WebLocksAPI
 ] interface Lock {
     readonly attribute DOMString name;
     readonly attribute LockMode mode;
