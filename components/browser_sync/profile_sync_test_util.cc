@@ -8,7 +8,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_model_worker.h"
@@ -53,8 +55,8 @@ class BundleSyncClient : public syncer::FakeSyncClient {
                        get_sync_service_callback,
                    const base::Callback<bookmarks::BookmarkModel*(void)>&
                        get_bookmark_model_callback,
-                   scoped_refptr<base::SingleThreadTaskRunner> db_thread,
-                   scoped_refptr<base::SingleThreadTaskRunner> file_thread,
+                   scoped_refptr<base::SequencedTaskRunner> db_thread,
+                   scoped_refptr<base::SequencedTaskRunner> file_thread,
                    history::HistoryService* history_service);
 
   ~BundleSyncClient() override;
@@ -81,8 +83,8 @@ class BundleSyncClient : public syncer::FakeSyncClient {
   const base::Callback<bookmarks::BookmarkModel*(void)>
       get_bookmark_model_callback_;
   // These task runners, if not null, are used in CreateModelWorkerForGroup.
-  const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
-  const scoped_refptr<base::SingleThreadTaskRunner> file_thread_;
+  const scoped_refptr<base::SequencedTaskRunner> db_thread_;
+  const scoped_refptr<base::SequencedTaskRunner> file_thread_;
   history::HistoryService* history_service_;
 };
 
@@ -96,8 +98,8 @@ BundleSyncClient::BundleSyncClient(
     const base::Callback<syncer::SyncService*(void)>& get_sync_service_callback,
     const base::Callback<bookmarks::BookmarkModel*(void)>&
         get_bookmark_model_callback,
-    scoped_refptr<base::SingleThreadTaskRunner> db_thread,
-    scoped_refptr<base::SingleThreadTaskRunner> file_thread,
+    scoped_refptr<base::SequencedTaskRunner> db_thread,
+    scoped_refptr<base::SequencedTaskRunner> file_thread,
     history::HistoryService* history_service)
     : syncer::FakeSyncClient(factory),
       pref_service_(pref_service),
@@ -232,12 +234,13 @@ ProfileSyncServiceBundle::SyncClientBuilder::Build() {
       get_syncable_service_callback_, get_sync_service_callback_,
       get_bookmark_model_callback_,
       activate_model_creation_ ? bundle_->db_thread() : nullptr,
-      activate_model_creation_ ? base::ThreadTaskRunnerHandle::Get() : nullptr,
+      activate_model_creation_ ? base::SequencedTaskRunnerHandle::Get()
+                               : nullptr,
       history_service_);
 }
 
 ProfileSyncServiceBundle::ProfileSyncServiceBundle()
-    : db_thread_(base::ThreadTaskRunnerHandle::Get()),
+    : db_thread_(base::SequencedTaskRunnerHandle::Get()),
       signin_client_(&pref_service_),
 #if defined(OS_CHROMEOS)
       signin_manager_(&signin_client_, &account_tracker_),

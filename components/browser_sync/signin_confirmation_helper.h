@@ -12,7 +12,7 @@
 #include "base/task/cancelable_task_tracker.h"
 
 namespace base {
-class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace history {
@@ -28,7 +28,7 @@ namespace browser_sync {
 class SigninConfirmationHelper {
  public:
   SigninConfirmationHelper(history::HistoryService* history_service,
-                           const base::Callback<void(bool)>& return_result);
+                           base::OnceCallback<void(bool)> return_result);
 
   // This helper checks if there are history entries in the history service.
   void CheckHasHistory(int max_entries);
@@ -44,15 +44,15 @@ class SigninConfirmationHelper {
   void OnHistoryQueryResults(size_t max_entries,
                              history::QueryResults* results);
 
-  // Posts the given result to the origin thread.
+  // Posts the given result to the origin sequence.
   void PostResult(bool result);
 
   // Calls |return_result_| if |result| == true or if it's the result of the
   // last pending check.
   void ReturnResult(bool result);
 
-  // The task runner for the thread this object was constructed on.
-  const scoped_refptr<base::SingleThreadTaskRunner> origin_thread_;
+  // The task runner for the sequence this object was constructed on.
+  const scoped_refptr<base::SequencedTaskRunner> origin_sequence_;
 
   // Pointer to the history service.
   history::HistoryService* history_service_;
@@ -64,7 +64,7 @@ class SigninConfirmationHelper {
   int pending_requests_;
 
   // Callback to pass the result back to the caller.
-  const base::Callback<void(bool)> return_result_;
+  base::OnceCallback<void(bool)> return_result_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninConfirmationHelper);
 };

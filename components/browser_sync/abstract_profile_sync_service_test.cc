@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/run_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/browser_sync/test_http_bridge_factory.h"
 #include "components/browser_sync/test_profile_sync_service.h"
 #include "components/sync/driver/glue/sync_backend_host_core.h"
@@ -105,7 +105,7 @@ void SyncEngineForProfileSyncTest::ConfigureDataTypes(ConfigureParams params) {
   // send back the list of newly configured types instead and hope it doesn't
   // break anything.
   // Posted to avoid re-entrancy issues.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(
           &SyncEngineForProfileSyncTest::FinishConfigureDataTypesOnFrontendLoop,

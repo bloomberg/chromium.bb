@@ -5,10 +5,13 @@
 #include "components/browser_sync/signin_confirmation_helper.h"
 
 #include <memory>
+#include <utility>
 
-#include "base/single_thread_task_runner.h"
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
@@ -21,8 +24,9 @@ namespace {
 // Determines whether there are any typed URLs in a history backend.
 class HasTypedURLsTask : public history::HistoryDBTask {
  public:
-  explicit HasTypedURLsTask(const base::Callback<void(bool)>& cb)
-      : has_typed_urls_(false), cb_(cb) {}
+  explicit HasTypedURLsTask(base::OnceCallback<void(bool)> cb)
+      : has_typed_urls_(false), cb_(std::move(cb)) {}
+  ~HasTypedURLsTask() override {}
 
   bool RunOnDBThread(history::HistoryBackend* backend,
                      history::HistoryDatabase* db) override {
@@ -36,27 +40,25 @@ class HasTypedURLsTask : public history::HistoryDBTask {
     return true;
   }
 
-  void DoneRunOnMainThread() override { cb_.Run(has_typed_urls_); }
+  void DoneRunOnMainThread() override { std::move(cb_).Run(has_typed_urls_); }
 
  private:
-  ~HasTypedURLsTask() override {}
-
   bool has_typed_urls_;
-  base::Callback<void(bool)> cb_;
+  base::OnceCallback<void(bool)> cb_;
 };
 
 }  // namespace
 
 SigninConfirmationHelper::SigninConfirmationHelper(
     history::HistoryService* history_service,
-    const base::Callback<void(bool)>& return_result)
-    : origin_thread_(base::ThreadTaskRunnerHandle::Get()),
+    base::OnceCallback<void(bool)> return_result)
+    : origin_sequence_(base::SequencedTaskRunnerHandle::Get()),
       history_service_(history_service),
       pending_requests_(0),
-      return_result_(return_result) {}
+      return_result_(std::move(return_result)) {}
 
 SigninConfirmationHelper::~SigninConfirmationHelper() {
-  DCHECK(origin_thread_->BelongsToCurrentThread());
+  DCHECK(origin_sequence_->RunsTasksInCurrentSequence());
 }
 
 void SigninConfirmationHelper::OnHistoryQueryResults(
@@ -95,23 +97,23 @@ void SigninConfirmationHelper::CheckHasTypedURLs() {
   }
   history_service_->ScheduleDBTask(
       FROM_HERE,
-      std::unique_ptr<history::HistoryDBTask>(new HasTypedURLsTask(base::Bind(
-          &SigninConfirmationHelper::ReturnResult, base::Unretained(this)))),
+      std::make_unique<HasTypedURLsTask>(base::BindOnce(
+          &SigninConfirmationHelper::ReturnResult, base::Unretained(this))),
       &task_tracker_);
 }
 
 void SigninConfirmationHelper::PostResult(bool result) {
-  origin_thread_->PostTask(FROM_HERE,
-                           base::Bind(&SigninConfirmationHelper::ReturnResult,
-                                      base::Unretained(this), result));
+  origin_sequence_->PostTask(
+      FROM_HERE, base::BindOnce(&SigninConfirmationHelper::ReturnResult,
+                                base::Unretained(this), result));
 }
 
 void SigninConfirmationHelper::ReturnResult(bool result) {
-  DCHECK(origin_thread_->BelongsToCurrentThread());
+  DCHECK(origin_sequence_->RunsTasksInCurrentSequence());
   // Pass |true| into the callback as soon as one of the tasks passes a
   // result of |true|, otherwise pass the last returned result.
   if (--pending_requests_ == 0 || result) {
-    return_result_.Run(result);
+    std::move(return_result_).Run(result);
 
     // This leaks at shutdown if the HistoryService is destroyed, but
     // the process is going to die anyway.
