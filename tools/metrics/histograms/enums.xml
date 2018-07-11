@@ -34314,6 +34314,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Out of interactive quota - deprecated"/>
   <int value="8" label="Out of non-interactive quota - deprecated"/>
   <int value="9" label="No API key available"/>
+  <int value="10" label="Access token invalid"/>
 </enum>
 
 <enum name="NTPSnippetsState">

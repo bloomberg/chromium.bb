@@ -77,7 +77,8 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
                                   const std::string& oauth_access_token);
   void StartRequest(internal::JsonRequest::Builder builder,
                     SnippetsAvailableCallback callback,
-                    bool is_authenticated);
+                    bool is_authenticated,
+                    std::string access_token);
 
   void StartTokenRequest();
 
@@ -88,6 +89,7 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
   void JsonRequestDone(std::unique_ptr<internal::JsonRequest> request,
                        SnippetsAvailableCallback callback,
                        bool is_authenticated,
+                       std::string access_token,
                        std::unique_ptr<base::Value> result,
                        internal::FetchResult status_code,
                        const std::string& error_details);
@@ -95,7 +97,8 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
                      SnippetsAvailableCallback callback,
                      internal::FetchResult status_code,
                      const std::string& error_details,
-                     bool is_authenticated);
+                     bool is_authenticated,
+                     std::string access_token);
 
   // Authentication for signed-in users.
   identity::IdentityManager* identity_manager_;

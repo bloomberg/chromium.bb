@@ -177,13 +177,11 @@ void JsonRequest::OnSimpleLoaderComplete(
         .Run(/*result=*/nullptr, FetchResult::URL_REQUEST_STATUS_ERROR,
              /*error_details=*/base::StringPrintf(" %d", net_error));
   } else if (response_code / 100 != 2) {
-    // TODO(jkrcal): https://crbug.com/609084
-    // We need to deal with the edge case again where the auth
-    // token expires just before we send the request (in which case we need to
-    // fetch a new auth token). We should extract that into a common class
-    // instead of adding it to every single class that uses auth tokens.
+    FetchResult result = response_code == net::HTTP_UNAUTHORIZED
+                             ? FetchResult::HTTP_ERROR_UNAUTHORIZED
+                             : FetchResult::HTTP_ERROR;
     std::move(request_completed_callback_)
-        .Run(/*result=*/nullptr, FetchResult::HTTP_ERROR,
+        .Run(/*result=*/nullptr, result,
              /*error_details=*/base::StringPrintf(" %d", response_code));
   } else {
     last_response_string_ = std::move(*response_body);

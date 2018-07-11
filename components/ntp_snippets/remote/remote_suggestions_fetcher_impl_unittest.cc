@@ -806,6 +806,29 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
   }
 }
 
+TEST_F(RemoteSuggestionsFetcherImplTest,
+       HttpUnauthorizedIsTreatedAsDistinctTemporaryError) {
+  SignIn();
+  SetFakeResponse(
+      GURL(std::string(kFetchSuggestionsEndpoint) + "?priority=user_action"),
+      /*response_data=*/std::string(), net::HTTP_UNAUTHORIZED, net::OK);
+  EXPECT_CALL(
+      mock_callback(),
+      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+          /*fetched_categories=*/Property(
+              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+      .Times(1);
+  fetcher().FetchSnippets(test_params(),
+                          ToSnippetsAvailableCallback(&mock_callback()));
+
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "access_token", base::Time::Max());
+  FastForwardUntilNoTasksRemain();
+
+  EXPECT_THAT(fetcher().GetLastStatusForDebugging(),
+              Eq("Access token invalid 401"));
+}
+
 TEST_F(RemoteSuggestionsFetcherImplTest, ShouldReportUrlStatusError) {
   SetFakeResponse(GURL(std::string(kFetchSuggestionsEndpoint) +
                        "?key=fakeAPIkey&priority=user_action"),

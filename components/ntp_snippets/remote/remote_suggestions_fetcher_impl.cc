@@ -78,6 +78,8 @@ std::string FetchResultToString(FetchResult result) {
       return "Error in obtaining an OAuth2 access token.";
     case FetchResult::MISSING_API_KEY:
       return "No API key available.";
+    case FetchResult::HTTP_ERROR_UNAUTHORIZED:
+      return "Access token invalid";
     case FetchResult::RESULT_MAX:
       break;
   }
@@ -98,6 +100,7 @@ Status FetchResultToStatus(FetchResult result) {
     // correctly but the server failed to respond as expected.
     // TODO(fhorschig): Revisit HTTP_ERROR once the rescheduling was reworked.
     case FetchResult::HTTP_ERROR:
+    case FetchResult::HTTP_ERROR_UNAUTHORIZED:
     case FetchResult::URL_REQUEST_STATUS_ERROR:
     case FetchResult::INVALID_SNIPPET_CONTENT_ERROR:
     case FetchResult::JSON_PARSE_ERROR:
@@ -225,7 +228,7 @@ void RemoteSuggestionsFetcherImpl::FetchSnippetsNonAuthenticated(
     // If we don't have an API key, don't even try.
     FetchFinished(OptionalFetchedCategories(), std::move(callback),
                   FetchResult::MISSING_API_KEY, std::string(),
-                  /*is_authenticated=*/false);
+                  /*is_authenticated=*/false, std::string());
     return;
   }
   // When not providing OAuth token, we need to pass the Google API key.
@@ -235,7 +238,7 @@ void RemoteSuggestionsFetcherImpl::FetchSnippetsNonAuthenticated(
 
   builder.SetUrl(url);
   StartRequest(std::move(builder), std::move(callback),
-               /*is_authenticated=*/false);
+               /*is_authenticated=*/false, std::string());
 }
 
 void RemoteSuggestionsFetcherImpl::FetchSnippetsAuthenticated(
@@ -250,18 +253,19 @@ void RemoteSuggestionsFetcherImpl::FetchSnippetsAuthenticated(
       base::StringPrintf(kAuthorizationRequestHeaderFormat,
                          oauth_access_token.c_str()));
   StartRequest(std::move(builder), std::move(callback),
-               /*is_authenticated=*/true);
+               /*is_authenticated=*/true, oauth_access_token);
 }
 
 void RemoteSuggestionsFetcherImpl::StartRequest(
     JsonRequest::Builder builder,
     SnippetsAvailableCallback callback,
-    bool is_authenticated) {
+    bool is_authenticated,
+    std::string access_token) {
   std::unique_ptr<JsonRequest> request = builder.Build();
   JsonRequest* raw_request = request.get();
   raw_request->Start(base::BindOnce(
       &RemoteSuggestionsFetcherImpl::JsonRequestDone, base::Unretained(this),
-      std::move(request), std::move(callback), is_authenticated));
+      std::move(request), std::move(callback), is_authenticated, access_token));
 }
 
 void RemoteSuggestionsFetcherImpl::StartTokenRequest() {
@@ -316,7 +320,7 @@ void RemoteSuggestionsFetcherImpl::AccessTokenError(
                   FetchResult::OAUTH_TOKEN_ERROR,
                   /*error_details=*/
                   base::StringPrintf(" (%s)", error.ToString().c_str()),
-                  /*is_authenticated=*/true);
+                  /*is_authenticated=*/true, std::string());
     pending_requests_.pop();
   }
 }
@@ -325,6 +329,7 @@ void RemoteSuggestionsFetcherImpl::JsonRequestDone(
     std::unique_ptr<JsonRequest> request,
     SnippetsAvailableCallback callback,
     bool is_authenticated,
+    std::string access_token,
     std::unique_ptr<base::Value> result,
     FetchResult status_code,
     const std::string& error_details) {
@@ -339,7 +344,7 @@ void RemoteSuggestionsFetcherImpl::JsonRequestDone(
 
   if (!result) {
     FetchFinished(OptionalFetchedCategories(), std::move(callback), status_code,
-                  error_details, is_authenticated);
+                  error_details, is_authenticated, access_token);
     return;
   }
 
@@ -348,7 +353,7 @@ void RemoteSuggestionsFetcherImpl::JsonRequestDone(
     LOG(WARNING) << "Received invalid snippets: " << last_fetch_json_;
     FetchFinished(OptionalFetchedCategories(), std::move(callback),
                   FetchResult::INVALID_SNIPPET_CONTENT_ERROR, std::string(),
-                  is_authenticated);
+                  is_authenticated, access_token);
     return;
   }
   // Filter out unwanted categories if necessary.
@@ -357,7 +362,8 @@ void RemoteSuggestionsFetcherImpl::JsonRequestDone(
   FilterCategories(&categories, request->exclusive_category());
 
   FetchFinished(std::move(categories), std::move(callback),
-                FetchResult::SUCCESS, std::string(), is_authenticated);
+                FetchResult::SUCCESS, std::string(), is_authenticated,
+                access_token);
 }
 
 void RemoteSuggestionsFetcherImpl::FetchFinished(
@@ -365,8 +371,17 @@ void RemoteSuggestionsFetcherImpl::FetchFinished(
     SnippetsAvailableCallback callback,
     FetchResult fetch_result,
     const std::string& error_details,
-    bool is_authenticated) {
+    bool is_authenticated,
+    std::string access_token) {
   DCHECK(fetch_result == FetchResult::SUCCESS || !categories.has_value());
+
+  if (fetch_result == FetchResult::HTTP_ERROR_UNAUTHORIZED) {
+    OAuth2TokenService::ScopeSet scopes{kContentSuggestionsApiScope};
+    std::string account_id =
+        identity_manager_->GetPrimaryAccountInfo().account_id;
+    identity_manager_->RemoveAccessTokenFromCache(account_id, scopes,
+                                                  access_token);
+  }
 
   last_status_ = FetchResultToString(fetch_result) + error_details;
   last_fetch_authenticated_ = is_authenticated;
