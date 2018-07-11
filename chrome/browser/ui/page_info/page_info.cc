@@ -16,6 +16,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
@@ -302,6 +303,37 @@ const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
      IDS_PAGE_INFO_DELETE_USB_DEVICE, "name"},
 };
 
+// Time open histogram prefixes.
+const char kPageInfoTimePrefix[] = "Security.PageInfo.TimeOpen";
+const char kPageInfoTimeActionPrefix[] = "Security.PageInfo.TimeOpen.Action";
+const char kPageInfoTimeNoActionPrefix[] =
+    "Security.PageInfo.TimeOpen.NoAction";
+
+std::string GetHistogramSuffixForSecurityLevel(
+    security_state::SecurityLevel level) {
+  switch (level) {
+    case security_state::EV_SECURE:
+      return "EV_SECURE";
+    case security_state::SECURE:
+      return "SECURE";
+    case security_state::NONE:
+      return "NONE";
+    case security_state::HTTP_SHOW_WARNING:
+      return "HTTP_SHOW_WARNING";
+    case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
+      return "SECURE_WITH_POLICY_INSTALLED_CERT";
+    case security_state::DANGEROUS:
+      return "DANGEROUS";
+    default:
+      return "OTHER";
+  }
+}
+
+std::string GetHistogramName(const char* prefix,
+                             security_state::SecurityLevel level) {
+  return std::string(prefix) + "." + GetHistogramSuffixForSecurityLevel(level);
+}
+
 }  // namespace
 
 PageInfo::PageInfo(PageInfoUI* ui,
@@ -330,7 +362,8 @@ PageInfo::PageInfo(PageInfoUI* ui,
           safe_browsing::ChromePasswordProtectionService::
               GetPasswordProtectionService(profile_)),
 #endif
-      show_change_password_buttons_(false) {
+      show_change_password_buttons_(false),
+      did_perform_action_(false) {
   Init(url, security_info);
 
   PresentSitePermissions();
@@ -340,6 +373,10 @@ PageInfo::PageInfo(PageInfoUI* ui,
   // Every time the Page Info UI is opened a |PageInfo| object is
   // created. So this counts how ofter the Page Info UI is opened.
   RecordPageInfoAction(PAGE_INFO_OPENED);
+
+  // Record the time when the Page Info UI is opened so the total time it is
+  // open can be measured.
+  start_time_ = base::TimeTicks::Now();
 }
 
 PageInfo::~PageInfo() {
@@ -353,9 +390,32 @@ PageInfo::~PageInfo() {
                               user_decision,
                               END_OF_SSL_CERTIFICATE_DECISIONS_DID_REVOKE_ENUM);
   }
+
+  // Record the total time the Page Info UI was open for all opens as well as
+  // split between whether any action was taken.
+  base::UmaHistogramCustomTimes(
+      GetHistogramName(kPageInfoTimePrefix, security_level_),
+      base::TimeTicks::Now() - start_time_,
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100);
+  if (did_perform_action_) {
+    base::UmaHistogramCustomTimes(
+        GetHistogramName(kPageInfoTimeActionPrefix, security_level_),
+        base::TimeTicks::Now() - start_time_,
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
+        100);
+  } else {
+    base::UmaHistogramCustomTimes(
+        GetHistogramName(kPageInfoTimeNoActionPrefix, security_level_),
+        base::TimeTicks::Now() - start_time_,
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
+        100);
+  }
 }
 
 void PageInfo::RecordPageInfoAction(PageInfoAction action) {
+  if (action != PAGE_INFO_OPENED)
+    did_perform_action_ = true;
+
   UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Action", action, PAGE_INFO_COUNT);
 
   std::string histogram_name;
