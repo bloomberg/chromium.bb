@@ -137,7 +137,6 @@
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
-#include "ui/base/pref_names.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_RLZ)

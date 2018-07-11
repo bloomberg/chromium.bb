@@ -27,7 +27,6 @@
 #include "components/sync/base/pref_names.h"
 #include "content/public/common/content_switches.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "ui/base/pref_names.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
 

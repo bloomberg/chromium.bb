@@ -139,7 +139,6 @@
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "ui/base/idle/idle.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/pref_names.h"
 #include "ui/base/ui_base_features.h"
 
 #if defined(OS_WIN)

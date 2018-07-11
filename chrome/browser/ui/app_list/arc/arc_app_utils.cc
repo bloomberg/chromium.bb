@@ -34,7 +34,6 @@
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
-#include "ui/base/pref_names.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_constants.h"

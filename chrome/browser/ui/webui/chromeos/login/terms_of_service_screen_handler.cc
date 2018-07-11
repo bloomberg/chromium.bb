@@ -28,7 +28,6 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/pref_names.h"
 
 namespace {
 
