@@ -59,11 +59,13 @@
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/socket/transport_client_socket_pool.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/channel_id_store.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/http_user_agent_settings.h"
@@ -2462,6 +2464,280 @@ TEST_F(NetworkContextTest, CanGetCookiesTrueIfCookiesAllowed) {
   EXPECT_TRUE(
       network_context->url_request_context()->network_delegate()->CanGetCookies(
           *request, {}, true));
+}
+
+// Gets notified by the EmbeddedTestServer on incoming connections being
+// accepted or read from, keeps track of them and exposes that info to
+// the tests.
+// A port being reused is currently considered an error.  If a test
+// needs to verify multiple connections are opened in sequence, that will need
+// to be changed.
+class ConnectionListener
+    : public net::test_server::EmbeddedTestServerConnectionListener {
+ public:
+  ConnectionListener()
+      : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        num_accepted_connections_needed_(0),
+        num_accepted_connections_loop_(nullptr) {}
+
+  ~ConnectionListener() override {}
+
+  // Get called from the EmbeddedTestServer thread to be notified that
+  // a connection was accepted.
+  void AcceptedSocket(const net::StreamSocket& connection) override {
+    base::AutoLock lock(lock_);
+    uint16_t socket = GetPort(connection);
+    EXPECT_TRUE(sockets_.find(socket) == sockets_.end());
+
+    sockets_[socket] = SOCKET_ACCEPTED;
+    CheckAccepted();
+  }
+
+  // Get called from the EmbeddedTestServer thread to be notified that
+  // a connection was read from.
+  void ReadFromSocket(const net::StreamSocket& connection, int rv) override {
+    NOTREACHED();
+  }
+
+  // Wait for exactly |n| items in |sockets_|. |n| must be greater than 0.
+  void WaitForAcceptedConnections(size_t num_connections) {
+    DCHECK(!num_accepted_connections_loop_);
+    DCHECK_GT(num_connections, 0u);
+    base::RunLoop run_loop;
+    {
+      base::AutoLock lock(lock_);
+      EXPECT_GE(num_connections, sockets_.size());
+      num_accepted_connections_loop_ = &run_loop;
+      num_accepted_connections_needed_ = num_connections;
+      CheckAccepted();
+    }
+    // Note that the previous call to CheckAccepted can quit this run loop
+    // before this call, which will make this call a no-op.
+    run_loop.Run();
+
+    // Grab the mutex again and make sure that the number of accepted sockets is
+    // indeed |num_connections|.
+    base::AutoLock lock(lock_);
+    EXPECT_EQ(num_connections, sockets_.size());
+  }
+
+  // Helper function to stop the waiting for sockets to be accepted for
+  // WaitForAcceptedConnections. |num_accepted_connections_loop_| spins
+  // until |num_accepted_connections_needed_| sockets are accepted by the test
+  // server. The values will be null/0 if the loop is not running.
+  void CheckAccepted() {
+    lock_.AssertAcquired();
+    // |num_accepted_connections_loop_| null implies
+    // |num_accepted_connections_needed_| == 0.
+    DCHECK(num_accepted_connections_loop_ ||
+           num_accepted_connections_needed_ == 0);
+    if (!num_accepted_connections_loop_ ||
+        num_accepted_connections_needed_ != sockets_.size()) {
+      return;
+    }
+
+    task_runner_->PostTask(FROM_HERE,
+                           num_accepted_connections_loop_->QuitClosure());
+    num_accepted_connections_needed_ = 0;
+    num_accepted_connections_loop_ = nullptr;
+  }
+
+ private:
+  static uint16_t GetPort(const net::StreamSocket& connection) {
+    // Get the remote port of the peer, since the local port will always be the
+    // port the test server is listening on. This isn't strictly correct - it's
+    // possible for multiple peers to connect with the same remote port but
+    // different remote IPs - but the tests here assume that connections to the
+    // test server (running on localhost) will always come from localhost, and
+    // thus the peer port is all thats needed to distinguish two connections.
+    // This also would be problematic if the OS reused ports, but that's not
+    // something to worry about for these tests.
+    net::IPEndPoint address;
+    EXPECT_EQ(net::OK, connection.GetPeerAddress(&address));
+    return address.port();
+  }
+
+  enum SocketStatus { SOCKET_ACCEPTED, SOCKET_READ_FROM };
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // This lock protects all the members below, which each are used on both the
+  // IO and UI thread. Members declared after the lock are protected by it.
+  mutable base::Lock lock_;
+  typedef std::map<uint16_t, SocketStatus> SocketContainer;
+  SocketContainer sockets_;
+
+  // If |num_accepted_connections_needed_| is non zero, then the object is
+  // waiting for |num_accepted_connections_needed_| sockets to be accepted
+  // before quitting the |num_accepted_connections_loop_|.
+  size_t num_accepted_connections_needed_;
+  base::RunLoop* num_accepted_connections_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConnectionListener);
+};
+
+TEST_F(NetworkContextTest, PreconnectOne) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::EmbeddedTestServer test_server;
+  ConnectionListener connection_listener;
+  test_server.SetConnectionListener(&connection_listener);
+  ASSERT_TRUE(test_server.Start());
+
+  network_context->PreconnectSockets(1, test_server.base_url(),
+                                     net::LOAD_NORMAL, true);
+  connection_listener.WaitForAcceptedConnections(1u);
+}
+
+TEST_F(NetworkContextTest, PreconnectZero) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::EmbeddedTestServer test_server;
+  ConnectionListener connection_listener;
+  test_server.SetConnectionListener(&connection_listener);
+  ASSERT_TRUE(test_server.Start());
+
+  network_context->PreconnectSockets(0, test_server.base_url(),
+                                     net::LOAD_NORMAL, true);
+  base::RunLoop().RunUntilIdle();
+
+  int num_sockets;
+  network_context->url_request_context()
+      ->http_transaction_factory()
+      ->GetSession()
+      ->GetTransportSocketPool(
+          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
+      ->GetInfoAsValue("", "", false)
+      ->GetInteger("idle_socket_count", &num_sockets);
+  ASSERT_EQ(num_sockets, 0);
+  int num_connecting_sockets;
+  network_context->url_request_context()
+      ->http_transaction_factory()
+      ->GetSession()
+      ->GetTransportSocketPool(
+          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
+      ->GetInfoAsValue("", "", false)
+      ->GetInteger("connecting_socket_count", &num_connecting_sockets);
+  ASSERT_EQ(num_connecting_sockets, 0);
+}
+
+// A negative input to PreconnectSockets is silently casted to a uint32_t,
+// which is then saturated_cast to an int32_t before being passed to the
+// underlying HttpStreamFactory method.
+TEST_F(NetworkContextTest, PreconnectLessThanZero) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::EmbeddedTestServer test_server;
+  ConnectionListener connection_listener;
+  test_server.SetConnectionListener(&connection_listener);
+  ASSERT_TRUE(test_server.Start());
+
+  int num_sockets, max_num_sockets;
+  network_context->url_request_context()
+      ->http_transaction_factory()
+      ->GetSession()
+      ->GetTransportSocketPool(
+          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
+      ->GetInfoAsValue("", "", false)
+      ->GetInteger("max_sockets_per_group", &max_num_sockets);
+
+  network_context->PreconnectSockets(-2, test_server.base_url(),
+                                     net::LOAD_NORMAL, true);
+  base::RunLoop().RunUntilIdle();
+
+  network_context->url_request_context()
+      ->http_transaction_factory()
+      ->GetSession()
+      ->GetTransportSocketPool(
+          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
+      ->GetInfoAsValue("", "", false)
+      ->GetInteger("idle_socket_count", &num_sockets);
+  ASSERT_EQ(num_sockets, max_num_sockets);
+}
+
+TEST_F(NetworkContextTest, PreconnectTwo) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::EmbeddedTestServer test_server;
+  ConnectionListener connection_listener;
+  test_server.SetConnectionListener(&connection_listener);
+  ASSERT_TRUE(test_server.Start());
+
+  network_context->PreconnectSockets(2, test_server.base_url(),
+                                     net::LOAD_NORMAL, true);
+  connection_listener.WaitForAcceptedConnections(2u);
+
+  int num_sockets;
+  network_context->url_request_context()
+      ->http_transaction_factory()
+      ->GetSession()
+      ->GetTransportSocketPool(
+          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
+      ->GetInfoAsValue("", "", false)
+      ->GetInteger("idle_socket_count", &num_sockets);
+  ASSERT_EQ(num_sockets, 2);
+}
+
+TEST_F(NetworkContextTest, PreconnectFour) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::EmbeddedTestServer test_server;
+  ConnectionListener connection_listener;
+  test_server.SetConnectionListener(&connection_listener);
+  ASSERT_TRUE(test_server.Start());
+
+  network_context->PreconnectSockets(4, test_server.base_url(),
+                                     net::LOAD_NORMAL, true);
+
+  connection_listener.WaitForAcceptedConnections(4u);
+
+  int num_sockets;
+  network_context->url_request_context()
+      ->http_transaction_factory()
+      ->GetSession()
+      ->GetTransportSocketPool(
+          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
+      ->GetInfoAsValue("", "", false)
+      ->GetInteger("idle_socket_count", &num_sockets);
+  ASSERT_EQ(num_sockets, 4);
+}
+
+TEST_F(NetworkContextTest, PreconnectMax) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  net::EmbeddedTestServer test_server;
+  ConnectionListener connection_listener;
+  test_server.SetConnectionListener(&connection_listener);
+  ASSERT_TRUE(test_server.Start());
+
+  int num_sockets, max_num_sockets;
+  network_context->url_request_context()
+      ->http_transaction_factory()
+      ->GetSession()
+      ->GetTransportSocketPool(
+          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
+      ->GetInfoAsValue("", "", false)
+      ->GetInteger("max_sockets_per_group", &max_num_sockets);
+  EXPECT_GT(76, max_num_sockets);
+
+  network_context->PreconnectSockets(76, test_server.base_url(),
+                                     net::LOAD_NORMAL, true);
+  base::RunLoop().RunUntilIdle();
+
+  network_context->url_request_context()
+      ->http_transaction_factory()
+      ->GetSession()
+      ->GetTransportSocketPool(
+          net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
+      ->GetInfoAsValue("", "", false)
+      ->GetInteger("idle_socket_count", &num_sockets);
+  ASSERT_EQ(num_sockets, max_num_sockets);
 }
 
 }  // namespace

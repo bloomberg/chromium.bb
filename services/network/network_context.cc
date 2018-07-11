@@ -801,6 +801,38 @@ void NetworkContext::SetFailingHttpTransactionForTesting(
   std::move(callback).Run();
 }
 
+void NetworkContext::PreconnectSockets(uint32_t num_streams,
+                                       const GURL& url,
+                                       int32_t load_flags,
+                                       bool privacy_mode_enabled) {
+  // |PreconnectSockets| may receive arguments from the renderer, which is not
+  // guaranteed to validate them.
+  if (num_streams == 0)
+    return;
+
+  std::string user_agent;
+  if (url_request_context_->http_user_agent_settings()) {
+    user_agent =
+        url_request_context_->http_user_agent_settings()->GetUserAgent();
+  }
+  net::HttpRequestInfo request_info;
+  request_info.url = url;
+  request_info.method = "GET";
+  request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
+                                       user_agent);
+
+  request_info.privacy_mode = privacy_mode_enabled ? net::PRIVACY_MODE_ENABLED
+                                                   : net::PRIVACY_MODE_DISABLED;
+  request_info.load_flags = load_flags;
+
+  net::HttpTransactionFactory* factory =
+      url_request_context_->http_transaction_factory();
+  net::HttpNetworkSession* session = factory->GetSession();
+  net::HttpStreamFactory* http_stream_factory = session->http_stream_factory();
+  http_stream_factory->PreconnectStreams(
+      base::saturated_cast<int32_t>(num_streams), request_info);
+}
+
 // ApplyContextParamsToBuilder represents the core configuration for
 // translating |network_context_params| into a set of configuration that can
 // be used to build a request context. All new initialization should be done

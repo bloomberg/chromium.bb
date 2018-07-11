@@ -200,6 +200,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void SetFailingHttpTransactionForTesting(
       int32_t rv,
       SetFailingHttpTransactionForTestingCallback callback) override;
+  void PreconnectSockets(uint32_t num_streams,
+                         const GURL& url,
+                         int32_t load_flags,
+                         bool privacy_mode_enabled) override;
 
   // Disables use of QUIC by the NetworkContext.
   void DisableQuic();
