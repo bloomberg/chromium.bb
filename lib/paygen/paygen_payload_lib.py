@@ -301,10 +301,11 @@ class _PaygenPayload(object):
          metadata_hash_file:
 
       cmd = ['delta_generator',
-             '-in_file=' + path_util.ToChrootPath(self.payload_file),
-             '-signature_size=' + ':'.join(signature_sizes),
-             '-out_hash_file=' + path_util.ToChrootPath(payload_hash_file.name),
-             '-out_metadata_hash_file=' +
+             '--in_file=' + path_util.ToChrootPath(self.payload_file),
+             '--signature_size=' + ':'.join(signature_sizes),
+             '--out_hash_file=' +
+             path_util.ToChrootPath(payload_hash_file.name),
+             '--out_metadata_hash_file=' +
              path_util.ToChrootPath(metadata_hash_file.name)]
 
       self._RunGeneratorCmd(cmd)
@@ -397,10 +398,10 @@ class _PaygenPayload(object):
                             for f in signature_files]
 
     cmd = ['delta_generator',
-           '-in_file=' + path_util.ToChrootPath(self.payload_file),
-           '-payload_signature_file=' + ':'.join(signature_file_names),
-           '-out_file=' + path_util.ToChrootPath(self.signed_payload_file),
-           '-out_metadata_size_file=' +
+           '--in_file=' + path_util.ToChrootPath(self.payload_file),
+           '--payload_signature_file=' + ':'.join(signature_file_names),
+           '--out_file=' + path_util.ToChrootPath(self.signed_payload_file),
+           '--out_metadata_size_file=' +
            path_util.ToChrootPath(self.metadata_size_file)]
 
     self._RunGeneratorCmd(cmd)

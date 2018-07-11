@@ -389,10 +389,10 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Record the expected function calls.
     cmd = ['delta_generator',
-           '-in_file=' + gen.payload_file,
-           '-signature_size=256',
-           mox.Regex('-out_hash_file=.+'),
-           mox.Regex('-out_metadata_hash_file=.+')]
+           '--in_file=' + gen.payload_file,
+           '--signature_size=256',
+           mox.Regex('--out_hash_file=.+'),
+           mox.Regex('--out_metadata_hash_file=.+')]
     gen._RunGeneratorCmd(cmd)
 
     # Run the test.
@@ -432,10 +432,10 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     # Record the expected function calls.
     cmd = ['delta_generator',
-           '-in_file=' + gen.payload_file,
+           '--in_file=' + gen.payload_file,
            mox.StrContains('payload_signature_file'),
-           '-out_file=' + gen.signed_payload_file,
-           '-out_metadata_size_file=' + gen.metadata_size_file]
+           '--out_file=' + gen.signed_payload_file,
+           '--out_metadata_size_file=' + gen.metadata_size_file]
     gen._RunGeneratorCmd(cmd)
     gen._ReadMetadataSizeFile()
 
