@@ -416,6 +416,35 @@ TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
   EXPECT_FALSE(msg4);
 }
 
+// Tests that url download are throttled when reaching the limit.
+TEST_F(RenderFrameImplTest, DownloadUrlLimit) {
+  const IPC::Message* msg1 = render_thread_->sink().GetFirstMessageMatching(
+      FrameHostMsg_DownloadUrl::ID);
+  EXPECT_FALSE(msg1);
+  render_thread_->sink().ClearMessages();
+
+  WebURLRequest request;
+  request.SetURL(GURL("http://test/test.pdf"));
+  request.SetRequestorOrigin(
+      blink::WebSecurityOrigin::Create(GURL("http://test")));
+
+  for (int i = 0; i < 10; ++i) {
+    frame()->DownloadURL(request, mojo::ScopedMessagePipeHandle());
+    base::RunLoop().RunUntilIdle();
+    const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
+        FrameHostMsg_DownloadUrl::ID);
+    EXPECT_TRUE(msg2);
+    base::RunLoop().RunUntilIdle();
+    render_thread_->sink().ClearMessages();
+  }
+
+  frame()->DownloadURL(request, mojo::ScopedMessagePipeHandle());
+  base::RunLoop().RunUntilIdle();
+  const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
+      FrameHostMsg_DownloadUrl::ID);
+  EXPECT_FALSE(msg3);
+}
+
 TEST_F(RenderFrameImplTest, ZoomLimit) {
   const double kMinZoomLevel = ZoomFactorToZoomLevel(kMinimumZoomFactor);
   const double kMaxZoomLevel = ZoomFactorToZoomLevel(kMaximumZoomFactor);
