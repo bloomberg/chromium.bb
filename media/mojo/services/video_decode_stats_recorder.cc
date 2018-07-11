@@ -5,7 +5,6 @@
 #include "media/mojo/services/video_decode_stats_recorder.h"
 
 #include "base/memory/ptr_util.h"
-#include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 #include "base/logging.h"
@@ -16,11 +15,15 @@ VideoDecodeStatsRecorder::VideoDecodeStatsRecorder(
     const url::Origin& untrusted_top_frame_origin,
     bool is_top_frame,
     uint64_t player_id,
-    VideoDecodePerfHistory* perf_history)
+    VideoDecodePerfHistory::SaveCallback save_cb)
     : untrusted_top_frame_origin_(untrusted_top_frame_origin),
       is_top_frame_(is_top_frame),
-      perf_history_(perf_history),
+      save_cb_(std::move(save_cb)),
       player_id_(player_id) {
+  // Only bother to make the recorder when able to save stats. Checking here
+  // instead of silently failing below.
+  CHECK(!save_cb_.is_null());
+
   DVLOG(2) << __func__
            << " untrusted_top_frame_origin:" << untrusted_top_frame_origin
            << " is_top_frame:" << is_top_frame;
@@ -68,7 +71,7 @@ void VideoDecodeStatsRecorder::UpdateRecord(
 
 void VideoDecodeStatsRecorder::FinalizeRecord() {
   if (features_.profile == VIDEO_CODEC_PROFILE_UNKNOWN ||
-      targets_.frames_decoded == 0 || !perf_history_) {
+      targets_.frames_decoded == 0) {
     return;
   }
 
@@ -80,8 +83,10 @@ void VideoDecodeStatsRecorder::FinalizeRecord() {
            << " power efficient decoded:"
            << targets_.frames_decoded_power_efficient;
 
-  perf_history_->SavePerfRecord(untrusted_top_frame_origin_, is_top_frame_,
-                                features_, targets_, player_id_);
+  // Final argument is an empty save-done-callback. No action to take if save
+  // fails (DB already records UMAs on failure). Callback mainly used by tests.
+  save_cb_.Run(untrusted_top_frame_origin_, is_top_frame_, features_, targets_,
+               player_id_, base::OnceClosure());
 }
 
 }  // namespace media

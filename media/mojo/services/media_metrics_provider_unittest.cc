@@ -30,7 +30,8 @@ class MediaMetricsProviderTest : public testing::Test {
   ~MediaMetricsProviderTest() override { base::RunLoop().RunUntilIdle(); }
 
   void Initialize(bool is_mse, bool is_top_frame, const std::string& origin) {
-    MediaMetricsProvider::Create(nullptr, mojo::MakeRequest(&provider_));
+    MediaMetricsProvider::Create(VideoDecodePerfHistory::SaveCallback(),
+                                 mojo::MakeRequest(&provider_));
     provider_->Initialize(is_mse, is_top_frame,
                           url::Origin::Create(GURL(origin)));
   }

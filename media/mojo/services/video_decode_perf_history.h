@@ -59,15 +59,18 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   void GetPerfInfo(mojom::PredictionFeaturesPtr features,
                    GetPerfInfoCallback got_info_cb) override;
 
-  // Save a record of the given performance stats for the described stream.
-  // Saving is generally fire-and-forget, but |save_done_cb| may be optionally
+  // Provides a callback for saving a stats record for the described stream.
+  // This callback will silently fail if called after |this| is destroyed.
+  // Saving is generally fire-and-forget, but |save_done_cb| may be provided
   // for tests to know the save is complete.
-  void SavePerfRecord(const url::Origin& untrusted_top_frame_origin,
-                      bool is_top_frame,
-                      mojom::PredictionFeatures features,
-                      mojom::PredictionTargets targets,
-                      uint64_t player_id,
-                      base::OnceClosure save_done_cb = base::OnceClosure());
+  using SaveCallback = base::RepeatingCallback<void(
+      const url::Origin& untrusted_top_frame_origin,
+      bool is_top_frame,
+      mojom::PredictionFeatures features,
+      mojom::PredictionTargets targets,
+      uint64_t player_id,
+      base::OnceClosure save_done_cb)>;
+  SaveCallback GetSaveCallback();
 
   // Clear all history from the underlying database. Run |clear_done_cb| when
   // complete.
@@ -100,6 +103,14 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
 
   // Callback from |db_->Initialize()|.
   void OnDatabaseInit(bool success);
+
+  // Initiated saving of the provided record. See GetSaveCallback().
+  void SavePerfRecord(const url::Origin& untrusted_top_frame_origin,
+                      bool is_top_frame,
+                      mojom::PredictionFeatures features,
+                      mojom::PredictionTargets targets,
+                      uint64_t player_id,
+                      base::OnceClosure save_done_cb);
 
   // Internal callback for database queries made from GetPerfInfo() (mojo API).
   // Assesses performance from database stats and passes results to
