@@ -4046,6 +4046,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          features::kAllowSignedHTTPExchangeCertsWithoutExtension)},
 
+#if defined(OS_MACOSX)
+    {"enable-web-authentication-touch-id",
+     flag_descriptions::kEnableWebAuthenticationTouchIdName,
+     flag_descriptions::kEnableWebAuthenticationTouchIdDescription, kOsMac,
+     FEATURE_VALUE_TYPE(device::kWebAuthTouchId)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

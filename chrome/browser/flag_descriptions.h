@@ -1690,6 +1690,9 @@ extern const char kContentFullscreenDescription[];
 extern const char kDialogTouchBarName[];
 extern const char kDialogTouchBarDescription[];
 
+extern const char kEnableWebAuthenticationTouchIdName[];
+extern const char kEnableWebAuthenticationTouchIdDescription[];
+
 extern const char kHostedAppsInWindowsName[];
 extern const char kHostedAppsInWindowsDescription[];
 

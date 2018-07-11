@@ -2787,6 +2787,11 @@ const char kDialogTouchBarName[] = "Dialog Touch Bar";
 const char kDialogTouchBarDescription[] =
     "Shows Dialog buttons on the Touch Bar.";
 
+const char kEnableWebAuthenticationTouchIdName[] =
+    "Web Authentication API Touch ID support";
+const char kEnableWebAuthenticationTouchIdDescription[] =
+    "Enables a built-in Touch ID authenticator for the Web Authentication API.";
+
 const char kHostedAppsInWindowsName[] =
     "Allow hosted apps to be opened in windows";
 const char kHostedAppsInWindowsDescription[] =
