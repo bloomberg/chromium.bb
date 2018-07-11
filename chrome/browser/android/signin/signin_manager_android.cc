@@ -178,9 +178,9 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
         content::BrowserContext::GetDefaultStoragePartition(profile_)
             ->GetURLLoaderFactoryForBrowserProcess();
     service->FetchPolicyForSignedInUser(
-        AccountTrackerServiceFactory::GetForProfile(profile_)
-            ->FindAccountInfoByEmail(username_)
-            .GetAccountId(),
+        AccountIdFromAccountInfo(
+            AccountTrackerServiceFactory::GetForProfile(profile_)
+                ->FindAccountInfoByEmail(username_)),
         dm_token_, client_id_, profile_->GetRequestContext(),
         url_loader_factory,
         base::Bind(&SigninManagerAndroid::OnPolicyFetchDone,

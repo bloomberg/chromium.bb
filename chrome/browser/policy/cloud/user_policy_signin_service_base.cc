@@ -197,7 +197,7 @@ void UserPolicySigninServiceBase::InitializeOnProfileReady(Profile* profile) {
   signin_manager()->AddObserver(this);
 
   AccountId account_id =
-      signin_manager()->GetAuthenticatedAccountInfo().GetAccountId();
+      AccountIdFromAccountInfo(signin_manager()->GetAuthenticatedAccountInfo());
   if (!account_id.is_valid())
     ShutdownUserCloudPolicyManager();
   else

@@ -34,9 +34,9 @@ struct AccountInfo {
   // Updates the empty fields of |this| with |other|. Returns whether at least
   // one field was updated.
   bool UpdateWith(const AccountInfo& other);
-
-  // Returns AccountId populated from the account info.
-  AccountId GetAccountId() const;
 };
+
+// Returns AccountID populated from |account_info|.
+AccountId AccountIdFromAccountInfo(const AccountInfo& account_info);
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_INFO_H_
