@@ -58,6 +58,13 @@ using testing::Return;
 namespace web {
 namespace {
 
+// WebStateImplTest is parameterized on this enum to test both implementations
+// of navigation manager.
+enum class NavigationManagerChoice {
+  LEGACY,
+  WK_BASED,
+};
+
 // Test observer to check that the GlobalWebStateObserver methods are called as
 // expected.
 class TestGlobalWebStateObserver : public GlobalWebStateObserver {
@@ -190,9 +197,19 @@ bool HandleScriptCommand(bool* is_called,
 }  // namespace
 
 // Test fixture for web::WebStateImpl class.
-class WebStateImplTest : public web::WebTest {
+class WebStateImplTest
+    : public web::WebTest,
+      public ::testing::WithParamInterface<NavigationManagerChoice> {
  protected:
   WebStateImplTest() : web::WebTest() {
+    if (GetParam() == NavigationManagerChoice::LEGACY) {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kSlimNavigationManager);
+    } else {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kSlimNavigationManager);
+    }
+
     web::WebState::CreateParams params(GetBrowserState());
     web_state_ = std::make_unique<web::WebStateImpl>(params);
   }
@@ -218,9 +235,12 @@ class WebStateImplTest : public web::WebTest {
     return result;
   }
   std::unique_ptr<WebStateImpl> web_state_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(WebStateImplTest, WebUsageEnabled) {
+TEST_P(WebStateImplTest, WebUsageEnabled) {
   // Default is false.
   ASSERT_TRUE(web_state_->IsWebUsageEnabled());
 
@@ -233,7 +253,7 @@ TEST_F(WebStateImplTest, WebUsageEnabled) {
   EXPECT_TRUE(web_state_->GetWebController().webUsageEnabled);
 }
 
-TEST_F(WebStateImplTest, ShouldSuppressDialogs) {
+TEST_P(WebStateImplTest, ShouldSuppressDialogs) {
   // Default is false.
   ASSERT_FALSE(web_state_->ShouldSuppressDialogs());
 
@@ -246,7 +266,7 @@ TEST_F(WebStateImplTest, ShouldSuppressDialogs) {
   EXPECT_FALSE(web_state_->GetWebController().shouldSuppressDialogs);
 }
 
-TEST_F(WebStateImplTest, ResponseHeaders) {
+TEST_P(WebStateImplTest, ResponseHeaders) {
   GURL real_url("http://foo.com/bar");
   GURL frame_url("http://frames-r-us.com/");
   scoped_refptr<net::HttpResponseHeaders> real_headers(HeadersFromString(
@@ -277,7 +297,7 @@ TEST_F(WebStateImplTest, ResponseHeaders) {
   EXPECT_EQ("text/html", web_state_->GetContentsMimeType());
 }
 
-TEST_F(WebStateImplTest, ResponseHeaderClearing) {
+TEST_P(WebStateImplTest, ResponseHeaderClearing) {
   GURL url("http://foo.com/");
   scoped_refptr<net::HttpResponseHeaders> headers(HeadersFromString(
       "HTTP/1.1 200 OK\r\n"
@@ -302,7 +322,7 @@ TEST_F(WebStateImplTest, ResponseHeaderClearing) {
 }
 
 // Tests forwarding to WebStateObserver callbacks.
-TEST_F(WebStateImplTest, ObserverTest) {
+TEST_P(WebStateImplTest, ObserverTest) {
   std::unique_ptr<TestWebStateObserver> observer(
       new TestWebStateObserver(web_state_.get()));
   EXPECT_EQ(web_state_.get(), observer->web_state());
@@ -517,7 +537,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
 }
 
 // Tests that placeholder navigations are not visible to WebStateObservers.
-TEST_F(WebStateImplTest, PlaceholderNavigationNotExposedToObservers) {
+TEST_P(WebStateImplTest, PlaceholderNavigationNotExposedToObservers) {
   TestWebStateObserver observer(web_state_.get());
   FakeNavigationContext context;
   context.SetUrl(
@@ -539,7 +559,7 @@ TEST_F(WebStateImplTest, PlaceholderNavigationNotExposedToObservers) {
 }
 
 // Tests that WebStateDelegate methods appropriately called.
-TEST_F(WebStateImplTest, DelegateTest) {
+TEST_P(WebStateImplTest, DelegateTest) {
   TestWebStateDelegate delegate;
   web_state_->SetDelegate(&delegate);
 
@@ -656,7 +676,7 @@ TEST_F(WebStateImplTest, DelegateTest) {
 }
 
 // Verifies that GlobalWebStateObservers are called when expected.
-TEST_F(WebStateImplTest, GlobalObserverTest) {
+TEST_P(WebStateImplTest, GlobalObserverTest) {
   std::unique_ptr<TestGlobalWebStateObserver> observer(
       new TestGlobalWebStateObserver());
 
@@ -718,7 +738,7 @@ MATCHER_P(RequestInfoMatch, expected_request_info, /* argument_name = */ "") {
 }
 
 // Verifies that policy deciders are correctly called by the web state.
-TEST_F(WebStateImplTest, PolicyDeciderTest) {
+TEST_P(WebStateImplTest, PolicyDeciderTest) {
   MockWebStatePolicyDecider decider(web_state_.get());
   MockWebStatePolicyDecider decider2(web_state_.get());
   EXPECT_EQ(web_state_.get(), decider.web_state());
@@ -816,7 +836,7 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
 }
 
 // Tests that script command callbacks are called correctly.
-TEST_F(WebStateImplTest, ScriptCommand) {
+TEST_P(WebStateImplTest, ScriptCommand) {
   // Set up three script command callbacks.
   const std::string kPrefix1("prefix1");
   const std::string kCommand1("prefix1.command1");
@@ -911,7 +931,7 @@ TEST_F(WebStateImplTest, ScriptCommand) {
 
 // Tests that WebState::CreateParams::created_with_opener is translated to
 // WebState::HasOpener() return values.
-TEST_F(WebStateImplTest, CreatedWithOpener) {
+TEST_P(WebStateImplTest, CreatedWithOpener) {
   // Verify that the HasOpener() returns false if not specified in the create
   // params.
   EXPECT_FALSE(web_state_->HasOpener());
@@ -926,7 +946,7 @@ TEST_F(WebStateImplTest, CreatedWithOpener) {
 
 // Tests that WebStateObserver::FaviconUrlUpdated is called for same-document
 // navigations.
-TEST_F(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
+TEST_P(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
   auto observer = std::make_unique<TestWebStateObserver>(web_state_.get());
 
   // No callback if icons has not been fetched yet.
@@ -975,7 +995,7 @@ TEST_F(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
 
 // Tests that BuildSessionStorage() and GetTitle() return information about the
 // most recently restored session if no navigation item has been committed.
-TEST_F(WebStateImplTest, UncommittedRestoreSession) {
+TEST_P(WebStateImplTest, UncommittedRestoreSession) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       web::features::kSlimNavigationManager);
@@ -997,7 +1017,7 @@ TEST_F(WebStateImplTest, UncommittedRestoreSession) {
   EXPECT_NSEQ(@"Title", base::SysUTF16ToNSString(web_state.GetTitle()));
 }
 
-TEST_F(WebStateImplTest, NoUncommittedRestoreSession) {
+TEST_P(WebStateImplTest, NoUncommittedRestoreSession) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       web::features::kSlimNavigationManager);
@@ -1010,8 +1030,14 @@ TEST_F(WebStateImplTest, NoUncommittedRestoreSession) {
 
 // Tests showing and clearing interstitial when NavigationManager is
 // empty.
-TEST_F(WebStateImplTest, ShowAndClearInterstitialWithNoCommittedItems) {
+TEST_P(WebStateImplTest, ShowAndClearInterstitialWithNoCommittedItems) {
   web_state_->GetNavigationManagerImpl().InitializeSession();
+
+  // Existence of a pending item is a precondition for a transient item.
+  web_state_->GetNavigationManagerImpl().AddPendingItem(
+      GURL::EmptyGURL(), web::Referrer(), ui::PAGE_TRANSITION_LINK,
+      NavigationInitiationType::BROWSER_INITIATED,
+      NavigationManager::UserAgentOverrideOption::DESKTOP);
 
   // Show the interstitial.
   ASSERT_FALSE(web_state_->IsShowingWebInterstitial());
@@ -1036,7 +1062,14 @@ TEST_F(WebStateImplTest, ShowAndClearInterstitialWithNoCommittedItems) {
 
 // Tests showing and clearing interstitial when NavigationManager has a
 // committed item.
-TEST_F(WebStateImplTest, ShowAndClearInterstitialWithCommittedItem) {
+TEST_P(WebStateImplTest, ShowAndClearInterstitialWithCommittedItem) {
+  if (GetParam() == NavigationManagerChoice::WK_BASED) {
+    // TODO(crbug.com/862733): This test requires injecting a committed item to
+    // navigation manager, which can't be done with WKBasedNavigationManager.
+    // Re-enable this test after switching to TestNavigationManager.
+    return;
+  }
+
   // Add SECURITY_STYLE_AUTHENTICATED committed item to navigation manager.
   AddCommittedNavigationItem();
   web_state_->GetNavigationManagerImpl()
@@ -1067,7 +1100,14 @@ TEST_F(WebStateImplTest, ShowAndClearInterstitialWithCommittedItem) {
 
 // Tests showing and clearing interstitial when visible SSL status does not
 // change.
-TEST_F(WebStateImplTest, ShowAndClearInterstitialWithoutChangingSslStatus) {
+TEST_P(WebStateImplTest, ShowAndClearInterstitialWithoutChangingSslStatus) {
+  if (GetParam() == NavigationManagerChoice::WK_BASED) {
+    // TODO(crbug.com/862733): This test requires injecting a committed item to
+    // navigation manager, which can't be done with WKBasedNavigationManager.
+    // Re-enable this test after switching to TestNavigationManager.
+    return;
+  }
+
   // Add a committed item to navigation manager with default SSL status.
   AddCommittedNavigationItem();
 
@@ -1090,5 +1130,10 @@ TEST_F(WebStateImplTest, ShowAndClearInterstitialWithoutChangingSslStatus) {
   // transient items had the same SSL status.
   EXPECT_FALSE(observer.did_change_visible_security_state_info());
 }
+
+INSTANTIATE_TEST_CASE_P(ProgrammaticWebStateImplTest,
+                        WebStateImplTest,
+                        ::testing::Values(NavigationManagerChoice::LEGACY,
+                                          NavigationManagerChoice::WK_BASED));
 
 }  // namespace web
