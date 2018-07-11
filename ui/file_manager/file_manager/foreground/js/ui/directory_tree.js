@@ -627,7 +627,7 @@ function EntryListItem(rootType, modelItem, tree) {
 
   var icon = queryRequiredElement('.icon', item);
   icon.classList.add('item-icon');
-  item.setAttribute('root-type-icon', rootType);
+  icon.setAttribute('root-type-icon', rootType);
   return item;
 }
 
