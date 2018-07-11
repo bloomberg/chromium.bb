@@ -83,9 +83,6 @@ public class CastWebContentsFragment extends Fragment {
         super.onStart();
 
         if (mSurfaceHelper != null) {
-            sendIntentSync(
-                    CastWebContentsIntentUtils.onVisibilityChange(mSurfaceHelper.getInstanceId(),
-                            CastWebContentsIntentUtils.VISIBITY_TYPE_FULL_SCREEN));
             return;
         }
 
@@ -104,8 +101,6 @@ public class CastWebContentsFragment extends Fragment {
         mAppId = CastWebContentsIntentUtils.getAppId(bundle);
         mInitialVisiblityPriority = CastWebContentsIntentUtils.getVisibilityPriority(bundle);
         mSurfaceHelper.onNewStartParams(params);
-        sendIntentSync(CastWebContentsIntentUtils.onVisibilityChange(mSurfaceHelper.getInstanceId(),
-                CastWebContentsIntentUtils.VISIBITY_TYPE_FULL_SCREEN));
     }
 
     @Override
@@ -138,8 +133,6 @@ public class CastWebContentsFragment extends Fragment {
     @Override
     public void onStop() {
         Log.d(TAG, "onStop");
-        sendIntentSync(CastWebContentsIntentUtils.onVisibilityChange(
-                mSurfaceHelper.getInstanceId(), CastWebContentsIntentUtils.VISIBITY_TYPE_HIDDEN));
         super.onStop();
     }
 
