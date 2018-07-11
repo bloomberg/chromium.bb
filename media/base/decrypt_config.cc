@@ -72,6 +72,10 @@ DecryptConfig::DecryptConfig(
 
 DecryptConfig::~DecryptConfig() = default;
 
+std::unique_ptr<DecryptConfig> DecryptConfig::Clone() {
+  return base::WrapUnique(new DecryptConfig(*this));
+}
+
 bool DecryptConfig::HasPattern() const {
   return encryption_pattern_.has_value();
 }
@@ -112,5 +116,7 @@ std::ostream& DecryptConfig::Print(std::ostream& os) const {
   os << "]";
   return os;
 }
+
+DecryptConfig::DecryptConfig(const DecryptConfig& other) = default;
 
 }  // namespace media
