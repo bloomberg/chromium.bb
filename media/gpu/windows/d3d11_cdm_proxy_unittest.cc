@@ -722,6 +722,46 @@ TEST_F(D3D11CdmProxyTest, SetKeyAndGetDecryptContext) {
   EXPECT_EQ(CRYPTO_TYPE_GUID, decrypt_context->key_info_guid);
 }
 
+// Verify that the keys are not accessible via CdmProxyContext, after a
+// teardown..
+TEST_F(D3D11CdmProxyTest, ClearKeysAfterHardwareContentProtectionTeardown) {
+  base::RunLoop run_loop;
+  MockProxyClient client;
+  EXPECT_CALL(client, NotifyHardwareReset()).WillOnce(Invoke([&run_loop]() {
+    run_loop.Quit();
+  }));
+
+  base::WeakPtr<CdmContext> context = proxy_->GetCdmContext();
+  ASSERT_TRUE(context);
+  CdmProxyContext* proxy_context = context->GetCdmProxyContext();
+
+  uint32_t crypto_session_id_from_initialize = 0;
+  EXPECT_CALL(callback_mock_,
+              InitializeCallback(CdmProxy::Status::kOk, kTestProtocol, _))
+      .WillOnce(SaveArg<2>(&crypto_session_id_from_initialize));
+  ASSERT_NO_FATAL_FAILURE(
+      Initialize(&client, base::BindOnce(&CallbackMock::InitializeCallback,
+                                         base::Unretained(&callback_mock_))));
+  ::testing::Mock::VerifyAndClearExpectations(&callback_mock_);
+
+  std::vector<uint8_t> kKeyId = {
+      0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+      0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+  };
+  std::vector<uint8_t> kKeyBlob = {
+      0xab, 0x01, 0x20, 0xd3, 0xee, 0x05, 0x99, 0x87,
+      0xff, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x7F,
+  };
+  proxy_->SetKey(crypto_session_id_from_initialize, kKeyId, kKeyBlob);
+
+  SetEvent(teardown_event_);
+  run_loop.Run();
+
+  std::string key_id_str(kKeyId.begin(), kKeyId.end());
+  auto decrypt_context = proxy_context->GetD3D11DecryptContext(key_id_str);
+  ASSERT_FALSE(decrypt_context);
+}
+
 // Verify that removing a key works.
 TEST_F(D3D11CdmProxyTest, RemoveKey) {
   base::WeakPtr<CdmContext> context = proxy_->GetCdmContext();

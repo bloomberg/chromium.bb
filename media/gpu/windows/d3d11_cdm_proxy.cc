@@ -78,6 +78,9 @@ class D3D11CdmProxyContext : public CdmProxyContext {
     key_info_map_.erase(key_id_str);
   }
 
+  // Removes all keys from the context.
+  void RemoveAllKeys() { key_info_map_.clear(); }
+
   // CdmProxyContext implementation.
   base::Optional<D3D11DecryptContext> GetD3D11DecryptContext(
       const std::string& key_id) override {
@@ -195,6 +198,9 @@ class D3D11CdmContext : public CdmContext {
                  const std::vector<uint8_t>& key_id) {
     cdm_proxy_context_.RemoveKey(crypto_session, key_id);
   }
+
+  // Removes all keys from the context.
+  void RemoveAllKeys() { cdm_proxy_context_.RemoveAllKeys(); }
 
   base::WeakPtr<D3D11CdmContext> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -507,6 +513,7 @@ void D3D11CdmProxy::SetCreateDeviceCallbackForTesting(
 }
 
 void D3D11CdmProxy::NotifyHardwareContentProtectionTeardown() {
+  cdm_context_->RemoveAllKeys();
   if (client_)
     client_->NotifyHardwareReset();
 }
