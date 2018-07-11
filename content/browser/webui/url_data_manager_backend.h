@@ -12,6 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "base/values.h"
 #include "content/browser/webui/url_data_manager.h"
@@ -122,6 +123,12 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
 
   // The ID we'll use for the next request we receive.
   RequestID next_request_id_;
+
+  // Vends weak pointers to URLDataSources, allowing them to continue referring
+  // to the backend that originally owned them, even if they've been replaced
+  // and detached from the backend. This allows outstanding asynchronous queries
+  // to be served and routed to the backend to which they were original issued.
+  base::WeakPtrFactory<URLDataManagerBackend> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLDataManagerBackend);
 };
