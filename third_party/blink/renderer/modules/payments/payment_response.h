@@ -19,7 +19,8 @@ namespace blink {
 
 class ExceptionState;
 class PaymentAddress;
-class PaymentCompleter;
+class PaymentStateResolver;
+class PaymentValidationErrors;
 class ScriptState;
 
 class MODULES_EXPORT PaymentResponse final : public ScriptWrappable {
@@ -29,7 +30,7 @@ class MODULES_EXPORT PaymentResponse final : public ScriptWrappable {
  public:
   PaymentResponse(payments::mojom::blink::PaymentResponsePtr,
                   PaymentAddress* shipping_address_,
-                  PaymentCompleter*,
+                  PaymentStateResolver*,
                   const String& requestId);
   ~PaymentResponse() override;
 
@@ -45,6 +46,7 @@ class MODULES_EXPORT PaymentResponse final : public ScriptWrappable {
   const String& payerPhone() const { return payer_phone_; }
 
   ScriptPromise complete(ScriptState*, const String& result = "");
+  ScriptPromise retry(ScriptState*, const PaymentValidationErrors&);
 
   void Trace(blink::Visitor*) override;
 
@@ -57,7 +59,7 @@ class MODULES_EXPORT PaymentResponse final : public ScriptWrappable {
   String payer_name_;
   String payer_email_;
   String payer_phone_;
-  Member<PaymentCompleter> payment_completer_;
+  Member<PaymentStateResolver> payment_state_resolver_;
 };
 
 }  // namespace blink

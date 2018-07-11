@@ -15,9 +15,9 @@
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/payments/payment_completer.h"
 #include "third_party/blink/renderer/modules/payments/payment_method_data.h"
 #include "third_party/blink/renderer/modules/payments/payment_options.h"
+#include "third_party/blink/renderer/modules/payments/payment_state_resolver.h"
 #include "third_party/blink/renderer/modules/payments/payment_updater.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -39,7 +39,7 @@ class ScriptState;
 class MODULES_EXPORT PaymentRequest final
     : public EventTargetWithInlineData,
       public payments::mojom::blink::PaymentRequestClient,
-      public PaymentCompleter,
+      public PaymentStateResolver,
       public PaymentUpdater,
       public ContextLifecycleObserver,
       public ActiveScriptWrappable<PaymentRequest> {
@@ -80,8 +80,9 @@ class MODULES_EXPORT PaymentRequest final
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  // PaymentCompleter:
+  // PaymentStateResolver:
   ScriptPromise Complete(ScriptState*, PaymentComplete result) override;
+  ScriptPromise Retry(ScriptState*, const PaymentValidationErrors&) override;
 
   // PaymentUpdater:
   void OnUpdatePaymentDetails(const ScriptValue& details_script_value) override;

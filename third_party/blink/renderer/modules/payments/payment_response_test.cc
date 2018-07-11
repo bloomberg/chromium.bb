@@ -12,29 +12,33 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/modules/payments/payment_address.h"
-#include "third_party/blink/renderer/modules/payments/payment_completer.h"
+#include "third_party/blink/renderer/modules/payments/payment_state_resolver.h"
 #include "third_party/blink/renderer/modules/payments/payment_test_helper.h"
+#include "third_party/blink/renderer/modules/payments/payment_validation_errors.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 namespace {
 
-class MockPaymentCompleter final
-    : public GarbageCollectedFinalized<MockPaymentCompleter>,
-      public PaymentCompleter {
-  USING_GARBAGE_COLLECTED_MIXIN(MockPaymentCompleter);
-  WTF_MAKE_NONCOPYABLE(MockPaymentCompleter);
+class MockPaymentStateResolver final
+    : public GarbageCollectedFinalized<MockPaymentStateResolver>,
+      public PaymentStateResolver {
+  USING_GARBAGE_COLLECTED_MIXIN(MockPaymentStateResolver);
+  WTF_MAKE_NONCOPYABLE(MockPaymentStateResolver);
 
  public:
-  MockPaymentCompleter() {
+  MockPaymentStateResolver() {
     ON_CALL(*this, Complete(testing::_, testing::_))
         .WillByDefault(testing::ReturnPointee(&dummy_promise_));
   }
 
-  ~MockPaymentCompleter() override = default;
+  ~MockPaymentStateResolver() override = default;
 
   MOCK_METHOD2(Complete, ScriptPromise(ScriptState*, PaymentComplete result));
+  MOCK_METHOD2(Retry,
+               ScriptPromise(ScriptState*,
+                             const PaymentValidationErrors& errorFields));
 
   void Trace(blink::Visitor* visitor) override {}
 
@@ -52,7 +56,7 @@ TEST(PaymentResponseTest, DataCopiedOver) {
   input->payer_name = "Jon Doe";
   input->payer_email = "abc@gmail.com";
   input->payer_phone = "0123";
-  MockPaymentCompleter* complete_callback = new MockPaymentCompleter;
+  MockPaymentStateResolver* complete_callback = new MockPaymentStateResolver;
 
   PaymentResponse* output =
       new PaymentResponse(std::move(input), nullptr, complete_callback, "id");
@@ -84,7 +88,7 @@ TEST(PaymentResponseTest, PaymentResponseDetailsJSONObject) {
   payments::mojom::blink::PaymentResponsePtr input =
       BuildPaymentResponseForTest();
   input->stringified_details = "transactionId";
-  MockPaymentCompleter* complete_callback = new MockPaymentCompleter;
+  MockPaymentStateResolver* complete_callback = new MockPaymentStateResolver;
   PaymentResponse* output =
       new PaymentResponse(std::move(input), nullptr, complete_callback, "id");
 
@@ -100,12 +104,12 @@ TEST(PaymentResponseTest, CompleteCalledWithSuccess) {
       BuildPaymentResponseForTest();
   input->method_name = "foo";
   input->stringified_details = "{\"transactionId\": 123}";
-  MockPaymentCompleter* complete_callback = new MockPaymentCompleter;
+  MockPaymentStateResolver* complete_callback = new MockPaymentStateResolver;
   PaymentResponse* output =
       new PaymentResponse(std::move(input), nullptr, complete_callback, "id");
 
   EXPECT_CALL(*complete_callback,
-              Complete(scope.GetScriptState(), PaymentCompleter::kSuccess));
+              Complete(scope.GetScriptState(), PaymentStateResolver::kSuccess));
 
   output->complete(scope.GetScriptState(), "success");
 }
@@ -116,12 +120,12 @@ TEST(PaymentResponseTest, CompleteCalledWithFailure) {
       BuildPaymentResponseForTest();
   input->method_name = "foo";
   input->stringified_details = "{\"transactionId\": 123}";
-  MockPaymentCompleter* complete_callback = new MockPaymentCompleter;
+  MockPaymentStateResolver* complete_callback = new MockPaymentStateResolver;
   PaymentResponse* output =
       new PaymentResponse(std::move(input), nullptr, complete_callback, "id");
 
   EXPECT_CALL(*complete_callback,
-              Complete(scope.GetScriptState(), PaymentCompleter::kFail));
+              Complete(scope.GetScriptState(), PaymentStateResolver::kFail));
 
   output->complete(scope.GetScriptState(), "fail");
 }
@@ -146,8 +150,8 @@ TEST(PaymentResponseTest, JSONSerializerTest) {
   PaymentAddress* address =
       new PaymentAddress(std::move(input->shipping_address));
 
-  PaymentResponse* output = new PaymentResponse(std::move(input), address,
-                                                new MockPaymentCompleter, "id");
+  PaymentResponse* output = new PaymentResponse(
+      std::move(input), address, new MockPaymentStateResolver, "id");
   ScriptValue json_object = output->toJSONForBinding(scope.GetScriptState());
   EXPECT_TRUE(json_object.IsObject());
 
