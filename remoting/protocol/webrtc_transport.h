@@ -118,6 +118,8 @@ class WebrtcTransport : public Transport {
   void OnIceGatheringChange(
       webrtc::PeerConnectionInterface::IceGatheringState new_state);
   void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
+  void OnStatsDelivered(
+      const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report);
 
   void RequestNegotiation();
   void SendOffer();
