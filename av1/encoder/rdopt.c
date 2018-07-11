@@ -1789,9 +1789,8 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
     // TODO(geza): Write direct sse functions that do not compute
     // variance as well.
-    // cpi->fn_ptr[plane_bsize].vf(p->src.buf, p->src.stride, pd->dst.buf,
-    //                             pd->dst.stride, &sse);
     sse = aom_sum_squares_2d_i16(p->src_diff, bw, bw, bh);
+    sse = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
 
     if (plane == 0) x->pred_sse[ref] = (unsigned int)AOMMIN(sse, UINT_MAX);
 
@@ -2442,7 +2441,9 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi, MACROBLOCK *const x,
   const int dst_stride = pd->dst.stride;
   const uint8_t *const dst = pd->dst.buf;
   const int16_t *const src_diff = p->src_diff;
-  const int64_t sse = aom_sum_squares_2d_i16(p->src_diff, bw, bw, bh);
+  const int shift = (xd->bd - 8);
+  int64_t sse = aom_sum_squares_2d_i16(p->src_diff, bw, bw, bh);
+  sse = ROUND_POWER_OF_TWO(sse, shift * 2);
   const double sse_norm = (double)sse / num_samples;
 
   if (sse == 0) {
@@ -2466,7 +2467,11 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi, MACROBLOCK *const x,
   get_2x2_normalized_sses_and_sads(cpi, plane_bsize, src, src_stride, dst,
                                    dst_stride, src_diff, bw, sse_norm_arr,
                                    NULL);
-  const double mean = get_mean(src_diff, bw, bw, bh);
+  double mean = get_mean(src_diff, bw, bw, bh);
+  if (shift) {
+    for (int k = 0; k < 4; ++k) sse_norm_arr[k] /= (1 << (2 * shift));
+    mean /= (1 << shift);
+  }
   const double variance = sse_norm - mean * mean;
   assert(variance >= 0.0);
   const double q_sqr = (double)(q_step * q_step);
