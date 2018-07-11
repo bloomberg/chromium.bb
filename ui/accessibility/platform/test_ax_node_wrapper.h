@@ -8,13 +8,13 @@
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
-#include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
 
 namespace ui {
 
 // For testing, a TestAXNodeWrapper wraps an AXNode, implements
 // AXPlatformNodeDelegate, and owns an AXPlatformNode.
-class TestAXNodeWrapper : public AXPlatformNodeDelegate {
+class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
  public:
   // Create TestAXNodeWrapper instances on-demand from an AXTree and AXNode.
   // Note that this sets the AXTreeDelegate, you can't use this class if
@@ -24,7 +24,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegate {
   // Set a global coordinate offset for testing.
   static void SetGlobalCoordinateOffset(const gfx::Vector2d& offset);
 
-  virtual ~TestAXNodeWrapper();
+  ~TestAXNodeWrapper() override;
 
   AXPlatformNode* ax_platform_node() { return platform_node_; }
 
@@ -33,17 +33,14 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegate {
   // AXPlatformNodeDelegate.
   const AXNodeData& GetData() const override;
   const AXTreeData& GetTreeData() const override;
-  gfx::NativeWindow GetTopLevelWidget() override;
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   gfx::Rect GetClippedScreenBoundsRect() const override;
   gfx::Rect GetUnclippedScreenBoundsRect() const override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
-  gfx::NativeViewAccessible GetFocus() override;
   AXPlatformNode* GetFromNodeID(int32_t id) override;
   int GetIndexInParent() const override;
-  gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   int GetTableRowCount() const override;
   int GetTableColCount() const override;
   std::vector<int32_t> GetColHeaderNodeIds() const override;
@@ -55,7 +52,6 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegate {
   int32_t CellIndexToId(int32_t cell_index) const override;
   bool AccessibilityPerformAction(const AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
-  bool IsOffscreen() const override;
   const ui::AXUniqueId& GetUniqueId() const override;
   std::set<int32_t> GetReverseRelations(ax::mojom::IntAttribute attr,
                                         int32_t dst_id) override;

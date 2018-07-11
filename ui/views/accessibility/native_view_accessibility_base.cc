@@ -215,11 +215,6 @@ const ui::AXNodeData& NativeViewAccessibilityBase::GetData() const {
   return data_;
 }
 
-const ui::AXTreeData& NativeViewAccessibilityBase::GetTreeData() const {
-  CR_DEFINE_STATIC_LOCAL(ui::AXTreeData, empty_data, ());
-  return empty_data;
-}
-
 int NativeViewAccessibilityBase::GetChildCount() {
   if (IsLeaf())
     return 0;
@@ -338,54 +333,6 @@ ui::AXPlatformNode* NativeViewAccessibilityBase::GetFromNodeID(int32_t id) {
   return PlatformNodeFromNodeID(id);
 }
 
-int NativeViewAccessibilityBase::GetIndexInParent() const {
-  return -1;
-}
-
-gfx::AcceleratedWidget
-NativeViewAccessibilityBase::GetTargetForNativeAccessibilityEvent() {
-  return gfx::kNullAcceleratedWidget;
-}
-
-int NativeViewAccessibilityBase::GetTableRowCount() const {
-  return 0;
-}
-
-int NativeViewAccessibilityBase::GetTableColCount() const {
-  return 0;
-}
-
-std::vector<int32_t> NativeViewAccessibilityBase::GetColHeaderNodeIds() const {
-  return {};
-}
-
-std::vector<int32_t> NativeViewAccessibilityBase::GetColHeaderNodeIds(
-    int32_t col_index) const {
-  return {};
-}
-
-std::vector<int32_t> NativeViewAccessibilityBase::GetRowHeaderNodeIds() const {
-  return {};
-}
-
-std::vector<int32_t> NativeViewAccessibilityBase::GetRowHeaderNodeIds(
-    int32_t row_index) const {
-  return {};
-}
-
-int32_t NativeViewAccessibilityBase::GetCellId(int32_t row_index,
-                                               int32_t col_index) const {
-  return 0;
-}
-
-int32_t NativeViewAccessibilityBase::CellIdToIndex(int32_t cell_id) const {
-  return -1;
-}
-
-int32_t NativeViewAccessibilityBase::CellIndexToId(int32_t cell_index) const {
-  return 0;
-}
-
 bool NativeViewAccessibilityBase::AccessibilityPerformAction(
     const ui::AXActionData& data) {
   return view()->HandleAccessibleAction(data);
@@ -398,18 +345,6 @@ bool NativeViewAccessibilityBase::ShouldIgnoreHoveredStateForTesting() {
 bool NativeViewAccessibilityBase::IsOffscreen() const {
   // TODO: need to implement.
   return false;
-}
-
-std::set<int32_t> NativeViewAccessibilityBase::GetReverseRelations(
-    ax::mojom::IntAttribute attr,
-    int32_t dst_id) {
-  return std::set<int32_t>();
-}
-
-std::set<int32_t> NativeViewAccessibilityBase::GetReverseRelations(
-    ax::mojom::IntListAttribute attr,
-    int32_t dst_id) {
-  return std::set<int32_t>();
 }
 
 const ui::AXUniqueId& NativeViewAccessibilityBase::GetUniqueId() const {

@@ -13,6 +13,10 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace ui {
 
 struct AXActionData;
@@ -34,6 +38,8 @@ class AXPlatformNode;
 // otherwise.
 class AX_EXPORT AXPlatformNodeDelegate {
  public:
+  virtual ~AXPlatformNodeDelegate() {}
+
   // Get the accessibility data that should be exposed for this node.
   // Virtually all of the information is obtained from this structure
   // (role, state, name, cursor position, etc.) - the rest of this interface
@@ -145,6 +151,12 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // the test behaves differently when the mouse happens to be over an
   // element. The default value should be falses if not in testing mode.
   virtual bool ShouldIgnoreHoveredStateForTesting() = 0;
+
+ protected:
+  AXPlatformNodeDelegate() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeDelegate);
 };
 
 }  // namespace ui
