@@ -297,7 +297,7 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   // relative to the container's border box, ng_absolute_utils expects it to be
   // relative to the container's padding box.
   NGStaticPosition static_position(descendant.static_position);
-  static_position.offset -= container_info.content_physical_offset;
+  static_position.offset -= default_containing_block_.content_physical_offset;
 
   // The block estimate is in the descendant's writing mode.
   scoped_refptr<NGConstraintSpace> descendant_constraint_space =
