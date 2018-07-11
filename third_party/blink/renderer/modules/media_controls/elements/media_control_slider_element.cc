@@ -21,8 +21,9 @@ void SetSegmentDivPosition(blink::HTMLDivElement* segment,
                            blink::MediaControlSliderElement::Position position,
                            int width,
                            float zoom_factor) {
-  int segment_width = int((position.width * width) / zoom_factor);
-  int segment_left = int((position.left * width) / zoom_factor);
+  int segment_width =
+      clampTo<int>(floor((position.width * width) / zoom_factor));
+  int segment_left = clampTo<int>(floor((position.left * width) / zoom_factor));
   int current_width = 0;
   int current_left = 0;
 
