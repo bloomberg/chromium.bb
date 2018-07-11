@@ -778,8 +778,11 @@ static ATTRIBUTE_NOINLINE bool SymbolizeAndDemangle(void *pc, char *out,
                                                              out_size - 1);
   }
 
+#if defined(PRINT_UNSYMBOLIZED_STACK_TRACES)
+  {
+    FileDescriptor wrapped_object_fd(object_fd);
+#else
   // Check whether a file name was returned.
-#if !defined(PRINT_UNSYMBOLIZED_STACK_TRACES)
   if (object_fd < 0) {
 #endif
     if (out[1]) {
@@ -795,9 +798,7 @@ static ATTRIBUTE_NOINLINE bool SymbolizeAndDemangle(void *pc, char *out,
     }
     // Failed to determine the object file containing PC.  Bail out.
     return false;
-#if !defined(PRINT_UNSYMBOLIZED_STACK_TRACES)
   }
-#endif
   FileDescriptor wrapped_object_fd(object_fd);
   int elf_type = FileGetElfType(wrapped_object_fd.get());
   if (elf_type == -1) {
