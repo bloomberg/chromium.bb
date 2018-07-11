@@ -65,6 +65,13 @@ class ScriptingPermissionsModifier {
   // which CanAffectExtension() returns true). Anything else will DCHECK.
   void RemoveGrantedHostPermission(const GURL& url);
 
+  // Revokes all host permissions granted to the extension. Note that this will
+  // only withhold hosts explicitly granted to the extension; this will not
+  // implicitly change the value of HasWithheldHostPermissions().
+  // This may only be called for extensions that can be affected (i.e., for
+  // which CanAffectExtension() returns true). Anything else will DCHECK.
+  void RemoveAllGrantedHostPermissions();
+
   // Takes in a set of permissions and withholds any permissions that should not
   // be granted for the given |extension|, populating |granted_permissions_out|
   // with the set of all permissions that can be granted, and

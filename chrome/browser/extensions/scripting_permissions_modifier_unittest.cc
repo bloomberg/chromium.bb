@@ -26,10 +26,37 @@
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/test_extension_dir.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace extensions {
 
 namespace {
+
+// Returns a list of |patterns| as strings, making it easy to compare for
+// equality with readable errors.
+std::vector<std::string> GetPatternsAsStrings(const URLPatternSet& patterns) {
+  std::vector<std::string> pattern_strings;
+  pattern_strings.reserve(patterns.size());
+  for (const auto& pattern : patterns) {
+    // chrome://favicon/ is automatically added as a pattern when the extension
+    // requests access to <all_urls>, but isn't really a host pattern (it allows
+    // the extension to retrieve a favicon for a given URL). Since it's not
+    // really a host permission and doesn't appear in the requested permissions
+    // of the extension, it's not withheld. Just ignore it when generating host
+    // sets.
+    std::string pattern_string = pattern.GetAsString();
+    if (pattern_string != "chrome://favicon/*")
+      pattern_strings.push_back(pattern_string);
+  }
+
+  return pattern_strings;
+}
+
+std::vector<std::string> GetEffectivePatternsAsStrings(
+    const Extension& extension) {
+  return GetPatternsAsStrings(
+      extension.permissions_data()->active_permissions().effective_hosts());
+}
 
 scoped_refptr<const Extension> CreateExtensionWithPermissions(
     const std::set<URLPattern>& scriptable_hosts,
@@ -67,6 +94,7 @@ scoped_refptr<const Extension> CreateExtensionWithPermissions(
       .Build();
 }
 
+// TODO(devlin): Implement this in terms of GetPatternsAsStrings().
 testing::AssertionResult SetsAreEqual(const std::set<URLPattern>& set1,
                                       const std::set<URLPattern>& set2) {
   // Take the (set1 - set2) U (set2 - set1). This is then the set of all
@@ -427,6 +455,97 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
                    ->active_permissions()
                    .explicit_hosts()
                    .MatchesURL(kChromiumOrg));
+}
+
+// Test ScriptingPermissionsModifier::RemoveAllGrantedHostPermissions() revokes
+// hosts granted through the ScriptingPermissionsModifier.
+TEST_F(ScriptingPermissionsModifierUnitTest,
+       RemoveAllGrantedHostPermissions_GrantedHosts) {
+  RuntimeHostPermissionsEnabledScope enabled_scope;
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("test").AddPermission("<all_urls>").Build();
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+
+  modifier.SetWithholdHostPermissions(true);
+
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
+
+  modifier.GrantHostPermission(GURL("https://example.com"));
+  modifier.GrantHostPermission(GURL("https://chromium.org"));
+
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension),
+              testing::UnorderedElementsAre("https://example.com/*",
+                                            "https://chromium.org/*"));
+
+  modifier.RemoveAllGrantedHostPermissions();
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
+}
+
+// Test ScriptingPermissionsModifier::RemoveAllGrantedHostPermissions() revokes
+// hosts granted through the ScriptingPermissionsModifier for extensions that
+// don't request <all_urls>.
+TEST_F(ScriptingPermissionsModifierUnitTest,
+       RemoveAllGrantedHostPermissions_GrantedHostsForNonAllUrlsExtension) {
+  RuntimeHostPermissionsEnabledScope enabled_scope;
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("test")
+          .AddPermissions({"https://example.com/*", "https://chromium.org/*"})
+          .Build();
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+
+  modifier.SetWithholdHostPermissions(true);
+
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
+
+  modifier.GrantHostPermission(GURL("https://example.com"));
+  modifier.GrantHostPermission(GURL("https://chromium.org"));
+
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension),
+              testing::UnorderedElementsAre("https://example.com/*",
+                                            "https://chromium.org/*"));
+
+  modifier.RemoveAllGrantedHostPermissions();
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
+}
+
+// Test ScriptingPermissionsModifier::RemoveAllGrantedHostPermissions() revokes
+// granted optional host permissions.
+TEST_F(ScriptingPermissionsModifierUnitTest,
+       RemoveAllGrantedHostPermissions_GrantedOptionalPermissions) {
+  RuntimeHostPermissionsEnabledScope enabled_scope;
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("test")
+          .AddPermission("<all_urls>")
+          .SetManifestKey("optional_permissions",
+                          ListBuilder().Append("https://example.com/*").Build())
+          .Build();
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+
+  modifier.SetWithholdHostPermissions(true);
+
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
+
+  {
+    // Simulate adding an optional permission, which should also be revokable.
+    URLPatternSet patterns;
+    patterns.AddPattern(URLPattern(Extension::kValidHostPermissionSchemes,
+                                   "https://example.com/*"));
+    PermissionsUpdater(profile()).GrantOptionalPermissions(
+        *extension, PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                                  patterns, URLPatternSet()));
+  }
+
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension),
+              testing::UnorderedElementsAre("https://example.com/*"));
+
+  modifier.RemoveAllGrantedHostPermissions();
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
 }
 
 }  // namespace extensions
