@@ -311,7 +311,7 @@ scoped_refptr<viz::ContextProvider> Gpu::CreateContextProvider(
       stream_priority, gpu::kNullSurfaceHandle,
       GURL("chrome://gpu/MusContextFactory"), automatic_flushes,
       support_locking, support_grcontext, gpu::SharedMemoryLimits(), attributes,
-      command_buffer_metrics::MUS_CLIENT_CONTEXT);
+      command_buffer_metrics::ContextType::MUS_CLIENT);
 }
 
 void Gpu::CreateJpegDecodeAccelerator(

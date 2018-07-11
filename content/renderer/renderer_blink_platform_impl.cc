@@ -996,7 +996,7 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
           gpu::kNullSurfaceHandle, GURL(top_document_web_url),
           automatic_flushes, support_locking, web_attributes.support_grcontext,
           gpu::SharedMemoryLimits(), attributes,
-          ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
+          ui::command_buffer_metrics::ContextType::WEBGL));
   return std::make_unique<WebGraphicsContext3DProviderImpl>(
       std::move(provider));
 }

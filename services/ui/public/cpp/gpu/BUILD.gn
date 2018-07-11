@@ -5,29 +5,10 @@
 import("//build/config/ui.gni")
 
 source_set("gpu") {
-  sources = [
+  public = [
     "command_buffer_metrics.h",
     "context_provider_command_buffer.h",
     "gpu.h",
-  ]
-
-  public_deps = [
-    ":internal",
-    "//cc",
-    "//gpu/command_buffer/common",
-    "//gpu/ipc/client",
-    "//gpu/ipc/common",
-    "//services/ui/public/interfaces",
-    "//url",
-  ]
-
-  allow_circular_includes_from = [ ":internal" ]
-}
-
-source_set("internal") {
-  visibility = [
-    ":gpu",
-    "//services/ui/demo:lib",
   ]
 
   sources = [
@@ -38,9 +19,17 @@ source_set("internal") {
     "gpu.cc",
   ]
 
+  public_deps = [
+    "//cc",
+    "//gpu/command_buffer/common",
+    "//gpu/ipc/client",
+    "//gpu/ipc/common",
+    "//services/ui/public/interfaces",
+    "//url",
+  ]
+
   deps = [
     "//base",
-    "//cc",
     "//gpu",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_cmd_helper",

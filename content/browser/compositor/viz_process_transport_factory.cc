@@ -394,7 +394,7 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
         kSharedWorkerContextSupportsLocking, kSharedWorkerContextSupportsGLES2,
         kSharedWorkerContextSupportsRaster,
         kSharedWorkerContextSupportsGrContext,
-        ui::command_buffer_metrics::BROWSER_WORKER_CONTEXT);
+        ui::command_buffer_metrics::ContextType::BROWSER_WORKER);
 
     // Don't observer context loss on |worker_context_provider_| here, that is
     // already observered by LayerTreeFrameSink. The lost context will be caught
@@ -421,7 +421,7 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
         std::move(gpu_channel_host), GetGpuMemoryBufferManager(),
         kCompositorContextSupportsLocking, kCompositorContextSupportsGLES2,
         kCompositorContextSupportsRaster, kCompositorContextSupportsGrContext,
-        ui::command_buffer_metrics::UI_COMPOSITOR_CONTEXT);
+        ui::command_buffer_metrics::ContextType::BROWSER_MAIN_THREAD);
     main_context_provider_->SetDefaultTaskRunner(resize_task_runner());
 
     auto context_result = main_context_provider_->BindToCurrentThread();

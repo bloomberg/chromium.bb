@@ -363,7 +363,7 @@ void CreateContextProviderAfterGpuChannelEstablished(
           GURL(std::string("chrome://gpu/Compositor::CreateContextProvider")),
           automatic_flushes, support_locking, support_grcontext,
           shared_memory_limits, attributes,
-          ui::command_buffer_metrics::CONTEXT_TYPE_UNKNOWN);
+          ui::command_buffer_metrics::ContextType::UNKNOWN);
   callback.Run(std::move(context_provider));
 }
 
@@ -1033,7 +1033,7 @@ void CompositorImpl::OnGpuChannelEstablished(
           GetCompositorContextSharedMemoryLimits(root_window_),
           GetCompositorContextAttributes(display_color_space_,
                                          requires_alpha_channel_),
-          ui::command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
+          ui::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
   auto result = context_provider->BindToCurrentThread();
   LOG_IF(FATAL, result == gpu::ContextResult::kFatalFailure)
       << "Fatal error making Gpu context";
