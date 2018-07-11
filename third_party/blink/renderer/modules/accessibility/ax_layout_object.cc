@@ -1663,7 +1663,7 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
     return nullptr;
 
   auto* frame_view = DocumentFrameView();
-  if (!frame_view || !frame_view->UpdateLifecycleToPrePaintClean())
+  if (!frame_view || !frame_view->UpdateAllLifecyclePhasesExceptPaint())
     return nullptr;
 
   PaintLayer* layer = ToLayoutBox(layout_object_)->Layer();

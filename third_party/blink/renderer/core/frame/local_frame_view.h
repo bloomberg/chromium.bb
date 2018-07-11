@@ -283,21 +283,18 @@ class CORE_EXPORT LocalFrameView final
   // PaintClean.
   void UpdateAllLifecyclePhases();
 
-  // Everything except paint (the last phase).
-  bool UpdateAllLifecyclePhasesExceptPaint();
-
-  // Printing needs everything up-to-date except paint (which will be done
-  // specially). We may also print a detached frame or a descendant of a
-  // detached frame and need special handling of the frame.
-  void UpdateLifecyclePhasesForPrinting();
-
   // Computes the style, layout, compositing and pre-paint lifecycle stages
   // if needed.
   // After calling this method, all frames will be in a lifecycle
   // state >= PrePaintClean, unless the frame was throttled or inactive.
   // Returns whether the lifecycle was successfully updated to the
   // desired state.
-  bool UpdateLifecycleToPrePaintClean();
+  bool UpdateAllLifecyclePhasesExceptPaint();
+
+  // Printing needs everything up-to-date except paint (which will be done
+  // specially). We may also print a detached frame or a descendant of a
+  // detached frame and need special handling of the frame.
+  void UpdateLifecyclePhasesForPrinting();
 
   // After calling this method, all frames will be in a lifecycle
   // state >= CompositingClean, and scrolling has been updated (unless
