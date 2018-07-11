@@ -37,56 +37,6 @@ _UNSCHEDULED_TELEMETRY_BENCHMARKS = set([
   'experimental.startup.mobile',
   ])
 
-
-ANDROID_BOT_TO_DEVICE_TYPE_MAP = {
-  'Android Swarming N5X Tester': 'Nexus 5X',
-  'Android Nexus5X Perf': 'Nexus 5X',
-  'Android Nexus5 Perf': 'Nexus 5',
-  'Android Nexus6 Perf': 'Nexus 6',
-  'Android Nexus7v2 Perf': 'Nexus 7',
-  'Android One Perf': 'W6210 (4560MMX_b fingerprint)',
-  'Android Nexus5X WebView Perf': 'Nexus 5X',
-  'Android Nexus6 WebView Tester': 'Nexus 6',
-}
-
-SVELTE_DEVICE_LIST = ['W6210 (4560MMX_b fingerprint)']
-
-
-def add_builder(waterfall, name, additional_compile_targets=None):
-  waterfall['builders'][name] = added = {}
-  if additional_compile_targets:
-    added['additional_compile_targets'] = additional_compile_targets
-
-  return waterfall
-
-
-def add_tester(waterfall, name, perf_id, platform, target_bits=64,
-               num_host_shards=1, num_device_shards=1, swarming=None,
-               replace_system_webview=False):
-  """ Adds tester named |name| to |waterfall|.
-
-  Tests can be added via 'perf_tests', which expects a 2 element tuple of
-  (isolate_name, shard), or via 'perf_tests_with_args', which allows you
-  to specify command line arguments for the tests. 'perf_tests_with_args'
-  expects a tuple of 4 elements: (name, shard, test_args, isolate_name).
-  'test_args' is a list of strings pass via the test's command line.
-  """
-  del perf_id # this will be needed
-  waterfall['testers'][name] = {
-    'platform': platform,
-    'num_device_shards': num_device_shards,
-    'num_host_shards': num_host_shards,
-    'target_bits': target_bits,
-    'replace_system_webview': replace_system_webview,
-  }
-
-  if swarming:
-    waterfall['testers'][name]['swarming_dimensions'] = swarming
-    waterfall['testers'][name]['swarming'] = True
-
-  return waterfall
-
-
 # Additional compile targets to add to builders.
 # On desktop builders, chromedriver is added as an additional compile target.
 # The perf waterfall builds this target for each commit, and the resulting
@@ -104,278 +54,559 @@ BUILDER_ADDITIONAL_COMPILE_TARGETS = {
 }
 
 
-def get_waterfall_config():
-  waterfall = {'builders':{}, 'testers': {}}
+# To add a new isolate, add an entry to the 'tests' section.  Supported
+# values in this json are:
+# isolate: the name of the isolate you are trigger
+# test_suite: name of the test suite if different than the isolate
+#     that you want to show up as the test name
+# extra_args: args that need to be passed to the script target
+#     of the isolate you are running.
+# shards: shard indices that you want the isolate to run on.  If omitted
+#     will run on all shards.
+# telemetry: boolean indicating if this is a telemetry test.  If omitted
+#     assumed to be true.
+NEW_PERF_RECIPE_FYI_TESTERS = {
+  'testers' : {
+    'OBBS Mac 10.12 Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=mac1012_5_shard_map.json',
+          ],
+          'num_shards': 5
+        },
+        {
+          'isolate': 'net_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'views_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        }
+      ],
+      'platform': 'mac',
+      'dimension': {
+        'pool': 'chrome.tests.perf-fyi',
+        'os': 'Mac-10.12',
+        'gpu': '8086:0a2e'
+      },
+    },
+    'One Buildbot Step Test Builder': {
+      'tests': [
+        {
+          'isolate': 'telemetry_perf_tests_without_chrome',
+          'extra_args': [
+            '--xvfb',
+            '--run-ref-build',
+            '--test-shard-map-filename=benchmark_bot_map.json'
+          ],
+          'num_shards': 3
+        },
+        {
+          'isolate': 'load_library_perf_tests',
+          'num_shards': 1,
+          'telemetry': False,
+        }
+      ],
+      'platform': 'linux',
+      'dimension': {
+        'gpu': 'none',
+        'pool': 'chrome.tests.perf-fyi',
+        'os': 'Linux',
+      },
+      'testing': True,
+    },
+    'Android Go': {
+      'tests': [
+        {
+          'name': 'performance_test_suite',
+          'isolate': 'performance_test_suite',
+          'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=android_go_14_shard_map.json',
+          ],
+          'num_shards': 14
+        }
+      ],
+      'platform': 'android',
+      'dimension': {
+        'device_os': 'O',
+        'device_type': 'gobo',
+        'device_os_flavor': 'google',
+        'pool': 'chrome.tests.perf-fyi',
+        'os': 'Android',
+      },
+    },
+    'android-pixel2_webview-perf': {
+      'tests': [
+        {
+          'isolate': 'performance_webview_test_suite',
+          'extra_args': [
+            '--test-shard-map-filename=pixel2_webview_7_shard_map.json',
+          ],
+          'num_shards': 7
+        }
+      ],
+      'platform': 'android-webview',
+      'dimension': {
+        'pool': 'chrome.tests.perf-webview-fyi',
+        'os': 'Android',
+        'device_type': 'walleye',
+        'device_os': 'O',
+        'device_os_flavor': 'google',
+      },
+    },
+    'android-pixel2-perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=pixel2_7_shard_map.json',
+          ],
+          'num_shards': 7
+        }
+      ],
+      'platform': 'android',
+      'dimension': {
+        'pool': 'chrome.tests.perf-fyi',
+        'os': 'Android',
+        'device_type': 'walleye',
+        'device_os': 'O',
+        'device_os_flavor': 'google',
+      },
+    }
+  }
+}
 
-  for builder, targets in BUILDER_ADDITIONAL_COMPILE_TARGETS.items():
-    waterfall = add_builder(
-        waterfall, builder, additional_compile_targets=targets)
+# These configurations are taken from chromium_perf.py in
+# build/scripts/slave/recipe_modules/chromium_tests and must be kept in sync
+# to generate the correct json for each tester
+NEW_PERF_RECIPE_MIGRATED_TESTERS = {
+  'testers' : {
+    'Android Nexus5X Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 16,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=android_nexus5x_16_shard_map.json',
+          ],
+        },
+        {
+          'isolate': 'media_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'components_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'tracing_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'gpu_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'angle_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+          'extra_args': [
+              '--shard-timeout=300'
+          ],
+        }
+      ],
+      'platform': 'android',
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Android',
+        'device_type': 'bullhead',
+        'device_os': 'MMB29Q',
+        'device_os_flavor': 'google',
+      },
+    },
+    'Android Nexus5 Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 16,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=android_nexus5_16_shard_map.json',
+          ],
+        },
+        {
+          'isolate': 'tracing_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'components_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'gpu_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'angle_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+          'extra_args': [
+              '--shard-timeout=300'
+          ],
+        }
+      ],
+      'platform': 'android',
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Android',
+        'device_type': 'hammerhead',
+        'device_os': 'KOT49H',
+        'device_os_flavor': 'google',
+      },
+    },
+    'Android One Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 16,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=android_one_16_shard_map.json',
+          ],
+        },
+        {
+          'isolate': 'tracing_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        }
+      ],
+      'platform': 'android',
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Android',
+        'device_type': 'sprout',
+        'device_os': 'LMY47W',
+        'device_os_flavor': 'google',
+      },
+    },
+    'Android Nexus5X WebView Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_webview_test_suite',
+          'num_shards': 16,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=android_nexus5x_webview_16_shard_map.json',
+          ],
+        }
+      ],
+      'platform': 'android',
+      'dimension': {
+        'pool': 'chrome.tests.perf-webview',
+        'os': 'Android',
+        'device_type': 'bullhead',
+        'device_os': 'MOB30K',
+        'device_os_flavor': 'aosp',
+      },
+    },
+    'Android Nexus6 WebView Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_webview_test_suite',
+          'num_shards': 16,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=android_nexus6_webview_16_shard_map.json',
+          ],
+        }
+      ],
+      'platform': 'android',
+      'dimension': {
+        'pool': 'chrome.tests.perf-webview',
+        'os': 'Android',
+        'device_type': 'shamu',
+        'device_os': 'MOB30K',
+        'device_os_flavor': 'aosp',
+      },
+    },
+    'Win 10 High-DPI Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 5,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=win10_highdpi_shard_map.json',
+          ],
+        }
+      ],
+      'platform': 'win',
+      'target_bits': 64,
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Windows-10',
+        'gpu': '8086:1616'
+      },
+    },
+    'Win 10 Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 5,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=win10_shard_map.json',
+          ],
+        },
+        {
+          'isolate': 'media_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'components_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'views_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        }
+      ],
+      'platform': 'win',
+      'target_bits': 64,
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Windows-10',
+        'gpu': '8086:5912'
+      },
+    },
+    'Win 7 Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 5,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=win7_shard_map.json',
+          ],
+        },
+        # crbug.com/735679 enable performance_browser_tests
+        {
+          'isolate': 'load_library_perf_tests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'components_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'media_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        }
+      ],
+      'platform': 'win',
+      'target_bits': 32,
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Windows-2008ServerR2-SP1',
+        'gpu': '102b:0532'
+      },
+    },
+    'Win 7 Nvidia GPU Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 5,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=win7_nvidia_shard_map.json',
+          ],
+        },
+        # crbug.com/735679 enable performance_browser_tests
+        {
+          'isolate': 'load_library_perf_tests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'angle_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'media_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'test_suite': 'passthrough_command_buffer_perftests',
+          'isolate': 'command_buffer_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+          'extra_args': [
+              '--use-cmd-decoder=passthrough',
+              '--use-angle=gl-null',
+          ],
+        },
+        {
+          'test_suite': 'validating_command_buffer_perftests',
+          'isolate': 'command_buffer_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+          'extra_args': [
+              '--use-cmd-decoder=validating',
+              '--use-stub',
+          ],
+        },
+      ],
+      'platform': 'win',
+      'target_bits': 64,
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Windows-2008ServerR2-SP1',
+        'gpu': '10de:1cb3'
+      },
+    },
+    'mac-10_12_laptop_low_end-perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 26,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=mac_1012_low_end_26_shard_map.json',
+          ],
+        },
+        {
+          'isolate': 'load_library_perf_tests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'performance_browser_tests',
+          'num_shards': 1,
+          'telemetry': False,
+        }
+      ],
+      'platform': 'mac',
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Mac-10.12',
+        'gpu': '8086:1626'
+      },
+    },
+    'linux-perf': {
+      'tests': [
+        # Add views_perftests, crbug.com/811766
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 26,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=linux_perf_shard_map.json',
+          ],
+        },
+        {
+          'isolate': 'load_library_perf_tests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'net_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'tracing_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'media_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        }
+      ],
+      'platform': 'linux',
+      'dimension': {
+        'gpu': '10de:1cb3',
+        'os': 'Ubuntu-14.04',
+        'pool': 'chrome.tests.perf',
+      },
+    },
+    'mac-10_13_laptop_high_end-perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=mac_1013_high_end_26_shard_map.json',
+          ],
+          'num_shards': 26
+        },
+        {
+          'isolate': 'net_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'views_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'media_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        }
+      ],
+      'platform': 'mac',
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Mac-10.13',
+        'gpu': '1002:6821'
+      },
+    },
+  }
+}
+
+def add_builder(waterfall, name, additional_compile_targets=None):
+  waterfall['builders'][name] = added = {}
+  if additional_compile_targets:
+    added['additional_compile_targets'] = additional_compile_targets
 
   return waterfall
 
 
-def generate_isolate_script_entry(swarming_dimensions, test_args,
-    isolate_name, step_name, ignore_task_failure,
-    override_compile_targets=None,
-    swarming_timeout=None,
-    io_timeout=None):
-  result = {
-    'args': test_args,
-    'isolate_name': isolate_name,
-    'name': step_name,
-  }
-  if override_compile_targets:
-    result['override_compile_targets'] = override_compile_targets
-  if swarming_dimensions:
-    result['swarming'] = {
-      # Always say this is true regardless of whether the tester
-      # supports swarming. It doesn't hurt.
-      'can_use_on_swarming_builders': True,
-      'expiration': 10 * 60 * 60, # 10 hour timeout
-      'hard_timeout': swarming_timeout if swarming_timeout else 10800, # 3 hours
-      'ignore_task_failure': ignore_task_failure,
-      'io_timeout': io_timeout if io_timeout else 1200, # 20 minutes
-      'dimension_sets': swarming_dimensions,
-      'upload_test_results': True,
-    }
-  return result
 
+def get_waterfall_builder_config():
+  builders = {'builders':{}}
 
-def generate_telemetry_test(swarming_dimensions, benchmark_name, browser):
-  # The step name must end in 'test' or 'tests' in order for the
-  # results to automatically show up on the flakiness dashboard.
-  # (At least, this was true some time ago.) Continue to use this
-  # naming convention for the time being to minimize changes.
+  for builder, targets in BUILDER_ADDITIONAL_COMPILE_TARGETS.items():
+    builders = add_builder(
+        builders, builder, additional_compile_targets=targets)
 
-  test_args = [
-    benchmark_name,
-    '-v',
-    '--upload-results',
-    '--browser=%s' % browser,
-    '--output-format=histograms',
-  ]
-  # When this is enabled on more than just windows machines we will need
-  # --device=android
-
-  ignore_task_failure = False
-  step_name = benchmark_name
-  if browser == 'reference':
-    # If there are more than 5 failures, usually the whole ref build benchmark
-    # will fail & the reference browser binary need to be updated.
-    # Also see crbug.com/707236 for more context.
-    test_args.append('--max-failures=5')
-    test_args.append('--output-trace-tag=_ref')
-    step_name += '.reference'
-    # We ignore the failures on reference builds since there is little we can do
-    # to fix them except waiting for the reference build to update.
-    ignore_task_failure = True
-
-  isolate_name = 'telemetry_perf_tests'
-  if browser == 'android-webview':
-    test_args.append(
-        '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk')
-    isolate_name = 'telemetry_perf_webview_tests'
-
-  return generate_isolate_script_entry(
-      swarming_dimensions, test_args, isolate_name,
-      step_name, ignore_task_failure=ignore_task_failure,
-      override_compile_targets=[isolate_name],
-      swarming_timeout=BENCHMARK_SWARMING_TIMEOUTS.get(benchmark_name),
-      io_timeout=BENCHMARK_SWARMING_IO_TIMEOUTS.get(benchmark_name))
-
-
-def script_test_enabled_on_tester(master, test, tester_name, shard):
-  for enabled_tester in test['testers'].get(master, []):
-    if enabled_tester['name'] == tester_name:
-      if shard in enabled_tester['shards']:
-        return True
-  return False
-
-
-def get_swarming_dimension(dimension, device_id):
-  assert device_id in dimension['device_ids']
-
-  complete_dimension = {
-    'id': device_id,
-    'os': dimension['os'],
-    'pool': dimension['pool'],
-  }
-  if 'gpu' in dimension:
-    complete_dimension['gpu'] = dimension['gpu']
-  if 'device_os' in dimension:
-    complete_dimension['device_os'] = dimension['device_os']
-  if 'device_type' in dimension:
-    complete_dimension['device_type'] = dimension['device_type']
-  if 'device_os_flavor' in dimension:
-    complete_dimension['device_os_flavor'] = dimension['device_os_flavor']
-  return complete_dimension
-
-
-def generate_cplusplus_isolate_script_entry(
-    dimension, name, shard, test_args, isolate_name):
-  return generate_isolate_script_entry(
-      [get_swarming_dimension(dimension, shard)], test_args, isolate_name,
-         name, ignore_task_failure=False)
-
-
-def generate_cplusplus_isolate_script_test(dimension):
-  return [
-    generate_cplusplus_isolate_script_entry(
-        dimension, name, shard, [], name)
-    for name, shard in dimension['perf_tests']
-  ]
-
-
-def generate_cplusplus_isolate_script_test_with_args(dimension):
-  return [
-    generate_cplusplus_isolate_script_entry(
-        dimension, name, shard, test_args, isolate_name)
-    for name, shard, test_args, isolate_name
-        in dimension['perf_tests_with_args']
-  ]
-
-
-def ShouldBenchmarksBeScheduled(
-    benchmark, name, os_name, browser_name):
-  # StoryExpectations uses finder_options.browser_type, platform.GetOSName,
-  # platform.GetDeviceTypeName, and platform.IsSvelte to determine if the
-  # the expectation test condition is true and the test should be disabled.
-  # This class is used as a placeholder for finder_options and platform since
-  # we do not have enough information to create those objection.
-  class ExpectationData(object):
-    def __init__(self, browser_type, os_name, device_type_name):
-      self._browser_type = browser_type
-      self._os_name = os_name
-      self._is_svelte = False
-      if os_name == 'android' and device_type_name in SVELTE_DEVICE_LIST:
-        self._is_svelte = True
-      self._device_type_name = device_type_name
-
-    def GetOSName(self):
-      return self._os_name
-
-    def GetDeviceTypeName(self):
-      return self._device_type_name if self._device_type_name else ''
-
-    @property
-    def browser_type(self):
-      return self._browser_type
-
-    def IsSvelte(self):
-      return self._is_svelte
-
-  # OS names are the exact OS names. We need ExpectationData to return OS names
-  # that are consistent with platform_backend in telemetry to work.
-  def sanitize_os_name(os_name):
-    lower_name = os_name.lower()
-    if 'win' in lower_name:
-      return 'win'
-    if 'mac' in lower_name:
-      return 'mac'
-    if 'android' in lower_name:
-      return 'android'
-    if 'ubuntu' in lower_name or 'linux' in lower_name:
-      return 'linux'
-    if lower_name == 'skynet':
-      print ('OS name appears to be for testing purposes. If this is in error '
-             'file a bug.')
-      return 'TEST'
-    raise TypeError('Unknown OS name detected.')
-
-  device_type_name = ANDROID_BOT_TO_DEVICE_TYPE_MAP.get(name)
-  os_name = sanitize_os_name(os_name)
-  e = ExpectationData(browser_name, os_name, device_type_name)
-
-  b = benchmark()
-  # TODO(rnephew): As part of the refactoring of TestConditions this will
-  # be refactored to make more sense. SUPPORTED_PLATFORMS was not the original
-  # intended use of TestConditions, so we actually want to test the opposite.
-  # If ShouldDisable() returns true, we should schedule the benchmark here.
-  return any(t.ShouldDisable(e, e) for t in b.SUPPORTED_PLATFORMS)
-
-
-def generate_telemetry_tests(name, tester_config, benchmarks,
-                             benchmark_sharding_map,
-                             benchmark_ref_build_blacklist):
-  isolated_scripts = []
-  # First determine the browser that you need based on the tester
-  browser_name = ''
-  if tester_config['platform'] == 'android':
-    if tester_config.get('replace_system_webview', False):
-      browser_name = 'android-webview'
-    else:
-      browser_name = 'android-chromium'
-  elif (tester_config['platform'] == 'win'
-    and tester_config['target_bits'] == 64):
-    browser_name = 'release_x64'
-  else:
-    browser_name ='release'
-
-  for benchmark in benchmarks:
-    # First figure out swarming dimensions this test needs to be triggered on.
-    # For each set of dimensions it is only triggered on one of the devices
-    swarming_dimensions = []
-    for dimension in tester_config['swarming_dimensions']:
-      device = None
-      sharding_map = benchmark_sharding_map.get(name, None)
-      device = sharding_map.get(benchmark.Name(), None)
-      if not device:
-        raise ValueError('No sharding map for benchmark %r found. Please '
-                         'add the benchmark to '
-                         '_UNSCHEDULED_TELEMETRY_BENCHMARKS list, '
-                         'then file a bug with Speed>Benchmarks>Waterfall '
-                         'component and assign to eyaich@ or ashleymarie@ to '
-                         'schedule the benchmark on the perf waterfall.' % (
-                             benchmark.Name()))
-      swarming_dimensions.append(get_swarming_dimension(
-          dimension, device))
-
-    if not ShouldBenchmarksBeScheduled(
-        benchmark, name, swarming_dimensions[0]['os'], browser_name):
-      continue
-
-    test = generate_telemetry_test(
-      swarming_dimensions, benchmark.Name(), browser_name)
-    isolated_scripts.append(test)
-    # Now create another executable for this benchmark on the reference browser
-    # if it is not blacklisted from running on the reference browser.
-    # Webview doesn't have a reference build right now.
-    if not tester_config.get('replace_system_webview', False) and (
-        benchmark.Name() not in benchmark_ref_build_blacklist):
-      reference_test = generate_telemetry_test(
-        swarming_dimensions, benchmark.Name(),'reference')
-      isolated_scripts.append(reference_test)
-
-  return isolated_scripts
-
-
-# Overrides the default 3 hour timeout for swarming tasks.
-BENCHMARK_SWARMING_TIMEOUTS = {
-    'loading.desktop': 14400, # 4 hours (crbug.com/753798)
-    'loading.mobile': 16200, # 4.5 hours
-    'system_health.memory_mobile': 14400, # 4 hours (crbug.com/775242)
-    'rendering.mobile': 14400, # 4 hours (crbug.com/851477)
-}
-
-
-# Overrides the default 10m swarming I/O timeout.
-BENCHMARK_SWARMING_IO_TIMEOUTS = {
-    'jetstream': 1200, # 20 minutes
-}
-
-
-# Devices which are broken right now. Tests will not be scheduled on them.
-# Please add a comment with a bug for replacing the device.
-BLACKLISTED_DEVICES = []
-
-
-# List of benchmarks that are to never be run with reference builds.
-BENCHMARK_REF_BUILD_BLACKLIST = [
-  'loading.desktop',  # Long running benchmark.
-  'loading.mobile',  # Long running benchmark.
-  'v8.runtime_stats.top_25',  # Long running benchmark.
-]
-
+  return builders
 
 
 def current_benchmarks():
@@ -394,77 +625,17 @@ def current_benchmarks():
   return sorted(all_benchmarks, key=lambda b: b.Name())
 
 
-def remove_blacklisted_device_tests(tests, blacklisted_devices):
-  new_tests = []
-  blacklist_device_to_test = collections.defaultdict(list)
-  for test in tests:
-    if test.get('swarming', None):
-      swarming = test['swarming']
-      new_dimensions = []
-
-      for dimension in swarming['dimension_sets']:
-        if dimension['id'] in blacklisted_devices:
-          blacklist_device_to_test[dimension['id']].append(test['name'])
-          continue
-        new_dimensions.append(dimension)
-      if not new_dimensions:
-        continue
-    new_tests.append(test)
-
-  return new_tests, {
-      device: sorted(tests) for device, tests
-      in blacklist_device_to_test.items()}
-
-
-def generate_all_tests(waterfall):
+def update_all_tests(waterfall, file_path):
   tests = {}
-
-  all_benchmarks = current_benchmarks()
-  benchmark_sharding_map = load_benchmark_sharding_map()
-
-  for name, config in waterfall['testers'].iteritems():
-    assert config.get('swarming', False), 'Only swarming config is supported'
-    # Our current configuration only ever has one set of swarming dimensions
-    # Make sure this still holds true
-    if len(config['swarming_dimensions']) > 1:
-      raise Exception('Invalid assumption on number of swarming dimensions')
-    # Generate benchmarks
-    isolated_scripts = generate_telemetry_tests(
-        name, config, all_benchmarks, benchmark_sharding_map,
-        BENCHMARK_REF_BUILD_BLACKLIST)
-    # Generate swarmed non-telemetry tests if present
-    if config['swarming_dimensions'][0].get('perf_tests', False):
-      isolated_scripts += generate_cplusplus_isolate_script_test(
-        config['swarming_dimensions'][0])
-    if config['swarming_dimensions'][0].get('perf_tests_with_args', False):
-      isolated_scripts += generate_cplusplus_isolate_script_test_with_args(
-        config['swarming_dimensions'][0])
-
-    isolated_scripts, devices_to_test_skipped = remove_blacklisted_device_tests(
-        isolated_scripts, BLACKLISTED_DEVICES)
-    if devices_to_test_skipped:
-      for device, skipped_tests in devices_to_test_skipped.items():
-        print (
-          'Device "%s" is blacklisted. These benchmarks are not scheduled:' % (
-              device))
-        for test in skipped_tests:
-          print ' * %s' % test
-    tests[name] = {
-      'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
-    }
-
-  for name, config in waterfall['builders'].iteritems():
-    tests[name] = config
 
   tests['AAAAA1 AUTOGENERATED FILE DO NOT EDIT'] = {}
   tests['AAAAA2 See //tools/perf/generate_perf_data to make changes'] = {}
-  return tests
+  # Add in builders
+  for name, config in waterfall['builders'].iteritems():
+    tests[name] = config
 
-
-def update_all_tests(waterfall, file_path):
-  tests = generate_all_tests(waterfall)
-  # Add in the migrated testers for the new recipe.
-  get_new_recipe_testers(NEW_PERF_RECIPE_MIGRATED_TESTERS, tests)
+  # Add in tests
+  generate_telemetry_tests(NEW_PERF_RECIPE_MIGRATED_TESTERS, tests)
   with open(file_path, 'w') as fp:
     json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
     fp.write('\n')
@@ -566,6 +737,7 @@ def add_benchmarks_from_sharding_map(tests, shard_map_name):
 def verify_all_tests_in_benchmark_csv(tests, benchmark_metadata):
   benchmark_names = sets.Set(benchmark_metadata)
   test_names = get_tests_in_performance_test_suite()
+
   for t in tests:
     scripts = []
     if 'isolated_scripts' in tests[t]:
@@ -585,6 +757,7 @@ def verify_all_tests_in_benchmark_csv(tests, benchmark_metadata):
           or name is 'performance_webview_test_suite'):
         continue
       test_names.add(name)
+
 
   # Disabled tests are filtered out of the waterfall json. Add them back here.
   for name, data in benchmark_metadata.items():
@@ -666,583 +839,7 @@ def validate_tests(waterfall, waterfall_file, benchmark_file):
 
   return up_to_date
 
-
-# This section is how we will generate json with the new perf recipe.
-# We will only be generating one entry per isolate in the new world.
-# Right now this is simply adding and/or updating chromium.perf.fyi.json
-# until migration is complete.  See crbug.com/757933 for more info.
-#
-# To add a new isolate, add an entry to the 'tests' section.  Supported
-# values in this json are:
-# isolate: the name of the isolate you are trigger
-# test_suite: name of the test suite if different than the isolate
-#     that you want to show up as the test name
-# extra_args: args that need to be passed to the script target
-#     of the isolate you are running.
-# shards: shard indices that you want the isolate to run on.  If omitted
-#     will run on all shards.
-# telemetry: boolean indicating if this is a telemetry test.  If omitted
-#     assumed to be true.
-NEW_PERF_RECIPE_FYI_TESTERS = {
-  'testers' : {
-    'OBBS Mac 10.12 Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'extra_args': [
-            '--run-ref-build',
-            '--test-shard-map-filename=mac1012_5_shard_map.json',
-          ],
-          'num_shards': 5
-        },
-        {
-          'isolate': 'net_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'views_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'mac',
-      'dimension': {
-        'pool': 'chrome.tests.perf-fyi',
-        'os': 'Mac-10.12',
-        'gpu': '8086:0a2e'
-      },
-      'device_ids': [
-      ],
-    },
-    'One Buildbot Step Test Builder': {
-      'tests': [
-        {
-          'isolate': 'telemetry_perf_tests_without_chrome',
-          'extra_args': [
-            '--xvfb',
-            '--run-ref-build',
-            '--test-shard-map-filename=benchmark_bot_map.json'
-          ],
-          'num_shards': 3
-        },
-        {
-          'isolate': 'load_library_perf_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'linux',
-      'dimension': {
-        'gpu': 'none',
-        'pool': 'chrome.tests.perf-fyi',
-        'os': 'Linux',
-      },
-      'testing': True,
-      'device_ids': [
-      ],
-    },
-    'Android Go': {
-      'tests': [
-        {
-          'name': 'performance_test_suite',
-          'isolate': 'performance_test_suite',
-          'extra_args': [
-            '--run-ref-build',
-            '--test-shard-map-filename=android_go_14_shard_map.json',
-          ],
-          'num_shards': 14
-        }
-      ],
-      'platform': 'android',
-      'dimension': {
-        'device_os': 'O',
-        'device_type': 'gobo',
-        'device_os_flavor': 'google',
-        'pool': 'chrome.tests.perf-fyi',
-        'os': 'Android',
-      },
-      'device_ids': [
-      ],
-    },
-    'android-pixel2_webview-perf': {
-      'tests': [
-        {
-          'isolate': 'performance_webview_test_suite',
-          'extra_args': [
-            '--test-shard-map-filename=pixel2_webview_7_shard_map.json',
-          ],
-          'num_shards': 7
-        }
-      ],
-      'platform': 'android-webview',
-      'dimension': {
-        'pool': 'chrome.tests.perf-webview-fyi',
-        'os': 'Android',
-        'device_type': 'walleye',
-        'device_os': 'O',
-        'device_os_flavor': 'google',
-      },
-      'device_ids': [
-      ],
-    },
-    'android-pixel2-perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'extra_args': [
-            '--run-ref-build',
-            '--test-shard-map-filename=pixel2_7_shard_map.json',
-          ],
-          'num_shards': 7
-        }
-      ],
-      'platform': 'android',
-      'dimension': {
-        'pool': 'chrome.tests.perf-fyi',
-        'os': 'Android',
-        'device_type': 'walleye',
-        'device_os': 'O',
-        'device_os_flavor': 'google',
-      },
-      'device_ids': [
-      ],
-    }
-  }
-}
-
-# These configurations are taken from chromium_perf.py in
-# build/scripts/slave/recipe_modules/chromium_tests and must be kept in sync
-# to generate the correct json for each tester
-NEW_PERF_RECIPE_MIGRATED_TESTERS = {
-  'testers' : {
-    'Android Nexus5X Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 16,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=android_nexus5x_16_shard_map.json',
-          ],
-        },
-        {
-          'isolate': 'media_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'components_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'tracing_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'gpu_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'angle_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-          'extra_args': [
-              '--shard-timeout=300'
-          ],
-        }
-      ],
-      'platform': 'android',
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Android',
-        'device_type': 'bullhead',
-        'device_os': 'MMB29Q',
-        'device_os_flavor': 'google',
-      },
-      'device_ids': [],
-    },
-    'Android Nexus5 Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 16,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=android_nexus5_16_shard_map.json',
-          ],
-        },
-        {
-          'isolate': 'tracing_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'components_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'gpu_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'angle_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-          'extra_args': [
-              '--shard-timeout=300'
-          ],
-        }
-      ],
-      'platform': 'android',
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Android',
-        'device_type': 'hammerhead',
-        'device_os': 'KOT49H',
-        'device_os_flavor': 'google',
-      },
-      'device_ids': [],
-    },
-    'Android One Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 16,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=android_one_16_shard_map.json',
-          ],
-        },
-        {
-          'isolate': 'tracing_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'android',
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Android',
-        'device_type': 'sprout',
-        'device_os': 'LMY47W',
-        'device_os_flavor': 'google',
-      },
-      'device_ids': [],
-    },
-    'Android Nexus5X WebView Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_webview_test_suite',
-          'num_shards': 16,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=android_nexus5x_webview_16_shard_map.json',
-          ],
-        }
-      ],
-      'platform': 'android',
-      'dimension': {
-        'pool': 'chrome.tests.perf-webview',
-        'os': 'Android',
-        'device_type': 'bullhead',
-        'device_os': 'MOB30K',
-        'device_os_flavor': 'aosp',
-      },
-      'device_ids': [],
-    },
-    'Android Nexus6 WebView Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_webview_test_suite',
-          'num_shards': 16,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=android_nexus6_webview_16_shard_map.json',
-          ],
-        }
-      ],
-      'platform': 'android',
-      'dimension': {
-        'pool': 'chrome.tests.perf-webview',
-        'os': 'Android',
-        'device_type': 'shamu',
-        'device_os': 'MOB30K',
-        'device_os_flavor': 'aosp',
-      },
-      'device_ids': [],
-    },
-    'Win 10 High-DPI Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 5,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=win10_highdpi_shard_map.json',
-          ],
-        }
-      ],
-      'platform': 'win',
-      'target_bits': 64,
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Windows-10',
-        'gpu': '8086:1616'
-      },
-      'device_ids': [],
-    },
-    'Win 10 Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 5,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=win10_shard_map.json',
-          ],
-        },
-        {
-          'isolate': 'media_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'components_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'views_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'win',
-      'target_bits': 64,
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Windows-10',
-        'gpu': '8086:5912'
-      },
-      'device_ids': [],
-    },
-    'Win 7 Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 5,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=win7_shard_map.json',
-          ],
-        },
-        # crbug.com/735679 enable performance_browser_tests
-        {
-          'isolate': 'load_library_perf_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'components_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'media_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'win',
-      'target_bits': 32,
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Windows-2008ServerR2-SP1',
-        'gpu': '102b:0532'
-      },
-      'device_ids': [],
-    },
-    'Win 7 Nvidia GPU Perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 5,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=win7_nvidia_shard_map.json',
-          ],
-        },
-        # crbug.com/735679 enable performance_browser_tests
-        {
-          'isolate': 'load_library_perf_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'angle_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'media_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'test_suite': 'passthrough_command_buffer_perftests',
-          'isolate': 'command_buffer_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-          'extra_args': [
-              '--use-cmd-decoder=passthrough',
-              '--use-angle=gl-null',
-          ],
-        },
-        {
-          'test_suite': 'validating_command_buffer_perftests',
-          'isolate': 'command_buffer_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-          'extra_args': [
-              '--use-cmd-decoder=validating',
-              '--use-stub',
-          ],
-        },
-      ],
-      'platform': 'win',
-      'target_bits': 64,
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Windows-2008ServerR2-SP1',
-        'gpu': '10de:1cb3'
-      },
-      'device_ids': [],
-    },
-    'mac-10_12_laptop_low_end-perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 26,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=mac_1012_low_end_26_shard_map.json',
-          ],
-        },
-        {
-          'isolate': 'load_library_perf_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'performance_browser_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'mac',
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Mac-10.12',
-        'gpu': '8086:1626'
-      },
-      'device_ids': [],
-    },
-    'linux-perf': {
-      'tests': [
-        # Add views_perftests, crbug.com/811766
-        {
-          'isolate': 'performance_test_suite',
-          'num_shards': 26,
-          'extra_args': [
-              '--run-ref-build',
-              '--test-shard-map-filename=linux_perf_shard_map.json',
-          ],
-        },
-        {
-          'isolate': 'load_library_perf_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'net_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'tracing_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'media_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'linux',
-      'dimension': {
-        'gpu': '10de:1cb3',
-        'os': 'Ubuntu-14.04',
-        'pool': 'chrome.tests.perf',
-      },
-      'device_ids': [],
-    },
-    'mac-10_13_laptop_high_end-perf': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-          'extra_args': [
-            '--run-ref-build',
-            '--test-shard-map-filename=mac_1013_high_end_26_shard_map.json',
-          ],
-          'num_shards': 26
-        },
-        {
-          'isolate': 'net_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'views_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        },
-        {
-          'isolate': 'media_perftests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'mac',
-      'dimension': {
-        'pool': 'chrome.tests.perf',
-        'os': 'Mac-10.13',
-        'gpu': '1002:6821'
-      },
-      'device_ids': [
-      ],
-    },
-  }
-}
-def add_common_test_properties(test_entry, tester_config, test_spec):
-  dimensions = []
-  index = 0
-  for device_id in tester_config['device_ids']:
-    run_on_shard = True
-    if test_spec.get('shards', False):
-      # If specific shards are specified, only generate
-      # a entry for the specified shards
-      if index not in test_spec['shards']:
-        run_on_shard = False
-    if run_on_shard:
-      dimensions.append({'id': device_id})
-    index = index + 1
+def add_common_test_properties(test_entry, tester_config):
   test_entry['trigger_script'] = {
       'script': '//testing/trigger_scripts/perf_device_trigger.py',
       'args': [
@@ -1258,11 +855,6 @@ def add_common_test_properties(test_entry, tester_config, test_spec):
   else:
     service_account_path = (
         '/creds/service_accounts/service-account-chromium-perf-histograms.json')
-  # Only want to append multiple-trigger-configs if we don't support
-  # soft device affinity
-  if len(dimensions):
-    test_entry['trigger_script']['args'].append('--multiple-trigger-configs')
-    test_entry['trigger_script']['args'].append(json.dumps(dimensions))
   test_entry['merge'] = {
       'script': '//tools/perf/process_perf_results.py',
       'args': [
@@ -1270,8 +862,6 @@ def add_common_test_properties(test_entry, tester_config, test_spec):
         service_account_path
       ],
   }
-  return len(dimensions)
-
 
 def generate_telemetry_args(tester_config):
   # First determine the browser that you need based on the tester
@@ -1336,9 +926,8 @@ def generate_performance_test(tester_config, test):
   # For now we either get shards from the number of devices specified
   # or a test entry needs to specify the num shards if it supports
   # soft device affinity.
-  shards = add_common_test_properties(result, tester_config, test)
-  if not shards:
-    shards = test.get('num_shards')
+  add_common_test_properties(result, tester_config)
+  shards = test.get('num_shards')
   result['swarming'] = {
     # Always say this is true regardless of whether the tester
     # supports swarming. It doesn't hurt.
@@ -1356,19 +945,19 @@ def generate_performance_test(tester_config, test):
   return result
 
 
-def load_and_update_new_recipe_fyi_json(fyi_waterfall_file):
+def load_and_update_fyi_json(fyi_waterfall_file):
   tests = {}
   with open(fyi_waterfall_file) as fp_r:
     tests = json.load(fp_r)
   with open(fyi_waterfall_file, 'w') as fp:
     # We have loaded what is there, we want to update or add
     # what we have listed here
-    get_new_recipe_testers(NEW_PERF_RECIPE_FYI_TESTERS, tests)
+    generate_telemetry_tests(NEW_PERF_RECIPE_FYI_TESTERS, tests)
     json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
     fp.write('\n')
 
 
-def get_new_recipe_testers(testers, tests):
+def generate_telemetry_tests(testers, tests):
   for tester, tester_config in testers['testers'].iteritems():
     isolated_scripts = []
     for test in tester_config['tests']:
@@ -1376,35 +965,6 @@ def get_new_recipe_testers(testers, tests):
     tests[tester] = {
       'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
     }
-
-
-def get_sharding_map_path():
-  return os.path.join(
-      path_util.GetChromiumSrcDir(), 'tools', 'perf', 'core',
-      'benchmark_sharding_map.json')
-
-
-def load_benchmark_sharding_map():
-  with open(get_sharding_map_path()) as f:
-    raw = json.load(f)
-
-  # The raw json format is easy for people to modify, but isn't what we want
-  # here. Change it to map builder -> benchmark -> device.
-  final_map = {}
-  for builder, builder_map in raw.items():
-    if builder == 'all_benchmarks':
-      continue
-
-    # Ignore comment at the top of the builder_map
-    if builder == "comment":
-      continue
-    final_builder_map = {}
-    for device, device_value in builder_map.items():
-      for benchmark_name in device_value['benchmarks']:
-        final_builder_map[benchmark_name] = device
-    final_map[builder] = final_builder_map
-
-  return final_map
 
 
 def main(args):
@@ -1430,7 +990,8 @@ def main(args):
       path_util.GetChromiumSrcDir(), 'tools', 'perf', 'benchmark.csv')
 
   if options.validate_only:
-    if validate_tests(get_waterfall_config(), waterfall_file, benchmark_file):
+    if validate_tests(get_waterfall_builder_config(),
+                      waterfall_file, benchmark_file):
       print 'All the perf JSON config files are up-to-date. \\o/'
       return 0
     else:
@@ -1439,7 +1000,7 @@ def main(args):
              'configs and benchmark.csv.') % sys.argv[0]
       return 1
   else:
-    load_and_update_new_recipe_fyi_json(fyi_waterfall_file)
-    update_all_tests(get_waterfall_config(), waterfall_file)
+    load_and_update_fyi_json(fyi_waterfall_file)
+    update_all_tests(get_waterfall_builder_config(), waterfall_file)
     update_benchmark_csv(benchmark_file)
   return 0
