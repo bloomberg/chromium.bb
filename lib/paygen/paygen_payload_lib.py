@@ -300,13 +300,12 @@ class _PaygenPayload(object):
          tempfile.NamedTemporaryFile(dir=self.work_dir) as \
          metadata_hash_file:
 
-      cmd = ['brillo_update_payload', 'hash',
-             '--unsigned_payload', path_util.ToChrootPath(self.payload_file),
-             '--payload_hash_file',
-             path_util.ToChrootPath(payload_hash_file.name),
-             '--metadata_hash_file',
-             path_util.ToChrootPath(metadata_hash_file.name),
-             '--signature_size', ':'.join(signature_sizes)]
+      cmd = ['delta_generator',
+             '-in_file=' + path_util.ToChrootPath(self.payload_file),
+             '-signature_size=' + ':'.join(signature_sizes),
+             '-out_hash_file=' + path_util.ToChrootPath(payload_hash_file.name),
+             '-out_metadata_hash_file=' +
+             path_util.ToChrootPath(metadata_hash_file.name)]
 
       self._RunGeneratorCmd(cmd)
       return payload_hash_file.read(), metadata_hash_file.read()

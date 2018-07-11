@@ -388,11 +388,11 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                              '_RunGeneratorCmd')
 
     # Record the expected function calls.
-    cmd = ['brillo_update_payload', 'hash',
-           '--unsigned_payload', gen.payload_file,
-           '--payload_hash_file', mox.IsA(str),
-           '--metadata_hash_file', mox.IsA(str),
-           '--signature_size', '256']
+    cmd = ['delta_generator',
+           '-in_file=' + gen.payload_file,
+           '-signature_size=256',
+           mox.Regex('-out_hash_file=.+'),
+           mox.Regex('-out_metadata_hash_file=.+')]
     gen._RunGeneratorCmd(cmd)
 
     # Run the test.
