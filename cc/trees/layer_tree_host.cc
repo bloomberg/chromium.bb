@@ -1217,7 +1217,7 @@ void LayerTreeHost::SetLocalSurfaceIdFromParent(
       "LocalSurfaceId.Submission.Flow",
       TRACE_ID_GLOBAL(local_surface_id_from_parent.submission_trace_id()),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-      "SetLocalSurfaceIdFromParent", "surface_id",
+      "SetLocalSurfaceIdFromParent", "local_surface_id",
       local_surface_id_from_parent.ToString());
   local_surface_id_from_parent_ = local_surface_id_from_parent;
   has_pushed_local_surface_id_from_parent_ = false;
