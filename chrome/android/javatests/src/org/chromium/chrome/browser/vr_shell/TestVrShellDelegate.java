@@ -66,6 +66,11 @@ public class TestVrShellDelegate extends VrShellDelegate {
     }
 
     @Override
+    public boolean isBlackOverlayVisible() {
+        return super.isBlackOverlayVisible();
+    }
+
+    @Override
     public boolean isListeningForWebVrActivate() {
         return super.isListeningForWebVrActivate();
     }

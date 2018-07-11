@@ -365,7 +365,7 @@ public class VrShellImpl
         DisplayMetrics dm = new DisplayMetrics();
         mActivity.getWindowManager().getDefaultDisplay().getRealMetrics(dm);
         // We're supposed to be in landscape at this point, but it's possible for us to get here
-        // before the change has fully propogated. In this case, the width and height are swapped,
+        // before the change has fully propagated. In this case, the width and height are swapped,
         // which causes an incorrect display size to be used, and the page to appear zoomed in.
         if (dm.widthPixels < dm.heightPixels) {
             int tempWidth = dm.heightPixels;
@@ -374,6 +374,10 @@ public class VrShellImpl
             float tempXDpi = dm.ydpi;
             dm.xdpi = dm.ydpi;
             dm.ydpi = tempXDpi;
+            // In the case where we're still in portrait, keep the black overlay visible until the
+            // GvrLayout is in the correct orientation.
+        } else {
+            VrShellDelegate.removeBlackOverlayView(mActivity, false /* animate */);
         }
         float displayWidthMeters = (dm.widthPixels / dm.xdpi) * INCHES_TO_METERS;
         float displayHeightMeters = (dm.heightPixels / dm.ydpi) * INCHES_TO_METERS;
@@ -1143,6 +1147,12 @@ public class VrShellImpl
     @Override
     public void onVrViewNonEmpty() {
         if (mNativeVrShell != 0) nativeOnOverlayTextureEmptyChanged(mNativeVrShell, false);
+    }
+
+    @Override
+    protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
+        super.onSizeChanged(width, height, oldWidth, oldHeight);
+        if (width > height) VrShellDelegate.removeBlackOverlayView(mActivity, true /* animate */);
     }
 
     /**

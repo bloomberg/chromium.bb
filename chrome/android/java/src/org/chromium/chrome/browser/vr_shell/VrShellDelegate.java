@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import android.animation.Animator;
+import android.animation.Animator.AnimatorListener;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
@@ -58,7 +61,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
-import org.chromium.ui.UiUtils;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroidManager;
 import org.chromium.ui.widget.UiWidgetFactory;
@@ -959,13 +961,37 @@ public class VrShellDelegate
         View v = new View(activity);
         v.setId(R.id.vr_overlay_view);
         v.setBackgroundColor(Color.BLACK);
-        activity.getWindow().addContentView(v, params);
+        FrameLayout decor = (FrameLayout) activity.getWindow().getDecorView();
+        decor.addView(v, params);
     }
 
-    private static void removeBlackOverlayView(ChromeActivity activity) {
+    /* package */ static void removeBlackOverlayView(ChromeActivity activity, boolean animate) {
         View overlay = activity.getWindow().findViewById(R.id.vr_overlay_view);
         if (overlay == null) return;
-        UiUtils.removeViewFromParent(overlay);
+        FrameLayout decor = (FrameLayout) activity.getWindow().getDecorView();
+        if (!animate) {
+            decor.removeView(overlay);
+        } else {
+            overlay.animate()
+                    .alpha(0)
+                    .setDuration(activity.getResources().getInteger(
+                            android.R.integer.config_mediumAnimTime))
+                    .setListener(new AnimatorListener() {
+                        @Override
+                        public void onAnimationStart(Animator arg0) {}
+
+                        @Override
+                        public void onAnimationRepeat(Animator arg0) {}
+
+                        @Override
+                        public void onAnimationEnd(Animator arg0) {
+                            decor.removeView(overlay);
+                        }
+
+                        @Override
+                        public void onAnimationCancel(Animator arg0) {}
+                    });
+        }
     }
 
     private static boolean isVrCoreCompatible(final Tab tabToShowInfobarIn) {
@@ -1261,7 +1287,7 @@ public class VrShellDelegate
         if (mVisible) mVrShell.resume();
 
         mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(this);
-        removeBlackOverlayView(mActivity);
+
         if (!donSuceeded && isDaydreamCurrentViewerInternal()) {
             // TODO(mthiesse): This is a VERY dirty hack. We need to know whether or not entering VR
             // will trigger the DON flow, so that we can wait for it to complete before we let the
@@ -1427,6 +1453,7 @@ public class VrShellDelegate
         activity.getWindow().getDecorView().setSystemUiVisibility(flags | VR_SYSTEM_UI_FLAGS);
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     private void setWindowModeForVr() {
         // Decouple the compositor size from the view size, or we'll get an unnecessary resize due
         // to the orientation change when entering VR, then another resize once VR has settled on
@@ -1436,17 +1463,22 @@ public class VrShellDelegate
         }
         ScreenOrientationProvider.setOrientationDelegate(this);
 
+        // Hide system UI.
+        setSystemUiVisibilityForVr(mActivity);
+
         // Set correct orientation.
         if (mRestoreOrientation == null) {
             mRestoreOrientation = mActivity.getRequestedOrientation();
         }
-        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-        // Hide system UI.
-        setSystemUiVisibilityForVr(mActivity);
         mRestoreSystemUiVisibility = true;
+
+        mActivity.getWindow().getAttributes().rotationAnimation =
+                WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT;
+        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     private void restoreWindowMode() {
         ScreenOrientationProvider.setOrientationDelegate(null);
         mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -1464,6 +1496,9 @@ public class VrShellDelegate
         if (mActivity.getCompositorViewHolder() != null) {
             mActivity.getCompositorViewHolder().onExitVr();
         }
+
+        mActivity.getWindow().getAttributes().rotationAnimation =
+                WindowManager.LayoutParams.ROTATION_ANIMATION_ROTATE;
     }
 
     /* package */ boolean canEnterVr() {
@@ -1871,7 +1906,7 @@ public class VrShellDelegate
 
     private void cancelPendingVrEntry() {
         if (DEBUG_LOGS) Log.i(TAG, "cancelPendingVrEntry");
-        removeBlackOverlayView(mActivity);
+        removeBlackOverlayView(mActivity, false /* animate */);
         mDonSucceeded = false;
         mActivateFromHeadsetInsertion = false;
         maybeSetPresentResult(false, false);
@@ -2030,7 +2065,15 @@ public class VrShellDelegate
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
         decor.addView(mVrShell.getContainer(), params);
+        // If the overlay exists, make sure to hide the GvrLayout behind it.
+        View overlay = mActivity.getWindow().findViewById(R.id.vr_overlay_view);
+        if (overlay != null) overlay.bringToFront();
         mActivity.onEnterVr();
+    }
+
+    protected boolean isBlackOverlayVisible() {
+        View overlay = mActivity.getWindow().findViewById(R.id.vr_overlay_view);
+        return overlay != null;
     }
 
     private void removeVrViews() {
