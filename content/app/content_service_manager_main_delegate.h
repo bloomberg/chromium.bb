@@ -42,6 +42,10 @@ class ContentServiceManagerMainDelegate : public service_manager::MainDelegate {
   std::unique_ptr<service_manager::Service> CreateEmbeddedService(
       const std::string& service_name) override;
 
+  // Sets the flag whether to start the Service Manager without starting the
+  // full browser.
+  void SetStartServiceManagerOnly(bool start_service_manager_only);
+
  private:
   ContentMainParams content_main_params_;
   std::unique_ptr<ContentMainRunnerImpl> content_main_runner_;
@@ -49,6 +53,10 @@ class ContentServiceManagerMainDelegate : public service_manager::MainDelegate {
 #if defined(OS_ANDROID)
   bool initialized_ = false;
 #endif
+
+  // Indicates whether to start the Service Manager without starting the full
+  // browser.
+  bool start_service_manager_only_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ContentServiceManagerMainDelegate);
 };

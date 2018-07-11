@@ -23,7 +23,7 @@ class CONTENT_EXPORT ContentMainRunner {
   virtual int Initialize(const ContentMainParams& params) = 0;
 
   // Perform the default run logic.
-  virtual int Run() = 0;
+  virtual int Run(bool start_service_manager_only) = 0;
 
   // Shut down the content state.
   virtual void Shutdown() = 0;

@@ -310,87 +310,141 @@ int Main(const MainParams& params) {
   MainDelegate* delegate = params.delegate;
   DCHECK(delegate);
 
-#if defined(OS_MACOSX) && BUILDFLAG(USE_ALLOCATOR_SHIM)
-  base::allocator::InitializeAllocatorShim();
+  int exit_code = -1;
+  base::debug::GlobalActivityTracker* tracker = nullptr;
+  ProcessType process_type = delegate->OverrideProcessType();
+#if defined(OS_MACOSX)
+  std::unique_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool;
 #endif
-  base::EnableTerminationOnOutOfMemory();
+
+  // A flag to indicate whether Main() has been called before. On Android, we
+  // may re-run Main() without restarting the browser process. This flag
+  // prevents initializing things more than once.
+  static bool is_initialized = false;
+#if !defined(OS_ANDROID)
+  DCHECK(!is_initialized);
+#endif
+  if (!is_initialized) {
+    is_initialized = true;
+#if defined(OS_MACOSX) && BUILDFLAG(USE_ALLOCATOR_SHIM)
+    base::allocator::InitializeAllocatorShim();
+#endif
+    base::EnableTerminationOnOutOfMemory();
 
 #if defined(OS_LINUX)
-  // The various desktop environments set this environment variable that allows
-  // the dbus client library to connect directly to the bus. When this variable
-  // is not set (test environments like xvfb-run), the dbus client library will
-  // fall back to auto-launch mode. Auto-launch is dangerous as it can cause
-  // hangs (crbug.com/715658) . This one line disables the dbus auto-launch,
-  // by clobbering the DBUS_SESSION_BUS_ADDRESS env variable if not already set.
-  // The old auto-launch behavior, if needed, can be restored by setting
-  // DBUS_SESSION_BUS_ADDRESS="autolaunch:" before launching chrome.
-  const int kNoOverrideIfAlreadySet = 0;
-  setenv("DBUS_SESSION_BUS_ADDRESS", "disabled:", kNoOverrideIfAlreadySet);
+    // The various desktop environments set this environment variable that
+    // allows the dbus client library to connect directly to the bus. When this
+    // variable is not set (test environments like xvfb-run), the dbus client
+    // library will fall back to auto-launch mode. Auto-launch is dangerous as
+    // it can cause hangs (crbug.com/715658) . This one line disables the dbus
+    // auto-launch, by clobbering the DBUS_SESSION_BUS_ADDRESS env variable if
+    // not already set. The old auto-launch behavior, if needed, can be restored
+    // by setting DBUS_SESSION_BUS_ADDRESS="autolaunch:" before launching
+    // chrome.
+    const int kNoOverrideIfAlreadySet = 0;
+    setenv("DBUS_SESSION_BUS_ADDRESS", "disabled:", kNoOverrideIfAlreadySet);
 #endif
 
 #if defined(OS_WIN)
-  base::win::RegisterInvalidParamHandler();
-  ui::win::CreateATLModuleIfNeeded();
+    base::win::RegisterInvalidParamHandler();
+    ui::win::CreateATLModuleIfNeeded();
 #endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID)
-  // On Android, the command line is initialized when library is loaded.
-  int argc = 0;
-  const char** argv = nullptr;
+    // On Android, the command line is initialized when library is loaded.
+    int argc = 0;
+    const char** argv = nullptr;
 
 #if !defined(OS_WIN)
-  // argc/argv are ignored on Windows; see command_line.h for details.
-  argc = params.argc;
-  argv = params.argv;
+    // argc/argv are ignored on Windows; see command_line.h for details.
+    argc = params.argc;
+    argv = params.argv;
 #endif
 
-  base::CommandLine::Init(argc, argv);
+    base::CommandLine::Init(argc, argv);
 
 #if defined(OS_POSIX)
-  PopulateFDsFromCommandLine();
+    PopulateFDsFromCommandLine();
 #endif
 
-  base::EnableTerminationOnHeapCorruption();
+    base::EnableTerminationOnHeapCorruption();
 
-  SetProcessTitleFromCommandLine(argv);
+    SetProcessTitleFromCommandLine(argv);
 #endif  // !defined(OS_ANDROID)
 
 // On Android setlocale() is not supported, and we don't override the signal
 // handlers so we can get a stack trace when crashing.
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
-  // Set C library locale to make sure CommandLine can parse argument values in
-  // the correct encoding.
-  setlocale(LC_ALL, "");
+    // Set C library locale to make sure CommandLine can parse argument values
+    // in the correct encoding.
+    setlocale(LC_ALL, "");
 
-  SetupSignalHandlers();
+    SetupSignalHandlers();
 #endif
 
-  const auto& command_line = *base::CommandLine::ForCurrentProcess();
+    const auto& command_line = *base::CommandLine::ForCurrentProcess();
 
 #if defined(OS_WIN)
-  base::win::SetupCRT(command_line);
+    base::win::SetupCRT(command_line);
 #endif
 
-  MainDelegate::InitializeParams init_params;
+    MainDelegate::InitializeParams init_params;
 
 #if defined(OS_MACOSX)
-  // We need this pool for all the objects created before we get to the event
-  // loop, but we don't want to leave them hanging around until the app quits.
-  // Each "main" needs to flush this pool right before it goes into its main
-  // event loop to get rid of the cruft.
-  std::unique_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool =
-      std::make_unique<base::mac::ScopedNSAutoreleasePool>();
-  init_params.autorelease_pool = autorelease_pool.get();
-  InitializeMac();
+    // We need this pool for all the objects created before we get to the event
+    // loop, but we don't want to leave them hanging around until the app quits.
+    // Each "main" needs to flush this pool right before it goes into its main
+    // event loop to get rid of the cruft.
+    autorelease_pool = std::make_unique<base::mac::ScopedNSAutoreleasePool>();
+    init_params.autorelease_pool = autorelease_pool.get();
+    InitializeMac();
 #endif
 
-  mojo::core::Configuration mojo_config;
-  ProcessType process_type = delegate->OverrideProcessType();
+    mojo::core::Configuration mojo_config;
+    if (process_type == ProcessType::kDefault &&
+        command_line.GetSwitchValueASCII(switches::kProcessType) ==
+            switches::kProcessTypeServiceManager) {
+      mojo_config.is_broker_process = true;
+    }
+    mojo_config.max_message_num_bytes = kMaximumMojoMessageSize;
+    delegate->OverrideMojoConfiguration(&mojo_config);
+    mojo::core::Init(mojo_config);
+
+    ui::RegisterPathProvider();
+
+    tracker = base::debug::GlobalActivityTracker::Get();
+    exit_code = delegate->Initialize(init_params);
+    if (exit_code >= 0) {
+      if (tracker) {
+        tracker->SetProcessPhase(
+            base::debug::GlobalActivityTracker::PROCESS_LAUNCH_FAILED);
+        tracker->process_data().SetInt("exit-code", exit_code);
+      }
+      return exit_code;
+    }
+
+#if defined(OS_WIN)
+    // Route stdio to parent console (if any) or create one.
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableLogging)) {
+      base::RouteStdioToConsole(true);
+    }
+#endif
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            ::switches::kTraceToConsole)) {
+      base::trace_event::TraceConfig trace_config =
+          tracing::GetConfigForTraceToConsole();
+      base::trace_event::TraceLog::GetInstance()->SetEnabled(
+          trace_config, base::trace_event::TraceLog::RECORDING_MODE);
+    }
+  }
+
+  const auto& command_line = *base::CommandLine::ForCurrentProcess();
   if (process_type == ProcessType::kDefault) {
     std::string type_switch =
         command_line.GetSwitchValueASCII(switches::kProcessType);
     if (type_switch == switches::kProcessTypeServiceManager) {
-      mojo_config.is_broker_process = true;
       process_type = ProcessType::kServiceManager;
     } else if (type_switch == switches::kProcessTypeService) {
       process_type = ProcessType::kService;
@@ -398,40 +452,6 @@ int Main(const MainParams& params) {
       process_type = ProcessType::kEmbedder;
     }
   }
-  mojo_config.max_message_num_bytes = kMaximumMojoMessageSize;
-  delegate->OverrideMojoConfiguration(&mojo_config);
-  mojo::core::Init(mojo_config);
-
-  ui::RegisterPathProvider();
-
-  base::debug::GlobalActivityTracker* tracker =
-      base::debug::GlobalActivityTracker::Get();
-  int exit_code = delegate->Initialize(init_params);
-  if (exit_code >= 0) {
-    if (tracker) {
-      tracker->SetProcessPhase(
-          base::debug::GlobalActivityTracker::PROCESS_LAUNCH_FAILED);
-      tracker->process_data().SetInt("exit-code", exit_code);
-    }
-    return exit_code;
-  }
-
-#if defined(OS_WIN)
-  // Route stdio to parent console (if any) or create one.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLogging)) {
-    base::RouteStdioToConsole(true);
-  }
-#endif
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kTraceToConsole)) {
-    base::trace_event::TraceConfig trace_config =
-        tracing::GetConfigForTraceToConsole();
-    base::trace_event::TraceLog::GetInstance()->SetEnabled(
-        trace_config, base::trace_event::TraceLog::RECORDING_MODE);
-  }
-
   switch (process_type) {
     case ProcessType::kDefault:
       NOTREACHED();

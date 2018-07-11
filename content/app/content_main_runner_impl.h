@@ -41,7 +41,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
   // ContentMainRunner:
   int Initialize(const ContentMainParams& params) override;
-  int Run() override;
+  int Run(bool start_service_manager_only) override;
   void Shutdown() override;
 
  private:

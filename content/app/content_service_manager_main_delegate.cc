@@ -50,7 +50,7 @@ bool ContentServiceManagerMainDelegate::IsEmbedderSubprocess() {
 }
 
 int ContentServiceManagerMainDelegate::RunEmbedderProcess() {
-  return content_main_runner_->Run();
+  return content_main_runner_->Run(start_service_manager_only_);
 }
 
 void ContentServiceManagerMainDelegate::ShutDownEmbedderProcess() {
@@ -124,6 +124,11 @@ ContentServiceManagerMainDelegate::CreateEmbeddedService(
   // TODO
 
   return nullptr;
+}
+
+void ContentServiceManagerMainDelegate::SetStartServiceManagerOnly(
+    bool start_service_manager_only) {
+  start_service_manager_only_ = start_service_manager_only;
 }
 
 }  // namespace content

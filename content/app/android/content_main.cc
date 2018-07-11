@@ -42,9 +42,11 @@ static jint JNI_ContentMain_Start(JNIEnv* env,
     g_service_manager_main_delegate.Get() =
         std::make_unique<ContentServiceManagerMainDelegate>(
             ContentMainParams(g_content_main_delegate.Get().get()));
-  } else {
-    return 0;
   }
+
+  static_cast<ContentServiceManagerMainDelegate*>(
+      g_service_manager_main_delegate.Get().get())
+      ->SetStartServiceManagerOnly(start_service_manager_only);
 
   service_manager::MainParams main_params(
       g_service_manager_main_delegate.Get().get());
