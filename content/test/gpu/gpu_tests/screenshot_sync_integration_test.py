@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import math
 import os
 import random
 import sys
@@ -119,9 +120,17 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         "window.draw({{ red }}, {{ green }}, {{ blue }});",
         red=canvasRGB.r, green=canvasRGB.g, blue=canvasRGB.b)
     screenshot = tab.Screenshot(10)
-    start_x = 10
-    start_y = 0
-    outer_size = 256
+    # Avoid checking along antialiased boundary due to limited Adreno 3xx
+    # interpolation precision (crbug.com/847984). We inset by one CSS pixel
+    # adjusted by the device pixel ratio.
+    inset = int(math.ceil(tab.EvaluateJavaScript('window.devicePixelRatio')))
+    # In the div version of the test the inner div's absolute position has
+    # left = 1. We need to account for that in start_x.
+    # For reasons not fully understood we must inset an additional pixel on
+    # mac_chromium_rel_ng
+    start_x = 2 * inset + 1
+    start_y = inset
+    outer_size = 256 - inset
     skip = 10
     for y in range(start_y, outer_size, skip):
       for x in range(start_x, outer_size, skip):
