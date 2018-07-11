@@ -1184,7 +1184,7 @@ int TabStrip::GetBackgroundResourceId(bool* custom_image) const {
   // the frame image.  Furthermore, since the theme provider will create the
   // incognito frame image from the normal frame image, in incognito mode we
   // need to look for a custom incognito _or_ regular frame image.
-  const bool incognito = controller_->IsIncognito();
+  const bool incognito = IsIncognito();
   const int id =
       incognito ? IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
   *custom_image = tp->HasCustomImage(id) ||
@@ -1401,8 +1401,7 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
                                 largest_min_tab_width);
   }
   return gfx::Size(needed_tab_width + TabToFollowingNewTabButtonSpacing() +
-                       GetNewTabButtonWidth(IsIncognito()) +
-                       GetFrameGrabWidth(),
+                       new_tab_button_bounds_.width() + GetFrameGrabWidth(),
                    GetLayoutConstant(TAB_HEIGHT));
 }
 
@@ -1585,10 +1584,6 @@ bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
   return in_tab_close_;
 }
 
-int TabStrip::GetNewTabButtonWidth(bool is_incognito) const {
-  return GetLayoutSize(NEW_TAB_BUTTON, is_incognito).width();
-}
-
 int TabStrip::TabToFollowingNewTabButtonSpacing() const {
   if (controller_->GetNewTabButtonPosition() != AFTER_TABS)
     return 0;
@@ -1755,7 +1750,7 @@ std::vector<gfx::Rect> TabStrip::CalculateBoundsForDraggedTabs(
 
 int TabStrip::TabStartX() const {
   return (controller_->GetNewTabButtonPosition() == LEADING)
-             ? GetNewTabButtonWidth(IsIncognito())
+             ? new_tab_button_bounds_.width()
              : 0;
 }
 
@@ -1769,7 +1764,7 @@ int TabStrip::NewTabButtonIdealX() const {
   if (position == LEADING)
     return 0;
 
-  const int tab_area_width = width() - GetNewTabButtonWidth(IsIncognito());
+  const int tab_area_width = width() - new_tab_button_bounds_.width();
   if (position == TRAILING)
     return tab_area_width;
 
@@ -2273,7 +2268,7 @@ int TabStrip::GenerateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {
 }
 
 int TabStrip::GetTabAreaWidth() const {
-  return width() - GetFrameGrabWidth() - GetNewTabButtonWidth(IsIncognito()) -
+  return width() - GetFrameGrabWidth() - new_tab_button_bounds_.width() -
          TabToFollowingNewTabButtonSpacing();
 }
 

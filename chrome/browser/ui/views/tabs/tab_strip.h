@@ -339,9 +339,6 @@ class TabStrip : public views::View,
   // Returns whether the close button should be highlighted after a remove.
   bool ShouldHighlightCloseButtonAfterRemove();
 
-  // Returns the width needed for the new tab button (and padding).
-  int GetNewTabButtonWidth(bool is_incognito) const;
-
   // If the new tab button position is AFTER_TABS, returns the spacing to use
   // between the trailing edge of the tabs and the leading edge of the new tab
   // button.  For other button positions, returns 0.
