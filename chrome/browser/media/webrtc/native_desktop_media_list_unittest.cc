@@ -35,11 +35,9 @@ using testing::DoAll;
 
 namespace {
 
-// Aura window capture unit tests are not stable in linux. crbug.com/602494 and
+// Aura window capture unit tests are not stable. crbug.com/602494 and
 // crbug.com/603823.
-#if defined(OS_WIN)
-#define ENABLE_AURA_WINDOW_TESTS
-#endif
+// #define ENABLE_AURA_WINDOW_TESTS
 
 static const int kDefaultWindowCount = 2;
 #if defined(ENABLE_AURA_WINDOW_TESTS)
