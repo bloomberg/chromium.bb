@@ -2131,60 +2131,24 @@ static void define_gf_group_structure_16(AV1_COMP *cpi) {
 #endif  // USE_GF16_MULTI_LAYER
 
 #if USE_SYMM_MULTI_LAYER
-#define GF_INTERVAL_4 4
-#define GF_FRAME_PARAMS 4
+void check_frame_params(GF_GROUP *const gf_group, int gf_interval,
+                        int frame_nums) {
+  static const char *update_type_strings[] = {
+    "KF_UPDATE",          "LF_UPDATE",      "GF_UPDATE",
+    "ARF_UPDATE",         "OVERLAY_UPDATE", "BRF_UPDATE",
+    "LAST_BIPRED_UPDATE", "BIPRED_UPDATE",  "INTNL_OVERLAY_UPDATE",
+    "INTNL_ARF_UPDATE"
+  };
+  FILE *fid = fopen("GF_PARAMS.txt", "a");
 
-static const unsigned char gf4_multi_layer_params[][GF_FRAME_PARAMS] = {
-  {
-      // gf_group->index == 0 (Frame 0)
-      // It can also be KEY frame. Will assign the proper value
-      // in define_gf_group_structure
-      OVERLAY_UPDATE,  // update_type (default value)
-      0,               // arf_src_offset
-      0,               // brf_src_offset
-      0                // arf_update_idx
-  },
-  {
-      // gf_group->index == 1 (Frame 4)
-      ARF_UPDATE,         // update_type
-      GF_INTERVAL_4 - 1,  // arf_src_offset
-      0,                  // brf_src_offset
-      0                   // arf_update_idx
-  },
-  {
-      // gf_group->index == 2 (Frame 2)
-      INTNL_ARF_UPDATE,          // update_type
-      (GF_INTERVAL_4 >> 1) - 1,  // arf_src_offset
-      0,                         // brf_src_offset
-      0                          // arf_update_idx
-  },
-  {
-// gf_group->index == 3 (Frame 1)
-#if MATCH_OLD_BITRATE
-      LAST_BIPRED_UPDATE,  // update_type
-#else
-      LF_UPDATE,  // update_type
-#endif
-      0,  // arf_src_offset
-      0,  // brf_src_offset
-      0   // arf_update_idx
-  },
-
-  {
-      // gf_group->index == 4 (Frame 2 - OVERLAY)
-      INTNL_OVERLAY_UPDATE,  // update_type
-      0,                     // arf_src_offset
-      0,                     // brf_src_offset
-      0                      // arf_update_idx
-  },
-  {
-      // gf_group->index == 5 (Frame 3)
-      LF_UPDATE,  // update_type
-      0,          // arf_src_offset
-      0,          // brf_src_offset
-      1           // arf_update_idx
+  fprintf(fid, "\n{%d}\n", gf_interval);
+  for (int i = 0; i <= frame_nums; ++i) {
+    fprintf(fid, "%s %d %d %d\n", update_type_strings[gf_group->update_type[i]],
+            gf_group->arf_src_offset[i], gf_group->arf_pos_in_gf[i],
+            gf_group->arf_update_idx[i]);
   }
-};
+  fclose(fid);
+}
 
 static int update_type_2_rf_level(FRAME_UPDATE_TYPE update_type) {
   // Derive rf_level from update_type
@@ -2201,13 +2165,185 @@ static int update_type_2_rf_level(FRAME_UPDATE_TYPE update_type) {
   }
 }
 
-static void gf4_arf_position_handling(AV1_COMP *cpi) {
-  cpi->arf_pos_for_ovrly[0] = 6;
-  cpi->arf_pos_for_ovrly[1] = 4;
+static void set_multi_layer_params(GF_GROUP *const gf_group, int l, int r,
+                                   int *frame_ind, int arf_ind) {
+  if (r - l == 2) {
+    // leaf node, not a look-ahead frame
+    gf_group->update_type[*frame_ind] = LAST_BIPRED_UPDATE;
+    gf_group->arf_src_offset[*frame_ind] = 0;
+    gf_group->arf_pos_in_gf[*frame_ind] = 0;
+    gf_group->arf_update_idx[*frame_ind] = arf_ind;
+    ++(*frame_ind);
+  } else {
+    int m = (l + r) / 2;
+    int arf_pos_in_gf = *frame_ind;
 
-  cpi->arf_pos_in_gf[0] = 1;
-  cpi->arf_pos_in_gf[1] = 2;
+    gf_group->update_type[*frame_ind] = INTNL_ARF_UPDATE;
+    gf_group->arf_src_offset[*frame_ind] = m - l - 1;
+    gf_group->arf_pos_in_gf[*frame_ind] = 0;
+    gf_group->arf_update_idx[*frame_ind] = 1;  // mark all internal ARF 1
+    ++(*frame_ind);
+
+    // set parameters for frames displayed before this frame
+    set_multi_layer_params(gf_group, l, m, frame_ind, 1);
+
+    // for overlay frames, we need to record the position of its corresponding
+    // arf frames for bit allocation
+    gf_group->update_type[*frame_ind] = INTNL_OVERLAY_UPDATE;
+    gf_group->arf_src_offset[*frame_ind] = 0;
+    gf_group->arf_pos_in_gf[*frame_ind] = arf_pos_in_gf;
+    gf_group->arf_update_idx[*frame_ind] = 1;
+    ++(*frame_ind);
+
+    // set parameters for frames displayed after this frame
+    set_multi_layer_params(gf_group, m, r, frame_ind, arf_ind);
+  }
 }
+
+static int construct_multi_layer_gf_structure(GF_GROUP *const gf_group,
+                                              const int gf_interval) {
+  int frame_index = 0;
+
+  // At the beginning of each GF group it will be a key or overlay frame,
+  gf_group->update_type[frame_index] = OVERLAY_UPDATE;
+  gf_group->arf_src_offset[frame_index] = 0;
+  gf_group->arf_pos_in_gf[frame_index] = 0;
+  gf_group->arf_update_idx[frame_index] = 0;
+  ++frame_index;
+
+  // ALT0
+  gf_group->update_type[frame_index] = ARF_UPDATE;
+  gf_group->arf_src_offset[frame_index] = gf_interval - 1;
+  gf_group->arf_pos_in_gf[frame_index] = 0;
+  gf_group->arf_update_idx[frame_index] = 0;
+  ++frame_index;
+
+  // set parameters for the rest of the frames
+  set_multi_layer_params(gf_group, 0, gf_interval, &frame_index, 0);
+
+  // check_frame_params(gf_group, gf_interval, frame_index);
+
+  return frame_index;
+}
+
+void define_customized_gf_group_structure(AV1_COMP *cpi) {
+  RATE_CONTROL *const rc = &cpi->rc;
+  TWO_PASS *const twopass = &cpi->twopass;
+  GF_GROUP *const gf_group = &twopass->gf_group;
+  const int key_frame = cpi->common.frame_type == KEY_FRAME;
+
+  assert(rc->baseline_gf_interval == 4 || rc->baseline_gf_interval == 8 ||
+         rc->baseline_gf_interval == 16);
+
+  const int gf_update_frames =
+      construct_multi_layer_gf_structure(gf_group, rc->baseline_gf_interval);
+  int frame_index;
+
+  for (frame_index = 0; frame_index < gf_update_frames; ++frame_index) {
+    // Set unused variables to default values
+    gf_group->bidir_pred_enabled[frame_index] = 0;
+    gf_group->brf_src_offset[frame_index] = 0;
+
+    // Special handle for the first frame for assigning update_type
+    if (frame_index == 0) {
+      // For key frames the frame target rate is already set and it
+      // is also the golden frame.
+      if (key_frame) {
+        gf_group->update_type[frame_index] = KF_UPDATE;
+        continue;
+      }
+
+      if (rc->source_alt_ref_active) {
+        gf_group->update_type[frame_index] = OVERLAY_UPDATE;
+      } else {
+        gf_group->update_type[frame_index] = GF_UPDATE;
+      }
+    }
+
+    // Assign rf level based on update type
+    gf_group->rf_level[frame_index] =
+        update_type_2_rf_level(gf_group->update_type[frame_index]);
+  }
+
+  // NOTE: We need to configure the frame at the end of the sequence + 1 that
+  //       will be the start frame for the next group. Otherwise prior to the
+  //       call to av1_rc_get_second_pass_params() the data will be undefined.
+  if (rc->source_alt_ref_pending) {
+    gf_group->update_type[frame_index] = OVERLAY_UPDATE;
+    gf_group->rf_level[frame_index] = INTER_NORMAL;
+  } else {
+    gf_group->update_type[frame_index] = GF_UPDATE;
+    gf_group->rf_level[frame_index] = GF_ARF_STD;
+  }
+
+  gf_group->bidir_pred_enabled[frame_index] = 0;
+  gf_group->brf_src_offset[frame_index] = 0;
+  gf_group->arf_update_idx[frame_index] = 0;
+  // This value is only used for INTNL_OVERLAY_UPDATE
+  gf_group->arf_pos_in_gf[frame_index] = 0;
+
+  // This parameter is useless?
+  gf_group->arf_ref_idx[frame_index] = 0;
+
+  // check_frame_params(gf_group, rc->baseline_gf_interval, gf_update_frames);
+}
+
+// It is an example of how to define a GF stucture manually. The function will
+// result in exactly the same GF group structure as
+// define_customized_gf_group_structure() when rc->baseline_gf_interval == 4
+#if USE_MANUAL_GF4_STRUCT
+#define GF_INTERVAL_4 4
+static const unsigned char gf4_multi_layer_params[][GF_FRAME_PARAMS] = {
+  {
+      // gf_group->index == 0 (Frame 0)
+      // It can also be KEY frame. Will assign the proper value
+      // in define_gf_group_structure
+      OVERLAY_UPDATE,  // update_type (default value)
+      0,               // arf_src_offset
+      0,               // arf_pos_in_gf
+      0                // arf_update_idx
+  },
+  {
+      // gf_group->index == 1 (Frame 4)
+      ARF_UPDATE,         // update_type
+      GF_INTERVAL_4 - 1,  // arf_src_offset
+      0,                  // arf_pos_in_gf
+      0                   // arf_update_idx
+  },
+  {
+      // gf_group->index == 2 (Frame 2)
+      INTNL_ARF_UPDATE,          // update_type
+      (GF_INTERVAL_4 >> 1) - 1,  // arf_src_offset
+      0,                         // arf_pos_in_gf
+      0                          // arf_update_idx
+  },
+  {
+// gf_group->index == 3 (Frame 1)
+#if MATCH_OLD_BITRATE
+      LAST_BIPRED_UPDATE,  // update_type
+#else
+      LF_UPDATE,  // update_type
+#endif
+      0,  // arf_src_offset
+      0,  // arf_pos_in_gf
+      0   // arf_update_idx
+  },
+
+  {
+      // gf_group->index == 4 (Frame 2 - OVERLAY)
+      INTNL_OVERLAY_UPDATE,  // update_type
+      0,                     // arf_src_offset
+      2,                     // arf_pos_in_gf
+      0                      // arf_update_idx
+  },
+  {
+      // gf_group->index == 5 (Frame 3)
+      LF_UPDATE,  // update_type
+      0,          // arf_src_offset
+      0,          // arf_pos_in_gf
+      1           // arf_update_idx
+  }
+};
 
 static int define_gf_group_structure_4(AV1_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
@@ -2256,8 +2392,8 @@ static int define_gf_group_structure_4(AV1_COMP *cpi) {
     gf_group->arf_src_offset[frame_index] =
         gf4_multi_layer_params[frame_index][param_idx++];
 
-    // == brf_src_offset ==
-    gf_group->brf_src_offset[frame_index] =
+    // == arf_pos_in_gf ==
+    gf_group->arf_pos_in_gf[frame_index] =
         gf4_multi_layer_params[frame_index][param_idx++];
 
     // == arf_update_idx ==
@@ -2283,10 +2419,12 @@ static int define_gf_group_structure_4(AV1_COMP *cpi) {
   gf_group->bidir_pred_enabled[frame_index] = 0;
   gf_group->brf_src_offset[frame_index] = 0;
 
-  gf4_arf_position_handling(cpi);
+  // This value is only used for INTNL_OVERLAY_UPDATE
+  gf_group->arf_pos_in_gf[frame_index] = 0;
 
   return gf_update_frames;
 }
+#endif  // USE_MANUAL_GF4_STRUCT
 #endif  // USE_SYMM_MULTI_LAYER
 
 static void define_gf_group_structure(AV1_COMP *cpi) {
@@ -2301,8 +2439,11 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
 #if USE_SYMM_MULTI_LAYER
   if (rc->baseline_gf_interval == 4 && rc->source_alt_ref_pending &&
       cpi->extra_arf_allowed > 0) {
-    // used only if arf is allowed
+#if USE_MANUAL_GF4_STRUCT
     define_gf_group_structure_4(cpi);
+#else
+    define_customized_gf_group_structure(cpi);
+#endif
     cpi->new_bwdref_update_rule = 1;
     return;
   } else {
@@ -2492,9 +2633,8 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
   }
 
   // NOTE: We need to configure the frame at the end of the sequence + 1 that
-  // will
-  //       be the start frame for the next group. Otherwise prior to the call to
-  //       av1_rc_get_second_pass_params() the data will be undefined.
+  //       will be the start frame for the next group. Otherwise prior to the
+  //       call to av1_rc_get_second_pass_params() the data will be undefined.
   gf_group->arf_update_idx[frame_index] = 0;
   gf_group->arf_ref_idx[frame_index] = 0;
 
@@ -2611,8 +2751,10 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
 #if MATCH_OLD_BITRATE
     } else if (cpi->new_bwdref_update_rule == 1 &&
                gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE) {
+      int arf_pos = gf_group->arf_pos_in_gf[frame_index];
+      gf_group->bit_allocation[frame_index] = 0;
       // Boost up the allocated bits on backward reference frame
-      gf_group->bit_allocation[frame_index] =
+      gf_group->bit_allocation[arf_pos] =
           target_frame_size + (target_frame_size >> 2);
 #endif
     } else {
@@ -2630,10 +2772,11 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
     }
   }
 
-  // NOTE: We need to configure the frame at the end of the sequence + 1 that
-  //       will be the start frame for the next group. Otherwise prior to the
-  //       call to av1_rc_get_second_pass_params() the data will be undefined.
+#if USE_SYMM_MULTI_LAYER
+  if (cpi->new_bwdref_update_rule == 0 && rc->source_alt_ref_pending) {
+#else
   if (rc->source_alt_ref_pending) {
+#endif
     if (cpi->num_extra_arfs) {
       // NOTE: For bit allocation, move the allocated bits associated with
       //       INTNL_OVERLAY_UPDATE to the corresponding INTNL_ARF_UPDATE.
