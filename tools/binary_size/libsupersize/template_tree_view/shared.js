@@ -23,22 +23,29 @@
  * @prop {number} size Byte size of this node and its children.
  * @prop {string} type Type of this node. If this node has children, the string
  * may have a second character to denote the most common child.
- * @prop {{[type: string]: number}} childSizes The sizes of the children
- * of this node, split by the types of the children.
+ * @prop {{[type: string]: {size:number,count:number}}} childStats Stats about
+ * this node's descendants, organized by symbol type.
  */
 
 /**
  * @typedef {object} TreeProgress
  * @prop {TreeNode} root Root node and its direct children.
  * @prop {number} percent Number from (0-1] to represent percentage.
- * @prop {string} sizeHeader String to display as the header for the
- * Size column.
+ * @prop {boolean} diffMode True if we are currently showing the diff of two
+ * different size files.
  * @prop {string} [error] Error message, if an error occured in the worker.
  * If unset, then there was no error.
  */
 
 /**
- * @typedef {(size: number,unit:string) => {title:string,element:Node}} GetSize
+ * @typedef {object} GetSizeResult
+ * @prop {string} description Description of the size, shown as hover text
+ * @prop {Node} element Abbreviated representation of the size, which can
+ * include DOM elements for styling.
+ * @prop {number} value The size number used to create the other strings.
+ */
+/**
+ * @typedef {(node: TreeNode, unit: string) => GetSizeResult} GetSize
  */
 
 /** Abberivated keys used by FileEntrys in the JSON data file. */
@@ -74,6 +81,8 @@ const _CONTAINER_TYPES = {
 };
 const _CONTAINER_TYPE_SET = new Set(Object.values(_CONTAINER_TYPES));
 
+/** Type for a dex method symbol */
+const _DEX_METHOD_SYMBOL_TYPE = 'm'
 /** Type for an 'other' symbol */
 const _OTHER_SYMBOL_TYPE = 'o';
 
@@ -85,6 +94,9 @@ const _NO_NAME = '(No path)';
 
 /** Key where type is stored in the query string state. */
 const _TYPE_STATE_KEY = 'type';
+
+/** @type {string | string[]} */
+const _LOCALE = navigator.languages || navigator.language;
 
 /**
  * Returns shortName for a tree node.

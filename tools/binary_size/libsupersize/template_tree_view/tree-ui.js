@@ -45,18 +45,22 @@ const worker = new TreeWorker('tree-worker.js');
    * Create the contents for the size element of a tree node.
    * If in method count mode, size instead represents the amount of methods in
    * the node. In this case, don't append a unit at the end.
-   * @param {number} methodCount Number of methods to use for the count text
-   * @returns {{title:string,element:Node}} Object with hover text title and
+   * @param {TreeNode} node Node whose childStats will be polled to find the
+   * number of methods to use for the count text
+   * @returns {GetSizeResult} Object with hover text title and
    * size element body. Can be consumed by `_applySizeFunc()`
    */
-  function _getMethodCountContents(methodCount) {
-    const methodStr = methodCount.toLocaleString(undefined, {
+  function _getMethodCountContents(node) {
+    const {count: methodCount = 0} =
+      node.childStats[_DEX_METHOD_SYMBOL_TYPE] || {};
+    const methodStr = methodCount.toLocaleString(_LOCALE, {
       useGrouping: true,
     });
 
     return {
       element: document.createTextNode(methodStr),
-      title: `${methodStr} method${methodCount === 1 ? '' : 's'}`,
+      description: `${methodStr} method${methodCount === 1 ? '' : 's'}`,
+      value: methodCount,
     };
   }
 
@@ -64,26 +68,30 @@ const worker = new TreeWorker('tree-worker.js');
    * Create the contents for the size element of a tree node.
    * The unit to use is selected from the current state, and the original number
    * of bytes will be displayed as hover text over the element.
-   * @param {number} bytes Number of bytes to use for the size text
+   * @param {TreeNode} node Node whose size is the number of bytes to use for
+   * the size text
    * @param {string} unit Byte unit to use, such as 'MiB'.
-   * @returns {{title:string,element:Node}} Object with hover text title and
+   * @returns {GetSizeResult} Object with hover text title and
    * size element body. Can be consumed by `_applySizeFunc()`
    */
-  function _getSizeContents(bytes, unit) {
+  function _getSizeContents(node, unit) {
+    const bytes = node.size;
     // Format the bytes as a number with 2 digits after the decimal point
-    const text = (bytes / _BYTE_UNITS[unit]).toLocaleString(undefined, {
+    const text = (bytes / _BYTE_UNITS[unit]).toLocaleString(_LOCALE, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
     const textNode = document.createTextNode(`${text} `);
 
     // Display the suffix with a smaller font
-    const suffixElement = document.createElement('small');
-    suffixElement.textContent = unit;
+    const suffixElement = dom.textElement('small', unit);
+
+    const bytesGrouped = bytes.toLocaleString(_LOCALE, {useGrouping: true});
 
     return {
       element: dom.createFragment([textNode, suffixElement]),
-      title: bytes.toLocaleString(undefined, {useGrouping: true}) + ' bytes',
+      description: `${bytesGrouped} bytes`,
+      value: bytes,
     };
   }
 
@@ -92,16 +100,16 @@ const worker = new TreeWorker('tree-worker.js');
    * predefined function which returns a title string and DOM element.
    * @param {GetSize} sizeFunc
    * @param {HTMLElement} sizeElement Element that should display the size
-   * @param {number} bytes Number of bytes to use for the size text
+   * @param {TreeNode} node
    */
-  function _applySizeFunc(sizeFunc, sizeElement, bytes, unit) {
-    const {title, element} = sizeFunc(bytes, unit);
+  function _applySizeFunc(sizeFunc, sizeElement, node, unit) {
+    const {description, element, value} = sizeFunc(node, unit);
 
     // Replace the contents of '.size' and change its title
     dom.replace(sizeElement, element);
-    sizeElement.title = title;
+    sizeElement.title = description;
 
-    if (bytes < 0) {
+    if (value < 0) {
       sizeElement.classList.add('negative');
     } else {
       sizeElement.classList.remove('negative');
@@ -332,7 +340,7 @@ const worker = new TreeWorker('tree-worker.js');
     _applySizeFunc(
       _getSizeLabels,
       element.querySelector('.size'),
-      data.size,
+      data,
       state.get('byteunit', {default: 'MiB', valid: _BYTE_UNITS_SET})
     );
 
@@ -352,7 +360,7 @@ const worker = new TreeWorker('tree-worker.js');
     // Update existing size elements with the new unit
     for (const sizeElement of _liveSizeSpanList) {
       const data = _uiNodeData.get(sizeElement.parentElement);
-      _applySizeFunc(_getSizeContents, sizeElement, data.size, unit);
+      _applySizeFunc(_getSizeContents, sizeElement, data, unit);
     }
   });
 
@@ -376,11 +384,9 @@ const worker = new TreeWorker('tree-worker.js');
   const _symbolTree = document.getElementById('symboltree');
   /** @type {HTMLProgressElement} */
   const _progress = document.getElementById('progress');
-  /** @type {HTMLSpanElement} */
-  const _sizeHeader = document.getElementById('size-header');
 
   /** Displays the given data as a tree view */
-  worker.setOnLoadHandler(({root, percent, sizeHeader, error}) => {
+  worker.setOnLoadHandler(({root, percent, diffMode, error}) => {
     let rootElement = null;
     if (root) {
       /** @type {DocumentFragment} */
@@ -394,11 +400,15 @@ const worker = new TreeWorker('tree-worker.js');
 
     requestAnimationFrame(() => {
       _progress.value = percent;
-      _sizeHeader.textContent = sizeHeader;
       if (error) {
-        _progress.classList.add('error');
+        document.body.classList.add('error');
       } else {
-        _progress.classList.remove('error');
+        document.body.classList.remove('error');
+      }
+      if (diffMode) {
+        document.body.classList.add('diff');
+      } else {
+        document.body.classList.remove('diff');
       }
 
       dom.replace(_symbolTree, rootElement);
