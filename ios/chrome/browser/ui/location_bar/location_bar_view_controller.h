@@ -14,11 +14,15 @@
 @protocol ActivityServiceCommands;
 @protocol BrowserCommands;
 @protocol ApplicationCommands;
+@protocol LoadQueryCommands;
 
 @protocol LocationBarViewControllerDelegate<NSObject>
 
 // Notifies the delegate about a tap on the steady-state location bar.
 - (void)locationBarSteadyViewTapped;
+
+// Notifies the delegate about a tap on the Copy entry in the editing menu.
+- (void)locationBarCopyTapped;
 
 @end
 
@@ -34,10 +38,12 @@
 
 @property(nonatomic, assign) BOOL incognito;
 
-// The dispatcher for the share button action.
-@property(nonatomic, weak)
-    id<ActivityServiceCommands, BrowserCommands, ApplicationCommands>
-        dispatcher;
+// The dispatcher for the share button, voice search, and long press actions.
+@property(nonatomic, weak) id<ActivityServiceCommands,
+                              BrowserCommands,
+                              ApplicationCommands,
+                              LoadQueryCommands>
+    dispatcher;
 
 // Delegate for this location bar view controller.
 @property(nonatomic, weak) id<LocationBarViewControllerDelegate> delegate;

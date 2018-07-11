@@ -283,6 +283,13 @@ const CGFloat kButtonTrailingSpacing = 10;
   [self updateAccessibility];
 }
 
+#pragma mark - UIResponder
+
+// This is needed for UIMenu
+- (BOOL)canBecomeFirstResponder {
+  return true;
+}
+
 #pragma mark - UIView
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
