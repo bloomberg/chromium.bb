@@ -147,7 +147,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
   SignedExchangeCertFetcherTest()
       : url_(GURL("https://www.example.com/cert")),
         request_initiator_(
-            url::Origin::Create(GURL("https://htxg.example.com/test.htxg"))),
+            url::Origin::Create(GURL("https://sxg.example.com/test.sxg"))),
         resource_dispatcher_host_(CreateDownloadHandlerIntercept(),
                                   base::ThreadTaskRunnerHandle::Get(),
                                   true /* enable_resource_scheduler */) {}

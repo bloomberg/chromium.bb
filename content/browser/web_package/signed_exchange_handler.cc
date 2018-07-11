@@ -399,7 +399,7 @@ int SignedExchangeHandler::VerifyCT(net::ct::CTVerifyResult* ct_verify_result) {
       request_context->ct_policy_enforcer()->CheckCompliance(
           verified_cert, verified_scts, net_log_);
 
-  // TODO(https://crbug.com/803774): We should determine whether EV & HTXG
+  // TODO(https://crbug.com/803774): We should determine whether EV & SXG
   // should be a thing (due to the online/offline signing difference)
   if (cert_verify_result_.cert_status & net::CERT_STATUS_IS_EV &&
       ct_verify_result->policy_compliance !=

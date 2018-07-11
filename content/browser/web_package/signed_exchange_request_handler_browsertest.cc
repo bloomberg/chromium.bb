@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
 
   embedded_test_server()->RegisterRequestMonitor(
       base::BindRepeating([](const net::test_server::HttpRequest& request) {
-        if (request.relative_url == "/sxg/test.example.org_test.htxg") {
+        if (request.relative_url == "/sxg/test.example.org_test.sxg") {
           const auto& accept_value = request.headers.find("accept")->second;
           EXPECT_THAT(accept_value,
                       ::testing::HasSubstr("application/signed-exchange;v=b1"));
@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
       }));
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.htxg");
+  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
   base::string16 title = base::ASCIIToUTF16("https://test.example.org/test/");
   TitleWatcher title_watcher(shell()->web_contents(), title);
   NavigateToURL(shell(), url);
@@ -242,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL(
-      "/sxg/test.example.org_test_invalid_content_type.htxg");
+      "/sxg/test.example.org_test_invalid_content_type.sxg");
 
   NavigationFailureObserver failure_observer(shell()->web_contents());
   NavigateToURL(shell(), url);
@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.htxg");
+  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
 
   NavigationFailureObserver failure_observer(shell()->web_contents());
   NavigateToURL(shell(), url);
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.htxg");
+  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
 
   NavigationFailureObserver failure_observer(shell()->web_contents());
   NavigateToURL(shell(), url);
@@ -310,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
 
   embedded_test_server()->RegisterRequestMonitor(
       base::BindRepeating([](const net::test_server::HttpRequest& request) {
-        if (request.relative_url == "/sxg/test.example.org_test.htxg") {
+        if (request.relative_url == "/sxg/test.example.org_test.sxg") {
           const auto& accept_value = request.headers.find("accept")->second;
           EXPECT_THAT(accept_value,
                       ::testing::HasSubstr("application/signed-exchange;v=b1"));
@@ -318,9 +318,9 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
       }));
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.htxg");
+  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
 
-  // "test.example.org_test.htxg" should pass CertVerifier::Verify() and then
+  // "test.example.org_test.sxg" should pass CertVerifier::Verify() and then
   // fail at SignedExchangeHandler::CheckOCSPStatus() because of the dummy OCSP
   // response.
   // TODO(https://crbug.com/815024): Make this test pass the OCSP check. We'll

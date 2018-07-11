@@ -59,8 +59,8 @@ base::Optional<SignedExchangeEnvelope> GenerateHeaderAndParse(
 TEST(SignedExchangeEnvelopeTest, ParseGoldenFile) {
   base::FilePath test_sxg_path;
   base::PathService::Get(content::DIR_TEST_DATA, &test_sxg_path);
-  test_sxg_path = test_sxg_path.AppendASCII("sxg").AppendASCII(
-      "test.example.org_test.htxg");
+  test_sxg_path =
+      test_sxg_path.AppendASCII("sxg").AppendASCII("test.example.org_test.sxg");
 
   std::string contents;
   ASSERT_TRUE(base::ReadFileToString(test_sxg_path, &contents));

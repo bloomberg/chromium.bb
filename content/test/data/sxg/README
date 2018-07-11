@@ -1,4 +1,4 @@
-The certificate message files (*.msg) and the signed exchange files (*.htxg) in
+The certificate message files (*.msg) and the signed exchange files (*.sxg) in
 this directory are generated using the following commands.
 
 gen-certurl and gen-signedexchange are available in [webpackage repository][1].
@@ -49,7 +49,7 @@ gen-signedexchange \
   -validityUrl https://test.example.org/resource.validity.msg \
   -privateKey prime256v1.key \
   -date 2018-03-12T05:53:20Z \
-  -o test.example.org_test.htxg \
+  -o test.example.org_test.sxg \
   -miRecordSize 100
 
 # Generate the signed exchange file with noext certificate
@@ -62,7 +62,7 @@ gen-signedexchange \
   -validityUrl https://test.example.org/resource.validity.msg \
   -privateKey prime256v1.key \
   -date 2018-03-12T05:53:20Z \
-  -o test.example.org_noext_test.htxg \
+  -o test.example.org_noext_test.sxg \
   -miRecordSize 100
 
 # Generate the signed exchange file with invalid URL.
@@ -75,7 +75,7 @@ gen-signedexchange \
   -validityUrl https://test.example.org/resource.validity.msg \
   -privateKey prime256v1.key \
   -date 2018-03-12T05:53:20Z \
-  -o test.example.com_invalid_test.htxg \
+  -o test.example.com_invalid_test.sxg \
   -miRecordSize 100
 
 # Generate the signed exchange for a plain text file.
@@ -89,7 +89,7 @@ gen-signedexchange \
   -privateKey prime256v1.key \
   -responseHeader 'Content-Type: text/plain; charset=iso-8859-1' \
   -date 2018-03-12T05:53:20Z \
-  -o test.example.org_hello.txt.htxg
+  -o test.example.org_hello.txt.sxg
 
 # Generate a "secp384r1 ecdsa with sha256" key/cert pair for negative test
 openssl ecparam -out secp384r1.key -name secp384r1 -genkey
