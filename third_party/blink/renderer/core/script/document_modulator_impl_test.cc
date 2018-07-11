@@ -25,9 +25,8 @@ class DocumentModulatorImplTest : public PageTestBase {
 
 void DocumentModulatorImplTest::SetUp() {
   PageTestBase::SetUp(IntSize(500, 500));
-  scoped_refptr<ScriptState> script_state =
-      ToScriptStateForMainWorld(&GetFrame());
-  modulator_ = Modulator::From(script_state.get());
+  ScriptState* script_state = ToScriptStateForMainWorld(&GetFrame());
+  modulator_ = Modulator::From(script_state);
 }
 
 TEST_F(DocumentModulatorImplTest, ResolveModuleSpecifier) {

@@ -49,7 +49,7 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
  private:
   static ScriptCustomElementDefinitionBuilder* stack_;
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   Member<CustomElementRegistry> registry_;
   const Member<CSSStyleSheet> default_style_sheet_;
   v8::Local<v8::Value> constructor_value_;

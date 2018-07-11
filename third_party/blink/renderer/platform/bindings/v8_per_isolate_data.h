@@ -291,7 +291,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
 
   std::unique_ptr<StringCache> string_cache_;
   std::unique_ptr<V8PrivateProperty> private_property_;
-  scoped_refptr<ScriptState> script_regexp_script_state_;
+  Persistent<ScriptState> script_regexp_script_state_;
 
   bool constructor_mode_;
   friend class ConstructorMode;

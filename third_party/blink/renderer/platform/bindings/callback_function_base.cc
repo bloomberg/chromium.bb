@@ -20,6 +20,8 @@ CallbackFunctionBase::CallbackFunctionBase(
 
 void CallbackFunctionBase::Trace(Visitor* visitor) {
   visitor->Trace(callback_function_);
+  visitor->Trace(callback_relevant_script_state_);
+  visitor->Trace(incumbent_script_state_);
 }
 
 V8PersistentCallbackFunctionBase::V8PersistentCallbackFunctionBase(

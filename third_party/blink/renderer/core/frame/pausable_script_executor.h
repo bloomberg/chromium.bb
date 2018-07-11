@@ -57,7 +57,7 @@ class CORE_EXPORT PausableScriptExecutor final
 
     virtual Vector<v8::Local<v8::Value>> Execute(LocalFrame*) = 0;
 
-    virtual void Trace(blink::Visitor* visitor){};
+    virtual void Trace(blink::Visitor* visitor) {}
   };
 
  private:
@@ -71,7 +71,7 @@ class CORE_EXPORT PausableScriptExecutor final
   void ExecuteAndDestroySelf();
   void Dispose();
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   WebScriptExecutionCallback* callback_;
   BlockingOption blocking_option_;
 

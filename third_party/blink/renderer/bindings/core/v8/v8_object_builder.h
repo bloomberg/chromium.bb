@@ -22,7 +22,7 @@ class CORE_EXPORT V8ObjectBuilder final {
  public:
   explicit V8ObjectBuilder(ScriptState*);
 
-  ScriptState* GetScriptState() const { return script_state_.get(); }
+  ScriptState* GetScriptState() const { return script_state_; }
 
   V8ObjectBuilder& Add(const StringView& name, const V8ObjectBuilder&);
 
@@ -47,7 +47,7 @@ class CORE_EXPORT V8ObjectBuilder final {
  private:
   void AddInternal(const StringView& name, v8::Local<v8::Value>);
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   v8::Local<v8::Object> object_;
 };
 

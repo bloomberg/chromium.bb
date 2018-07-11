@@ -42,7 +42,7 @@ class PLATFORM_EXPORT CallbackInterfaceBase
     return callback_relevant_script_state_->GetIsolate();
   }
   ScriptState* CallbackRelevantScriptState() {
-    return callback_relevant_script_state_.get();
+    return callback_relevant_script_state_;
   }
 
   // NodeIteratorBase counts the invocation of those which are callable and
@@ -61,7 +61,7 @@ class PLATFORM_EXPORT CallbackInterfaceBase
   // Returns true iff the callback interface is a single operation callback
   // interface and the callback interface type value is callable.
   bool IsCallbackObjectCallable() const { return is_callback_object_callable_; }
-  ScriptState* IncumbentScriptState() { return incumbent_script_state_.get(); }
+  ScriptState* IncumbentScriptState() { return incumbent_script_state_; }
 
  private:
   // The "callback interface type" value.
@@ -70,11 +70,11 @@ class PLATFORM_EXPORT CallbackInterfaceBase
   // The associated Realm of the callback interface type value. Note that the
   // callback interface type value can be different from the function object
   // to be invoked.
-  scoped_refptr<ScriptState> callback_relevant_script_state_;
+  Member<ScriptState> callback_relevant_script_state_;
   // The callback context, i.e. the incumbent Realm when an ECMAScript value is
   // converted to an IDL value.
   // https://heycam.github.io/webidl/#dfn-callback-context
-  scoped_refptr<ScriptState> incumbent_script_state_;
+  Member<ScriptState> incumbent_script_state_;
 
   friend class V8PersistentCallbackInterfaceBase;
   // ToV8 needs to call |CallbackObject| member function.

@@ -93,7 +93,7 @@ class CORE_EXPORT ScriptValue final {
     DCHECK(IsEmpty() || script_state_);
   }
 
-  ScriptState* GetScriptState() const { return script_state_.get(); }
+  ScriptState* GetScriptState() const { return script_state_; }
 
   v8::Isolate* GetIsolate() const {
     return script_state_ ? script_state_->GetIsolate()
@@ -101,7 +101,7 @@ class CORE_EXPORT ScriptValue final {
   }
 
   v8::Local<v8::Context> GetContext() const {
-    DCHECK(script_state_.get());
+    DCHECK(script_state_);
     return script_state_->GetContext();
   }
 
@@ -170,7 +170,9 @@ class CORE_EXPORT ScriptValue final {
   static ScriptValue CreateNull(ScriptState*);
 
  private:
-  scoped_refptr<ScriptState> script_state_;
+  // TODO(peria): Move ScriptValue to Oilpan heap.
+  GC_PLUGIN_IGNORE("813731")
+  Persistent<ScriptState> script_state_;
   scoped_refptr<SharedPersistent<v8::Value>> value_;
 };
 

@@ -10,8 +10,9 @@
 #include "gin/public/context_holder.h"
 #include "gin/public/gin_embedders.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -31,9 +32,9 @@ class V8PerContextData;
 //
 // In some cases, you need ScriptState in code that doesn't have any JavaScript
 // on the stack. Then you can store ScriptState on a C++ object using
-// scoped_refptr<ScriptState>.
+// Member<ScriptState> or Persistent<ScriptState>.
 //
-// class SomeObject {
+// class SomeObject : public GarbageCollected<SomeObject> {
 //   void someMethod(ScriptState* scriptState) {
 //     script_state_ = scriptState; // Record the ScriptState.
 //     ...;
@@ -45,11 +46,16 @@ class V8PerContextData;
 //       return;
 //     }
 //     // Enter the ScriptState.
-//     ScriptState::Scope scope(script_state_.get());
+//     ScriptState::Scope scope(script_state_);
 //     // Do V8 related things.
 //     ToV8(...);
 //   }
-//   scoped_refptr<ScriptState> script_state_;
+//
+//   virtual void Trace(Visitor* visitor) {
+//     visitor->Trace(script_state_);  // ScriptState also needs to be traced.
+//   }
+//
+//   Member<ScriptState> script_state_;
 // };
 //
 // You should not store ScriptState on a C++ object that can be accessed
@@ -65,7 +71,8 @@ class V8PerContextData;
 // ScriptState is created when v8::Context is created.
 // ScriptState is destroyed when v8::Context is garbage-collected and
 // all V8 proxy objects that have references to the ScriptState are destructed.
-class PLATFORM_EXPORT ScriptState : public RefCounted<ScriptState> {
+class PLATFORM_EXPORT ScriptState final
+    : public GarbageCollectedFinalized<ScriptState> {
   WTF_MAKE_NONCOPYABLE(ScriptState);
 
  public:
@@ -89,12 +96,13 @@ class PLATFORM_EXPORT ScriptState : public RefCounted<ScriptState> {
     v8::Local<v8::Context> context_;
   };
 
-  static scoped_refptr<ScriptState> Create(v8::Local<v8::Context>,
-                                           scoped_refptr<DOMWrapperWorld>);
-  virtual ~ScriptState();
+  static ScriptState* Create(v8::Local<v8::Context>,
+                             scoped_refptr<DOMWrapperWorld>);
+  ~ScriptState();
 
-  static ScriptState* Current(v8::Isolate* isolate)  // DEPRECATED
-  {
+  void Trace(blink::Visitor*) {}
+
+  static ScriptState* Current(v8::Isolate* isolate) {  // DEPRECATED
     return From(isolate->GetCurrentContext());
   }
 
@@ -141,7 +149,6 @@ class PLATFORM_EXPORT ScriptState : public RefCounted<ScriptState> {
     return !context_.IsEmpty() && per_context_data_;
   }
   void DetachGlobalObject();
-  void ClearContext() { return context_.Clear(); }
 
   V8PerContextData* PerContextData() const { return per_context_data_.get(); }
   void DisposePerContextData();
@@ -156,11 +163,14 @@ class PLATFORM_EXPORT ScriptState : public RefCounted<ScriptState> {
   ScriptState(v8::Local<v8::Context>, scoped_refptr<DOMWrapperWorld>);
 
  private:
+  static void OnV8ContextCollectedCallback(
+      const v8::WeakCallbackInfo<ScriptState>&);
+
   v8::Isolate* isolate_;
   // This persistent handle is weak.
   ScopedPersistent<v8::Context> context_;
 
-  // This RefPtr doesn't cause a cycle because all persistent handles that
+  // This refptr doesn't cause a cycle because all persistent handles that
   // DOMWrapperWorld holds are weak.
   scoped_refptr<DOMWrapperWorld> world_;
 
@@ -172,20 +182,47 @@ class PLATFORM_EXPORT ScriptState : public RefCounted<ScriptState> {
   // Otherwise, the v8::Context will leak.
   std::unique_ptr<V8PerContextData> per_context_data_;
 
+  // v8::Context has an internal field to this ScriptState* as a raw pointer,
+  // which is out of scope of Blink GC, but it must be a strong reference.  We
+  // use |reference_from_v8_context_| to represent this strong reference.  The
+  // lifetime of |reference_from_v8_context_| and the internal field must match
+  // exactly.
+  SelfKeepAlive<ScriptState> reference_from_v8_context_;
+
   static constexpr int kV8ContextPerContextDataIndex = static_cast<int>(
       gin::kPerContextDataStartIndex +  // NOLINT(readability/enum_casing)
       gin::kEmbedderBlink);             // NOLINT(readability/enum_casing)
 };
 
 // ScriptStateProtectingContext keeps the context associated with the
-// ScriptState alive.  You need to call clear() once you no longer need the
+// ScriptState alive.  You need to call Clear() once you no longer need the
 // context. Otherwise, the context will leak.
-class ScriptStateProtectingContext {
+class ScriptStateProtectingContext
+    : public GarbageCollectedFinalized<ScriptStateProtectingContext> {
   WTF_MAKE_NONCOPYABLE(ScriptStateProtectingContext);
-  USING_FAST_MALLOC(ScriptStateProtectingContext);
 
  public:
-  ScriptStateProtectingContext(ScriptState* script_state)
+  static ScriptStateProtectingContext* Create(ScriptState* script_state) {
+    return new ScriptStateProtectingContext(script_state);
+  }
+
+  void Trace(blink::Visitor* visitor) { visitor->Trace(script_state_); }
+
+  ScriptState* Get() const { return script_state_; }
+  void Reset() {
+    script_state_ = nullptr;
+    context_.Clear();
+  }
+
+  // ScriptState like interface
+  bool ContextIsValid() const { return script_state_->ContextIsValid(); }
+  v8::Isolate* GetIsolate() const { return script_state_->GetIsolate(); }
+  v8::Local<v8::Context> GetContext() const {
+    return script_state_->GetContext();
+  }
+
+ private:
+  explicit ScriptStateProtectingContext(ScriptState* script_state)
       : script_state_(script_state) {
     if (script_state_) {
       context_.Set(script_state_->GetIsolate(), script_state_->GetContext());
@@ -194,15 +231,7 @@ class ScriptStateProtectingContext {
     }
   }
 
-  ScriptState* operator->() const { return script_state_.get(); }
-  ScriptState* Get() const { return script_state_.get(); }
-  void Clear() {
-    script_state_ = nullptr;
-    context_.Clear();
-  }
-
- private:
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   ScopedPersistent<v8::Context> context_;
 };
 

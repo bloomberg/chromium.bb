@@ -70,16 +70,11 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   base::Optional<bool> IsStreamDisturbed(ExceptionState&);
   bool IsStreamDisturbedForDCheck();
   void CloseAndLockAndDisturb(ExceptionState&);
-  ScriptState* GetScriptState() { return script_state_.get(); }
+  ScriptState* GetScriptState() { return script_state_; }
 
   bool IsAborted();
 
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(consumer_);
-    visitor->Trace(loader_);
-    visitor->Trace(signal_);
-    UnderlyingSourceBase::Trace(visitor);
-  }
+  void Trace(blink::Visitor*) override;
 
  private:
   class LoaderClient;
@@ -103,7 +98,7 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
                                         ExceptionState&),
       ExceptionState& exception_state);
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   Member<BytesConsumer> consumer_;
   // We need this member to keep it alive while loading.
   Member<FetchDataLoader> loader_;

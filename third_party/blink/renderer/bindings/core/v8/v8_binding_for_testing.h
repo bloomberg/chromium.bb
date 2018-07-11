@@ -14,21 +14,10 @@
 namespace blink {
 
 class Document;
-class DOMWrapperWorld;
 class DummyPageHolder;
 class ExecutionContext;
 class LocalFrame;
 class Page;
-
-class ScriptStateForTesting : public ScriptState {
- public:
-  static scoped_refptr<ScriptStateForTesting> Create(
-      v8::Local<v8::Context>,
-      scoped_refptr<DOMWrapperWorld>);
-
- private:
-  ScriptStateForTesting(v8::Local<v8::Context>, scoped_refptr<DOMWrapperWorld>);
-};
 
 class V8TestingScope {
   STACK_ALLOCATED();

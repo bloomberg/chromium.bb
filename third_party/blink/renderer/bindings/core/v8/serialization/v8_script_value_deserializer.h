@@ -35,10 +35,10 @@ class CORE_EXPORT V8ScriptValueDeserializer
 
  public:
   using Options = SerializedScriptValue::DeserializeOptions;
-  V8ScriptValueDeserializer(scoped_refptr<ScriptState>,
+  V8ScriptValueDeserializer(ScriptState*,
                             UnpackedSerializedScriptValue*,
                             const Options& = Options());
-  V8ScriptValueDeserializer(scoped_refptr<ScriptState>,
+  V8ScriptValueDeserializer(ScriptState*,
                             scoped_refptr<SerializedScriptValue>,
                             const Options& = Options());
 
@@ -47,7 +47,7 @@ class CORE_EXPORT V8ScriptValueDeserializer
  protected:
   virtual ScriptWrappable* ReadDOMObject(SerializationTag);
 
-  ScriptState* GetScriptState() const { return script_state_.get(); }
+  ScriptState* GetScriptState() const { return script_state_; }
 
   uint32_t Version() const { return version_; }
   bool ReadTag(SerializationTag* tag) {
@@ -82,7 +82,7 @@ class CORE_EXPORT V8ScriptValueDeserializer
   }
 
  private:
-  V8ScriptValueDeserializer(scoped_refptr<ScriptState>,
+  V8ScriptValueDeserializer(ScriptState*,
                             UnpackedSerializedScriptValue*,
                             scoped_refptr<SerializedScriptValue>,
                             const Options&);
@@ -103,7 +103,7 @@ class CORE_EXPORT V8ScriptValueDeserializer
       v8::Isolate*,
       uint32_t) override;
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   Member<UnpackedSerializedScriptValue> unpacked_value_;
   scoped_refptr<SerializedScriptValue> serialized_script_value_;
   v8::ValueDeserializer deserializer_;

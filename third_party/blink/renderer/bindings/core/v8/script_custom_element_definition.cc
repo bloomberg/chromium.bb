@@ -128,6 +128,7 @@ void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
   visitor->Trace(disconnected_callback_.Cast<v8::Value>());
   visitor->Trace(adopted_callback_.Cast<v8::Value>());
   visitor->Trace(attribute_changed_callback_.Cast<v8::Value>());
+  visitor->Trace(script_state_);
   CustomElementDefinition::Trace(visitor);
 }
 
@@ -150,7 +151,7 @@ HTMLElement* ScriptCustomElementDefinition::CreateAutonomousCustomElementSync(
     const QualifiedName& tag_name) {
   if (!script_state_->ContextIsValid())
     return CustomElement::CreateFailedElement(document, tag_name);
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
   v8::Isolate* isolate = script_state_->GetIsolate();
 
   ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
@@ -205,7 +206,7 @@ HTMLElement* ScriptCustomElementDefinition::CreateAutonomousCustomElementSync(
 bool ScriptCustomElementDefinition::RunConstructor(Element* element) {
   if (!script_state_->ContextIsValid())
     return false;
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
   v8::Isolate* isolate = script_state_->GetIsolate();
 
   // Step 5 says to rethrow the exception; but there is no one to
@@ -239,8 +240,7 @@ bool ScriptCustomElementDefinition::RunConstructor(Element* element) {
 Element* ScriptCustomElementDefinition::CallConstructor() {
   v8::Isolate* isolate = script_state_->GetIsolate();
   DCHECK(ScriptState::Current(isolate) == script_state_);
-  ExecutionContext* execution_context =
-      ExecutionContext::From(script_state_.get());
+  ExecutionContext* execution_context = ExecutionContext::From(script_state_);
   v8::Local<v8::Value> result;
   if (!V8ScriptRunner::CallAsConstructor(isolate, Constructor(),
                                          execution_context, 0, nullptr)
@@ -257,7 +257,7 @@ v8::Local<v8::Object> ScriptCustomElementDefinition::Constructor() const {
 
 // CustomElementDefinition
 ScriptValue ScriptCustomElementDefinition::GetConstructorForScript() {
-  return ScriptValue(script_state_.get(), Constructor());
+  return ScriptValue(script_state_, Constructor());
 }
 
 bool ScriptCustomElementDefinition::HasConnectedCallback() const {
@@ -286,8 +286,7 @@ void ScriptCustomElementDefinition::RunCallback(
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
 
-  ExecutionContext* execution_context =
-      ExecutionContext::From(script_state_.get());
+  ExecutionContext* execution_context = ExecutionContext::From(script_state_);
   v8::Local<v8::Value> element_handle =
       ToV8(element, script_state_->GetContext()->Global(), isolate);
   V8ScriptRunner::CallFunction(callback, execution_context, element_handle,
@@ -297,7 +296,7 @@ void ScriptCustomElementDefinition::RunCallback(
 void ScriptCustomElementDefinition::RunConnectedCallback(Element* element) {
   if (!script_state_->ContextIsValid())
     return;
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
   v8::Isolate* isolate = script_state_->GetIsolate();
   RunCallback(connected_callback_.NewLocal(isolate), element);
 }
@@ -305,7 +304,7 @@ void ScriptCustomElementDefinition::RunConnectedCallback(Element* element) {
 void ScriptCustomElementDefinition::RunDisconnectedCallback(Element* element) {
   if (!script_state_->ContextIsValid())
     return;
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
   v8::Isolate* isolate = script_state_->GetIsolate();
   RunCallback(disconnected_callback_.NewLocal(isolate), element);
 }
@@ -315,7 +314,7 @@ void ScriptCustomElementDefinition::RunAdoptedCallback(Element* element,
                                                        Document* new_owner) {
   if (!script_state_->ContextIsValid())
     return;
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
   v8::Isolate* isolate = script_state_->GetIsolate();
   v8::Local<v8::Value> argv[] = {
       ToV8(old_owner, script_state_->GetContext()->Global(), isolate),
@@ -331,7 +330,7 @@ void ScriptCustomElementDefinition::RunAttributeChangedCallback(
     const AtomicString& new_value) {
   if (!script_state_->ContextIsValid())
     return;
-  ScriptState::Scope scope(script_state_.get());
+  ScriptState::Scope scope(script_state_);
   v8::Isolate* isolate = script_state_->GetIsolate();
   v8::Local<v8::Value> argv[] = {
       V8String(isolate, name.LocalName()), V8StringOrNull(isolate, old_value),

@@ -259,7 +259,7 @@ ScriptPromise ScriptPromise::Then(v8::Local<v8::Function> on_fulfilled,
       return ScriptPromise();
   }
 
-  return ScriptPromise(script_state_.get(), result_promise);
+  return ScriptPromise(script_state_, result_promise);
 }
 
 ScriptPromise ScriptPromise::CastUndefined(ScriptState* script_state) {

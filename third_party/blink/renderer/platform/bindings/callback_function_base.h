@@ -35,7 +35,7 @@ class PLATFORM_EXPORT CallbackFunctionBase
     return callback_relevant_script_state_->GetIsolate();
   }
   ScriptState* CallbackRelevantScriptState() {
-    return callback_relevant_script_state_.get();
+    return callback_relevant_script_state_;
   }
 
  protected:
@@ -44,17 +44,17 @@ class PLATFORM_EXPORT CallbackFunctionBase
   v8::Local<v8::Function> CallbackFunction() const {
     return callback_function_.NewLocal(GetIsolate());
   }
-  ScriptState* IncumbentScriptState() { return incumbent_script_state_.get(); }
+  ScriptState* IncumbentScriptState() { return incumbent_script_state_; }
 
  private:
   // The "callback function type" value.
   TraceWrapperV8Reference<v8::Function> callback_function_;
   // The associated Realm of the callback function type value.
-  scoped_refptr<ScriptState> callback_relevant_script_state_;
+  Member<ScriptState> callback_relevant_script_state_;
   // The callback context, i.e. the incumbent Realm when an ECMAScript value is
   // converted to an IDL value.
   // https://heycam.github.io/webidl/#dfn-callback-context
-  scoped_refptr<ScriptState> incumbent_script_state_;
+  Member<ScriptState> incumbent_script_state_;
 
   friend class V8PersistentCallbackFunctionBase;
 };

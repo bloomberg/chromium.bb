@@ -154,7 +154,7 @@ V0CustomElementConstructorBuilder::CreateCallbacks() {
       RetrieveCallback("attributeChangedCallback");
 
   callbacks_ = V8V0CustomElementLifecycleCallbacks::Create(
-      script_state_.get(), prototype_, created, attached, detached,
+      script_state_, prototype_, created, attached, detached,
       attribute_changed);
   return callbacks_.Get();
 }
@@ -289,7 +289,7 @@ bool V0CustomElementConstructorBuilder::DidRegisterDefinition() const {
 }
 
 ScriptValue V0CustomElementConstructorBuilder::BindingsReturnValue() const {
-  return ScriptValue(script_state_.get(), constructor_);
+  return ScriptValue(script_state_, constructor_);
 }
 
 bool V0CustomElementConstructorBuilder::HasValidPrototypeChainFor(

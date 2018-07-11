@@ -122,14 +122,14 @@ BytesConsumer::Result ReadableStreamBytesConsumer::BeginRead(
   }
   if (!is_reading_) {
     is_reading_ = true;
-    ScriptState::Scope scope(script_state_.get());
-    ScriptValue reader(script_state_.get(),
+    ScriptState::Scope scope(script_state_);
+    ScriptValue reader(script_state_,
                        reader_.NewLocal(script_state_->GetIsolate()));
     // The owner must retain the reader.
     DCHECK(!reader.IsEmpty());
-    ReadableStreamOperations::DefaultReaderRead(script_state_.get(), reader)
-        .Then(OnFulfilled::CreateFunction(script_state_.get(), this),
-              OnRejected::CreateFunction(script_state_.get(), this));
+    ReadableStreamOperations::DefaultReaderRead(script_state_, reader)
+        .Then(OnFulfilled::CreateFunction(script_state_, this),
+              OnRejected::CreateFunction(script_state_, this));
   }
   return Result::kShouldWait;
 }
@@ -174,6 +174,7 @@ BytesConsumer::Error ReadableStreamBytesConsumer::GetError() const {
 void ReadableStreamBytesConsumer::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_);
   visitor->Trace(pending_buffer_);
+  visitor->Trace(script_state_);
   BytesConsumer::Trace(visitor);
 }
 

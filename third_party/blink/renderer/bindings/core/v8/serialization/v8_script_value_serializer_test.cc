@@ -62,7 +62,7 @@ v8::Local<v8::Value> RoundTrip(
     ExceptionState* override_exception_state = nullptr,
     Transferables* transferables = nullptr,
     WebBlobInfoArray* blob_info = nullptr) {
-  scoped_refptr<ScriptState> script_state = scope.GetScriptState();
+  ScriptState* script_state = scope.GetScriptState();
   ExceptionState& exception_state = override_exception_state
                                         ? *override_exception_state
                                         : scope.GetExceptionState();

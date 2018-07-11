@@ -139,7 +139,9 @@ class CORE_EXPORT ScriptPromise final {
   static void IncreaseInstanceCount();
   static void DecreaseInstanceCount();
 
-  scoped_refptr<ScriptState> script_state_;
+  // TODO(peria): Move ScriptPromise to Oilpan heap.
+  GC_PLUGIN_IGNORE("813731")
+  Persistent<ScriptState> script_state_;
   ScriptValue promise_;
 };
 

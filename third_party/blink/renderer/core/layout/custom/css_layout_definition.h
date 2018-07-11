@@ -78,19 +78,20 @@ class CSSLayoutDefinition final
     return child_custom_invalidation_properties_;
   }
 
-  ScriptState* GetScriptState() const { return script_state_.get(); }
+  ScriptState* GetScriptState() const { return script_state_; }
 
   v8::Local<v8::Function> LayoutFunctionForTesting(v8::Isolate* isolate) {
     return layout_.NewLocal(isolate);
   }
 
   virtual void Trace(blink::Visitor* visitor);
+
   const char* NameInHeapSnapshot() const override {
     return "CSSLayoutDefinition";
   }
 
  private:
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
 
   // This object keeps the class instances, constructor function, intrinsic
   // sizes function, and layout function alive. It participates in wrapper

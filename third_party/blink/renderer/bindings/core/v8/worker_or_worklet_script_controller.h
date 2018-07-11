@@ -47,7 +47,7 @@ class ExceptionState;
 class ScriptSourceCode;
 class WorkerOrWorkletGlobalScope;
 
-class CORE_EXPORT WorkerOrWorkletScriptController
+class CORE_EXPORT WorkerOrWorkletScriptController final
     : public GarbageCollectedFinalized<WorkerOrWorkletScriptController> {
   WTF_MAKE_NONCOPYABLE(WorkerOrWorkletScriptController);
 
@@ -76,7 +76,7 @@ class CORE_EXPORT WorkerOrWorkletScriptController
   void DisableEval(const String&);
 
   // Used by Inspector agents:
-  ScriptState* GetScriptState() { return script_state_.get(); }
+  ScriptState* GetScriptState() { return script_state_; }
 
   // Used by V8 bindings:
   v8::Local<v8::Context> GetContext() {
@@ -112,7 +112,7 @@ class CORE_EXPORT WorkerOrWorkletScriptController
   // usually the main thread's isolate is used.
   v8::Isolate* isolate_;
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   scoped_refptr<DOMWrapperWorld> world_;
   String disable_eval_pending_;
   bool execution_forbidden_;

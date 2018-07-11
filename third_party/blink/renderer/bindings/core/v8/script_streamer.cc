@@ -461,7 +461,7 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
     source_ = std::make_unique<v8::ScriptCompiler::StreamedSource>(stream_,
                                                                    encoding_);
 
-    ScriptState::Scope scope(script_state_.get());
+    ScriptState::Scope scope(script_state_);
     std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>
         script_streaming_task(
             base::WrapUnique(v8::ScriptCompiler::StartStreamingScript(
@@ -531,6 +531,7 @@ ScriptStreamer::~ScriptStreamer() = default;
 
 void ScriptStreamer::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_script_);
+  visitor->Trace(script_state_);
 }
 
 void ScriptStreamer::StreamingComplete() {

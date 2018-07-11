@@ -55,8 +55,8 @@ class TestModuleTreeClient final : public ModuleTreeClient {
 
 class ModuleTreeLinkerTestModulator final : public DummyModulator {
  public:
-  ModuleTreeLinkerTestModulator(scoped_refptr<ScriptState> script_state)
-      : script_state_(std::move(script_state)) {}
+  ModuleTreeLinkerTestModulator(ScriptState* script_state)
+      : script_state_(script_state) {}
   ~ModuleTreeLinkerTestModulator() override = default;
 
   void Trace(blink::Visitor*) override;
@@ -68,7 +68,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
       const KURL& url,
       const Vector<String>& dependency_module_specifiers,
       bool parse_error = false) {
-    ScriptState::Scope scope(script_state_.get());
+    ScriptState::Scope scope(script_state_);
 
     StringBuilder source_text;
     Vector<ModuleRequest> dependency_module_requests;
@@ -98,7 +98,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
       v8::Local<v8::Value> error = V8ThrowException::CreateError(
           script_state_->GetIsolate(), "Parse failure.");
       module_script->SetParseErrorAndClearRecord(
-          ScriptValue(script_state_.get(), error));
+          ScriptValue(script_state_, error));
     }
 
     EXPECT_TRUE(pending_clients_.Contains(url));
@@ -121,7 +121,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
  private:
   // Implements Modulator:
 
-  ScriptState* GetScriptState() override { return script_state_.get(); }
+  ScriptState* GetScriptState() override { return script_state_; }
 
   KURL ResolveModuleSpecifier(const String& module_request,
                               const KURL& base_url,
@@ -149,10 +149,10 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
 
   ScriptValue InstantiateModule(ScriptModule record) override {
     if (instantiate_should_fail_) {
-      ScriptState::Scope scope(script_state_.get());
+      ScriptState::Scope scope(script_state_);
       v8::Local<v8::Value> error = V8ThrowException::CreateError(
           script_state_->GetIsolate(), "Instantiation failure.");
-      return ScriptValue(script_state_.get(), error);
+      return ScriptValue(script_state_, error);
     }
     instantiated_records_.insert(record);
     return ScriptValue();
@@ -170,7 +170,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
     return it->value;
   }
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   HeapHashMap<KURL, Member<SingleModuleClient>> pending_clients_;
   HashMap<ScriptModule, Vector<ModuleRequest>> dependency_module_requests_map_;
   HeapHashMap<KURL, Member<ModuleScript>> module_map_;
@@ -179,6 +179,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
 };
 
 void ModuleTreeLinkerTestModulator::Trace(blink::Visitor* visitor) {
+  visitor->Trace(script_state_);
   visitor->Trace(pending_clients_);
   visitor->Trace(module_map_);
   DummyModulator::Trace(visitor);
@@ -199,8 +200,7 @@ class ModuleTreeLinkerTest : public PageTestBase {
 
 void ModuleTreeLinkerTest::SetUp() {
   PageTestBase::SetUp(IntSize(500, 500));
-  scoped_refptr<ScriptState> script_state =
-      ToScriptStateForMainWorld(&GetFrame());
+  ScriptState* script_state = ToScriptStateForMainWorld(&GetFrame());
   modulator_ = new ModuleTreeLinkerTestModulator(script_state);
 }
 

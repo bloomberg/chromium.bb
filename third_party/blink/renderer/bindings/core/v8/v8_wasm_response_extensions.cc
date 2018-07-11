@@ -65,7 +65,7 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
           break;
         }
         case BytesConsumer::Result::kDone: {
-          ScriptState::Scope scope(script_state_.get());
+          ScriptState::Scope scope(script_state_);
           builder_.Finish();
           client_->DidFetchDataLoadedCustomFormat();
           return;
@@ -87,6 +87,7 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(consumer_);
     visitor->Trace(client_);
+    visitor->Trace(script_state_);
     FetchDataLoader::Trace(visitor);
     BytesConsumer::Client::Trace(visitor);
   }
@@ -95,8 +96,8 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
   // TODO(mtrofin): replace with spec-ed error types, once spec clarifies
   // what they are.
   void AbortCompilation() {
-    ScriptState::Scope scope(script_state_.get());
-    if (!ExecutionContext::From(script_state_.get())->IsContextDestroyed()) {
+    ScriptState::Scope scope(script_state_);
+    if (!ExecutionContext::From(script_state_)->IsContextDestroyed()) {
       builder_.Abort(V8ThrowException::CreateTypeError(
           script_state_->GetIsolate(), "Could not download wasm module"));
     } else {
@@ -110,7 +111,7 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
   Member<BytesConsumer> consumer_;
   Member<FetchDataLoader::Client> client_;
   v8::WasmModuleObjectBuilderStreaming builder_;
-  const scoped_refptr<ScriptState> script_state_;
+  const Member<ScriptState> script_state_;
 };
 
 // TODO(mtrofin): WasmDataLoaderClient is necessary so we may provide an

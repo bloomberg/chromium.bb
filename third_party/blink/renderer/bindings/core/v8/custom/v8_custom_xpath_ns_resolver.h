@@ -54,7 +54,7 @@ class V8CustomXPathNSResolver final : public XPathNSResolver {
  private:
   V8CustomXPathNSResolver(ScriptState*, v8::Local<v8::Object> resolver);
 
-  scoped_refptr<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   v8::Local<v8::Object> resolver_;  // Handle to resolver object.
 };
 

@@ -57,12 +57,9 @@ class ClipboardPromise final
   void HandleWriteText(const String&);
   void HandleWriteTextWithPermission(mojom::blink::PermissionStatus);
 
-  ScriptState* script_state_;
-
+  Member<ScriptState> script_state_;
   Member<ScriptPromiseResolver> script_promise_resolver_;
-
   mojom::blink::PermissionServicePtr permission_service_;
-
   mojom::ClipboardBuffer buffer_;
 
   String write_data_;

@@ -37,7 +37,7 @@ namespace {
 
 v8::Local<v8::Value> RoundTripForModules(v8::Local<v8::Value> value,
                                          V8TestingScope& scope) {
-  scoped_refptr<ScriptState> script_state = scope.GetScriptState();
+  ScriptState* script_state = scope.GetScriptState();
   ExceptionState& exception_state = scope.GetExceptionState();
   scoped_refptr<SerializedScriptValue> serialized_script_value =
       V8ScriptValueSerializerForModules(

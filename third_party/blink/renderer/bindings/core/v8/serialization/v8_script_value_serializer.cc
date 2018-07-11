@@ -55,10 +55,9 @@ namespace blink {
 // made to how Blink writes data. Purely V8-side changes do not require an
 // adjustment to this value.
 
-V8ScriptValueSerializer::V8ScriptValueSerializer(
-    scoped_refptr<ScriptState> script_state,
-    const Options& options)
-    : script_state_(std::move(script_state)),
+V8ScriptValueSerializer::V8ScriptValueSerializer(ScriptState* script_state,
+                                                 const Options& options)
+    : script_state_(script_state),
       serialized_script_value_(SerializedScriptValue::Create()),
       serializer_(script_state_->GetIsolate(), this),
       transferables_(options.transferables),
@@ -120,7 +119,7 @@ void V8ScriptValueSerializer::PrepareTransfer(ExceptionState& exception_state) {
   for (uint32_t i = 0; i < transferables_->array_buffers.size(); i++) {
     DOMArrayBufferBase* array_buffer = transferables_->array_buffers[i].Get();
     if (!array_buffer->IsShared()) {
-      v8::Local<v8::Value> wrapper = ToV8(array_buffer, script_state_.get());
+      v8::Local<v8::Value> wrapper = ToV8(array_buffer, script_state_);
       serializer_.TransferArrayBuffer(
           i, v8::Local<v8::ArrayBuffer>::Cast(wrapper));
     } else {

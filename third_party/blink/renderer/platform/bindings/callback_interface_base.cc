@@ -23,6 +23,8 @@ CallbackInterfaceBase::CallbackInterfaceBase(
 
 void CallbackInterfaceBase::Trace(Visitor* visitor) {
   visitor->Trace(callback_object_);
+  visitor->Trace(callback_relevant_script_state_);
+  visitor->Trace(incumbent_script_state_);
 }
 
 V8PersistentCallbackInterfaceBase::V8PersistentCallbackInterfaceBase(
