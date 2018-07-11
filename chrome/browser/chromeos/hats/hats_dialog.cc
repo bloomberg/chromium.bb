@@ -17,7 +17,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/pref_names.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/size.h"
 
