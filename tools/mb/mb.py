@@ -920,6 +920,8 @@ class MetaBuildWrapper(object):
       subdir, exe = 'linux64', 'gn'
     elif self.platform == 'darwin':
       subdir, exe = 'mac', 'gn'
+    elif self.platform == 'aix6':
+      subdir, exe = 'aix', 'gn'
     else:
       subdir, exe = 'win', 'gn.exe'
 

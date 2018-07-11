@@ -39,7 +39,7 @@ config("compiler") {
     "-fno-rtti",
     "-fno-exceptions",
     "-Wno-narrowing",
-    "-Wnon-virtual-dtor",
+    "-Wno-non-virtual-dtor",
   ]
 
   ldflags = [
