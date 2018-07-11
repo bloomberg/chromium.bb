@@ -58,7 +58,6 @@ def _ParseOptions(args):
       'added.')
   parser.add_option('--classpath', action='append',
                     help='Classpath for proguard.')
-  parser.add_option('--stamp', help='Path to touch on success.')
   parser.add_option('--enable-dangerous-optimizations', action='store_true',
                     help='Enable optimizations which are known to have issues.')
   parser.add_option('--verbose', '-v', action='store_true',

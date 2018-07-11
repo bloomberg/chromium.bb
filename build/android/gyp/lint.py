@@ -316,8 +316,6 @@ def main():
                       help='If set, script will not log anything.')
   parser.add_argument('--src-dirs',
                       help='Directories containing java files.')
-  parser.add_argument('--stamp',
-                      help='Path to touch on success.')
   parser.add_argument('--srcjars',
                       help='GN list of included srcjars.')
 

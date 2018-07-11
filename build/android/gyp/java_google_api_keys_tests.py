@@ -9,16 +9,9 @@ This test suite contains various tests for the C++ -> Java Google API Keys
 generator.
 """
 
-import collections
-import argparse
-import os
-import sys
 import unittest
 
 import java_google_api_keys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "gyp"))
-from util import build_utils
 
 
 class TestJavaGoogleAPIKeys(unittest.TestCase):
@@ -45,17 +38,5 @@ public class GoogleAPIKeys {
     self.assertEqual(expected % java_google_api_keys.GetScriptName(), output)
 
 
-def main(argv):
-  parser = argparse.ArgumentParser()
-  parser.add_argument("--stamp", help="File to touch on success.")
-  options = parser.parse_args(argv)
-
-  suite = unittest.TestLoader().loadTestsFromTestCase(TestJavaGoogleAPIKeys)
-  unittest.TextTestRunner(verbosity=0).run(suite)
-
-  if options.stamp:
-    build_utils.Touch(options.stamp)
-
 if __name__ == '__main__':
-  main(sys.argv[1:])
-
+  unittest.main()
