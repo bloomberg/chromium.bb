@@ -103,11 +103,13 @@ void UnifiedSystemTrayController::HandleUserSwitch(int user_index) {
       MultiProfileUMA::SWITCH_ACTIVE_USER_BY_TRAY);
   controller->SwitchActiveUser(
       controller->GetUserSession(user_index)->user_info->account_id);
+  CloseBubble();
 }
 
 void UnifiedSystemTrayController::HandleAddUserAction() {
   MultiProfileUMA::RecordSigninUser(MultiProfileUMA::SIGNIN_USER_BY_TRAY);
   Shell::Get()->session_controller()->ShowMultiProfileLogin();
+  CloseBubble();
 }
 
 void UnifiedSystemTrayController::HandleSignOutAction() {
@@ -120,6 +122,7 @@ void UnifiedSystemTrayController::HandleLockAction() {
   chromeos::DBusThreadManager::Get()
       ->GetSessionManagerClient()
       ->RequestLockScreen();
+  CloseBubble();
 }
 
 void UnifiedSystemTrayController::HandleSettingsAction() {
