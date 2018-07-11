@@ -2950,6 +2950,10 @@ const char kCaptivePortalBypassProxyDescription[] =
     "different captive portals. This enables opening captive portal "
     "authorization dialog in a separate window, which ignores proxy settings.";
 
+const char kChromeVoxArcSupportName[] = "ChromeVox ARC support";
+const char kChromeVoxArcSupportDescription[] =
+    "Use ChromeVox screen reader features in ARC";
+
 const char kCrOSComponentName[] = "Chrome OS Component";
 const char kCrOSComponentDescription[] =
     "Disable the use of componentized escpr CUPS filter.";
@@ -3000,10 +3004,6 @@ const char kEnableAppsGridGapFeatureDescription[] =
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Peeking Launcher and Tab Switcher.";
-
-const char kEnableChromevoxArcSupportName[] = "ChromeVox ARC support";
-const char kEnableChromevoxArcSupportDescription[] =
-    "Enable ChromeVox screen reader features in ARC";
 
 const char kEnableDisplayZoomSettingName[] = "Enable display zoom settings";
 const char kEnableDisplayZoomSettingDescription[] =

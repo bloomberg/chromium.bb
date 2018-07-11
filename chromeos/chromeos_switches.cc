@@ -313,9 +313,6 @@ const char kEnableCaptivePortalRandomUrl[] = "enable-captive-portal-random-url";
 // Enables the Cast Receiver.
 const char kEnableCastReceiver[] = "enable-cast-receiver";
 
-// Enables native ChromeVox support for Arc.
-const char kEnableChromeVoxArcSupport[] = "enable-chromevox-arc-support";
-
 // Enables consumer kiosk mode for Chrome OS.
 const char kEnableConsumerKiosk[] = "enable-consumer-kiosk";
 

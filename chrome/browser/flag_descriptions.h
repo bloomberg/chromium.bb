@@ -1808,6 +1808,9 @@ extern const char kBulkPrintersDescription[];
 extern const char kCaptivePortalBypassProxyName[];
 extern const char kCaptivePortalBypassProxyDescription[];
 
+extern const char kChromeVoxArcSupportName[];
+extern const char kChromeVoxArcSupportDescription[];
+
 extern const char kCrOSComponentName[];
 extern const char kCrOSComponentDescription[];
 
@@ -1840,9 +1843,6 @@ extern const char kEnableAppsGridGapFeatureDescription[];
 
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
-
-extern const char kEnableChromevoxArcSupportName[];
-extern const char kEnableChromevoxArcSupportDescription[];
 
 extern const char kEnableDisplayZoomSettingName[];
 extern const char kEnableDisplayZoomSettingDescription[];

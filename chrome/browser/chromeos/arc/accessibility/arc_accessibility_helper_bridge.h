@@ -97,6 +97,8 @@ class ArcAccessibilityHelperBridge
     return notification_key_to_tree_;
   }
 
+  void set_filter_type_all_for_test() { use_filter_type_all_for_test_ = true; }
+
  protected:
   virtual aura::Window* GetActiveWindow();
 
@@ -110,6 +112,7 @@ class ArcAccessibilityHelperBridge
 
   void OnAccessibilityStatusChanged(
       const chromeos::AccessibilityStatusEventDetails& event_details);
+  arc::mojom::AccessibilityFilterType GetFilterTypeForProfile(Profile* profile);
   void UpdateFilterType();
   void UpdateWindowProperties(aura::Window* window);
   void UpdateTreeIdOfNotificationSurface(const std::string& notification_key,
@@ -130,6 +133,7 @@ class ArcAccessibilityHelperBridge
       notification_key_to_tree_;
   std::unique_ptr<chromeos::AccessibilityStatusSubscription>
       accessibility_status_subscription_;
+  bool use_filter_type_all_for_test_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAccessibilityHelperBridge);
 };
