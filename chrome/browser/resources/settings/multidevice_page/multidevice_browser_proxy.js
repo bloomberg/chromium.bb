@@ -26,8 +26,10 @@ cr.define('settings', function() {
       //    return cr.sendWithPromise('getPageContentData');
       // once handler is built.
       return Promise.resolve({
-        mode: settings.MultiDeviceSettingsMode.NO_HOST_SET,
-        hostDevice: null,
+        mode: settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED,
+        hostDevice: {
+          name: 'Pixel XL',
+        },
       });
     }
   }

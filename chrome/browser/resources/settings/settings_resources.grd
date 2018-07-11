@@ -1306,6 +1306,12 @@
         <structure name="IDR_SETTINGS_MULTIDEVICE_CONSTANTS_JS"
                    file="multidevice_page/multidevice_constants.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_FEATURE_ITEM_HTML"
+                   file="multidevice_page/multidevice_feature_item.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_FEATURE_ITEM_JS"
+                   file="multidevice_page/multidevice_feature_item.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_MULTIDEVICE_PAGE_HTML"
                    file="multidevice_page/multidevice_page.html"
                    type="chrome_html" />
@@ -1317,6 +1323,12 @@
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_MULTIDEVICE_PAGE_CONTAINER_JS"
                    file="multidevice_page/multidevice_page_container.js"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_SUBPAGE_HTML"
+                   file="multidevice_page/multidevice_subpage.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_SUBPAGE_JS"
+                   file="multidevice_page/multidevice_subpage.js"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_NETWORK_PROXY_SECTION_HTML"
                    file="internet_page/network_proxy_section.html"
