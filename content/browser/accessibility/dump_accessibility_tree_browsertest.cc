@@ -194,7 +194,11 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "FOCUSED", Filter::DENY);
   AddFilter(filters, "HOTTRACKED", Filter::DENY);
   AddFilter(filters, "OFFSCREEN", Filter::DENY);
-  // Object attributes.
+  AddFilter(filters, "value='*'");
+  // The value attribute on the document object contains the URL of the current
+  // page which will not be the same every time the test is run.
+  AddFilter(filters, "value='http*'", Filter::DENY);
+  // Object attributes.value
   AddFilter(filters, "layout-guess:*", Filter::ALLOW);
 
   //

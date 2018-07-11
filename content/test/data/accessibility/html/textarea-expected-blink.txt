@@ -1,6 +1,6 @@
 rootWebArea
 ++genericContainer
-++++textField multiline textSelStart=0 textSelEnd=0
+++++textField multiline value='The <newline>textarea tag  defines a multi-line text input control.<newline>' textSelStart=0 textSelEnd=0
 ++++++genericContainer
 ++++++++staticText name='The <newline>textarea tag  defines a multi-line text input control.<newline>'
 ++++++++++inlineTextBox name='The '

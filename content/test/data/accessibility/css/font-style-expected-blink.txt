@@ -24,7 +24,7 @@ rootWebArea
 ++++++inlineTextBox name=' '
 ++++staticText name='dog' textStyle=7
 ++++++inlineTextBox name='dog'
-++genericContainer multiline
+++genericContainer multiline value='Normal bold italic underline line-through subscript superscript'
 ++++staticText name='Normal'
 ++++++inlineTextBox name='Normal'
 ++++staticText name=' '

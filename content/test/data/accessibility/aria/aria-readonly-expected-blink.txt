@@ -1,11 +1,11 @@
 rootWebArea
 ++genericContainer
-++++textField
+++++textField value='Readonly-false input'
 ++++++genericContainer
 ++++++++staticText name='Readonly-false input'
 ++++++++++inlineTextBox name='Readonly-false input'
 ++genericContainer
-++++textField restriction=readOnly
+++++textField value='Readonly-true input' restriction=readOnly
 ++++++genericContainer
 ++++++++staticText name='Readonly-true input'
 ++++++++++inlineTextBox name='Readonly-true input'
