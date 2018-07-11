@@ -50,7 +50,7 @@ Each *study configuration* is a dictionary containing `platforms` and
 `experiments`.
 
 `platforms` is an array of strings, indicating the targetted platforms. The
-strings may be `android`, `chromeos`, `ios`, `linux`, `mac`, or `win`.
+strings may be `android`, `chromeos`, `ios`, `linux`, `mac`, or `windows`.
 
 `experiments` is an array containing the *experiments*.
 
@@ -109,7 +109,7 @@ the form `//N` where `N` is between 0 and 9.
 {
     "AStudyWithExperimentComment": [
         {
-            "platforms": ["chromeos", "linux", "mac", "win"],
+            "platforms": ["chromeos", "linux", "mac", "windows"],
             "experiments": [
                 {
                     "//0": "This is the first comment line.",
@@ -129,7 +129,7 @@ Simply specify two different study configurations in the study:
 {
     "DifferentExperimentsPerPlatform": [
         {
-            "platforms": ["chromeos", "linux", "mac", "win"],
+            "platforms": ["chromeos", "linux", "mac", "windows"],
             "experiments": [{ "name": "DesktopExperiment" }]
         },
         {

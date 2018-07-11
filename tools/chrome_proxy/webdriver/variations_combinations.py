@@ -42,7 +42,7 @@ def GetExperimentArgs():
   elif platform.system().lower() == 'linux':
     my_platform = 'linux'
   elif platform.system().lower() == 'windows':
-    my_platform = 'win'
+    my_platform = 'windows'
   elif platform.system().lower() == 'darwin':
     my_platform = 'mac'
   else:

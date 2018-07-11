@@ -30,13 +30,13 @@ class FieldTrialUtilUnittest(unittest.TestCase):
     config = '''{
       "BrowserBlackList": [
         {
-          "platforms": ["win"],
+          "platforms": ["windows"],
           "experiments": [{"name": "Enabled"}]
         }
       ],
       "SimpleParams": [
         {
-          "platforms": ["win"],
+          "platforms": ["windows"],
           "experiments": [
             {
               "name": "Default",
@@ -48,7 +48,7 @@ class FieldTrialUtilUnittest(unittest.TestCase):
       ],
       "c": [
         {
-          "platforms": ["win"],
+          "platforms": ["windows"],
           "experiments": [
             {
               "name": "d.",
@@ -60,7 +60,7 @@ class FieldTrialUtilUnittest(unittest.TestCase):
         }
       ]
     }'''
-    result = self.runGenerateArgs(config, 'win')
+    result = self.runGenerateArgs(config, 'windows')
     self.assertEqual(['--force-fieldtrials='
         'BrowserBlackList/Enabled/SimpleParams/Default/c/d.',
         '--force-fieldtrial-params='
@@ -73,7 +73,7 @@ class FieldTrialUtilUnittest(unittest.TestCase):
     config = '''{
       "X": [
         {
-          "platforms": ["win"],
+          "platforms": ["windows"],
           "experiments": [
             {
               "name": "x",
@@ -84,7 +84,7 @@ class FieldTrialUtilUnittest(unittest.TestCase):
       ],
       "Y": [
         {
-          "platforms": ["win"],
+          "platforms": ["windows"],
           "experiments": [
             {
               "name": "Default",
@@ -95,7 +95,7 @@ class FieldTrialUtilUnittest(unittest.TestCase):
       ]
     }'''
     with self.assertRaises(Exception) as raised:
-      self.runGenerateArgs(config, 'win')
+      self.runGenerateArgs(config, 'windows')
     self.assertEqual('Duplicate feature(s) in enable_features: x',
                      str(raised.exception))
 
@@ -103,7 +103,7 @@ class FieldTrialUtilUnittest(unittest.TestCase):
     config = '''{
       "X": [
         {
-          "platforms": ["win"],
+          "platforms": ["windows"],
           "experiments": [
             {
               "name": "x",
@@ -114,7 +114,7 @@ class FieldTrialUtilUnittest(unittest.TestCase):
       ],
       "Y": [
         {
-          "platforms": ["win"],
+          "platforms": ["windows"],
           "experiments": [
             {
               "name": "Default",
@@ -125,7 +125,7 @@ class FieldTrialUtilUnittest(unittest.TestCase):
       ]
     }'''
     with self.assertRaises(Exception) as raised:
-      self.runGenerateArgs(config, 'win')
+      self.runGenerateArgs(config, 'windows')
     self.assertEqual('Duplicate feature(s) in enable_features: y, z',
                      str(raised.exception))
 
@@ -134,7 +134,7 @@ class FieldTrialUtilUnittest(unittest.TestCase):
     config = '''{
       "X": [
         {
-          "platforms": ["win"],
+          "platforms": ["windows"],
           "experiments": [
             {
               "name": "x",
@@ -145,7 +145,7 @@ class FieldTrialUtilUnittest(unittest.TestCase):
       ],
       "Y": [
         {
-          "platforms": ["win"],
+          "platforms": ["windows"],
           "experiments": [
             {
               "name": "Default",
@@ -156,7 +156,7 @@ class FieldTrialUtilUnittest(unittest.TestCase):
       ]
     }'''
     with self.assertRaises(Exception) as raised:
-      self.runGenerateArgs(config, 'win')
+      self.runGenerateArgs(config, 'windows')
     self.assertEqual('Conflicting features set as both enabled and disabled: x',
                      str(raised.exception))
 

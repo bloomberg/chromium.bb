@@ -104,7 +104,7 @@ class PerfBenchmark(benchmark.Benchmark):
     if target_os == 'darwin':
       return 'mac'
     if target_os.startswith('win'):
-      return 'win'
+      return 'windows'
     if target_os.startswith('linux'):
       return 'linux'
     return target_os

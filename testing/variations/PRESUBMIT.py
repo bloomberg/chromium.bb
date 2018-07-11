@@ -159,8 +159,8 @@ def ValidateData(json_data, file_path, message_type):
       if not isinstance(experiment_config['platforms'], list):
         return _CreateMalformedConfigMessage(message_type, file_path,
             'Expecting list for platforms in Study[%s]', study)
-      supported_platforms = ['android', 'chromeos', 'ios', 'linux', 'mac',
-                             'win']
+      supported_platforms = ['android', 'android_webview', 'chromeos', 'ios',
+                             'linux', 'mac', 'windows']
       experiment_platforms = experiment_config['platforms']
       unsupported_platforms = list(set(experiment_platforms).difference(
                                        supported_platforms))

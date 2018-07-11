@@ -29,16 +29,13 @@ _platforms = [
   'ios',
   'linux',
   'mac',
-  'win',
+  'windows',
 ]
 
 # Convert a platform argument to the matching Platform enum value in
 # components/variations/proto/study.proto.
 def _PlatformEnumValue(platform):
   assert platform in _platforms
-  # TODO(crbug/707911): Remove the 'win' special case.
-  if platform == 'win':
-    return 'Study::PLATFORM_WINDOWS'
   return 'Study::PLATFORM_' + platform.upper()
 
 def _Load(filename):

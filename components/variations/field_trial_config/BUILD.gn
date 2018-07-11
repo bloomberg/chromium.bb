@@ -19,20 +19,26 @@ action("field_trial_testing_config_action") {
     "$target_gen_dir/$out_name.h",
   ]
 
+  if (current_os == "win") {
+    platform = "windows"
+  } else {
+    platform = current_os
+  }
+
   args = [
     rebase_path(source, root_build_dir),
     "--destbase=" + rebase_path(target_gen_dir, root_build_dir),
     "--namespace=variations",
     "--schema=" +
         rebase_path("field_trial_testing_config_schema.json", root_build_dir),
-    "--platform=" + current_os,
+    "--platform=" + platform,
     "--output=$out_name",
   ]
 
-  # At build-time, Chrome and WebView both use platform "android", but at
-  # run-time, variations hase separate platforms "android" and "android_webview".
-  # So if building "android", also include WebView.
-  if (current_os == "android") {
+  # At build-time, Android Chrome and WebView both use platform "android", but
+  # at run-time, variations has separate platforms "android" and
+  # "android_webview". So if building "android", also include WebView.
+  if (platform == "android") {
     args += [ "--platform=android_webview" ]
   }
 }
