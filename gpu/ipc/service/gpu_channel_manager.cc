@@ -418,10 +418,8 @@ GpuChannelManager::GetRasterDecoderContextState(
         gpu_driver_bug_workarounds_);
   }
 
-  if (base::ThreadTaskRunnerHandle::IsSet()) {
-    gr_cache_controller_.emplace(raster_decoder_context_state_.get(),
-                                 base::ThreadTaskRunnerHandle::Get());
-  }
+  gr_cache_controller_.emplace(raster_decoder_context_state_.get(),
+                               task_runner_);
 
   *result = ContextResult::kSuccess;
   return raster_decoder_context_state_;
