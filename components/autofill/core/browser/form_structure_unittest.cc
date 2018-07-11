@@ -2346,9 +2346,9 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   EXPECT_EQ(expected_query_string, encoded_query_string);
 
   FormData malformed_form(form);
-  // Add 50 address fields - the form is not valid anymore, but previous ones
+  // Add 150 address fields - the form is not valid anymore, but previous ones
   // are. The result should be the same as in previous test.
-  for (size_t i = 0; i < 50; ++i) {
+  for (size_t i = 0; i < 150; ++i) {
     field.label = ASCIIToUTF16("Address");
     field.name = ASCIIToUTF16("address");
     malformed_form.fields.push_back(field);
@@ -2537,8 +2537,9 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   encoded_upload3.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
 
-  // Add 50 address fields - now the form is invalid, as it has too many fields.
-  for (size_t i = 0; i < 50; ++i) {
+  // Add 150 address fields - now the form is invalid, as it has too many
+  // fields.
+  for (size_t i = 0; i < 150; ++i) {
     field.label = ASCIIToUTF16("Address");
     field.name = ASCIIToUTF16("address");
     field.form_control_type = "text";
@@ -5798,6 +5799,29 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_LastFieldRationalized) {
   EXPECT_EQ(NAME_FULL, forms[0]->field(3)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(4)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(5)->Type().GetStorableType());
+}
+
+TEST_F(FormStructureTest, AllowBigForms) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  // Check that the form with 100 fields are processed correctly.
+  for (size_t i = 0; i < 100; ++i) {
+    field.form_control_type = "text";
+    field.name = ASCIIToUTF16("text") + base::NumberToString16(i);
+    form.fields.push_back(field);
+  }
+
+  FormStructure form_structure(form);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+  std::vector<std::string> encoded_signatures;
+
+  AutofillQueryContents encoded_query;
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+                                                &encoded_query));
+  EXPECT_EQ(1u, encoded_signatures.size());
 }
 
 }  // namespace autofill

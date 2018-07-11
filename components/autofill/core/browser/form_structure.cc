@@ -16,6 +16,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -495,6 +496,7 @@ bool FormStructure::EncodeQueryRequest(
     if (processed_forms.find(signature) != processed_forms.end())
       continue;
     processed_forms.insert(signature);
+    UMA_HISTOGRAM_COUNTS_1000("Autofill.FieldCount", form->field_count());
     if (form->IsMalformed())
       continue;
 
@@ -1630,10 +1632,10 @@ bool FormStructure::IsMalformed() const {
     return true;
 
   // Some badly formatted web sites repeat fields - limit number of fields to
-  // 48, which is far larger than any valid form and proto still fits into 2K.
+  // 100, which is far larger than any valid form and proto still fits into 2K.
   // Do not send requests for forms with more than this many fields, as they are
   // near certainly not valid/auto-fillable.
-  const size_t kMaxFieldsOnTheForm = 48;
+  const size_t kMaxFieldsOnTheForm = 100;
   if (field_count() > kMaxFieldsOnTheForm)
     return true;
   return false;
