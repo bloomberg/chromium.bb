@@ -21,7 +21,6 @@ import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 
 import org.chromium.base.TraceEvent;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.SmartClipProvider;
@@ -137,14 +136,14 @@ public class ContentView
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        if (getContentViewCore() == null) return null;
+        // Calls may come while/after WebContents is destroyed. See https://crbug.com/821750#c8.
+        if (mWebContents.isDestroyed()) return null;
         return ImeAdapter.fromWebContents(mWebContents).onCreateInputConnection(outAttrs);
     }
 
     @Override
     public boolean onCheckIsTextEditor() {
-        if (getContentViewCore() == null) return false;
-
+        if (mWebContents.isDestroyed()) return false;
         return ImeAdapter.fromWebContents(mWebContents).onCheckIsTextEditor();
     }
 
@@ -203,11 +202,6 @@ public class ContentView
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
         return getEventForwarder().onGenericMotionEvent(event);
-    }
-
-    private ContentViewCore getContentViewCore() {
-        if (mWebContents.isDestroyed()) return null;
-        return ContentViewCore.fromWebContents(mWebContents);
     }
 
     private EventForwarder getEventForwarder() {

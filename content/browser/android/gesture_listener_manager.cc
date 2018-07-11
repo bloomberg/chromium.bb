@@ -114,11 +114,6 @@ GestureListenerManager::~GestureListenerManager() {
   Java_GestureListenerManagerImpl_onDestroy(env, j_obj);
 }
 
-void GestureListenerManager::Reset(JNIEnv* env,
-                                   const JavaParamRef<jobject>& obj) {
-  java_ref_.reset();
-}
-
 void GestureListenerManager::ResetGestureDetection(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -145,6 +140,10 @@ void GestureListenerManager::SetMultiTouchZoomSupportEnabled(
 void GestureListenerManager::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
+  // This is called to fix crash happening while WebContents is being
+  // destroyed. See https://crbug.com/803244#c20
+  if (web_contents_->IsBeingDestroyed())
+    return;
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())

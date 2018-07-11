@@ -1330,7 +1330,6 @@ public class AwContents implements SmartClipProvider {
 
             mWebContentsObserver.destroy();
             mWebContentsObserver = null;
-            mContentViewCore.destroy();
             mContentViewCore = null;
             mNativeAwContents = 0;
             mWebContents = null;

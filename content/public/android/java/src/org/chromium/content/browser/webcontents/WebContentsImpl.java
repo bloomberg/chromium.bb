@@ -124,10 +124,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     // the same life time as native MediaSession.
     private MediaSessionImpl mMediaSession;
 
-    // True while WebContents is functional and alive. Set to false when the native WebContents is
-    // gone, or destroy() is called explicitly.
-    private boolean mIsAlive;
-
     private class SmartClipCallback {
         public SmartClipCallback(final Handler smartClipHandler) {
             mHandler = smartClipHandler;
@@ -197,7 +193,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
         mInternalsHolder = new DefaultInternalsHolder();
         mInternalsHolder.set(internals);
-        mIsAlive = true;
     }
 
     @CalledByNative
@@ -214,7 +209,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
             mObserverProxy.destroy();
             mObserverProxy = null;
         }
-        mIsAlive = false;
     }
 
     @Override
@@ -296,13 +290,9 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         if (mNativeWebContentsAndroid != 0) nativeDestroyWebContents(mNativeWebContentsAndroid);
     }
 
-    public void destroyContentsInternal() {
-        mIsAlive = false;
-    }
-
     @Override
     public boolean isDestroyed() {
-        return !mIsAlive || mNativeWebContentsAndroid == 0;
+        return mNativeWebContentsAndroid == 0 || nativeIsBeingDestroyed(mNativeWebContentsAndroid);
     }
 
     @Override
@@ -945,4 +935,5 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     private native void nativeSetFocus(long nativeWebContentsAndroid, boolean focused);
     private native void nativeSetDisplayCutoutSafeArea(
             long nativeWebContentsAndroid, int top, int left, int bottom, int right);
+    private native boolean nativeIsBeingDestroyed(long nativeWebContentsAndroid);
 }

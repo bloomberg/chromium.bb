@@ -33,7 +33,6 @@ class GestureListenerManager : public RenderWidgetHostConnector {
                          WebContentsImpl* web_contents);
   ~GestureListenerManager() override;
 
-  void Reset(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void ResetGestureDetection(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj);
   void SetDoubleTapSupportEnabled(

@@ -855,6 +855,11 @@ void WebContentsAndroid::SetFocus(JNIEnv* env,
   view->SetFocus(focused);
 }
 
+bool WebContentsAndroid::IsBeingDestroyed(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj) {
+  return web_contents_->IsBeingDestroyed();
+}
+
 int WebContentsAndroid::GetTopControlsShrinkBlinkHeightPixForTesting(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

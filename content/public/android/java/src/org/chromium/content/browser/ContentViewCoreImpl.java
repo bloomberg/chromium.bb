@@ -94,13 +94,4 @@ public class ContentViewCoreImpl implements ContentViewCore {
     private boolean initialized() {
         return mInitialized;
     }
-
-    @Override
-    public void destroy() {
-        // This is called to fix crash. See https://crbug.com/803244
-        // TODO(jinsukkim): Use an observer to let the manager handle it on its own.
-        GestureListenerManagerImpl.fromWebContents(mWebContents).reset();
-        mWebContents.destroyContentsInternal();
-        mWebContents = null;
-    }
 }
