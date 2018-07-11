@@ -52,7 +52,6 @@ html[dir=rtl] #edit-bg {
   background: #fff;
   border: none;
   border-radius: 8px;
-  border-style: outset;
   border-width: thin;
   bottom: 44px;
   box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
