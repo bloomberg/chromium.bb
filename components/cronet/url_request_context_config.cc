@@ -31,6 +31,7 @@
 #include "net/quic/chromium/quic_utils_chromium.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/ssl/ssl_key_logger_impl.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/url_request/url_request_context_builder.h"
 
@@ -456,12 +457,13 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
         base::FilePath ssl_key_log_file(
             base::FilePath::FromUTF8Unsafe(ssl_key_log_file_string));
         if (!ssl_key_log_file.empty()) {
-          // SetSSLKeyLogFile is only safe to call before any SSLClientSockets
+          // SetSSLKeyLogger is only safe to call before any SSLClientSockets
           // are created. This should not be used if there are multiple
           // CronetEngine.
           // TODO(xunjieli): Expose this as a stable API after crbug.com/458365
           // is resolved.
-          net::SSLClientSocket::SetSSLKeyLogFile(ssl_key_log_file);
+          net::SSLClientSocket::SetSSLKeyLogger(
+              std::make_unique<net::SSLKeyLoggerImpl>(ssl_key_log_file));
         }
       }
     } else if (it.key() == kNetworkQualityEstimatorFieldTrialName) {

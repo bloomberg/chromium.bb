@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "build/build_config.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/cert/cert_verifier.h"
@@ -37,7 +36,6 @@
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace base {
-class FilePath;
 namespace trace_event {
 class ProcessMemoryDump;
 }
@@ -53,6 +51,7 @@ class CertVerifier;
 class CTVerifier;
 class SSLCertRequestInfo;
 class SSLInfo;
+class SSLKeyLogger;
 
 using TokenBindingSignatureMap =
     base::MRUCache<std::pair<TokenBindingType, std::string>,
@@ -76,11 +75,9 @@ class SSLClientSocketImpl : public SSLClientSocket,
     return ssl_session_cache_shard_;
   }
 
-#if !defined(OS_NACL)
-  // Log SSL key material to |path|. Must be called before any SSLClientSockets
-  // are created.
-  static void SetSSLKeyLogFile(const base::FilePath& path);
-#endif
+  // Log SSL key material to |logger|. Must be called before any
+  // SSLClientSockets are created.
+  static void SetSSLKeyLogger(std::unique_ptr<SSLKeyLogger> logger);
 
   // SSLSocket implementation.
   int ExportKeyingMaterial(const base::StringPiece& label,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/ssl/ssl_key_logger.h"
+#include "net/ssl/ssl_key_logger_impl.h"
 
 #include <stdio.h>
 
@@ -21,7 +21,7 @@ namespace net {
 
 // An object which lives on the background SequencedTaskRunner and performs the
 // blocking file operations.
-class SSLKeyLogger::Core {
+class SSLKeyLoggerImpl::Core {
  public:
   Core() { DETACH_FROM_SEQUENCE(sequence_checker_); }
   ~Core() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
@@ -49,24 +49,25 @@ class SSLKeyLogger::Core {
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-SSLKeyLogger::SSLKeyLogger(const base::FilePath& path) : core_(new Core) {
+SSLKeyLoggerImpl::SSLKeyLoggerImpl(const base::FilePath& path)
+    : core_(new Core) {
   // The user explicitly asked for debugging information, so these tasks block
   // shutdown to avoid dropping some log entries.
   task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Core::OpenFile, base::Unretained(core_.get()), path));
+      base::BindOnce(&Core::OpenFile, base::Unretained(core_.get()), path));
 }
 
-SSLKeyLogger::~SSLKeyLogger() {
+SSLKeyLoggerImpl::~SSLKeyLoggerImpl() {
   task_runner_->DeleteSoon(FROM_HERE, core_.release());
 }
 
-void SSLKeyLogger::WriteLine(const std::string& line) {
+void SSLKeyLoggerImpl::WriteLine(const std::string& line) {
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Core::WriteLine, base::Unretained(core_.get()), line));
+      base::BindOnce(&Core::WriteLine, base::Unretained(core_.get()), line));
 }
 
 }  // namespace net

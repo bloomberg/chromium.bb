@@ -41,6 +41,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/ssl/ssl_key_logger_impl.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/size.h"
@@ -163,8 +164,10 @@ void HeadlessShell::OnStart(HeadlessBrowser* browser) {
   // are created via DevTools later.
   base::FilePath ssl_keylog_file =
       GetSSLKeyLogFile(base::CommandLine::ForCurrentProcess());
-  if (!ssl_keylog_file.empty())
-    net::SSLClientSocket::SetSSLKeyLogFile(ssl_keylog_file);
+  if (!ssl_keylog_file.empty()) {
+    net::SSLClientSocket::SetSSLKeyLogger(
+        std::make_unique<net::SSLKeyLoggerImpl>(ssl_keylog_file));
+  }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(::switches::kLang)) {
     context_builder.SetAcceptLanguage(
