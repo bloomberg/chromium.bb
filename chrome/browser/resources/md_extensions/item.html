@@ -3,7 +3,6 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
@@ -11,10 +10,12 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="icons.html">
 <link rel="import" href="item_behavior.html">
+<link rel="import" href="icons.html">
 <link rel="import" href="item_util.html">
 <link rel="import" href="strings.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/communication-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tooltip/paper-tooltip.html">
@@ -258,7 +259,7 @@
           <template is="dom-if"
               if="[[hasWarnings_(data.disableReasons.*, data.*)]]">
             <div id="warnings">
-              <iron-icon id="error-icon" icon="cr:error"></iron-icon>
+              <iron-icon id="error-icon" icon="error"></iron-icon>
               <span id="runtime-warnings" aria-describedby="a11yAssociation"
                   hidden$="[[!data.runtimeWarnings.length]]">
                 <template is="dom-repeat" items="[[data.runtimeWarnings]]">
