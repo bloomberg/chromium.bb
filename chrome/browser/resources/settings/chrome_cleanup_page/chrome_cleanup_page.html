@@ -125,6 +125,12 @@
           title="$i18n{chromeCleanupDetailsRegistryEntries}"
           items-to-show="[[scannerResults_.registryKeys]]">
       </items-to-remove-list>
+      <items-to-remove-list
+          id="extensions-list"
+          hidden="[[!hasExtensionsToShow_]]"
+          title="$i18n{chromeCleanupDetailsExtensions}"
+          items-to-show="[[scannerResults_.extensions]]">
+      </items-to-remove-list>
       <div class="settings-box continuation">
         <div class="secondary">
           $i18nRaw{chromeCleanupDetailsExplanation}

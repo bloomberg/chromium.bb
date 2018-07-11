@@ -44,13 +44,12 @@ std::unique_ptr<base::ListValue> GetFilesAsListStorage(
   return value;
 }
 
-// Returns a ListValue containing a copy of the registry keys stored in
-// |registry_keys|.
-std::unique_ptr<base::ListValue> GetRegistryKeysAsListStorage(
-    const std::set<base::string16>& registry_keys) {
+// Returns a ListValue containing a copy of the strings stored in |string_set|.
+std::unique_ptr<base::ListValue> GetStringSetAsListStorage(
+    const std::set<base::string16>& string_set) {
   auto value = std::make_unique<base::ListValue>();
-  for (const base::string16& key : registry_keys)
-    value->AppendString(key);
+  for (const base::string16& string : string_set)
+    value->AppendString(string);
 
   return value;
 }
@@ -61,7 +60,9 @@ base::DictionaryValue GetScannerResultsAsDictionary(
   value.SetList("files",
                 GetFilesAsListStorage(scanner_results.files_to_delete()));
   value.SetList("registryKeys",
-                GetRegistryKeysAsListStorage(scanner_results.registry_keys()));
+                GetStringSetAsListStorage(scanner_results.registry_keys()));
+  value.SetList("extensions",
+                GetStringSetAsListStorage(scanner_results.extension_names()));
   return value;
 }
 

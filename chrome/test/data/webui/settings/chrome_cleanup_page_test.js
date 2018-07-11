@@ -78,10 +78,23 @@ const shortRegistryKeysList = ['key 1', 'key 2'];
 const exactSizeRegistryKeysList = ['key 1', 'key 2', 'key 3', 'key 4'];
 const longRegistryKeysList =
     ['key 1', 'key 2', 'key 3', 'key 4', 'key 5', 'key 6'];
+const shortExtensionList = ['ext 1', 'ext 2'];
+const exactSizeExtensionList = ['ext 1', 'ext 2', 'ext 3', 'ext 4'];
+const longExtensionList =
+    ['ext 1', 'ext 2', 'ext 3', 'ext 4', 'ext 5', 'ext 6'];
+
+const fileLists = [[], shortFileList, exactSizeFileList, longFileList];
+const registryKeysLists = [
+  [], shortRegistryKeysList, exactSizeRegistryKeysList, longRegistryKeysList
+];
+const extensionLists =
+    [[], shortExtensionList, exactSizeExtensionList, longExtensionList];
+const descriptors = ['No', 'Few', 'ExactSize', 'Many'];
 
 const defaultScannerResults = {
   'files': shortFileList,
   'registryKeys': shortRegistryKeysList,
+  'extensions': shortExtensionList,
 };
 
 /**
@@ -113,11 +126,16 @@ function validateVisibleItemsList(originalItems, visibleItems) {
 }
 
 /**
- * @param {!Array} files The list of files to be cleaned
- * @param {!Array} registryKeys The list of registry entires to be cleaned.
+ * @param {!Array} files The list of files to be cleaned.
+ * @param {!Array} registryKeys The list of registry entries to be cleaned.
+ * @param {!Array} extensions The list of extensions to be cleaned.
  */
-function startCleanupFromInfected(files, registryKeys) {
-  const scannerResults = {'files': files, 'registryKeys': registryKeys};
+function startCleanupFromInfected(files, registryKeys, extensions) {
+  const scannerResults = {
+    'files': files,
+    'registryKeys': registryKeys,
+    'extensions': extensions
+  };
 
   cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', false);
   cr.webUIListenerCallback(
@@ -141,6 +159,16 @@ function startCleanupFromInfected(files, registryKeys) {
     validateVisibleItemsList(registryKeys, registryKeysListContainer);
   } else {
     assertTrue(registryKeysListContainer.hidden);
+  }
+
+  const extensionsListContainer = chromeCleanupPage.$$('#extensions-list');
+  assertTrue(!!extensionsListContainer);
+  if (extensions.length > 0) {
+    assertFalse(extensionsListContainer.hidden);
+    assertTrue(!!extensionsListContainer);
+    validateVisibleItemsList(extensions, extensionsListContainer);
+  } else {
+    assertTrue(extensionsListContainer.hidden);
   }
 
   const actionButton = chromeCleanupPage.$$('#action-button');
@@ -353,56 +381,26 @@ suite('ChromeCleanupHandler', function() {
     assertFalse(!!actionButton);
   });
 
-  test('startCleanupFromInfected_FewFilesNoRegistryKeys', function() {
-    return startCleanupFromInfected(shortFileList, []);
-  });
+  // Test all combinations of item list sizes.
+  for (let file_index = 0; file_index < fileLists.length; file_index++) {
+    for (let registry_index = 0; registry_index < registryKeysLists.length;
+         registry_index++) {
+      for (let extension_index = 0; extension_index < extensionLists.length;
+           extension_index++) {
+        const testName = 'startCleanupFromInfected_' + descriptors[file_index] +
+            'Files' + descriptors[registry_index] + 'RegistryKeys' +
+            descriptors[extension_index] + 'Extensions';
+        const fileList = fileLists[file_index];
+        const registryKeysList = registryKeysLists[registry_index];
+        const extensionList = extensionLists[extension_index];
 
-  test('startCleanupFromInfected_FewFilesFewRegistryKeys', function() {
-    return startCleanupFromInfected(shortFileList, shortRegistryKeysList);
-  });
-
-  test('startCleanupFromInfected_FewFilesExactSizeRegistryKeys', function() {
-    return startCleanupFromInfected(shortFileList, exactSizeRegistryKeysList);
-  });
-
-  test('startCleanupFromInfected_FewFilesManyRegistryKeys', function() {
-    return startCleanupFromInfected(shortFileList, longRegistryKeysList);
-  });
-
-  test('startCleanupFromInfected_ExactSizeFilesNoRegistryKeys', function() {
-    return startCleanupFromInfected(exactSizeFileList, []);
-  });
-
-  test('startCleanupFromInfected_ExactSizeFilesFewRegistryKeys', function() {
-    return startCleanupFromInfected(exactSizeFileList, shortRegistryKeysList);
-  });
-
-  test(
-      'startCleanupFromInfected_ExactSizeFilesExactSizeRegistryKeys',
-      function() {
-        return startCleanupFromInfected(
-            exactSizeFileList, exactSizeRegistryKeysList);
-      });
-
-  test('startCleanupFromInfected_ExactSizeFilesManyRegistryKeys', function() {
-    return startCleanupFromInfected(exactSizeFileList, longRegistryKeysList);
-  });
-
-  test('startCleanupFromInfected_ManyFilesNoRegistryKeys', function() {
-    return startCleanupFromInfected(longFileList, []);
-  });
-
-  test('startCleanupFromInfected_ManyFilesFewRegistryKeys', function() {
-    return startCleanupFromInfected(longFileList, shortRegistryKeysList);
-  });
-
-  test('startCleanupFromInfected_ManyFilesExactSizeRegistryKeys', function() {
-    return startCleanupFromInfected(longFileList, exactSizeRegistryKeysList);
-  });
-
-  test('startCleanupFromInfected_ManyFilesManyRegistryKeys', function() {
-    return startCleanupFromInfected(longFileList, longRegistryKeysList);
-  });
+        test(testName, function() {
+          return startCleanupFromInfected(
+              fileList, registryKeysList, extensionList);
+        });
+      }
+    }
+  }
 
   test('rebootFromRebootRequired', function() {
     cr.webUIListenerCallback('chrome-cleanup-on-reboot-required');
