@@ -175,9 +175,9 @@ class SigninHeaderHelper {
 
   // Returns wether an account consistency header should be built for this
   // request.
-  bool ShouldBuildRequestHeader(
+  virtual bool ShouldBuildRequestHeader(
       const GURL& url,
-      const content_settings::CookieSettings* cookie_settings);
+      const content_settings::CookieSettings* cookie_settings) = 0;
 
  protected:
   SigninHeaderHelper() {}
