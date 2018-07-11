@@ -13,6 +13,8 @@
 #include "components/cryptauth/remote_device_test_util.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_event_router.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
@@ -71,6 +73,31 @@ TEST_F(EasyUnlockPrivateApiTest, BrowserContextTearDown) {
 
   // The Profile is cleaned up at the end of this scope, and BrowserContext
   // shutdown logic asserts no browser dependencies are referenced afterward.
+}
+
+// Tests that the EasyUnlockPrivateConnectionManager handles tracking when an
+// extension it has a connection to is unloaded.
+TEST_F(EasyUnlockPrivateApiTest, ExtensionUnloaded) {
+  extensions::CreateAndUseTestEventRouter(profile());
+
+  auto* manager = GetConnectionManager(profile());
+  ASSERT_NE(nullptr, manager);
+
+  // Add a Connection to the extension tracked by
+  // EasyUnlockPrivateConnectionManager.
+  auto extension = CreateTestExtension();
+  auto connection = std::make_unique<FakeConnection>(
+      cryptauth::CreateRemoteDeviceRefForTest());
+  manager->AddConnection(extension.get(), std::move(connection), true);
+
+  // Remove the extension from the registry.
+  auto* registry = ExtensionRegistry::Get(profile());
+  registry->TriggerOnUnloaded(
+      extension.get(), extensions::UnloadedExtensionReason::PROFILE_SHUTDOWN);
+
+  // The Profile is cleaned up at the end of this scope, leading to the
+  // destruction of the EasyUnlockPrivateConnectionManager; the extension being
+  // tracked should be cleaned up by this point and not lead to a crash.
 }
 
 }  // namespace

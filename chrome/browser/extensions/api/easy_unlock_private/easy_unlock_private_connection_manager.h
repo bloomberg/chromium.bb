@@ -15,6 +15,7 @@
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/connection_observer.h"
 #include "components/cryptauth/wire_message.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
 class BrowserContext;
@@ -27,7 +28,8 @@ class Extension;
 // EasyUnlockPrivateConnectionManager is used by the EasyUnlockPrivateAPI to
 // interface with cryptauth::Connection.
 class EasyUnlockPrivateConnectionManager
-    : public cryptauth::ConnectionObserver {
+    : public cryptauth::ConnectionObserver,
+      public extensions::ExtensionRegistryObserver {
  public:
   explicit EasyUnlockPrivateConnectionManager(content::BrowserContext* context);
   ~EasyUnlockPrivateConnectionManager() override;
@@ -70,6 +72,11 @@ class EasyUnlockPrivateConnectionManager
                        bool success) override;
 
  private:
+  // extensions::ExtensionRegistryObserver:
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionReason reason) override;
+
   // Dispatches |event_name| with |args| to all listeners. Retrieves the
   // |connection_id| corresponding to the event and rewrite the first argument
   // in |args| with it.
