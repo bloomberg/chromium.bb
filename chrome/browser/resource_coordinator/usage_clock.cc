@@ -28,23 +28,27 @@ UsageClock::~UsageClock() {
 
 base::TimeDelta UsageClock::GetTotalUsageTime() const {
   base::TimeDelta elapsed_time_in_session = usage_time_in_completed_sessions_;
-  if (!current_usage_session_start_time_.is_null())
+  if (IsInUse())
     elapsed_time_in_session += NowTicks() - current_usage_session_start_time_;
   return elapsed_time_in_session;
+}
+
+bool UsageClock::IsInUse() const {
+  return !current_usage_session_start_time_.is_null();
 }
 
 #if !defined(OS_CHROMEOS)
 void UsageClock::OnSessionStarted(base::TimeTicks session_start) {
   // Ignore |session_start| because it doesn't come from the resource
   // coordinator clock.
-  DCHECK(current_usage_session_start_time_.is_null());
+  DCHECK(!IsInUse());
   current_usage_session_start_time_ = NowTicks();
 }
 
 void UsageClock::OnSessionEnded(base::TimeDelta session_length) {
   // Ignore |session_length| because it wasn't measured using the resource
   // coordinator clock.
-  DCHECK(!current_usage_session_start_time_.is_null());
+  DCHECK(IsInUse());
   usage_time_in_completed_sessions_ +=
       NowTicks() - current_usage_session_start_time_;
   current_usage_session_start_time_ = base::TimeTicks();
