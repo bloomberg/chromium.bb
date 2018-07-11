@@ -913,11 +913,13 @@ util.isDescendantEntry = function(ancestorEntry, childEntry) {
   if (!ancestorEntry.isDirectory)
     return false;
   if (ancestorEntry instanceof EntryList) {
-    let entryList = /** @type {EntryList} */ (ancestorEntry);
+    const entryList = /** @type {EntryList} */ (ancestorEntry);
     return entryList.children.some(ancestorChild => {
-      let volumeEntry = ancestorChild.rootEntry;
-      return util.isSameEntry(volumeEntry, childEntry) ||
-          util.isDescendantEntry(volumeEntry, childEntry);
+      // rootEntry might not be resolved yet.
+      const volumeEntry = ancestorChild.rootEntry;
+      return volumeEntry &&
+          (util.isSameEntry(volumeEntry, childEntry) ||
+           util.isDescendantEntry(volumeEntry, childEntry));
     });
   }
   if (!util.isSameFileSystem(ancestorEntry.filesystem, childEntry.filesystem))

@@ -50,7 +50,6 @@ testcase.showMyFiles = function() {
     function() {
       remoteCall.callRemoteTestUtil(
           'selectVolume', appId, ['downloads'], this.next);
-
     },
     // Get the breadcrumbs elements.
     function() {
@@ -125,6 +124,45 @@ testcase.hideSearchButton = function() {
       this.next();
     },
     function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
+/**
+ * Tests directory tree refresh doesn't hide Downloads folder.
+ *
+ * This tests a regression where Downloads folder would disappear because
+ * MyFiles model and entry were being recreated on every update and
+ * DirectoryTree expects NavigationModelItem to be the same instance through
+ * updates.
+ */
+testcase.directoryTreeRefresh = function() {
+  let appId;
+  const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
+  StepsRunner.run([
+    // Open Files app on local Downloads.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.beautiful], []);
+    },
+    // Mount a USB volume.
+    function(results) {
+      appId = results.windowId;
+      chrome.test.sendMessage(
+          JSON.stringify({name: 'mountFakeUsb'}), this.next);
+    },
+    // Wait for the USB volume to mount.
+    function() {
+      remoteCall.waitForElement(appId, USB_VOLUME_QUERY).then(this.next);
+    },
+    // Select Downloads folder.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'selectVolume', appId, ['downloads'], this.next);
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
       checkIfNoErrorsOccured(this.next);
     },
   ]);

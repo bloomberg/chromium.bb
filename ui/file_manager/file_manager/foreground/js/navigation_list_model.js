@@ -230,6 +230,13 @@ function NavigationListModel(
   this.addNewServicesItem_ = addNewServicesItem;
 
   /**
+   * NavigationModel for MyFiles, since DirectoryTree expect it to be always the
+   * same reference we keep the initial reference for reuse.
+   * @private {NavigationModelFakeItem}
+   */
+  this.myFilesModel_ = null;
+
+  /**
    * All root navigation items in display order.
    * @private {!Array<!NavigationModelItem>}
    */
@@ -530,31 +537,67 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
   for (const shortcut of this.shortcutList_)
     this.navigationItems_.push(shortcut);
 
-  const myFilesEntry = new EntryList(
-      str('MY_FILES_ROOT_LABEL'), VolumeManagerCommon.RootType.MY_FILES);
-  const myFilesModel = new NavigationModelFakeItem(
-      myFilesEntry.label, NavigationModelItemType.ENTRY_LIST, myFilesEntry);
+  let myFilesEntry, myFilesModel;
+  if (!this.myFilesModel_) {
+    myFilesEntry = new EntryList(
+        str('MY_FILES_ROOT_LABEL'), VolumeManagerCommon.RootType.MY_FILES);
+    myFilesModel = new NavigationModelFakeItem(
+        myFilesEntry.label, NavigationModelItemType.ENTRY_LIST, myFilesEntry);
+    myFilesModel.section = NavigationSection.MY_FILES;
+    this.myFilesModel_ = myFilesModel;
+  } else {
+    myFilesEntry = this.myFilesModel_.entry;
+    myFilesModel = this.myFilesModel_;
+  }
+  this.navigationItems_.push(myFilesModel);
+
+  // Add Downloads to My Files.
   const downloadsVolume =
       getSingleVolume(VolumeManagerCommon.VolumeType.DOWNLOADS);
-  if (downloadsVolume)
-    myFilesEntry.addEntry(new VolumeEntry(downloadsVolume.volumeInfo));
+  if (downloadsVolume) {
+    // Only add volume if MyFiles doesn't have it yet.
+    if (!myFilesEntry.children.find(
+            childEntry =>
+                childEntry.volumeInfo === downloadsVolume.volumeInfo)) {
+      myFilesEntry.addEntry(new VolumeEntry(downloadsVolume.volumeInfo));
+    }
+  }
 
-  this.navigationItems_.push(myFilesModel);
-  myFilesModel.section = NavigationSection.MY_FILES;
-
+  // Add Android to My Files.
   const androidVolume =
       getSingleVolume(VolumeManagerCommon.VolumeType.ANDROID_FILES);
-  if (androidVolume)
-    myFilesEntry.addEntry(new VolumeEntry(androidVolume.volumeInfo));
+  if (androidVolume) {
+    // Only add volume if MyFiles doesn't have it yet.
+    if (!myFilesEntry.children.find(
+            childEntry => childEntry.volumeInfo === androidVolume.volumeInfo)) {
+      myFilesEntry.addEntry(new VolumeEntry(androidVolume.volumeInfo));
+    }
+  }
 
+  // Add Linux to My Files.
   const crostiniVolume =
       getSingleVolume(VolumeManagerCommon.VolumeType.CROSTINI);
   if (crostiniVolume) {
-    // Crostini is mounted so add it.
-    myFilesEntry.addEntry(new crostiniVolume.volumeInfo);
+    // Crostini is mounted so add it if MyFiles doesn't have it yet.
+    if (!myFilesEntry.children.find(
+            childEntry =>
+                childEntry.volumeInfo === crostiniVolume.volumeInfo)) {
+      myFilesEntry.addEntry(new crostiniVolume.volumeInfo);
+    }
+    // Remove linuxFilesItem_ if exists on EntryList.
+    if (this.linuxFilesItem_) {
+      const fakeCrostiniIndex =
+          myFilesEntry.children.indexOf(this.linuxFilesItem_.entry);
+      if (fakeCrostiniIndex != -1) {
+        myFilesEntry.children.splice(fakeCrostiniIndex, 1);
+      }
+    }
   } else if (this.linuxFilesItem_) {
-    // Here it's just a fake item.
-    myFilesEntry.addEntry(this.linuxFilesItem_.entry);
+    // Here it's just a fake item, only add if MyFiles doesn't have it yet.
+    if (!myFilesEntry.children.find(
+            childEntry => childEntry === this.linuxFilesItem_.entry)) {
+      myFilesEntry.addEntry(this.linuxFilesItem_.entry);
+    }
   }
 
   // Join MEDIA_VIEW, MTP, ARCHIVE and REMOVABLE. These types belong to same
@@ -574,11 +617,13 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
     volume.section = NavigationSection.REMOVABLE;
   }
 
+  // Add Drive.
   for (const driveItem of getVolumes(VolumeManagerCommon.VolumeType.DRIVE)) {
     this.navigationItems_.push(driveItem);
     driveItem.section = NavigationSection.CLOUD;
   }
 
+  // Add FSP.
   for (const provided of getVolumes(VolumeManagerCommon.VolumeType.PROVIDED)) {
     this.navigationItems_.push(provided);
     provided.section = NavigationSection.CLOUD;

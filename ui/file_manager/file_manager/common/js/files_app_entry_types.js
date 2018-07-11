@@ -309,6 +309,11 @@ class VolumeEntry {
 
     /** @type {DirectoryEntry} from Volume's root. */
     this.rootEntry_ = volumeInfo.displayRoot;
+    if (!volumeInfo.displayRoot) {
+      volumeInfo.resolveDisplayRoot(displayRoot => {
+        this.rootEntry_ = displayRoot;
+      });
+    }
     this.type_name = 'VolumeEntry';
   }
 
