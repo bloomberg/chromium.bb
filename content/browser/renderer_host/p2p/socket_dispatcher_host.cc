@@ -140,6 +140,8 @@ void P2PSocketDispatcherHost::OnChannelClosing() {
     net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
     monitoring_networks_ = false;
   }
+
+  proxy_resolving_socket_factory_.reset();
 }
 
 void P2PSocketDispatcherHost::OnDestruct() const {
