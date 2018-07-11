@@ -21,6 +21,7 @@
 #include "base/containers/stack_container.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -589,6 +590,9 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_YUV444P12:
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_UNKNOWN:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.GpuMemoryBufferVideoFramePool.UnsupportedFormat",
+          video_frame->format(), PIXEL_FORMAT_MAX + 1);
       passthrough = true;
   }
   // TODO(dcastagna): Handle odd positioned video frame input, see
