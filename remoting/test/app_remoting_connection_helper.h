@@ -11,12 +11,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "remoting/test/remote_connection_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 class RunLoop;
-class Timer;
 }
 
 namespace remoting {
@@ -77,7 +77,7 @@ class AppRemotingConnectionHelper
   std::unique_ptr<base::RunLoop> run_loop_;
 
   // Used for setting timeouts and delays.
-  std::unique_ptr<base::Timer> timer_;
+  base::OneShotTimer timer_;
 
   // Used to ensure RemoteConnectionObserver methods are called on the same
   // thread.

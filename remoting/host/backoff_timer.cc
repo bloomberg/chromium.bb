@@ -8,7 +8,7 @@
 
 namespace remoting {
 
-BackoffTimer::BackoffTimer() : timer_(new base::Timer(false, false)) {}
+BackoffTimer::BackoffTimer() : timer_(new base::OneShotTimer()) {}
 
 BackoffTimer::~BackoffTimer() = default;
 
@@ -33,7 +33,7 @@ void BackoffTimer::Stop() {
   backoff_entry_.reset();
 };
 
-void BackoffTimer::SetTimerForTest(std::unique_ptr<base::Timer> timer) {
+void BackoffTimer::SetTimerForTest(std::unique_ptr<base::OneShotTimer> timer) {
   timer_ = std::move(timer);
 }
 

@@ -60,7 +60,7 @@ bool ChromotingTestFixture::ConnectToHost(
 
   CreateObserver();
 
-  base::Timer timer(true, false);
+  base::OneShotTimer timer;
   timer.Start(FROM_HERE, max_time_to_connect, run_loop.QuitClosure());
 
   connection_time_observer_->ConnectionStateChanged(

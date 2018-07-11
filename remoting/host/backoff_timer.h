@@ -34,13 +34,13 @@ class BackoffTimer {
   // Returns true if the user task may be invoked in the future.
   bool IsRunning() const { return !!backoff_entry_; }
 
-  void SetTimerForTest(std::unique_ptr<base::Timer> timer);
+  void SetTimerForTest(std::unique_ptr<base::OneShotTimer> timer);
 
  private:
   void StartTimer();
   void OnTimerFired();
 
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
   base::Closure user_task_;
   base::Location posted_from_;
   net::BackoffEntry::Policy backoff_policy_ = {};

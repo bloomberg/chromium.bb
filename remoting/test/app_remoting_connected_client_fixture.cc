@@ -40,8 +40,7 @@ namespace test {
 
 AppRemotingConnectedClientFixture::AppRemotingConnectedClientFixture()
     : application_details_(
-          AppRemotingSharedData->GetDetailsFromAppName(GetParam())),
-      timer_(new base::Timer(true, false)) {}
+          AppRemotingSharedData->GetDetailsFromAppName(GetParam())) {}
 
 AppRemotingConnectedClientFixture::~AppRemotingConnectedClientFixture() =
     default;
@@ -97,11 +96,11 @@ bool AppRemotingConnectedClientFixture::VerifyResponseForSimpleHostMessage(
   message.set_data(message_payload);
   connection_helper_->host_stub()->DeliverClientMessage(message);
 
-  DCHECK(!timer_->IsRunning());
-  timer_->Start(FROM_HERE, max_wait_time, run_loop_->QuitClosure());
+  base::OneShotTimer timer;
+  timer.Start(FROM_HERE, max_wait_time, run_loop_->QuitClosure());
 
   run_loop_->Run();
-  timer_->Stop();
+  timer.Stop();
   host_message_received_callback_.Reset();
 
   return message_received;

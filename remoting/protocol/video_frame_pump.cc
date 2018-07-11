@@ -52,8 +52,7 @@ VideoFramePump::VideoFramePump(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kKeepAlivePacketIntervalMs),
           base::Bind(&VideoFramePump::SendKeepAlivePacket,
-                     base::Unretained(this)),
-          false),
+                     base::Unretained(this))),
       capture_scheduler_(base::Bind(&VideoFramePump::CaptureNextFrame,
                                     base::Unretained(this))),
       weak_factory_(this) {

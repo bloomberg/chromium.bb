@@ -39,7 +39,7 @@ class MouseShapePump : public webrtc::MouseCursorMonitor::Callback {
   std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor_;
   protocol::CursorShapeStub* cursor_shape_stub_;
 
-  base::Timer capture_timer_;
+  base::RepeatingTimer capture_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseShapePump);
 };
