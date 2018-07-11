@@ -1898,7 +1898,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialPageFocusedWidget) {
       interstitial_main_frame->GetRenderViewHost()->GetWidget();
 
   content::WaitForHitTestDataOrChildSurfaceReady(interstitial_main_frame);
-  content::RenderFrameSubmissionObserver frame_observer(guest_web_contents);
 
   EXPECT_NE(interstitial_widget,
             content::GetFocusedRenderWidgetHost(guest_web_contents));
@@ -1913,15 +1912,16 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialPageFocusedWidget) {
   content::RouteMouseEvent(outer_web_contents, &event);
 
   // Wait a frame.
-  frame_observer.WaitForAnyFrameSubmission();
+  content::MainThreadFrameObserver observer(interstitial_widget);
+  observer.Wait();
 
   // Send mouse up.
-  content::InputEventAckWaiter waiter(interstitial_widget,
-                                      blink::WebInputEvent::kMouseUp);
   event.SetType(blink::WebInputEvent::kMouseUp);
   event.SetPositionInWidget(10, 10);
   content::RouteMouseEvent(outer_web_contents, &event);
-  waiter.Wait();
+
+  // Wait another frame.
+  observer.Wait();
 
   EXPECT_EQ(interstitial_widget,
             content::GetFocusedRenderWidgetHost(guest_web_contents));
