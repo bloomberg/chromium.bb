@@ -423,9 +423,9 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   available_width = std::max(LayoutUnit(0), available_width);
 
   // Use kStartShouldBeSafe if at the beginning of a line.
-  unsigned options = 0;
-  if (offset_ == line_info->StartOffset())
-    options |= ShapingLineBreaker::kStartShouldBeSafe;
+  unsigned options = ShapingLineBreaker::kDefaultOptions;
+  if (offset_ != line_info->StartOffset())
+    options |= ShapingLineBreaker::kDontReshapeStart;
 
   // Use kNoResultIfOverflow if 'break-word' and we're trying to break normally
   // because if this item overflows, we will rewind and break line again. The

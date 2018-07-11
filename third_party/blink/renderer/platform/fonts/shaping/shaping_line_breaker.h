@@ -66,9 +66,10 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
   // Shapes a line of text by finding a valid and appropriate break opportunity
   // based on the shaping results for the entire paragraph.
   enum Options {
-    // Enforce the start to be safe-to-break. Set for the beginning of each
-    // wrapped line, but not for subsequent ShapeResults.
-    kStartShouldBeSafe = 1,
+    kDefaultOptions = 0,
+    // Disable reshpaing the start edge even if the start offset is not safe-
+    // to-break. Set if this is not at the start edge of a wrapped line.
+    kDontReshapeStart = 1,
     // Returns nullptr if this line overflows. When the word is very long, such
     // as URL or data, creating ShapeResult is expensive. Set this option to
     // suppress if ShapeResult is not needed when this line overflows.
@@ -81,7 +82,7 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
   scoped_refptr<ShapeResult> ShapeLine(unsigned start_offset,
                                        LayoutUnit available_space,
                                        Result* result_out) {
-    return ShapeLine(start_offset, available_space, kStartShouldBeSafe,
+    return ShapeLine(start_offset, available_space, kDefaultOptions,
                      result_out);
   }
 

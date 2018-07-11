@@ -243,9 +243,9 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
   unsigned candidate_break =
       result_->CachedOffsetForPosition(end_position) + range_start;
 
-  unsigned first_safe = (options & kStartShouldBeSafe)
-                            ? result_->CachedNextSafeToBreakOffset(start)
-                            : start;
+  unsigned first_safe = (options & kDontReshapeStart)
+                            ? start
+                            : result_->CachedNextSafeToBreakOffset(start);
   DCHECK_GE(first_safe, start);
   if (candidate_break >= range_end) {
     // The |result_| does not have glyphs to fill the available space,
