@@ -2015,6 +2015,7 @@ test("ash_unittests") {
     "//components/sync_preferences:test_support",
     "//components/user_manager",
     "//components/user_manager:test_support",
+    "//device/base",
     "//device/bluetooth",
     "//mojo/core/embedder",
     "//net:net",

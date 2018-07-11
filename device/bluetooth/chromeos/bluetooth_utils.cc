@@ -4,6 +4,9 @@
 
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 
+#include "base/feature_list.h"
+#include "device/base/features.h"
+
 namespace device {
 
 namespace {
@@ -46,6 +49,9 @@ BluetoothAdapter::DeviceList GetLimitedNumDevices(
 // Filter out unknown devices from the list.
 BluetoothAdapter::DeviceList FilterUnknownDevices(
     const BluetoothAdapter::DeviceList& devices) {
+  if (base::FeatureList::IsEnabled(device::kUnfilteredBluetoothDevices))
+    return devices;
+
   BluetoothAdapter::DeviceList result;
   for (BluetoothDevice* device : devices) {
     switch (device->GetType()) {

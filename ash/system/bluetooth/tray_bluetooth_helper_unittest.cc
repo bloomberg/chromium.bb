@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "ash/test/ash_test_base.h"
+#include "base/test/scoped_feature_list.h"
+#include "device/base/features.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
@@ -74,6 +76,43 @@ TEST_F(TrayBluetoothHelperTest, Basics) {
   helper.StopBluetoothDiscovering();
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(helper.HasBluetoothDiscoverySession());
+}
+
+// Tests the Bluetooth device list when UnfilteredBluetoothDevices feature is
+// enabled.
+TEST_F(TrayBluetoothHelperTest, UnfilteredBluetoothDevices) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitFromCommandLine(device::kUnfilteredBluetoothDevices.name,
+                                   "");
+
+  // Set Bluetooth discovery simulation delay to 0 so the test doesn't have to
+  // wait or use timers.
+  FakeBluetoothAdapterClient* adapter_client =
+      static_cast<FakeBluetoothAdapterClient*>(
+          BluezDBusManager::Get()->GetBluetoothAdapterClient());
+  adapter_client->SetSimulationIntervalMs(0);
+
+  FakeBluetoothDeviceClient* device_client =
+      static_cast<FakeBluetoothDeviceClient*>(
+          BluezDBusManager::Get()->GetBluetoothDeviceClient());
+  // All devices should be shown (unfiltered).
+  device_client->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kDisplayPinCodePath));
+  device_client->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+
+  TrayBluetoothHelper helper;
+  helper.Initialize();
+  base::RunLoop().RunUntilIdle();
+
+  BluetoothDeviceList devices = helper.GetAvailableBluetoothDevices();
+  // The devices are fake in tests, so don't assume any particular number.
+  EXPECT_TRUE(ExistInFilteredDevices(
+      FakeBluetoothDeviceClient::kDisplayPinCodeAddress, devices));
+  EXPECT_TRUE(ExistInFilteredDevices(
+      FakeBluetoothDeviceClient::kLowEnergyAddress, devices));
 }
 
 }  // namespace

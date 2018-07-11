@@ -212,7 +212,12 @@ void BluezDBusManager::InitializeClients() {
 }
 
 std::string BluezDBusManager::GetBluetoothServiceName() {
-  return base::FeatureList::IsEnabled(device::kNewblueDaemon)
+  bool use_newblue = false;
+#if defined(OS_CHROMEOS)
+  use_newblue = base::FeatureList::IsEnabled(device::kNewblueDaemon);
+#endif  // defined(OS_CHROMEOS)
+
+  return use_newblue
              ? bluetooth_object_manager::kBluetoothObjectManagerServiceName
              : bluez_object_manager::kBluezObjectManagerServiceName;
 }
