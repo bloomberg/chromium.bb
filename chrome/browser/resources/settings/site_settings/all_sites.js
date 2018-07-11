@@ -10,7 +10,12 @@
 Polymer({
   is: 'all-sites',
 
-  behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
+  behaviors: [
+    SiteSettingsBehavior,
+    WebUIListenerBehavior,
+    settings.RouteObserverBehavior,
+    settings.GlobalScrollTargetBehavior,
+  ],
 
   properties: {
     /**
@@ -23,6 +28,16 @@ Polymer({
         return [];
       },
     },
+
+    /**
+     * Needed by GlobalScrollTargetBehavior.
+     * @override
+     */
+    subpageRoute: {
+      type: Object,
+      value: settings.routes.SITE_SETTINGS_ALL,
+      readOnly: true,
+    },
   },
 
   /** @override */
@@ -32,6 +47,15 @@ Polymer({
     this.addWebUIListener(
         'contentSettingSitePermissionChanged', this.populateList_.bind(this));
     this.populateList_();
+  },
+
+  /** @override */
+  attached: function() {
+    // Set scrollOffset so the iron-list scrolling accounts for the space the
+    // title takes.
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      this.$.allSitesList.scrollOffset = this.$.allSitesList.offsetTop;
+    });
   },
 
   /**
