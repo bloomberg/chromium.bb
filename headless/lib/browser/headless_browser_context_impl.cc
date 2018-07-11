@@ -450,12 +450,6 @@ HeadlessBrowserContext::Builder::SetBlockNewWebContents(
 }
 
 HeadlessBrowserContext::Builder&
-HeadlessBrowserContext::Builder::SetAllowCookies(bool allow_cookies) {
-  options_->allow_cookies_ = allow_cookies;
-  return *this;
-}
-
-HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::SetOverrideWebPreferencesCallback(
     base::RepeatingCallback<void(WebPreferences*)> callback) {
   options_->override_web_preferences_callback_ = std::move(callback);

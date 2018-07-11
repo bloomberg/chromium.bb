@@ -316,38 +316,6 @@ void HeadlessContentBrowserClient::ResourceDispatcherHostCreated() {
       resource_dispatcher_host_delegate_.get());
 }
 
-bool HeadlessContentBrowserClient::AllowGetCookie(
-    const GURL& url,
-    const GURL& first_party,
-    const net::CookieList& cookie_list,
-    content::ResourceContext* context,
-    int render_process_id,
-    int render_frame_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  LockedPtr<HeadlessBrowserContextImpl> browser_context =
-      browser_->GetBrowserContextForRenderFrame(render_process_id,
-                                                render_frame_id);
-  if (!browser_context)
-    return false;
-  return browser_context->options()->allow_cookies();
-}
-
-bool HeadlessContentBrowserClient::AllowSetCookie(
-    const GURL& url,
-    const GURL& first_party,
-    const net::CanonicalCookie& cookie,
-    content::ResourceContext* context,
-    int render_process_id,
-    int render_frame_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  LockedPtr<HeadlessBrowserContextImpl> browser_context =
-      browser_->GetBrowserContextForRenderFrame(render_process_id,
-                                                render_frame_id);
-  if (!browser_context)
-    return false;
-  return browser_context->options()->allow_cookies();
-}
-
 bool HeadlessContentBrowserClient::DoesSiteRequireDedicatedProcess(
     content::BrowserContext* browser_context,
     const GURL& effective_site_url) {
