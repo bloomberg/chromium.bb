@@ -763,6 +763,9 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 // Marks items from |section| with as read or unread dending on |read|.
 - (void)markItemsInSection:(SectionIdentifier)section
             withReadStatus:(BOOL)read {
+  if (![self.tableViewModel hasSectionForSectionIdentifier:section])
+    return;
+
   // Mark the items as |read| and exit editing.
   ReadingListListItemUpdater updater = ^(id<ReadingListListItem> item) {
     [self.dataSource setReadStatus:read forItem:item];
