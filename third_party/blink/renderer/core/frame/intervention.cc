@@ -19,22 +19,22 @@ namespace blink {
 
 // static
 void Intervention::GenerateReport(const LocalFrame* frame,
+                                  const String& id,
                                   const String& message) {
   if (!frame)
     return;
 
   // Send the message to the console.
-  frame->Console().AddMessage(ConsoleMessage::Create(
+  Document* document = frame->GetDocument();
+  document->AddConsoleMessage(ConsoleMessage::Create(
       kInterventionMessageSource, kErrorMessageLevel, message));
 
   if (!frame->Client())
     return;
 
-  Document* document = frame->GetDocument();
-
   // Construct the intervention report.
   InterventionReportBody* body =
-      new InterventionReportBody(message, SourceLocation::Capture());
+      new InterventionReportBody(id, message, SourceLocation::Capture());
   Report* report =
       new Report("intervention", document->Url().GetString(), body);
 

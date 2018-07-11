@@ -17,6 +17,7 @@ async_test(function(test) {
       assert_equals(reports[0].type, "intervention");
       assert_true(reports[0].url.endsWith(
           "reporting-observer/intervention.html"));
+      assert_equals(typeof reports[0].body.id, "string");
       assert_true(reports[0].body.sourceFile.endsWith(
           "reporting-observer/resources/intervention.js"));
       assert_equals(typeof reports[0].body.lineNumber, "number");

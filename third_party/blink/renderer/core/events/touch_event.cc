@@ -264,11 +264,13 @@ void TouchEvent::preventDefault() {
   // A common developer error is to wait too long before attempting to stop
   // scrolling by consuming a touchmove event. Generate an error if this
   // event is uncancelable.
+  String id;
   String message;
   switch (HandlingPassive()) {
     case PassiveMode::kNotPassive:
     case PassiveMode::kNotPassiveDefault:
       if (!cancelable()) {
+        id = "IgnoredEventCancel";
         message = "Ignored attempt to cancel a " + type() +
                   " event with cancelable=false, for example "
                   "because scrolling is in progress and "
@@ -280,6 +282,7 @@ void TouchEvent::preventDefault() {
       // an author may use touch action but call preventDefault for interop with
       // browsers that don't support touch-action.
       if (current_touch_action_ == TouchAction::kTouchActionAuto) {
+        id = "PreventDefaultPassive";
         message =
             "Unable to preventDefault inside passive event listener due to "
             "target being treated as passive. See "
@@ -292,7 +295,8 @@ void TouchEvent::preventDefault() {
 
   if (!message.IsEmpty() && view() && view()->IsLocalDOMWindow() &&
       view()->GetFrame()) {
-    Intervention::GenerateReport(ToLocalDOMWindow(view())->GetFrame(), message);
+    Intervention::GenerateReport(ToLocalDOMWindow(view())->GetFrame(), id,
+                                 message);
   }
 
   if ((type() == EventTypeNames::touchstart ||
