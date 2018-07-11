@@ -147,10 +147,20 @@ void SetIsInputSourceDvorakQwertyForTesting(bool is_dvorak_qwerty) {
     }
   }
 
-  // Clear shift key for printable characters.
-  if ((eventModifiers & (NSNumericPadKeyMask | NSFunctionKeyMask)) == 0 &&
-      [[self keyEquivalent] characterAtIndex:0] != '\r')
-    eventModifiers &= ~NSShiftKeyMask;
+  // [ctr + shift + tab] generates the "End of Medium" keyEquivalent rather than
+  // "Horizontal Tab". We still use "Horizontal Tab" in the main menu to match
+  // the behavior of Safari and Terminal. Thus, we need to explicitly check for
+  // this case.
+  if ((eventModifiers & NSShiftKeyMask) &&
+      [eventString isEqualToString:@"\x19"]) {
+    eventString = @"\x9";
+  } else {
+    // Clear shift key for printable characters, excluding tab.
+    if ((eventModifiers & (NSNumericPadKeyMask | NSFunctionKeyMask)) == 0 &&
+        [[self keyEquivalent] characterAtIndex:0] != '\r') {
+      eventModifiers &= ~NSShiftKeyMask;
+    }
+  }
 
   // Clear all non-interesting modifiers
   eventModifiers &= NSCommandKeyMask |
