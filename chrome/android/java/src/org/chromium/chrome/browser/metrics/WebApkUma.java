@@ -16,16 +16,12 @@ import android.text.TextUtils;
 import org.chromium.base.AsyncTask;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
-import org.chromium.chrome.browser.preferences.website.Website;
-import org.chromium.chrome.browser.preferences.website.WebsitePermissionsFetcher;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -164,16 +160,6 @@ public class WebApkUma {
                 HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_HIDDEN, durationMs, TimeUnit.MILLISECONDS);
     }
 
-    /**
-     * When a user presses on the "Open WebAPK" menu item, this records whether the WebAPK was
-     * opened successfully.
-     * @param type Result of trying to open WebAPK.
-     */
-    public static void recordWebApkOpenAttempt(int type) {
-        assert type >= 0 && type < WEBAPK_OPEN_MAX;
-        RecordHistogram.recordEnumeratedHistogram("WebApk.OpenFromMenu", type, WEBAPK_OPEN_MAX);
-    }
-
     /** Records whether a WebAPK has permission to display notifications. */
     public static void recordNotificationPermissionStatus(boolean permissionEnabled) {
         RecordHistogram.recordBooleanHistogram(
@@ -210,12 +196,6 @@ public class WebApkUma {
     public static void recordWebApkSessionDuration(long duration) {
         RecordHistogram.recordLongTimesHistogram(
                 "WebApk.Session.TotalDuration", duration, TimeUnit.MILLISECONDS);
-    }
-
-    /** Records the amount of time that it takes to bind to the play install service. */
-    public static void recordGooglePlayBindDuration(long durationMs) {
-        RecordHistogram.recordTimesHistogram(
-                "WebApk.Install.GooglePlayBindDuration", durationMs, TimeUnit.MILLISECONDS);
     }
 
     /** Records the current Shell APK version. */
@@ -312,20 +292,12 @@ public class WebApkUma {
 
             @Override
             protected void onPostExecute(Void result) {
-                logSpaceUsageUMA(mAvailableSpaceInByte, mCacheSizeInByte);
+                logSpaceUsageUMAOnDataAvailable(mAvailableSpaceInByte, mCacheSizeInByte);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    private static void logSpaceUsageUMA(long availableSpaceInByte, long cacheSizeInByte) {
-        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(
-                new UnimportantStorageSizeCalculator(availableSpaceInByte, cacheSizeInByte));
-        fetcher.fetchPreferencesForCategory(
-                SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.USE_STORAGE));
-    }
-
-    private static void logSpaceUsageUMAOnDataAvailable(
-            long spaceSize, long cacheSize, long unimportantSiteSize) {
+    private static void logSpaceUsageUMAOnDataAvailable(long spaceSize, long cacheSize) {
         RecordHistogram.recordSparseSlowlyHistogram(
                 "WebApk.Install.AvailableSpace.Fail", roundByteToMb(spaceSize));
 
@@ -333,19 +305,8 @@ public class WebApkUma {
                 "WebApk.Install.ChromeCacheSize.Fail", roundByteToMb(cacheSize));
 
         RecordHistogram.recordSparseSlowlyHistogram(
-                "WebApk.Install.ChromeUnimportantStorage.Fail", roundByteToMb(unimportantSiteSize));
-
-        RecordHistogram.recordSparseSlowlyHistogram(
                 "WebApk.Install.AvailableSpaceAfterFreeUpCache.Fail",
                 roundByteToMb(spaceSize + cacheSize));
-
-        RecordHistogram.recordSparseSlowlyHistogram(
-                "WebApk.Install.AvailableSpaceAfterFreeUpUnimportantStorage.Fail",
-                roundByteToMb(spaceSize + unimportantSiteSize));
-
-        RecordHistogram.recordSparseSlowlyHistogram(
-                "WebApk.Install.AvailableSpaceAfterFreeUpAll.Fail",
-                roundByteToMb(spaceSize + cacheSize + unimportantSiteSize));
     }
 
     private static int roundByteToMb(long bytes) {
@@ -438,32 +399,5 @@ public class WebApkUma {
         long minFreePercentInBytes = (partitionTotalBytes * minFreePercent) / 100;
 
         return Math.min(minFreeBytes, minFreePercentInBytes);
-    }
-
-    private static class UnimportantStorageSizeCalculator
-            implements WebsitePermissionsFetcher.WebsitePermissionsCallback {
-        private long mAvailableSpaceInByte;
-        private long mCacheSizeInByte;
-
-        UnimportantStorageSizeCalculator(long availableSpaceInByte, long cacheSizeInByte) {
-            mAvailableSpaceInByte = availableSpaceInByte;
-            mCacheSizeInByte = cacheSizeInByte;
-        }
-        @Override
-        public void onWebsitePermissionsAvailable(Collection<Website> sites) {
-            long siteStorageSize = 0;
-            long importantSiteStorageTotal = 0;
-            for (Website site : sites) {
-                siteStorageSize += site.getTotalUsage();
-                if (site.getLocalStorageInfo() != null
-                        && site.getLocalStorageInfo().isDomainImportant()) {
-                    importantSiteStorageTotal += site.getTotalUsage();
-                }
-            }
-
-            long unimportantSiteStorageTotal = siteStorageSize - importantSiteStorageTotal;
-            logSpaceUsageUMAOnDataAvailable(
-                    mAvailableSpaceInByte, mCacheSizeInByte, unimportantSiteStorageTotal);
-        }
     }
 }
