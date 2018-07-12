@@ -32,6 +32,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -901,9 +902,15 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
     }
     if (i == 2 && chromeos::switches::ShouldUseShelfNewUi()) {
       // Start centering after we've laid out the launcher button.
+      // Center the shelf items on the whole shelf, including the status
+      // area widget.
       int centered_shelf_items_size = GetDimensionOfCenteredShelfItemsInNewUi();
+      StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
+      int status_widget_size = shelf_->PrimaryAxisValue(
+          status_widget->GetWindowBoundsInScreen().width(),
+          status_widget->GetWindowBoundsInScreen().height());
       int padding_for_centering =
-          (available_size - centered_shelf_items_size) / 2;
+          (available_size + status_widget_size - centered_shelf_items_size) / 2;
       x = shelf_->PrimaryAxisValue(padding_for_centering, 0);
       y = shelf_->PrimaryAxisValue(0, padding_for_centering);
     }
