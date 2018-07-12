@@ -20,6 +20,7 @@
 #include "url/gurl.h"
 
 using testing::Eq;
+using testing::StartsWith;
 
 namespace {
 
@@ -46,7 +47,8 @@ class NtpBackgroundServiceTest : public testing::Test {
 
     service_ = std::make_unique<NtpBackgroundService>(
         identity_env_.identity_manager(), test_shared_loader_factory_,
-        base::nullopt, base::nullopt, base::nullopt, kImageOptions);
+        base::nullopt, base::nullopt, base::nullopt, base::nullopt,
+        kImageOptions);
   }
 
   void SetUpResponseWithData(const GURL& load_url,
@@ -80,11 +82,10 @@ TEST_F(NtpBackgroundServiceTest, CollectionInfoNetworkError) {
 
   ASSERT_TRUE(service()->collection_info().empty());
 
-  base::RunLoop loop;
   service()->FetchCollectionInfo();
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
-  ASSERT_TRUE(service()->collection_info().empty());
+  EXPECT_TRUE(service()->collection_info().empty());
 }
 
 TEST_F(NtpBackgroundServiceTest, BadCollectionsResponse) {
@@ -93,9 +94,8 @@ TEST_F(NtpBackgroundServiceTest, BadCollectionsResponse) {
 
   ASSERT_TRUE(service()->collection_info().empty());
 
-  base::RunLoop loop;
   service()->FetchCollectionInfo();
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->collection_info().empty());
 }
@@ -115,9 +115,8 @@ TEST_F(NtpBackgroundServiceTest, GoodCollectionsResponse) {
 
   ASSERT_TRUE(service()->collection_info().empty());
 
-  base::RunLoop loop;
   service()->FetchCollectionInfo();
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   CollectionInfo collection_info;
   collection_info.collection_id = collection.collection_id();
@@ -133,11 +132,10 @@ TEST_F(NtpBackgroundServiceTest, CollectionImagesNetworkError) {
 
   ASSERT_TRUE(service()->collection_images().empty());
 
-  base::RunLoop loop;
   service()->FetchCollectionImageInfo("shapes");
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
-  ASSERT_TRUE(service()->collection_images().empty());
+  EXPECT_TRUE(service()->collection_images().empty());
 }
 
 TEST_F(NtpBackgroundServiceTest, BadCollectionImagesResponse) {
@@ -146,9 +144,8 @@ TEST_F(NtpBackgroundServiceTest, BadCollectionImagesResponse) {
 
   ASSERT_TRUE(service()->collection_images().empty());
 
-  base::RunLoop loop;
   service()->FetchCollectionImageInfo("shapes");
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->collection_images().empty());
 }
@@ -168,9 +165,8 @@ TEST_F(NtpBackgroundServiceTest, GoodCollectionImagesResponse) {
 
   ASSERT_TRUE(service()->collection_images().empty());
 
-  base::RunLoop loop;
   service()->FetchCollectionImageInfo("shapes");
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   CollectionImage collection_image;
   collection_image.collection_id = "shapes";
@@ -211,12 +207,11 @@ TEST_F(NtpBackgroundServiceTest, MultipleRequests) {
   ASSERT_TRUE(service()->collection_info().empty());
   ASSERT_TRUE(service()->collection_images().empty());
 
-  base::RunLoop loop;
   service()->FetchCollectionInfo();
   service()->FetchCollectionImageInfo("shapes");
   // Subsequent requests are ignored while the loader is in use.
   service()->FetchCollectionImageInfo("colors");
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   CollectionInfo collection_info;
   collection_info.collection_id = collection.collection_id();
@@ -241,11 +236,10 @@ TEST_F(NtpBackgroundServiceTest, AlbumInfoNetworkError) {
 
   ASSERT_TRUE(service()->album_info().empty());
 
-  base::RunLoop loop;
   service()->FetchAlbumInfo();
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
-  ASSERT_TRUE(service()->album_info().empty());
+  EXPECT_TRUE(service()->album_info().empty());
 }
 
 TEST_F(NtpBackgroundServiceTest, BadAlbumsResponse) {
@@ -254,9 +248,8 @@ TEST_F(NtpBackgroundServiceTest, BadAlbumsResponse) {
 
   ASSERT_TRUE(service()->album_info().empty());
 
-  base::RunLoop loop;
   service()->FetchAlbumInfo();
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->album_info().empty());
 }
@@ -276,9 +269,8 @@ TEST_F(NtpBackgroundServiceTest, GoodAlbumsResponse) {
 
   ASSERT_TRUE(service()->album_info().empty());
 
-  base::RunLoop loop;
   service()->FetchAlbumInfo();
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   AlbumInfo album_info;
   album_info.album_id = album.album_id();
@@ -288,4 +280,72 @@ TEST_F(NtpBackgroundServiceTest, GoodAlbumsResponse) {
 
   EXPECT_FALSE(service()->album_info().empty());
   EXPECT_THAT(service()->album_info().at(0), Eq(album_info));
+}
+
+TEST_F(NtpBackgroundServiceTest, AlbumPhotosNetworkError) {
+  SetUpResponseWithNetworkError(service()->GetAlbumPhotosApiUrlForTesting(
+      "album_id", "photo_container_id"));
+
+  ASSERT_TRUE(service()->album_photos().empty());
+
+  service()->FetchAlbumPhotos("album_id", "photo_container_id");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(service()->album_photos().empty());
+}
+
+TEST_F(NtpBackgroundServiceTest, BadAlbumPhotosResponse) {
+  SetUpResponseWithData(service()->GetAlbumPhotosApiUrlForTesting(
+                            "album_id", "photo_container_id"),
+                        "bad serialized SettingPreviewResponse");
+
+  ASSERT_TRUE(service()->album_photos().empty());
+
+  service()->FetchAlbumPhotos("album_id", "photo_container_id");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(service()->album_photos().empty());
+}
+
+TEST_F(NtpBackgroundServiceTest, AlbumPhotoErrorResponse) {
+  ntp::background::SettingPreviewResponse response;
+  response.set_status(ntp::background::ErrorCode::SERVER_ERROR);
+  response.set_error_msg("server error");
+  std::string response_string;
+  response.SerializeToString(&response_string);
+
+  SetUpResponseWithData(service()->GetAlbumPhotosApiUrlForTesting(
+                            "album_id", "photo_container_id"),
+                        response_string);
+
+  ASSERT_TRUE(service()->album_photos().empty());
+
+  service()->FetchAlbumPhotos("album_id", "photo_container_id");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(service()->album_photos().empty());
+}
+
+TEST_F(NtpBackgroundServiceTest, GoodAlbumPhotosResponse) {
+  ntp::background::SettingPreviewResponse::Preview preview;
+  preview.set_preview_url("https://wallpapers.co/some_image");
+  ntp::background::SettingPreviewResponse response;
+  *response.add_preview() = preview;
+  std::string response_string;
+  response.SerializeToString(&response_string);
+
+  SetUpResponseWithData(service()->GetAlbumPhotosApiUrlForTesting(
+                            "album_id", "photo_container_id"),
+                        response_string);
+
+  ASSERT_TRUE(service()->album_photos().empty());
+
+  service()->FetchAlbumPhotos("album_id", "photo_container_id");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(service()->album_photos().empty());
+  EXPECT_THAT(service()->album_photos().at(0).thumbnail_photo_url.spec(),
+              StartsWith(preview.preview_url()));
+  EXPECT_THAT(service()->album_photos().at(0).photo_url.spec(),
+              StartsWith(preview.preview_url()));
 }

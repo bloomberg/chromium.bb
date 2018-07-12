@@ -110,3 +110,30 @@ message PersonalAlbumsResponse {
   // Set to true if there was an error on the server.
   optional bool error_on_server = 5;
 }
+
+// The Photos API returns metadata about photos within an album as a
+// SettingPreviewResponse. See NtpBackgroundService::FetchAlbumPhotos for the
+// API's usage. This is a server-defined message.
+message SettingPreviewResponse {
+  // Deprecated or unused tag numbers
+  reserved 1;
+
+  // A preview image for each photo.
+  message Preview { optional string preview_url = 1; }
+  repeated Preview preview = 2;
+
+  // A resume token can be used to get the next page of results.
+  optional string resume_token = 3;
+
+  // An error_msg is set when the status is not 'SUCCESS'.
+  optional ErrorCode status = 4 [default = SUCCESS];
+  optional string error_msg = 5;
+}
+
+// Server-defined ErrorCodes for the Photos API.
+enum ErrorCode {
+  UNKNOWN = 0;
+  SUCCESS = 1;
+  BAD_REQUEST = 2;
+  SERVER_ERROR = 3;
+}

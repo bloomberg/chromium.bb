@@ -106,3 +106,27 @@ AlbumInfo AlbumInfo::CreateFromProto(
 
   return album_info;
 }
+
+AlbumPhoto::AlbumPhoto() = default;
+// TODO(crbug.com/851990) Handle urls with existing image options.
+AlbumPhoto::AlbumPhoto(const std::string& photo_url,
+                       const std::string& default_image_options)
+    : thumbnail_photo_url(GURL(photo_url)),
+      photo_url(GURL(photo_url + ((photo_url.find('=') == std::string::npos)
+                                      ? default_image_options
+                                      : std::string()))) {}
+AlbumPhoto::AlbumPhoto(const AlbumPhoto&) = default;
+AlbumPhoto::AlbumPhoto(AlbumPhoto&&) = default;
+AlbumPhoto::~AlbumPhoto() = default;
+
+AlbumPhoto& AlbumPhoto::operator=(const AlbumPhoto&) = default;
+AlbumPhoto& AlbumPhoto::operator=(AlbumPhoto&&) = default;
+
+bool operator==(const AlbumPhoto& lhs, const AlbumPhoto& rhs) {
+  return lhs.thumbnail_photo_url == rhs.thumbnail_photo_url &&
+         lhs.photo_url == rhs.photo_url;
+}
+
+bool operator!=(const AlbumPhoto& lhs, const AlbumPhoto& rhs) {
+  return !(lhs == rhs);
+}
