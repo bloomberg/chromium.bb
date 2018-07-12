@@ -33,6 +33,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -113,15 +114,20 @@ public class PasswordEntryEditor extends Fragment {
         getActivity().setTitle(R.string.password_entry_editor_title);
         mClipboard = (ClipboardManager) getActivity().getApplicationContext().getSystemService(
                 Context.CLIPBOARD_SERVICE);
-        mView = inflater.inflate(mException ? R.layout.password_entry_exception
+        View inflatedView =
+                inflater.inflate(mException ? R.layout.password_entry_exception
                                             : R.layout.password_entry_editor_interactive,
-                container, false);
+                        container, false);
+        mView = inflatedView.findViewById(R.id.scroll_view);
         getActivity().setTitle(R.string.password_entry_editor_title);
         mClipboard = (ClipboardManager) getActivity().getApplicationContext().getSystemService(
                 Context.CLIPBOARD_SERVICE);
         View urlRowsView = mView.findViewById(R.id.url_row);
         TextView dataView = urlRowsView.findViewById(R.id.password_entry_editor_row_data);
         dataView.setText(url);
+        mView.getViewTreeObserver().addOnScrollChangedListener(
+                PreferenceUtils.getShowShadowOnScrollListener(
+                        mView, inflatedView.findViewById(R.id.shadow)));
 
         hookupCopySiteButton(urlRowsView);
         if (!mException) {
@@ -179,7 +185,7 @@ public class PasswordEntryEditor extends Fragment {
                     "PasswordManager.Android.PasswordExceptionEntry", PASSWORD_ENTRY_ACTION_VIEWED,
                     PASSWORD_ENTRY_ACTION_BOUNDARY);
         }
-        return mView;
+        return inflatedView;
     }
 
     @Override

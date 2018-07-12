@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.preferences;
 import android.os.StrictMode;
 import android.preference.PreferenceFragment;
 import android.support.annotation.XmlRes;
+import android.view.View;
+import android.view.ViewTreeObserver.OnScrollChangedListener;
 
 /**
  * A helper class for Preferences.
@@ -27,5 +29,25 @@ public class PreferenceUtils {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
+    }
+
+    /**
+     * Returns a view tree observer to show the shadow if and only if the view is scrolled.
+     * @param view   The view whose scroll will be detected to determine the shadow's visibility.
+     * @param shadow The shadow to show/hide.
+     * @return An OnScrollChangedListener that detects scrolling and shows the passed in shadow
+     *         when a scroll is detected and hides the shadow otherwise.
+     */
+    public static OnScrollChangedListener getShowShadowOnScrollListener(View view, View shadow) {
+        return new OnScrollChangedListener() {
+            @Override
+            public void onScrollChanged() {
+                if (!view.canScrollVertically(-1)) {
+                    shadow.setVisibility(View.GONE);
+                } else {
+                    shadow.setVisibility(View.VISIBLE);
+                }
+            }
+        };
     }
 }
