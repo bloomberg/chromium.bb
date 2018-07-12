@@ -94,7 +94,7 @@ void GoogleSearchDomainMixingMetricsEmitter::SetClockForTesting(
 }
 
 void GoogleSearchDomainMixingMetricsEmitter::SetTimerForTesting(
-    std::unique_ptr<base::Timer> timer) {
+    std::unique_ptr<base::RepeatingTimer> timer) {
   timer_ = std::move(timer);
 }
 

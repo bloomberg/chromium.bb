@@ -46,7 +46,7 @@ class ConfirmQuitBubbleController : public gfx::AnimationDelegate,
  protected:
   // |animation| is used to fade out all browser windows.
   ConfirmQuitBubbleController(std::unique_ptr<ConfirmQuitBubbleBase> bubble,
-                              std::unique_ptr<base::Timer> hide_timer,
+                              std::unique_ptr<base::OneShotTimer> hide_timer,
                               std::unique_ptr<gfx::SlideAnimation> animation);
 
   // BrowserListObserver:
@@ -123,7 +123,7 @@ class ConfirmQuitBubbleController : public gfx::AnimationDelegate,
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  std::unique_ptr<base::Timer> hide_timer_;
+  std::unique_ptr<base::OneShotTimer> hide_timer_;
 
   std::unique_ptr<gfx::SlideAnimation> const browser_hide_animation_;
 

@@ -47,8 +47,7 @@ ModuleDatabase::ModuleDatabase(
       idle_timer_(
           FROM_HERE,
           kIdleTimeout,
-          base::Bind(&ModuleDatabase::OnDelayExpired, base::Unretained(this)),
-          false),
+          base::Bind(&ModuleDatabase::OnDelayExpired, base::Unretained(this))),
       has_started_processing_(false),
       shell_extensions_enumerated_(false),
       ime_enumerated_(false),

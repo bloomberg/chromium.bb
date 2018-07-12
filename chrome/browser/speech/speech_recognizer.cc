@@ -101,7 +101,7 @@ class SpeechRecognizer::EventListener
   scoped_refptr<net::URLRequestContextGetter>
       deprecated_url_request_context_getter_;
   std::string locale_;
-  base::Timer speech_timeout_;
+  base::OneShotTimer speech_timeout_;
   int session_;
   base::string16 last_result_str_;
 
@@ -122,7 +122,6 @@ SpeechRecognizer::EventListener::EventListener(
       deprecated_url_request_context_getter_(
           deprecated_url_request_context_getter),
       locale_(locale),
-      speech_timeout_(false, false),
       session_(kInvalidSessionId),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

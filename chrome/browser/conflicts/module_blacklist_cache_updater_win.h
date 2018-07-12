@@ -139,7 +139,7 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
 
   // Ensures that the cache is updated when new blocked modules arrives even if
   // OnModuleDatabaseIdle() is never called again.
-  base::Timer timer_;
+  base::OneShotTimer timer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -286,7 +286,7 @@ class InkDropImpl::HideHighlightOnRippleHiddenState
 
   // The timer used to delay the highlight fade in after an ink drop ripple
   // animation.
-  std::unique_ptr<base::Timer> highlight_after_ripple_timer_;
+  std::unique_ptr<base::OneShotTimer> highlight_after_ripple_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(HideHighlightOnRippleHiddenState);
 };

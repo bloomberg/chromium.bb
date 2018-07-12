@@ -70,7 +70,8 @@ class VisibilityTimerTabHelper
   bool is_visible_;
 
   struct Task {
-    Task(const PermissionRequestID& id, std::unique_ptr<base::Timer> timer)
+    Task(const PermissionRequestID& id,
+         std::unique_ptr<base::RetainingOneShotTimer> timer)
         : id(id), timer(std::move(timer)) {}
 
     // Move-only.
@@ -84,7 +85,7 @@ class VisibilityTimerTabHelper
     }
 
     PermissionRequestID id;
-    std::unique_ptr<base::Timer> timer;
+    std::unique_ptr<base::RetainingOneShotTimer> timer;
   };
   base::circular_deque<Task> task_queue_;
 
@@ -119,10 +120,10 @@ void VisibilityTimerTabHelper::PostTaskAfterVisibleDelay(
 
   // Safe to use Unretained, as destroying this will destroy task_queue_, hence
   // cancelling all timers.
-  std::unique_ptr<base::Timer> timer(new base::Timer(
-      from_here, visible_delay, base::Bind(&VisibilityTimerTabHelper::RunTask,
-                                           base::Unretained(this), task),
-      false /* is_repeating */));
+  auto timer = std::make_unique<base::RetainingOneShotTimer>(
+      from_here, visible_delay,
+      base::Bind(&VisibilityTimerTabHelper::RunTask, base::Unretained(this),
+                 task));
   DCHECK(!timer->IsRunning());
 
   task_queue_.emplace_back(id, std::move(timer));

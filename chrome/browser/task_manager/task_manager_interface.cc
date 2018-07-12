@@ -141,9 +141,7 @@ bool TaskManagerInterface::IsResourceRefreshEnabled(RefreshType type) const {
 }
 
 TaskManagerInterface::TaskManagerInterface()
-    : refresh_timer_(new base::Timer(true, true)),
-      enabled_resources_flags_(0) {
-}
+    : refresh_timer_(new base::RepeatingTimer()), enabled_resources_flags_(0) {}
 
 TaskManagerInterface::~TaskManagerInterface() {
 }

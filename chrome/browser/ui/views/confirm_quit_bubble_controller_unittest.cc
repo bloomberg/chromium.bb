@@ -33,7 +33,7 @@ class TestConfirmQuitBubbleController : public ConfirmQuitBubbleController {
  public:
   TestConfirmQuitBubbleController(
       std::unique_ptr<ConfirmQuitBubbleBase> bubble,
-      std::unique_ptr<base::Timer> hide_timer,
+      std::unique_ptr<base::OneShotTimer> hide_timer,
       std::unique_ptr<gfx::SlideAnimation> animation)
       : ConfirmQuitBubbleController(std::move(bubble),
                                     std::move(hide_timer),

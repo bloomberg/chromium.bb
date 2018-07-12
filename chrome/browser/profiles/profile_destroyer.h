@@ -49,7 +49,7 @@ class ProfileDestroyer : public content::RenderProcessHostObserver {
   static DestroyerSet* pending_destroyers_;
 
   // We don't want to wait forever, so we have a cancellation timer.
-  base::Timer timer_;
+  base::OneShotTimer timer_;
 
   // Used to count down the number of render process host left.
   uint32_t num_hosts_;

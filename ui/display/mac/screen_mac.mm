@@ -136,11 +136,10 @@ CGFloat GetMinimumDistanceToCorner(const NSPoint& point, NSScreen* screen) {
 class ScreenMac : public Screen {
  public:
   ScreenMac()
-      : configure_timer_(
-            FROM_HERE,
-            base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
-            base::Bind(&ScreenMac::ConfigureTimerFired, base::Unretained(this)),
-            false) {
+      : configure_timer_(FROM_HERE,
+                         base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
+                         base::Bind(&ScreenMac::ConfigureTimerFired,
+                                    base::Unretained(this))) {
     old_displays_ = displays_ = BuildDisplaysFromQuartz();
     CGDisplayRegisterReconfigurationCallback(
         ScreenMac::DisplayReconfigurationCallBack, this);
@@ -354,7 +353,7 @@ class ScreenMac : public Screen {
   std::vector<Display> old_displays_;
 
   // The timer to delay configuring outputs and notifying observers.
-  base::Timer configure_timer_;
+  base::RetainingOneShotTimer configure_timer_;
 
   // The observer notified by NSScreenColorSpaceDidChangeNotification.
   base::scoped_nsobject<id> screen_color_change_observer_;

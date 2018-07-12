@@ -42,7 +42,7 @@ ConfirmQuitBubbleController::ConfirmQuitBubbleController()
 
 ConfirmQuitBubbleController::ConfirmQuitBubbleController(
     std::unique_ptr<ConfirmQuitBubbleBase> bubble,
-    std::unique_ptr<base::Timer> hide_timer,
+    std::unique_ptr<base::OneShotTimer> hide_timer,
     std::unique_ptr<gfx::SlideAnimation> animation)
     : view_(std::move(bubble)),
       state_(State::kWaiting),

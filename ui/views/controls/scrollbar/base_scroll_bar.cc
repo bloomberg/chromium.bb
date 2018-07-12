@@ -405,7 +405,8 @@ int BaseScrollBar::GetScrollIncrement(bool is_page, bool is_positive) {
 
 #if !defined(OS_MACOSX)
 // static
-base::Timer* BaseScrollBar::GetHideTimerForTest(BaseScrollBar* scroll_bar) {
+base::RetainingOneShotTimer* BaseScrollBar::GetHideTimerForTest(
+    BaseScrollBar* scroll_bar) {
   return nullptr;
 }
 #endif

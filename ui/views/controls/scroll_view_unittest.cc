@@ -44,7 +44,8 @@ class ScrollViewTestApi {
     return static_cast<BaseScrollBar*>(scroll_bar);
   }
 
-  const base::Timer& GetScrollBarTimer(ScrollBarOrientation orientation) {
+  const base::OneShotTimer& GetScrollBarTimer(
+      ScrollBarOrientation orientation) {
     return GetBaseScrollBar(orientation)->repeater_.timer_for_testing();
   }
 
@@ -58,7 +59,8 @@ class ScrollViewTestApi {
 
   gfx::ScrollOffset CurrentOffset() { return scroll_view_->CurrentOffset(); }
 
-  base::Timer* GetScrollBarHideTimer(ScrollBarOrientation orientation) {
+  base::RetainingOneShotTimer* GetScrollBarHideTimer(
+      ScrollBarOrientation orientation) {
     return BaseScrollBar::GetHideTimerForTest(GetBaseScrollBar(orientation));
   }
 
@@ -987,8 +989,9 @@ TEST_F(WidgetScrollViewTest, ScrollersOnRest) {
   ScrollViewTestApi test_api(scroll_view);
   BaseScrollBar* bar[]{test_api.GetBaseScrollBar(HORIZONTAL),
                        test_api.GetBaseScrollBar(VERTICAL)};
-  base::Timer* hide_timer[]{test_api.GetScrollBarHideTimer(HORIZONTAL),
-                            test_api.GetScrollBarHideTimer(VERTICAL)};
+  base::RetainingOneShotTimer* hide_timer[] = {
+      test_api.GetScrollBarHideTimer(HORIZONTAL),
+      test_api.GetScrollBarHideTimer(VERTICAL)};
 
   EXPECT_EQ(0, bar[HORIZONTAL]->layer()->opacity());
   EXPECT_EQ(0, bar[VERTICAL]->layer()->opacity());
@@ -1459,7 +1462,7 @@ TEST_F(WidgetScrollViewTest, ScrollTrackScrolling) {
   ui::MouseEvent press(TestLeftMouseAt(location, ui::ET_MOUSE_PRESSED));
   ui::MouseEvent release(TestLeftMouseAt(location, ui::ET_MOUSE_RELEASED));
 
-  const base::Timer& timer = test_api.GetScrollBarTimer(VERTICAL);
+  const base::OneShotTimer& timer = test_api.GetScrollBarTimer(VERTICAL);
   EXPECT_FALSE(timer.IsRunning());
 
   EXPECT_EQ(0, scroll_view->GetVisibleRect().y());
