@@ -412,7 +412,7 @@ deps = {
       'packages': [
           {
        'package': 'chromium/third_party/android_tools_bundletool',
-       'version': 'version:0.4.2-cr0',
+       'version': 'version:0.5.0-cr0',
    },
       ],
       'condition': 'checkout_android',
