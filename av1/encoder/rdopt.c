@@ -1384,16 +1384,27 @@ static void get_energy_distribution_finer(const int16_t *diff, int stride,
   unsigned int esq[256];
   const int w_shift = bw <= 8 ? 0 : 1;
   const int h_shift = bh <= 8 ? 0 : 1;
-  const int esq_w = bw <= 8 ? bw : bw / 2;
-  const int esq_h = bh <= 8 ? bh : bh / 2;
+  const int esq_w = bw >> w_shift;
+  const int esq_h = bh >> h_shift;
   const int esq_sz = esq_w * esq_h;
   int i, j;
   memset(esq, 0, esq_sz * sizeof(esq[0]));
-  for (i = 0; i < bh; i++) {
-    unsigned int *cur_esq_row = esq + (i >> h_shift) * esq_w;
-    const int16_t *cur_diff_row = diff + i * stride;
-    for (j = 0; j < bw; j++) {
-      cur_esq_row[j >> w_shift] += cur_diff_row[j] * cur_diff_row[j];
+  if (w_shift) {
+    for (i = 0; i < bh; i++) {
+      unsigned int *cur_esq_row = esq + (i >> h_shift) * esq_w;
+      const int16_t *cur_diff_row = diff + i * stride;
+      for (j = 0; j < bw; j += 2) {
+        cur_esq_row[j >> 1] += (cur_diff_row[j] * cur_diff_row[j] +
+                                cur_diff_row[j + 1] * cur_diff_row[j + 1]);
+      }
+    }
+  } else {
+    for (i = 0; i < bh; i++) {
+      unsigned int *cur_esq_row = esq + (i >> h_shift) * esq_w;
+      const int16_t *cur_diff_row = diff + i * stride;
+      for (j = 0; j < bw; j++) {
+        cur_esq_row[j] += cur_diff_row[j] * cur_diff_row[j];
+      }
     }
   }
 
@@ -1571,9 +1582,9 @@ static const float *prune_2D_adaptive_thresholds[] = {
   NULL,
 };
 
-static int prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
-                       int blk_row, int blk_col, TxSetType tx_set_type,
-                       TX_TYPE_PRUNE_MODE prune_mode) {
+static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
+                            int blk_row, int blk_col, TxSetType tx_set_type,
+                            TX_TYPE_PRUNE_MODE prune_mode) {
   static const int tx_type_table_2D[16] = {
     DCT_DCT,      DCT_ADST,      DCT_FLIPADST,      V_DCT,
     ADST_DCT,     ADST_ADST,     ADST_FLIPADST,     V_ADST,
@@ -1649,7 +1660,7 @@ static int prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   const float score_thresh =
       prune_2D_adaptive_thresholds[tx_size][pruning_aggressiveness - 1];
 
-  int prune_bitmask = 0;
+  uint16_t prune_bitmask = 0;
   for (int i = 0; i < 16; i++) {
     if (scores_2D[i] < score_thresh && i != max_score_i)
       prune_bitmask |= (1 << tx_type_table_2D[i]);
@@ -1657,9 +1668,27 @@ static int prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   return prune_bitmask;
 }
 
+// ((prune >> vtx_tab[tx_type]) & 1)
+static const uint16_t prune_v_mask[] = {
+  0x0000, 0x0425, 0x108a, 0x14af, 0x4150, 0x4575, 0x51da, 0x55ff,
+  0xaa00, 0xae25, 0xba8a, 0xbeaf, 0xeb50, 0xef75, 0xfbda, 0xffff,
+};
+
+// ((prune >> (htx_tab[tx_type] + 8)) & 1)
+static const uint16_t prune_h_mask[] = {
+  0x0000, 0x0813, 0x210c, 0x291f, 0x80e0, 0x88f3, 0xa1ec, 0xa9ff,
+  0x5600, 0x5e13, 0x770c, 0x7f1f, 0xd6e0, 0xdef3, 0xf7ec, 0xffff,
+};
+
+static INLINE uint16_t gen_tx_search_prune_mask(int tx_search_prune) {
+  uint8_t prune_v = tx_search_prune & 0x0F;
+  uint8_t prune_h = (tx_search_prune >> 8) & 0x0F;
+  return (prune_v_mask[prune_v] & prune_h_mask[prune_h]);
+}
+
 static void prune_tx(const AV1_COMP *cpi, BLOCK_SIZE bsize, MACROBLOCK *x,
                      const MACROBLOCKD *const xd, int tx_set_type) {
-  av1_zero(x->tx_search_prune);
+  x->tx_search_prune[tx_set_type] = 0;
   x->tx_split_prune_flag = 0;
   const MB_MODE_INFO *mbmi = xd->mi[0];
   if (!is_inter_block(mbmi) || cpi->sf.tx_type_search.prune_mode == NO_PRUNE ||
@@ -1669,39 +1698,28 @@ static void prune_tx(const AV1_COMP *cpi, BLOCK_SIZE bsize, MACROBLOCK *x,
   int tx_set = ext_tx_set_index[1][tx_set_type];
   assert(tx_set >= 0);
   const int *tx_set_1D = ext_tx_used_inter_1D[tx_set];
+  int prune = 0;
   switch (cpi->sf.tx_type_search.prune_mode) {
     case NO_PRUNE: return;
     case PRUNE_ONE:
       if (!(tx_set_1D[FLIPADST_1D] & tx_set_1D[ADST_1D])) return;
-      x->tx_search_prune[tx_set_type] = prune_one_for_sby(cpi, bsize, x, xd);
+      prune = prune_one_for_sby(cpi, bsize, x, xd);
+      x->tx_search_prune[tx_set_type] = gen_tx_search_prune_mask(prune);
       break;
     case PRUNE_TWO:
       if (!(tx_set_1D[FLIPADST_1D] & tx_set_1D[ADST_1D])) {
         if (!(tx_set_1D[DCT_1D] & tx_set_1D[IDTX_1D])) return;
-        x->tx_search_prune[tx_set_type] =
-            prune_two_for_sby(cpi, bsize, x, xd, 0, 1);
+        prune = prune_two_for_sby(cpi, bsize, x, xd, 0, 1);
+      } else if (!(tx_set_1D[DCT_1D] & tx_set_1D[IDTX_1D])) {
+        prune = prune_two_for_sby(cpi, bsize, x, xd, 1, 0);
+      } else {
+        prune = prune_two_for_sby(cpi, bsize, x, xd, 1, 1);
       }
-      if (!(tx_set_1D[DCT_1D] & tx_set_1D[IDTX_1D])) {
-        x->tx_search_prune[tx_set_type] =
-            prune_two_for_sby(cpi, bsize, x, xd, 1, 0);
-      }
-      x->tx_search_prune[tx_set_type] =
-          prune_two_for_sby(cpi, bsize, x, xd, 1, 1);
+      x->tx_search_prune[tx_set_type] = gen_tx_search_prune_mask(prune);
       break;
     case PRUNE_2D_ACCURATE:
     case PRUNE_2D_FAST: break;
     default: assert(0);
-  }
-}
-
-static int do_tx_type_search(TX_TYPE tx_type, int prune,
-                             TX_TYPE_PRUNE_MODE mode) {
-  // TODO(sarahparker) implement for non ext tx
-  if (mode >= PRUNE_2D_ACCURATE) {
-    return !((prune >> tx_type) & 1);
-  } else {
-    return !(((prune >> vtx_tab[tx_type]) & 1) |
-             ((prune >> (htx_tab[tx_type] + 8)) & 1));
   }
 }
 
@@ -2645,27 +2663,16 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   int rate_cost = 0;
   TX_TYPE txk_start = DCT_DCT;
   TX_TYPE txk_end = TX_TYPES - 1;
-  if (!(!is_inter && x->use_default_intra_tx_type) &&
-      !(is_inter && x->use_default_inter_tx_type))
-    if (x->rd_model == LOW_TXFM_RD || x->cb_partition_scan)
-      if (plane == 0) txk_end = DCT_DCT;
+  if ((!is_inter && x->use_default_intra_tx_type) ||
+      (is_inter && x->use_default_inter_tx_type)) {
+    txk_start = txk_end = get_default_tx_type(0, xd, tx_size);
+  } else if (x->rd_model == LOW_TXFM_RD || x->cb_partition_scan) {
+    if (plane == 0) txk_end = DCT_DCT;
+  }
 
   uint8_t best_txb_ctx = 0;
   const TxSetType tx_set_type =
       av1_get_ext_tx_set_type(tx_size, is_inter, cm->reduced_tx_set_used);
-  int prune = 0;
-  const int do_prune = plane == 0 && !fast_tx_search && txk_end != DCT_DCT &&
-                       !(!is_inter && x->use_default_intra_tx_type) &&
-                       !(is_inter && x->use_default_inter_tx_type) &&
-                       cpi->sf.tx_type_search.prune_mode > NO_PRUNE;
-  if (do_prune && is_inter) {
-    if (cpi->sf.tx_type_search.prune_mode >= PRUNE_2D_ACCURATE) {
-      prune = prune_tx_2D(x, plane_bsize, tx_size, blk_row, blk_col,
-                          tx_set_type, cpi->sf.tx_type_search.prune_mode);
-    } else {
-      prune = x->tx_search_prune[tx_set_type];
-    }
-  }
 
   TX_TYPE uv_tx_type = DCT_DCT;
   if (plane) {
@@ -2674,39 +2681,38 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         av1_get_tx_type(get_plane_type(plane), xd, blk_row, blk_col, tx_size,
                         cm->reduced_tx_set_used);
   }
-  if (xd->lossless[mbmi->segment_id] || txsize_sqr_up_map[tx_size] > TX_32X32) {
+  const uint16_t ext_tx_used_flag = av1_ext_tx_used_flag[tx_set_type];
+  if (xd->lossless[mbmi->segment_id] || txsize_sqr_up_map[tx_size] > TX_32X32 ||
+      ext_tx_used_flag == 0x0001) {
     txk_start = txk_end = DCT_DCT;
   }
-
-  int8_t allowed_tx_mask[TX_TYPES] = { 0 };  // 1: allow; 0: skip.
-  int allowed_tx_num = 0;
-  if (fast_tx_search) {
-    allowed_tx_mask[DCT_DCT] = 1;
-    allowed_tx_mask[H_DCT] = 1;
-    allowed_tx_mask[V_DCT] = 1;
+  uint16_t allowed_tx_mask = 0;  // 1: allow; 0: skip.
+  if (txk_start == txk_end) {
+    allowed_tx_mask = 1 << txk_start;
+    allowed_tx_mask &= ext_tx_used_flag;
+  } else if (fast_tx_search) {
+    allowed_tx_mask = 0x0c01;  // V_DCT, H_DCT, DCT_DCT
+    allowed_tx_mask &= ext_tx_used_flag;
   } else {
-    memset(allowed_tx_mask + txk_start, 1, txk_end - txk_start + 1);
-  }
-  for (TX_TYPE tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
-    if (do_prune) {
-      if (!do_tx_type_search(tx_type, prune, cpi->sf.tx_type_search.prune_mode))
-        allowed_tx_mask[tx_type] = 0;
+    assert(plane == 0);
+    allowed_tx_mask = ext_tx_used_flag;
+    // !fast_tx_search && txk_end != txk_start && plane == 0
+    const int do_prune = cpi->sf.tx_type_search.prune_mode > NO_PRUNE;
+    if (do_prune && is_inter) {
+      if (cpi->sf.tx_type_search.prune_mode >= PRUNE_2D_ACCURATE) {
+        const uint16_t prune =
+            prune_tx_2D(x, plane_bsize, tx_size, blk_row, blk_col, tx_set_type,
+                        cpi->sf.tx_type_search.prune_mode);
+        allowed_tx_mask &= (~prune);
+      } else {
+        allowed_tx_mask &= (~x->tx_search_prune[tx_set_type]);
+      }
     }
-    if (plane == 0 && allowed_tx_mask[tx_type]) {
-      if (!av1_ext_tx_used[tx_set_type][tx_type])
-        allowed_tx_mask[tx_type] = 0;
-      else if (!is_inter && x->use_default_intra_tx_type &&
-               tx_type != get_default_tx_type(0, xd, tx_size))
-        allowed_tx_mask[tx_type] = 0;
-      else if (is_inter && x->use_default_inter_tx_type &&
-               tx_type != get_default_tx_type(0, xd, tx_size))
-        allowed_tx_mask[tx_type] = 0;
-    }
-    allowed_tx_num += allowed_tx_mask[tx_type];
   }
   // Need to have at least one transform type allowed.
-  if (allowed_tx_num == 0) {
-    allowed_tx_mask[plane ? uv_tx_type : DCT_DCT] = 1;
+  if (allowed_tx_mask == 0) {
+    txk_start = txk_end = (plane ? uv_tx_type : DCT_DCT);
+    allowed_tx_mask = (1 << txk_start);
   }
 
   int use_transform_domain_distortion =
@@ -2723,7 +2729,8 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       cpi->sf.use_transform_domain_distortion == 1 &&
       use_transform_domain_distortion && x->rd_model != LOW_TXFM_RD &&
       !x->cb_partition_scan;
-  if (calc_pixel_domain_distortion_final && allowed_tx_num <= 1)
+  if (calc_pixel_domain_distortion_final &&
+      (txk_start == txk_end || allowed_tx_mask == 0x0001))
     calc_pixel_domain_distortion_final = use_transform_domain_distortion = 0;
 
   const uint16_t *eobs_ptr = x->plane[plane].eobs;
@@ -2736,7 +2743,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   block_sse *= 16;
 
   for (TX_TYPE tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
-    if (!allowed_tx_mask[tx_type]) continue;
+    if (!(allowed_tx_mask & (1 << tx_type))) continue;
     if (plane == 0) mbmi->txk_type[txk_type_idx] = tx_type;
     RD_STATS this_rd_stats;
     av1_invalid_rd_stats(&this_rd_stats);
