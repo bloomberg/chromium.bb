@@ -1656,7 +1656,6 @@ ImageData* BaseRenderingContext2D::getImageData(
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;
   }
-
   base::Optional<ScopedUsHistogramTimer> timer;
   if (!IsPaint2D()) {
     if (CanCreateCanvas2dResourceProvider() && IsAccelerated()) {

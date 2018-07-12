@@ -62,7 +62,7 @@ class PLATFORM_EXPORT CanvasResource
   virtual bool NeedsReadLockFences() const { return false; }
   virtual IntSize Size() const = 0;
   virtual const gpu::Mailbox& GetOrCreateGpuMailbox(MailboxSyncMode) = 0;
-  virtual void Transfer() { NOTREACHED(); }
+  virtual void Transfer() {}
   virtual const gpu::SyncToken GetSyncToken() {
     NOTREACHED();
     return gpu::SyncToken();
@@ -74,12 +74,9 @@ class PLATFORM_EXPORT CanvasResource
   virtual scoped_refptr<CanvasResource> MakeAccelerated(
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) = 0;
   virtual scoped_refptr<CanvasResource> MakeUnaccelerated() = 0;
-  virtual bool IsBitmap();
-  virtual bool OriginClean() const {
-    NOTREACHED();
-    return false;
-  }
-  virtual scoped_refptr<StaticBitmapImage> Bitmap();
+  virtual bool OriginClean() const = 0;
+  virtual void SetOriginClean(bool) = 0;
+  virtual scoped_refptr<StaticBitmapImage> Bitmap() = 0;
   virtual void CopyFromTexture(GLuint source_texture,
                                GLenum format,
                                GLenum type) {
@@ -150,10 +147,10 @@ class PLATFORM_EXPORT CanvasResourceBitmap final : public CanvasResource {
   }
   bool IsValid() const final;
   IntSize Size() const final;
-  bool IsBitmap() final;
   void Transfer() final;
   scoped_refptr<StaticBitmapImage> Bitmap() final;
   bool OriginClean() const final;
+  void SetOriginClean(bool value) final;
   scoped_refptr<CanvasResource> MakeAccelerated(
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final;
   scoped_refptr<CanvasResource> MakeUnaccelerated() final;
@@ -193,6 +190,8 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
   bool IsValid() const override;
   bool SupportsAcceleratedCompositing() const override { return true; }
   bool NeedsReadLockFences() const final { return true; }
+  bool OriginClean() const final { return is_origin_clean_; }
+  void SetOriginClean(bool value) final { is_origin_clean_ = value; }
   scoped_refptr<CanvasResource> MakeAccelerated(
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
     NOTREACHED();
@@ -208,6 +207,7 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
   void CopyFromTexture(GLuint source_texture,
                        GLenum format,
                        GLenum type) override;
+  scoped_refptr<StaticBitmapImage> Bitmap() override;
 
  private:
   void TearDown() override;
@@ -240,6 +240,7 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
   GLuint texture_id_ = 0;
   MailboxSyncMode mailbox_sync_mode_ = kVerifiedSyncToken;
   bool is_accelerated_;
+  bool is_origin_clean_ = true;
 
   // GL_TEXTURE_2D view of |gpu_memory_buffer_| for CopyFromTexture(); only used
   // if TextureTarget() is GL_TEXTURE_EXTERNAL_OES.
@@ -277,6 +278,9 @@ class PLATFORM_EXPORT CanvasResourceSharedBitmap final : public CanvasResource {
                        GLenum type) override {
     NOTREACHED();
   }
+  scoped_refptr<StaticBitmapImage> Bitmap() final;
+  bool OriginClean() const final { return is_origin_clean_; }
+  void SetOriginClean(bool flag) final { is_origin_clean_ = flag; }
 
  private:
   void TearDown() override;
@@ -291,6 +295,7 @@ class PLATFORM_EXPORT CanvasResourceSharedBitmap final : public CanvasResource {
   viz::SharedBitmapId shared_bitmap_id_;
   std::unique_ptr<base::SharedMemory> shared_memory_;
   IntSize size_;
+  bool is_origin_clean_ = true;
 };
 
 }  // namespace blink

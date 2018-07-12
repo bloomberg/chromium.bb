@@ -5,7 +5,10 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/graphics_context_3d_utils.h"
 
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/config/gpu_feature_info.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
@@ -82,6 +85,22 @@ void GraphicsContext3DUtils::GetMailboxForSkImage(gpu::Mailbox& out_mailbox,
 
 void GraphicsContext3DUtils::RemoveCachedMailbox(GrTexture* gr_texture) {
   cached_mailboxes_.erase(gr_texture);
+}
+
+bool GraphicsContext3DUtils::Accelerated2DCanvasFeatureEnabled() {
+  // Don't use accelerated canvas if compositor is in software mode.
+  if (!SharedGpuContext::IsGpuCompositingEnabled())
+    return false;
+
+  if (!RuntimeEnabledFeatures::Accelerated2dCanvasEnabled())
+    return false;
+
+  DCHECK(context_provider_wrapper_);
+  const gpu::GpuFeatureInfo& gpu_feature_info =
+      context_provider_wrapper_->ContextProvider()->GetGpuFeatureInfo();
+  return gpu::kGpuFeatureStatusEnabled ==
+         gpu_feature_info
+             .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS];
 }
 
 }  // namespace blink

@@ -51,6 +51,7 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
 
   bool IsValid() const final { return GetSkSurface() && !IsGpuContextLost(); }
   bool IsAccelerated() const final { return true; }
+  bool SupportsDirectCompositing() const override { return true; }
 
   GLuint GetBackingTextureHandleForOverwrite() override {
     GrBackendTexture backend_texture = GetSkSurface()->getBackendTexture(
@@ -149,6 +150,7 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
                                       std::move(resource_dispatcher)) {}
 
   ~CanvasResourceProviderTextureGpuMemoryBuffer() override = default;
+  bool SupportsDirectCompositing() const override { return true; }
 
  private:
   scoped_refptr<CanvasResource> CreateResource() final {
@@ -218,11 +220,11 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
 
   bool IsValid() const final { return GetSkSurface(); }
   bool IsAccelerated() const final { return false; }
+  bool SupportsDirectCompositing() const override { return false; }
 
  private:
   scoped_refptr<CanvasResource> ProduceFrame() override {
-    NOTREACHED();  // Not directly compositable.
-    return nullptr;
+    return nullptr;  // Does not support direct compositing
   }
 
   sk_sp<SkSurface> CreateSkSurface() const override {
@@ -254,6 +256,7 @@ class CanvasResourceProviderRamGpuMemoryBuffer final
                                      std::move(resource_dispatcher)) {}
 
   ~CanvasResourceProviderRamGpuMemoryBuffer() override = default;
+  bool SupportsDirectCompositing() const override { return true; }
 
  private:
   scoped_refptr<CanvasResource> CreateResource() final {
@@ -307,16 +310,23 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
     DCHECK(ResourceDispatcher());
   }
   ~CanvasResourceProviderSharedBitmap() override = default;
+  bool SupportsDirectCompositing() const override { return true; }
 
  private:
   scoped_refptr<CanvasResource> CreateResource() final {
-    return CanvasResourceSharedBitmap::Create(Size(), ColorParams(),
+    CanvasColorParams color_params = ColorParams();
+    if (!IsBitmapFormatSupported(color_params.TransferableResourceFormat())) {
+      // If the rendering format is not supported, downgrate to 8-bits.
+      // TODO(junov): Should we try 12-12-12-12 and 10-10-10-2?
+      color_params.SetCanvasPixelFormat(kRGBA8CanvasPixelFormat);
+    }
+
+    return CanvasResourceSharedBitmap::Create(Size(), color_params,
                                               CreateWeakPtr(), FilterQuality());
   }
 
   scoped_refptr<CanvasResource> ProduceFrame() final {
     DCHECK(GetSkSurface());
-
     scoped_refptr<CanvasResource> output_resource = NewOrRecycledResource();
     if (!output_resource) {
       // Not compositable without a SharedBitmap
@@ -332,8 +342,6 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
 
     return output_resource;
   }
-
-  base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher_;
 };
 
 // CanvasResourceProvider base class implementation
@@ -349,6 +357,7 @@ enum ResourceType {
 
 constexpr ResourceType kSoftwareCompositedFallbackList[] = {
     kRamGpuMemoryBufferResourceType, kSharedBitmapResourceType,
+    // Fallback to no direct compositing support
     kBitmapResourceType,
 };
 
@@ -357,14 +366,16 @@ constexpr ResourceType kSoftwareFallbackList[] = {
 };
 
 constexpr ResourceType kAcceleratedFallbackList[] = {
-    kTextureResourceType, kBitmapResourceType,
+    kTextureResourceType,
+    // Fallback to software
+    kBitmapResourceType,
 };
 
 constexpr ResourceType kAcceleratedCompositedFallbackList[] = {
-    kTextureGpuMemoryBufferResourceType,
-    kTextureResourceType,
-    kRamGpuMemoryBufferResourceType,
-    kSharedBitmapResourceType,
+    kTextureGpuMemoryBufferResourceType, kTextureResourceType,
+    // Fallback to software composited
+    kRamGpuMemoryBufferResourceType, kSharedBitmapResourceType,
+    // Fallback to no direct compositing support
     kBitmapResourceType,
 };
 
@@ -437,15 +448,12 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
             size, color_params, resource_dispatcher);
         break;
       case kSharedBitmapResourceType:
-        if (!IsBitmapFormatSupported(color_params.TransferableResourceFormat()))
-          continue;
         if (!resource_dispatcher)
           continue;
         provider = std::make_unique<CanvasResourceProviderSharedBitmap>(
             size, color_params, resource_dispatcher);
         break;
       case kTextureResourceType:
-        DCHECK(SharedGpuContext::IsGpuCompositingEnabled());
         provider = std::make_unique<CanvasResourceProviderTexture>(
             size, msaa_sample_count, color_params, context_provider_wrapper,
             resource_dispatcher);
@@ -677,8 +685,9 @@ cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCache() {
 
 void CanvasResourceProvider::RecycleResource(
     scoped_refptr<CanvasResource> resource) {
-  DCHECK(resource->HasOneRef());
-  if (resource_recycling_enabled_)
+  // Need to check HasOneRef() because if there are outstanding references to
+  // the resource, it cannot be safely recycled.
+  if (resource->HasOneRef() && resource_recycling_enabled_)
     recycled_resources_.push_back(std::move(resource));
 }
 

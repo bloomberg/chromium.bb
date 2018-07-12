@@ -82,7 +82,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   };
 
   Canvas2DLayerBridge(const IntSize&,
-                      int msaa_sample_count,
                       AccelerationMode,
                       const CanvasColorParams&);
 
@@ -102,7 +101,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   cc::Layer* Layer();
   bool Restore();
   void DisableDeferral(DisableDeferralReason);
-  void SetFilterQuality(SkFilterQuality);
+  void UpdateFilterQuality();
 
   // virtual for unit testing
   virtual void WillOverwriteCanvas();
@@ -187,7 +186,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   int frames_since_last_commit_ = 0;
   size_t bytes_allocated_;
   bool have_recorded_draw_commands_;
-  SkFilterQuality filter_quality_;
   bool is_hidden_;
   bool is_deferral_enabled_;
   bool software_rendering_while_hidden_;

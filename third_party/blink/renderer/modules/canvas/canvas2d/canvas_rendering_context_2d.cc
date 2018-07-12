@@ -187,7 +187,7 @@ void CanvasRenderingContext2D::LoseContext(LostContextMode lost_mode) {
   if (context_lost_mode_ != kNotLostContext)
     return;
   context_lost_mode_ = lost_mode;
-  if (context_lost_mode_ == kSyntheticLostContext && canvas()) {
+  if (context_lost_mode_ == kSyntheticLostContext && Host()) {
     Host()->DiscardResourceProvider();
   }
   dispatch_context_lost_event_timer_.StartOneShot(TimeDelta(), FROM_HERE);

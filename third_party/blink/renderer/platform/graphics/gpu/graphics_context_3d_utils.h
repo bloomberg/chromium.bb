@@ -36,6 +36,8 @@ class PLATFORM_EXPORT GraphicsContext3DUtils {
                             GLenum filter);
   void RemoveCachedMailbox(GrTexture*);
 
+  bool Accelerated2DCanvasFeatureEnabled();
+
  private:
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   WTF::HashMap<GrTexture*, gpu::Mailbox> cached_mailboxes_;

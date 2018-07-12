@@ -134,9 +134,7 @@ TEST_F(SharedGpuContextTest, Canvas2DLayerBridgeAutoRecovery) {
   CanvasColorParams color_params;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       std::make_unique<Canvas2DLayerBridge>(
-          size, 0,
-          /*msaa sample count*/ Canvas2DLayerBridge::kEnableAcceleration,
-          color_params);
+          size, Canvas2DLayerBridge::kEnableAcceleration, color_params);
   EXPECT_TRUE(bridge->IsAccelerated());
   EXPECT_TRUE(SharedGpuContext::IsValidWithoutRestoring());
 }

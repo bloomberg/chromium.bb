@@ -178,6 +178,8 @@ class CORE_EXPORT HTMLCanvasElement final
 
   void FinalizeFrame() override;
 
+  CanvasResourceDispatcher* GetOrCreateResourceDispatcher() override;
+
   // ContextLifecycleObserver and PageVisibilityObserver implementation
   void ContextDestroyed(ExecutionContext*) override;
 
@@ -203,6 +205,9 @@ class CORE_EXPORT HTMLCanvasElement final
   void NotifyGpuContextLost() override;
   void SetNeedsCompositingUpdate() override;
   void UpdateMemoryUsage() override;
+  bool ShouldAccelerate2dContext() const override;
+  unsigned GetMSAASampleCountFor2dContext() const override;
+  SkFilterQuality FilterQuality() const override;
 
   void DisableAcceleration(std::unique_ptr<Canvas2DLayerBridge>
                                unaccelerated_bridge_used_for_testing = nullptr);
@@ -308,8 +313,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   void Reset();
 
-  std::unique_ptr<Canvas2DLayerBridge> CreateAccelerated2dBuffer(
-      int* msaa_sample_count);
+  std::unique_ptr<Canvas2DLayerBridge> CreateAccelerated2dBuffer();
   std::unique_ptr<Canvas2DLayerBridge> CreateUnaccelerated2dBuffer();
   void SetCanvas2DLayerBridgeInternal(std::unique_ptr<Canvas2DLayerBridge>);
 
@@ -335,6 +339,8 @@ class CORE_EXPORT HTMLCanvasElement final
   TraceWrapperMember<CanvasRenderingContext> context_;
   // Used only for WebGL currently.
   bool context_creation_was_blocked_;
+
+  bool canvas_is_clear_ = true;
 
   bool ignore_reset_;
   FloatRect dirty_rect_;

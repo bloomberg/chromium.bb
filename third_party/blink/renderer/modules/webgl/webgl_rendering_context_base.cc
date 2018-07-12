@@ -1532,7 +1532,7 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   canvas()->ClearCopiedImage();
   marked_canvas_dirty_ = false;
 
-  if (!canvas()->GetOrCreateCanvasResourceProvider())
+  if (!canvas()->GetOrCreateCanvasResourceProvider(kPreferAcceleration))
     return false;
 
   if (!canvas()->ResourceProvider()->IsAccelerated())

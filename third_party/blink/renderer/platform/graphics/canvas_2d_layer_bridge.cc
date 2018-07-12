@@ -61,14 +61,11 @@ enum {
 namespace blink {
 
 Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
-                                         int msaa_sample_count,
                                          AccelerationMode acceleration_mode,
                                          const CanvasColorParams& color_params)
     : logger_(std::make_unique<Logger>()),
-      msaa_sample_count_(msaa_sample_count),
       bytes_allocated_(0),
       have_recorded_draw_commands_(false),
-      filter_quality_(kLow_SkFilterQuality),
       is_hidden_(false),
       is_deferral_enabled_(true),
       software_rendering_while_hidden_(false),
@@ -282,8 +279,13 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
     return nullptr;
   }
 
-  if (resource_provider && resource_provider->IsValid())
+  if (resource_provider && resource_provider->IsValid()) {
+    // If resource provider is accelerated, a layer should already exist.
+    // If not, it could mean that the resource provider was create without
+    // going through this method, which is bad.
+    DCHECK(!IsAccelerated() || !!layer_);
     return resource_provider;
+  }
 
   if (layer_ && !IsHibernating() && hint == kPreferAcceleration &&
       acceleration_mode_ != kDisableAcceleration) {
@@ -296,42 +298,22 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
     want_acceleration = false;
     software_rendering_while_hidden_ = true;
   }
+  AccelerationHint adjusted_hint =
+      want_acceleration ? kPreferAcceleration : kPreferNoAcceleration;
 
-  // TODO: switch to kSoftwareResourceUsage and start using mailbox+layer
-  // for non-accelerated 2D canvas.
-  CanvasResourceProvider::ResourceUsage usage =
-      want_acceleration
-          ? CanvasResourceProvider::kAcceleratedCompositedResourceUsage
-          : CanvasResourceProvider::kSoftwareResourceUsage;
+  resource_provider =
+      resource_host_->GetOrCreateCanvasResourceProvider(adjusted_hint);
 
-  CanvasResourceProvider::PresentationMode presentation_mode =
-      RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()
-          ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
-          : CanvasResourceProvider::kDefaultPresentationMode;
-
-  resource_host_->ReplaceResourceProvider(CanvasResourceProvider::Create(
-      size_, usage, SharedGpuContext::ContextProviderWrapper(),
-      msaa_sample_count_, color_params_, presentation_mode,
-      nullptr  // canvas_resource_dispatcher
-      ));
-  resource_provider = resource_host_->ResourceProvider();
-
-  if (resource_provider) {
-    // Always save an initial frame, to support resetting the top level matrix
-    // and clip.
-    resource_provider->Canvas()->save();
-    resource_provider->SetFilterQuality(filter_quality_);
-    resource_provider->SetResourceRecyclingEnabled(!IsHidden());
-  } else {
+  if (!resource_provider)
     ReportResourceProviderCreationFailure();
-  }
 
-  if (resource_provider && resource_provider->IsAccelerated() && !layer_) {
+  if (resource_provider && IsAccelerated() && !layer_) {
     layer_ = cc::TextureLayer::CreateForMailbox(this);
     layer_->SetIsDrawable(true);
     layer_->SetContentsOpaque(ColorParams().GetOpacityMode() == kOpaque);
     layer_->SetBlendBackgroundColor(ColorParams().GetOpacityMode() != kOpaque);
-    layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
+    layer_->SetNearestNeighbor(resource_host_->FilterQuality() ==
+                               kNone_SkFilterQuality);
     GraphicsLayer::RegisterContentsLayer(layer_.get());
   }
 
@@ -374,7 +356,7 @@ cc::PaintCanvas* Canvas2DLayerBridge::Canvas() {
   DCHECK(resource_host_);
   if (!is_deferral_enabled_) {
     if (GetOrCreateResourceProvider())
-      return resource_host_->ResourceProvider()->Canvas();
+      return ResourceProvider()->Canvas();
     return nullptr;
   }
   return recorder_->getRecordingCanvas();
@@ -411,9 +393,9 @@ void Canvas2DLayerBridge::DisableDeferral(DisableDeferralReason reason) {
     resource_host_->RestoreCanvasMatrixClipStack(ResourceProvider()->Canvas());
 }
 
-void Canvas2DLayerBridge::SetFilterQuality(SkFilterQuality filter_quality) {
-  filter_quality_ = filter_quality;
-  if (ResourceProvider())
+void Canvas2DLayerBridge::UpdateFilterQuality() {
+  SkFilterQuality filter_quality = resource_host_->FilterQuality();
+  if (GetOrCreateResourceProvider())
     ResourceProvider()->SetFilterQuality(filter_quality);
   if (layer_)
     layer_->SetNearestNeighbor(filter_quality == kNone_SkFilterQuality);
@@ -427,8 +409,8 @@ void Canvas2DLayerBridge::SetIsHidden(bool hidden) {
   if (ResourceProvider())
     ResourceProvider()->SetResourceRecyclingEnabled(!IsHidden());
 
-  if (CANVAS2D_HIBERNATION_ENABLED && ResourceProvider() && IsHidden() &&
-      !hibernation_scheduled_) {
+  if (CANVAS2D_HIBERNATION_ENABLED && ResourceProvider() && IsAccelerated() &&
+      IsHidden() && !hibernation_scheduled_) {
     if (layer_)
       layer_->ClearTexture();
     logger_->ReportHibernationEvent(kHibernationScheduled);
@@ -548,7 +530,7 @@ bool Canvas2DLayerBridge::CheckResourceProviderValid() {
     return true;
   if (context_lost_)
     return false;
-  if (ResourceProvider() && ResourceProvider()->IsAccelerated() &&
+  if (ResourceProvider() && IsAccelerated() &&
       ResourceProvider()->IsGpuContextLost()) {
     context_lost_ = true;
     ResetResourceProvider();
@@ -575,17 +557,8 @@ bool Canvas2DLayerBridge::Restore() {
     shared_gl = context_provider_wrapper->ContextProvider()->ContextGL();
 
   if (shared_gl && shared_gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
-    CanvasResourceProvider::PresentationMode presentation_mode =
-        RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()
-            ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
-            : CanvasResourceProvider::kDefaultPresentationMode;
-    std::unique_ptr<CanvasResourceProvider> resource_provider =
-        CanvasResourceProvider::Create(
-            size_, CanvasResourceProvider::kAcceleratedCompositedResourceUsage,
-            std::move(context_provider_wrapper), msaa_sample_count_,
-            color_params_, presentation_mode,
-            nullptr  // canvas_resource_dispatcher
-            );
+    CanvasResourceProvider* resource_provider =
+        resource_host_->GetOrCreateCanvasResourceProvider(kPreferAcceleration);
 
     if (!resource_provider)
       ReportResourceProviderCreationFailure();
@@ -594,11 +567,12 @@ bool Canvas2DLayerBridge::Restore() {
     // non-accelerated, which would be tricky due to changes to the layer tree,
     // which can only happen at specific times during the document lifecycle.
     // Therefore, we can only accept the restored surface if it is accelerated.
-    if (resource_provider && resource_provider->IsAccelerated()) {
-      resource_host_->ReplaceResourceProvider(std::move(resource_provider));
+    if (resource_provider && !IsAccelerated()) {
+      resource_host_->ReplaceResourceProvider(nullptr);
       // FIXME: draw sad canvas picture into new buffer crbug.com/243842
+    } else {
+      context_lost_ = false;
     }
-    context_lost_ = false;
   }
 
   if (resource_host_)

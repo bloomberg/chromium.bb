@@ -25,6 +25,11 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
         image_decode_cache_(cache ? cache : &stub_image_decode_cache_) {
     sk_sp<const GrGLInterface> gl_interface(GrGLCreateNullInterface());
     gr_context_ = GrContext::MakeGL(std::move(gl_interface));
+    // enable all gpu features.
+    for (unsigned feature = 0; feature < gpu::NUMBER_OF_GPU_FEATURE_TYPES;
+         ++feature) {
+      gpu_feature_info_.status_values[feature] = gpu::kGpuFeatureStatusEnabled;
+    }
   }
   ~FakeWebGraphicsContext3DProvider() override = default;
 

@@ -21,6 +21,7 @@ namespace blink {
 
 class CanvasColorParams;
 class CanvasRenderingContext;
+class CanvasResourceDispatcher;
 class FontSelector;
 class StaticBitmapImage;
 class KURL;
@@ -42,6 +43,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   virtual void SetOriginTainted() = 0;
   virtual const IntSize& Size() const = 0;
   virtual CanvasRenderingContext* RenderingContext() const = 0;
+  virtual CanvasResourceDispatcher* GetOrCreateResourceDispatcher() = 0;
 
   virtual ExecutionContext* GetTopExecutionContext() const = 0;
   virtual DispatchEventResult HostDispatchEvent(Event*) = 0;
@@ -58,6 +60,9 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
 
   virtual FontSelector* GetFontSelector() = 0;
 
+  virtual bool ShouldAccelerate2dContext() const = 0;
+  virtual unsigned GetMSAASampleCountFor2dContext() const = 0;
+
   // TODO(fserb): remove this.
   virtual bool IsOffscreenCanvas() const { return false; }
   virtual bool IsNeutered() const { return false; }
@@ -71,11 +76,12 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
 
   // Partial CanvasResourceHost implementation
   void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const final;
+  CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
+      AccelerationHint hint) final;
 
   bool Is3d() const;
   bool Is2d() const;
   CanvasColorParams ColorParams() const;
-  CanvasResourceProvider* GetOrCreateCanvasResourceProvider();
 
   ScriptPromise convertToBlob(ScriptState*,
                               const ImageEncodeOptions&,
@@ -87,7 +93,6 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   scoped_refptr<StaticBitmapImage> CreateTransparentImage(const IntSize&) const;
 
   bool did_fail_to_create_resource_provider_ = false;
-  bool resource_provider_is_clear_ = false;
 };
 
 }  // namespace blink

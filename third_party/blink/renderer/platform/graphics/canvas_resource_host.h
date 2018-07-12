@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace cc {
@@ -23,6 +25,10 @@ class PLATFORM_EXPORT CanvasResourceHost {
   virtual void SetNeedsCompositingUpdate() = 0;
   virtual void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const = 0;
   virtual void UpdateMemoryUsage() = 0;
+  virtual CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
+      AccelerationHint hint) = 0;
+
+  virtual SkFilterQuality FilterQuality() const = 0;
 
   CanvasResourceProvider* ResourceProvider() const;
 
