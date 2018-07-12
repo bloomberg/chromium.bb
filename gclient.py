@@ -2845,8 +2845,7 @@ def CMDverify(parser, args):
 
 
 @subcommand.epilog("""For more information on what metrics are we collecting and
-why, please read metrics.README.md or visit
-<short link to metrics.README.md in gitiles>.""")
+why, please read metrics.README.md or visit https://bit.ly/2ufRS4p""")
 def CMDmetrics(parser, args):
   """Reports, and optionally modifies, the status of metric collection."""
   parser.add_option('--opt-in', action='store_true', dest='enable_metrics',
