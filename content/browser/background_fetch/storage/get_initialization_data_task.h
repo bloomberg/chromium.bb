@@ -37,8 +37,6 @@ struct CONTENT_EXPORT BackgroundFetchInitializationData {
   size_t num_requests;
   size_t num_completed_requests;
   std::vector<std::string> active_fetch_guids;
-  // The most recent title. This can be different from |options.title| if the
-  // developer called `updateUI` on the BackgroundFetchUpdateEvent.
   std::string ui_title;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchInitializationData);

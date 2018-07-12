@@ -31,7 +31,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/image/image.h"
 
 namespace content {
 namespace {
@@ -144,23 +143,6 @@ std::vector<ServiceWorkerFetchRequest> CreateValidRequests(
     requests[i].url = GURL(origin.GetURL().spec() + base::NumberToString(i));
   }
   return requests;
-}
-
-// TODO(crbug.com/855789): Remove this helper function when icon deserialization
-// is added.
-void CheckSerializedIcon(const std::string& bytes, const SkBitmap& test_icon) {
-  SkBitmap icon =
-      gfx::Image::CreateFrom1xPNGBytes(
-          reinterpret_cast<const unsigned char*>(bytes.c_str()), bytes.size())
-          .AsBitmap();
-
-  EXPECT_FALSE(icon.isNull());
-  EXPECT_EQ(icon.width(), test_icon.width());
-  EXPECT_EQ(icon.height(), test_icon.height());
-  for (int i = 0; i < icon.width(); i++) {
-    for (int j = 0; j < icon.height(); j++)
-      EXPECT_EQ(icon.getColor(i, j), SK_ColorGREEN);
-  }
 }
 
 }  // namespace
@@ -745,12 +727,8 @@ TEST_F(BackgroundFetchDataManagerTest, GetMetadata) {
   BackgroundFetchOptions options;
   blink::mojom::BackgroundFetchError error;
 
-  SkBitmap icon;
-  icon.allocN32Pixels(42, 42);
-  icon.eraseColor(SK_ColorGREEN);
-
   // Create a single registration.
-  CreateRegistration(registration_id, requests, options, icon, &error);
+  CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   // Verify that the metadata can be retrieved.
@@ -760,7 +738,6 @@ TEST_F(BackgroundFetchDataManagerTest, GetMetadata) {
   EXPECT_EQ(metadata->origin(), origin().Serialize());
   EXPECT_NE(metadata->creation_microseconds_since_unix_epoch(), 0);
   EXPECT_EQ(metadata->num_fetches(), static_cast<int>(requests.size()));
-  ASSERT_NO_FATAL_FAILURE(CheckSerializedIcon(metadata->icon(), icon));
 
   // Verify that retrieving using the wrong developer id doesn't work.
   metadata = GetMetadata(sw_id, origin(), kAlternativeDeveloperId, &error);
@@ -1373,8 +1350,10 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
   // Register a Background Fetch.
   BackgroundFetchRegistrationId registration_id(
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
-
-  CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
+  SkBitmap icon;
+  icon.allocN32Pixels(42, 42);
+  icon.eraseColor(SK_ColorGREEN);
+  CreateRegistration(registration_id, requests, options, icon, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   UpdateRegistrationUI(registration_id, kUpdatedTitle, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1382,16 +1361,26 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
     std::vector<BackgroundFetchInitializationData> data =
         GetInitializationData();
     ASSERT_EQ(data.size(), 1u);
+    const BackgroundFetchInitializationData& init = data[0];
 
-    EXPECT_EQ(data[0].registration_id, registration_id);
-    EXPECT_EQ(data[0].registration.unique_id, kExampleUniqueId);
-    EXPECT_EQ(data[0].registration.developer_id, kExampleDeveloperId);
-    EXPECT_EQ(data[0].options.title, kInitialTitle);
-    EXPECT_EQ(data[0].options.download_total, 42u);
-    EXPECT_EQ(data[0].ui_title, kUpdatedTitle);
-    EXPECT_EQ(data[0].num_requests, requests.size());
-    EXPECT_EQ(data[0].num_completed_requests, 0u);
-    EXPECT_TRUE(data[0].active_fetch_guids.empty());
+    EXPECT_EQ(init.registration_id, registration_id);
+    EXPECT_EQ(init.registration.unique_id, kExampleUniqueId);
+    EXPECT_EQ(init.registration.developer_id, kExampleDeveloperId);
+    EXPECT_EQ(init.options.title, kInitialTitle);
+    EXPECT_EQ(init.options.download_total, 42u);
+    EXPECT_EQ(init.ui_title, kUpdatedTitle);
+    EXPECT_EQ(init.num_requests, requests.size());
+    EXPECT_EQ(init.num_completed_requests, 0u);
+    EXPECT_TRUE(init.active_fetch_guids.empty());
+
+    // Check icon.
+    ASSERT_FALSE(init.icon.drawsNothing());
+    EXPECT_EQ(icon.width(), init.icon.width());
+    EXPECT_EQ(icon.height(), init.icon.height());
+    for (int i = 0; i < icon.width(); i++) {
+      for (int j = 0; j < icon.height(); j++)
+        EXPECT_EQ(init.icon.getColor(i, j), SK_ColorGREEN);
+    }
   }
 
   // Mark one request as complete and start another.
