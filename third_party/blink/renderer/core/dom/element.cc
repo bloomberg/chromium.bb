@@ -4647,6 +4647,8 @@ Node::InsertionNotificationRequest Node::InsertedInto(
   if (ChildNeedsDistributionRecalc() &&
       !insertion_point->ChildNeedsDistributionRecalc())
     insertion_point->MarkAncestorsWithChildNeedsDistributionRecalc();
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+    cache->ChildrenChanged(insertion_point);
   return kInsertionDone;
 }
 
@@ -4659,8 +4661,10 @@ void Node::RemovedFrom(ContainerNode* insertion_point) {
   }
   if (IsInShadowTree() && !ContainingTreeScope().RootNode().IsShadowRoot())
     ClearFlag(kIsInShadowTreeFlag);
-  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
     cache->Remove(this);
+    cache->ChildrenChanged(insertion_point);
+  }
 }
 
 void Element::WillRecalcStyle(StyleRecalcChange) {

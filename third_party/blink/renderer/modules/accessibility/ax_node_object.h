@@ -191,6 +191,10 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool CanHaveChildren() const override;
   void AddChild(AXObject*);
   void InsertChild(AXObject*, unsigned index);
+  void ClearChildren() override;
+  bool NeedsToUpdateChildren() const override { return children_dirty_; }
+  void SetNeedsToUpdateChildren() override { children_dirty_ = true; }
+  void UpdateChildrenIfNecessary() override;
 
   // DOM and Render tree access.
   Element* ActionElement() const override;

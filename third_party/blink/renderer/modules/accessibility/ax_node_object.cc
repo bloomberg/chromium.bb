@@ -2137,6 +2137,11 @@ void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
   }
 }
 
+void AXNodeObject::ClearChildren() {
+  AXObject::ClearChildren();
+  children_dirty_ = false;
+}
+
 bool AXNodeObject::CanHaveChildren() const {
   // If this is an AXLayoutObject, then it's okay if this object
   // doesn't have a node - there are some layoutObjects that don't have
@@ -2420,6 +2425,13 @@ void AXNodeObject::ChildrenChanged() {
       AXObjectCache().PostNotification(parent,
                                        AXObjectCacheImpl::kAXValueChanged);
   }
+}
+
+void AXNodeObject::UpdateChildrenIfNecessary() {
+  if (NeedsToUpdateChildren())
+    ClearChildren();
+
+  AXObject::UpdateChildrenIfNecessary();
 }
 
 void AXNodeObject::SelectionChanged() {
