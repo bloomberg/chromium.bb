@@ -4,12 +4,10 @@
 
 #include "chrome/browser/ssl/connection_help_tab_helper.h"
 
-#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
@@ -60,8 +58,7 @@ void ConnectionHelpTabHelper::DidFinishNavigation(
           GetHelpCenterURL()) {
     LearnMoreClickResult histogram_value;
     if (navigation_handle->IsErrorPage()) {
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kCommittedInterstitials) &&
+      if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials) &&
           net::IsCertificateError(navigation_handle->GetNetErrorCode())) {
         // When committed interstitials are enabled, DidAttachInterstitialPage
         // does not get called, so check if this navigation resulted in an SSL
