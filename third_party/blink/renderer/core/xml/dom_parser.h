@@ -27,6 +27,8 @@
 namespace blink {
 
 class Document;
+class StringOrTrustedHTML;
+class ExceptionState;
 
 class DOMParser final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -35,12 +37,15 @@ class DOMParser final : public ScriptWrappable {
   static DOMParser* Create(Document& document) {
     return new DOMParser(document);
   }
-
-  Document* parseFromString(const String&, const String& type);
+  Document* parseFromString(const StringOrTrustedHTML&,
+                            const String& type,
+                            ExceptionState& exception_state);
+  Document* parseFromString(const StringOrTrustedHTML&, const String& type);
 
   void Trace(blink::Visitor*) override;
 
  private:
+  Document* parseFromStringInternal(const String&, const String& type);
   explicit DOMParser(Document&);
 
   WeakMember<Document> context_document_;
