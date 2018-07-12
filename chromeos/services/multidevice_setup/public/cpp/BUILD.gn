@@ -2,15 +2,30 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("cpp") {
+  sources = [
+    "multidevice_setup_client.cc",
+    "multidevice_setup_client.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//chromeos/services/multidevice_setup/public/mojom",
+  ]
+}
+
 static_library("test_support") {
   testonly = true
 
   sources = [
     "fake_multidevice_setup.cc",
     "fake_multidevice_setup.h",
+    "fake_multidevice_setup_client.cc",
+    "fake_multidevice_setup_client.h",
   ]
 
   public_deps = [
+    ":cpp",
     "//chromeos/services/multidevice_setup/public/mojom",
   ]
 
