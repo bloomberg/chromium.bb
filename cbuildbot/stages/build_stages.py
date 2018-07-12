@@ -397,19 +397,9 @@ class InitSDKStage(generic_stages.BuilderStage):
 
   option_name = 'build'
 
-  def __init__(self, builder_run, chroot_replace=False, **kwargs):
-    """InitSDK constructor.
-
-    Args:
-      builder_run: Builder run instance for this run.
-      chroot_replace: If True, force the chroot to be replaced.
-    """
-    super(InitSDKStage, self).__init__(builder_run, **kwargs)
-    self.force_chroot_replace = chroot_replace
-
   def PerformStage(self):
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
-    replace = self._run.config.chroot_replace or self.force_chroot_replace
+    replace = self._run.config.chroot_replace
     pre_ver = post_ver = None
     if os.path.isdir(self._build_root) and not replace:
       try:
