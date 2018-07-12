@@ -308,7 +308,7 @@ def SetupBuild(options):
   Returns:
     Base flags to use for U-Boot, as a list.
   """
-  # pylint: disable=W0603
+  # pylint: disable=global-statement
   global arch, board, compiler, family, outdir, smdk, uboard, vendor, verbose
 
   if not verbose:

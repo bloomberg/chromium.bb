@@ -29,7 +29,7 @@ if cros_build_lib.IsInsideChroot():
   # Only import portage after we've checked that we're inside the chroot.
   # Outside may not have portage, in which case the above may not happen.
   # We'll check in main() if the operation needs portage.
-  # pylint: disable=F0401
+  # pylint: disable=import-error
   import portage
 
 
@@ -346,7 +346,6 @@ def GetInstalledPackageVersions(atom, root='/'):
     The list of versions of the package currently installed.
   """
   versions = []
-  # pylint: disable=E1101
   for pkg in PortageTrees(root)['vartree'].dbapi.match(atom, use_cache=0):
     version = portage.versions.cpv_getversion(pkg)
     versions.append(version)
@@ -365,7 +364,6 @@ def GetStablePackageVersion(atom, installed, root='/'):
     A string containing the latest version.
   """
   pkgtype = 'vartree' if installed else 'porttree'
-  # pylint: disable=E1101
   cpv = portage.best(PortageTrees(root)[pkgtype].dbapi.match(atom, use_cache=0))
   return portage.versions.cpv_getversion(cpv) if cpv else None
 
@@ -933,7 +931,6 @@ def _GetFilesForTarget(target, root='/'):
       atom = GetPortagePackage(target, pkg)
       cat, pn = atom.split('/')
       ver = GetInstalledPackageVersions(atom, root=root)[0]
-      # pylint: disable=E1101
       dblink = portage.dblink(cat, pn + '-' + ver, myroot=root,
                               settings=portage.settings)
       contents = dblink.getcontents()
@@ -950,7 +947,6 @@ def _GetFilesForTarget(target, root='/'):
     ver = GetInstalledPackageVersions(atom, root=root)[0]
     logging.info('packaging %s-%s', atom, ver)
 
-    # pylint: disable=E1101
     dblink = portage.dblink(cat, pn + '-' + ver, myroot=root,
                             settings=portage.settings)
     contents = dblink.getcontents()

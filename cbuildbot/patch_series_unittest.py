@@ -107,7 +107,7 @@ class PatchSeriesTestCase(patch_unittest.UploadedLocalPatchTestCase,
     self.MockPatch = self._patch_factory.MockPatch
 
   def MakeHelper(self, cros_internal=None, cros=None):
-    # pylint: disable=W0201
+    # pylint: disable=attribute-defined-outside-init
     if cros_internal:
       cros_internal = self.mox.CreateMock(gerrit.GerritHelper)
       cros_internal.version = '2.2'

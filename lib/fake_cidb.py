@@ -379,7 +379,7 @@ class FakeCIDBConnection(object):
 
   def GetActionHistory(self, *args, **kwargs):
     """Get all the actions for all changes."""
-    # pylint: disable=W0613
+    # pylint: disable=unused-argument
     values = []
     for item, action_id in zip(self.clActionTable, itertools.count()):
       row = (

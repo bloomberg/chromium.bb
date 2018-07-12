@@ -126,7 +126,7 @@ class MainTest(TestImageTest):
         self.tempdir
     ]
     test_image.main(argv)
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     self.assertEqual('my-board', test._board)
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     self.assertEqual('your-root', os.path.basename(test._result_dir))

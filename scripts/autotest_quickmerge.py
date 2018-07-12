@@ -27,6 +27,7 @@ from chromite.lib import portage_util
 
 if cros_build_lib.IsInsideChroot():
   # Only import portage after we've checked that we're inside the chroot.
+  # pylint: disable=import-error
   import portage
 
 

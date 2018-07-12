@@ -22,7 +22,7 @@ try:
 except ImportError:
   # Python-3 renamed to "queue".  We still use Queue to avoid collisions
   # with naming variables as "queue".  Maybe we'll transition at some point.
-  # pylint: disable=F0401
+  # pylint: disable=import-error
   import queue as Queue
 
 from chromite.lib import cros_logging as logging

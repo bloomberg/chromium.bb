@@ -28,7 +28,7 @@ DEFAULT_BOARD = 'TheBoard'
 DEFAULT_BOT_NAME = 'TheCoolBot'
 
 # Access to protected member.
-# pylint: disable=W0212
+# pylint: disable=protected-access
 
 DEFAULT_OPTIONS = cros_test_lib.EasyAttr(
     archive_base=DEFAULT_ARCHIVE_BASE,

@@ -20,8 +20,6 @@ from chromite.lib import partial_mock
 from chromite.lib import timeout_util
 
 
-# pylint: disable=W0212,W0233
-
 # Convenience alias
 Dir = cros_test_lib.Directory
 

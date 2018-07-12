@@ -834,7 +834,7 @@ class ValidationPool(object):
         candidates = [c for c in self.candidates if
                       c not in self.applied and filter_fn(c)]
 
-        # pylint: disable=E1123
+        # pylint: disable=unexpected-keyword-arg
         applied, failed_tot, failed_inflight = self.applied_patches.Apply(
             candidates, manifest=manifest)
       except (KeyboardInterrupt, RuntimeError, SystemExit):
@@ -873,7 +873,7 @@ class ValidationPool(object):
       self.applied_patches.FetchChanges(self.candidates, manifest=manifest)
       for change in self.candidates:
         try:
-          # pylint: disable=E1123
+          # pylint: disable=unexpected-keyword-arg
           self.applied_patches.ApplyChange(change, manifest=manifest)
         except cros_patch.PatchException as e:
           # Fail if any patch cannot be applied.

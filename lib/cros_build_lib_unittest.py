@@ -33,9 +33,6 @@ from chromite.lib import partial_mock
 from chromite.lib import signals as cros_signals
 
 
-# pylint: disable=W0212,R0904
-
-
 class RunCommandErrorStrTest(cros_test_lib.TestCase):
   """Test that RunCommandError __str__ works as expected."""
 
@@ -1095,13 +1092,13 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
     self.assertEqual(list(manifest.checkouts_by_name), ['monkeys'])
     self.assertEqual(list(manifest.remotes), ['foon'])
 
-  # pylint: disable=E1101
   def testGetManifestsBranch(self):
+    # pylint: disable=protected-access
     func = git.ManifestCheckout._GetManifestsBranch
     manifest = self.manifest_dir
     repo_root = self.tempdir
 
-    # pylint: disable=W0613
+    # pylint: disable=unused-argument
     def reconfig(merge='master', origin='origin'):
       if merge is not None:
         merge = 'refs/heads/%s' % merge
@@ -1400,7 +1397,7 @@ class FrozenAttributesTest(cros_test_lib.TestCase):
       object.__setattr__(self, attr, self.SETATTR_OFFSET + value)
 
   def _TestBasics(self, cls):
-    # pylint: disable=W0201
+    # pylint: disable=attribute-defined-outside-init
     def _Expected(val):
       return getattr(cls, 'SETATTR_OFFSET', 0) + val
 

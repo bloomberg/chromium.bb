@@ -23,7 +23,12 @@ from chromite.lib import upgrade_table as utable
 from chromite.scripts import cros_portage_upgrade as cpu
 from chromite.scripts import parallel_emerge
 
-from portage.package.ebuild import config as portcfg  # pylint: disable=F0401
+from portage.package.ebuild import config as portcfg  # pylint: disable=import-error
+
+
+# We disable no-value-for-parameter because pylint isn't able to dive into many
+# of portage's internal modules/funcs as they're constructed dynamically.
+# pylint: disable=protected-access,no-value-for-parameter
 
 
 # This no longer gets installed by portage.  Stub it as None to avoid
@@ -34,7 +39,6 @@ respgnd = None
 # Enable color invariably. Since we rely on color for error/warn message
 # recognition, leaving this to be decided based on stdout being a tty
 # will make the tests fail/succeed based on how they are run.
-# pylint: disable=W0102,W0212,E1120,E1101
 cpu.oper._color._enabled = True
 
 DEFAULT_PORTDIR = '/usr/portage'
@@ -439,7 +443,7 @@ class CpuTestBase(cros_test_lib.MoxTempDirTestOutputCase):
   def tearDown(self):
     self._TearDownPlayground()
 
-  def _SetUpPlayground(self, ebuilds=EBUILDS, installed=INSTALLED, world=WORLD,
+  def _SetUpPlayground(self, ebuilds=None, installed=None, world=None,
                        active=True):
     """Prepare the temporary ebuild playground (ResolverPlayground).
 
@@ -460,6 +464,13 @@ class CpuTestBase(cros_test_lib.MoxTempDirTestOutputCase):
     Returns:
       Tuple (playground, envvars).
     """
+    # It's safe to use these globals as we treat these dicts are read-only.
+    if ebuilds is None:
+      ebuilds = EBUILDS
+    if installed is None:
+      installed = INSTALLED
+    if world is None:
+      world = WORLD
 
     # TODO(mtennant): Support multiple overlays?  This essentially
     # creates just a default overlay.
@@ -1097,15 +1108,18 @@ class GetPackageUpgradeStateTest(CpuTestBase):
 class EmergeableTest(CpuTestBase):
   """Test Upgrader._AreEmergeable."""
 
-  def _TestAreEmergeable(self, cpvlist, expect,
-                         debug=False, world=WORLD):
+  def _TestAreEmergeable(self, cpvlist, expect, debug=False, world=None):
     """Test the Upgrader._AreEmergeable method.
 
-    |cpvlist| is passed to _AreEmergeable.
-    |expect| is boolean, expected return value of _AreEmergeable
-    |debug| requests that emerge output in _AreEmergeable be shown.
-    |world| is list of lines to override default world contents.
+    Args:
+      cpvlist: Passed to _AreEmergeable.
+      expect: Expected boolean return value of _AreEmergeable.
+      debug: Request that emerge output in _AreEmergeable be shown.
+      world: List of lines to override default world contents.
     """
+    # It's safe to use these globals as we treat these dicts are read-only.
+    if world is None:
+      world = WORLD
 
     cmdargs = ['--upgrade'] + cpvlist
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs)
@@ -3021,8 +3035,10 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
   def testResolveAndVerifyArgsWorldStatusMode(self):
     self._TestResolveAndVerifyArgsWorld(False)
 
-  def _TestResolveAndVerifyArgsNonWorld(self, pinfolist, cmdargs=[],
+  def _TestResolveAndVerifyArgsNonWorld(self, pinfolist, cmdargs=None,
                                         error=None, error_checker=None):
+    if cmdargs is None:
+      cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
                                          _curr_board=None)
     upgrade_mode = cpu.Upgrader._IsInUpgradeMode(mocked_upgrader)

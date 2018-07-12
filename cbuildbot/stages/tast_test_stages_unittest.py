@@ -89,7 +89,7 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._Prepare()
 
   def ConstructStage(self):
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     self._run.GetArchive().SetupArchivePath()
     self._stage = tast_test_stages.TastVMTestStage(self._run,
                                                    self._current_board)
@@ -154,7 +154,7 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def _VerifyArtifacts(self):
     """Verifies that results were archived and queued to be uploaded."""
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     archive_dir = constants.TAST_VM_TEST_RESULTS % \
         {'attempt': self._stage._attempt}
     self.assertEqual(os.listdir(self._stage.archive_path), [archive_dir])
@@ -312,7 +312,7 @@ class CopyResultsDirTest(cros_test_lib.TempDirTestCase):
 
   def _DoCopy(self):
     """Copies from src to dest directory."""
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     tast_test_stages._CopyResultsDir(self.src, self.dest)
 
   def testCopyAll(self):

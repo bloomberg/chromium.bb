@@ -55,7 +55,7 @@ class GCETestStageTest(generic_stages_unittest.AbstractStageTestCase,
     board_runattrs.SetParallel('breakpad_symbols_generated', True)
 
   def ConstructStage(self):
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     self._run.GetArchive().SetupArchivePath()
     stage = vm_test_stages.GCETestStage(self._run, self._current_board)
     image_dir = stage.GetImageDirSymlink()
@@ -114,7 +114,7 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     board_runattrs.SetParallel('breakpad_symbols_generated', True)
 
   def ConstructStage(self):
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     self._run.GetArchive().SetupArchivePath()
     stage = vm_test_stages.VMTestStage(self._run, self._current_board)
     image_dir = stage.GetImageDirSymlink()

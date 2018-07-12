@@ -21,14 +21,12 @@ from chromite.lib import gs
 from chromite.lib import path_util
 
 
-# pylint: disable=protected-access
-
-
 class TestShutDownException(cros_test_lib.TestCase):
   """Test that ShutDownException can be pickled."""
 
   def testShutDownException(self):
     """Test that ShutDownException can be pickled."""
+    # pylint: disable=protected-access
     ex = commandline._ShutDownException(signal.SIGTERM, 'Received SIGTERM')
     ex2 = cPickle.loads(cPickle.dumps(ex))
     self.assertEqual(ex.signal, ex2.signal)
@@ -362,7 +360,6 @@ class CacheTest(cros_test_lib.MockTempDirTestCase):
     self.parser = commandline.ArgumentParser(caching=True)
 
   def _CheckCall(self, cwd_retval, args_to_parse, expected, assert_func):
-    # pylint: disable=E1101
     self.cwd_mock.return_value = cwd_retval
     self.parser.parse_args(args_to_parse)
     cache_dir_mock = self.parser.ConfigureCacheDir

@@ -52,7 +52,7 @@ class ChromiteImporter(object):
     while not os.path.exists(os.path.join(path, 'PRESUBMIT.cfg')):
       path = os.path.dirname(path)
 
-    # pylint: disable=W0603
+    # pylint: disable=global-statement
     global CHROMITE_PATH
     CHROMITE_PATH = path + '/'
 

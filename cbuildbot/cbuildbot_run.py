@@ -32,7 +32,7 @@ try:
 except ImportError:
   # Python-3 renamed to "queue".  We still use Queue to avoid collisions
   # with naming variables as "queue".  Maybe we'll transition at some point.
-  # pylint: disable=F0401
+  # pylint: disable=import-error
   import queue as Queue
 import types
 
@@ -224,7 +224,6 @@ class RunAttributes(object):
     self._queues = {}
     for attr in RunAttributes.PARALLEL_ATTRS:
       if attr not in RunAttributes.BOARD_ATTRS:
-        # pylint: disable=E1101
         self._queues[attr] = LockableQueue(self._manager)
 
     # Set of known <board>||<target> combinations.
@@ -251,7 +250,6 @@ class RunAttributes(object):
       # now.  Queues are kept by the uniquified run attribute name.
       for attr in RunAttributes.BOARD_ATTRS:
         # Every attr in BOARD_ATTRS is in PARALLEL_ATTRS, by construction.
-        # pylint: disable=E1101
         uniquified_attr = self._GetBoardAttrName(attr, board, target)
         self._queues[uniquified_attr] = LockableQueue(self._manager)
 
@@ -1059,7 +1057,7 @@ class ChildBuilderRun(_RealBuilderRun):
       child_index: The child index of this child run, used to index into
         the main run's config.child_configs.
     """
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     run_base = builder_run._run_base
     config = builder_run.config.child_configs[child_index]
     super(ChildBuilderRun, self).__init__(run_base, config)

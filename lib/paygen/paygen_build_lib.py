@@ -48,10 +48,9 @@ sys.path.insert(0, AUTOTEST_DIR)
 # will fail. We quietly ignore the failure, but leave bombs around that will
 # explode if people try to really use this library.
 try:
-  # pylint: disable=F0401
+  # pylint: disable=import-error
   from site_utils.autoupdate.lib import test_params
   from site_utils.autoupdate.lib import test_control
-  # pylint: enable=F0401
 
 except ImportError:
   test_params = None

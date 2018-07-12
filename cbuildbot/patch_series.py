@@ -286,7 +286,7 @@ class PatchSeries(object):
     This function automatically initializes the manifest, and allows callers to
     override the manifest if needed.
     """
-    # pylint: disable=E0213,W0212,E1101,E1102
+    # pylint: disable=no-self-argument,protected-access,not-callable
     def f(self, *args, **kwargs):
       manifest = kwargs.pop('manifest', None)
       # Wipe is used to track if we need to reset manifest to None, and

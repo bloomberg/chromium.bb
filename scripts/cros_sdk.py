@@ -115,13 +115,11 @@ def FetchRemoteTarballs(storage_dir, urls, desc, allow_none=False):
 
   # Note we track content length ourselves since certain versions of curl
   # fail if asked to resume a complete file.
-  # pylint: disable=C0301,W0631
   # https://sourceforge.net/tracker/?func=detail&atid=100976&aid=3482927&group_id=976
   logging.notice('Downloading %s tarball...', desc)
   status_re = re.compile(r'^HTTP/[0-9]+(\.[0-9]+)? 200')
+  # pylint: disable=undefined-loop-variable
   for url in urls:
-    # http://www.logilab.org/ticket/8766
-    # pylint: disable=E1101
     parsed = urlparse.urlparse(url)
     tarball_name = os.path.basename(parsed.path)
     if parsed.scheme in ('', 'file'):

@@ -31,7 +31,7 @@ try:
 except ImportError:
   # Python-3 renamed to "queue".  We still use Queue to avoid collisions
   # with naming variables as "queue".  Maybe we'll transition at some point.
-  # pylint: disable=F0401
+  # pylint: disable=import-error
   import queue as Queue
 
 from chromite.lib import constants
@@ -127,7 +127,7 @@ def ListWorkonPackagesInfo(sysroot):
     A list of WorkonPackageInfo objects for unique packages being worked on.
   """
   # Import portage late so that this script can be imported outside the chroot.
-  # pylint: disable=F0401
+  # pylint: disable=import-error
   import portage.const
   packages = ListWorkonPackages(sysroot)
   if not packages:

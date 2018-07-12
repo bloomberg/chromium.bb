@@ -188,7 +188,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     # Force the fd to be opened via touching the property.
     # We do this to ensure that even if entering a context w/out a lock
     # held, we can do locking in that critical section if the code requests it.
-    # pylint: disable=W0104
+    # pylint: disable=pointless-statement
     self.fd
     return self
 

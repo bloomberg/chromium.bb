@@ -569,7 +569,7 @@ def _CreateParser():
   # Debug options
   #
   # Temporary hack; in place till --dry-run replaces --debug.
-  # pylint: disable=W0212
+  # pylint: disable=protected-access
   group = parser.debug_group
   debug = [x for x in group.option_list if x._long_opts == ['--debug']][0]
   debug.help += '  Currently functions as --dry-run in addition.'
@@ -677,7 +677,7 @@ def _FinishParsing(options):
         'running the %s config', constants.BRANCH_UTIL_CONFIG)
 
 
-# pylint: disable=W0613
+# pylint: disable=unused-argument
 def _PostParseCheck(parser, options, site_config):
   """Perform some usage validation after we've parsed the arguments
 

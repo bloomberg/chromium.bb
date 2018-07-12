@@ -33,6 +33,7 @@ from chromite.lib import path_util
 from chromite.lib import gs
 
 if cros_build_lib.IsInsideChroot():
+  # pylint: disable=import-error
   from portage import create_trees
 
 

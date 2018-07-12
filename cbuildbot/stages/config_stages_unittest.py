@@ -104,7 +104,7 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
   def tearDown(self):
     osutils.RmDir(self.chromite_dir, ignore_missing=True)
 
-  # pylint: disable=W0221
+  # pylint: disable=arguments-differ
   def ConstructStage(self, template, new_config=True):
     template_path = config_stages.GS_GE_TEMPLATE_BUCKET + template
     branch = config_stages.GetBranchName(template)

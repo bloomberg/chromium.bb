@@ -51,7 +51,7 @@ def ParseELFSymbols(elf):
       if tag.entry.d_tag == 'DT_HASH':
         dthash_ptr = tag.entry.d_ptr
 
-    stringtable = segment._get_stringtable()  # pylint: disable=W0212
+    stringtable = segment._get_stringtable()  # pylint: disable=protected-access
 
     symtab_offset = next(elf.address_offsets(symtab_ptr))
 

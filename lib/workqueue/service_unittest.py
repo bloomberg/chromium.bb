@@ -5,8 +5,6 @@
 
 """Unit tests for workqueue server and client classes."""
 
-#pylint: disable=protected-access
-
 from __future__ import print_function
 
 import mock
@@ -18,6 +16,9 @@ import unittest
 
 from chromite.lib.workqueue import service
 from chromite.lib.workqueue import tasks
+
+
+# pylint: disable=protected-access
 
 
 REQUESTED = service._BaseWorkQueue._REQUESTED

@@ -24,7 +24,7 @@ from chromite.lib import partial_mock
 from gn_helpers import gn_helpers
 
 
-# pylint: disable=W0212
+# pylint: disable=protected-access
 
 
 class MockChromeSDKCommand(command_unittest.MockCommand):

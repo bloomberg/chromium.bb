@@ -64,7 +64,7 @@ class DryRunMgr(object):
       func_name = '%s.%s' % (func.__module__, func.__name__)
     except AttributeError:
       # This happens in unittests where func is a mocked function.
-      # pylint: disable=W0212
+      # pylint: disable=protected-access
       func_name = func._name
     except Exception as e:
       if 'UnknownMethodCallError' in type(e).__name__:

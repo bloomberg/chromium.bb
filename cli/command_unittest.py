@@ -49,7 +49,7 @@ class TestCommandTest(cros_test_lib.MockTestCase):
   def testBadUseOfCommandDecorator(self):
     """Tests that our decorator correctly rejects bad test commands."""
     try:
-      # pylint: disable=W0612
+      # pylint: disable=unused-variable
       @command.CommandDecorator('bad')
       class BadTestCommand(object):
         """A command that wasn't implemented correctly."""
@@ -97,7 +97,7 @@ class MockCommand(partial_mock.PartialMock):
 class CommandTest(cros_test_lib.MockTestCase):
   """This test class tests that we can load modules correctly."""
 
-  # pylint: disable=W0212
+  # pylint: disable=protected-access
 
   def testFindModules(self):
     """Tests that we can return modules correctly when mocking out glob."""

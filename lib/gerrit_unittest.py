@@ -34,7 +34,6 @@ site_config = config_lib.GetConfig()
 # Any new test cases must be manually added to the qualification test suite.
 
 
-# pylint: disable=W0212,R0904
 @cros_test_lib.NetworkTest()
 class GerritHelperTest(cros_test_lib.GerritTestCase):
   """Unittests for GerritHelper."""

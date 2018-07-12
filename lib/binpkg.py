@@ -204,7 +204,7 @@ class PackageIndex(object):
     base_uri = gs.CanonicalizeURL(self.header['URI'])
     for pkgindex in pkgindexes:
       if gs.CanonicalizeURL(pkgindex.header['URI']) == base_uri:
-        # pylint: disable=W0212
+        # pylint: disable=protected-access
         pkgindex._PopulateDuplicateDB(db, expires)
 
     uploads = []

@@ -22,7 +22,8 @@ from chromite.lib import remote_access_unittest
 from chromite.scripts import deploy_chrome
 
 
-# pylint: disable=W0212
+# pylint: disable=protected-access
+
 
 _REGULAR_TO = ('--to', 'monkey')
 _GS_PATH = 'gs://foon'
@@ -169,7 +170,7 @@ class TestDisableRootfsVerification(DeployTest):
 
   def testDisableRootfsVerificationFailure(self):
     """Test failure to disable rootfs verification."""
-    #pylint: disable=unused-argument
+    # pylint: disable=unused-argument
     def RaiseRunCommandError(timeout_sec=None):
       raise cros_build_lib.RunCommandError('Mock RunCommandError', 0)
     self.remote_reboot_mock.side_effect = RaiseRunCommandError

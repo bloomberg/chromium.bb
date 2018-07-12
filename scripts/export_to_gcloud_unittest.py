@@ -7,11 +7,12 @@
 
 from __future__ import print_function
 
-from gcloud import datastore
+from gcloud import datastore  # pylint: disable=import-error
 import io
 
 from chromite.lib import cros_test_lib
 from chromite.scripts import export_to_gcloud
+
 
 class GetEntitiesTest(cros_test_lib.TestCase):
   """Test that GetEntities behaves correctly."""

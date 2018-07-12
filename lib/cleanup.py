@@ -74,7 +74,7 @@ class EnforcedCleanupSection(cros_build_lib.MasterPidContextManager):
 
     # Since we share stdin/stdout/whatever, suppress sigint should we somehow
     # become the foreground process in the session group.
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     # Child code.  We lose the lock via lockf/fork semantics.
     self._is_child = True
@@ -120,6 +120,6 @@ class EnforcedCleanupSection(cros_build_lib.MasterPidContextManager):
     if self._is_child:
       # All cleanup code that would've run, has ran.
       # Hard exit to bypass any further code execution.
-      # pylint: disable=W0212
+      # pylint: disable=protected-access
       os._exit(0)
     self._KillWatchdog()

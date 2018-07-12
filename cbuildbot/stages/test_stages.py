@@ -108,7 +108,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     self._board_name = lab_board_name or board
 
   # Disable complaint about calling _HandleStageException.
-  # pylint: disable=W0212
+  # pylint: disable=protected-access
   def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""
     exc_type = exc_info[0]

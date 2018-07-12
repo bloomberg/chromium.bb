@@ -1042,6 +1042,7 @@ def _GetRunSkylabSuiteArgs(
     args += ['--suite_args', repr(suite_args)]
 
   return args
+# pylint: enable=docstring-missing-args
 
 
 def _SkylabHWTestTriggerOrRun(swarming_cli_cmd, cmd, **kwargs):
@@ -1078,6 +1079,7 @@ def _SkylabHWTestTriggerOrRun(swarming_cli_cmd, cmd, **kwargs):
     sys.stdout.flush()
 
 
+# pylint: disable=docstring-missing-args
 @failures_lib.SetFailureType(failures_lib.SuiteTimedOut,
                              timeout_util.TimeoutError)
 def RunSkylabHWTestSuite(
@@ -1126,6 +1128,7 @@ def RunSkylabHWTestSuite(
     to_raise = failures_lib.TestFailure(
         '** HWTest failed (code %d) **' % result.returncode)
     return HWTestSuiteResult(to_raise, None)
+# pylint: enable=docstring-missing-args
 
 
 # pylint: disable=docstring-missing-args
@@ -1230,6 +1233,7 @@ def _GetRunSuiteArgs(
     args += ['--test_args', repr(test_args)]
 
   return args
+# pylint: enable=docstring-missing-args
 
 
 def _CreateSwarmingArgs(build, suite, board, priority,
@@ -1367,12 +1371,13 @@ def _HWTestWait(cmd, job_id, **kwargs):
 
   return pass_hwtest
 
+
 def _HWTestParseJSONDump(dump_output):
   """Parses JSON dump output and returns the parsed JSON dict.
 
   Args:
-    output: The string containing the HWTest result JSON dictionary to parse,
-            marked up with #JSON_START# and #JSON_END# start/end delimiters.
+    dump_output: The string containing the HWTest result JSON dictionary to
+        parse, marked up with #JSON_START# and #JSON_END# start/end delimiters.
 
   Returns:
     Decoded JSON dict. May raise ValueError upon failure to pass the embedded
@@ -1985,7 +1990,7 @@ def GenerateHtmlTimeline(timeline, rows, title):
   """Generate a simple timeline.html file given a list of timings.
 
   Args:
-    index: The file to write the html index to.
+    timeline: The file to write the html index to.
     rows: The list of rows to generate a timeline of.  Each row should be
           tuple of (entry, start_time, end_time)
     title: Title of the timeline.

@@ -22,7 +22,9 @@ from chromite.lib import parallel_unittest
 from chromite.lib import portage_util
 
 
-# pylint: disable=E1120,W0212,R0904
+# pylint: disable=protected-access
+
+
 PUBLIC_PACKAGES = [{'CPV': 'gtk+/public1', 'SHA1': '1', 'MTIME': '1'},
                    {'CPV': 'gtk+/public2', 'SHA1': '2',
                     'PATH': 'gtk+/foo.tgz', 'MTIME': '2'}]

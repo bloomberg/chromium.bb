@@ -34,5 +34,5 @@ class CIPDTest(cros_test_lib.MockTestCase):
     sha1.return_value.hexdigest.return_value = 'bogus-sha1'
 
     # Access to a protected member XXX of a client class
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     self.assertTrue(cipd._DownloadCIPD('bogus-instance-id'))

@@ -244,16 +244,14 @@ def FindSymbolFiles(tempdir, paths):
   tar_cache = cache.TarballCache(common_path)
 
   for p in paths:
-    # Pylint is confused about members of ParseResult.
-
     o = urlparse.urlparse(p)
-    if o.scheme:  # pylint: disable=E1101
+    if o.scheme:
       # Support globs of filenames.
       ctx = gs.GSContext()
       for p in ctx.LS(p):
         logging.info('processing files inside %s', p)
         o = urlparse.urlparse(p)
-        key = ('%s%s' % (o.netloc, o.path)).split('/')  # pylint: disable=E1101
+        key = ('%s%s' % (o.netloc, o.path)).split('/')
         # The common cache will not be LRU, removing the need to hold a read
         # lock on the cached gsutil.
         ref = tar_cache.Lookup(key)

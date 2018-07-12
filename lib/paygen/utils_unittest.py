@@ -49,7 +49,6 @@ class TestUtils(cros_test_lib.TempDirTestCase):
     # Verify the temp file goes away when we close it.
     self.assertNotExists(temp_name)
 
-  # pylint: disable=E1101
   def testListdirFullpath(self):
     file_a = os.path.join(self.tempdir, 'a')
     file_b = os.path.join(self.tempdir, 'b')

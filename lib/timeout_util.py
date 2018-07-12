@@ -83,7 +83,7 @@ def Timeout(max_run_time,
   if reason_message:
     error_message += reason_message
 
-  # pylint: disable=W0613
+  # pylint: disable=unused-argument
   def kill_us(sig_num, frame):
     raise TimeoutError(error_message % {'time': max_run_time})
 
@@ -131,7 +131,7 @@ def FatalTimeout(max_run_time, display_message=None):
   """
   max_run_time = Timedelta(max_run_time).total_seconds()
 
-  # pylint: disable=W0613
+  # pylint: disable=unused-argument
   def kill_us(sig_num, frame):
     # While this SystemExit *should* crash it's way back up the
     # stack to our exit handler, we do have live/production code

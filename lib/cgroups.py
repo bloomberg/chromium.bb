@@ -65,7 +65,7 @@ def EnsureInitialized(functor):
   """Decorator for Cgroup methods to ensure the method is ran only if inited"""
 
   def f(self, *args, **kwargs):
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     self.Instantiate()
     return functor(self, *args, **kwargs)
 
@@ -350,7 +350,7 @@ class Cgroup(object):
     autoclean_parents = kwargs.pop('autoclean_parents', autoclean)
     chunks = name.split('/', 1)
     node = self
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     for chunk in chunks[:-1]:
       node = node._AddSingleGroup(chunk, parent=node,
                                   autoclean=autoclean_parents, **kwargs)

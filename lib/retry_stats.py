@@ -50,10 +50,9 @@ def SetupStats():
   but most efficient to only make a single call.
   """
   # Pylint thinks our manager has no members.
-  # pylint: disable=E1101
   m = parallel.Manager()
 
-  # pylint: disable=W0603
+  # pylint: disable=global-statement
   # Create a new stats collection structure that is multiprocess usable.
   global _STATS_COLLECTION
   _STATS_COLLECTION = m.list()

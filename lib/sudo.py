@@ -130,7 +130,7 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
     self._existing_keepalive_value = os.environ.get('CROS_SUDO_KEEP_ALIVE')
     os.environ['CROS_SUDO_KEEP_ALIVE'] = start_for_tty
 
-  # pylint: disable=W0613
+  # pylint: disable=unused-argument
   def _exit(self, exc_type, exc_value, traceback):
     if self._proc is None:
       return

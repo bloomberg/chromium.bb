@@ -18,7 +18,7 @@ from chromite.scripts import cbuildbot
 class IsDistributedBuilderTest(cros_test_lib.TestCase):
   """Test for cbuildbot._IsDistributedBuilder."""
 
-  # pylint: disable=W0212
+  # pylint: disable=protected-access
   def testIsDistributedBuilder(self):
     """Tests for _IsDistributedBuilder() under various configurations."""
     parser = cbuildbot._CreateParser()

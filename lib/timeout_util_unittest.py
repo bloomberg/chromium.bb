@@ -16,9 +16,6 @@ from chromite.lib import timeout_util
 from multiprocessing.pool import ThreadPool
 
 
-# pylint: disable=W0212,R0904
-
-
 class TestTimeouts(cros_test_lib.MockTestCase):
   """Tests for timeout_util.Timeout."""
 

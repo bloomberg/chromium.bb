@@ -11,7 +11,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib.paygen import dryrun_lib
 
 
-# pylint: disable=W0212
+# pylint: disable=protected-access
 
 
 class FuncClass(object):

@@ -12,6 +12,7 @@ from __future__ import print_function
 _datastore_imported = False
 _datastore_import_exc = None
 try:
+  # pylint: disable=import-error
   from gcloud import datastore
   _datastore_imported = True
 except Exception as e:

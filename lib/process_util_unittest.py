@@ -23,7 +23,7 @@ def _SpawnChild(exit_code=None, kill_signal=None):
     # Make sure this child never returns.
     while True:
       if exit_code is not None:
-        # pylint: disable=W0212
+        # pylint: disable=protected-access
         os._exit(exit_code)
       else:
         os.kill(os.getpid(), kill_signal)
@@ -83,7 +83,7 @@ class ExitAsStatusTests(cros_test_lib.TestCase):
       try:
         process_util.ExitAsStatus(status)
       except SystemExit as e:
-        # pylint: disable=W0212
+        # pylint: disable=protected-access
         os._exit(e.code)
       raise AssertionError('ERROR: should have exited!')
 

@@ -90,7 +90,6 @@ def GetXbuddyPath(path):
   """
   parsed = urlparse.urlparse(path)
 
-  # pylint: disable=E1101
   if parsed.scheme == 'xbuddy':
     return '%s%s' % (parsed.netloc, parsed.path)
   elif parsed.scheme == '':

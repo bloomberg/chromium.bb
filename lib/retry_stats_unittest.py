@@ -14,7 +14,7 @@ from chromite.lib import retry_stats
 
 
 # We access internal members to help with testing.
-# pylint: disable=W0212
+# pylint: disable=protected-access
 
 
 class TestRetryException(Exception):

@@ -253,7 +253,6 @@ class TestFileLib(cros_test_lib.MoxTempDirTestCase):
         out.write(contents)
 
   def testRemove(self):
-    # pylint: disable=E1101
     path1 = os.path.join(self.tempdir, 'file1')
     path2 = os.path.join(self.tempdir, 'file2')
     missing_path = os.path.join(self.tempdir, 'missing')

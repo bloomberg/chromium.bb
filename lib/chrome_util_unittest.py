@@ -12,7 +12,6 @@ import os
 from chromite.lib import cros_test_lib
 from chromite.lib import chrome_util
 
-# pylint: disable=W0212,W0233
 
 # Convenience alias
 Dir = cros_test_lib.Directory
@@ -187,6 +186,7 @@ class SloppyFileCopyTest(FileCopyTest):
 
     if kwargs.get('error') is chrome_util.MissingPathError:
       kwargs['error'] = None
+    # pylint: disable=protected-access
     CopyTest._CopyAndVerify(self, path, src_struct, dest_struct, **kwargs)
 
 

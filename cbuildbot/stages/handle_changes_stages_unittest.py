@@ -76,7 +76,7 @@ class CommitQueueHandleChangesStageTests(
 
     return sync_stage
 
-  # pylint: disable=W0221
+  # pylint: disable=arguments-differ
   def ConstructStage(self, sync_stage=None, completion_stage=None):
     sync_stage = sync_stage or self.sync_stage
     completion_stage = completion_stage or self.completion_stage

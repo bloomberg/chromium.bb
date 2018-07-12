@@ -587,7 +587,7 @@ def main(argv):
   opts.gerrit = {}
   opts.Freeze()
 
-  # pylint: disable=W0603
+  # pylint: disable=global-statement
   global COLOR
   COLOR = terminal.Color(enabled=opts.color)
 

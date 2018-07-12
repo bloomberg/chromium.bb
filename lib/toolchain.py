@@ -19,14 +19,12 @@ if cros_build_lib.IsInsideChroot():
   # Only import portage after we've checked that we're inside the chroot.
   # Outside may not have portage, in which case the above may not happen.
   # We'll check in main() if the operation needs portage.
-
-  # pylint: disable=F0401
+  # pylint: disable=import-error
   import portage
 
 
 def GetHostTuple():
   """Returns compiler tuple for the host system."""
-  # pylint: disable=E1101
   return portage.settings['CHOST']
 
 

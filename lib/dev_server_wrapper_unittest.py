@@ -15,7 +15,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import dev_server_wrapper
 
 
-# pylint: disable=W0212
+# pylint: disable=protected-access
 class TestXbuddyHelpers(cros_test_lib.MockTempDirTestCase):
   """Test xbuddy helper functions."""
   def testGenerateXbuddyRequestForUpdate(self):

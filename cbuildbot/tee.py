@@ -33,8 +33,7 @@ class ToldToDie(Exception):
     Exception.__init__(self, "We received signal %i" % (signum,))
 
 
-# pylint: disable=W0613
-def _TeeProcessSignalHandler(signum, frame):
+def _TeeProcessSignalHandler(signum, _frame):
   """TeeProcess custom signal handler.
 
   This is used to decide whether or not to kill our parent.
@@ -168,7 +167,7 @@ class _TeeProcess(multiprocessing.Process):
       # Specifically do it in a fashion that ensures no inherited
       # cleanup code from our parent process is ran- leave that to
       # the parent.
-      # pylint: disable=W0212
+      # pylint: disable=protected-access
       os._exit(0)
 
 
@@ -231,7 +230,7 @@ class Tee(cros_build_lib.MasterPidContextManager):
   def _enter(self):
     self.start()
 
-  def _exit(self, exc_type, exc, exc_traceback):
+  def _exit(self, exc_type, exc, _exc_traceback):
     try:
       self.stop()
     finally:

@@ -223,7 +223,6 @@ def MD5Sum(file_path):
   """
   # For some reason pylint refuses to accept that md5 is a function in
   # the hashlib module, hence this pylint disable.
-  # pylint: disable=E1101
   if not os.path.exists(file_path):
     return None
 
@@ -268,7 +267,6 @@ def ShaSums(file_path):
   Returns:
     A tuple of base64 encoded sha1 and sha256 hashes.
   """
-  # pylint: disable=E1101
   sha1 = hashlib.sha1()
   sha256 = hashlib.sha256()
   with open(file_path, mode='r') as file_fobj:

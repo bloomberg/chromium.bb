@@ -187,7 +187,6 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(sleep_history, [1, 2, 4, 8, 16])
 
   def testBasicRetry(self):
-    # pylint: disable=E1101
     path = os.path.join(self.tempdir, 'script')
     paths = {
         'stop': os.path.join(self.tempdir, 'stop'),

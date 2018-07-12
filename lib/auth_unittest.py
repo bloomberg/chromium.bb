@@ -15,7 +15,6 @@ from chromite.lib import cros_test_lib
 from chromite.lib import cros_build_lib
 
 
-# pylint: disable=protected-access
 class AuthTest(cros_test_lib.MockTestCase):
   """Test cases for methods in auth."""
 
@@ -53,6 +52,7 @@ class AuthTest(cros_test_lib.MockTestCase):
 
   def testTokenAndLoginIfNeed(self):
     """Test TokenAndLoginIfNeed."""
+    # pylint: disable=protected-access
     sc_json = '/tmp/service_account.json'
 
     mock_login = self.PatchObject(auth, 'Login', return_value=None)

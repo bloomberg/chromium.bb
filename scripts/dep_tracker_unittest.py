@@ -15,7 +15,7 @@ from chromite.lib import unittest_lib
 from chromite.scripts import dep_tracker
 
 # Allow access private members for testing:
-# pylint: disable=W0212
+# pylint: disable=protected-access
 
 
 class MainTest(cros_test_lib.OutputTestCase):

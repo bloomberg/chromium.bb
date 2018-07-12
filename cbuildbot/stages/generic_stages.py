@@ -977,7 +977,7 @@ class ArchivingStageMixin(object):
   @property
   def archive(self):
     """Retrieve the Archive object to use."""
-    # pylint: disable=W0201
+    # pylint: disable=attribute-defined-outside-init
     if not hasattr(self, '_archive'):
       self._archive = self._run.GetArchive()
 
