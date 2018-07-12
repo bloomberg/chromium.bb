@@ -35,10 +35,6 @@ class NewTabButton : public views::ImageButton,
     background_offset_ = offset;
   }
 
-  // Returns the offset from the top of the tabstrip at which the new tab
-  // button's visible region begins.
-  static int GetTopOffset();
-
   // Retrieves the last active BrowserView instance to display the NewTabPromo.
   static void ShowPromoForLastActiveBrowser();
 
