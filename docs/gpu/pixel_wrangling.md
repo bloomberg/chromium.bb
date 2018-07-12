@@ -23,7 +23,7 @@ Primary configurations:
 *   [Windows 10 Intel HD 630 Pool](http://shortn/_QsoGIGIFYd)
 *   [Linux Quadro P400 Pool](http://shortn/_fNgNs1uROQ)
 *   [Linux Intel HD 630 Pool](http://shortn/_dqEGjCGMHT)
-*   [Mac AMD Retina 10.12.6 GPU Pool](http://shortn/_BcrVmfRoSo)
+*   [Mac AMD Retina 10.13.5 GPU Pool](http://shortn/_c2CCVyT6Uj)
 *   [Mac Mini Chrome Pool](http://shortn/_Ru8NESapPM)
 *   [Android Nexus 5X Chrome Pool](http://shortn/_G3j7AVmuNR)
 
@@ -31,7 +31,7 @@ Secondary configurations:
 
 *   [Windows 7 Quadro P400 Pool](http://shortn/_cuxSKC15UX)
 *   [Windows AMD R7 240 GPU Pool](http://shortn/_XET7RTMHQm)
-*   [Mac NVIDIA Retina 10.12.6 GPU Pool](http://shortn/_jQWG7W71Ek)
+*   [Mac NVIDIA Retina 10.13.5 GPU Pool](http://shortn/_sun7ISEg3F)
 
 ## GPU Bots' Waterfalls
 
