@@ -14,7 +14,7 @@ namespace views {
 
 MenuConfig::MenuConfig()
     : arrow_color(SK_ColorBLACK),
-      menu_vertical_border_size(3),
+      menu_vertical_border_size(4),
       menu_horizontal_border_size(views::RoundRectPainter::kBorderWidth),
       submenu_horizontal_inset(3),
       item_top_margin(4),
