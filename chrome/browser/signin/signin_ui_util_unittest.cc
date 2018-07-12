@@ -136,7 +136,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
             {ProfileOAuth2TokenServiceFactory::GetInstance(),
              BuildFakeProfileOAuth2TokenService},
             {GaiaCookieManagerServiceFactory::GetInstance(),
-             BuildFakeGaiaCookieManagerService}};
+             BuildFakeGaiaCookieManagerServiceNoFakeUrlFetcher}};
   }
 
   // BrowserWithTestWindowTest:

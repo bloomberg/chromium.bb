@@ -19,7 +19,6 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,15 +57,12 @@ class OneGoogleBarServiceTest : public testing::Test {
  public:
   OneGoogleBarServiceTest()
       : signin_client_(&pref_service_),
-        fetcher_factory_(/*default_factory=*/nullptr),
         cookie_service_(&token_service_,
                         GaiaConstants::kChromeSource,
                         &signin_client_) {
     // GaiaCookieManagerService calls static methods of AccountTrackerService
     // which access prefs.
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
-
-    cookie_service_.Init(&fetcher_factory_);
 
     auto loader = std::make_unique<FakeOneGoogleBarLoader>();
     loader_ = loader.get();
@@ -96,7 +92,6 @@ class OneGoogleBarServiceTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   TestSigninClient signin_client_;
   FakeOAuth2TokenService token_service_;
-  net::FakeURLFetcherFactory fetcher_factory_;
   FakeGaiaCookieManagerService cookie_service_;
 
   // Owned by the service.

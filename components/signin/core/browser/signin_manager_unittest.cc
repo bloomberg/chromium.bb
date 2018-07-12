@@ -29,7 +29,6 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/cookie_monster.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -85,11 +84,9 @@ class SigninManagerTest : public testing::Test {
         cookie_manager_service_(&token_service_,
                                 GaiaConstants::kChromeSource,
                                 &test_signin_client_),
-        url_fetcher_factory_(nullptr),
         account_consistency_(signin::AccountConsistencyMethod::kDisabled) {
     test_signin_client_.SetURLRequestContext(
         new net::TestURLRequestContextGetter(loop_.task_runner()));
-    cookie_manager_service_.Init(&url_fetcher_factory_);
     AccountFetcherService::RegisterPrefs(user_prefs_.registry());
     AccountTrackerService::RegisterPrefs(user_prefs_.registry());
     SigninManagerBase::RegisterProfilePrefs(user_prefs_.registry());
@@ -172,7 +169,6 @@ class SigninManagerTest : public testing::Test {
   AccountTrackerService account_tracker_;
   FakeGaiaCookieManagerService cookie_manager_service_;
   FakeAccountFetcherService account_fetcher_;
-  net::FakeURLFetcherFactory url_fetcher_factory_;
   std::unique_ptr<SigninManager> manager_;
   TestSigninManagerObserver test_observer_;
   std::vector<std::string> oauth_tokens_fetched_;

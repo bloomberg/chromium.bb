@@ -13,7 +13,6 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -26,7 +25,7 @@ std::unique_ptr<KeyedService> BuildTestSigninClient(
 
 class ChildAccountServiceTest : public ::testing::Test {
  public:
-  ChildAccountServiceTest() : fake_url_fetcher_factory_(nullptr) {}
+  ChildAccountServiceTest() = default;
 
   void SetUp() override {
     ChromeSigninClientFactory::GetInstance()->SetTestingFactory(
@@ -35,13 +34,11 @@ class ChildAccountServiceTest : public ::testing::Test {
         &profile_, &BuildFakeGaiaCookieManagerService);
     gaia_cookie_manager_service_ = static_cast<FakeGaiaCookieManagerService*>(
         GaiaCookieManagerServiceFactory::GetForProfile(&profile_));
-    gaia_cookie_manager_service_->Init(&fake_url_fetcher_factory_);
   }
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  net::FakeURLFetcherFactory fake_url_fetcher_factory_;
   FakeGaiaCookieManagerService* gaia_cookie_manager_service_ = nullptr;
 };
 

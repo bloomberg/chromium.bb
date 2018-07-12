@@ -238,13 +238,6 @@ class AccountReconcilorTest : public ::testing::Test {
   }
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
-  void SetFakeResponse(const std::string& url,
-                       const std::string& data,
-                       net::HttpStatusCode code,
-                       net::URLRequestStatus::Status status) {
-    url_fetcher_factory_.SetFakeResponse(GURL(url), data, code, status);
-  }
-
   MockAccountReconcilor* GetMockReconcilor();
   MockAccountReconcilor* GetMockReconcilor(
       std::unique_ptr<signin::AccountReconcilorDelegate> delegate);
@@ -282,7 +275,6 @@ class AccountReconcilorTest : public ::testing::Test {
   FakeGaiaCookieManagerService cookie_manager_service_;
   FakeSigninManagerForTesting signin_manager_;
   std::unique_ptr<MockAccountReconcilor> mock_reconcilor_;
-  net::FakeURLFetcherFactory url_fetcher_factory_;
   base::HistogramTester histogram_tester_;
   GURL get_check_connection_info_url_;
 
@@ -315,14 +307,13 @@ AccountReconcilorTest::AccountReconcilorTest()
                               GaiaConstants::kChromeSource,
                               &test_signin_client_),
 #if defined(OS_CHROMEOS)
-      signin_manager_(&test_signin_client_, &account_tracker_),
+      signin_manager_(&test_signin_client_, &account_tracker_) {
 #else
       signin_manager_(&test_signin_client_,
                       &token_service_,
                       &account_tracker_,
-                      &cookie_manager_service_),
+                      &cookie_manager_service_) {
 #endif
-      url_fetcher_factory_(nullptr) {
   AccountTrackerService::RegisterPrefs(pref_service_.registry());
   SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterPrefs(pref_service_.registry());
@@ -333,7 +324,6 @@ AccountReconcilorTest::AccountReconcilorTest()
           GaiaConstants::kChromeSource);
 
   account_tracker_.Initialize(&test_signin_client_);
-  cookie_manager_service_.Init(&url_fetcher_factory_);
   cookie_manager_service_.SetListAccountsResponseHttpNotFound();
   signin_manager_.Initialize(nullptr);
 

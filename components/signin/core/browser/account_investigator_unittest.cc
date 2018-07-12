@@ -23,7 +23,6 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::HistogramTester;
@@ -44,13 +43,13 @@ class AccountInvestigatorTest : public testing::Test {
         gaia_cookie_manager_service_(nullptr,
                                      GaiaConstants::kChromeSource,
                                      &signin_client_),
-        investigator_(&gaia_cookie_manager_service_, &prefs_, &signin_manager_),
-        fake_url_fetcher_factory_(nullptr) {
+        investigator_(&gaia_cookie_manager_service_,
+                      &prefs_,
+                      &signin_manager_) {
     AccountTrackerService::RegisterPrefs(prefs_.registry());
     AccountInvestigator::RegisterPrefs(prefs_.registry());
     SigninManagerBase::RegisterProfilePrefs(prefs_.registry());
     account_tracker_service_.Initialize(&signin_client_);
-    gaia_cookie_manager_service_.Init(&fake_url_fetcher_factory_);
   }
 
   ~AccountInvestigatorTest() override { investigator_.Shutdown(); }
@@ -161,7 +160,6 @@ class AccountInvestigatorTest : public testing::Test {
   FakeSigninManager signin_manager_;
   FakeGaiaCookieManagerService gaia_cookie_manager_service_;
   AccountInvestigator investigator_;
-  net::FakeURLFetcherFactory fake_url_fetcher_factory_;
   std::map<ReportingType, std::string> suffix_ = {
       {ReportingType::PERIODIC, "_Periodic"},
       {ReportingType::ON_CHANGE, "_OnChange"}};
