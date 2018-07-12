@@ -4964,7 +4964,7 @@
   </message>
 
   <message name="IDS_CROSTINI_INSTALLER_TITLE" desc="Title of the Crostini installer, a dialog for installing Linux.">
-    Set up Linux on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+    Set up Linux (Beta) on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
   <message name="IDS_CROSTINI_INSTALLER_BODY" desc="Description for the Crostini installer, a dialog for installing Linux.">
     Get tools for developing websites, Android apps, and more. Installing Linux will download <ph name="DOWNLOAD_SIZE">$1<ex>300MB</ex></ph> of data.
