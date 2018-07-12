@@ -13,6 +13,7 @@
 #include "components/reading_list/core/reading_list_model.h"
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #include "components/url_formatter/url_formatter.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
@@ -21,6 +22,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item_util.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_table_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,6 +34,10 @@ namespace {
 bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
   return rhs->UpdateTime() > lhs->UpdateTime();
 }
+// Light gray color that matches the favicon background image color to eliminate
+// setting a non-opaque background color.
+const CGFloat kFallbackIconDefaultBackgroundColor = 0xf1f3f4;
+
 }  // namespace
 
 @interface ReadingListMediator ()<ReadingListModelBridgeObserver> {
@@ -164,7 +170,17 @@ bool EntrySorter(const ReadingListEntry* rhs, const ReadingListEntry* lhs) {
         if (!strongSelf || !strongItem) {
           return;
         }
-
+        if (attributes.monogramString &&
+            experimental_flags::IsCollectionsUIRebootEnabled()) {
+          UIColor* textColor = [UIColor colorWithWhite:0 alpha:0.33];
+          UIColor* backgroundColor =
+              UIColorFromRGB(kFallbackIconDefaultBackgroundColor);
+          attributes = [FaviconAttributes
+              attributesWithMonogram:attributes.monogramString
+                           textColor:textColor
+                     backgroundColor:backgroundColor
+              defaultBackgroundColor:NO];
+        }
         strongItem.attributes = attributes;
 
         [strongSelf.dataSink itemHasChangedAfterDelay:strongItem];
