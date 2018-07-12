@@ -8,8 +8,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +15,7 @@ import android.widget.FrameLayout;
 
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.scope.FeedStreamScope;
+import com.google.android.libraries.feed.api.stream.ScrollListener;
 import com.google.android.libraries.feed.api.stream.Stream;
 import com.google.android.libraries.feed.host.stream.CardConfiguration;
 import com.google.android.libraries.feed.host.stream.SnackbarApi;
@@ -30,8 +29,8 @@ import org.chromium.chrome.browser.feed.action.FeedActionHandler;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchEnabledDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.ntp.NewTabPage.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
+import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegateImpl;
@@ -48,6 +47,9 @@ import java.util.Arrays;
 public class FeedNewTabPage
         extends NewTabPage implements TouchEnabledDelegate, NewTabPageLayout.ScrollDelegate {
     private final StreamLifecycleManager mStreamLifecycleManager;
+    private final Stream mStream;
+    private final ScrollListener mStreamScrollListener;
+    private final SnapScrollHelper mSnapScrollHelper;
 
     private FrameLayout mRootView;
     private FeedImageLoader mImageLoader;
@@ -78,7 +80,7 @@ public class FeedNewTabPage
         }
         @Override
         public int getPaddingTop() {
-            return mPadding;
+            return 0;
         }
         @Override
         public int getPaddingBottom() {
@@ -145,23 +147,46 @@ public class FeedNewTabPage
                                 new DummySnackbarApi())
                         .build();
 
-        Stream stream = streamScope.getStream();
-        mStreamLifecycleManager = new StreamLifecycleManager(stream, activity, tab);
+        mStream = streamScope.getStream();
+        mStreamLifecycleManager = new StreamLifecycleManager(mStream, activity, tab);
+        mSnapScrollHelper =
+                new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout, mStream.getView());
 
-        stream.getView().setBackgroundColor(Color.WHITE);
-        mRootView.addView(stream.getView());
+        mStream.getView().setBackgroundColor(Color.WHITE);
+        mRootView.addView(mStream.getView());
 
-        stream.setHeaderViews(Arrays.asList(mNewTabPageLayout));
+        mStream.setHeaderViews(Arrays.asList(mNewTabPageLayout));
 
         // TODO(skym): This is a work around for outstanding Feed bug.
-        stream.triggerRefresh();
+        mStream.triggerRefresh();
+
+        // Listen for layout changes on the NewTabPageView itself to catch changes in scroll
+        // position that are due to layout changes after e.g. device rotation. This contrasts with
+        // regular scrolling, which is observed through an OnScrollListener.
+        mRootView.addOnLayoutChangeListener(
+                (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                    mSnapScrollHelper.handleScroll();
+                });
+
+        mStreamScrollListener = new ScrollListener() {
+            @Override
+            public void onScrollStateChanged(int state) {}
+
+            @Override
+            public void onScrolled(int dx, int dy) {
+                mSnapScrollHelper.handleScroll();
+            }
+        };
+        mStream.addScrollListener(mStreamScrollListener);
     }
 
     @Override
     protected void initializeMainView(Context context) {
+        int topPadding = context.getResources().getDimensionPixelOffset(R.dimen.tab_strip_height);
         mRootView = new FrameLayout(context);
         mRootView.setLayoutParams(new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        mRootView.setPadding(0, topPadding, 0, 0);
 
         // Don't store a direct reference to the activity, because it might change later if the tab
         // is reparented.
@@ -183,6 +208,7 @@ public class FeedNewTabPage
     @Override
     public void destroy() {
         super.destroy();
+        mStream.removeScrollListener(mStreamScrollListener);
         mImageLoader.destroy();
         mStreamLifecycleManager.destroy();
     }
@@ -198,22 +224,7 @@ public class FeedNewTabPage
     }
 
     @Override
-    protected void setSearchProviderInfoOnView(boolean hasLogo, boolean isGoogle) {
-        mNewTabPageLayout.setSearchProviderInfo(hasLogo, isGoogle);
-    }
-
-    @Override
     protected void scrollToSuggestions() {
-        // TODO(twellington): implement this method.
-    }
-
-    @Override
-    public void getSearchBoxBounds(Rect bounds, Point translation) {
-        // TODO(twellington): implement this method.
-    }
-
-    @Override
-    public void setFakeboxDelegate(FakeboxDelegate fakeboxDelegate) {
         // TODO(twellington): implement this method.
     }
 
@@ -241,24 +252,35 @@ public class FeedNewTabPage
 
     @Override
     public boolean isScrollViewInitialized() {
-        // TODO(twellington): implement this method.
-        return false;
+        // During startup the view may not be fully initialized, so we check to see if some basic
+        // view properties (height of the RecyclerView) are sane.
+        return mStream != null && mStream.getView().getHeight() > 0;
     }
 
     @Override
     public int getVerticalScrollOffset() {
-        // TODO(twellington): implement this method.
-        return 0;
+        // This method returns a valid vertical scroll offset only when the first header view in the
+        // Stream is visible. In all other cases, this returns 0.
+        if (!isScrollViewInitialized()) return 0;
+
+        int firstChildTop = mStream.getChildTopAt(0);
+        return firstChildTop != Stream.POSITION_NOT_KNOWN ? -firstChildTop : 0;
     }
 
     @Override
     public boolean isChildVisibleAtPosition(int position) {
-        // TODO(twellington): implement this method.
-        return false;
+        return isScrollViewInitialized() && mStream.isChildAtPositionVisible(position);
     }
 
     @Override
     public void snapScroll() {
-        // TODO(twellington): implement this method.
+        if (!isScrollViewInitialized()) return;
+
+        int initialScroll = getVerticalScrollOffset();
+        int scrollTo = mSnapScrollHelper.calculateSnapPosition(initialScroll);
+
+        // Calculating the snap position should be idempotent.
+        assert scrollTo == mSnapScrollHelper.calculateSnapPosition(scrollTo);
+        mStream.smoothScrollBy(0, scrollTo - initialScroll);
     }
 }

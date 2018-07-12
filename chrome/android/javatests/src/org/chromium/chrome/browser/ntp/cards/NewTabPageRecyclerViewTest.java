@@ -344,7 +344,7 @@ public class NewTabPageRecyclerViewTest {
 
     private int getSnapPosition(int scrollPosition) {
         NewTabPageView ntpView = getNtpView();
-        return getRecyclerView().calculateSnapPosition(scrollPosition, ntpView.getHeight());
+        return ntpView.getSnapScrollHelper().calculateSnapPosition(scrollPosition);
     }
 
     private NewTabPageView getNtpView() {
