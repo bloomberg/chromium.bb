@@ -213,7 +213,7 @@ def CreateRJavaFiles(srcjar_dir, package, main_r_txt_file,
   packages = list(extra_res_packages)
   r_txt_files = list(extra_r_txt_files)
 
-  if package not in packages:
+  if package and package not in packages:
     # Sometimes, an apk target and a resources target share the same
     # AndroidManifest.xml and thus |package| will already be in |packages|.
     packages.append(package)
