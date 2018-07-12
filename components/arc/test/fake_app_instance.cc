@@ -126,10 +126,7 @@ void FakeAppInstance::SendAppAdded(const mojom::AppInfo& app) {
 void FakeAppInstance::SendTaskCreated(int32_t taskId,
                                       const mojom::AppInfo& app,
                                       const std::string& intent) {
-  app_host_->OnTaskCreated(taskId,
-                           app.package_name,
-                           app.activity,
-                           app.name,
+  app_host_->OnTaskCreated(taskId, app.package_name, app.activity, app.name,
                            intent);
 }
 
@@ -279,11 +276,9 @@ void FakeAppInstance::GetTaskInfo(int32_t task_id,
   std::move(callback).Run(it->second->package_name(), it->second->activity());
 }
 
-void FakeAppInstance::SetTaskActive(int32_t task_id) {
-}
+void FakeAppInstance::SetTaskActive(int32_t task_id) {}
 
-void FakeAppInstance::CloseTask(int32_t task_id) {
-}
+void FakeAppInstance::CloseTask(int32_t task_id) {}
 
 void FakeAppInstance::ShowPackageInfoDeprecated(
     const std::string& package_name,
@@ -388,6 +383,29 @@ void FakeAppInstance::GetIcingGlobalQueryResults(
                           std::move(fake_app_data_results));
 }
 
+void FakeAppInstance::GetAppShortcutGlobalQueryItems(
+    const std::string& query,
+    int32_t max_results,
+    GetAppShortcutGlobalQueryItemsCallback callback) {
+  // Fake app shortcut items results.
+  std::vector<mojom::AppShortcutItemPtr> fake_app_shortcut_items;
+
+  // Fake icon data.
+  std::string png_data_as_string;
+  GetFakeIcon(mojom::ScaleFactor::SCALE_FACTOR_100P, &png_data_as_string);
+  std::vector<uint8_t> fake_icon_png_data(png_data_as_string.begin(),
+                                          png_data_as_string.end());
+
+  for (int i = 0; i < max_results; ++i) {
+    fake_app_shortcut_items.emplace_back(mojom::AppShortcutItem::New(
+        base::StringPrintf("ShortcutId %d", i),
+        base::StringPrintf("ShortLabel %d", i), fake_icon_png_data,
+        "FakeAppPackageName", mojom::AppShortcutItemType::kStatic, i));
+  }
+
+  std::move(callback).Run(std::move(fake_app_shortcut_items));
+}
+
 void FakeAppInstance::GetAppShortcutItems(
     const std::string& package_name,
     GetAppShortcutItemsCallback callback) {
@@ -404,8 +422,7 @@ void FakeAppInstance::GetAppShortcutItems(
     fake_app_shortcut_items.push_back(mojom::AppShortcutItem::New(
         base::StringPrintf("ShortcutId %d", i),
         base::StringPrintf("ShortLabel %d", i), fake_icon_png_data,
-        package_name.empty() ? "FakeAppPackageName" : package_name,
-        mojom::AppShortcutItemType::kStatic, i));
+        package_name, mojom::AppShortcutItemType::kStatic, i));
   }
 
   std::move(callback).Run(std::move(fake_app_shortcut_items));
