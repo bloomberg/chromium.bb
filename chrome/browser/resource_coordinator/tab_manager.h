@@ -28,6 +28,7 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
+#include "chrome/browser/resource_coordinator/usage_clock.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -175,6 +176,8 @@ class TabManager : public LifecycleUnitObserver,
   InterventionPolicyDatabase* intervention_policy_database() {
     return intervention_policy_database_.get();
   }
+
+  UsageClock* usage_clock() { return &usage_clock_; }
 
   // Returns true if the tab was created by session restore and has not finished
   // the first navigation.
@@ -510,6 +513,9 @@ class TabManager : public LifecycleUnitObserver,
   // The intervention policy database, should be initialized by
   // InterventionPolicyDatabaseComponentInstallerPolicy.
   std::unique_ptr<InterventionPolicyDatabase> intervention_policy_database_;
+
+  // A clock that advances when Chrome is in use.
+  UsageClock usage_clock_;
 
   // Weak pointer factory used for posting delayed tasks.
   base::WeakPtrFactory<TabManager> weak_ptr_factory_;
