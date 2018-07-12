@@ -254,7 +254,7 @@ void WebUILoginView::InitializeWebView(views::WebView* web_view,
       web_contents);
   content::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(
-      prefs, ProfileHelper::GetSigninProfile(), web_contents);
+      prefs, ProfileHelper::GetSigninProfile());
 }
 
 void WebUILoginView::Init() {

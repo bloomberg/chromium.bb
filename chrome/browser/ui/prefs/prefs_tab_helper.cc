@@ -452,9 +452,7 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
 
   content::RendererPreferences* render_prefs =
       web_contents_->GetMutableRendererPrefs();
-  renderer_preferences_util::UpdateFromSystemSettings(render_prefs,
-                                                      profile_,
-                                                      web_contents_);
+  renderer_preferences_util::UpdateFromSystemSettings(render_prefs, profile_);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   registrar_.Add(this,
@@ -584,8 +582,7 @@ void PrefsTabHelper::UpdateWebPreferences() {
 void PrefsTabHelper::UpdateRendererPreferences() {
   content::RendererPreferences* prefs =
       web_contents_->GetMutableRendererPrefs();
-  renderer_preferences_util::UpdateFromSystemSettings(
-      prefs, profile_, web_contents_);
+  renderer_preferences_util::UpdateFromSystemSettings(prefs, profile_);
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 }
 
