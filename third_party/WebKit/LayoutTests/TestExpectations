@@ -4611,7 +4611,6 @@ crbug.com/859102 virtual/gpu/fast/canvas/color-space/canvas-drawImage-rec2020.ht
 crbug.com/862588 [ Linux ] external/wpt/cookie-store/idlharness.tentative.https.html [ Timeout Pass ]
 crbug.com/862588 [ Linux ] external/wpt/fetch/cors-rfc1918/idlharness.tentative.any.html [ Timeout Pass ]
 crbug.com/862588 [ Linux ] external/wpt/gamepad/idlharness.html [ Timeout Pass ]
-crbug.com/862588 [ Linux ] external/wpt/payment-request/idlharness.https.window.html [ Timeout Pass ]
 crbug.com/862588 [ Linux ] external/wpt/push-api/idlharness.https.any.sharedworker.html [ Timeout Pass ]
 crbug.com/862588 [ Linux ] external/wpt/push-api/idlharness.https.any.worker.html [ Timeout Pass ]
 crbug.com/862588 [ Linux ] external/wpt/resource-timing/idlharness.any.html [ Timeout Pass ]
