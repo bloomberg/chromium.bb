@@ -59,10 +59,10 @@ class CORE_EXPORT NGUnpositionedListMarker final {
   LayoutUnit AddToBoxWithoutLineBoxes(const NGConstraintSpace&,
                                       FontBaseline,
                                       NGFragmentBuilder*) const;
+  LayoutUnit InlineOffset(const LayoutUnit marker_inline_size) const;
 
  private:
   bool IsImage() const;
-  LayoutUnit InlineOffset(const LayoutUnit marker_inline_size) const;
 
   scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&,
                                        FontBaseline) const;

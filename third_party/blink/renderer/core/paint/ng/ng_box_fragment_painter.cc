@@ -695,7 +695,10 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& text_fragment,
       ToNGPhysicalTextFragment(text_fragment.PhysicalFragment());
   if (physical_text_fragment.TextType() ==
       NGPhysicalTextFragment::kSymbolMarker) {
-    PaintSymbol(text_fragment, paint_info, paint_offset);
+    // The NGInlineItem of marker might be Split(). So PaintSymbol only if the
+    // StartOffset is 0, or it might be painted several times.
+    if (!physical_text_fragment.StartOffset())
+      PaintSymbol(text_fragment, paint_info, paint_offset);
   } else {
     NGTextFragmentPainter text_painter(text_fragment);
     text_painter.Paint(paint_info, paint_offset);

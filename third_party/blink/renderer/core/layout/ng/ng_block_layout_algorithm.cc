@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_child_iterator.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -503,7 +504,9 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     } else if (child.IsFloating()) {
       HandleFloat(previous_inflow_position, ToNGBlockNode(child),
                   ToNGBlockBreakToken(child_break_token));
-    } else if (child.IsListMarker()) {
+    } else if (child.IsListMarker() &&
+               !ToLayoutNGListMarker(child.GetLayoutBox())
+                    ->NeedsOccupyWholeLine()) {
       container_builder_.SetUnpositionedListMarker(
           NGUnpositionedListMarker(ToNGBlockNode(child)));
     } else {
@@ -889,8 +892,18 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   // pretend that computed margins are 0 here, as they have already been
   // excluded from the layout opportunity rectangle.
   NGBoxStrut auto_margins;
-  ResolveInlineMargins(child_style, Style(), opportunity.rect.InlineSize(),
-                       fragment.InlineSize(), &auto_margins);
+  if (child.IsListMarker() &&
+      ToLayoutNGListMarker(child.GetLayoutBox())->NeedsOccupyWholeLine()) {
+    // Deal with marker's margin. It happens only when marker
+    // NeedsOccupyWholeLine().
+    auto_margins.inline_start = NGUnpositionedListMarker(ToNGBlockNode(child))
+                                    .InlineOffset(fragment.InlineSize());
+    auto_margins.inline_end = opportunity.rect.InlineSize() -
+                              fragment.InlineSize() - auto_margins.inline_start;
+  } else {
+    ResolveInlineMargins(child_style, Style(), opportunity.rect.InlineSize(),
+                         fragment.InlineSize(), &auto_margins);
+  }
 
   NGBfcOffset child_bfc_offset(opportunity.rect.start_offset.line_offset +
                                    auto_margins.LineLeft(direction),
