@@ -1322,4 +1322,25 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   wait_until_connection_error_loop_2.Run();
 }
 
+// Regression test for https://crbug.com/852350
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       GetCanonicalUrlAfterRendererCrash) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GetTestUrl("render_frame_host", "beforeunload.html")));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame =
+      static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+
+  // Make the renderer crash.
+  RenderProcessHost* renderer_process = main_frame->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      renderer_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  renderer_process->Shutdown(0);
+  crash_observer.Wait();
+
+  main_frame->GetCanonicalUrlForSharing(base::DoNothing());
+}
+
 }  // namespace content
