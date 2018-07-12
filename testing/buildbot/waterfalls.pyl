@@ -325,6 +325,21 @@
         'skip_output_links': True,
         'os_type': 'android',
       },
+      'Oreo Phone Tester': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'OPR3.170623.008',
+              'device_type': 'marlin',
+              'os': 'Android',
+            },
+          ],
+        },
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_oreo_gtests',
+        },
+      },
     },
   },
   {
@@ -401,21 +416,6 @@
         'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
-        },
-      },
-      'Oreo Phone Tester': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'OPR3.170623.008',
-              'device_type': 'marlin',
-              'os': 'Android',
-            },
-          ],
-        },
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'android_oreo_gtests',
         },
       },
       'Unswarmed N5 Tests Dummy Builder': {

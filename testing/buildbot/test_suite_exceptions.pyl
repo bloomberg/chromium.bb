@@ -419,6 +419,9 @@
           'hard_timeout': 1800,
         },
       },
+      'Oreo Phone Tester': {
+        'experiment_percentage': 100,
+      },
       # chromium.android.fyi
       'Nougat Phone Tester': {
         'swarming': {
