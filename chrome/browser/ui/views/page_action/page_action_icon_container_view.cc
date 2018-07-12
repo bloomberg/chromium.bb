@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_action/zoom_view.h"
 #include "ui/views/layout/box_layout.h"
@@ -11,17 +13,23 @@
 PageActionIconContainerView::PageActionIconContainerView(
     const std::vector<PageActionIconType>& types_enabled,
     int icon_size,
-    content::BrowserContext* browser_context,
-    PageActionIconView::Delegate* bubble_icon_delegate,
+    int between_icon_spacing,
+    Browser* browser,
+    PageActionIconView::Delegate* page_action_icon_delegate,
     LocationBarView::Delegate* location_bar_delegate)
     : zoom_observer_(this) {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(), between_icon_spacing));
 
   for (PageActionIconType type : types_enabled) {
     switch (type) {
+      case PageActionIconType::kFind:
+        find_bar_icon_ = new FindBarIcon(browser, page_action_icon_delegate);
+        page_action_icons_.push_back(find_bar_icon_);
+        break;
       case PageActionIconType::kZoom:
-        zoom_view_ = new ZoomView(location_bar_delegate, bubble_icon_delegate);
+        zoom_view_ =
+            new ZoomView(location_bar_delegate, page_action_icon_delegate);
         page_action_icons_.push_back(zoom_view_);
         break;
     }
@@ -34,8 +42,10 @@ PageActionIconContainerView::PageActionIconContainerView(
     AddChildView(icon);
   }
 
-  zoom_observer_.Add(
-      zoom::ZoomEventManager::GetForBrowserContext(browser_context));
+  if (browser) {
+    zoom_observer_.Add(
+        zoom::ZoomEventManager::GetForBrowserContext(browser->profile()));
+  }
 }
 
 PageActionIconContainerView::~PageActionIconContainerView() {}
@@ -46,6 +56,8 @@ PageActionIconView* PageActionIconContainerView::GetPageActionIconView(
   // methods are migrated out of LocationBar to the PageActionIconContainer
   // interface.
   switch (type) {
+    case PageActionIconType::kFind:
+      return find_bar_icon_;
     case PageActionIconType::kZoom:
       return zoom_view_;
   }

@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -86,7 +86,8 @@ void FindBarController::EndFindSession(SelectionAction selection_action,
 }
 
 void FindBarController::FindBarVisibilityChanged() {
-  browser_->window()->GetLocationBar()->UpdateFindBarIconVisibility();
+  browser_->window()->GetPageActionIconContainer()->UpdatePageActionIcon(
+      PageActionIconType::kFind);
 }
 
 void FindBarController::ChangeWebContents(WebContents* contents) {

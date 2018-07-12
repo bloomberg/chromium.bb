@@ -177,7 +177,6 @@ class TestBrowserWindow : public BrowserWindow {
     void UpdateManagePasswordsIconAndBubble() override {}
     void UpdateSaveCreditCardIcon() override {}
     void UpdateLocalCardMigrationIcon() override {}
-    void UpdateFindBarIconVisibility() override {}
     void UpdateBookmarkStarVisibility() override {}
     void UpdateLocationBarVisibility(bool visible, bool animate) override {}
     void SaveStateToContents(content::WebContents* contents) override {}

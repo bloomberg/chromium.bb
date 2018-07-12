@@ -206,11 +206,6 @@ void LocationBarViewMac::UpdateLocalCardMigrationIcon() {
   NOTIMPLEMENTED();
 }
 
-void LocationBarViewMac::UpdateFindBarIconVisibility() {
-  // TODO(crbug/651643): Implement for mac.
-  NOTIMPLEMENTED();
-}
-
 void LocationBarViewMac::UpdateBookmarkStarVisibility() {
   star_decoration_->SetVisible(IsStarEnabled());
 }
@@ -516,6 +511,10 @@ void LocationBarViewMac::UpdatePageActionIcon(PageActionIconType type) {
   // as update methods are migrated out of LocationBar to the
   // PageActionIconContainer interface.
   switch (type) {
+    case PageActionIconType::kFind:
+      // TODO(crbug/651643): Implement for mac.
+      NOTIMPLEMENTED();
+      break;
     case PageActionIconType::kZoom:
       UpdateZoomDecoration(/*default_zoom_changed=*/false);
       OnChanged();
