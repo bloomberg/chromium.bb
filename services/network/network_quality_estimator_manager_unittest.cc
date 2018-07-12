@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/time/time.h"
 #include "net/log/test_net_log.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator.h"
@@ -29,6 +30,8 @@ class TestNetworkQualityEstimatorManagerClient
         num_network_quality_changed_(0),
         run_loop_(std::make_unique<base::RunLoop>()),
         effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+        http_rtt_(base::TimeDelta()),
+        downlink_bandwidth_kbps_(INT32_MAX),
         binding_(this) {
     mojom::NetworkQualityEstimatorManagerPtr manager_ptr;
     mojom::NetworkQualityEstimatorManagerRequest request(
@@ -44,17 +47,21 @@ class TestNetworkQualityEstimatorManagerClient
 
   ~TestNetworkQualityEstimatorManagerClient() override {}
 
-  void OnNetworkQualityChanged(net::EffectiveConnectionType type) override {
+  void OnNetworkQualityChanged(net::EffectiveConnectionType type,
+                               base::TimeDelta http_rtt,
+                               int32_t downlink_bandwidth_kbps) override {
     num_network_quality_changed_++;
     effective_connection_type_ = type;
-    EXPECT_EQ(type,
-              network_quality_estimator_manager_->GetNetworkQualityEstimator()
-                  ->GetEffectiveConnectionType());
+    http_rtt_ = http_rtt;
+    downlink_bandwidth_kbps_ = downlink_bandwidth_kbps;
     if (run_loop_wait_effective_connection_type_ == type)
       run_loop_->Quit();
   }
 
-  // Returns the number of OnNetworkQualityChanged() notifications.
+  // Returns the number of OnNetworkQualityChanged() notifications. Note that
+  // the number may change based on the order in which underlying network
+  // quality estimator provides notifications when effective connection
+  // type, RTT and downlink estimates change simultaneously.
   size_t num_network_quality_changed() const {
     return num_network_quality_changed_;
   }
@@ -69,6 +76,8 @@ class TestNetworkQualityEstimatorManagerClient
   net::EffectiveConnectionType effective_connection_type() const {
     return effective_connection_type_;
   }
+  base::TimeDelta http_rtt() const { return http_rtt_; }
+  int32_t downlink_bandwidth_kbps() const { return downlink_bandwidth_kbps_; }
 
  private:
   NetworkQualityEstimatorManager* network_quality_estimator_manager_;
@@ -76,6 +85,8 @@ class TestNetworkQualityEstimatorManagerClient
   std::unique_ptr<base::RunLoop> run_loop_;
   net::EffectiveConnectionType run_loop_wait_effective_connection_type_;
   net::EffectiveConnectionType effective_connection_type_;
+  base::TimeDelta http_rtt_;
+  int32_t downlink_bandwidth_kbps_;
   mojo::Binding<mojom::NetworkQualityEstimatorManagerClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkQualityEstimatorManagerClient);
@@ -134,8 +145,16 @@ TEST_F(NetworkQualityEstimatorManagerTest, ClientNotified) {
       net::EFFECTIVE_CONNECTION_TYPE_3G,
       network_quality_estimator_manager_client()->effective_connection_type());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, network_quality_estimator_manager_client()
+  // Verify that not more than 2 notifications were received.
+  EXPECT_GE(2u, network_quality_estimator_manager_client()
                     ->num_network_quality_changed());
+  // Typical RTT and downlink values when effective connection type is 3G. Taken
+  // from net::NetworkQualityEstimatorParams.
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(450),
+            network_quality_estimator_manager_client()->http_rtt());
+  EXPECT_EQ(
+      400,
+      network_quality_estimator_manager_client()->downlink_bandwidth_kbps());
 }
 
 TEST_F(NetworkQualityEstimatorManagerTest, OneClientPipeBroken) {
@@ -156,12 +175,19 @@ TEST_F(NetworkQualityEstimatorManagerTest, OneClientPipeBroken) {
   EXPECT_EQ(
       net::EFFECTIVE_CONNECTION_TYPE_4G,
       network_quality_estimator_manager_client2->effective_connection_type());
+  // Typical RTT and downlink values when effective connection type is 4G. Taken
+  // from net::NetworkQualityEstimatorParams.
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(175),
+            network_quality_estimator_manager_client2->http_rtt());
+  EXPECT_EQ(
+      1600,
+      network_quality_estimator_manager_client2->downlink_bandwidth_kbps());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(1u, network_quality_estimator_manager_client()
+  EXPECT_GE(2u, network_quality_estimator_manager_client()
                     ->num_network_quality_changed());
-  EXPECT_EQ(
-      1u,
+  EXPECT_GE(
+      2u,
       network_quality_estimator_manager_client2->num_network_quality_changed());
   network_quality_estimator_manager_client2.reset();
 
@@ -176,8 +202,13 @@ TEST_F(NetworkQualityEstimatorManagerTest, OneClientPipeBroken) {
   EXPECT_EQ(
       net::EFFECTIVE_CONNECTION_TYPE_2G,
       network_quality_estimator_manager_client()->effective_connection_type());
-  EXPECT_EQ(2u, network_quality_estimator_manager_client()
+  EXPECT_GE(3u, network_quality_estimator_manager_client()
                     ->num_network_quality_changed());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1800),
+            network_quality_estimator_manager_client()->http_rtt());
+  EXPECT_EQ(
+      75,
+      network_quality_estimator_manager_client()->downlink_bandwidth_kbps());
 }
 
 TEST_F(NetworkQualityEstimatorManagerTest,
@@ -191,6 +222,13 @@ TEST_F(NetworkQualityEstimatorManagerTest,
       net::EFFECTIVE_CONNECTION_TYPE_2G,
       network_quality_estimator_manager_client()->effective_connection_type());
   base::RunLoop().RunUntilIdle();
+  // Typical RTT and downlink values when effective connection type is 2G. Taken
+  // from net::NetworkQualityEstimatorParams.
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1800),
+            network_quality_estimator_manager_client()->http_rtt());
+  EXPECT_EQ(
+      75,
+      network_quality_estimator_manager_client()->downlink_bandwidth_kbps());
 
   // Register a new client after the network quality change and it should
   // receive the up-to-date effective connection type.
@@ -202,6 +240,12 @@ TEST_F(NetworkQualityEstimatorManagerTest,
   EXPECT_EQ(
       net::EFFECTIVE_CONNECTION_TYPE_2G,
       network_quality_estimator_manager_client2.effective_connection_type());
+  // Typical RTT and downlink values when when effective connection type is 2G.
+  // Taken from net::NetworkQualityEstimatorParams.
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1800),
+            network_quality_estimator_manager_client2.http_rtt());
+  EXPECT_EQ(
+      75, network_quality_estimator_manager_client2.downlink_bandwidth_kbps());
 }
 
 }  // namespace network

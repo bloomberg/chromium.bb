@@ -14,6 +14,7 @@ NetworkQualityTracker::NetworkQualityTracker(
     base::RepeatingCallback<network::mojom::NetworkService*()> callback)
     : get_network_service_callback_(callback),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+      downlink_bandwidth_kbps_(INT32_MAX),
       binding_(this) {
   InitializeMojoChannel();
   DCHECK(binding_.is_bound());
@@ -25,6 +26,16 @@ net::EffectiveConnectionType NetworkQualityTracker::GetEffectiveConnectionType()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return effective_connection_type_;
+}
+
+base::TimeDelta NetworkQualityTracker::GetHttpRTT() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return http_rtt_;
+}
+
+int32_t NetworkQualityTracker::GetDownstreamThroughputKbps() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return downlink_bandwidth_kbps_;
 }
 
 void NetworkQualityTracker::AddEffectiveConnectionTypeObserver(
@@ -42,8 +53,14 @@ void NetworkQualityTracker::RemoveEffectiveConnectionTypeObserver(
 }
 
 void NetworkQualityTracker::OnNetworkQualityChanged(
-    net::EffectiveConnectionType effective_connection_type) {
+    net::EffectiveConnectionType effective_connection_type,
+    base::TimeDelta http_rtt,
+    int32_t bandwidth_kbps) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  http_rtt_ = http_rtt;
+  downlink_bandwidth_kbps_ = bandwidth_kbps;
+
   if (effective_connection_type == effective_connection_type_)
     return;
   effective_connection_type_ = effective_connection_type;
