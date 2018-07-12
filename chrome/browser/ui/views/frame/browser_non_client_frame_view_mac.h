@@ -68,7 +68,10 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   };
 
   void PaintThemedFrame(gfx::Canvas* canvas);
-  int GetTabStripRightInset() const;
+
+  // Returns the width taken by any items after the tabstrip, to the edge of the
+  // window.  Does not include any padding between the tabstrip and these items.
+  int GetAfterTabstripItemWidth() const;
 
   // Used to keep track of the update of kShowFullscreenToolbar preference.
   PrefChangeRegistrar pref_registrar_;
