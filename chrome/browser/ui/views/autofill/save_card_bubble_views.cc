@@ -360,11 +360,16 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
     cardholder_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     cardholder_name_label_row->AddChildView(cardholder_name_label.release());
 
-    // Set up cardholder name label tooltip.
-    std::unique_ptr<views::TooltipIcon> cardholder_name_tooltip =
-        std::make_unique<views::TooltipIcon>(l10n_util::GetStringUTF16(
-            IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME_TOOLTIP));
-    cardholder_name_label_row->AddChildView(cardholder_name_tooltip.release());
+    // Set up cardholder name label tooltip ONLY if the cardholder name
+    // textfield will be prefilled.
+    if (!controller_->GetAccountInfo().full_name.empty()) {
+      std::unique_ptr<views::TooltipIcon> cardholder_name_tooltip =
+          std::make_unique<views::TooltipIcon>(l10n_util::GetStringUTF16(
+              IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME_TOOLTIP));
+      cardholder_name_tooltip->set_id(DialogViewId::CARDHOLDER_NAME_TOOLTIP);
+      cardholder_name_label_row->AddChildView(
+          cardholder_name_tooltip.release());
+    }
 
     // Set up cardholder name textfield.
     DCHECK(!cardholder_name_textfield_);
