@@ -49,7 +49,6 @@ class CORE_TEMPLATE_CLASS_EXPORT V8PersistentCallbackFunction<V8AnyCallbackFunct
   // Returns a wrapper-tracing version of this callback function.
   V8CallbackFunction* ToNonV8Persistent() { return Proxy(); }
 
-  CORE_EXTERN_TEMPLATE_EXPORT
   v8::Maybe<ScriptValue> Invoke(ScriptWrappable* callback_this_value, ScriptValue optionalAnyArg) WARN_UNUSED_RESULT;
 
  private:

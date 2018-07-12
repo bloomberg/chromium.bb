@@ -109,13 +109,11 @@ void V8VoidCallbackFunctionTypedef::InvokeAndReportException(ScriptWrappable* ca
   ALLOW_UNUSED_LOCAL(maybe_result);
 }
 
-CORE_TEMPLATE_EXPORT
 v8::Maybe<void> V8PersistentCallbackFunction<V8VoidCallbackFunctionTypedef>::Invoke(ScriptWrappable* callback_this_value, const String& arg) {
   return Proxy()->Invoke(
       callback_this_value, arg);
 }
 
-CORE_TEMPLATE_EXPORT
 void V8PersistentCallbackFunction<V8VoidCallbackFunctionTypedef>::InvokeAndReportException(ScriptWrappable* callback_this_value, const String& arg) {
   Proxy()->InvokeAndReportException(
       callback_this_value, arg);

@@ -193,7 +193,6 @@ v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(ScriptWrappable* c
   }
 }
 
-CORE_EXTERN_TEMPLATE_EXPORT
 v8::Maybe<uint16_t> V8PersistentCallbackInterface<V8TestLegacyCallbackInterface>::acceptNode(ScriptWrappable* callback_this_value, Node* node) {
   return Proxy()->acceptNode(
       callback_this_value, node);

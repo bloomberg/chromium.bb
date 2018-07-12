@@ -51,11 +51,9 @@ class {{exported|replace('_EXPORT', '_TEMPLATE_CLASS_EXPORT')}}V8PersistentCallb
   // Returns a wrapper-tracing version of this callback function.
   V8CallbackFunction* ToNonV8Persistent() { return Proxy(); }
 
-  {{exported|replace('_EXPORT', '_EXTERN_TEMPLATE_EXPORT')|trim}}
   v8::Maybe<{{return_cpp_type}}> Invoke({{argument_declarations | join(', ')}}) WARN_UNUSED_RESULT;
 {% if idl_type == 'void' %}
-  {{exported|replace('_EXPORT', '_EXTERN_TEMPLATE_EXPORT')|trim}}
-  void InvokeAndReportException({{argument_declarations | join(', ')}});
+  {{exported}}void InvokeAndReportException({{argument_declarations | join(', ')}});
 {% endif %}
 
  private:

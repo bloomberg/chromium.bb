@@ -175,12 +175,10 @@ class PLATFORM_EXPORT ExceptionMessages {
 };
 
 template <>
-PLATFORM_EXTERN_TEMPLATE_EXPORT String
-ExceptionMessages::FormatNumber<float>(float number);
+PLATFORM_EXPORT String ExceptionMessages::FormatNumber<float>(float number);
 
 template <>
-PLATFORM_EXTERN_TEMPLATE_EXPORT String
-ExceptionMessages::FormatNumber<double>(double number);
+PLATFORM_EXPORT String ExceptionMessages::FormatNumber<double>(double number);
 
 }  // namespace blink
 

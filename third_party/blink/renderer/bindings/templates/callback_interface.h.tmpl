@@ -65,12 +65,10 @@ class {{exported|replace('_EXPORT', '_TEMPLATE_CLASS_EXPORT')}}V8PersistentCallb
   ~V8PersistentCallbackInterface() override = default;
 
 {% for method in methods %}
-  {{exported|replace('_EXPORT', '_EXTERN_TEMPLATE_EXPORT')|trim}}
-  v8::Maybe<{{method.cpp_type}}> {{method.name}}({{method.argument_declarations | join(', ')}}) WARN_UNUSED_RESULT;
+  {{exported}}v8::Maybe<{{method.cpp_type}}> {{method.name}}({{method.argument_declarations | join(', ')}}) WARN_UNUSED_RESULT;
 {% endfor %}
 {% if methods|length == 1 and methods[0].idl_type == 'void' %}
-  {{exported|replace('_EXPORT', '_EXTERN_TEMPLATE_EXPORT')|trim}}
-  void InvokeAndReportException({{methods[0].argument_declarations | join(', ')}});
+  {{exported}}void InvokeAndReportException({{methods[0].argument_declarations | join(', ')}});
 {% endif %}
 
  private:

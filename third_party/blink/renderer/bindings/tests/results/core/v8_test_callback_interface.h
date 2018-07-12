@@ -78,24 +78,15 @@ class CORE_TEMPLATE_CLASS_EXPORT V8PersistentCallbackInterface<V8TestCallbackInt
  public:
   ~V8PersistentCallbackInterface() override = default;
 
-  CORE_EXTERN_TEMPLATE_EXPORT
-  v8::Maybe<void> voidMethod(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;
-  CORE_EXTERN_TEMPLATE_EXPORT
-  v8::Maybe<bool> booleanMethod(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;
-  CORE_EXTERN_TEMPLATE_EXPORT
-  v8::Maybe<void> voidMethodBooleanArg(ScriptWrappable* callback_this_value, bool boolArg) WARN_UNUSED_RESULT;
-  CORE_EXTERN_TEMPLATE_EXPORT
-  v8::Maybe<void> voidMethodSequenceArg(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) WARN_UNUSED_RESULT;
-  CORE_EXTERN_TEMPLATE_EXPORT
-  v8::Maybe<void> voidMethodFloatArg(ScriptWrappable* callback_this_value, float floatArg) WARN_UNUSED_RESULT;
-  CORE_EXTERN_TEMPLATE_EXPORT
-  v8::Maybe<void> voidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
-  CORE_EXTERN_TEMPLATE_EXPORT
-  v8::Maybe<void> voidMethodTestInterfaceEmptyStringArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) WARN_UNUSED_RESULT;
-  CORE_EXTERN_TEMPLATE_EXPORT
-  v8::Maybe<void> callbackWithThisValueVoidMethodStringArg(ScriptWrappable* callback_this_value, const String& stringArg) WARN_UNUSED_RESULT;
-  CORE_EXTERN_TEMPLATE_EXPORT
-  v8::Maybe<void> customVoidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> voidMethod(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<bool> booleanMethod(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> voidMethodBooleanArg(ScriptWrappable* callback_this_value, bool boolArg) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> voidMethodSequenceArg(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> voidMethodFloatArg(ScriptWrappable* callback_this_value, float floatArg) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> voidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> voidMethodTestInterfaceEmptyStringArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> callbackWithThisValueVoidMethodStringArg(ScriptWrappable* callback_this_value, const String& stringArg) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> customVoidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
 
  private:
   explicit V8PersistentCallbackInterface(V8CallbackInterface* callback_interface)

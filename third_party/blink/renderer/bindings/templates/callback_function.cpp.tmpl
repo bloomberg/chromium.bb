@@ -144,7 +144,6 @@ void {{cpp_class}}::InvokeAndReportException({{argument_declarations | join(', '
 }
 {% endif %}
 
-{{exported|replace('_EXPORT', '_TEMPLATE_EXPORT')|trim}}
 v8::Maybe<{{return_cpp_type}}> V8PersistentCallbackFunction<{{cpp_class}}>::Invoke({{argument_declarations | join(', ')}}) {
   return Proxy()->Invoke(
       {{
@@ -155,7 +154,6 @@ v8::Maybe<{{return_cpp_type}}> V8PersistentCallbackFunction<{{cpp_class}}>::Invo
 }
 
 {% if idl_type == 'void' %}
-{{exported|replace('_EXPORT', '_TEMPLATE_EXPORT')|trim}}
 void V8PersistentCallbackFunction<{{cpp_class}}>::InvokeAndReportException({{argument_declarations | join(', ')}}) {
   Proxy()->InvokeAndReportException(
       {{

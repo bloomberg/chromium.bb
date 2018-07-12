@@ -930,55 +930,46 @@ v8::Maybe<void> V8TestCallbackInterface::customVoidMethodTestInterfaceEmptyArg(S
   return v8::JustVoid();
 }
 
-CORE_EXTERN_TEMPLATE_EXPORT
 v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::voidMethod(ScriptWrappable* callback_this_value) {
   return Proxy()->voidMethod(
       callback_this_value);
 }
 
-CORE_EXTERN_TEMPLATE_EXPORT
 v8::Maybe<bool> V8PersistentCallbackInterface<V8TestCallbackInterface>::booleanMethod(ScriptWrappable* callback_this_value) {
   return Proxy()->booleanMethod(
       callback_this_value);
 }
 
-CORE_EXTERN_TEMPLATE_EXPORT
 v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::voidMethodBooleanArg(ScriptWrappable* callback_this_value, bool boolArg) {
   return Proxy()->voidMethodBooleanArg(
       callback_this_value, boolArg);
 }
 
-CORE_EXTERN_TEMPLATE_EXPORT
 v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::voidMethodSequenceArg(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) {
   return Proxy()->voidMethodSequenceArg(
       callback_this_value, sequenceArg);
 }
 
-CORE_EXTERN_TEMPLATE_EXPORT
 v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::voidMethodFloatArg(ScriptWrappable* callback_this_value, float floatArg) {
   return Proxy()->voidMethodFloatArg(
       callback_this_value, floatArg);
 }
 
-CORE_EXTERN_TEMPLATE_EXPORT
 v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::voidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) {
   return Proxy()->voidMethodTestInterfaceEmptyArg(
       callback_this_value, testInterfaceEmptyArg);
 }
 
-CORE_EXTERN_TEMPLATE_EXPORT
 v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::voidMethodTestInterfaceEmptyStringArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) {
   return Proxy()->voidMethodTestInterfaceEmptyStringArg(
       callback_this_value, testInterfaceEmptyArg, stringArg);
 }
 
-CORE_EXTERN_TEMPLATE_EXPORT
 v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::callbackWithThisValueVoidMethodStringArg(ScriptWrappable* callback_this_value, const String& stringArg) {
   return Proxy()->callbackWithThisValueVoidMethodStringArg(
       callback_this_value, stringArg);
 }
 
-CORE_EXTERN_TEMPLATE_EXPORT
 v8::Maybe<void> V8PersistentCallbackInterface<V8TestCallbackInterface>::customVoidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) {
   return Proxy()->customVoidMethodTestInterfaceEmptyArg(
       callback_this_value, testInterfaceEmptyArg);
