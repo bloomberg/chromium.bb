@@ -70,7 +70,10 @@ class FakeBackgroundProfilingTriggers : public BackgroundProfilingTriggers {
 
   using BackgroundProfilingTriggers::OnReceivedMemoryDump;
 
-  void Reset() { was_report_triggered_ = false; }
+  void Reset() {
+    was_report_triggered_ = false;
+    pmf_at_last_upload_.clear();
+  }
   bool WasReportTriggered() const { return was_report_triggered_; }
 
  private:
@@ -195,6 +198,31 @@ TEST_F(BackgroundProfilingTriggersTest, OnReceivedMemoryDump_ProfiledPids) {
   triggers_.OnReceivedMemoryDump(profiled_pids_, true,
                                  GlobalMemoryDump::MoveFrom(std::move(dump)));
   EXPECT_TRUE(triggers_.WasReportTriggered());
+}
+
+TEST_F(BackgroundProfilingTriggersTest, HighWaterMark) {
+  GlobalMemoryDumpPtr dump(
+      memory_instrumentation::mojom::GlobalMemoryDump::New());
+  PopulateMetrics(&dump, 1, ProcessType::BROWSER, kProcessMallocTriggerKb,
+                  kProcessMallocTriggerKb, kProcessMallocTriggerKb);
+  triggers_.OnReceivedMemoryDump(profiled_pids_, true,
+                                 GlobalMemoryDump::MoveFrom(std::move(dump)));
+  EXPECT_TRUE(triggers_.WasReportTriggered());
+  triggers_.Reset();
+
+  // A small increase in memory should not trigger another report.
+  dump = memory_instrumentation::mojom::GlobalMemoryDump::New();
+  uint32_t small_increase = kProcessMallocTriggerKb + 10 * 1024;
+  PopulateMetrics(&dump, 1, ProcessType::BROWSER, small_increase,
+                  small_increase, small_increase);
+  EXPECT_FALSE(triggers_.WasReportTriggered());
+
+  // But a large increase should trigger another report.
+  dump = memory_instrumentation::mojom::GlobalMemoryDump::New();
+  uint32_t large_increase = kProcessMallocTriggerKb + 1000 * 1024;
+  PopulateMetrics(&dump, 1, ProcessType::BROWSER, large_increase,
+                  large_increase, large_increase);
+  EXPECT_FALSE(triggers_.WasReportTriggered());
 }
 
 // Non-profiled processes don't trigger.
