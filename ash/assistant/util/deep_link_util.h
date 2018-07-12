@@ -20,6 +20,10 @@ namespace util {
 // Returns true if the specified |url| is a deep link, false otherwise.
 ASH_EXPORT bool IsDeepLinkUrl(const GURL& url);
 
+// Returns true if the specified |url| is an Assistant explore deep link,
+// false otherwise.
+ASH_EXPORT bool IsAssistantExploreDeepLink(const GURL& url);
+
 // Returns true if the specified |url| is an Assistant onboarding deep link,
 // false otherwise.
 ASH_EXPORT bool IsAssistantOnboardingDeepLink(const GURL& url);

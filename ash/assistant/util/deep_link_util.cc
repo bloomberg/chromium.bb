@@ -14,9 +14,14 @@ namespace util {
 
 namespace {
 
+constexpr char kAssistantExplorePrefix[] = "googleassistant://explore";
 constexpr char kAssistantOnboardingPrefix[] = "googleassistant://onboarding";
 constexpr char kAssistantRemindersPrefix[] = "googleassistant://reminders";
 constexpr char kAssistantSettingsPrefix[] = "googleassistant://settings";
+
+// TODO(dmblack): Maybe don't hard code this URL. Use a finch flag?
+constexpr char kAssistantExploreWebUrl[] =
+    "https://assistant.google.com/explore";
 
 // TODO(dmblack): Wire up actual Assistant Reminders URL.
 constexpr char kAssistantRemindersWebUrl[] = R"(data:text/html,
@@ -41,8 +46,14 @@ constexpr char kAssistantSettingsWebUrl[] = R"(data:text/html,
 }  // namespace
 
 bool IsDeepLinkUrl(const GURL& url) {
-  return IsAssistantOnboardingDeepLink(url) ||
+  return IsAssistantExploreDeepLink(url) ||
+         IsAssistantOnboardingDeepLink(url) ||
          IsAssistantRemindersDeepLink(url) || IsAssistantSettingsDeepLink(url);
+}
+
+bool IsAssistantExploreDeepLink(const GURL& url) {
+  return base::StartsWith(url.spec(), kAssistantExplorePrefix,
+                          base::CompareCase::SENSITIVE);
 }
 
 bool IsAssistantOnboardingDeepLink(const GURL& url) {
@@ -68,6 +79,9 @@ base::Optional<GURL> GetWebUrl(const GURL& deep_link) {
   if (!IsWebDeepLink(deep_link))
     return base::nullopt;
 
+  if (IsAssistantExploreDeepLink(deep_link))
+    return GURL(kAssistantExploreWebUrl);
+
   if (IsAssistantRemindersDeepLink(deep_link))
     return GURL(kAssistantRemindersWebUrl);
 
@@ -79,7 +93,8 @@ base::Optional<GURL> GetWebUrl(const GURL& deep_link) {
 }
 
 bool IsWebDeepLink(const GURL& url) {
-  return IsAssistantRemindersDeepLink(url) || IsAssistantSettingsDeepLink(url);
+  return IsAssistantExploreDeepLink(url) || IsAssistantRemindersDeepLink(url) ||
+         IsAssistantSettingsDeepLink(url);
 }
 
 bool ParseDeepLinkParams(const GURL& deep_link,
