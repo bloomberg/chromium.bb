@@ -61,13 +61,16 @@ message Optimization {
   // Only the first ResourceLoadingHint record that matches a target resource
   // URL will be applied to that resource.
   repeated ResourceLoadingHint resource_loading_hints = 3;
-  // If this optimization is experimental, this field will contain the
-  // experiment name that activates the optimization. If a non-empty name is
-  // configured, the optimization will be disabled unless a previews experiment
-  // of that same name is running. Previews experiments are enabled and
-  // configured by passing an experiment_name parameter to the
-  // OptimizationHintsExperiments feature. For example, if experiment_name is
-  // my_exp, it could be enabled with the following command-line flags:
+  // The experiment name that activates the optimization.
+  //
+  // If a non-empty name is provided, the optimization will be disabled unless
+  // a previews experiment of that same name is running. An empty name is not
+  // experimental.
+  //
+  // Previews experiments are enabled and configured by passing an
+  // experiment_name parameter to the OptimizationHintsExperiments feature.
+  // For example, if experiment_name is my_exp, it could be enabled with the
+  // following command-line flags:
   //   --enable-features=OptimizationHintsExperiments<MyFieldTrial
   //   --force-fieldtrial-params="MyFieldTrial.Enabled:experiment_name/my_exp"
   //   --force-fieldtrials=MyFieldTrial/Enabled/
