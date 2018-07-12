@@ -12,6 +12,7 @@
 #include "components/domain_reliability/monitor.h"
 #include "components/domain_reliability/test_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"
@@ -78,7 +79,7 @@ class TestPermissionManager : public content::PermissionManager {
       const base::Callback<void(blink::mojom::PermissionStatus)>& callback)
       override {
     NOTIMPLEMENTED();
-    return kNoPendingOperation;
+    return content::PermissionController::kNoPendingOperation;
   }
 
   int RequestPermissions(
@@ -90,7 +91,7 @@ class TestPermissionManager : public content::PermissionManager {
           void(const std::vector<blink::mojom::PermissionStatus>&)>& callback)
       override {
     NOTIMPLEMENTED();
-    return kNoPendingOperation;
+    return content::PermissionController::kNoPendingOperation;
   }
 
   void ResetPermission(content::PermissionType permission,

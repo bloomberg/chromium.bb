@@ -33,6 +33,7 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/push_messaging/push_messaging_router.h"
 #include "content/browser/service_manager/common_browser_interfaces.h"
 #include "content/browser/storage_partition_impl_map.h"
@@ -105,6 +106,7 @@ class ContentServiceDelegateHolder : public base::SupportsUserData::Data {
 // Key names on BrowserContext.
 const char kBrowsingDataRemoverKey[] = "browsing-data-remover";
 const char kContentServiceDelegateKey[] = "content-service-delegate";
+const char kPermissionControllerKey[] = "permission-controller";
 const char kDownloadManagerKeyName[] = "download_manager";
 const char kMojoWasInitialized[] = "mojo-was-initialized";
 const char kServiceManagerConnection[] = "service-manager-connection";
@@ -286,6 +288,20 @@ content::BrowsingDataRemover* content::BrowserContext::GetBrowsingDataRemover(
 
   return static_cast<BrowsingDataRemoverImpl*>(
       context->GetUserData(kBrowsingDataRemoverKey));
+}
+
+// static
+content::PermissionController* content::BrowserContext::GetPermissionController(
+    BrowserContext* context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!context->GetUserData(kPermissionControllerKey)) {
+    context->SetUserData(kPermissionControllerKey,
+                         std::make_unique<PermissionControllerImpl>(context));
+  }
+
+  return static_cast<PermissionControllerImpl*>(
+      context->GetUserData(kPermissionControllerKey));
 }
 
 StoragePartition* BrowserContext::GetStoragePartition(

@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -26,12 +26,12 @@ using device::mojom::SensorCreationResult;
 namespace content {
 
 SensorProviderProxyImpl::SensorProviderProxyImpl(
-    PermissionManager* permission_manager,
+    PermissionControllerImpl* permission_controller,
     RenderFrameHost* render_frame_host)
-    : permission_manager_(permission_manager),
+    : permission_controller_(permission_controller),
       render_frame_host_(render_frame_host),
       weak_factory_(this) {
-  DCHECK(permission_manager);
+  DCHECK(permission_controller);
   DCHECK(render_frame_host);
 }
 
@@ -65,9 +65,9 @@ void SensorProviderProxyImpl::GetSensor(SensorType type,
   }
 
   // TODO(shalamov): base::BindOnce should be used (https://crbug.com/714018),
-  // however, PermissionManager::RequestPermission enforces use of repeating
+  // however, PermissionController::RequestPermission enforces use of repeating
   // callback.
-  permission_manager_->RequestPermission(
+  permission_controller_->RequestPermission(
       PermissionType::SENSORS, render_frame_host_,
       render_frame_host_->GetLastCommittedURL().GetOrigin(), false,
       base::BindRepeating(

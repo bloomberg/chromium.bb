@@ -14,15 +14,8 @@ namespace content {
 enum class PermissionType;
 class RenderFrameHost;
 
-// This class allows the content layer to manipulate permissions. It has to be
-// implemented by the embedder which ultimately handles the permission
-// management for the content layer.
 class CONTENT_EXPORT PermissionManager {
  public:
-  // Constant retured when registering and subscribing if
-  // cancelling/unsubscribing at a later stage would have no effect.
-  static const int kNoPendingOperation = -1;
-
   virtual ~PermissionManager() = default;
 
   // Requests a permission on behalf of a frame identified by
@@ -103,4 +96,4 @@ class CONTENT_EXPORT PermissionManager {
 
 }  // namespace content
 
-#endif // CONTENT_PUBLIC_BROWSER_PERMISSION_MANAGER_H_
+#endif  // CONTENT_PUBLIC_BROWSER_PERMISSION_MANAGER_H_

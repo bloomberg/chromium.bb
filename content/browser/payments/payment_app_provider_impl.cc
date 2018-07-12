@@ -14,7 +14,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/permission_manager.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -401,18 +401,15 @@ void CheckPermissionForPaymentApps(
     PaymentAppProvider::PaymentApps apps) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  PermissionManager* permission_manager =
-      browser_context->GetPermissionManager();
-  if (!permission_manager) {
-    std::move(callback).Run(PaymentAppProvider::PaymentApps());
-    return;
-  }
+  PermissionController* permission_controller =
+      BrowserContext::GetPermissionController(browser_context);
+  DCHECK(permission_controller);
 
   PaymentAppProvider::PaymentApps permitted_apps;
   for (auto& app : apps) {
     GURL origin = app.second->scope.GetOrigin();
-    if (permission_manager->GetPermissionStatus(PermissionType::PAYMENT_HANDLER,
-                                                origin, origin) ==
+    if (permission_controller->GetPermissionStatus(
+            PermissionType::PAYMENT_HANDLER, origin, origin) ==
         blink::mojom::PermissionStatus::GRANTED) {
       permitted_apps[app.first] = std::move(app.second);
     }

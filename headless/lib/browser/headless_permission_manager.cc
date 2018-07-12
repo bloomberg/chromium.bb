@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 
 namespace headless {
@@ -28,11 +29,11 @@ int HeadlessPermissionManager::RequestPermission(
   if (browser_context_->IsOffTheRecord() &&
       permission == content::PermissionType::NOTIFICATIONS) {
     callback.Run(blink::mojom::PermissionStatus::DENIED);
-    return kNoPendingOperation;
+    return content::PermissionController::kNoPendingOperation;
   }
 
   callback.Run(blink::mojom::PermissionStatus::ASK);
-  return kNoPendingOperation;
+  return content::PermissionController::kNoPendingOperation;
 }
 
 int HeadlessPermissionManager::RequestPermissions(
@@ -47,7 +48,7 @@ int HeadlessPermissionManager::RequestPermissions(
   std::vector<blink::mojom::PermissionStatus> result(
       permissions.size(), blink::mojom::PermissionStatus::ASK);
   callback.Run(result);
-  return kNoPendingOperation;
+  return content::PermissionController::kNoPendingOperation;
 }
 
 void HeadlessPermissionManager::ResetPermission(
@@ -75,7 +76,7 @@ int HeadlessPermissionManager::SubscribePermissionStatusChange(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
-  return kNoPendingOperation;
+  return content::PermissionController::kNoPendingOperation;
 }
 
 void HeadlessPermissionManager::UnsubscribePermissionStatusChange(

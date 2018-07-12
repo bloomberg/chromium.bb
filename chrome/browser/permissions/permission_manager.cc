@@ -36,6 +36,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -367,7 +368,7 @@ int PermissionManager::RequestPermissions(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (permissions.empty()) {
     callback.Run(std::vector<ContentSetting>());
-    return kNoPendingOperation;
+    return content::PermissionController::kNoPendingOperation;
   }
 
   content::WebContents* web_contents =
@@ -377,7 +378,7 @@ int PermissionManager::RequestPermissions(
           web_contents, vr::UiSuppressedElement::kPermissionRequest)) {
     callback.Run(
         std::vector<ContentSetting>(permissions.size(), CONTENT_SETTING_BLOCK));
-    return kNoPendingOperation;
+    return content::PermissionController::kNoPendingOperation;
   }
 
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
@@ -405,7 +406,7 @@ int PermissionManager::RequestPermissions(
 
   // The request might have been resolved already.
   if (!pending_requests_.Lookup(request_id))
-    return kNoPendingOperation;
+    return content::PermissionController::kNoPendingOperation;
 
   return request_id;
 }

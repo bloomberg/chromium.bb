@@ -1212,6 +1212,8 @@ jumbo_source_set("browser") {
     "payments/payment_instrument_icon_fetcher.h",
     "payments/payment_manager.cc",
     "payments/payment_manager.h",
+    "permissions/permission_controller_impl.cc",
+    "permissions/permission_controller_impl.h",
     "permissions/permission_service_context.cc",
     "permissions/permission_service_context.h",
     "permissions/permission_service_impl.cc",

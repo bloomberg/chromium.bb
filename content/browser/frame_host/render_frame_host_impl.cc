@@ -65,6 +65,7 @@
 #include "content/browser/media/media_interface_proxy.h"
 #include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/payments/payment_app_context_impl.h"
+#include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/presentation/presentation_service_impl.h"
@@ -117,7 +118,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -3249,14 +3249,14 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::Bind(&InstalledAppProviderImplDefault::Create));
 #endif  // !defined(OS_ANDROID)
 
-  PermissionManager* permission_manager =
-      GetProcess()->GetBrowserContext()->GetPermissionManager();
-
+  PermissionControllerImpl* permission_controller =
+      PermissionControllerImpl::FromBrowserContext(
+          GetProcess()->GetBrowserContext());
   if (delegate_) {
     auto* geolocation_context = delegate_->GetGeolocationContext();
-    if (geolocation_context && permission_manager) {
+    if (geolocation_context) {
       geolocation_service_.reset(new GeolocationServiceImpl(
-          geolocation_context, permission_manager, this));
+          geolocation_context, permission_controller, this));
       // NOTE: Both the |interface_registry_| and |geolocation_service_| are
       // owned by |this|, so their destruction will be triggered together.
       // |interface_registry_| is declared after |geolocation_service_|, so it
@@ -3378,13 +3378,11 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   }
 #endif  // !defined(OS_ANDROID)
 
-  if (permission_manager) {
-    sensor_provider_proxy_.reset(
-        new SensorProviderProxyImpl(permission_manager, this));
-    registry_->AddInterface(
-        base::Bind(&SensorProviderProxyImpl::Bind,
-                   base::Unretained(sensor_provider_proxy_.get())));
-  }
+  sensor_provider_proxy_.reset(
+      new SensorProviderProxyImpl(permission_controller, this));
+  registry_->AddInterface(
+      base::Bind(&SensorProviderProxyImpl::Bind,
+                 base::Unretained(sensor_provider_proxy_.get())));
 
   // Only save decode stats when BrowserContext provides a VideoPerfHistory.
   // Off-the-record contexts will internally use an ephemeral history DB.

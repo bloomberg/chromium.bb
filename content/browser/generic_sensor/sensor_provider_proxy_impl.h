@@ -13,15 +13,15 @@
 
 namespace content {
 
-class PermissionManager;
+class PermissionControllerImpl;
 class RenderFrameHost;
 
 // This proxy acts as a gatekeeper to the real sensor provider so that this
 // proxy can intercept sensor requests and allow or deny them based on
-// the permission statuses retrieved from a permission manager.
+// the permission statuses retrieved from a permission controller.
 class SensorProviderProxyImpl final : public device::mojom::SensorProvider {
  public:
-  SensorProviderProxyImpl(PermissionManager* permission_manager,
+  SensorProviderProxyImpl(PermissionControllerImpl* permission_controller,
                           RenderFrameHost* render_frame_host);
   ~SensorProviderProxyImpl() override;
 
@@ -39,7 +39,7 @@ class SensorProviderProxyImpl final : public device::mojom::SensorProvider {
   void OnConnectionError();
 
   mojo::BindingSet<device::mojom::SensorProvider> binding_set_;
-  PermissionManager* permission_manager_;
+  PermissionControllerImpl* permission_controller_;
   RenderFrameHost* render_frame_host_;
   device::mojom::SensorProviderPtr sensor_provider_;
 
