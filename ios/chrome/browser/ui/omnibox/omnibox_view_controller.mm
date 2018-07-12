@@ -96,6 +96,23 @@ const CGFloat kClearButtonSize = 28.0f;
 
 #pragma mark - private
 
+- (void)updateLeadingImageVisibility {
+  [self.view setLeadingImageHidden:!IsRegularXRegularSizeClass(self)];
+}
+
+// Tint color for the textfield placeholder and the clear button.
+- (UIColor*)placeholderAndClearButtonColor {
+  return self.incognito ? [UIColor colorWithWhite:1 alpha:0.5]
+                        : [UIColor colorWithWhite:0 alpha:0.3];
+}
+
+#pragma mark clear button
+
+// Omnibox uses a custom clear button. It has a custom tint and image, but
+// otherwise it should act exactly like a system button. To achieve this, a
+// custom button is used as the |rightView|. Textfield's setRightViewMode: is
+// used to make the button invisible when the textfield is empty; the visibility
+// is updated on textfield text changes and clear button presses.
 - (void)setupClearButton {
   // Do not use the system clear button. Use a custom "right view" instead.
   // Note that |rightView| is an incorrect name, it's really a trailing view.
@@ -113,6 +130,12 @@ const CGFloat kClearButtonSize = 28.0f;
   clearButton.tintColor = [self placeholderAndClearButtonColor];
   SetA11yLabelAndUiAutomationName(clearButton, IDS_IOS_ACCNAME_CLEAR_TEXT,
                                   @"Clear Text");
+
+  // Observe text changes to show the clear button when there is text and hide
+  // it when the textfield is empty.
+  [self.textField addTarget:self
+                     action:@selector(textFieldDidChange:)
+           forControlEvents:UIControlEventEditingChanged];
 }
 
 - (UIImage*)clearButtonIcon {
@@ -128,17 +151,22 @@ const CGFloat kClearButtonSize = 28.0f;
       [self.textField.delegate textFieldShouldClear:self.textField];
   if (shouldClear) {
     [self.textField setText:@""];
+    // Calling setText: does not trigger UIControlEventEditingChanged, so update
+    // the clear button visibility manually.
+    [self updateClearButtonVisibility];
   }
 }
 
-- (void)updateLeadingImageVisibility {
-  [self.view setLeadingImageHidden:!IsRegularXRegularSizeClass(self)];
+// Called on textField's UIControlEventEditingChanged.
+- (void)textFieldDidChange:(UITextField*)textField {
+  [self updateClearButtonVisibility];
 }
 
-// Tint color for the textfield placeholder and the clear button.
-- (UIColor*)placeholderAndClearButtonColor {
-  return self.incognito ? [UIColor colorWithWhite:1 alpha:0.5]
-                        : [UIColor colorWithWhite:0 alpha:0.3];
+// Hides the clear button if the textfield is empty; shows it otherwise.
+- (void)updateClearButtonVisibility {
+  BOOL hasText = self.textField.text.length > 0;
+  [self.textField setRightViewMode:hasText ? UITextFieldViewModeAlways
+                                           : UITextFieldViewModeNever];
 }
 
 @end
