@@ -42,10 +42,11 @@ class UnifiedConsentService : public KeyedService,
                               public identity::IdentityManager::Observer,
                               public syncer::SyncServiceObserver {
  public:
-  UnifiedConsentService(UnifiedConsentServiceClient* service_client,
-                        PrefService* pref_service,
-                        identity::IdentityManager* identity_manager,
-                        syncer::SyncService* sync_service);
+  UnifiedConsentService(
+      std::unique_ptr<UnifiedConsentServiceClient> service_client,
+      PrefService* pref_service,
+      identity::IdentityManager* identity_manager,
+      syncer::SyncService* sync_service);
   ~UnifiedConsentService() override;
 
   // Register the prefs used by this UnifiedConsentService.
@@ -82,14 +83,14 @@ class UnifiedConsentService : public KeyedService,
   // non-personalized services. Otherwise it does nothing.
   void OnUnifiedConsentGivenPrefChanged();
 
-  // Enables all sync data types if sync is active.
+  // Enables all sync data types if the sync engine is initialized.
   void EnableAllSyncDataTypesIfPossible();
 
   // Called when the unified consent service is created to resolve
   // inconsistencies with sync-related prefs.
   void MigrateProfileToUnifiedConsent();
 
-  UnifiedConsentServiceClient* service_client_;
+  std::unique_ptr<UnifiedConsentServiceClient> service_client_;
   PrefService* pref_service_;
   identity::IdentityManager* identity_manager_;
   syncer::SyncService* sync_service_;

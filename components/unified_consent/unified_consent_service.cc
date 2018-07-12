@@ -17,11 +17,11 @@
 namespace unified_consent {
 
 UnifiedConsentService::UnifiedConsentService(
-    UnifiedConsentServiceClient* service_client,
+    std::unique_ptr<UnifiedConsentServiceClient> service_client,
     PrefService* pref_service,
     identity::IdentityManager* identity_manager,
     syncer::SyncService* sync_service)
-    : service_client_(service_client),
+    : service_client_(std::move(service_client)),
       pref_service_(pref_service),
       identity_manager_(identity_manager),
       sync_service_(sync_service) {
@@ -112,7 +112,8 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
 }
 
 void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
-  if (IsUnifiedConsentGiven())
+  syncer::SyncPrefs sync_prefs(pref_service_);
+  if (IsUnifiedConsentGiven() && !sync_prefs.HasKeepEverythingSynced())
     EnableAllSyncDataTypesIfPossible();
 }
 
@@ -156,7 +157,7 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
 }
 
 void UnifiedConsentService::EnableAllSyncDataTypesIfPossible() {
-  if (sync_service_->GetState() != syncer::SyncService::State::ACTIVE)
+  if (!sync_service_->IsEngineInitialized())
     return;
   pref_service_->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled,
                             true);
