@@ -1553,21 +1553,12 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
         },
-        "test": "angle_unittests",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -1580,21 +1571,12 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
         },
-        "test": "gl_tests",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -1606,21 +1588,12 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
         },
-        "test": "gl_unittests",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test": "gl_unittests"
       }
     ],
     "isolated_scripts": [
@@ -1641,19 +1614,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -1673,19 +1637,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -1705,19 +1660,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -1737,19 +1683,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -1773,19 +1710,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -1812,19 +1740,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -1859,19 +1778,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -1892,19 +1802,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -1924,19 +1825,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -1956,20 +1848,11 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ],
           "shards": 2
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       }
     ]
@@ -1987,21 +1870,12 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
         },
-        "test": "angle_unittests",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test": "angle_unittests"
       },
       {
         "args": [
@@ -2017,21 +1891,12 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
         },
-        "test": "browser_tests",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -2044,21 +1909,12 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
         },
-        "test": "gl_tests",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test": "gl_tests"
       },
       {
         "args": [
@@ -2070,21 +1926,12 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
         },
-        "test": "gl_unittests",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test": "gl_unittests"
       }
     ],
     "isolated_scripts": [
@@ -2105,19 +1952,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -2137,19 +1975,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -2169,19 +1998,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -2201,19 +2021,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -2237,19 +2048,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -2276,19 +2078,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -2323,19 +2116,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -2356,19 +2140,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -2388,19 +2163,10 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ]
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -2420,20 +2186,11 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.12.6",
+              "os": "Mac-10.13.5",
               "pool": "Chrome-GPU"
             }
           ],
           "shards": 2
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.12.6\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"1002:6821\", \"hidpi\": \"1\", \"os\": \"Mac-10.13.5\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       }
     ]
