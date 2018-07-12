@@ -3483,6 +3483,9 @@ crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/locat
 
 crbug.com/785940 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Failure Pass ]
 
+# Decoding test timeout on Win7. Marked flaky to get imported in case it's flaky timeout everywhere.
+crbug.com/862938 external/wpt/encoding/textdecoder-fatal-single-byte.any.worker.html [ Pass Timeout ]
+
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
 crbug.com/655458 external/wpt/workers/interfaces/SharedWorkerGlobalScope/onconnect.html [ Failure ]
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/setting-port-members.html [ Failure ]
