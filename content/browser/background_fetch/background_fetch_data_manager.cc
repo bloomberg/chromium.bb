@@ -63,16 +63,13 @@ void GetRegistrationFromMetadata(
 BackgroundFetchDataManager::BackgroundFetchDataManager(
     BrowserContext* browser_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    scoped_refptr<CacheStorageContextImpl> cache_storage_context,
-    const base::RepeatingClosure& abandon_fetches_callback)
+    scoped_refptr<CacheStorageContextImpl> cache_storage_context)
     : service_worker_context_(std::move(service_worker_context)),
       cache_storage_context_(std::move(cache_storage_context)),
-      abandon_fetches_callback_(abandon_fetches_callback),
       weak_ptr_factory_(this) {
   // Constructed on the UI thread, then used on the IO thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context);
-  DCHECK(abandon_fetches_callback_);
 
   // Store the blob storage context for the given |browser_context|.
   blob_storage_context_ =

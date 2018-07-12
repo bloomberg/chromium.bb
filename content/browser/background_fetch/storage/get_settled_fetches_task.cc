@@ -82,7 +82,7 @@ void GetSettledFetchesTask::DidGetCompletedRequests(
       // Service worker database has been corrupted. Abandon fetches.
       error_ = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
       background_fetch_succeeded_ = false;
-      data_manager()->abandon_fetches_callback().Run();
+      AbandonFetches(registration_id_.service_worker_registration_id());
       break;
     }
     if (!completed_requests_.back().succeeded())

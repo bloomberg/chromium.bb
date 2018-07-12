@@ -61,7 +61,7 @@ void StartNextPendingRequestTask::DidGetPendingRequests(
 
   if (!pending_request_.ParseFromString(data.front())) {
     // Service Worker database has been corrupted. Abandon fetches.
-    data_manager()->abandon_fetches_callback().Run();
+    AbandonFetches(service_worker_registration_id_);
     std::move(callback_).Run(nullptr /* request */);
     Finished();  // Destroys |this|.
     return;
@@ -93,7 +93,7 @@ void StartNextPendingRequestTask::DidFindActiveRequest(
       // We already stored the active request.
       if (!active_request_.ParseFromString(data.front())) {
         // Service worker database has been corrupted. Abandon fetches.
-        data_manager()->abandon_fetches_callback().Run();
+        AbandonFetches(service_worker_registration_id_);
         std::move(callback_).Run(nullptr /* request */);
         Finished();
         return;

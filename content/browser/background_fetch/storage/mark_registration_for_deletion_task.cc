@@ -78,7 +78,7 @@ void MarkRegistrationForDeletionTask::DidGetActiveUniqueId(
                        weak_factory_.GetWeakPtr()));
   } else {
     // Service worker database has been corrupted. Abandon fetches.
-    data_manager()->abandon_fetches_callback().Run();
+    AbandonFetches(registration_id_.service_worker_registration_id());
     std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
     Finished();  // Destroys |this|.
     return;

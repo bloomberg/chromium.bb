@@ -479,6 +479,8 @@ class BackgroundFetchDataManagerTest
   MOCK_METHOD2(OnUpdatedUI,
                void(const BackgroundFetchRegistrationId& registration,
                     const std::string& title));
+  MOCK_METHOD1(OnServiceWorkerDatabaseCorrupted,
+               void(int64_t service_worker_registration_id));
 
  protected:
   void DidGetRegistration(
