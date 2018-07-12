@@ -38,6 +38,9 @@ public class BottomToolbarCoordinator {
     /** The home button component that lives in the bottom toolbar. */
     private final ToolbarButtonCoordinator mHomeButtonCoordinator;
 
+    /** The menu button that lives in the bottom toolbar. */
+    private final MenuButton mMenuButton;
+
     /**
      * Build the coordinator that manages the bottom toolbar.
      * @param fullscreenManager A {@link ChromeFullscreenManager} to update the bottom controls
@@ -64,6 +67,7 @@ public class BottomToolbarCoordinator {
         mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(toolbarRoot);
         mHomeButtonCoordinator =
                 new ToolbarButtonCoordinator(toolbarRoot.findViewById(R.id.home_button));
+        mMenuButton = toolbarRoot.findViewById(R.id.menu_button_wrapper);
     }
 
     /**
@@ -92,7 +96,7 @@ public class BottomToolbarCoordinator {
             OnClickListener homeButtonListener, OnTouchListener menuButtonListener,
             TabModelSelector tabModelSelector, OverviewModeBehavior overviewModeBehavior,
             ContextualSearchManager contextualSearchManager) {
-        mMediator.setButtonListeners(searchAcceleratorListener, menuButtonListener);
+        mMediator.setSearchAcceleratorListener(searchAcceleratorListener);
         mMediator.setLayoutManager(layoutManager);
         mMediator.setResourceManager(resourceManager);
         mMediator.setOverviewModeBehavior(overviewModeBehavior);
@@ -105,27 +109,29 @@ public class BottomToolbarCoordinator {
         mHomeButtonCoordinator.setButtonListeners(homeButtonListener, null);
         mHomeButtonCoordinator.setOverviewModeBehavior(
                 overviewModeBehavior, ToolbarButtonCoordinator.BROWSING_MODE);
+
+        mMenuButton.setTouchListener(menuButtonListener);
     }
 
     /**
      * Show the update badge over the bottom toolbar's app menu.
      */
     public void showAppMenuUpdateBadge() {
-        mMediator.setUpdateBadgeVisibility(true);
+        mMenuButton.setUpdateBadgeVisibility(true);
     }
 
     /**
      * Remove the update badge.
      */
     public void removeAppMenuUpdateBadge() {
-        mMediator.setUpdateBadgeVisibility(false);
+        mMenuButton.setUpdateBadgeVisibility(false);
     }
 
     /**
      * @return Whether the update badge is showing.
      */
     public boolean isShowingAppMenuUpdateBadge() {
-        return mMediator.isShowingAppMenuUpdateBadge();
+        return mMenuButton.isShowingAppMenuUpdateBadge();
     }
 
     /**
