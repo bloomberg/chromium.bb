@@ -74,11 +74,16 @@ class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
 
   void OnBadMessage(const std::string& reason) { bad_message_called_ = true; }
 
+  void SetBackingMode(SessionStorageContextMojo::BackingMode backing_mode) {
+    DCHECK(!context_);
+    backing_mode_ = backing_mode;
+  }
+
   SessionStorageContextMojo* context() {
     if (!context_) {
       context_ = new SessionStorageContextMojo(
-          base::SequencedTaskRunnerHandle::Get(), connector(), base::FilePath(),
-          kSessionStorageDirectory);
+          base::SequencedTaskRunnerHandle::Get(), connector(), backing_mode_,
+          base::FilePath(), kSessionStorageDirectory);
     }
     return context_;
   }
@@ -144,6 +149,8 @@ class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
   bool bad_message_called_ = false;
 
  private:
+  SessionStorageContextMojo::BackingMode backing_mode_ =
+      SessionStorageContextMojo::BackingMode::kRestoreDiskState;
   base::test::ScopedFeatureList features_;
   SessionStorageContextMojo* context_ = nullptr;
 
@@ -970,6 +977,47 @@ TEST_F(SessionStorageContextMojoTest, PurgeInactiveWrappers) {
   ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb));
   std::vector<blink::mojom::KeyValuePtr> data;
   ASSERT_TRUE(test::GetAllSync(leveldb.get(), &data));
+  EXPECT_EQ(0ul, data.size());
+}
+
+TEST_F(SessionStorageContextMojoTest, ClearDiskState) {
+  SetBackingMode(SessionStorageContextMojo::BackingMode::kClearDiskStateOnOpen);
+  std::string namespace_id1 = base::GenerateGUID();
+  url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
+  context()->CreateSessionNamespace(namespace_id1);
+
+  blink::mojom::SessionStorageNamespacePtr ss_namespace1;
+  context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                mojo::MakeRequest(&ss_namespace1));
+
+  blink::mojom::StorageAreaAssociatedPtr leveldb_n1_o1;
+  ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
+
+  // Verify no data.
+  std::vector<blink::mojom::KeyValuePtr> data;
+  EXPECT_TRUE(test::GetAllSync(leveldb_n1_o1.get(), &data));
+  EXPECT_EQ(0ul, data.size());
+
+  // Put some data.
+  EXPECT_TRUE(test::PutSync(
+      leveldb_n1_o1.get(), leveldb::StringPieceToUint8Vector("key1"),
+      leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
+
+  // Delete the namespace and shutdown the context, BUT persist the namespace on
+  // disk.
+  context()->DeleteSessionNamespace(namespace_id1, true);
+  ShutdownContext();
+
+  // This will re-open the context, and load the persisted namespace, but it
+  // should have been deleted due to our backing mode.
+  context()->CreateSessionNamespace(namespace_id1);
+  context()->OpenSessionStorage(kTestProcessId, namespace_id1,
+                                mojo::MakeRequest(&ss_namespace1));
+  ss_namespace1->OpenArea(origin1, mojo::MakeRequest(&leveldb_n1_o1));
+
+  // The data from before should not be here, because the context clears disk
+  // space on open.
+  EXPECT_TRUE(test::GetAllSync(leveldb_n1_o1.get(), &data));
   EXPECT_EQ(0ul, data.size());
 }
 

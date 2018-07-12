@@ -94,9 +94,11 @@ void RecordSessionStorageCachePurgedHistogram(
 SessionStorageContextMojo::SessionStorageContextMojo(
     scoped_refptr<base::SequencedTaskRunner> memory_dump_task_runner,
     service_manager::Connector* connector,
-    base::Optional<base::FilePath> local_partition_directory,
+    BackingMode backing_mode,
+    base::FilePath local_partition_directory,
     std::string leveldb_name)
     : connector_(connector ? connector->Clone() : nullptr),
+      backing_mode_(backing_mode),
       partition_directory_path_(std::move(local_partition_directory)),
       leveldb_name_(std::move(leveldb_name)),
       memory_dump_id_(base::StringPrintf("SessionStorage/0x%" PRIXPTR,
@@ -607,12 +609,12 @@ void SessionStorageContextMojo::InitiateConnection(bool in_memory_only) {
     return;
   }
 
-  if (partition_directory_path_ && !in_memory_only) {
+  if (backing_mode_ != BackingMode::kNoDisk && !in_memory_only) {
     // We were given a subdirectory to write to. Get it and use a disk backed
     // database.
     connector_->BindInterface(file::mojom::kServiceName, &file_system_);
     file_system_->GetSubDirectory(
-        partition_directory_path_.value().AsUTF8Unsafe(),
+        partition_directory_path_.AsUTF8Unsafe(),
         MakeRequest(&partition_directory_),
         base::BindOnce(&SessionStorageContextMojo::OnDirectoryOpened,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -644,6 +646,14 @@ void SessionStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
   // We might still need to use the directory, so create a clone.
   filesystem::mojom::DirectoryPtr partition_directory_clone;
   partition_directory_->Clone(MakeRequest(&partition_directory_clone));
+
+  if (backing_mode_ == BackingMode::kClearDiskStateOnOpen) {
+    filesystem::mojom::DirectoryPtr partition_directory_clone_for_deletion;
+    partition_directory_->Clone(
+        MakeRequest(&partition_directory_clone_for_deletion));
+    leveldb_service_->Destroy(std::move(partition_directory_clone_for_deletion),
+                              leveldb_name_, base::DoNothing());
+  }
 
   leveldb_env::Options options;
   options.create_if_missing = true;
@@ -843,7 +853,7 @@ void SessionStorageContextMojo::DeleteAndRecreateDatabase(
 
   // If tried to recreate database on disk already, try again but this time
   // in memory.
-  if (tried_to_recreate_during_open_ && !!partition_directory_path_) {
+  if (tried_to_recreate_during_open_ && backing_mode_ != BackingMode::kNoDisk) {
     recreate_in_memory = true;
   } else if (tried_to_recreate_during_open_) {
     // Give up completely, run without any database.
