@@ -172,8 +172,16 @@ void GpuVideoFrameFactory::CreateVideoFrame(
   // the image.  It would save a lot of hoops, but would also make the texture
   // unrenderable.  That's bad when the sync token isn't up to date.
   auto sync_token_cb = base::BindOnce(
-      [](CodecImage* codec_image) { codec_image->ReleaseCodecBuffer(); },
-      base::Unretained(codec_image));
+      [](AbstractTexture* texture, CodecImage* codec_image) {
+        // If |texture| no longer holds the TextureBase, then |codec_image|
+        // might not be valid anymore if the underlying TextureBase has been
+        // destroyed. Note that we can't tell if it has been destroyed or not.
+        // However, this happens only when our stub is destroyed, causing our
+        // AbstractTexture to forget the texture.
+        if (texture->GetTextureBase())
+          codec_image->ReleaseCodecBuffer();
+      },
+      base::Unretained(texture.get()), base::Unretained(codec_image));
 
   // Note that this keeps the pool around while any texture is.
   auto drop_texture_ref = base::BindOnce(

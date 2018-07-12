@@ -81,6 +81,12 @@ void TexturePool::OnSyncTokenReleased(AbstractTexture* texture,
 void TexturePool::OnWillDestroyStub(bool have_context) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(helper_);
+  // TODO(liberato): Should we drop all unrendered codec buffers here?  It seems
+  // like a good idea, just to release the resources.  However, they won't block
+  // decoding, since decoding requires the stub too.  More generally, it might
+  // be worthwhile to have a callback on AbstractTexture that's called when it
+  // transitions to not owning a texture.
+
   // Note that we don't have to do anything with |pool_|, since AbstractTextures
   // can outlive the stub that created them.  They just don't have a texture.
   helper_ = nullptr;
