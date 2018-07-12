@@ -457,6 +457,19 @@
     ]
   },
 
+  "AutofillProfileEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
+    "test_policy": { "AutofillProfileEnabled": false },
+    "pref_mappings": [
+      { "pref": "autofill.profile_enabled",
+        "indicator_tests": [
+          { "policy": { "AutofillProfileEnabled": false } }
+        ]
+      }
+    ]
+  },
+
   "AutofillCreditCardEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,

@@ -13795,6 +13795,7 @@ Called by update_net_error_codes.py.-->
   <int value="456" label="AllowedInputMethods"/>
   <int value="457" label="OverrideSecurityRestrictionsOnInsecureOrigin"/>
   <int value="458" label="DeviceUpdateStagingPercentOfFleetPerWeek"/>
+  <int value="459" label="AutofillProfileEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
