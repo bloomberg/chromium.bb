@@ -605,10 +605,10 @@ void GetFormAndField(autofill::FormData* form,
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
 
-  // Scan the page to find the latest version of the forms for their new,
-  // changed or previously hidden fields, when we get notified of form changes
-  // or a field is focused.
-  if (params.type == "form_changed" || params.type == "focus") {
+  // If the event is a form_changed, then the event concerns the whole page and
+  // not a particular form. The whole page need to be reparsed to find the new
+  // forms.
+  if (params.type == "form_changed") {
     [self scanFormsInPage:webState pageURL:pageURL];
     return;
   }
