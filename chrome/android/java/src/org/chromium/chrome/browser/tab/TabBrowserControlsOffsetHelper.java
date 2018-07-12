@@ -11,8 +11,8 @@ import android.animation.ValueAnimator;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
-import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
-import org.chromium.chrome.browser.vr_shell.VrShellDelegate.VrModeObserver;
+import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrShellDelegate.VrModeObserver;
 
 /**
  * Handles browser controls offset for a Tab.

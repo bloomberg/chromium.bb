@@ -10,7 +10,7 @@
 #include "url/url_constants.h"
 
 // Browser test equivalent of
-// chrome/android/javatests/src/.../browser/vr_shell/WebVrTabTest.java.
+// chrome/android/javatests/src/.../browser/vr/WebVrTabTest.java.
 // End-to-end tests for testing WebVR's interaction with multiple tabss.
 
 namespace vr {

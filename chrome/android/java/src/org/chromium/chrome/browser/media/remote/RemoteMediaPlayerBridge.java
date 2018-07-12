@@ -12,7 +12,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blink_public.platform.modules.remoteplayback.WebRemotePlaybackAvailability;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
-import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrShellDelegate;
 
 /**
  * Acts as a proxy between the remotely playing video and the HTMLMediaElement.

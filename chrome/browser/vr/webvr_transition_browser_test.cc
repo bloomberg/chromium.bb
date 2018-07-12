@@ -8,7 +8,7 @@
 #include "content/public/test/browser_test_utils.h"
 
 // Browser test equivalent of
-// chrome/android/javatests/src/.../browser/vr_shell/WebVrTransitionTest.java.
+// chrome/android/javatests/src/.../browser/vr/WebVrTransitionTest.java.
 // End-to-end tests for transitioning between WebVR's magic window and
 // presentation modes.
 

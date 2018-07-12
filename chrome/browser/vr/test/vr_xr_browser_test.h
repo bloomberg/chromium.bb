@@ -23,7 +23,7 @@ namespace vr {
 
 // Base browser test class for running VR/XR-related tests.
 // This is essentially a C++ port of the way Android does similar tests in
-// //chrome/android/javatests/src/.../browser/vr_shell/TestFramework.java
+// //chrome/android/javatests/src/.../browser/vr/TestFramework.java
 // This must be subclassed for VR or XR in order to handle the few differences
 // between WebVR and WebXR.
 class VrXrBrowserTestBase : public InProcessBrowserTest {

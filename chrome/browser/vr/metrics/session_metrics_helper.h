@@ -22,7 +22,7 @@ namespace vr {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 // Ensure that this stays in sync with VRSessionStartAction in enums.xml
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr_shell
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr
 enum class VrStartAction : int {
   // The user activated a headset. For example, inserted phone in Daydream, or
   // put on an Occulus or Vive.
