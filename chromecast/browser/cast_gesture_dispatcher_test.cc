@@ -27,8 +27,11 @@ constexpr gfx::Point kOngoingBackGesturePoint2(75, 50);
 constexpr gfx::Point kValidBackGestureEndPoint(90, 50);
 constexpr gfx::Point kPastTheEndPoint1(105, 50);
 constexpr gfx::Point kPastTheEndPoint2(200, 50);
+
 constexpr gfx::Point kTopSidePoint(100, 5);
-constexpr gfx::Point kDownFromTheTopPoint(100, 100);
+constexpr gfx::Point kOngoingTopGesturePoint1(100, 70);
+constexpr gfx::Point kOngoingTopGesturePoint2(100, 75);
+constexpr gfx::Point kTopGestureEndPoint(100, 90);
 
 }  // namespace
 
@@ -49,9 +52,12 @@ class MockCastContentWindowDelegate : public CastContentWindow::Delegate {
 
 // Verify the simple case of a left swipe with the right horizontal leads to
 // back.
-TEST(CastGestureDispatcherTest, VerifySimpleDispatchSuccess) {
+TEST(CastGestureDispatcherTest, VerifySimpleBackSuccess) {
   MockCastContentWindowDelegate delegate;
   CastGestureDispatcher dispatcher(&delegate);
+  EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
+      .WillRepeatedly(Return(false));
+
   EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::GO_BACK)))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(delegate, GestureProgress(Eq(GestureType::GO_BACK),
@@ -70,6 +76,9 @@ TEST(CastGestureDispatcherTest, VerifySimpleDispatchSuccess) {
 TEST(CastGestureDispatcherTest, VerifyNoDispatchOnNoLift) {
   MockCastContentWindowDelegate delegate;
   CastGestureDispatcher dispatcher(&delegate);
+  EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
+      .WillRepeatedly(Return(false));
+
   EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::GO_BACK)))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(delegate, ConsumeGesture(Eq(GestureType::GO_BACK))).Times(0);
@@ -85,35 +94,14 @@ TEST(CastGestureDispatcherTest, VerifyNoDispatchOnNoLift) {
                                      kPastTheEndPoint1);
 }
 
-// Verify that no continue events are dispatched after the end.
-TEST(CastGestureDispatcherTest, VerifyNoContinueAfterEnd) {
-  MockCastContentWindowDelegate delegate;
-  CastGestureDispatcher dispatcher(&delegate);
-  EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::GO_BACK)))
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(delegate, GestureProgress(Eq(GestureType::GO_BACK),
-                                        Eq(kOngoingBackGesturePoint1)));
-  EXPECT_CALL(delegate, ConsumeGesture(Eq(GestureType::GO_BACK)))
-      .WillOnce(Return(true));
-  EXPECT_CALL(delegate,
-              GestureProgress(Eq(GestureType::GO_BACK), Eq(kPastTheEndPoint1)))
-      .Times(0);
-
-  dispatcher.CanHandleSwipe(CastSideSwipeOrigin::LEFT);
-  dispatcher.HandleSideSwipeBegin(CastSideSwipeOrigin::LEFT, kLeftSidePoint);
-  dispatcher.HandleSideSwipeContinue(CastSideSwipeOrigin::LEFT,
-                                     kOngoingBackGesturePoint1);
-  dispatcher.HandleSideSwipeEnd(CastSideSwipeOrigin::LEFT,
-                                kValidBackGestureEndPoint);
-  dispatcher.HandleSideSwipeContinue(CastSideSwipeOrigin::LEFT,
-                                     kPastTheEndPoint1);
-}
-
 // Verify that multiple 'continue' events still only lead to one back
 // invocation.
 TEST(CastGestureDispatcherTest, VerifyOnlySingleDispatch) {
   MockCastContentWindowDelegate delegate;
   CastGestureDispatcher dispatcher(&delegate);
+  EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
+      .WillRepeatedly(Return(false));
+
   EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::GO_BACK)))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(delegate, GestureProgress(Eq(GestureType::GO_BACK),
@@ -136,6 +124,9 @@ TEST(CastGestureDispatcherTest, VerifyOnlySingleDispatch) {
 TEST(CastGestureDispatcherTest, VerifyDelegateDoesNotConsumeUnwanted) {
   MockCastContentWindowDelegate delegate;
   CastGestureDispatcher dispatcher(&delegate);
+  EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
+      .WillRepeatedly(Return(false));
+
   EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::GO_BACK)))
       .WillRepeatedly(Return(false));
   dispatcher.CanHandleSwipe(CastSideSwipeOrigin::LEFT);
@@ -149,10 +140,13 @@ TEST(CastGestureDispatcherTest, VerifyDelegateDoesNotConsumeUnwanted) {
 TEST(CastGestureDispatcherTest, VerifyNotLeftSwipeIsNotBack) {
   MockCastContentWindowDelegate delegate;
   CastGestureDispatcher dispatcher(&delegate);
+  EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
+      .WillRepeatedly(Return(false));
+
   dispatcher.CanHandleSwipe(CastSideSwipeOrigin::TOP);
   dispatcher.HandleSideSwipeBegin(CastSideSwipeOrigin::TOP, kTopSidePoint);
   dispatcher.HandleSideSwipeContinue(CastSideSwipeOrigin::TOP,
-                                     kDownFromTheTopPoint);
+                                     kOngoingTopGesturePoint2);
 }
 
 // Verify that if the gesture doesn't go far enough horizontally that we will
@@ -160,6 +154,9 @@ TEST(CastGestureDispatcherTest, VerifyNotLeftSwipeIsNotBack) {
 TEST(CastGestureDispatcherTest, VerifyNotFarEnoughRightIsNotBack) {
   MockCastContentWindowDelegate delegate;
   CastGestureDispatcher dispatcher(&delegate);
+  EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
+      .WillRepeatedly(Return(false));
+
   EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::GO_BACK)))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(delegate, GestureProgress(Eq(GestureType::GO_BACK),
@@ -179,6 +176,9 @@ TEST(CastGestureDispatcherTest, VerifyNotFarEnoughRightIsNotBack) {
 TEST(CastGestureDispatcherTest, VerifyNotFarEnoughRightAndEndIsNotBack) {
   MockCastContentWindowDelegate delegate;
   CastGestureDispatcher dispatcher(&delegate);
+  EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
+      .WillRepeatedly(Return(false));
+
   EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::GO_BACK)))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(delegate, GestureProgress(Eq(GestureType::GO_BACK),
@@ -193,5 +193,24 @@ TEST(CastGestureDispatcherTest, VerifyNotFarEnoughRightAndEndIsNotBack) {
                                 kOngoingBackGesturePoint2);
 }
 
+// Verify simple top-down drag.
+TEST(CastGestureDispatcherTest, VerifySimpleTopSuccess) {
+  MockCastContentWindowDelegate delegate;
+  CastGestureDispatcher dispatcher(&delegate);
+  EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::GO_BACK)))
+      .WillRepeatedly(Return(false));
+
+  EXPECT_CALL(delegate, GestureProgress(Eq(GestureType::TOP_DRAG),
+                                        Eq(kOngoingTopGesturePoint1)));
+  EXPECT_CALL(delegate, ConsumeGesture(Eq(GestureType::TOP_DRAG)))
+      .WillRepeatedly(Return(true));
+  dispatcher.CanHandleSwipe(CastSideSwipeOrigin::TOP);
+  dispatcher.HandleSideSwipeBegin(CastSideSwipeOrigin::TOP, kTopSidePoint);
+  dispatcher.HandleSideSwipeContinue(CastSideSwipeOrigin::TOP,
+                                     kOngoingTopGesturePoint1);
+  dispatcher.HandleSideSwipeEnd(CastSideSwipeOrigin::LEFT, kTopGestureEndPoint);
+}
 }  // namespace shell
 }  // namespace chromecast

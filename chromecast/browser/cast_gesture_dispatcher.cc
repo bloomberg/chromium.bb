@@ -11,49 +11,57 @@ namespace shell {
 
 namespace {
 constexpr int kDefaultBackGestureHorizontalThreshold = 80;
+
+GestureType GestureForSwipeOrigin(CastSideSwipeOrigin swipe_origin) {
+  switch (swipe_origin) {
+    case CastSideSwipeOrigin::LEFT:
+      return GestureType::GO_BACK;
+    case CastSideSwipeOrigin::TOP:
+      return GestureType::TOP_DRAG;
+    default:
+      return GestureType::NO_GESTURE;
+  }
+}
+
 }  // namespace
 
 CastGestureDispatcher::CastGestureDispatcher(
     CastContentWindow::Delegate* delegate)
-    : horizontal_threshold_(
+    : back_horizontal_threshold_(
           GetSwitchValueInt(switches::kBackGestureHorizontalThreshold,
                             kDefaultBackGestureHorizontalThreshold)),
-      delegate_(delegate),
-      dispatched_back_(false) {
+      delegate_(delegate) {
   DCHECK(delegate_);
 }
 bool CastGestureDispatcher::CanHandleSwipe(CastSideSwipeOrigin swipe_origin) {
-  return swipe_origin == CastSideSwipeOrigin::LEFT &&
-         delegate_->CanHandleGesture(GestureType::GO_BACK);
+  return delegate_->CanHandleGesture(GestureForSwipeOrigin(swipe_origin));
 }
 
 void CastGestureDispatcher::HandleSideSwipeBegin(
     CastSideSwipeOrigin swipe_origin,
     const gfx::Point& touch_location) {
-  if (swipe_origin == CastSideSwipeOrigin::LEFT) {
-    dispatched_back_ = false;
-    VLOG(1) << "swipe gesture begin";
-    current_swipe_time_ = base::ElapsedTimer();
+  if (!CanHandleSwipe(swipe_origin)) {
+    return;
+  }
+
+  current_swipe_time_ = base::ElapsedTimer();
+
+  GestureType gesture_type = GestureForSwipeOrigin(swipe_origin);
+  if (gesture_type == GestureType::GO_BACK) {
+    VLOG(1) << "back swipe gesture begin";
   }
 }
 
 void CastGestureDispatcher::HandleSideSwipeContinue(
     CastSideSwipeOrigin swipe_origin,
     const gfx::Point& touch_location) {
-  if (swipe_origin != CastSideSwipeOrigin::LEFT) {
+  if (!CanHandleSwipe(swipe_origin)) {
     return;
   }
 
-  if (!delegate_->CanHandleGesture(GestureType::GO_BACK)) {
-    return;
-  }
+  GestureType gesture_type = GestureForSwipeOrigin(swipe_origin);
 
-  // Already dispatched, don't send further progress events.
-  if (dispatched_back_) {
-    return;
-  }
-
-  delegate_->GestureProgress(GestureType::GO_BACK, touch_location);
+  delegate_->GestureProgress(gesture_type, touch_location);
   VLOG(1) << "swipe gesture continue, elapsed time: "
           << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
 }
@@ -61,32 +69,26 @@ void CastGestureDispatcher::HandleSideSwipeContinue(
 void CastGestureDispatcher::HandleSideSwipeEnd(
     CastSideSwipeOrigin swipe_origin,
     const gfx::Point& touch_location) {
-  if (swipe_origin != CastSideSwipeOrigin::LEFT) {
+  if (!CanHandleSwipe(swipe_origin)) {
     return;
   }
+
+  GestureType gesture_type = GestureForSwipeOrigin(swipe_origin);
   VLOG(1) << "swipe end, elapsed time: "
           << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
-  if (!delegate_->CanHandleGesture(GestureType::GO_BACK)) {
-    return;
-  }
 
-  // Already dispatched, don't send further events until the next begin.
-  if (dispatched_back_) {
-    return;
-  }
-
-  // Finger lifted before horizontal threshold met, cancel the gesture.
-  if (touch_location.x() < horizontal_threshold_) {
+  // If it's a back gesture, we have special handling to check for the
+  // horizontal threshold. If the finger has lifted before the horizontal
+  // gesture, cancel the back gesture and do not consume it.
+  if (gesture_type == GestureType::GO_BACK &&
+      touch_location.x() < back_horizontal_threshold_) {
     VLOG(1) << "swipe gesture cancelled";
     delegate_->CancelGesture(GestureType::GO_BACK, touch_location);
     return;
   }
 
-  // Finger lifted after horizontal threshold, let the consumer know we have a
-  // back gesture.
-  dispatched_back_ = true;
-  delegate_->ConsumeGesture(GestureType::GO_BACK);
-  VLOG(1) << "swipe gesture complete, elapsed time: "
+  delegate_->ConsumeGesture(gesture_type);
+  VLOG(1) << "gesture complete, elapsed time: "
           << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
 }
 
