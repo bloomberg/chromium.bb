@@ -235,9 +235,9 @@ void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
   // was just loaded.
   // Uninitialized renderers will be informed of the extension load during the
   // first batch of messages.
-  std::vector<ExtensionMsg_Loaded_Params> params(
-      1,
-      ExtensionMsg_Loaded_Params(&extension, false /* no tab permissions */));
+  std::vector<ExtensionMsg_Loaded_Params> params;
+  params.emplace_back(&extension, false /* no tab permissions */);
+
   for (content::RenderProcessHost* process : initialized_processes_) {
     if (!IsExtensionVisibleToContext(extension, process->GetBrowserContext()))
       continue;

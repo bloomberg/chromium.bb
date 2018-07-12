@@ -102,7 +102,7 @@ TEST(ExtensionMessageTypesTest, TestLoadedParams) {
         &msg, &iter, &params_out));
 
     EXPECT_EQ(params_in.id, params_out.id);
-    EXPECT_TRUE(params_in.manifest->Equals(params_out.manifest.get()));
+    EXPECT_TRUE(params_in.manifest.Equals(&params_out.manifest));
     EXPECT_EQ(params_in.location, params_out.location);
     EXPECT_EQ(params_in.path, params_out.path);
     EXPECT_EQ(params_in.creation_flags, params_out.creation_flags);
