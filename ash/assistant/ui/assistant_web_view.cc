@@ -5,13 +5,15 @@
 #include "ash/assistant/ui/assistant_web_view.h"
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/caption_bar.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/public/interfaces/web_contents_manager.mojom.h"
 #include "base/callback.h"
 #include "base/unguessable_token.h"
-#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/box_layout.h"
 
 namespace ash {
 
@@ -47,7 +49,14 @@ void AssistantWebView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 void AssistantWebView::InitLayout() {
-  SetLayoutManager(std::make_unique<views::FillLayout>());
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+
+  // Caption bar.
+  caption_bar_ = new CaptionBar();
+  caption_bar_->set_delegate(assistant_controller_->ui_controller());
+  caption_bar_->SetButtonVisible(CaptionButtonId::kMinimize, false);
+  AddChildView(caption_bar_);
 }
 
 void AssistantWebView::OnDeepLinkReceived(const GURL& deep_link) {
@@ -58,11 +67,14 @@ void AssistantWebView::OnDeepLinkReceived(const GURL& deep_link) {
 
   web_contents_id_token_ = base::UnguessableToken::Create();
 
+  const int preferred_height_dip =
+      kMaxHeightDip - caption_bar_->GetPreferredSize().height();
+
   ash::mojom::ManagedWebContentsParamsPtr params(
       ash::mojom::ManagedWebContentsParams::New());
   params->url = assistant::util::GetWebUrl(deep_link).value();
-  params->min_size_dip = gfx::Size(kPreferredWidthDip, kMaxHeightDip);
-  params->max_size_dip = gfx::Size(kPreferredWidthDip, kMaxHeightDip);
+  params->min_size_dip = gfx::Size(kPreferredWidthDip, preferred_height_dip);
+  params->max_size_dip = gfx::Size(kPreferredWidthDip, preferred_height_dip);
 
   assistant_controller_->ManageWebContents(
       web_contents_id_token_.value(), std::move(params),
@@ -80,8 +92,9 @@ void AssistantWebView::OnWebContentsReady(
   // When web contents are rendered in process, the WebView associated with the
   // returned |embed_token| is found in the AnswerCardContentsRegistry.
   if (app_list::AnswerCardContentsRegistry::Get()) {
-    AddChildView(app_list::AnswerCardContentsRegistry::Get()->GetView(
-        embed_token.value()));
+    content_view_ = app_list::AnswerCardContentsRegistry::Get()->GetView(
+        embed_token.value());
+    AddChildView(content_view_);
   }
 
   // TODO(dmblack): Handle mash case.
@@ -93,7 +106,16 @@ void AssistantWebView::ReleaseWebContents() {
   if (!web_contents_id_token_.has_value())
     return;
 
-  RemoveAllChildViews(/*delete_children=*/true);
+  if (content_view_) {
+    RemoveChildView(content_view_);
+
+    // In Mash, |content_view_| was owned by the view hierarchy prior to its
+    // removal. Otherwise the view is owned by the WebContentsManager.
+    if (!content_view_->owned_by_client())
+      delete content_view_;
+
+    content_view_ = nullptr;
+  }
 
   assistant_controller_->ReleaseWebContents(web_contents_id_token_.value());
   web_contents_id_token_.reset();

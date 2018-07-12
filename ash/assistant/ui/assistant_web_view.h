@@ -19,6 +19,7 @@ class UnguessableToken;
 namespace ash {
 
 class AssistantController;
+class CaptionBar;
 
 // AssistantWebView is a child of AssistantBubbleView which allows Assistant UI
 // to render remotely hosted content within its bubble. It provides a CaptionBar
@@ -45,6 +46,12 @@ class AssistantWebView : public views::View,
   void ReleaseWebContents();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
+
+  CaptionBar* caption_bar_;  // Owned by view hierarchy.
+
+  // In Mash, |content_view_| is owned by the view hierarchy. Otherwise, the
+  // view is owned by the WebContentsManager.
+  views::View* content_view_;
 
   // Uniquely identifies web contents owned by WebContentsManager.
   base::Optional<base::UnguessableToken> web_contents_id_token_;

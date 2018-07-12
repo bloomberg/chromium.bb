@@ -6,6 +6,7 @@
 
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
@@ -71,8 +72,16 @@ void CaptionBar::InitLayout() {
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
-  layout_manager->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_END);
+  // Back.
+  CaptionButton* back_button = new CaptionButton(kWindowControlBackIcon, this);
+  back_button->set_id(static_cast<int>(CaptionButtonId::kBack));
+  AddChildView(back_button);
+
+  // Spacer.
+  views::View* spacer = new views::View();
+  AddChildView(spacer);
+
+  layout_manager->SetFlexForView(spacer, 1);
 
   // Minimize.
   CaptionButton* minimize_button =
@@ -99,11 +108,18 @@ void CaptionBar::ButtonPressed(views::Button* sender, const ui::Event& event) {
     case CaptionButtonId::kClose:
       GetWidget()->Close();
       break;
+    case CaptionButtonId::kBack:
     case CaptionButtonId::kMinimize:
       // No default behavior defined.
       NOTIMPLEMENTED();
       break;
   }
+}
+
+void CaptionBar::SetButtonVisible(CaptionButtonId id, bool visible) {
+  views::View* button = GetViewByID(static_cast<int>(id));
+  if (button)
+    button->SetVisible(visible);
 }
 
 }  // namespace ash
