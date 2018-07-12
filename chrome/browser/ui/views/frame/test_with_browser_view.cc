@@ -61,12 +61,11 @@ std::unique_ptr<KeyedService> CreateAutocompleteClassifier(
 
 }  // namespace
 
-TestWithBrowserView::TestWithBrowserView() : url_fetcher_factory_(nullptr) {}
+TestWithBrowserView::TestWithBrowserView() = default;
 
 TestWithBrowserView::TestWithBrowserView(Browser::Type browser_type,
                                          bool hosted_app)
-    : BrowserWithTestWindowTest(browser_type, hosted_app),
-      url_fetcher_factory_(nullptr) {}
+    : BrowserWithTestWindowTest(browser_type, hosted_app) {}
 
 TestWithBrowserView::~TestWithBrowserView() {
 }
@@ -113,7 +112,6 @@ TestingProfile* TestWithBrowserView::CreateProfile() {
   FakeGaiaCookieManagerService* gcms =
       static_cast<FakeGaiaCookieManagerService*>(
           GaiaCookieManagerServiceFactory::GetForProfile(profile));
-  gcms->Init(&url_fetcher_factory_);
   gcms->SetListAccountsResponseHttpNotFound();
   return profile;
 }

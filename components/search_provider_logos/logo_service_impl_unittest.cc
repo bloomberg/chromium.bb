@@ -281,16 +281,13 @@ class FakeImageDecoder : public image_fetcher::ImageDecoder {
 // signing in/out.
 class SigninHelper {
  public:
-  SigninHelper(base::test::ScopedTaskEnvironment* task_environment,
-               net::FakeURLFetcherFactory* fetcher_factory)
+  explicit SigninHelper(base::test::ScopedTaskEnvironment* task_environment)
       : task_environment_(task_environment),
         signin_client_(&pref_service_),
         cookie_service_(&token_service_, "test_source", &signin_client_) {
     // GaiaCookieManagerService calls static methods of AccountTrackerService
     // which access prefs.
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
-
-    cookie_service_.Init(fetcher_factory);
   }
 
   GaiaCookieManagerService* cookie_service() { return &cookie_service_; }
@@ -325,8 +322,7 @@ class LogoServiceImplTest : public ::testing::Test {
         shared_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
-        fake_url_fetcher_factory_(nullptr),
-        signin_helper_(&task_environment_, &fake_url_fetcher_factory_),
+        signin_helper_(&task_environment_),
         use_gray_background_(false) {
     test_url_loader_factory_.SetInterceptor(base::BindRepeating(
         &LogoServiceImplTest::CapturingInterceptor, base::Unretained(this)));
@@ -395,14 +391,11 @@ class LogoServiceImplTest : public ::testing::Test {
   base::SimpleTestClock test_clock_;
   NiceMock<MockLogoCache>* logo_cache_;
 
-  // There is a bit of transition pain here: |fake_url_fetcher_factory_| is used
-  // for signin_helper,  while |test_url_loader_factory_| is used for
-  // logo_service_.
+  // Used for mocking |logo_service_| URLs.
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   std::unique_ptr<LogoServiceImpl> logo_service_;
 
-  net::FakeURLFetcherFactory fake_url_fetcher_factory_;
   SigninHelper signin_helper_;
 
   GURL latest_url_;
