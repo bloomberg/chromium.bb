@@ -265,6 +265,8 @@ bool ExtensionHasLockedFullscreenPermission(const Extension* extension) {
 
 #if defined(OS_CHROMEOS)
 void SetLockedFullscreenState(Browser* browser, bool locked) {
+  UMA_HISTOGRAM_BOOLEAN("Extensions.LockedFullscreenStateRequest", locked);
+
   aura::Window* window = browser->window()->GetNativeWindow();
   // TRUSTED_PINNED is used here because that one locks the window fullscreen
   // without allowing the user to exit (as opposed to regular PINNED).
