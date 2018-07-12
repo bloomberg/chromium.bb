@@ -19,16 +19,22 @@
 
 @interface NSThemeFrame (PrivateAPI)
 - (CGFloat)_titlebarHeight;
+- (void)setStyleMask:(NSUInteger)styleMask;
 @end
 
 @interface BrowserWindowFrame : NativeWidgetMacNSWindowTitledFrame
 @end
 
-@implementation BrowserWindowFrame
+@implementation BrowserWindowFrame {
+  BOOL _inFullScreen;
+}
 
 // NSThemeFrame overrides.
 
 - (CGFloat)_titlebarHeight {
+  if (_inFullScreen)
+    return [super _titlebarHeight];
+
   if (views::Widget* widget = views::Widget::GetWidgetForNativeView(self)) {
     if (views::NonClientView* nonClientView = widget->non_client_view()) {
       auto* frameView = static_cast<const BrowserNonClientFrameView*>(
@@ -38,6 +44,11 @@
     }
   }
   return [super _titlebarHeight];
+}
+
+- (void)setStyleMask:(NSUInteger)styleMask {
+  _inFullScreen = (styleMask & NSWindowStyleMaskFullScreen) != 0;
+  [super setStyleMask:styleMask];
 }
 
 - (BOOL)_shouldCenterTrafficLights {
@@ -80,10 +91,8 @@
 
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle {
   // - NSThemeFrame and its subclasses will be nil if it's missing at runtime.
-  if ([BrowserWindowFrame class]) {
-    // TODO(crbug/825968): fullscreen should have a reduced titlebar height.
+  if ([BrowserWindowFrame class])
     return [BrowserWindowFrame class];
-  }
   return [super frameViewClassForStyleMask:windowStyle];
 }
 
