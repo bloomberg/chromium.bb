@@ -698,14 +698,6 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
         textfield_->GetSelectedRange().length() == text.length();
 
     int menu_index = 0;
-#if defined(OS_MACOSX)
-    // On Mac, the Look Up item should appear at the top of the menu if the
-    // textfield has a selection.
-    if (textfield_has_selection) {
-      EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* LOOK UP */));
-      EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
-    }
-#endif
     if (ui::IsEmojiPanelSupported()) {
       EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* EMOJI */));
       EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
@@ -3550,6 +3542,11 @@ TEST_F(TextfieldTest, LookUpItemUpdate) {
   EXPECT_EQ(context_menu->GetLabelAt(0),
             l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_LOOK_UP, kTextOne));
 
+#if !defined(OS_MACOSX)
+  // Mac context menus don't behave this way: it's not possible to update the
+  // text while the menu is still "open", but also the selection can't change
+  // while the menu is open (because the user can't interact with the rest of
+  // the app).
   const base::string16 kTextTwo = ASCIIToUTF16("rail");
   textfield_->SetText(kTextTwo);
   textfield_->SelectAll(false);
@@ -3559,6 +3556,7 @@ TEST_F(TextfieldTest, LookUpItemUpdate) {
   EXPECT_GT(context_menu->GetItemCount(), 0);
   EXPECT_EQ(context_menu->GetLabelAt(0),
             l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_LOOK_UP, kTextTwo));
+#endif
 }
 
 // Tests to see if the look up item is hidden for password fields.
