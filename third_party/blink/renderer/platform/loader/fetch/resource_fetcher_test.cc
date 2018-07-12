@@ -910,4 +910,20 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   EXPECT_FALSE(GetMemoryCache()->Contains(resource));
 }
 
+TEST_F(ResourceFetcherTest, CachedResourceShouldNotCrashByNullURL) {
+  ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
+
+  // Make sure |cached_resources_map_| is not empty, so that HashMap lookup
+  // won't take a fast path.
+  KURL url("http://127.0.0.1:8000/foo.html");
+  ResourceResponse response(url);
+  response.SetHTTPStatusCode(200);
+  RegisterMockedURLLoadWithCustomResponse(url, response);
+  FetchParameters fetch_params{ResourceRequest(url)};
+  MockResource::Fetch(fetch_params, fetcher, nullptr);
+  ASSERT_NE(fetcher->CachedResource(url), nullptr);
+
+  ASSERT_EQ(fetcher->CachedResource(KURL()), nullptr);
+}
+
 }  // namespace blink
