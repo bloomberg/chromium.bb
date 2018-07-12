@@ -580,6 +580,7 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
                      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                              CREDENTIALS_MISSING));
+    FireRefreshTokenAvailable(loading_primary_account_id_);
   }
 
 #ifndef NDEBUG
