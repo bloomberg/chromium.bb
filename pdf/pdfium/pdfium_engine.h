@@ -31,13 +31,13 @@
 #include "ppapi/cpp/var_array.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
-#include "third_party/pdfium/public/fpdf_dataavail.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/pdfium/public/fpdf_progressive.h"
 #include "third_party/pdfium/public/fpdfview.h"
 
 namespace chrome_pdf {
 
+class PDFiumDocument;
 class ShadowMatrix;
 
 class PDFiumEngine : public PDFEngine,
@@ -141,9 +141,9 @@ class PDFiumEngine : public PDFEngine,
   void UnsupportedFeature(const std::string& feature);
   void FontSubstituted();
 
-  FPDF_AVAIL fpdf_availability() const { return fpdf_availability_.get(); }
-  FPDF_DOCUMENT doc() const { return doc_.get(); }
-  FPDF_FORMHANDLE form() const { return form_.get(); }
+  FPDF_AVAIL fpdf_availability() const;
+  FPDF_DOCUMENT doc() const;
+  FPDF_FORMHANDLE form() const;
 
  private:
   // This helper class is used to detect the difference in selection between
@@ -193,26 +193,6 @@ class PDFiumEngine : public PDFEngine,
 
   friend class PDFiumFormFiller;
   friend class SelectionChangeInvalidator;
-
-  struct FileAvail : public FX_FILEAVAIL {
-    PDFiumEngine* engine;
-  };
-
-  struct DownloadHints : public FX_DOWNLOADHINTS {
-    PDFiumEngine* engine;
-  };
-
-  // PDFium interface to get block of data.
-  static int GetBlock(void* param,
-                      unsigned long position,
-                      unsigned char* buffer,
-                      unsigned long size);
-
-  // PDFium interface to check is block of data is available.
-  static FPDF_BOOL IsDataAvail(FX_FILEAVAIL* param, size_t offset, size_t size);
-
-  // PDFium interface to request download of the block of data.
-  static void AddSegment(FX_DOWNLOADHINTS* param, size_t offset, size_t size);
 
   // We finished getting the pdf file, so load it. This will complete
   // asynchronously (due to password fetching) and may be run multiple times.
@@ -515,28 +495,7 @@ class PDFiumEngine : public PDFEngine,
   // form filler.
   PDFiumFormFiller form_filler_;
 
-  // Interface structure to provide access to document stream.
-  FPDF_FILEACCESS file_access_;
-
-  // Interface structure to check data availability in the document stream.
-  FileAvail file_availability_;
-
-  // Interface structure to request data chunks from the document stream.
-  DownloadHints download_hints_;
-
-  // Pointer to the document availability interface.
-  ScopedFPDFAvail fpdf_availability_;
-
-  // The PDFium wrapper object for the document. Must come after
-  // |fpdf_availability_| to prevent outliving it.
-  ScopedFPDFDocument doc_;
-
-  // The PDFium wrapper for form data.  Used even if there are no form controls
-  // on the page. Must come after |doc_| to prevent outliving it.
-  ScopedFPDFFormHandle form_;
-
-  // Current form availability status.
-  int form_status_ = PDF_FORM_NOTAVAIL;
+  std::unique_ptr<PDFiumDocument> document_;
 
   // The page(s) of the document.
   std::vector<std::unique_ptr<PDFiumPage>> pages_;
