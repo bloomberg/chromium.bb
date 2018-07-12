@@ -83,7 +83,6 @@ class ShellBrowserContext : public BrowserContext {
     ~ShellResourceContext() override;
 
     // ResourceContext implementation:
-    net::HostResolver* GetHostResolver() override;
     net::URLRequestContext* GetRequestContext() override;
 
     void set_url_request_context_getter(ShellURLRequestContextGetter* getter) {

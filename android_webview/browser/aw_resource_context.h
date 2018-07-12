@@ -29,7 +29,6 @@ class AwResourceContext : public content::ResourceContext {
   std::string GetExtraHeaders(const GURL& url);
 
   // content::ResourceContext implementation.
-  net::HostResolver* GetHostResolver() override;
   net::URLRequestContext* GetRequestContext() override;
 
  private:

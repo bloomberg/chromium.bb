@@ -33,11 +33,11 @@
 
 namespace content {
 class BrowserContext;
-class ResourceContext;
 }
 
 namespace net {
 class IOBuffer;
+class URLRequestContextGetter;
 }
 
 namespace extensions {
@@ -164,8 +164,7 @@ class SocketExtensionWithDnsLookupFunction : public SocketAsyncApiFunction {
  private:
   void OnDnsLookup(int resolve_result);
 
-  // Weak pointer to the resource context.
-  content::ResourceContext* resource_context_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 };
 
 class SocketCreateFunction : public SocketAsyncApiFunction {

@@ -4,8 +4,9 @@
 
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
 
-#include "content/public/browser/resource_context.h"
 #include "net/dns/host_resolver.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace extensions {
 
@@ -17,8 +18,10 @@ HostResolverWrapper* HostResolverWrapper::GetInstance() {
 }
 
 net::HostResolver* HostResolverWrapper::GetHostResolver(
-    content::ResourceContext* context) {
-  return resolver_ ? resolver_ : context->GetHostResolver();
+    net::URLRequestContextGetter* url_request_context_getter) {
+  return resolver_ ? resolver_
+                   : url_request_context_getter->GetURLRequestContext()
+                         ->host_resolver();
 }
 
 void HostResolverWrapper::SetHostResolverForTesting(

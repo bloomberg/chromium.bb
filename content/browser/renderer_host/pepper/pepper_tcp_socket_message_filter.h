@@ -38,6 +38,7 @@ namespace net {
 class DrainableIOBuffer;
 class IOBuffer;
 class SSLClientSocket;
+class URLRequestContextGetter;
 }
 
 namespace ppapi {
@@ -52,7 +53,6 @@ namespace content {
 
 class BrowserPpapiHostImpl;
 class ContentBrowserPepperHostFactory;
-class ResourceContext;
 
 class CONTENT_EXPORT PepperTCPSocketMessageFilter
     : public ppapi::host::ResourceMessageFilter,
@@ -119,10 +119,11 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
 
   void DoBind(const ppapi::host::ReplyMessageContext& context,
               const PP_NetAddress_Private& net_addr);
-  void DoConnect(const ppapi::host::ReplyMessageContext& context,
-                 const std::string& host,
-                 uint16_t port,
-                 ResourceContext* resource_context);
+  void DoConnect(
+      const ppapi::host::ReplyMessageContext& context,
+      const std::string& host,
+      uint16_t port,
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
   void DoConnectWithNetAddress(const ppapi::host::ReplyMessageContext& context,
                                const PP_NetAddress_Private& net_addr);
   void DoWrite(const ppapi::host::ReplyMessageContext& context);

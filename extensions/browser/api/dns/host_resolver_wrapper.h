@@ -8,12 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 
-namespace content {
-class ResourceContext;
-}
-
 namespace net {
 class HostResolver;
+class URLRequestContextGetter;
 }
 
 namespace extensions {
@@ -31,10 +28,11 @@ class HostResolverWrapper {
  public:
   static HostResolverWrapper* GetInstance();
 
-  // Given a pointer to a ResourceContext, returns its HostResolver if
+  // Given a pointer to a URLRequestContextGetter, returns its HostResolver if
   // SetHostResolverForTesting() hasn't been called, or else a
   // a substitute MockHostResolver to use instead.
-  net::HostResolver* GetHostResolver(content::ResourceContext* context);
+  net::HostResolver* GetHostResolver(
+      net::URLRequestContextGetter* url_request_context_getter);
 
   // Sets the MockHostResolver to return in GetHostResolver().
   void SetHostResolverForTesting(net::HostResolver* mock_resolver);

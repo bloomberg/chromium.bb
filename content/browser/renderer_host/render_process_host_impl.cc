@@ -1847,8 +1847,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new TextInputClientMessageFilter());
 #endif
 
-  p2p_socket_dispatcher_host_ = new P2PSocketDispatcherHost(
-      resource_context, request_context.get());
+  p2p_socket_dispatcher_host_ =
+      new P2PSocketDispatcherHost(request_context.get());
   AddFilter(p2p_socket_dispatcher_host_.get());
 
   AddFilter(new TraceMessageFilter(GetID()));

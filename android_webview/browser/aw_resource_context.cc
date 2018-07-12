@@ -40,11 +40,6 @@ std::string AwResourceContext::GetExtraHeaders(const GURL& url) {
   return iter != extra_headers_.end() ? iter->second : std::string();
 }
 
-net::HostResolver* AwResourceContext::GetHostResolver() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return getter_->GetURLRequestContext()->host_resolver();
-}
-
 net::URLRequestContext* AwResourceContext::GetRequestContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return getter_->GetURLRequestContext();

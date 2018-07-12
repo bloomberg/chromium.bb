@@ -15,10 +15,12 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/socket_permission_request.h"
 #include "net/base/address_list.h"
 #include "net/dns/host_resolver.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
@@ -138,15 +140,14 @@ int32_t PepperHostResolverMessageFilter::OnMsgResolve(
       RenderProcessHost::FromID(render_process_id_);
   if (!render_process_host)
     return PP_ERROR_FAILED;
-  BrowserContext* browser_context = render_process_host->GetBrowserContext();
-  if (!browser_context || !browser_context->GetResourceContext())
-    return PP_ERROR_FAILED;
+  auto* storage_partition = render_process_host->GetStoragePartition();
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&PepperHostResolverMessageFilter::DoResolve, this,
-                     context->MakeReplyMessageContext(), host_port, hint,
-                     browser_context->GetResourceContext()));
+      base::BindOnce(
+          &PepperHostResolverMessageFilter::DoResolve, this,
+          context->MakeReplyMessageContext(), host_port, hint,
+          base::WrapRefCounted(storage_partition->GetURLRequestContext())));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -154,10 +155,17 @@ void PepperHostResolverMessageFilter::DoResolve(
     const ReplyMessageContext& context,
     const ppapi::HostPortPair& host_port,
     const PP_HostResolver_Private_Hint& hint,
-    ResourceContext* resource_context) {
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  net::HostResolver* host_resolver = resource_context->GetHostResolver();
+  auto* url_request_context =
+      url_request_context_getter->GetURLRequestContext();
+  if (!url_request_context) {
+    SendResolveError(PP_ERROR_FAILED, context);
+    return;
+  }
+
+  net::HostResolver* host_resolver = url_request_context->host_resolver();
   if (!host_resolver) {
     SendResolveError(PP_ERROR_FAILED, context);
     return;

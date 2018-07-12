@@ -42,12 +42,6 @@ ShellBrowserContext::ShellResourceContext::ShellResourceContext()
 ShellBrowserContext::ShellResourceContext::~ShellResourceContext() {
 }
 
-net::HostResolver*
-ShellBrowserContext::ShellResourceContext::GetHostResolver() {
-  CHECK(getter_);
-  return getter_->host_resolver();
-}
-
 net::URLRequestContext*
 ShellBrowserContext::ShellResourceContext::GetRequestContext() {
   CHECK(getter_);

@@ -22,6 +22,7 @@ struct PP_NetAddress_Private;
 
 namespace net {
 class AddressList;
+class URLRequestContextGetter;
 }
 
 namespace ppapi {
@@ -35,7 +36,6 @@ struct HostMessageContext;
 namespace content {
 
 class BrowserPpapiHostImpl;
-class ResourceContext;
 
 class CONTENT_EXPORT PepperHostResolverMessageFilter
     : public ppapi::host::ResourceMessageFilter {
@@ -63,10 +63,11 @@ class CONTENT_EXPORT PepperHostResolverMessageFilter
 
   // Backend for OnMsgResolve(). Delegates host resolution to the
   // Browser's HostResolver. Must be called on the IO thread.
-  void DoResolve(const ppapi::host::ReplyMessageContext& context,
-                 const ppapi::HostPortPair& host_port,
-                 const PP_HostResolver_Private_Hint& hint,
-                 ResourceContext* resource_context);
+  void DoResolve(
+      const ppapi::host::ReplyMessageContext& context,
+      const ppapi::HostPortPair& host_port,
+      const PP_HostResolver_Private_Hint& hint,
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
 
   void OnLookupFinished(int net_result,
                         const net::AddressList& addresses,

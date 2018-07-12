@@ -976,18 +976,11 @@ void ProfileIOData::set_previews_decider_impl(
 
 ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)
     : io_data_(io_data),
-      host_resolver_(NULL),
       request_context_(NULL) {
   DCHECK(io_data);
 }
 
 ProfileIOData::ResourceContext::~ResourceContext() {}
-
-net::HostResolver* ProfileIOData::ResourceContext::GetHostResolver()  {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(io_data_->initialized_);
-  return host_resolver_;
-}
 
 net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1178,8 +1171,6 @@ void ProfileIOData::Init(
           !GetMetricsEnabledStateOnIOThread());
     }
 
-    resource_context_->host_resolver_ =
-        io_thread_globals->system_request_context->host_resolver();
     resource_context_->request_context_ = main_request_context_;
   }
 
