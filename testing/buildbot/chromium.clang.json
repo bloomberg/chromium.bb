@@ -10829,6 +10829,7 @@
               "os": "Android"
             }
           ],
+          "hard_timeout": 960,
           "output_links": [
             {
               "link": [
@@ -11005,6 +11006,7 @@
               "os": "Android"
             }
           ],
+          "hard_timeout": 960,
           "output_links": [
             {
               "link": [
@@ -11014,7 +11016,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 3
         },
         "test": "content_shell_test_apk"
       },
@@ -11914,6 +11917,7 @@
               "os": "Android"
             }
           ],
+          "hard_timeout": 300,
           "output_links": [
             {
               "link": [
@@ -16251,8 +16255,7 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 5
+          "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
       },

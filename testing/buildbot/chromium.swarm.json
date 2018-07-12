@@ -542,7 +542,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 4
+          "shards": 3
         },
         "test": "content_unittests"
       },
