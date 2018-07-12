@@ -10,6 +10,7 @@ from __future__ import print_function
 import copy
 import json
 import mock
+import os
 import re
 import cPickle
 
@@ -19,11 +20,11 @@ from chromite.lib import config_lib
 from chromite.lib import config_lib_unittest
 from chromite.lib import constants
 from chromite.cbuildbot.builders import generic_builders
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib.const import waterfall
-from chromite.scripts import cros_show_waterfall_layout
 
 # pylint: disable=protected-access
 
@@ -33,7 +34,7 @@ CHROMIUM_WATCHING_URL = (
 )
 
 
-class ChromeosConfigTestBase(cros_test_lib.OutputTestCase):
+class ChromeosConfigTestBase(cros_test_lib.TestCase):
   """Base class for tests of chromeos_config.."""
 
   def setUp(self):
@@ -62,11 +63,12 @@ class ConfigDumpTest(ChromeosConfigTestBase):
                   'config/chromeos_config_unittest --update')
 
     # watefall_layout_dump.txt
-    with self.OutputCapturer() as output:
-      config_lib.ClearConfigCache()
-      cros_show_waterfall_layout.main(['--format', 'text'])
+    # We run this as a sep program to avoid the config cache.
+    cmd = os.path.join(constants.CHROMITE_BIN_DIR, 'cros_show_waterfall_layout')
+    result = cros_build_lib.RunCommand([cmd, '--format', 'text'],
+                                       capture_output=True)
 
-    new_dump = output.GetStdout()
+    new_dump = result.output
     old_dump = osutils.ReadFile(constants.WATERFALL_CONFIG_FILE)
 
     if new_dump != old_dump:

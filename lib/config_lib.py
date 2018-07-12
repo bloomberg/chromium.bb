@@ -12,6 +12,7 @@ import itertools
 import json
 
 from chromite.lib import constants
+from chromite.lib import memoize
 from chromite.lib import osutils
 
 
@@ -108,9 +109,6 @@ def isTryjobConfig(build_config):
 # In the Json, this special build config holds the default values for all
 # other configs.
 DEFAULT_BUILD_CONFIG = '_default'
-
-# We cache the config we load from disk to avoid reparsing.
-_CACHED_CONFIG = None
 
 # Constants for config template file
 CONFIG_TEMPLATE_BOARDS = 'boards'
@@ -1878,31 +1876,11 @@ def _CreateBuildConfig(name, default, build_dict, templates):
   return result
 
 
-def ClearConfigCache():
-  """Clear the currently cached SiteConfig.
-
-  This is intended to be used very early in the startup, after we fetch/update
-  the site config information available to us.
-
-  However, this operation is never 100% safe, since the Chrome OS config, or an
-  outdated config was availble to any code that ran before (including on
-  import), and that code might have used or cached related values.
-  """
-  # pylint: disable=global-statement
-  global _CACHED_CONFIG
-  _CACHED_CONFIG = None
-
-
+@memoize.Memoize
 def GetConfig():
   """Load the current SiteConfig.
 
   Returns:
     SiteConfig instance to use for this build.
   """
-  # pylint: disable=global-statement
-  global _CACHED_CONFIG
-
-  if _CACHED_CONFIG is None:
-    _CACHED_CONFIG = LoadConfigFromFile(constants.CHROMEOS_CONFIG_FILE)
-
-  return _CACHED_CONFIG
+  return LoadConfigFromFile(constants.CHROMEOS_CONFIG_FILE)

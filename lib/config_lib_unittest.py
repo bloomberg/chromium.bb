@@ -802,18 +802,6 @@ class GetConfigTests(cros_test_lib.TestCase):
     self.assertIsInstance(config_a, config_lib.SiteConfig)
     self.assertIs(config_a, config_b)
 
-    # Clear our cache.
-    config_lib.ClearConfigCache()
-    config_c = config_lib.GetConfig()
-    config_d = config_lib.GetConfig()
-
-    # Ensure that this gives us a new instance of the SiteConfig.
-    self.assertIsNot(config_a, config_c)
-
-    # But also that it's cached going forward.
-    self.assertIsInstance(config_c, config_lib.SiteConfig)
-    self.assertIs(config_c, config_d)
-
 
 class GEBuildConfigTests(cros_test_lib.TestCase):
   """Test GE build config related methods."""
