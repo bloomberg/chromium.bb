@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 
 #include "base/feature_list.h"
-#include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -163,14 +162,6 @@ void ScriptingPermissionsModifier::SetWithholdHostPermissions(
     WithholdHostPermissions();
   else
     GrantWithheldHostPermissions();
-
-  // If this was an update to permissions, we also need to sync the change.
-  // TODO(devlin): This isn't currently necessary. We should remove it and add
-  // it back.
-  ExtensionSyncService* sync_service =
-      ExtensionSyncService::Get(browser_context_);
-  if (sync_service)  // |sync_service| can be null in unittests.
-    sync_service->SyncExtensionChangeIfNeeded(*extension_);
 }
 
 bool ScriptingPermissionsModifier::HasWithheldHostPermissions() const {
