@@ -199,9 +199,11 @@ public class WebappActivity extends SingleTabActivity {
             }
 
             BrowserServicesMetrics.recordTwaOpened();
-            // Occasionally verification occurs in the background while there is no active Tab.
+            TrustedWebActivityDisclosure.showIfNeeded(WebappActivity.this, packageName);
+
+            // When verification occurs instantly (eg the result is cached) then it returns before
+            // there is an active tab.
             if (areTabModelsInitialized() && getActivityTab() != null) {
-                TrustedWebActivityDisclosure.showIfNeeded(WebappActivity.this, packageName);
                 mUkmRecorder.recordTwaOpened(getActivityTab().getWebContents());
             }
         }

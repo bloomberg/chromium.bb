@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.browserservices;
 
 import android.content.Context;
 
+import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.ui.widget.Toast;
 
@@ -33,7 +35,9 @@ public class TrustedWebActivityDisclosure {
         long millisSince = now.getTime() - lastShown.getTime();
         long daysSince = TimeUnit.DAYS.convert(millisSince, TimeUnit.MILLISECONDS);
 
-        if (daysSince <= DISCLOSURE_PERIOD_DAYS) return;
+        boolean force = CommandLine.getInstance().hasSwitch(
+                ChromeSwitches.FORCE_TRUSTED_WEB_ACTIVITY_DISCLOSURE);
+        if (!force && daysSince <= DISCLOSURE_PERIOD_DAYS) return;
 
         prefs.setTrustedWebActivityLastDisclosureTime(packageName, now);
 
