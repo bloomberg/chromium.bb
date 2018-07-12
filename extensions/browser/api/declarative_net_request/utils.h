@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 
 namespace base {
 class ListValue;
@@ -67,11 +68,11 @@ using IndexAndPersistRulesCallback =
     base::OnceCallback<void(IndexAndPersistRulesResult)>;
 // Same as IndexAndPersistRulesUnsafe but parses the JSON rules file out-of-
 // process. |connector| should be a connector to the ServiceManager usable on
-// the current sequence. |identity| is used when accessing the data decoder
-// service which is used internally to parse JSON.
-// Note: This must be called on a sequence where file IO is allowed.
+// the current sequence. Optionally clients can pass a valid |identity| to be
+// used when accessing the data decoder service which is used internally to
+// parse JSON. Note: This must be called on a sequence where file IO is allowed.
 void IndexAndPersistRules(service_manager::Connector* connector,
-                          const service_manager::Identity& identity,
+                          service_manager::Identity* identity,
                           const Extension& extension,
                           IndexAndPersistRulesCallback callback);
 

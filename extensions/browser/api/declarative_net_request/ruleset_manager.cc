@@ -263,6 +263,9 @@ void RulesetManager::AddRuleset(const ExtensionId& extension_id,
   DCHECK(inserted) << "AddRuleset called twice in succession for "
                    << extension_id;
 
+  if (test_observer_)
+    test_observer_->OnRulesetCountChanged(rulesets_.size());
+
   // Clear the renderers' cache so that they take the new rules into account.
   ClearRendererCacheOnNavigation();
 }
@@ -282,6 +285,9 @@ void RulesetManager::RemoveRuleset(const ExtensionId& extension_id) {
       << extension_id;
 
   base::EraseIf(rulesets_, compare_by_id);
+
+  if (test_observer_)
+    test_observer_->OnRulesetCountChanged(rulesets_.size());
 
   // Clear the renderers' cache so that they take the removed rules into
   // account.

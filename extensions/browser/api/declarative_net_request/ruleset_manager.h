@@ -42,11 +42,14 @@ class RulesetManager {
   explicit RulesetManager(const InfoMap* info_map);
   ~RulesetManager();
 
-  // An interface used for testing purposes.
+  // An observer used for testing purposes.
   class TestObserver {
    public:
     virtual void OnEvaluateRequest(const WebRequestInfo& request,
-                                   bool is_incognito_context) = 0;
+                                   bool is_incognito_context) {}
+
+    // Called whenever a ruleset is added or removed.
+    virtual void OnRulesetCountChanged(size_t new_count) {}
 
    protected:
     virtual ~TestObserver() {}

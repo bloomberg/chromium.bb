@@ -15,8 +15,10 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
@@ -28,6 +30,7 @@
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/file_util.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -95,7 +98,13 @@ struct RulesMonitorService::LoadRulesetInfo {
 // should only be accessed on the extension file task runner.
 class RulesMonitorService::FileSequenceState {
  public:
-  FileSequenceState() { DCHECK_CURRENTLY_ON(content::BrowserThread::UI); }
+  FileSequenceState()
+      : connector_(content::ServiceManagerConnection::GetForProcess()
+                       ->GetConnector()
+                       ->Clone()),
+        weak_factory_(this) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  }
 
   ~FileSequenceState() {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
@@ -108,6 +117,21 @@ class RulesMonitorService::FileSequenceState {
   // instance created, passing null on failure.
   void LoadRuleset(LoadRulesetInfo info,
                    LoadRulesetUICallback ui_callback) const {
+    LoadRulesetInternal(std::move(info), std::move(ui_callback),
+                        LoadFailedAction::kReindex);
+  }
+
+ private:
+  // Describes the action to take if ruleset loading fails.
+  enum class LoadFailedAction {
+    kReindex,        // Reindexes the JSON ruleset.
+    kSignalFailure,  // Signals failure on the UI thread.
+  };
+
+  // Internal helper to load the ruleset for |info|.
+  void LoadRulesetInternal(LoadRulesetInfo info,
+                           LoadRulesetUICallback ui_callback,
+                           LoadFailedAction failed_action) const {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
 
     std::unique_ptr<RulesetMatcher> matcher;
@@ -122,13 +146,70 @@ class RulesMonitorService::FileSequenceState {
     // |matcher| is valid only on success.
     DCHECK_EQ(result == RulesetMatcher::kLoadSuccess, !!matcher);
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(std::move(ui_callback), std::move(info),
-                       std::move(matcher)));
+    const bool reindex_ruleset = result != RulesetMatcher::kLoadSuccess &&
+                                 failed_action == LoadFailedAction::kReindex;
+
+    if (!reindex_ruleset) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::BindOnce(std::move(ui_callback), std::move(info),
+                         std::move(matcher)));
+      return;
+    }
+
+    // Attempt to reindex the extension ruleset.
+
+    // Store the extension pointer since |info| will subsequently be moved.
+    const Extension* extension = info.extension.get();
+
+    // Using a weak pointer here is safe since |ruleset_reindexed_callback| will
+    // be called on this sequence itself.
+    IndexAndPersistRulesCallback ruleset_reindexed_callback = base::BindOnce(
+        &FileSequenceState::OnRulesetReindexed, weak_factory_.GetWeakPtr(),
+        std::move(info), std::move(ui_callback));
+    IndexAndPersistRules(connector_.get(), nullptr /*identity*/, *extension,
+                         std::move(ruleset_reindexed_callback));
   }
 
- private:
+  // Callback invoked when the JSON ruleset is reindexed.
+  void OnRulesetReindexed(LoadRulesetInfo info,
+                          LoadRulesetUICallback ui_callback,
+                          IndexAndPersistRulesResult result) const {
+    DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
+
+    // The checksum of the reindexed ruleset should have been the same as the
+    // expected checksum obtained from prefs. If this is not the case, then
+    // there is some other issue (like the JSON rules file has been modified
+    // from the one used during installation or preferences are corrupted). But
+    // taking care of these is beyond our scope here, so simply signal a
+    // failure.
+    bool reindexing_success =
+        result.success &&
+        info.expected_ruleset_checksum == result.ruleset_checksum;
+    UMA_HISTOGRAM_BOOLEAN(
+        "Extensions.DeclarativeNetRequest.RulesetReindexSuccessful",
+        reindexing_success);
+    if (!reindexing_success) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::BindOnce(std::move(ui_callback), std::move(info),
+                         nullptr /* matcher */));
+      return;
+    }
+
+    // We already reindexed the extension ruleset once and it succeeded. If the
+    // ruleset load fails again, there is some other issue. To prevent a cycle,
+    // don't reindex on failure again.
+    LoadRulesetInternal(std::move(info), std::move(ui_callback),
+                        LoadFailedAction::kSignalFailure);
+  }
+
+  const std::unique_ptr<service_manager::Connector> connector_;
+
+  // Must be the last member variable. See WeakPtrFactory documentation for
+  // details. Mutable to allow GetWeakPtr() usage from const methods.
+  mutable base::WeakPtrFactory<FileSequenceState> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(FileSequenceState);
 };
 
