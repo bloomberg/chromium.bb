@@ -1884,19 +1884,6 @@ hooks = [
     ],
   },
 
-  # Download Telemetry's binary dependencies
-  # TODO(crbug.com/780967) - remove this once the bots are setting the
-  # `checkout_telemetry_dependencies` condition.
-  {
-    'name': 'fetch_telemetry_binary_dependencies',
-    'pattern': '.',
-    'action': [ 'vpython',
-                'src/tools/perf/conditionally_execute',
-                '--gyp-condition', 'fetch_telemetry_dependencies=1',
-                'src/third_party/catapult/telemetry/bin/fetch_telemetry_binary_dependencies',
-    ],
-  },
-
   # This is used to ensure that all network operations are properly
   # annotated so we can document what they're for.
   {
