@@ -3633,9 +3633,6 @@ test("unit_tests") {
       "../browser/sync_file_system/sync_file_system_test_util.h",
       "../browser/sync_file_system/sync_process_runner_unittest.cc",
       "../browser/sync_file_system/syncable_file_system_util_unittest.cc",
-      "../browser/web_applications/policy/web_app_policy_manager_unittest.cc",
-      "../browser/web_applications/web_app_mac_unittest.mm",
-      "../browser/web_applications/web_app_unittest.cc",
       "../common/extensions/api/commands/commands_manifest_unittest.cc",
       "../common/extensions/api/common_extension_api_unittest.cc",
       "../common/extensions/api/extension_action/browser_action_manifest_unittest.cc",
@@ -3703,6 +3700,7 @@ test("unit_tests") {
       "../utility/image_writer/image_writer_unittest.cc",
     ]
     deps += [
+      "//chrome/browser/web_applications:unit_tests",
       "//chrome/common/extensions/api",
       "//extensions:extensions_resources",
       "//extensions/browser:test_support",
