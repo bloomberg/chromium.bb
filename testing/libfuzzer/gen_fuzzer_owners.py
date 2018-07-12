@@ -70,7 +70,9 @@ def GetOwnersForFuzzer(sources):
         source_content):
       # Found the fuzzer source (and not dependency of fuzzer).
 
-      is_git_file = bool(subprocess.check_output(['git', 'ls-files', source]))
+      git_dir = os.path.join(CHROMIUM_SRC_DIR, '.git')
+      is_git_file = bool(subprocess.check_output(
+          ['git', '--git-dir', git_dir, 'ls-files', source]))
       if not is_git_file:
         # File is not in working tree. Return owners for third_party.
         return GetOwnersIfThirdParty(source)
@@ -80,7 +82,8 @@ def GetOwnersForFuzzer(sources):
       # the original author has authored line 1 which is usually the
       # copyright line and does not change even with file rename / move.
       blame_output = subprocess.check_output(
-          ['git', 'blame', '--porcelain', '-L1,1', source])
+          ['git', '--git-dir', git_dir,
+           'blame', '--porcelain', '-L1,1', source])
       return GetAuthorFromGitBlame(blame_output)
 
   return None
@@ -155,8 +158,7 @@ def GetSourcesFromDeps(deps_list, build_dir):
     for source in output.splitlines():
       if source.startswith('//'):
         source = source[2:]
-      actual_source = os.path.join(CHROMIUM_SRC_DIR, source)
-      all_sources.append(actual_source)
+      all_sources.append(source)
 
   return all_sources
 
