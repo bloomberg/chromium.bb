@@ -432,7 +432,16 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_EQ(1, start_batch_changes_);
   EXPECT_EQ(1, end_batch_changes_);
   EXPECT_EQ(1, auth_error_changed_count_);
-  ExpectOneTokensLoadedNotification();
+
+  // A"tokens loaded" notification should have been fired.
+  EXPECT_EQ(1, tokens_loaded_count_);
+
+  // As the delegate puts the primary account into the token map with an invalid
+  // token in the case of loading from an empty TB, a "token available"
+  // notification should have been fired as well.
+  EXPECT_EQ(1, token_available_count_);
+
+  ResetObserverCounts();
 
   // LoadCredentials() guarantees that the account given to it as argument
   // is in the refresh_token map.
@@ -718,13 +727,21 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, tokens_loaded_count_);
-  EXPECT_EQ(0, token_available_count_);
   EXPECT_EQ(1, token_revoked_count_);
   EXPECT_EQ(1, start_batch_changes_);
   EXPECT_EQ(1, end_batch_changes_);
   EXPECT_EQ(1, auth_error_changed_count_);
+
+  // After having revoked the primary account's token during loading, the
+  // delegate should have noticed that it had no token for the primary account
+  // when the load was complete and inserted an invalid token for that account.
+  EXPECT_EQ(1, token_available_count_);
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
       primary_account.account_id));
+  EXPECT_EQ(
+      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+      oauth2_service_delegate_->refresh_tokens_[primary_account.account_id]
+          ->refresh_token());
   EXPECT_EQ(
       GoogleServiceAuthError::InvalidGaiaCredentialsReason::CREDENTIALS_MISSING,
       oauth2_service_delegate_->GetAuthError(primary_account.account_id)

@@ -128,6 +128,8 @@ class MutableProfileOAuth2TokenServiceDelegate
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            DelayedRevoke);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
+                           DiceMigrationHostedDomainPrimaryAccount);
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            ShutdownDuringRevoke);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            UpdateInvalidToken);
