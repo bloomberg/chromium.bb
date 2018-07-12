@@ -18,9 +18,20 @@ namespace base {
 class RefCountedMemory;
 }
 
+namespace url {
+class Origin;
+}
+
 class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
  public:
   static ChromeWebUIControllerFactory* GetInstance();
+
+  // http://crbug.com/829412
+  // Renderers with WebUI bindings shouldn't make http(s) requests for security
+  // reasons (e.g. to avoid malicious responses being able to run code in
+  // priviliged renderers). Fix these webui's to make requests through C++
+  // code instead.
+  static bool IsWebUIAllowedToMakeNetworkRequests(const url::Origin& origin);
 
   // content::WebUIControllerFactory:
   content::WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,

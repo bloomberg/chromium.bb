@@ -3687,9 +3687,13 @@ void RenderFrameHostImpl::CommitNavigation(
       if (base::ContainsValue(schemes, scheme)) {
         network::mojom::URLLoaderFactoryPtr factory_for_webui =
             CreateWebUIURLLoaderBinding(this, scheme);
-        if (enabled_bindings_ & kWebUIBindingsPolicyMask) {
-          // If the renderer has webui bindings, then don't give it access to
-          // network loader for security reasons.
+        // If the renderer has webui bindings, then don't give it access to
+        // network loader for security reasons.
+        // http://crbug.com/829412: make an exception for a small whitelist
+        // of WebUIs that need to be fixed to not make network requests in JS.
+        if ((enabled_bindings_ & kWebUIBindingsPolicyMask) &&
+            !GetContentClient()->browser()->IsWebUIAllowedToMakeNetworkRequests(
+                url::Origin::Create(common_params.url.GetOrigin()))) {
           default_factory_info = factory_for_webui.PassInterface();
         } else {
           // This is a webui scheme that doesn't have webui bindings. Give it

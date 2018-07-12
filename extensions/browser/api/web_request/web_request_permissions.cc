@@ -15,6 +15,7 @@
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -88,23 +89,6 @@ PermissionsData::PageAccess GetMinimumAccessType(
       break;
   }
   return access;
-}
-
-bool IsWebUIAllowedToMakeNetworkRequests(const url::Origin& origin) {
-  // Whitelist to work around exceptional cases. This is only used to elide a
-  // DCHECK.
-  //
-  // If you are adding a new host to this list, please file a corresponding bug
-  // to track its removal. See https://crbug.com/829412 for the metabug.
-  return
-      // https://crbug.com/829414
-      origin.host() == "print" ||
-      // https://crbug.com/831812
-      origin.host() == "sync-confirmation" ||
-      // https://crbug.com/831813
-      origin.host() == "inspect" ||
-      // https://crbug.com/859345
-      origin.host() == "downloads";
 }
 
 PermissionsData::PageAccess CanExtensionAccessURLInternal(
@@ -210,7 +194,8 @@ bool IsSensitiveRequest(const extensions::WebRequestInfo& request,
     // treat the requests as sensitive to ensure that the Web Request API
     // doesn't see them.
     DCHECK(request.initiator.has_value());
-    DCHECK(IsWebUIAllowedToMakeNetworkRequests(*request.initiator))
+    DCHECK(extensions::ExtensionsBrowserClient::Get()
+               ->IsWebUIAllowedToMakeNetworkRequests(*request.initiator))
         << "Unsupported network request from "
         << request.initiator->GetURL().spec() << " for " << url.spec();
     return true;

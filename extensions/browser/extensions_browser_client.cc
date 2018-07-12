@@ -66,6 +66,11 @@ bool ExtensionsBrowserClient::IsExtensionEnabled(
   return false;
 }
 
+bool ExtensionsBrowserClient::IsWebUIAllowedToMakeNetworkRequests(
+    const url::Origin& origin) {
+  return false;
+}
+
 ExtensionsBrowserClient* ExtensionsBrowserClient::Get() {
   return g_extension_browser_client;
 }

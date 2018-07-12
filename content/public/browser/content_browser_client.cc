@@ -118,6 +118,11 @@ bool ContentBrowserClient::LogWebUIUrl(const GURL& web_ui_url) const {
   return false;
 }
 
+bool ContentBrowserClient::IsWebUIAllowedToMakeNetworkRequests(
+    const url::Origin& origin) {
+  return false;
+}
+
 bool ContentBrowserClient::IsHandledURL(const GURL& url) {
   return false;
 }

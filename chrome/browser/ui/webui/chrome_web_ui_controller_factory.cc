@@ -780,6 +780,26 @@ ChromeWebUIControllerFactory* ChromeWebUIControllerFactory::GetInstance() {
   return base::Singleton<ChromeWebUIControllerFactory>::get();
 }
 
+// static
+bool ChromeWebUIControllerFactory::IsWebUIAllowedToMakeNetworkRequests(
+    const url::Origin& origin) {
+  // Whitelist to work around exceptional cases.
+  //
+  // If you are adding a new host to this list, please file a corresponding bug
+  // to track its removal. See https://crbug.com/829412 for the metabug.
+  return
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+      // https://crbug.com/829414
+      origin.host() == chrome::kChromeUIPrintHost ||
+#endif
+      // https://crbug.com/831812
+      origin.host() == chrome::kChromeUISyncConfirmationHost ||
+      // https://crbug.com/831813
+      origin.host() == chrome::kChromeUIInspectHost ||
+      // https://crbug.com/859345
+      origin.host() == chrome::kChromeUIDownloadsHost;
+}
+
 ChromeWebUIControllerFactory::ChromeWebUIControllerFactory() {
 }
 

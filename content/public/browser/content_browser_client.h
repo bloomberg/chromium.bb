@@ -306,6 +306,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // chrome://) URLs are logged. Returns whether the URL was actually logged.
   virtual bool LogWebUIUrl(const GURL& web_ui_url) const;
 
+  // http://crbug.com/829412
+  // Renderers with WebUI bindings shouldn't make http(s) requests for security
+  // reasons (e.g. to avoid malicious responses being able to run code in
+  // priviliged renderers). Fix these webui's to make requests through C++
+  // code instead.
+  virtual bool IsWebUIAllowedToMakeNetworkRequests(const url::Origin& origin);
+
   // Returns whether a specified URL is handled by the embedder's internal
   // protocol handlers.
   virtual bool IsHandledURL(const GURL& url);
