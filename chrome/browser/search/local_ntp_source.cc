@@ -171,6 +171,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_NTP_CUSTOM_LINKS_DONE);
     AddString(translated_strings.get(), "selectionCancel",
               IDS_NTP_CUSTOM_BG_CANCEL);
+    AddString(translated_strings.get(), "selectGooglePhotoAlbum",
+              IDS_NTP_CUSTOM_BG_SELECT_GOOGLE_ALBUM);
 
     // Voice Search
     AddString(translated_strings.get(), "audioError",
@@ -327,9 +329,11 @@ base::Value ConvertAlbumPhotosToDict(
   photos.GetList().reserve(album_photos.size());
   for (const AlbumPhoto& photo : album_photos) {
     base::Value dict(base::Value::Type::DICTIONARY);
-    dict.SetKey("thumbnail_photo_url",
+    dict.SetKey("thumbnailPhotoUrl",
                 base::Value(photo.thumbnail_photo_url.spec()));
-    dict.SetKey("photo_url", base::Value(photo.photo_url.spec()));
+    dict.SetKey("photoUrl", base::Value(photo.photo_url.spec()));
+    dict.SetKey("albumId", base::Value(photo.album_id));
+    dict.SetKey("photoContainerId", base::Value(photo.photo_container_id));
     photos.GetList().push_back(std::move(dict));
   }
   return photos;

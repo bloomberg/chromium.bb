@@ -109,9 +109,13 @@ AlbumInfo AlbumInfo::CreateFromProto(
 
 AlbumPhoto::AlbumPhoto() = default;
 // TODO(crbug.com/851990) Handle urls with existing image options.
-AlbumPhoto::AlbumPhoto(const std::string& photo_url,
+AlbumPhoto::AlbumPhoto(const std::string& album_id,
+                       const std::string& photo_container_id,
+                       const std::string& photo_url,
                        const std::string& default_image_options)
-    : thumbnail_photo_url(GURL(photo_url)),
+    : album_id(album_id),
+      photo_container_id(photo_container_id),
+      thumbnail_photo_url(GURL(photo_url)),
       photo_url(GURL(photo_url + ((photo_url.find('=') == std::string::npos)
                                       ? default_image_options
                                       : std::string()))) {}

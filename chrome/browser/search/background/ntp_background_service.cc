@@ -468,8 +468,9 @@ void NtpBackgroundService::OnAlbumPhotosFetchComplete(
   }
 
   for (int i = 0; i < photos_response.preview_size(); ++i) {
-    album_photos_.emplace_back(photos_response.preview(i).preview_url(),
-                               image_options_);
+    album_photos_.emplace_back(
+        requested_album_id_, requested_photo_container_id_,
+        photos_response.preview(i).preview_url(), image_options_);
   }
 
   NotifyObservers(FetchComplete::ALBUM_PHOTOS);
