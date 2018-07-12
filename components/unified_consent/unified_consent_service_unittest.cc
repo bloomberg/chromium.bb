@@ -22,6 +22,30 @@ namespace {
 class TestSyncService : public syncer::FakeSyncService {
  public:
   int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
+  bool IsFirstSetupComplete() const override { return true; }
+  bool IsSyncActive() const override { return engine_initialized_; }
+  bool IsEngineInitialized() const override { return engine_initialized_; }
+  void AddObserver(syncer::SyncServiceObserver* observer) override {
+    observer_ = observer;
+  }
+  void OnUserChoseDatatypes(bool sync_everything,
+                            syncer::ModelTypeSet chosen_types) override {
+    is_syncing_everything_ = sync_everything;
+  }
+
+  void SetEngineInitialized(bool engine_initialized) {
+    engine_initialized_ = engine_initialized;
+  }
+  void FireStateChanged() {
+    if (observer_)
+      observer_->OnStateChanged(this);
+  }
+  bool IsSyncingEverything() { return is_syncing_everything_; }
+
+ private:
+  syncer::SyncServiceObserver* observer_ = nullptr;
+  bool engine_initialized_ = true;
+  bool is_syncing_everything_ = false;
 };
 
 class UnifiedConsentServiceTest : public testing::Test,
@@ -115,6 +139,33 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent) {
   EXPECT_TRUE(safe_browsing_enabled_);
   EXPECT_TRUE(safe_browsing_extended_reporting_enabled_);
   EXPECT_TRUE(search_suggest_enabled_);
+}
+
+TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_SyncNotActive) {
+  CreateConsentService();
+  identity_test_environment_.SetPrimaryAccount("testaccount");
+  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_FALSE(sync_service_.IsSyncingEverything());
+
+  // Make sure sync is not active.
+  sync_service_.SetEngineInitialized(false);
+  EXPECT_FALSE(sync_service_.IsEngineInitialized());
+  EXPECT_NE(sync_service_.GetState(), syncer::SyncService::State::ACTIVE);
+
+  // Opt into unified consent.
+  consent_service_->SetUnifiedConsentGiven(true);
+  EXPECT_TRUE(consent_service_->IsUnifiedConsentGiven());
+
+  // Couldn't sync everything because sync is not active.
+  EXPECT_FALSE(sync_service_.IsSyncingEverything());
+
+  // Initalize sync engine and therefore activate sync.
+  sync_service_.SetEngineInitialized(true);
+  EXPECT_EQ(sync_service_.GetState(), syncer::SyncService::State::ACTIVE);
+  sync_service_.FireStateChanged();
+
+  // UnifiedConsentService starts syncing everything.
+  EXPECT_TRUE(sync_service_.IsSyncingEverything());
 }
 
 #if !defined(OS_CHROMEOS)
