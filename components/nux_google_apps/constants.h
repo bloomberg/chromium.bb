@@ -12,6 +12,7 @@ struct Feature;
 namespace nux_google_apps {
 
 extern const base::Feature kNuxGoogleAppsFeature;
+extern const char kNuxGoogleAppsUrl[];
 
 }  // namespace nux_google_apps
 

@@ -28,6 +28,7 @@ include_rules = [
   "+components/nacl/common",
   "+components/network_session_configurator/common",
   "+components/ntp_tiles",
+  "+components/nux_google_apps",
   "+components/offline_pages/buildflags",
   "+components/password_manager/core/common",
   "+components/policy/core/common",

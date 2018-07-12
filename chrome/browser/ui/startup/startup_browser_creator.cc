@@ -468,6 +468,9 @@ void StartupBrowserCreator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // ProfileManager handles setting this to false for new profiles upon
   // creation.
   registry->RegisterBooleanPref(prefs::kHasSeenWelcomePage, true);
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  registry->RegisterBooleanPref(prefs::kHasSeenGoogleAppsPromoPage, true);
+#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 }
 
 // static

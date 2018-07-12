@@ -1084,9 +1084,13 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   // new even if the "Preferences" file already existed. (For example: The
   // master_preferences file is dumped into the default profile on first run,
   // before profile creation.)
-  if (profile->IsNewProfile() || first_run::IsChromeFirstRun())
+  if (profile->IsNewProfile() || first_run::IsChromeFirstRun()) {
     profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, false);
-#endif
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+    profile->GetPrefs()->SetBoolean(prefs::kHasSeenGoogleAppsPromoPage, false);
+#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 void ProfileManager::RegisterTestingProfile(Profile* profile,

@@ -437,7 +437,10 @@ extern const char kHasSeenWelcomePage[];
 
 #if defined(OS_WIN)
 extern const char kHasSeenWin10PromoPage[];
-#endif
+#if defined(GOOGLE_CHROME_BUILD)
+extern const char kHasSeenGoogleAppsPromoPage[];
+#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN)
 
 // Deprecated preference for metric / crash reporting on Android. Use
 // kMetricsReportingEnabled instead.
