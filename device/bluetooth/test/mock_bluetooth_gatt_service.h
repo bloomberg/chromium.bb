@@ -40,32 +40,14 @@ class MockBluetoothGattService : public BluetoothRemoteGattService {
                      std::vector<BluetoothRemoteGattService*>());
   MOCK_CONST_METHOD1(GetCharacteristic,
                      BluetoothRemoteGattCharacteristic*(const std::string&));
-  MOCK_METHOD1(AddCharacteristic, bool(BluetoothRemoteGattCharacteristic*));
   MOCK_METHOD1(AddIncludedService, bool(BluetoothRemoteGattService*));
   MOCK_METHOD2(Register, void(const base::Closure&, const ErrorCallback&));
   MOCK_METHOD2(Unregister, void(const base::Closure&, const ErrorCallback&));
 
-  // BluetoothRemoteGattService manages the lifetime of its
-  // BluetoothGATTCharacteristics.
-  // This method takes ownership of the MockBluetoothGATTCharacteristics. This
-  // is only for convenience as far as testing is concerned, and it's possible
-  // to write test cases without using these functions.
-  // Example:
-  // ON_CALL(*mock_service, GetCharacteristics))
-  //   .WillByDefault(Invoke(
-  //     *mock_service,
-  //      &MockBluetoothGattService::GetMockCharacteristics));
   void AddMockCharacteristic(
       std::unique_ptr<MockBluetoothGattCharacteristic> mock_characteristic);
-  std::vector<BluetoothRemoteGattCharacteristic*> GetMockCharacteristics()
-      const;
-  BluetoothRemoteGattCharacteristic* GetMockCharacteristic(
-      const std::string& identifier) const;
 
  private:
-  std::vector<std::unique_ptr<MockBluetoothGattCharacteristic>>
-      mock_characteristics_;
-
   DISALLOW_COPY_AND_ASSIGN(MockBluetoothGattService);
 };
 

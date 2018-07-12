@@ -128,10 +128,7 @@ device::BluetoothDevice* BluetoothRemoteGattServiceAndroid::GetDevice() const {
 std::vector<device::BluetoothRemoteGattCharacteristic*>
 BluetoothRemoteGattServiceAndroid::GetCharacteristics() const {
   EnsureCharacteristicsCreated();
-  std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics;
-  for (const auto& map_iter : characteristics_)
-    characteristics.push_back(map_iter.second.get());
-  return characteristics;
+  return BluetoothRemoteGattService::GetCharacteristics();
 }
 
 std::vector<device::BluetoothRemoteGattService*>
@@ -144,10 +141,15 @@ device::BluetoothRemoteGattCharacteristic*
 BluetoothRemoteGattServiceAndroid::GetCharacteristic(
     const std::string& identifier) const {
   EnsureCharacteristicsCreated();
-  const auto& iter = characteristics_.find(identifier);
-  if (iter == characteristics_.end())
-    return nullptr;
-  return iter->second.get();
+  return BluetoothRemoteGattService::GetCharacteristic(identifier);
+}
+
+std::vector<BluetoothRemoteGattCharacteristic*>
+BluetoothRemoteGattServiceAndroid::GetCharacteristicsByUUID(
+    const BluetoothUUID& characteristic_uuid) const {
+  EnsureCharacteristicsCreated();
+  return BluetoothRemoteGattService::GetCharacteristicsByUUID(
+      characteristic_uuid);
 }
 
 bool BluetoothRemoteGattServiceAndroid::IsDiscoveryComplete() const {
@@ -175,11 +177,9 @@ void BluetoothRemoteGattServiceAndroid::CreateGattRemoteCharacteristic(
       base::android::ConvertJavaStringToUTF8(env, instance_id);
 
   DCHECK(!base::ContainsKey(characteristics_, instance_id_string));
-
-  characteristics_[instance_id_string] =
-      BluetoothRemoteGattCharacteristicAndroid::Create(
-          adapter_, this, instance_id_string,
-          bluetooth_gatt_characteristic_wrapper, chrome_bluetooth_device);
+  AddCharacteristic(BluetoothRemoteGattCharacteristicAndroid::Create(
+      adapter_, this, instance_id_string, bluetooth_gatt_characteristic_wrapper,
+      chrome_bluetooth_device));
 }
 
 BluetoothRemoteGattServiceAndroid::BluetoothRemoteGattServiceAndroid(

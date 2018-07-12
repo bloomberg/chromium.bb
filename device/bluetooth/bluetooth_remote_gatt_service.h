@@ -5,9 +5,11 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
@@ -40,7 +42,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattService
 
   // List of characteristics that belong to this service.
   virtual std::vector<BluetoothRemoteGattCharacteristic*> GetCharacteristics()
-      const = 0;
+      const;
 
   // List of GATT services that are included by this service.
   virtual std::vector<BluetoothRemoteGattService*> GetIncludedServices()
@@ -49,7 +51,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattService
   // Returns the GATT characteristic with identifier |identifier| if it belongs
   // to this GATT service.
   virtual BluetoothRemoteGattCharacteristic* GetCharacteristic(
-      const std::string& identifier) const = 0;
+      const std::string& identifier) const;
+
+  // List of characteristics that belong to this service and have a UUID equal
+  // to |characteristic_uuid|.
+  virtual std::vector<BluetoothRemoteGattCharacteristic*>
+  GetCharacteristicsByUUID(const BluetoothUUID& characteristic_uuid) const;
 
   // Returns true if all the characteristics have been discovered.
   virtual bool IsDiscoveryComplete() const;
@@ -57,11 +64,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattService
   // Sets characteristic discovery as complete or incomplete.
   virtual void SetDiscoveryComplete(bool complete);
 
-  std::vector<BluetoothRemoteGattCharacteristic*> GetCharacteristicsByUUID(
-      const BluetoothUUID& characteristic_uuid);
-
  protected:
+  using CharacteristicMap =
+      base::flat_map<std::string,
+                     std::unique_ptr<BluetoothRemoteGattCharacteristic>>;
+
   BluetoothRemoteGattService();
+
+  bool AddCharacteristic(
+      std::unique_ptr<BluetoothRemoteGattCharacteristic> characteristic);
+
+  CharacteristicMap characteristics_;
 
  private:
   // Is true if all the characteristics have been discovered.

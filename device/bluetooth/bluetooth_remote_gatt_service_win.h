@@ -8,7 +8,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/files/file.h"
@@ -44,11 +43,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWin
   BluetoothUUID GetUUID() const override;
   bool IsPrimary() const override;
   BluetoothDevice* GetDevice() const override;
-  std::vector<BluetoothRemoteGattCharacteristic*> GetCharacteristics()
-      const override;
   std::vector<BluetoothRemoteGattService*> GetIncludedServices() const override;
-  BluetoothRemoteGattCharacteristic* GetCharacteristic(
-      const std::string& identifier) const override;
 
   // Notify |characteristic| discovery complete, |characteristic| is the
   // included characteritic of this service.
@@ -101,14 +96,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWin
   // BluetoothTaskManagerWin to handle asynchronously Bluetooth IO and platform
   // dependent operations.
   scoped_refptr<BluetoothTaskManagerWin> task_manager_;
-
-  // The key of GattCharacteristicsMap is the identifier of
-  // BluetoothRemoteGattCharacteristicWin instance.
-  typedef std::unordered_map<
-      std::string,
-      std::unique_ptr<BluetoothRemoteGattCharacteristicWin>>
-      GattCharacteristicsMap;
-  GattCharacteristicsMap included_characteristics_;
 
   // The element of the set is the identifier of
   // BluetoothRemoteGattCharacteristicWin instance.

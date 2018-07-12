@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -26,7 +27,6 @@ namespace device {
 
 class BluetoothGattNotifySession;
 class BluetoothRemoteGattDescriptor;
-class BluetoothRemoteGattService;
 
 // BluetoothRemoteGattCharacteristic represents a remote GATT characteristic.
 // This class is used to represent GATT characteristics that belong to a service
@@ -49,6 +49,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   // been successfully started.
   typedef base::Callback<void(std::unique_ptr<BluetoothGattNotifySession>)>
       NotifySessionCallback;
+
+  ~BluetoothRemoteGattCharacteristic() override;
 
   // Returns the value of the characteristic. For remote characteristics, this
   // is the most recently cached value. For local characteristics, this is the
@@ -168,7 +170,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
 
  protected:
   BluetoothRemoteGattCharacteristic();
-  ~BluetoothRemoteGattCharacteristic() override;
 
   // Writes to the Client Characteristic Configuration descriptor to enable
   // notifications/indications. This method is meant to be called from

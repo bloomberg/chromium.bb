@@ -23,10 +23,9 @@ BluetoothRemoteGattServiceCast::BluetoothRemoteGattServiceCast(
   std::vector<scoped_refptr<chromecast::bluetooth::RemoteCharacteristic>>
       characteristics = remote_service_->GetCharacteristics();
   characteristics_.reserve(characteristics.size());
-  for (auto& characteristic : characteristics) {
-    characteristics_.push_back(
-        std::make_unique<BluetoothRemoteGattCharacteristicCast>(
-            this, characteristic));
+  for (const auto& characteristic : characteristics) {
+    AddCharacteristic(std::make_unique<BluetoothRemoteGattCharacteristicCast>(
+        this, characteristic));
   }
   SetDiscoveryComplete(true);
 }
@@ -43,35 +42,16 @@ BluetoothUUID BluetoothRemoteGattServiceCast::GetUUID() const {
 
 bool BluetoothRemoteGattServiceCast::IsPrimary() const {
   return remote_service_->primary();
-};
+}
 
 BluetoothDevice* BluetoothRemoteGattServiceCast::GetDevice() const {
   return device_;
-}
-
-std::vector<BluetoothRemoteGattCharacteristic*>
-BluetoothRemoteGattServiceCast::GetCharacteristics() const {
-  std::vector<BluetoothRemoteGattCharacteristic*> results;
-  results.reserve(characteristics_.size());
-  for (auto& characteristic : characteristics_)
-    results.push_back(characteristic.get());
-  return results;
 }
 
 std::vector<BluetoothRemoteGattService*>
 BluetoothRemoteGattServiceCast::GetIncludedServices() const {
   NOTIMPLEMENTED();
   return std::vector<BluetoothRemoteGattService*>();
-}
-
-BluetoothRemoteGattCharacteristic*
-BluetoothRemoteGattServiceCast::GetCharacteristic(
-    const std::string& identifier) const {
-  for (auto& characteristic : characteristics_) {
-    if (characteristic->GetIdentifier() == identifier)
-      return characteristic.get();
-  }
-  return nullptr;
 }
 
 }  // namespace device

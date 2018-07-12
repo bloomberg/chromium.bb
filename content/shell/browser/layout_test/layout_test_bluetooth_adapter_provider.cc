@@ -1360,14 +1360,6 @@ LayoutTestBluetoothAdapterProvider::GetBaseGATTService(
       device, identifier, BluetoothUUID(uuid), true /* is_primary */,
       false /* is_local */);
 
-  ON_CALL(*service, GetCharacteristics())
-      .WillByDefault(Invoke(service.get(),
-                            &MockBluetoothGattService::GetMockCharacteristics));
-
-  ON_CALL(*service, GetCharacteristic(_))
-      .WillByDefault(Invoke(service.get(),
-                            &MockBluetoothGattService::GetMockCharacteristic));
-
   return service;
 }
 
