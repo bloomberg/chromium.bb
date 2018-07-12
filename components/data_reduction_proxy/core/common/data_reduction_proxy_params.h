@@ -147,6 +147,10 @@ const char* GetWarmupCallbackParamName();
 // Returns the experiment parameter name to disable missing via header bypasses.
 const char* GetMissingViaBypassParamName();
 
+// Returns if site-breakdown metrics should be recorded using the page load
+// metrics harness.
+bool IsDataSaverSiteBreakdownUsingPLMEnabled();
+
 // Returns the experiment parameter name to discard the cached result for canary
 // check probe.
 const char* GetDiscardCanaryCheckResultParam();
