@@ -122,10 +122,6 @@ const char kCloudPrintServiceProcess[]      = "service";
 // service or register proxy for autostart.
 const char kCloudPrintSetupProxy[]          = "cloud-print-setup-proxy";
 
-// Enables committed error pages instead of transient navigation entries for
-// interstitial error pages (e.g. certificate errors).
-const char kCommittedInterstitials[] = "committed-interstitials";
-
 // Comma-separated list of BrowserThreads that cause browser process to crash if
 // the given browser thread is not responsive. UI/IO are the BrowserThreads that
 // are supported.

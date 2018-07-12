@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -198,8 +199,7 @@ enum ProceedDecision {
 };
 
 bool AreCommittedInterstitialsEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kCommittedInterstitials);
+  return base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials);
 }
 
 void CheckProceedLinkExists(WebContents* tab) {
@@ -1034,16 +1034,12 @@ class SSLUITest : public SSLUITestBase,
   SSLUITest() : SSLUITestBase() {}
 
  protected:
-  void MaybeSetUpCommittedInterstitialCommandLine(
-      base::CommandLine* command_line) {
+  void SetUpOnMainThread() override {
+    SSLUITestBase::SetUpOnMainThread();
     if (IsCommittedInterstitialTest()) {
-      command_line->AppendSwitch(switches::kCommittedInterstitials);
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kSSLCommittedInterstitials);
     }
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SSLUITestBase::SetUpCommandLine(command_line);
-    MaybeSetUpCommittedInterstitialCommandLine(command_line);
   }
 
   SSLBlockingPage* GetSSLBlockingPage(WebContents* tab) override {
@@ -1164,6 +1160,7 @@ class SSLUITest : public SSLUITestBase,
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(SSLUITest);
 };
 
@@ -1178,7 +1175,6 @@ class SSLUITestBlock : public SSLUITest {
 
   // Browser will not run insecure content.
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    MaybeSetUpCommittedInterstitialCommandLine(command_line);
     // By overriding SSLUITest, we won't apply the flag that allows running
     // insecure content.
   }
@@ -3638,9 +3634,11 @@ class SSLUIWorkerFetchTest : public testing::WithParamInterface<
 
   ~SSLUIWorkerFetchTest() override {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpOnMainThread() override {
+    SSLUITestBase::SetUpOnMainThread();
     if (GetParam().second) {
-      command_line->AppendSwitch(switches::kCommittedInterstitials);
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kSSLCommittedInterstitials);
     }
   }
 
@@ -5096,13 +5094,14 @@ class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest,
     // Enable finch experiment for SSL common name mismatch handling.
     command_line->AppendSwitchASCII(switches::kForceFieldTrials,
                                     "SSLCommonNameMismatchHandling/Enabled/");
-    if (GetParam()) {
-      command_line->AppendSwitch(switches::kCommittedInterstitials);
-    }
   }
 
   void SetUpOnMainThread() override {
     CertVerifierBrowserTest::SetUpOnMainThread();
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kSSLCommittedInterstitials);
+    }
     host_resolver()->AddRule("*", "127.0.0.1");
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
@@ -5114,6 +5113,9 @@ class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest,
                                      base::BindOnce(&CleanUpOnIOThread));
     CertVerifierBrowserTest::TearDownOnMainThread();
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_CASE_P(,
@@ -6163,10 +6165,11 @@ class SSLUICaptivePortalListResourceBundleTest
     https_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    CertVerifierBrowserTest::SetUpCommandLine(command_line);
+  void SetUpOnMainThread() override {
+    CertVerifierBrowserTest::SetUpOnMainThread();
     if (GetParam()) {
-      command_line->AppendSwitch(switches::kCommittedInterstitials);
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kSSLCommittedInterstitials);
     }
   }
 
@@ -6229,6 +6232,7 @@ class SSLUICaptivePortalListResourceBundleTest
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_server_;
 };
 
@@ -6428,15 +6432,12 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest,
 
   void SetUpOnMainThread() override {
     CertVerifierBrowserTest::SetUpOnMainThread();
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kSSLCommittedInterstitials);
+    }
     host_resolver()->AddRule("*", "127.0.0.1");
     SetHSTSForHostName(browser()->profile());
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    CertVerifierBrowserTest::SetUpCommandLine(command_line);
-    if (GetParam()) {
-      command_line->AppendSwitch(switches::kCommittedInterstitials);
-    }
   }
 
   // Set up the cert verifier to return the error passed in as the cert_error
@@ -6548,7 +6549,7 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest,
 
  private:
   net::EmbeddedTestServer https_server_;
-
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(SSLUIMITMSoftwareTest);
 };
 
@@ -6891,15 +6892,12 @@ class SuperfishSSLUITest : public CertVerifierBrowserTest,
 
   void SetUpOnMainThread() override {
     CertVerifierBrowserTest::SetUpOnMainThread();
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kSSLCommittedInterstitials);
+    }
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(https_server_.Start());
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    CertVerifierBrowserTest::SetUpCommandLine(command_line);
-    if (GetParam()) {
-      command_line->AppendSwitch(switches::kCommittedInterstitials);
-    }
   }
 
  protected:
@@ -6983,6 +6981,8 @@ class SuperfishSSLUITest : public CertVerifierBrowserTest,
     }
     return net::X509Certificate::CreateFromDERCertChain(decoded_pieces);
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_CASE_P(, SuperfishSSLUITest, ::testing::Values(false, true));
@@ -7701,15 +7701,12 @@ class RecurrentInterstitialBrowserTest
  public:
   RecurrentInterstitialBrowserTest() : CertVerifierBrowserTest() {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    CertVerifierBrowserTest::SetUpCommandLine(command_line);
-    if (IsCommittedInterstitialTest()) {
-      command_line->AppendSwitch(switches::kCommittedInterstitials);
-    }
-  }
-
   void SetUpOnMainThread() override {
     CertVerifierBrowserTest::SetUpOnMainThread();
+    if (IsCommittedInterstitialTest()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kSSLCommittedInterstitials);
+    }
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
@@ -7721,6 +7718,9 @@ class RecurrentInterstitialBrowserTest
 
  protected:
   bool IsCommittedInterstitialTest() { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_CASE_P(,

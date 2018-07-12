@@ -166,11 +166,6 @@ const char kBypassAppBannerEngagementChecksDescription[] =
     "eligibility requirements for showing app banners, such as having a "
     "manifest, are met.";
 
-const char kCommittedInterstitialsName[] = "Committed Interstitials";
-const char kCommittedInterstitialsDescription[] =
-    "Use committed error pages instead of transient navigation entries "
-    "for interstitial error pages (e.g. certificate errors).";
-
 const char kCanvas2DImageChromiumName[] = "Canvas 2D Image Chromium";
 const char kCanvas2DImageChromiumDescription[] =
     "Allows for using CHROMIUM_image GLES2 extension for HTML Canvas Contexts";
@@ -1679,6 +1674,11 @@ const char kSpeculativeServiceWorkerStartOnQueryInputDescription[] =
 const char kSpellingFeedbackFieldTrialName[] = "Spelling Feedback Field Trial";
 const char kSpellingFeedbackFieldTrialDescription[] =
     "Enable the field trial for sending user feedback to spelling service.";
+
+const char kSSLCommittedInterstitialsName[] = "Committed Interstitials";
+const char kSSLCommittedInterstitialsDescription[] =
+    "Use committed error pages instead of transient navigation entries "
+    "for SSL interstitial error pages (i.e. certificate errors).";
 
 const char kStopInBackgroundName[] = "Stop in background";
 const char kStopInBackgroundDescription[] =

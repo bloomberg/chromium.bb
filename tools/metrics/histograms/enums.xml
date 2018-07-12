@@ -27755,6 +27755,7 @@ from previous Chrome versions.
   <int value="-1334327410" label="ash-enable-touch-view-testing"/>
   <int value="-1332267458" label="RemoveNavigationHistory:enabled"/>
   <int value="-1327676774" label="disable-accelerated-mjpeg-decode"/>
+  <int value="-1326463296" label="SSLCommittedInterstitials:disabled"/>
   <int value="-1325887476" label="NewPrintPreview:enabled"/>
   <int value="-1322882747" label="disable-datasaver-prompt"/>
   <int value="-1320952186" label="new-files-app-navigation"/>
@@ -29112,6 +29113,7 @@ from previous Chrome versions.
   <int value="1571998166" label="DetectingHeavyPages:disabled"/>
   <int value="1579461102" label="MemoryCoordinator:disabled"/>
   <int value="1586022426" label="AutofillCreditCardAssist:enabled"/>
+  <int value="1587521886" label="SSLCommittedInterstitials:enabled"/>
   <int value="1589341623" label="disable-easy-unlock"/>
   <int value="1590278995"
       label="AutofillSendExperimentIdsInPaymentsRPCs:enabled"/>
