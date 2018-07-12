@@ -74,15 +74,16 @@ inline bool operator!=(const TextEncoding& a, const TextEncoding& b) {
 
 WTF_EXPORT const TextEncoding& ASCIIEncoding();
 WTF_EXPORT const TextEncoding& Latin1Encoding();
+WTF_EXPORT const TextEncoding& UnknownEncoding();
 WTF_EXPORT const TextEncoding& UTF16BigEndianEncoding();
 WTF_EXPORT const TextEncoding& UTF16LittleEndianEncoding();
 WTF_EXPORT const TextEncoding& UTF8Encoding();
 WTF_EXPORT const TextEncoding& WindowsLatin1Encoding();
-
 }  // namespace WTF
 
 using WTF::ASCIIEncoding;
 using WTF::Latin1Encoding;
+using WTF::UnknownEncoding;
 using WTF::UTF16BigEndianEncoding;
 using WTF::UTF16LittleEndianEncoding;
 using WTF::UTF8Encoding;

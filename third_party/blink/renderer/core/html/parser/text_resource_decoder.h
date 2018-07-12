@@ -95,6 +95,7 @@ class CORE_EXPORT TextResourceDecoder {
   bool checked_for_xml_charset_;
   bool checked_for_meta_charset_;
   bool saw_error_;
+  bool detection_completed_;
 
   std::unique_ptr<HTMLMetaCharsetParser> charset_parser_;
 

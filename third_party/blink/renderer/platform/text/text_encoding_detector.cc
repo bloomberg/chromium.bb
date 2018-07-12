@@ -69,6 +69,11 @@ bool DetectTextEncoding(const char* data,
       false,  // Include 7-bit encodings to detect ISO-2022-JP
       &consumed_bytes, &is_reliable);
 
+  if (encoding == UNKNOWN_ENCODING)
+    *detected_encoding = WTF::UnknownEncoding();
+  else
+    *detected_encoding = WTF::TextEncoding(MimeEncodingName(encoding));
+
   // Should return false if the detected encoding is UTF8. This helps prevent
   // modern web sites from neglecting proper encoding labelling and simply
   // relying on browser-side encoding detection. Encoding detection is supposed
@@ -76,12 +81,8 @@ bool DetectTextEncoding(const char* data,
   // be applied to local file resources).
   // Detection failure leads |TextResourceDecoder| to use its default encoding
   // determined from system locale or TLD.
-  if (encoding == UNKNOWN_ENCODING ||
-      (hint_url.Protocol() != "file" && encoding == UTF8))
-    return false;
-
-  *detected_encoding = WTF::TextEncoding(MimeEncodingName(encoding));
-  return true;
+  return !(encoding == UNKNOWN_ENCODING ||
+           (hint_url.Protocol() != "file" && encoding == UTF8));
 }
 
 }  // namespace blink
