@@ -408,10 +408,15 @@ PreviewsDeciderImpl::IsPreviewAllowedByOptmizationHints(
     const net::URLRequest& request,
     PreviewsType type,
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
-  if (!previews_opt_guide_)
+  DCHECK(type == PreviewsType::NOSCRIPT ||
+         type == PreviewsType::RESOURCE_LOADING_HINTS);
+
+  // For NoScript, if optimization guide is not present, assume that all URLs
+  // are ALLOWED.
+  if (!previews_opt_guide_ && type == PreviewsType::NOSCRIPT)
     return PreviewsEligibilityReason::ALLOWED;
 
-  // Check optmization guide whitelist.
+  // Check optimization guide whitelist.
   if (!previews_opt_guide_->IsWhitelisted(request, type)) {
     return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
   }

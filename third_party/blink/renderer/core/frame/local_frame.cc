@@ -79,6 +79,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
+#include "third_party/blink/renderer/core/loader/previews_resource_loading_hints_receiver_impl.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
@@ -485,6 +486,7 @@ void LocalFrame::DocumentAttached() {
   GetInputMethodController().DocumentAttached(GetDocument());
   GetSpellChecker().DocumentAttached(GetDocument());
   GetTextSuggestionController().DocumentAttached(GetDocument());
+  previews_resource_loading_hints_receiver_.reset();
 }
 
 Frame* LocalFrame::FindFrameForNavigation(const AtomicString& name,
@@ -1422,6 +1424,14 @@ void LocalFrame::ResumeSubresourceLoading() {
 
 void LocalFrame::AnimateSnapFling(base::TimeTicks monotonic_time) {
   GetEventHandler().AnimateSnapFling(monotonic_time);
+}
+
+void LocalFrame::BindPreviewsResourceLoadingHintsRequest(
+    blink::mojom::blink::PreviewsResourceLoadingHintsReceiverRequest request) {
+  DCHECK(!previews_resource_loading_hints_receiver_);
+  previews_resource_loading_hints_receiver_ =
+      std::make_unique<PreviewsResourceLoadingHintsReceiverImpl>(
+          std::move(request));
 }
 
 }  // namespace blink
