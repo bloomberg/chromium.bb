@@ -1218,7 +1218,7 @@
     {
       name: "StaleWhileRevalidate",
       origin_trial_feature_name: "StaleWhileRevalidate",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "StopInBackground",
