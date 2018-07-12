@@ -53,6 +53,10 @@ const SkColor kAutofillPopupSelectedBackgroundColor = gfx::kGoogleGrey200;
 const SkColor kAutofillPopupFooterBackgroundColor = gfx::kGoogleGrey050;
 const SkColor kAutofillPopupSeparatorColor = gfx::kGoogleGrey200;
 
+// A space between the input element and the dropdown, so that the dropdown's
+// border doesn't look too close to the element.
+constexpr int kElementBorderPadding = 1;
+
 int GetCornerRadius() {
   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
       views::EMPHASIS_MEDIUM);
@@ -632,9 +636,18 @@ void AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
   gfx::Size size = CalculatePreferredSize();
   gfx::Rect popup_bounds;
 
-  PopupViewCommon().CalculatePopupVerticalBounds(
-      size.height(), gfx::ToEnclosingRect(controller_->element_bounds()),
-      controller_->container_view(), &popup_bounds);
+  // When a bubble border is shown, the contents area (inside the shadow) is
+  // supposed to be aligned with input element boundaries.
+  gfx::Rect element_bounds =
+      gfx::ToEnclosingRect(controller_->element_bounds());
+  // Consider the element is |kElementBorderPadding| pixels larger at the top
+  // and at the bottom in order to reposition the dropdown, so that it doesn't
+  // look too close to the element.
+  element_bounds.Inset(/*horizontal=*/0, /*vertical=*/-kElementBorderPadding);
+
+  PopupViewCommon().CalculatePopupVerticalBounds(size.height(), element_bounds,
+                                                 controller_->container_view(),
+                                                 &popup_bounds);
 
   // Adjust the width to compensate for a scroll bar, if necessary, and for
   // other rules.
@@ -651,8 +664,8 @@ void AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
   size.set_width(AdjustWidth(size.width() + scroll_width));
 
   PopupViewCommon().CalculatePopupHorizontalBounds(
-      size.width(), gfx::ToEnclosingRect(controller_->element_bounds()),
-      controller_->container_view(), controller_->IsRTL(), &popup_bounds);
+      size.width(), element_bounds, controller_->container_view(),
+      controller_->IsRTL(), &popup_bounds);
 
   SetSize(size);
 
