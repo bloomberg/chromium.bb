@@ -102,10 +102,7 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       queue_type_(params.queue_type),
       queue_class_(QueueClassForQueueType(params.queue_type)),
       fixed_priority_(params.fixed_priority),
-      can_be_deferred_(params.can_be_deferred),
-      can_be_throttled_(params.can_be_throttled),
-      can_be_paused_(params.can_be_paused),
-      can_be_frozen_(params.can_be_frozen),
+      queue_traits_(params.queue_traits),
       freeze_when_keep_active_(params.freeze_when_keep_active),
       main_thread_scheduler_(main_thread_scheduler),
       frame_scheduler_(params.frame_scheduler) {
