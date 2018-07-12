@@ -107,6 +107,10 @@ namespace app.runtime {
     // matching URL handler in the <code>url_handlers</code> manifest key.
     DOMString? referrerUrl;
 
+    // Whether the app is launched in a Chrome OS Demo Mode session. Used for
+    // default-installed Demo Mode Chrome apps.
+    [nodoc] boolean? isDemoSession;
+
     // Whether the app is being launched in a <a
     // href="https://support.google.com/chromebook/answer/3134673">Chrome OS
     // kiosk session</a>.
