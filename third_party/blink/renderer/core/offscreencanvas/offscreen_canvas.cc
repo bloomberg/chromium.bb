@@ -51,7 +51,7 @@ void OffscreenCanvas::Commit(scoped_refptr<StaticBitmapImage> bitmap_image,
 
   base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
   current_frame_damage_rect_.join(damage_rect);
-  GetOrCreateFrameDispatcher()->DispatchFrameSync(
+  GetOrCreateResourceDispatcher()->DispatchFrameSync(
       std::move(bitmap_image), commit_start_time, current_frame_damage_rect_);
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
 }
@@ -231,7 +231,14 @@ bool OffscreenCanvas::IsAccelerated() const {
   return context_ && context_->IsAccelerated();
 }
 
-CanvasResourceDispatcher* OffscreenCanvas::GetOrCreateFrameDispatcher() {
+bool OffscreenCanvas::HasPlaceholderCanvas() const {
+  return placeholder_canvas_id_ != kInvalidDOMNodeId;
+}
+
+CanvasResourceDispatcher* OffscreenCanvas::GetOrCreateResourceDispatcher() {
+  DCHECK(HasPlaceholderCanvas());
+  // If we don't have a valid placeholder_canvas_id_, then this is a standalone
+  // OffscreenCanvas, and it should not have a placeholder.
   if (!frame_dispatcher_) {
     // The frame dispatcher connects the current thread of OffscreenCanvas
     // (either main or worker) to the browser process and remains unchanged
@@ -316,12 +323,19 @@ void OffscreenCanvas::DidDraw(const FloatRect& rect) {
   if (!HasPlaceholderCanvas())
     return;
 
-  GetOrCreateFrameDispatcher()->SetNeedsBeginFrame(true);
+  GetOrCreateResourceDispatcher()->SetNeedsBeginFrame(true);
 }
 
 void OffscreenCanvas::BeginFrame() {
   context_->PushFrame();
-  GetOrCreateFrameDispatcher()->SetNeedsBeginFrame(false);
+  GetOrCreateResourceDispatcher()->SetNeedsBeginFrame(false);
+}
+
+bool OffscreenCanvas::ShouldAccelerate2dContext() const {
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
+      SharedGpuContext::ContextProviderWrapper();
+  return context_provider_wrapper &&
+         context_provider_wrapper->Utils()->Accelerated2DCanvasFeatureEnabled();
 }
 
 void OffscreenCanvas::PushFrame(scoped_refptr<StaticBitmapImage> image,
@@ -330,7 +344,7 @@ void OffscreenCanvas::PushFrame(scoped_refptr<StaticBitmapImage> image,
   if (current_frame_damage_rect_.isEmpty())
     return;
   base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
-  GetOrCreateFrameDispatcher()->DispatchFrame(
+  GetOrCreateResourceDispatcher()->DispatchFrame(
       std::move(image), commit_start_time, current_frame_damage_rect_);
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
 }

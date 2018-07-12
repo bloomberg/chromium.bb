@@ -173,7 +173,6 @@ bool CanvasResourceDispatcher::PrepareFrame(
     base::TimeTicks commit_start_time,
     const SkIRect& damage_rect,
     viz::CompositorFrame* frame) {
-  DCHECK(canvas_resource->IsBitmap());
   if (!canvas_resource || !VerifyImageSize(canvas_resource->Size()))
     return false;
 
@@ -426,8 +425,6 @@ void CanvasResourceDispatcher::SetNeedsBeginFrameInternal() {
 
 void CanvasResourceDispatcher::OnBeginFrame(
     const viz::BeginFrameArgs& begin_frame_args) {
-  DCHECK(Client());
-
   current_begin_frame_ack_ = viz::BeginFrameAck(begin_frame_args, false);
   if (pending_compositor_frames_ >= kMaxPendingCompositorFrames ||
       (begin_frame_args.type == viz::BeginFrameArgs::MISSED &&
@@ -436,7 +433,8 @@ void CanvasResourceDispatcher::OnBeginFrame(
     return;
   }
 
-  Client()->BeginFrame();
+  if (Client())
+    Client()->BeginFrame();
   // TODO(eseckler): Tell |m_sink| if we did not draw during the BeginFrame.
   current_begin_frame_ack_.sequence_number =
       viz::BeginFrameArgs::kInvalidFrameNumber;

@@ -40,7 +40,6 @@ class GLES2Interface;
 namespace blink {
 
 class CanvasResourceDispatcher;
-class StaticBitmapImage;
 class WebGraphicsContext3DProviderWrapper;
 
 // CanvasResourceProvider
@@ -100,6 +99,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   const IntSize& Size() const { return size_; }
   virtual bool IsValid() const = 0;
   virtual bool IsAccelerated() const = 0;
+  virtual bool SupportsDirectCompositing() const = 0;
   uint32_t ContentUniqueID() const;
   CanvasResourceDispatcher* ResourceDispatcher() {
     return resource_dispatcher_.get();
@@ -120,6 +120,10 @@ class PLATFORM_EXPORT CanvasResourceProvider
   virtual GLuint GetBackingTextureHandleForOverwrite() {
     NOTREACHED();
     return 0;
+  }
+  virtual void* GetPixelBufferAddressForOverwrite() {
+    NOTREACHED();
+    return nullptr;
   }
   void Clear();
   ~CanvasResourceProvider() override;

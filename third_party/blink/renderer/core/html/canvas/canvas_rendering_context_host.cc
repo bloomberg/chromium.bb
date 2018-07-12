@@ -63,25 +63,54 @@ bool CanvasRenderingContextHost::Is2d() const {
 }
 
 CanvasResourceProvider*
-CanvasRenderingContextHost::GetOrCreateCanvasResourceProvider() {
+CanvasRenderingContextHost::GetOrCreateCanvasResourceProvider(
+    AccelerationHint hint) {
   if (!ResourceProvider() && !did_fail_to_create_resource_provider_) {
-    resource_provider_is_clear_ = true;
     if (IsValidImageSize(Size())) {
+      base::WeakPtr<CanvasResourceDispatcher> dispatcher =
+          GetOrCreateResourceDispatcher()
+              ? GetOrCreateResourceDispatcher()->GetWeakPtr()
+              : nullptr;
       if (Is3d()) {
+        CanvasResourceProvider::PresentationMode presentation_mode =
+            RuntimeEnabledFeatures::WebGLImageChromiumEnabled()
+                ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
+                : CanvasResourceProvider::kDefaultPresentationMode;
+
         ReplaceResourceProvider(CanvasResourceProvider::Create(
             Size(),
-            Platform::Current()->IsGpuCompositingDisabled()
-                ? CanvasResourceProvider::kSoftwareResourceUsage
-                : CanvasResourceProvider::kAcceleratedResourceUsage,
+            SharedGpuContext::IsGpuCompositingEnabled()
+                ? CanvasResourceProvider::kAcceleratedCompositedResourceUsage
+                : CanvasResourceProvider::kSoftwareCompositedResourceUsage,
             SharedGpuContext::ContextProviderWrapper(),
             0,  // msaa_sample_count
-            ColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
-            nullptr));  // canvas_resource_dispatcher
+            ColorParams(), presentation_mode, std::move(dispatcher)));
       } else {
-        // 2d context
-        // TODO: move resource provider ownership from canvas 2d layer bridge
-        // to here.
-        NOTREACHED();
+        bool want_acceleration =
+            hint == kPreferAcceleration && ShouldAccelerate2dContext();
+
+        CanvasResourceProvider::ResourceUsage usage =
+            want_acceleration
+                ? CanvasResourceProvider::kAcceleratedCompositedResourceUsage
+                : CanvasResourceProvider::kSoftwareCompositedResourceUsage;
+
+        CanvasResourceProvider::PresentationMode presentation_mode =
+            RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()
+                ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
+                : CanvasResourceProvider::kDefaultPresentationMode;
+
+        ReplaceResourceProvider(CanvasResourceProvider::Create(
+            Size(), usage, SharedGpuContext::ContextProviderWrapper(),
+            GetMSAASampleCountFor2dContext(), ColorParams(), presentation_mode,
+            std::move(dispatcher)));
+
+        if (ResourceProvider()) {
+          // Always save an initial frame, to support resetting the top level
+          // matrix and clip.
+          ResourceProvider()->Canvas()->save();
+          ResourceProvider()->SetFilterQuality(FilterQuality());
+          ResourceProvider()->SetResourceRecyclingEnabled(true);
+        }
       }
     }
     if (!ResourceProvider()) {

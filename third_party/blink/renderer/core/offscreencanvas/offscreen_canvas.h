@@ -65,9 +65,7 @@ class CORE_EXPORT OffscreenCanvas final
     placeholder_canvas_id_ = canvas_id;
   }
   DOMNodeId PlaceholderCanvasId() const { return placeholder_canvas_id_; }
-  bool HasPlaceholderCanvas() {
-    return placeholder_canvas_id_ != kInvalidDOMNodeId;
-  }
+  bool HasPlaceholderCanvas() const;
   bool IsNeutered() const override { return is_neutered_; }
   void SetNeutered();
   CanvasRenderingContext* GetCanvasRenderingContext(
@@ -105,11 +103,16 @@ class CORE_EXPORT OffscreenCanvas final
   void DidDraw() override;
   void Commit(scoped_refptr<StaticBitmapImage> bitmap_image,
               const SkIRect& damage_rect) override;
+  bool ShouldAccelerate2dContext() const override;
+  unsigned GetMSAASampleCountFor2dContext() const override { return 0; }
+  CanvasResourceDispatcher* GetOrCreateResourceDispatcher() override;
 
   // Partial CanvasResourceHost implementation
   void NotifyGpuContextLost() override {}
   void SetNeedsCompositingUpdate() override {}
-  void UpdateMemoryUsage() override { /*TODO(crbug.com/842693): implement*/
+  void UpdateMemoryUsage() override {}  // TODO(crbug.com/842693): implement
+  SkFilterQuality FilterQuality() const override {
+    return kLow_SkFilterQuality;  // TODO(crbug.com/856654)
   }
 
   // EventTarget implementation
@@ -165,7 +168,6 @@ class CORE_EXPORT OffscreenCanvas final
  private:
   friend class OffscreenCanvasTest;
   explicit OffscreenCanvas(const IntSize&);
-  CanvasResourceDispatcher* GetOrCreateFrameDispatcher();
   using ContextFactoryVector =
       Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
   static ContextFactoryVector& RenderingContextFactories();

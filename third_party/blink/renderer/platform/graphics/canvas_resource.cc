@@ -62,15 +62,6 @@ void CanvasResource::OnDestroy() {
 #endif
 }
 
-bool CanvasResource::IsBitmap() {
-  return false;
-}
-
-scoped_refptr<StaticBitmapImage> CanvasResource::Bitmap() {
-  NOTREACHED();
-  return nullptr;
-}
-
 gpu::gles2::GLES2Interface* CanvasResource::ContextGL() const {
   if (!ContextProviderWrapper())
     return nullptr;
@@ -251,10 +242,6 @@ GLenum CanvasResourceBitmap::TextureTarget() const {
   return GL_TEXTURE_2D;
 }
 
-bool CanvasResourceBitmap::IsBitmap() {
-  return true;
-}
-
 scoped_refptr<StaticBitmapImage> CanvasResourceBitmap::Bitmap() {
   return image_;
 }
@@ -283,6 +270,11 @@ void CanvasResourceBitmap::Transfer() {
 bool CanvasResourceBitmap::OriginClean() const {
   DCHECK(image_);
   return image_->OriginClean();
+}
+
+void CanvasResourceBitmap::SetOriginClean(bool value) {
+  DCHECK(image_);
+  image_->SetOriginClean(value);
 }
 
 base::WeakPtr<WebGraphicsContext3DProviderWrapper>
@@ -557,6 +549,14 @@ CanvasResourceGpuMemoryBuffer::ContextProviderWrapper() const {
   return context_provider_wrapper_;
 }
 
+scoped_refptr<StaticBitmapImage> CanvasResourceGpuMemoryBuffer::Bitmap() {
+  WillPaint();
+  scoped_refptr<StaticBitmapImage> bitmap = StaticBitmapImage::Create(
+      surface_->makeImageSnapshot(), ContextProviderWrapper());
+  DidPaint();
+  return bitmap;
+}
+
 // CanvasResourceSharedBitmap
 //==============================================================================
 
@@ -599,6 +599,30 @@ bool CanvasResourceSharedBitmap::IsValid() const {
 
 IntSize CanvasResourceSharedBitmap::Size() const {
   return size_;
+}
+
+scoped_refptr<StaticBitmapImage> CanvasResourceSharedBitmap::Bitmap() {
+  if (!IsValid())
+    return nullptr;
+  // Construct an SkImage that references the shared memory buffer.
+  // The release callback holds a reference to |this| to ensure that the
+  // canvas resource that owns the shared memory stays alive at least until
+  // the SkImage is destroyed.
+  SkImageInfo image_info = SkImageInfo::Make(
+      Size().Width(), Size().Height(), ColorParams().GetSkColorType(),
+      ColorParams().GetSkAlphaType(), ColorParams().GetSkColorSpace());
+  SkPixmap pixmap(image_info, shared_memory_->memory(),
+                  image_info.minRowBytes());
+  this->AddRef();
+  sk_sp<SkImage> sk_image = SkImage::MakeFromRaster(
+      pixmap,
+      [](const void*, SkImage::ReleaseContext resource_to_unref) {
+        static_cast<CanvasResourceSharedBitmap*>(resource_to_unref)->Release();
+      },
+      this);
+  auto image = StaticBitmapImage::Create(sk_image);
+  image->SetOriginClean(is_origin_clean_);
+  return image;
 }
 
 scoped_refptr<CanvasResourceSharedBitmap> CanvasResourceSharedBitmap::Create(
