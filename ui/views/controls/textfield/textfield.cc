@@ -1168,6 +1168,15 @@ void Textfield::OnCompositionTextConfirmedOrCleared() {
 void Textfield::ShowContextMenuForView(View* source,
                                        const gfx::Point& point,
                                        ui::MenuSourceType source_type) {
+#if defined(OS_MACOSX)
+  // On Mac, the context menu contains a look up item which displays the
+  // selected text. As such, the menu needs to be updated if the selection has
+  // changed. Be careful to reset the MenuRunner first so it doesn't reference
+  // the old model.
+  context_menu_runner_.reset();
+  context_menu_contents_.reset();
+#endif
+
   UpdateContextMenu();
   context_menu_runner_->RunMenuAt(GetWidget(), NULL,
                                   gfx::Rect(point, gfx::Size()),
@@ -2197,15 +2206,6 @@ void Textfield::OnCaretBoundsChanged() {
     GetInputMethod()->OnCaretBoundsChanged(this);
   if (touch_selection_controller_)
     touch_selection_controller_->SelectionChanged();
-
-#if defined(OS_MACOSX)
-  // On Mac, the context menu contains a look up item which displays the
-  // selected text. As such, the menu needs to be updated if the selection has
-  // changed. Be careful to reset the MenuRunner first so it doesn't reference
-  // the old model.
-  context_menu_runner_.reset();
-  context_menu_contents_.reset();
-#endif
 
   // Screen reader users don't expect notifications about unfocused textfields.
   if (HasFocus())
