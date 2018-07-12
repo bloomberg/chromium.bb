@@ -3573,7 +3573,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       ChildThreadImpl::current()->thread_safe_sender(),
       ChildThreadImpl::current()->GetConnector()->Clone());
 
-  worker_fetch_context->set_parent_frame_id(routing_id_);
+  worker_fetch_context->set_ancestor_frame_id(routing_id_);
   worker_fetch_context->set_site_for_cookies(
       frame_->GetDocument().SiteForCookies());
   worker_fetch_context->set_is_secure_context(
