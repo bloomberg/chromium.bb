@@ -2693,7 +2693,8 @@ void MainThreadSchedulerImpl::OnQueueingTimeForWindowEstimated(
             CreateMaxQueueingTimeMetric();
       }
       main_thread_only().max_queueing_time_metric->SetSample(
-          queueing_time.InMilliseconds());
+          base::saturated_cast<base::HistogramBase::Sample>(
+              queueing_time.InMilliseconds()));
       main_thread_only().max_queueing_time = queueing_time;
     }
   }

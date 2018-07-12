@@ -122,10 +122,9 @@ double ThreadHeapStatsCollector::Event::marking_time_in_bytes_per_second()
   return marked_bytes ? marking_time_in_ms() / 1000 / marked_bytes : 0.0;
 }
 
-double ThreadHeapStatsCollector::Event::sweeping_time_in_ms() const {
-  return (scope_data[kCompleteSweep] + scope_data[kEagerSweep] +
-          scope_data[kLazySweepInIdle] + scope_data[kLazySweepOnAllocation])
-      .InMillisecondsF();
+TimeDelta ThreadHeapStatsCollector::Event::sweeping_time() const {
+  return scope_data[kCompleteSweep] + scope_data[kEagerSweep] +
+         scope_data[kLazySweepInIdle] + scope_data[kLazySweepOnAllocation];
 }
 
 size_t ThreadHeapStatsCollector::allocated_bytes_since_prev_gc() const {
