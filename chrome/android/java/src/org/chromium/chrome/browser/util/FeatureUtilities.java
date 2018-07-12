@@ -16,6 +16,7 @@ import android.os.UserManager;
 import android.speech.RecognizerIntent;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
@@ -260,7 +261,9 @@ public class FeatureUtilities {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
             try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsBottomToolbarEnabled = prefManager.isBottomToolbarEnabled();
+                sIsBottomToolbarEnabled = prefManager.isBottomToolbarEnabled()
+                        && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
+                                   ContextUtils.getApplicationContext());
             }
         }
         return sIsBottomToolbarEnabled;
