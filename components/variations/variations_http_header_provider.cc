@@ -21,6 +21,27 @@
 
 namespace variations {
 
+// The following documents how adding/removing http headers for web content
+// requests are implemented when Network Service is enabled or not enabled.
+//
+// When Network Service is not enabled, adding headers is implemented in
+// ChromeResourceDispatcherHostDelegate::RequestBeginning() by calling
+// variations::AppendVariationHeaders(), and removing headers is implemented in
+// ChromeNetworkDelegate::OnBeforeRedirect() by calling
+// variations::StripVariationHeaderIfNeeded().
+//
+// When Network Service is enabled, adding/removing headers is implemented by
+// request consumers, and how it is implemented depends on the request type.
+// There are three cases:
+// 1. Subresources request in renderer, it is implemented
+// in URLLoaderThrottleProviderImpl::CreateThrottles() by adding a
+// VariationsHeaderURLLoaderThrottle to a content::URLLoaderThrottle vector.
+// 2. Navigations/Downloads request in browser, it is implemented in
+// ChromeContentBrowserClient::CreateURLLoaderThrottles() by also adding a
+// VariationsHeaderURLLoaderThrottle to a content::URLLoaderThrottle vector.
+// 3. SimpleURLLoader in browser, it is implemented in a SimpleURLLoader wrapper
+// function variations::CreateSimpleURLLoaderWithVariationsHeaders().
+
 // static
 VariationsHttpHeaderProvider* VariationsHttpHeaderProvider::GetInstance() {
   return base::Singleton<VariationsHttpHeaderProvider>::get();
