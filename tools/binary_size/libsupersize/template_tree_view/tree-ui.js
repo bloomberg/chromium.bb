@@ -11,8 +11,6 @@
  * Binary Size Analysis HTML report.
  */
 
-const worker = new TreeWorker('tree-worker.js');
-
 {
   /** Capture one of: "::", "../", "./", "/", "#" */
   const _SPECIAL_CHAR_REGEX = /(::|(?:\.*\/)+|#)/g;
@@ -393,11 +391,14 @@ const worker = new TreeWorker('tree-worker.js');
   /** @type {HTMLProgressElement} */
   const _progress = document.getElementById('progress');
 
-  /** Displays the given data as a tree view */
-  worker.setOnLoadHandler(({root, percent, diffMode, error}) => {
+  /**
+   * Displays the given data as a tree view
+   * @param {TreeProgress} param0
+   */
+  function displayTree({root, percent, diffMode, error}) {
+    /** @type {DocumentFragment | null} */
     let rootElement = null;
     if (root) {
-      /** @type {DocumentFragment} */
       rootElement = newTreeElement(root);
       /** @type {HTMLAnchorElement} */
       const link = rootElement.querySelector('.node');
@@ -421,18 +422,20 @@ const worker = new TreeWorker('tree-worker.js');
 
       dom.replace(_symbolTree, rootElement);
     });
-  });
+  }
 
-  worker.loadTree();
+  treeReady.then(displayTree);
+  worker.setOnProgressHandler(displayTree);
+
   form.addEventListener('change', event => {
     if (event.target.dataset.dynamic == null) {
       _progress.value = 0;
-      worker.loadTree();
+      worker.loadTree().then(displayTree);
     }
   });
   form.addEventListener('submit', event => {
     event.preventDefault();
     _progress.value = 0;
-    worker.loadTree();
+    worker.loadTree().then(displayTree);
   });
 }
