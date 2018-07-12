@@ -138,6 +138,25 @@ bool IsBackForwardNavigationInProgress(LocalFrame* local_frame) {
          !local_frame->GetDocument()->LoadEventFinished();
 }
 
+// Called after committing provisional load to reset the EventHandlerProperties.
+// Only called on local frame roots.
+void ResetWheelAndTouchEventHandlerProperties(LocalFrame& frame) {
+  // If we are loading a local root, it is important to explicitly set the event
+  // listener properties to Nothing as this triggers notifications to the
+  // client. Clients may assume the presence of handlers for touch and wheel
+  // events, so these notifications tell it there are (presently) no handlers.
+  auto& chrome_client = frame.GetPage()->GetChromeClient();
+  chrome_client.SetEventListenerProperties(
+      &frame, cc::EventListenerClass::kTouchStartOrMove,
+      cc::EventListenerProperties::kNone);
+  chrome_client.SetEventListenerProperties(&frame,
+                                           cc::EventListenerClass::kMouseWheel,
+                                           cc::EventListenerProperties::kNone);
+  chrome_client.SetEventListenerProperties(
+      &frame, cc::EventListenerClass::kTouchEndOrCancel,
+      cc::EventListenerProperties::kNone);
+}
+
 }  // namespace
 
 LocalFrameClientImpl::LocalFrameClientImpl(WebLocalFrameImpl* frame)
@@ -434,6 +453,13 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   if (web_frame_->Client()) {
     web_frame_->Client()->DidCommitProvisionalLoad(
         WebHistoryItem(item), commit_type, global_object_reuse_policy);
+    if (web_frame_->GetFrame()->IsLocalRoot()) {
+      // This update should be sent as soon as loading the new document begins
+      // so that the browser and compositor could reset their states. However,
+      // up to this point |web_frame_| is still provisional and the updates will
+      // not get sent. Revise this when https://crbug.com/578349 is fixed.
+      ResetWheelAndTouchEventHandlerProperties(*web_frame_->GetFrame());
+    }
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidCommitLoadForLocalFrame(web_frame_->GetFrame());

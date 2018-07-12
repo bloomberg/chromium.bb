@@ -15,6 +15,8 @@
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/renderer_host/input/input_router_impl.h"
+#include "content/browser/renderer_host/input/touch_action_filter.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -22,10 +24,13 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
@@ -37,7 +42,31 @@
 
 namespace content {
 
-class RenderWidgetHostBrowserTest : public ContentBrowserTest {};
+class RenderWidgetHostBrowserTest : public ContentBrowserTest {
+ protected:
+  WebContentsImpl* web_contents() const {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
+
+  TouchActionFilter* GetTouchActionFilterForWidget(RenderWidgetHostImpl* rwhi) {
+    return &static_cast<InputRouterImpl*>(rwhi->input_router())
+                ->touch_action_filter_;
+  }
+};
+
+// The --site-per-porcess version of RenderWidgetHostBrowserTest.
+class RenderWidgetHostSitePerProcessTest : public RenderWidgetHostBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolateAllSitesForTesting(command_line);
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    SetupCrossSiteRedirector(embedded_test_server());
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+};
 
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostBrowserTest,
                        ProhibitsCopyRequestsFromRenderer) {
@@ -368,6 +397,57 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
   EXPECT_EQ(blink::WebInputEvent::kGestureScrollEnd, dispatched_events[1]);
 
   host()->RemoveInputEventObserver(&observer);
+}
+
+// Observes the WebContents until a frame finishes loading the contents of a
+// given GURL.
+class DocumentLoadObserver : WebContentsObserver {
+ public:
+  DocumentLoadObserver(WebContents* contents, const GURL& url)
+      : WebContentsObserver(contents), document_origin_(url) {}
+
+  void Wait() {
+    if (loaded_)
+      return;
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+  }
+
+ private:
+  void DidFinishLoad(RenderFrameHost* rfh, const GURL& url) override {
+    loaded_ |= (url == document_origin_);
+    if (loaded_ && run_loop_)
+      run_loop_->Quit();
+  }
+
+  bool loaded_ = false;
+  const GURL document_origin_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(DocumentLoadObserver);
+};
+
+// This test verifies that when a cross-process child frame loads, the initial
+// updates for touch event handlers are sent from the renderer.
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
+                       OnHasTouchEventHandlers) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL::Replacements replacement;
+  replacement.SetHostStr("b.com");
+  replacement.SetQueryStr("b()");
+  GURL target_child_url = main_url.ReplaceComponents(replacement);
+  DocumentLoadObserver child_frame_observer(shell()->web_contents(),
+                                            target_child_url);
+  NavigateToURL(shell(), main_url);
+  child_frame_observer.Wait();
+  auto* filter = GetTouchActionFilterForWidget(web_contents()
+                                                   ->GetFrameTree()
+                                                   ->root()
+                                                   ->child_at(0)
+                                                   ->current_frame_host()
+                                                   ->GetRenderWidgetHost());
+  EXPECT_TRUE(filter->allowed_touch_action().has_value());
 }
 
 }  // namespace content
