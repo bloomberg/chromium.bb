@@ -53,12 +53,11 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
+  void AddedToWidget() override;
 
   // views::WidgetDelegate:
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
-  gfx::ImageSkia GetWindowIcon() override;
-  bool ShouldShowWindowIcon() const override;
   void WindowClosing() override;
 
   // views::StyledLabelListener:
@@ -94,7 +93,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   ~SaveCardBubbleViews() override;
 
   CurrentFlowStep GetCurrentFlowStep() const;
-  // Create the dialog's content view containing everything except for the
+  // Creates the dialog's content view containing everything except for the
   // footnote.
   std::unique_ptr<views::View> CreateMainContentView();
 

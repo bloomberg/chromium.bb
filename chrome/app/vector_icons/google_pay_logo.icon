@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-CANVAS_DIMENSIONS, 57,
+CANVAS_DIMENSIONS, 40,
+
+// Pay part.
 PATH_COLOR_ARGB, 0xFF, 0x5F, 0x63, 0x68,
 MOVE_TO, 18.92f, 7.82f,
 R_V_LINE_TO, 4.64f,
@@ -62,6 +64,8 @@ R_LINE_TO, 2.34f, 5.63f,
 R_H_LINE_TO, 0.03f,
 R_LINE_TO, 2.28f, -5.63f,
 CLOSE,
+
+// Blue part of the G.
 NEW_PATH,
 PATH_COLOR_ARGB, 0xFF, 0x42, 0x85, 0xF4,
 MOVE_TO, 12.95f, 6.82f,
@@ -74,6 +78,8 @@ R_V_LINE_TO, 1.65f,
 R_H_LINE_TO, 2.13f,
 R_CUBIC_TO, 1.25f, -1.14f, 1.97f, -2.84f, 1.97f, -4.84f,
 CLOSE,
+
+// Green part of the G.
 NEW_PATH,
 PATH_COLOR_ARGB, 0xFF, 0x34, 0xA8, 0x53,
 MOVE_TO, 6.61f, 13.26f,
@@ -85,6 +91,8 @@ H_LINE_TO, 0.7f,
 V_LINE_TO, 9.63f,
 R_ARC_TO, 6.61f, 6.61f, 0, 0, 0, 5.9f, 3.63f,
 CLOSE,
+
+// Yellow part of the G.
 NEW_PATH,
 PATH_COLOR_ARGB, 0xFF, 0xFB, 0xBC, 0x05,
 MOVE_TO, 2.9f, 7.93f,
@@ -94,6 +102,8 @@ H_LINE_TO, 0.7f,
 R_ARC_TO, 6.56f, 6.56f, 0, 0, 0, 0, 5.91f,
 R_LINE_TO, 2.19f, -1.7f,
 CLOSE,
+
+// Red part of the G.
 NEW_PATH,
 PATH_COLOR_ARGB, 0xFF, 0xEA, 0x43, 0x35,
 MOVE_TO, 6.61f, 2.7f,
@@ -103,12 +113,5 @@ ARC_TO, 6.36f, 6.36f, 0, 0, 0, 6.61f, 0.09f,
 ARC_TO, 6.61f, 6.61f, 0, 0, 0, 0.71f, 3.72f,
 R_LINE_TO, 2.19f, 1.7f,
 R_CUBIC_TO, 0.52f, -1.56f, 1.99f, -2.72f, 3.71f, -2.72f,
-CLOSE,
-NEW_PATH,
-PATH_COLOR_ARGB, 0xFF, 0x9E, 0x9E, 0x9E,
-MOVE_TO, 56, 1,
-R_H_LINE_TO, 1,
-R_V_LINE_TO, 14,
-R_H_LINE_TO, -1,
 CLOSE
 

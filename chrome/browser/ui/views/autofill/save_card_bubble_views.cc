@@ -32,6 +32,7 @@
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
@@ -43,8 +44,18 @@ namespace autofill {
 namespace {
 
 // Dimensions of the Google Pay logo.
-const int kGooglePayLogoWidth = 57;
+const int kGooglePayLogoWidth = 40;
 const int kGooglePayLogoHeight = 16;
+
+const int kGooglePayLogoSeparatorHeight = 12;
+
+// Using custom padding instead of reusing left/right padding from
+// INSETS_DIALOG_TITLE, because it gives too much spacing when there is a
+// separator line between the icon and the title.
+// TODO(ftirelo): This padding should come from the layout provider.
+const int kTitleSeparatorPadding = 8;
+
+const SkColor kTitleSeparatorColor = SkColorSetRGB(0x9E, 0x9E, 0x9E);
 
 std::unique_ptr<views::StyledLabel> CreateLegalMessageLineLabel(
     const LegalMessageLine& line,
@@ -171,6 +182,49 @@ gfx::Size SaveCardBubbleViews::CalculatePreferredSize() const {
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
+void SaveCardBubbleViews::AddedToWidget() {
+  // Use a custom title container if this is a server card. Done when this view
+  // is added to the widget, so the bubble frame view is guaranteed to exist.
+  if (GetCurrentFlowStep() != UPLOAD_SAVE_ONLY_STEP)
+    return;
+
+  auto title_container = std::make_unique<views::View>();
+  title_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(), kTitleSeparatorPadding));
+
+  // kGooglePayLogoIcon is square, and CreateTiledImage() will clip it whereas
+  // setting the icon size would rescale it incorrectly.
+  gfx::ImageSkia image = gfx::ImageSkiaOperations::CreateTiledImage(
+      gfx::CreateVectorIcon(kGooglePayLogoIcon, gfx::kPlaceholderColor),
+      /*x=*/0, /*y=*/0, kGooglePayLogoWidth, kGooglePayLogoHeight);
+  auto icon_view = std::make_unique<views::ImageView>();
+  icon_view->SetImage(&image);
+  title_container->AddChildView(icon_view.release());
+
+  auto* separator = new views::Separator();
+  separator->SetColor(kTitleSeparatorColor);
+  title_container->AddChildView(separator);
+
+  auto title_label = std::make_unique<views::Label>(
+      GetWindowTitle(), views::style::CONTEXT_DIALOG_TITLE);
+  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_label->SetMultiLine(true);
+  title_container->AddChildView(title_label.release());
+
+  GetBubbleFrameView()->SetTitleView(std::move(title_container));
+
+  // Add vertical padding to the separator doesn't expand to use all the
+  // available vertical space. This needs to be done after the title container
+  // is added to the bubble frame view, in order to use its preferred size.
+  const int separator_vertical_padding =
+      (GetBubbleFrameView()->title()->GetPreferredSize().height() -
+       kGooglePayLogoSeparatorHeight) /
+      2;
+  separator->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+      /*vertical=*/separator_vertical_padding,
+      /*horizontal=*/0)));
+}
+
 bool SaveCardBubbleViews::ShouldShowCloseButton() const {
   // The [X] is shown for Material UI.
   return ui::MaterialDesignController::IsSecondaryUiMaterial();
@@ -178,18 +232,6 @@ bool SaveCardBubbleViews::ShouldShowCloseButton() const {
 
 base::string16 SaveCardBubbleViews::GetWindowTitle() const {
   return controller_ ? controller_->GetWindowTitle() : base::string16();
-}
-
-gfx::ImageSkia SaveCardBubbleViews::GetWindowIcon() {
-  return gfx::ImageSkiaOperations::CreateTiledImage(
-      gfx::CreateVectorIcon(kGooglePayLogoWithVerticalSeparatorIcon,
-                            gfx::kPlaceholderColor),
-      /*x=*/0, /*y=*/0, kGooglePayLogoWidth, kGooglePayLogoHeight);
-}
-
-bool SaveCardBubbleViews::ShouldShowWindowIcon() const {
-  // We show the window icon (the Google Pay logo) in non-local save scenarios.
-  return GetCurrentFlowStep() != LOCAL_SAVE_ONLY_STEP;
 }
 
 void SaveCardBubbleViews::WindowClosing() {
