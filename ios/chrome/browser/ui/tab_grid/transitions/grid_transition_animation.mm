@@ -109,8 +109,8 @@ const CGFloat kInactiveItemScale = 0.95;
   // fractions of the overall animation duration.
   CGFloat partialDuration = 0.6;
   CGFloat briefDuration = partialDuration * 0.5;
-  CGFloat shortDelay = 0.12;
-  CGFloat longDelay = 0.4;
+  CGFloat delay = 0.4;
+  CGFloat shortDelay = 0.2;
 
   // If there's only one cell, the animation has two parts.
   //   (A) Zooming the active cell into position.
@@ -129,8 +129,8 @@ const CGFloat kInactiveItemScale = 0.95;
   //  {0%}------------------[A]----------{60%}
   //                 {40%}--[B]---------------{70%}
   //  {0%}---[C]---{30%}
-  //  {0%}------------------[D]--------------------{100%}
-  //     {12%}--------------[E]-------------- {72%}
+  //           {20%}--[D]-------------------------{100%}
+  //           {20%}--[E]----------------------{80%}
   //
   // All animations are timed ease-in (so more motion happens later), except
   // for C which is relatively small in space and short in duration; it has
@@ -154,7 +154,7 @@ const CGFloat kInactiveItemScale = 0.95;
   // B: Fade in the active cell's auxillary view
   UIView* auxillaryView = self.layout.activeItem.auxillaryView;
   auto fadeInAuxillaryKeyframeAnimation =
-      [self keyframeAnimationWithRelativeStart:longDelay
+      [self keyframeAnimationWithRelativeStart:delay
                               relativeDuration:briefDuration
                                     animations:^{
                                       auxillaryView.alpha = 1.0;
@@ -195,10 +195,15 @@ const CGFloat kInactiveItemScale = 0.95;
       item.cell.transform = CGAffineTransformIdentity;
     }
   };
+
+  auto scaleUpCellsKeyframeAnimation =
+      [self keyframeAnimationWithRelativeStart:shortDelay
+                              relativeDuration:1 - shortDelay
+                                    animations:scaleUpCellsAnimation];
   UIViewPropertyAnimator* scaleUpCells = [[UIViewPropertyAnimator alloc]
       initWithDuration:self.duration
-                 curve:UIViewAnimationCurveEaseOut
-            animations:scaleUpCellsAnimation];
+                 curve:UIViewAnimationCurveEaseIn
+            animations:scaleUpCellsKeyframeAnimation];
   [self.animations addAnimator:scaleUpCells];
 
   // E: Fade in inactive cells.
@@ -210,12 +215,12 @@ const CGFloat kInactiveItemScale = 0.95;
     }
   };
   auto fadeInCellsKeyframeAnimation =
-      [self keyframeAnimationWithRelativeStart:shortDelay
+      [self keyframeAnimationWithRelativeStart:delay
                               relativeDuration:partialDuration
                                     animations:fadeInCellsAnimation];
   UIViewPropertyAnimator* fadeInCells = [[UIViewPropertyAnimator alloc]
       initWithDuration:self.duration
-                 curve:UIViewAnimationCurveEaseOut
+                 curve:UIViewAnimationCurveEaseIn
             animations:fadeInCellsKeyframeAnimation];
   [self.animations addAnimator:fadeInCells];
 }
