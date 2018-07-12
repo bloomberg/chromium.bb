@@ -29,6 +29,7 @@ UnifiedConsentService::UnifiedConsentService(
   DCHECK(identity_manager_);
   DCHECK(sync_service_);
   identity_manager_->AddObserver(this);
+  sync_service_->AddObserver(this);
 
   if (GetMigrationState() == MigrationState::NOT_INITIALIZED)
     MigrateProfileToUnifiedConsent();
@@ -83,6 +84,7 @@ void UnifiedConsentService::MarkMigrationComplete() {
 
 void UnifiedConsentService::Shutdown() {
   identity_manager_->RemoveObserver(this);
+  sync_service_->RemoveObserver(this);
 }
 
 void UnifiedConsentService::OnPrimaryAccountCleared(
@@ -109,6 +111,11 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
   }
 }
 
+void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
+  if (IsUnifiedConsentGiven())
+    EnableAllSyncDataTypesIfPossible();
+}
+
 void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
   bool enabled = pref_service_->GetBoolean(prefs::kUnifiedConsentGiven);
 
@@ -130,10 +137,9 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
   if (GetMigrationState() != MigrationState::COMPLETED)
     MarkMigrationComplete();
 
-  // Enable all sync data types.
-  pref_service_->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled,
-                            true);
-  sync_service_->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  // Enable all sync data types if possible, otherwise they will be enabled with
+  // |OnStateChanged| once sync is active;
+  EnableAllSyncDataTypesIfPossible();
 
   // Enable all non-personalized services.
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
@@ -147,6 +153,14 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
   service_client_->SetSafeBrowsingEnabled(true);
   service_client_->SetSafeBrowsingExtendedReportingEnabled(true);
   service_client_->SetNetworkPredictionEnabled(true);
+}
+
+void UnifiedConsentService::EnableAllSyncDataTypesIfPossible() {
+  if (sync_service_->GetState() != syncer::SyncService::State::ACTIVE)
+    return;
+  pref_service_->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled,
+                            true);
+  sync_service_->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
 }
 
 void UnifiedConsentService::MigrateProfileToUnifiedConsent() {

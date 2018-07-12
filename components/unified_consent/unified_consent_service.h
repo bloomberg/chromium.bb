@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync/driver/sync_service_observer.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace user_prefs {
@@ -38,7 +39,8 @@ class UnifiedConsentServiceClient;
 // A browser-context keyed service that is used to manage the user consent
 // when UnifiedConsent feature is enabled.
 class UnifiedConsentService : public KeyedService,
-                              public identity::IdentityManager::Observer {
+                              public identity::IdentityManager::Observer,
+                              public syncer::SyncServiceObserver {
  public:
   UnifiedConsentService(UnifiedConsentServiceClient* service_client,
                         PrefService* pref_service,
@@ -72,10 +74,16 @@ class UnifiedConsentService : public KeyedService,
       const AccountInfo& previous_primary_account_info) override;
 
  private:
+  // syncer::SyncServiceObserver:
+  void OnStateChanged(syncer::SyncService* sync) override;
+
   // Called when |prefs::kUnifiedConsentGiven| pref value changes.
   // When set to true, it enables syncing of all data types and it enables all
   // non-personalized services. Otherwise it does nothing.
   void OnUnifiedConsentGivenPrefChanged();
+
+  // Enables all sync data types if sync is active.
+  void EnableAllSyncDataTypesIfPossible();
 
   // Called when the unified consent service is created to resolve
   // inconsistencies with sync-related prefs.
