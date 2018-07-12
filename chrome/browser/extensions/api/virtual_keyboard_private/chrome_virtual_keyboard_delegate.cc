@@ -211,7 +211,7 @@ bool ChromeVirtualKeyboardDelegate::SetDraggableArea(
   if (!controller->enabled())
     return true;
   return controller->SetDraggableArea(
-      gfx::Rect(rect.top, rect.left, rect.width, rect.height));
+      gfx::Rect(rect.left, rect.top, rect.width, rect.height));
 }
 
 bool ChromeVirtualKeyboardDelegate::SetRequestedKeyboardState(int state_enum) {
