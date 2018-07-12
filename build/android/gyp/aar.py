@@ -16,6 +16,7 @@ from xml.etree import ElementTree
 import zipfile
 
 from util import build_utils
+from util import md5_check
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.pardir, os.pardir)))
@@ -122,9 +123,17 @@ def main():
         raise Exception('android_aar_prebuilt() cached .info file is '
                         'out-of-date. Run gn gen with '
                         'update_android_aar_prebuilts=true to update it.')
-    # Clear previously extracted versions of the AAR.
-    shutil.rmtree(args.output_dir, True)
-    build_utils.ExtractAll(args.aar_file, path=args.output_dir)
+
+    def clobber():
+      # Clear previously extracted versions of the AAR if it is obsolete.
+      shutil.rmtree(args.output_dir, ignore_errors=True)
+      build_utils.ExtractAll(args.aar_file, path=args.output_dir)
+
+    with zipfile.ZipFile(args.aar_file) as zf:
+      md5_check.CallAndRecordIfStale(
+          clobber, input_paths=[args.aar_file],
+          output_paths=[
+              os.path.join(args.output_dir, n) for n in zf.namelist()])
 
   elif args.command == 'list':
     aar_info = _CreateInfo(args.aar_file)
