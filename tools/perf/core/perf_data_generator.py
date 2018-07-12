@@ -188,7 +188,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
 # to generate the correct json for each tester
 NEW_PERF_RECIPE_MIGRATED_TESTERS = {
   'testers' : {
-    'Android Nexus5X Perf': {
+    'android-nexus5x-perf': {
       'tests': [
         {
           'isolate': 'performance_test_suite',
@@ -363,7 +363,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         'gpu': '8086:1616'
       },
     },
-    'Win 10 Perf': {
+    'win-10-perf': {
       'tests': [
         {
           'isolate': 'performance_test_suite',
