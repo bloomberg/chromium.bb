@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/stylus_utils.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/values.h"
@@ -165,6 +166,17 @@ const char kDeviceTypeChromebox[] = "chromebox";
 
 // Value to which deviceType property is set when the specific type is unknown.
 const char kDeviceTypeChromedevice[] = "chromedevice";
+
+// Key which corresponds to the stylusStatus property in JS.
+const char kPropertyStylusStatus[] = "stylusStatus";
+
+// Value to which stylusStatus property is set when the device does not support
+// stylus input.
+const char kStylusStatusUnsupported[] = "unsupported";
+
+// Value to which stylusStatus property is set when the device supports stylus
+// input.
+const char kStylusStatusSupported[] = "supported";
 
 const struct {
   const char* api_name;
@@ -329,6 +341,15 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
       default:
         return std::make_unique<base::Value>(kDeviceTypeChromedevice);
     }
+  }
+
+  if (property_name == kPropertyStylusStatus) {
+    if (!ash::stylus_utils::HasStylusInput()) {
+      return std::make_unique<base::Value>(kStylusStatusUnsupported);
+    }
+
+    // TODO(michaelpg): Return "seen" if stylus has been used.
+    return std::make_unique<base::Value>(kStylusStatusSupported);
   }
 
   if (property_name == kPropertyClientId) {

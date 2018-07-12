@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/stylus_utils.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -124,6 +125,19 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, UnknownDeviceType) {
   SetDeviceType("UNKNOWN");
   ASSERT_TRUE(RunPlatformAppTestWithArg("chromeos_info_private/extended",
                                         "unknown device type"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusUnsupported) {
+  ASSERT_TRUE(RunPlatformAppTestWithArg("chromeos_info_private/extended",
+                                        "stylus unsupported"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusSupported) {
+  ash::stylus_utils::SetHasStylusInputForTesting();
+  ASSERT_TRUE(RunPlatformAppTestWithArg("chromeos_info_private/extended",
+                                        "stylus supported"))
       << message_;
 }
 
