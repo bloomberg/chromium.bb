@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/notifications/notification_image_loader.h"
 
 #include <memory>
+#include "base/numerics/safe_conversions.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -89,7 +90,8 @@ SkBitmap NotificationImageLoader::ScaleDownIfNeeded(const SkBitmap& image,
                                       std::lround(scale * image.height()));
     NOTIFICATION_HISTOGRAM_COUNTS(
         LoadScaleDownTime, type,
-        (CurrentTimeTicks() - start_time).InMilliseconds(),
+        base::saturated_cast<base::HistogramBase::Sample>(
+            (CurrentTimeTicks() - start_time).InMilliseconds()),
         1000 * 10 /* 10 seconds max */);
     return scaled_image;
   }
@@ -150,7 +152,8 @@ void NotificationImageLoader::DidFinishLoading(
 
   NOTIFICATION_HISTOGRAM_COUNTS(
       LoadFinishTime, type_,
-      (CurrentTimeTicks() - start_time_).InMilliseconds(),
+      base::saturated_cast<base::HistogramBase::Sample>(
+          (CurrentTimeTicks() - start_time_).InMilliseconds()),
       1000 * 60 * 60 /* 1 hour max */);
 
   if (data_) {
@@ -175,7 +178,9 @@ void NotificationImageLoader::DidFinishLoading(
 
 void NotificationImageLoader::DidFail(const ResourceError& error) {
   NOTIFICATION_HISTOGRAM_COUNTS(
-      LoadFailTime, type_, (CurrentTimeTicks() - start_time_).InMilliseconds(),
+      LoadFailTime, type_,
+      base::saturated_cast<base::HistogramBase::Sample>(
+          (CurrentTimeTicks() - start_time_).InMilliseconds()),
       1000 * 60 * 60 /* 1 hour max */);
 
   RunCallbackWithEmptyBitmap();

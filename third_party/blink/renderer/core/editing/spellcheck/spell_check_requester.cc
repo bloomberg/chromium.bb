@@ -188,13 +188,10 @@ bool SpellCheckRequester::RequestCheckingFor(const EphemeralRange& range,
   if (!request)
     return false;
 
-  DEFINE_STATIC_LOCAL(CustomCountHistogram,
-                      spell_checker_request_interval_histogram,
-                      ("WebCore.SpellChecker.RequestInterval", 0, 10000, 50));
   const TimeTicks current_request_time = CurrentTimeTicks();
   if (request_num == 0 && last_request_time_ > TimeTicks()) {
-    const TimeDelta interval = current_request_time - last_request_time_;
-    spell_checker_request_interval_histogram.Count(interval.InMilliseconds());
+    UMA_HISTOGRAM_TIMES("WebCore.SpellChecker.RequestInterval",
+                        current_request_time - last_request_time_);
   }
   last_request_time_ = current_request_time;
 

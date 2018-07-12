@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <cmath>
 #include <limits>
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -172,7 +173,7 @@ int32_t ToTimeDeltaSample(double delta_seconds) {
   } while (false)
 
 void RecordDragGestureDurationByWidth(int timeline_width, TimeDelta duration) {
-  int32_t sample = static_cast<int32_t>(duration.InMilliseconds());
+  int32_t sample = base::saturated_cast<int32_t>(duration.InMilliseconds());
   RECORD_TIMELINE_UMA_BY_WIDTH(timeline_width, DragGestureDuration, sample,
                                CustomCountHistogram, 1 /* 1 ms */,
                                60000 /* 1 minute */, 50);

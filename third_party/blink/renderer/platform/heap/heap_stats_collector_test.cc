@@ -268,7 +268,8 @@ TEST(ThreadHeapStatsCollectorTest, EventSweepingTimeInMs) {
                                     TimeDelta::FromMilliseconds(5));
   stats_collector.NotifyMarkingCompleted();
   stats_collector.NotifySweepingCompleted();
-  EXPECT_DOUBLE_EQ(15.0, stats_collector.previous().sweeping_time_in_ms());
+  EXPECT_EQ(TimeDelta::FromMilliseconds(15),
+            stats_collector.previous().sweeping_time());
 }
 
 TEST(ThreadHeapStatsCollectorTest, EventCompactionFreedBytes) {
