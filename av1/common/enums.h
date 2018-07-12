@@ -607,6 +607,7 @@ typedef enum ATTRIBUTE_PACKED {
 
 // In large_scale_tile coding, external references are used.
 #define MAX_EXTERNAL_REFERENCES 128
+#define MAX_TILES 512
 
 #ifdef __cplusplus
 }  // extern "C"
