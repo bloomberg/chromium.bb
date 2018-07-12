@@ -23,6 +23,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_tracker_factory.h"
 #include "chrome/browser/signin/signin_util.h"
+#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/account_id/account_id.h"
@@ -43,6 +45,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/unified_consent/unified_consent_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -444,12 +447,15 @@ void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
 
   switch (result) {
     case LoginUIService::CONFIGURE_SYNC_FIRST:
+      EnableUnifiedConsentIfNeeded();
       ShowSyncSetupSettingsSubpage();
       break;
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
       ProfileSyncService* profile_sync_service = GetProfileSyncService();
-      if (profile_sync_service)
+      if (profile_sync_service) {
         profile_sync_service->SetFirstSetupComplete();
+        EnableUnifiedConsentIfNeeded();
+      }
       FinishProfileSyncServiceSetup();
       break;
     }
@@ -462,6 +468,13 @@ void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
   }
 
   delete this;
+}
+
+void OneClickSigninSyncStarter::EnableUnifiedConsentIfNeeded() {
+  if (IsUnifiedConsentEnabled(profile_)) {
+    UnifiedConsentServiceFactory::GetForProfile(profile_)
+        ->SetUnifiedConsentGiven(true);
+  }
 }
 
 void OneClickSigninSyncStarter::SigninFailed(
@@ -555,4 +568,3 @@ ProfileSyncService* OneClickSigninSyncStarter::GetProfileSyncService() {
 void OneClickSigninSyncStarter::FinishProfileSyncServiceSetup() {
   sync_blocker_.reset();
 }
-
