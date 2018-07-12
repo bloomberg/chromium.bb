@@ -213,7 +213,9 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->comp_inter_joint_search_thresh = BLOCK_SIZES_ALL;
 
     sf->partition_search_breakout_rate_thr = 80;
-    sf->auto_min_max_partition_size = RELAXED_NEIGHBORING_MIN_MAX;
+    // Note: This speed feature is disable as it seems to be worse in
+    // compression/quality and is also slower.
+    // sf->auto_min_max_partition_size = RELAXED_NEIGHBORING_MIN_MAX;
     sf->allow_partition_search_skip = 1;
     sf->disable_wedge_search_var_thresh = 100;
     sf->fast_wedge_sign_estimate = 1;
