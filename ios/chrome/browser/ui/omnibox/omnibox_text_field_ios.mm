@@ -445,7 +445,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     return self.normalFont;
   }
 
-  return IsRegularXRegularSizeClass() ? self.largerFont : self.normalFont;
+  return IsCompactWidth() ? self.normalFont : self.largerFont;
 }
 
 #pragma mark - Private methods

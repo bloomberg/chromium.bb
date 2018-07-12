@@ -98,3 +98,4 @@ const CGFloat kToolbarFullBleedShadowHeight = 10;
 const CGFloat kLocationBarTintBlue = 0x1A73E8;
 const CGFloat kLocationBarFontSize = 15.0f;
 const CGFloat kLocationBarRegularRegularFontSize = 17.0f;
+const CGFloat kLocationBarSteadyFontSize = 17.0f;

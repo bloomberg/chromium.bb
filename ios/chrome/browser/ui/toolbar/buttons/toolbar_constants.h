@@ -143,5 +143,6 @@ extern const CGFloat kLocationBarTintBlue;
 // Font sizes used in omnibox and location bar.
 extern const CGFloat kLocationBarFontSize;
 extern const CGFloat kLocationBarRegularRegularFontSize;
+extern const CGFloat kLocationBarSteadyFontSize;
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_BUTTONS_TOOLBAR_CONSTANTS_H_
