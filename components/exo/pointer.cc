@@ -155,6 +155,10 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
 }
 
 void Pointer::SetCursorType(ui::CursorType cursor_type) {
+  // Early out if the pointer doesn't have a surface in focus.
+  if (!focus_surface_)
+    return;
+
   if (cursor_ == cursor_type)
     return;
   cursor_ = cursor_type;
