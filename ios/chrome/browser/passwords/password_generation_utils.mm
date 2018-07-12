@@ -4,9 +4,6 @@
 
 #include "ios/chrome/browser/passwords/password_generation_utils.h"
 
-#include "base/i18n/rtl.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -14,8 +11,6 @@
 namespace passwords {
 
 namespace {
-
-const CGFloat kPadding = IsIPadIdiom() ? 16 : 8;
 
 // The actual implementation of |RunPipeline| that begins with the first block
 // in |blocks|.
