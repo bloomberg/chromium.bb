@@ -873,8 +873,9 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
 
     switch (update.host_access) {
       case developer::HOST_ACCESS_ON_CLICK:
-      // TODO(devlin): We should also clear specific granted sites here.
-      // https://crbug.com/844128.
+        modifier.SetWithholdHostPermissions(true);
+        modifier.RemoveAllGrantedHostPermissions();
+        break;
       case developer::HOST_ACCESS_ON_SPECIFIC_SITES:
         modifier.SetWithholdHostPermissions(true);
         break;
