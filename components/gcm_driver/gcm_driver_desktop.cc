@@ -74,6 +74,7 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
       const GCMClient::ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   void Start(GCMClient::StartMode start_mode,
              const base::WeakPtr<GCMDriverDesktop>& service);
@@ -145,14 +146,18 @@ void GCMDriverDesktop::IOWorker::Initialize(
     const GCMClient::ChromeBuildInfo& chrome_build_info,
     const base::FilePath& store_path,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
     const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
   gcm_client_ = gcm_client_factory->BuildInstance();
 
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_for_io =
+      network::SharedURLLoaderFactory::Create(std::move(loader_factory_info));
+
   gcm_client_->Initialize(chrome_build_info, store_path, blocking_task_runner,
-                          request_context, std::make_unique<SystemEncryptor>(),
-                          this);
+                          request_context, url_loader_factory_for_io,
+                          std::make_unique<SystemEncryptor>(), this);
 }
 
 void GCMDriverDesktop::IOWorker::OnRegisterFinished(
@@ -523,7 +528,7 @@ GCMDriverDesktop::GCMDriverDesktop(
     PrefService* prefs,
     const base::FilePath& store_path,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_for_ui,
     const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
     const scoped_refptr<base::SequencedTaskRunner>& io_thread,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
@@ -533,7 +538,7 @@ GCMDriverDesktop::GCMDriverDesktop(
                                      prefs,
                                      channel_status_request_url,
                                      user_agent,
-                                     url_loader_factory)),
+                                     url_loader_factory_for_ui)),
       signed_in_(false),
       gcm_started_(false),
       gcm_enabled_(true),
@@ -557,7 +562,10 @@ GCMDriverDesktop::GCMDriverDesktop(
       base::BindOnce(&GCMDriverDesktop::IOWorker::Initialize,
                      base::Unretained(io_worker_.get()),
                      std::move(gcm_client_factory), chrome_build_info,
-                     store_path, request_context, blocking_task_runner));
+                     store_path, request_context,
+                     // ->Clone() permits creation of an equivalent
+                     // SharedURLLoaderFactory on IO thread.
+                     url_loader_factory_for_ui->Clone(), blocking_task_runner));
 }
 
 GCMDriverDesktop::~GCMDriverDesktop() {

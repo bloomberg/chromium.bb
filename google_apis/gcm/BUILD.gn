@@ -68,6 +68,7 @@ component("gcm") {
     "//base/third_party/dynamic_annotations",
     "//net",
     "//services/network:network_service",
+    "//services/network/public/cpp",
     "//third_party/leveldatabase",
     "//url",
   ]
@@ -150,15 +151,18 @@ test("gcm_unit_tests") {
     "engine/mcs_client_unittest.cc",
     "engine/registration_request_unittest.cc",
     "engine/unregistration_request_unittest.cc",
+    "test/run_all_unittests.cc",
   ]
 
   deps = [
     ":gcm",
     ":test_support",
     "//base",
-    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//mojo/core/embedder",
     "//net",
     "//net:test_support",
+    "//services/network:test_support",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
   ]

@@ -19,11 +19,15 @@
 #include "base/time/time.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "net/base/backoff_entry.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 namespace net {
-class URLRequestContextGetter;
+class HttpRequestHeaders;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
 }
 
 namespace gcm {
@@ -34,7 +38,7 @@ class GCMStatsRecorder;
 // want to use GCM. It requires a set of parameters to be specified to identify
 // the Chrome instance, the user, the application and a set of senders that will
 // be authorized to address the application using it's assigned registration ID.
-class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
+class GCM_EXPORT RegistrationRequest {
  public:
   // This enum is also used in an UMA histogram (GCMRegistrationRequestStatus
   // enum defined in tools/metrics/histograms/histogram.xml). Hence the entries
@@ -116,26 +120,29 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
       const net::BackoffEntry::Policy& backoff_policy,
       const RegistrationCallback& callback,
       int max_retry_count,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       GCMStatsRecorder* recorder,
       const std::string& source_to_record);
-  ~RegistrationRequest() override;
+  ~RegistrationRequest();
 
   void Start();
 
-  // URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Invoked from SimpleURLLoader.
+  void OnURLLoadComplete(const network::SimpleURLLoader* source,
+                         std::unique_ptr<std::string> body);
 
  private:
   // Schedules a retry attempt with a backoff.
   void RetryWithBackoff();
 
-  void BuildRequestHeaders(std::string* extra_headers);
+  void BuildRequestHeaders(net::HttpRequestHeaders* headers);
   void BuildRequestBody(std::string* body);
 
-  // Parse the response returned by the URL fetcher into token, and returns the
+  // Parse the response returned by the URL loader into token, and returns the
   // status.
-  Status ParseResponse(const net::URLFetcher* source, std::string* token);
+  Status ParseResponse(const network::SimpleURLLoader* source,
+                       std::unique_ptr<std::string> body,
+                       std::string* token);
 
   RegistrationCallback callback_;
   RequestInfo request_info_;
@@ -143,8 +150,8 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
   GURL registration_url_;
 
   net::BackoffEntry backoff_entry_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
   int retries_left_;
   base::TimeTicks request_start_time_;
 

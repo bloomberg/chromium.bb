@@ -210,7 +210,9 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
             {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
     return std::make_unique<gcm::GCMProfileService>(
         profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
-        nullptr /* url_loader_factory */, chrome::GetChannel(),
+        content::BrowserContext::GetDefaultStoragePartition(profile)
+            ->GetURLLoaderFactoryForBrowserProcess(),
+        chrome::GetChannel(),
         gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
         SigninManagerFactory::GetForProfile(profile),
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile),

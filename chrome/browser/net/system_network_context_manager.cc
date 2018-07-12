@@ -228,6 +228,7 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
 
   // SharedURLLoaderFactory implementation:
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return std::make_unique<network::CrossThreadSharedURLLoaderFactoryInfo>(
         this);
   }
