@@ -367,8 +367,8 @@ void UnifiedSystemTrayController::ShowDetailedView(
   animation_->Reset(1.0);
   UpdateExpandedAmount();
 
-  unified_view_->SetDetailedView(controller->CreateView());
   unified_view_->SaveFeaturePodFocus();
+  unified_view_->SetDetailedView(controller->CreateView());
   detailed_view_controller_ = std::move(controller);
 }
 
