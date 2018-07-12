@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_navigation_loader.h"
 
+#include <sstream>
 #include <utility>
 
 #include "base/optional.h"
@@ -21,6 +22,17 @@
 namespace content {
 
 namespace {
+
+std::string ComposeFetchEventResultString(
+    ServiceWorkerFetchDispatcher::FetchEventResult result,
+    const ServiceWorkerResponse& response) {
+  if (result == ServiceWorkerFetchDispatcher::FetchEventResult::kShouldFallback)
+    return "Fallback to network";
+  std::stringstream stream;
+  stream << "Got response (status_code: " << response.status_code
+         << " status_text: '" << response.status_text << "')";
+  return stream.str();
+}
 
 bool BodyHasNoDataPipeGetters(const network::ResourceRequestBody* body) {
   if (!body)
@@ -202,6 +214,11 @@ void ServiceWorkerNavigationLoader::StartRequest() {
 void ServiceWorkerNavigationLoader::CommitResponseHeaders() {
   DCHECK_EQ(Status::kStarted, status_);
   DCHECK(url_loader_client_.is_bound());
+  TRACE_EVENT_WITH_FLOW2(
+      "ServiceWorker", "ServiceWorkerNavigationLoader::CommitResponseHeaders",
+      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+      "response_code", response_head_.headers->response_code(), "status_text",
+      response_head_.headers->GetStatusText());
   status_ = Status::kSentHeader;
   url_loader_client_->OnReceiveResponse(response_head_);
 }
@@ -269,10 +286,11 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
   // Temporary CHECK for https://crbug.com/857005.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  TRACE_EVENT_WITH_FLOW1(
+  TRACE_EVENT_WITH_FLOW2(
       "ServiceWorker", "ServiceWorkerNavigationLoader::DidDispatchFetchEvent",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
-      blink::ServiceWorkerStatusToString(status));
+      blink::ServiceWorkerStatusToString(status), "result",
+      ComposeFetchEventResultString(fetch_result, response));
   ServiceWorkerMetrics::RecordFetchEventStatus(true /* is_main_resource */,
                                                status);
 
