@@ -1075,22 +1075,6 @@ void FrameLoader::CommitProvisionalLoad() {
   if (!PrepareForCommit())
     return;
 
-  // If we are loading a local root, it is important to explicitly set the event
-  // listener properties to Nothing as this triggers notifications to the
-  // client. Clients may assume the presence of handlers for touch and wheel
-  // events, so these notifications tell it there are (presently) no handlers.
-  if (frame_->IsLocalRoot()) {
-    frame_->GetPage()->GetChromeClient().SetEventListenerProperties(
-        frame_, cc::EventListenerClass::kTouchStartOrMove,
-        cc::EventListenerProperties::kNone);
-    frame_->GetPage()->GetChromeClient().SetEventListenerProperties(
-        frame_, cc::EventListenerClass::kMouseWheel,
-        cc::EventListenerProperties::kNone);
-    frame_->GetPage()->GetChromeClient().SetEventListenerProperties(
-        frame_, cc::EventListenerClass::kTouchEndOrCancel,
-        cc::EventListenerProperties::kNone);
-  }
-
   Client()->TransitionToCommittedForNewPage();
 
   frame_->GetNavigationScheduler().Cancel();
