@@ -25,6 +25,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import gob_util
+from chromite.lib import memoize
 from chromite.lib import terminal
 from chromite.lib import uri_lib
 
@@ -300,7 +301,7 @@ def UserActDeps(opts, query):
   """List CLs matching a query, and all transitive dependencies of those CLs"""
   cls = _Query(opts, query, raw=False)
 
-  @cros_build_lib.Memoize
+  @memoize.Memoize
   def _QueryChange(cl, helper=None):
     return _Query(opts, cl, raw=False, helper=helper)
 

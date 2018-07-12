@@ -22,6 +22,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
+from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import retry_util
@@ -193,7 +194,7 @@ class SDKFetcher(object):
     logging.debug('Read LKGM version from %s: %s', lkgm_file, version)
     return version
 
-  @cros_build_lib.Memoize
+  @memoize.Memoize
   def _GetSDKVersion(self, version):
     """Get SDK version from metadata.
 

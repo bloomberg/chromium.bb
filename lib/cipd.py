@@ -21,6 +21,7 @@ import urlparse
 
 import chromite.lib.cros_logging as log
 from chromite.lib import cache
+from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import cros_build_lib
@@ -121,7 +122,7 @@ def GetCIPDFromCache(instance_id=CIPD_INSTANCE_ID):
   return ref.path
 
 
-@cros_build_lib.Memoize
+@memoize.Memoize
 def InstallPackage(cipd_path, package, instance_id, destination,
                    service_account_json=None):
   """Installs a package at a given destination using cipd.

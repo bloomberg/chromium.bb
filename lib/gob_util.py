@@ -36,6 +36,7 @@ except ImportError:  # Newer oauth2client versions put it in .contrib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import memoize
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 from chromite.lib import cros_build_lib
@@ -87,7 +88,7 @@ class ErrorParser(HTMLParser.HTMLParser):
     return self.err_data.strip()
 
 
-@cros_build_lib.Memoize
+@memoize.Memoize
 def _GetNetRC():
   try:
     return netrc.netrc(None)
@@ -109,7 +110,7 @@ def _NetRCAuthenticators(host):
     return net_rc.authenticators(host)
 
 
-@cros_build_lib.Memoize
+@memoize.Memoize
 def _GetAppCredentials():
   """Returns the singleton Appengine credentials for gerrit code review."""
   return gce.AppAssertionCredentials(

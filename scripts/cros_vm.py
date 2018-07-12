@@ -19,6 +19,7 @@ from chromite.lib import commandline
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import remote_access
@@ -132,7 +133,7 @@ class VM(object):
                         cros_chrome_sdk.COMMAND_NAME,
                         cache_name)
 
-  @cros_build_lib.MemoizedSingleCall
+  @memoize.MemoizedSingleCall
   def _SDKVersion(self):
     """Determine SDK version.
 
@@ -166,7 +167,7 @@ class VM(object):
           return ref.path
     return None
 
-  @cros_build_lib.MemoizedSingleCall
+  @memoize.MemoizedSingleCall
   def QemuVersion(self):
     """Determine QEMU version.
 

@@ -15,6 +15,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import memoize
 from chromite.lib import osutils
 
 
@@ -71,7 +72,7 @@ class ChrootPathResolver(object):
       )
 
   @classmethod
-  @cros_build_lib.MemoizedSingleCall
+  @memoize.MemoizedSingleCall
   def _GetCachePath(cls):
     """Returns the cache directory."""
     return os.path.realpath(GetCacheDir())

@@ -14,6 +14,7 @@ import time
 
 from chromite.lib import cros_build_lib
 from chromite.lib import locking
+from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import signals
 from chromite.lib import sudo
@@ -111,7 +112,7 @@ class Cgroup(object):
   _SUPPORTS_AUTOINHERIT = False
 
   @classmethod
-  @cros_build_lib.MemoizedSingleCall
+  @memoize.MemoizedSingleCall
   def InitSystem(cls):
     """If cgroups are supported, initialize the system state"""
     if not cls.IsSupported():
@@ -147,7 +148,7 @@ class Cgroup(object):
         _EnsureMounted(cls.CGROUP_ROOT, cgroup_root_args)
 
   @classmethod
-  @cros_build_lib.MemoizedSingleCall
+  @memoize.MemoizedSingleCall
   def IsUsable(cls):
     """Function to sanity check if everything is setup to use cgroups"""
     if not cls.InitSystem():
@@ -157,7 +158,7 @@ class Cgroup(object):
     return True
 
   @classmethod
-  @cros_build_lib.MemoizedSingleCall
+  @memoize.MemoizedSingleCall
   def IsSupported(cls):
     """Sanity check as to whether or not cgroups are supported."""
     # Is the cgroup subsystem even enabled?
@@ -293,7 +294,7 @@ class Cgroup(object):
     return list(walk(self.nested_groups))
 
   @property
-  @cros_build_lib.MemoizedSingleCall
+  @memoize.MemoizedSingleCall
   def pid_owner(self):
     # Ensure it's in cros namespace- if it is outside of the cros namespace,
     # we shouldn't make assumptions about the naming convention used.
@@ -357,7 +358,7 @@ class Cgroup(object):
     return node._AddSingleGroup(chunks[-1], parent=node,
                                 autoclean=autoclean, **kwargs)
 
-  @cros_build_lib.MemoizedSingleCall
+  @memoize.MemoizedSingleCall
   def Instantiate(self):
     """Ensure this group exists on disk in the cgroup hierarchy"""
 

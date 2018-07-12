@@ -19,6 +19,7 @@ import time
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import timeout_util
@@ -740,7 +741,7 @@ class RemoteDevice(object):
                                        '--version'], error_code_ok=True)
     return result.returncode == 0
 
-  @cros_build_lib.MemoizedSingleCall
+  @memoize.MemoizedSingleCall
   def HasGigabitEthernet(self):
     """Checks if the device has a gigabit ethernet port.
 
