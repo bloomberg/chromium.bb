@@ -57,7 +57,6 @@
 
 #include <wayland-client.h>
 #include "shared/zalloc.h"
-#include "shared/platform.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
 #include "linux-dmabuf-unstable-v1-client-protocol.h"
@@ -843,7 +842,6 @@ static struct display *
 create_display(int opts, int format)
 {
 	struct display *display;
-	const char *extensions;
 
 	display = malloc(sizeof *display);
 	if (display == NULL) {
@@ -854,15 +852,6 @@ create_display(int opts, int format)
 	assert(display->display);
 
 	display->req_dmabuf_immediate = opts & OPT_IMMEDIATE;
-
-	/*
-	 * hard code format if the platform egl doesn't support format
-	 * querying / advertising.
-	 */
-	extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-	if (extensions && !weston_check_egl_extension(extensions,
-				"EGL_EXT_image_dma_buf_import_modifiers"))
-		display->xrgb8888_format_found = 1;
 
 	display->registry = wl_display_get_registry(display->display);
 	wl_registry_add_listener(display->registry,
