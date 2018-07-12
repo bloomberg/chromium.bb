@@ -94,7 +94,6 @@ PRUNE_PATHS = set([
 
     # Mock test data.
     os.path.join('tools', 'binary_size', 'libsupersize', 'testdata'),
-    os.path.join('tools', 'binary_size', 'libsupersize', 'third_party', 'gvr-android-sdk'),
 
     # Overrides some WebRTC files, same license. Skip this one.
     os.path.join('third_party', 'webrtc_overrides'),
