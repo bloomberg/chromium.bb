@@ -213,6 +213,9 @@ TEST_F(UsageTimeLimitProcessorInternalTest, OverrideValid) {
 TEST_F(UsageTimeLimitProcessorTest, GetStateOnlyTimeWindowLimitSet) {
   // Set up policy.
   std::string last_updated_millis = CreatePolicyTimestamp("1 Jan 2018 10:00");
+  base::Value sunday_time_limit =
+      CreateTimeWindow(base::Value("SUNDAY"), CreateTime(22, 0),
+                       CreateTime(7, 30), base::Value(last_updated_millis));
   base::Value monday_time_limit =
       CreateTimeWindow(base::Value("MONDAY"), CreateTime(21, 0),
                        CreateTime(7, 30), base::Value(last_updated_millis));
@@ -221,6 +224,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOnlyTimeWindowLimitSet) {
                        CreateTime(7, 30), base::Value(last_updated_millis));
 
   base::Value window_limit_entries(base::Value::Type::LIST);
+  window_limit_entries.GetList().push_back(std::move(sunday_time_limit));
   window_limit_entries.GetList().push_back(std::move(monday_time_limit));
   window_limit_entries.GetList().push_back(std::move(friday_time_limit));
 

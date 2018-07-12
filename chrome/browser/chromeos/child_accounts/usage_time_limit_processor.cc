@@ -695,15 +695,15 @@ bool UsageTimeLimitProcessor::IsTodayTimeWindowLimitActive() {
   if (!time_window_limit)
     return false;
 
-  base::Optional<internal::TimeWindowLimitEntry> today_window_limit =
-      time_window_limit->entries[current_weekday];
   base::Optional<internal::TimeWindowLimitEntry> yesterday_window_limit =
       time_window_limit.value()
           .entries[internal::WeekdayShift(current_weekday, -1)];
+  base::TimeDelta delta_from_midnight =
+      current_time - UTCMidnight(current_time);
 
   if ((active_time_window_limit || overridden_window_limit) &&
-      (!yesterday_window_limit ||
-       yesterday_window_limit->ends_at < today_window_limit->ends_at)) {
+      (!yesterday_window_limit || !yesterday_window_limit->IsOvernight() ||
+       yesterday_window_limit->ends_at < delta_from_midnight)) {
     return true;
   }
   return false;
