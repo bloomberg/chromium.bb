@@ -25,6 +25,18 @@ namespace autofill {
 // Owned by AutofillManager.
 class FormDataImporter {
  public:
+  // Record type of the credit card imported from the form, if one exists.
+  enum ImportedCreditCardRecordType {
+    // No card was successfully imported from the form.
+    NO_CARD,
+    // The imported card is already stored locally on the device.
+    LOCAL_CARD,
+    // The imported card is already known to be a server card (either masked or
+    // unmasked).
+    SERVER_CARD,
+    // The imported card is not currently stored with the browser.
+    NEW_CARD,
+  };
   // The parameters should outlive the FormDataImporter.
   FormDataImporter(AutofillClient* client,
                    payments::PaymentsClient* payments_client,
@@ -109,9 +121,10 @@ class FormDataImporter {
   // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_manager_;
 
-  // For metrics, to be passed to |credit_card_save_manager_|. Notes if the
-  // credit card being offered for upload is already a locally-saved card.
-  bool offering_upload_of_local_credit_card_ = false;
+  // Represents the type of the imported credit card from the submitted form.
+  // It will be used to determine whether to offer Upstream or card migration.
+  // Will be passed to |credit_card_save_manager_| for metrics.
+  ImportedCreditCardRecordType imported_credit_card_record_type_;
 
   std::string app_locale_;
 
@@ -124,14 +137,32 @@ class FormDataImporter {
                            AllowDuplicateMaskedServerCardIfFlagEnabled);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, DontDuplicateFullServerCard);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, DontDuplicateMaskedServerCard);
+  FRIEND_TEST_ALL_PREFIXES(
+      FormDataImporterTest,
+      ImportFormData_ImportCreditCardRecordType_FullServerCard);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportCreditCard_TrackOfferingUploadOfLocalCard);
+                           ImportFormData_ImportCreditCardRecordType_LocalCard);
+  FRIEND_TEST_ALL_PREFIXES(
+      FormDataImporterTest,
+      ImportFormData_ImportCreditCardRecordType_MaskedServerCard);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportCreditCard_TrackOfferingUploadOfNewCard);
+                           ImportFormData_ImportCreditCardRecordType_NewCard);
+  FRIEND_TEST_ALL_PREFIXES(
+      FormDataImporterTest,
+      ImportFormData_ImportCreditCardRecordType_NoCard_ExpiredCard);
+  FRIEND_TEST_ALL_PREFIXES(
+      FormDataImporterTest,
+      ImportFormData_ImportCreditCardRecordType_NoCard_InvalidCardNumber);
+  FRIEND_TEST_ALL_PREFIXES(
+      FormDataImporterTest,
+      ImportFormData_ImportCreditCardRecordType_NoCard_NoCardOnForm);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            ImportFormData_OneAddressCreditCardDisabled);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            ImportFormData_OneAddressOneCreditCard);
+  FRIEND_TEST_ALL_PREFIXES(
+      FormDataImporterTest,
+      ImportFormData_SecondImportResetsCreditCardRecordType);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            ImportFormData_AddressesDisabledOneCreditCard);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
