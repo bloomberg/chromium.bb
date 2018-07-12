@@ -111,7 +111,7 @@ class ImageLoader::Task {
       return;
     ExecutionContext& context = loader_->GetElement()->GetDocument();
     probe::AsyncTask async_task(&context, this);
-    if (script_state_->ContextIsValid()) {
+    if (script_state_ && script_state_->ContextIsValid()) {
       ScriptState::Scope scope(script_state_);
       loader_->DoUpdateFromElement(should_bypass_main_world_csp_,
                                    update_behavior_, request_url_,
@@ -135,8 +135,7 @@ class ImageLoader::Task {
   WeakPersistent<ImageLoader> loader_;
   BypassMainWorldBehavior should_bypass_main_world_csp_;
   UpdateFromElementBehavior update_behavior_;
-  // TODO(peria): Make |script_state_| WeakPersistent.
-  Persistent<ScriptState> script_state_;
+  WeakPersistent<ScriptState> script_state_;
   ReferrerPolicy referrer_policy_;
   KURL request_url_;
   base::WeakPtrFactory<Task> weak_factory_;
