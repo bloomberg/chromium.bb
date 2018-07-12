@@ -278,8 +278,8 @@ void CaptivePortalService::DetectCaptivePortalInternal() {
         })");
   captive_portal_detector_->DetectCaptivePortal(
       test_url_,
-      base::Bind(&CaptivePortalService::OnPortalDetectionCompleted,
-                 base::Unretained(this)),
+      base::BindOnce(&CaptivePortalService::OnPortalDetectionCompleted,
+                     base::Unretained(this)),
       traffic_annotation);
 }
 

@@ -27,13 +27,13 @@ CaptivePortalDetector::~CaptivePortalDetector() {
 
 void CaptivePortalDetector::DetectCaptivePortal(
     const GURL& url,
-    const DetectionCallback& detection_callback,
+    DetectionCallback detection_callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!FetchingURL());
   DCHECK(detection_callback_.is_null());
 
-  detection_callback_ = detection_callback;
+  detection_callback_ = std::move(detection_callback);
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
@@ -85,10 +85,8 @@ void CaptivePortalDetector::OnSimpleLoaderCompleteInternal(
   Results results;
   GetCaptivePortalResultFromResponse(net_error, response_code, url, headers,
                                      &results);
-  DetectionCallback callback = detection_callback_;
   simple_loader_.reset();
-  detection_callback_.Reset();
-  callback.Run(results);
+  std::move(detection_callback_).Run(results);
 }
 
 void CaptivePortalDetector::GetCaptivePortalResultFromResponse(

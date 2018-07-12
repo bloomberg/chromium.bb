@@ -74,8 +74,8 @@ class CaptivePortalDetectorTest : public testing::Test,
 
     detector()->DetectCaptivePortal(
         url,
-        base::Bind(&CaptivePortalClient::OnPortalDetectionCompleted,
-                   base::Unretained(&client)),
+        base::BindOnce(&CaptivePortalClient::OnPortalDetectionCompleted,
+                       base::Unretained(&client)),
         TRAFFIC_ANNOTATION_FOR_TESTS);
 
     ASSERT_TRUE(FetchingURL());
@@ -100,8 +100,8 @@ class CaptivePortalDetectorTest : public testing::Test,
 
     detector()->DetectCaptivePortal(
         url,
-        base::Bind(&CaptivePortalClient::OnPortalDetectionCompleted,
-                   base::Unretained(&client)),
+        base::BindOnce(&CaptivePortalClient::OnPortalDetectionCompleted,
+                       base::Unretained(&client)),
         TRAFFIC_ANNOTATION_FOR_TESTS);
 
     ASSERT_TRUE(FetchingURL());
