@@ -100,7 +100,8 @@ class ViewIDTest : public InProcessBrowserTest {
   test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
 };
 
-IN_PROC_BROWSER_TEST_F(ViewIDTest, Basic) {
+// https://crbug.com/862945
+IN_PROC_BROWSER_TEST_F(ViewIDTest, DISABLED_Basic) {
   ASSERT_NO_FATAL_FAILURE(DoTest());
 }
 
