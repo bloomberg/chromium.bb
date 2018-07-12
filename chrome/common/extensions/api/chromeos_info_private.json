@@ -52,6 +52,12 @@
         "type": "string",
         "enum": ["chromebase", "chromebit", "chromebook", "chromebox", "chromedevice"],
         "description": "Device type."
+      },
+      {
+        "id": "StylusStatus",
+        "type": "string",
+        "enum": ["unsupported", "supported"],
+        "description": "Status of stylus."
       }
     ],
     "functions": [
@@ -85,6 +91,7 @@
                   "playStoreStatus": {"$ref": "PlayStoreStatus", "optional": true},
                   "managedDeviceStatus": {"$ref": "ManagedDeviceStatus", "optional": true},
                   "deviceType": {"$ref": "DeviceType", "optional": true},
+                  "stylusStatus": {"$ref": "StylusStatus", "optional": true},
                   "clientId" : {"type": "string", "optional": true, "description": "Device client id"},
                   "timezone" : {"type": "string", "optional": true, "description": "Timezone"},
                   "a11yLargeCursorEnabled" : {"type": "boolean", "optional": true, "description": "If true, ChromeOS is showing enlarged cursor."},

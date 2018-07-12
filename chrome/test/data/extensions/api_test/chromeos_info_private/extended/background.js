@@ -13,7 +13,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
       'sessionType',
       'playStoreStatus',
       'managedDeviceStatus',
-      'deviceType'
+      'deviceType',
+      'stylusStatus',
     ], chrome.test.callbackPass(function(values) {
           switch (testName) {
             case 'kiosk':
@@ -45,6 +46,13 @@ chrome.app.runtime.onLaunched.addListener(function() {
               break;
             case 'unknown device type':
               chrome.test.assertEq('chromedevice', values['deviceType']);
+              break;
+            case 'stylus unsupported':
+              chrome.test.assertEq('unsupported', values['stylusStatus']);
+              break;
+            case 'stylus supported':
+              chrome.test.assertEq('supported', values['stylusStatus']);
+              break;
           }
         }));
   });
