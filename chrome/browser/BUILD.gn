@@ -3222,7 +3222,6 @@ jumbo_split_static_library("browser") {
       "shell_integration_linux.cc",
       "shell_integration_linux.h",
       "speech/tts_linux.cc",
-      "web_applications/web_app_linux.cc",
     ]
 
     deps += [ "//third_party/speech-dispatcher" ]

@@ -1751,6 +1751,11 @@ split_static_library("ui") {
     if (!toolkit_views) {
       sources += [ "media_router/cloud_services_dialog.cc" ]
     }
+
+    # TODO(loyso): Rework these dependencies. http://crbug.com/862049
+    if (enable_extensions) {
+      deps += [ "//chrome/browser/web_applications" ]
+    }
   }
 
   if (is_chromeos) {
