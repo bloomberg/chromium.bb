@@ -61,7 +61,7 @@ Polymer({
 
   /** @private */
   onInputValueChanged_: function() {
-    this.searchTerm_ = this.value;
+    this.searchTerm_ = this.$.search.value;
   },
 
   /**
