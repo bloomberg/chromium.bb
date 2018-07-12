@@ -116,6 +116,8 @@ class CONTENT_EXPORT BackgroundFetchContext
   // BackgroundFetchDataManagerObserver implementation.
   void OnUpdatedUI(const BackgroundFetchRegistrationId& registration_id,
                    const std::string& title) override;
+  void OnServiceWorkerDatabaseCorrupted(
+      int64_t service_worker_registration_id) override;
 
   // ServiceWorkerContextCoreObserver implementation.
   void OnRegistrationDeleted(int64_t registration_id,

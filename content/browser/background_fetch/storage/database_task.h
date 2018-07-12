@@ -76,6 +76,9 @@ class DatabaseTask : public DatabaseTaskHost {
   void AddDatabaseTask(std::unique_ptr<DatabaseTask> task);
   void AddSubTask(std::unique_ptr<DatabaseTask> task);
 
+  // Abandon all fetches for a given service worker.
+  void AbandonFetches(int64_t service_worker_registration_id);
+
   ServiceWorkerContextWrapper* service_worker_context();
 
   CacheStorageManager* cache_manager();

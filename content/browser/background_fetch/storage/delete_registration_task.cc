@@ -94,7 +94,7 @@ void DeleteRegistrationTask::DidGetRegistration(
     } else {
       // Service worker database has been corrupted. Abandon all fetches.
       error_ = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
-      data_manager()->abandon_fetches_callback().Run();
+      AbandonFetches(service_worker_registration_id_);
       std::move(done_closure).Run();
     }
   } else {

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -53,6 +54,11 @@ void DatabaseTask::AddSubTask(std::unique_ptr<DatabaseTask> task) {
   DCHECK_EQ(task->host_, this);
   auto insert_result = active_subtasks_.emplace(task.get(), std::move(task));
   insert_result.first->second->Start();  // Start the subtask.
+}
+
+void DatabaseTask::AbandonFetches(int64_t service_worker_registration_id) {
+  for (auto& observer : data_manager()->observers())
+    observer.OnServiceWorkerDatabaseCorrupted(service_worker_registration_id);
 }
 
 ServiceWorkerContextWrapper* DatabaseTask::service_worker_context() {

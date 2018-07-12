@@ -36,11 +36,9 @@ BackgroundFetchContext::BackgroundFetchContext(
   // Although this lives only on the IO thread, it is constructed on UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(service_worker_context_);
+
   data_manager_ = std::make_unique<BackgroundFetchDataManager>(
-      browser_context, service_worker_context, cache_storage_context,
-      base::BindRepeating(&BackgroundFetchContext::AbandonFetches,
-                          weak_factory_.GetWeakPtr(),
-                          blink::mojom::kInvalidServiceWorkerRegistrationId));
+      browser_context_, service_worker_context, cache_storage_context);
   scheduler_ = std::make_unique<BackgroundFetchScheduler>(data_manager_.get());
   delegate_proxy_.SetClickEventDispatcher(base::BindRepeating(
       &BackgroundFetchContext::DispatchClickEvent, weak_factory_.GetWeakPtr()));
@@ -207,6 +205,11 @@ void BackgroundFetchContext::UpdateUI(
 
   data_manager_->UpdateRegistrationUI(registration_id, title,
                                       std::move(callback));
+}
+
+void BackgroundFetchContext::OnServiceWorkerDatabaseCorrupted(
+    int64_t service_worker_registration_id) {
+  AbandonFetches(service_worker_registration_id);
 }
 
 void BackgroundFetchContext::AbandonFetches(

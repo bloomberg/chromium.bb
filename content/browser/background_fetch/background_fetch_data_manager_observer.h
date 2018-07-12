@@ -19,6 +19,10 @@ class BackgroundFetchDataManagerObserver {
   virtual void OnUpdatedUI(const BackgroundFetchRegistrationId& registration_id,
                            const std::string& title) = 0;
 
+  // Called if corrupted data is found in the Service Worker database.
+  virtual void OnServiceWorkerDatabaseCorrupted(
+      int64_t service_worker_registration_id) = 0;
+
   virtual ~BackgroundFetchDataManagerObserver() {}
 };
 

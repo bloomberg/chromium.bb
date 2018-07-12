@@ -78,8 +78,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   BackgroundFetchDataManager(
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      scoped_refptr<CacheStorageContextImpl> cache_storage_context,
-      const base::RepeatingClosure& abandon_fetches_callback);
+      scoped_refptr<CacheStorageContextImpl> cache_storage_context);
 
   ~BackgroundFetchDataManager() override;
 
@@ -162,10 +161,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
     return observers_;
   }
 
-  const base::RepeatingClosure& abandon_fetches_callback() {
-    return abandon_fetches_callback_;
-  }
-
   // BackgroundFetchScheduler::RequestProvider implementation:
   void PopNextRequest(const BackgroundFetchRegistrationId& registration_id,
                       NextRequestCallback callback) override;
@@ -236,11 +231,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // refcount of JavaScript objects that refers to them goes to zero, unless
   // the browser is shutdown first.
   std::set<std::string> ref_counted_unique_ids_;
-
-  // This is called to abandon all ongoing fetches. It will also mark these
-  // fetches for deletion, which will be cleaned up by the Cleanup task
-  // subsequently.
-  base::RepeatingClosure abandon_fetches_callback_;
 
   base::WeakPtrFactory<BackgroundFetchDataManager> weak_ptr_factory_;
 
