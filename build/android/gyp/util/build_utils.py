@@ -255,6 +255,7 @@ def ExtractAll(zip_path, path=None, no_clobber=True, pattern=None,
   with zipfile.ZipFile(zip_path) as z:
     for name in z.namelist():
       if name.endswith('/'):
+        MakeDirectory(os.path.join(path, name))
         continue
       if pattern is not None:
         if not fnmatch.fnmatch(name, pattern):
