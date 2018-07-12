@@ -37,6 +37,7 @@
 // logging is skipped due to exponential backoff.
 //
 // For external QUIC, EXPECT_QUIC_BUG should be #defined to EXPECT_DFATAL.
+// TODO(danzh): Move to third_party/quic/platform/api/quic_expect_bug.h.
 #define EXPECT_QUIC_BUG EXPECT_DFATAL
 
 namespace quic {
