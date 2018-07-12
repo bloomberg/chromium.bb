@@ -21,11 +21,11 @@
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_observers.h"
 #include "chrome/browser/media/router/presentation/render_frame_host_id.h"
 #include "chrome/common/media_router/media_source.h"
-#include "content/public/browser/media_controller.h"
 #include "content/public/browser/presentation_request.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "media/base/media_controller.h"
 
 namespace content {
 class PresentationScreenAvailabilityListener;
@@ -110,7 +110,7 @@ class PresentationServiceDelegateImpl
   void Terminate(int render_process_id,
                  int render_frame_id,
                  const std::string& presentation_id) override;
-  std::unique_ptr<content::MediaController> GetMediaController(
+  std::unique_ptr<media::MediaController> GetMediaController(
       int render_process_id,
       int render_frame_id,
       const std::string& presentation_id) override;

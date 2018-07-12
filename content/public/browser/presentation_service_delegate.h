@@ -12,8 +12,8 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/media_controller.h"
 #include "content/public/common/presentation_connection_message.h"
+#include "media/base/media_controller.h"
 #include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
 
 namespace content {
@@ -174,7 +174,7 @@ class CONTENT_EXPORT ControllerPresentationServiceDelegate
   // |render_process_id|, |render_frame_id|: ID of originating frame.
   // |presentation_id|: The ID of the presentation for which we want a
   // Controller.
-  virtual std::unique_ptr<MediaController> GetMediaController(
+  virtual std::unique_ptr<media::MediaController> GetMediaController(
       int render_process_id,
       int render_frame_id,
       const std::string& presentation_id) = 0;

@@ -7,12 +7,12 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/time/time.h"
-#include "content/public/browser/media_controller.h"
+#include "media/base/media_controller.h"
 
 namespace media_router {
 
 // Allows native code to call into a Java MediaController.
-class MediaControllerBridge : public content::MediaController {
+class MediaControllerBridge : public media::MediaController {
  public:
   explicit MediaControllerBridge(
       base::android::ScopedJavaGlobalRef<jobject> controller);

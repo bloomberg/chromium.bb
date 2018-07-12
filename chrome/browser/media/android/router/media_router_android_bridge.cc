@@ -8,8 +8,8 @@
 #include "base/android/jni_string.h"
 #include "chrome/browser/media/android/remote/media_controller_bridge.h"
 #include "chrome/browser/media/android/router/media_router_android.h"
-#include "content/public/browser/media_controller.h"
 #include "jni/ChromeMediaRouter_jni.h"
+#include "media/base/media_controller.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;
@@ -120,7 +120,7 @@ void MediaRouterAndroidBridge::StopObservingMediaSinks(
                                                  jsource_id);
 }
 
-std::unique_ptr<content::MediaController>
+std::unique_ptr<media::MediaController>
 MediaRouterAndroidBridge::GetMediaController(const MediaRoute::Id& route_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jroute_id =

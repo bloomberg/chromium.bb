@@ -17,7 +17,7 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/common/media_router/media_route.h"
-#include "content/public/browser/media_controller.h"
+#include "media/base/media_controller.h"
 #include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
 
 namespace media_router {
@@ -35,7 +35,7 @@ class MediaRouterBase : public MediaRouter {
   void OnIncognitoProfileShutdown() override;
   IssueManager* GetIssueManager() final;
   std::vector<MediaRoute> GetCurrentRoutes() const override;
-  std::unique_ptr<content::MediaController> GetMediaController(
+  std::unique_ptr<media::MediaController> GetMediaController(
       const MediaRoute::Id& route_id) override;
 #if !defined(OS_ANDROID)
   scoped_refptr<MediaRouteController> GetRouteController(

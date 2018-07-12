@@ -162,6 +162,7 @@ source_set("base") {
     "media_client.h",
     "media_content_type.cc",
     "media_content_type.h",
+    "media_controller.h",
     "media_export.h",
     "media_log.cc",
     "media_log.h",

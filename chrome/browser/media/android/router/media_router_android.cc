@@ -312,8 +312,8 @@ void MediaRouterAndroid::RemoveRoute(const MediaRoute::Id& route_id) {
     observer.OnRoutesUpdated(active_routes_, std::vector<MediaRoute::Id>());
 }
 
-std::unique_ptr<content::MediaController>
-MediaRouterAndroid::GetMediaController(const MediaRoute::Id& route_id) {
+std::unique_ptr<media::MediaController> MediaRouterAndroid::GetMediaController(
+    const MediaRoute::Id& route_id) {
   return bridge_->GetMediaController(route_id);
 }
 
