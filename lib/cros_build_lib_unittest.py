@@ -820,10 +820,6 @@ class HelperMethodSimpleTests(cros_test_lib.OutputTestCase):
     self.assertEqual(cros_build_lib.ParseUserDateTimeFormat(stringtime),
                      100000.0)
 
-  def testParseDurationToSeconds(self):
-    self.assertEqual(cros_build_lib.ParseDurationToSeconds('1:01:01'),
-                     3600 + 60 + 1)
-
   def testMachineDetails(self):
     """Verify we don't crash."""
     contents = cros_build_lib.MachineDetails()

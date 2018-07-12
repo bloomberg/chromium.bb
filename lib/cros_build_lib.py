@@ -1685,20 +1685,6 @@ def SafeRun(functors, combine_exceptions=False):
       raise RuntimeError([e[0] for e in errors])
 
 
-def ParseDurationToSeconds(duration):
-  """Parses a string duration of the form HH:MM:SS into seconds.
-
-  Args:
-    duration: A string such as '12:43:12' (representing in this case
-              12 hours, 43 minutes, 12 seconds).
-
-  Returns:
-    An integer number of seconds.
-  """
-  h, m, s = [int(t) for t in duration.split(':')]
-  return s + 60 * m + 3600 * h
-
-
 def UserDateTimeFormat(timeval=None):
   """Format a date meant to be viewed by a user
 
