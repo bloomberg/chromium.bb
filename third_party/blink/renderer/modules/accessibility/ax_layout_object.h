@@ -165,10 +165,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   AXObject* RawNextSibling() const override;
   void AddChildren() override;
   bool CanHaveChildren() const override;
-  void UpdateChildrenIfNecessary() override;
-  bool NeedsToUpdateChildren() const override { return children_dirty_; }
-  void SetNeedsToUpdateChildren() override { children_dirty_ = true; }
-  void ClearChildren() override;
 
   // Properties of the object's owning document or page.
   double EstimatedLoadingProgress() const override;

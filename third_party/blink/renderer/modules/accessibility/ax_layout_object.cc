@@ -1915,18 +1915,6 @@ bool AXLayoutObject::CanHaveChildren() const {
   return AXNodeObject::CanHaveChildren();
 }
 
-void AXLayoutObject::UpdateChildrenIfNecessary() {
-  if (NeedsToUpdateChildren())
-    ClearChildren();
-
-  AXObject::UpdateChildrenIfNecessary();
-}
-
-void AXLayoutObject::ClearChildren() {
-  AXObject::ClearChildren();
-  children_dirty_ = false;
-}
-
 //
 // Properties of the object's owning document or page.
 //
