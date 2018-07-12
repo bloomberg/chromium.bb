@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/frame/location.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/window_post_message_options.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
@@ -113,6 +114,16 @@ void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
                             const String& target_origin,
                             Vector<ScriptValue>& transfer,
                             ExceptionState& exception_state) {
+  WindowPostMessageOptions options;
+  options.setTargetOrigin(target_origin);
+  postMessage(incumbent_window, message, transfer, options, exception_state);
+}
+
+void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
+                            const ScriptValue& message,
+                            Vector<ScriptValue>& transfer,
+                            const WindowPostMessageOptions& options,
+                            ExceptionState& exception_state) {
   UseCounter::Count(incumbent_window->GetFrame(),
                     WebFeature::kWindowPostMessage);
 
@@ -129,17 +140,17 @@ void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
     }
   }
 
-  SerializedScriptValue::SerializeOptions options;
-  options.transferables = &transferables;
+  SerializedScriptValue::SerializeOptions serialize_options;
+  serialize_options.transferables = &transferables;
   scoped_refptr<SerializedScriptValue> serialized_message =
-      SerializedScriptValue::Serialize(isolate, message.V8Value(), options,
-                                       exception_state);
+      SerializedScriptValue::Serialize(isolate, message.V8Value(),
+                                       serialize_options, exception_state);
   if (exception_state.HadException())
     return;
 
   serialized_message->UnregisterMemoryAllocatedWithCurrentScriptContext();
   DoPostMessage(std::move(serialized_message), transferables.message_ports,
-                target_origin, incumbent_window, exception_state);
+                options.targetOrigin(), incumbent_window, exception_state);
 }
 
 DOMWindow* DOMWindow::AnonymousIndexedGetter(uint32_t index) const {

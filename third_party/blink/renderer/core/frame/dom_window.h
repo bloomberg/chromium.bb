@@ -25,6 +25,7 @@ class MessageEvent;
 class ScriptValue;
 class SecurityOrigin;
 class SerializedScriptValue;
+class WindowPostMessageOptions;
 class WindowProxyManager;
 
 class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
@@ -90,6 +91,12 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
                    const ScriptValue& message,
                    const String& target_origin,
                    Vector<ScriptValue>& transfer,
+                   ExceptionState&);
+
+  void postMessage(LocalDOMWindow* incumbent_window,
+                   const ScriptValue& message,
+                   Vector<ScriptValue>& transfer,
+                   const WindowPostMessageOptions& options,
                    ExceptionState&);
 
   // Indexed properties

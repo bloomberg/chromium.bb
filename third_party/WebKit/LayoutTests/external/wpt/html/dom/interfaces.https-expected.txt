@@ -5620,6 +5620,8 @@ PASS Window interface: operation cancelAnimationFrame(unsigned long)
 PASS Unscopable handled correctly for cancelAnimationFrame(unsigned long) on Window
 PASS Window interface: operation postMessage(any, USVString, [object Object])
 PASS Unscopable handled correctly for postMessage(any, USVString, [object Object]) on Window
+PASS Window interface: operation postMessage(any, [object Object], WindowPostMessageOptions)
+PASS Unscopable handled correctly for postMessage(any, [object Object], WindowPostMessageOptions) on Window
 PASS Window interface: operation captureEvents()
 PASS Unscopable handled correctly for captureEvents() on Window
 PASS Window interface: operation releaseEvents()
@@ -5855,6 +5857,8 @@ PASS Window interface: window must inherit property "cancelAnimationFrame(unsign
 PASS Window interface: calling cancelAnimationFrame(unsigned long) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "postMessage(any, USVString, [object Object])" with the proper type
 PASS Window interface: calling postMessage(any, USVString, [object Object]) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "postMessage(any, [object Object], WindowPostMessageOptions)" with the proper type
+PASS Window interface: calling postMessage(any, [object Object], WindowPostMessageOptions) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "captureEvents()" with the proper type
 PASS Window interface: window must inherit property "releaseEvents()" with the proper type
 PASS Window interface: window must inherit property "external" with the proper type

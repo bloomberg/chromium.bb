@@ -3617,6 +3617,7 @@ crbug.com/669473 external/wpt/css/css-ui/outline-016.html [ Failure ]
 crbug.com/670024 external/wpt/webmessaging/broadcastchannel/sandbox.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/with-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/without-ports/001.html [ Failure ]
+crbug.com/660384 external/wpt/webmessaging/with-options/broken-origin.tentative.html [ Failure ]
 
 # Added 2016-12-12
 crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
@@ -4575,6 +4576,7 @@ crbug.com/859169 [ Win7 ] http/tests/devtools/layers/layer-scroll-rects-get.js [
 
 # User Activation
 crbug.com/736415 external/wpt/html/user-activation/activation-api-iframe.tenative.html [ Failure ]
+crbug.com/846858 external/wpt/webmessaging/without-ports/008.html [ Failure ]
 
 # wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html is flaky in some virtual/ tests.
 crbug.com/850964 [ Linux Win ] virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass Failure ]

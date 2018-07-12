@@ -1411,6 +1411,10 @@
       name: "WebXRHitTest",
     },
     {
+      name: "WindowPostMessageOptions",
+      status: "experimental",
+    },
+    {
       name: "WorkerNosniffBlock",
       status: "test",
     },

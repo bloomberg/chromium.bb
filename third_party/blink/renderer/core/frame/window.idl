@@ -102,6 +102,8 @@
 
     [CrossOrigin, CallWith=CurrentWindow, RaisesException] void postMessage(any message, USVString targetOrigin, optional sequence<object> transfer = []);
 
+    [CrossOrigin, CallWith=CurrentWindow, RaisesException, RuntimeEnabled=WindowPostMessageOptions] void postMessage(any message, optional sequence<object> transfer = [], optional WindowPostMessageOptions options);
+
     // Custom elements
     // https://w3c.github.io/webcomponents/spec/custom/#custom-elements-api
     [CallWith=ScriptState] readonly attribute CustomElementRegistry customElements;
