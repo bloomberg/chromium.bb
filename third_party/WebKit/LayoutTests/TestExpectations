@@ -2276,6 +2276,12 @@ crbug.com/595206 inspector-protocol/runtime/runtime-property-on-console-proto.js
 crbug.com/595206 inspector-protocol/sessions/runtime-evaluate.js [ Skip ]
 crbug.com/595206 inspector-protocol/target/target-send-message.js [ Skip ]
 
+# after skia roll these should be removed
+crbug.com/863042 fast/gradients/crash-on-zero-radius.html [ Failure Pass ]
+crbug.com/863042 fast/gradients/generated-gradients.html [ Failure Pass ]
+crbug.com/863042 fast/gradients/simple-gradients.html [ Failure Pass ]
+crbug.com/863042 svg/W3C-SVG-1.1/pservers-grad-13-b.svg [ Failure Pass ]
+
 # Not implemented yet
 crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse-line-wrapping.html [ Failure ]
 crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse.html [ Failure ]
