@@ -785,8 +785,13 @@ const url::Origin& RenderFrameHostImpl::GetLastCommittedOrigin() {
 
 void RenderFrameHostImpl::GetCanonicalUrlForSharing(
     mojom::Frame::GetCanonicalUrlForSharingCallback callback) {
-  DCHECK(frame_);
-  frame_->GetCanonicalUrlForSharing(std::move(callback));
+  // TODO(https://crbug.com/859110): Remove this once frame_ can no longer be
+  // null.
+  if (IsRenderFrameLive()) {
+    frame_->GetCanonicalUrlForSharing(std::move(callback));
+  } else {
+    std::move(callback).Run(base::nullopt);
+  }
 }
 
 blink::mojom::PauseSubresourceLoadingHandlePtr
