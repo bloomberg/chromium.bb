@@ -613,6 +613,12 @@ scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
 
 scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
     const NGConstraintSpace& constraint_space) {
+  // This is an exit-point from LayoutNG to the legacy engine. This means that
+  // we need to be at a formatting context boundary, since NG and legacy don't
+  // cooperate on e.g. margin collapsing.
+  DCHECK(!box_->IsLayoutBlock() ||
+         ToLayoutBlock(box_)->CreatesNewFormattingContext());
+
   WritingMode writing_mode = Style().GetWritingMode();
   const NGConstraintSpace* old_space =
       box_->IsLayoutNGMixin() ? ToLayoutBlockFlow(box_)->CachedConstraintSpace()
