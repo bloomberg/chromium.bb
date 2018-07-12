@@ -37,8 +37,10 @@ std::list<uint32_t> VideoCaptureDeviceLinux::GetListOfUsableFourCCs(
 }
 
 VideoCaptureDeviceLinux::VideoCaptureDeviceLinux(
+    scoped_refptr<V4L2CaptureDevice> v4l2,
     const VideoCaptureDeviceDescriptor& device_descriptor)
     : device_descriptor_(device_descriptor),
+      v4l2_(std::move(v4l2)),
       v4l2_thread_("V4L2CaptureThread") {}
 
 VideoCaptureDeviceLinux::~VideoCaptureDeviceLinux() {
@@ -59,7 +61,8 @@ void VideoCaptureDeviceLinux::AllocateAndStart(
   const int line_frequency =
       TranslatePowerLineFrequencyToV4L2(GetPowerLineFrequency(params));
   capture_impl_ = std::make_unique<V4L2CaptureDelegate>(
-      device_descriptor_, v4l2_thread_.task_runner(), line_frequency);
+      v4l2_.get(), device_descriptor_, v4l2_thread_.task_runner(),
+      line_frequency);
   if (!capture_impl_) {
     client->OnError(FROM_HERE, "Failed to create VideoCaptureDelegate");
     return;
