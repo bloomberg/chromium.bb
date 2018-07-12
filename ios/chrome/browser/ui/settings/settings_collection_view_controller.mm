@@ -376,12 +376,15 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
   // Basics section
   [model addSectionWithIdentifier:SectionIdentifierBasics];
-  SettingsTextItem* basicsHeader =
-      [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
-  basicsHeader.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_GENERAL_TAB_LABEL);
-  basicsHeader.textColor = [[MDCPalette greyPalette] tint500];
-  [model setHeader:basicsHeader
-      forSectionWithIdentifier:SectionIdentifierBasics];
+  if (!experimental_flags::IsSettingsUIRebootEnabled()) {
+    SettingsTextItem* basicsHeader =
+        [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
+    basicsHeader.text =
+        l10n_util::GetNSString(IDS_IOS_OPTIONS_GENERAL_TAB_LABEL);
+    basicsHeader.textColor = [[MDCPalette greyPalette] tint500];
+    [model setHeader:basicsHeader
+        forSectionWithIdentifier:SectionIdentifierBasics];
+  }
   [model addItem:[self searchEngineDetailItem]
       toSectionWithIdentifier:SectionIdentifierBasics];
   [model addItem:[self savePasswordsDetailItem]
@@ -391,13 +394,15 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
   // Advanced Section
   [model addSectionWithIdentifier:SectionIdentifierAdvanced];
-  SettingsTextItem* advancedHeader =
-      [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
-  advancedHeader.text =
-      l10n_util::GetNSString(IDS_IOS_OPTIONS_ADVANCED_TAB_LABEL);
-  advancedHeader.textColor = [[MDCPalette greyPalette] tint500];
-  [model setHeader:advancedHeader
-      forSectionWithIdentifier:SectionIdentifierAdvanced];
+  if (!experimental_flags::IsSettingsUIRebootEnabled()) {
+    SettingsTextItem* advancedHeader =
+        [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
+    advancedHeader.text =
+        l10n_util::GetNSString(IDS_IOS_OPTIONS_ADVANCED_TAB_LABEL);
+    advancedHeader.textColor = [[MDCPalette greyPalette] tint500];
+    [model setHeader:advancedHeader
+        forSectionWithIdentifier:SectionIdentifierAdvanced];
+  }
   [model addItem:[self voiceSearchDetailItem]
       toSectionWithIdentifier:SectionIdentifierAdvanced];
   [model addItem:[self privacyDetailItem]
@@ -418,12 +423,14 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   // Debug Section
   if ([self hasDebugSection]) {
     [model addSectionWithIdentifier:SectionIdentifierDebug];
-    SettingsTextItem* debugHeader =
-        [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
-    debugHeader.text = @"Debug";
-    debugHeader.textColor = [[MDCPalette greyPalette] tint500];
-    [model setHeader:debugHeader
-        forSectionWithIdentifier:SectionIdentifierDebug];
+    if (!experimental_flags::IsSettingsUIRebootEnabled()) {
+      SettingsTextItem* debugHeader =
+          [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
+      debugHeader.text = @"Debug";
+      debugHeader.textColor = [[MDCPalette greyPalette] tint500];
+      [model setHeader:debugHeader
+          forSectionWithIdentifier:SectionIdentifierDebug];
+    }
   }
 
   if (experimental_flags::IsMemoryDebuggingEnabled()) {
@@ -474,10 +481,13 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 }
 
 - (CollectionViewItem*)googleServicesCellItem {
+  // TODO(crbug.com/805214): This branded icon image needs to come from
+  // BrandedImageProvider.
   return [self detailItemWithType:ItemGoogleServices
                              text:l10n_util::GetNSString(
                                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE)
-                       detailText:nil];
+                       detailText:nil
+                    iconImageName:nil];
 }
 
 - (CollectionViewItem*)accountCellItem {
@@ -500,7 +510,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       [self detailItemWithType:ItemTypeSearchEngine
                           text:l10n_util::GetNSString(
                                    IDS_IOS_SEARCH_ENGINE_SETTING_TITLE)
-                    detailText:defaultSearchEngineName];
+                    detailText:defaultSearchEngineName
+                 iconImageName:@"settings_search_engine"];
   _defaultSearchEngineItem.accessibilityIdentifier =
       kSettingsSearchEngineCellId;
   return _defaultSearchEngineItem;
@@ -510,7 +521,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   _savePasswordsDetailItem =
       [self detailItemWithType:ItemTypeSavedPasswords
                           text:l10n_util::GetNSString(IDS_IOS_PASSWORDS)
-                    detailText:nil];
+                    detailText:nil
+                 iconImageName:@"settings_passwords"];
 
   return _savePasswordsDetailItem;
 }
@@ -524,7 +536,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   _autoFillDetailItem =
       [self detailItemWithType:ItemTypeAutofill
                           text:l10n_util::GetNSString(IDS_IOS_AUTOFILL)
-                    detailText:autofillDetail];
+                    detailText:autofillDetail
+                 iconImageName:@"settings_autofill_forms"];
 
   return _autoFillDetailItem;
 }
@@ -541,7 +554,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       [self detailItemWithType:ItemTypeVoiceSearch
                           text:l10n_util::GetNSString(
                                    IDS_IOS_VOICE_SEARCH_SETTING_TITLE)
-                    detailText:languageName];
+                    detailText:languageName
+                 iconImageName:@"settings_voice_search"];
   _voiceSearchDetailItem.accessibilityIdentifier = kSettingsVoiceSearchCellId;
   return _voiceSearchDetailItem;
 }
@@ -551,33 +565,38 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       [self detailItemWithType:ItemTypePrivacy
                           text:l10n_util::GetNSString(
                                    IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)
-                    detailText:nil];
+                    detailText:nil
+                 iconImageName:@"settings_privacy"];
 }
 
 - (CollectionViewItem*)contentSettingsDetailItem {
   return [self
       detailItemWithType:ItemTypeContentSettings
                     text:l10n_util::GetNSString(IDS_IOS_CONTENT_SETTINGS_TITLE)
-              detailText:nil];
+              detailText:nil
+           iconImageName:@"settings_content_settings"];
 }
 
 - (CollectionViewItem*)bandwidthManagementDetailItem {
   return [self detailItemWithType:ItemTypeBandwidth
                              text:l10n_util::GetNSString(
                                       IDS_IOS_BANDWIDTH_MANAGEMENT_SETTINGS)
-                       detailText:nil];
+                       detailText:nil
+                    iconImageName:@"settings_bandwidth"];
 }
 
 - (CollectionViewItem*)aboutChromeDetailItem {
   return [self detailItemWithType:ItemTypeAboutChrome
                              text:l10n_util::GetNSString(IDS_IOS_PRODUCT_NAME)
-                       detailText:nil];
+                       detailText:nil
+                    iconImageName:@"settings_about_chrome"];
 }
 
 - (SettingsSwitchItem*)showMemoryDebugSwitchItem {
   SettingsSwitchItem* showMemoryDebugSwitchItem =
       [self switchItemWithType:ItemTypeMemoryDebugging
                          title:@"Show memory debug tools"
+                 iconImageName:@"settings_debug"
                withDefaultsKey:nil];
   showMemoryDebugSwitchItem.on = [_showMemoryDebugToolsEnabled value];
 
@@ -589,6 +608,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       [self switchItemWithType:ItemTypeArticlesForYou
                          title:l10n_util::GetNSString(
                                    IDS_IOS_CONTENT_SUGGESTIONS_SETTING_TITLE)
+                 iconImageName:@"settings_article_suggestions"
                withDefaultsKey:nil];
   articlesForYouSwitchItem.on = [_articlesEnabled value];
 
@@ -599,25 +619,29 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 - (SettingsSwitchItem*)viewSourceSwitchItem {
   return [self switchItemWithType:ItemTypeViewSource
                             title:@"View source menu"
+                    iconImageName:@"settings_debug"
                   withDefaultsKey:kDevViewSourceKey];
 }
 
 - (SettingsSwitchItem*)logJavascriptConsoleSwitchItem {
   return [self switchItemWithType:ItemTypeLogJavascript
                             title:@"Log JS"
+                    iconImageName:@"settings_debug"
                   withDefaultsKey:kLogJavascriptKey];
 }
 
 - (SettingsDetailItem*)collectionViewCatalogDetailItem {
   return [self detailItemWithType:ItemTypeCollectionCellCatalog
                              text:@"Collection Cell Catalog"
-                       detailText:nil];
+                       detailText:nil
+                    iconImageName:@"settings_debug"];
 }
 
 - (SettingsDetailItem*)tableViewCatalogDetailItem {
   return [self detailItemWithType:ItemTypeTableCellCatalog
                              text:@"TableView Cell Catalog"
-                       detailText:nil];
+                       detailText:nil
+                    iconImageName:@"settings_debug"];
 }
 #endif  // CHROMIUM_BUILD && !defined(NDEBUG)
 
@@ -636,12 +660,14 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
 - (SettingsDetailItem*)detailItemWithType:(NSInteger)type
                                      text:(NSString*)text
-                               detailText:(NSString*)detailText {
+                               detailText:(NSString*)detailText
+                            iconImageName:(NSString*)iconImageName {
   SettingsDetailItem* detailItem =
       [[SettingsDetailItem alloc] initWithType:type];
   detailItem.text = text;
   detailItem.detailText = detailText;
   detailItem.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+  detailItem.iconImageName = iconImageName;
   detailItem.accessibilityTraits |= UIAccessibilityTraitButton;
 
   return detailItem;
@@ -649,10 +675,12 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
 - (SettingsSwitchItem*)switchItemWithType:(NSInteger)type
                                     title:(NSString*)title
+                            iconImageName:(NSString*)iconImageName
                           withDefaultsKey:(NSString*)key {
   SettingsSwitchItem* switchItem =
       [[SettingsSwitchItem alloc] initWithType:type];
   switchItem.text = title;
+  switchItem.iconImageName = iconImageName;
   if (key) {
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     switchItem.on = [defaults boolForKey:key];
