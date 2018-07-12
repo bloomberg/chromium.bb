@@ -737,6 +737,14 @@ const base::UnguessableToken& RenderFrameHostImpl::GetOverlayRoutingToken() {
   return *overlay_routing_token_;
 }
 
+void RenderFrameHostImpl::DidCommitProvisionalLoadForTesting(
+    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
+    service_manager::mojom::InterfaceProviderRequest
+        interface_provider_request) {
+  DidCommitProvisionalLoad(std::move(params),
+                           std::move(interface_provider_request));
+}
+
 SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() {
   return site_instance_.get();
 }
@@ -1817,6 +1825,7 @@ NavigationHandleImpl* RenderFrameHostImpl::GetNavigationHandle() {
 void RenderFrameHostImpl::ResetNavigationRequests() {
   navigation_request_.reset();
   same_document_navigation_request_.reset();
+  navigation_requests_.clear();
 }
 
 void RenderFrameHostImpl::SetNavigationRequest(
@@ -1827,7 +1836,8 @@ void RenderFrameHostImpl::SetNavigationRequest(
     same_document_navigation_request_ = std::move(navigation_request);
     return;
   }
-  navigation_request_ = std::move(navigation_request);
+  navigation_requests_[navigation_request->navigation_handle()
+                           ->GetNavigationId()] = std::move(navigation_request);
 }
 
 void RenderFrameHostImpl::SwapOut(
@@ -3465,7 +3475,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       false /* started_from_context_menu */, false /* has_user_gesture */,
       std::vector<ContentSecurityPolicy>() /* initiator_csp */,
       CSPSource() /* initiator_self_source */);
-  CommitNavigation(nullptr, network::mojom::URLLoaderClientEndpointsPtr(),
+  CommitNavigation(0, nullptr, network::mojom::URLLoaderClientEndpointsPtr(),
                    common_params, RequestNavigationParams(), false,
                    base::nullopt, base::nullopt /* subresource_overrides */,
                    base::UnguessableToken::Create() /* not traced */);
@@ -3624,6 +3634,7 @@ void RenderFrameHostImpl::SendJavaScriptDialogReply(
 }
 
 void RenderFrameHostImpl::CommitNavigation(
+    int64_t navigation_id,
     network::ResourceResponse* response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     const CommonNavigationParams& common_params,
@@ -3815,6 +3826,11 @@ void RenderFrameHostImpl::CommitNavigation(
                          CloneSubresourceFactories()));
     }
 
+    auto find_request = navigation_requests_.find(navigation_id);
+    NavigationRequest* request = find_request != navigation_requests_.end()
+                                     ? find_request->second.get()
+                                     : nullptr;
+
     if (IsPerNavigationMojoInterfaceEnabled() && navigation_request_ &&
         navigation_request_->GetCommitNavigationClient()) {
       navigation_request_->GetCommitNavigationClient()->CommitNavigation(
@@ -3828,13 +3844,11 @@ void RenderFrameHostImpl::CommitNavigation(
           std::move(url_loader_client_endpoints), CloneSubresourceFactories(),
           std::move(subresource_overrides), std::move(controller),
           std::move(prefetch_loader_factory), devtools_navigation_token,
-          navigation_request_
-              ? base::BindOnce(
-                    &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
-                    base::Unretained(this),
-                    navigation_request_->navigation_handle()->GetNavigationId())
-              : content::mojom::FrameNavigationControl::
-                    CommitNavigationCallback());
+          request ? base::BindOnce(
+                        &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
+                        base::Unretained(this), navigation_id)
+                  : content::mojom::FrameNavigationControl::
+                        CommitNavigationCallback());
     }
 
     // |remote_object| is an associated interface ptr, so calls can't be made on
@@ -3858,6 +3872,7 @@ void RenderFrameHostImpl::CommitNavigation(
 }
 
 void RenderFrameHostImpl::FailedNavigation(
+    int64_t navigation_id,
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     bool has_stale_copy_in_cache,
@@ -3886,25 +3901,27 @@ void RenderFrameHostImpl::FailedNavigation(
   }
   SaveSubresourceFactories(std::move(subresource_loader_factories));
 
-  if (IsPerNavigationMojoInterfaceEnabled() && navigation_request_ &&
-      navigation_request_->GetCommitNavigationClient()) {
-    navigation_request_->GetCommitNavigationClient()->CommitFailedNavigation(
+  auto find_request = navigation_requests_.find(navigation_id);
+  NavigationRequest* request = find_request != navigation_requests_.end()
+                                   ? find_request->second.get()
+                                   : nullptr;
+  if (IsPerNavigationMojoInterfaceEnabled() && request &&
+      request->GetCommitNavigationClient()) {
+    request->GetCommitNavigationClient()->CommitFailedNavigation(
         common_params, request_params, has_stale_copy_in_cache, error_code,
         error_page_content, CloneSubresourceFactories());
   } else {
     GetNavigationControl()->CommitFailedNavigation(
         common_params, request_params, has_stale_copy_in_cache, error_code,
         error_page_content, CloneSubresourceFactories(),
-        base::BindOnce(
-            &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
-            base::Unretained(this),
-            navigation_request_->navigation_handle()->GetNavigationId()));
+        base::BindOnce(&RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
+                       base::Unretained(this), navigation_id));
   }
 
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
-  DCHECK(GetNavigationHandle() &&
-         GetNavigationHandle()->GetNetErrorCode() != net::OK);
+  DCHECK(request && request->navigation_handle() &&
+         request->navigation_handle()->GetNetErrorCode() != net::OK);
 }
 
 void RenderFrameHostImpl::HandleRendererDebugURL(const GURL& url) {
@@ -4399,6 +4416,15 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   SaveSubresourceFactories(std::move(subresource_loader_factories));
   GetNavigationControl()->UpdateSubresourceLoaderFactories(
       CloneSubresourceFactories());
+}
+
+std::set<int> RenderFrameHostImpl::GetNavigationEntryIdsPendingCommit() {
+  std::set<int> result;
+  if (navigation_request_)
+    result.insert(navigation_request_->nav_entry_id());
+  for (auto const& requests : navigation_requests_)
+    result.insert(requests.second->nav_entry_id());
+  return result;
 }
 
 void RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
@@ -5162,21 +5188,19 @@ void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
 void RenderFrameHostImpl::OnCrossDocumentCommitProcessed(
     int64_t navigation_id,
     blink::mojom::CommitResult result) {
-  // If the NavigationRequest was deleted, another navigation commit started to
-  // be processed. Let the latest commit go through and stop doing anything.
-  if (!navigation_request_ ||
-      navigation_request_->navigation_handle()->GetNavigationId() !=
-          navigation_id) {
-    return;
-  }
   DCHECK_NE(blink::mojom::CommitResult::RestartCrossDocument, result);
-
-  // Note: if the commit was successful, navigation_request_ is reset in
-  // DidCommitProvisionalLoad.
-  if (result == blink::mojom::CommitResult::Ok)
-    return;
-
-  navigation_request_.reset();
+  if (result == blink::mojom::CommitResult::Ok) {
+    // The navigation will soon be committed. Move it out of the map to the
+    // NavigationRequest that is about to commit.
+    auto find_request = navigation_requests_.find(navigation_id);
+    if (find_request != navigation_requests_.end()) {
+      navigation_request_ = std::move(find_request->second);
+    } else {
+      NOTREACHED();
+    }
+  }
+  // Remove the requests from the list of NavigationRequests waiting to commit.
+  navigation_requests_.erase(navigation_id);
 }
 
 void RenderFrameHostImpl::SaveSubresourceFactories(

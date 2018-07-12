@@ -568,7 +568,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |subresource_loader_params| is used in network service land to pass
   // the parameters to create a custom subresource loader in the renderer
   // process, e.g. by AppCache etc.
+  // TODO(clamy): Pass the NavigationRequest directly to this function when
+  // interstitials have been refactored to no longer call CommitNavigation
+  // without a NavigationRequest.
   void CommitNavigation(
+      int64_t navigation_id,
       network::ResourceResponse* response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       const CommonNavigationParams& common_params,
@@ -581,7 +585,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Indicates that a navigation failed and that this RenderFrame should display
   // an error page.
-  void FailedNavigation(const CommonNavigationParams& common_params,
+  void FailedNavigation(int64_t navigation_id,
+                        const CommonNavigationParams& common_params,
                         const RequestNavigationParams& request_params,
                         bool has_stale_copy_in_cache,
                         int error_code,
@@ -748,6 +753,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
     received_post_message_from_non_descendant_ = true;
   }
 
+  // Returns the list of NavigationEntry ids corresponding to NavigationRequests
+  // waiting to commit in this RenderFrameHost.
+  std::set<int> GetNavigationEntryIdsPendingCommit();
+
+  void DidCommitProvisionalLoadForTesting(
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
+      service_manager::mojom::InterfaceProviderRequest
+          interface_provider_request);
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -771,6 +785,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   friend class TestRenderFrameHost;
   friend class TestRenderViewHost;
 
+  FRIEND_TEST_ALL_PREFIXES(NavigatorTestWithBrowserSideNavigation,
+                           TwoNavigationsRacingCommit);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            CreateRenderViewAfterProcessKillAndClosedProxy);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, DontSelectInvalidFiles);
@@ -1373,9 +1389,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<resource_coordinator::FrameResourceCoordinator>
       frame_resource_coordinator_;
 
-  // Holds a NavigationRequest while waiting for the navigation it is tracking
-  // to commit. This NavigationRequest is for a cross-document navigation.
+  // Holds a NavigationRequest when it's about to commit, ie. after
+  // OnCrossDocumentCommitProcessed has returned a positive answer for this
+  // NavigationRequest but before receiving DidCommitProvisionalLoad. This
+  // NavigationRequest is for a cross-document navigation.
   std::unique_ptr<NavigationRequest> navigation_request_;
+
+  // Holds the cross-document NavigationRequests that are waiting to commit,
+  // indexed by IDs. These are navigations that have passed ReadyToCommit stage
+  // and are waiting for the renderer to send back a matching
+  // OnCrossDocumentCommitProcessed.
+  std::map<int64_t, std::unique_ptr<NavigationRequest>> navigation_requests_;
 
   // Holds a same-document NavigationRequest while waiting for the navigation it
   // is tracking to commit.

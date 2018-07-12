@@ -572,7 +572,7 @@ class CommitOriginInterceptor : public DidCommitProvisionalLoadInterceptor {
   void WebContentsDestroyed() override { delete this; }
 
  protected:
-  void WillDispatchDidCommitProvisionalLoad(
+  bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       service_manager::mojom::InterfaceProviderRequest*
@@ -581,6 +581,7 @@ class CommitOriginInterceptor : public DidCommitProvisionalLoadInterceptor {
       params->url = new_url_;
       params->origin = new_origin_;
     }
+    return true;
   }
 
  private:

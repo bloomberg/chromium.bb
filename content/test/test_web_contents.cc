@@ -302,6 +302,7 @@ void TestWebContents::CommitPendingNavigation() {
   DCHECK(entry);
 
   TestRenderFrameHost* old_rfh = GetMainFrame();
+  NavigationRequest* request = old_rfh->frame_tree_node()->navigation_request();
 
   // PlzNavigate: the pending RenderFrameHost is not created before the
   // navigation commit, so it is necessary to simulate the IO thread response
@@ -319,11 +320,14 @@ void TestWebContents::CommitPendingNavigation() {
   TestRenderFrameHost* rfh = GetPendingMainFrame();
   if (!rfh)
     rfh = old_rfh;
-  const bool browser_side_navigation = IsBrowserSideNavigationEnabled();
-  CHECK(!browser_side_navigation || rfh->is_loading() ||
-        IsRendererDebugURL(entry->GetURL()));
-  CHECK(!browser_side_navigation ||
-        !rfh->frame_tree_node()->navigation_request());
+  CHECK(rfh->is_loading() || IsRendererDebugURL(entry->GetURL()));
+  CHECK(!rfh->frame_tree_node()->navigation_request());
+
+  if (request && !request->navigation_handle()->IsSameDocument()) {
+    rfh->SimulateCommitProcessed(
+        request->navigation_handle()->GetNavigationId(),
+        true /* was successful */);
+  }
 
   rfh->SendNavigateWithTransition(entry->GetUniqueID(),
                                   GetController().GetPendingEntryIndex() == -1,

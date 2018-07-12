@@ -163,13 +163,14 @@ class ClosureExecutorBeforeNavigationCommit
   ~ClosureExecutorBeforeNavigationCommit() override = default;
 
  protected:
-  void WillDispatchDidCommitProvisionalLoad(
+  bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       service_manager::mojom::InterfaceProviderRequest*
           interface_provider_request) override {
     if (closure_)
       std::move(closure_).Run();
+    return true;
   }
 
  private:

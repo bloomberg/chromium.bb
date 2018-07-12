@@ -11,7 +11,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -78,30 +81,33 @@ void RenderFrameHostTester::CommitPendingLoad(
   // place to handle this simulation. Unfortunately, it is not trivial to make
   // that change, so for now we have this extra simulation for
   // non-TestWebContents.
-  RenderFrameHost* old_rfh = controller->GetWebContents()->GetMainFrame();
-  TestRenderFrameHost* old_rfh_tester =
-      static_cast<TestRenderFrameHost*>(old_rfh);
-  old_rfh_tester->PrepareForCommitIfNecessary();
+  TestRenderFrameHost* old_rfh = static_cast<TestRenderFrameHost*>(
+      controller->GetWebContents()->GetMainFrame());
+  NavigationRequest* request = old_rfh->frame_tree_node()->navigation_request();
+  old_rfh->PrepareForCommitIfNecessary();
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(controller->GetWebContents());
-  RenderFrameHost* pending_rfh = web_contents->GetRenderManagerForTesting()
-                                     ->speculative_render_frame_host_.get();
+  TestRenderFrameHost* pending_rfh = static_cast<TestRenderFrameHost*>(
+      web_contents->GetRenderManagerForTesting()
+          ->speculative_render_frame_host_.get());
 
   // Commit on the pending_rfh, if one exists.
-  RenderFrameHost* test_rfh = pending_rfh ? pending_rfh : old_rfh;
-  RenderFrameHostTester* test_rfh_tester = For(test_rfh);
+  TestRenderFrameHost* test_rfh = pending_rfh ? pending_rfh : old_rfh;
+  if (request && !request->navigation_handle()->IsSameDocument()) {
+    test_rfh->SimulateCommitProcessed(
+        request->navigation_handle()->GetNavigationId(),
+        true /* was successful */);
+  }
 
   if (controller->GetPendingEntryIndex() >= 0) {
-    test_rfh_tester->SendNavigateWithTransition(
-        controller->GetPendingEntry()->GetUniqueID(),
-        false,
+    test_rfh->SendNavigateWithTransition(
+        controller->GetPendingEntry()->GetUniqueID(), false,
         controller->GetPendingEntry()->GetURL(),
         controller->GetPendingEntry()->GetTransitionType());
   } else {
-    test_rfh_tester->SendNavigateWithTransition(
-        controller->GetPendingEntry()->GetUniqueID(),
-        true,
+    test_rfh->SendNavigateWithTransition(
+        controller->GetPendingEntry()->GetUniqueID(), true,
         controller->GetPendingEntry()->GetURL(),
         controller->GetPendingEntry()->GetTransitionType());
   }

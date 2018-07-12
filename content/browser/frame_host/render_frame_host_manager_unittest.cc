@@ -837,11 +837,18 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
       kViewSourceUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   int entry_id = controller().GetPendingEntry()->GetUniqueID();
 
+  NavigationRequest* request =
+      main_test_rfh()->frame_tree_node()->navigation_request();
+  CHECK(request);
+
   // Simulate response from RenderFrame for DispatchBeforeUnload.
   contents()->GetMainFrame()->PrepareForCommit();
   ASSERT_TRUE(contents()->GetPendingMainFrame())
       << "Expected new pending RenderFrameHost to be created.";
   RenderFrameHost* last_rfh = contents()->GetPendingMainFrame();
+  contents()->GetPendingMainFrame()->SimulateCommitProcessed(
+      request->navigation_handle()->GetNavigationId(),
+      true /* was_successful */);
   contents()->GetPendingMainFrame()->SendNavigate(entry_id, true, kUrl);
 
   EXPECT_EQ(1, controller().GetLastCommittedEntryIndex());
@@ -860,6 +867,8 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   // Navigate, again.
   controller().LoadURL(
       kViewSourceUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  request = main_test_rfh()->frame_tree_node()->navigation_request();
+  CHECK(request);
   entry_id = controller().GetPendingEntry()->GetUniqueID();
   contents()->GetMainFrame()->PrepareForCommit();
 
@@ -868,6 +877,9 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   EXPECT_EQ(last_rfh, contents()->GetMainFrame());
 
   // The renderer sends a commit.
+  contents()->GetMainFrame()->SimulateCommitProcessed(
+      request->navigation_handle()->GetNavigationId(),
+      true /* was_successful */);
   contents()->GetMainFrame()->SendNavigateWithTransition(
       entry_id, false, kUrl, ui::PAGE_TRANSITION_TYPED);
   EXPECT_EQ(1, controller().GetLastCommittedEntryIndex());

@@ -11007,7 +11007,7 @@ class CommitMessageOrderReverser : public DidCommitProvisionalLoadInterceptor {
   void WaitForBothCommits() { outer_run_loop.Run(); }
 
  protected:
-  void WillDispatchDidCommitProvisionalLoad(
+  bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       service_manager::mojom::InterfaceProviderRequest*
@@ -11026,6 +11026,7 @@ class CommitMessageOrderReverser : public DidCommitProvisionalLoadInterceptor {
     } else if (nested_loop_quit_) {
       std::move(nested_loop_quit_).Run();
     }
+    return true;
   }
 
  private:
@@ -11922,7 +11923,7 @@ class ClosePageBeforeCommitHelper : public DidCommitProvisionalLoadInterceptor {
 
  private:
   // DidCommitProvisionalLoadInterceptor:
-  void WillDispatchDidCommitProvisionalLoad(
+  bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       service_manager::mojom::InterfaceProviderRequest*
@@ -11933,6 +11934,7 @@ class ClosePageBeforeCommitHelper : public DidCommitProvisionalLoadInterceptor {
     rvh->ClosePage();
     if (run_loop_)
       run_loop_->Quit();
+    return true;
   }
 
   std::unique_ptr<base::RunLoop> run_loop_;

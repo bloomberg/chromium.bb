@@ -6672,7 +6672,7 @@ class HistoryNavigationBeforeCommitInjector
 
  private:
   // DidCommitProvisionalLoadInterceptor:
-  void WillDispatchDidCommitProvisionalLoad(
+  bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       service_manager::mojom::InterfaceProviderRequest*
@@ -6681,6 +6681,7 @@ class HistoryNavigationBeforeCommitInjector
       did_trigger_history_navigation_ = true;
       web_contents()->GetController().GoBack();
     }
+    return true;
   }
 
   bool did_trigger_history_navigation_;

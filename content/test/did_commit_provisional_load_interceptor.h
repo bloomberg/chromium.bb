@@ -29,7 +29,9 @@ class DidCommitProvisionalLoadInterceptor : public WebContentsObserver {
 
   // Called just before DidCommitProvisionalLoad with |params| and
   // |interface_provider_request| would be dispatched to |render_frame_host|.
-  virtual void WillDispatchDidCommitProvisionalLoad(
+  // Return false to cancel the dispatching of this message to
+  // |render_frame_host|.
+  virtual bool WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       service_manager::mojom::InterfaceProviderRequest*
