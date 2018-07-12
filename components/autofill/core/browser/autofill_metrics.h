@@ -770,6 +770,11 @@ class AutofillMetrics {
   // whether the cardholder name was prefilled or not.
   static void LogSaveCardCardholderNamePrefilled(bool prefilled);
 
+  // When a cardholder name fix flow is shown during credit card upload and the
+  // user accepts upload, logs whether the final cardholder name was changed
+  // from its prefilled value or not.
+  static void LogSaveCardCardholderNameWasEdited(bool edited);
+
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
   static void LogCardUploadDecisionMetrics(int upload_decision_metrics);
   static void LogCreditCardInfoBarMetric(

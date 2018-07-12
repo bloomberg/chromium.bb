@@ -681,6 +681,11 @@ void AutofillMetrics::LogSaveCardCardholderNamePrefilled(bool prefilled) {
 }
 
 // static
+void AutofillMetrics::LogSaveCardCardholderNameWasEdited(bool edited) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.SaveCardCardholderNameWasEdited", edited);
+}
+
+// static
 void AutofillMetrics::LogCardUploadDecisionMetrics(
     int upload_decision_metrics) {
   DCHECK(upload_decision_metrics);

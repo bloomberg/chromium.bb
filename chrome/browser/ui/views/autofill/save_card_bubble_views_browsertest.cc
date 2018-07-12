@@ -559,6 +559,80 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TOOLTIP));
 }
 
+// Tests the upload save bubble. Ensures that if cardholder name is explicitly
+// requested and the user accepts the dialog without changing it, the correct
+// metric is logged.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Upload_CardholderNameRequested_SubmittingPrefilledValueLogsUneditedMetric) {
+  // Enable the EditableCardholderName experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamEditableCardholderName);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Sign the user in.
+  SignInWithFullName("John Smith");
+
+  // Submitting the form should show the upload save bubble, along with a
+  // textfield specifically requesting the cardholder name.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitFormWithoutName();
+  WaitForObservedEvent();
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
+
+  // Clicking [Save] should accept and close the bubble, logging that the name
+  // was not edited.
+  ResetEventWaiterForSequence({DialogEvent::SENT_UPLOAD_CARD_REQUEST});
+  base::HistogramTester histogram_tester;
+  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCardCardholderNameWasEdited", false, 1);
+}
+
+// Tests the upload save bubble. Ensures that if cardholder name is explicitly
+// requested and the user accepts the dialog after changing it, the correct
+// metric is logged.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Upload_CardholderNameRequested_SubmittingChangedValueLogsEditedMetric) {
+  // Enable the EditableCardholderName experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamEditableCardholderName);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Sign the user in.
+  SignInWithFullName("John Smith");
+
+  // Submitting the form should show the upload save bubble, along with a
+  // textfield specifically requesting the cardholder name.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitFormWithoutName();
+  WaitForObservedEvent();
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
+
+  // Changing the name then clicking [Save] should accept and close the bubble,
+  // logging that the name was edited.
+  ResetEventWaiterForSequence({DialogEvent::SENT_UPLOAD_CARD_REQUEST});
+  views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
+      FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
+  cardholder_name_textfield->InsertOrReplaceText(
+      base::ASCIIToUTF16("Jane Doe"));
+  base::HistogramTester histogram_tester;
+  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCardCardholderNameWasEdited", true, 1);
+}
+
 // TODO(jsaul): Only *part* of the legal message StyledLabel is clickable, and
 //              the NOTREACHED() in SaveCardBubbleViews::StyledLabelLinkClicked
 //              prevents us from being able to click it unless we know the exact
