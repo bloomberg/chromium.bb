@@ -6,10 +6,3 @@ include_rules = [
   "+third_party/blink/renderer/platform/scheduler/base",
   "+third_party/blink/renderer/platform/scheduler/child",
 ]
-
-specific_include_rules = {
-  ".*test\.cc": [
-    "+cc/test",
-    "+components/viz/test",
-  ],
-}
