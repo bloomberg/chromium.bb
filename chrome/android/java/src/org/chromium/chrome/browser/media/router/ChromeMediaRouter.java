@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.media.router;
 
 import android.support.v7.media.MediaRouter;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
@@ -13,6 +16,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.media.router.caf.CafMediaRouteProvider;
 import org.chromium.chrome.browser.media.router.cast.CastMediaRouteProvider;
@@ -33,6 +37,7 @@ import javax.annotation.Nullable;
 public class ChromeMediaRouter implements MediaRouteManager {
 
     private static final String TAG = "MediaRouter";
+    private static final int MIN_GOOGLE_PLAY_SERVICES_APK_VERSION = 12600000;
 
     private static MediaRouteProvider.Factory sRouteProviderFactory =
             new MediaRouteProvider.Factory() {
@@ -43,6 +48,15 @@ public class ChromeMediaRouter implements MediaRouteManager {
                     if (ChromeFeatureList.isInitialized()
                             && ChromeFeatureList.isEnabled(
                                        ChromeFeatureList.CAF_MEDIA_ROUTER_IMPL)) {
+                        int googleApiAvailabilityResult =
+                                AppHooks.get().isGoogleApiAvailableWithMinApkVersion(
+                                        MIN_GOOGLE_PLAY_SERVICES_APK_VERSION);
+                        if (googleApiAvailabilityResult != ConnectionResult.SUCCESS) {
+                            GoogleApiAvailability.getInstance().showErrorNotification(
+                                    ContextUtils.getApplicationContext(),
+                                    googleApiAvailabilityResult);
+                            return;
+                        }
                         MediaRouteProvider cafProvider = CafMediaRouteProvider.create(manager);
                         manager.addMediaRouteProvider(cafProvider);
                     } else {
