@@ -361,6 +361,12 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 	}
 
 	for (plane = 0; plane < bo->num_planes; plane++) {
+		pthread_mutex_lock(&bo->drv->driver_lock);
+		drv_increment_reference_count(bo->drv, bo, plane);
+		pthread_mutex_unlock(&bo->drv->driver_lock);
+	}
+
+	for (plane = 0; plane < bo->num_planes; plane++) {
 		bo->strides[plane] = data->strides[plane];
 		bo->offsets[plane] = data->offsets[plane];
 		bo->format_modifiers[plane] = data->format_modifiers[plane];

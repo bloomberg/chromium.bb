@@ -368,12 +368,6 @@ int drv_prime_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 		bo->handles[plane].u32 = prime_handle.handle;
 	}
 
-	for (plane = 0; plane < bo->num_planes; plane++) {
-		pthread_mutex_lock(&bo->drv->driver_lock);
-		drv_increment_reference_count(bo->drv, bo, plane);
-		pthread_mutex_unlock(&bo->drv->driver_lock);
-	}
-
 	return 0;
 }
 
