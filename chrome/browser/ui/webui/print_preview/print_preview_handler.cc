@@ -16,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/crash_keys.h"
@@ -74,7 +76,6 @@
 #include "printing/backend/print_backend_consts.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/print_settings.h"
-#include "services/network/public/cpp/features.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 #if defined(OS_CHROMEOS)
@@ -1113,7 +1114,7 @@ void PrintPreviewHandler::SendCloudPrintEnabled() {
       preview_web_contents()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
   if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled) &&
-      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      !base::FeatureList::IsEnabled(features::kCloudPrinterHandler)) {
     FireWebUIListener(
         "use-cloud-print",
         base::Value(GURL(cloud_devices::GetCloudPrintURL()).spec()),
@@ -1283,10 +1284,9 @@ PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
     return local_printer_handler_.get();
   }
   if (printer_type == PrinterType::kCloudPrinter) {
-    // This printer handler is currently an empty implementation to prevent
-    // crashes when the network service flag is enabled. Ensure it is never
-    // created otherwise.
-    CHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+    // This printer handler is currently experimental. Ensure it is never
+    // created unless the flag is enabled.
+    CHECK(base::FeatureList::IsEnabled(features::kCloudPrinterHandler));
     if (!cloud_printer_handler_)
       cloud_printer_handler_ = PrinterHandler::CreateForCloudPrinters();
     return cloud_printer_handler_.get();

@@ -198,6 +198,12 @@ const char kCloseButtonsInactiveTabsDescription[] =
 const char kCloudImportName[] = "Cloud Import";
 const char kCloudImportDescription[] = "Allows the cloud-import feature.";
 
+const char kCloudPrinterHandlerName[] = "Enable Cloud Printer Handler";
+const char kCloudPrinterHandlerDescription[] =
+    "Use the new cloud printer handler for communicating with the cloud "
+    "print server, instead of the cloud print interface in the Print "
+    "Preview WebUI.";
+
 const char kForceColorProfileSRGB[] = "sRGB";
 const char kForceColorProfileP3[] = "Display P3 D65";
 const char kForceColorProfileColorSpin[] = "Color spin with gamma 2.4";

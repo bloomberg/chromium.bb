@@ -246,6 +246,7 @@ extern const base::Feature kPreloadLockScreen;
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+extern const base::Feature kCloudPrinterHandler;
 extern const base::Feature kNewPrintPreview;
 extern const base::Feature kNupPrinting;
 #endif
