@@ -199,6 +199,8 @@ void UnifiedSystemTrayView::SetDetailedView(views::View* detailed_view) {
   detailed_view_container_->SetPreferredSize(system_tray_size);
   detailed_view->InvalidateLayout();
   Layout();
+
+  detailed_view->RequestFocus();
 }
 
 void UnifiedSystemTrayView::ResetDetailedView() {
