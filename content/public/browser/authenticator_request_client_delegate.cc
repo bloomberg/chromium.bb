@@ -32,15 +32,9 @@ bool AuthenticatorRequestClientDelegate::IsFocused() {
 }
 
 #if defined(OS_MACOSX)
-std::string
-AuthenticatorRequestClientDelegate::TouchIdAuthenticatorKeychainAccessGroup() {
-  return std::string();
-}
-#endif
-
-#if defined(OS_MACOSX)
-std::string AuthenticatorRequestClientDelegate::TouchIdMetadataSecret() {
-  return std::string();
+base::Optional<AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
+AuthenticatorRequestClientDelegate::GetTouchIdAuthenticatorConfig() const {
+  return base::nullopt;
 }
 #endif
 

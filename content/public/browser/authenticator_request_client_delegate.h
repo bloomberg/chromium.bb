@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
@@ -55,20 +56,24 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate {
   virtual bool IsFocused();
 
 #if defined(OS_MACOSX)
-  // Returns the kechain-access-group value used for WebAuthn credentials
-  // stored in the macOS keychain by the built-in Touch ID authenticator. For
-  // more information on this, refer to |device::fido::TouchIdAuthenticator|.
-  // This method may to return empty string or some other placeholder value on
-  // platforms where |TouchIdAuthenticator| is not used.
-  virtual std::string TouchIdAuthenticatorKeychainAccessGroup();
+  struct TouchIdAuthenticatorConfig {
+    // The keychain-access-group value used for WebAuthn credentials
+    // stored in the macOS keychain by the built-in Touch ID
+    // authenticator. For more information on this, refer to
+    // |device::fido::TouchIdAuthenticator|.
+    std::string keychain_access_group;
+    // The secret used to derive key material when encrypting WebAuthn
+    // credential metadata for storage in the macOS keychain. Chrome returns
+    // different secrets for each user profile in order to logically separate
+    // credentials per profile.
+    std::string metadata_secret;
+  };
 
-  // Returns the secret used to derive key material when encrypting WebAuthn
-  // credential metadata for storage in the macOS keychain. Chrome returns
-  // different secrets for each user profile in order to logically separate
-  // credentials per profile. This method may to return empty string or some
-  // other placeholder value on platforms where |TouchIdAuthenticator| is not
-  // used.
-  virtual std::string TouchIdMetadataSecret();
+  // Returns configuration data for the built-in Touch ID platform
+  // authenticator. May return nullopt if the authenticator is not used or not
+  // available.
+  virtual base::Optional<TouchIdAuthenticatorConfig>
+  GetTouchIdAuthenticatorConfig() const;
 #endif
 
  private:

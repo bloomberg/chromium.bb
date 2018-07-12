@@ -178,21 +178,13 @@ bool ChromeAuthenticatorRequestDelegate::IsFocused() {
 }
 
 #if defined(OS_MACOSX)
-std::string
-ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorKeychainAccessGroup() {
-  // This exact value must be whitelisted in the keychain-access-group section
-  // of the entitlements plist file with which Chrome is signed. Note that
-  // even though the bundle identifier for the Canary channel differs from that
-  // of the other channels, Canary still uses the same keychain access group.
-  static const char* access_group = "EQHXZ8M8AV.com.google.Chrome.webauthn";
-  return access_group;
-}
-#endif
+static constexpr char kTouchIdKeychainAccessGroup[] =
+    "EQHXZ8M8AV.com.google.Chrome.webauthn";
 
-#if defined(OS_MACOSX)
-std::string ChromeAuthenticatorRequestDelegate::TouchIdMetadataSecret() {
-  PrefService* prefs =
-      Profile::FromBrowserContext(browser_context())->GetPrefs();
+namespace {
+
+std::string TouchIdMetadataSecret(Profile* profile) {
+  PrefService* prefs = profile->GetPrefs();
   std::string key = prefs->GetString(kWebAuthnTouchIdMetadataSecretPrefName);
   if (key.empty() || !base::Base64Decode(key, &key)) {
     key = device::fido::mac::CredentialMetadata::GenerateRandomSecret();
@@ -201,6 +193,24 @@ std::string ChromeAuthenticatorRequestDelegate::TouchIdMetadataSecret() {
     prefs->SetString(kWebAuthnTouchIdMetadataSecretPrefName, encoded_key);
   }
   return key;
+}
+
+}  // namespace
+
+// static
+content::AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig
+ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorConfigForProfile(
+    Profile* profile) {
+  return content::AuthenticatorRequestClientDelegate::
+      TouchIdAuthenticatorConfig{kTouchIdKeychainAccessGroup,
+                                 TouchIdMetadataSecret(profile)};
+}
+
+base::Optional<
+    content::AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
+ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() const {
+  return TouchIdAuthenticatorConfigForProfile(
+      Profile::FromBrowserContext(browser_context()));
 }
 #endif
 

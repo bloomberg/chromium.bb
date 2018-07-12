@@ -28,13 +28,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
   static std::unique_ptr<TouchIdAuthenticator> CreateIfAvailable(
       std::string keychain_access_group,
       std::string metadata_secret);
+
   static std::unique_ptr<TouchIdAuthenticator> CreateForTesting(
       std::string keychain_access_group,
       std::string metadata_secret);
 
   ~TouchIdAuthenticator() override;
 
-  // TouchIdAuthenticator
+  // FidoAuthenticator
   void MakeCredential(
       AuthenticatorSelectionCriteria authenticator_selection_criteria,
       CtapMakeCredentialRequest request,
@@ -42,7 +43,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
   void GetAssertion(CtapGetAssertionRequest request,
                     GetAssertionCallback callback) override;
   void Cancel() override;
-
   std::string GetId() const override;
 
  private:
@@ -52,7 +52,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
   // The keychain access group under which credentials are stored in the macOS
   // keychain for access control. The set of all access groups that the
   // application belongs to is stored in the entitlements file that gets
-  // embedded into the application during code signing. For more information see
+  // embedded into the application during code signing. For more information
+  // see
   // https://developer.apple.com/documentation/security/ksecattraccessgroup?language=objc.
   std::string keychain_access_group_;
 
