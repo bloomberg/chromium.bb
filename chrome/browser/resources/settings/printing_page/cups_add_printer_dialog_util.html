@@ -52,7 +52,9 @@
         padding: 8px 0;
       }
     </style>
-    <cr-input label="[[label]]" on-click="onClick_" value="{{value}}"
+    <!-- |value| is one-way binding on purpose so that it doesn't change
+      immediately as the user types. -->
+    <cr-input label="[[label]]" on-click="onClick_" value="[[value]]"
         on-value-changed="onInputValueChanged_" id="search">
     </cr-input>
     <iron-dropdown horizontal-align="left" vertical-align="top"

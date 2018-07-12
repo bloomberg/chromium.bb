@@ -401,3 +401,41 @@ suite('CupsAddPrinterDialogTests', function() {
         });
   });
 });
+
+suite('CupsDropDownSearchBoxTests', function() {
+  let searchBox;
+
+  setup(function() {
+    PolymerTest.clearBody();
+    searchBox = document.createElement('drop-down-search-box');
+    document.body.appendChild(searchBox);
+    assertTrue(!!searchBox);
+    Polymer.dom.flush();
+  });
+
+  test('searchingWithInput', function() {
+    function testFilteredLength(filter, length) {
+      searchBox.$.search.value = filter;
+      Polymer.dom.flush();
+      assertEquals(
+          length, searchBox.shadowRoot.querySelectorAll('.list-item').length);
+    }
+
+    searchBox.items = ['a', 'aa', 'b', 'c'];
+    testFilteredLength('a', 2);
+    // Makes sure final value doesn't change while searching.
+    assertTrue(searchBox.value === undefined);
+    testFilteredLength('aa', 1);
+    testFilteredLength('a', 2);
+    testFilteredLength('ab', 0);
+    testFilteredLength('b', 1);
+    testFilteredLength('', 4);
+    testFilteredLength('c', 1);
+    // Makes sure final value doesn't change while searching.
+    assertTrue(searchBox.value === undefined);
+
+    // Clicking on an item sets the final value of the search box.
+    searchBox.$$('.list-item').click();
+    assertEquals('c', searchBox.value);
+  });
+});
