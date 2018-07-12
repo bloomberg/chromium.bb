@@ -95,6 +95,10 @@ class TestNetworkQualityObserver
   net::EffectiveConnectionType effective_connection_type() const {
     return effective_connection_type_;
   }
+  base::TimeDelta http_rtt() const { return tracker_->GetHttpRTT(); }
+  int32_t downlink_bandwidth_kbps() const {
+    return tracker_->GetDownstreamThroughputKbps();
+  }
 
  private:
   size_t num_notifications_;
@@ -174,6 +178,11 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityTrackerBrowserTest,
             network_quality_observer.effective_connection_type());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, network_quality_observer.num_notifications());
+  // Typical RTT and downlink values when effective connection type is 3G. Taken
+  // from net::NetworkQualityEstimatorParams.
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(450),
+            network_quality_observer.http_rtt());
+  EXPECT_EQ(400, network_quality_observer.downlink_bandwidth_kbps());
 }
 
 // Basic test to make sure NetworkQualityTracker is set up, and clients are
@@ -193,6 +202,11 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityTrackerBrowserTest,
       net::EFFECTIVE_CONNECTION_TYPE_2G);
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             network_quality_observer.effective_connection_type());
+  // Typical RTT and downlink values when effective connection type is 2G. Taken
+  // from net::NetworkQualityEstimatorParams.
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1800),
+            network_quality_observer.http_rtt());
+  EXPECT_EQ(75, network_quality_observer.downlink_bandwidth_kbps());
 }
 
 // Simulates a network service crash, and ensures that network quality estimate
@@ -223,6 +237,11 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityTrackerBrowserTest,
             network_quality_observer.effective_connection_type());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, network_quality_observer.num_notifications());
+  // Typical RTT and downlink values when effective connection type is 3G. Taken
+  // from net::NetworkQualityEstimatorParams.
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(450),
+            network_quality_observer.http_rtt());
+  EXPECT_EQ(400, network_quality_observer.downlink_bandwidth_kbps());
 
   SimulateNetworkServiceCrash();
   // Flush the network interface to make sure it notices the crash.
@@ -235,6 +254,9 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityTrackerBrowserTest,
   network_quality_observer.WaitForNotification(
       net::EFFECTIVE_CONNECTION_TYPE_2G);
   EXPECT_LE(2u, network_quality_observer.num_notifications());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1800),
+            network_quality_observer.http_rtt());
+  EXPECT_EQ(75, network_quality_observer.downlink_bandwidth_kbps());
 }
 
 }  // namespace network

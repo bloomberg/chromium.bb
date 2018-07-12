@@ -10,10 +10,12 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/effective_connection_type_observer.h"
+#include "net/nqe/rtt_throughput_estimates_observer.h"
 #include "services/network/public/mojom/network_quality_estimator_manager.mojom.h"
 
 namespace net {
@@ -25,12 +27,14 @@ namespace network {
 
 // Implementation of mojom::NetworkQualityEstimatorManager. All accesses to this
 // class are done through mojo on the main thread. This registers itself to
-// receive broadcasts from net::EffectiveConnectionTypeObserver and rebroadcasts
-// the notifications to mojom::NetworkQualityEstimatorManagerClients through
-// mojo pipes.
+// receive broadcasts from net::EffectiveConnectionTypeObserver and
+// net::RTTAndThroughputEstimatesObserver. NetworkQualityEstimatorManager then
+// rebroadcasts the notifications to
+// mojom::NetworkQualityEstimatorManagerClients through mojo pipes.
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkQualityEstimatorManager
     : public mojom::NetworkQualityEstimatorManager,
-      public net::EffectiveConnectionTypeObserver {
+      public net::EffectiveConnectionTypeObserver,
+      public net::RTTAndThroughputEstimatesObserver {
  public:
   explicit NetworkQualityEstimatorManager(net::NetLog* net_log);
 
@@ -50,11 +54,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkQualityEstimatorManager
   // net::EffectiveConnectionTypeObserver implementation:
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType type) override;
+  // net::RTTAndThroughputEstimatesObserver implementation:
+  void OnRTTOrThroughputEstimatesComputed(
+      base::TimeDelta http_rtt,
+      base::TimeDelta transport_rtt,
+      int32_t downstream_throughput_kbps) override;
 
   std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator_;
   mojo::BindingSet<mojom::NetworkQualityEstimatorManager> bindings_;
   mojo::InterfacePtrSet<mojom::NetworkQualityEstimatorManagerClient> clients_;
   net::EffectiveConnectionType effective_connection_type_;
+  base::TimeDelta http_rtt_;
+  int32_t downstream_throughput_kbps_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
