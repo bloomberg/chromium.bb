@@ -373,6 +373,18 @@
   }
 
   function onKeyUpActionHandler(event) {
+    if (event.key === 'Enter') {
+      const elementReadyState =
+          automation_helper.getElementState(event.target);
+      const selector = buildXPathForElement(event.target);
+      addActionToRecipe({
+        selector: selector,
+        visibility: elementReadyState,
+        context: frameContext,
+        type: 'pressEnter'
+      });
+    }
+
     if (isEditableInputElement(event.target)) {
       lastTypingEventTargetValue = event.target.value;
     } else {
