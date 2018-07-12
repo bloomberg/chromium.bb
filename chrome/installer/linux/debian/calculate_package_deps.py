@@ -41,6 +41,9 @@ elif arch == 'x86':
 elif arch == 'arm':
   cmd.extend(['-l%s/usr/lib/arm-linux-gnueabihf' % sysroot,
               '-l%s/lib/arm-linux-gnueabihf' % sysroot])
+elif arch == 'arm64':
+  cmd.extend(['-l%s/usr/lib/aarch64-linux-gnu' % sysroot,
+              '-l%s/lib/aarch64-linux-gnu' % sysroot])
 elif arch == 'mipsel':
   cmd.extend(['-l%s/usr/lib/mipsel-linux-gnu' % sysroot,
               '-l%s/lib/mipsel-linux-gnu' % sysroot])
