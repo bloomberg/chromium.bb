@@ -265,9 +265,6 @@ vs-chromium-project.txt
 /tools/metrics/actions/actions.old.xml
 /tools/metrics/histograms/histograms.before.pretty-print.xml
 /tools/page_cycler/acid3
-/tools/perf/data
-/tools/perf/internal
-/tools/perf/results.html
 /tools/swarming_client
 /tools/tryserver
 /tools/win/link_limiter/build
