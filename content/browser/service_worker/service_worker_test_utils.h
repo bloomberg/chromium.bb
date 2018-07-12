@@ -30,7 +30,6 @@ class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerStorage;
 class ServiceWorkerVersion;
-struct ServiceWorkerProviderHostInfo;
 
 template <typename Arg>
 void ReceiveResult(BrowserThread::ID run_quit_thread,
@@ -68,7 +67,7 @@ class ServiceWorkerRemoteProviderEndpoint {
       ServiceWorkerRemoteProviderEndpoint&& other);
   ~ServiceWorkerRemoteProviderEndpoint();
 
-  void BindWithProviderHostInfo(ServiceWorkerProviderHostInfo* info);
+  void BindWithProviderHostInfo(mojom::ServiceWorkerProviderHostInfoPtr* info);
   void BindWithProviderInfo(
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 
@@ -90,6 +89,10 @@ class ServiceWorkerRemoteProviderEndpoint {
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRemoteProviderEndpoint);
 };
+
+mojom::ServiceWorkerProviderHostInfoPtr CreateProviderHostInfoForWindow(
+    int provider_id,
+    int route_id);
 
 std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
     int process_id,

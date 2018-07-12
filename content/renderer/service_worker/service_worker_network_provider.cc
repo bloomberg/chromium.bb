@@ -8,7 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
-#include "content/common/service_worker/service_worker_provider_host_info.h"
+#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/origin_util.h"
@@ -277,14 +277,15 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
          provider_type ==
              blink::mojom::ServiceWorkerProviderType::kForSharedWorker);
 
-  ServiceWorkerProviderHostInfo host_info(provider_id, route_id, provider_type,
-                                          is_parent_frame_secure);
+  auto host_info = mojom::ServiceWorkerProviderHostInfo::New(
+      provider_id, route_id, provider_type, is_parent_frame_secure,
+      nullptr /* host_request */, nullptr /* client_ptr_info */);
   mojom::ServiceWorkerContainerAssociatedRequest client_request =
-      mojo::MakeRequest(&host_info.client_ptr_info);
+      mojo::MakeRequest(&host_info->client_ptr_info);
   mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
-  host_info.host_request = mojo::MakeRequest(&host_ptr_info);
-  DCHECK(host_info.host_request.is_pending());
-  DCHECK(host_info.host_request.handle().is_valid());
+  host_info->host_request = mojo::MakeRequest(&host_ptr_info);
+  DCHECK(host_info->host_request.is_pending());
+  DCHECK(host_info->host_request.handle().is_valid());
 
   // current() may be null in tests.
   if (ChildThreadImpl::current()) {

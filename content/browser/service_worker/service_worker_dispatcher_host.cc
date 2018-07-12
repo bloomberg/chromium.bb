@@ -49,14 +49,14 @@ void ServiceWorkerDispatcherHost::RenderProcessExited(
 }
 
 void ServiceWorkerDispatcherHost::OnProviderCreated(
-    ServiceWorkerProviderHostInfo info) {
+    mojom::ServiceWorkerProviderHostInfoPtr info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnProviderCreated");
   ServiceWorkerContextCore* context = context_wrapper_->context();
   if (!context)
     return;
-  if (context->GetProviderHost(render_process_id_, info.provider_id)) {
+  if (context->GetProviderHost(render_process_id_, info->provider_id)) {
     bindings_.ReportBadMessage("SWDH_PROVIDER_CREATED_DUPLICATE_ID");
     return;
   }
@@ -64,8 +64,8 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
   // Provider hosts for navigations are precreated on the browser process with a
   // browser-assigned id. The renderer process calls OnProviderCreated once it
   // creates the provider.
-  if (ServiceWorkerUtils::IsBrowserAssignedProviderId(info.provider_id)) {
-    if (info.type != blink::mojom::ServiceWorkerProviderType::kForWindow) {
+  if (ServiceWorkerUtils::IsBrowserAssignedProviderId(info->provider_id)) {
+    if (info->type != blink::mojom::ServiceWorkerProviderType::kForWindow) {
       bindings_.ReportBadMessage(
           "SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_NOT_WINDOW");
       return;
@@ -74,7 +74,7 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     // Retrieve the provider host pre-created for the navigation.
     std::unique_ptr<ServiceWorkerProviderHost> provider_host =
         context->ReleaseProviderHost(ChildProcessHost::kInvalidUniqueID,
-                                     info.provider_id);
+                                     info->provider_id);
     // If no host is found, create one.
     // TODO(crbug.com/789111#c14): This is probably not right, see bug.
     if (!provider_host) {
@@ -93,7 +93,8 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
   // Provider hosts for service workers don't call OnProviderCreated. They are
   // precreated and ServiceWorkerProviderHost::CompleteStartWorkerPreparation is
   // called during the startup sequence once a process is allocated.
-  if (info.type == blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
+  if (info->type ==
+      blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
     bindings_.ReportBadMessage(
         "SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_SERVICE_WORKER");
     return;

@@ -135,15 +135,15 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   }
 
   RemoteProviderInfo SendProviderCreated(
-      ServiceWorkerProviderHostInfo host_info) {
-    DCHECK(!host_info.host_request.is_pending());
-    DCHECK(!host_info.client_ptr_info.is_valid());
+      mojom::ServiceWorkerProviderHostInfoPtr host_info) {
+    DCHECK(!host_info->host_request.is_pending());
+    DCHECK(!host_info->client_ptr_info.is_valid());
 
     RemoteProviderInfo remote_info;
     mojom::ServiceWorkerContainerAssociatedPtrInfo client;
     remote_info.client_request = mojo::MakeRequest(&client);
-    host_info.host_request = mojo::MakeRequest(&remote_info.host_ptr);
-    host_info.client_ptr_info = std::move(client);
+    host_info->host_request = mojo::MakeRequest(&remote_info.host_ptr);
+    host_info->client_ptr_info = std::move(client);
 
     mojom::ServiceWorkerDispatcherHostAssociatedPtr ptr;
     dispatcher_host_->AddBinding(
@@ -177,9 +177,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
             context()->AsWeakPtr(), true /* are_ancestors_secure */,
             base::RepeatingCallback<WebContents*(void)>());
     EXPECT_EQ(kProviderId, host->provider_id());
-    ServiceWorkerProviderHostInfo host_info(kProviderId, 1 /* route_id */,
-                                            host->provider_type(),
-                                            host->is_parent_frame_secure());
+    mojom::ServiceWorkerProviderHostInfoPtr host_info =
+        CreateProviderHostInfoForWindow(kProviderId, 1 /* route_id */);
     navigation_handle_core->DidPreCreateProviderHost(kProviderId);
     RemoteProviderInfo remote_provider =
         SendProviderCreated(std::move(host_info));
@@ -194,17 +193,12 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
   {
     // Two with the same ID should be seen as a bad message.
     const int kProviderId = 99;
-    RemoteProviderInfo remote_provider_1 =
-        SendProviderCreated(ServiceWorkerProviderHostInfo(
-            kProviderId, 1 /* route_id */,
-            blink::mojom::ServiceWorkerProviderType::kForWindow,
-            true /* is_parent_frame_secure */));
+    RemoteProviderInfo remote_provider_1 = SendProviderCreated(
+        CreateProviderHostInfoForWindow(kProviderId, 1 /* route_id */));
+
     EXPECT_TRUE(bad_messages_.empty());
-    RemoteProviderInfo remote_provider_2 =
-        SendProviderCreated(ServiceWorkerProviderHostInfo(
-            kProviderId, 1 /* route_id */,
-            blink::mojom::ServiceWorkerProviderType::kForWindow,
-            true /* is_parent_frame_secure */));
+    RemoteProviderInfo remote_provider_2 = SendProviderCreated(
+        CreateProviderHostInfoForWindow(kProviderId, 1 /* route_id */));
     ASSERT_EQ(1u, bad_messages_.size());
     EXPECT_EQ("SWDH_PROVIDER_CREATED_DUPLICATE_ID", bad_messages_[0]);
   }
@@ -219,9 +213,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
             context()->AsWeakPtr(), true /* are_ancestors_secure */,
             base::RepeatingCallback<WebContents*(void)>());
     EXPECT_EQ(kProviderId, host->provider_id());
-    ServiceWorkerProviderHostInfo host_info(kProviderId, 2 /* route_id */,
-                                            host->provider_type(),
-                                            host->is_parent_frame_secure());
+    mojom::ServiceWorkerProviderHostInfoPtr host_info =
+        CreateProviderHostInfoForWindow(kProviderId, 2 /* route_id */);
     navigation_handle_core->DidPreCreateProviderHost(kProviderId);
     RemoteProviderInfo remote_provider =
         SendProviderCreated(std::move(host_info));
@@ -241,10 +234,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   int process_id = helper_->mock_render_process_id();
 
   const int64_t kProviderId = 99;
-  ServiceWorkerProviderHostInfo host_info_1(
-      kProviderId, MSG_ROUTING_NONE,
-      blink::mojom::ServiceWorkerProviderType::kForWindow,
-      true /* is_parent_frame_secure */);
+  mojom::ServiceWorkerProviderHostInfoPtr host_info_1 =
+      CreateProviderHostInfoForWindow(kProviderId, MSG_ROUTING_NONE);
   RemoteProviderInfo remote_provider_1 =
       SendProviderCreated(std::move(host_info_1));
   ServiceWorkerProviderHost* provider_host = context()->GetProviderHost(
@@ -279,10 +270,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   // renderer process creates a provider with the same |kProviderId|. Since the
   // dispatcher host already cleaned up the old provider host, the new one won't
   // complain.
-  ServiceWorkerProviderHostInfo host_info_2(
-      kProviderId, MSG_ROUTING_NONE,
-      blink::mojom::ServiceWorkerProviderType::kForWindow,
-      true /* is_parent_frame_secure */);
+  mojom::ServiceWorkerProviderHostInfoPtr host_info_2 =
+      CreateProviderHostInfoForWindow(kProviderId, MSG_ROUTING_NONE);
   RemoteProviderInfo remote_provider_2 =
       SendProviderCreated(std::move(host_info_2));
   EXPECT_TRUE(bad_messages_.empty());

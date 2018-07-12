@@ -172,7 +172,7 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
   }
 
   void FinishNavigation(ServiceWorkerProviderHost* host,
-                        ServiceWorkerProviderHostInfo info) {
+                        mojom::ServiceWorkerProviderHostInfoPtr info) {
     // In production code, the loader/request handler does this.
     host->SetDocumentUrl(GURL("https://www.example.com/page"));
     host->SetTopmostFrameUrl(GURL("https://www.example.com/page"));
@@ -289,10 +289,8 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
         ServiceWorkerProviderHost::PreCreateNavigationHost(
             helper_->context()->AsWeakPtr(), true,
             base::Callback<WebContents*(void)>());
-    ServiceWorkerProviderHostInfo info(
-        host->provider_id(), 1 /* route_id */,
-        blink::mojom::ServiceWorkerProviderType::kForWindow,
-        true /* is_parent_frame_secure */);
+    mojom::ServiceWorkerProviderHostInfoPtr info =
+        CreateProviderHostInfoForWindow(host->provider_id(), 1 /* route_id */);
     remote_endpoint->BindWithProviderHostInfo(&info);
 
     std::unique_ptr<ServiceWorkerProviderHost> owned_host =
@@ -442,10 +440,8 @@ TEST_P(ServiceWorkerProviderHostTest, Controller) {
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
           base::Callback<WebContents*(void)>());
-  ServiceWorkerProviderHostInfo info(
-      host->provider_id(), 1 /* route_id */,
-      blink::mojom::ServiceWorkerProviderType::kForWindow,
-      true /* is_parent_frame_secure */);
+  mojom::ServiceWorkerProviderHostInfoPtr info =
+      CreateProviderHostInfoForWindow(host->provider_id(), 1 /* route_id */);
   remote_endpoints_.emplace_back();
   remote_endpoints_.back().BindWithProviderHostInfo(&info);
   auto container = std::make_unique<MockServiceWorkerContainer>(
@@ -479,10 +475,8 @@ TEST_P(ServiceWorkerProviderHostTest, ActiveIsNotController) {
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
           base::Callback<WebContents*(void)>());
-  ServiceWorkerProviderHostInfo info(
-      host->provider_id(), 1 /* route_id */,
-      blink::mojom::ServiceWorkerProviderType::kForWindow,
-      true /* is_parent_frame_secure */);
+  mojom::ServiceWorkerProviderHostInfoPtr info =
+      CreateProviderHostInfoForWindow(host->provider_id(), 1 /* route_id */);
   remote_endpoints_.emplace_back();
   remote_endpoints_.back().BindWithProviderHostInfo(&info);
   auto container = std::make_unique<MockServiceWorkerContainer>(
@@ -856,10 +850,8 @@ TEST_P(ServiceWorkerProviderHostTest,
         ServiceWorkerProviderHost::PreCreateNavigationHost(
             helper_->context()->AsWeakPtr(), true,
             base::RepeatingCallback<WebContents*(void)>());
-    ServiceWorkerProviderHostInfo info(
-        host->provider_id(), 1 /* route_id */,
-        blink::mojom::ServiceWorkerProviderType::kForWindow,
-        true /* is_parent_frame_secure */);
+    mojom::ServiceWorkerProviderHostInfoPtr info =
+        CreateProviderHostInfoForWindow(host->provider_id(), 1 /* route_id */);
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
     remote_endpoint.BindWithProviderHostInfo(&info);
     host->SetDocumentUrl(GURL("https://www.example.com/page"));

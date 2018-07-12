@@ -69,7 +69,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       CleanupOnRendererCrash);
 
   // mojom::ServiceWorkerDispatcherHost implementation
-  void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
+  void OnProviderCreated(mojom::ServiceWorkerProviderHostInfoPtr info) override;
 
   void RemoveAllProviderHostsForProcess();
 
