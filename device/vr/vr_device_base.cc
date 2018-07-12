@@ -62,19 +62,6 @@ void VRDeviceBase::GetFrameData(
   OnMagicWindowFrameDataRequest(std::move(callback));
 }
 
-void VRDeviceBase::GetFrameData(
-    const gfx::Size& frame_size,
-    display::Display::Rotation display_rotation,
-    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
-  if (!magic_window_enabled_) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-
-  OnMagicWindowFrameDataRequest(frame_size, display_rotation,
-                                std::move(callback));
-}
-
 void VRDeviceBase::SetVRDisplayInfo(mojom::VRDisplayInfoPtr display_info) {
   DCHECK(display_info);
   DCHECK(display_info->index == id_);
@@ -108,13 +95,6 @@ bool VRDeviceBase::ShouldPauseTrackingWhenFrameDataRestricted() {
 void VRDeviceBase::OnListeningForActivate(bool listening) {}
 
 void VRDeviceBase::OnMagicWindowFrameDataRequest(
-    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
-  std::move(callback).Run(nullptr);
-}
-
-void VRDeviceBase::OnMagicWindowFrameDataRequest(
-    const gfx::Size& frame_size,
-    display::Display::Rotation display_rotation,
     mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
   std::move(callback).Run(nullptr);
 }

@@ -115,9 +115,6 @@ class XRSession final : public EventTargetWithInlineData {
 
   void LogGetPose() const;
 
-  // Output canvas orientation in degrees. Expected to be multiple of 90.
-  int OutputCanvasAngle() const;
-
   // EventTarget overrides.
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
@@ -196,7 +193,6 @@ class XRSession final : public EventTargetWithInlineData {
   // Dimensions of the output canvas.
   int output_width_ = 1;
   int output_height_ = 1;
-  int output_angle_ = 0;
 };
 
 }  // namespace blink

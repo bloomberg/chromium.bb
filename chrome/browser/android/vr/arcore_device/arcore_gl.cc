@@ -124,6 +124,8 @@ void ARCoreGl::Initialize(base::OnceCallback<void(bool)> callback) {
 
   // Set the texture on ARCore to render the camera.
   arcore_->SetCameraTexture(ar_image_transport_->GetCameraTextureId());
+  // Set the Geometry to ensure consistent behaviour.
+  arcore_->SetDisplayGeometry(gfx::Size(0, 0), display::Display::ROTATE_0);
 
   is_initialized_ = true;
 
@@ -179,13 +181,36 @@ void ARCoreGl::ProduceFrame(
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
 
-  // Set display geometry before calling Update. It's a pending request that
-  // applies to the next frame.
-  // TODO(klausw): Only call if there was a change, this may be an expensive
-  // operation. If there was no change, the previous projection matrix and UV
-  // transform remain valid.
-  gfx::Size transfer_size = frame_size;
-  arcore_->SetDisplayGeometry(transfer_size, display_rotation);
+  // Check if the frame_size and display_rotation updated last frame.
+  if (should_recalculate_uvs_) {
+    // Get the UV transform matrix from ARCore's UV transform.
+    std::vector<float> uvs_transformed =
+        arcore_->TransformDisplayUvCoords(kDisplayCoordinatesForTransform);
+    uv_transform_ = ConvertUvsToTransformMatrix(uvs_transformed);
+
+    // We need near/far distances to make a projection matrix. The actual
+    // values don't matter, the Renderer will recalculate dependent values
+    // based on the application's near/far settngs.
+    constexpr float depth_near = 0.1f;
+    constexpr float depth_far = 1000.f;
+    projection_ = arcore_->GetProjectionMatrix(depth_near, depth_far);
+    should_recalculate_uvs_ = false;
+  }
+
+  if (transfer_size_ != frame_size || display_rotation_ != display_rotation) {
+    // Set display geometry before calling Update. It's a pending request that
+    // applies to the next frame.
+    arcore_->SetDisplayGeometry(frame_size, display_rotation);
+
+    // Store the passed in values to ensure that we can update them only if they
+    // change.
+    transfer_size_ = frame_size;
+    display_rotation_ = display_rotation;
+
+    // Tell the uvs to recalculate on the next animation frame, by which time
+    // SetDisplayGeometry will have set the new values in arcore_.
+    should_recalculate_uvs_ = true;
+  }
 
   TRACE_EVENT_BEGIN0("gpu", "ARCore Update");
   bool camera_updated = false;
@@ -197,34 +222,20 @@ void ARCoreGl::ProduceFrame(
     return;
   }
 
-  // Get the UV transform matrix from ARCore's UV transform. TODO(klausw): do
-  // this only on changes, not every frame.
-  std::vector<float> uvs_transformed =
-      arcore_->TransformDisplayUvCoords(kDisplayCoordinatesForTransform);
-  gfx::Transform uv_transform = ConvertUvsToTransformMatrix(uvs_transformed);
-
   // Transfer the camera image texture to a MailboxHolder for transport to
   // the renderer process.
   gpu::MailboxHolder buffer_holder =
-      ar_image_transport_->TransferFrame(transfer_size, uv_transform);
+      ar_image_transport_->TransferFrame(transfer_size_, uv_transform_);
 
   // Create the frame data to return to the renderer.
   mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
   frame_data->pose = std::move(pose);
   frame_data->buffer_holder = buffer_holder;
-  frame_data->buffer_size = transfer_size;
+  frame_data->buffer_size = transfer_size_;
   frame_data->time_delta = base::TimeTicks::Now() - base::TimeTicks();
-  // We need near/far distances to make a projection matrix. The actual
-  // values don't matter, the Renderer will recalculate dependent values
-  // based on the application's near/far settngs.
-  constexpr float depth_near = 0.1f;
-  constexpr float depth_far = 1000.f;
-  gfx::Transform projection =
-      arcore_->GetProjectionMatrix(depth_near, depth_far);
   // Convert the Transform's 4x4 matrix to 16 floats in column-major order.
-
   frame_data->projection_matrix.emplace(16);
-  projection.matrix().asColMajorf(frame_data->projection_matrix->data());
+  projection_.matrix().asColMajorf(frame_data->projection_matrix->data());
 
   fps_meter_.AddFrame(base::TimeTicks::Now());
   TRACE_COUNTER1("gpu", "WebXR FPS", fps_meter_.GetFPS());

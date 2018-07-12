@@ -68,11 +68,6 @@ class XRFrameProvider final
   device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider_;
   device::mojom::blink::VRPosePtr frame_pose_;
 
-  // Track the size/orientation of the requested canvas.
-  // TODO(https://crbug.com/836496): move these to XRSession.
-  IntSize ar_requested_transfer_size_;
-  int ar_requested_transfer_angle_ = 0;
-
   // This frame ID is XR-specific and is used to track when frames arrive at the
   // XR compositor so that it knows which poses to use, when to apply bounds
   // updates, etc.

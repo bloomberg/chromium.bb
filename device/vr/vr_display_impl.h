@@ -32,6 +32,9 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider,
                 mojom::XRSessionControllerRequest);
   ~VRDisplayImpl() override;
 
+  gfx::Size sessionFrameSize() { return session_frame_size_; };
+  display::Display::Rotation sessionRotation() { return session_rotation_; };
+
   device::VRDeviceBase* device() { return device_; };
 
   // Accessible to tests.
@@ -53,8 +56,6 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider,
   device::VRDeviceBase* device_;
   bool restrict_frame_data_ = true;
 
-  // TODO(offenwanger) When device tracks it's own sessions, let it track this
-  // data.
   gfx::Size session_frame_size_ = gfx::Size(0, 0);
   display::Display::Rotation session_rotation_ = display::Display::ROTATE_0;
 };
