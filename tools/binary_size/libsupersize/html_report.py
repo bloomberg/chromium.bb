@@ -61,6 +61,18 @@ _NAME_NO_PATH_BUCKET = '(No Path)'
 # graphing lib.
 _BIG_BUCKET_LIMIT = 3000
 
+_TEMPLATE_FILES = [
+  'index.html',
+  'favicon.ico',
+  'options.css',
+  'infocard.css',
+  'shared.js',
+  'state.js',
+  'infocard-ui.js',
+  'tree-ui.js',
+  'tree-worker.js',
+]
+
 
 def _GetOrMakeChildNode(node, node_type, name):
   child = node[_NODE_CHILDREN_KEY].get(name)
@@ -333,14 +345,8 @@ def _CopyTreeViewTemplateFiles(template_src, dest_dir):
     KeyError: thrown if a variable tag does not have a corresponding kwarg.
   """
   _MakeDirIfDoesNotExist(dest_dir)
-  shutil.copy(os.path.join(template_src, 'index.html'), dest_dir)
-  shutil.copy(os.path.join(template_src, 'options.css'), dest_dir)
-  shutil.copy(os.path.join(template_src, 'infocard.css'), dest_dir)
-  shutil.copy(os.path.join(template_src, 'shared.js'), dest_dir)
-  shutil.copy(os.path.join(template_src, 'state.js'), dest_dir)
-  shutil.copy(os.path.join(template_src, 'infocard-ui.js'), dest_dir)
-  shutil.copy(os.path.join(template_src, 'tree-ui.js'), dest_dir)
-  shutil.copy(os.path.join(template_src, 'tree-worker.js'), dest_dir)
+  for path in _TEMPLATE_FILES:
+    shutil.copy(os.path.join(template_src, path), dest_dir)
 
 
 def AddArguments(parser):
