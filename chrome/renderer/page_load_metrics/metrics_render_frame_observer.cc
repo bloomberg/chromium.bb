@@ -40,10 +40,12 @@ class MojoPageTimingSender : public PageTimingSender {
   ~MojoPageTimingSender() override {}
   void SendTiming(const mojom::PageLoadTimingPtr& timing,
                   const mojom::PageLoadMetadataPtr& metadata,
-                  mojom::PageLoadFeaturesPtr new_features) override {
+                  mojom::PageLoadFeaturesPtr new_features,
+                  mojom::PageLoadDataUsePtr new_data_use) override {
     DCHECK(page_load_metrics_);
     page_load_metrics_->UpdateTiming(timing->Clone(), metadata->Clone(),
-                                     std::move(new_features));
+                                     std::move(new_features),
+                                     std::move(new_data_use));
   }
 
  private:
@@ -88,20 +90,71 @@ void MetricsRenderFrameObserver::DidObserveNewCssPropertyUsage(
 void MetricsRenderFrameObserver::DidStartResponse(
     int request_id,
     const network::ResourceResponseHead& response_head,
-    content::ResourceType resource_type) {}
+    content::ResourceType resource_type) {
+  if (provisional_frame_resource_data_use_ &&
+      content::IsResourceTypeFrame(resource_type)) {
+    // TODO(rajendrant): This frame request might start before the provisional
+    // load starts, and data use of the frame request might be missed in that
+    // case. There should be a guarantee that DidStartProvisionalLoad be called
+    // before DidStartResponse for the frame request.
+    provisional_frame_resource_data_use_->DidStartResponse(request_id,
+                                                           response_head);
+  } else if (page_timing_metrics_sender_) {
+    page_timing_metrics_sender_->DidStartResponse(request_id, response_head);
+  }
+}
 
 void MetricsRenderFrameObserver::DidCompleteResponse(
     int request_id,
-    const network::URLLoaderCompletionStatus& status) {}
+    const network::URLLoaderCompletionStatus& status) {
+  if (provisional_frame_resource_data_use_ &&
+      provisional_frame_resource_data_use_->resource_id() == request_id) {
+    provisional_frame_resource_data_use_->DidCompleteResponse(
+        status, provisional_delta_data_use_.get());
+  } else if (page_timing_metrics_sender_) {
+    page_timing_metrics_sender_->DidCompleteResponse(request_id, status);
+  }
+}
 
-void MetricsRenderFrameObserver::DidCancelResponse(int request_id) {}
+void MetricsRenderFrameObserver::DidCancelResponse(int request_id) {
+  if (provisional_frame_resource_data_use_ &&
+      provisional_frame_resource_data_use_->resource_id() == request_id) {
+    provisional_frame_resource_data_use_.reset();
+  } else if (page_timing_metrics_sender_) {
+    page_timing_metrics_sender_->DidCancelResponse(request_id);
+  }
+}
 
 void MetricsRenderFrameObserver::DidReceiveTransferSizeUpdate(
     int request_id,
-    int received_data_length) {}
+    int received_data_length) {
+  if (provisional_frame_resource_data_use_ &&
+      provisional_frame_resource_data_use_->resource_id() == request_id) {
+    provisional_frame_resource_data_use_->DidReceiveTransferSizeUpdate(
+        received_data_length, provisional_delta_data_use_.get());
+  } else if (page_timing_metrics_sender_) {
+    page_timing_metrics_sender_->DidReceiveTransferSizeUpdate(
+        request_id, received_data_length);
+  }
+}
 
 void MetricsRenderFrameObserver::FrameDetached() {
   page_timing_metrics_sender_.reset();
+}
+
+void MetricsRenderFrameObserver::DidStartProvisionalLoad(
+    blink::WebDocumentLoader* document_loader) {
+  // Create a new data use tracker for the new provisional load.
+  provisional_frame_resource_data_use_ =
+      std::make_unique<PageResourceDataUse>();
+  provisional_delta_data_use_ = mojom::PageLoadDataUse::New();
+}
+
+void MetricsRenderFrameObserver::DidFailProvisionalLoad(
+    const blink::WebURLError& error) {
+  // Clear the data use tracker for the provisional navigation that started.
+  provisional_frame_resource_data_use_.reset();
+  provisional_delta_data_use_.reset();
 }
 
 void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
@@ -122,7 +175,9 @@ void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
     return;
 
   page_timing_metrics_sender_ = std::make_unique<PageTimingMetricsSender>(
-      CreatePageTimingSender(), CreateTimer(), GetTiming());
+      CreatePageTimingSender(), CreateTimer(), GetTiming(),
+      std::move(provisional_frame_resource_data_use_),
+      std::move(provisional_delta_data_use_));
 }
 
 void MetricsRenderFrameObserver::SendMetrics() {

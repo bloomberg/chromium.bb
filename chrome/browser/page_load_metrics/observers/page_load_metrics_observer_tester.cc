@@ -88,7 +88,7 @@ void PageLoadMetricsObserverTester::SimulatePageLoadTimingUpdate(
     const mojom::PageLoadMetadata& metadata,
     const mojom::PageLoadFeatures& new_features) {
   observer_->OnTimingUpdated(web_contents()->GetMainFrame(), timing, metadata,
-                             new_features);
+                             new_features, mojom::PageLoadDataUse());
   // If sending the timing update caused the PageLoadMetricsUpdateDispatcher to
   // schedule a buffering timer, then fire it now so metrics are dispatched to
   // observers.

@@ -68,6 +68,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/failing_http_transaction_factory.h"
 #include "net/http/http_cache.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
@@ -124,6 +125,11 @@ class PageLoadMetricsWaiter
     // expectation as well
     if (IsPageLevelField(field))
       page_expected_fields_.Set(field);
+  }
+
+  void AddMinimumPageLoadDataUseExpectation(
+      int expected_minimum_page_load_data_use) {
+    expected_minimum_page_load_data_use_ = expected_minimum_page_load_data_use;
   }
 
   // Whether the given TimingField was observed in the page.
@@ -189,6 +195,15 @@ class PageLoadMetricsWaiter
       run_loop_->Quit();
   }
 
+  void OnDataUseObserved(int64_t received_data_length,
+                         int64_t data_reduction_proxy_bytes_saved) {
+    current_page_load_data_use_ += received_data_length;
+    if (expectations_satisfied() && run_loop_)
+      run_loop_->Quit();
+  }
+
+  int64_t current_page_load_data_use() { return current_page_load_data_use_; }
+
  private:
   // PageLoadMetricsObserver used by the PageLoadMetricsWaiter to observe
   // metrics updates.
@@ -212,6 +227,13 @@ class PageLoadMetricsWaiter
                               extra_request_complete_info) override {
       if (waiter_)
         waiter_->OnLoadedResource(extra_request_complete_info);
+    }
+
+    void OnDataUseObserved(int64_t received_data_length,
+                           int64_t data_reduction_proxy_bytes_saved) override {
+      if (waiter_)
+        waiter_->OnDataUseObserved(received_data_length,
+                                   data_reduction_proxy_bytes_saved);
     }
 
    private:
@@ -305,7 +327,10 @@ class PageLoadMetricsWaiter
   }
 
   bool expectations_satisfied() const {
-    return subframe_expected_fields_.Empty() && page_expected_fields_.Empty();
+    return subframe_expected_fields_.Empty() && page_expected_fields_.Empty() &&
+           (expected_minimum_page_load_data_use_ == 0 ||
+            current_page_load_data_use_ >=
+                expected_minimum_page_load_data_use_);
   }
 
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -314,6 +339,9 @@ class PageLoadMetricsWaiter
   TimingFieldBitSet subframe_expected_fields_;
 
   TimingFieldBitSet observed_page_fields_;
+
+  int64_t expected_minimum_page_load_data_use_ = 0;
+  int64_t current_page_load_data_use_ = 0;
 
   bool attach_on_tracker_creation_ = false;
   bool did_add_observer_ = false;
@@ -1011,8 +1039,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   histogram_tester_.ExpectUniqueSample(
       internal::kHistogramFirstMeaningfulPaintStatus,
       internal::FIRST_MEANINGFUL_PAINT_RECORDED, 1);
-  histogram_tester_.ExpectTotalCount(
-      internal::kHistogramFirstMeaningfulPaint, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstMeaningfulPaint,
+                                     1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramParseStartToFirstMeaningfulPaint, 1);
 }
@@ -1037,8 +1065,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   histogram_tester_.ExpectUniqueSample(
       internal::kHistogramFirstMeaningfulPaintStatus,
       internal::FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_NETWORK_STABLE, 1);
-  histogram_tester_.ExpectTotalCount(
-      internal::kHistogramFirstMeaningfulPaint, 0);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstMeaningfulPaint,
+                                     0);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramParseStartToFirstMeaningfulPaint, 0);
 }
@@ -1995,4 +2023,91 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   session_restore_paint_waiter.WaitForForegroundTabs(1);
   ASSERT_NO_FATAL_FAILURE(WaitForTabsToLoad(new_browser));
   ExpectFirstPaintMetricsTotalCount(1);
+}
+
+// TODO(rajendrant): Add tests for data reduction proxy savings, and tests for
+// page loads in brand new renderers that the navigation response is recorded
+// (e.g. do window.open('/some-cross-site-page')).
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ReceivedDataLength) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_EVENT);
+  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
+                                              "/page_load_metrics/large.html"));
+  waiter->AddMinimumPageLoadDataUseExpectation(10000);
+  waiter->Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       ReceivedDataLengthControlledLoad) {
+  const char kHttpResponseHeader[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n";
+
+  auto main_html_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/mock_page.html",
+          true /*relative_url_is_prefix*/);
+  auto css_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/mock_css.css",
+          true /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+
+  browser()->OpenURL(content::OpenURLParams(
+      embedded_test_server()->GetURL("/mock_page.html"), content::Referrer(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+
+  main_html_response->WaitForRequest();
+  main_html_response->Send(kHttpResponseHeader);
+  main_html_response->Send(
+      "<html><link rel=\"stylesheet\" href=\"mock_css.css\">");
+  main_html_response->Send(std::string(1000, ' '));
+  // TODO(rajendrant): Verify that 1000 bytes are received at this point before
+  // the request completes. This is hard to verify now since
+  // MojoAsyncResourceHandler throttles the transfer size updates, and calls
+  // only when a read is called after 1 second from previous update.
+
+  main_html_response->Send("</html>");
+  main_html_response->Send(std::string(1000, ' '));
+  main_html_response->Done();
+  waiter->AddMinimumPageLoadDataUseExpectation(2000);
+  waiter->Wait();
+
+  css_response->WaitForRequest();
+  css_response->Send(kHttpResponseHeader);
+  css_response->Send(std::string(1000, ' '));
+  css_response->Done();
+  waiter->AddMinimumPageLoadDataUseExpectation(3000);
+  waiter->Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       ReceivedDataLengthCrossSiteIframe) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_EVENT);
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "foo.com", "/cross_site_iframe_factory.html?foo"));
+  waiter->Wait();
+  int64_t one_frame_page_size = waiter->current_page_load_data_use();
+
+  waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_EVENT);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "a.com", "/cross_site_iframe_factory.html?a(b,c,d(e,f,g))"));
+  // Verify that 7 iframes are fetched, with some amount of tolerance since
+  // favicon is fetched only once.
+  waiter->AddMinimumPageLoadDataUseExpectation(7 * (one_frame_page_size - 100));
+  waiter->Wait();
 }

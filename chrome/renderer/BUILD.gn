@@ -73,6 +73,8 @@ static_library("renderer") {
     "net_benchmarking_extension.h",
     "page_load_metrics/metrics_render_frame_observer.cc",
     "page_load_metrics/metrics_render_frame_observer.h",
+    "page_load_metrics/page_resource_data_use.cc",
+    "page_load_metrics/page_resource_data_use.h",
     "page_load_metrics/page_timing_metrics_sender.cc",
     "page_load_metrics/page_timing_metrics_sender.h",
     "page_load_metrics/page_timing_sender.h",

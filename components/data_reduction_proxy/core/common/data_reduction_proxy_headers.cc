@@ -24,6 +24,7 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace {
 
@@ -482,6 +483,22 @@ int64_t GetDataReductionProxyOFCL(const net::HttpResponseHeaders* headers) {
     return ofcl;
   }
   return -1;
+}
+
+double EstimateCompressionRatioFromHeaders(
+    const network::ResourceResponseHead* response_head) {
+  if (!response_head->network_accessed || !response_head->headers ||
+      response_head->headers->GetContentLength() <= 0) {
+    return 1.0;  // No compression
+  }
+
+  int64_t original_content_length =
+      GetDataReductionProxyOFCL(response_head->headers.get());
+  if (original_content_length > 0) {
+    return static_cast<double>(original_content_length) /
+           static_cast<double>(response_head->headers->GetContentLength());
+  }
+  return 1.0;  // No compression
 }
 
 }  // namespace data_reduction_proxy

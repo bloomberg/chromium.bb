@@ -21,6 +21,10 @@ namespace net {
 class HttpResponseHeaders;
 }  // namespace net
 
+namespace network {
+struct ResourceResponseHead;
+}  // namespace network
+
 namespace data_reduction_proxy {
 
 // Transform directives that may be parsed out of http headers.
@@ -176,9 +180,19 @@ bool ParseHeadersAndSetBypassDuration(const net::HttpResponseHeaders* headers,
                                       base::StringPiece action_prefix,
                                       base::TimeDelta* bypass_duration);
 
-// Returns the OFCL value in the Chrome-Proxy header. Returns -1 in case of
-// of error or if OFCL does not exist. |headers| must be non-null.
+// Returns the Original-Full-Content-Length(OFCL) value in the Chrome-Proxy
+// header. Returns -1 in case of of error or if OFCL does not exist. |headers|
+// must be non-null.
 int64_t GetDataReductionProxyOFCL(const net::HttpResponseHeaders* headers);
+
+// Returns an estimate of the compression ratio from the Content-Length and
+// Chrome-Proxy Original-Full-Content-Length(OFCL) response headers. These may
+// not be populated for responses which are streamed from the origin which will
+// be treated as a no compression case. Notably, only the response body size is
+// used to compute the ratio, and headers are excluded, since this is only an
+// estimate for response that is beginning to arrive.
+double EstimateCompressionRatioFromHeaders(
+    const network::ResourceResponseHead* response_head);
 
 }  // namespace data_reduction_proxy
 #endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_HEADERS_H_

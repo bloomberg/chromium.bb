@@ -145,7 +145,8 @@ class MetricsWebContentsObserver
   void OnTimingUpdated(content::RenderFrameHost* render_frame_host,
                        const mojom::PageLoadTiming& timing,
                        const mojom::PageLoadMetadata& metadata,
-                       const mojom::PageLoadFeatures& new_features);
+                       const mojom::PageLoadFeatures& new_features,
+                       const mojom::PageLoadDataUse& new_data_use);
 
   // Informs the observers of the currently committed load that the event
   // corresponding to |event_key| has occurred. This should not be called within
@@ -157,9 +158,10 @@ class MetricsWebContentsObserver
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
 
   // page_load_metrics::mojom::PageLoadMetrics implementation.
-  void UpdateTiming(mojom::PageLoadTimingPtr timing,
-                    mojom::PageLoadMetadataPtr metadata,
-                    mojom::PageLoadFeaturesPtr new_features) override;
+  void UpdateTiming(const mojom::PageLoadTimingPtr timing,
+                    const mojom::PageLoadMetadataPtr metadata,
+                    const mojom::PageLoadFeaturesPtr new_features,
+                    const mojom::PageLoadDataUsePtr new_data_use) override;
 
   void HandleFailedNavigationForTrackedLoad(
       content::NavigationHandle* navigation_handle,

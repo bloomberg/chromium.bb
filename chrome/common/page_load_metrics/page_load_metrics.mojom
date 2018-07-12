@@ -151,10 +151,22 @@ struct PageLoadFeatures {
   array<int32> animated_css_properties;
 };
 
+// Data used for the page load.
+struct PageLoadDataUse {
+  // Network bytes received for the page load.
+  int64 received_data_length = 0;
+
+  // The number of bytes saved by the data reduction proxy. Will be zero when
+  // data reduction proxy is not used. Can be negative if the proxy inflated the
+  // resource.
+  int64 data_reduction_proxy_bytes_saved = 0;
+};
+
 // Sent from renderer to browser process when the PageLoadTiming for the
 // associated frame changed.
 interface PageLoadMetrics {
   UpdateTiming(PageLoadTiming page_load_timing,
                PageLoadMetadata page_load_metadata,
-               PageLoadFeatures new_features);
+               PageLoadFeatures new_features,
+               PageLoadDataUse data_use);
 };

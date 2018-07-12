@@ -430,7 +430,8 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     content::RenderFrameHost* render_frame_host,
     const mojom::PageLoadTiming& new_timing,
     const mojom::PageLoadMetadata& new_metadata,
-    const mojom::PageLoadFeatures& new_features) {
+    const mojom::PageLoadFeatures& new_features,
+    const mojom::PageLoadDataUse& new_data_use) {
   if (render_frame_host->GetLastCommittedURL().SchemeIs(
           extensions::kExtensionScheme)) {
     // Extensions can inject child frames into a page. We don't want to track
@@ -446,6 +447,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     UpdateSubFrameTiming(render_frame_host, new_timing);
   }
   client_->UpdateFeaturesUsage(new_features);
+  client_->UpdateDataUse(new_data_use);
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateFeatures(
