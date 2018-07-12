@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
@@ -133,12 +134,14 @@ class DialogLauncher : public content::NotificationObserver {
         account_supported = true;
     }
 
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
     // Launch Assistant OOBE flow if Assistant is enabled.
     if (account_supported && chromeos::switches::IsAssistantEnabled()) {
       chromeos::AssistantOptInDialog::Show();
       delete this;
       return;
     }
+#endif
 
     // If voice interaction value prop needs to be shown, the tutorial will be
     // shown after the voice interaction OOBE flow.
