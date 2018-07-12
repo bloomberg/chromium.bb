@@ -55,9 +55,6 @@ class LocationBar {
   // Updates the visibility and toggled state of the local card migration icon.
   virtual void UpdateLocalCardMigrationIcon() = 0;
 
-  // Updates the visibility of the find bar image icon.
-  virtual void UpdateFindBarIconVisibility() = 0;
-
   // Updates the visibility of the bookmark star.
   virtual void UpdateBookmarkStarVisibility() = 0;
 

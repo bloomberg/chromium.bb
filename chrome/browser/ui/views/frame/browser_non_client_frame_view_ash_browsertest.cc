@@ -812,6 +812,12 @@ class HostedAppNonClientFrameViewAshTest
     return hosted_app_button_container_->active_icon_color_;
   }
 
+  PageActionIconView* GetPageActionIcon(PageActionIconType type) {
+    return browser_view_->toolbar_button_provider()
+        ->GetPageActionIconContainerView()
+        ->GetPageActionIconView(type);
+  }
+
   ContentSettingImageView* GrantGeolocationPermission() {
     content::RenderFrameHost* frame =
         app_browser_->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
@@ -879,16 +885,21 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FrameSize) {
             frame_header_->GetHeaderHeight());
 }
 
+// Test that the HostedAppButtonContainer is the designated toolbar button
+// provider in this window configuration.
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+                       ToolbarButtonProvider) {
+  EXPECT_EQ(browser_view_->toolbar_button_provider(),
+            hosted_app_button_container_);
+}
+
 // Test that the zoom icon appears in the title bar for hosted app windows.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ZoomIcon) {
   content::WebContents* web_contents =
       app_browser_->tab_strip_model()->GetActiveWebContents();
   zoom::ZoomController* zoom_controller =
       zoom::ZoomController::FromWebContents(web_contents);
-  PageActionIconView* zoom_icon =
-      browser_view_->toolbar_button_provider()
-          ->GetPageActionIconContainerView()
-          ->GetPageActionIconView(PageActionIconType::kZoom);
+  PageActionIconView* zoom_icon = GetPageActionIcon(PageActionIconType::kZoom);
 
   EXPECT_TRUE(zoom_icon);
   EXPECT_FALSE(zoom_icon->visible());
@@ -899,6 +910,18 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ZoomIcon) {
 
   EXPECT_TRUE(zoom_icon->visible());
   EXPECT_TRUE(ZoomBubbleView::GetZoomBubble());
+}
+
+// Test that the find icon appears in the title bar for hosted app windows.
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FindIcon) {
+  PageActionIconView* find_icon = GetPageActionIcon(PageActionIconType::kFind);
+
+  EXPECT_TRUE(find_icon);
+  EXPECT_FALSE(find_icon->visible());
+
+  chrome::Find(app_browser_);
+
+  EXPECT_TRUE(find_icon->visible());
 }
 
 // Tests that the focus toolbar command focuses the app menu button in web app

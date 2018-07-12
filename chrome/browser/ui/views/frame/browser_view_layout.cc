@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -216,26 +215,16 @@ gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
   // to the Toolbar.
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
-  LocationBarView* location_bar_view = browser_view->GetLocationBarView();
-
-  // Check for the presence of a visible OmniBox/location bar.
-  const bool has_location_bar =
-      browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR) &&
-      location_bar_view && location_bar_view->visible() &&
-      (!immersive_mode_controller_->IsEnabled() ||
-       immersive_mode_controller_->IsRevealed());
 
   gfx::Rect bounding_box;
-  // If the OmniBox/location bar is visible, anchor the find bar bounding box
-  // to its bottom edge.
-  if (has_location_bar) {
-    // The bounding box should be the area right below the OmniBox/location bar.
-    bounding_box = location_bar_view->ConvertRectToWidget(
-        location_bar_view->GetLocalBounds());
-    bounding_box.Inset(0, location_bar_view->height(), 0,
-                       -contents_container_->height());
-    return bounding_box;
+  if (!immersive_mode_controller_->IsEnabled() ||
+      immersive_mode_controller_->IsRevealed()) {
+    bounding_box =
+        browser_view->toolbar_button_provider()->GetFindBarBoundingBox(
+            contents_container_->height());
   }
+  if (!bounding_box.IsEmpty())
+    return bounding_box;
 
   // Otherwise, use the contents container minus any infobars and detached
   // bookmark bar from the top and a scrollbar width from the appropriate edge.

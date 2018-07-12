@@ -4,12 +4,18 @@
 
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
 
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/find_bar/find_bar.h"
+#include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/toolbar/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 
-FindBarIcon::FindBarIcon(PageActionIconView::Delegate* delegate)
-    : PageActionIconView(nullptr, 0, delegate) {}
+FindBarIcon::FindBarIcon(Browser* browser,
+                         PageActionIconView::Delegate* delegate)
+    : PageActionIconView(nullptr, 0, delegate), browser_(browser) {
+  DCHECK(browser_);
+}
 
 FindBarIcon::~FindBarIcon() {}
 
@@ -40,4 +46,17 @@ views::BubbleDialogDelegateView* FindBarIcon::GetBubble() const {
 
 const gfx::VectorIcon& FindBarIcon::GetVectorIcon() const {
   return toolbar::kFindInPageIcon;
+}
+
+bool FindBarIcon::Update() {
+  // |browser_->window()| may return nullptr because Update() is called while
+  // BrowserWindow is being constructed.
+  if (!browser_->window() || !browser_->HasFindBarController())
+    return false;
+
+  const bool was_visible = visible();
+  SetVisible(browser_->GetFindBarController()->find_bar()->IsFindBarVisible());
+  const bool visibility_changed = was_visible != visible();
+  SetActive(visible(), visibility_changed);
+  return visibility_changed;
 }

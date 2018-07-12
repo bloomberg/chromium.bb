@@ -196,6 +196,7 @@ class ToolbarView : public views::AccessiblePaneView,
   BrowserActionsContainer* GetBrowserActionsContainer() override;
   PageActionIconContainerView* GetPageActionIconContainerView() override;
   AppMenuButton* GetAppMenuButton() override;
+  gfx::Rect GetFindBarBoundingBox(int contents_height) const override;
   void FocusToolbar() override;
   views::AccessiblePaneView* GetAsAccessiblePaneView() override;
 

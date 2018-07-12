@@ -8,6 +8,7 @@
 enum class PageActionIconType {
   // TODO(https://crbug.com/788051): Migrate page action icon update methods out
   // of LocationBar to this interface.
+  kFind,
   kZoom,
 };
 

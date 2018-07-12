@@ -35,8 +35,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
-#include "chrome/browser/ui/find_bar/find_bar.h"
-#include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
@@ -50,7 +48,6 @@
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
-#include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
@@ -218,9 +215,17 @@ void LocationBarView::Init() {
 
   SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
 
+  std::vector<PageActionIconType> page_action_icon_types;
+  // |browser_| may be null when LocationBarView is used for non-Browser windows
+  // such as PresentationReceiverWindowView, which do not support page actions.
+  if (browser_) {
+    page_action_icon_types = {PageActionIconType::kFind,
+                              PageActionIconType::kZoom};
+  }
   page_action_icon_container_view_ = new PageActionIconContainerView(
-      {PageActionIconType::kZoom}, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-      profile(), this, delegate_);
+      page_action_icon_types, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+      GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING), browser_, this,
+      delegate_);
   AddChildView(page_action_icon_container_view_);
   page_action_icon_container_view_->SetIconColor(icon_color);
 
@@ -246,7 +251,6 @@ void LocationBarView::Init() {
     page_action_icons_.push_back(intent_picker_view_ =
                                      new IntentPickerView(browser_, this));
 #endif
-  page_action_icons_.push_back(find_bar_icon_ = new FindBarIcon(this));
   if (browser_) {
     page_action_icons_.push_back(
         star_view_ = new StarView(command_updater(), browser_, this));
@@ -536,7 +540,6 @@ void LocationBarView::Layout() {
   if (star_view_)
     add_trailing_decoration(star_view_);
   add_trailing_decoration(page_action_icon_container_view_);
-  add_trailing_decoration(find_bar_icon_);
 #if defined(OS_CHROMEOS)
   if (intent_picker_view_)
     add_trailing_decoration(intent_picker_view_);
@@ -639,13 +642,7 @@ void LocationBarView::ChildPreferredSizeChanged(views::View* child) {
 void LocationBarView::Update(const WebContents* contents) {
   RefreshContentSettingViews();
 
-  page_action_icon_container_view_->UpdatePageActionIcon(
-      PageActionIconType::kZoom);
-
   RefreshPageActionIconViews();
-
-  // TODO(calamity): Refactor Update to use PageActionIconView::Refresh.
-  RefreshFindBarIcon();
 
   if (star_view_) {
     // TODO(calamity): Refactor Update to use PageActionIconView::Refresh.
@@ -883,20 +880,6 @@ void LocationBarView::ButtonPressed(views::Button* sender,
   }
 }
 
-bool LocationBarView::RefreshFindBarIcon() {
-  // |browser_| may be nullptr since some unit tests pass it in for the
-  // Browser*. |browser_->window()| may return nullptr because Update() is
-  // called while BrowserWindow is being constructed.
-  if (!find_bar_icon_ || !browser_ || !browser_->window() ||
-      !browser_->HasFindBarController()) {
-    return false;
-  }
-  const bool was_visible = find_bar_icon_->visible();
-  find_bar_icon_->SetVisible(
-      browser_->GetFindBarController()->find_bar()->IsFindBarVisible());
-  return was_visible != find_bar_icon_->visible();
-}
-
 void LocationBarView::RefreshClearAllButtonIcon() {
   const gfx::VectorIcon& icon =
       ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
@@ -1063,15 +1046,6 @@ void LocationBarView::UpdateLocalCardMigrationIcon() {
     Layout();
     SchedulePaint();
   }
-}
-
-void LocationBarView::UpdateFindBarIconVisibility() {
-  const bool visibility_changed = RefreshFindBarIcon();
-  if (visibility_changed) {
-    Layout();
-    SchedulePaint();
-  }
-  find_bar_icon_->SetActive(find_bar_icon_->visible(), visibility_changed);
 }
 
 void LocationBarView::UpdateBookmarkStarVisibility() {

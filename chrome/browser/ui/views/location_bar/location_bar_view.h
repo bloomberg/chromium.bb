@@ -37,7 +37,6 @@
 
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
-class FindBarIcon;
 class GURL;
 class IntentPickerView;
 class KeywordHintView;
@@ -301,9 +300,6 @@ class LocationBarView : public LocationBar,
   // actions are available on the current page.
   void RefreshPageActionIconViews();
 
-  // Updates |find_bar_icon_|. Returns true if visibility changed.
-  bool RefreshFindBarIcon();
-
   // Updates the color of the icon for the "clear all" button.
   void RefreshClearAllButtonIcon();
 
@@ -343,7 +339,6 @@ class LocationBarView : public LocationBar,
   void UpdateManagePasswordsIconAndBubble() override;
   void UpdateSaveCreditCardIcon() override;
   void UpdateLocalCardMigrationIcon() override;
-  void UpdateFindBarIconVisibility() override;
   void UpdateBookmarkStarVisibility() override;
   void UpdateLocationBarVisibility(bool visible, bool animation) override;
   void SaveStateToContents(content::WebContents* contents) override;
@@ -449,9 +444,6 @@ class LocationBarView : public LocationBar,
   // |browser_| is null.
   IntentPickerView* intent_picker_view_ = nullptr;
 #endif  // defined(OS_CHROMEOS)
-
-  // The icon displayed when the find bar is visible.
-  FindBarIcon* find_bar_icon_ = nullptr;
 
   // The star for bookmarking.  It will be null when |browser_| is null.
   StarView* star_view_ = nullptr;

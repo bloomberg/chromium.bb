@@ -14,9 +14,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/view.h"
 
-namespace context {
-class BrowserContext;
-}
+class Browser;
+class FindBarIcon;
 class ZoomView;
 
 class PageActionIconContainerView : public views::View,
@@ -26,7 +25,8 @@ class PageActionIconContainerView : public views::View,
   PageActionIconContainerView(
       const std::vector<PageActionIconType>& types_enabled,
       int icon_size,
-      content::BrowserContext* browser_context,
+      int between_icon_spacing,
+      Browser* browser,
       PageActionIconView::Delegate* page_action_icon_delegate,
       LocationBarView::Delegate* location_bar_delegate);
   ~PageActionIconContainerView() override;
@@ -59,6 +59,7 @@ class PageActionIconContainerView : public views::View,
   void OnDefaultZoomLevelChanged() override;
 
   ZoomView* zoom_view_ = nullptr;
+  FindBarIcon* find_bar_icon_ = nullptr;
   std::vector<PageActionIconView*> page_action_icons_;
 
   ScopedObserver<zoom::ZoomEventManager, zoom::ZoomEventManagerObserver>

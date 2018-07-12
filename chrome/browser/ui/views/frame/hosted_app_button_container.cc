@@ -57,6 +57,11 @@ class HostedAppToolbarActionsBar : public ToolbarActionsBar {
   DISALLOW_COPY_AND_ASSIGN(HostedAppToolbarActionsBar);
 };
 
+int HorizontalPaddingBetweenItems() {
+  return views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
+}
+
 }  // namespace
 
 class HostedAppButtonContainer::ContentSettingsContainer
@@ -172,9 +177,10 @@ HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
       inactive_icon_color_(inactive_icon_color),
       content_settings_container_(new ContentSettingsContainer(browser_view)),
       page_action_icon_container_view_(new PageActionIconContainerView(
-          {PageActionIconType::kZoom},
+          {PageActionIconType::kFind, PageActionIconType::kZoom},
           GetLayoutConstant(HOSTED_APP_PAGE_ACTION_ICON_SIZE),
-          browser_view->GetProfile(),
+          HorizontalPaddingBetweenItems(),
+          browser_view->browser(),
           this,
           nullptr)),
       browser_actions_container_(
@@ -184,12 +190,10 @@ HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
                                       false /* interactive */)),
       app_menu_button_(new HostedAppMenuButton(browser_view)) {
   DCHECK(browser_view_);
-  const int kHorizontalPadding =
-      views::LayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
   auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(0, kHorizontalPadding),
-      kHorizontalPadding);
+      views::BoxLayout::kHorizontal,
+      gfx::Insets(0, HorizontalPaddingBetweenItems()),
+      HorizontalPaddingBetweenItems());
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(std::move(layout));
@@ -300,6 +304,24 @@ HostedAppButtonContainer::GetPageActionIconContainerView() {
 
 AppMenuButton* HostedAppButtonContainer::GetAppMenuButton() {
   return app_menu_button_;
+}
+
+gfx::Rect HostedAppButtonContainer::GetFindBarBoundingBox(
+    int contents_height) const {
+  if (!IsDrawn())
+    return gfx::Rect();
+
+  gfx::Rect anchor_bounds =
+      app_menu_button_->ConvertRectToWidget(app_menu_button_->GetLocalBounds());
+  if (base::i18n::IsRTL()) {
+    // Find bar will be left aligned so align to left edge of app menu button.
+    int widget_width = GetWidget()->GetRootView()->width();
+    return gfx::Rect(anchor_bounds.x(), anchor_bounds.bottom(),
+                     widget_width - anchor_bounds.x(), contents_height);
+  }
+  // Find bar will be right aligned so align to right edge of app menu button.
+  return gfx::Rect(0, anchor_bounds.bottom(),
+                   anchor_bounds.x() + anchor_bounds.width(), contents_height);
 }
 
 void HostedAppButtonContainer::FocusToolbar() {
