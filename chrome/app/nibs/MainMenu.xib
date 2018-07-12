@@ -481,14 +481,20 @@ CA
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="453"/>
-                            <menuItem title="^IDS_NEXT_TAB_MAC" tag="34016" keyEquivalent="" id="455">
-                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                            <menuItem title="^IDS_NEXT_TAB_MAC" tag="34016" id="455">
+                                <string key="keyEquivalent" base64-UTF8="YES">
+CQ
+</string>
+                                <modifierMask key="keyEquivalentModifierMask" control="YES"/>
                                 <connections>
                                     <action selector="commandDispatch:" target="-1" id="529"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="^IDS_PREV_TAB_MAC" tag="34017" keyEquivalent="" id="454">
-                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                            <menuItem title="^IDS_PREV_TAB_MAC" tag="34017" id="454">
+                                <string key="keyEquivalent" base64-UTF8="YES">
+CQ
+</string>
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" control="YES"/>
                                 <connections>
                                     <action selector="commandDispatch:" target="-1" id="530"/>
                                 </connections>

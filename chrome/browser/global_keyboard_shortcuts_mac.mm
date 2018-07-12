@@ -123,9 +123,9 @@ const std::vector<KeyboardShortcutData>& GetShortcutsNotPresentInMainMenu() {
     {true,  true,  false, false, kVK_ANSI_RightBracket, IDC_SELECT_NEXT_TAB},
     {true,  true,  false, false, kVK_ANSI_LeftBracket,  IDC_SELECT_PREVIOUS_TAB},
     {false, false, true,  false, kVK_PageDown,          IDC_SELECT_NEXT_TAB},
-    {false, false, true,  false, kVK_Tab,               IDC_SELECT_NEXT_TAB},
     {false, false, true,  false, kVK_PageUp,            IDC_SELECT_PREVIOUS_TAB},
-    {false, true,  true,  false, kVK_Tab,               IDC_SELECT_PREVIOUS_TAB},
+    {true,  false, false, true,  kVK_RightArrow,        IDC_SELECT_NEXT_TAB},
+    {true,  false, false, true,  kVK_LeftArrow,         IDC_SELECT_PREVIOUS_TAB},
 
     // Cmd-0..8 select the nth tab, with cmd-9 being "last tab".
     {true, false, false, false, kVK_ANSI_1,             IDC_SELECT_TAB_0},
