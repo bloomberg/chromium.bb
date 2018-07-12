@@ -64,7 +64,7 @@ namespace {
 void CheckShapeResultRange(const ShapeResult* result,
                            unsigned start,
                            unsigned end,
-                           const UChar* text,
+                           const String& text,
                            const Font* font) {
   DCHECK_LE(start, end);
   unsigned length = end - start;
@@ -148,8 +148,7 @@ class HarfBuzzScopedPtr {
   DestroyFunction destroy_;
 };
 
-HarfBuzzShaper::HarfBuzzShaper(const UChar* text, unsigned length)
-    : text_(text), text_length_(length) {}
+HarfBuzzShaper::HarfBuzzShaper(const String& text) : text_(text) {}
 
 using FeaturesVector = Vector<hb_feature_t, 6>;
 struct RangeData {
@@ -493,9 +492,18 @@ bool HarfBuzzShaper::CollectFallbackHintChars(
     if (it->action_ == kReshapeQueueNextFont)
       break;
 
+    CHECK_LE((it->start_index_ + it->num_characters_), text_.length());
+    if (text_.Is8Bit()) {
+      for (unsigned i = 0; i < it->num_characters_; i++) {
+        hint.push_back(text_[it->start_index_ + i]);
+        num_chars_added++;
+      }
+      continue;
+    }
+
     UChar32 hint_char;
-    CHECK_LE((it->start_index_ + it->num_characters_), text_length_);
-    UTF16TextIterator iterator(text_ + it->start_index_, it->num_characters_);
+    UTF16TextIterator iterator(text_.Characters16() + it->start_index_,
+                               it->num_characters_);
     while (iterator.Consume(hint_char)) {
       hint.push_back(hint_char);
       num_chars_added++;
@@ -508,10 +516,21 @@ bool HarfBuzzShaper::CollectFallbackHintChars(
 namespace {
 
 void SplitUntilNextCaseChange(
-    const UChar* normalized_buffer,
+    const String& text,
     Deque<blink::ReshapeQueueItem>* queue,
     blink::ReshapeQueueItem& current_queue_item,
     SmallCapsIterator::SmallCapsBehavior& small_caps_behavior) {
+  // TODO(layout-dev): Add support for latin-1 to SmallCapsIterator.
+  const UChar* normalized_buffer;
+  base::Optional<String> utf16_text;
+  if (text.Is8Bit()) {
+    utf16_text.emplace(text);
+    utf16_text->Ensure16Bit();
+    normalized_buffer = utf16_text->Characters16();
+  } else {
+    normalized_buffer = text.Characters16();
+  }
+
   unsigned num_characters_until_case_change = 0;
   SmallCapsIterator small_caps_iterator(
       normalized_buffer + current_queue_item.start_index_,
@@ -870,15 +889,7 @@ void HarfBuzzShaper::ShapeSegment(
     }
 
     DCHECK(current_queue_item.num_characters_);
-    const SimpleFontData* small_caps_adjusted_font =
-        needs_caps_handling &&
-                caps_support.NeedsSyntheticFont(small_caps_behavior)
-            ? font_data->SmallCapsFontData(font_description).get()
-            : font_data;
-
-    CaseMapIntend case_map_intend = CaseMapIntend::kKeepSameCase;
-    if (needs_caps_handling)
-      case_map_intend = caps_support.NeedsCaseChange(small_caps_behavior);
+    const SimpleFontData* adjusted_font = font_data;
 
     // Clamp the start and end offsets of the queue item to the offsets
     // representing the shaping window.
@@ -889,13 +900,20 @@ void HarfBuzzShaper::ShapeSegment(
                                       current_queue_item.num_characters_);
     DCHECK_GT(shape_end, shape_start);
 
+    CaseMapIntend case_map_intend = CaseMapIntend::kKeepSameCase;
+    if (needs_caps_handling) {
+      case_map_intend = caps_support.NeedsCaseChange(small_caps_behavior);
+      if (caps_support.NeedsSyntheticFont(small_caps_behavior))
+        adjusted_font = font_data->SmallCapsFontData(font_description).get();
+    }
+
     CaseMappingHarfBuzzBufferFiller(
         case_map_intend, font_description.LocaleOrDefault(), range_data->buffer,
-        text_, text_length_, shape_start, shape_end - shape_start);
+        text_, shape_start, shape_end - shape_start);
 
-    CanvasRotationInVertical canvas_rotation = CanvasRotationForRun(
-        small_caps_adjusted_font->PlatformData().Orientation(),
-        segment.render_orientation);
+    CanvasRotationInVertical canvas_rotation =
+        CanvasRotationForRun(adjusted_font->PlatformData().Orientation(),
+                             segment.render_orientation);
 
     CapsFeatureSettingsScopedOverlay caps_overlay(
         &range_data->font_features,
@@ -906,14 +924,14 @@ void HarfBuzzShaper::ShapeSegment(
                     range_data->font_features.IsEmpty()
                         ? nullptr
                         : range_data->font_features.data(),
-                    range_data->font_features.size(), small_caps_adjusted_font,
+                    range_data->font_features.size(), adjusted_font,
                     current_font_data_for_range_set->Ranges(), segment.script,
                     direction, language))
       DLOG(ERROR) << "Shaping range failed.";
 
     ExtractShapeResults(range_data, font_cycle_queued, current_queue_item,
-                        small_caps_adjusted_font, segment.script,
-                        canvas_rotation, !fallback_iterator->HasNext(), result);
+                        adjusted_font, segment.script, canvas_rotation,
+                        !fallback_iterator->HasNext(), result);
 
     hb_buffer_reset(range_data->buffer);
   }
@@ -926,7 +944,7 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
     unsigned end,
     const RunSegmenter::RunSegmenterRange* pre_segmented) const {
   DCHECK_GE(end, start);
-  DCHECK_LE(end, text_length_);
+  DCHECK_LE(end, text_.length());
   DCHECK(!pre_segmented ||
          (start >= pre_segmented->start && end <= pre_segmented->end));
 
@@ -944,10 +962,19 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
 
   if (pre_segmented) {
     ShapeSegment(&range_data, *pre_segmented, result.get());
+
+  } else if (text_.Is8Bit()) {
+    // 8-bit text is guaranteed to horizontal latin-1.
+    RunSegmenter::RunSegmenterRange segment_range = {
+        start, end, USCRIPT_LATIN, OrientationIterator::kOrientationKeep,
+        FontFallbackPriority::kText};
+    ShapeSegment(&range_data, segment_range, result.get());
+
   } else {
     // Run segmentation needs to operate on the entire string, regardless of the
     // shaping window (defined by the start and end parameters).
-    RunSegmenter run_segmenter(text_, text_length_,
+    DCHECK(!text_.Is8Bit());
+    RunSegmenter run_segmenter(text_.Characters16(), text_.length(),
                                font->GetFontDescription().Orientation());
     RunSegmenter::RunSegmenterRange segment_range = RunSegmenter::NullRange();
     while (run_segmenter.Consume(&segment_range)) {
@@ -978,7 +1005,7 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
 
 scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
                                           TextDirection direction) const {
-  return Shape(font, direction, 0, text_length_);
+  return Shape(font, direction, 0, text_.length());
 }
 
 }  // namespace blink

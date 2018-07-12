@@ -6,6 +6,7 @@
 
 #include <unicode/uscript.h>
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
@@ -145,7 +146,7 @@ TEST_F(HarfBuzzShaperTest, MutableUnique) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin) {
   String latin_common = To16Bit("ABC DEF.", 8);
-  HarfBuzzShaper shaper(latin_common.Characters16(), 8);
+  HarfBuzzShaper shaper(latin_common);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
 
   EXPECT_EQ(1u, TestInfo(result)->NumberOfRunsForTesting());
@@ -158,7 +159,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLeadingCommon) {
   String leading_common = To16Bit("... test", 8);
-  HarfBuzzShaper shaper(leading_common.Characters16(), 8);
+  HarfBuzzShaper shaper(leading_common);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
 
   EXPECT_EQ(1u, TestInfo(result)->NumberOfRunsForTesting());
@@ -183,7 +184,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
       {"Not-defined Variants", {0x41, 0xDB40, 0xDDEF}, 3, HB_SCRIPT_LATIN},
   };
   for (auto& test : testlist) {
-    HarfBuzzShaper shaper(test.string, test.length);
+    HarfBuzzShaper shaper(test.string);
     scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
 
     EXPECT_EQ(1u, TestInfo(result)->NumberOfRunsForTesting()) << test.name;
@@ -211,7 +212,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommon) {
   UChar devanagari_common_string[] = {0x915, 0x94d, 0x930, 0x28, 0x20, 0x29};
   String devanagari_common_latin(devanagari_common_string, 6);
-  HarfBuzzShaper shaper(devanagari_common_latin.Characters16(), 6);
+  HarfBuzzShaper shaper(devanagari_common_latin);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
 
   EXPECT_EQ(2u, TestInfo(result)->NumberOfRunsForTesting());
@@ -231,7 +232,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommon) {
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommonLatinCommon) {
   UChar devanagari_common_latin_string[] = {0x915, 0x94d, 0x930, 0x20,
                                             0x61,  0x62,  0x2E};
-  HarfBuzzShaper shaper(devanagari_common_latin_string, 7);
+  HarfBuzzShaper shaper(String(devanagari_common_latin_string, 7));
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
 
   EXPECT_EQ(3u, TestInfo(result)->NumberOfRunsForTesting());
@@ -256,7 +257,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommonLatinCommon) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatin) {
   UChar mixed_string[] = {0x628, 0x64A, 0x629, 0xE20, 0x65E5, 0x62};
-  HarfBuzzShaper shaper(mixed_string, 6);
+  HarfBuzzShaper shaper(String(mixed_string, 6));
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
 
   EXPECT_EQ(4u, TestInfo(result)->NumberOfRunsForTesting());
@@ -287,7 +288,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatin) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatinTwice) {
   UChar mixed_string[] = {0x628, 0x64A, 0x629, 0xE20, 0x65E5, 0x62};
-  HarfBuzzShaper shaper(mixed_string, 6);
+  HarfBuzzShaper shaper(String(mixed_string, 6));
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
   EXPECT_EQ(4u, TestInfo(result)->NumberOfRunsForTesting());
 
@@ -299,7 +300,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatinTwice) {
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabic) {
   UChar arabic_string[] = {0x628, 0x64A, 0x629};
-  HarfBuzzShaper shaper(arabic_string, 3);
+  HarfBuzzShaper shaper(String(arabic_string, 3));
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kRtl);
 
   EXPECT_EQ(1u, TestInfo(result)->NumberOfRunsForTesting());
@@ -316,10 +317,10 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabic) {
 // It better reflects the intended use where the range given to each shape call
 // corresponds to the text content of a TextNode.
 TEST_F(HarfBuzzShaperTest, ShapeLatinSegment) {
-  String string = To16Bit("Hello World!", 12);
+  String string("Hello World!", 12u);
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(string.Characters16(), 12);
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> combined = shaper.Shape(&font, direction);
   scoped_refptr<ShapeResult> first = shaper.Shape(&font, direction, 0, 6);
   scoped_refptr<ShapeResult> second = shaper.Shape(&font, direction, 6, 11);
@@ -338,13 +339,13 @@ TEST_F(HarfBuzzShaperTest, ShapeLatinSegment) {
   EXPECT_EQ(11u, start_index);
   EXPECT_EQ(1u, num_characters);
 
-  HarfBuzzShaper shaper2(string.Characters16(), 6);
+  HarfBuzzShaper shaper2(string.Substring(0, 6));
   scoped_refptr<ShapeResult> first_reference = shaper2.Shape(&font, direction);
 
-  HarfBuzzShaper shaper3(string.Characters16() + 6, 5);
+  HarfBuzzShaper shaper3(string.Substring(6, 5));
   scoped_refptr<ShapeResult> second_reference = shaper3.Shape(&font, direction);
 
-  HarfBuzzShaper shaper4(string.Characters16() + 11, 1);
+  HarfBuzzShaper shaper4(string.Substring(11, 1));
   scoped_refptr<ShapeResult> third_reference = shaper4.Shape(&font, direction);
 
   // Width of each segment should be the same when shaped using start and end
@@ -368,7 +369,7 @@ TEST_F(HarfBuzzShaperTest, ShapeLatinSegment) {
 // See crbug.com/689155
 TEST_F(HarfBuzzShaperTest, DISABLED_ShapeArabicWithContext) {
   UChar arabic_string[] = {0x647, 0x64A};
-  HarfBuzzShaper shaper(arabic_string, 2);
+  HarfBuzzShaper shaper(String(arabic_string, 2));
 
   scoped_refptr<ShapeResult> combined = shaper.Shape(&font, TextDirection::kRtl);
 
@@ -388,7 +389,7 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalUpright) {
   // This string should create 2 runs, ideographic and Latin, both in upright.
   String string(u"\u65E5\u65E5\u65E5lllll");
   TextDirection direction = TextDirection::kLtr;
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   // Check width and bounds are not too much different. ".1" is heuristic.
@@ -422,28 +423,28 @@ TEST_F(HarfBuzzShaperTest, RangeShapeSmallCaps) {
   // space character does not need to be uppercased. This triggered
   // crbug.com/817271.
   String string(u"a aa");
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result =
       shaper.Shape(&font, TextDirection::kLtr, 2, 3);
   EXPECT_EQ(1u, result->NumCharacters());
 
   string = u"aa a";
-  HarfBuzzShaper shaper_two(string.Characters16(), string.length());
+  HarfBuzzShaper shaper_two(string);
   result = shaper_two.Shape(&font, TextDirection::kLtr, 3, 4);
   EXPECT_EQ(1u, result->NumCharacters());
 
   string = u"a aa";
-  HarfBuzzShaper shaper_three(string.Characters16(), string.length());
+  HarfBuzzShaper shaper_three(string);
   result = shaper_three.Shape(&font, TextDirection::kLtr, 1, 2);
   EXPECT_EQ(1u, result->NumCharacters());
 
   string = u"aa aa aa aa aa aa aa aa aa aa";
-  HarfBuzzShaper shaper_four(string.Characters16(), string.length());
+  HarfBuzzShaper shaper_four(string);
   result = shaper_four.Shape(&font, TextDirection::kLtr, 21, 23);
   EXPECT_EQ(2u, result->NumCharacters());
 
   string = u"aa aa aa aa aa aa aa aa aa aa";
-  HarfBuzzShaper shaper_five(string.Characters16(), string.length());
+  HarfBuzzShaper shaper_five(string);
   result = shaper_five.Shape(&font, TextDirection::kLtr, 27, 29);
   EXPECT_EQ(2u, result->NumCharacters());
 }
@@ -457,7 +458,7 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalMixed) {
   // rotated horizontal.
   String string(u"\u65E5\u65E5\u65E5lllll");
   TextDirection direction = TextDirection::kLtr;
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   // Check width and bounds are not too much different. ".1" is heuristic.
@@ -481,7 +482,7 @@ TEST_P(ShapeParameterTest, MissingGlyph) {
   String string(
       u"\uFFF0"
       u"Hello");
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
   EXPECT_EQ(0u, result->StartIndexForResult());
   EXPECT_EQ(string.length(), result->EndIndexForResult());
@@ -496,8 +497,8 @@ TEST_P(ShapeParameterTest, ZeroWidthSpace) {
                     0x0648,
                     kZeroWidthSpaceCharacter,
                     kZeroWidthSpaceCharacter};
-  const unsigned length = arraysize(string);
-  HarfBuzzShaper shaper(string, length);
+  const unsigned length = base::size(string);
+  HarfBuzzShaper shaper(String(string, length));
   scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
   EXPECT_EQ(0u, result->StartIndexForResult());
   EXPECT_EQ(length, result->EndIndexForResult());
@@ -508,7 +509,7 @@ TEST_P(ShapeParameterTest, ZeroWidthSpace) {
 
 TEST_F(HarfBuzzShaperTest, NegativeLetterSpacing) {
   String string(u"Hello");
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
   float width = result->Width();
   FloatRect bounds = result->Bounds();
@@ -525,7 +526,7 @@ TEST_F(HarfBuzzShaperTest, NegativeLetterSpacing) {
 
 TEST_F(HarfBuzzShaperTest, NegativeLetterSpacingTo0) {
   String string(u"00000");
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
   float char_width = result->Width() / string.length();
 
@@ -545,7 +546,7 @@ TEST_F(HarfBuzzShaperTest, NegativeLetterSpacingTo0) {
 
 TEST_F(HarfBuzzShaperTest, NegativeLetterSpacingToNegative) {
   String string(u"00000");
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
   float char_width = result->Width() / string.length();
 
@@ -605,7 +606,7 @@ INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
 TEST_P(GlyphDataRangeTest, Data) {
   auto data = GetParam();
   String string(data.text);
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, data.direction);
 
   auto& run = TestInfo(result)->RunInfoForTesting(data.run_index);
@@ -668,7 +669,7 @@ INSTANTIATE_TEST_CASE_P(
 TEST_P(OffsetForPositionTest, Data) {
   auto data = GetParam();
   String string(u"01234");
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   Font ahem = CreateAhem(10);
   scoped_refptr<ShapeResult> result =
       SplitRun(shaper.Shape(&ahem, TextDirection::kLtr), 2);
@@ -692,7 +693,7 @@ TEST_F(HarfBuzzShaperTest, PositionForOffsetLatin) {
   String string = To16Bit("Hello World!", 12);
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(string.Characters16(), 12);
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
   scoped_refptr<ShapeResult> first = shaper.Shape(&font, direction, 0, 5);    // Hello
   scoped_refptr<ShapeResult> second = shaper.Shape(&font, direction, 6, 11);  // World
@@ -708,7 +709,7 @@ TEST_F(HarfBuzzShaperTest, PositionForOffsetArabic) {
   UChar arabic_string[] = {0x628, 0x64A, 0x629};
   TextDirection direction = TextDirection::kRtl;
 
-  HarfBuzzShaper shaper(arabic_string, 3);
+  HarfBuzzShaper shaper(String(arabic_string, 3));
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   EXPECT_EQ(0.0f, result->PositionForOffset(3));
@@ -720,7 +721,8 @@ TEST_F(HarfBuzzShaperTest, EmojiZWJSequence) {
                                 0x270C, 0x200D, 0xD83C, 0xDFFC};
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(emoji_zwj_sequence, arraysize(emoji_zwj_sequence));
+  HarfBuzzShaper shaper(
+      String(emoji_zwj_sequence, base::size(emoji_zwj_sequence)));
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 }
 
@@ -737,7 +739,7 @@ TEST_P(IncludePartialGlyphs, OffsetForPositionMatchesPositionForOffsetLatin) {
   String string = To16Bit("Hello World!", 12);
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(string.Characters16(), 12);
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   bool include_partial_glyphs = GetParam();
@@ -773,7 +775,7 @@ TEST_P(IncludePartialGlyphs, OffsetForPositionMatchesPositionForOffsetArabic) {
   UChar arabic_string[] = {0x628, 0x64A, 0x629};
   TextDirection direction = TextDirection::kRtl;
 
-  HarfBuzzShaper shaper(arabic_string, 3);
+  HarfBuzzShaper shaper(String(arabic_string, 3));
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   bool include_partial_glyphs = GetParam();
@@ -789,7 +791,7 @@ TEST_P(IncludePartialGlyphs, OffsetForPositionMatchesPositionForOffsetArabic) {
 
 TEST_P(IncludePartialGlyphs, OffsetForPositionMatchesPositionForOffsetMixed) {
   UChar mixed_string[] = {0x628, 0x64A, 0x629, 0xE20, 0x65E5, 0x62};
-  HarfBuzzShaper shaper(mixed_string, 6);
+  HarfBuzzShaper shaper(String(mixed_string, 6));
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
 
   bool include_partial_glyphs = GetParam();
@@ -813,7 +815,7 @@ TEST_F(HarfBuzzShaperTest, CachedOffsetPositionMappingForOffsetLatin) {
   String string = To16Bit("Hello World!", 12);
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(string.Characters16(), 12);
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> sr = shaper.Shape(&font, direction);
   sr->EnsurePositionData();
 
@@ -836,7 +838,7 @@ TEST_F(HarfBuzzShaperTest, CachedOffsetPositionMappingArabic) {
   UChar arabic_string[] = {0x628, 0x64A, 0x629};
   TextDirection direction = TextDirection::kRtl;
 
-  HarfBuzzShaper shaper(arabic_string, 3);
+  HarfBuzzShaper shaper(String(arabic_string, 3));
   scoped_refptr<ShapeResult> sr = shaper.Shape(&font, direction);
   sr->EnsurePositionData();
 
@@ -848,7 +850,7 @@ TEST_F(HarfBuzzShaperTest, CachedOffsetPositionMappingArabic) {
 
 TEST_F(HarfBuzzShaperTest, CachedOffsetPositionMappingMixed) {
   UChar mixed_string[] = {0x628, 0x64A, 0x629, 0xE20, 0x65E5, 0x62};
-  HarfBuzzShaper shaper(mixed_string, 6);
+  HarfBuzzShaper shaper(String(mixed_string, 6));
   scoped_refptr<ShapeResult> sr = shaper.Shape(&font, TextDirection::kLtr);
   sr->EnsurePositionData();
 
@@ -863,7 +865,7 @@ TEST_F(HarfBuzzShaperTest, CachedOffsetPositionMappingMixed) {
 
 TEST_F(HarfBuzzShaperTest, PositionForOffsetMissingGlyph) {
   String string(u"\u0633\u0644\u0627\u0645");
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kRtl);
   // Because the offset 1 and 2 should form a ligature, SubRange(2, 4) creates a
   // ShapeResult that does not have its first glyph.
@@ -903,7 +905,7 @@ TEST_P(ShapeResultCopyRangeTest, Split) {
   String string(test_data.string);
   TextDirection direction = test_data.direction;
 
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   // Split the result.
@@ -941,7 +943,7 @@ TEST_P(ShapeResultCopyRangeTest, ShapeRange) {
   String string(test_data.string);
   TextDirection direction = test_data.direction;
 
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   // Shape each range.
@@ -971,7 +973,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoLatin) {
   String string = To16Bit("Testing ShapeResult::createSubRun", 33);
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(string.Characters16(), 33);
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   scoped_refptr<ShapeResult> composite_result =
@@ -998,7 +1000,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoArabicThaiHanLatin) {
   UChar mixed_string[] = {0x628, 0x20, 0x64A, 0x629, 0x20, 0xE20, 0x65E5, 0x62};
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(mixed_string, 8);
+  HarfBuzzShaper shaper(String(mixed_string, 8));
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   // Check width and bounds are not too much different. ".2" is heuristic.
@@ -1041,7 +1043,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeAcrossRuns) {
   // [2]: 2 character.
   String mixed_string(u"\u65E5Hello\u65E5\u65E5");
   TextDirection direction = TextDirection::kLtr;
-  HarfBuzzShaper shaper(mixed_string.Characters16(), mixed_string.length());
+  HarfBuzzShaper shaper(mixed_string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   // Check width and bounds are not too much different. ".1" is heuristic.
@@ -1057,7 +1059,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeSegmentGlyphBoundingBox) {
   String string(u"THello worldL");
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result1 = shaper.Shape(&font, direction, 0, 6);
   scoped_refptr<ShapeResult> result2 =
       shaper.Shape(&font, direction, 6, string.length());
@@ -1077,7 +1079,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeSegmentGlyphBoundingBox) {
 TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeBoundsLtr) {
   String string(u". ");
   TextDirection direction = TextDirection::kLtr;
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   // Because a space character does not have ink, the bounds of "." should be
@@ -1089,7 +1091,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeBoundsLtr) {
 TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeBoundsRtl) {
   String string(u". ");
   TextDirection direction = TextDirection::kRtl;
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   // Because a space character does not have ink, the bounds of "." should be
@@ -1101,7 +1103,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeBoundsRtl) {
 TEST_F(HarfBuzzShaperTest, SubRange) {
   String string(u"Hello world");
   TextDirection direction = TextDirection::kRtl;
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   scoped_refptr<ShapeResult> sub_range = result->SubRange(4, 7);
@@ -1123,7 +1125,7 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinCommonLigatures) {
       16, &ligatures);
 
   String string = To16Bit("ffi ff", 6);
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&testFont, TextDirection::kLtr);
 
   EXPECT_EQ(0u, result->NextSafeToBreakOffset(0));  // At start of string.
@@ -1162,7 +1164,7 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakPreviousLatinCommonLigatures) {
       16, &ligatures);
 
   String string = To16Bit("ffi ff", 6);
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&testFont, TextDirection::kLtr);
 
   EXPECT_EQ(6u, result->PreviousSafeToBreakOffset(6));  // At end of "ff" liga.
@@ -1203,7 +1205,7 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
 
   // RA and CA form ligatures, most glyph pairs have kerning.
   String string(u"ABRACADABRA");
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&testFont, TextDirection::kLtr);
   EXPECT_EQ(6u, result->NextSafeToBreakOffset(1));    // After CA ligature.
   EXPECT_EQ(6u, result->NextSafeToBreakOffset(6));    // After CA ligature.
@@ -1213,7 +1215,7 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
 
   // Add zero-width spaces at the safe to break offsets.
   String refString(u"ABRACA\u200BDAB\u200BRA");
-  HarfBuzzShaper refShaper(refString.Characters16(), refString.length());
+  HarfBuzzShaper refShaper(refString);
   scoped_refptr<ShapeResult> referenceResult =
       refShaper.Shape(&testFont, TextDirection::kLtr);
 
@@ -1260,7 +1262,7 @@ TEST_F(HarfBuzzShaperTest, DISABLED_SafeToBreakArabicCommonLigatures) {
   String string(
       u"\u0643\u0633\u0631\u0020\u0627\u0644\u0627\u062E\u062A\u0628\u0627"
       u"\u0631");
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kRtl);
 
   // Safe to break at 0, 3, 4, 5, 7, and 11.
@@ -1333,7 +1335,7 @@ static bool KerningIsHappening(const FontDescription& font_description,
   Font font_kern(kern);
   font_kern.Update(nullptr);
 
-  HarfBuzzShaper shaper(str.Characters16(), str.length());
+  HarfBuzzShaper shaper(str);
 
   scoped_refptr<ShapeResult> result_no_kern =
       shaper.Shape(&font_no_kern, direction);
@@ -1370,7 +1372,7 @@ TEST_F(HarfBuzzShaperTest,
   TextDirection direction = TextDirection::kLtr;
   ASSERT_FALSE(KerningIsHappening(font_description, direction, string));
 
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   for (unsigned i = 0; i < string.length(); i++) {
@@ -1388,7 +1390,7 @@ TEST_F(HarfBuzzShaperTest,
   TextDirection direction = TextDirection::kLtr;
   ASSERT_FALSE(KerningIsHappening(font_description, direction, string));
 
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   for (unsigned i = 0; i < string.length(); i++) {
@@ -1408,7 +1410,7 @@ TEST_F(HarfBuzzShaperTest,
   TextDirection direction = TextDirection::kLtr;
   ASSERT_TRUE(KerningIsHappening(font_description, direction, string));
 
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   for (unsigned i = 0; i < string.length(); i++) {
@@ -1426,7 +1428,7 @@ TEST_F(HarfBuzzShaperTest,
   TextDirection direction = TextDirection::kLtr;
   ASSERT_TRUE(KerningIsHappening(font_description, direction, string));
 
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   for (unsigned i = 0; i < string.length(); i++) {
@@ -1448,7 +1450,7 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalWithoutSubpixelPositionIsRounded) {
   String string(u"\u65E5\u65E5\u65E5");
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   for (unsigned i = 0; i < string.length(); i++) {
@@ -1468,7 +1470,7 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalWithSubpixelPositionIsRounded) {
   String string(u"\u65E5\u65E5\u65E5");
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   // Vertical text is never subpixel positioned.

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/run_segmenter.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -47,7 +48,7 @@ struct BufferSlice;
 
 class PLATFORM_EXPORT HarfBuzzShaper final {
  public:
-  HarfBuzzShaper(const UChar*, unsigned length);
+  HarfBuzzShaper(const String&);
 
   // Shape a range, defined by the start and end parameters, of the string
   // supplied to the constructor.
@@ -70,8 +71,8 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   // end offset equal to the length.
   scoped_refptr<ShapeResult> Shape(const Font*, TextDirection) const;
 
-  const UChar* GetText() const { return text_; }
-  unsigned TextLength() const { return text_length_; }
+  const String& GetText() const { return text_; }
+  unsigned TextLength() const { return text_.length(); }
 
   ~HarfBuzzShaper() = default;
 
@@ -105,8 +106,7 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
                     const BufferSlice&,
                     ShapeResult*) const;
 
-  const UChar* text_;
-  unsigned text_length_;
+  const String text_;
 };
 
 }  // namespace blink

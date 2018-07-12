@@ -262,7 +262,7 @@ class PLATFORM_EXPORT TextRun final {
   // Up-converts to UTF-16 as needed and normalizes spaces and Unicode control
   // characters as per the CSS Text Module Level 3 specification.
   // https://drafts.csswg.org/css-text-3/#white-space-processing
-  std::unique_ptr<UChar[]> NormalizedUTF16(unsigned* result_length) const;
+  String NormalizedUTF16() const;
 
  private:
   union {

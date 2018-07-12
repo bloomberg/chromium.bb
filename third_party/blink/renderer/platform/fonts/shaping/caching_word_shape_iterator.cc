@@ -15,10 +15,8 @@ scoped_refptr<const ShapeResult> CachingWordShapeIterator::ShapeWordWithoutSpaci
   if (cache_entry && cache_entry->shape_result_)
     return cache_entry->shape_result_;
 
-  unsigned word_length = 0;
-  std::unique_ptr<UChar[]> word_text = word_run.NormalizedUTF16(&word_length);
-
-  HarfBuzzShaper shaper(word_text.get(), word_length);
+  const String word_text = word_run.NormalizedUTF16();
+  HarfBuzzShaper shaper(word_text);
   scoped_refptr<const ShapeResult> shape_result =
       shaper.Shape(font, word_run.Direction());
   if (!shape_result)

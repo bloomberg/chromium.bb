@@ -339,16 +339,26 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
 void NGInlineNode::SegmentText(NGInlineNodeData* data) {
   SegmentBidiRuns(data);
   SegmentScriptRuns(data);
+  SegmentFontOrientation(data);
 }
 
 // Segment NGInlineItem by script, Emoji, and orientation using RunSegmenter.
 void NGInlineNode::SegmentScriptRuns(NGInlineNodeData* data) {
-  Vector<NGInlineItem>& items = data->items;
-  String& text_content = data->text_content;
-  text_content.Ensure16Bit();
+  if (data->text_content.Is8Bit() && !data->is_bidi_enabled_) {
+    if (data->items.size()) {
+      RunSegmenter::RunSegmenterRange range = {
+          0u, data->text_content.length(), USCRIPT_LATIN,
+          OrientationIterator::kOrientationKeep, FontFallbackPriority::kText};
+      NGInlineItem::PopulateItemsFromRun(data->items, 0, range);
+    }
+    return;
+  }
 
   // Segment by script and Emoji.
   // Orientation is segmented separately, because it may vary by items.
+  Vector<NGInlineItem>& items = data->items;
+  String& text_content = data->text_content;
+  text_content.Ensure16Bit();
   RunSegmenter segmenter(text_content.Characters16(), text_content.length(),
                          FontOrientation::kHorizontal);
   RunSegmenter::RunSegmenterRange range = RunSegmenter::NullRange();
@@ -356,8 +366,6 @@ void NGInlineNode::SegmentScriptRuns(NGInlineNodeData* data) {
     DCHECK_EQ(items[item_index].start_offset_, range.start);
     item_index = NGInlineItem::PopulateItemsFromRun(items, item_index, range);
   }
-
-  SegmentFontOrientation(data);
 }
 
 void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) {
@@ -365,8 +373,11 @@ void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) {
   // 'text-orientation: mixed'.
   if (GetLayoutBlockFlow()->IsHorizontalWritingMode())
     return;
+
   Vector<NGInlineItem>& items = data->items;
   String& text_content = data->text_content;
+  text_content.Ensure16Bit();
+
   for (unsigned item_index = 0; item_index < items.size();) {
     NGInlineItem& item = items[item_index];
     if (item.Type() != NGInlineItem::kText ||
@@ -435,8 +446,6 @@ void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) {
 
 void NGInlineNode::ShapeText(NGInlineItemsData* data,
                              NGInlineItemsData* previous_data) {
-  // TODO(eae): Add support for shaping latin-1 text?
-  data->text_content.Ensure16Bit();
   ShapeText(data->text_content, &data->items,
             previous_data ? &previous_data->text_content : nullptr);
 }
@@ -445,7 +454,7 @@ void NGInlineNode::ShapeText(const String& text_content,
                              Vector<NGInlineItem>* items,
                              const String* previous_text) {
   // Provide full context of the entire node to the shaper.
-  HarfBuzzShaper shaper(text_content.Characters16(), text_content.length());
+  HarfBuzzShaper shaper(text_content);
   ShapeResultSpacing<String> spacing(text_content);
 
   for (unsigned index = 0; index < items->size();) {

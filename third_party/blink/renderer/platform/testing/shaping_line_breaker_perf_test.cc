@@ -71,7 +71,7 @@ TEST_F(ShapingLineBreakerPerfTest, ShapeLatinText) {
   // By William Arthur Dunkerley (John Oxenham)
   // In the public domain.
   String string(
-      u"\"Am I my brother's keeper?\""
+      "\"Am I my brother's keeper?\""
       "Yes, of a truth!"
       "Thine asking is thine answer."
       "That self-condemning cry of Cain"
@@ -124,7 +124,7 @@ TEST_F(ShapingLineBreakerPerfTest, ShapeLatinText) {
   LazyLineBreakIterator break_iterator(string, "en-US", LineBreakType::kNormal);
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(string.Characters16(), len);
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> reference_result = shaper.Shape(&font, direction);
   ShapingLineBreaker reference_breaker(&shaper, &font, reference_result.get(),
                                        &break_iterator);
