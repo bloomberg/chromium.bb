@@ -189,6 +189,12 @@ public abstract class ChromeSwitches {
     public static final String DISABLE_DIGITAL_ASSET_LINK_VERIFICATION =
             "disable-digital-asset-link-verification-for-url";
 
+    /**
+     * Forces Trusted Web Activities to show the the Disclosure Toast every time.
+     */
+    public static final String FORCE_TRUSTED_WEB_ACTIVITY_DISCLOSURE =
+            "force-trusted-web-activity-disclosure";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }
