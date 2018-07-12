@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
@@ -27,10 +26,6 @@ public class BottomToolbarModel extends PropertyModel {
     public static final ObjectPropertyKey<OnClickListener> SEARCH_ACCELERATOR_LISTENER =
             new ObjectPropertyKey<>();
 
-    /** The touch listener for the menu button. */
-    public static final ObjectPropertyKey<OnTouchListener> MENU_BUTTON_LISTENER =
-            new ObjectPropertyKey<>();
-
     /** A {@link LayoutManager} to attach overlays to. */
     public static final ObjectPropertyKey<LayoutManager> LAYOUT_MANAGER = new ObjectPropertyKey<>();
 
@@ -45,17 +40,14 @@ public class BottomToolbarModel extends PropertyModel {
     /** Whether or not the search accelerator is visible. */
     public static final BooleanPropertyKey SEARCH_ACCELERATOR_VISIBLE = new BooleanPropertyKey();
 
-    /** Whether or not the update badge is visible. */
-    public static final BooleanPropertyKey UPDATE_BADGE_VISIBLE = new BooleanPropertyKey();
-
     /** A handler for swipe events on the toolbar. */
     public static final ObjectPropertyKey<EdgeSwipeHandler> TOOLBAR_SWIPE_HANDLER =
             new ObjectPropertyKey<>();
 
     /** Default constructor. */
     public BottomToolbarModel() {
-        super(Y_OFFSET, ANDROID_VIEW_VISIBLE, SEARCH_ACCELERATOR_LISTENER, MENU_BUTTON_LISTENER,
-                LAYOUT_MANAGER, TOOLBAR_SWIPE_LAYOUT, RESOURCE_MANAGER, SEARCH_ACCELERATOR_VISIBLE,
-                UPDATE_BADGE_VISIBLE, TOOLBAR_SWIPE_HANDLER);
+        super(Y_OFFSET, ANDROID_VIEW_VISIBLE, SEARCH_ACCELERATOR_LISTENER, LAYOUT_MANAGER,
+                TOOLBAR_SWIPE_LAYOUT, RESOURCE_MANAGER, SEARCH_ACCELERATOR_VISIBLE,
+                TOOLBAR_SWIPE_HANDLER);
     }
 }

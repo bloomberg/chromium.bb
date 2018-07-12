@@ -58,9 +58,6 @@ public class BottomToolbarViewBinder
             view.toolbarRoot.findViewById(R.id.search_button)
                     .setOnClickListener(
                             model.getValue(BottomToolbarModel.SEARCH_ACCELERATOR_LISTENER));
-        } else if (BottomToolbarModel.MENU_BUTTON_LISTENER == propertyKey) {
-            view.toolbarRoot.findViewById(R.id.menu_button)
-                    .setOnTouchListener(model.getValue(BottomToolbarModel.MENU_BUTTON_LISTENER));
         } else if (BottomToolbarModel.LAYOUT_MANAGER == propertyKey) {
             assert view.sceneLayer == null;
             view.sceneLayer = new ScrollingBottomViewSceneLayer(
@@ -82,11 +79,6 @@ public class BottomToolbarViewBinder
                     .setVisibility(model.getValue(BottomToolbarModel.SEARCH_ACCELERATOR_VISIBLE)
                                     ? View.VISIBLE
                                     : View.INVISIBLE);
-        } else if (BottomToolbarModel.UPDATE_BADGE_VISIBLE == propertyKey) {
-            view.toolbarRoot.findViewById(R.id.menu_badge)
-                    .setVisibility(model.getValue(BottomToolbarModel.UPDATE_BADGE_VISIBLE)
-                                    ? View.VISIBLE
-                                    : View.GONE);
         } else if (BottomToolbarModel.TOOLBAR_SWIPE_HANDLER == propertyKey) {
             view.toolbarRoot.setSwipeDetector(
                     model.getValue(BottomToolbarModel.TOOLBAR_SWIPE_HANDLER));

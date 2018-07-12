@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.res.Resources;
 import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -127,10 +126,8 @@ class BottomToolbarMediator
         mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
     }
 
-    public void setButtonListeners(
-            OnClickListener searchAcceleratorListener, OnTouchListener menuButtonListener) {
+    public void setSearchAcceleratorListener(OnClickListener searchAcceleratorListener) {
         mModel.setValue(BottomToolbarModel.SEARCH_ACCELERATOR_LISTENER, searchAcceleratorListener);
-        mModel.setValue(BottomToolbarModel.MENU_BUTTON_LISTENER, menuButtonListener);
     }
 
     public void setLayoutManager(LayoutManager layoutManager) {
@@ -164,14 +161,6 @@ class BottomToolbarMediator
     public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
         mOverviewModeBehavior = overviewModeBehavior;
         mOverviewModeBehavior.addOverviewModeObserver(this);
-    }
-
-    public void setUpdateBadgeVisibility(boolean visible) {
-        mModel.setValue(BottomToolbarModel.UPDATE_BADGE_VISIBLE, visible);
-    }
-
-    public boolean isShowingAppMenuUpdateBadge() {
-        return mModel.getValue(BottomToolbarModel.UPDATE_BADGE_VISIBLE);
     }
 
     public void setContextualSearchManager(ContextualSearchManager contextualSearchManager) {

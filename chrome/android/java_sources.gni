@@ -1380,6 +1380,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/toolbar/BottomToolbarViewBinder.java",
   "java/src/org/chromium/chrome/browser/toolbar/CustomTabToolbar.java",
   "java/src/org/chromium/chrome/browser/toolbar/CustomTabToolbarAnimationDelegate.java",
+  "java/src/org/chromium/chrome/browser/toolbar/MenuButton.java",
   "java/src/org/chromium/chrome/browser/toolbar/ToolbarButtonCoordinator.java",
   "java/src/org/chromium/chrome/browser/toolbar/ToolbarButtonMediator.java",
   "java/src/org/chromium/chrome/browser/toolbar/ToolbarButtonProperties.java",
