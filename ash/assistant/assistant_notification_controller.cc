@@ -68,8 +68,8 @@ void AssistantNotificationController::OnShowNotification(
       message_center::Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title,
           message, gfx::Image(), display_source, action_url,
-          message_center::NotifierId(message_center::NotifierId::APPLICATION,
-                                     kNotifierAssistant),
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierAssistant),
           optional_field,
           base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
               base::BindRepeating(
