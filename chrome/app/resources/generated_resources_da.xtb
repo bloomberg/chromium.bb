@@ -451,7 +451,6 @@
 <translation id="1657406563541664238">Vær med til at gøre <ph name="PRODUCT_NAME" /> bedre ved automatisk at sende forbrugsstatistikker og rapportere om nedbrud til Google</translation>
 <translation id="1658424621194652532">Denne side har adgang til din mikrofon.</translation>
 <translation id="1660204651932907780">Tillad, at websites afspiller lyd (anbefales)</translation>
-<translation id="1660938185063657230">Bekræft din sikkerhedsnøgle</translation>
 <translation id="1661156625580498328">Gennemtving AES-kryptering (anbefalet).</translation>
 <translation id="1661245713600520330">Denne side angiver alle moduler, der er indlæst i hovedprocessen, og moduler, der er registreret til at blive indlæst på et senere tidspunkt.</translation>
 <translation id="166179487779922818">Adgangskoden er for kort.</translation>
@@ -563,7 +562,6 @@
 <translation id="1818007989243628752">Slet adgangskoden til <ph name="USERNAME" /></translation>
 <translation id="1819721979226826163">Tryk på Appunderretninger &gt; Google Play-tjenester.</translation>
 <translation id="1826516787628120939">Kontrollerer</translation>
-<translation id="1827750274519118478">Afspilningen af videoen i integreret billede afbrydes.</translation>
 <translation id="1828378091493947763">Dette plugin understøttes ikke på denne enhed</translation>
 <translation id="1828901632669367785">Dialogboks til Udskriv via system...</translation>
 <translation id="1829192082282182671">Zoom &amp;ud</translation>
@@ -2464,7 +2462,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4856478137399998590">Din mobildatatjeneste er aktiveret og klar til brug</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Åbn alle i &amp;inkognitovindue}=1{Åbn i &amp;inkognitovindue}one{Åbn (#) i &amp;inkognitovindue}other{Åbn alle (#) i &amp;inkognitovindue}}</translation>
 <translation id="4858913220355269194">Laudrup</translation>
-<translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> – Afspiller video i integreret billede</translation>
 <translation id="4862050643946421924">Tilføjer enhed…</translation>
 <translation id="4862642413395066333">Signering af OCSP-svar</translation>
 <translation id="4863769717153320198">Ligner <ph name="WIDTH" /> x <ph name="HEIGHT" /> (standard)</translation>
@@ -2530,7 +2527,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4925542575807923399">Kontoadministratoren kræver, at denne konto er den første konto, der logges ind på, i en session med samlet login fra flere konti.</translation>
 <translation id="4927753642311223124">Der er intet at se her, så du kan bare gå videre.</translation>
 <translation id="4927846293686536410">Log ind for at få dine bogmærker, din historik, dine adgangskoder og dine øvrige indstillinger på alle dine enheder. Du bliver også automatisk logget ind på dine Google-tjenester.</translation>
-<translation id="4929386379796360314">Udskriv destinationer</translation>
+<translation id="4929386379796360314">Udskriftsdestinationer</translation>
 <translation id="4931132176527519925">Brug altid spejling</translation>
 <translation id="4933484234309072027">indlejret på <ph name="URL" /></translation>
 <translation id="493571969993549666">Tilføj en administreret bruger</translation>
@@ -4146,7 +4143,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7427348830195639090">Baggrundsside: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Åbn alle i &amp;nyt vindue}=1{Åbn i &amp;nyt vindue}one{Åbn (#) i &amp;nyt vindue}other{Åbn alle (#) i &amp;nyt vindue}}</translation>
 <translation id="7434509671034404296">Udvikler</translation>
-<translation id="7436470008146509879">Konfigurer Linux på din <ph name="DEVICE_TYPE" /></translation>
 <translation id="7436921188514130341">Øv, surt! Der opstod en fejl under omdøbningen.</translation>
 <translation id="7441830548568730290">Andre brugere</translation>
 <translation id="7442465037756169001">Dit Hangouts Meet-hardware er klar til konfiguration.</translation>
@@ -4444,7 +4440,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7881969471599061635">Deaktiver undertekster</translation>
 <translation id="7882358943899516840">Udbydertype</translation>
 <translation id="7885253890047913815">Seneste destinationer</translation>
-<translation id="7886917304091689118">Kører i Chrome</translation>
 <translation id="7887334752153342268">Dupliker</translation>
 <translation id="7887864092952184874">Bluetooth-mus er parret</translation>
 <translation id="7889565820482017512">Skærmstørrelse</translation>
@@ -4615,7 +4610,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8118860139461251237">Administrere dine downloads</translation>
 <translation id="81238879832906896">Gul og hvid blomst</translation>
 <translation id="8124313775439841391">Administreret ONC</translation>
-<translation id="8125562866093998907">Websitet vil gerne bekræfte din sikkerhedsnøgle for at føje et ekstra lag sikkerhed til din konto.</translation>
 <translation id="813082847718468539">Se websiteoplysninger</translation>
 <translation id="8131740175452115882">Bekræft</translation>
 <translation id="8133676275609324831">&amp;Vis i mappe</translation>
@@ -4994,7 +4988,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8736288397686080465">Dette website er blevet opdateret i baggrunden.</translation>
 <translation id="8737685506611670901">Åbne <ph name="PROTOCOL" />-links i stedet for <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
-<translation id="8741316211671074806">Integreret billede</translation>
 <translation id="8743390665131937741">Zoomniveau i fuld skærm:</translation>
 <translation id="8743864605301774756">Opdateret for én time siden</translation>
 <translation id="874689135111202667">{0,plural, =1{Vil du uploade én fil til dette website?}one{Vil du uploade # fil til dette website?}other{Vil du uploade # filer til dette website?}}</translation>
@@ -5269,6 +5262,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9158715103698450907">Ups! Der opstod et problem med netværkskommunikationen under godkendelsen. Kontrollér din netværksforbindelse, og prøv igen.</translation>
 <translation id="9161070040817969420">Underrammer til: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">Send systemdata. Denne enhed sender i øjeblikket diagnostik og data om enheds- og appforbrug til Google. Indstillingen håndhæves af ejeren. Hvis du derudover har aktiveret Web- og app-aktivitet, gemmes disse oplysninger på din konto, så du kan administrere dem i Min aktivitet. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
+<translation id="916607977885256133">Integreret billede</translation>
 <translation id="9169496697824289689">Se tastaturgenveje</translation>
 <translation id="9169931577761441333">Føj <ph name="APP_NAME" /> til startskærmen</translation>
 <translation id="9170397650136757332">Bevæg derefter fingeren en smule for at registrere hele fingeraftrykket</translation>
@@ -5319,7 +5313,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="952992212772159698">Ikke aktiveret</translation>
 <translation id="957960681186851048">Dette website har forsøgt at downloade flere filer automatisk</translation>
 <translation id="9580706199804957">Der kunne ikke oprettes forbindelse til Google-tjenester</translation>
-<translation id="958416628331784386">Denne fane afspiller en video i integreret billede.</translation>
 <translation id="960719561871045870">Operatørkode</translation>
 <translation id="960987915827980018">Omkring én time tilbage</translation>
 <translation id="962802172452141067">Bogmærkemappe i trævisning</translation>

@@ -24,6 +24,7 @@
 <translation id="3805899903892079518">‏ל-Chromium אין גישה לתמונות או לסרטונים שלך. אפשר גישה ב'הגדרות iOS' &gt; 'פרטיות' &gt; 'תמונות'.</translation>
 <translation id="4024541897090868497">‏כדי לקבל גישה לכרטיסיות שלך בכל המכשירים, היכנס ל-Chromium.</translation>
 <translation id="4241912885070669028">‏אתה יוצא מחשבון המנוהל על-ידי <ph name="SIGNOUT_MANAGED_DOMAIN" />. פעולה זו תמחק את הנתונים שלך ב-Chromium מהמכשיר הזה, אבל הם יישארו בחשבון Google שלך.</translation>
+<translation id="4272892696084633551">‏עזרה בשיפור התכונות והביצועים של Chromium</translation>
 <translation id="4555020257205549924">‏כשהתכונה הזו פועלת, Chromium יציע לתרגם באמצעות Google Translate דפים שנכתבו בשפות אחרות‏. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">‏כרטיסיות שפתחת ב-Chromium במכשירים האחרים שלך יופיעו כאן.</translation>
 <translation id="495292094137889840">‏תחילת השימוש בסורק ה-QR של Chromium</translation>
@@ -33,6 +34,7 @@
 <translation id="5945387852661427312">‏אתה נכנס עם חשבון המנוהל על-ידי <ph name="DOMAIN" /> ומעניק למנהל שלו שליטה על הנתונים שלך ב-Chromium. הנתונים שלך ישויכו לצמיתות אל החשבון הזה. יציאה מ-Chromium תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו בחשבון Google שלך.</translation>
 <translation id="6068866989048414399">‏התנאים וההגבלות של Chromium</translation>
 <translation id="6268381023930128611">‏האם לצאת מ-Chromium?</translation>
+<translation id="641451971369018375">‏מתקשר עם Google כדי לשפר את הגלישה ואת Chromium</translation>
 <translation id="6424492062988593837">‏‫Chromium ממשיך להשתפר! קיימת גירסה חדשה.</translation>
 <translation id="6604711459180487467">‏גישה אל המיקום שלך תאפשר לך ליהנות מחוויה משופרת ב-Chromium.</translation>
 <translation id="6626296268883197964">‏שימוש באפליקציה הזו מהווה הסכמה ל<ph name="BEGIN_LINK_TOS" />תנאים ולהגבלות<ph name="END_LINK_TOS" /> ול<ph name="BEGIN_LINK_PRIVACY" />הודעת הפרטיות<ph name="END_LINK_PRIVACY" /> של Chromium.</translation>

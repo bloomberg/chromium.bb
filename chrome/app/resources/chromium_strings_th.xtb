@@ -155,10 +155,12 @@
 <translation id="6394232988457703198">คุณควรรีสตาร์ท Chromium เลย</translation>
 <translation id="6400072781405947421">Chromium อาจทำงานไม่ถูกต้องเนื่องจากไม่รองรับ Mac OS X 10.9 แล้ว</translation>
 <translation id="6403826409255603130">Chromium เป็นเว็บเบราว์เซอร์ที่เรียกใช้หน้าเว็บและแอปพลิเคชันด้วยความเร็วสูง มีความรวดเร็ว เสถียร และง่ายในการใช้งาน เรียกดูเว็บได้อย่างปลอดภัยมากขึ้นด้วยการป้องกันมัลแวร์และฟิชชิงที่สร้างอยู่ภายใน Chromium</translation>
+<translation id="641451971369018375">สื่อสารกับ Google เพื่อปรับปรุงการท่องเว็บและ Chromium</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium จะรีสตาร์ทใน 1 วินาที}other{Chromium จะรีสตาร์ทใน # วินาที}}</translation>
 <translation id="6475912303565314141">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chromium ด้วย</translation>
 <translation id="6485906693002546646">คุณกำลังใช้ <ph name="PROFILE_EMAIL" /> ในการซิงค์ข้อมูลใน Chromium หากต้องการอัปเดตค่ากำหนดการซิงค์หรือใช้ Chromium โดยไม่มีบัญชี Google โปรดไปที่ <ph name="SETTINGS_LINK" /></translation>
 <translation id="6510925080656968729">ถอนการติดตั้ง Chromium</translation>
+<translation id="6570579332384693436">Chromium จะส่งข้อความที่คุณพิมพ์ในช่องข้อความไปยัง Google เพื่อแก้ไขข้อผิดพลาดของการสะกดคำ</translation>
 <translation id="6598877126913850652">ไปที่การตั้งค่าการแจ้งเตือน Chromium</translation>
 <translation id="6664239887951090350">{0,plural, =0{Chromium จะเปิดขึ้นมาใหม่ตอนนี้}=1{Chromium จะเปิดขึ้นมาใหม่ใน 1 วินาที}other{Chromium จะเปิดขึ้นมาใหม่ใน # วินาที}}</translation>
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>

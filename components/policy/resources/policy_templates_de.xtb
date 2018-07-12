@@ -214,12 +214,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       In der Richtlinie muss eine URL angegeben werden, von der <ph name="PRODUCT_OS_NAME" /> die Nutzungsbedingungen herunterladen kann. Die Nutzungsbedingungen müssen als unformatierter Text mit dem MIME-Typ "text/plain" vorliegen. Markups sind nicht zulässig.</translation>
 <translation id="1750315445671978749">Alle Downloads blockieren</translation>
 <translation id="1781356041596378058">Diese Richtlinie steuert zudem den Zugriff auf Android-Entwickleroptionen. Wenn Sie diese Richtlinie auf "true" setzen, können Nutzer nicht auf die Entwickleroptionen zugreifen. Wenn Sie diese Richtlinie auf "false" setzen oder nicht konfigurieren, können Nutzer auf die Entwickleroptionen zugreifen, indem sie siebenmal auf die Build-Nummer in der Android-App "Einstellungen" tippen.</translation>
-<translation id="178832255504524723">Mit dieser Richtlinie wird die URL zur Passwortänderung konfiguriert (nur HTTP- und HTTPS-Schemas). Nutzer, die Opfer eines Phishingangriffs geworden sind, werden vom Passwortschutzdienst an diese URL weitergeleitet, damit sie ihr Passwort ändern können.
-      Ihre Anmeldeseiten müssen den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Fingerabdrücke zur Autorisierung in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
-
-      Wenn diese Einstellung aktiviert ist, leitet der Passwortschutzdienst Nutzer, die Opfer eines Phishingangriffs geworden sind, an diese URL weiter, damit sie ihr Passwort ändern können.
-      Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, leitet der Passwortschutzdienst Nutzer an https://myaccounts.google.com weiter, damit sie ihr Passwort ändern können.
-      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind.</translation>
 <translation id="1797233582739332495">Dem Nutzer eine wiederkehrende Aufforderung anzeigen, dass ein Neustart erforderlich ist</translation>
 <translation id="1803646570632580723">Liste der in der Übersicht angezeigten Apps ansehen</translation>
 <translation id="1808715480127969042">Cookies auf diesen Websites blockieren</translation>
@@ -680,9 +674,9 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2899002520262095963">Android-Apps können die über diese Richtlinie festgelegten Netzwerkkonfigurationen und CA-Zertifikate verwenden, haben jedoch keinen Zugriff auf bestimmte Konfigurationsoptionen.</translation>
 <translation id="290002216614278247">Ermöglicht, die Sitzung des Nutzers auf Grundlage der Clientzeit oder des Nutzungskontingents für den jeweiligen Tag zu sperren.
 
-          Das |time_window_limit| gibt ein tägliches Zeitfenster vor, in dem die Sitzung des Nutzers gesperrt sein soll. Wir unterstützen nur eine Regel für jeden Wochentag, weshalb die Größe der Matrix |entries| von 0 bis 7 reichen kann. |starts_at| und |ends_at| sind Anfang und Ende des Zeitfensters. Wenn |ends_at| kleiner ist als |starts_at|, bedeutet das, dass das |time_limit_window| am darauf folgenden Tag endet. |last_updated_millis| ist der UTC-Zeitstempel für die letzte Aktualisierung des Eintrags. Er wird als String gesendet, da ein Zeitstempel nicht in eine ganze Zahl passen würde.
+          Das |time_window_limit| gibt ein tägliches Zeitfenster vor, in dem die Sitzung des Nutzers gesperrt werden sollte. Wir unterstützen nur eine Regel für jeden Wochentag, weshalb die Größe der Matrix |entries| von 0 bis 7 reichen kann. |starts_at| und |ends_at| sind Anfang und Ende des Zeitfensters. Wenn |ends_at| kleiner ist als |starts_at|, bedeutet es, dass das |time_limit_window| am darauf folgenden Tag endet. |last_updated_millis| ist der UTC-Zeitstempel für die letzte Aktualisierung des Eintrags. Er wird als String gesendet, da ein Zeitstempel nicht in eine ganze Zahl passt.
 
-          Das |time_usage_limit| stellt ein tägliches Nutzungslimit dar. Wenn der Nutzer es erreicht, wird seine Sitzung gesperrt. Für jeden Tag der Woche steht eine Eigenschaft zur Verfügung und diese sollte nur dann konfiguriert werden, wenn für diesen Tag ein aktives Limit vorliegt. |usage_quota_mins| ist der Zeitraum, über den das verwaltete Gerät an einem bestimmten Tag genutzt werden darf, und |reset_at| ist der Zeitpunkt, an dem das Kontingent erneuert wird. Der Standardwert für |reset_at| ist Mitternacht ({'hour': 0, 'minute': 0}). |last_updated_millis| ist der UTC-Zeitstempel für die letzte Aktualisierung des Eintrags. Er wird als String gesendet, da ein Zeitstempel nicht in eine ganze Zahl passen würde.
+          Das |time_usage_limit| stellt ein tägliches Nutzungslimit dar. Wenn der Nutzer das Nutzungslimit erreicht, wird seine Sitzung gesperrt. Für jeden Tag der Woche steht eine Eigenschaft zur Verfügung und diese sollte nur dann konfiguriert werden, wenn für diesen Tag ein aktives Limit vorliegt. |usage_quota_mins| ist der Zeitraum, über den das verwaltete Gerät an einem bestimmten Tag genutzt werden darf, und |reset_at| ist der Zeitpunkt, an dem das Kontingent erneuert wird. Der Standardwert für |reset_at| ist Mitternacht ({'hour': 0, 'minute': 0}). |last_updated_millis| ist der UTC-Zeitstempel für die letzte Aktualisierung des Eintrags. Er wird als String gesendet, da ein Zeitstempel nicht in eine ganze Zahl passen würde.
 
           Mit |overrides| können die genannten Regeln vorübergehend außer Kraft gesetzt werden.
           * Wenn weder "time_window_limit" noch "time_usage_limit" aktiv sind, kann |LOCK| zur Sperrung des Geräts verwendet werden.
@@ -1372,14 +1366,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="4980635395568992380">Datentyp:</translation>
 <translation id="4983201894483989687">Ausführung veralteter Plug-ins zulassen</translation>
 <translation id="4988291787868618635">Auszuführende Aktion bei Erreichen der Inaktivitätsverzögerung</translation>
-<translation id="4990301296093321860">Mit dieser Richtlinie können Sie die Auslösung der Passwortschutzwarnung steuern. Durch diese Meldung werden Nutzer gewarnt, wenn sie ihr geschütztes Passwort auf potenziell verdächtigen Websites wiederverwenden.
-
-      Mithilfe der Richtlinien "PasswordProtectionLoginURLs" und "PasswordProtectionChangePasswordURL" können Sie konfigurieren, welches Passwort geschützt werden soll.
-
-      Wenn diese Richtlinie auf "PasswordProtectionWarningOff" festgelegt ist, wird keine Passwortschutzwarnung angezeigt.
-      Ist diese Richtlinie auf "PasswordProtectionWarningOnPasswordReuse" festgelegt, wird die Passwortschutzwarnung angezeigt, wenn der Nutzer sein Google-Passwort auf einer Website wiederverwendet, die nicht auf der weißen Liste steht.
-      Ist diese Richtlinie auf "PasswordProtectionWarningOnPhishingReuse" festgelegt, wird die Passwortschutzwarnung angezeigt, wenn der Nutzer sein Google-Passwort auf einer Phishingwebsite wiederverwendet.
-      Ist diese Richtlinie nicht konfiguriert, wird die Passwortschutzwarnung ausgelöst, wenn der Nutzer sein Google-Passwort auf Phishingwebsites wiederverwendet. Der Nutzer kann diese Einstellung jedoch ändern.</translation>
 <translation id="4995548127349206948">Steuerung der Aktivierung der NTLMv2-Authentifizierung.</translation>
 <translation id="5047604665028708335">Zugriff auf Websites außerhalb von Inhaltspaketen erlauben</translation>
 <translation id="5052081091120171147">Diese Richtlinie erzwingt, sofern aktiv, den Import des Browserverlaufs aus dem aktuellen Standardbrowser. Ist die Richtlinie aktiviert, wirkt sie sich auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import des Browserverlaufs. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
@@ -1877,13 +1863,6 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
 
       Wenn diese Richtlinie nicht konfiguriert wird oder die Liste leer ist, sind alle Schemata in <ph name="PRODUCT_NAME" /> zugänglich.</translation>
 <translation id="6652197835259177259">Einstellungen für lokal verwaltete Nutzer</translation>
-<translation id="6654559957643809067">Diese Richtlinie aktiviert die Netzwerkvorhersage in <ph name="PRODUCT_NAME" /> und verhindert, dass die Einstellung von Nutzern geändert wird. 
-
-Hiermit werden DNS-Vorabruf, TCP- und SSL-Vorverbindung und das Pre-Rendering von Webseiten gesteuert. 
-
-Wenn Sie diese Einstellung auf "Immer", "Nie" oder "Nur WLAN" festlegen, können sie Nutzer in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben. 
-
-Ist die Richtlinie nicht konfiguriert, wird die Netzwerkvorhersage aktiviert, kann jedoch vom Nutzer geändert werden. </translation>
 <translation id="6658245400435704251">Legt die Anzahl von Sekunden fest, die eine Verzögerung ab dem Übertragungszeitpunkt an den Server maximal betragen darf, wenn ein Gerät ein Update herunterlädt. Die Verzögerungszeit setzt sich aus der Istzeit und der auf die Anzahl der Überprüfungen auf Updates verwendeten Zeit zusammen. Die obere Grenze für den Streufaktor bildet ein konstanter Zeitraum, sodass ein Gerät nur eine begrenzte Zeit lang auf den Download eines Updates wartet.</translation>
 <translation id="6665670272107384733">Festlegen, wie oft der Nutzer das Passwort eingeben muss, um das schnelle Entsperren zu verwenden</translation>
 <translation id="6681229465468164801">Ermöglicht Ihnen die Erstellung einer Liste mit URL-Mustern. Den angegebenen Websites ist es nicht gestattet, Zugriff auf ein USB-Gerät anzufordern.

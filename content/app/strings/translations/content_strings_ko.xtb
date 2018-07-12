@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">다음 달 표시</translation>
 <translation id="512758898067543763">행 헤더</translation>
 <translation id="5143125788380636750">에필로그</translation>
-<translation id="5153163864850940242">이 동영상은 PIP 모드에서 재생 중입니다.</translation>
 <translation id="5164977714490026579">값은 <ph name="MINIMUM" /> 이상이어야 합니다.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" />PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' 앞 부분을 입력해 주세요. '<ph name="INVALIDADDRESS" />'(이)가 완전하지 않습니다.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">미터</translation>
 <translation id="6166809985690652833">후기</translation>
 <translation id="6213469881011901533">용어설명</translation>
-<translation id="6310801910862476708">PIP 모드 종료</translation>
 <translation id="6398862346408813489">월 선택 패널 표시</translation>
 <translation id="6404546809543547843">오디오 시간 스크러버</translation>
 <translation id="6453774872122745852">감사의 말</translation>
@@ -220,7 +218,6 @@
 <translation id="860475260694818407">목차</translation>
 <translation id="8613126697340063924">원격 재생 제어</translation>
 <translation id="862370744433916922">부제</translation>
-<translation id="8741316211671074806">PIP 모드</translation>
 <translation id="8750798805984357768">다음 옵션 중 하나를 선택하세요.</translation>
 <translation id="8785498733064193001">재생 시작</translation>
 <translation id="8808573423886751634">장</translation>
@@ -238,6 +235,7 @@
 <translation id="9132465097189459683">다른 달...</translation>
 <translation id="9138385573473225930">알림</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />(<ph name="WEEK_START_DATE" />에 시작)</translation>
+<translation id="916607977885256133">PIP 모드</translation>
 <translation id="9168329111483466115">각주</translation>
 <translation id="954003015749068518">PIP 모드 시작</translation>
 <translation id="966787709310836684">메뉴</translation>

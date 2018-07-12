@@ -454,7 +454,6 @@
 <translation id="1657406563541664238">Googleకు ఉపయోగ గణాంకాలు మరియు క్రాష్ నివేదికలను స్వయంచాలకంగా పంపడం ద్వారా <ph name="PRODUCT_NAME" />ను మరింత మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="1658424621194652532">ఈ పేజీ మీ మైక్రోఫోన్‌ను ప్రాప్యత చేస్తోంది.</translation>
 <translation id="1660204651932907780">ధ్వనిని ప్లే చేయడానికి సైట్‌లను అనుమతించండి (సిఫార్సు చేయబడింది)</translation>
-<translation id="1660938185063657230">మీ భద్రతా కీని ధృవీకరించండి</translation>
 <translation id="1661156625580498328">AES ఎన్‌క్రిప్షన్‌ను అమలు చేయి (సిఫార్సు చేయబడినది).</translation>
 <translation id="1661245713600520330">ఈ పేజీ ప్రధాన ప్రాసెస్‌లోకి లోడ్ చెయ్యబడిన అన్ని మాడ్యూళ్ళను మరియు తర్వాత లోడ్ చెయ్యడానికి నమోదు చెయ్యబడిన మాడ్యూళ్ళను జాబితా చేస్తుంది.</translation>
 <translation id="166179487779922818">పాస్‌వర్డ్ చాలా చిన్నదిగా ఉంది.</translation>
@@ -566,7 +565,6 @@
 <translation id="1818007989243628752"><ph name="USERNAME" /> యొక్క పాస్‌వర్డ్‌ను తొలగించండి</translation>
 <translation id="1819721979226826163">యాప్ నోటిఫికేషన్‌లు &gt; Google Play సేవలను నొక్కండి.</translation>
 <translation id="1826516787628120939">తనిఖీ చేస్తోంది</translation>
-<translation id="1827750274519118478">చిత్రంలో చిత్రంలో వీడియో ప్లే అవ్వడం ఆగిపోతుంది.</translation>
 <translation id="1828378091493947763">ఈ పరికరంలో ఈ ప్లగిన్‌కు మద్దతు లేదు</translation>
 <translation id="1828901632669367785">సిస్టమ్ డైలాగ్‌ని ఉపయోగించి ముద్రించు...</translation>
 <translation id="1829192082282182671">&amp;దూరంగా జూమ్ చెయ్యి</translation>
@@ -2455,7 +2453,6 @@
 <translation id="4856478137399998590">మీ మొబైల్ డేటా సేవ సక్రియం చెయ్యబడింది మరియు ఉపయోగించడానికి సిద్ధంగా ఉంది</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{అన్నింటినీ &amp;అజ్ఞాత విండోలో తెరవండి}=1{&amp;అజ్ఞాత విండోలో తెరవండి}other{అన్నింటినీ (#) &amp;అజ్ఞాత విండోలో తెరవండి}}</translation>
 <translation id="4858913220355269194">ఫ్రిట్జ్</translation>
-<translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> - చిత్రంలో చిత్రం మోడ్‌లో వీడియో ప్లే అవుతోంది</translation>
 <translation id="4862050643946421924">పరికరాన్ని జోడించడం...</translation>
 <translation id="4862642413395066333">OCSP ప్రతిస్పందనలను సైన్ చేస్తోంది</translation>
 <translation id="4863769717153320198"><ph name="WIDTH" /> x <ph name="HEIGHT" /> ఉన్నట్టుంది (డిఫాల్ట్)</translation>
@@ -4129,7 +4126,6 @@
 <translation id="7427348830195639090">నేపథ్య పేజీ: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{అన్నింటినీ &amp;కొత్త విండోలో తెరవండి}=1{&amp;కొత్త విండోలో తెరవండి}other{అన్నింటినీ (#) &amp;కొత్త విండోలో తెరవండి}}</translation>
 <translation id="7434509671034404296">డెవలపర్</translation>
-<translation id="7436470008146509879">మీ <ph name="DEVICE_TYPE" />లో Linuxను సెటప్ చేయండి</translation>
 <translation id="7436921188514130341">అయ్యో! పేరు మారుస్తున్నప్పుడు లోపం ఏర్పడింది.</translation>
 <translation id="7441830548568730290">ఇతర వినియోగదారులు</translation>
 <translation id="7442465037756169001">మీ Hangouts Meet hardware సెటప్ చేయడానికి సిద్ధంగా ఉంది.</translation>
@@ -4426,7 +4422,6 @@
 <translation id="7881969471599061635">ఉపశీర్షికలను నిలిపివేయి</translation>
 <translation id="7882358943899516840">ప్రదాత రకం</translation>
 <translation id="7885253890047913815">ఇటీవలి గమ్యస్థానాలు</translation>
-<translation id="7886917304091689118">Chromeలో అమలు అవుతోంది</translation>
 <translation id="7887334752153342268">నకిలీ</translation>
 <translation id="7887864092952184874">బ్లూటూత్ మౌస్ జత చేయబడింది</translation>
 <translation id="7889565820482017512">ప్రదర్శన పరిమాణం</translation>
@@ -4594,7 +4589,6 @@
 <translation id="8118860139461251237">మీ డౌన్‌లోడ్‌లను నిర్వహించండి</translation>
 <translation id="81238879832906896">పసుపు మరియు తెలుపు రంగు పుష్పం</translation>
 <translation id="8124313775439841391">నిర్వహిత ONC</translation>
-<translation id="8125562866093998907">మీ ఖాతాకు అదనపు భద్రత కోసం సైట్ మీ భద్రతా కీని ధృవీకరించాలని కోరుతోంది.</translation>
 <translation id="813082847718468539">సైట్ సమాచారాన్ని వీక్షించండి</translation>
 <translation id="8131740175452115882">నిర్ధారించు</translation>
 <translation id="8133676275609324831">&amp;ఫోల్డర్‌లో చూపించు</translation>
@@ -4974,7 +4968,6 @@
 <translation id="8736288397686080465">ఈ సైట్ నేపథ్యంలో నవీకరించబడింది.</translation>
 <translation id="8737685506611670901"><ph name="REPLACED_HANDLER_TITLE" />కి బదులుగా <ph name="PROTOCOL" /> లింక్‌లను తెరవాలనుకుంటోంది</translation>
 <translation id="8737709691285775803">షిల్</translation>
-<translation id="8741316211671074806">చిత్రంలో చిత్రం</translation>
 <translation id="8743390665131937741">పూర్తిస్క్రీన్ జూమ్ స్థాయి:</translation>
 <translation id="8743864605301774756">1గంట క్రితం నవీకరించబడింది</translation>
 <translation id="874689135111202667">{0,plural, =1{ఈ సైట్‌కు ఒక ఫైల్‌ను అప్‌లోడ్ చేయాలా?}other{ఈ సైట్‌కు # ఫైల్‌లను అప్‌లోడ్ చేయాలా?}}</translation>
@@ -5245,6 +5238,7 @@
 <translation id="9158715103698450907">అయ్యో!  ప్రామాణీకరణ సమయంలో నెట్‌వర్క్ కమ్యూనికేషన్ సమస్య సంభవించింది.  దయచేసి మీ నెట్‌వర్క్ కనెక్షన్‌ను తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="9161070040817969420">దీనికి ఉపఫ్రేమ్‌లు: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">సిస్టమ్ డేటాని పంపండి. ఈ పరికరం ప్రస్తుతం సమస్య విశ్లేషణ మరియు పరికర మరియు యాప్ వినియోగ డేటాని ఆటోమేటిక్‌గా Googleకి పంపుతోంది. ఈ సెట్టింగ్‌ని యజమాని ప్రారంభించారు. మీరు అదనపు వెబ్ &amp; యాప్ కార్యకలాపాన్ని ఆన్ చేసి ఉంటే, ఈ సమాచారం మీ ఖాతాలో నిల్వ చేయబడుతుంది, కనుక మీరు నా కార్యకలాపంలో దీనిని నిర్వహించవచ్చు. <ph name="BEGIN_LINK1" />మరింత తెలుసుకోండి<ph name="END_LINK1" /></translation>
+<translation id="916607977885256133">చిత్రంలో చిత్రం</translation>
 <translation id="9169496697824289689">కీబోర్డ్ సత్వరమార్గాలను వీక్షించండి</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" />ని హోమ్ స్క్రీన్‌కి జోడించండి</translation>
 <translation id="9170397650136757332">మీ వేలిముద్రలోని వివిధ భాగాలన్నింటినీ సంగ్రహించడానికి ఇప్పుడు మీ వేలిని మెల్లగా అటూ ఇటూ కదిలించండి</translation>
@@ -5294,7 +5288,6 @@
 <translation id="952992212772159698">సక్రియం చెయ్యబడలేదు</translation>
 <translation id="957960681186851048">ఈ సైట్ ఆటోమెటిక్‌గా పలు ఫైల్‌లను డౌన్‌లోడ్ చేయడానికి ప్రయత్నించింది</translation>
 <translation id="9580706199804957">Google సేవలకు కనెక్ట్ చేయడం సాధ్యం కాలేదు</translation>
-<translation id="958416628331784386">ఈ ట్యాబ్ వీడియోను చిత్రంలో చిత్రం మోడ్‌లో ప్లే చేస్తోంది.</translation>
 <translation id="960719561871045870">ఆపరేటర్ కోడ్</translation>
 <translation id="960987915827980018">సుమారు 1 గంట మిగిలి ఉంది</translation>
 <translation id="962802172452141067">బుక్‌మార్క్ ఫోల్డర్‌ ట్రీ</translation>

@@ -24,6 +24,7 @@
 <translation id="3805899903892079518">A Chromium nem fér hozzá az Ön képeihez és videóihoz. Engedélyezés iOS-en: Beállítások &gt; Adatvédelem &gt; Fényképek.</translation>
 <translation id="4024541897090868497">Ha az összes eszközén szeretne hozzáférni lapjaihoz, jelentkezzen be a Chromiumba.</translation>
 <translation id="4241912885070669028">Kijelentkezik egy <ph name="SIGNOUT_MANAGED_DOMAIN" /> által felügyelt fiókból. Ezzel törli az eszközön található Chromium-adatokat, amelyek azonban Google-fiókjában megmaradnak.</translation>
+<translation id="4272892696084633551">Segítség a Chromium funkcióinak és teljesítményének javítása érdekében</translation>
 <translation id="4555020257205549924">Ha a funkció be van kapcsolva, a Chromium felajánlja a más nyelveken írt oldalak lefordítását a Google Fordító segítségével. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="4787850887676698916">A más eszközökön futó Chromium böngészőben megnyitott lapok itt jelennek meg.</translation>
 <translation id="495292094137889840">A Chromium QR-olvasójának használata</translation>
@@ -33,6 +34,7 @@
 <translation id="5945387852661427312">Egy <ph name="DOMAIN" /> által felügyelt fiókkal jelentkezik be, és engedélyezi az adminisztrátor számára a Chromium-adatok kezelését. Adatai állandó jelleggel ehhez a fiókhoz lesznek társítva. A Chromiumból való kijelentkezéssel törli adatait erről az eszközről, de azok továbbra is megmaradnak Google-fiókjában.</translation>
 <translation id="6068866989048414399">Chromium – ÁSZF</translation>
 <translation id="6268381023930128611">Kijelentkezik a Chromiumból?</translation>
+<translation id="641451971369018375">Kommunikáció a Google-lal a böngészés és a Chromium javítása érdekében</translation>
 <translation id="6424492062988593837">A Chromium most még jobb lett! Új verzió áll rendelkezésre.</translation>
 <translation id="6604711459180487467">A helyadatokkal jobb felhasználói élményben lehet része a Chromium használatakor.</translation>
 <translation id="6626296268883197964">Az alkalmazás használatával Ön elfogadja a Chromium <ph name="BEGIN_LINK_TOS" />Általános Szerződési Feltételeit<ph name="END_LINK_TOS" /> és <ph name="BEGIN_LINK_PRIVACY" />Adatvédelmi közleményét<ph name="END_LINK_PRIVACY" />.</translation>

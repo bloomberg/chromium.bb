@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">ቀጣዩን ወር አሳይ</translation>
 <translation id="512758898067543763">የረድፍ ራስጌ</translation>
 <translation id="5143125788380636750">ድሕረ ታሪክ</translation>
-<translation id="5153163864850940242">ይህ ቪዲዮ ስዕል-በስዕል ውስጥ እያጫወተ ነው</translation>
 <translation id="5164977714490026579">ዋጋ ከ<ph name="MINIMUM" /> የሚበልጥ ወይም ከእሱ እኩል መሆን አለበት።</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> ፔታ</translation>
 <translation id="5307600278924710095">እባክዎ አንድ ክፍል ያስገቡና «<ph name="ATSIGN" />»ን ያስከትሉ። «<ph name="INVALIDADDRESS" />» ያልተሟላ ነው።</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">ሜትር</translation>
 <translation id="6166809985690652833">ድሕረ ቃል</translation>
 <translation id="6213469881011901533">ሙዳየ ቃላት</translation>
-<translation id="6310801910862476708">ከስዕል-ውስጥ-ስዕል ውጣ</translation>
 <translation id="6398862346408813489">የወር መምረጫ ፓነል አሳይ</translation>
 <translation id="6404546809543547843">የኦዲዮ ሰዓት አንፏቃቂ</translation>
 <translation id="6453774872122745852">ምስጋና</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">ማህደረ መረጃን አውርድ</translation>
 <translation id="6981594929165378967">ማስገባት</translation>
 <translation id="6989848892321993519">እባክዎ ይህን ጽሑፍ ወደ <ph name="MIN_CHARACTERS" /> ወይም ከዚያ በላይ ቁምፊዎች ያራዝሙት (አሁን እየተጠቀሙ ያሉት 1 ቁምፊ ነው)።</translation>
+<translation id="7090364526657522309">Linux የቅርጸ-ቁምፊ አገልግሎት</translation>
 <translation id="709897737746224366">እባክዎ የተጠየቀውን ቅርጸት ያዛምዱ።</translation>
 <translation id="7139483182332611405">መቅድም</translation>
 <translation id="7223624360433298498">ያለፈው ጊዜ</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">ማውጫ</translation>
 <translation id="8613126697340063924">በርቀት መልሶ ማጫወትን ተቆጣጠር</translation>
 <translation id="862370744433916922">የግርጌ ጽሑፍ</translation>
-<translation id="8741316211671074806">በስዕል-ውስጥ-ስዕል</translation>
 <translation id="8750798805984357768">እባክዎ ከእነዚህ አማራጮች ውስጥ አንዱን ይምረጡ።</translation>
 <translation id="8785498733064193001">መልሶ ማጫወት ይጀምሩ</translation>
 <translation id="8808573423886751634">ምዕራፍ</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">ሌላ...</translation>
 <translation id="9138385573473225930">ማንቂያ</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />፣ የሚጀምረው በ<ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">በሥዕል ላይ ሥዕል</translation>
 <translation id="9168329111483466115">የግርጌ ማስታወሻ</translation>
 <translation id="954003015749068518">ወደ ስዕል-ውስጥ-ስዕል ይግቡ</translation>
 <translation id="966787709310836684">ምናሌ</translation>

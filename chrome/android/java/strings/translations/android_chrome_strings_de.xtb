@@ -101,6 +101,7 @@
 <translation id="1782483593938241562">Enddatum: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Sie können den Standard-Downloadpfad jederzeit ändern</translation>
 <translation id="1807246157184219062">Hell</translation>
+<translation id="1821253160463689938">Zum Speichern Ihrer Einstellungen werden Cookies verwendet, auch wenn Sie diese Seiten nicht besuchen</translation>
 <translation id="1829244130665387512">Auf Seite suchen</translation>
 <translation id="1832521218263067499">Sicherheitsrelevante Zwischenfälle</translation>
 <translation id="1853692000353488670">Neuer Inkognito-Tab</translation>
@@ -141,6 +142,7 @@
 <translation id="2096012225669085171">Geräteübergreifend synchronisieren und personalisieren</translation>
 <translation id="2100273922101894616">Automatisch anmelden</translation>
 <translation id="2111511281910874386">Seite aufrufen</translation>
+<translation id="2120297377148151361">Aktivitäten und Interaktionen</translation>
 <translation id="2122601567107267586">App konnte nicht geöffnet werden</translation>
 <translation id="2126426811489709554">Powered by Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> eingespart</translation>
@@ -190,6 +192,8 @@
 <translation id="2498359688066513246">Hilfe und Feedback</translation>
 <translation id="2501278716633472235">Zurück</translation>
 <translation id="2512222046227390255">Formulare automatisch ausfüllen</translation>
+<translation id="2513403576141822879">Weitere Einstellungen in Verbindung mit Datenschutz, Sicherheit und der Erhebung von Daten finden Sie unter <ph name="BEGIN_LINK" />Synchronisierung und Google-Dienste<ph name="END_LINK" /></translation>
+<translation id="2523184218357549926">URLs der von Ihnen besuchten Seiten werden an Google gesendet</translation>
 <translation id="2526148617758225454">Der Datensparmodus ist aktiviert. Über die Einstellungen können Sie ihn wieder deaktivieren.</translation>
 <translation id="2532336938189706096">Web-Ansicht</translation>
 <translation id="2536728043171574184">Eine Offline-Kopie dieser Seite wird angezeigt.</translation>
@@ -252,6 +256,7 @@
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
 <translation id="311456632243022227">Mehrere Links in Chrome geöffnet</translation>
 <translation id="3115898365077584848">Informationen anzeigen</translation>
+<translation id="3129938255108848489">Vorschläge für ähnliche Seiten anzeigen, wenn eine Seite nicht gefunden werden kann</translation>
 <translation id="3137521801621304719">Inkognitomodus deaktivieren</translation>
 <translation id="3148434565183091099">Melden Sie sich in Chrome an, um Ihre Lesezeichen auf allen Ihren Geräten zu haben.</translation>
 <translation id="3157842584138209013">Über die Schaltfläche "Weitere Optionen" können Sie sich ansehen, wie viel Datenvolumen Sie einsparen</translation>
@@ -381,6 +386,7 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="4351244548802238354">Dialogfeld schließen</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Suche erfolgt mit Sogou</translation>
+<translation id="4398088515904522762">Wenn Sie diese Funktion verwenden möchten, aktivieren Sie <ph name="BEGIN_LINK" />Aktivitäten und Interaktionen<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Keine Lesezeichen</translation>
 <translation id="4409723563706114196">Vervollständigungen für Seiten verwenden</translation>
 <translation id="4412992751769744546">Cookies Dritter zulassen</translation>
@@ -516,6 +522,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="5447765697759493033">Diese Website wird nicht übersetzt</translation>
 <translation id="545042621069398927">Download wird beschleunigt.</translation>
 <translation id="5456381639095306749">Seite herunterladen</translation>
+<translation id="5466407412363861127">Für diese Funktion wird die <ph name="BEGIN_LINK" />Synchronisierung<ph name="END_LINK" /> genutzt.</translation>
 <translation id="548278423535722844">In einer Karten-App öffnen</translation>
 <translation id="5487521232677179737">Daten löschen</translation>
 <translation id="5487729733663684359">Chrome-Updates werden für diese Version von Android nicht mehr unterstützt.</translation>
@@ -586,6 +593,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="5937580074298050696"><ph name="AMOUNT" /> gespeichert</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="5942872142862698679">Suche erfolgt mit Google</translation>
+<translation id="5952764234151283551">Die URL einer Seite, die Sie aufrufen möchten, wird an Google gesendet</translation>
 <translation id="5956665950594638604">Chrome-Hilfe in einem neuen Tab öffnen</translation>
 <translation id="5958275228015807058">Ihre Dateien und Seiten finden Sie unter "Downloads"</translation>
 <translation id="5962718611393537961">Zum Minimieren tippen</translation>
@@ -713,10 +721,12 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="699220179437400583">Details zu möglichen sicherheitsrelevanten Zwischenfällen automatisch an Google senden</translation>
 <translation id="6992289844737586249">Nachfragen, bevor Websites auf Ihr Mikrofon zugreifen dürfen (empfohlen)</translation>
 <translation id="7016516562562142042">Für die aktuelle Suchmaschine zugelassen</translation>
+<translation id="7017968314960951695">Inhalte von besuchten Websites sowie Browseraktivitäten und -interaktionen werden zur Personalisierung verwendet</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> heruntergeladen</translation>
 <translation id="7022756207310403729">Im Browser öffnen</translation>
 <translation id="7029809446516969842">Passwörter</translation>
 <translation id="7031882061095297553">Synchronisieren mit</translation>
+<translation id="7032663816368481562">Wenn Sie in der Adressleiste auf "Weitere Ähnliche" <ph name="ICON" /> tippen, werden Quick Links zu ähnlichen Seiten angezeigt. Die URLs der von Ihnen besuchten Seiten werden an Google gesendet.</translation>
 <translation id="7034608350006174882">Karten und Adressen aus Google Pay</translation>
 <translation id="7053983685419859001">Blockieren</translation>
 <translation id="7055152154916055070">Weiterleitung blockiert:</translation>
@@ -794,6 +804,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7665369617277396874">Konto hinzufügen</translation>
 <translation id="7682724950699840886">Probieren Sie folgende Tipps aus: Sorgen Sie dafür, dass auf Ihrem Gerät ausreichend Speicherplatz vorhanden ist, und wiederholen Sie den Export.</translation>
 <translation id="7698359219371678927">E-Mail in <ph name="APP_NAME" /> erstellen</translation>
+<translation id="7704317875155739195">Suchanfragen und URLs automatisch vervollständigen</translation>
 <translation id="773466115871691567">Seiten auf <ph name="SOURCE_LANGUAGE" /> immer übersetzen</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Mich und mein Gerät vor schädlichen Websites schützen</translation>
@@ -831,7 +842,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="802154636333426148">Downloadfehler</translation>
 <translation id="8026334261755873520">Browserdaten löschen</translation>
 <translation id="8035133914807600019">Neuer Ordner…</translation>
-<translation id="8037686209485537503">Mehr hierzu</translation>
+<translation id="8037686209485537503">Weitere ähnliche</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> Tage übrig</translation>
 <translation id="804335162455518893">SD-Karte nicht gefunden</translation>
 <translation id="805047784848435650">Basierend auf Ihrem Browserverlauf</translation>
@@ -848,6 +859,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8105951947646329362">Ähnliche Seiten vorschlagen</translation>
 <translation id="8116925261070264013">Stummgeschaltet</translation>
 <translation id="813082847718468539">Website-Informationen anzeigen</translation>
+<translation id="8160722851663543621">Suchanfragen, die in die Adressleiste oder das Suchfeld eingegeben wurden, sowie einige Cookies werden an Ihre Standardsuchmaschine gesendet</translation>
 <translation id="8168435359814927499">Inhalte</translation>
 <translation id="8186512483418048923">Noch <ph name="FILES" /> Dateien</translation>
 <translation id="8190358571722158785">1 Tag übrig</translation>
@@ -872,6 +884,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8413126021676339697">Gesamtverlauf anzeigen</translation>
 <translation id="8420510748452002155">Nicht-personalisierte Dienste</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
+<translation id="8438566539970814960">Suchanfragen und das Surfen verbessern</translation>
 <translation id="8441146129660941386">Zurück navigieren</translation>
 <translation id="8445448999790540984">Passwörter können nicht exportiert werden</translation>
 <translation id="8447861592752582886">Zugriffsberechtigung auf Gerät widerrufen</translation>
@@ -881,6 +894,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8497726226069778601">Noch keine Seiten</translation>
 <translation id="8503559462189395349">Chrome-Passwörter</translation>
 <translation id="8503813439785031346">Nutzername</translation>
+<translation id="8504988642345501642">Wenn Sie nach oben scrollen, werden Quick Links zu ähnlichen Seiten angezeigt. Die URLs der von Ihnen besuchten Seiten werden an Google gesendet.</translation>
 <translation id="8514477925623180633">In Chrome gespeicherte Passwörter exportieren</translation>
 <translation id="8514577642972634246">Inkognitomodus aktivieren</translation>
 <translation id="851751545965956758">Verhindern, dass Websites eine Verbindung zu Geräten herstellen</translation>

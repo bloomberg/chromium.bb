@@ -451,7 +451,6 @@
 <translation id="1657406563541664238">‏با ارسال خودکار آمار استفاده و گزارش‌های خرابی به Google، به بهتر شدن <ph name="PRODUCT_NAME" /> کمک کنید.</translation>
 <translation id="1658424621194652532">این صفحه به میکروفون شما دسترسی دارد.</translation>
 <translation id="1660204651932907780">به سایت‌ها اجازه داده شود صدا پخش کنند (توصیه می‌شود)</translation>
-<translation id="1660938185063657230">به تأیید رساندن کلید امنیتی</translation>
 <translation id="1661156625580498328">اجرای اجباری استاندارد رمزگذاری پیشرفته (توصیه‌شده).</translation>
 <translation id="1661245713600520330">این صفحه همه مدول های بارگیری شده در پردازش اصلی و مدول های فهرست شده را برای بارگیری در فرصت دیگری فهرست می‌کند.</translation>
 <translation id="166179487779922818">گذرواژه بیش از حد کوتاه است.</translation>
@@ -563,7 +562,6 @@
 <translation id="1818007989243628752">گذرواژه مربوط به <ph name="USERNAME" /> حذف شود</translation>
 <translation id="1819721979226826163">‏روی «اعلان‌های برنامه &gt; خدمات Google Play» ضربه بزنید.</translation>
 <translation id="1826516787628120939">در حال بررسی</translation>
-<translation id="1827750274519118478">پخش ویدیو در حالت «تصویر در تصویر» متوقف خواهد شد.</translation>
 <translation id="1828378091493947763">این افزایه در این دستگاه پشتیبانی نمی‌شود</translation>
 <translation id="1828901632669367785">چاپ با استفاده از گفتگوی سیستم...</translation>
 <translation id="1829192082282182671">کوچک&amp; نمایی</translation>
@@ -2462,7 +2460,6 @@
 <translation id="4856478137399998590">سرویس داده تلفن همراه شما فعال شده و آمادهٔ استفاده است.</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{باز کردن همه در پنجره ناشناس}=1{باز کردن در پنجره ناشناس}one{باز کردن همه (#) در پنجره ناشناس}other{باز کردن همه (#) در پنجره ناشناس}}</translation>
 <translation id="4858913220355269194">فوتبالی</translation>
-<translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> - ویدیو در حالت تصویر در تصویر پخش می‌شود</translation>
 <translation id="4862050643946421924">در حال افزودن دستگاه...</translation>
 <translation id="4862642413395066333">‏امضا کردن پاسخ‌های OCSP</translation>
 <translation id="4863769717153320198">‏‎<ph name="WIDTH" /> × <ph name="HEIGHT" />‎ به‌نظر می‌رسد (پیش‌فرض)</translation>
@@ -4143,7 +4140,6 @@
 <translation id="7427348830195639090">صفحه پس‌زمینه: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{باز کردن همه در پنجره جدید}=1{باز کردن در پنجره جدید}one{باز کردن همه (#) در پنجره جدید}other{باز کردن همه (#) در پنجره جدید}}</translation>
 <translation id="7434509671034404296">برنامه‌نویس</translation>
-<translation id="7436470008146509879">‏راه‌اندازی Linux در <ph name="DEVICE_TYPE" /></translation>
 <translation id="7436921188514130341">اوه، نه! درحین تغییر نام خطایی رخ داد.</translation>
 <translation id="7441830548568730290">کاربران دیگر</translation>
 <translation id="7442465037756169001">‏Hangouts Meet hardware شما آماده راه‌اندازی است.</translation>
@@ -4442,7 +4438,6 @@
 <translation id="7881969471599061635">غیرفعال کردن زیرنویس</translation>
 <translation id="7882358943899516840">نوع ارائه‌دهنده</translation>
 <translation id="7885253890047913815">مقصدهای اخیر</translation>
-<translation id="7886917304091689118">‏درحال اجرا در Chrome</translation>
 <translation id="7887334752153342268">کپی‌برداری</translation>
 <translation id="7887864092952184874">موشواره بلوتوث مرتبط شد</translation>
 <translation id="7889565820482017512">اندازه صفحه‌نمایش</translation>
@@ -4613,7 +4608,6 @@
 <translation id="8118860139461251237">مدیریت بارگیری‌ها</translation>
 <translation id="81238879832906896">گل زرد و سفید</translation>
 <translation id="8124313775439841391">‏ONC مدیریت شده</translation>
-<translation id="8125562866093998907">این سایت می‌خواهد «کلید امنیتی» مربوط به امنیت اضافه‌شده حسابتان را به تأیید برساند.</translation>
 <translation id="813082847718468539">مشاهدهٔ اطلاعات سایت</translation>
 <translation id="8131740175452115882">تأیید</translation>
 <translation id="8133676275609324831">&amp;نمایش در پوشه</translation>
@@ -4992,7 +4986,6 @@
 <translation id="8736288397686080465">این سایت در پس‌زمینه به‌روزرسانی شده است.</translation>
 <translation id="8737685506611670901">باز کردن پیوندهای <ph name="PROTOCOL" /> به جای <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
-<translation id="8741316211671074806">تصویردرتصویر</translation>
 <translation id="8743390665131937741">میزان بزرگ‌نمایی تمام‌صفحه:</translation>
 <translation id="8743864605301774756">۱ ساعت قبل به‌روز‌رسانی شد</translation>
 <translation id="874689135111202667">{0,plural, =1{یک فایل در این سایت بارگذاری شود؟}one{# فایل در این سایت بارگذاری شود؟}other{# فایل در این سایت بارگذاری شود؟}}</translation>
@@ -5266,6 +5259,7 @@
 <translation id="9158715103698450907">اوه! هنگام راستی‌آزمایی مشکلی در ارتباط شبکه رخ داد. لطفاً اتصال شبکه را بررسی کنید و دوباره امتحان کنید.</translation>
 <translation id="9161070040817969420">قاب‌های فرعی برای: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">‏ارسال داده‌های سیستم. درحال‌حاضر این دستگاه داده‌های عیب‌یابی و میزان استفاده دستگاه و برنامه را به‌طور خودکار به Google ارسال می‌کند. این تنظیم توسط مالک اعمال می‌شود. اگر «فعالیت وب و برنامه» تکمیلی را روشن کرده باشید، این اطلاعات در حسابتان ذخیره خواهد شد تا بتوانید آن‌ها را در «فعالیت من» مدیریت کنید. <ph name="BEGIN_LINK1" />بیشتر بدانید<ph name="END_LINK1" /></translation>
+<translation id="916607977885256133">تصویر در تصویر</translation>
 <translation id="9169496697824289689">مشاهده میان‌برهای صفحه‌کلید</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" /> را به صفحه اصلی اضافه کنید</translation>
 <translation id="9170397650136757332">حالا کمی انگشتتان را حرکت دهید تا قسمت‌های متفاوت اثرانگشتتان ثبت شود</translation>
@@ -5316,7 +5310,6 @@
 <translation id="952992212772159698">فعال نشد</translation>
 <translation id="957960681186851048">این سایت تلاش کرده است چند فایل را به‌طور خودکار بارگیری کند</translation>
 <translation id="9580706199804957">‏به سرویس‌های Google متصل نشد</translation>
-<translation id="958416628331784386">این برگه درحال پخش ویدیو در حالت تصویر در تصویر است.</translation>
 <translation id="960719561871045870">کد اپراتور</translation>
 <translation id="960987915827980018">حدود ۱ ساعت باقی مانده است</translation>
 <translation id="962802172452141067">درخت پوشه نشانک</translation>

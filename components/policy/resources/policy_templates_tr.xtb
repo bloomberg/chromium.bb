@@ -222,12 +222,6 @@
       Politika, <ph name="PRODUCT_OS_NAME" /> tarafından Hizmet Şartları'nın indirilebileceği bir URL'ye ayarlanmalıdır. Hizmet Şartları'nda düz metin kullanılmalı, MIME türü metin/düz olarak sunulmalıdır. Herhangi bir işaretleme kullanılamaz.</translation>
 <translation id="1750315445671978749">Tüm indirmeleri engelle</translation>
 <translation id="1781356041596378058">Ayrıca bu politika Android Geliştirici Seçenekleri'ne erişimi de kontrol eder. Bu politikayı doğru (true) seçeneğine ayarlarsanız kullanıcılar Geliştirici Seçenekleri'ne erişemez. Bu politikayı yanlış (false) seçeneğine ayarlar veya ayarlamadan bırakırsanız kullanıcılar, Android ayarları uygulamasında derleme numarasına yedi kez dokunarak Geliştirici Seçenekleri'ne erişebilir.</translation>
-<translation id="178832255504524723">Şifre değiştirme URL'sini yapılandırın (yalnızca HTTP ve HTTPS şemaları). Kullanıcılar kimlik avına maruz kalmışsa şifre koruma hizmeti, şifrelerini değiştirmeleri için kullanıcıları bu URL'ye gönderir.
-      <ph name="PRODUCT_NAME" /> uygulamasının bu şifre değişikliği sayfasında yeni şifrenin dijital parmak izini doğru bir şekilde yakalayabilmesi için lütfen şifre değiştirme sayfanızın https://www.chromium.org/developers/design-documents/create-amazing-password-forms adresindeki kurallara uyduğundan emin olun.
-
-      Bu ayar etkinleştirilirse şifre koruma hizmeti, kimlik avına maruz kalmış kullanıcıları şifrelerini değiştirmeleri için bu URL'ye gönderir.
-      Bu ayar devre dışı bırakılmış veya ayarlanmamışsa şifre koruma hizmeti, kullanıcıları https://myaccounts.google.com to change their password adresine gönderir.
-      Bu politika, bir <ph name="MS_AD_NAME" /> alanına katılmış Windows örneklerinde kullanılamaz.</translation>
 <translation id="1797233582739332495">Kullanıcıya yeniden başlatmanın gerektiğini belirten yinelenen bir istem gösterme</translation>
 <translation id="1803646570632580723">Başlatıcıda gösterilecek sabitlenmiş uygulamalar listesi</translation>
 <translation id="1808715480127969042">Bu sitelerdeki çerezleri engelle</translation>
@@ -1414,14 +1408,6 @@ politikayı geçersiz kılamaz.
 <translation id="4980635395568992380">Veri türü:</translation>
 <translation id="4983201894483989687">Eski eklentilerin çalıştırılmasına izin ver</translation>
 <translation id="4988291787868618635">Boşta kalma gecikme süresine ulaşıldığında uygulanacak işlem</translation>
-<translation id="4990301296093321860">Şifre koruma uyarısının tetiklenmesini kontrol etmenize olanak tanır. Şifre koruma, korunan şifrelerini şüpheli olabilecek sitelerde yeniden kullandıklarında kullanıcıları uyarır.
-
-      Korunacak şifreyi yapılandırmak için "PasswordProtectionLoginURLs" ve "PasswordProtectionChangePasswordURL" politikalarını kullanabilirsiniz
-
-      Bu politikanın "PasswordProtectionWarningOff" değerine ayarlanması halinde herhangi bir şifre koruma uyarısı gösterilmez.
-      Bu politikanın "PasswordProtectionWarningOnPasswordReuse" değerine ayarlanması halinde kullanıcı korunan şifresini beyaz listede yer almayan sitelerde yeniden kullandığında şifre koruma uyarısı gösterilir.
-      Bu politikanın "PasswordProtectionWarningOnPhishingReuse" değerine ayarlanması halinde kullanıcı korunan şifresini kimlik avı sitelerinde yeniden kullandığında şifre koruma uyarısı gösterilir.
-      Bu politikanın ayarlanmadan bırakılması halinde kullanıcı korunan şifresini kimlik avı sitelerinde yeniden kullandığında şifre koruma uyarısı tetiklenir ancak kullanıcı bu ayarı değiştirebilir.</translation>
 <translation id="4995548127349206948">NTLMv2 kimlik doğrulamasının etkinleştirilip etkinleştirilmediği.</translation>
 <translation id="5047604665028708335">İçerik paketlerinin dışındaki sitelere erişime izin ver</translation>
 <translation id="5052081091120171147">Bu politika, göz atma geçmişini etkin olması durumunda geçerli varsayılan tarayıcıdan içe aktarır. Bu politika etkinleştirilirse, içe aktarma iletişim kutusunu da etkiler.
@@ -1953,13 +1939,6 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlanmadan bırakılırsa veya liste boş olursa, <ph name="PRODUCT_NAME" /> içindeki tüm şemalara erişilebilir.</translation>
 <translation id="6652197835259177259">Yerel olarak yönetilen kullanıcıların ayarları</translation>
-<translation id="6654559957643809067"><ph name="PRODUCT_NAME" /> ürününde ağ tahminini etkinleştirir ve kullanıcıların bu ayarı değiştirmesini önler.
-
-       Bu politika, DNS'nin önceden getirilmesini, TCP ve SSL ön bağlantısını ve web sayfalarının önceden oluşturulmasını denetler.
-
-      Bu tercihi "her zaman", "hiçbir zaman" veya "yalnızca kablosuz" olarak ayarladığınızda kullanıcılar <ph name="PRODUCT_NAME" /> ürününde bu ayarı değiştiremez veya geçersiz kılamaz.
-
-      Bu politika ayarlanmadan bırakılırsa ağ tahmini etkinleştirilir, ancak isteyen kullanıcı bu ayarı değiştirebilir.</translation>
 <translation id="6658245400435704251">Bir güncelleme sunucuya ilk gönderildiği andan itibaren bir cihazın rastgele şekilde güncelleme yüklemesini geciktirebileceği süreyi saniye olarak belirtir. Cihaz bu sürenin bir kısmında gerçek zaman olarak, geri kalan kısmında ise güncelleme denetlemelerinin sayısınca bekleyebilir. Cihazın bir güncellemeyi sürekli bekler durumda kalmaması için, dağılım her durumda üst sınır olarak sabit bir süre ile kısıtlıdır.</translation>
 <translation id="6665670272107384733">Hızlı kilit açmayı kullanmak için kullanıcının şifreyi hangi sıklıkta girmesi gerektiğini ayarla</translation>
 <translation id="6681229465468164801">USB cihazlarına erişmek için kullanıcıdan izin istemesi engellenen sitelerin belirtildiği URL kalıpları listesini ayarlamanıza olanak sağlar.

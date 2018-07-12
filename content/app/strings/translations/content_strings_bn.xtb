@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">পরবর্তী মাস দেখান</translation>
 <translation id="512758898067543763">সারি শিরোলেখ</translation>
 <translation id="5143125788380636750">উপসংহার</translation>
-<translation id="5153163864850940242">এই ভিডিওটি ছবির-মধ্যে-ছবিতে চালানো হচ্ছে</translation>
 <translation id="5164977714490026579">মানটি অবশ্যই <ph name="MINIMUM" />এর চেয়ে বেশি বা সমান হবে৷</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS" />' অসম্পূর্ণ৷</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">মিটার</translation>
 <translation id="6166809985690652833">পরিশিষ্ট</translation>
 <translation id="6213469881011901533">শব্দকোষ</translation>
-<translation id="6310801910862476708">ছবির-মধ্যে-ছবি মোড থেকে বেরিয়ে আসুন</translation>
 <translation id="6398862346408813489">মাস নির্বাচনের প্যানেল দেখান</translation>
 <translation id="6404546809543547843">অডিও সময় স্ক্রাবার</translation>
 <translation id="6453774872122745852">কৃতজ্ঞতা স্বীকার</translation>
@@ -220,7 +218,6 @@
 <translation id="860475260694818407">সূচিপত্র</translation>
 <translation id="8613126697340063924">রিমোট প্লেব্যাক নিয়ন্ত্রণ করুন</translation>
 <translation id="862370744433916922">সাবটাইটেল</translation>
-<translation id="8741316211671074806">ছবির-মধ্যে-ছবি</translation>
 <translation id="8750798805984357768">দয়া করে বিকল্পগুলির একটি নির্বাচন করুন৷</translation>
 <translation id="8785498733064193001">প্লেব্যাক শুরু করুন</translation>
 <translation id="8808573423886751634">অধ্যায়</translation>
@@ -238,6 +235,7 @@
 <translation id="9132465097189459683">অন্যান্য...</translation>
 <translation id="9138385573473225930">সতর্কতা</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> এ শুরু</translation>
+<translation id="916607977885256133">ছবির-মধ্যে-ছবি</translation>
 <translation id="9168329111483466115">ফুটনোট</translation>
 <translation id="954003015749068518">ছবির-মধ্যে-ছবি মোডে যান</translation>
 <translation id="966787709310836684">মেনু</translation>

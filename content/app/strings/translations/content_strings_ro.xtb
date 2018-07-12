@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Afișează luna următoare</translation>
 <translation id="512758898067543763">antet rând</translation>
 <translation id="5143125788380636750">epilog</translation>
-<translation id="5153163864850940242">Videoclipul se redă în modul imagine în imagine</translation>
 <translation id="5164977714490026579">Valoarea trebuie să fie mai mare sau egală cu <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Introduceți o valoare urmată de semnul „<ph name="ATSIGN" />”. Adresa „<ph name="INVALIDADDRESS" />” nu este completă.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">instrument de măsurare</translation>
 <translation id="6166809985690652833">postfață</translation>
 <translation id="6213469881011901533">glosar</translation>
-<translation id="6310801910862476708">Ieși din modul Picture-in-Picture</translation>
 <translation id="6398862346408813489">Afișează panoul de selectare a lunii</translation>
 <translation id="6404546809543547843">glisor redare audio</translation>
 <translation id="6453774872122745852">lista colaboratorilor</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">descarcă conținut media</translation>
 <translation id="6981594929165378967">inserare</translation>
 <translation id="6989848892321993519">Mărește acest text la cel puțin <ph name="MIN_CHARACTERS" /> caractere (în prezent folosești 1 caracter).</translation>
+<translation id="7090364526657522309">Serviciul de fonturi Linux</translation>
 <translation id="709897737746224366">Respectă formatul solicitat.</translation>
 <translation id="7139483182332611405">prefață</translation>
 <translation id="7223624360433298498">timp scurs</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">cuprins</translation>
 <translation id="8613126697340063924">controlează redarea la distanță</translation>
 <translation id="862370744433916922">subtitlu</translation>
-<translation id="8741316211671074806">Picture-in-Picture</translation>
 <translation id="8750798805984357768">Selectează una dintre aceste opțiuni.</translation>
 <translation id="8785498733064193001">începeți redarea</translation>
 <translation id="8808573423886751634">capitol</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">Altele...</translation>
 <translation id="9138385573473225930">alertă</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, începând de pe <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Picture-in-Picture</translation>
 <translation id="9168329111483466115">notă de subsol</translation>
 <translation id="954003015749068518">intră în modul picture-in-picture</translation>
 <translation id="966787709310836684">meniu</translation>

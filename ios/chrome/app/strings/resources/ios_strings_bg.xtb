@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">Сканирайте код за бърза реакция</translation>
 <translation id="1580783302095112590">Пощата е изпратена.</translation>
 <translation id="1582732959743469162">Текущото изтегляне ще бъде прекратено.</translation>
+<translation id="1605658421715042784">Копиране на изображението</translation>
 <translation id="1612730193129642006">Показване на мрежа с раздели</translation>
 <translation id="1644574205037202324">История</translation>
 <translation id="1646446875146297738">Активирането на „Do Not Track“ означава, че с трафика ви на сърфиране ще се включва заявка. Ефектите зависят от това, дали уебсайтът ще отговори на нея и как ще я изтълкува.
@@ -58,6 +59,7 @@
 <translation id="1809939268435598390">Изтриване на папката</translation>
 <translation id="1813414402673211292">Изчистване на данните за сърфирането</translation>
 <translation id="1820259098641718022">Добавихте към списъка за четене</translation>
+<translation id="1821253160463689938">Използва „бисквитки“ за запомняне на предпочитанията ви дори ако не посещавате тези страници</translation>
 <translation id="1876721852596493031">Send Usage Data</translation>
 <translation id="1886928167269928266">Самото начало</translation>
 <translation id="1911619930368729126">Качване в Google Диск</translation>
@@ -71,6 +73,7 @@
 <translation id="209018056901015185">Заявка за настолния сайт</translation>
 <translation id="2103075008456228677">Към history.google.com</translation>
 <translation id="2116625576999540962">Преместихте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> елемента</translation>
+<translation id="2120297377148151361">Активност и взаимодействия</translation>
 <translation id="213900355088104901">За да сърфирате частно, отворете раздел в режим „инкогнито“</translation>
 <translation id="2149973817440762519">Редактиране на отметката</translation>
 <translation id="2230173723195178503">Уеб страницата се зареди</translation>
@@ -86,6 +89,7 @@
 <translation id="2386793615875593361">1 избрана</translation>
 <translation id="2435457462613246316">Показване на паролата</translation>
 <translation id="2481538920734869610">НОВ ПРОФИЛ</translation>
+<translation id="2523184218357549926">Изпраща до Google URL адресите на страниците, които посещавате</translation>
 <translation id="2523363575747517183">Този уебсайт многократно се опитва да отвори друго приложение.</translation>
 <translation id="2529021024822217800">Отваряне на всички</translation>
 <translation id="2572712655377361602">Достъпът до снимките ви е блокиран от правило за устройства</translation>
@@ -115,6 +119,7 @@
 <translation id="2898963176829412617">Нова папка…</translation>
 <translation id="2903493209154104877">Адреси</translation>
 <translation id="2909437209446960244">Скорошни раздели</translation>
+<translation id="2916171785467530738">Автоматично довършване на заявки за търсене и URL адреси</translation>
 <translation id="291754862089661335">Поставете кода за бърза реакция или баркода в тази рамка</translation>
 <translation id="2921219216347069551">Стр. не може да се сподели</translation>
 <translation id="2923448633003185837">Поставяне и старт</translation>
@@ -219,10 +224,12 @@
 <translation id="4860895144060829044">Обаждане</translation>
 <translation id="4875622588773761625">Искате ли <ph name="PASSWORD_MANAGER_BRAND" /> да актуализира паролата ви за този сайт?</translation>
 <translation id="4881695831933465202">Отваряне</translation>
+<translation id="4882831918239250449">Контролирайте начина, по който историята ви на сърфиране се използва за персонализиране на търсенето, рекламите и др.</translation>
 <translation id="4904877109095351937">Означаване като прочетено</translation>
 <translation id="4930268273022498155">Изтриване на съществуващите данни. Можете да ги извлечете, като превключите обратно към <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">При споделянето на елемента възникна проблем.</translation>
 <translation id="4979397965658815378">Влезте с профила си в Google, за да получите своите отметки, пароли, история и други настройки на всичките си устройства</translation>
+<translation id="5004416275253351869">Контроли за активността в Google</translation>
 <translation id="5005498671520578047">Копиране на паролата</translation>
 <translation id="5010803260590204777">Отворете раздел в режим „инкогнито“, за да сърфирате частно в мрежата.</translation>
 <translation id="5011684439661633295">Здравейте, <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -249,6 +256,7 @@
 <translation id="5548760955356983418">С Handoff можете да започнете да разглеждате уебсайт на това устройство, след което лесно да продължите сърфирането от своя Mac. Отвореният сайт ще се покаже в лентата Dock.
 
 Трябва да активирате Handoff и в секцията „General“ на Settings, както и да използвате един и същ профил в iCloud на устройствата си.</translation>
+<translation id="5554368826343982379">Синхронизиране и персонализиране</translation>
 <translation id="5556459405103347317">Повторно зареждане</translation>
 <translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">Понастоящем файлът не можа да бъде изтеглен.</translation>
@@ -340,6 +348,7 @@
 <translation id="6979158407327259162">Google Диск</translation>
 <translation id="7004499039102548441">Скорошни раздели</translation>
 <translation id="7006788746334555276">Настройки за съдържанието</translation>
+<translation id="7017968314960951695">Използва за персонализиране съдържанието на посещаваните от вас сайтове, както и активността в браузъра и взаимодействията с него</translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7031882061095297553">Синхронизиране със</translation>
 <translation id="7053983685419859001">Блокиране</translation>
@@ -382,6 +391,7 @@
 <translation id="7769602470925380267">Приемане и излизане от профила</translation>
 <translation id="7772032839648071052">Потвърдете пропуска</translation>
 <translation id="780301667611848630">Не, благодаря</translation>
+<translation id="7830720446622801252">Неперсонализирани услуги</translation>
 <translation id="7856733331829174190">Неуспешно изтегляне</translation>
 <translation id="7859704718976024901">История на сърфирането</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -400,6 +410,7 @@
 <translation id="8076014560081431679">Запазените настройки за сайтове няма да бъдат изтрити и може да отразяват навиците ви при сърфиране. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Затваряне на разделите</translation>
 <translation id="8114753159095730575">Наличен е файл за изтегляне. Съответните опции са достъпни в долната част на екрана.</translation>
+<translation id="8160722851663543621">Изпраща заявките за търсене от адресната лента и полето за търсене, както и някои „бисквитки“, до стандартната ви търсеща машина</translation>
 <translation id="8205564605687841303">Отказ</translation>
 <translation id="8225985093977202398">Кеширани изображения и файлове</translation>
 <translation id="8261506727792406068">Изтриване</translation>
@@ -410,6 +421,7 @@
 <translation id="842017693807136194">Влезли сте със:</translation>
 <translation id="8428045167754449968">Град/селище</translation>
 <translation id="8428213095426709021">Настройки</translation>
+<translation id="8438566539970814960">Подобряване на търсенията и сърфирането</translation>
 <translation id="8458397775385147834">Изтрихте 1 елемент</translation>
 <translation id="8487700953926739672">Налице офлайн</translation>
 <translation id="8503813439785031346">Потребителско име</translation>

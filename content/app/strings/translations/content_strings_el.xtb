@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Εμφάνιση επόμενου μήνα</translation>
 <translation id="512758898067543763">κεφαλίδα σειράς</translation>
 <translation id="5143125788380636750">επίλογος</translation>
-<translation id="5153163864850940242">Η αναπαραγωγή αυτού του βίντεο γίνεται σε λειτουργία Picture-in-Picture</translation>
 <translation id="5164977714490026579">Η τιμή πρέπει να είναι μεγαλύτερη ή ίση του <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Καταχωρίστε το τμήμα της διεύθυνσης πριν το σύμβολο "<ph name="ATSIGN" />". Η διεύθυνση "<ph name="INVALIDADDRESS" />" δεν είναι πλήρης.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">μετρητής</translation>
 <translation id="6166809985690652833">επίλογος</translation>
 <translation id="6213469881011901533">γλωσσάρι</translation>
-<translation id="6310801910862476708">Έξοδος από τη λειτουργία Picture-in-Picture</translation>
 <translation id="6398862346408813489">Εμφάνιση παραθύρου επιλογής μήνα</translation>
 <translation id="6404546809543547843">δείκτης χρόνου ήχου</translation>
 <translation id="6453774872122745852">ευχαριστίες</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">λήψη μέσων</translation>
 <translation id="6981594929165378967">εισαγωγή</translation>
 <translation id="6989848892321993519">Αυξήστε την έκταση αυτού του κειμένου στους <ph name="MIN_CHARACTERS" /> χαρακτήρες ή περισσότερο (αυτήν τη στιγμή χρησιμοποιείτε 1 χαρακτήρα).</translation>
+<translation id="7090364526657522309">Υπηρεσία γραμματοσειρών Linux</translation>
 <translation id="709897737746224366">Αντιστοιχίστε τη ζητούμενη μορφή.</translation>
 <translation id="7139483182332611405">πρόλογος</translation>
 <translation id="7223624360433298498">χρόνος που παρήλθε</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">πίνακας περιεχομένων</translation>
 <translation id="8613126697340063924">έλεγχος απομακρυσμένης αναπαραγωγής</translation>
 <translation id="862370744433916922">υπότιτλος</translation>
-<translation id="8741316211671074806">Picture-in-picture</translation>
 <translation id="8750798805984357768">Ορίστε μία από αυτές τις επιλογές.</translation>
 <translation id="8785498733064193001">έναρξη αναπαραγωγής</translation>
 <translation id="8808573423886751634">κεφάλαιο</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">Άλλες…</translation>
 <translation id="9138385573473225930">ειδοποίηση</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, από τις <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Παράθεση εικόνων</translation>
 <translation id="9168329111483466115">υποσημείωση</translation>
 <translation id="954003015749068518">είσοδος στη λειτουργία picture-in-picture</translation>
 <translation id="966787709310836684">μενού</translation>

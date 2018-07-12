@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">अगला माह दिखाएं</translation>
 <translation id="512758898067543763">पंक्ति शीर्षलेख</translation>
 <translation id="5143125788380636750">उपसंहार</translation>
-<translation id="5153163864850940242">यह वीडियो पिक्चर में पिक्चर मोड में चल रहा है</translation>
 <translation id="5164977714490026579">मान <ph name="MINIMUM" /> से कम या इसके बराबर होना चाहिए.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">कृपया '<ph name="ATSIGN" />' के पहले वाला भाग डालें. '<ph name="INVALIDADDRESS" />' अधूरा है.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">मीटर</translation>
 <translation id="6166809985690652833">उपसंहार</translation>
 <translation id="6213469881011901533">शब्दावली</translation>
-<translation id="6310801910862476708">'पिक्चर में पिक्चर से बाहर निकलें'</translation>
 <translation id="6398862346408813489">माह चयन फलक दिखाएं</translation>
 <translation id="6404546809543547843">ऑडियो समय स्क्रबर</translation>
 <translation id="6453774872122745852">धन्यवाद</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">मीडिया डाउनलोड करें</translation>
 <translation id="6981594929165378967">डालना</translation>
 <translation id="6989848892321993519">कृपया इस लेख को <ph name="MIN_CHARACTERS" /> या उससे ज़्यादा वर्णों तक बढ़ाएं (आप इस समय 1 वर्ण का उपयोग कर रहे हैं).</translation>
+<translation id="7090364526657522309">Linux फ़ॉन्ट सेवा</translation>
 <translation id="709897737746224366">कृपया अनुरोधित प्रारूप का मिलान करें.</translation>
 <translation id="7139483182332611405">आमुख</translation>
 <translation id="7223624360433298498">बीता हुआ समय</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">विषय सूची</translation>
 <translation id="8613126697340063924">दूरस्थ प्लेबैक नियंत्रित करें</translation>
 <translation id="862370744433916922">सबटाइटल</translation>
-<translation id="8741316211671074806">पिक्चर में पिक्चर</translation>
 <translation id="8750798805984357768">कृपया इनमें से कोई विकल्प चुनें.</translation>
 <translation id="8785498733064193001">प्लेबैक शुरू करें</translation>
 <translation id="8808573423886751634">पाठ</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">अन्य...</translation>
 <translation id="9138385573473225930">सूचना</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> से प्रारंभ हो रहा है</translation>
+<translation id="916607977885256133">पिक्चर में पिक्चर</translation>
 <translation id="9168329111483466115">फ़ुटनोट</translation>
 <translation id="954003015749068518">पिक्चर में पिक्चर चालू करें</translation>
 <translation id="966787709310836684">मेनू</translation>

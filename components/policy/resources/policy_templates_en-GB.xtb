@@ -223,12 +223,6 @@
       The policy should be set to a URL from which <ph name="PRODUCT_OS_NAME" /> can download the Terms of Service. The Terms of Service must be plain text, served as MIME type text/plain. No markup is allowed.</translation>
 <translation id="1750315445671978749">Block all downloads</translation>
 <translation id="1781356041596378058">This policy also controls access to Android Developer Options. If you set this policy to true, users cannot access Developer Options. If you set this policy to false or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.</translation>
-<translation id="178832255504524723">Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their passwords if they've been phished.
-      For <ph name="PRODUCT_NAME" /> to correctly capture the new password fingerprint on this change password page, please make sure that your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      If this setting is enabled, password protection service will send users to this URL to change their passwords if they've been phished.
-      If this setting is disabled or not set, password protection service will send users to https://myaccounts.google.com to change their password.
-      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="1797233582739332495">Show a recurring prompt to the user indicating that a relaunch is required</translation>
 <translation id="1803646570632580723">List of pinned apps to show in the launcher</translation>
 <translation id="1808715480127969042">Block cookies on these sites</translation>
@@ -1430,14 +1424,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4980635395568992380">Data Types</translation>
 <translation id="4983201894483989687">Allow running plug-ins that are outdated</translation>
 <translation id="4988291787868618635">Action to take when the idle delay is reached</translation>
-<translation id="4990301296093321860">Allows you to control the triggering of password protection warning. Password protection alerts users when they reuse their protected password on potentially suspicious sites.
-
-      You can use 'PasswordProtectionLoginURLs' and 'PasswordProtectionChangePasswordURL' policies to configure which password to protect.
-
-      If this policy is set to 'PasswordProtectionWarningOff', no password protection warning will be shown.
-      If this policy is set to 'PasswordProtectionWarningOnPasswordReuse', password protection warning will be shown when the user reuses their protected password on a non-whitelisted site.
-      If this policy is set to 'PasswordProtectionWarningOnPhishingReuse', password protection warning will be shown when the user reuses their protected password on a phishing site.
-      If this policy is left unset, password protection warning will be triggered when the user reuses their protected password on a phishing site, but the user will be able to change this setting.</translation>
 <translation id="4995548127349206948">Whether NTLMv2 authentication is enabled.</translation>
 <translation id="5047604665028708335">Allow access to sites outside of content packs</translation>
 <translation id="5052081091120171147">This policy forces the browsing history to be imported from the current default browser, if enabled. If enabled, this policy also affects the import dialogue.
@@ -1971,13 +1957,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is left not set or the list is empty all schemes will be accessible in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Locally managed users settings</translation>
-<translation id="6654559957643809067">Enables network prediction in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
-
-      This controls DNS prefetching, TCP and SSL preconnection and prerendering of web pages.
-
-      If you set this preference to 'always', 'never' or 'Wi-Fi only', users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
-
-      If this policy is left not set, network prediction will be enabled but the user will be able to change it.</translation>
 <translation id="6658245400435704251">Specifies the number of seconds up to which a device may randomly delay its download of an update from the time the update was first pushed out to the server. The device may wait a portion of this time in terms of wall-clock-time and the remaining portion in terms of the number of update checks. In any case, the scatter is upper bounded to a constant amount of time so that a device does not ever get stuck waiting to download an update forever.</translation>
 <translation id="6665670272107384733">Set how often user has to enter password to use quick unlock</translation>
 <translation id="6681229465468164801">Allows you to set a list of url patterns that specify sites which are prevented from asking the user to grant them access to a USB device.

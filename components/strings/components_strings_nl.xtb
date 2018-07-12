@@ -329,6 +329,7 @@
 <translation id="3234666976984236645">Altijd belangrijke content op deze site detecteren</translation>
 <translation id="3254409185687681395">Bladwijzer instellen voor deze pagina</translation>
 <translation id="3270847123878663523">&amp;Volgorde wijzigen ongedaan maken</translation>
+<translation id="3280511504953918101">Deze naam wordt ook gebruikt wanneer je Google-betalingsaccount wordt gemaakt.</translation>
 <translation id="3282497668470633863">Naam op kaart toevoegen</translation>
 <translation id="3287510313208355388">Downloaden wanneer online</translation>
 <translation id="3293642807462928945">Meer informatie over het beleid <ph name="POLICY_NAME" /></translation>
@@ -798,6 +799,7 @@
 <translation id="6831043979455480757">Vertalen</translation>
 <translation id="6839929833149231406">Gebied</translation>
 <translation id="6852204201400771460">App opnieuw laden?</translation>
+<translation id="6865412394715372076">Deze kaart kan momenteel niet worden geverifieerd</translation>
 <translation id="6874604403660855544">&amp;Opnieuw toevoegen</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Beleidsniveau wordt niet ondersteund.</translation>
@@ -1044,6 +1046,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, antwoord, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Je verbinding met <ph name="DOMAIN" /> is niet gecodeerd.</translation>
 <translation id="8718314106902482036">Betaling niet voltooid</translation>
+<translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, zoeksuggestie</translation>
 <translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="8728672262656704056">Je bent incognito</translation>
 <translation id="8730621377337864115">Gereed</translation>

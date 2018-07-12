@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">عرض الشهر التالي</translation>
 <translation id="512758898067543763">عنوان الصف</translation>
 <translation id="5143125788380636750">تتِّمة</translation>
-<translation id="5153163864850940242">يتم تشغيل هذا الفيديو في الوضع "نافذة ضمن النافذة".</translation>
 <translation id="5164977714490026579">يجب أن تكون القيمة أكبر من أو تساوي <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> بيتابايت</translation>
 <translation id="5307600278924710095">يُرجى إدخال جزء متبوع بعلامة "<ph name="ATSIGN" />"، حيث إن "<ph name="INVALIDADDRESS" />" غير مكتمل.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">متر</translation>
 <translation id="6166809985690652833">كلمة ختامية</translation>
 <translation id="6213469881011901533">مسرد مصطلحات</translation>
-<translation id="6310801910862476708">الخروج من وضع "نافذة ضمن نافذة"</translation>
 <translation id="6398862346408813489">عرض لوحة تحديد الشهر</translation>
 <translation id="6404546809543547843">شريط تمرير وقت الصوت</translation>
 <translation id="6453774872122745852">شكر وتقدير</translation>
@@ -220,7 +218,6 @@
 <translation id="860475260694818407">جدول المحتويات</translation>
 <translation id="8613126697340063924">التحكم في التشغيل عن بعد</translation>
 <translation id="862370744433916922">ترجمة مصاحِبة</translation>
-<translation id="8741316211671074806">نافذة ضمن النافذة</translation>
 <translation id="8750798805984357768">يُرجى اختيار أحد هذه الخيارات.</translation>
 <translation id="8785498733064193001">بدء التشغيل</translation>
 <translation id="8808573423886751634">فصل</translation>
@@ -238,6 +235,7 @@
 <translation id="9132465097189459683">آخر...</translation>
 <translation id="9138385573473225930">تنبيه</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />، ابتداء من <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">نافذة ضمن النافذة</translation>
 <translation id="9168329111483466115">حاشية سُفلية</translation>
 <translation id="954003015749068518">الدخول في وضع "نافذة ضمن نافذة"</translation>
 <translation id="966787709310836684">القائمة</translation>

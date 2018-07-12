@@ -220,12 +220,6 @@
       La política debe establecerse en una URL de la cual <ph name="PRODUCT_OS_NAME" /> pueda descargar las Condiciones del servicio. Estas deberán estar en texto sin formato y ofrecerse como texto sin formato tipo MIME. No se permiten marcas.</translation>
 <translation id="1750315445671978749">Bloquear todas las descargas</translation>
 <translation id="1781356041596378058">Esta política también controla el acceso a las Opciones para programador de Android. Si habilitas esta política, los usuarios no podrán acceder a las Opciones para programador. Si estableces esta política como falsa o no la estableces, los usuarios podrán acceder a las Opciones para programador al presionar siete veces el número de compilación en la app de Configuración de Android.</translation>
-<translation id="178832255504524723">Configura la URL de cambio de contraseña (solo en esquemas HTTP y HTTPS). Si los usuarios sufrieron un ataque de suplantación de identidad (phishing), el servicio de protección de contraseñas los redirecciona a esta URL para cambiar las suyas.
-      Para que <ph name="PRODUCT_NAME" /> capture la nueva huella digital de contraseña correctamente en esta página, asegúrate de que la página cumpla con los lineamientos que se indican en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si se habilita esta configuración, el servicio enviará a los usuarios a esta URL para que cambien sus contraseñas en el caso de que hayan sufrido un ataque de suplantación de identidad (phishing).
-      Si se inhabilita esta configuración o no se establece, el servicio enviará a los usuarios a https://myaccounts.google.com para que las cambien.
-      Esta política no está disponible en instancias de Windows que no se hayan unido a un dominio de <ph name="MS_AD_NAME" />.</translation>
 <translation id="1797233582739332495">Mostrar un mensaje recurrente al usuario para indicarle que se debe realizar un reinicio</translation>
 <translation id="1803646570632580723">Lista de aplicaciones fijas para mostrar en el menú de aplicaciones</translation>
 <translation id="1808715480127969042">Bloquear cookies en estos sitios</translation>
@@ -676,6 +670,19 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2877225735001246144">Inhabilitar la búsqueda de CNAME al negociar la autenticación de Kerberos</translation>
 <translation id="2893546967669465276">Enviar registros del sistema al servidor de administración</translation>
 <translation id="2899002520262095963">A través de esta política, las apps de Android pueden usar la configuración de red y los Certificados de CA, pero no tienen acceso a algunas opciones de configuración.</translation>
+<translation id="290002216614278247">Permite bloquear la sesión del usuario en función del tiempo del cliente o del uso durante el día.
+
+          El |time_window_limit| especifica un período diario en el que se debe bloquear la sesión del usuario. Solo se admite una regla por día, por lo que el tamaño de |entries| puede variar de 0 a 7. Los parámetros |starts_at| y |ends_at| representan el comienzo y final del período. Cuando |ends_at| es anterior a |starts_at|, significa que |time_limit_window| finaliza el día siguiente. |last_updated_millis| es la marca de tiempo expresada en UTC correspondiente a la última actualización de la entrada. Se envía como string porque la marca de tiempo no se puede expresar como número entero.
+
+          El |time_usage_limit| especifica un período de uso diario; cuando el usuario supera ese límite, se bloquea la sesión. Existe una propiedad para cada día de la semana, y debe establecerse solo si hay un horario de actividad ese día. |usage_quota_mins| es la cantidad de tiempo que puede usarse el dispositivo administrado un día determinado, y |reset_at| es la hora cuando se renueva el tiempo de uso. El valor predeterminado para |reset_at| es la medianoche ({"hora": 0, "minuto": 0}). |last_updated_millis| es la marca de tiempo expresada en UTC correspondiente a la última actualización de esta entrada. Se envía como string porque la marca de tiempo no se puede expresar como número entero.
+
+          Se proporciona |overrides| para invalidar de forma temporal una o varias de las reglas anteriores.
+          * Si no están activos time_window_limit ni time_usage_limit, se podrá usar |LOCK| para bloquear el dispositivo.
+          * |LOCK| bloquea de forma temporal una sesión de usuario hasta que comienza el siguiente time_window_limit o time_usage_limit.
+          * |UNLOCK| desbloquea una sesión de usuario que esté bloqueada por time_window_limit o time_usage_limit.
+          |created_time_millis| es la marca de tiempo expresada en UTC para la anulación. Este valor se usa para determinar si se debe aplicar esta anulación y se envía como string porque la marca de tiempo no se puede expresar como número entero. Si la función de límite actual para el tiempo activo (el límite de uso o el límite de tiempo) comenzó después de haberse creado la anulación, no realiza ninguna acción. Además, la anulación no debe aplicarse si se creó antes del último cambio del time_window_limit o time_usage_window activos.
+
+          Si se envían varias anulaciones, se aplicará la entrada válida más reciente.</translation>
 <translation id="2906874737073861391">Lista de extensiones AppPack</translation>
 <translation id="2907992746861405243">Controla a qué impresoras de <ph name="BULK_PRINTERS_POLICY" /> pueden acceder los usuarios.
 
@@ -1732,6 +1739,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6155936611791017817">Establece el estado predeterminado del cursor grande en la pantalla de acceso.</translation>
 <translation id="6157537876488211233">Lista separada por comas de las normas de omisión de proxy</translation>
 <translation id="6158324314836466367">Indica el nombre de la tienda web de la empresa (en desuso).</translation>
+<translation id="6164955668342404660">Dejó de estar disponible en M69. Usa OverrideSecurityRestrictionsOnInsecureOrigin en su lugar.
+
+      La política especifica una lista de orígenes (URL) que se considerarán como contexto seguro. El objetivo es permitir que las organizaciones configuren un servidor de etapas de pruebas para desarrollos web internos, a fin de que sus desarrolladores puedan probar las funciones que requieren contextos seguros sin la necesidad de implementar TLS en el servidor de etapas de pruebas.
+      Configurar una lista de URL en esta política tiene el mismo efecto que configurar la marca de línea de comandos "--unsafely-treat-insecure-origin-as-secure" en una lista de elementos separados por comas de las mismas URL. Si se establece la política, anulará la marca de línea de comandos.
+      Para obtener más información sobre contextos seguros, consulta https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6181608880636987460">Te permite establecer una lista de patrones de URL que especifican los sitios que no tienen permitido ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
 
           Si esta política no se establece, el valor predeterminado global se usará para todos los sitios, ya sea desde la política "DefaultPluginsSetting", si está configurada, o desde otro tipo de configuración personal del usuario.</translation>
@@ -1848,13 +1861,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si no se establece esta política o si la lista está vacía, se podrá acceder a todos los esquemas en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Configuración de los usuarios administrados localmente</translation>
-<translation id="6654559957643809067">Habilita la predicción de red en <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración.
-
-      Controla la precarga de DNS y la preconexión a TCP y SSL, así como la representación previa de páginas web.
-
-      Si estableces esta preferencia en "siempre", "nunca" o "solo WiFi", los usuarios no pueden cambiar o anular esta configuración en <ph name="PRODUCT_NAME" />.
-
-      Si no se establece esta política, la predicción de red se habilitará, pero el usuario podrá cambiarla.</translation>
 <translation id="6658245400435704251">Especifica la cantidad máxima de segundos que un dispositivo puede retrasar aleatoriamente la descarga de una actualización desde el momento en el que la descarga se envío al servidor por primera vez. El dispositivo puede dedicar una parte de este tiempo al proceso de actualización y el resto a realizar las comprobaciones necesarias. En cualquier caso, el límite superior de la dispersión es un período de tiempo constante, para que el dispositivo no se quede bloqueado mientras espera descargar una actualización.</translation>
 <translation id="6665670272107384733">Establecer la frecuencia con la que el usuario debe ingresar la contraseña para usar el desbloqueo rápido</translation>
 <translation id="6681229465468164801">Te permite establecer una lista de patrones de URL que especifica los sitios que no pueden solicitarle al usuario acceso a un dispositivo USB.
@@ -1905,6 +1911,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6786967369487349613">Establecer el directorio del perfil de itinerancia</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="681446116407619279">Esquemas de autenticación compatibles</translation>
+<translation id="6832455357698286434">
+      La política especifica una lista de orígenes (URL) o patrones de nombres de host (como "*.ejemplo.com") que se considerarán como contexto seguro. El objetivo es permitir que las organizaciones configuren un servidor de etapas de pruebas para desarrollos web internos, a fin de que sus programadores puedan probar las funciones que requieren contextos seguros sin la necesidad de implementar TLS en el servidor de etapas de pruebas.
+      Configurar una lista de URL en esta política tiene el mismo efecto que configurar la marca de línea de comandos "--unsafely-treat-insecure-origin-as-secure" en una lista de elementos separados por comas de las mismas URL. Si se establece la política, se anulará la marca de línea de comandos.
+      Para obtener más información sobre contextos seguros, consulta https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6835883744948188639">Mostrar un mensaje recurrente al usuario para indicarle que se recomienda llevar a cabo el reinicio</translation>
 <translation id="6838056959556423778">Anula las reglas predeterminadas de selección de impresora de <ph name="PRODUCT_NAME" />.
 
@@ -2247,6 +2258,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7617319494457709698">Esta política especifica las extensiones con permiso para usar la API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> con la función <ph name="CHALLENGE_USER_KEY_FUNCTION" /> para la verificación remota. Para poder usar la API, las extensiones deben agregarse a esta lista.
 
           Si una extensión no está en la lista o no se establece la lista, las llamadas a la API fallarán y se mostrará un código de error.</translation>
+<translation id="7620300057302654932">Los orígenes o patrones de nombres de host se considerarán como contexto seguro.</translation>
 <translation id="7625444193696794922">Especifica el canal de publicaciones al que debe conectarse este dispositivo.</translation>
 <translation id="7632724434767231364">Nombre de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Si se establece la configuración regional de la aplicación en <ph name="PRODUCT_NAME" />, los usuarios no podrán cambiarla. Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> usará aquella que se especificó. Si la configuración regional no es compatible, se usará "en-US" en su lugar. Si esta opción se inhabilita o no se configura, <ph name="PRODUCT_NAME" /> usará la configuración regional preferida que haya especificado el usuario (si está configurada), la configuración regional del sistema o la configuración regional alternativa "en-US".</translation>

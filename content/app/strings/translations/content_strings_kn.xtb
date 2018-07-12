@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">ಮುಂದಿನ ತಿಂಗಳು ತೋರಿಸಿ</translation>
 <translation id="512758898067543763">ಸಾಲಿನ ಶಿರೋನಾಮೆ</translation>
 <translation id="5143125788380636750">ಹಿನ್ನುಡಿ</translation>
-<translation id="5153163864850940242">ಚಿತ್ರದಲ್ಲಿನ ಚಿತ್ರದಲ್ಲಿ ಈ ವೀಡಿಯೊ ಪ್ಲೇ ಆಗುತ್ತಿದೆ</translation>
 <translation id="5164977714490026579">ಮೌಲ್ಯವು <ph name="MINIMUM" /> ಕ್ಕಿಂತಲೂ ಹೆಚ್ಚಾಗಿರಬೇಕು ಅಥವಾ ಸಮನಾಗಿರಬೇಕು.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' ನಂತರದ ಭಾಗವನ್ನು ನಮೂದಿಸಿ. '<ph name="INVALIDADDRESS" />' ಅಪೂರ್ಣವಾಗಿದೆ.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">ಮೀಟರ್</translation>
 <translation id="6166809985690652833">ನಂತರದ</translation>
 <translation id="6213469881011901533">ಪದಕೋಶ</translation>
-<translation id="6310801910862476708">ಚಿತ್ರದಲ್ಲಿನ ಚಿತ್ರದಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="6398862346408813489">ತಿಂಗಳ ಆಯ್ಕೆ ಪ್ಯಾನಲ್ ತೋರಿಸಿ</translation>
 <translation id="6404546809543547843">ಆಡಿಯೊ ಸಮಯ ಸ್ಕ್ರಬ್ಬರ್</translation>
 <translation id="6453774872122745852">ಅಂಗೀಕಾರಗಳು</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">ಮಾಧ್ಯಮ ಡೌನ್‌ಲೋಡ್</translation>
 <translation id="6981594929165378967">ಅಳವಡಿಕೆ</translation>
 <translation id="6989848892321993519">ಈ ಪಠ್ಯವನ್ನು <ph name="MIN_CHARACTERS" /> ಅಥವಾ ಇದಕ್ಕಿಂತಲೂ ಹೆಚ್ಚಿನ ಅಕ್ಷರಗಳಿಗೆ ಉದ್ದಗೊಳಿಸಿ (ನೀವು ಪ್ರಸ್ತುತ 1 ಅಕ್ಷರಗಳನ್ನು ಬಳಸುತ್ತಿರುವಿರಿ).</translation>
+<translation id="7090364526657522309">Linux ಫಾಂಟ್ ಸೇವೆ</translation>
 <translation id="709897737746224366">ದಯವಿಟ್ಟು ವಿನಂತಿಸಿದ ಸ್ವರೂಪವನ್ನು ಹೊಂದಿಸಿ.</translation>
 <translation id="7139483182332611405">ಮುನ್ನುಡಿ</translation>
 <translation id="7223624360433298498">ಕಳೆದುಹೋದ ಸಮಯ</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">ಪರಿವಿಡಿ</translation>
 <translation id="8613126697340063924">ರಿಮೋಟ್ ಪ್ಲೇಬ್ಯಾಕ್ ನಿಯಂತ್ರಿಸಿ</translation>
 <translation id="862370744433916922">ಉಪಶೀರ್ಷಿಕೆ</translation>
-<translation id="8741316211671074806">ಚಿತ್ರದಲ್ಲಿ ಚಿತ್ರ</translation>
 <translation id="8750798805984357768">ದಯವಿಟ್ಟು ಈ ಕೆಳಗಿನ ಆಯ್ಕೆಗಳಲ್ಲಿ ಒಂದನ್ನು ಆರಿಸಿ.</translation>
 <translation id="8785498733064193001">ಪ್ಲೇಬ್ಯಾಕ್ ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="8808573423886751634">ಅಧ್ಯಾಯ</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">ಇತರೆ...</translation>
 <translation id="9138385573473225930">ಎಚ್ಚರಿಕೆ</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> ರಂದು ಪ್ರಾರಂಭವಾಗುತ್ತದೆ</translation>
+<translation id="916607977885256133">ಚಿತ್ರದಲ್ಲಿ ಚಿತ್ರ</translation>
 <translation id="9168329111483466115">ಅಡಿಟಿಪ್ಪಣಿ</translation>
 <translation id="954003015749068518">ಚಿತ್ರದಲ್ಲಿನ ಚಿತ್ರವನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="966787709310836684">ಮೆನು</translation>

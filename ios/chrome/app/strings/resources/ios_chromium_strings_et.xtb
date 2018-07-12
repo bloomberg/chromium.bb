@@ -24,6 +24,7 @@
 <translation id="3805899903892079518">Chromiumil pole juurdepääsu fotodele ega videotele. Lubage iOS-is juurdepääs valikutega Seaded &gt; Privaatsus &gt; Fotod.</translation>
 <translation id="4024541897090868497">Kõikidesse seadmetesse vahelehtede hankimiseks logige Chromiumi sisse.</translation>
 <translation id="4241912885070669028">Logite välja kontolt, mida haldab <ph name="SIGNOUT_MANAGED_DOMAIN" />. Selle tulemusel kustutatakse seadmes olevad Chromiumi andmed, kuid need jäävad alles teie Google'i kontole.</translation>
+<translation id="4272892696084633551">Aidake täiustada Chromiumi funktsioone ja toimivust</translation>
 <translation id="4555020257205549924">Kui see funktsioon on sisse lülitatud, pakub Chromium võimalust tõlkida teistes keeltes kirjutatud lehti Google'i tõlke abil. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Siin kuvatakse teie teistes seadmetes Chromiumis avatud vahelehed.</translation>
 <translation id="495292094137889840">Chromiumi QR-skanneri kasutamise alustamine</translation>
@@ -33,6 +34,7 @@
 <translation id="5945387852661427312">Logite sisse kontoga, mida haldab <ph name="DOMAIN" />, ja annate selle administraatorile üle Chromiumi andmete juhtimise. Teie andmed seotakse jäädavalt selle kontoga. Chromiumist väljalogimisel kustutatakse teie andmed sellest seadmest, kuid need jäävad alles teie Google'i kontole.</translation>
 <translation id="6068866989048414399">Chromiumi teenusetingimused</translation>
 <translation id="6268381023930128611">Kas logida Chromiumist välja?</translation>
+<translation id="641451971369018375">Antakse Google'ile tagasisidet, et sirvimist ja Chromiumi paremaks muuta</translation>
 <translation id="6424492062988593837">Chromium muutus just veelgi paremaks! Saadaval on uus versioon.</translation>
 <translation id="6604711459180487467">Täiustage Chromiumis oma kasutuskogemust asukohateabe abil.</translation>
 <translation id="6626296268883197964">Seda rakendust kasutades nõustute Chromiumi <ph name="BEGIN_LINK_TOS" />teenusetingimuste<ph name="END_LINK_TOS" /> ja <ph name="BEGIN_LINK_PRIVACY" />privaatsusteatisega<ph name="END_LINK_PRIVACY" />.</translation>

@@ -223,12 +223,6 @@
       Den här policyn ska ställas in på en webbadress som <ph name="PRODUCT_OS_NAME" /> kan ladda ned användarvillkoren från. Användarvillkoren måste vara oformaterad text av MIME-typ. Ingen kod får användas.</translation>
 <translation id="1750315445671978749">Blockera alla nedladdningar</translation>
 <translation id="1781356041596378058">Den här principen styr även tillgången till Androids utvecklaralternativ. Om principen är inställd på sant kan användarna inte öppna utvecklaralternativen. Om principen är inställd på falskt eller lämnas utan inställning kan användarna öppna utvecklaralternativen genom att trycka sju gånger på versionsnumret i appen Inställningar i Android.</translation>
-<translation id="178832255504524723">Konfigurera webbadressen för att byta lösenord (endast HTTP och HTTPS). Om användarna har utsatts för nätfiske skickas de till den här webbadressen av tjänsten för lösenordsskydd så att de kan byta lösenord.
-      Se till att sidan för att byta lösenord följer riktlinjerna på https://www.chromium.org/developers/design-documents/create-amazing-password-forms så att <ph name="PRODUCT_NAME" /> kan registrera lösenordssignaturer korrekt.
-
-      Om inställningen är aktiverad skickas användarna till den här webbadressen där de får byta lösenord om de har utsatts för nätfiske.
-      Om inställningen är inaktiverad eller har lämnats utan inställning skickas användarna till https://myaccounts.google.com där de får byta lösenord.
-      Principen är inte tillgänglig på Windows-instanser som inte har fogats till en <ph name="MS_AD_NAME" />-domän.</translation>
 <translation id="1797233582739332495">Visa användaren ett återkommande meddelande om att omstart krävs</translation>
 <translation id="1803646570632580723">Lista över fasta appar som ska visas i startfönstret</translation>
 <translation id="1808715480127969042">Blockera cookies på dessa webbplatser</translation>
@@ -1429,14 +1423,6 @@
 <translation id="4980635395568992380">Datatyp:</translation>
 <translation id="4983201894483989687">Tillåt att föråldrade plugin-program körs</translation>
 <translation id="4988291787868618635">Åtgärd som ska vidtas när inaktivitetstiden har gått</translation>
-<translation id="4990301296093321860">Låter dig styra vad som ska utlösa en varning från lösenordsskyddet. Lösenordsskyddet varnar användarna om de återanvänder ett skyddat lösenord på en webbplats som kan vara misstänkt.
-
-      Du kan konfigurera vilket lösenord som ska skyddas med principerna PasswordProtectionLoginURLs och PasswordProtectionChangePasswordURL.
-
-      När principen är inställd på PasswordProtectionWarningOff visas inga varningar.
-      När principen är inställd på PasswordProtectionWarningOnPasswordReuse visas en varning om användaren återanvänder sitt skyddade lösenord på en webbplats som inte står med på vitlistan.
-      När principen är inställd på PasswordProtectionWarningOnPhishingReuse visas en varning om användaren återanvänder sitt skyddade lösenord på en webbplats som används för nätfiske.
-      Om principen har lämnats utan inställning utlöses en varning när användaren återanvänder sitt skyddade lösenord på en webbplats som används för nätfiske, men användaren kan ändra inställningen.</translation>
 <translation id="4995548127349206948">Om autentisering med NTLMv2 har aktiverats eller inte</translation>
 <translation id="5047604665028708335">Tillåt åtkomst till webbplatser utanför innehållspaket</translation>
 <translation id="5052081091120171147">Om den här policyn är aktiverad gör den att webbhistoriken måste importeras från den nuvarande standardwebbläsaren. Den påverkar då även importfönstret.
@@ -1974,13 +1960,6 @@
 
       Om den här principen inte ställs in eller om listan är tom är alla scheman tillgängliga i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Inställningar för lokalt hanterade användare</translation>
-<translation id="6654559957643809067">Policyn aktiverar nätverksförslag i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
-
-      Detta styr DNS-förhämtning, TCP- och SSL-föranslutning och förrendering av webbsidor.
-
-      Om du ställer in den här inställningen på ”alltid”, ”aldrig” eller ”endast Wi-Fi” kan inte användare ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME" />.
-
-      Om policyn inte ställs in aktiveras nätverksförslag, men användaren kan då ändra det.</translation>
 <translation id="6658245400435704251">Anger hur många sekunder en nedladdning av en uppdatering via en enhet får försenas slumpmässigt från den tidpunkt då uppdateringen först skickades till servern. Enheten kan hållas i vänteläge dels under en vanlig tidsperiod, dels beroende på antalet uppdateringskontroller. Spridningen är alltid bunden till en övre tidsgräns så att en enhet aldrig fastnar för gott medan en uppdatering håller på att laddas ned.</translation>
 <translation id="6665670272107384733">Ställ in hur ofta användaren måste ange lösenord för att kunna använda snabb upplåsning</translation>
 <translation id="6681229465468164801">Låter dig ange med hjälp av en lista med webbadressmönster vilka webbplatser som inte får begära åtkomstbehörighet till en USB-enhet.

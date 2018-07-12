@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">掃描 QR 圖碼</translation>
 <translation id="1580783302095112590">已傳送郵件。</translation>
 <translation id="1582732959743469162">目前所有下載進度都會因此停止。</translation>
+<translation id="1605658421715042784">複製圖片</translation>
 <translation id="1612730193129642006">顯示分頁方格</translation>
 <translation id="1644574205037202324">歷史記錄</translation>
 <translation id="1646446875146297738">啟用「不追蹤」選項後，您的瀏覽流量會置入一項特定的要求，其作用則視網站是否回應要求，以及網站解讀要求的方式而定。
@@ -58,6 +59,7 @@
 <translation id="1809939268435598390">刪除資料夾</translation>
 <translation id="1813414402673211292">清除瀏覽資料</translation>
 <translation id="1820259098641718022">已加入閱讀清單</translation>
+<translation id="1821253160463689938">使用 Cookie 記住你的偏好設定 (即使你沒有造訪這些網頁)</translation>
 <translation id="1876721852596493031">傳送使用情況資料</translation>
 <translation id="1886928167269928266">不限時間</translation>
 <translation id="1911619930368729126">上傳至 Google 雲端硬碟</translation>
@@ -71,6 +73,7 @@
 <translation id="209018056901015185">切換為電腦版網站</translation>
 <translation id="2103075008456228677">開啟 history.google.com</translation>
 <translation id="2116625576999540962">已移動 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
+<translation id="2120297377148151361">活動與互動行為</translation>
 <translation id="213900355088104901">如要進行私密瀏覽，請開啟無痕式分頁</translation>
 <translation id="2149973817440762519">編輯書籤</translation>
 <translation id="2230173723195178503">已載入網頁</translation>
@@ -86,6 +89,7 @@
 <translation id="2386793615875593361">已選取 1 張</translation>
 <translation id="2435457462613246316">顯示密碼</translation>
 <translation id="2481538920734869610">新增帳戶</translation>
+<translation id="2523184218357549926">將你造訪的網頁網址傳送給 Google</translation>
 <translation id="2523363575747517183">這個網站不斷嘗試開啟其他應用程式。</translation>
 <translation id="2529021024822217800">全部開啟</translation>
 <translation id="2572712655377361602">裝置政策禁止您存取相片</translation>
@@ -115,6 +119,7 @@
 <translation id="2898963176829412617">新資料夾…</translation>
 <translation id="2903493209154104877">地址</translation>
 <translation id="2909437209446960244">最近開啟的分頁</translation>
+<translation id="2916171785467530738">自動完成搜尋字詞與網址</translation>
 <translation id="291754862089661335">將這個方框對準 QR 圖碼或條碼</translation>
 <translation id="2921219216347069551">無法分享網頁</translation>
 <translation id="2923448633003185837">貼上並前往</translation>
@@ -219,10 +224,12 @@
 <translation id="4860895144060829044">撥號</translation>
 <translation id="4875622588773761625">您要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 更新您在這個網站設定的密碼嗎？</translation>
 <translation id="4881695831933465202">開啟</translation>
+<translation id="4882831918239250449">控制 Google 使用瀏覽記錄提供個人化搜尋服務、廣告和其他內容的方式</translation>
 <translation id="4904877109095351937">標示為已讀取</translation>
 <translation id="4930268273022498155">刪除現有資料。你可以切換回 <ph name="USER_EMAIL1" />，重新取得現有資料。</translation>
 <translation id="4941089862236492464">很抱歉，分享您的項目時發生問題。</translation>
 <translation id="4979397965658815378">只要使用 Google 帳戶登入，您就可以在所有裝置上存取自己的書籤、密碼、歷史記錄和其他設定。</translation>
+<translation id="5004416275253351869">Google 活動控制項</translation>
 <translation id="5005498671520578047">複製密碼</translation>
 <translation id="5010803260590204777">透過新開啟的無痕式分頁以私密模式瀏覽網頁。</translation>
 <translation id="5011684439661633295"><ph name="FULL_ACCOUNT_NAME" />，您好：</translation>
@@ -249,6 +256,7 @@
 <translation id="5548760955356983418">有了 Handoff，您使用這個裝置開始瀏覽網站後，可輕鬆改用 Mac 繼續瀏覽。目前開啟的網站會自動顯示在 Mac 的 Dock 中。
 
 此外，您必須在 [設定] 的「一般設定」部分中啟用 Handoff，且您的裝置必須使用同一個 iCloud 帳戶。</translation>
+<translation id="5554368826343982379">同步處理和個人化</translation>
 <translation id="5556459405103347317">重新載入</translation>
 <translation id="5619279135193775234">郵件</translation>
 <translation id="5626245204502895507">目前無法下載這個檔案。</translation>
@@ -340,6 +348,7 @@
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="7004499039102548441">最近開啟的分頁</translation>
 <translation id="7006788746334555276">內容設定</translation>
+<translation id="7017968314960951695">使用你所造訪網站的內容、瀏覽器活動和瀏覽器互動行為，提供個人化的使用體驗</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7031882061095297553">同步處理</translation>
 <translation id="7053983685419859001">封鎖</translation>
@@ -382,6 +391,7 @@
 <translation id="7769602470925380267">接受並登出</translation>
 <translation id="7772032839648071052">確認通關密語</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
+<translation id="7830720446622801252">非個人化服務</translation>
 <translation id="7856733331829174190">無法下載</translation>
 <translation id="7859704718976024901">瀏覽記錄</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -400,6 +410,7 @@
 <translation id="8076014560081431679">已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">關閉所有分頁</translation>
 <translation id="8114753159095730575">可下載檔案，相關選項位於畫面底部。</translation>
+<translation id="8160722851663543621">將網址列和搜尋框中的搜尋字詞以及部分 Cookie 傳送給你的預設搜尋引擎</translation>
 <translation id="8205564605687841303">取消</translation>
 <translation id="8225985093977202398">快取圖片和檔案</translation>
 <translation id="8261506727792406068">刪除</translation>
@@ -410,6 +421,7 @@
 <translation id="842017693807136194">目前登入身分</translation>
 <translation id="8428045167754449968">鄉/鎮/市/區</translation>
 <translation id="8428213095426709021">設定</translation>
+<translation id="8438566539970814960">改善搜尋和瀏覽體驗</translation>
 <translation id="8458397775385147834">已刪除 1 個項目</translation>
 <translation id="8487700953926739672">可離線使用</translation>
 <translation id="8503813439785031346">使用者名稱</translation>

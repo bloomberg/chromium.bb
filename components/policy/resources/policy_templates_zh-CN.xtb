@@ -205,12 +205,6 @@
       该政策的值应设置为供 <ph name="PRODUCT_OS_NAME" />下载服务条款的网址。该服务条款必须是纯文本，以 MIME 纯文本形式提供，不允许进行任何标记。</translation>
 <translation id="1750315445671978749">拦截所有下载内容</translation>
 <translation id="1781356041596378058">此政策亦用于控制对 Android 开发者选项的访问。如果此政策设为 true，用户将无法访问开发者选项。如果此政策设为 false 或未设置，用户只需在 Android 的“设置”应用中连续点按 7 次版本号即可访问开发者选项。</translation>
-<translation id="178832255504524723">配置用于更改密码的网址（仅限 HTTP 和 HTTPS 方案）。密码保护服务会在用户遭遇网上诱骗时将用户转到此网址，以便其更改密码。
-      为了使 <ph name="PRODUCT_NAME" /> 能够正确捕获这一用于更改密码的页面中的新密码指纹，请务必确保该页面遵循了 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 上所述的准则。
-
-      如果启用了此设置，密码保护服务就会在用户遭遇网上诱骗时将用户转到此网址，以便其更改密码。
-      如果停用了或未设定此设置，密码保护服务则会将用户转到 https://myaccounts.google.com，以便其更改密码。
-      此政策不适用于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例。</translation>
 <translation id="1797233582739332495">显示要求用户重新启动浏览器的周期性提示</translation>
 <translation id="1803646570632580723">要在启动程序中显示的固定应用的列表</translation>
 <translation id="1808715480127969042">在这些网站上阻止 Cookie</translation>
@@ -665,7 +659,7 @@
           * |UNLOCK| 可解锁根据 time_window_limit 或 time_usage_limit 锁定的用户会话。
           |created_time_millis| 是表示替换值的创建时间的时间戳（采用世界协调时间），由于时间戳无法转换成整数，因此这项参数会以字符串的形式发送。这项参数用于确定是否仍应将相应替换值付诸应用。如果目前有效的时间限制功能（时间用量限制或时段限制）的开始时间晚于替换值的创建时间，系统便不应采取任何行动。另外，如果替换值的创建时间早于有效 time_window_limit 或 time_usage_window 的上次更改时间，系统也不应将该替换值付诸应用。
 
-          系统会发送多个替换值，并会应用最新的有效条目。</translation>
+          可以发送多个替换值，最新的有效条目会得到应用。</translation>
 <translation id="2906874737073861391">AppPack 扩展程序列表</translation>
 <translation id="2907992746861405243">控制用户可以使用 <ph name="BULK_PRINTERS_POLICY" /> 中的哪些打印机。
 
@@ -1339,14 +1333,6 @@
 <translation id="4980635395568992380">数据类型：</translation>
 <translation id="4983201894483989687">允许运行过期的插件</translation>
 <translation id="4988291787868618635">闲置延迟时间已过时执行的操作</translation>
-<translation id="4990301296093321860">可让您控制“密码保护服务警告”功能的触发条件。当用户在可疑的网站上重复使用受保护的密码时，密码保护服务会向用户发出提醒。
-
-      您可以使用“PasswordProtectionLoginURLs”和“PasswordProtectionChangePasswordURL”政策来配置要保护的密码。
-
-      如果此政策设为“PasswordProtectionWarningOff”，则一律不会触发密码保护服务警告。
-      如果此政策设为“PasswordProtectionWarningOnPasswordReuse”，那么每当用户在任何未列入白名单的网站上重复使用受保护的密码时，都会触发密码保护服务警告。
-      如果此政策设为“PasswordProtectionWarningOnPhishingReuse”，那么每当用户在网上诱骗网站上重复使用受保护的密码时，都会触发密码保护服务警告。
-      如果未设置此政策，那么当用户在网上诱骗网站上重复使用受保护的密码时，密码保护服务警告便会被触发，但用户可以更改此设置。</translation>
 <translation id="4995548127349206948">是否启用 NTLMv2 身份验证。</translation>
 <translation id="5047604665028708335">允许访问非内容包内的网站</translation>
 <translation id="5052081091120171147">如果启用此政策，就会强制从当前默认浏览器导入浏览记录，还会影响导入对话框。如果停用此政策，就不会导入浏览记录。如果未设置此政策，系统就会询问用户是否导入浏览记录，或者系统自动进行导入。</translation>
@@ -1839,13 +1825,6 @@
 
       如果未设置此政策或此列表为空，则可在 <ph name="PRODUCT_NAME" /> 中使用所有架构。</translation>
 <translation id="6652197835259177259">本地托管用户设置</translation>
-<translation id="6654559957643809067">在 <ph name="PRODUCT_NAME" /> 中启用网络联想查询功能，并禁止用户更改此设置。
-
-      此政策用于控制 DNS 预提取、TCP 和 SSL 预连接以及网页预呈现。
-
-      如果您将此设置设为“始终”、“一律不”或“仅限 WiFi”，用户将无法在 <ph name="PRODUCT_NAME" /> 中更改或覆盖此设置。
-
-      如果此政策未设置，系统将启用网络联想查询功能，但用户可以自行更改。</translation>
 <translation id="6658245400435704251">指定一个时间（以秒为单位），即从更新首次推送到服务器起设备随机延迟更新下载的最大时间。设备的这一等待时间一部分会按照实际时间计算，而剩下的部分则取决于更新检查的次数。在任何情况下，分配的时间上限都是固定的，因此设备绝不会一直等待下载某个更新。</translation>
 <translation id="6665670272107384733">指定用户必须按什么样的频率输入密码才能使用快速解锁功能</translation>
 <translation id="6681229465468164801">让您能够设置一系列网址格式，以用于指定禁止哪些网站请求用户授权其访问 USB 设备。

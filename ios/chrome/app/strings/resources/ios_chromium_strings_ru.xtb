@@ -24,6 +24,7 @@
 <translation id="3805899903892079518">У Chromium нет доступа к вашим фото и видео. Чтобы предоставить его, нажмите "Настройки &gt; Конфиденциальность &gt; Фотографии".</translation>
 <translation id="4024541897090868497">Чтобы получить доступ к вкладкам на всех ваших устройствах, войдите в Chromium.</translation>
 <translation id="4241912885070669028">Вы выходите из аккаунта, которым управляет администратор домена <ph name="SIGNOUT_MANAGED_DOMAIN" />. Обратите внимание, что данные Chromium будут удалены с устройства, но сохранятся в аккаунте Google.</translation>
+<translation id="4272892696084633551">Помогите нам улучшить производительность Chromium и его функции</translation>
 <translation id="4555020257205549924">Когда эта функция включена, Chrome предлагает перевести страницы с помощью Google Переводчика. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Здесь появятся вкладки, открытые в Chromium на других устройствах.</translation>
 <translation id="495292094137889840">Используйте QR-сканер в Chromium</translation>
@@ -33,6 +34,7 @@
 <translation id="5945387852661427312">Вы входите в аккаунт, которым управляет администратор домена <ph name="DOMAIN" />. Он может контролировать ваши данные Chromium, которые теперь будут связаны с управляемым аккаунтом. При выходе из системы все данные Chromium, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
 <translation id="6068866989048414399">Условия использования Chromium</translation>
 <translation id="6268381023930128611">Выйти из Chromium?</translation>
+<translation id="641451971369018375">Обмен информацией с Google для улучшения работы Chromium</translation>
 <translation id="6424492062988593837">Chromium становится лучше! Доступна новая версия.</translation>
 <translation id="6604711459180487467">Откройте доступ к геоданным, чтобы использовать дополнительные возможности Chromium.</translation>
 <translation id="6626296268883197964">Работая с Chromium, вы принимаете <ph name="BEGIN_LINK_TOS" />Условия использования<ph name="END_LINK_TOS" /> и <ph name="BEGIN_LINK_PRIVACY" />Примечание о конфиденциальности<ph name="END_LINK_PRIVACY" />.</translation>

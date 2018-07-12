@@ -24,6 +24,7 @@
 <translation id="3805899903892079518">„Chromium“ nepasiekia nuotraukų ar vaizdo įr. Įgalinkite prieigą apsil. „iOS“ nustatymai“ &gt; „Privatumas“ &gt; „Nuotraukos“.</translation>
 <translation id="4024541897090868497">Prisijunkite prie „Chromium“, kad pasiektumėte skirtukus visuose įrenginiuose.</translation>
 <translation id="4241912885070669028">Atsijungiate nuo paskyros, kurią valdo <ph name="SIGNOUT_MANAGED_DOMAIN" />. „Chromium“ duomenys bus ištrinti iš šio įrenginio, bet liks „Google“ paskyroje.</translation>
+<translation id="4272892696084633551">Padėti tobulinti „Chromium“ funkcijas ir našumą</translation>
 <translation id="4555020257205549924">Kai ši funkcija bus įjungta, „Chromium“ siūlys versti kitomis kalbomis parašytus puslapius naudojant „Google“ vertėją. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Čia bus rodomi kituose įrenginiuose atidaryti „Chromium“ skirtukai.</translation>
 <translation id="495292094137889840">Pradėkite naudoti „Chromium“ QR skaitytuvą</translation>
@@ -33,6 +34,7 @@
 <translation id="5945387852661427312">Prisijungiate naudodami <ph name="DOMAIN" /> valdomą paskyrą ir suteikiate jos administratoriui galimybę valdyti jūsų „Chromium“ duomenis. Duomenys bus visam laikui susieti su šia paskyra. Atsijungę nuo „Chromium“ ištrinsite duomenis iš šio įrenginio, bet jie ir toliau bus saugomi „Google“ paskyroje.</translation>
 <translation id="6068866989048414399">„Chromium“ pasl. teikimo sąl.</translation>
 <translation id="6268381023930128611">Atsijungti nuo „Chromium“?</translation>
+<translation id="641451971369018375">Palaikomas ryšys su „Google“, siekiant tobulinti naršymą ir „Chromium“</translation>
 <translation id="6424492062988593837">„Chromium“ patobulėjo! Galima nauja versija.</translation>
 <translation id="6604711459180487467">Gaukite geresnių funkcijų naudodami vietove pagrįstą „Chromium“.</translation>
 <translation id="6626296268883197964">Naudodami šią programą sutinkate su „Chromium“ <ph name="BEGIN_LINK_TOS" />paslaugų teikimo sąlygomis<ph name="END_LINK_TOS" /> ir <ph name="BEGIN_LINK_PRIVACY" />privatumo pranešimo<ph name="END_LINK_PRIVACY" /> sąlygomis.</translation>

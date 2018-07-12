@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Показати наступний місяць</translation>
 <translation id="512758898067543763">заголовок рядка</translation>
 <translation id="5143125788380636750">епілог</translation>
-<translation id="5153163864850940242">Це відео відтворюється в режимі "Картинка в картинці"</translation>
 <translation id="5164977714490026579">Значення має бути більшим або дорівнювати <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> Пб</translation>
 <translation id="5307600278924710095">Введіть частину електронної адреси до знака "<ph name="ATSIGN" />". Електронна адреса "<ph name="INVALIDADDRESS" />" неповна.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">вимірювач</translation>
 <translation id="6166809985690652833">післямова</translation>
 <translation id="6213469881011901533">глосарій</translation>
-<translation id="6310801910862476708">Вийти з режиму "Картинка в картинці"</translation>
 <translation id="6398862346408813489">Показати панель вибору місяців</translation>
 <translation id="6404546809543547843">повзунок часу відтворення аудіо</translation>
 <translation id="6453774872122745852">слова подяки</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">завантажити медіафайл</translation>
 <translation id="6981594929165378967">вставлення</translation>
 <translation id="6989848892321993519">У тексті має бути не менше стількох символів: <ph name="MIN_CHARACTERS" />. Наразі ви ввели 1 символ.</translation>
+<translation id="7090364526657522309">Сервіс шрифту Linux</translation>
 <translation id="709897737746224366">Виберіть потрібний формат.</translation>
 <translation id="7139483182332611405">передмова</translation>
 <translation id="7223624360433298498">минуло часу</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">зміст</translation>
 <translation id="8613126697340063924">керувати віддаленим відтворенням</translation>
 <translation id="862370744433916922">підзаголовок</translation>
-<translation id="8741316211671074806">Картинка в картинці</translation>
 <translation id="8750798805984357768">Виберіть один із запропонованих варіантів.</translation>
 <translation id="8785498733064193001">розпочати відтворення</translation>
 <translation id="8808573423886751634">розділ</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">Інші...</translation>
 <translation id="9138385573473225930">сповіщення</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, починається <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Картинка в картинці</translation>
 <translation id="9168329111483466115">виноска</translation>
 <translation id="954003015749068518">увімкнути режим "Картинка в картинці"</translation>
 <translation id="966787709310836684">меню</translation>

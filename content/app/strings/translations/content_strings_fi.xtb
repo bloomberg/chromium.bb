@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Näytä seuraava kuukausi</translation>
 <translation id="512758898067543763">rivin otsikko</translation>
 <translation id="5143125788380636750">epilogi</translation>
-<translation id="5153163864850940242">Video toistetaan Kuva kuvassa ‑tilassa</translation>
 <translation id="5164977714490026579">Arvon tulee olla suurempi tai yhtä suuri kuin <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> Pt</translation>
 <translation id="5307600278924710095">Lisää <ph name="ATSIGN" />-osaa ennen tuleva osa. <ph name="INVALIDADDRESS" /> on puutteellinen.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">mittari</translation>
 <translation id="6166809985690652833">jälkipuhe</translation>
 <translation id="6213469881011901533">sanasto</translation>
-<translation id="6310801910862476708">Sulje kuva kuvassa ‑tila</translation>
 <translation id="6398862346408813489">Näytä kuukaudenvalintapaneeli</translation>
 <translation id="6404546809543547843">äänen ajan liukusäädin</translation>
 <translation id="6453774872122745852">kiitokset</translation>
@@ -220,7 +218,6 @@
 <translation id="860475260694818407">sisällysluettelo</translation>
 <translation id="8613126697340063924">hallinnoi etätoistoa</translation>
 <translation id="862370744433916922">alaotsikko</translation>
-<translation id="8741316211671074806">Kuva kuvassa</translation>
 <translation id="8750798805984357768">Valitse yksi vaihtoehdoista.</translation>
 <translation id="8785498733064193001">aloita toisto</translation>
 <translation id="8808573423886751634">luku</translation>
@@ -238,6 +235,7 @@
 <translation id="9132465097189459683">Muu...</translation>
 <translation id="9138385573473225930">ilmoitus</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, alkupäivä: <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Kuva kuvassa</translation>
 <translation id="9168329111483466115">alaviite</translation>
 <translation id="954003015749068518">avaa kuva kuvassa ‑tila</translation>
 <translation id="966787709310836684">valikko</translation>

@@ -209,12 +209,6 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
       Sera itawekwa kwenye URL ambapo <ph name="PRODUCT_OS_NAME" /> inaweza kupakua Sheria na masharti. Lazima Sheria na Masharti yawe maandishi matupu, yawe kama maandishi ya kuandika/matupu ya MIME. Markup hairuhusiwi.</translation>
 <translation id="1750315445671978749">Zuia vipakuliwa vyote</translation>
 <translation id="1781356041596378058">Sera hii pia inadhibiti idhini ya kufikia Chaguo za Wasanidi Programu wa Android. Ukiweka sera hii kuwa ndivyo, watumiaji hawataweza kufikia Chaguo za Wasanidi Programu. Ukiweka sera hii kuwa sivyo au uiache bila kuiweka, watumiaji wataweza kufikia Chaguo za Wasanidi Programu kwa kugonga mara saba kwenye nambari ya muundo katika programu ya mipangilio ya Android.</translation>
-<translation id="178832255504524723">Weka URL ya kubadilisha nenosiri (mifumo ya HTTP na HTTPS pekee). Huduma ya ulinzi wa manenosiri itawaelekeza watumiaji kwenye URL hii ili wabadilishe manenosiri yao iwapo yameibwa.
-      Ili <ph name="PRODUCT_NAME" /> irekodi alama bainifu mpya kwa usahihi kwenye ukurasa huu wa kubadilisha nenosiri, tafadhali hakikisha kuwa ukurasa wako wa kubadilisha nenosiri unafuata mwongozo ulio kwenye https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Kama mipangilio hii imewashwa, basi huduma ya ulinzi wa manenosiri itawaelekeza watumiaji kwenye URL hii ili wabadilishe manenosiri yao iwapo yameibwa.
-      Ikiwa mipangilio hii imezimwa au haijawekwa, basi huduma ya ulinzi wa manenosiri itawaelekeza watumiaji kwenye https://myaccounts.google.com ili wabadilishe manenosiri yao.
-      Sera hii haipatikani kwenye matukio ya Windows ambayo hayajaunganishwa na kikoa cha <ph name="MS_AD_NAME" />.</translation>
 <translation id="1797233582739332495">Mwonyeshe mtumiaji kidokezo kinachojirudia, kinachoashiria kwamba anatakiwa afungue kivinjari upya</translation>
 <translation id="1803646570632580723">Orodha ya programu zilizobanwa ili kuonekana kwenye kizunduzi</translation>
 <translation id="1808715480127969042">Zuia vidakuzi katika tovuti hizi</translation>
@@ -1402,14 +1396,6 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
 <translation id="4980635395568992380">Aina ya data:</translation>
 <translation id="4983201894483989687">Ruhusu kuendesha programu jalizi ambazo zimepitwa na wakati.</translation>
 <translation id="4988291787868618635">Hatua ya kuchukua wakati ucheleweshaji wa kutokuwa na shughuli unapofikiwa</translation>
-<translation id="4990301296093321860">Hukuruhusu udhibiti uwekaji wa onyo la ulinzi wa nenosiri. Ulinzi wa nenosiri huarifu watumiaji wanapotumia tena nenosiri lao lililolindwa kwenye tovuti ambazo huenda haziaminiki.
-
-      Unaweza kutumia sera za 'PasswordProtectionLoginURLs' na 'PasswordProtectionChangePasswordURL' kubaini nenosiri utakalolinda.
-
-      Iwapo sera hii imewekwa kuwa 'PasswordProtectionWarningOff', hakuna onyo lolote la ulinzi wa nenosiri litakaloonyeshwa.
-      Iwapo sera hii imewekwa kuwa 'PasswordProtectionWarningOnPasswordReuse', onyo la nenosiri litaonyeshwa wakati watumiaji watatumia tena nenosiri linalolindwa kwenye tovuti ambazo hazijaruhusiwa.
-      Iwapo sera imewekwa kuwa 'PasswordProtectionWarningOnPhishingReuse', onyo la ulinzi wa nenosiri litaonyeshwa wakati mtumiaji atatumia tena nenosiri linalolindwa kwenye tovuti inayoiba data.
-      Ikiwa sera hii haijawekwa, onyo la ulinzi wa nenosiri litaonyeshwa wakati mtumiaji atatumia tena nenosiri linalolindwa kwenye tovuti inayoiba data lakini mtumiaji ataweza kubadilisha mipangilio hii.</translation>
 <translation id="4995548127349206948">Ikiwa uthibishaji wa NTLMv2 umewashwa.</translation>
 <translation id="5047604665028708335">Ruhusu ufikiaji wa tovuti zilizo nje ya vifurushi vya maudhui</translation>
 <translation id="5052081091120171147">Sera hii inalazimisha historia ya kuvinjari kuletwa kutoka kwenye kivinjari chaguomsingi cha sasa ikiwa imewezeshwa. Ikiwa imewezeshwa, sera hii pia inaathiri kidadisi cha kuleta.
@@ -1937,13 +1923,6 @@ Huzima itifaki za miradi iliyoorodheshwa katika <ph name="PRODUCT_NAME" /> .
 URL zinazotumia miradi kutoka orodha hii hazitapakia na haziwezi kutembelewa. 
 Iwapo sera hii haitawekwa au orodha ni tupu miradi yote itapatikana katika <ph name="PRODUCT_NAME" /> .</translation>
 <translation id="6652197835259177259">Mipangilio ya watumiaji inayodhibitiwa kwa ndani</translation>
-<translation id="6654559957643809067">Inawezesha ubashiri wa mtandao katika <ph name="PRODUCT_NAME" /> na kuzuia watumiaji kubadilisha mipangilio hii.
-
-      Hii hudhibiti kuleta DNS, uunganishaji na uonyeshaji awali wa kurasa za wavuti za TCP na SSL.
-
-      Ukiweka mapendeleo haya kuwa 'kila wakati', 'kamwe', au 'WiFi pekee', watumiaji hawawezi kubadilisha au kufuta mipangilio hii katika <ph name="PRODUCT_NAME" />.
-
-      Ikiwa sera hii itaachwa bila kuwekwa, kipengee cha ubashiri wa mtandao kitawashwa lakini mtumiaji ataweza kukibadilisha.</translation>
 <translation id="6658245400435704251">Inabainisha idadi ya sekunde ambazo kifaa kinaweza kuamua kuchelewesha upakuaji wake wa sasisho kutoka wakati ambapo usasishaji ulisukumwa kwanza nje katika seva. Kifaa kinaweza kusubiri kijisehemu cha muda huu kwa hali ya muda wa saa na kijisehemu kinachosalia katika hali ya idadi ya ukaguzi wa visasisho. Katika hali yoyote, utawanyishaji umekitwa katika kiwango cha kudumu cha muda ili kifaa kisikwame tena kikisubiri kupakua sasisho kwa muda mrefu.</translation>
 <translation id="6665670272107384733">Weka mara ambazo mtumiaji anatakiwa kuweka nenosiri ili atumie kipengele cha kufungua haraka.</translation>
 <translation id="6681229465468164801">Hukuruhusu uweke orodha ya ruwaza za url ambayo inabainisha tovuti zinazozuiliwa ili zisimuulize mtumiaji atoe ruhusa ya kufikia kifaa cha USB.
@@ -1994,7 +1973,7 @@ Iwapo sera hii haitawekwa au orodha ni tupu miradi yote itapatikana katika <ph n
 <translation id="6810445994095397827">Zuia JavaScript kwenye tovuti hizi</translation>
 <translation id="681446116407619279">Mipango inayohimiliwa ya uthibitishaji</translation>
 <translation id="6832455357698286434">
-      Sera hii inabainisha orodha ya vyanzo (URL) au mitindo ya majina ya seva pangishi ( kama vile "*.example.com") izingatiwe kuwa muktadha salama. Nia yake ni kuruhusu mashirika yaweke seva ya majaribio kwa ajili ya usanidi wa tovuti za ndani, ili wasanidi programu waweze kujaribu vipengele wakitumia muktadha salama bila kutumia TLS kwenye seva ya majaribio.
+      Sera hii inabainisha orodha ya vyanzo (URL) au mitindo ya majina ya seva pangishi ( kama vile "*.example.com") ya kuzingatiwa kuwa muktadha salama. Nia yake ni kuruhusu mashirika yaweke seva ya majaribio kwa ajili ya usanidi wa tovuti za ndani, ili wasanidi programu waweze kujaribu vipengele wakitumia muktadha salama bila kutumia TLS kwenye seva ya majaribio.
       Hatua ya kuweka orodha ya URL katika sera hii ina athari sawa na kuweka mipangilio ya ripoti ya mstari wa amri '--unsafely-treat-insecure-origin-as-secure' kwenye orodha inayotenganishwa kwa koma ya URL sawa. Iwapo sera imewekwa, itabatilisha ripoti ya mstari wa amri.
       Kwa maelezo zaidi kuhusu muktadha salama, angalia https://www.w3.org/TR/secure-contexts/
       </translation>

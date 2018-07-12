@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">पुढील महिना दर्शवा</translation>
 <translation id="512758898067543763">पंक्ती शीर्षलेख</translation>
 <translation id="5143125788380636750">उपसंहार</translation>
-<translation id="5153163864850940242">हा व्हिडिओ पिक्चर-इन-पिक्चर मध्ये सुरू आहे</translation>
 <translation id="5164977714490026579">मूल्य <ph name="MINIMUM" /> पेक्षा मोठे किंवा समान असावे.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">कृपया '<ph name="ATSIGN" />' मागुन येणारा भाग एंटर करा. '<ph name="INVALIDADDRESS" />' अपूर्ण आहे.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">मीटर</translation>
 <translation id="6166809985690652833">अंतिम शब्द</translation>
 <translation id="6213469881011901533">शब्दावली</translation>
-<translation id="6310801910862476708">चित्रात-चित्र मधून बाहेर पडा</translation>
 <translation id="6398862346408813489">महिना निवड पॅनेल दर्शवा</translation>
 <translation id="6404546809543547843">ऑडिओ वेळ स्क्रबर</translation>
 <translation id="6453774872122745852">श्रेयनिर्देश</translation>
@@ -220,7 +218,6 @@
 <translation id="860475260694818407">अनुक्रमणिका</translation>
 <translation id="8613126697340063924">दूरस्थ प्लेबॅक नियंत्रित करा</translation>
 <translation id="862370744433916922">उपशीर्षक</translation>
-<translation id="8741316211671074806">चित्रात-चित्र</translation>
 <translation id="8750798805984357768">कृपया या पर्यायांपैकी एक निवडा.</translation>
 <translation id="8785498733064193001">प्लेबॅक आरंभ करा</translation>
 <translation id="8808573423886751634">प्रकरण</translation>
@@ -238,6 +235,7 @@
 <translation id="9132465097189459683">अन्य...</translation>
 <translation id="9138385573473225930">सूचना</translation>
 <translation id="9155987714137265666"><ph name="WEEK_START_DATE" /> रोजी प्रारंभ होणारा, <ph name="WEEK" /></translation>
+<translation id="916607977885256133">चित्रात-चित्र</translation>
 <translation id="9168329111483466115">तळटीप</translation>
 <translation id="954003015749068518">चित्रात-चित्र एंटर करा</translation>
 <translation id="966787709310836684">मेनू</translation>

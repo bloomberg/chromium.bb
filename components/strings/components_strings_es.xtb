@@ -332,6 +332,7 @@
 <translation id="3234666976984236645">Detectar siempre contenido importante en este sitio</translation>
 <translation id="3254409185687681395">Añadir esta página a marcadores</translation>
 <translation id="3270847123878663523">&amp;Deshacer reorganización</translation>
+<translation id="3280511504953918101">Este nombre se usará también para crear tu cuenta de pagos de Google.</translation>
 <translation id="3282497668470633863">Añadir un nombre de la tarjeta</translation>
 <translation id="3287510313208355388">Descargar cuando haya conexión</translation>
 <translation id="3293642807462928945">Más información sobre la política <ph name="POLICY_NAME" /></translation>
@@ -803,6 +804,7 @@
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="6839929833149231406">Área</translation>
 <translation id="6852204201400771460">¿Quieres volver a cargar la aplicación?</translation>
+<translation id="6865412394715372076">No se puede verificar la tarjeta en este momento.</translation>
 <translation id="6874604403660855544">&amp;Rehacer acción de añadir</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">No se admite el nivel de la política.</translation>
@@ -1049,6 +1051,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, respuesta: <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Tu conexión a <ph name="DOMAIN" /> no está cifrada.</translation>
 <translation id="8718314106902482036">El pago no se ha completado</translation>
+<translation id="8719263113926255150">Sugerencia de búsqueda: <ph name="ENTITY" />, <ph name="DESCRIPTION" /></translation>
 <translation id="8725066075913043281">Volver a intentarlo</translation>
 <translation id="8728672262656704056">Has iniciado una sesión de incógnito</translation>
 <translation id="8730621377337864115">Listo</translation>

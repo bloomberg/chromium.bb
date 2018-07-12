@@ -210,12 +210,6 @@ Se questa norma non viene impostata, i Termini di servizio non verranno visualiz
 Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME" /> possa scaricare i Termini di servizio. I Termini di servizio devono essere in testo normale e pubblicati come testo di tipo MIME/semplice. Il markup non è consentito.</translation>
 <translation id="1750315445671978749">Blocca tutti i download</translation>
 <translation id="1781356041596378058">Questa norma controlla anche l'accesso alle Opzioni sviluppatore di Android. Se la norma viene impostata su true, gli utenti non possono accedere alle Opzioni sviluppatore. Se la norma viene impostata su false o non viene impostata, gli utenti possono accedere alle Opzioni sviluppatore toccando sette volte il numero di build nell'app Impostazioni di Android.</translation>
-<translation id="178832255504524723">Configura l'URL di modifica della password (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password indirizzerà gli utenti a questo URL per modificare le password, se queste sono state oggetto di phishing.
-      Affinché <ph name="PRODUCT_NAME" /> possa acquisire correttamente l'impronta digitale della nuova password in questa pagina di modifica della password, assicurati che la pagina di modifica della password che stai utilizzando rispetti le linee guida all'indirizzo https://www.chromium.org/developers/designdocuments/create-amazing-password-forms.
-
-      Se questa impostazione è attiva, il servizio di protezione tramite password indirizza gli utenti a questo URL per modificare le password, se queste sono state oggetto di phishing.
-      Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password indirizzerà gli utenti alla pagina https://myaccounts.google.com per modificare la password.
-      Questa norma non è disponibile su istanze Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="1797233582739332495">Mostra un messaggio ricorrente all'utente in cui indica che è necessario un riavvio</translation>
 <translation id="1803646570632580723">Elenco di applicazioni bloccate da visualizzare in Avvio applicazioni</translation>
 <translation id="1808715480127969042">Blocca cookie su questi siti</translation>
@@ -669,15 +663,15 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2899002520262095963">Le app Android possono utilizzare le configurazioni di rete e i certificati CA impostati tramite questa norma ma non hanno accesso ad alcune opzioni di configurazione.</translation>
 <translation id="290002216614278247">Questa norma consente di bloccare la sessione dell'utente in base al tempo del client o alla quota di utilizzo del giorno.
 
-          |time_window_limit| consente di specificare un periodo giornaliero in cui la sessione dell'utente deve essere bloccata. Supportiamo solo una regola per ogni giorno della settimana, quindi la matrice |entries| potrebbe variare da 0 a 7. |starts_at| ed |ends_at| corrispondono all'inizio e alla fine del limite del periodo. Quando |ends_at| è inferiore a |starts_at| significa che il periodo |time_limit_window| termina il giorno successivo. |last_updated_millis| è il timestamp UTC relativo all'ultimo aggiornamento della voce in questione, che viene inviato sotto forma di stringa perché non si adatta a un numero intero.
+          |time_window_limit| consente di specificare un periodo giornaliero in cui la sessione dell'utente deve essere bloccata. Supportiamo solo una regola per ogni giorno della settimana, quindi la matrice |entries| potrebbe variare da 0 a 7. |starts_at| e |ends_at| corrispondono all'inizio e alla fine del limite del periodo. Quando |ends_at| è inferiore a |starts_at| significa che il periodo |time_limit_window| termina il giorno successivo. |last_updated_millis| è il timestamp UTC relativo all'ultimo aggiornamento della voce in questione, che viene inviato sotto forma di stringa perché non si adatta a un numero intero.
 
-          |time_usage_limit| consente di specificare una quota giornaliera di utilizzo dello schermo che, una volta raggiunta, blocca la sessione dell'utente. Esiste una proprietà per ogni giorno della settimana, che dovrebbe essere impostata solo se esiste una quota attiva per il giorno in questione. |usage_quota_mins| indica per quanto tempo è possibile usare il dispositivo gestito nell'arco di una giornata, mentre |reset_at| indica il momento in cui viene rinnovata la quota di utilizzo. Il valore predefinito di |reset_at| è mezzanotte ({"hour": 0, "minute": 0}). |last_updated_millis| è il timestamp UTC relativo all'ultimo aggiornamento della voce in questione, che viene inviato sotto forma di stringa perché non si adatta a un numero intero.
+          |time_usage_limit| consente di specificare una quota giornaliera di utilizzo dello schermo che, una volta raggiunta, blocca la sessione dell'utente. Esiste una proprietà per ogni giorno della settimana, che dovrebbe essere impostata solo se esiste una quota attiva per il giorno in questione. |usage_quota_mins| indica per quanto tempo è possibile usare il dispositivo gestito nell'arco di una giornata, mentre |reset_at| indica il momento in cui viene rinnovata la quota di utilizzo. Il valore predefinito di |reset_at| è mezzanotte ({'hour': 0, 'minute': 0}). |last_updated_millis| è il timestamp UTC relativo all'ultimo aggiornamento della voce in questione, che viene inviato sotto forma di stringa perché non si adatta a un numero intero.
 
           Il valore |overrides| viene fornito per invalidare temporaneamente una o più regole precedenti.
           * Se non sono attivi né time_window_limit né time_usage_limit, è possibile usare |LOCK| per bloccare il dispositivo.
           * |LOCK| consente di bloccare temporaneamente una sessione utente fino all'inizio dei valori time_window_limit o time_usage_limit successivi.
           * |UNLOCK| consente di sbloccare la sessione di un utente bloccata in base a time_window_limit o time_usage_limit.
-          |created_time_millis| è il timestamp UTC per la creazione dell'override che viene inviato sotto forma di stringa perché non si adatta a un numero intero. Viene usato per stabilire se applicare ancora o meno l'override. Se la funzione del limite di tempo attivo corrente (limite di tempo di utilizzo o limite della finestra temporale) è iniziata dopo la creazione dell'override, non dovrebbe essere applicata. Inoltre, se l'override è stato creato prima dell'ultima modifica dei valori time_window_limit o time_usage_window attivi, non dovrebbe essere applicato.
+          |created_time_millis| è il timestamp UTC per la creazione dell'override che viene inviato sotto forma di stringa perché non si adatta a un numero intero. Viene usato per stabilire se applicare ancora l'override o meno. Se la funzione del limite di tempo attivo corrente (limite di tempo di utilizzo o limite della finestra temporale) è iniziata dopo la creazione dell'override, non dovrebbe essere applicata. Inoltre, se l'override è stato creato prima dell'ultima modifica dei valori time_window_limit o time_usage_window attivi, non dovrebbe essere applicato.
 
           È possibile inviare più override; viene applicata la voce valida più recente.</translation>
 <translation id="2906874737073861391">Elenco di estensioni AppPack</translation>
@@ -1351,14 +1345,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4980635395568992380">Tipo di dati:</translation>
 <translation id="4983201894483989687">Consenti esecuzione dei plug-in obsoleti</translation>
 <translation id="4988291787868618635">Azione da compiere a raggiungimento ritardo inattività</translation>
-<translation id="4990301296093321860">Questa norma consente di controllare l'attivazione dell'avviso di protezione tramite password. La protezione tramite password avvisa gli utenti quando riutilizzano le proprie password protette su siti potenzialmente sospetti.
-
-      Puoi usare le norme "PasswordProtectionLoginURLs" e "PasswordProtectionChangePasswordURL" per configurare la password da proteggere.
-
-      Se questa norma viene impostata su "PasswordProtectionWarningOff", non apparirà alcun avviso di protezione tramite password.
-      Se questa norma viene impostata su "PasswordProtectionWarningOnPasswordReuse", l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password protetta su un sito non autorizzato.
-      Se questa norma viene impostata su "PasswordProtectionWarningOnPhishingReuse", l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password protetta su un sito di phishing.
-      Se questa norma non viene impostata, l'avviso di protezione tramite password verrà attivato quando l'utente riutilizza la propria password protetta su un sito di phishing, ma l'utente potrà cambiare questa impostazione.</translation>
 <translation id="4995548127349206948">Se l'autenticazione NTLMv2 è attiva.</translation>
 <translation id="5047604665028708335">Consenti l'accesso ai siti non presenti nei pacchetti di contenuti</translation>
 <translation id="5052081091120171147">Se è attiva, questa norma impone l'importazione della cronologia di navigazione dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, la cronologia di navigazione non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
@@ -1847,13 +1833,6 @@ Gli URL che utilizzano uno schema di questo elenco non verranno caricati e non p
 
 Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile accedere a tutti gli schemi in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Impostazioni degli utenti gestiti localmente</translation>
-<translation id="6654559957643809067">Consente di attivare la previsione di rete in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
-
-      Questa norma consente di controllare il precaricamento DNS, nonché la preconnessione TCP e SSL e il prerendering delle pagine web.
-
-      Se questa preferenza viene impostata su "always", "never" o su "Wi-Fi only" ("sempre", "mai", "solo su Wi-Fi"), gli utenti non potranno modificare o ignorare questa impostazione in <ph name="PRODUCT_NAME" />.
-
-      Se questa norma non viene impostata, la previsione di rete verrà attivata ma l'utente potrà modificarla.</translation>
 <translation id="6658245400435704251">Consente di specificare il numero di secondi massimo per cui un dispositivo può ritardare in modo casuale il download di un suo aggiornamento dal momento della pubblicazione dell'aggiornamento sul server. Il dispositivo può attendere una parte di questo tempo in termini di tempo reale e la parte rimanente in termini di numero di controlli della disponibilità di aggiornamenti. In ogni caso, la dispersione ha un limite massimo pari a un periodo di tempo costante in modo che un dispositivo non si blocchi mai in attesa di scaricare un aggiornamento.</translation>
 <translation id="6665670272107384733">Imposta la frequenza di inserimento della password per poter usare lo sblocco rapido</translation>
 <translation id="6681229465468164801">Consente di impostare un elenco di pattern URL che specificano i siti che non possono richiedere all'utente l'accesso al dispositivo USB.

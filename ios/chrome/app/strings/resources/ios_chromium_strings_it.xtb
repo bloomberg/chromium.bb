@@ -24,6 +24,7 @@
 <translation id="3805899903892079518">Chromium non ha accesso alle tue foto o ai tuoi video. Attiva l'accesso in Impostazioni iOS &gt; Privacy &gt; Foto.</translation>
 <translation id="4024541897090868497">Accedi a Chromium per trovare le tue schede su tutti i dispositivi.</translation>
 <translation id="4241912885070669028">Stai per uscire da un account gestito da <ph name="SIGNOUT_MANAGED_DOMAIN" />. I dati di Chromium verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo account Google.</translation>
+<translation id="4272892696084633551">Contribuisci a migliorare le funzioni e le prestazioni di Chromium</translation>
 <translation id="4555020257205549924">Quando questa funzione è attiva, Chromium si offre di tradurre le pagine scritte in altre lingue utilizzando Google Traduttore. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Le schede aperte in Chromium sugli altri dispositivi verranno visualizzate qui.</translation>
 <translation id="495292094137889840">Inizia a utilizzare lo scanner QR di Chromium</translation>
@@ -33,6 +34,7 @@
 <translation id="5945387852661427312">Stai per eseguire l'accesso con un account gestito da <ph name="DOMAIN" /> e consentire al relativo amministratore di avere il controllo dei tuoi dati di Chromium. I tuoi dati verranno associati definitivamente a questo account. Se esci da Chromium, i dati verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo account Google.</translation>
 <translation id="6068866989048414399">Termini di servizio di Chromium</translation>
 <translation id="6268381023930128611">Uscire da Chromium?</translation>
+<translation id="641451971369018375">Comunica con Google per migliorare Chromium e la navigazione</translation>
 <translation id="6424492062988593837">Chromium è stato migliorato. È disponibile una nuova versione.</translation>
 <translation id="6604711459180487467">Migliora la tua esperienza in Chromium tramite l'accesso alla tua posizione.</translation>
 <translation id="6626296268883197964">Se usi questa applicazione, accetti i <ph name="BEGIN_LINK_TOS" />Termini di servizio<ph name="END_LINK_TOS" /> e l'<ph name="BEGIN_LINK_PRIVACY" />Informativa sulla privacy<ph name="END_LINK_PRIVACY" /> di Chromium.</translation>

@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">Imbas Kod QR</translation>
 <translation id="1580783302095112590">Mel dihantar.</translation>
 <translation id="1582732959743469162">Ini akan menghentikan semua kemajuan bagi muat turun semasa anda.</translation>
+<translation id="1605658421715042784">Salin Imej</translation>
 <translation id="1612730193129642006">Tunjukkan Grid Tab</translation>
 <translation id="1644574205037202324">Sejarah</translation>
 <translation id="1646446875146297738">Mendayakan ‘Jangan Kesan’ bermakna permintaan akan dimasukkan dengan trafik penyemakan imbas anda. Sebarang kesan bergantung pada sama ada tapak web menyambut permintaan tersebut dan cara permintaan tersebut ditafsirkan.
@@ -58,6 +59,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="1809939268435598390">Padam Folder</translation>
 <translation id="1813414402673211292">Kosongkan Data Semakan Imbas</translation>
 <translation id="1820259098641718022">Ditambahkan pada Senarai Bacaan</translation>
+<translation id="1821253160463689938">Menggunakan kuki untuk mengingati pilihan anda, walaupun anda tidak melawati halaman tersebut</translation>
 <translation id="1876721852596493031">Hantar Data Penggunaan</translation>
 <translation id="1886928167269928266">Permulaan Masa</translation>
 <translation id="1911619930368729126">Muat naik ke Google Drive</translation>
@@ -71,6 +73,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="209018056901015185">Minta Tapak Desktop</translation>
 <translation id="2103075008456228677">Buka history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dialihkan</translation>
+<translation id="2120297377148151361">Aktiviti dan interaksi</translation>
 <translation id="213900355088104901">Untuk menyemak imbas secara tertutup, buka tab inkognito</translation>
 <translation id="2149973817440762519">Edit Penanda Halaman</translation>
 <translation id="2230173723195178503">Halaman web dimuatkan</translation>
@@ -86,6 +89,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="2386793615875593361">1 dipilih</translation>
 <translation id="2435457462613246316">Paparkan kata laluan</translation>
 <translation id="2481538920734869610">TAMBAH AKAUN</translation>
+<translation id="2523184218357549926">Menghantar URL halaman yang anda lawati kepada Google</translation>
 <translation id="2523363575747517183">Tapak web ini berulang kali cuba membuka aplikasi lain.</translation>
 <translation id="2529021024822217800">Buka Semua</translation>
 <translation id="2572712655377361602">Dasar peranti menyekat akses ke foto anda</translation>
@@ -115,6 +119,7 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="2898963176829412617">Folder Baharu…</translation>
 <translation id="2903493209154104877">Alamat</translation>
 <translation id="2909437209446960244">Tab Terbaharu</translation>
+<translation id="2916171785467530738">Autolengkap Carian dan URL</translation>
 <translation id="291754862089661335">Letakkan kod QR atau kod bar dalam bingkai ini</translation>
 <translation id="2921219216347069551">Tidak Boleh Berkongsi Halaman</translation>
 <translation id="2923448633003185837">Tampal dan Pergi</translation>
@@ -219,10 +224,12 @@ Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memu
 <translation id="4860895144060829044">Hubungi</translation>
 <translation id="4875622588773761625">Adakah anda ingin <ph name="PASSWORD_MANAGER_BRAND" /> mengemaskinikan kata laluan anda untuk tapak ini?</translation>
 <translation id="4881695831933465202">Buka</translation>
+<translation id="4882831918239250449">Kawal cara sejarah penyemakan imbas anda digunakan untuk memperibadikan Carian, iklan dan pelbagai lagi</translation>
 <translation id="4904877109095351937">Tandakan Dibaca</translation>
 <translation id="4930268273022498155">Padam data sedia ada. Anda boleh mendapatkannya semula dengan beralih semula kepada <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Maaf, terdapat masalah mengongsi item anda.</translation>
 <translation id="4979397965658815378">Log masuk dengan Akaun Google anda untuk mendapatkan penanda halaman, kata laluan, sejarah dan tetapan anda yang lain pada semua peranti anda</translation>
+<translation id="5004416275253351869">Kawalan aktiviti Google</translation>
 <translation id="5005498671520578047">Salin kata laluan</translation>
 <translation id="5010803260590204777">Buka tab inkognito untuk menyemak imbas web secara sulit.</translation>
 <translation id="5011684439661633295">Hai, <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -249,6 +256,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memu
 <translation id="5548760955356983418">Ciri Serah membolehkan anda mula menyemak imbas tapak web pada peranti ini, kemudian meneruskannya pada Mac anda dengan mudah. Tapak web yang dibuka pada masa ini akan muncul dalam Dock Mac anda.
 
 Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda mestilah menggunakan akaun iCloud yang sama.</translation>
+<translation id="5554368826343982379">Penyegerakan dan Pemeribadian</translation>
 <translation id="5556459405103347317">Muat Semula</translation>
 <translation id="5619279135193775234">Mel</translation>
 <translation id="5626245204502895507">Fail tidak boleh dimuat turun pada masa ini.</translation>
@@ -340,6 +348,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Tab Terbaharu</translation>
 <translation id="7006788746334555276">Tetapan Kandungan</translation>
+<translation id="7017968314960951695">Menggunakan kandungan di tapak yang anda lawati dan aktiviti serta interaksi penyemak imbas untuk pemperibadian</translation>
 <translation id="7029809446516969842">Kata laluan</translation>
 <translation id="7031882061095297553">Segerakkan ke</translation>
 <translation id="7053983685419859001">Sekat</translation>
@@ -382,6 +391,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7769602470925380267">Terima dan log keluar</translation>
 <translation id="7772032839648071052">Sahkan frasa laluan</translation>
 <translation id="780301667611848630">Tidak, terima kasih</translation>
+<translation id="7830720446622801252">Perkhidmatan Tidak Diperibadikan</translation>
 <translation id="7856733331829174190">Tidak Dapat Memuat Turun</translation>
 <translation id="7859704718976024901">Sejarah Penyemakan Imbas</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -400,6 +410,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8076014560081431679">Tetapan tapak yang disimpan tidak akan dipadamkan dan mungkin mencerminkan tabiat semak imbas anda. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Tutup Semua Tab</translation>
 <translation id="8114753159095730575">Muat turun fail tersedia. Pilihan tersedia di bahagian bawah skrin.</translation>
+<translation id="8160722851663543621">Menghantar carian daripada bar alamat dan kotak carian serta beberapa kuki ke enjin carian lalai anda</translation>
 <translation id="8205564605687841303">Batal</translation>
 <translation id="8225985093977202398">Imej dan Fail Dicache</translation>
 <translation id="8261506727792406068">Padam</translation>
@@ -410,6 +421,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="842017693807136194">Dilog Masuk dengan</translation>
 <translation id="8428045167754449968">Bandar / Pekan</translation>
 <translation id="8428213095426709021">Tetapan</translation>
+<translation id="8438566539970814960">Mempertingkatkan carian dan penyemakan imbas</translation>
 <translation id="8458397775385147834">1 item dipadamkan</translation>
 <translation id="8487700953926739672">Tersedia di luar talian</translation>
 <translation id="8503813439785031346">Nama pengguna</translation>

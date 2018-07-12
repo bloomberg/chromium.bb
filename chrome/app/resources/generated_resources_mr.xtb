@@ -453,7 +453,6 @@
 <translation id="1657406563541664238">वापर आकडेवारी आणि क्रॅश अहवाल स्वयंचलितपणे Google कडे पाठवून <ph name="PRODUCT_NAME" /> ला अधिक चांगले करण्यास मदत करा</translation>
 <translation id="1658424621194652532">हे पृष्ठ आपल्या मायक्रोफोनवर प्रवेश करत आहे.</translation>
 <translation id="1660204651932907780">साइटना ध्वनी प्ले करण्याची परवानगी द्या (शिफारस केलेले)</translation>
-<translation id="1660938185063657230">तुमची सिक्युरिटी की पडताळून पाहा</translation>
 <translation id="1661156625580498328">AES एंक्रिप्शन लागू करा (शिफारस केलेले).</translation>
 <translation id="1661245713600520330">हे पृष्ठ मुख्य प्रक्रियेत लोड केलेली आणि नंतर लोड करण्यासाठी नोंदविलेली सर्व मॉड्यूल्स सूचीबद्ध करते.</translation>
 <translation id="166179487779922818">पासवर्ड खूप लहान आहे.</translation>
@@ -565,7 +564,6 @@
 <translation id="1818007989243628752"><ph name="USERNAME" /> चा पासवर्ड हटवा</translation>
 <translation id="1819721979226826163">अ‍ॅप सूचना &gt; Google Play सेवा वर टॅप करा.</translation>
 <translation id="1826516787628120939">तपासत आहे</translation>
-<translation id="1827750274519118478">चित्रात-चित्र मोडमधील व्हिडिओ प्ले होणे थांबेल.</translation>
 <translation id="1828378091493947763">हे प्लगिन या डिव्हाइसवर समर्थित नाही</translation>
 <translation id="1828901632669367785">सिस्टम संवाद वापरून प्रिंट करा…</translation>
 <translation id="1829192082282182671">झूम &amp;कमी करा</translation>
@@ -2465,7 +2463,6 @@
 <translation id="4856478137399998590">तुमची मोबाइल सेवा सक्रिय झाली आणि वापरण्यासाठी तयार आहे</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{सर्व गुप्त विंडोमध्ये उघडा}=1{गुप्त विंडोमध्ये उघडा}one{सर्व (#) गुप्त विंडोमध्ये उघडा}other{सर्व (#) गुप्त विंडोमध्ये उघडा}}</translation>
 <translation id="4858913220355269194">फ्रिटझ</translation>
-<translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> - व्हिडिओ चित्रात-चित्र मध्ये प्ले होत आहे</translation>
 <translation id="4862050643946421924">डिव्हाइस जोडणे...</translation>
 <translation id="4862642413395066333">OCSP प्रतिसाद साइन करत आहे</translation>
 <translation id="4863769717153320198"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (डीफॉल्ट) सारखे दिसते</translation>
@@ -4148,7 +4145,6 @@
 <translation id="7427348830195639090">पार्श्वभूमी पृष्ठ: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{सर्व नवीन विंडोमध्ये उघडा}=1{ नवीन विंडोमध्ये उघडा}one{सर्व (#) नवीन विंडोमध्ये उघडा}other{सर्व (#) नवीन विंडोमध्ये उघडा}}</translation>
 <translation id="7434509671034404296">विकसक</translation>
-<translation id="7436470008146509879">तुमच्या <ph name="DEVICE_TYPE" /> वर Linux सेट करा</translation>
 <translation id="7436921188514130341">ओहो! नाव बदलताना एक एरर आली होती.</translation>
 <translation id="7441830548568730290">इतर वापरकर्ते</translation>
 <translation id="7442465037756169001">तुमचे Hangouts Meet hardware सेट अप होण्यासाठी सज्ज आहे.</translation>
@@ -4445,7 +4441,6 @@
 <translation id="7881969471599061635">उपशीर्षके अक्षम करा</translation>
 <translation id="7882358943899516840">प्रदाता प्रकार</translation>
 <translation id="7885253890047913815">अलीकडील गंतव्ये</translation>
-<translation id="7886917304091689118">Chrome मध्ये चालत आहे</translation>
 <translation id="7887334752153342268">डुप्लिकेट</translation>
 <translation id="7887864092952184874">Bluetooth माउस जोडला</translation>
 <translation id="7889565820482017512">डिस्प्ले आकार</translation>
@@ -4616,7 +4611,6 @@
 <translation id="8118860139461251237">आपले डाउनलोड व्यवस्थापित करा</translation>
 <translation id="81238879832906896">पिवळे आणि पांढरे फूल</translation>
 <translation id="8124313775439841391">व्यवस्‍थापित ONC</translation>
-<translation id="8125562866093998907">तुमच्या खात्याच्या अधिक सुरक्षिततेसाठी या साइटला तुमची सिक्युरिटी की पडताळायची आहे.</translation>
 <translation id="813082847718468539">साइटची माहिती पहा</translation>
 <translation id="8131740175452115882">पुष्टी करा</translation>
 <translation id="8133676275609324831">फोल्डरमध्ये &amp;दर्शवा</translation>
@@ -4995,7 +4989,6 @@
 <translation id="8736288397686080465">ही साइट पार्श्वभूमीमध्ये अपडेट केली गेली आहे.</translation>
 <translation id="8737685506611670901"><ph name="REPLACED_HANDLER_TITLE" /> ऐवजी <ph name="PROTOCOL" /> दुवे उघडा</translation>
 <translation id="8737709691285775803">Shill</translation>
-<translation id="8741316211671074806">चित्रात-चित्र</translation>
 <translation id="8743390665131937741">पूर्णस्क्रीन झूम पातळी:</translation>
 <translation id="8743864605301774756">1 तासापूर्वी अपडेट करण्यात आले</translation>
 <translation id="874689135111202667">{0,plural, =1{या साइटवर एक फाइल अपलोड करायची?}one{या साइटवर # फाइल अपलोड करायची?}other{या साइटवर # फायली अपलोड करायच्या?}}</translation>
@@ -5270,6 +5263,7 @@
 <translation id="9158715103698450907">अरेरे! प्रमाणीकरणादरम्यान एक नेटवर्क संवाद प्रस्थापित समस्या आली. कृपया आपले नेटवर्क कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="9161070040817969420">यासाठी सबफ्रेम: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">सिस्टम डेटा पाठवा. आपोआप निदान आणि डिव्हाइस आणि अ‍ॅप वापर डेटा Google ला पाठवा. या डिव्हाइससाठी निदान आणि वापर डेटा Google ला पाठवण्याचे मालक निवडू शकतो. तुम्ही अतिरिक्त वेब आणि अ‍ॅप अॅक्टिव्हिटी चालू केली असल्यास, ही माहिती तुमच्या खात्यात स्टोअर केली जाईल जेणेकरून तुम्ही ती माझी अॅक्टिव्हिटी मध्ये व्यवस्थापित करू शकाल. <ph name="BEGIN_LINK1" />अधिक जाणून घ्या<ph name="END_LINK1" /></translation>
+<translation id="916607977885256133">चित्रात-चित्र</translation>
 <translation id="9169496697824289689">कीबोर्ड शॉर्टकट पहा</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" /> ला होम स्क्रीनवर जोडा</translation>
 <translation id="9170397650136757332">आपल्या फिंगरप्रिंटचे सर्व भिन्न भाग कॅप्चर करण्यासाठी आता आपले बोट किंचित हलवा</translation>
@@ -5320,7 +5314,6 @@
 <translation id="952992212772159698">सक्रिय नाही</translation>
 <translation id="957960681186851048">या साइटने एकाहून अधिक फायली आपोआप डाउनलोड करण्याचा प्रयत्न केला</translation>
 <translation id="9580706199804957">Google सेवांशी कनेक्ट करता आले नाही</translation>
-<translation id="958416628331784386">हा टॅब व्हिडिओ चित्रात-चित्र मध्ये प्ले करत आहे.</translation>
 <translation id="960719561871045870">ऑपरेटर कोड</translation>
 <translation id="960987915827980018">सुमारे 1 तास बाकी</translation>
 <translation id="962802172452141067">फोल्डर ट्री बुकमार्क करा</translation>

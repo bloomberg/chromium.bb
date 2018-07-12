@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">આગલો મહિનો દર્શાવો</translation>
 <translation id="512758898067543763">પંક્તિ હેડર</translation>
 <translation id="5143125788380636750">ઉપસંહાર</translation>
-<translation id="5153163864850940242">આ વીડિઓ ચિત્ર-માં-ચિત્ર મોડમાં ચાલી રહ્યો છે</translation>
 <translation id="5164977714490026579">મૂલ્ય <ph name="MINIMUM" /> જેટલું અથવા આનાથી વધુ હોવું આવશ્યક છે.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">કૃપા કરીને '<ph name="ATSIGN" />' ની આગળનો ભાગ દાખલ કરો. '<ph name="INVALIDADDRESS" />' અપૂર્ણ છે.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">મીટર</translation>
 <translation id="6166809985690652833">સમાપન ભાષણ</translation>
 <translation id="6213469881011901533">શબ્દાવલી</translation>
-<translation id="6310801910862476708">ચિત્ર-માં-ચિત્રમાંથી બહાર નીકળો</translation>
 <translation id="6398862346408813489">મહિના પસંદગી પેનલ દર્શાવો</translation>
 <translation id="6404546809543547843">ઑડિઓ સમય સ્ક્રબર</translation>
 <translation id="6453774872122745852">સ્વીકૃતિઓ</translation>
@@ -220,7 +218,6 @@
 <translation id="860475260694818407">અનુક્રમણિકા</translation>
 <translation id="8613126697340063924">રિમોટ પ્લેબેકનું નિયંત્રણ કરો</translation>
 <translation id="862370744433916922">(સબટાઇટલ)</translation>
-<translation id="8741316211671074806">ચિત્ર-માં-ચિત્ર</translation>
 <translation id="8750798805984357768">કૃપા કરીને આ વિકલ્પોમાંથી કોઈ એક પસંદ કરો.</translation>
 <translation id="8785498733064193001">પ્લેબૅક શરૂ કરો</translation>
 <translation id="8808573423886751634">પ્રકરણ</translation>
@@ -238,6 +235,7 @@
 <translation id="9132465097189459683">અન્ય...</translation>
 <translation id="9138385573473225930">ચેતવણી</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> થી શરૂ કરીને</translation>
+<translation id="916607977885256133">ચિત્ર-માં-ચિત્ર</translation>
 <translation id="9168329111483466115">ફૂટનોટ</translation>
 <translation id="954003015749068518">ચિત્ર-માં-ચિત્રમાં પ્રવેશ કરો</translation>
 <translation id="966787709310836684">મેનૂ</translation>

@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Show next month</translation>
 <translation id="512758898067543763">row header</translation>
 <translation id="5143125788380636750">epilogue</translation>
-<translation id="5153163864850940242">This video is playing in Picture-in-Picture</translation>
 <translation id="5164977714490026579">Value must be greater than or equal to <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Please enter a part followed by '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' is incomplete.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">meter</translation>
 <translation id="6166809985690652833">afterword</translation>
 <translation id="6213469881011901533">glossary</translation>
-<translation id="6310801910862476708">Exit picture-in-picture</translation>
 <translation id="6398862346408813489">Show month selection panel</translation>
 <translation id="6404546809543547843">audio time scrubber</translation>
 <translation id="6453774872122745852">acknowledgements</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">download media</translation>
 <translation id="6981594929165378967">insertion</translation>
 <translation id="6989848892321993519">Please lengthen this text to <ph name="MIN_CHARACTERS" /> characters or more (you are currently using 1 character).</translation>
+<translation id="7090364526657522309">Linux Font Service</translation>
 <translation id="709897737746224366">Please match the format requested.</translation>
 <translation id="7139483182332611405">preface</translation>
 <translation id="7223624360433298498">elapsed time</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">table of contents</translation>
 <translation id="8613126697340063924">control remote playback</translation>
 <translation id="862370744433916922">subtitle</translation>
-<translation id="8741316211671074806">Picture-in-picture</translation>
 <translation id="8750798805984357768">Please select one of these options.</translation>
 <translation id="8785498733064193001">begin playback</translation>
 <translation id="8808573423886751634">chapter</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">Other...</translation>
 <translation id="9138385573473225930">alert</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, starting on <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Picture in Picture</translation>
 <translation id="9168329111483466115">footnote</translation>
 <translation id="954003015749068518">enter picture-in-picture</translation>
 <translation id="966787709310836684">menu</translation>

@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">نمایش ماه بعدی</translation>
 <translation id="512758898067543763">عنوان ردیف</translation>
 <translation id="5143125788380636750">گفتار پایانی</translation>
-<translation id="5153163864850940242">این ویدیو درحال پخش شدن در حالت «تصویر در تصویر» است</translation>
 <translation id="5164977714490026579">مقدار باید بیشتر یا مساوی با <ph name="MINIMUM" /> باشد.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> پتابایت</translation>
 <translation id="5307600278924710095">لطفاً قسمت قبل از «<ph name="ATSIGN" />» را وارد کنید. «<ph name="INVALIDADDRESS" />» ناقص است.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">متر</translation>
 <translation id="6166809985690652833">سخن پایانی</translation>
 <translation id="6213469881011901533">واژه‌نامه</translation>
-<translation id="6310801910862476708">خروج از تصویر در تصویر</translation>
 <translation id="6398862346408813489">نمایش پانل انتخاب ماه</translation>
 <translation id="6404546809543547843">انتخابگر زمان صدا</translation>
 <translation id="6453774872122745852">قدردانی</translation>
@@ -220,7 +218,6 @@
 <translation id="860475260694818407">فهرست مطالب</translation>
 <translation id="8613126697340063924">کنترل بازپخش راه دور</translation>
 <translation id="862370744433916922">زیرنویس</translation>
-<translation id="8741316211671074806">تصویردرتصویر</translation>
 <translation id="8750798805984357768">لطفاً یکی از این گزینه‌ها را انتخاب کنید.</translation>
 <translation id="8785498733064193001">شروع بازپخش</translation>
 <translation id="8808573423886751634">فصل</translation>
@@ -238,6 +235,7 @@
 <translation id="9132465097189459683">موارد دیگر...</translation>
 <translation id="9138385573473225930">هشدار</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />، شروع از <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">تصویر در تصویر</translation>
 <translation id="9168329111483466115">پانویس</translation>
 <translation id="954003015749068518">ورود به تصویر در تصویر</translation>
 <translation id="966787709310836684">منو</translation>

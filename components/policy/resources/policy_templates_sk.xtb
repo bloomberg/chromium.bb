@@ -210,12 +210,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Toto pravidlo byť malo byť nastavené ako webová adresa, z ktorej systém <ph name="PRODUCT_OS_NAME" /> môže Zmluvné podmienky stiahnuť. Zmluvné podmienky musia byť uložené vo formáte čistého textu, zobrazované ako typ MIME „text/plain“. Nie sú povolené žiadne značky.</translation>
 <translation id="1750315445671978749">Blokovať všetky súbory na stiahnutie</translation>
 <translation id="1781356041596378058">Toto pravidlo ovláda aj prístup k nastaveniu Androidu Pre vývojárov. Ak toto pravidlo nastavíte na hodnotu True, používatelia budú môcť pristupovať k nastaveniu Pre vývojárov. Ak toto pravidlo nastavíte na hodnotu False alebo ho ponecháte nenastavené, umožní to používateľom otvoriť nastavenie Pre vývojárov tým, že sedemkrát klepnú na číslo zostavy v aplikácii nastavení Androidu.</translation>
-<translation id="178832255504524723">Nastavuje webovú adresu zmeny hesla (iba schémy HTTP a HTTPS). Služba ochrany hesla odkáže používateľov na túto webovú adresu, aby si tam zmenili heslo v prípade jeho neoprávneného získania inou osobou.
-      Na to, aby <ph name="PRODUCT_NAME" /> správne zaznamenával digitálne odtlačky hesiel, musia stránky na zmenu hesla dodržiavať pokyny uvedené na adrese https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Ak toto nastavenie aktivujete, služba ochrany hesla odkáže používateľov na túto webovú adresu, aby si tam zmenili heslo v prípade jeho neoprávneného získania inou osobou.
-      Ak je toto nastavenie zakázané alebo nie je nastavené, služba ochrany hesla odkáže používateľov na adresu https://myaccounts.google.com, aby si tam zmenili heslo.
-      Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré nie sú v doméne <ph name="MS_AD_NAME" />.</translation>
 <translation id="1797233582739332495">Zobrazovať používateľovi opakovanú výzvu, že sa vyžaduje opätovné spustenie</translation>
 <translation id="1803646570632580723">Zoznam pripnutých aplikácií, ktoré sa zobrazujú v spúšťači</translation>
 <translation id="1808715480127969042">Blokovať súbory cookie na týchto webových stránkach</translation>
@@ -1405,14 +1399,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="4980635395568992380">Typ údajov:</translation>
 <translation id="4983201894483989687">Povoliť spúšťanie zastaraných doplnkov</translation>
 <translation id="4988291787868618635">Akcia po určitej dobe nečinnosti</translation>
-<translation id="4990301296093321860">Umožňuje ovládať spustenie upozornenia v rámci ochrany heslom. Ochrana heslom upozorňuje používateľov, keď svoje chránené heslo opätovne použijú na potenciálne podozrivých weboch.
-
-      Pomocou pravidiel PasswordProtectionLoginURLs a PasswordProtectionChangePasswordURL môžete nakonfigurovať, ktoré heslo chcete chrániť.
-
-      Ak toto pravidlo nastavíte na možnosť PasswordProtectionWarningOff, nezobrazí sa žiadne upozornenie v rámci ochrany heslom.
-      Ak ho nastavíte na možnosť PasswordProtectionWarningOnPasswordReuse, upozornenie v rámci ochrany heslom sa zobrazí, keď používateľ opätovne použije heslo na webe, ktorý nebol pridaný na bielu listinu.
-      Ak ho nastavíte na možnosť PasswordProtectionWarningOnPhishingReuse, upozornenie v rámci ochrany heslom sa zobrazí, keď používateľ opätovne použije chránené heslo na phishingovom webe.
-      Ak toto pravidlo nenastavíte, upozornenie v rámci ochrany heslom sa spustí, keď používateľ opätovne použije chránené heslo na phishingovom webe. Nastavenie však bude môcť zmeniť.</translation>
 <translation id="4995548127349206948">Či je povolené overenie totožnosti NTLMv2</translation>
 <translation id="5047604665028708335">Povoliť prístup ku stránkam mimo balíkov obsahu</translation>
 <translation id="5052081091120171147">Ak je toto pravidlo povolené, história prehliadania bude importovaná z aktuálneho predvoleného prehliadača. Povolenie tohto pravidla má vplyv aj na dialógové okno importu.
@@ -1944,13 +1930,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Ak je toto pravidlo nenastavené alebo je zoznam prázdny, bude sa dať v prehliadači <ph name="PRODUCT_NAME" /> pristupovať ku všetkým schémam.</translation>
 <translation id="6652197835259177259">Nastavenia miestne spravovaných používateľov</translation>
-<translation id="6654559957643809067">Povolí predpovedanie siete v prehliadači <ph name="PRODUCT_NAME" /> a zabráni používateľom toto nastavenie zmeniť.
-
-      Toto pravidlo ovláda spoločne s predbežným načítaním servera DNS aj predbežné pripojenie pomocou protokolu TCP a SSL a predbežné vykreslenie webových stránok.
-
-      Ak túto predvoľbu zmeníte na hodnotu Vždy, Nikdy alebo Iba W-Fi, používatelia ju v prehliadači <ph name="PRODUCT_NAME" /> nebudú môcť zmeniť.
-
-      Ak ponecháte toto pravidlo nenastavené, bude predpovedanie siete aktivované, no používatelia budú môcť nastavenie zmeniť.</translation>
 <translation id="6658245400435704251">Určí počet sekúnd, o koľko môže zariadenie náhodne zdržať sťahovanie aktualizácie odvtedy, čo bola aktualizácia odoslaná na server. Zariadenie môže čakať určitý čas a sa pokúsiť o určitý počet kontrol aktualizácií. Oneskorenie je obmedzené nemenným maximálnym časovým intervalom tak, aby zariadenie nečakalo na stiahnutie aktualizácie donekonečna.</translation>
 <translation id="6665670272107384733">Nastaviť, ako často musí používateľ zadávať heslo na používanie rýchleho odomknutia</translation>
 <translation id="6681229465468164801">Umožňuje nastaviť zoznam vzorov webových adries určujúcich weby, ktoré nemôžu používateľa požiadať o udelenie prístupu k zariadeniu USB.

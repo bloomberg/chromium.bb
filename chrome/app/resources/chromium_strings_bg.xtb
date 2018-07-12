@@ -153,10 +153,12 @@
 <translation id="6394232988457703198">Трябва да рестартирате Chromium сега.</translation>
 <translation id="6400072781405947421">Chromium може да не функционира правилно, защото вече не се поддържа под Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium е уеб браузър, който зарежда уеб страници и изпълнява приложения със светкавична скорост. Той е бърз, стабилен и лесен за употреба. Сърфирайте в мрежата по-безопасно с вградената защита на Chromium срещу злонамерен софтуер и фишинг.</translation>
+<translation id="641451971369018375">Комуникира с Google с цел подобряване на сърфирането и на Chromium</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium ще се рестартира след 1 секунда}other{Chromium ще се рестартира след # секунди}}</translation>
 <translation id="6475912303565314141">То също контролира коя страница се показва при стартиране на Chromium.</translation>
 <translation id="6485906693002546646">Използвате <ph name="PROFILE_EMAIL" /> за синхронизиране на нещата си в Chromium. За да актуализирате съответното предпочитание или да ползвате браузъра без профил в Google, посетете <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Деинсталиране на Chromium</translation>
+<translation id="6570579332384693436">С цел поправка на правописни грешки Chromium изпраща до Google текста, който въвеждате в текстовите полета</translation>
 <translation id="6598877126913850652">Към настройките за известия в Chromium</translation>
 <translation id="6664239887951090350">{0,plural, =0{Chromium ще се рестартира сега}=1{Chromium ще се рестартира след 1 секунда}other{Chromium ще се рестартира след # секунди}}</translation>
 <translation id="6676384891291319759">Достъп до интернет</translation>

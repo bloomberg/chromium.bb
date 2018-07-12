@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">அடுத்த மாதத்தைக் காட்டு</translation>
 <translation id="512758898067543763">வரிசை மேற்தலைப்பு</translation>
 <translation id="5143125788380636750">முடிவுரை</translation>
-<translation id="5153163864850940242">பிக்ச்சர்-இன்-பிக்ச்சர் பயன்முறையில் இந்த வீடியோ இயக்கப்படுகிறது</translation>
 <translation id="5164977714490026579">மதிப்பானது, கண்டிப்பாக <ph name="MINIMUM" /> ஐ விட அதிகமாக அல்லது அதற்குச் சமமாக இருக்க வேண்டும்.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> பெ.பை</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' ஐத் தொடர்ந்து ஒரு பகுதியை உள்ளிடவும். '<ph name="INVALIDADDRESS" />' முழுமைப் பெறாமல் உள்ளது.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">மீட்டர்</translation>
 <translation id="6166809985690652833">பின்னுரை</translation>
 <translation id="6213469881011901533">அருஞ்சொல் திரட்டு</translation>
-<translation id="6310801910862476708">பிக்ச்சர்-இன்-பிக்ச்சர் பயன்முறையிலிருந்து வெளியேறு</translation>
 <translation id="6398862346408813489">மாதம் தேர்ந்தெடுப்புப் பலகத்தைக் காட்டு</translation>
 <translation id="6404546809543547843">ஆடியோ நேர ஸ்கிரப்பர்</translation>
 <translation id="6453774872122745852">அங்கீகாரங்கள்</translation>
@@ -220,7 +218,6 @@
 <translation id="860475260694818407">உள்ளடக்க அட்டவணை</translation>
 <translation id="8613126697340063924">தொலைநிலை இயக்கத்தைக் கட்டுப்படுத்தவும்</translation>
 <translation id="862370744433916922">துணை தலைப்பு</translation>
-<translation id="8741316211671074806">பிக்ச்சர்-இன்-பிக்ச்சர்</translation>
 <translation id="8750798805984357768">தயவுசெய்து இந்த விருப்பங்களில் ஒன்றைத் தேர்ந்தெடுங்கள்.</translation>
 <translation id="8785498733064193001">மறுஇயக்கத்தைத் தொடங்கு</translation>
 <translation id="8808573423886751634">அத்தியாயம்</translation>
@@ -238,6 +235,7 @@
 <translation id="9132465097189459683">மற்றவை…</translation>
 <translation id="9138385573473225930">விழிப்பூட்டல்</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> அன்று தொடங்குவது</translation>
+<translation id="916607977885256133">பிக்ச்சர்-இன்-பிக்ச்சர்</translation>
 <translation id="9168329111483466115">அடிக்குறிப்பு</translation>
 <translation id="954003015749068518">பிக்ச்சர்-இன்-பிக்ச்சர் பயன்முறைக்குச் செல்லும்</translation>
 <translation id="966787709310836684">மெனு</translation>

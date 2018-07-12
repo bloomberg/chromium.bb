@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Ipakita ang susunod na buwan</translation>
 <translation id="512758898067543763">header ng row</translation>
 <translation id="5143125788380636750">epilogue</translation>
-<translation id="5153163864850940242">Nagpe-play ang video na ito sa Picture-in-Picture</translation>
 <translation id="5164977714490026579">Dapat mas mataas kaysa sa o katumbas ng <ph name="MINIMUM" /> ang halaga.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> (na) PB</translation>
 <translation id="5307600278924710095">Mangyaring maglagay ng isang bahagi na sinusundan ng '<ph name="ATSIGN" />.' Hindi kumpleto ang '<ph name="INVALIDADDRESS" />.'</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">metro</translation>
 <translation id="6166809985690652833">afterword</translation>
 <translation id="6213469881011901533">glosaryo</translation>
-<translation id="6310801910862476708">Lumabas sa Picture-in-Picture</translation>
 <translation id="6398862346408813489">Ipakita ang panel ng pagpipilian ng buwan</translation>
 <translation id="6404546809543547843">scrubber ng oras ng audio</translation>
 <translation id="6453774872122745852">mga pagkilala</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">i-download ang media</translation>
 <translation id="6981594929165378967">paglagay</translation>
 <translation id="6989848892321993519">Pakidagdagan ang text na ito nang hanggang <ph name="MIN_CHARACTERS" /> (na) character o higit pa (kasalukuyan kang gumagamit ng 1 character).</translation>
+<translation id="7090364526657522309">Serbisyo sa Font ng Linux</translation>
 <translation id="709897737746224366">Pakitugma ang hiniling na format.</translation>
 <translation id="7139483182332611405">preface</translation>
 <translation id="7223624360433298498">lumipas na oras</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">talaan ng nilalaman</translation>
 <translation id="8613126697340063924">kontrolin ang malayuang pag-playback</translation>
 <translation id="862370744433916922">subtitle</translation>
-<translation id="8741316211671074806">Picture-in-Picture</translation>
 <translation id="8750798805984357768">Mangyaring pumili ng isa sa mga opsyong ito.</translation>
 <translation id="8785498733064193001">simulan ang pag-playback</translation>
 <translation id="8808573423886751634">kabanata</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">Iba pa...</translation>
 <translation id="9138385573473225930">alerto</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, na magsisimula sa <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Picture in Picture</translation>
 <translation id="9168329111483466115">footnote</translation>
 <translation id="954003015749068518">pumasok sa picture-in-picture</translation>
 <translation id="966787709310836684">menu</translation>

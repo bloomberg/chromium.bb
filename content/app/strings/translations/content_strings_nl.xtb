@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Volgende maand weergeven</translation>
 <translation id="512758898067543763">rijkop</translation>
 <translation id="5143125788380636750">epiloog</translation>
-<translation id="5153163864850940242">Deze video wordt in de scherm-in-scherm-modus afgespeeld</translation>
 <translation id="5164977714490026579">Waarde moet groter dan of gelijk zijn aan <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Geef een naamgedeelte op, gevolgd door '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' is onvolledig.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">meter</translation>
 <translation id="6166809985690652833">nawoord</translation>
 <translation id="6213469881011901533">woordenlijst</translation>
-<translation id="6310801910862476708">Scherm-in-scherm afsluiten</translation>
 <translation id="6398862346408813489">Deelvenster voor maandselectie weergeven</translation>
 <translation id="6404546809543547843">scrollbar met audiotijd</translation>
 <translation id="6453774872122745852">dankwoord</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">media downloaden</translation>
 <translation id="6981594929165378967">invoeging</translation>
 <translation id="6989848892321993519">Breid deze tekst uit tot <ph name="MIN_CHARACTERS" /> tekens of meer (je gebruikt momenteel één teken).</translation>
+<translation id="7090364526657522309">Linux-lettertypeservice</translation>
 <translation id="709897737746224366">Zorg dat de indeling voldoet aan de gevraagde indeling.</translation>
 <translation id="7139483182332611405">voorwoord</translation>
 <translation id="7223624360433298498">verstreken tijd</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">inhoudsopgave</translation>
 <translation id="8613126697340063924">afspelen bedienen op afstand</translation>
 <translation id="862370744433916922">ondertitel</translation>
-<translation id="8741316211671074806">Scherm-in-scherm</translation>
 <translation id="8750798805984357768">Selecteer een van deze opties.</translation>
 <translation id="8785498733064193001">afspelen starten</translation>
 <translation id="8808573423886751634">hoofdstuk</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">Anders...</translation>
 <translation id="9138385573473225930">melding</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, die begint op <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Scherm-in-scherm</translation>
 <translation id="9168329111483466115">voetnoot</translation>
 <translation id="954003015749068518">scherm-in-scherm openen</translation>
 <translation id="966787709310836684">menu</translation>

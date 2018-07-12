@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Prikaz naslednjega meseca</translation>
 <translation id="512758898067543763">glava vrstice</translation>
 <translation id="5143125788380636750">epilog</translation>
-<translation id="5153163864850940242">Ta videoposnetek se predvaja v načinu slike v sliki</translation>
 <translation id="5164977714490026579">Vrednost mora biti večja od <ph name="MINIMUM" /> ali enaka.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Vnesite nekaj in nato <ph name="ATSIGN" />. Naslov »<ph name="INVALIDADDRESS" />« je nepopoln.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">merilnik</translation>
 <translation id="6166809985690652833">spremna beseda</translation>
 <translation id="6213469881011901533">glosar</translation>
-<translation id="6310801910862476708">Zapri način slike v sliki</translation>
 <translation id="6398862346408813489">Prikaz podokna za izbiro meseca</translation>
 <translation id="6404546809543547843">časovni krmilnik za predvajanje zvoka</translation>
 <translation id="6453774872122745852">zahvala</translation>
@@ -220,7 +218,6 @@
 <translation id="860475260694818407">kazalo</translation>
 <translation id="8613126697340063924">upravljanje oddaljenega predvajanja</translation>
 <translation id="862370744433916922">podnaslov</translation>
-<translation id="8741316211671074806">Slika v sliki</translation>
 <translation id="8750798805984357768">Izberite eno od teh možnosti.</translation>
 <translation id="8785498733064193001">začetek predvajanja</translation>
 <translation id="8808573423886751634">poglavje</translation>
@@ -238,6 +235,7 @@
 <translation id="9132465097189459683">Drugo ...</translation>
 <translation id="9138385573473225930">opozorilo</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, začne se <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Slika v sliki</translation>
 <translation id="9168329111483466115">sprotna opomba</translation>
 <translation id="954003015749068518">odpiranje načina slike v sliki</translation>
 <translation id="966787709310836684">meni</translation>

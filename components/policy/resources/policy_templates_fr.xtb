@@ -225,12 +225,6 @@ Pour consulter des exemples détaillés, rendez-vous sur :
       La règle doit être définie sur une URL à partir de laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger les conditions d'utilisation. Ces conditions doivent être en texte brut, et proposées au format texte/brut au type MIME. Aucun balisage n'est autorisé.</translation>
 <translation id="1750315445671978749">Bloquer tous les téléchargements</translation>
 <translation id="1781356041596378058">Cette règle permet également de contrôler l'accès aux options pour les développeurs Android. Si vous définissez cette règle sur "True", les utilisateurs ne pourront pas accéder aux options pour les développeurs. Si vous la définissez sur "False" ou si vous ne la modifiez pas, les utilisateurs pourront accéder aux options pour les développeurs en appuyant sept fois sur le numéro de version dans l'application des paramètres Android.</translation>
-<translation id="178832255504524723">Permet de configurer l'URL de modification de mot de passe (protocoles HTTP et HTTPS uniquement). Le service de protection par mot de passe redirige les utilisateurs vers cette URL afin que ces derniers modifient leur mot de passe s'ils sont victimes d'une attaque par hameçonnage.
-      Afin que <ph name="PRODUCT_NAME" /> enregistre correctement la nouvelle empreinte numérique du mot de passe sur la page de modification de ce dernier, vérifiez que cette page respecte bien les consignes indiquées à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si cette règle est activée, le service de protection par mot de passe redirige les utilisateurs vers cette URL afin que ces derniers modifient leur mot de passe s'ils ont été victimes d'une attaque par hameçonnage.
-      Si cette règle est désactivée ou n'est pas configurée, le service de protection par mot de passe redirige les utilisateurs vers la page https://myaccounts.google.com afin que ces derniers modifient leur mot de passe.
-      Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="1797233582739332495">Afficher une invite récurrente indiquant qu'un redémarrage est nécessaire</translation>
 <translation id="1803646570632580723">Liste des applications épinglées à afficher dans le lanceur d'applications</translation>
 <translation id="1808715480127969042">Bloquer les cookies sur ces sites</translation>
@@ -720,7 +714,7 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
 
           |time_window_limit| spécifie une période quotidienne pendant laquelle la session utilisateur doit être verrouillée. Une seule règle par jour étant autorisée, |entries| ne peut donc être compris qu'entre 0 et 7. |starts_at| et |ends_at| indiquent respectivement le début et la fin de cette période. Si |ends_at| est inférieur à |starts_at|, |time_limit_window| se termine alors le lendemain. |last_updated_millis|, qui correspond à l'horodatage UTC de la dernière mise à jour de cette entrée, est envoyé sous la forme d'une chaîne, car l'horodatage ne peut pas être exprimé par un nombre entier.
 
-          |time_usage_limit| spécifie un quota d'utilisation par jour. Ainsi, lorsque l'utilisateur atteint ce quota, sa session est verrouillée. Il y a une propriété pour chaque jour de la semaine. Elle ne doit être définie que si un quota est actif le jour concerné. |usage_quota_mins| indique la durée pendant laquelle l'appareil géré peut être utilisé dans une journée, tandis que |reset_at| indique la date et l'heure à laquelle le quota d'utilisation est renouvelé. La valeur par défaut de |reset_at| est minuit ({'hour': 0, 'minute': 0}). |last_updated_millis|, qui correspond à l'horodatage UTC de la dernière mise à jour de cette entrée, est envoyé sous la forme d'une chaîne, car l'horodatage ne peut pas être exprimé par un nombre entier.
+          |time_usage_limit| spécifie un quota d'utilisation par jour. Ainsi, lorsque l'utilisateur atteint ce quota, sa session est verrouillée. Il existe une propriété pour chaque jour de la semaine. Elle ne doit être définie que si un quota est actif le jour concerné. |usage_quota_mins| indique la durée pendant laquelle l'appareil géré peut être utilisé dans une journée, tandis que |reset_at| indique la date et l'heure à laquelle le quota d'utilisation est renouvelé. La valeur par défaut de |reset_at| est minuit ({'hour': 0, 'minute': 0}). |last_updated_millis|, qui correspond à l'horodatage UTC de la dernière mise à jour de cette entrée, est envoyé sous la forme d'une chaîne, car l'horodatage ne peut pas être exprimé par un nombre entier.
 
           |overrides| invalide temporairement une ou plusieurs des règles précédentes.
           * Si ni neither time_window_limit, ni time_usage_limit ne sont actifs, |LOCK| peut être utilisé pour verrouiller l'appareil.
@@ -1438,14 +1432,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4980635395568992380">Type de données :</translation>
 <translation id="4983201894483989687">Autoriser l'exécution de plug-ins obsolètes</translation>
 <translation id="4988291787868618635">Action à effectuer au terme du délai d'inactivité</translation>
-<translation id="4990301296093321860">Vous permet de contrôler le déclenchement de l'avertissement relatif à la protection par mot de passe. La protection par mot de passe affiche une alerte lorsque les utilisateurs réutilisent leur mot de passe protégé sur des sites potentiellement suspects.
-
-      Vous pouvez utiliser les règles "PasswordProtectionLoginURLs" et "PasswordProtectionChangePasswordURL" pour configurer le mot de passe à protéger.
-
-      Si cette règle est définie sur "PasswordProtectionWarningOff", aucun avertissement ne s'affiche.
-      Si elle est définie sur "PasswordProtectionWarningOnPasswordReuse", l'avertissement s'affiche lorsque les utilisateurs réutilisent leurs mots de passe Google sur des sites qui ne figurent pas sur la liste blanche.
-      Si elle est définie sur "PasswordProtectionWarningOnPhishingReuse", il s'affiche lorsqu'ils les réutilisent sur des sites d'hameçonnage.
-      Il en va de même lorsque la règle n'est pas configurée, excepté que les utilisateurs peuvent modifier ce paramètre.</translation>
 <translation id="4995548127349206948">Contrôler l'activation ou la désactivation de l'authentification NTLMv2.</translation>
 <translation id="5047604665028708335">Autoriser l'accès aux sites en dehors des packs de contenu</translation>
 <translation id="5052081091120171147">Lorsqu'elle est activée, cette règle force l'importation de l'historique de navigation à partir du navigateur par défaut actuel. Si elle est activée, elle affecte également la boîte de dialogue d'importation. 
@@ -1984,13 +1970,6 @@ Si vous activez ce paramètre ou ne définissez pas de valeur, la fonction de sa
 
       Si vous ne définissez pas cette règle ou si la liste est vide, tous les schémas sont accessibles dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Paramètres des utilisateurs gérés en local</translation>
-<translation id="6654559957643809067">Active la prédiction de réseau dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
-
-      Ceci contrôle la prélecture des DNS, la préconnexion et le préchargement TCP et SSL des pages Web.
-
-      Si vous paramétrez cette préférence sur "always" (toujours), "never" (jamais) ou "WiFi only" (Wi-Fi uniquement), les utilisateurs ne pourront pas changer ou ignorer ce paramètre dans <ph name="PRODUCT_NAME" />.
-
-      Si vous ne définissez pas cette règle, la prédiction de réseau sera activée, mais les utilisateurs pourront la modifier.</translation>
 <translation id="6658245400435704251">Indique le nombre maximal de secondes pendant lesquelles un appareil peut retarder de façon aléatoire le téléchargement d'une mise à jour à partir du moment où celle-ci est disponible sur le serveur. L'appareil peut attendre pendant une certaine partie de ce temps en termes de temps de l'horloge et pendant la partie restante en termes de nombre de recherches de mise à jour. Dans tous les cas, le facteur de dispersion est limité à une quantité de temps constante, de sorte qu'un appareil ne reste jamais bloqué dans l'attente d'une mise à jour.</translation>
 <translation id="6665670272107384733">Définir la fréquence à laquelle l'utilisateur doit saisir le mot de passe pour utiliser le déverrouillage rapide</translation>
 <translation id="6681229465468164801">Cette règle permet de définir une liste de formats d'URL spécifiant les sites non autorisés à demander à l'utilisateur l'accès à un périphérique USB.
@@ -2042,7 +2021,7 @@ Si vous activez ce paramètre ou ne définissez pas de valeur, la fonction de sa
 <translation id="6810445994095397827">Bloquer JavaScript sur ces sites</translation>
 <translation id="681446116407619279">Modèles d'authentification compatibles</translation>
 <translation id="6832455357698286434">
-      Cette règle répertorie les origines (URL) ou de modèles du nom d'hôte (par exemple, "*.example.com") à considérer comme contextes sécurisés. L'objectif est de permettre aux organisations de configurer un serveur de test pour les développements Web internes. Cela permet aux développeurs de tester les fonctionnalités nécessitant des contextes sécurisés sans avoir à déployer TLS sur le serveur de test.
+      Cette règle répertorie les origines (URL) ou les modèles de nom d'hôte (par exemple, "*.example.com") à considérer comme contextes sécurisés. L'objectif est de permettre aux organisations de configurer un serveur de test pour les développements Web internes. Cela permet aux développeurs de tester les fonctionnalités nécessitant des contextes sécurisés sans avoir à déployer TLS sur le serveur de test.
       Définir une liste d'URL dans cette règle a le même effet qu'utiliser l'indicateur de ligne de commande "--unsafely-treat-insecure-origin-as-secure" avec une liste des URL en question séparées par une virgule. Si la règle est définie, elle remplace l'indicateur de ligne de commande.
       Pour en savoir plus sur les contextes sécurisés, consultez https://www.w3.org/TR/secure-contexts/
       </translation>
@@ -2405,7 +2384,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="7617319494457709698">Cette règle définit les extensions autorisées à utiliser la fonction <ph name="CHALLENGE_USER_KEY_FUNCTION" /> de l'<ph name="ENTERPRISE_PLATFORM_KEYS_API" /> pour l'attestation à distance. Pour pouvoir utiliser cette API, les extensions doivent être ajoutées à cette liste.
 
           Si une extension ne figure pas dans la liste, ou si la liste n'est pas définie, l'appel vers l'API échoue, et un code d'erreur est renvoyé.</translation>
-<translation id="7620300057302654932">Origines ou modèles du nom d'hôte à considérer comme contexte sécurisé.</translation>
+<translation id="7620300057302654932">Origines ou modèles de nom d'hôte à considérer comme contexte sécurisé.</translation>
 <translation id="7625444193696794922">Indique le canal de distribution sur lequel cet appareil devrait être verrouillé.</translation>
 <translation id="7632724434767231364">Nom de la bibliothèque GSSAPI</translation>
 <translation id="7635471475589566552">Configure les paramètres régionaux de l'application dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ces paramètres. 

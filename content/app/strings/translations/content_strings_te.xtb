@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">తదుపరి నెలను చూపుతుంది</translation>
 <translation id="512758898067543763">అడ్డు వరుస శీర్షిక</translation>
 <translation id="5143125788380636750">ఉపసంహారం</translation>
-<translation id="5153163864850940242">ఈ వీడియో చిత్రంలో-చిత్రంలో ప్లే అవుతోంది</translation>
 <translation id="5164977714490026579">విలువ ఖచ్చితంగా <ph name="MINIMUM" /> కంటే ఎక్కువగా లేదా సమానంగా ఉండాలి.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">దయచేసి '<ph name="ATSIGN" />'కి ముందు ఉన్న భాగాన్ని నమోదు చేయండి. '<ph name="INVALIDADDRESS" />' అసంపూర్ణంగా ఉంది.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">మీటర్</translation>
 <translation id="6166809985690652833">చివరిమాట</translation>
 <translation id="6213469881011901533">పదకోశం</translation>
-<translation id="6310801910862476708">చిత్రంలో చిత్రం మోడ్ నుండి నిష్క్రమించు</translation>
 <translation id="6398862346408813489">నెల ఎంపిక ప్యానెల్‌ను చూపుతుంది</translation>
 <translation id="6404546809543547843">ఆడియో సమయ స్క్రబ్బర్</translation>
 <translation id="6453774872122745852">గుర్తింపులు</translation>
@@ -220,7 +218,6 @@
 <translation id="860475260694818407">విషయ పట్టిక</translation>
 <translation id="8613126697340063924">రిమోట్ ప్లేబ్యాక్‌ను నియంత్రిస్తుంది</translation>
 <translation id="862370744433916922">ఉపశీర్షిక</translation>
-<translation id="8741316211671074806">చిత్రంలో చిత్రం</translation>
 <translation id="8750798805984357768">దయచేసి ఈ ఎంపికలలో ఒకదాన్ని ఎంచుకోండి.</translation>
 <translation id="8785498733064193001">ప్లేబ్యాక్‌ను ప్రారంభించు</translation>
 <translation id="8808573423886751634">అధ్యాయం</translation>
@@ -238,6 +235,7 @@
 <translation id="9132465097189459683">ఇతర...</translation>
 <translation id="9138385573473225930">హెచ్చరిక</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> నుండి ప్రారంభమవుతుంది</translation>
+<translation id="916607977885256133">చిత్రంలో చిత్రం</translation>
 <translation id="9168329111483466115">ఫుట్‌నోట్</translation>
 <translation id="954003015749068518">చిత్రంలో చిత్రం మోడ్‌లోకి ప్రవేశిస్తుంది</translation>
 <translation id="966787709310836684">మెను</translation>

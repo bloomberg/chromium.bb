@@ -223,12 +223,6 @@
       Phải đặt chính sách thành một URL nơi <ph name="PRODUCT_OS_NAME" /> có thể tải xuống Điều khoản dịch vụ. Điều khoản dịch vụ phải là văn bản thuần túy, được phân phối dưới dạng văn bản/thuần túy loại MIME. Không cho phép đánh dấu.</translation>
 <translation id="1750315445671978749">Chặn tất cả các mục tải xuống</translation>
 <translation id="1781356041596378058">Chính sách này cũng kiểm soát quyền truy cập vào Tùy chọn của nhà phát triển Android. Nếu bạn đặt chính sách này thành true, người dùng sẽ không thể truy cập vào Tùy chọn của nhà phát triển. Nếu bạn đặt chính sách này thành false hoặc không đặt chính sách này thì người dùng có thể truy cập Tùy chọn của nhà phát triển bằng cách nhấn bảy lần trên số bản dựng trong ứng dụng cài đặt Android.</translation>
-<translation id="178832255504524723">Định cấu hình URL thay đổi mật khẩu (chỉ dành cho các lược đồ HTTP và HTTPS). Dịch vụ bảo vệ mật khẩu sẽ chuyển người dùng tới URL này để thay đổi mật khẩu của họ nếu họ đã bị lừa đảo.
-      Để <ph name="PRODUCT_NAME" /> có thể quét chính xác dấu vân tay của mật khẩu mới trên trang thay đổi mật khẩu này, hãy đảm bảo trang thay đổi mật khẩu của bạn tuân thủ các nguyên tắc trên https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Nếu bạn bật mục cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ chuyển người dùng tới URL này để thay đổi mật khẩu của họ nếu họ đã bị lừa đảo.
-      Nếu bạn tắt hoặc chưa đặt mục cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ chuyển người dùng đến https://myaccounts.google.com để thay đổi mật khẩu của họ.
-      Chính sách này không có trên các phiên bản Windows chưa tham gia miền <ph name="MS_AD_NAME" />.</translation>
 <translation id="1797233582739332495">Hiển thị lời nhắc định kỳ cho người dùng cho biết bắt buộc phải chạy lại</translation>
 <translation id="1803646570632580723">Danh sách các ứng dụng được ghim sẽ hiển thị trong trình chạy</translation>
 <translation id="1808715480127969042">Chặn cookie trên các trang web này</translation>
@@ -1420,14 +1414,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4980635395568992380">Loại dữ liệu:</translation>
 <translation id="4983201894483989687">Cho phép chạy các plugin đã lỗi thời</translation>
 <translation id="4988291787868618635">Hành động cần thực hiện khi đạt tới độ trễ khi không sử dụng</translation>
-<translation id="4990301296093321860">Cho phép bạn kiểm soát việc kích hoạt cảnh báo bảo vệ mật khẩu. Tính năng bảo vệ mật khẩu sẽ cảnh báo người dùng khi họ sử dụng lại mật khẩu được bảo vệ trên các trang web có thể đáng ngờ.
-
-      Bạn có thể sử dụng các chính sách 'PasswordProtectionLoginURLs' và 'PasswordProtectionChangePasswordURL' để định cấu hình mật khẩu cần bảo vệ.
-
-      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOff', thì sẽ không có cảnh báo bảo vệ nào hiển thị.
-      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOnPasswordReuse', thì cảnh báo bảo vệ mật khẩu sẽ hiển thị khi người dùng sử dụng lại mật khẩu được bảo vệ của họ trên trang web nằm ngoài danh sách cho phép.
-      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOnPhishingReuse', thì cảnh báo bảo vệ mật khẩu sẽ hiển thị khi người dùng sử dụng lại mật khẩu được bảo vệ của họ trên trang web lừa đảo.
-      Nếu bạn không đặt chính sách này, thì cảnh báo bảo vệ mật khẩu sẽ được kích hoạt khi người dùng sử dụng lại mật khẩu được bảo vệ của họ trên trang web lừa đảo nhưng người dùng có thể thay đổi tùy chọn cài đặt này.</translation>
 <translation id="4995548127349206948">Cho dù có bật xác thực NTLMv2 hay không.</translation>
 <translation id="5047604665028708335">Cho phép truy cập vào các trang web nằm ngoài gói nội dung</translation>
 <translation id="5052081091120171147">Chính sách này nếu được bật sẽ buộc lịch sử web phải được nhập từ trình duyệt mặc định hiện tại. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
@@ -1960,13 +1946,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Không thể tải và điều hướng đến URL sử dụng lược đồ từ danh sách này.
       Nếu không đặt chính sách này hoặc danh sách trống, tất cả lược đồ sẽ có thể truy cập được trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Cài đặt người dùng được quản lý cục bộ</translation>
-<translation id="6654559957643809067">Bật dự đoán mạng trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cài đặt này.
-
-      Cài đặt này kiểm soát việc tìm nạp trước DNS, kết nối trước TCP và SSL cũng như hiển thị trước các trang web.
-
-      Nếu bạn đặt tùy chọn này thành 'luôn luôn', 'không bao giờ' hoặc 'Chỉ WiFi', người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME" />.
-
-      Nếu chính sách này không được đặt, dự đoán mạng sẽ được bật nhưng người dùng sẽ có thể thay đổi cài đặt đó.</translation>
 <translation id="6658245400435704251">Chỉ định số giây tối đa mà thiết bị có thể ngẫu nhiên trì hoãn việc tải xuống bản cập nhật từ thời điểm bản cập nhật được đưa lên máy chủ lần đầu tiên. Thiết bị có thể đợi một phần số thời gian này là thời gian thực và phần thời gian còn lại là thời gian kiểm tra bản cập nhật. Trong bất kỳ trường hợp nào, việc phân tán bị chặn trên ở lượng thời gian cố định để thiết bị không bao giờ phải chờ mãi để tải xuống bản cập nhật.</translation>
 <translation id="6665670272107384733">Đặt tần suất người dùng phải nhập mật khẩu để sử dụng tính năng mở khóa nhanh</translation>
 <translation id="6681229465468164801">Cho phép bạn đặt danh sách mẫu URL để chỉ định các trang web không được phép yêu cầu người dùng cấp quyền truy cập vào thiết bị USB.

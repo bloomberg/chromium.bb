@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Rādīt nākamo mēnesi</translation>
 <translation id="512758898067543763">rindas virsraksts</translation>
 <translation id="5143125788380636750">epilogs</translation>
-<translation id="5153163864850940242">Videoklips tiek atskaņots režīmā Attēls attēlā</translation>
 <translation id="5164977714490026579">Vērtībai ir jābūt lielākai vai vienādai ar <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Lūdzu, ievadiet daļu, kas atrodas pirms zīmes <ph name="ATSIGN" />. “<ph name="INVALIDADDRESS" />” ir nepilna adrese.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">mērītājs</translation>
 <translation id="6166809985690652833">pēcvārds</translation>
 <translation id="6213469881011901533">glosārijs</translation>
-<translation id="6310801910862476708">Aizvērt režīmu “Attēls attēlā”</translation>
 <translation id="6398862346408813489">Rādīt mēneša atlases paneli</translation>
 <translation id="6404546809543547843">audio laika skalas slīdnis</translation>
 <translation id="6453774872122745852">pateicības</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">lejupielādēt multivides failus</translation>
 <translation id="6981594929165378967">ievietošana</translation>
 <translation id="6989848892321993519">Lūdzu, papildiniet šo tekstu līdz vismaz <ph name="MIN_CHARACTERS" /> rakstzīmēm (pašlaik tas ietver 1 rakstzīmi).</translation>
+<translation id="7090364526657522309">Linux fontu pakalpojums</translation>
 <translation id="709897737746224366">Pieskaņojiet vērtību prasītajam formātam.</translation>
 <translation id="7139483182332611405">ievadraksts</translation>
 <translation id="7223624360433298498">pagājušais laiks</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">satura rādītājs</translation>
 <translation id="8613126697340063924">kontrolēt attālināto atskaņošanu</translation>
 <translation id="862370744433916922">apakšvirsraksts</translation>
-<translation id="8741316211671074806">Attēls attēlā</translation>
 <translation id="8750798805984357768">Lūdzu, atlasiet vienu no šīm opcijām.</translation>
 <translation id="8785498733064193001">sākt atskaņošanu</translation>
 <translation id="8808573423886751634">nodaļa</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">Cits...</translation>
 <translation id="9138385573473225930">brīdinājums</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, sākot no: <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Attēls attēlā</translation>
 <translation id="9168329111483466115">vēre</translation>
 <translation id="954003015749068518">atvērt režīmu “attēls attēlā”</translation>
 <translation id="966787709310836684">izvēlne</translation>

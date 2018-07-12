@@ -24,6 +24,7 @@
 <translation id="3805899903892079518">Chromium nemá prístup k vašim fotkám ani videám. Prístup povoľte v časti Nastavenia systému iOS &gt; Súkromie &gt; Fotky.</translation>
 <translation id="4024541897090868497">Ak chcete mať karty na všetkých zariadeniach, prihláste sa do prehliadača Chromium.</translation>
 <translation id="4241912885070669028">Odhlasujete sa z účtu spravovaného doménou <ph name="SIGNOUT_MANAGED_DOMAIN" />. Touto akciou odstránite údaje prehliadača Chromium z príslušného zariadenia, avšak zostanú naďalej vo vašom účte Google.</translation>
+<translation id="4272892696084633551">Pomôžte vylepšiť funkcie a výkon prehliadača Chromium</translation>
 <translation id="4555020257205549924">Po zapnutí tejto funkcie bude prehliadač Chromium ponúkať preloženie stránok napísaných v inom jazyku pomocou Prekladača Google. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Tu sa zobrazia karty, ktoré ste otvorili v prehliadači Chromium na iných zariadeniach.</translation>
 <translation id="495292094137889840">Začnite používať čítačku kódov QR Chromium</translation>
@@ -33,6 +34,7 @@
 <translation id="5945387852661427312">Prihlasujete sa pomocou účtu spravovaného doménou <ph name="DOMAIN" /> a jej správcovi tým dávate kontrolu nad vašimi údajmi prehliadača Chromium. Vaše údaje budú natrvalo prepojené s týmto účtom. Odhlásením z prehliadača Chromium odstránite údaje z príslušného zariadenia, avšak naďalej zostanú uložené vo vašom účte Google.</translation>
 <translation id="6068866989048414399">Zmluvné podmienky prehliadača Chromium</translation>
 <translation id="6268381023930128611">Odhlásiť sa z prehliadača Chromium?</translation>
+<translation id="641451971369018375">Komunikuje s Googlom s cieľom zlepšiť prehliadanie a Chromium</translation>
 <translation id="6424492062988593837">Systém Chromium bol práve vylepšený. K dispozícii je nová verzia.</translation>
 <translation id="6604711459180487467">Získajte lepšie prostredie v prehliadači Chromium na základe svojej polohy.</translation>
 <translation id="6626296268883197964">Používaním tejto aplikácie vyjadrujete súhlas so <ph name="BEGIN_LINK_TOS" />zmluvnými podmienkami<ph name="END_LINK_TOS" /> a <ph name="BEGIN_LINK_PRIVACY" />upozornením o ochrane súkromia<ph name="END_LINK_PRIVACY" /> prehliadača Chromium.</translation>

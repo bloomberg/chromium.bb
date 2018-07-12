@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">Zeskanuj kod QR</translation>
 <translation id="1580783302095112590">E-mail wysłany.</translation>
 <translation id="1582732959743469162">Spowoduje to zatrzymanie bieżącego pobierania.</translation>
+<translation id="1605658421715042784">Kopiuj obraz</translation>
 <translation id="1612730193129642006">Pokaż układ kart</translation>
 <translation id="1644574205037202324">Historia</translation>
 <translation id="1646446875146297738">Włączenie opcji „Bez śledzenia” oznacza, że podczas przeglądania będzie wysyłane żądanie. Jego wynik zależy od tego, czy strona na nie odpowie oraz jak zostanie ono zinterpretowane.
@@ -58,6 +59,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="1809939268435598390">Usuń folder</translation>
 <translation id="1813414402673211292">Wyczyść historię przeglądania</translation>
 <translation id="1820259098641718022">Dodano do listy Do przeczytania</translation>
+<translation id="1821253160463689938">Zapisuje Twoje ustawienia w plikach cookie, nawet jeśli nie odwiedzasz tych stron</translation>
 <translation id="1876721852596493031">Wysyłaj dane na temat użytkowania</translation>
 <translation id="1886928167269928266">Od początku</translation>
 <translation id="1911619930368729126">Prześlij na Dysk Google</translation>
@@ -71,6 +73,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="209018056901015185">Wersja na komputer</translation>
 <translation id="2103075008456228677">Otwórz history.google.com</translation>
 <translation id="2116625576999540962">Przeniesione elementy: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="2120297377148151361">Aktywność i interakcje</translation>
 <translation id="213900355088104901">Aby przeglądać prywatnie, otwórz kartę incognito</translation>
 <translation id="2149973817440762519">Edytuj zakładkę</translation>
 <translation id="2230173723195178503">Wczytano stronę internetową</translation>
@@ -86,6 +89,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="2386793615875593361">Wybrano: 1</translation>
 <translation id="2435457462613246316">Pokaż hasło</translation>
 <translation id="2481538920734869610">DODAJ KONTO</translation>
+<translation id="2523184218357549926">Wysyła adresy URL odwiedzanych stron do Google</translation>
 <translation id="2523363575747517183">Ta strona internetowa wielokrotnie próbuje otworzyć inną aplikację.</translation>
 <translation id="2529021024822217800">Otwórz wszystkie</translation>
 <translation id="2572712655377361602">Zasady dotyczące urządzeń zablokowały dostęp do Twoich zdjęć</translation>
@@ -115,6 +119,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="2898963176829412617">Nowy folder…</translation>
 <translation id="2903493209154104877">Adresy</translation>
 <translation id="2909437209446960244">Ostatnie karty</translation>
+<translation id="2916171785467530738">Autouzupełnianie wyszukiwania i adresów URL</translation>
 <translation id="291754862089661335">Umieść kod QR lub kod kreskowy w tej ramce</translation>
 <translation id="2921219216347069551">Nie można udostępnić</translation>
 <translation id="2923448633003185837">Wklej i otwórz</translation>
@@ -219,10 +224,12 @@ Dane zostały zaszyfrowane z użyciem Twojego hasła synchronizacji. Wpisz je, 
 <translation id="4860895144060829044">Zadzwoń</translation>
 <translation id="4875622588773761625">Czy <ph name="PASSWORD_MANAGER_BRAND" /> ma zaktualizować hasło do tej strony?</translation>
 <translation id="4881695831933465202">Otwórz</translation>
+<translation id="4882831918239250449">Zarządzaj personalizacją wyszukiwarki, reklam i innych funkcji na podstawie historii przeglądania</translation>
 <translation id="4904877109095351937">Oznacz jako przeczytane</translation>
 <translation id="4930268273022498155">Usuń istniejące dane. Aby je pobrać, przełącz się z powrotem na konto <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Niestety, wystąpił problem z udostępnieniem tej rzeczy.</translation>
 <translation id="4979397965658815378">Zaloguj się na konto Google, by korzystać z zakładek, haseł, historii i innych ustawień na wszystkich urządzeniach</translation>
+<translation id="5004416275253351869">Zarządzanie aktywnością w Google</translation>
 <translation id="5005498671520578047">Skopiuj hasło</translation>
 <translation id="5010803260590204777">Otwórz kartę incognito, by przeglądać strony prywatnie.</translation>
 <translation id="5011684439661633295">Witaj, <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -249,6 +256,7 @@ Dane zostały zaszyfrowane z użyciem Twojego hasła synchronizacji. Wpisz je, 
 <translation id="5548760955356983418">Dzięki funkcji Handoff możesz rozpocząć przeglądanie strony na tym urządzeniu, a następnie płynnie kontynuować na Macu. Aktualnie otwarta strona internetowa wyświetli się w Docku na Macu.
 
 Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urządzenie musi używać tego samego konta iCloud.</translation>
+<translation id="5554368826343982379">Synchronizacja i personalizacja</translation>
 <translation id="5556459405103347317">Odśwież</translation>
 <translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">Nie udało się pobrać teraz tego pliku.</translation>
@@ -340,6 +348,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6979158407327259162">Dysk Google</translation>
 <translation id="7004499039102548441">Niedawno używane karty</translation>
 <translation id="7006788746334555276">Ustawienia treści</translation>
+<translation id="7017968314960951695">Wykorzystuje do personalizacji zawartość otwieranych stron oraz informacje o Twoich interakcjach i aktywności w przeglądarce.</translation>
 <translation id="7029809446516969842">Hasła</translation>
 <translation id="7031882061095297553">Synchronizuj z</translation>
 <translation id="7053983685419859001">Blokuj</translation>
@@ -382,6 +391,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7769602470925380267">Zaakceptuj i wyloguj się</translation>
 <translation id="7772032839648071052">Potwierdź hasło</translation>
 <translation id="780301667611848630">Nie, dziękuję</translation>
+<translation id="7830720446622801252">Niespersonalizowane usługi</translation>
 <translation id="7856733331829174190">Nie udało się pobrać pliku</translation>
 <translation id="7859704718976024901">Historia przeglądania</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -400,6 +410,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8076014560081431679">Zapisane ustawienia witryn nie zostaną usunięte i mogą zawierać informacje o Twoim korzystaniu z przeglądarki. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Zamknij wszystkie karty</translation>
 <translation id="8114753159095730575">Pobrany plik jest dostępny. Opcje są dostępne u dołu ekranu.</translation>
+<translation id="8160722851663543621">Wysyła zapytania wpisane na pasku adresu i w polu wyszukiwania oraz niektóre pliki cookie do domyślnej wyszukiwarki</translation>
 <translation id="8205564605687841303">Anuluj</translation>
 <translation id="8225985093977202398">Obrazy i pliki w pamięci podręcznej</translation>
 <translation id="8261506727792406068">Usuń</translation>
@@ -410,6 +421,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="842017693807136194">Zalogowano za pomocą:</translation>
 <translation id="8428045167754449968">Miejscowość</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
+<translation id="8438566539970814960">Ulepsz wyszukiwanie i przeglądanie</translation>
 <translation id="8458397775385147834">Usunąłeś 1 element</translation>
 <translation id="8487700953926739672">Dostępny offline</translation>
 <translation id="8503813439785031346">Nazwa użytkownika</translation>

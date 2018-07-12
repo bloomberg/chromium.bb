@@ -451,7 +451,6 @@
 <translation id="1657406563541664238">将使用情况统计信息和崩溃报告自动发送给 Google，帮助我们完善 <ph name="PRODUCT_NAME" /></translation>
 <translation id="1658424621194652532">此网页正在使用您的麦克风。</translation>
 <translation id="1660204651932907780">允许网站播放声音（推荐）</translation>
-<translation id="1660938185063657230">验证您的安全密钥</translation>
 <translation id="1661156625580498328">强制执行 AES 加密（推荐）。</translation>
 <translation id="1661245713600520330">此网页列出了已加载主进程中的所有模块以及稍后要加载的模块。</translation>
 <translation id="166179487779922818">密码太短。</translation>
@@ -563,7 +562,6 @@
 <translation id="1818007989243628752">删除 <ph name="USERNAME" /> 的密码</translation>
 <translation id="1819721979226826163">依次点按“应用通知”&gt;“Google Play 服务”。</translation>
 <translation id="1826516787628120939">正在检查</translation>
-<translation id="1827750274519118478">“画中画”模式中的视频将会停止播放。</translation>
 <translation id="1828378091493947763">该插件在此设备上不受支持</translation>
 <translation id="1828901632669367785">使用系统对话框进行打印...</translation>
 <translation id="1829192082282182671">缩小(&amp;O)</translation>
@@ -2459,7 +2457,6 @@
 <translation id="4856478137399998590">您的移动数据服务已激活，可以立即使用</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{在无痕式窗口中打开全部网址(&amp;I)}=1{在无痕式窗口中打开 1 个网址(&amp;I)}other{在无痕式窗口中打开全部（# 个）网址(&amp;I)}}</translation>
 <translation id="4858913220355269194">足球</translation>
-<translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> - 视频正在“画中画”模式中播放</translation>
 <translation id="4862050643946421924">添加设备…</translation>
 <translation id="4862642413395066333">签名 OCSP 响应</translation>
 <translation id="4863769717153320198">有效分辨率：<ph name="WIDTH" /> x <ph name="HEIGHT" />（默认）</translation>
@@ -3121,7 +3118,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - 摄像头或麦克风正在录制/录音</translation>
 <translation id="5835754902560991078">极短（0.6 秒）</translation>
 <translation id="5838456317242088717">当前的隐身会话</translation>
-<translation id="5842053879378944309">通过<ph name="APP_NAME" />使用 USB 安全密钥</translation>
+<translation id="5842053879378944309">对<ph name="APP_NAME" />使用 USB 安全密钥</translation>
 <translation id="5842497610951477805">蓝牙开关</translation>
 <translation id="5843250171025351504">您的设备已不再符合管理员指定的最低客户端版本的要求。请先更新操作系统，然后再登录。</translation>
 <translation id="5846929185714966548">标签页 4</translation>
@@ -4133,7 +4130,6 @@
 <translation id="7427348830195639090">后台网页：<ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{在新窗口中打开全部网址(&amp;N)}=1{在新窗口中打开 1 个网址(&amp;N)}other{在新窗口中打开全部（# 个）网址(&amp;N)}}</translation>
 <translation id="7434509671034404296">开发者</translation>
-<translation id="7436470008146509879">在 <ph name="DEVICE_TYPE" /> 上设置 Linux</translation>
 <translation id="7436921188514130341">糟糕！重命名过程中出错了。</translation>
 <translation id="7441830548568730290">其他用户</translation>
 <translation id="7442465037756169001">您的 Hangouts Meet 设备现已可供设置了。</translation>
@@ -4430,7 +4426,6 @@
 <translation id="7881969471599061635">停用字幕</translation>
 <translation id="7882358943899516840">提供商类型</translation>
 <translation id="7885253890047913815">近期使用过的目标打印机</translation>
-<translation id="7886917304091689118">正在 Chrome 中运行</translation>
 <translation id="7887334752153342268">复制</translation>
 <translation id="7887864092952184874">蓝牙鼠标已配对</translation>
 <translation id="7889565820482017512">显示大小</translation>
@@ -4601,7 +4596,6 @@
 <translation id="8118860139461251237">管理您的下载内容</translation>
 <translation id="81238879832906896">黄色和白色花朵</translation>
 <translation id="8124313775439841391">受管理的 ONC</translation>
-<translation id="8125562866093998907">该网站想验证您的安全密钥，以提高您帐号的安全性。</translation>
 <translation id="813082847718468539">查看网站信息</translation>
 <translation id="8131740175452115882">确认</translation>
 <translation id="8133676275609324831">在文件夹中显示(&amp;S)</translation>
@@ -4980,7 +4974,6 @@
 <translation id="8736288397686080465">此网站已在后台更新。</translation>
 <translation id="8737685506611670901">打开<ph name="PROTOCOL" />链接而非“<ph name="REPLACED_HANDLER_TITLE" />”</translation>
 <translation id="8737709691285775803">Shill</translation>
-<translation id="8741316211671074806">画中画</translation>
 <translation id="8743390665131937741">全屏放大镜的缩放级别：</translation>
 <translation id="8743864605301774756">上次更新时间：1 小时前</translation>
 <translation id="874689135111202667">{0,plural, =1{将 1 个文件上传到此网站？}other{将 # 个文件上传到此网站？}}</translation>
@@ -5254,6 +5247,7 @@
 <translation id="9158715103698450907">糟糕！系统在进行身份验证时发生了网络通信问题。请检查您的网络连接，然后重试。</translation>
 <translation id="9161070040817969420">以下网址的辅助框架：<ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">发送系统数据。此设备目前会自动向 Google 发送诊断数据以及设备和应用使用情况数据。此设备的所有者已强制启用了这项设置。如果您开启了“其他网络与应用活动记录”设置，这些信息将会存储在您的帐号中，以便您在“我的活动记录”页面中进行管理。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
+<translation id="916607977885256133">画中画</translation>
 <translation id="9169496697824289689">查看键盘快捷键</translation>
 <translation id="9169931577761441333">将“<ph name="APP_NAME" />”添加到主屏幕</translation>
 <translation id="9170397650136757332">现在请稍微移动一下您的手指，以便系统记录您指纹的各个部分</translation>
@@ -5304,7 +5298,6 @@
 <translation id="952992212772159698">未激活</translation>
 <translation id="957960681186851048">此网站试图自动下载多个文件</translation>
 <translation id="9580706199804957">无法连接到 Google 服务</translation>
-<translation id="958416628331784386">此标签页正在“画中画”模式中播放视频。</translation>
 <translation id="960719561871045870">运营商代码</translation>
 <translation id="960987915827980018">约剩 1 小时</translation>
 <translation id="962802172452141067">书签文件夹树</translation>

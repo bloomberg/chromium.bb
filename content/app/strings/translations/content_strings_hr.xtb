@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Prikaži sljedeći mjesec</translation>
 <translation id="512758898067543763">zaglavlje retka</translation>
 <translation id="5143125788380636750">epilog</translation>
-<translation id="5153163864850940242">Ovaj se videozapis prikazuje u značajci slike u slici</translation>
 <translation id="5164977714490026579">Vrijednost mora biti <ph name="MINIMUM" /> ili veća.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Unesite dio adrese ispred znaka "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" nije potpuna e-adresa.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">mjerač</translation>
 <translation id="6166809985690652833">pogovor</translation>
 <translation id="6213469881011901533">pojmovnik</translation>
-<translation id="6310801910862476708">Izlaz iz načina slika u slici</translation>
 <translation id="6398862346408813489">Prikaži ploču za odabir mjeseca</translation>
 <translation id="6404546809543547843">klizač vremena audiozapisa</translation>
 <translation id="6453774872122745852">zahvale</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">preuzmi medij</translation>
 <translation id="6981594929165378967">umetanje</translation>
 <translation id="6989848892321993519">Produljite broj znakova u tekstu na minimalno <ph name="MIN_CHARACTERS" /> (trenutačno imate 1 znak).</translation>
+<translation id="7090364526657522309">Linuxova usluga fonta</translation>
 <translation id="709897737746224366">Udovoljite zadanom formatu.</translation>
 <translation id="7139483182332611405">predgovor</translation>
 <translation id="7223624360433298498">proteklo vrijeme</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">sadržaj</translation>
 <translation id="8613126697340063924">upravljaj daljinskom reprodukcijom</translation>
 <translation id="862370744433916922">titl</translation>
-<translation id="8741316211671074806">Slika u slici</translation>
 <translation id="8750798805984357768">Izaberite jednu od tih opcija.</translation>
 <translation id="8785498733064193001">početak reprodukcije</translation>
 <translation id="8808573423886751634">poglavlje</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">Drugo...</translation>
 <translation id="9138385573473225930">upozorenje</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, počevši od <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Slika u slici</translation>
 <translation id="9168329111483466115">fusnota</translation>
 <translation id="954003015749068518">pokretanje načina slika u slici</translation>
 <translation id="966787709310836684">izbornik</translation>

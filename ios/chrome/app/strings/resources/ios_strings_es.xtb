@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">Escanea el código QR</translation>
 <translation id="1580783302095112590">Correo enviado</translation>
 <translation id="1582732959743469162">Esta acción detendrá el progreso de la descarga actual.</translation>
+<translation id="1605658421715042784">Copiar imagen</translation>
 <translation id="1612730193129642006">Mostrar cuadrícula de pestañas</translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="1646446875146297738">Al habilitar la opción No realizar seguimiento, se incluirá una solicitud con tu tráfico de navegación. El efecto dependerá de si un sitio web responde a la solicitud y de cómo se interpreta esa solicitud.
@@ -58,6 +59,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="1809939268435598390">Eliminar carpeta</translation>
 <translation id="1813414402673211292">Borrar datos de navegación</translation>
 <translation id="1820259098641718022">Añadida a Lista de lectura</translation>
+<translation id="1821253160463689938">Usa cookies para recordar tus preferencias aunque no visites esas páginas</translation>
 <translation id="1876721852596493031">Enviar datos de uso</translation>
 <translation id="1886928167269928266">Desde siempre</translation>
 <translation id="1911619930368729126">Subir a Google Drive</translation>
@@ -71,6 +73,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="209018056901015185">Ver como ordenador</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
+<translation id="2120297377148151361">Actividad e interacciones</translation>
 <translation id="213900355088104901">Para navegar en privado, abre una pestaña de incógnito</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2230173723195178503">Página web cargada</translation>
@@ -86,6 +89,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="2386793615875593361">1 foto seleccionada</translation>
 <translation id="2435457462613246316">Mostrar contraseña</translation>
 <translation id="2481538920734869610">AÑADIR CUENTA</translation>
+<translation id="2523184218357549926">Envía las URL de las páginas que visitas en Google</translation>
 <translation id="2523363575747517183">Este sitio web está intentando abrir otra aplicación reiteradamente.</translation>
 <translation id="2529021024822217800">Abrir todos</translation>
 <translation id="2572712655377361602">Una política de dispositivos ha bloqueado el acceso a tus fotos</translation>
@@ -115,6 +119,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="2898963176829412617">Nueva carpeta…</translation>
 <translation id="2903493209154104877">Direcciones</translation>
 <translation id="2909437209446960244">Pestañas recientes</translation>
+<translation id="2916171785467530738">Autocompletar búsquedas y URLs</translation>
 <translation id="291754862089661335">Coloca el código QR o de barras en este marco</translation>
 <translation id="2921219216347069551">Error al compartir página</translation>
 <translation id="2923448633003185837">Pegar y acceder</translation>
@@ -219,10 +224,12 @@ Tus datos se han cifrado con tu frase de contraseña de sincronización. Introd�
 <translation id="4860895144060829044">Llamar</translation>
 <translation id="4875622588773761625">¿Quieres que <ph name="PASSWORD_MANAGER_BRAND" /> actualice tu contraseña para este sitio web?</translation>
 <translation id="4881695831933465202">Abrir</translation>
+<translation id="4882831918239250449">Controlar cómo se utiliza el historial de navegación para personalizar la Búsqueda, los anuncios y mucho más</translation>
 <translation id="4904877109095351937">Marcar como leídas</translation>
 <translation id="4930268273022498155">Elimina los datos actuales. Para recuperarlos, cambia a <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Error al compartir tu elemento</translation>
 <translation id="4979397965658815378">Inicia sesión con tu cuenta de Google para acceder a tus marcadores, contraseñas, historial y otros ajustes desde todos tus dispositivos</translation>
+<translation id="5004416275253351869">Controles de actividad de Google</translation>
 <translation id="5005498671520578047">Copiar contraseña</translation>
 <translation id="5010803260590204777">Abre una pestaña de incógnito para navegar por la Web de forma privada.</translation>
 <translation id="5011684439661633295">Hola, <ph name="FULL_ACCOUNT_NAME" />:</translation>
@@ -249,6 +256,7 @@ Tus datos se han cifrado con tu frase de contraseña de sincronización. Introd�
 <translation id="5548760955356983418">Handoff te permite empezar a navegar en un sitio web en este dispositivo y continuar fácilmente en tu Mac más tarde. El sitio web abierto actualmente aparecerá en el Dock de tu Mac.
 
 Handoff también debe estar habilitado en la sección General de Configuración, y los dispositivos deben utilizar la misma cuenta de iCloud.</translation>
+<translation id="5554368826343982379">Sincronización y personalización</translation>
 <translation id="5556459405103347317">Volver a cargar</translation>
 <translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">No se puede descargar el archivo en este momento.</translation>
@@ -340,6 +348,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Pestañas recientes</translation>
 <translation id="7006788746334555276">Configuración de contenido</translation>
+<translation id="7017968314960951695">Utiliza el contenido de los sitios web que visitas, así como las interacciones y la actividad del navegador, para ofrecer una experiencia personalizada.</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
 <translation id="7031882061095297553">Sincronizar con</translation>
 <translation id="7053983685419859001">Bloquear</translation>
@@ -382,6 +391,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7769602470925380267">Aceptar y cerrar sesión</translation>
 <translation id="7772032839648071052">Repite la contraseña</translation>
 <translation id="780301667611848630">No, gracias</translation>
+<translation id="7830720446622801252">Servicios no personalizados</translation>
 <translation id="7856733331829174190">No se ha podido descargar</translation>
 <translation id="7859704718976024901">Historial de navegación</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -400,6 +410,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="8076014560081431679">No se eliminará la configuración guardada de los sitios web, lo cual puede reflejar tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Cerrar todas las pestañas</translation>
 <translation id="8114753159095730575">La descarga de archivos está disponible. Hay opciones disponibles en la parte inferior de la pantalla.</translation>
+<translation id="8160722851663543621">Envía las búsquedas de la barra de direcciones y del cuadro de búsqueda junto con algunas cookies a tu buscador predeterminado</translation>
 <translation id="8205564605687841303">Cancelar</translation>
 <translation id="8225985093977202398">Archivos e imágenes en caché</translation>
 <translation id="8261506727792406068">Eliminar</translation>
@@ -410,6 +421,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="842017693807136194">Has iniciado sesión como</translation>
 <translation id="8428045167754449968">Ciudad/Localidad</translation>
 <translation id="8428213095426709021">Configuración</translation>
+<translation id="8438566539970814960">Mejorar las búsquedas y la navegación</translation>
 <translation id="8458397775385147834">1 elemento eliminado</translation>
 <translation id="8487700953926739672">Disponible sin conexión</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>

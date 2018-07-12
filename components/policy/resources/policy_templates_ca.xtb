@@ -213,12 +213,6 @@
       La política s'ha de definir en un URL del qual <ph name="PRODUCT_OS_NAME" /> pugui baixar els Termes i condicions, que han de trobar-se com a text sense format proporcionat com a text/sense format de tipus MIME. No es permet el marcatge.</translation>
 <translation id="1750315445671978749">Bloqueja totes les baixades</translation>
 <translation id="1781356041596378058">Aquesta política també controla l'accés a les Opcions per a desenvolupadors d'Android. Si l'estableixes en "true", els usuaris no hi poden accedir. Si l'estableixes en "false" o la deixes sense establir, els usuaris hi poden accedir tocant set vegades el número de compilació que hi ha a l'aplicació de configuració d'Android.</translation>
-<translation id="178832255504524723">Configura l'URL per canviar la contrasenya (només esquemes HTTP i HTTPS). El servei de protecció de contrasenyes enviarà els usuaris a aquest URL perquè canviïn la contrasenya si han estat víctimes d'un atac de pesca.
-      Perquè <ph name="PRODUCT_NAME" /> pugui capturar correctament l'empremta digital de la nova contrasenya en aquesta pàgina per canviar de contrasenya, assegura't que la pàgina segueixi les directrius descrites a https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si aquesta opció de configuració està activada, el servei de protecció de contrasenyes enviarà els usuaris a aquest URL perquè canviïn la contrasenya si han estat víctimes d'un atac de pesca.
-      Si aquesta opció de configuració està desactivada o no s'estableix, el servei de protecció de contrasenyes enviarà els usuaris a https://myaccounts.google.com perquè canviïn la contrasenya.
-      Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="1797233582739332495">Mostra una sol·licitud periòdica a l'usuari per indicar-li que cal reiniciar el navegador</translation>
 <translation id="1803646570632580723">Llista d'aplicacions fixades perquè es mostrin a la barra d'execució ràpida</translation>
 <translation id="1808715480127969042">Bloqueja les galetes en aquests llocs</translation>
@@ -1370,14 +1364,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4980635395568992380">Tipus de dades:</translation>
 <translation id="4983201894483989687">Permet que s'executin els connectors que estiguin obsolets</translation>
 <translation id="4988291787868618635">Acció que cal dur a terme quan s'arriba al retard d'inactivitat</translation>
-<translation id="4990301296093321860">Et permet controlar l'activació d'un advertiment sobre la protecció de contrasenyes, que avisa els usuaris quan reutilitzen una contrasenya protegida en llocs web potencialment sospitosos.
-
-      Pots utilitzar les polítiques PasswordProtectionLoginURLs i PasswordProtectionChangePasswordURL per configurar quina contrasenya vols protegir.
-
-      Si aquesta política s'estableix en "PasswordProtectionWarningOff", no es mostrarà cap advertiment sobre la protecció de contrasenyes.
-      Si aquesta política s'estableix en "PasswordProtectionWarningOnPasswordReuse", l'advertiment sobre la protecció de contrasenyes es mostrarà quan l'usuari reutilitzi la seva contrasenya protegida en un lloc web que no es trobi a la llista blanca.
-      Si aquesta política s'estableix en "PasswordProtectionWarningOnPhishingReuse", l'advertiment sobre la protecció de contrasenyes es mostrarà quan l'usuari reutilitzi la seva contrasenya protegida en un lloc web de pesca.
-      Si aquesta política no es configura, l'advertiment sobre la protecció de contrasenyes s'activarà quan l'usuari reutilitzi la seva contrasenya protegida en un lloc web de pesca, però l'usuari podrà canviar aquesta opció de configuració.</translation>
 <translation id="4995548127349206948">Si l'autenticació NTLMv2 està activada.</translation>
 <translation id="5047604665028708335">Permet l'accés a llocs situats fora de paquets de contingut.</translation>
 <translation id="5052081091120171147">Si està activada, aquesta política fa que l'historial de navegació s'importi des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, no s'importarà cap historial de navegació. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
@@ -1870,13 +1856,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si no s'estableix aquesta política o la llista és buida, es podrà accedir a tots els esquemes a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Configuració dels usuaris gestionats localment</translation>
-<translation id="6654559957643809067">Activa la predicció de xarxa a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció de configuració.
-
-      No només controla la baixada prèvia de DNS, sinó també la connexió i la renderització prèvies de TCP i de SSL de les pàgines web.
-
-      Si establiu aquesta preferència en Sempre, en Mai o en Només Wi-Fi, els usuaris no podran canviar ni substituir aquesta opció de configuració a <ph name="PRODUCT_NAME" />.
-
-      Si aquesta política no s'estableix, la predicció de xarxa s'activarà però l'usuari podrà canviar-la.</translation>
 <translation id="6658245400435704251">Especifica el nombre de segons fins a què un dispositiu pot retardar aleatòriament la baixada d'una actualització des del moment en què l'actualització es transmet per primera vegada des del servidor. El dispositiu pot esperar una part d'aquest temps en termes de rellotge i la part restant en termes de nombre de comprovacions d'actualitzacions. En qualsevol cas, la dispersió tendeix cap amunt a una quantitat constant de temps, de manera que un dispositiu mai no es quedi encallat mentre espera que es baixi una actualització.</translation>
 <translation id="6665670272107384733">Defineix amb quina freqüència l'usuari ha d'introduir la contrasenya per utilitzar el desbloqueig ràpid</translation>
 <translation id="6681229465468164801">Permet definir una llista de patrons d'URL que especifiquin llocs web que no poden demanar a l'usuari que els concedeixi accés a un dispositiu USB.
