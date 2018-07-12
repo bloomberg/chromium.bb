@@ -21,7 +21,7 @@ constexpr char kAssistantSettingsPrefix[] = "googleassistant://settings";
 // TODO(dmblack): Wire up actual Assistant Reminders URL.
 constexpr char kAssistantRemindersWebUrl[] = R"(data:text/html,
   <html>
-    <body style="padding:32px;">
+    <body style="padding:0 32px;">
       <h3>Assistant Reminders</h3>
       <p>Coming Soon! :)</p>
     </body>
@@ -31,7 +31,7 @@ constexpr char kAssistantRemindersWebUrl[] = R"(data:text/html,
 // TODO(dmblack): Wire up actual Assistant Settings URL.
 constexpr char kAssistantSettingsWebUrl[] = R"(data:text/html,
   <html>
-    <body style="padding:32px;">
+    <body style="padding:0 32px;">
       <h3>Assistant Settings</h3>
       <p>Coming Soon! :)</p>
     </body>

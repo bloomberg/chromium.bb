@@ -14,7 +14,8 @@ namespace ash {
 // CaptionButtonId -------------------------------------------------------------
 
 enum class CaptionButtonId {
-  kClose = 1,
+  kBack = 1,
+  kClose,
   kMinimize,
 };
 
@@ -45,6 +46,9 @@ class CaptionBar : public views::View, views::ButtonListener {
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void set_delegate(CaptionBarDelegate* delegate) { delegate_ = delegate; }
+
+  // Sets visibility for the caption button identified by |id|.
+  void SetButtonVisible(CaptionButtonId id, bool visible);
 
  private:
   void InitLayout();

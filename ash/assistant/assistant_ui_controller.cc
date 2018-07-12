@@ -152,11 +152,14 @@ void AssistantUiController::OnScreenContextRequestStateChanged(
 
 bool AssistantUiController::OnCaptionButtonPressed(CaptionButtonId id) {
   switch (id) {
-    case CaptionButtonId::kMinimize:
-      UpdateUiMode(AssistantUiMode::kMiniUi);
+    case CaptionButtonId::kBack:
+      UpdateUiMode(AssistantUiMode::kMainUi);
       return true;
     case CaptionButtonId::kClose:
       return false;
+    case CaptionButtonId::kMinimize:
+      UpdateUiMode(AssistantUiMode::kMiniUi);
+      return true;
   }
   return false;
 }
