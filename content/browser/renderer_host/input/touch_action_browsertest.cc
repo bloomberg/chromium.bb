@@ -357,7 +357,9 @@ class TouchActionBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TouchActionBrowserTest);
 };
 
-#if defined(DEBUG)
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
+    defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(THREAD_SANITIZER)
 #define MAYBE_DefaultAuto DISABLED_DefaultAuto
 #else
 #define MAYBE_DefaultAuto DefaultAuto
@@ -379,7 +381,9 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_DefaultAuto) {
 
 // Verify that touching a touch-action: none region disables scrolling and
 // enables all touch events to be sent.
-#if defined(DEBUG)
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
+    defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(THREAD_SANITIZER)
 #define MAYBE_TouchActionNone DISABLED_TouchActionNone
 #else
 #define MAYBE_TouchActionNone TouchActionNone
@@ -396,7 +400,9 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_TouchActionNone) {
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("eventCounts.touchcancel"));
 }
 
-#if defined(DEBUG)
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
+    defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(THREAD_SANITIZER)
 #define MAYBE_PanYMainThreadJanky DISABLED_PanYMainThreadJanky
 #else
 #define MAYBE_PanYMainThreadJanky PanYMainThreadJanky
@@ -408,7 +414,9 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_PanYMainThreadJanky) {
                 gfx::Vector2d(0, 45), kShortJankTime);
 }
 
-#if defined(DEBUG)
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
+    defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(THREAD_SANITIZER)
 #define MAYBE_PanXMainThreadJanky DISABLED_PanXMainThreadJanky
 #else
 #define MAYBE_PanXMainThreadJanky PanXMainThreadJanky
@@ -449,7 +457,9 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
   DoTwoFingerTouchScroll(false, gfx::Vector2d(20, 0));
 }
 
-#if defined(DEBUG)
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
+    defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(THREAD_SANITIZER)
 #define MAYBE_PanXYMainThreadJanky DISABLED_PanXYMainThreadJanky
 #else
 #define MAYBE_PanXYMainThreadJanky PanXYMainThreadJanky
@@ -461,7 +471,9 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_PanXYMainThreadJanky) {
                 gfx::Vector2d(45, 45), kShortJankTime);
 }
 
-#if defined(DEBUG)
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
+    defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(THREAD_SANITIZER)
 #define MAYBE_PanXYAtXAreaMainThreadJanky DISABLED_PanXYAtXAreaMainThreadJanky
 #else
 #define MAYBE_PanXYAtXAreaMainThreadJanky PanXYAtXAreaMainThreadJanky
@@ -474,7 +486,9 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                 gfx::Vector2d(45, 0), kShortJankTime);
 }
 
-#if defined(DEBUG)
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
+    defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(THREAD_SANITIZER)
 #define MAYBE_PanXYAtYAreaMainThreadJanky DISABLED_PanXYAtYAreaMainThreadJanky
 #else
 #define MAYBE_PanXYAtYAreaMainThreadJanky PanXYAtYAreaMainThreadJanky
@@ -487,7 +501,9 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                 gfx::Vector2d(0, 45), kShortJankTime);
 }
 
-#if defined(DEBUG)
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
+    defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(THREAD_SANITIZER)
 #define MAYBE_PanXYAtAutoYOverlapAreaMainThreadJanky \
   DISABLED_PanXYAtAutoYOverlapAreaMainThreadJanky
 #else
@@ -502,7 +518,9 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                 gfx::Vector2d(0, 45), kShortJankTime);
 }
 
-#if defined(DEBUG)
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
+    defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(THREAD_SANITIZER)
 #define MAYBE_PanXYAtAutoXOverlapAreaMainThreadJanky \
   DISABLED_PanXYAtAutoXOverlapAreaMainThreadJanky
 #else
