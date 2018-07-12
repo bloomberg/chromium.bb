@@ -187,11 +187,9 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   base::ObserverList<ShelfObserver> observers_;
 
   // Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
-  // TODO(mash): Facilitate simliar functionality in mash: crbug.com/631216
   std::unique_ptr<AutoHideEventHandler> auto_hide_event_handler_;
 
   // Forwards touch gestures on a bezel sensor to the shelf.
-  // TODO(mash): Facilitate simliar functionality in mash: crbug.com/636647
   std::unique_ptr<ShelfBezelEventHandler> bezel_event_handler_;
 
   // True while the animation to enter or exit tablet mode is running. Sometimes
