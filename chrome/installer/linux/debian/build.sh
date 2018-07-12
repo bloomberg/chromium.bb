@@ -278,6 +278,9 @@ case "$TARGETARCH" in
   arm )
     export ARCHITECTURE="armhf"
     ;;
+  arm64 )
+    export ARCHITECTURE="arm64"
+    ;;
   ia32 )
     export ARCHITECTURE="i386"
     ;;
