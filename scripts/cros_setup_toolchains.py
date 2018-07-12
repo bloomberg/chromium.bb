@@ -77,6 +77,11 @@ HOST_POST_CROSS_PACKAGES = (
 # so we have to list them here and wait.  Once it completes, entries here can
 # be removed so they'll end up on bots & dev's systems.
 NEW_PACKAGES = (
+    'sys-libs/llvm-libunwind',
+    'cross-armv7a-cros-linux-gnueabi/llvm-libunwind',
+    'cross-armv7a-cros-linux-gnueabihf/llvm-libunwind',
+    'cross-aarch64-cros-linux-gnu/llvm-libunwind',
+    'cross-x86_64-cros-linux-gnu/llvm-libunwind',
 )
 
 # Enable the Go compiler for these targets.
@@ -107,6 +112,7 @@ TARGET_LLVM_PKGS_ENABLED = (
 LLVM_PKGS_TABLE = {
     'ex_libcxxabi' : ['--ex-pkg', 'sys-libs/libcxxabi'],
     'ex_libcxx' : ['--ex-pkg', 'sys-libs/libcxx'],
+    'ex_llvm-libunwind' : ['--ex-pkg', 'sys-libs/llvm-libunwind'],
 }
 
 # Overrides for {gcc,binutils}-config, pick a package with particular suffix.
@@ -135,6 +141,7 @@ class Crossdev(object):
       'libcxxabi': 'sys-libs',
       'libcxx': 'sys-libs',
       'elfutils': 'dev-libs',
+      'llvm-libunwind': 'sys-libs',
   }
 
   @classmethod
@@ -1315,6 +1322,13 @@ def main(argv):
   targets_wanted = set(options.targets.split(','))
   boards_wanted = (set(options.include_boards.split(','))
                    if options.include_boards else set())
+
+  # pylint: disable=global-statement
+  global LLVM_PKGS_TABLE
+  if options.usepkg:
+    # For bootstrapping, disable the new package cross-*/llvm-libunwind
+    # Remove after SDK builder uploads new prebuilts.
+    del LLVM_PKGS_TABLE['ex_llvm-libunwind']
 
   if options.cfg_name:
     ShowConfig(options.cfg_name)
