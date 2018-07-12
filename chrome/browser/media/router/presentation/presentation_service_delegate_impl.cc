@@ -673,7 +673,7 @@ void PresentationServiceDelegateImpl::ClearDefaultPresentationRequest() {
     observer.OnDefaultPresentationRemoved();
 }
 
-std::unique_ptr<content::MediaController>
+std::unique_ptr<media::MediaController>
 PresentationServiceDelegateImpl::GetMediaController(
     int render_process_id,
     int render_frame_id,

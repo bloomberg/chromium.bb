@@ -5,7 +5,7 @@
 #include "content/browser/media/flinging_renderer.h"
 
 #include "base/version.h"
-#include "content/public/browser/media_controller.h"
+#include "media/base/media_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,7 +14,7 @@ using ::testing::StrictMock;
 
 namespace content {
 
-class MockMediaController : public MediaController {
+class MockMediaController : public media::MediaController {
  public:
   MOCK_METHOD0(Play, void());
   MOCK_METHOD0(Pause, void());
@@ -27,7 +27,7 @@ class FlingingRendererTest : public testing::Test {
  public:
   FlingingRendererTest()
       : media_controller_(new StrictMock<MockMediaController>()),
-        renderer_(std::unique_ptr<MediaController>(media_controller_)) {}
+        renderer_(std::unique_ptr<media::MediaController>(media_controller_)) {}
 
  protected:
   StrictMock<MockMediaController>* media_controller_;

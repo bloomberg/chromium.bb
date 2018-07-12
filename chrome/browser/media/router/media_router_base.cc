@@ -86,7 +86,7 @@ std::vector<MediaRoute> MediaRouterBase::GetCurrentRoutes() const {
   return internal_routes_observer_->current_routes;
 }
 
-std::unique_ptr<content::MediaController> MediaRouterBase::GetMediaController(
+std::unique_ptr<media::MediaController> MediaRouterBase::GetMediaController(
     const MediaRoute::Id& route_id) {
   return nullptr;
 }

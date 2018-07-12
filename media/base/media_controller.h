@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_MEDIA_CONTROLLER_H_
-#define CONTENT_PUBLIC_BROWSER_MEDIA_CONTROLLER_H_
+#ifndef MEDIA_BASE_MEDIA_CONTROLLER_H_
+#define MEDIA_BASE_MEDIA_CONTROLLER_H_
 
 #include "base/time/time.h"
 
-namespace content {
+namespace media {
 
 // High level interface that allows a controller to issue simple media commands.
 // Modeled after the media_router.mojom.MediaController interface.
@@ -39,6 +39,6 @@ class MediaController {
   virtual void Seek(base::TimeDelta time) = 0;
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_PUBLIC_BROWSER_MEDIA_CONTROLLER_H_
+#endif  // MEDIA_BASE_MEDIA_CONTROLLER_H_

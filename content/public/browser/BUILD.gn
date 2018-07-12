@@ -156,7 +156,6 @@ jumbo_source_set("browser_sources") {
     "login_delegate.h",
     "manifest_icon_downloader.h",
     "media_capture_devices.h",
-    "media_controller.h",
     "media_device_id.cc",
     "media_device_id.h",
     "media_request_state.h",

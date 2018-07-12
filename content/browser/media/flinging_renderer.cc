@@ -14,7 +14,8 @@
 
 namespace content {
 
-FlingingRenderer::FlingingRenderer(std::unique_ptr<MediaController> controller)
+FlingingRenderer::FlingingRenderer(
+    std::unique_ptr<media::MediaController> controller)
     : controller_(std::move(controller)) {}
 
 FlingingRenderer::~FlingingRenderer() = default;
