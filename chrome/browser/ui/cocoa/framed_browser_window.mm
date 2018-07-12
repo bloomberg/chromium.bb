@@ -15,12 +15,12 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
-#import "chrome/browser/ui/browser_window_touch_bar_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/nsgraphics_context_additions.h"
@@ -188,7 +188,7 @@
   if (@available(macOS 10.12.2, *)) {
     BrowserWindowController* bwc =
         [BrowserWindowController browserWindowControllerForWindow:self];
-    return [[bwc browserWindowTouchBar] makeTouchBar];
+    return [[bwc browserWindowTouchBarController] makeTouchBar];
   } else {
     return nil;
   }

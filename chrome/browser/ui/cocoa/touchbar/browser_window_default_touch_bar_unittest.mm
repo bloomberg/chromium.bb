@@ -13,9 +13,9 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
-#import "chrome/browser/ui/browser_window_touch_bar_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
+#import "chrome/browser/ui/cocoa/touchbar/browser_window_default_touch_bar.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -45,7 +45,7 @@ const int kForwardSegmentIndex = 1;
 
 }  // namespace
 
-class BrowserWindowTouchBarUnitTest : public CocoaProfileTest {
+class BrowserWindowDefaultTouchBarUnitTest : public CocoaProfileTest {
  public:
   void SetUp() override {
     CocoaProfileTest::SetUp();
@@ -55,8 +55,9 @@ class BrowserWindowTouchBarUnitTest : public CocoaProfileTest {
 
     command_updater_ = browser()->command_controller();
 
-    touch_bar_.reset(
-        [[BrowserWindowTouchBar alloc] initWithBrowser:browser() window:nil]);
+    touch_bar_.reset([[BrowserWindowDefaultTouchBar alloc]
+        initWithBrowser:browser()
+             controller:nil]);
   }
 
   NSString* GetFullscreenTouchBarItemId(NSString* id) {
@@ -81,11 +82,11 @@ class BrowserWindowTouchBarUnitTest : public CocoaProfileTest {
   // Used to enable the the browser window touch bar.
   base::test::ScopedFeatureList feature_list;
 
-  base::scoped_nsobject<BrowserWindowTouchBar> touch_bar_;
+  base::scoped_nsobject<BrowserWindowDefaultTouchBar> touch_bar_;
 };
 
 // Tests to check if the touch bar contains the correct items.
-TEST_F(BrowserWindowTouchBarUnitTest, TouchBarItems) {
+TEST_F(BrowserWindowDefaultTouchBarUnitTest, TouchBarItems) {
   if (@available(macOS 10.12.2, *)) {
     // Set to tab fullscreen.
     FullscreenController* fullscreen_controller =
@@ -126,7 +127,7 @@ TEST_F(BrowserWindowTouchBarUnitTest, TouchBarItems) {
 }
 
 // Tests the reload or stop touch bar item.
-TEST_F(BrowserWindowTouchBarUnitTest, ReloadOrStopTouchBarItem) {
+TEST_F(BrowserWindowDefaultTouchBarUnitTest, ReloadOrStopTouchBarItem) {
   if (@available(macOS 10.12.2, *)) {
     NSTouchBar* touch_bar = [touch_bar_ makeTouchBar];
     [touch_bar_ setIsPageLoading:NO];
@@ -145,7 +146,7 @@ TEST_F(BrowserWindowTouchBarUnitTest, ReloadOrStopTouchBarItem) {
 
 // Tests to see if the back/forward items on the touch bar is in sync with the
 // back and forward commands.
-TEST_F(BrowserWindowTouchBarUnitTest, BackForwardCommandUpdate) {
+TEST_F(BrowserWindowDefaultTouchBarUnitTest, BackForwardCommandUpdate) {
   if (@available(macOS 10.12.2, *)) {
     NSSegmentedControl* back_forward_control = [touch_bar_ backForwardControl];
 
