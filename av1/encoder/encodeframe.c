@@ -4270,25 +4270,24 @@ static int is_screen_content(const uint8_t *src, int use_hbd, int bd,
   return counts * blk_h * blk_w * 10 > width * height;
 }
 
+static const uint8_t ref_frame_flag_list[REF_FRAMES] = { 0,
+                                                         AOM_LAST_FLAG,
+                                                         AOM_LAST2_FLAG,
+                                                         AOM_LAST3_FLAG,
+                                                         AOM_GOLD_FLAG,
+                                                         AOM_BWD_FLAG,
+                                                         AOM_ALT2_FLAG,
+                                                         AOM_ALT_FLAG };
+
 // Enforce the number of references for each arbitrary frame limited to
 // (INTER_REFS_PER_FRAME - 1)
 static void enforce_max_ref_frames(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  static const int flag_list[REF_FRAMES] = { 0,
-                                             AOM_LAST_FLAG,
-                                             AOM_LAST2_FLAG,
-                                             AOM_LAST3_FLAG,
-                                             AOM_GOLD_FLAG,
-                                             AOM_BWD_FLAG,
-                                             AOM_ALT2_FLAG,
-                                             AOM_ALT_FLAG };
   MV_REFERENCE_FRAME ref_frame;
   int total_valid_refs = 0;
-
-  (void)flag_list;
-
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    if (cpi->ref_frame_flags & flag_list[ref_frame]) total_valid_refs++;
+    if (cpi->ref_frame_flags & ref_frame_flag_list[ref_frame])
+      total_valid_refs++;
   }
 
   // NOTE(zoeliu): When all the possible reference frames are availble, we
@@ -4739,6 +4738,15 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                              cm->allow_high_precision_mv) +
           cpi->gmtype_cost[cm->global_motion[frame].wmtype] -
           cpi->gmtype_cost[IDENTITY];
+    }
+    // clear disabled ref_frames
+    for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
+      const int ref_disabled =
+          !(cpi->ref_frame_flags & ref_frame_flag_list[frame]);
+      if (ref_disabled && cpi->sf.recode_loop != DISALLOW_RECODE) {
+        cpi->gmparams_cost[frame] = 0;
+        cm->global_motion[frame] = default_warp_params;
+      }
     }
     cpi->global_motion_search_done = 1;
   }
