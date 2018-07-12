@@ -69,7 +69,7 @@ class TestVectorTest : public ::libaom_test::DecoderTest,
     ::libaom_test::MD5 md5_res;
 #if !CONFIG_LOWBITDEPTH
     const aom_img_fmt_t shifted_fmt =
-        (aom_img_fmt)(img.fmt ^ (img.fmt & AOM_IMG_FMT_HIGHBITDEPTH));
+        (aom_img_fmt)(img.fmt & ~AOM_IMG_FMT_HIGHBITDEPTH);
     if (img.bit_depth == 8 && shifted_fmt != img.fmt) {
       aom_image_t *img_shifted =
           aom_img_alloc(NULL, shifted_fmt, img.d_w, img.d_h, 16);
