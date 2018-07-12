@@ -134,8 +134,13 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)viewWillAppear:(BOOL)animated {
   [self.topToolbar.pageControl setSelectedPage:self.currentPage animated:YES];
   [self configureViewControllerForCurrentSizeClassesAndPage];
+  // The toolbars should be hidden (alpha 0.0) before the tab appears, so that
+  // they can be animated in. They can't be set to 0.0 here, because if
+  // |animated| is YES, this method is being called inside the animation block.
   if (animated && self.transitionCoordinator) {
     [self animateToolbarsForAppearance];
+  } else {
+    [self showToolbars];
   }
   [super viewWillAppear:animated];
 }
@@ -143,8 +148,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)viewWillDisappear:(BOOL)animated {
   self.undoCloseAllAvailable = NO;
   [self.regularTabsDelegate discardSavedClosedItems];
+  // When the view disappears, the toolbar alpha should be set to 0; either as
+  // part of the animation, or directly with -hideToolbars.
   if (animated && self.transitionCoordinator) {
     [self animateToolbarsForDisappearance];
+  } else {
+    [self hideToolbars];
   }
   [super viewWillDisappear:animated];
 }
@@ -279,7 +288,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (UIView*)proxyPositionForTransitionContext:
     (id<UIViewControllerContextTransitioning>)context {
-  return self.scrollView;
+  return self.floatingButton;
 }
 
 #pragma mark - Public
@@ -561,7 +570,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   TabGridNewTabButton* button = [TabGridNewTabButton
       buttonWithSizeClass:TabGridNewTabButtonSizeClassLarge];
   button.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.view addSubview:button];
+  // Position the floating button over the scroll view, so transition animations
+  // can be above the button but below the toolbars.
+  [self.view insertSubview:button aboveSubview:self.scrollView];
   self.floatingButton = button;
   CGFloat verticalInset = kTabGridFloatingButtonVerticalInsetSmall;
   if (self.traitCollection.verticalSizeClass ==
@@ -676,27 +687,36 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       kTabGridCloseAllButtonIdentifier;
 }
 
+// Shows (by setting the alpha to 1.0) the two toolbar views. Suitable for use
+// in animations.
+- (void)showToolbars {
+  self.topToolbar.alpha = 1.0;
+  self.bottomToolbar.alpha = 1.0;
+}
+
+// Hides (by setting the alpha to 0.0) the two toolbar views. Suitable for use
+// in animations.
+- (void)hideToolbars {
+  self.topToolbar.alpha = 0.0;
+  self.bottomToolbar.alpha = 0.0;
+}
+
 // Translates the toolbar views offscreen and then animates them back in using
 // the transition coordinator. Transitions are preferred here since they don't
 // interact with the layout system at all.
 - (void)animateToolbarsForAppearance {
   DCHECK(self.transitionCoordinator);
-  // Set toolbar alphas to 0 prior to animation.
-  self.topToolbar.alpha = 0;
-  self.bottomToolbar.alpha = 0;
   // Unless reduce motion is enabled, hide the scroll view during the
   // animation.
   if (!UIAccessibilityIsReduceMotionEnabled()) {
     self.scrollView.hidden = YES;
   }
-
   // Fade the toolbars in for the last 60% of the transition.
   auto keyframe = ^{
     [UIView addKeyframeWithRelativeStartTime:0.4
                             relativeDuration:0.6
                                   animations:^{
-                                    self.topToolbar.alpha = 1.0;
-                                    self.bottomToolbar.alpha = 1.0;
+                                    [self showToolbars];
                                   }];
   };
   // Animation block that does the keyframe animation.
@@ -712,8 +732,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // complete) as part of the completion.
   auto cleanup = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
     self.scrollView.hidden = NO;
-    self.topToolbar.alpha = 1.0;
-    self.bottomToolbar.alpha = 1.0;
+    [self showToolbars];
   };
 
   // Animate the toolbar alphas alongside the current transition.
@@ -724,14 +743,17 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Translates the toolbar views offscreen using the transition coordinator.
 - (void)animateToolbarsForDisappearance {
   DCHECK(self.transitionCoordinator);
-
+  // Unless reduce motion is enabled, hide the scroll view during the
+  // animation.
+  if (!UIAccessibilityIsReduceMotionEnabled()) {
+    self.scrollView.hidden = YES;
+  }
   // Fade the toolbars out in the first 66% of the transition.
   auto keyframe = ^{
     [UIView addKeyframeWithRelativeStartTime:0
                             relativeDuration:0.66
                                   animations:^{
-                                    self.topToolbar.alpha = 0.0;
-                                    self.bottomToolbar.alpha = 0.0;
+                                    [self hideToolbars];
                                   }];
   };
 
@@ -746,11 +768,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
   // Hide the scroll view (and thus the tab grids) until the transition
   // completes. Restore the toolbar opacity when the transition completes.
-  self.scrollView.hidden = YES;
   auto cleanup = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
     self.scrollView.hidden = NO;
-    self.topToolbar.alpha = 1.0;
-    self.bottomToolbar.alpha = 1.0;
   };
 
   // Animate the toolbar alphas alongside the current transition.
