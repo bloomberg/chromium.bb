@@ -5,12 +5,20 @@
 import("//build/config/c++/c++.gni")
 
 config("libunwind_config") {
-  # ValueAsBitPattern in Unwind-EHABI.cpp is only used on Debug builds.
-  cflags = [ "-Wno-unused-function" ]
+  cflags = [
+    "-fstrict-aliasing",
+    "-fPIC",
+
+    # ValueAsBitPattern in Unwind-EHABI.cpp is only used on Debug builds.
+    "-Wno-unused-function",
+  ]
 }
 
 source_set("libunwind") {
-  visibility = [ "//buildtools/third_party/libc++abi" ]
+  visibility = [
+    "//buildtools/third_party/libc++abi",
+    "//components/tracing",
+  ]
 
   if (libcpp_is_static) {
     defines = [ "_LIBUNWIND_DISABLE_VISIBILITY_ANNOTATIONS" ]
@@ -40,7 +48,6 @@ source_set("libunwind") {
     "//build/config/compiler:no_chromium_code",
     "//build/config/compiler:exceptions",
     "//build/config/compiler:rtti",
-    "//buildtools/third_party/libc++:config",
 
     # Must be after no_chromium_code
     ":libunwind_config",
