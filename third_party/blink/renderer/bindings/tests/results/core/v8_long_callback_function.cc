@@ -109,7 +109,6 @@ v8::Maybe<int32_t> V8LongCallbackFunction::Invoke(ScriptWrappable* callback_this
   }
 }
 
-CORE_TEMPLATE_EXPORT
 v8::Maybe<int32_t> V8PersistentCallbackFunction<V8LongCallbackFunction>::Invoke(ScriptWrappable* callback_this_value, int32_t num1, int32_t num2) {
   return Proxy()->Invoke(
       callback_this_value, num1, num2);

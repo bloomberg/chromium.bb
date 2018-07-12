@@ -53,10 +53,8 @@ class MODULES_TEMPLATE_CLASS_EXPORT V8PersistentCallbackFunction<V8VoidCallbackF
   // Returns a wrapper-tracing version of this callback function.
   V8CallbackFunction* ToNonV8Persistent() { return Proxy(); }
 
-  MODULES_EXTERN_TEMPLATE_EXPORT
   v8::Maybe<void> Invoke(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;
-  MODULES_EXTERN_TEMPLATE_EXPORT
-  void InvokeAndReportException(ScriptWrappable* callback_this_value);
+  MODULES_EXPORT void InvokeAndReportException(ScriptWrappable* callback_this_value);
 
  private:
   explicit V8PersistentCallbackFunction(V8CallbackFunction* callback_function)

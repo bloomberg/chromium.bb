@@ -32,17 +32,6 @@
 //
 // - PLATFORM_EXPORT
 //   Exports non-template symbols.
-//
-// - PLATFORM_EXTERN_TEMPLATE_EXPORT
-//   Applicable to template declarations (except for definitions). The
-//   corresponding definition must come along with PLATFORM_TEMPLATE_EXPORT.
-//   Template specialization uses this macro to declare that such a
-//   specialization exists without providing an actual definition.
-//
-// - PLATFORM_TEMPLATE_EXPORT
-//   Applicable to template definitions whose declarations are annotated
-//   with PLATFORM_EXTERN_TEMPLATE_EXPORT. Template specialization uses this
-//   macro to provide an actual definition.
 
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLATFORM_EXPORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLATFORM_EXPORT_H_
@@ -80,29 +69,6 @@
 #endif  // defined(COMPILER_GCC)
 
 #endif  // !defined(COMPONENT_BUILD)
-
-//
-// PLATFORM_EXTERN_TEMPLATE_EXPORT
-// PLATFORM_TEMPLATE_EXPORT
-//
-#if BLINK_PLATFORM_IMPLEMENTATION
-
-#if defined(COMPILER_MSVC)
-#define PLATFORM_EXTERN_TEMPLATE_EXPORT PLATFORM_EXPORT
-#define PLATFORM_TEMPLATE_EXPORT PLATFORM_EXPORT
-#endif
-
-#if defined(COMPILER_GCC)
-#define PLATFORM_EXTERN_TEMPLATE_EXPORT PLATFORM_EXPORT
-#define PLATFORM_TEMPLATE_EXPORT
-#endif
-
-#else  // BLINK_PLATFORM_IMPLEMENTATION
-
-#define PLATFORM_EXTERN_TEMPLATE_EXPORT PLATFORM_EXPORT
-#define PLATFORM_TEMPLATE_EXPORT
-
-#endif  // BLINK_PLATFORM_IMPLEMENTATION
 
 // TODO(thakis): Remove all references to this, https://crbug.com/859989
 #define PLATFORM_TEMPLATE_CLASS_EXPORT

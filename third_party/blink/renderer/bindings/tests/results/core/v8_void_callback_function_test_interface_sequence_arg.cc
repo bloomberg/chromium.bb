@@ -110,13 +110,11 @@ void V8VoidCallbackFunctionTestInterfaceSequenceArg::InvokeAndReportException(Sc
   ALLOW_UNUSED_LOCAL(maybe_result);
 }
 
-CORE_TEMPLATE_EXPORT
 v8::Maybe<void> V8PersistentCallbackFunction<V8VoidCallbackFunctionTestInterfaceSequenceArg>::Invoke(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceImplementation>>& arg) {
   return Proxy()->Invoke(
       callback_this_value, arg);
 }
 
-CORE_TEMPLATE_EXPORT
 void V8PersistentCallbackFunction<V8VoidCallbackFunctionTestInterfaceSequenceArg>::InvokeAndReportException(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceImplementation>>& arg) {
   Proxy()->InvokeAndReportException(
       callback_this_value, arg);
