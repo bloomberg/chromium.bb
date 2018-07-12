@@ -1988,8 +1988,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
 IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, DynamicChangingFormFill) {
   // Explicitly disable the filling of dynamic forms.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kAutofillRequireSecureCreditCardContext);
+  scoped_feature_list.InitAndDisableFeature(features::kAutofillDynamicForms);
 
   CreateTestProfile();
 
