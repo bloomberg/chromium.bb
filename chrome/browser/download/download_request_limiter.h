@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -171,6 +172,10 @@ class DownloadRequestLimiter
     void SetDownloadStatusAndNotifyImpl(DownloadStatus status,
                                         ContentSetting setting);
 
+    // Check if download is restricted (either requires prompting or is blocked)
+    // for the |navigation_handle|.
+    bool IsNavigationRestricted(content::NavigationHandle* navigation_handle);
+
     content::WebContents* web_contents_;
 
     DownloadRequestLimiter* host_;
@@ -191,6 +196,10 @@ class DownloadRequestLimiter
     // See description above CanDownloadOnIOThread for details on lifetime of
     // callbacks.
     std::vector<DownloadRequestLimiter::Callback> callbacks_;
+
+    // A list of hosts that won't cause tab's download state to change if the
+    // state is PROMPT_BEFORE_DOWNLOAD or DOWNLOADS_NOT_ALLOWED.
+    std::set<std::string> restricted_hosts_;
 
     ScopedObserver<HostContentSettingsMap, content_settings::Observer>
         observer_;
