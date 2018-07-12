@@ -85,7 +85,6 @@ struct display {
 	int nv12_format_found;
 	uint64_t nv12_modifier;
 	int req_dmabuf_immediate;
-	int req_dmabuf_modifiers;
 };
 
 struct drm_device {
@@ -821,16 +820,10 @@ registry_handle_global(void *data, struct wl_registry *registry,
 		d->fshell = wl_registry_bind(registry,
 					     id, &zwp_fullscreen_shell_v1_interface, 1);
 	} else if (strcmp(interface, "zwp_linux_dmabuf_v1") == 0) {
-		int ver;
-		if (d->req_dmabuf_modifiers)
-			ver = 3;
-		else if (d->req_dmabuf_immediate)
-			ver = 2;
-		else
-			ver = 1;
+		if (version < 3)
+			return;
 		d->dmabuf = wl_registry_bind(registry,
-					     id, &zwp_linux_dmabuf_v1_interface,
-					     ver);
+					     id, &zwp_linux_dmabuf_v1_interface, 3);
 		zwp_linux_dmabuf_v1_add_listener(d->dmabuf, &dmabuf_listener, d);
 	}
 }
@@ -861,7 +854,6 @@ create_display(int opts, int format)
 	assert(display->display);
 
 	display->req_dmabuf_immediate = opts & OPT_IMMEDIATE;
-	display->req_dmabuf_modifiers = (format == DRM_FORMAT_NV12);
 
 	/*
 	 * hard code format if the platform egl doesn't support format
