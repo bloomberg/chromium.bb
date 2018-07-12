@@ -14,7 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_database_data.h"
-#include "content/public/browser/permission_manager.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/content_client.h"
@@ -128,11 +128,9 @@ void BlinkNotificationServiceImpl::CloseNonPersistentNotification(
 blink::mojom::PermissionStatus
 BlinkNotificationServiceImpl::CheckPermissionStatus() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!browser_context_->GetPermissionManager())
-    return blink::mojom::PermissionStatus::DENIED;
-
-  return browser_context_->GetPermissionManager()->GetPermissionStatus(
-      PermissionType::NOTIFICATIONS, origin_.GetURL(), origin_.GetURL());
+  return BrowserContext::GetPermissionController(browser_context_)
+      ->GetPermissionStatus(PermissionType::NOTIFICATIONS, origin_.GetURL(),
+                            origin_.GetURL());
 }
 
 void BlinkNotificationServiceImpl::DisplayPersistentNotification(

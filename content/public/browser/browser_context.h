@@ -67,6 +67,7 @@ class BrowsingDataRemover;
 class BrowsingDataRemoverDelegate;
 class DownloadManager;
 class DownloadManagerDelegate;
+class PermissionController;
 class PermissionManager;
 struct PushEventPayload;
 class PushMessagingService;
@@ -101,6 +102,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns a BrowsingDataRemover that can schedule data deletion tasks
   // for this |context|.
   static BrowsingDataRemover* GetBrowsingDataRemover(BrowserContext* context);
+
+  // Returns the PermissionController associated with this context. There's
+  // always a PermissionController instance for each BrowserContext.
+  static PermissionController* GetPermissionController(BrowserContext* context);
 
   // Returns a StoragePartition for the given SiteInstance. By default this will
   // create a new StoragePartition if it doesn't exist, unless |can_create| is
@@ -256,8 +261,14 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // return nullptr, implementing the default exception storage strategy.
   virtual SSLHostStateDelegate* GetSSLHostStateDelegate() = 0;
 
-  // Returns the PermissionManager associated with that context if any, nullptr
-  // otherwise.
+  // Returns the PermissionManager associated with this context if
+  // any, nullptr otherwise.
+  //
+  // Note: if you want to check a permission status, you probably need
+  // BrowserContext::GetPermissionController() instead.
+  //
+  // TODO(lushnikov): This should be renamed into
+  // GetPermissionControllerDelegate().
   virtual PermissionManager* GetPermissionManager() = 0;
 
   // Returns the BackgroundFetchDelegate associated with that context if any,

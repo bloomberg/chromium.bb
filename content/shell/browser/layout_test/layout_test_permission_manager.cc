@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
@@ -56,8 +57,7 @@ size_t LayoutTestPermissionManager::PermissionDescription::Hash::operator()(
 }
 
 LayoutTestPermissionManager::LayoutTestPermissionManager()
-    : PermissionManager() {
-}
+    : PermissionManager() {}
 
 LayoutTestPermissionManager::~LayoutTestPermissionManager() {
 }
@@ -74,7 +74,7 @@ int LayoutTestPermissionManager::RequestPermission(
       permission, requesting_origin,
       WebContents::FromRenderFrameHost(render_frame_host)
           ->GetLastCommittedURL().GetOrigin()));
-  return kNoPendingOperation;
+  return PermissionController::kNoPendingOperation;
 }
 
 int LayoutTestPermissionManager::RequestPermissions(
@@ -97,7 +97,7 @@ int LayoutTestPermissionManager::RequestPermissions(
   }
 
   callback.Run(result);
-  return kNoPendingOperation;
+  return PermissionController::kNoPendingOperation;
 }
 
 void LayoutTestPermissionManager::ResetPermission(

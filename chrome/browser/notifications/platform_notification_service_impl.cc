@@ -45,7 +45,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_event_dispatcher.h"
-#include "content/public/browser/permission_manager.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
@@ -145,8 +145,9 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
 
   NotificationMetricsLogger* metrics_logger = GetMetricsLogger(browser_context);
   blink::mojom::PermissionStatus permission_status =
-      browser_context->GetPermissionManager()->GetPermissionStatus(
-          content::PermissionType::NOTIFICATIONS, origin, origin);
+      BrowserContext::GetPermissionController(browser_context)
+          ->GetPermissionStatus(content::PermissionType::NOTIFICATIONS, origin,
+                                origin);
 
   // TODO(peter): Change this to a CHECK() when Issue 555572 is resolved.
   // Also change this method to be const again.
