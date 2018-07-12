@@ -38,7 +38,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
     scoped_refptr<const SecurityOrigin> src_origin,
     Vector<String>* messages,
     const FeatureNameMap& feature_names) {
-  ParsedFeaturePolicy whitelists;
+  ParsedFeaturePolicy allowlists;
   BitVector features_specified(
       static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue));
 
@@ -72,8 +72,8 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       if (features_specified.QuickGet(static_cast<int>(feature)))
         continue;
 
-      ParsedFeaturePolicyDeclaration whitelist;
-      whitelist.feature = feature;
+      ParsedFeaturePolicyDeclaration allowlist;
+      allowlist.feature = feature;
       features_specified.QuickSet(static_cast<int>(feature));
       std::vector<url::Origin> origins;
       // If a policy entry has no (optional) values (e,g,
@@ -89,7 +89,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
         } else if (!src_origin->IsOpaque()) {
           origins.push_back(src_origin->ToUrlOrigin());
         } else {
-          whitelist.matches_opaque_src = true;
+          allowlist.matches_opaque_src = true;
         }
       }
 
@@ -110,14 +110,14 @@ ParsedFeaturePolicy ParseFeaturePolicy(
           // the |matches_opaque_src| flag on the declaration is set, rather
           // than adding an origin to the allowlist.
           if (src_origin->IsOpaque()) {
-            whitelist.matches_opaque_src = true;
+            allowlist.matches_opaque_src = true;
           } else {
             origins.push_back(src_origin->ToUrlOrigin());
           }
         } else if (EqualIgnoringASCIICase(tokens[i], "'none'")) {
           continue;
         } else if (tokens[i] == "*") {
-          whitelist.matches_all_origins = true;
+          allowlist.matches_all_origins = true;
           break;
         } else {
           url::Origin target_origin = url::Origin::Create(
@@ -128,11 +128,11 @@ ParsedFeaturePolicy ParseFeaturePolicy(
             messages->push_back("Unrecognized origin: '" + tokens[i] + "'.");
         }
       }
-      whitelist.origins = origins;
-      whitelists.push_back(whitelist);
+      allowlist.origins = origins;
+      allowlists.push_back(allowlist);
     }
   }
-  return whitelists;
+  return allowlists;
 }
 
 const FeatureNameMap& GetDefaultFeatureNameMap() {
