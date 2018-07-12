@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/modules/payments/payment_instruments.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

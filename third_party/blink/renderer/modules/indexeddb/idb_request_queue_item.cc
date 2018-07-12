@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"

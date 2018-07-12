@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
