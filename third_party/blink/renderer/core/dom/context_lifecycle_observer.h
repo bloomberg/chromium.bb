@@ -54,7 +54,10 @@ class LocalFrame;
 // * If an object additionally must suspend its activity during pause (see
 //   pausable_object.h), it should be a PausableObject (and thus, transitively,
 //   also a ContextLifecycleObserver).
-
+//
+// If your object has activity which requires that it be kept alive, even if no
+// other object has a reference to it, consider whether your object should also
+// derive from ActiveScriptWrappable.
 
 // ContextClient provides access to the associated execution context until it is
 // shut down (e.g. for a document, at navigation or frame detach).
