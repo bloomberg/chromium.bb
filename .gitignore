@@ -78,3 +78,6 @@ testing_support/google_appengine
 
 # Ignore emacs / vim backup files.
 *~
+
+# Ignore the monitoring config. It is unique for each user.
+/metrics.cfg

@@ -18,6 +18,10 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import metrics
+# We have to disable monitoring before importing gclient.
+metrics.DISABLE_METRICS_COLLECTION = True
+
 import gclient
 import gclient_utils
 import gclient_scm

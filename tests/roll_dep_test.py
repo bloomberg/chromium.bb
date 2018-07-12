@@ -52,6 +52,7 @@ class RollDepTest(fake_repos.FakeReposTestBase):
     # Make sure it doesn't try to auto update when testing!
     self.env = os.environ.copy()
     self.env['DEPOT_TOOLS_UPDATE'] = '0'
+    self.env['DEPOT_TOOLS_METRICS'] = '0'
 
     self.enabled = self.FAKE_REPOS.set_up_git()
     self.src_dir = os.path.join(self.root_dir, 'src')
@@ -64,7 +65,7 @@ class RollDepTest(fake_repos.FakeReposTestBase):
   def call(self, cmd, cwd=None):
     cwd = cwd or self.src_dir
     process = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
+                               stderr=subprocess.PIPE, env=self.env,
                                shell=sys.platform.startswith('win'))
     stdout, stderr = process.communicate()
     logging.debug("XXX: %s\n%s\nXXX" % (' '.join(cmd), stdout))
@@ -75,8 +76,11 @@ class RollDepTest(fake_repos.FakeReposTestBase):
   def testRollsDep(self):
     if not self.enabled:
       return
-    stdout = self.call([ROLL_DEP, 'src/foo'])[0]
+    stdout, stderr, returncode = self.call([ROLL_DEP, 'src/foo'])
     expected_revision = self.githash('repo_2', 3)
+
+    self.assertEqual(stderr, '')
+    self.assertEqual(returncode, 0)
 
     with open(os.path.join(self.src_dir, 'DEPS')) as f:
       contents = f.read()
@@ -99,9 +103,12 @@ class RollDepTest(fake_repos.FakeReposTestBase):
   def testRollsDepToSpecificRevision(self):
     if not self.enabled:
       return
-    stdout = self.call([ROLL_DEP, 'src/foo',
-                        '--roll-to', self.githash('repo_2', 2)])[0]
+    stdout, stderr, returncode = self.call(
+        [ROLL_DEP, 'src/foo', '--roll-to', self.githash('repo_2', 2)])
     expected_revision = self.githash('repo_2', 2)
+
+    self.assertEqual(stderr, '')
+    self.assertEqual(returncode, 0)
 
     with open(os.path.join(self.src_dir, 'DEPS')) as f:
       contents = f.read()

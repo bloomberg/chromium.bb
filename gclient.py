@@ -104,6 +104,7 @@ import gclient_eval
 import gclient_scm
 import gclient_utils
 import git_cache
+import metrics
 from third_party.repo.progress import Progress
 import subcommand
 import subprocess2
@@ -2841,6 +2842,36 @@ def CMDverify(parser, args):
     raise gclient_utils.Error(
         'dependencies from disallowed hosts; check your DEPS file.')
   return 0
+
+
+@subcommand.epilog("""For more information on what metrics are we collecting and
+why, please read metrics.README.md or visit
+<short link to metrics.README.md in gitiles>.""")
+def CMDmetrics(parser, args):
+  """Reports, and optionally modifies, the status of metric collection."""
+  parser.add_option('--opt-in', action='store_true', dest='enable_metrics',
+                    help='Opt-in to metrics collection.',
+                    default=None)
+  parser.add_option('--opt-out', action='store_false', dest='enable_metrics',
+                    help='Opt-out of metrics collection.')
+  options, args = parser.parse_args(args)
+  if args:
+    parser.error('Unused arguments: "%s"' % '" "'.join(args))
+  if not metrics.collector.config.is_googler:
+    print("You're not a Googler. Metrics collection is disabled for you.")
+    return 0
+
+  if options.enable_metrics is not None:
+    metrics.collector.config.opted_in = options.enable_metrics
+
+  if metrics.collector.config.opted_in is None:
+    print("You haven't opted in or out of metrics collection.")
+  elif metrics.collector.config.opted_in:
+    print("You have opted in. Thanks!")
+  else:
+    print("You have opted out. Please consider opting in.")
+  return 0
+
 
 class OptionParser(optparse.OptionParser):
   gclientfile_default = os.environ.get('GCLIENT_FILE', '.gclient')
