@@ -83,6 +83,9 @@ class ArcNotificationItem {
 
   virtual bool IsManuallyExpandedOrCollapsed() const = 0;
 
+  // Cancel long press operation on Android side.
+  virtual void CancelLongPress() = 0;
+
   // Returns the rect for which Android wants to handle all swipe events.
   // Defaults to the empty rectangle.
   virtual gfx::Rect GetSwipeInputRect() const = 0;

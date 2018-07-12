@@ -66,6 +66,7 @@ class ArcNotificationManager
   bool IsOpeningSettingsSupported() const;
   void SendNotificationToggleExpansionOnChrome(const std::string& key);
   void SetDoNotDisturbStatusOnAndroid(bool enabled);
+  void CancelLongPress(const std::string& key);
 
  private:
   // Helper class to own MojoChannel and ConnectionHolder.

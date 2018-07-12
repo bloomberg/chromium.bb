@@ -486,4 +486,18 @@ void ArcNotificationManager::SetDoNotDisturbStatusOnAndroid(bool enabled) {
   notifications_instance->SetDoNotDisturbStatusOnAndroid(std::move(status));
 }
 
+void ArcNotificationManager::CancelLongPress(const std::string& key) {
+  auto* notifications_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(instance_owner_->holder(), CancelLongPress);
+
+  // On shutdown, the ARC channel may quit earlier than notifications.
+  if (!notifications_instance) {
+    VLOG(2) << "Trying to cancel the long press operation, "
+               "but the ARC channel has already gone.";
+    return;
+  }
+
+  notifications_instance->CancelLongPress(key);
+}
+
 }  // namespace ash
