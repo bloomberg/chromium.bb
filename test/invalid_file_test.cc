@@ -49,29 +49,31 @@ class InvalidFileTest : public ::libaom_test::DecoderTest,
       const libaom_test::CompressedVideoSource &video,
       libaom_test::Decoder *decoder) {
     EXPECT_TRUE(res_file_ != NULL);
-    int expected_res_dec;
+    int expected_res_dec = -1;
 
     // Read integer result.
     const int res = fscanf(res_file_, "%d", &expected_res_dec);
     EXPECT_NE(res, EOF) << "Read result data failed";
 
-    // Check results match.
-    const DecodeParam input = GET_PARAM(1);
-    if (input.threads > 1) {
-      // The serial decode check is too strict for tile-threaded decoding as
-      // there is no guarantee on the decode order nor which specific error
-      // will take precedence. Currently a tile-level error is not forwarded so
-      // the frame will simply be marked corrupt.
-      EXPECT_TRUE(res_dec == expected_res_dec ||
-                  res_dec == AOM_CODEC_CORRUPT_FRAME)
-          << "Results don't match: frame number = " << video.frame_number()
-          << ". (" << decoder->DecodeError()
-          << "). Expected: " << expected_res_dec << " or "
-          << AOM_CODEC_CORRUPT_FRAME;
-    } else {
-      EXPECT_EQ(expected_res_dec, res_dec)
-          << "Results don't match: frame number = " << video.frame_number()
-          << ". (" << decoder->DecodeError() << ")";
+    if (expected_res_dec != -1) {
+      // Check results match.
+      const DecodeParam input = GET_PARAM(1);
+      if (input.threads > 1) {
+        // The serial decode check is too strict for tile-threaded decoding as
+        // there is no guarantee on the decode order nor which specific error
+        // will take precedence. Currently a tile-level error is not forwarded
+        // so the frame will simply be marked corrupt.
+        EXPECT_TRUE(res_dec == expected_res_dec ||
+                    res_dec == AOM_CODEC_CORRUPT_FRAME)
+            << "Results don't match: frame number = " << video.frame_number()
+            << ". (" << decoder->DecodeError()
+            << "). Expected: " << expected_res_dec << " or "
+            << AOM_CODEC_CORRUPT_FRAME;
+      } else {
+        EXPECT_EQ(expected_res_dec, res_dec)
+            << "Results don't match: frame number = " << video.frame_number()
+            << ". (" << decoder->DecodeError() << ")";
+      }
     }
 
     return !HasFailure();
