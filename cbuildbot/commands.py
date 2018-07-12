@@ -258,16 +258,6 @@ def RunChrootUpgradeHooks(buildroot, chrome_root=None, extra_env=None):
                  chroot_args=chroot_args, extra_env=extra_env)
 
 
-def SetSharedUserPassword(buildroot, password):
-  """Wrapper around set_shared_user_password.sh"""
-  if password is not None:
-    cmd = ['./set_shared_user_password.sh', password]
-    RunBuildScript(buildroot, cmd, enter_chroot=True)
-  else:
-    passwd_file = os.path.join(buildroot, 'chroot/etc/shared_user_passwd.txt')
-    osutils.SafeUnlink(passwd_file, sudo=True)
-
-
 def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None,
                  save_install_plan=None):
   """Wrapper around update_chroot.

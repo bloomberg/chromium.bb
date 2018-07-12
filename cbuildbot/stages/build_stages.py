@@ -429,10 +429,6 @@ class InitSDKStage(generic_stages.BuilderStage):
     else:
       logging.PrintBuildbotStepText(post_ver)
 
-    commands.SetSharedUserPassword(
-        self._build_root,
-        password=self._run.config.shared_user_password)
-
 
 class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
   """Stage that is responsible for building host pkgs and setting up a board."""
