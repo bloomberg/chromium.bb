@@ -30,13 +30,14 @@ ScopedLogMessage::~ScopedLogMessage() {
   if (!g_logging_enabled)
     return;
 
+  const std::string string_from_stream = stream_.str();
   LogBuffer::GetInstance()->AddLogMessage(LogBuffer::LogMessage(
-      stream_.str(), base::Time::Now(), file_, line_, severity_));
+      string_from_stream, base::Time::Now(), file_, line_, severity_));
 
   // The destructor of |log_message| also creates a log for the standard logging
   // system.
   logging::LogMessage log_message(file_, line_, severity_);
-  log_message.stream() << stream_.str();
+  log_message.stream() << string_from_stream;
 }
 
 }  // namespace proximity_auth
