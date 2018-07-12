@@ -716,12 +716,6 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     // one from the list because it is already shown in a separate button.
     std::vector<AccountInfo> accounts(dice_sync_promo_accounts_.begin() + 1,
                                       dice_sync_promo_accounts_.end());
-    if (accounts.empty()) {
-      // If there is no account to list for the submenu, directly open the
-      // sign-in page.
-      ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
-      return;
-    }
     // Display the submenu to list |accounts|.
     // Using base::Unretained(this) is safe here because |dice_accounts_menu_|
     // is owned by |ProfileChooserView|, i.e. |this|.
@@ -1200,37 +1194,20 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
         profiles::GetPlaceholderAvatarIconResourceID());
   }
   dice_signin_button_view_ =
-      new DiceSigninButtonView(dice_promo_default_account, account_icon, this);
-  dice_signin_button_view_->SetBorder(
+      new DiceSigninButtonView(dice_promo_default_account, account_icon, this,
+                               true /* show_drop_down_arrow */);
+  views::View* signin_button_container = new views::View();
+  // Create a container for the signin button, so the special highlighting of
+  // the button won't go over the border. (DiceSigninButtonView sets a custom
+  // highlighting view with |HoverButton::SetHighlightingView|.)
+  signin_button_container->SetLayoutManager(
+      std::make_unique<views::FillLayout>());
+  signin_button_container->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kMenuEdgeMargin)));
-  view->AddChildView(dice_signin_button_view_);
+  signin_button_container->AddChildView(dice_signin_button_view_);
+  view->AddChildView(signin_button_container);
   signin_with_gaia_account_button_ = dice_signin_button_view_->signin_button();
-
-  // Create a button to sync to another account.
-  constexpr int kSmallMenuIconSize = 16;
-  std::unique_ptr<views::ImageView> switch_account_icon_view(
-      new views::ImageView());
-  switch_account_icon_view->SetImage(gfx::CreateVectorIcon(
-      kSyncSwitchAccountIcon, kSmallMenuIconSize, gfx::kChromeIconGrey));
-  // The accounts submenu is only needed when there are additional accounts to
-  // list, i.e. when there is more than 1 account (the first account has it's
-  // own button).
-  std::unique_ptr<views::ImageView> submenu_arrow_icon_view;
-  if (dice_sync_promo_accounts_.size() > 1) {
-    constexpr int kSubmenuArrowSize = 12;
-    submenu_arrow_icon_view = std::make_unique<views::ImageView>();
-    submenu_arrow_icon_view->SetImage(gfx::CreateVectorIcon(
-        kUserMenuRightArrowIcon, kSubmenuArrowSize, gfx::kChromeIconGrey));
-    // Make sure that the arrow is flipped in RTL mode.
-    submenu_arrow_icon_view->EnableCanvasFlippingForRTLUI(true);
-  }
-  LOG(ERROR) << "----------- use secondary icon";
-  sync_to_another_account_button_ = new HoverButton(
-      this, std::move(switch_account_icon_view),
-      l10n_util::GetStringUTF16(
-          IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON),
-      base::string16() /* subtitle */, std::move(submenu_arrow_icon_view));
-  view->AddChildView(sync_to_another_account_button_);
+  sync_to_another_account_button_ = dice_signin_button_view_->drop_down_arrow();
   return view;
 }
 
