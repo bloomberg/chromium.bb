@@ -160,7 +160,8 @@ CaretPositionResolution TryResolveCaretPositionByBoxFragmentSide(
     const NGPaintFragment& fragment,
     unsigned offset,
     TextAffinity affinity) {
-  if (!fragment.GetNode()) {
+  // There is no caret position at a pseudo or generated box side.
+  if (!fragment.GetNode() || fragment.GetNode()->IsPseudoElement()) {
     // TODO(xiaochengh): This leads to false negatives for, e.g., RUBY, where an
     // anonymous wrapping inline block is created.
     return CaretPositionResolution();
