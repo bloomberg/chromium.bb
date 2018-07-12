@@ -861,12 +861,19 @@ void FrameLoader::CommitNavigation(
   CHECK(!passed_request.Form());
   CHECK(passed_request.TriggeringEventInfo() ==
         WebTriggeringEventInfo::kNotFromEvent);
-
   DCHECK(frame_->GetDocument());
-  DCHECK(!in_stop_all_loaders_);
-  DCHECK(frame_->IsNavigationAllowed());
-  DCHECK_EQ(Document::kNoDismissal,
-            frame_->GetDocument()->PageDismissalEventBeingDispatched());
+
+  if (in_stop_all_loaders_ || !frame_->IsNavigationAllowed() ||
+      frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
+          Document::kNoDismissal) {
+    // Any of the checks above should not be necessary.
+    // Unfortunately, in the case of sync IPCs like print() there might be
+    // reentrancy and, for example, frame detach happening.
+    // See fast/loader/detach-while-printing.html for a repro.
+    // TODO(https://crbug.com/862088): we should probably ignore print()
+    // call in this case instead.
+    return;
+  }
 
   // TODO(dgozman): figure out the better place for this check
   // to cancel lazy load both on start and commit. Perhaps
