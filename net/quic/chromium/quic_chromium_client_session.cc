@@ -1689,21 +1689,27 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
     return;
   }
 
-  NotifyFactoryOfSessionGoingAway();
   MigrationResult result =
       Migrate(new_network, connection()->peer_address().impl().socket_address(),
               /*close_session_on_error=*/false, migration_net_log);
   migration_net_log.EndEvent(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
 
-  if (result == MigrationResult::SUCCESS)
+  if (result == MigrationResult::FAILURE) {
+    // Close the connection if migration failed. Do not cause a
+    // connection close packet to be sent since socket may be borked.
+    connection()->CloseConnection(quic::QUIC_PACKET_WRITE_ERROR,
+                                  "Write and subsequent migration failed",
+                                  quic::ConnectionCloseBehavior::SILENT_CLOSE);
     return;
+  }
 
-  // Close the connection if migration failed. Do not cause a
-  // connection close packet to be sent since socket may be borked.
-  connection()->CloseConnection(quic::QUIC_PACKET_WRITE_ERROR,
-                                "Write and subsequent migration failed",
-                                quic::ConnectionCloseBehavior::SILENT_CLOSE);
+  if (new_network != default_network_) {
+    StartMigrateBackToDefaultNetworkTimer(
+        base::TimeDelta::FromSeconds(kMinRetryTimeForDefaultNetworkSecs));
+  } else {
+    CancelMigrateBackToDefaultNetworkTimer();
+  }
 }
 
 void QuicChromiumClientSession::OnNoNewNetwork() {
