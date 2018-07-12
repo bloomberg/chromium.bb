@@ -98,7 +98,7 @@ enum FeaturePolicyFeature {
   kDocumentWrite,
 };
 
-// This struct holds feature policy whitelist data that needs to be replicated
+// This struct holds feature policy allowlist data that needs to be replicated
 // between a RenderFrame and any of its associated RenderFrameProxies. A list of
 // these form a ParsedFeaturePolicy.
 // NOTE: These types are used for replication frame state between processes.

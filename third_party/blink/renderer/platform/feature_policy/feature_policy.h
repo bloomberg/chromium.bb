@@ -24,7 +24,7 @@ namespace blink {
 typedef HashMap<String, mojom::FeaturePolicyFeature> FeatureNameMap;
 PLATFORM_EXPORT const FeatureNameMap& GetDefaultFeatureNameMap();
 
-// Converts a header policy string into a vector of whitelists, one for each
+// Converts a header policy string into a vector of allowlists, one for each
 // feature specified. Unrecognized features are filtered out. If |messages|
 // is not null, then any message in the input will cause a warning message to be
 // appended to it.
@@ -35,7 +35,7 @@ ParseFeaturePolicyHeader(const String& policy,
                          scoped_refptr<const SecurityOrigin>,
                          Vector<String>* messages);
 
-// Converts a container policy string into a vector of whitelists, given self
+// Converts a container policy string into a vector of allowlists, given self
 // and src origins provided, one for each feature specified. Unrecognized
 // features are filtered out. If |messages| is not null, then any message in the
 // input will cause as warning message to be appended to it.
@@ -47,7 +47,7 @@ ParseFeaturePolicyAttribute(const String& policy,
                             scoped_refptr<const SecurityOrigin> src_origin,
                             Vector<String>* messages);
 
-// Converts a feature policy string into a vector of whitelists (see comments
+// Converts a feature policy string into a vector of allowlists (see comments
 // above), with an explicit FeatureNameMap. This algorithm is called by both
 // header policy parsing and container policy parsing. |self_origin| and
 // |src_origin| are both nullable.
