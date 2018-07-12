@@ -121,8 +121,7 @@ class AXPosition {
     return new_position;
   }
 
-  AXPosition() {}
-  virtual ~AXPosition() {}
+  virtual ~AXPosition() = default;
 
   virtual AXPositionInstance Clone() const = 0;
 
@@ -1143,8 +1142,12 @@ class AXPosition {
   // Returns the text that is present inside the anchor node, including any text
   // found in descendant nodes.
   virtual base::string16 GetInnerText() const = 0;
+  // Returns the length of the text that is present inside the anchor node,
+  // including any text found in descendant text nodes.
+  virtual int MaxTextOffset() const = 0;
 
  protected:
+  AXPosition() = default;
   AXPosition(const AXPosition<AXPositionType, AXNodeType>& other) = default;
   virtual AXPosition<AXPositionType, AXNodeType>& operator=(
       const AXPosition<AXPositionType, AXNodeType>& other) = default;
@@ -1270,9 +1273,6 @@ class AXPosition {
   virtual int AnchorIndexInParent() const = 0;
   virtual void AnchorParent(int* tree_id, int32_t* parent_id) const = 0;
   virtual AXNodeType* GetNodeInTree(int tree_id, int32_t node_id) const = 0;
-  // Returns the length of the text that is present inside the anchor node,
-  // including any text found in descendant text nodes.
-  virtual int MaxTextOffset() const = 0;
   // Returns the length of text that this anchor node takes up in its parent.
   // On some platforms, embedded objects are represented in their parent with a
   // single embedded object character.
@@ -1333,14 +1333,53 @@ bool operator<(const AXPosition<AXPositionType, AXNodeType>& first,
   if (first.IsNullPosition() || second.IsNullPosition())
     return false;
 
+  // It is potentially costly to compute the parent position of a text position,
+  // whilst computing the parent position of a tree position is really
+  // inexpensive. In order to find the lowest common ancestor, especially if
+  // that ancestor is all the way up to the root of the tree, this will need to
+  // be done repeatedly. We avoid the performance hit by converting both
+  // positions to tree positions and only falling back to text positions if both
+  // are text positions and the lowest common ancestor is not one of their
+  // anchors. Essentially, the question we need to answer is: "When are two non
+  // equivalent positions going to have the same lowest common ancestor position
+  // when converted to tree positions?" The answer is when they are both text
+  // positions and they either have the same anchor, or one is the ancestor of
+  // the other.
+  std::unique_ptr<AXPosition<AXPositionType, AXNodeType>> tree_first =
+      first.AsTreePosition();
+  std::unique_ptr<AXPosition<AXPositionType, AXNodeType>> tree_second =
+      second.AsTreePosition();
   std::unique_ptr<AXPosition<AXPositionType, AXNodeType>> first_ancestor =
-      first.LowestCommonAncestor(second)->AsTreePosition();
+      tree_first->LowestCommonAncestor(*tree_second);
   std::unique_ptr<AXPosition<AXPositionType, AXNodeType>> second_ancestor =
-      second.LowestCommonAncestor(first)->AsTreePosition();
+      tree_second->LowestCommonAncestor(*tree_first);
   DCHECK_EQ(first_ancestor->GetAnchor(), second_ancestor->GetAnchor());
-  return !first_ancestor->IsNullPosition() &&
-         first_ancestor->AsTextPosition()->text_offset() <
-             second_ancestor->AsTextPosition()->text_offset();
+  if (first_ancestor->IsNullPosition())
+    return false;
+  DCHECK(first_ancestor->IsTreePosition() && second_ancestor->IsTreePosition());
+
+  if (first.IsTextPosition() && second.IsTextPosition()) {
+    // We avoid recomputing lowest common ancestor, because we already have its
+    // anchor. We just need its text offset.
+    if (first.GetAnchor() == first_ancestor->GetAnchor()) {
+      // If both positions have the same anchor, or if the first is an ancestor
+      // of the second.
+      std::unique_ptr<AXPosition<AXPositionType, AXNodeType>> text_second =
+          second.Clone();
+      while (text_second->GetAnchor() != first.GetAnchor())
+        text_second = text_second->CreateParentPosition();
+      return first.text_offset() < text_second->text_offset();
+    } else if (second.GetAnchor() == second_ancestor->GetAnchor()) {
+      // If the second position is an ancestor of the first.
+      std::unique_ptr<AXPosition<AXPositionType, AXNodeType>> text_first =
+          first.Clone();
+      while (text_first->GetAnchor() != second.GetAnchor())
+        text_first = text_first->CreateParentPosition();
+      return text_first->text_offset() < second.text_offset();
+    }
+  }
+
+  return first_ancestor->child_index() < second_ancestor->child_index();
 }
 
 template <class AXPositionType, class AXNodeType>
@@ -1354,15 +1393,7 @@ bool operator>(const AXPosition<AXPositionType, AXNodeType>& first,
                const AXPosition<AXPositionType, AXNodeType>& second) {
   if (first.IsNullPosition() || second.IsNullPosition())
     return false;
-
-  std::unique_ptr<AXPosition<AXPositionType, AXNodeType>> first_ancestor =
-      first.LowestCommonAncestor(second)->AsTreePosition();
-  std::unique_ptr<AXPosition<AXPositionType, AXNodeType>> second_ancestor =
-      second.LowestCommonAncestor(first)->AsTreePosition();
-  DCHECK_EQ(first_ancestor->GetAnchor(), second_ancestor->GetAnchor());
-  return !first_ancestor->IsNullPosition() &&
-         first_ancestor->AsTextPosition()->text_offset() >
-             second_ancestor->AsTextPosition()->text_offset();
+  return !(first <= second);
 }
 
 template <class AXPositionType, class AXNodeType>
