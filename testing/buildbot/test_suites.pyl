@@ -1831,8 +1831,6 @@
   'linux_specific_chromium_gtests': {
     # Linux only.
     # TODO(kbr): unclear why some of these aren't run more broadly.
-    'filesystem_service_unittests': {},
-    'leveldb_service_unittests': {},
     'traffic_annotation_auditor_unittests': {},
   },
 
@@ -1889,11 +1887,13 @@
     'chromedriver_unittests': {},
     'extensions_browsertests': {},
     'extensions_unittests': {},
+    'filesystem_service_unittests': {},  # https://crbug.com/862712
     'interactive_ui_tests': {
       'swarming': {
         'shards': 3,
       },
     },
+    'leveldb_service_unittests': {},  # https://crbug.com/862709
     'message_center_unittests': {},
     'nacl_loader_unittests': {},
     'native_theme_unittests': {},
