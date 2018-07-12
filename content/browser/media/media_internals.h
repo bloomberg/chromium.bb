@@ -92,13 +92,20 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
       int render_process_id = -1,
       int render_frame_id = MSG_ROUTING_NONE);
 
+  // Strongly bounds |request| to a new media::mojom::AudioLog instance. Safe to
+  // call from any thread.
+  void CreateMojoAudioLog(AudioComponent component,
+                          int component_id,
+                          media::mojom::AudioLogRequest request,
+                          int render_process_id = -1,
+                          int render_frame_id = MSG_ROUTING_NONE);
+
   void OnProcessTerminatedForTesting(int process_id);
 
  private:
+  class AudioLogImpl;
   // Inner class to handle reporting pipelinestatus to UMA
   class MediaInternalsUMAHandler;
-
-  friend class AudioLogImpl;
 
   MediaInternals();
 
@@ -122,6 +129,11 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
                       const std::string& cache_key,
                       const std::string& function,
                       const base::DictionaryValue* value);
+
+  std::unique_ptr<AudioLogImpl> CreateAudioLogImpl(AudioComponent component,
+                                                   int component_id,
+                                                   int render_process_id,
+                                                   int render_frame_id);
 
   // Must only be accessed on the UI thread.
   std::vector<UpdateCallback> update_callbacks_;
