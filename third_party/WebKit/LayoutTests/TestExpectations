@@ -2625,9 +2625,7 @@ crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.
 crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.worker.html [ Pass Timeout ]
 
 # Websockets
-crbug.com/803558 external/wpt/websockets/opening-handshake/003-sets-origin.worker.html [ Timeout ]
 crbug.com/803358 virtual/off-main-thread-websocket/external/wpt/websockets/Create-Secure-extensions-empty.htm [ Timeout ]
-crbug.com/803558 virtual/off-main-thread-websocket/external/wpt/websockets/opening-handshake/003-sets-origin.worker.html [ Timeout ]
 # Cannot be rebaselined because the output contains a timestamp and a random number.
 crbug.com/803200 external/wpt/websockets/cookies/006.html?wss [ Failure ]
 crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure ]
