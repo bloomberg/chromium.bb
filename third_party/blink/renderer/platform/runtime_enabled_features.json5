@@ -485,10 +485,6 @@
       status: "stable"
     },
     {
-      name: "FeaturePolicyExperimentalFeatures",
-      status: "experimental"
-    },
-    {
       name: "FeaturePolicyForPermissions",
       status: "stable"
     },
