@@ -1171,7 +1171,7 @@ if (closure_compile) {
     if (is_android) {
       data_deps += [ "components/offline_pages/resources:closure_compile" ]
     }
-    if (is_win) {
+    if (is_win && is_chrome_branded) {
       data_deps += [ "components/nux_google_apps/resources:closure_compile" ]
     }
   }

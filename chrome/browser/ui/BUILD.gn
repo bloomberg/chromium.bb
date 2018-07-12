@@ -3887,7 +3887,7 @@ split_static_library("ui") {
     deps += [ "//components/nacl/browser" ]
   }
 
-  if (is_win) {
+  if (is_win && is_chrome_branded) {
     deps += [ "//components/nux_google_apps:nux_google_apps_feature" ]
   }
 

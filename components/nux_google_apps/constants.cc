@@ -11,4 +11,6 @@ namespace nux_google_apps {
 extern const base::Feature kNuxGoogleAppsFeature{
     "NuxGoogleApps", base::FEATURE_DISABLED_BY_DEFAULT};
 
+extern const char kNuxGoogleAppsUrl[] = "chrome://welcome/apps";
+
 }  // namespace nux_google_apps

@@ -1259,7 +1259,14 @@ const char kHasSeenWelcomePage[] = "browser.has_seen_welcome_page";
 #if defined(OS_WIN)
 // Whether or not this profile has been shown the Win10 promo page.
 const char kHasSeenWin10PromoPage[] = "browser.has_seen_win10_promo_page";
-#endif
+
+#if defined(GOOGLE_CHROME_BUILD)
+// Whether or not this profile has been shown the new user experience promo
+// page.
+const char kHasSeenGoogleAppsPromoPage[] =
+    "browser.has_seen_google_apps_promo_page";
+#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN)
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation

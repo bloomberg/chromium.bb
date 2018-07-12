@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if (is_win) {
+import("//build/config/chrome_build.gni")
+
+if (is_win && is_chrome_branded) {
   static_library("nux_google_apps_feature") {
     sources = [
       "constants.cc",

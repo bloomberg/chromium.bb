@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_WELCOME_UI_H_
 
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "url/gurl.h"
 
@@ -16,6 +17,9 @@ class WelcomeUI : public content::WebUIController {
  public:
   WelcomeUI(content::WebUI* web_ui, const GURL& url);
   ~WelcomeUI() override;
+
+ private:
+  void StorePageSeen(Profile* profile, const GURL& url);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_UI_H_
