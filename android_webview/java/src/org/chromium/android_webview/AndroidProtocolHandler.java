@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Implements the Java side of Android URL protocol jobs.
@@ -43,9 +44,22 @@ public class AndroidProtocolHandler {
         if (uri == null) {
             return null;
         }
+        InputStream stream = openByScheme(uri);
+        if (stream != null && uri.getLastPathSegment().endsWith(".svgz")) {
+            try {
+                stream = new GZIPInputStream(stream);
+            } catch (IOException e) {
+                Log.e(TAG, "Error decompressing " + uri + " - " + e.getMessage());
+                return null;
+            }
+        }
+        return stream;
+    }
+
+    private static InputStream openByScheme(Uri uri) {
         try {
-            String path = uri.getPath();
             if (uri.getScheme().equals(FILE_SCHEME)) {
+                String path = uri.getPath();
                 if (path.startsWith(nativeGetAndroidAssetPath())) {
                     return openAsset(uri);
                 } else if (path.startsWith(nativeGetAndroidResourcePath())) {
@@ -55,7 +69,7 @@ public class AndroidProtocolHandler {
                 return openContent(uri);
             }
         } catch (Exception ex) {
-            Log.e(TAG, "Error opening inputstream: " + url);
+            Log.e(TAG, "Error opening inputstream: " + uri);
         }
         return null;
     }
