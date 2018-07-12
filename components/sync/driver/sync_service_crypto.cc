@@ -120,19 +120,19 @@ SyncServiceCrypto::SyncServiceCrypto(
 SyncServiceCrypto::~SyncServiceCrypto() = default;
 
 base::Time SyncServiceCrypto::GetExplicitPassphraseTime() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return cached_explicit_passphrase_time_;
 }
 
 bool SyncServiceCrypto::IsUsingSecondaryPassphrase() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return cached_passphrase_type_ ==
              PassphraseType::FROZEN_IMPLICIT_PASSPHRASE ||
          cached_passphrase_type_ == PassphraseType::CUSTOM_PASSPHRASE;
 }
 
 void SyncServiceCrypto::EnableEncryptEverything() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsEncryptEverythingAllowed());
   DCHECK(engine_);
 
@@ -143,14 +143,14 @@ void SyncServiceCrypto::EnableEncryptEverything() {
 }
 
 bool SyncServiceCrypto::IsEncryptEverythingEnabled() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(engine_);
   return encrypt_everything_ || encryption_pending_;
 }
 
 void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase,
                                                 bool is_explicit) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This should only be called when the engine has been initialized.
   DCHECK(engine_);
   DCHECK(data_type_manager_);
@@ -189,7 +189,7 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase,
 }
 
 bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(data_type_manager_);
 
   if (!data_type_manager_->IsNigoriEnabled()) {
@@ -226,23 +226,23 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
 }
 
 PassphraseType SyncServiceCrypto::GetPassphraseType() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return cached_passphrase_type_;
 }
 
 bool SyncServiceCrypto::IsEncryptEverythingAllowed() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return encrypt_everything_allowed_;
 }
 
 void SyncServiceCrypto::SetEncryptEverythingAllowed(bool allowed) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(allowed || !engine_ || !IsEncryptEverythingEnabled());
   encrypt_everything_allowed_ = allowed;
 }
 
 ModelTypeSet SyncServiceCrypto::GetEncryptedDataTypes() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(encrypted_types_.Has(PASSWORDS));
   // We may be called during the setup process before we're
   // initialized.  In this case, we default to the sensitive types.
@@ -252,7 +252,7 @@ ModelTypeSet SyncServiceCrypto::GetEncryptedDataTypes() const {
 void SyncServiceCrypto::OnPassphraseRequired(
     PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Update our cache of the cryptographer's pending keys.
   cached_pending_keys_ = pending_keys;
@@ -274,7 +274,7 @@ void SyncServiceCrypto::OnPassphraseRequired(
 }
 
 void SyncServiceCrypto::OnPassphraseAccepted() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Clear our cache of the cryptographer's pending keys.
   cached_pending_keys_.clear_blob();
@@ -297,7 +297,7 @@ void SyncServiceCrypto::OnPassphraseAccepted() {
 void SyncServiceCrypto::OnBootstrapTokenUpdated(
     const std::string& bootstrap_token,
     BootstrapTokenType type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_prefs_);
   if (type == PASSPHRASE_BOOTSTRAP_TOKEN) {
     sync_prefs_->SetEncryptionBootstrapToken(bootstrap_token);
@@ -308,7 +308,7 @@ void SyncServiceCrypto::OnBootstrapTokenUpdated(
 
 void SyncServiceCrypto::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                                 bool encrypt_everything) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   encrypted_types_ = encrypted_types;
   encrypt_everything_ = encrypt_everything;
   DCHECK(encrypt_everything_allowed_ || !encrypt_everything_);
@@ -322,7 +322,7 @@ void SyncServiceCrypto::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
 }
 
 void SyncServiceCrypto::OnEncryptionComplete() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "Encryption complete";
   if (encryption_pending_ && encrypt_everything_) {
     encryption_pending_ = false;
@@ -334,13 +334,13 @@ void SyncServiceCrypto::OnEncryptionComplete() {
 
 void SyncServiceCrypto::OnCryptographerStateChanged(
     Cryptographer* cryptographer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Do nothing.
 }
 
 void SyncServiceCrypto::OnPassphraseTypeChanged(PassphraseType type,
                                                 base::Time passphrase_time) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "Passphrase type changed to " << PassphraseTypeToString(type);
   cached_passphrase_type_ = type;
   cached_explicit_passphrase_time_ = passphrase_time;
@@ -349,7 +349,7 @@ void SyncServiceCrypto::OnPassphraseTypeChanged(PassphraseType type,
 
 void SyncServiceCrypto::OnLocalSetPassphraseEncryption(
     const SyncEncryptionHandler::NigoriState& nigori_state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!base::FeatureList::IsEnabled(
           switches::kSyncClearDataOnPassphraseEncryption)) {
     return;
@@ -367,7 +367,7 @@ void SyncServiceCrypto::OnLocalSetPassphraseEncryption(
 }
 
 void SyncServiceCrypto::BeginConfigureCatchUpBeforeClear() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(data_type_manager_);
   DCHECK(!saved_nigori_state_);
   DCHECK(can_configure_data_types_.Run());
@@ -380,14 +380,14 @@ void SyncServiceCrypto::BeginConfigureCatchUpBeforeClear() {
 
 std::unique_ptr<SyncEncryptionHandler::Observer>
 SyncServiceCrypto::GetEncryptionObserverProxy() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return std::make_unique<SyncEncryptionObserverProxy>(
       weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get());
 }
 
 std::unique_ptr<SyncEncryptionHandler::NigoriState>
 SyncServiceCrypto::TakeSavedNigoriState() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return std::move(saved_nigori_state_);
 }
 

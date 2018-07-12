@@ -15,22 +15,22 @@ FakeModelWorker::~FakeModelWorker() {
   // multi-threaded test; since ModelSafeWorkers are
   // RefCountedThreadSafe, they could theoretically be destroyed from
   // a different thread.
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void FakeModelWorker::ScheduleWork(base::OnceClosure work) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Simply do the work on the current thread.
   std::move(work).Run();
 }
 
 ModelSafeGroup FakeModelWorker::GetModelSafeGroup() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return group_;
 }
 
 bool FakeModelWorker::IsOnModelSequence() {
-  return thread_checker_.CalledOnValidThread();
+  return sequence_checker_.CalledOnValidSequence();
 }
 
 }  // namespace syncer

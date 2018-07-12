@@ -1121,7 +1121,7 @@ class SyncManagerTest : public testing::Test,
   }
 
   void SimulateInvalidatorEnabledForTest(bool is_enabled) {
-    DCHECK(sync_manager_.thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sync_manager_.sequence_checker_);
     sync_manager_.SetInvalidatorEnabled(is_enabled);
   }
 

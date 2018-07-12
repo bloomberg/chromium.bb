@@ -61,7 +61,7 @@ BookmarkChangeProcessor::~BookmarkChangeProcessor() {
 }
 
 void BookmarkChangeProcessor::StartImpl() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!bookmark_model_);
   bookmark_model_ = sync_client_->GetBookmarkModel();
   DCHECK(bookmark_model_->loaded());
@@ -559,7 +559,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
     int64_t model_version,
     const syncer::ImmutableChangeRecordList& changes) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // A note about ordering.  Sync backend is responsible for ordering the change
   // records in the following order:
   //

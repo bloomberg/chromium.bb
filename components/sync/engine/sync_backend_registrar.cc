@@ -28,7 +28,7 @@ SyncBackendRegistrar::SyncBackendRegistrar(
 }
 
 void SyncBackendRegistrar::RegisterNonBlockingType(ModelType type) {
-  DCHECK(ui_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoLock lock(lock_);
   // There may have been a previously successful sync of a type when passive,
   // which is now NonBlocking. We're not sure what order these two sets of types
@@ -78,7 +78,7 @@ void SyncBackendRegistrar::SetInitialTypes(ModelTypeSet initial_types) {
 }
 
 void SyncBackendRegistrar::AddRestoredNonBlockingType(ModelType type) {
-  DCHECK(ui_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoLock lock(lock_);
   DCHECK(non_blocking_types_.Has(type));
   DCHECK(routing_info_.find(type) == routing_info_.end());
@@ -87,7 +87,7 @@ void SyncBackendRegistrar::AddRestoredNonBlockingType(ModelType type) {
 }
 
 bool SyncBackendRegistrar::IsNigoriEnabled() const {
-  DCHECK(ui_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoLock lock(lock_);
   return routing_info_.find(NIGORI) != routing_info_.end();
 }
@@ -139,7 +139,7 @@ ModelTypeSet SyncBackendRegistrar::GetLastConfiguredTypes() const {
 }
 
 void SyncBackendRegistrar::RequestWorkerStopOnUIThread() {
-  DCHECK(ui_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoLock lock(lock_);
   for (const auto& kv : workers_) {
     kv.second->RequestStop();
@@ -172,7 +172,9 @@ void SyncBackendRegistrar::ActivateDataType(ModelType type,
 void SyncBackendRegistrar::DeactivateDataType(ModelType type) {
   DVLOG(1) << "Deactivate: " << ModelTypeToString(type);
 
-  DCHECK(ui_thread_checker_.CalledOnValidThread() || IsControlType(type));
+  if (!IsControlType(type)) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
   base::AutoLock lock(lock_);
 
   routing_info_.erase(type);

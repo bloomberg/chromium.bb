@@ -15,6 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/sync_manager.h"
@@ -237,7 +238,7 @@ class SyncManagerImpl
 
   const std::string name_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Thread-safe handle used by
   // HandleCalculateChangesChangeEventFromSyncApi(), which can be

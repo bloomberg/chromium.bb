@@ -12,6 +12,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
@@ -107,7 +108,7 @@ class DebugInfoEventListener : public SyncManager::Observer,
   // Cryptographer is initialized and does not have pending keys.
   bool cryptographer_ready_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<DebugInfoEventListener> weak_ptr_factory_;
 
