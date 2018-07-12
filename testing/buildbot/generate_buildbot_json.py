@@ -785,9 +785,6 @@ class BBJSONGenerator(object):
       'Optional Win10 Release (Intel HD 630)',
       'Optional Win10 Release (NVIDIA)',
       'Win7 ANGLE Tryserver (AMD)',
-      # chromium.android.fyi
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
       # chromium.fyi
       'chromeos-amd64-generic-rel-vm-tests',
       'linux-blink-rel-dummy',

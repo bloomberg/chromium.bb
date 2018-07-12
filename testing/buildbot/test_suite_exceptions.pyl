@@ -39,10 +39,8 @@
   },
   'angle_perftests': {
     'remove_from': [
-      # crbug.com/860800
-      'Android FYI Release (Nexus 5)',
-      # anglebug.com/2433
-      'Android FYI Release (Nexus 6)',
+      'Android FYI Release (Nexus 5)',  # crbug.com/860800
+      'Android FYI Release (Nexus 6)',  # anglebug.com/2433
     ],
   },
   'angle_unittests': {
@@ -253,11 +251,6 @@
     ],
   },
   'chrome_public_test_apk': {
-    'remove_gtest_from': [
-      # chromium.android.fyi
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-    ],
     'remove_from': [
       # chromium.clang
       'ToTAndroidCFI',  # https://crbug.com/862581
@@ -344,11 +337,6 @@
     },
   },
   'chrome_sync_shell_test_apk': {
-    'remove_gtest_from': [
-      # chromium.android.fyi
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-    ],
     'key_removals': {
       # chromium.android.fyi
       'Nougat Phone Tester': [
@@ -403,19 +391,6 @@
   },
   'content_browsertests': {
     'modifications': {
-      # chromium.android.fyi
-      'Unswarmed N5 Tests Dummy Builder': {
-        'args': [
-          '--shard-timeout',
-          '600',
-        ],
-      },
-      'Unswarmed N5X Tests Dummy Builder': {
-        'args': [
-          '--shard-timeout',
-          '600',
-        ],
-      },
       # chromium.chromiumos
       'linux-chromeos-dbg': {
         'swarming': {
@@ -508,11 +483,6 @@
     },
   },
   'content_shell_test_apk': {
-    'remove_gtest_from': [
-      # chromium.android.fyi
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-    ],
     'key_removals': {
       # chromium.android.fyi
       'Nougat Phone Tester': [
@@ -1877,10 +1847,6 @@
     },
   },
   'webview_instrumentation_test_apk': {
-    'remove_gtest_from': [
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-    ],
     'remove_from': [
       # This test frequently fails on Android, https://crbug.com/824959
       # chromium.android

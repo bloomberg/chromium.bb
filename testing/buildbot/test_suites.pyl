@@ -37,13 +37,6 @@
     'platform': 'O',
   },
 
-  'android_fyi_instrumentation_tests': {
-    'chrome_public_test_apk': {},
-    'chrome_sync_shell_test_apk': {},
-    'content_shell_test_apk': {},
-    'webview_instrumentation_test_apk': {},
-  },
-
   'android_fyi_vr_gtests': {
     'chrome_public_test_vr_apk-nonddready-cardboard-current-kitkat': {
       'args': [
@@ -2175,12 +2168,6 @@
 
   'components_perftests_isolated_scripts' : {
     'components_perftests': {},
-  },
-
-  'telemetry_perf_unittests_scripts': {
-    'telemetry_perf_unittests': {
-      'script': 'telemetry_perf_unittests.py',
-    }
   },
 
   'viz_fyi_gtests': {
