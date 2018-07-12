@@ -58,6 +58,8 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
+#include "media/capabilities/in_memory_video_decode_stats_db_impl.h"
+#include "media/mojo/services/video_decode_perf_history.h"
 #include "net/http/transport_security_state.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -107,9 +109,12 @@ using content::DownloadManagerDelegate;
 using content::HostZoomMap;
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 namespace {
 
+// Key names for OTR Profile user data.
+constexpr char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 void NotifyOTRProfileCreatedOnIOThread(void* original_profile,
                                        void* otr_profile) {
   extensions::ExtensionWebRequestEventRouter::GetInstance()
@@ -121,9 +126,9 @@ void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
   extensions::ExtensionWebRequestEventRouter::GetInstance()
       ->OnOTRBrowserContextDestroyed(original_profile, otr_profile);
 }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 }  // namespace
-#endif
 
 OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
     : profile_(real_profile), start_time_(base::Time::Now()) {
@@ -455,11 +460,37 @@ OffTheRecordProfileImpl::GetBrowsingDataRemoverDelegate() {
 
 media::VideoDecodePerfHistory*
 OffTheRecordProfileImpl::GetVideoDecodePerfHistory() {
-  // Defer to the original profile for VideoDecodePerfHistory. The incognito
-  // profile will have no history of its own (we don't save it for incognito)
-  // and the two profiles should have the same video performance. The history is
-  // not exposed directly to the web, so privacy is not compromised.
-  return GetOriginalProfile()->GetVideoDecodePerfHistory();
+  media::VideoDecodePerfHistory* decode_history =
+      static_cast<media::VideoDecodePerfHistory*>(
+          GetUserData(kVideoDecodePerfHistoryId));
+
+  // Lazily created. Note, this does not trigger loading the DB from disk. That
+  // occurs later upon first VideoDecodePerfHistory API request that requires DB
+  // access. DB operations will not block the UI thread.
+  if (!decode_history) {
+    // Use the original profile's DB to seed the OTR VideoDeocdePerfHisotry. The
+    // original DB is treated as read-only, while OTR playbacks will write stats
+    // to the InMemory version (cleared on profile destruction). Guest profiles
+    // don't have a root profile like incognito, meaning they don't have a seed
+    // DB to call on and we can just pass null.
+    media::VideoDecodeStatsDBProvider* seed_db_provider =
+        IsGuestSession() ? nullptr
+                         // Safely passing raw pointer to VideoDecodePerfHistory
+                         // because original profile will outlive this profile.
+                         : GetOriginalProfile()->GetVideoDecodePerfHistory();
+
+    auto db_factory =
+        std::make_unique<media::InMemoryVideoDecodeStatsDBFactory>(
+            seed_db_provider);
+
+    auto new_decode_history =
+        std::make_unique<media::VideoDecodePerfHistory>(std::move(db_factory));
+    decode_history = new_decode_history.get();
+
+    SetUserData(kVideoDecodePerfHistoryId, std::move(new_decode_history));
+  }
+
+  return decode_history;
 }
 
 bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {

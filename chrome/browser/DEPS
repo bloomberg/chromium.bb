@@ -42,6 +42,7 @@ include_rules = [
   "+mash/public/mojom",
   "+media/audio", # For media audio hang monitor.
   "+media/base",  # For media switches
+  "+media/capabilities", # For InMemoryVideoDecodeStatsDB
   "+media/cdm/cdm_paths.h",
   "+media/capture",
   "+media/midi",  # For midi switches

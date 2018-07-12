@@ -15,6 +15,7 @@
 #include "base/supports_user_data.h"
 #include "media/base/video_codecs.h"
 #include "media/capabilities/video_decode_stats_db.h"
+#include "media/capabilities/video_decode_stats_db_provider.h"
 #include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -45,6 +46,7 @@ namespace media {
 // sequence.
 class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
     : public mojom::VideoDecodePerfHistory,
+      public VideoDecodeStatsDBProvider,
       public base::SupportsUserData::Data {
  public:
   explicit VideoDecodePerfHistory(
@@ -76,6 +78,10 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   // complete.
   void ClearHistory(base::OnceClosure clear_done_cb);
 
+  // From VideoDecodeStatsDBProvider. |cb| receives a pointer to the
+  // *initialized* VideoDecodeStatsDB, or null in case of error.
+  void GetVideoDecodeStatsDB(GetCB cb) override;
+
  private:
   friend class VideoDecodePerfHistoryTest;
 
@@ -104,7 +110,7 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   // Callback from |db_->Initialize()|.
   void OnDatabaseInit(bool success);
 
-  // Initiated saving of the provided record. See GetSaveCallback().
+  // Initiate saving of the provided record. See GetSaveCallback().
   void SavePerfRecord(const url::Origin& untrusted_top_frame_origin,
                       bool is_top_frame,
                       mojom::PredictionFeatures features,

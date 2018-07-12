@@ -21,6 +21,9 @@
 #include "url/origin.h"
 
 using UkmEntry = ukm::builders::Media_VideoDecodePerfRecord;
+using testing::Eq;
+using testing::IsNull;
+using testing::_;
 
 namespace {
 
@@ -159,6 +162,8 @@ class VideoDecodePerfHistoryTest : public testing::Test {
   // the operation has completed. See CompleteDBInitOnClearedHistory().
   MOCK_METHOD0(MockOnClearedHistory, void());
 
+  MOCK_METHOD1(MockGetVideoDecodeStatsDBCB, void(VideoDecodeStatsDB* db));
+
   mojom::PredictionFeatures MakeFeatures(VideoCodecProfile profile,
                                          gfx::Size video_size,
                                          int frames_per_sec) {
@@ -292,9 +297,7 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_Smooth) {
     GetFakeDB()->CompleteInitialize(true);
 
     // Allow initialize-deferred API calls to complete.
-    base::RunLoop run_loop;
-    base::PostTask(FROM_HERE, base::BindOnce(run_loop.QuitWhenIdleClosure()));
-    run_loop.Run();
+    scoped_task_environment_.RunUntilIdle();
   }
 }
 
@@ -386,9 +389,7 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_PowerEfficient) {
     GetFakeDB()->CompleteInitialize(true);
 
     // Allow initialize-deferred API calls to complete.
-    base::RunLoop run_loop;
-    base::PostTask(FROM_HERE, base::BindOnce(run_loop.QuitWhenIdleClosure()));
-    run_loop.Run();
+    scoped_task_environment_.RunUntilIdle();
   }
 }
 
@@ -415,9 +416,7 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_FailedInitialize) {
     GetFakeDB()->CompleteInitialize(false);
 
     // Allow initialize-deferred API calls to complete.
-    base::RunLoop run_loop;
-    base::PostTask(FROM_HERE, base::BindOnce(run_loop.QuitWhenIdleClosure()));
-    run_loop.Run();
+    scoped_task_environment_.RunUntilIdle();
   }
 }
 
@@ -472,9 +471,7 @@ TEST_P(VideoDecodePerfHistoryParamTest, AppendAndDestroyStats) {
     GetFakeDB()->CompleteInitialize(true);
 
     // Allow initialize-deferred API calls to complete.
-    base::RunLoop run_loop;
-    base::PostTask(FROM_HERE, base::BindOnce(run_loop.QuitWhenIdleClosure()));
-    run_loop.Run();
+    scoped_task_environment_.RunUntilIdle();
   }
 
   const auto& entries = test_recorder_->GetEntriesByName(UkmEntry::kEntryName);
@@ -492,6 +489,70 @@ TEST_P(VideoDecodePerfHistoryParamTest, AppendAndDestroyStats) {
 #undef EXPECT_UKM
 
     // TODO(chcunningham): Expand UKM tests to include absence tests.
+  }
+}
+
+TEST_P(VideoDecodePerfHistoryParamTest, GetVideoDecodeStatsDB) {
+  // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
+  // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
+  // that EXPECT_CALLs arrive in top-to-bottom order.
+  bool defer_initialize = GetParam();
+  testing::InSequence dummy;
+
+  // Complete initialization in advance of API calls when not asked to defer.
+  if (!defer_initialize)
+    PreInitializeDB(/* success */ true);
+
+  // Request a pointer to VideoDecodeStatsDB and verify the callback.
+  EXPECT_CALL(*this, MockGetVideoDecodeStatsDBCB(_))
+      .WillOnce([&](const auto* db_ptr) {
+        // Not able to simply use a matcher because the DB does not exist at the
+        // time we setup the EXPECT_CALL.
+        EXPECT_EQ(GetFakeDB(), db_ptr);
+      });
+
+  perf_history_->GetVideoDecodeStatsDB(
+      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetVideoDecodeStatsDBCB,
+                     base::Unretained(this)));
+
+  scoped_task_environment_.RunUntilIdle();
+
+  // Complete successful deferred DB initialization (see comment at top of test)
+  if (defer_initialize) {
+    GetFakeDB()->CompleteInitialize(true);
+
+    // Allow initialize-deferred API calls to complete.
+    scoped_task_environment_.RunUntilIdle();
+  }
+}
+
+TEST_P(VideoDecodePerfHistoryParamTest,
+       GetVideoDecodeStatsDB_FailedInitialize) {
+  // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
+  // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
+  // that EXPECT_CALLs arrive in top-to-bottom order.
+  bool defer_initialize = GetParam();
+  testing::InSequence dummy;
+
+  // Complete initialization in advance of API calls when not asked to defer.
+  if (!defer_initialize)
+    PreInitializeDB(/* success */ false);
+
+  // Request a pointer to VideoDecodeStatsDB and verify the callback provides
+  // a nullptr due to failed initialization.
+  EXPECT_CALL(*this, MockGetVideoDecodeStatsDBCB(IsNull()));
+  perf_history_->GetVideoDecodeStatsDB(
+      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetVideoDecodeStatsDBCB,
+                     base::Unretained(this)));
+
+  scoped_task_environment_.RunUntilIdle();
+
+  // Complete failed deferred DB initialization (see comment at top of test)
+  if (defer_initialize) {
+    GetFakeDB()->CompleteInitialize(false);
+
+    // Allow initialize-deferred API calls to complete.
+    scoped_task_environment_.RunUntilIdle();
   }
 }
 
@@ -540,9 +601,7 @@ TEST_F(VideoDecodePerfHistoryTest, AppendWhileDestroying) {
   GetFakeDB()->CompleteInitialize(/* success */ true);
 
   // Allow initialize-deferred API calls to complete.
-  base::RunLoop run_loop;
-  base::PostTask(FROM_HERE, base::BindOnce(run_loop.QuitWhenIdleClosure()));
-  run_loop.Run();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 }  // namespace media

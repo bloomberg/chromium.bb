@@ -20,10 +20,14 @@ source_set("capabilities") {
   sources = [
     "bucket_utility.cc",
     "bucket_utility.h",
+    "in_memory_video_decode_stats_db_impl.cc",
+    "in_memory_video_decode_stats_db_impl.h",
     "video_decode_stats_db.cc",
     "video_decode_stats_db.h",
     "video_decode_stats_db_impl.cc",
     "video_decode_stats_db_impl.h",
+    "video_decode_stats_db_provider.cc",
+    "video_decode_stats_db_provider.h",
   ]
 
   public_deps = [
@@ -40,6 +44,7 @@ source_set("capabilities") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "in_memory_video_decode_stats_db_unittest.cc",
     "video_decode_stats_db_unittest.cc",
   ]
 
