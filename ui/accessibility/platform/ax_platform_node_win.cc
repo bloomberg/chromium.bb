@@ -6128,7 +6128,7 @@ bool AXPlatformNodeWin::IsSameHypertextCharacter(size_t old_char_index,
   base::char16 new_ch = hypertext_.hypertext[new_char_index];
   if (old_ch != new_ch)
     return false;
-  if (old_ch == new_ch && new_ch != kEmbeddedCharacter)
+  if (new_ch != kEmbeddedCharacter)
     return true;
 
   // If it's an embedded character, they're only identical if the child id
@@ -6157,6 +6157,17 @@ bool AXPlatformNodeWin::IsSameHypertextCharacter(size_t old_char_index,
   return old_child_id == new_child_id;
 }
 
+// Return true if the index represents a text character.
+bool AXPlatformNodeWin::IsText(const base::string16& text,
+                               size_t index,
+                               bool is_indexed_from_end) {
+  size_t text_len = text.size();
+  if (index == text_len)
+    return false;
+  auto ch = text[is_indexed_from_end ? text_len - index - 1 : index];
+  return ch != kEmbeddedCharacter;
+}
+
 void AXPlatformNodeWin::ComputeHypertextRemovedAndInserted(int* start,
                                                            int* old_len,
                                                            int* new_len) {
@@ -6173,18 +6184,44 @@ void AXPlatformNodeWin::ComputeHypertextRemovedAndInserted(int* start,
   const base::string16& old_text = old_hypertext_.hypertext;
   const base::string16& new_text = hypertext_.hypertext;
 
+  // TODO(accessibility) Plumb through which part of text changed so we don't
+  // have to guess what changed based on character differences. This can be
+  // wrong in some cases as follows:
+  // -- EDITABLE --
+  // If editable: when part of the text node changes, assume only that part
+  // changed, and not the entire thing. For example, if "car" changes to
+  // "cat", assume only 1 letter changed. This code compares common characters
+  // to guess what has changed.
+  // -- NOT EDITABLE --
+  // When part of the text changes, assume the entire node's text changed. For
+  // example, if "car" changes to "cat" then assume all 3 letters changed. Note,
+  // it is possible (though rare) that CharacterData methods are used to remove,
+  // insert, replace or append a substring.
+  bool allow_partial_text_node_changes =
+      GetData().HasState(ax::mojom::State::kEditable);
+  size_t prefix_index = 0;
   size_t common_prefix = 0;
-  while (common_prefix < old_text.size() && common_prefix < new_text.size() &&
-         IsSameHypertextCharacter(common_prefix, common_prefix)) {
-    ++common_prefix;
+  while (prefix_index < old_text.size() && prefix_index < new_text.size() &&
+         IsSameHypertextCharacter(prefix_index, prefix_index)) {
+    ++prefix_index;
+    if (allow_partial_text_node_changes ||
+        (!IsText(old_text, prefix_index) && !IsText(new_text, prefix_index))) {
+      common_prefix = prefix_index;
+    }
   }
 
+  size_t suffix_index = 0;
   size_t common_suffix = 0;
-  while (common_prefix + common_suffix < old_text.size() &&
-         common_prefix + common_suffix < new_text.size() &&
-         IsSameHypertextCharacter(old_text.size() - common_suffix - 1,
-                                  new_text.size() - common_suffix - 1)) {
-    ++common_suffix;
+  while (common_prefix + suffix_index < old_text.size() &&
+         common_prefix + suffix_index < new_text.size() &&
+         IsSameHypertextCharacter(old_text.size() - suffix_index - 1,
+                                  new_text.size() - suffix_index - 1)) {
+    ++suffix_index;
+    if (allow_partial_text_node_changes ||
+        (!IsText(old_text, suffix_index, true) &&
+         !IsText(new_text, suffix_index, true))) {
+      common_suffix = suffix_index;
+    }
   }
 
   *start = (int)common_prefix;
