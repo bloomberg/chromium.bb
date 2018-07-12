@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
@@ -154,9 +155,18 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
   if (base::FeatureList::IsEnabled(features::kMojoSessionStorage)) {
     mojo_session_state_ = new SessionStorageContextMojo(
         mojo_task_runner_, connector,
-        profile_path.empty() ? base::nullopt
-                             : base::make_optional(local_partition_path),
-        std::string(kSessionStorageDirectory));
+
+#if defined(OS_ANDROID)
+        // On Android there is no support for session storage restoring, and
+        // since the restoring code is responsible for database cleanup, we must
+        // manually delete the old database here before we open it.
+        SessionStorageContextMojo::BackingMode::kClearDiskStateOnOpen,
+#else
+        profile_path.empty()
+            ? SessionStorageContextMojo::BackingMode::kNoDisk
+            : SessionStorageContextMojo::BackingMode::kRestoreDiskState,
+#endif
+        local_partition_path, std::string(kSessionStorageDirectory));
   }
 
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
