@@ -10,6 +10,8 @@ static_library("consent_auditor") {
   sources = [
     "consent_auditor.cc",
     "consent_auditor.h",
+    "consent_auditor_impl.cc",
+    "consent_auditor_impl.h",
     "consent_sync_bridge.h",
     "consent_sync_bridge_impl.cc",
     "consent_sync_bridge_impl.h",
@@ -48,7 +50,7 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "consent_auditor_unittest.cc",
+    "consent_auditor_impl_unittest.cc",
     "consent_sync_bridge_impl_unittest.cc",
   ]
 

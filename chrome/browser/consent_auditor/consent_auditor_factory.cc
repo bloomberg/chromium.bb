@@ -10,7 +10,7 @@
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/consent_auditor/consent_auditor.h"
+#include "components/consent_auditor/consent_auditor_impl.h"
 #include "components/consent_auditor/consent_sync_bridge.h"
 #include "components/consent_auditor/consent_sync_bridge_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -69,7 +69,7 @@ KeyedService* ConsentAuditorFactory::BuildServiceInstanceFor(
         browser_sync::UserEventServiceFactory::GetForProfile(profile);
   }
 
-  return new consent_auditor::ConsentAuditor(
+  return new consent_auditor::ConsentAuditorImpl(
       profile->GetPrefs(), std::move(consent_sync_bridge), user_event_service,
       // The browser version and locale do not change runtime, so we can pass
       // them directly.
@@ -80,5 +80,5 @@ KeyedService* ConsentAuditorFactory::BuildServiceInstanceFor(
 // static
 void ConsentAuditorFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  consent_auditor::ConsentAuditor::RegisterProfilePrefs(registry);
+  consent_auditor::ConsentAuditorImpl::RegisterProfilePrefs(registry);
 }

@@ -11,21 +11,11 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/consent_auditor/consent_sync_bridge.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace syncer {
 class ModelTypeControllerDelegate;
-class UserEventService;
 }
-
-namespace sync_pb {
-class UserConsentSpecifics;
-class UserEventSpecifics;
-}
-
-class PrefService;
-class PrefRegistrySimple;
 
 namespace consent_auditor {
 
@@ -57,18 +47,8 @@ enum class ConsentStatus { NOT_GIVEN, GIVEN };
 // fully launched.
 class ConsentAuditor : public KeyedService {
  public:
-  ConsentAuditor(PrefService* pref_service,
-                 std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge,
-                 syncer::UserEventService* user_event_service,
-                 const std::string& app_version,
-                 const std::string& app_locale);
+  ConsentAuditor();
   ~ConsentAuditor() override;
-
-  // KeyedService:
-  void Shutdown() override;
-
-  // Registers the preferences needed by this service.
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Records a consent for |feature| for the signed-in GAIA account with
   // the ID |account_id| (as defined in AccountInfo).
@@ -79,41 +59,21 @@ class ConsentAuditor : public KeyedService {
                                  Feature feature,
                                  const std::vector<int>& description_grd_ids,
                                  int confirmation_grd_id,
-                                 ConsentStatus status);
+                                 ConsentStatus status) = 0;
 
   // Records that the user consented to a |feature|. The user was presented with
   // |description_text| and accepted it by interacting |confirmation_text|
   // (e.g. clicking on a button; empty if not applicable).
   // Returns true if successful.
-  void RecordLocalConsent(const std::string& feature,
-                          const std::string& description_text,
-                          const std::string& confirmation_text);
+  virtual void RecordLocalConsent(const std::string& feature,
+                                  const std::string& description_text,
+                                  const std::string& confirmation_text) = 0;
 
   // Returns the underlying Sync integration point.
-  base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetControllerDelegateOnUIThread();
+  virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  GetControllerDelegateOnUIThread() = 0;
 
  private:
-  std::unique_ptr<sync_pb::UserEventSpecifics> ConstructUserEventSpecifics(
-      const std::string& account_id,
-      Feature feature,
-      const std::vector<int>& description_grd_ids,
-      int confirmation_grd_id,
-      ConsentStatus status);
-
-  std::unique_ptr<sync_pb::UserConsentSpecifics> ConstructUserConsentSpecifics(
-      const std::string& account_id,
-      Feature feature,
-      const std::vector<int>& description_grd_ids,
-      int confirmation_grd_id,
-      ConsentStatus status);
-
-  PrefService* pref_service_;
-  std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge_;
-  syncer::UserEventService* user_event_service_;
-  std::string app_version_;
-  std::string app_locale_;
-
   DISALLOW_COPY_AND_ASSIGN(ConsentAuditor);
 };
 
