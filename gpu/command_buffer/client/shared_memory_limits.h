@@ -54,6 +54,16 @@ struct SharedMemoryLimits {
     limits.min_transfer_buffer_size = 64 * 1024;
     return limits;
   }
+
+  static SharedMemoryLimits ForOOPRasterContext() {
+    SharedMemoryLimits limits;
+    limits.command_buffer_size = 64 * 1024;
+    // TODO(khushalsagar): See if transfer buffer sizes can be fine-tuned
+    // further. A 16M max_transfer_buffer_size doesn't make sense if only paint
+    // commands are being sent through this buffer, and all large transfers use
+    // the transfer cache backed by mapped memory.
+    return limits;
+  }
 };
 
 }  // namespace gpu

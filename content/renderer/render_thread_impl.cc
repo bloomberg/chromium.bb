@@ -2394,9 +2394,12 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider() {
   bool support_gles2_interface = !support_oop_rasterization;
   bool support_raster_interface = true;
   bool support_grcontext = !support_oop_rasterization;
+  auto shared_memory_limits =
+      support_oop_rasterization ? gpu::SharedMemoryLimits::ForOOPRasterContext()
+                                : gpu::SharedMemoryLimits();
   shared_worker_context_provider_ = CreateOffscreenContext(
       std::move(gpu_channel_host), GetGpuMemoryBufferManager(),
-      gpu::SharedMemoryLimits(), support_locking, support_gles2_interface,
+      shared_memory_limits, support_locking, support_gles2_interface,
       support_raster_interface, support_oop_rasterization, support_grcontext,
       ui::command_buffer_metrics::ContextType::RENDER_WORKER,
       kGpuStreamIdWorker, kGpuStreamPriorityWorker);
