@@ -17,18 +17,28 @@
 
 namespace webrunner {
 
-ComponentControllerImpl::ComponentControllerImpl(
+// static
+std::unique_ptr<ComponentControllerImpl>
+ComponentControllerImpl::CreateForRequest(
     WebContentRunner* runner,
     fuchsia::sys::Package package,
     fuchsia::sys::StartupInfo startup_info,
-    ::fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-        controller_request)
+    fidl::InterfaceRequest<fuchsia::sys::ComponentController>
+        controller_request) {
+  std::unique_ptr<ComponentControllerImpl> result{
+      new ComponentControllerImpl(runner)};
+  if (!result->BindToRequest(std::move(package), std::move(startup_info),
+                             std::move(controller_request))) {
+    return nullptr;
+  }
+  return result;
+}
+
+ComponentControllerImpl::ComponentControllerImpl(WebContentRunner* runner)
     : runner_(runner),
       controller_binding_(this),
       frame_observer_binding_(this) {
   DCHECK(runner);
-  BindToRequest(std::move(package), std::move(startup_info),
-                std::move(controller_request));
 }
 
 ComponentControllerImpl::~ComponentControllerImpl() {
@@ -37,10 +47,10 @@ ComponentControllerImpl::~ComponentControllerImpl() {
   }
 }
 
-void ComponentControllerImpl::BindToRequest(
+bool ComponentControllerImpl::BindToRequest(
     fuchsia::sys::Package package,
     fuchsia::sys::StartupInfo startup_info,
-    ::fidl::InterfaceRequest<fuchsia::sys::ComponentController>
+    fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         controller_request) {
   DCHECK(!service_directory_);
   DCHECK(!view_provider_binding_);
@@ -48,10 +58,7 @@ void ComponentControllerImpl::BindToRequest(
   url_ = GURL(*package.resolved_url);
   if (!url_.is_valid()) {
     LOG(ERROR) << "Rejected invalid URL: " << url_;
-
-    // By now |this| has been destroyed by WebContentRunner, so return
-    // immediately.
-    return;
+    return false;
   }
 
   if (controller_request.is_valid()) {
@@ -65,12 +72,18 @@ void ComponentControllerImpl::BindToRequest(
   frame_->GetNavigationController(navigation_controller_.NewRequest());
   navigation_controller_->LoadUrl(url_.spec(), nullptr);
 
-  // Publish a ViewProvider service.
+  // Create ServiceDirectory for the component and publish ViewProvider
+  // interface. ViewProvider will be used by the caller to create a view for the
+  // Frame. Note that these two operations must be done on the same/
+  // AsyncDispatcher in order to ensure that ServiceDirectory doesn't process
+  // incoming service requests before the service is published.
   service_directory_ = std::make_unique<base::fuchsia::ServiceDirectory>(
       std::move(startup_info.launch_info.directory_request));
   view_provider_binding_ = std::make_unique<
       base::fuchsia::ScopedServiceBinding<fuchsia::ui::views_v1::ViewProvider>>(
       service_directory_.get(), this);
+
+  return true;
 }
 
 void ComponentControllerImpl::Kill() {
@@ -91,13 +104,13 @@ void ComponentControllerImpl::OnNavigationStateChanged(
     OnNavigationStateChangedCallback callback) {}
 
 void ComponentControllerImpl::CreateView(
-    ::fidl::InterfaceRequest<fuchsia::ui::views_v1_token::ViewOwner> view_owner,
-    ::fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) {
+    fidl::InterfaceRequest<fuchsia::ui::views_v1_token::ViewOwner> view_owner,
+    fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) {
   DCHECK(frame_);
-  DCHECK(!view_bound_);
+  DCHECK(!view_is_bound_);
 
   frame_->CreateView(std::move(view_owner), std::move(services));
-  view_bound_ = true;
+  view_is_bound_ = true;
 }
 
 }  // namespace webrunner
