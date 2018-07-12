@@ -144,10 +144,8 @@ const char* NGInlineItem::NGInlineItemTypeToString(int val) const {
 }
 
 UScriptCode NGInlineItem::Script() const {
-  // UScriptCode is -1 (USCRIPT_INVALID_CODE) to 177 as of ICU 60.
-  // Convert back the max value of the unsigned bit field to -1.
-  return script_ != (1 << kScriptBits) - 1 ? static_cast<UScriptCode>(script_)
-                                           : USCRIPT_INVALID_CODE;
+  return script_ != kInvalidScript ? static_cast<UScriptCode>(script_)
+                                   : USCRIPT_INVALID_CODE;
 }
 
 FontFallbackPriority NGInlineItem::GetFontFallbackPriority() const {
@@ -173,17 +171,16 @@ bool NGInlineItem::EqualsRunSegment(const NGInlineItem& other) const {
 void NGInlineItem::SetRunSegment(const RunSegmenter::RunSegmenterRange& range) {
   DCHECK_EQ(Type(), NGInlineItem::kText);
 
-  // Ensure the values can fit in the bit fields.
-  DCHECK(range.script == USCRIPT_INVALID_CODE ||
-         static_cast<unsigned>(range.script) < (1u << kScriptBits));
-  DCHECK_LT(static_cast<unsigned>(range.font_fallback_priority), 1u << 2);
-
   // Orientation should be set in a separate pass. See
   // NGInlineNode::SegmentScriptRuns().
   DCHECK_EQ(range.render_orientation, OrientationIterator::kOrientationKeep);
 
   script_ = static_cast<unsigned>(range.script);
   font_fallback_priority_ = static_cast<unsigned>(range.font_fallback_priority);
+
+  // Ensure our bit fields are large enough by reading them back.
+  DCHECK_EQ(range.script, Script());
+  DCHECK_EQ(range.font_fallback_priority, GetFontFallbackPriority());
 }
 
 void NGInlineItem::SetFontOrientation(
