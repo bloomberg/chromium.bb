@@ -53,6 +53,10 @@ document.addEventListener('DOMContentLoaded', () => {
     selectorDetailLabel.textContent = action.selector;
 
     switch (action.type) {
+      case 'autofill':
+        actionLabel.textContent = 'trigger autofill';
+        actionDetailLabel.textContent = `trigger autofill`;
+        break;
       case 'click':
         actionLabel.textContent = 'left-click';
         actionDetailLabel.textContent = `left click element`;
@@ -61,9 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
         actionLabel.textContent = 'hover';
         actionDetailLabel.textContent = `hover over element`;
         break;
-      case 'autofill':
-        actionLabel.textContent = 'trigger autofill';
-        actionDetailLabel.textContent = `trigger autofill`;
+      case 'pressEnter':
+        actionLabel.textContent = 'enter';
+        actionDetailLabel.textContent = `press enter`;
         break;
       case 'select':
         actionLabel.textContent = 'select dropdown option';
