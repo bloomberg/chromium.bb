@@ -134,16 +134,17 @@ class CookiesAuthenticator(Authenticator):
   def _get_netrc(cls):
     # Buffer the '.netrc' path. Use an empty file if it doesn't exist.
     path = cls.get_netrc_path()
-    content = ''
-    if os.path.exists(path):
-      st = os.stat(path)
-      if st.st_mode & (stat.S_IRWXG | stat.S_IRWXO):
-        print >> sys.stderr, (
-            'WARNING: netrc file %s cannot be used because its file '
-            'permissions are insecure.  netrc file permissions should be '
-            '600.' % path)
-      with open(path) as fd:
-        content = fd.read()
+    if not os.path.exists(path):
+      return netrc.netrc(os.devnull)
+
+    st = os.stat(path)
+    if st.st_mode & (stat.S_IRWXG | stat.S_IRWXO):
+      print >> sys.stderr, (
+          'WARNING: netrc file %s cannot be used because its file '
+          'permissions are insecure.  netrc file permissions should be '
+          '600.' % path)
+    with open(path) as fd:
+      content = fd.read()
 
     # Load the '.netrc' file. We strip comments from it because processing them
     # can trigger a bug in Windows. See crbug.com/664664.
