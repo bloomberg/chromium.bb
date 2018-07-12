@@ -49,6 +49,7 @@
             android:inflatedId="@+id/experimental_toolbar_button"
             android:layout="@layout/experimental_toolbar_button"
             style="@style/ToolbarButton"
+            android:paddingStart="8dp"
             android:layout_gravity="top"
             android:visibility="gone" />
 
