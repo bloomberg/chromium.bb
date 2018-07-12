@@ -74,6 +74,7 @@ source_set("chromeos") {
     "//chromeos:cryptohome_proto",
     "//chromeos:cryptohome_signkey_proto",
     "//chromeos:login_manager_proto",
+    "//chromeos/assistant:buildflags",
     "//chromeos/components/drivefs",
     "//chromeos/components/drivefs/mojom",
     "//chromeos/components/proximity_auth",
