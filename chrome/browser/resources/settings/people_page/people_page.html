@@ -126,6 +126,12 @@
       }
 
       settings-sync-account-control[showing-promo] {
+        --promo-banner: {
+          /* Make the banner image stay within setting-section's card border
+             radius. */
+          border-top-left-radius: var(--cr-card-border-radius);
+          border-top-right-radius: var(--cr-card-border-radius);
+        }
         /* When showing promo in this page, text should be larger. */
         --promo-description: {
           font-size: 0.9rem;
