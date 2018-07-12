@@ -56,8 +56,7 @@ class SessionMonitor {
   SessionMonitor(int max_retention_bytes,
                  const net::IPAddress& receiver_address,
                  base::Value session_tags,
-                 network::mojom::URLLoaderFactoryPtr loader_factory,
-                 std::unique_ptr<WifiStatusMonitor> wifi_status_monitor);
+                 network::mojom::URLLoaderFactoryPtr loader_factory);
 
   ~SessionMonitor();
 
@@ -71,6 +70,7 @@ class SessionMonitor {
   // events/stats.
   void StartStreamingSession(
       scoped_refptr<media::cast::CastEnvironment> cast_environment,
+      std::unique_ptr<WifiStatusMonitor> wifi_status_monitor,
       SessionType session_type,
       bool is_remoting);
   void StopStreamingSession();
@@ -90,6 +90,8 @@ class SessionMonitor {
 
   // Takes a snapshot of recent Cast Streaming events and statistics.
   void TakeSnapshot();
+
+  std::string GetReceiverBuildVersion() const;
 
  private:
   // Query the receiver for its current setup and uptime.
@@ -113,7 +115,7 @@ class SessionMonitor {
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
 
   // Monitors the WiFi status if not null.
-  const std::unique_ptr<WifiStatusMonitor> wifi_status_monitor_;
+  std::unique_ptr<WifiStatusMonitor> wifi_status_monitor_;
 
   std::unique_ptr<media::cast::RawEventSubscriberBundle> event_subscribers_;
 

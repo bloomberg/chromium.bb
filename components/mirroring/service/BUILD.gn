@@ -18,6 +18,7 @@ source_set("interface") {
     "//media/capture/mojom:video_capture",
     "//media/cast:common",
     "//media/mojo/interfaces",
+    "//media/mojo/interfaces:remoting",
     "//net",
     "//services/network/public/mojom",
   ]

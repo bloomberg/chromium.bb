@@ -17,10 +17,7 @@ class MessageDispatcher::RequestHolder {
  public:
   RequestHolder() {}
 
-  ~RequestHolder() {
-    if (!response_callback_.is_null())
-      std::move(response_callback_).Run(ReceiverResponse());
-  }
+  ~RequestHolder() {}
 
   void Start(const base::TimeDelta& timeout,
              int32_t sequence_number,
@@ -134,6 +131,8 @@ void MessageDispatcher::RequestReply(const CastMessage& message,
                                      OnceResponseCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(timeout > base::TimeDelta());
+
+  Unsubscribe(response_type);  // Cancel the old request if there is any.
   RequestHolder* const request_holder = new RequestHolder();
   request_holder->Start(
       timeout, sequence_number,

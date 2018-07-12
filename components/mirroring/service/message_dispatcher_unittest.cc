@@ -286,14 +286,11 @@ TEST_F(MessageDispatcherTest, RequestReply) {
   EXPECT_FALSE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
 
-  // Destroy the dispatcher. Expect to receive an unknown type response.
+  // Destroy the dispatcher.
   message_dispatcher_.reset();
   scoped_task_environment_.RunUntilIdle();
-  ASSERT_TRUE(last_answer_response_);
+  ASSERT_FALSE(last_answer_response_);
   EXPECT_FALSE(last_status_response_);
-  EXPECT_TRUE(last_error_message_.empty());
-  EXPECT_EQ(ResponseType::UNKNOWN, last_answer_response_->type);
-  EXPECT_EQ(-1, last_answer_response_->sequence_number);
 }
 
 }  // namespace mirroring

@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "components/mirroring/service/interface.h"
+#include "components/mirroring/service/media_remoter.h"
 #include "components/mirroring/service/message_dispatcher.h"
 #include "components/mirroring/service/mirror_settings.h"
 #include "components/mirroring/service/rtp_stream.h"
@@ -33,13 +34,14 @@ struct ReceiverResponse;
 class VideoCaptureClient;
 class SessionMonitor;
 
-// Controls a mirroring session, including audio/video capturing and Cast
-// Streaming. When constructed, it does OFFER/ANSWER exchange with the mirroring
-// receiver. Mirroring starts when the exchange succeeds and stops when this
-// class is destructed or error occurs. |observer| will get notified when status
-// changes. |outbound_channel| is responsible for sending messages to the
-// mirroring receiver through Cast Channel.
-class Session final : public RtpStreamClient {
+// Controls a mirroring session, including audio/video capturing, Cast
+// Streaming, and the switching to/from media remoting. When constructed, it
+// does OFFER/ANSWER exchange with the mirroring receiver. Mirroring starts when
+// the exchange succeeds and stops when this class is destructed or error
+// occurs. |observer| will get notified when status changes. |outbound_channel|
+// is responsible for sending messages to the mirroring receiver through Cast
+// Channel.
+class Session final : public RtpStreamClient, public MediaRemoter::Client {
  public:
   Session(int32_t session_id,
           const CastSinkInfo& sink_info,
@@ -72,7 +74,6 @@ class Session final : public RtpStreamClient {
   // get notified with error, and session is stopped. Otherwise, capturing and
   // streaming are started with the selected configs.
   void OnAnswer(
-      const std::string& cast_mode,
       const std::vector<media::cast::FrameSenderConfig>& audio_configs,
       const std::vector<media::cast::FrameSenderConfig>& video_configs,
       const ReceiverResponse& response);
@@ -87,10 +88,30 @@ class Session final : public RtpStreamClient {
                          const media::AudioParameters& params,
                          uint32_t shared_memory_count);
 
+  // Callback for CAPABILITIES_RESPONSE.
+  void OnCapabilitiesResponse(const ReceiverResponse& response);
+
  private:
+  // To allow the test code access the |message_dispatcher_|.
+  // TODO(xjz): Remove this after adding the inbound message channel argument.
+  friend class SessionTest;
+
   class AudioCapturingCallback;
 
-  void StopSession();
+  // MediaRemoter::Client implementation.
+  void ConnectToRemotingSource(
+      media::mojom::RemoterPtr remoter,
+      media::mojom::RemotingSourceRequest source_request) override;
+  void RequestRemotingStreaming() override;
+  void RestartMirroringStreaming() override;
+
+  // Stops the current streaming session. If not called from StopSession(), a
+  // new streaming session will start later after exchanging OFFER/ANSWER
+  // messages with the receiver. This could happen any number of times before
+  // StopSession() shuts down everything permanently.
+  void StopStreaming();
+
+  void StopSession();  // Shuts down the entire mirroring session.
 
   // Notify |observer_| that error occurred and close the session.
   void ReportError(SessionError error);
@@ -106,9 +127,22 @@ class Session final : public RtpStreamClient {
   // Create and send OFFER message.
   void CreateAndSendOffer();
 
+  // Send GET_CAPABILITIES message.
+  void QueryCapabilitiesForRemoting();
+
   // Provided by Cast Media Route Provider (MRP).
   const int32_t session_id_;
   const CastSinkInfo sink_info_;
+
+  // State transition:
+  // MIRRORING <-------> REMOTING
+  //     |                   |
+  //     .---> STOPPED <----.
+  enum {
+    MIRRORING,  // A mirroring streaming session is starting or started.
+    REMOTING,   // A remoting streaming session is starting or started.
+    STOPPED,    // The session is stopped due to user's request or errors.
+  } state_;
 
   SessionObserver* observer_ = nullptr;
   ResourceProvider* resource_provider_ = nullptr;
@@ -130,6 +164,7 @@ class Session final : public RtpStreamClient {
   scoped_refptr<base::SingleThreadTaskRunner> video_encode_thread_ = nullptr;
   std::unique_ptr<AudioCapturingCallback> audio_capturing_callback_;
   scoped_refptr<media::AudioInputDevice> audio_input_device_;
+  std::unique_ptr<MediaRemoter> media_remoter_;
 
   base::WeakPtrFactory<Session> weak_factory_;
 };
