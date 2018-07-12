@@ -108,19 +108,10 @@ DeviceService::DeviceService(
       io_task_runner_(std::move(io_task_runner)),
       geolocation_request_context_producer_(
           geolocation_request_context_producer),
-      geolocation_api_key_(geolocation_api_key) {
-  base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
-}
+      geolocation_api_key_(geolocation_api_key) {}
 #endif
 
 DeviceService::~DeviceService() {
-  if (base::MessageLoopCurrent::Get()) {
-    base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
-    ShutDown();
-  }
-}
-
-void DeviceService::ShutDown() {
 #if !defined(OS_ANDROID)
   device::BatteryStatusService::GetInstance()->Shutdown();
 #endif
@@ -129,17 +120,6 @@ void DeviceService::ShutDown() {
     io_task_runner_->DeleteSoon(
         FROM_HERE, std::move(public_ip_address_geolocation_provider_));
   }
-}
-
-// On embedder shutdown, the Device Service needs to shut down certain parts of
-// its state to avoid DCHECKs going off (see. https://crbug.com/794105 for
-// details). However, when used in the context of the browser the Device Service
-// is not guaranteed to have its destructor run, as the sequence on which it
-// runs is stopped before the task posted to run the Device Service destructor
-// is run. Hence, observe destruction of that sequence in order to clean up the
-// necessary state.
-void DeviceService::WillDestroyCurrentMessageLoop() {
-  ShutDown();
 }
 
 void DeviceService::OnStart() {
