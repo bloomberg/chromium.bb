@@ -1,13 +1,6 @@
 <!DOCTYPE html>
-<script>
-if (window.testRunner)
-  testRunner.dumpAsText();
-
-window.onload = function() {
-  document.getElementById('object').appendChild(document.getElementById('meta'));
-  document.execCommand('FindString', 'test');
-};
-</script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <style>
   caption:first-line { visibility: hidden; }
   caption:first-letter { color: red; }
@@ -24,3 +17,9 @@ window.onload = function() {
   </object>
 </p>
 <p></p>
+<script>
+test(() => {
+  document.getElementById('object').appendChild(document.getElementById('meta'));
+  document.execCommand('FindString', 'test');
+}, 'Should not crash');
+</script>
