@@ -37,7 +37,7 @@
     </div>
 
     <iron-list items="[[historyData_]]" as="item" id="infinite-list"
-        hidden$="[[!hasResults_(historyData_.length)]]">
+        hidden$="[[!hasResults_(historyData_.length)]]" preserve-focus>
       <template>
         <history-item tabindex$="[[tabIndex]]"
             item="[[item]]"
