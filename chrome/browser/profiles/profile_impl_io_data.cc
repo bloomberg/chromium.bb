@@ -12,8 +12,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -21,7 +19,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/task_scheduler/task_traits.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -113,19 +110,6 @@ net::BackendType ChooseCacheBackendType(const base::CommandLine& command_line) {
       break;
   }
   return net::CACHE_BACKEND_DEFAULT;
-}
-
-void MaybeDeleteMediaCache(const base::FilePath& media_cache_path) {
-  if (!base::FeatureList::IsEnabled(features::kUseSameCacheForMedia) ||
-      media_cache_path.empty()) {
-    return;
-  }
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::TaskPriority::BACKGROUND, base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile), media_cache_path,
-                     true /* recursive */));
 }
 
 }  // namespace
@@ -536,8 +520,6 @@ void ProfileImplIOData::OnMainRequestContextCreated(
   InitializeExtensionsRequestContext(profile_params);
 #endif
 
-  MaybeDeleteMediaCache(lazy_params_->media_cache_path);
-
   // Create a media request context based on the main context, but using a
   // media cache.  It shares the same job factory as the main context.
   StoragePartitionDescriptor details(profile_path_, false);
@@ -571,11 +553,6 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
         protocol_handler_interceptor,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) const {
-  if (!partition_descriptor.in_memory) {
-    MaybeDeleteMediaCache(
-        partition_descriptor.path.Append(chrome::kMediaCacheDirname));
-  }
-
   // Copy most state from the main context.
   AppRequestContext* context = new AppRequestContext();
   context->CopyFrom(main_context);
