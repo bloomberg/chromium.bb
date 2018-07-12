@@ -491,7 +491,8 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
 
   DCHECK(wants_to_be_visible_);
 
-  ui::CATransactionCoordinator::Get().Synchronize();
+  if (!ca_transaction_sync_suppressed_)
+    ui::CATransactionCoordinator::Get().Synchronize();
 
   // If the parent (or an ancestor) is hidden, return and wait for it to become
   // visible.
@@ -501,24 +502,6 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
   if (native_widget_mac_->IsWindowModalSheet()) {
     ShowAsModalSheet();
     return;
-  }
-
-  // TODO(https://crbug.com/682825): Delete this during cleanup.
-  // Non-modal windows are not animated. Hence opaque non-modal windows can
-  // appear with a "flash" if they are made visible before the frame from the
-  // compositor arrives. To get around this, set the alpha value of the window
-  // to 0, till we receive the correct frame from the compositor. Also, ignore
-  // mouse clicks till then. Also check for an active task runner on the
-  // WindowResizeHelperMac instance to ensure visibility is only suppressed when
-  // there is an active GPU process.
-  // TODO(karandeepb): Investigate whether similar technique is needed for other
-  // dialog types.
-  if (false && layer() && [window_ isOpaque] && !window_visible_ &&
-      !native_widget_mac_->GetWidget()->IsModal() &&
-      ui::WindowResizeHelperMac::Get()->task_runner()) {
-    initial_visibility_suppressed_ = true;
-    [window_ setAlphaValue:0.0];
-    [window_ setIgnoresMouseEvents:YES];
   }
 
   if (new_state == SHOW_AND_ACTIVATE_WINDOW) {
@@ -900,6 +883,12 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
                                                            : SK_ColorWHITE);
   layer()->SetFillsBoundsOpaquely(!translucent);
 
+  // Don't block waiting for the initial frame of transparent windows. This
+  // allows us to avoid blocking on the UI thread e.g, while typing in the
+  // omnibox.
+  // https://crbug.com/712268
+  ca_transaction_sync_suppressed_ = translucent;
+
   // Use the regular window background for window modal sheets. The layer() will
   // still paint over most of it, but the native -[NSApp beginSheet:] animation
   // blocks the UI thread, so there's no way to invalidate the shadow to match
@@ -989,9 +978,13 @@ void BridgedNativeWidget::ReparentNativeView(NSView* native_view,
 // BridgedNativeWidget, ui::CATransactionObserver
 
 bool BridgedNativeWidget::ShouldWaitInPreCommit() {
-  return window_visible_ &&
-         (!compositor_ ||
-          !compositor_->widget()->HasFrameOfSize(GetClientAreaSize()));
+  if (!window_visible_)
+    return false;
+  if (ca_transaction_sync_suppressed_)
+    return false;
+  if (!compositor_)
+    return false;
+  return !compositor_->widget()->HasFrameOfSize(GetClientAreaSize());
 }
 
 base::TimeDelta BridgedNativeWidget::PreCommitTimeout() {
@@ -1076,11 +1069,8 @@ void BridgedNativeWidget::AcceleratedWidgetCALayerParamsUpdated() {
   if (ca_layer_params)
     display_ca_layer_tree_->UpdateCALayerTree(*ca_layer_params);
 
-  if (initial_visibility_suppressed_) {
-    initial_visibility_suppressed_ = false;
-    [window_ setAlphaValue:1.0];
-    [window_ setIgnoresMouseEvents:NO];
-  }
+  if (ca_transaction_sync_suppressed_)
+    ca_transaction_sync_suppressed_ = false;
 
   if (invalidate_shadow_on_frame_swap_) {
     invalidate_shadow_on_frame_swap_ = false;
@@ -1281,7 +1271,8 @@ void BridgedNativeWidget::UpdateLayerProperties() {
   gfx::Size size_in_dip = GetClientAreaSize();
   gfx::Size size_in_pixel = ConvertSizeToPixel(scale_factor, size_in_dip);
 
-  ui::CATransactionCoordinator::Get().Synchronize();
+  if (!ca_transaction_sync_suppressed_)
+    ui::CATransactionCoordinator::Get().Synchronize();
 
   layer()->SetBounds(gfx::Rect(size_in_dip));
   compositor_->UpdateSurface(size_in_pixel, scale_factor);
