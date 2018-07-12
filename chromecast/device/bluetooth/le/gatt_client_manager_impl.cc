@@ -117,7 +117,11 @@ void GattClientManagerImpl::OnConnectChanged(
     bool connected) {
   MAKE_SURE_IO_THREAD(OnConnectChanged, addr, status, connected);
   auto it = addr_to_device_.find(addr);
-  CHECK_DEVICE_EXISTS_IT(it);
+
+  // Silently ignore devices we aren't keeping track of.
+  if (it == addr_to_device_.end()) {
+    return;
+  }
 
   it->second->SetConnected(connected);
   if (connected) {
