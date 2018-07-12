@@ -9,7 +9,6 @@
 # InputEventAckWaiter never receives the event: https://crbug.com/848348
 -SitePerProcessHitTestBrowserTest.CrossProcessMouseEnterAndLeaveTest*
 -SitePerProcessHitTestBrowserTest.CrossProcessMouseCapture*
--SitePerProcessHitTestBrowserTest.TouchpadPinchOverOOPIF*
 
 ### Mac
 # BrowserSideFlingBrowserTest timing out https://crbug.com/842325
