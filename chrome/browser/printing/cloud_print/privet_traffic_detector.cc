@@ -14,8 +14,10 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_response.h"
@@ -83,20 +85,22 @@ void PrivetTrafficDetector::Start() {
 
 PrivetTrafficDetector::~PrivetTrafficDetector() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  g_browser_process->network_connection_tracker()
+      ->RemoveNetworkConnectionObserver(this);
 }
 
 void PrivetTrafficDetector::StartOnIOThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  g_browser_process->network_connection_tracker()->AddNetworkConnectionObserver(
+      this);
   ScheduleRestart();
 }
 
-void PrivetTrafficDetector::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void PrivetTrafficDetector::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   restart_attempts_ = kMaxRestartAttempts;
-  if (type != net::NetworkChangeNotifier::CONNECTION_NONE)
+  if (type != network::mojom::ConnectionType::CONNECTION_NONE)
     ScheduleRestart();
 }
 
