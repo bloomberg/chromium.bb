@@ -3368,21 +3368,31 @@ bool Document::ShouldComplete() {
          AllDescendantsAreComplete(frame_);
 }
 
+void Document::Abort() {
+  CancelParsing();
+  CheckCompletedInternal();
+}
+
 void Document::CheckCompleted() {
+  if (CheckCompletedInternal())
+    frame_->Loader().DidFinishNavigation();
+}
+
+bool Document::CheckCompletedInternal() {
   if (!ShouldComplete())
-    return;
+    return false;
 
   if (frame_) {
     frame_->Client()->RunScriptsAtDocumentIdle();
 
     // Injected scripts may have disconnected this frame.
     if (!frame_)
-      return;
+      return false;
 
     // Check again, because runScriptsAtDocumentIdle() may have delayed the load
     // event.
     if (!ShouldComplete())
-      return;
+      return false;
   }
 
   // OK, completed. Fire load completion events as needed.
@@ -3392,7 +3402,7 @@ void Document::CheckCompleted() {
 
   // The readystatechanged or load event may have disconnected this frame.
   if (!frame_ || !frame_->IsAttached())
-    return;
+    return false;
   if (frame_->GetSettings()->GetSavePreviousDocumentResources() ==
       SavePreviousDocumentResources::kUntilOnLoad) {
     fetcher_->ClearResourcesFromPreviousFetcher();
@@ -3402,7 +3412,7 @@ void Document::CheckCompleted() {
   // The document itself is complete, but if a child frame was restarted due to
   // an event, this document is still considered to be in progress.
   if (!AllDescendantsAreComplete(frame_))
-    return;
+    return false;
 
   // No need to repeat if we've already notified this load as finished.
   if (!Loader()->SentDidFinishLoad()) {
@@ -3411,7 +3421,7 @@ void Document::CheckCompleted() {
     Loader()->SetSentDidFinishLoad();
     frame_->Client()->DispatchDidFinishLoad();
     if (!frame_)
-      return;
+      return false;
 
     // Send the source ID of the document to the browser.
     if (frame_->Client()->GetRemoteNavigationAssociatedInterfaces()) {
@@ -3423,7 +3433,7 @@ void Document::CheckCompleted() {
     }
   }
 
-  frame_->Loader().DidFinishNavigation();
+  return true;
 }
 
 bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,

@@ -610,6 +610,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // This is used internally and does not handle exceptions.
   void close();
 
+  // Corresponds to "9. Abort the active document of browsingContext."
+  // https://html.spec.whatwg.org/#navigate
+  void Abort();
+
   void CheckCompleted();
 
   bool DispatchBeforeUnloadEvent(ChromeClient&,
@@ -1466,6 +1470,11 @@ class CORE_EXPORT Document : public ContainerNode,
   // ImplicitClose() actually does the work of closing the input stream.
   void ImplicitClose();
   bool ShouldComplete();
+
+  // Returns |true| if both document and its owning frame are still attached.
+  // Any of them could be detached during the check, e.g. by calling
+  // iframe.remove() from an event handler.
+  bool CheckCompletedInternal();
 
   void DetachParser();
 
