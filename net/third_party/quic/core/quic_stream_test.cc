@@ -11,6 +11,7 @@
 #include "net/third_party/quic/core/quic_write_blocked_list.h"
 #include "net/third_party/quic/core/spdy_utils.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
+#include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
@@ -294,8 +295,8 @@ TEST_F(QuicStreamTest, WriteOrBufferDataReachStreamLimit) {
       .WillOnce(Invoke(&(MockQuicSession::ConsumeData)));
   stream_->WriteOrBufferData(data, false, nullptr);
   EXPECT_CALL(*connection_, CloseConnection(QUIC_STREAM_LENGTH_OVERFLOW, _, _));
-  EXPECT_DFATAL(stream_->WriteOrBufferData("a", false, nullptr),
-                "Write too many data via stream");
+  EXPECT_QUIC_BUG(stream_->WriteOrBufferData("a", false, nullptr),
+                  "Write too many data via stream");
 }
 
 TEST_F(QuicStreamTest, ConnectionCloseAfterStreamClose) {
@@ -601,8 +602,8 @@ TEST_F(QuicStreamTest, StreamTooLong) {
       .Times(1);
   QuicStreamFrame stream_frame(stream_->id(), false, kMaxStreamLength,
                                QuicStringPiece("."));
-  EXPECT_DFATAL(stream_->OnStreamFrame(stream_frame),
-                "Receive stream frame reaches max stream length");
+  EXPECT_QUIC_PEER_BUG(stream_->OnStreamFrame(stream_frame),
+                       "Receive stream frame reaches max stream length");
 }
 
 TEST_F(QuicStreamTest, SetDrainingIncomingOutgoing) {
@@ -965,8 +966,8 @@ TEST_F(QuicStreamTest, WritevDataReachStreamLimit) {
   EXPECT_EQ(data.length(), consumed.bytes_consumed);
   struct iovec iov2 = {const_cast<char*>(data.data()), 1u};
   EXPECT_CALL(*connection_, CloseConnection(QUIC_STREAM_LENGTH_OVERFLOW, _, _));
-  EXPECT_DFATAL(stream_->WritevData(&iov2, 1u, false),
-                "Write too many data via stream");
+  EXPECT_QUIC_BUG(stream_->WritevData(&iov2, 1u, false),
+                  "Write too many data via stream");
 }
 
 TEST_F(QuicStreamTest, WriteMemSlices) {
@@ -1058,8 +1059,8 @@ TEST_F(QuicStreamTest, WriteMemSlicesReachStreamLimit) {
   QuicTestMemSliceVector vector2(buffers);
   QuicMemSliceSpan span2 = vector2.span();
   EXPECT_CALL(*connection_, CloseConnection(QUIC_STREAM_LENGTH_OVERFLOW, _, _));
-  EXPECT_DFATAL(stream_->WriteMemSlices(span2, false),
-                "Write too many data via stream");
+  EXPECT_QUIC_BUG(stream_->WriteMemSlices(span2, false),
+                  "Write too many data via stream");
 }
 
 TEST_F(QuicStreamTest, StreamDataGetAckedMultipleTimes) {
