@@ -41,14 +41,23 @@ TEST_F(NavigationPredictorTest, UpdateAnchorElementMetrics) {
   base::HistogramTester histogram_tester;
 
   auto metrics = blink::mojom::AnchorElementMetrics::New();
-  metrics->ratio_area = 0.1;
-  metrics->ratio_distance_root_top = 0.1;
-  metrics->ratio_distance_center_to_visible_top = 0.1;
   metrics->target_url = GURL("https://example.com");
-
   predictor_service()->UpdateAnchorElementMetrics(std::move(metrics));
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
       "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
+}
+
+// Test that if source url is not http or https, no score will be calculated.
+TEST_F(NavigationPredictorTest, BadUrlUpdateAnchorElementMetrics) {
+  base::HistogramTester histogram_tester;
+
+  auto metrics = blink::mojom::AnchorElementMetrics::New();
+  metrics->target_url = GURL("ftp://example.com");
+  predictor_service()->UpdateAnchorElementMetrics(std::move(metrics));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 0);
 }
