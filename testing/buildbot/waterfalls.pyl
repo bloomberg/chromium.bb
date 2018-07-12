@@ -418,24 +418,6 @@
           'gtest_tests': 'chromium_android_gtests',
         },
       },
-      'Unswarmed N5 Tests Dummy Builder': {
-        'os_type': 'android',
-        'use_swarming': False,
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-          'instrumentation_tests': 'android_fyi_instrumentation_tests',
-          'scripts': 'telemetry_perf_unittests_scripts',
-        },
-      },
-      'Unswarmed N5X Tests Dummy Builder': {
-        'os_type': 'android',
-        'use_swarming': False,
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-          'instrumentation_tests': 'android_fyi_instrumentation_tests',
-          'scripts': 'telemetry_perf_unittests_scripts',
-        },
-      },
       'x64 Device Tester': {
         'swarming': {
           'dimension_sets': [
