@@ -129,18 +129,18 @@ void ScreenTimeController::CheckTimeLimit() {
     }
 
     if (notification_type.has_value()) {
-      // Schedule notification based on the remaining screen time.
-      const base::TimeDelta remaining_usage = state.remaining_usage;
-      if (remaining_usage >= kWarningNotificationTimeout) {
+      // Schedule notification based on the remaining screen time until lock.
+      const base::TimeDelta remaining_time = state.next_state_change_time - now;
+      if (remaining_time >= kWarningNotificationTimeout) {
         warning_notification_timer_.Start(
-            FROM_HERE, remaining_usage - kWarningNotificationTimeout,
+            FROM_HERE, remaining_time - kWarningNotificationTimeout,
             base::BindRepeating(
                 &ScreenTimeController::ShowNotification, base::Unretained(this),
                 notification_type.value(), kWarningNotificationTimeout));
       }
-      if (remaining_usage >= kExitNotificationTimeout) {
+      if (remaining_time >= kExitNotificationTimeout) {
         exit_notification_timer_.Start(
-            FROM_HERE, remaining_usage - kExitNotificationTimeout,
+            FROM_HERE, remaining_time - kExitNotificationTimeout,
             base::BindRepeating(
                 &ScreenTimeController::ShowNotification, base::Unretained(this),
                 notification_type.value(), kExitNotificationTimeout));
