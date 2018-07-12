@@ -173,8 +173,6 @@ class AutofillPopupSeparatorView : public AutofillPopupRowView {
   AutofillPopupSeparatorView(AutofillPopupController* controller,
                              int line_number);
 
-  views::View* empty_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupSeparatorView);
 };
 
@@ -374,18 +372,17 @@ void AutofillPopupSeparatorView::GetAccessibleNodeData(
 void AutofillPopupSeparatorView::CreateContent() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  // In order to draw the horizontal line for the separator, create an empty
-  // view which matches the width of the parent (by using full flex) and has a
-  // height equal to the desired padding, then paint a border on the bottom.
-  empty_ = new views::View();
-  empty_->SetPreferredSize(gfx::Size(1, GetContentsVerticalPadding()));
-  empty_->SetBorder(views::CreateSolidSidedBorder(
-      /*top=*/0,
+  views::Separator* separator = new views::Separator();
+  separator->SetColor(kAutofillPopupSeparatorColor);
+  // Add some spacing between the the previous item and the separator.
+  separator->SetPreferredHeight(
+      views::MenuConfig::instance().separator_thickness);
+  separator->SetBorder(views::CreateEmptyBorder(
+      /*top=*/GetContentsVerticalPadding(),
       /*left=*/0,
-      /*bottom=*/views::MenuConfig::instance().separator_thickness,
-      /*right=*/0,
-      /*color=*/kAutofillPopupSeparatorColor));
-  AddChildView(empty_);
+      /*bottom=*/0,
+      /*right=*/0));
+  AddChildView(separator);
 }
 
 void AutofillPopupSeparatorView::RefreshStyle() {
