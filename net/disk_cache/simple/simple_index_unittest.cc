@@ -735,11 +735,9 @@ TEST_F(SimpleIndexTest, DiskWriteExecuted) {
   index()->Insert(kHash1);
   index()->UpdateEntrySize(kHash1, 20u);
   EXPECT_TRUE(index()->write_to_disk_timer_.IsRunning());
-  base::Closure user_task(index()->write_to_disk_timer_.user_task());
-  index()->write_to_disk_timer_.Stop();
 
   EXPECT_EQ(0, index_file_->disk_writes());
-  user_task.Run();
+  index()->write_to_disk_timer_.FireNow();
   EXPECT_EQ(1, index_file_->disk_writes());
   SimpleIndex::EntrySet entry_set;
   index_file_->GetAndResetDiskWriteEntrySet(&entry_set);
