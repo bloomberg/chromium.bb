@@ -7,13 +7,11 @@
 #include "ash/app_list/pagination_controller.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
-#include "ash/app_list/views/assistant_container_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/chromeos_switches.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/views/controls/label.h"
 
@@ -29,11 +27,6 @@ HorizontalPageContainer::HorizontalPageContainer(ContentsView* contents_view,
       &pagination_model_, PaginationController::SCROLL_AXIS_HORIZONTAL));
 
   // Add horizontal pages.
-  if (chromeos::switches::IsAssistantEnabled()) {
-    assistant_container_view_ = new AssistantContainerView(contents_view_);
-    AddHorizontalPage(assistant_container_view_);
-  }
-
   apps_container_view_ = new AppsContainerView(contents_view_, model);
   AddHorizontalPage(apps_container_view_);
   pagination_model_.SetTotalPages(horizontal_pages_.size());

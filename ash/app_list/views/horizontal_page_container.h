@@ -17,7 +17,6 @@
 namespace app_list {
 
 class AppsContainerView;
-class AssistantContainerView;
 class PaginationController;
 class HorizontalPage;
 
@@ -80,9 +79,6 @@ class APP_LIST_EXPORT HorizontalPageContainer : public AppListPage,
 
   // Owned by view hierarchy:
   AppsContainerView* apps_container_view_ = nullptr;
-
-  // Owned by view hierarchy:
-  AssistantContainerView* assistant_container_view_ = nullptr;
 
   // The child page views. Owned by the views hierarchy.
   std::vector<HorizontalPage*> horizontal_pages_;
