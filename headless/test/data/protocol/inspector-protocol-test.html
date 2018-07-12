@@ -26,13 +26,6 @@ DevToolsHost.dummyPageURL = `http://127.0.0.1:${window.location.port}/protocol/i
 <script src="../../resources/inspector-protocol-test.js"></script>
 <script>
 DevToolsAPI._log = text => output.push(text);
-DevToolsAPI._fetch = url => {
-  var params = new URLSearchParams(window.location.search);
-  var testScriptURL = params.get('test');
-  if (url === testScriptURL)
-    return Promise.resolve(decodeURIComponent(params.get('script')));
-  throw new Error('Can not fetch ' + url);
-};
 
 function onmessage(json) { DevToolsAPI.dispatchMessage(json); }
 </script>
