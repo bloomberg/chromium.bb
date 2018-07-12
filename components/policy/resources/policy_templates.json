@@ -885,7 +885,7 @@
 
       This controls DNS prefetching, TCP and SSL preconnection and prerendering of web pages.
 
-      If you set this preference to 'always', 'never', or 'WiFi only', users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      If you set this policy, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If this policy is left not set, network prediction will be enabled but the user will be able to change it.''',
     },
