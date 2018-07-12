@@ -131,13 +131,6 @@ ChromeWebContentsViewDelegateMac::CreateRenderViewContextMenu(
   gfx::NativeView parent_view =
       GetActiveRenderWidgetHostView()->GetNativeView();
 
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-  if (!views_mode_controller::IsViewsBrowserCocoa()) {
-    return new RenderViewContextMenuMacViews(focused_frame, params,
-                                             parent_view);
-  }
-#endif
-
   return new RenderViewContextMenuMacCocoa(focused_frame, params, parent_view);
 }
 
