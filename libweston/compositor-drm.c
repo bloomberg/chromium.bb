@@ -1168,10 +1168,8 @@ drm_fb_get_from_dmabuf(struct linux_dmabuf_buffer *dmabuf,
 			goto err_free;
 	}
 
-	if (drm_fb_addfb(fb) != 0) {
-		weston_log("failed to create kms fb: %m\n");
+	if (drm_fb_addfb(fb) != 0)
 		goto err_free;
-	}
 
 	return fb;
 
@@ -1242,7 +1240,8 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 	}
 
 	if (drm_fb_addfb(fb) != 0) {
-		weston_log("failed to create kms fb: %m\n");
+		if (type == BUFFER_GBM_SURFACE)
+			weston_log("failed to create kms fb: %m\n");
 		goto err_free;
 	}
 
