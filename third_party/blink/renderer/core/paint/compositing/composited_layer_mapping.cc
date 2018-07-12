@@ -3516,6 +3516,11 @@ bool CompositedLayerMapping::IsTrackingRasterInvalidations() const {
       ->IsTrackingPaintInvalidations();
 }
 
+void CompositedLayerMapping::SetOverlayScrollbarsHidden(bool hidden) {
+  if (ScrollableArea* scrollable_area = owning_layer_.GetScrollableArea())
+    scrollable_area->SetScrollbarsHiddenIfOverlay(hidden);
+}
+
 #if DCHECK_IS_ON()
 void CompositedLayerMapping::VerifyNotPainting() {
   DCHECK(!GetLayoutObject().GetFrame()->GetPage() ||
@@ -3705,6 +3710,13 @@ String CompositedLayerMapping::DebugName(
   }
 
   return name;
+}
+
+const ScrollableArea* CompositedLayerMapping::GetScrollableAreaForTesting(
+    const GraphicsLayer* layer) const {
+  if (layer == scrolling_contents_layer_.get())
+    return owning_layer_.GetScrollableArea();
+  return nullptr;
 }
 
 }  // namespace blink

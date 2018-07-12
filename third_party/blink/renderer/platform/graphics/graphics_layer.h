@@ -72,7 +72,6 @@ class LinkHighlight;
 class PaintController;
 class RasterInvalidationTracking;
 class RasterInvalidator;
-class ScrollableArea;
 
 typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 
@@ -250,10 +249,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   unsigned NumLinkHighlights() { return link_highlights_.size(); }
   LinkHighlight* GetLinkHighlight(int i) { return link_highlights_[i]; }
 
-  void SetScrollableArea(ScrollableArea*);
-  ScrollableArea* GetScrollableArea() const { return scrollable_area_; }
-  void ScrollableAreaDisposed();
-
   int GetRenderingContext3D() const { return rendering_context3d_; }
 
   cc::PictureLayer* ContentLayer() const { return layer_.get(); }
@@ -429,7 +424,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   Vector<LinkHighlight*> link_highlights_;
 
-  WeakPersistent<ScrollableArea> scrollable_area_;
   int rendering_context3d_;
 
   CompositingReasons compositing_reasons_ = CompositingReason::kNone;

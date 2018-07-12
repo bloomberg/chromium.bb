@@ -1125,11 +1125,6 @@ TEST_P(ScrollingCoordinatorTest, overflowScrolling) {
   ASSERT_TRUE(composited_layer_mapping->HasScrollingLayer());
   DCHECK(composited_layer_mapping->ScrollingContentsLayer());
 
-  GraphicsLayer* graphics_layer =
-      composited_layer_mapping->ScrollingContentsLayer();
-  ASSERT_EQ(box->Layer()->GetScrollableArea(),
-            graphics_layer->GetScrollableArea());
-
   cc::Layer* cc_scroll_layer =
       composited_layer_mapping->ScrollingContentsLayer()->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
@@ -1171,11 +1166,6 @@ TEST_P(ScrollingCoordinatorTest, overflowHidden) {
   ASSERT_TRUE(composited_layer_mapping->HasScrollingLayer());
   DCHECK(composited_layer_mapping->ScrollingContentsLayer());
 
-  GraphicsLayer* graphics_layer =
-      composited_layer_mapping->ScrollingContentsLayer();
-  ASSERT_EQ(box->Layer()->GetScrollableArea(),
-            graphics_layer->GetScrollableArea());
-
   cc::Layer* cc_scroll_layer =
       composited_layer_mapping->ScrollingContentsLayer()->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
@@ -1197,10 +1187,6 @@ TEST_P(ScrollingCoordinatorTest, overflowHidden) {
   composited_layer_mapping = box->Layer()->GetCompositedLayerMapping();
   ASSERT_TRUE(composited_layer_mapping->HasScrollingLayer());
   DCHECK(composited_layer_mapping->ScrollingContentsLayer());
-
-  graphics_layer = composited_layer_mapping->ScrollingContentsLayer();
-  ASSERT_EQ(box->Layer()->GetScrollableArea(),
-            graphics_layer->GetScrollableArea());
 
   cc_scroll_layer =
       composited_layer_mapping->ScrollingContentsLayer()->CcLayer();
@@ -1242,8 +1228,6 @@ TEST_P(ScrollingCoordinatorTest, iframeScrolling) {
   GraphicsLayer* scroll_layer =
       inner_frame_view->LayoutViewport()->LayerForScrolling();
   ASSERT_TRUE(scroll_layer);
-  ASSERT_EQ(inner_frame_view->LayoutViewport(),
-            scroll_layer->GetScrollableArea());
 
   cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
@@ -1294,8 +1278,6 @@ TEST_P(ScrollingCoordinatorTest, rtlIframe) {
   GraphicsLayer* scroll_layer =
       inner_frame_view->LayoutViewport()->LayerForScrolling();
   ASSERT_TRUE(scroll_layer);
-  ASSERT_EQ(inner_frame_view->LayoutViewport(),
-            scroll_layer->GetScrollableArea());
 
   cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
@@ -1475,8 +1457,6 @@ TEST_P(ScrollingCoordinatorTest,
   GraphicsLayer* scroll_layer =
       inner_frame_view->LayoutViewport()->LayerForScrolling();
   ASSERT_TRUE(scroll_layer);
-  ASSERT_EQ(inner_frame_view->LayoutViewport(),
-            scroll_layer->GetScrollableArea());
 
   cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());

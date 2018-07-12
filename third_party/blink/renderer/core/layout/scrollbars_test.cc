@@ -1898,7 +1898,6 @@ TEST_F(ScrollbarsTest, PLSADisposeShouldClearPointerInLayers) {
   document.UpdateStyleAndLayout();
 
   EXPECT_FALSE(paint_layer->GetScrollableArea());
-  EXPECT_FALSE(graphics_layer->GetScrollableArea());
 }
 
 TEST_F(ScrollbarsTest, OverlayScrollbarHitTest) {

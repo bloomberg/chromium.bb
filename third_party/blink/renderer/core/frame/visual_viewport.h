@@ -286,7 +286,11 @@ class CORE_EXPORT VisualViewport final
                      GraphicsContext&,
                      GraphicsLayerPaintingPhase,
                      const IntRect&) const override;
+  void SetOverlayScrollbarsHidden(bool) override;
   String DebugName(const GraphicsLayer*) const override;
+
+  const ScrollableArea* GetScrollableAreaForTesting(
+      const GraphicsLayer*) const override;
 
   void SetupScrollbar(ScrollbarOrientation);
 

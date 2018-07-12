@@ -17,10 +17,18 @@ namespace {
 
 typedef HashMap<int, int> RenderingContextMap;
 
-static String PointerAsString(const void* ptr) {
+String PointerAsString(const void* ptr) {
   WTF::TextStream ts;
   ts << ptr;
   return ts.Release();
+}
+
+FloatPoint ScrollPosition(const GraphicsLayer& layer) {
+  if (const auto* scrollable_area =
+          layer.Client().GetScrollableAreaForTesting(&layer)) {
+    return scrollable_area->ScrollPosition();
+  }
+  return FloatPoint();
 }
 
 void AddFlattenInheritedTransformJSON(const GraphicsLayer* layer,
@@ -112,11 +120,9 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
     AddTransformJSONProperties(layer, *json, rendering_context_map);
     if (!layer->ShouldFlattenTransform())
       json->SetBoolean("shouldFlattenTransform", false);
-    ScrollableArea* scrollable_area = layer->GetScrollableArea();
-    if (scrollable_area && scrollable_area->ScrollPosition() != FloatPoint()) {
-      json->SetArray("scrollPosition",
-                     PointAsJSONArray(scrollable_area->ScrollPosition()));
-    }
+    FloatPoint scroll_position(ScrollPosition(*layer));
+    if (scroll_position != FloatPoint())
+      json->SetArray("scrollPosition", PointAsJSONArray(scroll_position));
   }
 
   if ((flags & kLayerTreeIncludesPaintInvalidations) &&
@@ -246,12 +252,6 @@ class LayersAsJSONArray {
     auto* result = transform_json.get();
     transforms_json_->PushObject(std::move(transform_json));
     return result;
-  }
-
-  static FloatPoint ScrollPosition(const GraphicsLayer& layer) {
-    if (const auto* scrollable_area = layer.GetScrollableArea())
-      return scrollable_area->ScrollPosition();
-    return FloatPoint();
   }
 
   void AddLayer(const GraphicsLayer& layer,

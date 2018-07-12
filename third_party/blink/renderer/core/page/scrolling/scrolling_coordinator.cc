@@ -514,7 +514,7 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
 bool ScrollingCoordinator::UpdateCompositedScrollOffset(
     ScrollableArea* scrollable_area) {
   GraphicsLayer* scroll_layer = scrollable_area->LayerForScrolling();
-  if (!scroll_layer || scroll_layer->GetScrollableArea() != scrollable_area)
+  if (!scroll_layer)
     return false;
 
   cc::Layer* cc_layer =
@@ -531,10 +531,6 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     ScrollableArea* scrollable_area) {
   if (!page_ || !page_->MainFrame())
     return false;
-
-  GraphicsLayer* scroll_layer = scrollable_area->LayerForScrolling();
-  if (scroll_layer)
-    scroll_layer->SetScrollableArea(scrollable_area);
 
   UpdateUserInputScrollable(scrollable_area);
 
@@ -957,29 +953,26 @@ void ScrollingCoordinator::WillDestroyLayer(PaintLayer* layer) {
 void ScrollingCoordinator::SetShouldUpdateScrollLayerPositionOnMainThread(
     LocalFrame* frame,
     MainThreadScrollingReasons main_thread_scrolling_reasons) {
-  GraphicsLayer* visual_viewport_layer =
-      frame->GetPage()->GetVisualViewport().ScrollLayer();
+  VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
+  GraphicsLayer* visual_viewport_layer = visual_viewport.ScrollLayer();
   cc::Layer* visual_viewport_scroll_layer =
       GraphicsLayerToCcLayer(visual_viewport_layer);
-  GraphicsLayer* layer = frame->View()->LayoutViewport()->LayerForScrolling();
+  ScrollableArea* scrollable_area = frame->View()->LayoutViewport();
+  GraphicsLayer* layer = scrollable_area->LayerForScrolling();
   if (cc::Layer* scroll_layer = GraphicsLayerToCcLayer(layer)) {
     if (main_thread_scrolling_reasons) {
-      ScrollableArea* scrollable_area = layer->GetScrollableArea();
-      if (scrollable_area) {
-        if (ScrollAnimatorBase* scroll_animator =
-                scrollable_area->ExistingScrollAnimator()) {
-          DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
-                 frame->GetDocument()->Lifecycle().GetState() >=
-                     DocumentLifecycle::kCompositingClean);
-          scroll_animator->TakeOverCompositorAnimation();
-        }
+      if (ScrollAnimatorBase* scroll_animator =
+              scrollable_area->ExistingScrollAnimator()) {
+        DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+               frame->GetDocument()->Lifecycle().GetState() >=
+                   DocumentLifecycle::kCompositingClean);
+        scroll_animator->TakeOverCompositorAnimation();
       }
       scroll_layer->AddMainThreadScrollingReasons(
           main_thread_scrolling_reasons);
       if (visual_viewport_scroll_layer) {
         if (ScrollAnimatorBase* scroll_animator =
-                visual_viewport_layer->GetScrollableArea()
-                    ->ExistingScrollAnimator()) {
+                visual_viewport.ExistingScrollAnimator()) {
           DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
                  frame->GetDocument()->Lifecycle().GetState() >=
                      DocumentLifecycle::kCompositingClean);
