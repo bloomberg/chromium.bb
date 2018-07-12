@@ -321,6 +321,20 @@ base::Value ConvertAlbumInfoToDict(const std::vector<AlbumInfo>& album_info) {
   return albums;
 }
 
+base::Value ConvertAlbumPhotosToDict(
+    const std::vector<AlbumPhoto>& album_photos) {
+  base::Value photos(base::Value::Type::LIST);
+  photos.GetList().reserve(album_photos.size());
+  for (const AlbumPhoto& photo : album_photos) {
+    base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetKey("thumbnail_photo_url",
+                base::Value(photo.thumbnail_photo_url.spec()));
+    dict.SetKey("photo_url", base::Value(photo.photo_url.spec()));
+    photos.GetList().push_back(std::move(dict));
+  }
+  return photos;
+}
+
 std::unique_ptr<base::DictionaryValue> ConvertOGBDataToDict(
     const OneGoogleBarData& og) {
   auto result = std::make_unique<base::DictionaryValue>();
@@ -673,7 +687,7 @@ void LocalNtpSource::StartDataRequest(
                                                    callback);
       ntp_background_service_->FetchAlbumInfo();
     } else {
-      // If there's no "collection_type" param, default to getting collections.
+      // If collection_type is not "album", default to getting collections.
       // TODO(ramyan): Explicitly require a collection_type when frontend
       //  supports it.
       ntp_background_collections_requests_.emplace_back(base::TimeTicks::Now(),
@@ -688,15 +702,38 @@ void LocalNtpSource::StartDataRequest(
       callback.Run(nullptr);
       return;
     }
-    std::string collection_id_param;
+    std::string collection_type_param;
     GURL path_url = GURL(chrome::kChromeSearchLocalNtpUrl).Resolve(path);
-    if (net::GetValueForKeyInQuery(path_url, "collection_id",
-                                   &collection_id_param)) {
-      ntp_background_image_info_requests_.emplace_back(base::TimeTicks::Now(),
-                                                       callback);
-      ntp_background_service_->FetchCollectionImageInfo(collection_id_param);
+    if (net::GetValueForKeyInQuery(path_url, "collection_type",
+                                   &collection_type_param) &&
+        (collection_type_param == "album")) {
+      std::string album_id_param;
+      std::string photo_container_id_param;
+      if (!net::GetValueForKeyInQuery(path_url, "album_id", &album_id_param) ||
+          !net::GetValueForKeyInQuery(path_url, "photo_container_id",
+                                      &photo_container_id_param)) {
+        callback.Run(nullptr);
+        return;
+      }
+      ntp_background_photos_requests_.emplace_back(base::TimeTicks::Now(),
+                                                   callback);
+      ntp_background_service_->FetchAlbumPhotos(album_id_param,
+                                                photo_container_id_param);
     } else {
-      callback.Run(nullptr);
+      // If collection_type is not "album", default to getting images for a
+      // collection.
+      // TODO(ramyan): Explicitly require a collection_type when frontend
+      // supports it.
+      std::string collection_id_param;
+      GURL path_url = GURL(chrome::kChromeSearchLocalNtpUrl).Resolve(path);
+      if (net::GetValueForKeyInQuery(path_url, "collection_id",
+                                     &collection_id_param)) {
+        ntp_background_image_info_requests_.emplace_back(base::TimeTicks::Now(),
+                                                         callback);
+        ntp_background_service_->FetchCollectionImageInfo(collection_id_param);
+      } else {
+        callback.Run(nullptr);
+      }
     }
     return;
   }
@@ -914,6 +951,30 @@ void LocalNtpSource::OnAlbumInfoAvailable() {
     // TODO(ramyan): Define and capture latency for failed requests.
   }
   ntp_background_albums_requests_.clear();
+}
+
+void LocalNtpSource::OnAlbumPhotosAvailable() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (ntp_background_photos_requests_.empty())
+    return;
+
+  scoped_refptr<base::RefCountedString> result;
+  std::string js;
+  base::JSONWriter::Write(
+      ConvertAlbumPhotosToDict(ntp_background_service_->album_photos()), &js);
+  js = "var photos = " + js + ";";
+  result = base::RefCountedString::TakeString(&js);
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  for (const auto& request : ntp_background_photos_requests_) {
+    request.callback.Run(result);
+    base::TimeDelta delta = now - request.start_time;
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "NewTabPage.BackgroundService.Photos.RequestLatency", delta);
+    // TODO(ramyan): Define and capture latency for failed requests.
+  }
+  ntp_background_photos_requests_.clear();
 }
 
 void LocalNtpSource::OnNtpBackgroundServiceShuttingDown() {

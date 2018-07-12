@@ -87,9 +87,12 @@ struct AlbumInfo {
 
   static AlbumInfo CreateFromProto(const ntp::background::AlbumMetaData& album);
 
-  // A unique identifier for the album.
+  // A unique identifier for the album. This is required when requesting the
+  // album.
   int64_t album_id;
-  // A generic photo container ID based on the photo provider.
+  // A generic photo container ID based on the photo provider. For Google
+  // Photos, this corresponds to media keys for the collection. It is also
+  // required when requesting the album.
   std::string photo_container_id;
   // A human-readable name for the album.
   std::string album_name;
@@ -99,5 +102,28 @@ struct AlbumInfo {
 
 bool operator==(const AlbumInfo& lhs, const AlbumInfo& rhs);
 bool operator!=(const AlbumInfo& lhs, const AlbumInfo& rhs);
+
+// Represents a photo within an album.
+struct AlbumPhoto {
+  AlbumPhoto();
+  // default_image_options are applied to the image.image_url() if options
+  // (specifying resolution, cropping, etc) are not already present.
+  AlbumPhoto(const std::string& photo_url,
+             const std::string& default_image_options);
+  AlbumPhoto(const AlbumPhoto&);
+  AlbumPhoto(AlbumPhoto&&);
+  ~AlbumPhoto();
+
+  AlbumPhoto& operator=(const AlbumPhoto&);
+  AlbumPhoto& operator=(AlbumPhoto&&);
+
+  // The thumbnail image URL, typically lower resolution than the photo_url.
+  GURL thumbnail_photo_url;
+  // The image URL.
+  GURL photo_url;
+};
+
+bool operator==(const AlbumPhoto& lhs, const AlbumPhoto& rhs);
+bool operator!=(const AlbumPhoto& lhs, const AlbumPhoto& rhs);
 
 #endif  // CHROME_BROWSER_SEARCH_BACKGROUND_NTP_BACKGROUND_DATA_H_

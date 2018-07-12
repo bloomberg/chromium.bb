@@ -9,25 +9,24 @@
 class NtpBackgroundServiceObserver {
  public:
   // Called when the CollectionInfo is updated, usually as the result of a
-  // FetchCollectionInfo() call on the service. Note that this is called after
-  // each FetchCollectionInfo(), even if the network request failed, or if it
-  // didn't result in an actual change to the cached data. You can get the new
-  // data via NtpBackgroundService::collection_info().
+  // FetchCollectionInfo() call on the service. You can get the new data via
+  // NtpBackgroundService::collection_info().
   virtual void OnCollectionInfoAvailable() = 0;
 
   // Called when the CollectionImages are updated, usually as the result of a
-  // FetchCollectionImageInfo() call on the service. Note that this is called
-  // after each FetchCollectionImage(), even if the network request failed, or
-  // if it didn't result in an actual change to the cached data. You can get the
-  // new data via NtpBackgroundService::collection_images().
+  // FetchCollectionImageInfo() call on the service. You can get the new data
+  // via NtpBackgroundService::collection_images().
   virtual void OnCollectionImagesAvailable() = 0;
 
   // Called when the AlbumInfo is updated, usually as the result of a
-  // PersonalAlbumsRequestOption() call on the service. Note that this is called
-  // after each FetchAlbumInfo(), even if the network request failed, or if it
-  // didn't result in an actual change to the cached data. You can get the new
+  // PersonalAlbumsRequestOption() call on the service. You can get the new
   // data via NtpBackgroundService::album_info().
   virtual void OnAlbumInfoAvailable() = 0;
+
+  // Called when the AlbumPhotos are updated, usually as the result of a
+  // SettingPreviewRequest() call on the service. You can get the new data via
+  // NtpBackgroundService::album_photos().
+  virtual void OnAlbumPhotosAvailable() = 0;
 
   // Called when the OnNtpBackgroundService is shutting down. Observers that
   // might outlive the service should use this to unregister themselves, and
