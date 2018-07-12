@@ -31,9 +31,12 @@ class EventPageRequestManager;
 // the requests.
 class ExtensionMediaRouteProviderProxy : public mojom::MediaRouteProvider {
  public:
-  ExtensionMediaRouteProviderProxy(content::BrowserContext* context,
-                                   mojom::MediaRouteProviderRequest request);
+  explicit ExtensionMediaRouteProviderProxy(content::BrowserContext* context);
   ~ExtensionMediaRouteProviderProxy() override;
+
+  // Binds |request| to |this|. If |this| is already bound to a previous
+  // request, that previous request will be dropped.
+  void Bind(mojom::MediaRouteProviderRequest request);
 
   // mojom::MediaRouteProvider implementation. Forwards the calls to
   // |media_route_provider_| through |request_manager_|.
@@ -102,6 +105,9 @@ class ExtensionMediaRouteProviderProxy : public mojom::MediaRouteProvider {
   void SetExtensionId(const std::string& extension_id);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest,
+                           ExtensionMrpRecoversFromConnectionError);
+
   // These methods call the corresponding |media_route_provider_| methods.
   // Passed to |request_manager_| as requests to be run when the Mojo connection
   // to the provider is established.

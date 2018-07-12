@@ -32,6 +32,11 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
  public:
   ~MediaRouterDesktop() override;
 
+  // Max number of Mojo connection error counts on a MediaRouteProvider message
+  // pipe before MediaRouterDesktop treats it as a permanent error. Used for
+  // ExtensionMediaRouteProviderProxy only.
+  static constexpr int kMaxMediaRouteProviderErrorCount = 10;
+
   // Sets up the MediaRouter instance owned by |context| to handle
   // MediaRouterObserver requests from the component extension given by
   // |extension|. Creates the MediaRouterMojoImpl instance if it does not
@@ -60,7 +65,8 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   friend class MediaRouterDesktopTestBase;
   friend class MediaRouterFactory;
   FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest, ProvideSinks);
-
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest,
+                           ExtensionMrpRecoversFromConnectionError);
   // This constructor performs a firewall check on Windows and is not suitable
   // for use in unit tests; instead use the constructor below.
   explicit MediaRouterDesktop(content::BrowserContext* context);
@@ -114,6 +120,10 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   void InitializeCastMediaRouteProvider();
   void InitializeDialMediaRouteProvider();
 
+  // Invoked when a Mojo connection error is encountered with the message pipe
+  // to |extension_provider_proxy_|.
+  void OnExtensionProviderError();
+
 #if defined(OS_WIN)
   // Ensures that mDNS discovery is enabled in the MRPM extension. This can be
   // called many times but the MRPM will only be called once per registration
@@ -159,6 +169,10 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   // |false| to |true|.
   bool should_enable_mdns_discovery_ = false;
 #endif
+
+  // The number of times a Mojo connection error is encountered with the
+  // message pipe to |extension_provider_proxy_|.
+  int extension_provider_error_count_ = 0;
 
   base::WeakPtrFactory<MediaRouterDesktop> weak_factory_;
 
