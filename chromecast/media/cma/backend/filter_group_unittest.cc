@@ -190,7 +190,8 @@ class FilterGroupTest : public testing::Test {
     float* interleaved_data = filter_group_->GetOutputBuffer();
     for (int f = 0; f < kInputFrames; ++f) {
       for (int ch = 0; ch < kNumInputChannels; ++ch) {
-        ASSERT_EQ(Input(ch, f), interleaved_data[f * kNumInputChannels + ch]);
+        ASSERT_EQ(Input(ch, f), interleaved_data[f * kNumInputChannels + ch])
+            << f;
       }
     }
   }
@@ -373,6 +374,7 @@ TEST_F(FilterGroupTest, ChecksContentType) {
   filter_group_->AddInput(&tts_input);
   EXPECT_CALL(*post_processor_,
               SetContentType(AudioContentType::kCommunication));
+  tts_source.SetData(GetTestData());
   filter_group_->MixAndFilter(kInputFrames, RenderingDelay());
 
   // Media input + tts input + alarm input -> tts content type (no update).
@@ -380,16 +382,22 @@ TEST_F(FilterGroupTest, ChecksContentType) {
   EXPECT_CALL(*post_processor_,
               SetContentType(AudioContentType::kCommunication))
       .Times(0);
+  source_.SetData(GetTestData());
+  tts_source.SetData(GetTestData());
+  alarm_source.SetData(GetTestData());
   filter_group_->MixAndFilter(kInputFrames, RenderingDelay());
 
   // Media input + alarm input -> alarm content type.
   filter_group_->RemoveInput(&tts_input);
   EXPECT_CALL(*post_processor_, SetContentType(AudioContentType::kAlarm));
+  source_.SetData(GetTestData());
+  alarm_source.SetData(GetTestData());
   filter_group_->MixAndFilter(kInputFrames, RenderingDelay());
 
   // Media input stream -> media input
   EXPECT_CALL(*post_processor_, SetContentType(AudioContentType::kMedia));
   filter_group_->RemoveInput(&alarm_input);
+  source_.SetData(GetTestData());
   filter_group_->MixAndFilter(kInputFrames, RenderingDelay());
 }
 
