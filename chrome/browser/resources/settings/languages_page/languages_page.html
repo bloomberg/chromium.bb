@@ -99,7 +99,7 @@
         margin-top: 8px;
       }
 
-      iron-icon[icon='settings:error'] {
+      iron-icon[icon='cr:error'] {
         @apply --cr-icon-height-width;
         --iron-icon-fill-color: var(--google-red-700);
         -webkit-margin-end: 8px;
@@ -275,7 +275,7 @@
                   [[item.language.displayName]]
                   <div hidden="[[!errorsGreaterThan_(
                       item.downloadDictionaryFailureCount, 0)]]">
-                    <iron-icon icon="settings:error"></iron-icon>
+                    <iron-icon icon="cr:error"></iron-icon>
                     $i18n{languagesDictionaryDownloadError}
                   </div>
                   <div hidden="[[!errorsGreaterThan_(
