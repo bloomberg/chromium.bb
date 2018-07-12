@@ -52,7 +52,7 @@ CGError CGSSetWindowBackgroundBlurRadius(CGSConnection connection,
 
 }
 namespace {
-constexpr auto kUIPaintTimeout = base::TimeDelta::FromMilliseconds(250);
+constexpr auto kUIPaintTimeout = base::TimeDelta::FromSeconds(5);
 }  // namespace
 
 // The NSView that hosts the composited CALayer drawing the UI. It fills the
