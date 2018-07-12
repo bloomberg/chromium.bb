@@ -293,11 +293,27 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   WritingMode container_writing_mode(container_info.style->GetWritingMode());
   WritingMode descendant_writing_mode(descendant.node.Style().GetWritingMode());
 
-  // Adjust the static_position origin. The static_position coordinate origin is
-  // relative to the container's border box, ng_absolute_utils expects it to be
-  // relative to the container's padding box.
+  // Adjust the static_position origin.
+  // The static_position coordinate origin is relative to default_container's
+  // border box.
+  // ng_absolute_utils expects static position to be relative to
+  // the container's padding box.
+  // Adjust static position by offset of container from default container,
+  // and default_container border width.
   NGStaticPosition static_position(descendant.static_position);
-  static_position.offset -= default_containing_block_.content_physical_offset;
+  NGPhysicalSize default_containing_block_physical_size =
+      default_containing_block_.content_size.ConvertToPhysical(
+          default_containing_block_.style->GetWritingMode());
+  NGPhysicalOffset default_container_physical_offset =
+      container_info.default_container_offset.ConvertToPhysical(
+          default_containing_block_.style->GetWritingMode(),
+          default_containing_block_.style->Direction(),
+          default_containing_block_physical_size,
+          default_containing_block_physical_size);
+
+  static_position.offset = static_position.offset -
+                           default_containing_block_.content_physical_offset -
+                           default_container_physical_offset;
 
   // The block estimate is in the descendant's writing mode.
   scoped_refptr<NGConstraintSpace> descendant_constraint_space =

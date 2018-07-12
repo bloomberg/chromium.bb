@@ -525,8 +525,6 @@ crbug.com/591099 fast/css-intrinsic-dimensions/fixed-height-stf-img-block-child-
 crbug.com/591099 fast/css-intrinsic-dimensions/fixed-height-stf-img-inline-child-percent-height.html [ Failure ]
 crbug.com/591099 fast/css-intrinsic-dimensions/height-positioned.html [ Failure ]
 crbug.com/807708 fast/css-intrinsic-dimensions/width-avoid-floats.html [ Failure ]
-crbug.com/591099 fast/css/abs-pos-child-inside-rel-pos-inline-001.html [ Failure ]
-crbug.com/591099 fast/css/abs-pos-child-inside-rel-pos-inline-offset-001.html [ Failure ]
 crbug.com/591099 fast/css/absolute-inline-alignment-2.html [ Pass ]
 crbug.com/714962 fast/css/absolute-inline-alignment.html [ Failure ]
 crbug.com/591099 fast/css/case-transform.html [ Failure ]
