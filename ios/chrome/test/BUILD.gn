@@ -32,6 +32,7 @@ source_set("test_support") {
     "root_view_controller_test.mm",
     "scoped_block_popups_pref.h",
     "scoped_block_popups_pref.mm",
+    "scoped_eg_synchronization_disabler.h",
     "scoped_key_window.h",
     "testing_application_context.h",
     "testing_application_context.mm",

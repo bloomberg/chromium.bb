@@ -5,11 +5,14 @@
 #import <EarlGrey/EarlGrey.h>
 
 #include "base/test/scoped_feature_list.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #include "ios/testing/embedded_test_server_handlers.h"
 #import "ios/testing/wait_util.h"
 #include "ios/web/public/features.h"
@@ -44,6 +47,20 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   return result;
 }
 
+// Waits until Open in... button is shown.
+bool WaitForOpenInButton() WARN_UNUSED_RESULT;
+bool WaitForOpenInButton() {
+  // These downloads usually take longer and need a longer timeout.
+  const NSTimeInterval kLongDownloadTimeout = 25;
+  return testing::WaitUntilConditionOrTimeout(kLongDownloadTimeout, ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:OpenInButton()]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return (error == nil);
+  });
+}
+
 }  // namespace
 
 // Tests critical user journeys for Download Manager.
@@ -71,7 +88,7 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 }
 
 // Tests sucessfull download up to the point where "Open in..." button is
-// presented. EarlGreay does not allow testing "Open in..." dialog, because it
+// presented. EarlGrey does not allow testing "Open in..." dialog, because it
 // is run in a separate process.
 - (void)testSucessfullDownload {
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
@@ -81,21 +98,11 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
       performAction:grey_tap()];
 
-  // Wait until Open in... button is shown.
-  ConditionBlock openInShown = ^{
-    NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:OpenInButton()]
-        assertWithMatcher:grey_notNil()
-                    error:&error];
-    return (error == nil);
-  };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(
-                 testing::kWaitForDownloadTimeout, openInShown),
-             @"Open in... button did not show up");
+  GREYAssert(WaitForOpenInButton(), @"Open in... button did not show up");
 }
 
 // Tests sucessfull download up to the point where "Open in..." button is
-// presented. EarlGreay does not allow testing "Open in..." dialog, because it
+// presented. EarlGrey does not allow testing "Open in..." dialog, because it
 // is run in a separate process. Performs download in Incognito.
 - (void)testSucessfullDownloadInIncognito {
   chrome_test_util::OpenNewIncognitoTab();
@@ -108,17 +115,7 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
       performAction:grey_tap()];
 
-  // Wait until Open in... button is shown.
-  ConditionBlock openInShown = ^{
-    NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:OpenInButton()]
-        assertWithMatcher:grey_notNil()
-                    error:&error];
-    return (error == nil);
-  };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(
-                 testing::kWaitForDownloadTimeout, openInShown),
-             @"Open in... button did not show up");
+  GREYAssert(WaitForOpenInButton(), @"Open in... button did not show up");
 }
 
 // Tests cancelling download UI.
@@ -135,6 +132,38 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
       assertWithMatcher:grey_nil()];
+}
+
+// Tests sucessfull download up to the point where "Open in..." button is
+// presented. EarlGrey does not allow testing "Open in..." dialog, because it
+// is run in a separate process. After tapping Download this test opens a
+// separate tabs and loads the URL there. Then closes the tab and waits for
+// the download completion.
+- (void)testDownloadWhileBrowsing {
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
+  [ChromeEarlGrey waitForWebViewContainingText:"Download"];
+  [ChromeEarlGrey tapWebViewElementWithID:@"download"];
+
+  [[EarlGrey selectElementWithMatcher:DownloadButton()]
+      performAction:grey_tap()];
+
+  {
+    // In order to open a new Tab, disable EG synchronization so the framework
+    // does not wait until the download progress bar becomes idle (which will
+    // not happen until the download is complete).
+    ScopedSynchronizationDisabler disabler;
+    chrome_test_util::OpenNewTab();
+    [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  }
+
+  // Load a URL in a separate Tab and close that tab.
+  [ChromeEarlGrey loadURL:GURL(kChromeUITermsURL)];
+  const char kTermsText[] = "Google Chrome Terms of Service";
+  [ChromeEarlGrey waitForWebViewContainingText:kTermsText];
+  chrome_test_util::CloseCurrentTab();
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  GREYAssert(WaitForOpenInButton(), @"Open in... button did not show up");
 }
 
 @end
