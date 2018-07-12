@@ -197,8 +197,6 @@ jumbo_source_set("unit_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//components/viz/common",
-    "//components/viz/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/public:test_support",

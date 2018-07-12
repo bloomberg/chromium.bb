@@ -6,9 +6,6 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  ".*test\.cc": [
-    "+components/viz/test",
-  ],
   "main_thread_task_queue.h": [
     "+base/task/sequence_manager/task_queue_impl.h",
   ],
