@@ -64,8 +64,9 @@ class ExtensionMediaRouteProviderProxyTest : public testing::Test {
           std::move(request).Run();
         }));
 
-    provider_proxy_ = std::make_unique<ExtensionMediaRouteProviderProxy>(
-        &profile_, mojo::MakeRequest(&provider_proxy_ptr_));
+    provider_proxy_ =
+        std::make_unique<ExtensionMediaRouteProviderProxy>(&profile_);
+    provider_proxy_->Bind(mojo::MakeRequest(&provider_proxy_ptr_));
     RegisterMockMediaRouteProvider();
   }
 

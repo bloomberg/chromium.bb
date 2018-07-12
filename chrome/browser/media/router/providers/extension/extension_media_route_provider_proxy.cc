@@ -15,14 +15,21 @@
 namespace media_router {
 
 ExtensionMediaRouteProviderProxy::ExtensionMediaRouteProviderProxy(
-    content::BrowserContext* context,
-    mojom::MediaRouteProviderRequest request)
-    : binding_(this, std::move(request)),
+    content::BrowserContext* context)
+    : binding_(this),
       request_manager_(
           EventPageRequestManagerFactory::GetApiForBrowserContext(context)),
       weak_factory_(this) {}
 
 ExtensionMediaRouteProviderProxy::~ExtensionMediaRouteProviderProxy() = default;
+
+void ExtensionMediaRouteProviderProxy::Bind(
+    mojom::MediaRouteProviderRequest request) {
+  // This method is called when the previous Binding became invalid. We close it
+  // first to make sure it is in a clean state.
+  binding_.Close();
+  binding_.Bind(std::move(request));
+}
 
 void ExtensionMediaRouteProviderProxy::CreateRoute(
     const std::string& media_source,

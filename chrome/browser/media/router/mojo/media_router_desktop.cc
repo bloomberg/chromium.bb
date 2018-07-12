@@ -73,7 +73,6 @@ MediaRouterDesktop::GetProviderIdForPresentation(
 
 MediaRouterDesktop::MediaRouterDesktop(content::BrowserContext* context)
     : MediaRouterDesktop(context, DualMediaSinkService::GetInstance()) {
-  InitializeMediaRouteProviders();
 #if defined(OS_WIN)
   CanFirewallUseLocalPorts(
       base::BindOnce(&MediaRouterDesktop::OnFirewallCheckComplete,
@@ -213,12 +212,31 @@ void MediaRouterDesktop::InitializeMediaRouteProviders() {
 }
 
 void MediaRouterDesktop::InitializeExtensionMediaRouteProviderProxy() {
+  if (!extension_provider_proxy_) {
+    extension_provider_proxy_ =
+        std::make_unique<ExtensionMediaRouteProviderProxy>(context());
+  }
   mojom::MediaRouteProviderPtr extension_provider_proxy_ptr;
-  extension_provider_proxy_ =
-      std::make_unique<ExtensionMediaRouteProviderProxy>(
-          context(), mojo::MakeRequest(&extension_provider_proxy_ptr));
+  extension_provider_proxy_->Bind(
+      mojo::MakeRequest(&extension_provider_proxy_ptr));
+  extension_provider_proxy_ptr.set_connection_error_handler(base::BindOnce(
+      &MediaRouterDesktop::OnExtensionProviderError, base::Unretained(this)));
   media_route_providers_[MediaRouteProviderId::EXTENSION] =
       std::move(extension_provider_proxy_ptr);
+}
+
+void MediaRouterDesktop::OnExtensionProviderError() {
+  // The message pipe for |extension_provider_proxy_| might error out due to
+  // Media Router extension causing dropped callbacks. Detect this case and
+  // recover by re-creating the pipe.
+  DVLOG(2) << "Extension MRP encountered error.";
+  if (extension_provider_error_count_ >= kMaxMediaRouteProviderErrorCount)
+    return;
+
+  ++extension_provider_error_count_;
+  DVLOG(2) << "Reconnecting to extension MRP: "
+           << extension_provider_error_count_;
+  InitializeExtensionMediaRouteProviderProxy();
 }
 
 void MediaRouterDesktop::InitializeWiredDisplayMediaRouteProvider() {
