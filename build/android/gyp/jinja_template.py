@@ -156,7 +156,7 @@ def main():
       #     are fixed. https://crbug.com/843562
       print ('Found files not listed via --includes:\n' +
              '\n'.join(sorted(all_inputs)))
-    build_utils.WriteDepfile(options.depfile, output)
+    build_utils.WriteDepfile(options.depfile, output, inputs=list(all_inputs))
 
 
 if __name__ == '__main__':
