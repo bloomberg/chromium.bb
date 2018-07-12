@@ -42,6 +42,8 @@ class CORE_EXPORT LayoutNGListMarker final
 
   LayoutNGListItem* ListItem() const;
 
+  bool NeedsOccupyWholeLine() const;
+
  private:
   bool IsOfType(LayoutObjectType) const override;
 };

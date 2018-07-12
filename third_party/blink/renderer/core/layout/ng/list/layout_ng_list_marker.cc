@@ -69,4 +69,17 @@ String LayoutNGListMarker::TextAlternative() const {
   return ToLayoutText(FirstChild())->GetText();
 }
 
+bool LayoutNGListMarker::NeedsOccupyWholeLine() const {
+  if (!GetDocument().InQuirksMode())
+    return false;
+
+  LayoutObject* next_sibling = NextSibling();
+  if (next_sibling && next_sibling->GetNode() &&
+      (IsHTMLUListElement(*next_sibling->GetNode()) ||
+       IsHTMLOListElement(*next_sibling->GetNode())))
+    return true;
+
+  return false;
+}
+
 }  // namespace blink
