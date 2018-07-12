@@ -21,6 +21,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "device/vr/vr_display_impl.h"
 #include "ui/display/display.h"
 
 using base::android::JavaRef;
@@ -135,6 +136,10 @@ void ARCoreDevice::OnARCoreGlThreadInitialized() {
   DCHECK(IsOnMainThread());
 
   is_arcore_gl_thread_initialized_ = true;
+
+  if (pending_request_session_callback_) {
+    std::move(pending_request_session_callback_).Run();
+  }
 }
 
 void ARCoreDevice::RequestSession(
@@ -145,12 +150,17 @@ void ARCoreDevice::RequestSession(
   // TODO(https://crbug.com/849568): Instead of splitting the initialization
   // of this class between construction and RequestSession, perform all the
   // initialization at once on the first successful RequestSession call.
-
-  // TODO(https://crbug.com/846521): If the RequestSession call comes before
-  // the arcore gl thread is initialized, the resolution of the request should
-  // be delayed.
   if (!is_arcore_gl_thread_initialized_) {
-    std::move(callback).Run(nullptr, nullptr);
+    if (pending_request_session_callback_) {
+      // We can only store one request at a time, so reject any further
+      // requests.
+      // TODO(http://crbug.com/836496) Make this queue session requests.
+      std::move(callback).Run(nullptr, nullptr);
+    }
+
+    pending_request_session_callback_ =
+        base::BindOnce(&ARCoreDevice::RequestSession, GetWeakPtr(),
+                       std::move(options), std::move(callback));
     return;
   }
 
@@ -267,25 +277,37 @@ bool ARCoreDevice::ShouldPauseTrackingWhenFrameDataRestricted() {
 }
 
 void ARCoreDevice::OnMagicWindowFrameDataRequest(
-    const gfx::Size& frame_size,
-    display::Display::Rotation display_rotation,
     mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(IsOnMainThread());
+  // We should not be able to reach this point if we are not initialized.
+  DCHECK(is_arcore_gl_thread_initialized_);
 
-  // TODO(ijamardo): Do we need to queue requests to avoid breaking
-  // applications?
-  // TODO(https://crbug.com/837944): Ensure is_arcore_gl_thread_initialized_
-  // is always true by blocking requestDevice()'s callback until it is true
-  if (is_paused_ || !is_arcore_gl_thread_initialized_) {
+  if (is_paused_) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  // TODO(https://crbug.com/836496) This current implementation does not handle
+  // multiple sessions well. There should be a better way to handle this than
+  // taking the max of all sessions.
+  gfx::Size max_size(0, 0);
+  display::Display::Rotation rotation;
+  for (auto& session : magic_window_sessions_) {
+    max_size.SetToMax(session->sessionFrameSize());
+    // We have to pick a rotation so just go with the last one.
+    rotation = session->sessionRotation();
+  }
+
+  if (max_size.IsEmpty()) {
+    DLOG(ERROR) << "No valid AR frame size provided!";
     std::move(callback).Run(nullptr);
     return;
   }
 
   PostTaskToGlThread(base::BindOnce(
       &ARCoreGl::ProduceFrame, arcore_gl_thread_->GetARCoreGl()->GetWeakPtr(),
-      frame_size, display_rotation,
-      CreateMainThreadCallback(std::move(callback))));
+      max_size, rotation, CreateMainThreadCallback(std::move(callback))));
 }
 
 void ARCoreDevice::RequestHitTest(

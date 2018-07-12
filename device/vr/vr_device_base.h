@@ -33,10 +33,6 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
 
   void GetFrameData(
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
-  void GetFrameData(
-      const gfx::Size& frame_size,
-      display::Display::Rotation display_rotation,
-      mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
 
   virtual void RequestHitTest(
       mojom::XRRayPtr ray,
@@ -78,14 +74,13 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
   void SetVRDisplayInfo(mojom::VRDisplayInfoPtr display_info);
   void OnActivate(mojom::VRDisplayEventReason reason,
                   base::Callback<void(bool)> on_handled);
+
+  std::vector<std::unique_ptr<VRDisplayImpl>> magic_window_sessions_;
+
  private:
   // TODO(https://crbug.com/842227): Rename methods to HandleOnXXX
   virtual void OnListeningForActivate(bool listening);
   virtual void OnMagicWindowFrameDataRequest(
-      mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
-  virtual void OnMagicWindowFrameDataRequest(
-      const gfx::Size& frame_size,
-      display::Display::Rotation rotation,
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
 
   // XRRuntime
@@ -104,8 +99,6 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
   bool magic_window_enabled_ = true;
 
   mojo::Binding<mojom::XRRuntime> runtime_binding_;
-
-  std::vector<std::unique_ptr<VRDisplayImpl>> magic_window_sessions_;
 
   DISALLOW_COPY_AND_ASSIGN(VRDeviceBase);
 };

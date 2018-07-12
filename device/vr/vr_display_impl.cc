@@ -41,21 +41,15 @@ void VRDisplayImpl::GetFrameData(
     return;
   }
 
-  // If a valid frame_size has been set, use the GetFrameData with session
-  // geometry.
-  if (!session_frame_size_.IsEmpty()) {
-    device_->GetFrameData(session_frame_size_, session_rotation_,
-                          std::move(callback));
-  } else {
-    device_->GetFrameData(std::move(callback));
-  }
+  device_->GetFrameData(std::move(callback));
 }
 
 void VRDisplayImpl::UpdateSessionGeometry(const gfx::Size& frame_size,
                                           display::Display::Rotation rotation) {
   // Check for a valid frame size.
-  // While Mojo should handle negative values, we also do not want to allow 0.
-  // TODO(https://crbug.com/841062): Reconsider how we check the sizes.
+
+  // TODO(https://crbug.com/841062, https://crbug.com/836496): Reconsider how we
+  // check the sizes.
   if (frame_size.width() <= 0 || frame_size.height() <= 0 ||
       frame_size.width() > kMaxImageHeightOrWidth ||
       frame_size.height() > kMaxImageHeightOrWidth) {

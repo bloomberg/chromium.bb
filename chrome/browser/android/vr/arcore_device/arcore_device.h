@@ -52,8 +52,6 @@ class ARCoreDevice : public VRDeviceBase {
   // VRDeviceBase implementation
   bool ShouldPauseTrackingWhenFrameDataRestricted() override;
   void OnMagicWindowFrameDataRequest(
-      const gfx::Size& frame_size,
-      display::Display::Rotation display_rotation,
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback) override;
   void RequestHitTest(
       mojom::XRRayPtr ray,
@@ -120,6 +118,10 @@ class ARCoreDevice : public VRDeviceBase {
 
   bool is_arcore_gl_thread_initialized_ = false;
   bool is_arcore_gl_initialized_ = false;
+
+  // If we get a requestSession before we are completely initialized, store it
+  // until we are intialized.
+  base::OnceClosure pending_request_session_callback_;
 
   // This object is not paused when it is created. Although it is not
   // necessarily running during initialization, it is not paused. If it is

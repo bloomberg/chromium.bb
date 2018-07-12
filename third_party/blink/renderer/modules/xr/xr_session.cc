@@ -415,10 +415,6 @@ DoubleSize XRSession::OutputCanvasSize() const {
   return DoubleSize(output_width_, output_height_);
 }
 
-int XRSession::OutputCanvasAngle() const {
-  return output_angle_;
-}
-
 void XRSession::OnFocus() {
   if (!blurred_)
     return;
@@ -540,13 +536,21 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
   update_views_next_frame_ = true;
   output_width_ = element->OffsetWidth() * devicePixelRatio;
   output_height_ = element->OffsetHeight() * devicePixelRatio;
+  int output_angle = 0;
 
   // TODO(crbug.com/836948): handle square canvases.
   // TODO(crbug.com/840346): we should not need to use ScreenOrientation here.
   ScreenOrientation* orientation = ScreenOrientation::Create(frame);
+
   if (orientation) {
-    output_angle_ = orientation->angle();
-    DVLOG(2) << __FUNCTION__ << ": got angle=" << output_angle_;
+    output_angle = orientation->angle();
+    DVLOG(2) << __FUNCTION__ << ": got angle=" << output_angle;
+  }
+
+  if (device_->xrMagicWindowProviderPtr()) {
+    device_->xrMagicWindowProviderPtr()->UpdateSessionGeometry(
+        IntSize(output_width_, output_height_),
+        display::Display::DegreesToRotation(output_angle));
   }
 
   if (base_layer_) {

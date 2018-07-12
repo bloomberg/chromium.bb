@@ -81,6 +81,16 @@ class ARCoreGl {
   std::unique_ptr<ARCore> arcore_;
   std::unique_ptr<ARImageTransport> ar_image_transport_;
 
+  // Default dummy values to ensure consistent behaviour.
+  gfx::Size transfer_size_ = gfx::Size(0, 0);
+  display::Display::Rotation display_rotation_ = display::Display::ROTATE_0;
+
+  gfx::Transform uv_transform_;
+  gfx::Transform projection_;
+  // The first run of ProduceFrame should set uv_transform_ and projection_
+  // using the default settings in ARCore.
+  bool should_recalculate_uvs_ = true;
+
   bool is_initialized_ = false;
 
   vr::FPSMeter fps_meter_;

@@ -181,16 +181,6 @@ void XRFrameProvider::RequestFrame(XRSession* session) {
   if (exclusive_session_)
     return;
 
-  if (device_->xrDisplayInfoPtr()
-          ->capabilities->can_provide_pass_through_images) {
-    DoubleSize session_size_double = session->OutputCanvasSize();
-    IntSize session_size(session_size_double.Width(),
-                         session_size_double.Height());
-    ar_requested_transfer_size_ =
-        ar_requested_transfer_size_.ExpandedTo(session_size);
-    // Have to pick an angle so we'll take the last angle.
-    ar_requested_transfer_angle_ = session->OutputCanvasAngle();
-  }
   ScheduleNonExclusiveFrame();
 }
 
@@ -211,6 +201,7 @@ void XRFrameProvider::ScheduleNonExclusiveFrame() {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(!exclusive_session_)
       << "Scheduling should be done via the exclusive session if present.";
+  DCHECK(device_->xrMagicWindowProviderPtr());
 
   if (pending_non_exclusive_vsync_)
     return;
@@ -227,36 +218,12 @@ void XRFrameProvider::ScheduleNonExclusiveFrame() {
 
   pending_non_exclusive_vsync_ = true;
 
+  device_->xrMagicWindowProviderPtr()->GetFrameData(WTF::Bind(
+      &XRFrameProvider::OnNonExclusiveFrameData, WrapWeakPersistent(this)));
+
   // TODO(https://crbug.com/839253): Generalize the pass-through images
   // code path so that it also works for exclusive sessions on an AR device
   // with pass-through technology.
-  if (device_->xrDisplayInfoPtr()
-          ->capabilities->can_provide_pass_through_images) {
-    DVLOG(2) << __FUNCTION__ << ": transfer_size "
-             << ar_requested_transfer_size_.Width() << "x"
-             << ar_requested_transfer_size_.Height()
-             << " angle=" << ar_requested_transfer_angle_;
-    DCHECK(display::Display::IsValidRotation(ar_requested_transfer_angle_));
-
-    // TODO(https://crbug.com/836496): ensure valid frame sizes, including when
-    // using multiple sessions. Currently, we take the max size of all the
-    // active session's requested sizes and pass that to the browser as-is.
-    // Unsupported sizes such as zero or excessively large ones may be rejected
-    // by the device, resulting in null XRFrameData responses.
-    // Requests for frames of 0 size are making it to this point - we should
-    // ensure that frames are not scheduled until the frame context is ready.
-    // In the future, we should signal an error back to the client.
-
-    // TODO(http://crbug.com/856259): Only call if there was a change, this may
-    // be an expensive operation. If there was no change, the previous values
-    // should remain valid.
-    device_->xrMagicWindowProviderPtr()->UpdateSessionGeometry(
-        ar_requested_transfer_size_,
-        display::Display::DegreesToRotation(ar_requested_transfer_angle_));
-  }
-
-  device_->xrMagicWindowProviderPtr()->GetFrameData(WTF::Bind(
-      &XRFrameProvider::OnNonExclusiveFrameData, WrapWeakPersistent(this)));
 
   // TODO(http://crbug.com/856257) Remove the special casing for AR and non-AR.
   if (!device_->xrDisplayInfoPtr()
@@ -398,12 +365,6 @@ void XRFrameProvider::ProcessScheduledFrame(
     // from the requests to prevent infinite loops.
     HeapVector<Member<XRSession>> processing_sessions;
     swap(requesting_sessions_, processing_sessions);
-    if (device_->xrDisplayInfoPtr()
-            ->capabilities->can_provide_pass_through_images) {
-      // Clear the AR transfer size for next frame.
-      ar_requested_transfer_size_.SetWidth(0);
-      ar_requested_transfer_size_.SetHeight(0);
-    }
 
     // Inform sessions with a pending request of the new frame
     for (unsigned i = 0; i < processing_sessions.size(); ++i) {
