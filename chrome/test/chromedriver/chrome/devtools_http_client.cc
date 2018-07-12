@@ -82,6 +82,7 @@ DevToolsHttpClient::DevToolsHttpClient(
       page_load_strategy_(page_load_strategy) {
   window_types_->insert(WebViewInfo::kPage);
   window_types_->insert(WebViewInfo::kApp);
+  browser_info_.debugger_address = address;
 }
 
 DevToolsHttpClient::~DevToolsHttpClient() {}

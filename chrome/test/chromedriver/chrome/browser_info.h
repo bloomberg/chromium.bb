@@ -6,6 +6,7 @@
 #define CHROME_TEST_CHROMEDRIVER_CHROME_BROWSER_INFO_H_
 
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/net/net_util.h"
 
 // Content Shell and WebView have an empty product version and a fake user
 // agent. There's no way to detect the actual version, so unless specified we
@@ -17,19 +18,13 @@ static const int kToTBlinkRevision = 999999;
 
 struct BrowserInfo {
   BrowserInfo();
-  BrowserInfo(std::string android_package_,
-              std::string browser_name_,
-              std::string browser_version_,
-              int major_version_,
-              int build_no_,
-              int blink_revision_,
-              bool is_android_);
   ~BrowserInfo();
 
   std::string android_package;
   std::string browser_name;
   std::string browser_version;
   std::string web_socket_url;
+  NetAddress debugger_address;
   int major_version;
   int build_no;
   int blink_revision;
