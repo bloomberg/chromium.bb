@@ -33,9 +33,8 @@ class CastGestureDispatcher : public CastGestureHandler {
 
  private:
   // Number of pixels past swipe origin to consider as a back gesture.
-  const int horizontal_threshold_;
+  const int back_horizontal_threshold_;
   CastContentWindow::Delegate* const delegate_;
-  bool dispatched_back_;
   base::ElapsedTimer current_swipe_time_;
 };
 
