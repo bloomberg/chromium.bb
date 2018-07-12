@@ -277,51 +277,43 @@ MojoRemoveTrigger(MojoHandle trap_handle,
 //
 // Parameters:
 //   |trap_handle|: The handle of the trap to be armed.
-//   |num_ready_triggers|: An address pointing to the number of elements
-//       available for storage in the following output buffer parameters.
+//   |num_blocking_events|: An address pointing to the number of elements
+//       available for storage at the address given by |blocking_events|.
 //       Optional and only used when |MOJO_RESULT_FAILED_PRECONDITION| is
 //       returned. See below.
-//   |ready_triggers|: An output buffer for contexts of triggers that would have
-//       tripped the trap immediately if it were armed. Optional and used only
-//       when |MOJO_RESULT_FAILED_PRECONDITION| is returned. See below.
-//   |ready_results|: An output buffer for |MojoResult| values corresponding to
-//       each trigger in |ready_triggers|. Optional and only used when
-//       |MOJO_RESULT_FAILED_PRECONDITION| is returned. See below.
-//   |ready_signals_states|: An output buffer for |MojoHandleSignalsState|
-//       structures corresponding to the handle observed by each respective
-//       trigger in |ready_triggers|. Optional and only used when
+//   |blocking_events|: An output buffer for |MojoTrapEvent| structures to be
+//       filled in if one or more triggers would have tripped the trap
+//       immediately if it were armed. Optional and used only when
 //       |MOJO_RESULT_FAILED_PRECONDITION| is returned. See below.
 //
 // Returns:
-//   |MOJO_RESULT_OK| if the trap has been successfully armed. All arguments
-//       other than |trap_handle| are ignored in this case.
-//   |MOJO_RESULT_NOT_FOUND| if the trap does not have any triggers. All
-//       arguments other than |trap_handle| are ignored.
+//   |MOJO_RESULT_OK| if the trap has been successfully armed.
+//       |num_blocking_events| and |blocking_events| are ignored.
+//   |MOJO_RESULT_NOT_FOUND| if the trap does not have any triggers.
+//       |num_blocking_events| and |blocking_events| are ignored.
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |trap_handle| is not a valid trap handle,
-//       or if |num_ready_triggers| is non-null and any of the output buffer
-//       paramters is null.
+//       or if |num_blocking_events| is non-null but |blocking_events| is
+//       not.
 //   |MOJO_RESULT_FAILED_PRECONDITION| if one or more triggers would have
-//       tripped the trap immediately upon arming. If |num_handles| is non-null,
-//       this assumes there is enough space for |*num_handles| entries in each
-//       of the subsequent output buffer parameters.
+//       tripped the trap immediately upon arming. If |num_blocking_events| is
+//       non-null, this assumes there is enough space for |*num_blocking_events|
+//       entries at the non-null address in |blocking_events|.
 //
-//       At most |*num_handles| entries are populated in the output buffers,
-//       with each entry corresponding to one of the triggers which would have
-//       tripped the trap. The actual number of entries populated is written to
-//       |*num_handles| before returning.
+//       At most |*num_blocking_events| entries are populated there, with each
+//       entry corresponding to one of the triggers which would have tripped the
+//       trap. The actual number of entries populated is written to
+//       |*num_blocking_events| before returning.
 //
 //       If there are more ready triggers than available provided storage, the
-//       subset presented to thecaller is arbitrary. The runtime makes an effort
-//       to circulate triggers returned by consecutive failed |MojoArmTrap()|
-//       calls so that callers may avoid handle starvation when observing a
-//       large number of active handles with a single trap.
+//       subset presented to the caller is arbitrary. The runtime makes an
+//       effort to circulate triggers returned by consecutive failed
+//       |MojoArmTrap()| calls so that callers may avoid handle starvation when
+//       observing a large number of active handles with a single trap.
 MOJO_SYSTEM_EXPORT MojoResult
 MojoArmTrap(MojoHandle trap_handle,
             const struct MojoArmTrapOptions* options,
-            uint32_t* num_ready_triggers,
-            uintptr_t* ready_triggers,
-            MojoResult* ready_results,
-            struct MojoHandleSignalsState* ready_signals_states);
+            uint32_t* num_blocking_events,
+            struct MojoTrapEvent* blocking_events);
 
 #ifdef __cplusplus
 }  // extern "C"

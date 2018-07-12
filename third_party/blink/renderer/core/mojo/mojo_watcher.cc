@@ -118,20 +118,18 @@ MojoResult MojoWatcher::Arm(MojoResult* ready_result) {
   if (!handle_.is_valid())
     return MOJO_RESULT_OK;
 
-  uint32_t num_ready_contexts = 1;
-  uintptr_t ready_context;
-  MojoResult local_ready_result;
-  MojoHandleSignalsState ready_signals;
-  MojoResult result =
-      MojoArmTrap(trap_handle_.get().value(), nullptr, &num_ready_contexts,
-                  &ready_context, &local_ready_result, &ready_signals);
+  uint32_t num_blocking_events = 1;
+  MojoTrapEvent blocking_event = {sizeof(blocking_event)};
+  MojoResult result = MojoArmTrap(trap_handle_.get().value(), nullptr,
+                                  &num_blocking_events, &blocking_event);
   if (result == MOJO_RESULT_OK)
     return MOJO_RESULT_OK;
 
   if (result == MOJO_RESULT_FAILED_PRECONDITION) {
-    DCHECK_EQ(1u, num_ready_contexts);
-    DCHECK_EQ(reinterpret_cast<uintptr_t>(this), ready_context);
-    *ready_result = local_ready_result;
+    DCHECK_EQ(1u, num_blocking_events);
+    DCHECK_EQ(reinterpret_cast<uintptr_t>(this),
+              blocking_event.trigger_context);
+    *ready_result = blocking_event.result;
     return result;
   }
 

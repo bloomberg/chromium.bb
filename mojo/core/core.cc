@@ -315,7 +315,7 @@ MojoResult Core::QueryHandleSignalsState(
 MojoResult Core::CreateTrap(MojoTrapEventHandler handler,
                             const MojoCreateTrapOptions* options,
                             MojoHandle* trap_handle) {
-  if (options && options->struct_size != sizeof(*options))
+  if (options && options->struct_size < sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   RequestContext request_context;
@@ -333,7 +333,7 @@ MojoResult Core::AddTrigger(MojoHandle trap_handle,
                             MojoTriggerCondition condition,
                             uintptr_t context,
                             const MojoAddTriggerOptions* options) {
-  if (options && options->struct_size != sizeof(*options))
+  if (options && options->struct_size < sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   RequestContext request_context;
@@ -352,7 +352,7 @@ MojoResult Core::AddTrigger(MojoHandle trap_handle,
 MojoResult Core::RemoveTrigger(MojoHandle trap_handle,
                                uintptr_t context,
                                const MojoRemoveTriggerOptions* options) {
-  if (options && options->struct_size != sizeof(*options))
+  if (options && options->struct_size < sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   RequestContext request_context;
@@ -364,26 +364,23 @@ MojoResult Core::RemoveTrigger(MojoHandle trap_handle,
 
 MojoResult Core::ArmTrap(MojoHandle trap_handle,
                          const MojoArmTrapOptions* options,
-                         uint32_t* num_ready_triggers,
-                         uintptr_t* ready_triggers,
-                         MojoResult* ready_results,
-                         MojoHandleSignalsState* ready_signals_states) {
-  if (options && options->struct_size != sizeof(*options))
+                         uint32_t* num_blocking_events,
+                         MojoTrapEvent* blocking_events) {
+  if (options && options->struct_size < sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   RequestContext request_context;
   scoped_refptr<Dispatcher> watcher = GetDispatcher(trap_handle);
   if (!watcher || watcher->GetType() != Dispatcher::Type::WATCHER)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  return watcher->Arm(num_ready_triggers, ready_triggers, ready_results,
-                      ready_signals_states);
+  return watcher->Arm(num_blocking_events, blocking_events);
 }
 
 MojoResult Core::CreateMessage(const MojoCreateMessageOptions* options,
                                MojoMessageHandle* message_handle) {
   if (!message_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (options && options->struct_size != sizeof(*options))
+  if (options && options->struct_size < sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
   *message_handle = reinterpret_cast<MojoMessageHandle>(
       UserMessageImpl::CreateEventForNewMessage().release());
@@ -403,7 +400,7 @@ MojoResult Core::SerializeMessage(MojoMessageHandle message_handle,
                                   const MojoSerializeMessageOptions* options) {
   if (!message_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (options && options->struct_size != sizeof(*options))
+  if (options && options->struct_size < sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
   RequestContext request_context;
   return reinterpret_cast<ports::UserMessageEvent*>(message_handle)
@@ -420,7 +417,7 @@ MojoResult Core::AppendMessageData(MojoMessageHandle message_handle,
                                    uint32_t* buffer_size) {
   if (!message_handle || (num_handles && !handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (options && options->struct_size != sizeof(*options))
+  if (options && options->struct_size < sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   RequestContext request_context;
@@ -453,7 +450,7 @@ MojoResult Core::GetMessageData(MojoMessageHandle message_handle,
                                 uint32_t* num_handles) {
   if (!message_handle || (num_handles && *num_handles && !handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (options && options->struct_size != sizeof(*options))
+  if (options && options->struct_size < sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
@@ -502,7 +499,7 @@ MojoResult Core::SetMessageContext(
     const MojoSetMessageContextOptions* options) {
   if (!message_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (options && options->struct_size != sizeof(*options))
+  if (options && options->struct_size < sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
   auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
                       ->GetMessage<UserMessageImpl>();
@@ -514,7 +511,7 @@ MojoResult Core::GetMessageContext(MojoMessageHandle message_handle,
                                    uintptr_t* context) {
   if (!message_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (options && options->struct_size != sizeof(*options))
+  if (options && options->struct_size < sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
@@ -658,7 +655,7 @@ MojoResult Core::CreateDataPipe(const MojoCreateDataPipeOptions* options,
                                 MojoHandle* data_pipe_producer_handle,
                                 MojoHandle* data_pipe_consumer_handle) {
   RequestContext request_context;
-  if (options && options->struct_size != sizeof(MojoCreateDataPipeOptions))
+  if (options && options->struct_size < sizeof(MojoCreateDataPipeOptions))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   MojoCreateDataPipeOptions create_options;

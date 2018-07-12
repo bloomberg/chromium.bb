@@ -145,22 +145,18 @@ class WaitSet::State : public base::RefCountedThreadSafe<State> {
         handle_event_.Reset();
 
         DCHECK_LE(*num_ready_handles, std::numeric_limits<uint32_t>::max());
-        uint32_t num_ready_contexts = static_cast<uint32_t>(*num_ready_handles);
+        uint32_t num_blocking_events =
+            static_cast<uint32_t>(*num_ready_handles);
 
-        base::StackVector<uintptr_t, 4> ready_contexts;
-        ready_contexts.container().resize(num_ready_contexts);
-        base::StackVector<MojoHandleSignalsState, 4> ready_states;
-        MojoHandleSignalsState* out_states = signals_states;
-        if (!out_states) {
-          // If the caller didn't provide a buffer for signal states, we provide
-          // our own locally. MojoArmTrap() requires one if we want to handle
-          // arming failure properly.
-          ready_states.container().resize(num_ready_contexts);
-          out_states = ready_states.container().data();
+        base::StackVector<MojoTrapEvent, 4> blocking_events;
+        blocking_events.container().resize(num_blocking_events);
+        for (size_t i = 0; i < num_blocking_events; ++i) {
+          blocking_events.container()[i].struct_size =
+              sizeof(blocking_events.container()[i]);
         }
-        MojoResult rv = MojoArmTrap(
-            trap_handle_.get().value(), nullptr, &num_ready_contexts,
-            ready_contexts.container().data(), ready_results, out_states);
+        MojoResult rv = MojoArmTrap(trap_handle_.get().value(), nullptr,
+                                    &num_blocking_events,
+                                    blocking_events.container().data());
 
         if (rv == MOJO_RESULT_FAILED_PRECONDITION) {
           // Simulate the handles becoming ready. We do this in lieu of
@@ -168,11 +164,12 @@ class WaitSet::State : public base::RefCountedThreadSafe<State> {
           // starving user events. i.e., we always want to call WaitMany()
           // below.
           handle_event_.Signal();
-          for (size_t i = 0; i < num_ready_contexts; ++i) {
-            auto it = contexts_.find(ready_contexts.container()[i]);
+          for (size_t i = 0; i < num_blocking_events; ++i) {
+            const auto& event = blocking_events.container()[i];
+            auto it = contexts_.find(event.trigger_context);
             DCHECK(it != contexts_.end());
-            ready_handles_[it->second->handle()] = {ready_results[i],
-                                                    out_states[i]};
+            ready_handles_[it->second->handle()] = {event.result,
+                                                    event.signals_state};
           }
         } else if (rv == MOJO_RESULT_NOT_FOUND) {
           // Nothing to watch. If there are no user events, always signal to

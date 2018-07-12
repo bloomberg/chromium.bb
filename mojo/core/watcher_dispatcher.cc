@@ -204,16 +204,11 @@ MojoResult WatcherDispatcher::CancelWatch(uintptr_t context) {
   return MOJO_RESULT_OK;
 }
 
-MojoResult WatcherDispatcher::Arm(
-    uint32_t* num_ready_contexts,
-    uintptr_t* ready_contexts,
-    MojoResult* ready_results,
-    MojoHandleSignalsState* ready_signals_states) {
+MojoResult WatcherDispatcher::Arm(uint32_t* num_blocking_events,
+                                  MojoTrapEvent* blocking_events) {
   base::AutoLock lock(lock_);
-  if (num_ready_contexts &&
-      (!ready_contexts || !ready_results || !ready_signals_states)) {
+  if (num_blocking_events && !blocking_events)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  }
   if (closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -226,10 +221,10 @@ MojoResult WatcherDispatcher::Arm(
     return MOJO_RESULT_OK;
   }
 
-  if (num_ready_contexts) {
+  if (num_blocking_events) {
     DCHECK_LE(ready_watches_.size(), std::numeric_limits<uint32_t>::max());
-    *num_ready_contexts = std::min(
-        *num_ready_contexts, static_cast<uint32_t>(ready_watches_.size()));
+    *num_blocking_events = std::min(
+        *num_blocking_events, static_cast<uint32_t>(ready_watches_.size()));
 
     WatchSet::const_iterator next_ready_iter = ready_watches_.begin();
     if (last_watch_to_block_arming_) {
@@ -242,11 +237,14 @@ MojoResult WatcherDispatcher::Arm(
         next_ready_iter = ready_watches_.begin();
     }
 
-    for (size_t i = 0; i < *num_ready_contexts; ++i) {
+    for (size_t i = 0; i < *num_blocking_events; ++i) {
       const Watch* const watch = *next_ready_iter;
-      ready_contexts[i] = watch->context();
-      ready_results[i] = watch->last_known_result();
-      ready_signals_states[i] = watch->last_known_signals_state();
+      if (blocking_events[i].struct_size < sizeof(*blocking_events))
+        return MOJO_RESULT_INVALID_ARGUMENT;
+      blocking_events[i].flags = MOJO_TRAP_EVENT_FLAG_WITHIN_API_CALL;
+      blocking_events[i].trigger_context = watch->context();
+      blocking_events[i].result = watch->last_known_result();
+      blocking_events[i].signals_state = watch->last_known_signals_state();
 
       // Iterate and wrap around.
       last_watch_to_block_arming_ = watch;

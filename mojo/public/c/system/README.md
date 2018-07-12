@@ -745,7 +745,7 @@ immediately once armed.
 In this case `a` is clearly not yet readable, so arming should succeed:
 
 ``` c
-MojoResult result = MojoArmTrap(t, NULL, NULL, NULL, NULL, NULL);
+MojoResult result = MojoArmTrap(t, NULL, NULL, NULL);
 ```
 
 Now we can write to `b` to make `a` readable:
@@ -780,28 +780,27 @@ it to fail:
 ``` c
 // Provide some storage for information about triggers that would have been
 // activated immediately.
-uint32_t num_ready_triggers = 4;
-uintptr_t reay_triggers[4];
-MojoResult ready_results[4];
-struct MojoHandleSignalsStates ready_states[4];
-MojoResult result = MojoArmTrap(t, NULL, &num_ready_triggers, ready_triggers,
-                                ready_results, ready_states);
+uint32_t num_blocking_events = 2;
+MojoTrapEvent blocking_events[2] = {{sizeof(MojoTrapEvent)},
+                                    {sizeof(MojoTrapEvent)}};
+MojoResult result = MojoArmTrap(t, NULL, &num_blocking_events,
+                                &blocking_events);
 ```
 
 Because `a` is still readable this operation will now fail with
-`MOJO_RESULT_FAILED_PRECONDITION`. The input value of `num_ready_triggers`
-informs `MojoArmTrap` that it may store information regarding up to 4 triggers
+`MOJO_RESULT_FAILED_PRECONDITION`. The input value of `num_blocking_events`
+informs `MojoArmTrap` that it may store information regarding up to 2 triggers
 which have prevented arming. In this case of course there is only one active
 trigger, so upon return we will see:
 
-* `num_ready_triggers` is `1`.
-* `ready_triggers[0]` is `1234`.
-* `ready_results[0]` is `MOJO_RESULT_OK`
-* `ready_states[0]` is the last known signaling state of handle `a`.
+* `num_blocking_events` is `1`.
+* `blocking_events[0].trigger_context` is `1234`.
+* `blocking_events[0].result` is `MOJO_RESULT_OK`
+* `blocking_events[0].signals_state` is the last known signaling state of handle
+  `a`.
 
-In other words the stored information mirrors what would have been the
-event handler's arguments if the trap were allowed to arm and thus notify
-immediately.
+In other words the stored information mirrors what would have been the resulting
+event structure if the trap were allowed to arm and then notify immediately.
 
 ### Removing a Trigger
 
@@ -873,7 +872,7 @@ void OnNotification(const struct MojoTrapEvent* event) {
   // This is the only handle watched by the trap, so as long as we can't arm
   // the watcher we know something's up with this handle. Try to read messages
   // until we can successfully arm again or something goes terribly wrong.
-  while (MojoArmTrap(state->trap, NULL NULL, NULL, NULL, NULL) ==
+  while (MojoArmTrap(state->trap, NULL NULL, NULL) ==
          MOJO_RESULT_FAILED_PRECONDITION) {
     rv = MojoReadMessageNew(state->handle, NULL, NULL, NULL,
                             MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
@@ -910,8 +909,8 @@ MojoAddTrigger(b_trap, b, MOJO_HANDLE_SIGNAL_READABLE,
                MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED, (uintptr_t)b_state,
                NULL);
 
-MojoArmTrap(a_trap, NULL, NULL, NULL, NULL, NULL);
-MojoArmTrap(b_trap, NULL, NULL, NULL, NULL, NULL);
+MojoArmTrap(a_trap, NULL, NULL, NULL);
+MojoArmTrap(b_trap, NULL, NULL, NULL);
 ```
 
 Now any writes to `a` will increment `message_count` in `b_state`, and any

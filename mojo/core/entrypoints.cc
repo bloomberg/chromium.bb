@@ -237,12 +237,10 @@ MojoResult MojoRemoveTriggerImpl(MojoHandle trap_handle,
 
 MojoResult MojoArmTrapImpl(MojoHandle trap_handle,
                            const MojoArmTrapOptions* options,
-                           uint32_t* num_ready_triggers,
-                           uintptr_t* ready_triggers,
-                           MojoResult* ready_results,
-                           MojoHandleSignalsState* ready_signals_states) {
-  return g_core->ArmTrap(trap_handle, options, num_ready_triggers,
-                         ready_triggers, ready_results, ready_signals_states);
+                           uint32_t* num_blocking_events,
+                           MojoTrapEvent* blocking_events) {
+  return g_core->ArmTrap(trap_handle, options, num_blocking_events,
+                         blocking_events);
 }
 
 MojoResult MojoWrapPlatformHandleImpl(

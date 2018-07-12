@@ -34,10 +34,8 @@ MojoResult Dispatcher::CancelWatch(uintptr_t context) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::Arm(uint32_t* num_ready_contexts,
-                           uintptr_t* ready_contexts,
-                           MojoResult* ready_results,
-                           MojoHandleSignalsState* ready_signals_states) {
+MojoResult Dispatcher::Arm(uint32_t* num_blocking_events,
+                           MojoTrapEvent* blocking_events) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
