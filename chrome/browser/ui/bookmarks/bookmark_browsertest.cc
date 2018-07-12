@@ -72,7 +72,7 @@ class BookmarkBrowsertest : public InProcessBrowserTest {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
 
-    base::Timer timer(false, true);
+    base::RepeatingTimer timer;
     timer.Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(15),

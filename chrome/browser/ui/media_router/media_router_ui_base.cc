@@ -79,7 +79,7 @@ class MediaRouterUIBase::WebContentsFullscreenOnLoadedObserver final
  public:
   WebContentsFullscreenOnLoadedObserver(const GURL& file_url,
                                         content::WebContents* web_contents)
-      : file_url_(file_url), capture_poll_timer_(false, false) {
+      : file_url_(file_url) {
     DCHECK(file_url_.SchemeIsFile());
     DCHECK(fullscreen_request_time_.is_null());
 
@@ -137,7 +137,7 @@ class MediaRouterUIBase::WebContentsFullscreenOnLoadedObserver final
   //
   // TODO(crbug.com/540965): Add a method to WebContentsObserver to report
   // capturer count changes and get rid of this polling-based approach.
-  base::Timer capture_poll_timer_;
+  base::OneShotTimer capture_poll_timer_;
 
   // Sends a request for full screen to the WebContents targeted at the first
   // video element.  The request is only sent after capture has begun.

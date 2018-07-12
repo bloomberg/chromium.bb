@@ -55,14 +55,7 @@ bool BrowserAppMenuButton::g_open_app_immediately_for_testing = false;
 
 BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
     : AppMenuButton(toolbar_view),
-      toolbar_view_(toolbar_view),
-      animation_delay_timer_(
-          FROM_HERE,
-          kDelayTime,
-          base::BindRepeating(&BrowserAppMenuButton::AnimateIconIfPossible,
-                              base::Unretained(this),
-                              false),
-          false) {
+      toolbar_view_(toolbar_view) {
   SetInkDropMode(InkDropMode::ON);
   SetFocusPainter(nullptr);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -258,8 +251,14 @@ void BrowserAppMenuButton::AnimateIconIfPossible(bool with_delay) {
     return;
   }
 
-  if (!animation_delay_timer_.IsRunning())
-    animation_delay_timer_.Reset();
+  if (!animation_delay_timer_.IsRunning()) {
+    animation_delay_timer_.Start(
+        FROM_HERE,
+        kDelayTime,
+        base::Bind(&BrowserAppMenuButton::AnimateIconIfPossible,
+                   base::Unretained(this),
+                   false));
+  }
 }
 
 const char* BrowserAppMenuButton::GetClassName() const {

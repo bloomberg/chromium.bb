@@ -77,7 +77,7 @@ class FullscreenToolbarAnimationController
   gfx::SlideAnimation animation_;
 
   // Timer that will start the scrollbar's hiding animation when it reaches 0.
-  base::Timer hide_toolbar_timer_;
+  base::RetainingOneShotTimer hide_toolbar_timer_;
 
   // The value that the animation should start from.
   CGFloat animation_start_value_;

@@ -145,11 +145,6 @@ ModuleBlacklistCacheUpdater::ModuleBlacklistCacheUpdater(
       module_load_attempt_log_listener_(
           base::BindRepeating(&ModuleBlacklistCacheUpdater::OnNewModulesBlocked,
                               base::Unretained(this))),
-      timer_(FROM_HERE,
-             kUpdateTimerDuration,
-             base::Bind(&ModuleBlacklistCacheUpdater::OnTimerExpired,
-                        base::Unretained(this)),
-             false /* is_repeating */),
       weak_ptr_factory_(this) {
   DCHECK(module_list_filter_);
   module_database_event_source_->AddObserver(this);
@@ -281,7 +276,10 @@ void ModuleBlacklistCacheUpdater::OnNewModulesBlocked(
                           std::make_move_iterator(blocked_modules.end()));
 
   // Start the timer.
-  timer_.Reset();
+  timer_.Start(FROM_HERE,
+               kUpdateTimerDuration,
+               base::Bind(&ModuleBlacklistCacheUpdater::OnTimerExpired,
+                          base::Unretained(this)));
 }
 
 void ModuleBlacklistCacheUpdater::OnTimerExpired() {

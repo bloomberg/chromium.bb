@@ -75,7 +75,7 @@ struct HungPluginTabHelper::PluginState {
   base::TimeDelta next_reshow_delay;
 
   // Handles calling the helper when the infobar should be re-shown.
-  base::Timer timer;
+  base::OneShotTimer timer;
 
  private:
   // Initial delay in seconds before re-showing the hung plugin message.
@@ -94,9 +94,7 @@ HungPluginTabHelper::PluginState::PluginState(const base::FilePath& p,
     : path(p),
       name(n),
       infobar(NULL),
-      next_reshow_delay(base::TimeDelta::FromSeconds(kInitialReshowDelaySec)),
-      timer(false, false) {
-}
+      next_reshow_delay(base::TimeDelta::FromSeconds(kInitialReshowDelaySec)) {}
 
 HungPluginTabHelper::PluginState::~PluginState() {
 }

@@ -98,7 +98,7 @@ class VIEWS_EXPORT CocoaScrollBar : public BaseScrollBar,
   NSScrollerStyle scroller_style_;
 
   // Timer that will start the scrollbar's hiding animation when it reaches 0.
-  base::Timer hide_scrollbar_timer_;
+  base::RetainingOneShotTimer hide_scrollbar_timer_;
 
   // Slide animation that animates the thickness of an overlay scrollbar.
   // The animation expands the scrollbar as the showing animation and shrinks

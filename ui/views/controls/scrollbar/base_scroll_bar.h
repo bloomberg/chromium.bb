@@ -111,7 +111,8 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
 
   FRIEND_TEST_ALL_PREFIXES(ScrollBarViewsTest, ScrollBarFitsToBottom);
   FRIEND_TEST_ALL_PREFIXES(ScrollBarViewsTest, ThumbFullLengthOfTrack);
-  static base::Timer* GetHideTimerForTest(BaseScrollBar* scroll_bar);
+  static base::RetainingOneShotTimer* GetHideTimerForTest(
+      BaseScrollBar* scroll_bar);
   int GetThumbSizeForTest();
 
   // Changes to 'pushed' state and starts a timer to scroll repeatedly.

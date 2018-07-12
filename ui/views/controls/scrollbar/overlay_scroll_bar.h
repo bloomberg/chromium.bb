@@ -59,7 +59,7 @@ class VIEWS_EXPORT OverlayScrollBar : public BaseScrollBar {
   // Starts a countdown that hides this when it fires.
   void StartHideCountdown();
 
-  base::Timer hide_timer_;
+  base::OneShotTimer hide_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayScrollBar);
 };

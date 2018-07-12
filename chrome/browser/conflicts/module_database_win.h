@@ -210,7 +210,7 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   // A map of all known modules.
   ModuleMap modules_;
 
-  base::Timer idle_timer_;
+  base::RetainingOneShotTimer idle_timer_;
 
   // Indicates if the ModuleDatabase has started processing module load events.
   bool has_started_processing_;

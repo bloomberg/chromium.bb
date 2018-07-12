@@ -34,8 +34,7 @@ FullscreenToolbarAnimationController::FullscreenToolbarAnimationController(
           base::TimeDelta::FromMilliseconds(kTabStripChangesDelay),
           base::Bind(&FullscreenToolbarAnimationController::
                          AnimateToolbarOutIfPossible,
-                     base::Unretained(this)),
-          false),
+                     base::Unretained(this))),
       animation_start_value_(0),
       should_hide_toolbar_after_delay_(false) {
   animation_.SetSlideDuration(kToolbarAnimationDuration);

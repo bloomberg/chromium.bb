@@ -178,8 +178,7 @@ CocoaScrollBar::CocoaScrollBar(bool horizontal)
       hide_scrollbar_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kScrollbarHideTimeoutMs),
-          base::Bind(&CocoaScrollBar::HideScrollbar, base::Unretained(this)),
-          false),
+          base::Bind(&CocoaScrollBar::HideScrollbar, base::Unretained(this))),
       thickness_animation_(this),
       last_contents_scroll_offset_(0),
       is_expanded_(false),
@@ -542,7 +541,8 @@ CocoaScrollBarThumb* CocoaScrollBar::GetCocoaScrollBarThumb() const {
 }
 
 // static
-base::Timer* BaseScrollBar::GetHideTimerForTest(BaseScrollBar* scroll_bar) {
+base::RetainingOneShotTimer* BaseScrollBar::GetHideTimerForTest(
+    BaseScrollBar* scroll_bar) {
   return &static_cast<CocoaScrollBar*>(scroll_bar)->hide_scrollbar_timer_;
 }
 

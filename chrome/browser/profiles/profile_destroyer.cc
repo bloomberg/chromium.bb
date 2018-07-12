@@ -122,10 +122,7 @@ void ProfileDestroyer::DestroyOffTheRecordProfileNow(Profile* const profile) {
 }
 
 ProfileDestroyer::ProfileDestroyer(Profile* const profile, HostSet* hosts)
-    : timer_(false, false),
-      num_hosts_(0),
-      profile_(profile),
-      weak_ptr_factory_(this) {
+    : num_hosts_(0), profile_(profile), weak_ptr_factory_(this) {
   if (pending_destroyers_ == NULL)
     pending_destroyers_ = new DestroyerSet;
   pending_destroyers_->insert(this);
