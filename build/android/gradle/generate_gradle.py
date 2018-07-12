@@ -809,9 +809,9 @@ def main():
                       action='store_true',
                       help='Split projects by their gn deps rather than '
                            'combining all the dependencies of each target')
-  parser.add_argument('--full',
+  parser.add_argument('--fast',
                       action='store_true',
-                      help='Generate R.java and other ninja-generated files')
+                      help='Skip generating R.java and other generated files.')
   parser.add_argument('-j',
                       default=1000 if os.path.exists(_SRC_INTERNAL) else 50,
                       help='Value for number of parallel jobs for ninja')
@@ -962,7 +962,7 @@ def main():
     _WriteFile(os.path.join(generator.project_dir, 'local.properties'),
                _GenerateLocalProperties(sdk_path))
 
-  if args.full:
+  if not args.fast:
     zip_tuples = []
     generated_inputs = set()
     for entry in entries:
@@ -977,8 +977,9 @@ def main():
       _ExtractZips(generator.project_dir, zip_tuples)
 
   logging.warning('Generated projects for Android Studio %s', channel)
-  if not args.full:
-    logging.warning('Run with --full flag to update generated files (slow)')
+  if not args.fast:
+    logging.warning('Run with --fast flag to skip generating files (faster, '
+                    'but less correct)')
   logging.warning('For more tips: https://chromium.googlesource.com/chromium'
                   '/src.git/+/master/docs/android_studio.md')
 
