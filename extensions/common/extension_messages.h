@@ -327,14 +327,16 @@ struct ExtensionMsg_Loaded_Params {
   ~ExtensionMsg_Loaded_Params();
   ExtensionMsg_Loaded_Params(const extensions::Extension* extension,
                              bool include_tab_permissions);
-  ExtensionMsg_Loaded_Params(const ExtensionMsg_Loaded_Params& other);
+
+  ExtensionMsg_Loaded_Params(ExtensionMsg_Loaded_Params&& other);
+  ExtensionMsg_Loaded_Params& operator=(ExtensionMsg_Loaded_Params&& other);
 
   // Creates a new extension from the data in this object.
   scoped_refptr<extensions::Extension> ConvertToExtension(
       std::string* error) const;
 
   // The subset of the extension manifest data we send to renderers.
-  linked_ptr<base::DictionaryValue> manifest;
+  base::DictionaryValue manifest;
 
   // The location the extension was installed from.
   extensions::Manifest::Location location;
@@ -361,6 +363,9 @@ struct ExtensionMsg_Loaded_Params {
 
   // Send creation flags so extension is initialized identically.
   int creation_flags;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtensionMsg_Loaded_Params);
 };
 
 struct ExtensionHostMsg_AutomationQuerySelector_Error {

@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "content/public/common/common_param_traits.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -46,8 +45,8 @@ ExtensionMsg_PermissionSetStruct::~ExtensionMsg_PermissionSetStruct() {
 
 std::unique_ptr<const PermissionSet>
 ExtensionMsg_PermissionSetStruct::ToPermissionSet() const {
-  return base::WrapUnique(new PermissionSet(apis, manifest_permissions,
-                                            explicit_hosts, scriptable_hosts));
+  return std::make_unique<PermissionSet>(apis, manifest_permissions,
+                                         explicit_hosts, scriptable_hosts);
 }
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
@@ -59,7 +58,8 @@ ExtensionMsg_Loaded_Params::~ExtensionMsg_Loaded_Params() {}
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
     const Extension* extension,
     bool include_tab_permissions)
-    : manifest(extension->manifest()->value()->DeepCopy()),
+    : manifest(static_cast<base::DictionaryValue&&>(
+          extension->manifest()->value()->Clone())),
       location(extension->location()),
       path(extension->path()),
       active_permissions(extension->permissions_data()->active_permissions()),
@@ -83,7 +83,9 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
 }
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
-    const ExtensionMsg_Loaded_Params& other) = default;
+    ExtensionMsg_Loaded_Params&& other) = default;
+ExtensionMsg_Loaded_Params& ExtensionMsg_Loaded_Params::operator=(
+    ExtensionMsg_Loaded_Params&& other) = default;
 
 scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
     std::string* error) const {
@@ -91,7 +93,7 @@ scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
   // normal case, and because in tests, extensions may not have paths or keys,
   // but it's important to retain the same id.
   scoped_refptr<Extension> extension =
-      Extension::Create(path, location, *manifest, creation_flags, id, error);
+      Extension::Create(path, location, manifest, creation_flags, id, error);
   if (extension.get()) {
     const extensions::PermissionsData* permissions_data =
         extension->permissions_data();
@@ -316,7 +318,7 @@ void ParamTraits<ExtensionMsg_Loaded_Params>::Write(base::Pickle* m,
                                                     const param_type& p) {
   WriteParam(m, p.location);
   WriteParam(m, p.path);
-  WriteParam(m, *(p.manifest));
+  WriteParam(m, p.manifest);
   WriteParam(m, p.creation_flags);
   WriteParam(m, p.id);
   WriteParam(m, p.active_permissions);
@@ -330,9 +332,9 @@ void ParamTraits<ExtensionMsg_Loaded_Params>::Write(base::Pickle* m,
 bool ParamTraits<ExtensionMsg_Loaded_Params>::Read(const base::Pickle* m,
                                                    base::PickleIterator* iter,
                                                    param_type* p) {
-  p->manifest.reset(new base::DictionaryValue());
+  p->manifest.Clear();
   return ReadParam(m, iter, &p->location) && ReadParam(m, iter, &p->path) &&
-         ReadParam(m, iter, p->manifest.get()) &&
+         ReadParam(m, iter, &p->manifest) &&
          ReadParam(m, iter, &p->creation_flags) && ReadParam(m, iter, &p->id) &&
          ReadParam(m, iter, &p->active_permissions) &&
          ReadParam(m, iter, &p->withheld_permissions) &&
