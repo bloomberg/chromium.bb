@@ -88,13 +88,11 @@ class LifecycleUnit {
   // Returns the current visibility of this LifecycleUnit.
   virtual content::Visibility GetVisibility() const = 0;
 
-  // Returns the TimeTicks from when the LifecycleUnit was hidden, or
-  // TimeTicks::Max() if it is currently visible.
-  virtual base::TimeTicks GetWallTimeWhenHidden() const = 0;
-
-  // Returns the Chrome usage time from when the LifecycleUnit was hidden, or
-  // TimeDelta::Max() if it is currently visible.
-  virtual base::TimeDelta GetChromeUsageTimeWhenHidden() const = 0;
+  // Returns TimeTicks::Max() if the LifecycleUnit is currently visible, the
+  // last time at which the LifecycleUnit was visible if it's not currently
+  // visible but has been visible in the past, the LifecycleUnit creation time
+  // otherwise.
+  virtual base::TimeTicks GetLastActiveTime() const = 0;
 
   // Returns the loading state associated with a LifecycleUnit.
   virtual LifecycleUnitLoadingState GetLoadingState() const = 0;

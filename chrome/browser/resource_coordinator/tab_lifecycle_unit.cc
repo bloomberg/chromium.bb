@@ -229,10 +229,9 @@ InterventionPolicyDatabase* GetInterventionPolicyDatabase() {
 
 TabLifecycleUnitSource::TabLifecycleUnit::TabLifecycleUnit(
     base::ObserverList<TabLifecycleObserver>* observers,
-    UsageClock* usage_clock,
     content::WebContents* web_contents,
     TabStripModel* tab_strip_model)
-    : LifecycleUnitBase(web_contents->GetVisibility(), usage_clock),
+    : LifecycleUnitBase(web_contents->GetVisibility()),
       content::WebContentsObserver(web_contents),
       observers_(observers),
       tab_strip_model_(tab_strip_model) {
