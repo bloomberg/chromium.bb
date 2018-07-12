@@ -110,17 +110,27 @@ MessageCenterController::MessageCenterController() {
         std::make_unique<PopupNotificationBlocker>(MessageCenter::Get());
   }
 
-  message_center::RegisterVectorIcons(
-      {&kNotificationCaptivePortalIcon,  &kNotificationCellularAlertIcon,
-       &kNotificationDownloadIcon,       &kNotificationEndOfSupportIcon,
-       &kNotificationGoogleIcon,         &kNotificationImageIcon,
-       &kNotificationInstalledIcon,      &kNotificationMultiDeviceSetupIcon,
-       &kNotificationMobileDataIcon,     &kNotificationMobileDataOffIcon,
-       &kNotificationPlayPrismIcon,      &kNotificationPrintingDoneIcon,
-       &kNotificationPrintingIcon,       &kNotificationPrintingWarningIcon,
-       &kNotificationSettingsIcon,       &kNotificationStorageFullIcon,
-       &kNotificationSupervisedUserIcon, &kNotificationVpnIcon,
-       &kNotificationWarningIcon,        &kNotificationWifiOffIcon});
+  message_center::RegisterVectorIcons({&kNotificationCaptivePortalIcon,
+                                       &kNotificationCellularAlertIcon,
+                                       &kNotificationDownloadIcon,
+                                       &kNotificationEndOfSupportIcon,
+                                       &kNotificationFamilyLinkIcon,
+                                       &kNotificationGoogleIcon,
+                                       &kNotificationImageIcon,
+                                       &kNotificationInstalledIcon,
+                                       &kNotificationMultiDeviceSetupIcon,
+                                       &kNotificationMobileDataIcon,
+                                       &kNotificationMobileDataOffIcon,
+                                       &kNotificationPlayPrismIcon,
+                                       &kNotificationPrintingDoneIcon,
+                                       &kNotificationPrintingIcon,
+                                       &kNotificationPrintingWarningIcon,
+                                       &kNotificationSettingsIcon,
+                                       &kNotificationStorageFullIcon,
+                                       &kNotificationSupervisedUserIcon,
+                                       &kNotificationVpnIcon,
+                                       &kNotificationWarningIcon,
+                                       &kNotificationWifiOffIcon});
 
   // Set the system notification source display name ("Chrome OS" or "Chromium
   // OS").
