@@ -280,14 +280,33 @@ void Ui::SetAlertDialogEnabled(bool enabled,
                                float height) {
   model_->web_vr.showing_hosted_ui = enabled;
   model_->hosted_platform_ui.hosted_ui_enabled = enabled;
-  model_->hosted_platform_ui.rect.set_height(height);
-  model_->hosted_platform_ui.rect.set_width(width);
+  model_->hosted_platform_ui.delegate = delegate;
+
+  if (!enabled)
+    return;
+  SetAlertDialogSize(width, height);
+}
+
+void Ui::SetContentOverlayAlertDialogEnabled(bool enabled,
+                                             PlatformUiInputDelegate* delegate,
+                                             float width_percentage,
+                                             float height_percentage) {
+  model_->web_vr.showing_hosted_ui = enabled;
+  model_->hosted_platform_ui.hosted_ui_enabled = enabled;
+  SetContentOverlayAlertDialogSize(width_percentage, height_percentage);
   model_->hosted_platform_ui.delegate = delegate;
 }
 
 void Ui::SetAlertDialogSize(float width, float height) {
-  model_->hosted_platform_ui.rect.set_height(height);
-  model_->hosted_platform_ui.rect.set_width(width);
+  float scale = std::max(height, width);
+  model_->hosted_platform_ui.rect.set_height(height / scale);
+  model_->hosted_platform_ui.rect.set_width(width / scale);
+}
+
+void Ui::SetContentOverlayAlertDialogSize(float width_percentage,
+                                          float height_percentage) {
+  model_->hosted_platform_ui.rect.set_height(height_percentage);
+  model_->hosted_platform_ui.rect.set_width(width_percentage);
 }
 
 void Ui::SetDialogLocation(float x, float y) {

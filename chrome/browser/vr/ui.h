@@ -125,7 +125,13 @@ class VR_EXPORT Ui : public BrowserUiInterface, public KeyboardUiInterface {
                              PlatformUiInputDelegate* delegate,
                              float width,
                              float height);
+  void SetContentOverlayAlertDialogEnabled(bool enabled,
+                                           PlatformUiInputDelegate* delegate,
+                                           float width_percentage,
+                                           float height_percentage);
   void SetAlertDialogSize(float width, float height);
+  void SetContentOverlayAlertDialogSize(float width_percentage,
+                                        float height_percentage);
   void SetDialogLocation(float x, float y);
   void SetDialogFloating(bool floating);
   void ShowPlatformToast(const base::string16& text);
