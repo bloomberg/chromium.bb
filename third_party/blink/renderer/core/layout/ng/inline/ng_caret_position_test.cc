@@ -276,4 +276,23 @@ TEST_F(NGCaretPositionTest, CaretPositionAtSoftLineWrapBetweenDeepTextNodes) {
              fragment_d, kAtTextOffset, base::Optional<unsigned>(wrap_offset));
 }
 
+TEST_F(NGCaretPositionTest, InlineBlockBeforeContent) {
+  SetInlineFormattingContext(
+      "t",
+      "<style>span::before{display:inline-block; content:'foo'}</style>"
+      "<span id=span>bar</span>",
+      100);  // Line width doesn't matter here.
+  const Node* text = GetElementById("span")->firstChild();
+  const NGPhysicalFragment* text_fragment = FragmentOf(text);
+
+  // Test caret position of "|bar", which shouldn't be affected by ::before
+  const Position position(text, 0);
+  const NGOffsetMapping& mapping = *NGOffsetMapping::GetFor(position);
+  const unsigned text_offset = mapping.GetTextContentOffset(position).value();
+
+  TEST_CARET(ComputeNGCaretPosition(text_offset, TextAffinity::kDownstream),
+             text_fragment, kAtTextOffset,
+             base::Optional<unsigned>(text_offset));
+}
+
 }  // namespace blink
