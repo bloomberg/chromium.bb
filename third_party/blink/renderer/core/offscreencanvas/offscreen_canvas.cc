@@ -320,14 +320,24 @@ void OffscreenCanvas::DidDraw(const FloatRect& rect) {
   if (rect.IsEmpty())
     return;
 
-  if (!HasPlaceholderCanvas())
-    return;
-
-  GetOrCreateResourceDispatcher()->SetNeedsBeginFrame(true);
+  if (HasPlaceholderCanvas()) {
+    next_begin_frame_should_push_frame_ = true;
+    GetOrCreateResourceDispatcher()->SetNeedsBeginFrame(true);
+  }
 }
 
 void OffscreenCanvas::BeginFrame() {
-  context_->PushFrame();
+  DCHECK(HasPlaceholderCanvas());
+  // The following check is necessary because it is possible to receive a
+  // BeginFrame signal after SetNeedsBeginFrame(false) was called due to the
+  // asynchronous nature of the mechanism that generates this signal.  It is
+  // very important not to call PushFrame when not necessary because it may
+  // result in a WebGL DrawingBuffer being accidentally cleared at an
+  // inappropriate time (due to preserveDrawingBuffer = false behaviour).
+  if (next_begin_frame_should_push_frame_) {
+    context_->PushFrame();
+    next_begin_frame_should_push_frame_ = false;
+  }
   GetOrCreateResourceDispatcher()->SetNeedsBeginFrame(false);
 }
 
