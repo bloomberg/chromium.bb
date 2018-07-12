@@ -179,6 +179,7 @@ const CGFloat kIconImageSize = 28;
     return;
   }
 
+  self.iconImageView.image = image;
   self.iconImageView.hidden = hidden;
   if (hidden) {
     self.iconVisibleConstraint.active = NO;

@@ -48,3 +48,93 @@ imageset("settings_sync") {
     "settings_sync.imageset/settings_sync@3x.png",
   ]
 }
+
+imageset("settings_about_chrome") {
+  sources = [
+    "settings_about_chrome.imageset/Contents.json",
+    "settings_about_chrome.imageset/settings_about_chrome.png",
+    "settings_about_chrome.imageset/settings_about_chrome@2x.png",
+    "settings_about_chrome.imageset/settings_about_chrome@3x.png",
+  ]
+}
+
+imageset("settings_article_suggestions") {
+  sources = [
+    "settings_article_suggestions.imageset/Contents.json",
+    "settings_article_suggestions.imageset/settings_article_suggestions.png",
+    "settings_article_suggestions.imageset/settings_article_suggestions@2x.png",
+    "settings_article_suggestions.imageset/settings_article_suggestions@3x.png",
+  ]
+}
+
+imageset("settings_autofill_forms") {
+  sources = [
+    "settings_autofill_forms.imageset/Contents.json",
+    "settings_autofill_forms.imageset/settings_autofill_forms.png",
+    "settings_autofill_forms.imageset/settings_autofill_forms@2x.png",
+    "settings_autofill_forms.imageset/settings_autofill_forms@3x.png",
+  ]
+}
+
+imageset("settings_bandwidth") {
+  sources = [
+    "settings_bandwidth.imageset/Contents.json",
+    "settings_bandwidth.imageset/settings_bandwidth.png",
+    "settings_bandwidth.imageset/settings_bandwidth@2x.png",
+    "settings_bandwidth.imageset/settings_bandwidth@3x.png",
+  ]
+}
+
+imageset("settings_content_settings") {
+  sources = [
+    "settings_content_settings.imageset/Contents.json",
+    "settings_content_settings.imageset/settings_content_settings.png",
+    "settings_content_settings.imageset/settings_content_settings@2x.png",
+    "settings_content_settings.imageset/settings_content_settings@3x.png",
+  ]
+}
+
+imageset("settings_debug") {
+  sources = [
+    "settings_debug.imageset/Contents.json",
+    "settings_debug.imageset/settings_debug.png",
+    "settings_debug.imageset/settings_debug@2x.png",
+    "settings_debug.imageset/settings_debug@3x.png",
+  ]
+}
+
+imageset("settings_passwords") {
+  sources = [
+    "settings_passwords.imageset/Contents.json",
+    "settings_passwords.imageset/settings_passwords.png",
+    "settings_passwords.imageset/settings_passwords@2x.png",
+    "settings_passwords.imageset/settings_passwords@3x.png",
+  ]
+}
+
+imageset("settings_privacy") {
+  sources = [
+    "settings_privacy.imageset/Contents.json",
+    "settings_privacy.imageset/settings_privacy.png",
+    "settings_privacy.imageset/settings_privacy@2x.png",
+    "settings_privacy.imageset/settings_privacy@3x.png",
+  ]
+}
+
+imageset("settings_search_engine") {
+  sources = [
+    "settings_search_engine.imageset/Contents.json",
+    "settings_search_engine.imageset/settings_search_engine.png",
+    "settings_search_engine.imageset/settings_search_engine@2x.png",
+    "settings_search_engine.imageset/settings_search_engine@3x.png",
+  ]
+}
+
+imageset("settings_voice_search") {
+  sources = [
+    "settings_voice_search.imageset/Contents.json",
+    "settings_voice_search.imageset/settings_voice_search.png",
+    "settings_voice_search.imageset/settings_voice_search@2x.png",
+    "settings_voice_search.imageset/settings_voice_search@3x.png",
+  ]
+}
