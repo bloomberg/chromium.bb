@@ -87,23 +87,21 @@ MojoResult Wait(Handle handle,
   }
   DCHECK_EQ(MOJO_RESULT_OK, rv);
 
-  uint32_t num_ready_contexts = 1;
-  uintptr_t ready_context;
-  MojoResult ready_result;
-  MojoHandleSignalsState ready_state;
-  rv = MojoArmTrap(trap.get().value(), nullptr, &num_ready_contexts,
-                   &ready_context, &ready_result, &ready_state);
+  uint32_t num_blocking_events = 1;
+  MojoTrapEvent blocking_event = {sizeof(blocking_event)};
+  rv = MojoArmTrap(trap.get().value(), nullptr, &num_blocking_events,
+                   &blocking_event);
   if (rv == MOJO_RESULT_FAILED_PRECONDITION) {
-    DCHECK_EQ(1u, num_ready_contexts);
+    DCHECK_EQ(1u, num_blocking_events);
     if (signals_state)
-      *signals_state = ready_state;
-    return ready_result;
+      *signals_state = blocking_event.signals_state;
+    return blocking_event.result;
   }
 
   // Wait for the first notification only.
   context->event().Wait();
 
-  ready_result = context->wait_result();
+  MojoResult ready_result = context->wait_result();
   DCHECK_NE(MOJO_RESULT_UNKNOWN, ready_result);
 
   if (signals_state)
@@ -150,22 +148,24 @@ MojoResult WaitMany(const Handle* handles,
     events[i] = &contexts[i]->event();
   }
 
-  uint32_t num_ready_contexts = 1;
-  uintptr_t ready_context = 0;
-  MojoResult ready_result = MOJO_RESULT_UNKNOWN;
-  MojoHandleSignalsState ready_state{0, 0};
-  rv = MojoArmTrap(trap.get().value(), nullptr, &num_ready_contexts,
-                   &ready_context, &ready_result, &ready_state);
+  uint32_t num_blocking_events = 1;
+  MojoTrapEvent blocking_event = {sizeof(blocking_event)};
+  rv = MojoArmTrap(trap.get().value(), nullptr, &num_blocking_events,
+                   &blocking_event);
 
   size_t index = num_handles;
+  MojoResult ready_result = MOJO_RESULT_UNKNOWN;
+  MojoHandleSignalsState ready_state = {};
   if (rv == MOJO_RESULT_FAILED_PRECONDITION) {
-    DCHECK_EQ(1u, num_ready_contexts);
+    DCHECK_EQ(1u, num_blocking_events);
 
     // Most commonly we only watch a small number of handles. Just scan for
     // the right index.
     for (size_t i = 0; i < num_handles; ++i) {
-      if (contexts[i]->context_value() == ready_context) {
+      if (contexts[i]->context_value() == blocking_event.trigger_context) {
         index = i;
+        ready_result = blocking_event.result;
+        ready_state = blocking_event.signals_state;
         break;
       }
     }

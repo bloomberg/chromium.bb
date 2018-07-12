@@ -288,12 +288,10 @@ MojoResult MojoRemoveTrigger(MojoHandle trap_handle,
 
 MojoResult MojoArmTrap(MojoHandle trap_handle,
                        const MojoArmTrapOptions* options,
-                       uint32_t* num_ready_triggers,
-                       uintptr_t* ready_triggers,
-                       MojoResult* ready_results,
-                       MojoHandleSignalsState* ready_signals_states) {
-  return INVOKE_THUNK(ArmTrap, trap_handle, options, num_ready_triggers,
-                      ready_triggers, ready_results, ready_signals_states);
+                       uint32_t* num_blocking_events,
+                       MojoTrapEvent* blocking_events) {
+  return INVOKE_THUNK(ArmTrap, trap_handle, options, num_blocking_events,
+                      blocking_events);
 }
 
 MojoResult MojoCreateMessage(const MojoCreateMessageOptions* options,

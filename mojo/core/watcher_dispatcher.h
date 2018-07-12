@@ -50,10 +50,8 @@ class WatcherDispatcher : public Dispatcher {
                              MojoTriggerCondition condition,
                              uintptr_t context) override;
   MojoResult CancelWatch(uintptr_t context) override;
-  MojoResult Arm(uint32_t* num_ready_contexts,
-                 uintptr_t* ready_contexts,
-                 MojoResult* ready_results,
-                 MojoHandleSignalsState* ready_signals_states) override;
+  MojoResult Arm(uint32_t* num_blocking_events,
+                 MojoTrapEvent* blocking_events) override;
 
  private:
   friend class Watch;

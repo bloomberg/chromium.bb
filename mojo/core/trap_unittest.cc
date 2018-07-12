@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
@@ -27,61 +28,35 @@ namespace mojo {
 namespace core {
 namespace {
 
-// TODO(https://crbug.com/819046): These are temporary wrappers to reduce
-// changes necessary during the API rename. Remove them.
+using TrapTest = test::MojoTestBase;
 
-MojoResult MojoWatch(MojoHandle trap_handle,
-                     MojoHandle handle,
-                     MojoHandleSignals signals,
-                     MojoTriggerCondition condition,
-                     uintptr_t context) {
-  return MojoAddTrigger(trap_handle, handle, signals, condition, context,
-                        nullptr);
-}
-
-MojoResult MojoCancelWatch(MojoHandle trap_handle, uintptr_t context) {
-  return MojoRemoveTrigger(trap_handle, context, nullptr);
-}
-
-MojoResult MojoArmWatcher(MojoHandle trap_handle,
-                          uint32_t* num_ready_contexts,
-                          uintptr_t* ready_contexts,
-                          MojoResult* ready_results,
-                          MojoHandleSignalsState* ready_signals) {
-  return MojoArmTrap(trap_handle, nullptr, num_ready_contexts, ready_contexts,
-                     ready_results, ready_signals);
-}
-
-using WatcherTest = test::MojoTestBase;
-
-class WatchHelper {
+class TriggerHelper {
  public:
-  using ContextCallback =
-      base::Callback<void(MojoResult, MojoHandleSignalsState)>;
+  using ContextCallback = base::RepeatingCallback<void(const MojoTrapEvent&)>;
 
-  WatchHelper() {}
-  ~WatchHelper() {}
+  TriggerHelper() {}
+  ~TriggerHelper() {}
 
-  MojoResult CreateWatcher(MojoHandle* handle) {
+  MojoResult CreateTrap(MojoHandle* handle) {
     return MojoCreateTrap(&Notify, nullptr, handle);
   }
 
-  uintptr_t CreateContext(const ContextCallback& callback) {
-    return CreateContextWithCancel(callback, base::Closure());
+  template <typename Handler>
+  uintptr_t CreateContext(Handler handler) {
+    return CreateContextWithCancel(handler, [] {});
   }
 
-  uintptr_t CreateContextWithCancel(const ContextCallback& callback,
-                                    const base::Closure& cancel_callback) {
-    auto context = std::make_unique<NotificationContext>(callback);
-    NotificationContext* raw_context = context.get();
-    raw_context->SetCancelCallback(base::Bind(
-        [](std::unique_ptr<NotificationContext> context,
-           const base::Closure& cancel_callback) {
-          if (cancel_callback)
-            cancel_callback.Run();
-        },
-        base::Passed(&context), cancel_callback));
-    return reinterpret_cast<uintptr_t>(raw_context);
+  template <typename Handler, typename CancelHandler>
+  uintptr_t CreateContextWithCancel(Handler handler,
+                                    CancelHandler cancel_handler) {
+    auto* context =
+        new NotificationContext(base::BindLambdaForTesting(handler));
+    context->SetCancelCallback(
+        base::BindOnce(base::BindLambdaForTesting([cancel_handler, context] {
+          cancel_handler();
+          delete context;
+        })));
+    return reinterpret_cast<uintptr_t>(context);
   }
 
  private:
@@ -92,42 +67,42 @@ class WatchHelper {
 
     ~NotificationContext() {}
 
-    void SetCancelCallback(const base::Closure& cancel_callback) {
-      cancel_callback_ = cancel_callback;
+    void SetCancelCallback(base::OnceClosure cancel_callback) {
+      cancel_callback_ = std::move(cancel_callback);
     }
 
-    void Notify(MojoResult result, MojoHandleSignalsState state) {
-      if (result == MOJO_RESULT_CANCELLED)
-        cancel_callback_.Run();
+    void Notify(const MojoTrapEvent& event) {
+      if (event.result == MOJO_RESULT_CANCELLED && cancel_callback_)
+        std::move(cancel_callback_).Run();
       else
-        callback_.Run(result, state);
+        callback_.Run(event);
     }
 
    private:
     const ContextCallback callback_;
-    base::Closure cancel_callback_;
+    base::OnceClosure cancel_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(NotificationContext);
   };
 
   static void Notify(const MojoTrapEvent* event) {
     reinterpret_cast<NotificationContext*>(event->trigger_context)
-        ->Notify(event->result, event->signals_state);
+        ->Notify(*event);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(WatchHelper);
+  DISALLOW_COPY_AND_ASSIGN(TriggerHelper);
 };
 
 class ThreadedRunner : public base::SimpleThread {
  public:
-  explicit ThreadedRunner(const base::Closure& callback)
-      : SimpleThread("ThreadedRunner"), callback_(callback) {}
+  explicit ThreadedRunner(base::OnceClosure callback)
+      : SimpleThread("ThreadedRunner"), callback_(std::move(callback)) {}
   ~ThreadedRunner() override {}
 
-  void Run() override { callback_.Run(); }
+  void Run() override { std::move(callback_).Run(); }
 
  private:
-  const base::Closure callback_;
+  base::OnceClosure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadedRunner);
 };
@@ -140,76 +115,66 @@ void ExpectOnlyCancel(const MojoTrapEvent* event) {
   EXPECT_EQ(event->result, MOJO_RESULT_CANCELLED);
 }
 
-TEST_F(WatcherTest, InvalidArguments) {
+TEST_F(TrapTest, InvalidArguments) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             MojoCreateTrap(&ExpectNoNotification, nullptr, nullptr));
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectNoNotification, nullptr, &w));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectNoNotification, nullptr, &t));
 
-  // Try to watch unwatchable handles.
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoWatch(w, w, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, 0));
-  MojoHandle buffer_handle = CreateBuffer(42);
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoWatch(w, buffer_handle, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, 0));
-
-  // Try to cancel a watch on an invalid watcher handle.
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoCancelWatch(buffer_handle, 0));
-
-  // Try to arm an invalid handle.
+  // Try to add triggers for handles which don't raise trappable signals.
   EXPECT_EQ(
       MOJO_RESULT_INVALID_ARGUMENT,
-      MojoArmWatcher(MOJO_HANDLE_INVALID, nullptr, nullptr, nullptr, nullptr));
+      MojoAddTrigger(t, t, MOJO_HANDLE_SIGNAL_READABLE,
+                     MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED, 0, nullptr));
+  MojoHandle buffer_handle = CreateBuffer(42);
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      MojoAddTrigger(t, buffer_handle, MOJO_HANDLE_SIGNAL_READABLE,
+                     MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED, 0, nullptr));
+
+  // Try to remove a trigger on a non-trap handle.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoArmWatcher(buffer_handle, nullptr, nullptr, nullptr, nullptr));
+            MojoRemoveTrigger(buffer_handle, 0, nullptr));
+
+  // Try to arm an invalid or non-trap handle.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoArmTrap(MOJO_HANDLE_INVALID, nullptr, nullptr, nullptr));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoArmTrap(buffer_handle, nullptr, nullptr, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(buffer_handle));
 
-  // Try to arm with a non-null count but at least one null output buffer.
-  uint32_t num_ready_contexts = 1;
-  uintptr_t ready_context;
-  MojoResult ready_result;
-  MojoHandleSignalsState ready_state;
+  // Try to arm with a non-null count but a null output buffer.
+  uint32_t num_blocking_events = 1;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoArmWatcher(w, &num_ready_contexts, nullptr, &ready_result,
-                           &ready_state));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoArmWatcher(w, &num_ready_contexts, &ready_context, nullptr,
-                           &ready_state));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoArmWatcher(w, &num_ready_contexts, &ready_context,
-                           &ready_result, nullptr));
+            MojoArmTrap(t, nullptr, &num_blocking_events, nullptr));
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
 }
 
-TEST_F(WatcherTest, WatchMessagePipeReadable) {
+TEST_F(TrapTest, TrapMessagePipeReadable) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  WatchHelper helper;
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  TriggerHelper helper;
   int num_expected_notifications = 1;
-  const uintptr_t readable_a_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, int* expected_count, MojoResult result,
-         MojoHandleSignalsState state) {
-        EXPECT_GT(*expected_count, 0);
-        *expected_count -= 1;
+  const uintptr_t readable_a_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_GT(num_expected_notifications, 0);
+        num_expected_notifications -= 1;
 
-        EXPECT_EQ(MOJO_RESULT_OK, result);
-        event->Signal();
-      },
-      &event, &num_expected_notifications));
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
+        wait.Signal();
+      });
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_a_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   const char kMessage1[] = "hey hey hey hey";
   const char kMessage2[] = "i said hey";
@@ -218,140 +183,135 @@ TEST_F(WatcherTest, WatchMessagePipeReadable) {
   // Writing to |b| multiple times should notify exactly once.
   WriteMessage(b, kMessage1);
   WriteMessage(b, kMessage2);
-  event.Wait();
+  wait.Wait();
 
-  // This also shouldn't fire a notification; the watcher is still disarmed.
+  // This also shouldn't fire a notification; the trap is still disarmed.
   WriteMessage(b, kMessage3);
 
   // Arming should fail with relevant information.
-  constexpr size_t kMaxReadyContexts = 10;
-  uint32_t num_ready_contexts = kMaxReadyContexts;
-  uintptr_t ready_contexts[kMaxReadyContexts];
-  MojoResult ready_results[kMaxReadyContexts];
-  MojoHandleSignalsState ready_states[kMaxReadyContexts];
+  constexpr size_t kMaxBlockingEvents = 3;
+  uint32_t num_blocking_events = kMaxBlockingEvents;
+  MojoTrapEvent blocking_events[kMaxBlockingEvents] = {
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])}};
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                           ready_results, ready_states));
-  EXPECT_EQ(1u, num_ready_contexts);
-  EXPECT_EQ(readable_a_context, ready_contexts[0]);
-  EXPECT_EQ(MOJO_RESULT_OK, ready_results[0]);
+            MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_events[0]));
+  EXPECT_EQ(1u, num_blocking_events);
+  EXPECT_EQ(readable_a_context, blocking_events[0].trigger_context);
+  EXPECT_EQ(MOJO_RESULT_OK, blocking_events[0].result);
 
   // Flush the three messages from above.
   EXPECT_EQ(kMessage1, ReadMessage(a));
   EXPECT_EQ(kMessage2, ReadMessage(a));
   EXPECT_EQ(kMessage3, ReadMessage(a));
 
-  // Now we can rearm the watcher.
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+  // Now we can rearm the trap.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
 }
 
-TEST_F(WatcherTest, CloseWatchedMessagePipeHandle) {
+TEST_F(TrapTest, CloseWatchedMessagePipeHandle) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  WatchHelper helper;
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  TriggerHelper helper;
   const uintptr_t readable_a_context = helper.CreateContextWithCancel(
-      WatchHelper::ContextCallback(),
-      base::Bind([](base::WaitableEvent* event) { event->Signal(); }, &event));
+      [](const MojoTrapEvent&) {}, [&] { wait.Signal(); });
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_a_context, nullptr));
 
   // Test that closing a watched handle fires an appropriate notification, even
-  // when the watcher is unarmed.
+  // when the trap is unarmed.
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
-  event.Wait();
+  wait.Wait();
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
 }
 
-TEST_F(WatcherTest, CloseWatchedMessagePipeHandlePeer) {
+TEST_F(TrapTest, CloseWatchedMessagePipeHandlePeer) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  WatchHelper helper;
-  const uintptr_t readable_a_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, MojoResult result,
-         MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
-        event->Signal();
-      },
-      &event));
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  TriggerHelper helper;
+  const uintptr_t readable_a_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, event.result);
+        wait.Signal();
+      });
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_a_context, nullptr));
 
-  // Test that closing a watched handle's peer with an armed watcher fires an
+  // Test that closing a watched handle's peer with an armed trap fires an
   // appropriate notification.
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
-  event.Wait();
+  wait.Wait();
 
   // And now arming should fail with correct information about |a|'s state.
-  constexpr size_t kMaxReadyContexts = 10;
-  uint32_t num_ready_contexts = kMaxReadyContexts;
-  uintptr_t ready_contexts[kMaxReadyContexts];
-  MojoResult ready_results[kMaxReadyContexts];
-  MojoHandleSignalsState ready_states[kMaxReadyContexts];
+  constexpr size_t kMaxBlockingEvents = 3;
+  uint32_t num_blocking_events = kMaxBlockingEvents;
+  MojoTrapEvent blocking_events[kMaxBlockingEvents] = {
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])}};
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                           ready_results, ready_states));
-  EXPECT_EQ(1u, num_ready_contexts);
-  EXPECT_EQ(readable_a_context, ready_contexts[0]);
-  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, ready_results[0]);
-  EXPECT_TRUE(ready_states[0].satisfied_signals &
+            MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_events[0]));
+  EXPECT_EQ(1u, num_blocking_events);
+  EXPECT_EQ(readable_a_context, blocking_events[0].trigger_context);
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, blocking_events[0].result);
+  EXPECT_TRUE(blocking_events[0].signals_state.satisfied_signals &
               MOJO_HANDLE_SIGNAL_PEER_CLOSED);
-  EXPECT_FALSE(ready_states[0].satisfiable_signals &
+  EXPECT_FALSE(blocking_events[0].signals_state.satisfiable_signals &
                MOJO_HANDLE_SIGNAL_READABLE);
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
 }
 
-TEST_F(WatcherTest, WatchDataPipeConsumerReadable) {
+TEST_F(TrapTest, TrapDataPipeConsumerReadable) {
   constexpr size_t kTestPipeCapacity = 64;
   MojoHandle producer, consumer;
   CreateDataPipe(&producer, &consumer, kTestPipeCapacity);
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  WatchHelper helper;
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  TriggerHelper helper;
   int num_expected_notifications = 1;
-  const uintptr_t readable_consumer_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, int* expected_count, MojoResult result,
-         MojoHandleSignalsState state) {
-        EXPECT_GT(*expected_count, 0);
-        *expected_count -= 1;
+  const uintptr_t readable_consumer_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_GT(num_expected_notifications, 0);
+        num_expected_notifications -= 1;
 
-        EXPECT_EQ(MOJO_RESULT_OK, result);
-        event->Signal();
-      },
-      &event, &num_expected_notifications));
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
+        wait.Signal();
+      });
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, consumer, MOJO_HANDLE_SIGNAL_READABLE,
-                                      MOJO_WATCH_CONDITION_SATISFIED,
-                                      readable_consumer_context));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, consumer, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_consumer_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   const char kMessage1[] = "hey hey hey hey";
   const char kMessage2[] = "i said hey";
@@ -360,64 +320,61 @@ TEST_F(WatcherTest, WatchDataPipeConsumerReadable) {
   // Writing to |producer| multiple times should notify exactly once.
   WriteData(producer, kMessage1);
   WriteData(producer, kMessage2);
-  event.Wait();
+  wait.Wait();
 
-  // This also shouldn't fire a notification; the watcher is still disarmed.
+  // This also shouldn't fire a notification; the trap is still disarmed.
   WriteData(producer, kMessage3);
 
   // Arming should fail with relevant information.
-  constexpr size_t kMaxReadyContexts = 10;
-  uint32_t num_ready_contexts = kMaxReadyContexts;
-  uintptr_t ready_contexts[kMaxReadyContexts];
-  MojoResult ready_results[kMaxReadyContexts];
-  MojoHandleSignalsState ready_states[kMaxReadyContexts];
+  constexpr size_t kMaxBlockingEvents = 3;
+  uint32_t num_blocking_events = kMaxBlockingEvents;
+  MojoTrapEvent blocking_events[kMaxBlockingEvents] = {
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])}};
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                           ready_results, ready_states));
-  EXPECT_EQ(1u, num_ready_contexts);
-  EXPECT_EQ(readable_consumer_context, ready_contexts[0]);
-  EXPECT_EQ(MOJO_RESULT_OK, ready_results[0]);
+            MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_events[0]));
+  EXPECT_EQ(1u, num_blocking_events);
+  EXPECT_EQ(readable_consumer_context, blocking_events[0].trigger_context);
+  EXPECT_EQ(MOJO_RESULT_OK, blocking_events[0].result);
 
   // Flush the three messages from above.
   EXPECT_EQ(kMessage1, ReadData(consumer, sizeof(kMessage1) - 1));
   EXPECT_EQ(kMessage2, ReadData(consumer, sizeof(kMessage2) - 1));
   EXPECT_EQ(kMessage3, ReadData(consumer, sizeof(kMessage3) - 1));
 
-  // Now we can rearm the watcher.
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+  // Now we can rearm the trap.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(producer));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(consumer));
 }
 
-TEST_F(WatcherTest, WatchDataPipeConsumerNewDataReadable) {
+TEST_F(TrapTest, TrapDataPipeConsumerNewDataReadable) {
   constexpr size_t kTestPipeCapacity = 64;
   MojoHandle producer, consumer;
   CreateDataPipe(&producer, &consumer, kTestPipeCapacity);
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  WatchHelper helper;
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  TriggerHelper helper;
   int num_new_data_notifications = 0;
-  const uintptr_t new_data_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, int* notification_count, MojoResult result,
-         MojoHandleSignalsState state) {
-        *notification_count += 1;
+  const uintptr_t new_data_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        num_new_data_notifications += 1;
 
-        EXPECT_EQ(MOJO_RESULT_OK, result);
-        event->Signal();
-      },
-      &event, &num_new_data_notifications));
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
+        wait.Signal();
+      });
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, consumer, MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, new_data_context));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, consumer, MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           new_data_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   const char kMessage1[] = "hey hey hey hey";
   const char kMessage2[] = "i said hey";
@@ -426,23 +383,23 @@ TEST_F(WatcherTest, WatchDataPipeConsumerNewDataReadable) {
   // Writing to |producer| multiple times should notify exactly once.
   WriteData(producer, kMessage1);
   WriteData(producer, kMessage2);
-  event.Wait();
+  wait.Wait();
 
-  // This also shouldn't fire a notification; the watcher is still disarmed.
+  // This also shouldn't fire a notification; the trap is still disarmed.
   WriteData(producer, kMessage3);
 
   // Arming should fail with relevant information.
-  constexpr size_t kMaxReadyContexts = 10;
-  uint32_t num_ready_contexts = kMaxReadyContexts;
-  uintptr_t ready_contexts[kMaxReadyContexts];
-  MojoResult ready_results[kMaxReadyContexts];
-  MojoHandleSignalsState ready_states[kMaxReadyContexts];
+  constexpr size_t kMaxBlockingEvents = 3;
+  uint32_t num_blocking_events = kMaxBlockingEvents;
+  MojoTrapEvent blocking_events[kMaxBlockingEvents] = {
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])}};
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                           ready_results, ready_states));
-  EXPECT_EQ(1u, num_ready_contexts);
-  EXPECT_EQ(new_data_context, ready_contexts[0]);
-  EXPECT_EQ(MOJO_RESULT_OK, ready_results[0]);
+            MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_events[0]));
+  EXPECT_EQ(1u, num_blocking_events);
+  EXPECT_EQ(new_data_context, blocking_events[0].trigger_context);
+  EXPECT_EQ(MOJO_RESULT_OK, blocking_events[0].result);
 
   // Attempt to read more data than is available. Should fail but clear the
   // NEW_DATA_READABLE signal.
@@ -455,28 +412,26 @@ TEST_F(WatcherTest, WatchDataPipeConsumerNewDataReadable) {
             MojoReadData(consumer, &options, large_buffer, &large_read_size));
 
   // Attempt to arm again. Should succeed.
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   // Write more data. Should notify.
-  event.Reset();
+  wait.Reset();
   WriteData(producer, kMessage1);
-  event.Wait();
+  wait.Wait();
 
   // Reading some data should clear NEW_DATA_READABLE again so we can rearm.
   EXPECT_EQ(kMessage1, ReadData(consumer, sizeof(kMessage1) - 1));
 
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   EXPECT_EQ(2, num_new_data_notifications);
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(producer));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(consumer));
 }
 
-TEST_F(WatcherTest, WatchDataPipeProducerWritable) {
+TEST_F(TrapTest, TrapDataPipeProducerWritable) {
   constexpr size_t kTestPipeCapacity = 8;
   MojoHandle producer, consumer;
   CreateDataPipe(&producer, &consumer, kTestPipeCapacity);
@@ -486,180 +441,177 @@ TEST_F(WatcherTest, WatchDataPipeProducerWritable) {
   static_assert((sizeof(kTestData) - 1) * 2 == kTestPipeCapacity,
                 "Invalid test data for this test.");
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  WatchHelper helper;
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  TriggerHelper helper;
   int num_expected_notifications = 1;
-  const uintptr_t writable_producer_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, int* expected_count, MojoResult result,
-         MojoHandleSignalsState state) {
-        EXPECT_GT(*expected_count, 0);
-        *expected_count -= 1;
+  const uintptr_t writable_producer_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_GT(num_expected_notifications, 0);
+        num_expected_notifications -= 1;
 
-        EXPECT_EQ(MOJO_RESULT_OK, result);
-        event->Signal();
-      },
-      &event, &num_expected_notifications));
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
+        wait.Signal();
+      });
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, producer, MOJO_HANDLE_SIGNAL_WRITABLE,
-                                      MOJO_WATCH_CONDITION_SATISFIED,
-                                      writable_producer_context));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoAddTrigger(t, producer, MOJO_HANDLE_SIGNAL_WRITABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           writable_producer_context, nullptr));
 
   // The producer is already writable, so arming should fail with relevant
   // information.
-  constexpr size_t kMaxReadyContexts = 10;
-  uint32_t num_ready_contexts = kMaxReadyContexts;
-  uintptr_t ready_contexts[kMaxReadyContexts];
-  MojoResult ready_results[kMaxReadyContexts];
-  MojoHandleSignalsState ready_states[kMaxReadyContexts];
+  constexpr size_t kMaxBlockingEvents = 3;
+  uint32_t num_blocking_events = kMaxBlockingEvents;
+  MojoTrapEvent blocking_events[kMaxBlockingEvents] = {
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])}};
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                           ready_results, ready_states));
-  EXPECT_EQ(1u, num_ready_contexts);
-  EXPECT_EQ(writable_producer_context, ready_contexts[0]);
-  EXPECT_EQ(MOJO_RESULT_OK, ready_results[0]);
-  EXPECT_TRUE(ready_states[0].satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
+            MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_events[0]));
+  EXPECT_EQ(1u, num_blocking_events);
+  EXPECT_EQ(writable_producer_context, blocking_events[0].trigger_context);
+  EXPECT_EQ(MOJO_RESULT_OK, blocking_events[0].result);
+  EXPECT_TRUE(blocking_events[0].signals_state.satisfied_signals &
+              MOJO_HANDLE_SIGNAL_WRITABLE);
 
   // Write some data, but don't fill the pipe yet. Arming should fail again.
   WriteData(producer, kTestData);
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                           ready_results, ready_states));
-  EXPECT_EQ(1u, num_ready_contexts);
-  EXPECT_EQ(writable_producer_context, ready_contexts[0]);
-  EXPECT_EQ(MOJO_RESULT_OK, ready_results[0]);
-  EXPECT_TRUE(ready_states[0].satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
+            MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_events[0]));
+  EXPECT_EQ(1u, num_blocking_events);
+  EXPECT_EQ(writable_producer_context, blocking_events[0].trigger_context);
+  EXPECT_EQ(MOJO_RESULT_OK, blocking_events[0].result);
+  EXPECT_TRUE(blocking_events[0].signals_state.satisfied_signals &
+              MOJO_HANDLE_SIGNAL_WRITABLE);
 
   // Write more data, filling the pipe to capacity. Arming should succeed now.
   WriteData(producer, kTestData);
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   // Now read from the pipe, making the producer writable again. Should notify.
   EXPECT_EQ(kTestData, ReadData(consumer, sizeof(kTestData) - 1));
-  event.Wait();
+  wait.Wait();
 
   // Arming should fail again.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                           ready_results, ready_states));
-  EXPECT_EQ(1u, num_ready_contexts);
-  EXPECT_EQ(writable_producer_context, ready_contexts[0]);
-  EXPECT_EQ(MOJO_RESULT_OK, ready_results[0]);
-  EXPECT_TRUE(ready_states[0].satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
+            MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_events[0]));
+  EXPECT_EQ(1u, num_blocking_events);
+  EXPECT_EQ(writable_producer_context, blocking_events[0].trigger_context);
+  EXPECT_EQ(MOJO_RESULT_OK, blocking_events[0].result);
+  EXPECT_TRUE(blocking_events[0].signals_state.satisfied_signals &
+              MOJO_HANDLE_SIGNAL_WRITABLE);
 
-  // Fill the pipe once more and arm the watcher. Should succeed.
+  // Fill the pipe once more and arm the trap. Should succeed.
   WriteData(producer, kTestData);
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(producer));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(consumer));
 };
 
-TEST_F(WatcherTest, CloseWatchedDataPipeConsumerHandle) {
+TEST_F(TrapTest, CloseWatchedDataPipeConsumerHandle) {
   constexpr size_t kTestPipeCapacity = 8;
   MojoHandle producer, consumer;
   CreateDataPipe(&producer, &consumer, kTestPipeCapacity);
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  WatchHelper helper;
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  TriggerHelper helper;
   const uintptr_t readable_consumer_context = helper.CreateContextWithCancel(
-      WatchHelper::ContextCallback(),
-      base::Bind([](base::WaitableEvent* event) { event->Signal(); }, &event));
+      [](const MojoTrapEvent&) {}, [&] { wait.Signal(); });
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, consumer, MOJO_HANDLE_SIGNAL_READABLE,
-                                      MOJO_WATCH_CONDITION_SATISFIED,
-                                      readable_consumer_context));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoAddTrigger(t, consumer, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_consumer_context, nullptr));
 
   // Closing the consumer should fire a cancellation notification.
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(consumer));
-  event.Wait();
+  wait.Wait();
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(producer));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
 }
 
-TEST_F(WatcherTest, CloseWatcherDataPipeConsumerHandlePeer) {
+TEST_F(TrapTest, CloseWatchedDataPipeConsumerHandlePeer) {
   constexpr size_t kTestPipeCapacity = 8;
   MojoHandle producer, consumer;
   CreateDataPipe(&producer, &consumer, kTestPipeCapacity);
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  WatchHelper helper;
-  const uintptr_t readable_consumer_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, MojoResult result,
-         MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
-        event->Signal();
-      },
-      &event));
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  TriggerHelper helper;
+  const uintptr_t readable_consumer_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, event.result);
+        wait.Signal();
+      });
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, consumer, MOJO_HANDLE_SIGNAL_READABLE,
-                                      MOJO_WATCH_CONDITION_SATISFIED,
-                                      readable_consumer_context));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, consumer, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_consumer_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
-  // Closing the producer should fire a notification for an unsatisfiable watch.
+  // Closing the producer should fire a notification for an unsatisfiable
+  // condition.
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(producer));
-  event.Wait();
+  wait.Wait();
 
   // Now attempt to rearm and expect appropriate error feedback.
-  constexpr size_t kMaxReadyContexts = 10;
-  uint32_t num_ready_contexts = kMaxReadyContexts;
-  uintptr_t ready_contexts[kMaxReadyContexts];
-  MojoResult ready_results[kMaxReadyContexts];
-  MojoHandleSignalsState ready_states[kMaxReadyContexts];
+  constexpr size_t kMaxBlockingEvents = 3;
+  uint32_t num_blocking_events = kMaxBlockingEvents;
+  MojoTrapEvent blocking_events[kMaxBlockingEvents] = {
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])}};
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                           ready_results, ready_states));
-  EXPECT_EQ(1u, num_ready_contexts);
-  EXPECT_EQ(readable_consumer_context, ready_contexts[0]);
-  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, ready_results[0]);
-  EXPECT_FALSE(ready_states[0].satisfiable_signals &
+            MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_events[0]));
+  EXPECT_EQ(1u, num_blocking_events);
+  EXPECT_EQ(readable_consumer_context, blocking_events[0].trigger_context);
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, blocking_events[0].result);
+  EXPECT_FALSE(blocking_events[0].signals_state.satisfiable_signals &
                MOJO_HANDLE_SIGNAL_READABLE);
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(consumer));
 }
 
-TEST_F(WatcherTest, CloseWatchedDataPipeProducerHandle) {
+TEST_F(TrapTest, CloseWatchedDataPipeProducerHandle) {
   constexpr size_t kTestPipeCapacity = 8;
   MojoHandle producer, consumer;
   CreateDataPipe(&producer, &consumer, kTestPipeCapacity);
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  WatchHelper helper;
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  TriggerHelper helper;
   const uintptr_t writable_producer_context = helper.CreateContextWithCancel(
-      WatchHelper::ContextCallback(),
-      base::Bind([](base::WaitableEvent* event) { event->Signal(); }, &event));
+      [](const MojoTrapEvent&) {}, [&] { wait.Signal(); });
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, producer, MOJO_HANDLE_SIGNAL_WRITABLE,
-                                      MOJO_WATCH_CONDITION_SATISFIED,
-                                      writable_producer_context));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoAddTrigger(t, producer, MOJO_HANDLE_SIGNAL_WRITABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           writable_producer_context, nullptr));
 
   // Closing the consumer should fire a cancellation notification.
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(producer));
-  event.Wait();
+  wait.Wait();
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(consumer));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
 }
 
-TEST_F(WatcherTest, CloseWatchedDataPipeProducerHandlePeer) {
+TEST_F(TrapTest, CloseWatchedDataPipeProducerHandlePeer) {
   constexpr size_t kTestPipeCapacity = 8;
   MojoHandle producer, consumer;
   CreateDataPipe(&producer, &consumer, kTestPipeCapacity);
@@ -671,177 +623,184 @@ TEST_F(WatcherTest, CloseWatchedDataPipeProducerHandlePeer) {
   // Make the pipe unwritable initially.
   WriteData(producer, kTestMessageFullCapacity);
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  WatchHelper helper;
-  const uintptr_t writable_producer_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, MojoResult result,
-         MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
-        event->Signal();
-      },
-      &event));
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  TriggerHelper helper;
+  const uintptr_t writable_producer_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, event.result);
+        wait.Signal();
+      });
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, producer, MOJO_HANDLE_SIGNAL_WRITABLE,
-                                      MOJO_WATCH_CONDITION_SATISFIED,
-                                      writable_producer_context));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, producer, MOJO_HANDLE_SIGNAL_WRITABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           writable_producer_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
-  // Closing the consumer should fire a notification for an unsatisfiable watch,
-  // as the full data pipe can never be read from again and is therefore
-  // permanently full and unwritable.
+  // Closing the consumer should fire a notification for an unsatisfiable
+  // condition, as the full data pipe can never be read from again and is
+  // therefore permanently full and unwritable.
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(consumer));
-  event.Wait();
+  wait.Wait();
 
   // Now attempt to rearm and expect appropriate error feedback.
-  constexpr size_t kMaxReadyContexts = 10;
-  uint32_t num_ready_contexts = kMaxReadyContexts;
-  uintptr_t ready_contexts[kMaxReadyContexts];
-  MojoResult ready_results[kMaxReadyContexts];
-  MojoHandleSignalsState ready_states[kMaxReadyContexts];
+  constexpr size_t kMaxBlockingEvents = 3;
+  uint32_t num_blocking_events = kMaxBlockingEvents;
+  MojoTrapEvent blocking_events[kMaxBlockingEvents] = {
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])}};
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                           ready_results, ready_states));
-  EXPECT_EQ(1u, num_ready_contexts);
-  EXPECT_EQ(writable_producer_context, ready_contexts[0]);
-  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, ready_results[0]);
-  EXPECT_FALSE(ready_states[0].satisfiable_signals &
+            MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_events[0]));
+  EXPECT_EQ(1u, num_blocking_events);
+  EXPECT_EQ(writable_producer_context, blocking_events[0].trigger_context);
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, blocking_events[0].result);
+  EXPECT_FALSE(blocking_events[0].signals_state.satisfiable_signals &
                MOJO_HANDLE_SIGNAL_WRITABLE);
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(producer));
 }
 
-TEST_F(WatcherTest, ArmWithNoWatches) {
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectNoNotification, nullptr, &w));
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+TEST_F(TrapTest, ArmWithNoTriggers) {
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectNoNotification, nullptr, &t));
+  EXPECT_EQ(MOJO_RESULT_NOT_FOUND, MojoArmTrap(t, nullptr, nullptr, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
 }
 
-TEST_F(WatcherTest, WatchDuplicateContext) {
+TEST_F(TrapTest, DuplicateTriggerContext) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectOnlyCancel, nullptr, &w));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                                      MOJO_WATCH_CONDITION_SATISFIED, 0));
-  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-            MojoWatch(w, b, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, 0));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectOnlyCancel, nullptr, &t));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                     MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED, 0, nullptr));
+  EXPECT_EQ(
+      MOJO_RESULT_ALREADY_EXISTS,
+      MojoAddTrigger(t, b, MOJO_HANDLE_SIGNAL_READABLE,
+                     MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED, 0, nullptr));
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
 }
 
-TEST_F(WatcherTest, CancelUnknownWatch) {
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectNoNotification, nullptr, &w));
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND, MojoCancelWatch(w, 1234));
+TEST_F(TrapTest, RemoveUnknownTrigger) {
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectNoNotification, nullptr, &t));
+  EXPECT_EQ(MOJO_RESULT_NOT_FOUND, MojoRemoveTrigger(t, 1234, nullptr));
 }
 
-TEST_F(WatcherTest, ArmWithWatchAlreadySatisfied) {
+TEST_F(TrapTest, ArmWithTriggerConditionAlreadySatisfied) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectOnlyCancel, nullptr, &w));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_WRITABLE,
-                                      MOJO_WATCH_CONDITION_SATISFIED, 0));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectOnlyCancel, nullptr, &t));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_WRITABLE,
+                     MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED, 0, nullptr));
 
-  // |a| is always writable, so we can never arm this watcher.
-  constexpr size_t kMaxReadyContexts = 10;
-  uint32_t num_ready_contexts = kMaxReadyContexts;
-  uintptr_t ready_contexts[kMaxReadyContexts];
-  MojoResult ready_results[kMaxReadyContexts];
-  MojoHandleSignalsState ready_states[kMaxReadyContexts];
+  // |a| is always writable, so we can never arm this trap.
+  constexpr size_t kMaxBlockingEvents = 3;
+  uint32_t num_blocking_events = kMaxBlockingEvents;
+  MojoTrapEvent blocking_events[kMaxBlockingEvents] = {
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])}};
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                           ready_results, ready_states));
-  EXPECT_EQ(1u, num_ready_contexts);
-  EXPECT_EQ(0u, ready_contexts[0]);
-  EXPECT_EQ(MOJO_RESULT_OK, ready_results[0]);
-  EXPECT_TRUE(ready_states[0].satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
+            MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_events[0]));
+  EXPECT_EQ(1u, num_blocking_events);
+  EXPECT_EQ(0u, blocking_events[0].trigger_context);
+  EXPECT_EQ(MOJO_RESULT_OK, blocking_events[0].result);
+  EXPECT_TRUE(blocking_events[0].signals_state.satisfied_signals &
+              MOJO_HANDLE_SIGNAL_WRITABLE);
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
 }
 
-TEST_F(WatcherTest, ArmWithWatchAlreadyUnsatisfiable) {
+TEST_F(TrapTest, ArmWithTriggerConditionAlreadyUnsatisfiable) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectOnlyCancel, nullptr, &w));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                                      MOJO_WATCH_CONDITION_SATISFIED, 0));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectOnlyCancel, nullptr, &t));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                     MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED, 0, nullptr));
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
 
   // |b| is closed and never wrote any messages, so |a| won't be readable again.
-  // MojoArmWatcher() should fail, incidcating as much.
-  constexpr size_t kMaxReadyContexts = 10;
-  uint32_t num_ready_contexts = kMaxReadyContexts;
-  uintptr_t ready_contexts[kMaxReadyContexts];
-  MojoResult ready_results[kMaxReadyContexts];
-  MojoHandleSignalsState ready_states[kMaxReadyContexts];
+  // MojoArmTrap() should fail, incidcating as much.
+  constexpr size_t kMaxBlockingEvents = 3;
+  uint32_t num_blocking_events = kMaxBlockingEvents;
+  MojoTrapEvent blocking_events[kMaxBlockingEvents] = {
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])}};
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                           ready_results, ready_states));
-  EXPECT_EQ(1u, num_ready_contexts);
-  EXPECT_EQ(0u, ready_contexts[0]);
-  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, ready_results[0]);
-  EXPECT_TRUE(ready_states[0].satisfied_signals &
+            MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_events[0]));
+  EXPECT_EQ(1u, num_blocking_events);
+  EXPECT_EQ(0u, blocking_events[0].trigger_context);
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, blocking_events[0].result);
+  EXPECT_TRUE(blocking_events[0].signals_state.satisfied_signals &
               MOJO_HANDLE_SIGNAL_PEER_CLOSED);
-  EXPECT_FALSE(ready_states[0].satisfiable_signals &
+  EXPECT_FALSE(blocking_events[0].signals_state.satisfiable_signals &
                MOJO_HANDLE_SIGNAL_READABLE);
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
 }
 
-TEST_F(WatcherTest, MultipleWatches) {
+TEST_F(TrapTest, MultipleTriggers) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
-  base::WaitableEvent a_event(base::WaitableEvent::ResetPolicy::MANUAL,
-                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-  base::WaitableEvent b_event(base::WaitableEvent::ResetPolicy::MANUAL,
-                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-  WatchHelper helper;
+  base::WaitableEvent a_wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent b_wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
+  TriggerHelper helper;
   int num_a_notifications = 0;
   int num_b_notifications = 0;
-  auto notify_callback =
-      base::Bind([](base::WaitableEvent* event, int* notification_count,
-                    MojoResult result, MojoHandleSignalsState state) {
-        *notification_count += 1;
-        EXPECT_EQ(MOJO_RESULT_OK, result);
-        event->Signal();
+  uintptr_t readable_a_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        num_a_notifications += 1;
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
+        a_wait.Signal();
       });
-  uintptr_t readable_a_context = helper.CreateContext(
-      base::Bind(notify_callback, &a_event, &num_a_notifications));
-  uintptr_t readable_b_context = helper.CreateContext(
-      base::Bind(notify_callback, &b_event, &num_b_notifications));
+  uintptr_t readable_b_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        num_b_notifications += 1;
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
+        b_wait.Signal();
+      });
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
 
-  // Add two independent watch contexts to watch for |a| or |b| readability.
+  // Add two independent triggers to trap |a| or |b| readability.
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_a_context, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, b, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_b_context));
+            MojoAddTrigger(t, b, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_b_context, nullptr));
 
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   const char kMessage1[] = "things are happening";
   const char kMessage2[] = "ok. ok. ok. ok.";
@@ -849,49 +808,51 @@ TEST_F(WatcherTest, MultipleWatches) {
 
   // Writing to |b| should signal |a|'s watch.
   WriteMessage(b, kMessage1);
-  a_event.Wait();
-  a_event.Reset();
+  a_wait.Wait();
+  a_wait.Reset();
 
   // Subsequent messages on |b| should not trigger another notification.
   WriteMessage(b, kMessage2);
   WriteMessage(b, kMessage3);
 
   // Messages on |a| also shouldn't trigger |b|'s notification, since the
-  // watcher should be disarmed by now.
+  // trap should be disarmed by now.
   WriteMessage(a, kMessage1);
   WriteMessage(a, kMessage2);
   WriteMessage(a, kMessage3);
 
   // Arming should fail. Since we only ask for at most one context's information
   // that's all we should get back. Which one we get is unspecified.
-  constexpr size_t kMaxReadyContexts = 10;
-  uint32_t num_ready_contexts = 1;
-  uintptr_t ready_contexts[kMaxReadyContexts];
-  MojoResult ready_results[kMaxReadyContexts];
-  MojoHandleSignalsState ready_states[kMaxReadyContexts];
+  constexpr size_t kMaxBlockingEvents = 3;
+  uint32_t num_blocking_events = 1;
+  MojoTrapEvent blocking_events[kMaxBlockingEvents] = {
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])},
+      {sizeof(blocking_events[0])}};
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                           ready_results, ready_states));
-  EXPECT_EQ(1u, num_ready_contexts);
-  EXPECT_TRUE(ready_contexts[0] == readable_a_context ||
-              ready_contexts[0] == readable_b_context);
-  EXPECT_EQ(MOJO_RESULT_OK, ready_results[0]);
-  EXPECT_TRUE(ready_states[0].satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
+            MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_events[0]));
+  EXPECT_EQ(1u, num_blocking_events);
+  EXPECT_TRUE(blocking_events[0].trigger_context == readable_a_context ||
+              blocking_events[0].trigger_context == readable_b_context);
+  EXPECT_EQ(MOJO_RESULT_OK, blocking_events[0].result);
+  EXPECT_TRUE(blocking_events[0].signals_state.satisfied_signals &
+              MOJO_HANDLE_SIGNAL_WRITABLE);
 
   // Now try arming again, verifying that both contexts are returned.
-  num_ready_contexts = kMaxReadyContexts;
+  num_blocking_events = kMaxBlockingEvents;
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                           ready_results, ready_states));
-  EXPECT_EQ(2u, num_ready_contexts);
-  EXPECT_EQ(MOJO_RESULT_OK, ready_results[0]);
-  EXPECT_EQ(MOJO_RESULT_OK, ready_results[1]);
-  EXPECT_TRUE(ready_states[0].satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
-  EXPECT_TRUE(ready_states[1].satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
-  EXPECT_TRUE((ready_contexts[0] == readable_a_context &&
-               ready_contexts[1] == readable_b_context) ||
-              (ready_contexts[0] == readable_b_context &&
-               ready_contexts[1] == readable_a_context));
+            MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_events[0]));
+  EXPECT_EQ(2u, num_blocking_events);
+  EXPECT_EQ(MOJO_RESULT_OK, blocking_events[0].result);
+  EXPECT_EQ(MOJO_RESULT_OK, blocking_events[1].result);
+  EXPECT_TRUE(blocking_events[0].signals_state.satisfied_signals &
+              MOJO_HANDLE_SIGNAL_WRITABLE);
+  EXPECT_TRUE(blocking_events[1].signals_state.satisfied_signals &
+              MOJO_HANDLE_SIGNAL_WRITABLE);
+  EXPECT_TRUE((blocking_events[0].trigger_context == readable_a_context &&
+               blocking_events[1].trigger_context == readable_b_context) ||
+              (blocking_events[0].trigger_context == readable_b_context &&
+               blocking_events[1].trigger_context == readable_a_context));
 
   // Flush out the test messages so we should be able to successfully rearm.
   EXPECT_EQ(kMessage1, ReadMessage(a));
@@ -901,140 +862,131 @@ TEST_F(WatcherTest, MultipleWatches) {
   EXPECT_EQ(kMessage2, ReadMessage(b));
   EXPECT_EQ(kMessage3, ReadMessage(b));
 
-  // Add a watch which is always satisfied, so we can't arm. Arming should fail
-  // with only this new watch's information.
-  uintptr_t writable_c_context = helper.CreateContext(base::Bind(
-      [](MojoResult result, MojoHandleSignalsState state) { NOTREACHED(); }));
+  // Add a trigger whose condition is always satisfied so we can't arm. Arming
+  // should fail with only this new watch's information.
+  uintptr_t writable_c_context =
+      helper.CreateContext([](const MojoTrapEvent&) { NOTREACHED(); });
   MojoHandle c, d;
   CreateMessagePipe(&c, &d);
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, c, MOJO_HANDLE_SIGNAL_WRITABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, writable_c_context));
-  num_ready_contexts = kMaxReadyContexts;
+            MojoAddTrigger(t, c, MOJO_HANDLE_SIGNAL_WRITABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           writable_c_context, nullptr));
+  num_blocking_events = kMaxBlockingEvents;
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoArmWatcher(w, &num_ready_contexts, ready_contexts,
-                           ready_results, ready_states));
-  EXPECT_EQ(1u, num_ready_contexts);
-  EXPECT_EQ(writable_c_context, ready_contexts[0]);
-  EXPECT_EQ(MOJO_RESULT_OK, ready_results[0]);
-  EXPECT_TRUE(ready_states[0].satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
+            MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_events[0]));
+  EXPECT_EQ(1u, num_blocking_events);
+  EXPECT_EQ(writable_c_context, blocking_events[0].trigger_context);
+  EXPECT_EQ(MOJO_RESULT_OK, blocking_events[0].result);
+  EXPECT_TRUE(blocking_events[0].signals_state.satisfied_signals &
+              MOJO_HANDLE_SIGNAL_WRITABLE);
 
-  // Cancel the new watch and arming should succeed once again.
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCancelWatch(w, writable_c_context));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+  // Remove the new trigger and arming should succeed once again.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoRemoveTrigger(t, writable_c_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(c));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(d));
 }
 
-TEST_F(WatcherTest, NotifyOtherFromNotificationCallback) {
+TEST_F(TrapTest, ActivateOtherTriggerFromEventHandler) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
   static const char kTestMessageToA[] = "hello a";
   static const char kTestMessageToB[] = "hello b";
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  WatchHelper helper;
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  TriggerHelper helper;
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
 
-  uintptr_t readable_a_context = helper.CreateContext(base::Bind(
-      [](MojoHandle w, MojoHandle a, MojoResult result,
-         MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_OK, result);
+  uintptr_t readable_a_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
         EXPECT_EQ("hello a", ReadMessage(a));
 
-        // Re-arm the watcher and signal |b|.
-        EXPECT_EQ(MOJO_RESULT_OK,
-                  MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+        // Re-arm the trap and signal |b|.
+        EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
         WriteMessage(a, kTestMessageToB);
-      },
-      w, a));
+      });
 
-  uintptr_t readable_b_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, MojoHandle w, MojoHandle b,
-         MojoResult result, MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_OK, result);
+  uintptr_t readable_b_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
         EXPECT_EQ(kTestMessageToB, ReadMessage(b));
-        EXPECT_EQ(MOJO_RESULT_OK,
-                  MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
-        event->Signal();
-      },
-      &event, w, b));
+        EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
+        wait.Signal();
+      });
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_a_context, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, b, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_b_context));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, b, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_b_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
-  // Send a message to |a|. The relevant watch context should be notified, and
-  // should in turn send a message to |b|, waking up the other context. The
-  // second context signals |event|.
+  // Send a message to |a|. The relevant trigger should be notified and the
+  // event handler should send a message to |b|, in turn notifying the other
+  // trigger. The second event handler will signal |wait|.
   WriteMessage(b, kTestMessageToA);
-  event.Wait();
+  wait.Wait();
 }
 
-TEST_F(WatcherTest, NotifySelfFromNotificationCallback) {
+TEST_F(TrapTest, ActivateSameTriggerFromEventHandler) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
   static const char kTestMessageToA[] = "hello a";
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  WatchHelper helper;
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  TriggerHelper helper;
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
 
   int expected_notifications = 10;
-  uintptr_t readable_a_context = helper.CreateContext(base::Bind(
-      [](int* expected_count, MojoHandle w, MojoHandle a, MojoHandle b,
-         base::WaitableEvent* event, MojoResult result,
-         MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_OK, result);
+  uintptr_t readable_a_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
         EXPECT_EQ("hello a", ReadMessage(a));
 
-        EXPECT_GT(*expected_count, 0);
-        *expected_count -= 1;
-        if (*expected_count == 0) {
-          event->Signal();
+        EXPECT_GT(expected_notifications, 0);
+        expected_notifications -= 1;
+        if (expected_notifications == 0) {
+          wait.Signal();
           return;
         } else {
-          // Re-arm the watcher and signal |a| again.
-          EXPECT_EQ(MOJO_RESULT_OK,
-                    MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+          // Re-arm the trap and signal |a| again.
+          EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
           WriteMessage(b, kTestMessageToA);
         }
-      },
-      &expected_notifications, w, a, b, &event));
+      });
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_a_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
-  // Send a message to |a|. When the watch above is notified, it will rearm and
-  // send another message to |a|. This will happen until
-  // |expected_notifications| reaches 0.
+  // Send a message to |a|. When the trigger above is activated, the event
+  // handler will rearm the trap and send another message to |a|. This will
+  // happen until |expected_notifications| reaches 0.
   WriteMessage(b, kTestMessageToA);
-  event.Wait();
+  wait.Wait();
 }
 
-TEST_F(WatcherTest, ImplicitCancelOtherFromNotificationCallback) {
+TEST_F(TrapTest, ImplicitRemoveOtherTriggerWithinEventHandler) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
@@ -1044,30 +996,24 @@ TEST_F(WatcherTest, ImplicitCancelOtherFromNotificationCallback) {
   static const char kTestMessageToA[] = "hi a";
   static const char kTestMessageToC[] = "hi c";
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  WatchHelper helper;
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  TriggerHelper helper;
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
 
   uintptr_t readable_a_context = helper.CreateContextWithCancel(
-      base::Bind([](MojoResult result, MojoHandleSignalsState state) {
-        NOTREACHED();
-      }),
-      base::Bind([](base::WaitableEvent* event) { event->Signal(); }, &event));
+      [](const MojoTrapEvent&) { NOTREACHED(); }, [&] { wait.Signal(); });
 
-  uintptr_t readable_c_context = helper.CreateContext(base::Bind(
-      [](MojoHandle w, MojoHandle a, MojoHandle b, MojoHandle c,
-         MojoResult result, MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_OK, result);
+  uintptr_t readable_c_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
         EXPECT_EQ(kTestMessageToC, ReadMessage(c));
 
-        // Now rearm the watcher.
-        EXPECT_EQ(MOJO_RESULT_OK,
-                  MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+        EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
-        // Must result in exactly ONE notification on the above context, for
+        // Must result in exactly ONE notification from the above trigger, for
         // CANCELLED only. Because we cannot dispatch notifications until the
         // stack unwinds, and because we must never dispatch non-cancellation
         // notifications for a handle once it's been closed, we must be certain
@@ -1077,35 +1023,34 @@ TEST_F(WatcherTest, ImplicitCancelOtherFromNotificationCallback) {
         WriteMessage(b, kTestMessageToA);
         EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
 
-        // Rearming should be fine since |a|'s watch should already be
-        // implicitly cancelled (even though the notification will not have
+        // Rearming should be fine since |a|'s trigger should already be
+        // implicitly removed (even though the notification will not have
         // been invoked yet.)
-        EXPECT_EQ(MOJO_RESULT_OK,
-                  MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+        EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
         // Nothing interesting should happen as a result of this.
         EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
-      },
-      w, a, b, c));
+      });
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_a_context, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, c, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_c_context));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, c, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_c_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   WriteMessage(d, kTestMessageToC);
-  event.Wait();
+  wait.Wait();
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(c));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(d));
 }
 
-TEST_F(WatcherTest, ExplicitCancelOtherFromNotificationCallback) {
+TEST_F(TrapTest, ExplicitRemoveOtherTriggerWithinEventHandler) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
@@ -1115,64 +1060,61 @@ TEST_F(WatcherTest, ExplicitCancelOtherFromNotificationCallback) {
   static const char kTestMessageToA[] = "hi a";
   static const char kTestMessageToC[] = "hi c";
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  WatchHelper helper;
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  TriggerHelper helper;
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
 
-  uintptr_t readable_a_context = helper.CreateContext(base::Bind(
-      [](MojoResult result, MojoHandleSignalsState state) { NOTREACHED(); }));
+  uintptr_t readable_a_context =
+      helper.CreateContext([](const MojoTrapEvent&) { NOTREACHED(); });
 
-  uintptr_t readable_c_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, uintptr_t readable_a_context, MojoHandle w,
-         MojoHandle a, MojoHandle b, MojoHandle c, MojoResult result,
-         MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_OK, result);
+  uintptr_t readable_c_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
         EXPECT_EQ(kTestMessageToC, ReadMessage(c));
 
-        // Now rearm the watcher.
-        EXPECT_EQ(MOJO_RESULT_OK,
-                  MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+        // Now rearm the trap.
+        EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
-        // Should result in no notifications on the above context, because the
-        // watch will have been cancelled by the time the notification callback
-        // can execute.
+        // Should result in no notifications from the above trigger, because the
+        // trigger will have been removed by the time the event handler can
+        // execute.
         WriteMessage(b, kTestMessageToA);
         WriteMessage(b, kTestMessageToA);
-        EXPECT_EQ(MOJO_RESULT_OK, MojoCancelWatch(w, readable_a_context));
+        EXPECT_EQ(MOJO_RESULT_OK,
+                  MojoRemoveTrigger(t, readable_a_context, nullptr));
 
         // Rearming should be fine now.
-        EXPECT_EQ(MOJO_RESULT_OK,
-                  MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+        EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
         // Nothing interesting should happen as a result of these.
         EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
         EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
 
-        event->Signal();
-      },
-      &event, readable_a_context, w, a, b, c));
+        wait.Signal();
+      });
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_a_context, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, c, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_c_context));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, c, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_c_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   WriteMessage(d, kTestMessageToC);
-  event.Wait();
+  wait.Wait();
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(c));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(d));
 }
 
-TEST_F(WatcherTest, NestedCancellation) {
+TEST_F(TrapTest, NestedCancellation) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
@@ -1183,243 +1125,231 @@ TEST_F(WatcherTest, NestedCancellation) {
   static const char kTestMessageToC[] = "hey c";
   static const char kTestMessageToD[] = "hey d";
 
-  // This is a tricky test. It establishes a watch on |b| using one watcher and
-  // watches on |c| and |d| using another watcher.
+  // This is a tricky test. It establishes a trigger on |b| using one trap and
+  // triggers on |c| and |d| using another trap.
   //
-  // A message is written to |d| to wake up |c|'s watch, and the notification
-  // handler for that event does the following:
-  //   1. Writes to |a| to eventually wake up |b|'s watcher.
-  //   2. Rearms |c|'s watcher.
-  //   3. Writes to |d| to eventually wake up |c|'s watcher again.
+  // A message is written to |d| to activate |c|'s trigger, and the resuling
+  // event handler invocation does the folllowing:
+  //   1. Writes to |a| to eventually activate |b|'s trigger.
+  //   2. Rearms |c|'s trap.
+  //   3. Writes to |d| to eventually activate |c|'s trigger again.
   //
-  // Meanwhile, |b|'s watch notification handler cancels |c|'s watch altogether
-  // before writing to |c| to wake up |d|.
+  // Meanwhile, |b|'s event handler removes |c|'s trigger altogether before
+  // writing to |c| to activate |d|'s trigger.
   //
-  // The net result should be that |c|'s context only gets notified once (from
+  // The net result should be that |c|'s trigger only gets activated once (from
   // the first write to |d| above) and everyone else gets notified as expected.
 
-  MojoHandle b_watcher;
-  MojoHandle cd_watcher;
-  WatchHelper helper;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&b_watcher));
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&cd_watcher));
+  MojoHandle b_trap;
+  MojoHandle cd_trap;
+  TriggerHelper helper;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&b_trap));
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&cd_trap));
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  uintptr_t readable_d_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, MojoHandle d, MojoResult result,
-         MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_OK, result);
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  uintptr_t readable_d_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
         EXPECT_EQ(kTestMessageToD, ReadMessage(d));
-        event->Signal();
-      },
-      &event, d));
+        wait.Signal();
+      });
 
-  static int num_expected_c_notifications = 1;
-  uintptr_t readable_c_context = helper.CreateContext(base::Bind(
-      [](MojoHandle cd_watcher, MojoHandle a, MojoHandle c, MojoHandle d,
-         MojoResult result, MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_OK, result);
+  int num_expected_c_notifications = 1;
+  uintptr_t readable_c_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
         EXPECT_GT(num_expected_c_notifications--, 0);
 
         // Trigger an eventual |readable_b_context| notification.
         WriteMessage(a, kTestMessageToA);
 
         EXPECT_EQ(kTestMessageToC, ReadMessage(c));
-        EXPECT_EQ(MOJO_RESULT_OK, MojoArmWatcher(cd_watcher, nullptr, nullptr,
-                                                 nullptr, nullptr));
+        EXPECT_EQ(MOJO_RESULT_OK,
+                  MojoArmTrap(cd_trap, nullptr, nullptr, nullptr));
 
         // Trigger another eventual |readable_c_context| notification.
         WriteMessage(d, kTestMessageToC);
-      },
-      cd_watcher, a, c, d));
+      });
 
-  uintptr_t readable_b_context = helper.CreateContext(base::Bind(
-      [](MojoHandle cd_watcher, uintptr_t readable_c_context, MojoHandle c,
-         MojoResult result, MojoHandleSignalsState state) {
+  uintptr_t readable_b_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
         EXPECT_EQ(MOJO_RESULT_OK,
-                  MojoCancelWatch(cd_watcher, readable_c_context));
+                  MojoRemoveTrigger(cd_trap, readable_c_context, nullptr));
 
-        EXPECT_EQ(MOJO_RESULT_OK, MojoArmWatcher(cd_watcher, nullptr, nullptr,
-                                                 nullptr, nullptr));
+        EXPECT_EQ(MOJO_RESULT_OK,
+                  MojoArmTrap(cd_trap, nullptr, nullptr, nullptr));
 
         WriteMessage(c, kTestMessageToD);
-      },
-      cd_watcher, readable_c_context, c));
+      });
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(b_watcher, b, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_b_context));
+            MojoAddTrigger(b_trap, b, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_b_context, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(cd_watcher, c, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_c_context));
+            MojoAddTrigger(cd_trap, c, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_c_context, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(cd_watcher, d, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_d_context));
+            MojoAddTrigger(cd_trap, d, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_d_context, nullptr));
 
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(b_watcher, nullptr, nullptr, nullptr, nullptr));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(cd_watcher, nullptr, nullptr, nullptr, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(b_trap, nullptr, nullptr, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(cd_trap, nullptr, nullptr, nullptr));
 
   WriteMessage(d, kTestMessageToC);
-  event.Wait();
+  wait.Wait();
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(cd_watcher));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b_watcher));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(cd_trap));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b_trap));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(c));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(d));
 }
 
-TEST_F(WatcherTest, CancelSelfInNotificationCallback) {
+TEST_F(TrapTest, RemoveSelfWithinEventHandler) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
   static const char kTestMessageToA[] = "hey a";
 
-  MojoHandle w;
-  WatchHelper helper;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  MojoHandle t;
+  TriggerHelper helper;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  static uintptr_t readable_a_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, MojoHandle w, MojoHandle a,
-         MojoResult result, MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_OK, result);
+  static uintptr_t readable_a_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
 
-        // There should be no problem cancelling this watch from its own
+        // There should be no problem removing this trigger from its own
         // notification invocation.
-        EXPECT_EQ(MOJO_RESULT_OK, MojoCancelWatch(w, readable_a_context));
+        EXPECT_EQ(MOJO_RESULT_OK,
+                  MojoRemoveTrigger(t, readable_a_context, nullptr));
         EXPECT_EQ(kTestMessageToA, ReadMessage(a));
 
         // Arming should fail because there are no longer any registered
-        // watches on the watcher.
+        // triggers on the trap.
         EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
-                  MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+                  MojoArmTrap(t, nullptr, nullptr, nullptr));
 
         // And closing |a| should be fine (and should not invoke this
         // notification with MOJO_RESULT_CANCELLED) for the same reason.
         EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
 
-        event->Signal();
-      },
-      &event, w, a));
+        wait.Signal();
+      });
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_a_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   WriteMessage(b, kTestMessageToA);
-  event.Wait();
+  wait.Wait();
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
 }
 
-TEST_F(WatcherTest, CloseWatcherInNotificationCallback) {
+TEST_F(TrapTest, CloseTrapWithinEventHandler) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
   static const char kTestMessageToA1[] = "hey a";
   static const char kTestMessageToA2[] = "hey a again";
 
-  MojoHandle w;
-  WatchHelper helper;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  MojoHandle t;
+  TriggerHelper helper;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  uintptr_t readable_a_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, MojoHandle w, MojoHandle a, MojoHandle b,
-         MojoResult result, MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_OK, result);
+  uintptr_t readable_a_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
         EXPECT_EQ(kTestMessageToA1, ReadMessage(a));
-        EXPECT_EQ(MOJO_RESULT_OK,
-                  MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+        EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
-        // There should be no problem closing this watcher from its own
+        // There should be no problem closing this trap from its own
         // notification callback.
-        EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+        EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
 
-        // And these should not trigger more notifications, because |w| has been
+        // And these should not trigger more notifications, because |t| has been
         // closed already.
         WriteMessage(b, kTestMessageToA2);
         EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
         EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
 
-        event->Signal();
-      },
-      &event, w, a, b));
+        wait.Signal();
+      });
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_a_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   WriteMessage(b, kTestMessageToA1);
-  event.Wait();
+  wait.Wait();
 }
 
-TEST_F(WatcherTest, CloseWatcherAfterImplicitCancel) {
+TEST_F(TrapTest, CloseTrapAfterImplicitTriggerRemoval) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
   static const char kTestMessageToA[] = "hey a";
 
-  MojoHandle w;
-  WatchHelper helper;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  MojoHandle t;
+  TriggerHelper helper;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  uintptr_t readable_a_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, MojoHandle w, MojoHandle a,
-         MojoResult result, MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_OK, result);
+  uintptr_t readable_a_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
         EXPECT_EQ(kTestMessageToA, ReadMessage(a));
-        EXPECT_EQ(MOJO_RESULT_OK,
-                  MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+        EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
         // This will cue up a notification for |MOJO_RESULT_CANCELLED|...
         EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
 
-        // ...but it should never fire because we close the watcher here.
-        EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+        // ...but it should never fire because we close the trap here.
+        EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
 
-        event->Signal();
-      },
-      &event, w, a));
+        wait.Signal();
+      });
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_a_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   WriteMessage(b, kTestMessageToA);
-  event.Wait();
+  wait.Wait();
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
 }
 
-TEST_F(WatcherTest, OtherThreadCancelDuringNotification) {
+TEST_F(TrapTest, OtherThreadRemovesTriggerDuringEventHandler) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
   static const char kTestMessageToA[] = "hey a";
 
-  MojoHandle w;
-  WatchHelper helper;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  MojoHandle t;
+  TriggerHelper helper;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
 
   base::WaitableEvent wait_for_notification(
       base::WaitableEvent::ResetPolicy::MANUAL,
@@ -1431,59 +1361,51 @@ TEST_F(WatcherTest, OtherThreadCancelDuringNotification) {
 
   static bool callback_done = false;
   uintptr_t readable_a_context = helper.CreateContextWithCancel(
-      base::Bind(
-          [](base::WaitableEvent* wait_for_notification, MojoHandle w,
-             MojoHandle a, MojoResult result, MojoHandleSignalsState state) {
-            EXPECT_EQ(MOJO_RESULT_OK, result);
-            EXPECT_EQ(kTestMessageToA, ReadMessage(a));
+      [&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
+        EXPECT_EQ(kTestMessageToA, ReadMessage(a));
 
-            wait_for_notification->Signal();
+        wait_for_notification.Signal();
 
-            // Give the other thread sufficient time to race with the completion
-            // of this callback. There should be no race, since the cancellation
-            // notification must be mutually exclusive to this notification.
-            base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+        // Give the other thread sufficient time to race with the completion
+        // of this callback. There should be no race, since the cancellation
+        // notification must be mutually exclusive to this notification.
+        base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
 
-            callback_done = true;
-          },
-          &wait_for_notification, w, a),
-      base::Bind(
-          [](base::WaitableEvent* wait_for_cancellation) {
-            EXPECT_TRUE(callback_done);
-            wait_for_cancellation->Signal();
-          },
-          &wait_for_cancellation));
-
-  ThreadedRunner runner(base::Bind(
-      [](base::WaitableEvent* wait_for_notification,
-         base::WaitableEvent* wait_for_cancellation, MojoHandle w,
-         uintptr_t readable_a_context) {
-        wait_for_notification->Wait();
-
-        // Cancel the watch while the notification is still running.
-        EXPECT_EQ(MOJO_RESULT_OK, MojoCancelWatch(w, readable_a_context));
-
-        wait_for_cancellation->Wait();
-
-        EXPECT_TRUE(callback_done);
+        callback_done = true;
       },
-      &wait_for_notification, &wait_for_cancellation, w, readable_a_context));
+      [&] {
+        EXPECT_TRUE(callback_done);
+        wait_for_cancellation.Signal();
+      });
+
+  ThreadedRunner runner(base::BindOnce(base::BindLambdaForTesting([&] {
+    wait_for_notification.Wait();
+
+    // Cancel the watch while the notification is still running.
+    EXPECT_EQ(MOJO_RESULT_OK,
+              MojoRemoveTrigger(t, readable_a_context, nullptr));
+
+    wait_for_cancellation.Wait();
+
+    EXPECT_TRUE(callback_done);
+  })));
   runner.Start();
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_a_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   WriteMessage(b, kTestMessageToA);
   runner.Join();
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
 }
 
-TEST_F(WatcherTest, WatchesCancelEachOtherFromNotifications) {
+TEST_F(TrapTest, TriggersRemoveEachOtherWithinEventHandlers) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
@@ -1503,81 +1425,65 @@ TEST_F(WatcherTest, WatchesCancelEachOtherFromNotifications) {
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  MojoHandle a_watcher;
-  MojoHandle b_watcher;
-  WatchHelper helper;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&a_watcher));
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&b_watcher));
+  MojoHandle a_trap;
+  MojoHandle b_trap;
+  TriggerHelper helper;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&a_trap));
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&b_trap));
 
-  // We set up two watchers, one on |a| and one on |b|. They cancel each other
-  // from within their respective watch notifications. This should be safe,
-  // i.e., it should not deadlock, in spite of the fact that we also guarantee
-  // mutually exclusive notification execution (including cancellations) on any
-  // given watch.
+  // We set up two traps, one triggered on |a| readability and one triggered on
+  // |b| readability. Each removes the other's trigger from within its own event
+  // handler. This should be safe, i.e., it should not deadlock in spite of the
+  // fact that we also guarantee mutually exclusive event handler invocation
+  // (including cancellations) on any given trap.
   bool a_cancelled = false;
   bool b_cancelled = false;
   static uintptr_t readable_b_context;
   uintptr_t readable_a_context = helper.CreateContextWithCancel(
-      base::Bind(
-          [](base::WaitableEvent* wait_for_a_to_notify,
-             base::WaitableEvent* wait_for_b_to_notify, MojoHandle b_watcher,
-             MojoHandle a, MojoResult result, MojoHandleSignalsState state) {
-            EXPECT_EQ(MOJO_RESULT_OK, result);
-            EXPECT_EQ(kTestMessageToA, ReadMessage(a));
-            wait_for_a_to_notify->Signal();
-            wait_for_b_to_notify->Wait();
-            EXPECT_EQ(MOJO_RESULT_OK,
-                      MojoCancelWatch(b_watcher, readable_b_context));
-            EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b_watcher));
-          },
-          &wait_for_a_to_notify, &wait_for_b_to_notify, b_watcher, a),
-      base::Bind(
-          [](base::WaitableEvent* wait_for_a_to_cancel,
-             base::WaitableEvent* wait_for_b_to_cancel, bool* a_cancelled) {
-            *a_cancelled = true;
-            wait_for_a_to_cancel->Signal();
-            wait_for_b_to_cancel->Wait();
-          },
-          &wait_for_a_to_cancel, &wait_for_b_to_cancel, &a_cancelled));
+      [&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
+        EXPECT_EQ(kTestMessageToA, ReadMessage(a));
+        wait_for_a_to_notify.Signal();
+        wait_for_b_to_notify.Wait();
+        EXPECT_EQ(MOJO_RESULT_OK,
+                  MojoRemoveTrigger(b_trap, readable_b_context, nullptr));
+        EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b_trap));
+      },
+      [&] {
+        a_cancelled = true;
+        wait_for_a_to_cancel.Signal();
+        wait_for_b_to_cancel.Wait();
+      });
 
   readable_b_context = helper.CreateContextWithCancel(
-      base::Bind(
-          [](base::WaitableEvent* wait_for_a_to_notify,
-             base::WaitableEvent* wait_for_b_to_notify,
-             uintptr_t readable_a_context, MojoHandle a_watcher, MojoHandle b,
-             MojoResult result, MojoHandleSignalsState state) {
-            EXPECT_EQ(MOJO_RESULT_OK, result);
-            EXPECT_EQ(kTestMessageToB, ReadMessage(b));
-            wait_for_b_to_notify->Signal();
-            wait_for_a_to_notify->Wait();
-            EXPECT_EQ(MOJO_RESULT_OK,
-                      MojoCancelWatch(a_watcher, readable_a_context));
-            EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a_watcher));
-          },
-          &wait_for_a_to_notify, &wait_for_b_to_notify, readable_a_context,
-          a_watcher, b),
-      base::Bind(
-          [](base::WaitableEvent* wait_for_a_to_cancel,
-             base::WaitableEvent* wait_for_b_to_cancel, bool* b_cancelled) {
-            *b_cancelled = true;
-            wait_for_b_to_cancel->Signal();
-            wait_for_a_to_cancel->Wait();
-          },
-          &wait_for_a_to_cancel, &wait_for_b_to_cancel, &b_cancelled));
+      [&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
+        EXPECT_EQ(kTestMessageToB, ReadMessage(b));
+        wait_for_b_to_notify.Signal();
+        wait_for_a_to_notify.Wait();
+        EXPECT_EQ(MOJO_RESULT_OK,
+                  MojoRemoveTrigger(a_trap, readable_a_context, nullptr));
+        EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a_trap));
+      },
+      [&] {
+        b_cancelled = true;
+        wait_for_b_to_cancel.Signal();
+        wait_for_a_to_cancel.Wait();
+      });
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(a_watcher, a, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
+            MojoAddTrigger(a_trap, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_a_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(a_trap, nullptr, nullptr, nullptr));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(a_watcher, nullptr, nullptr, nullptr, nullptr));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(b_watcher, b, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_b_context));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(b_watcher, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(b_trap, b, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_b_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(b_trap, nullptr, nullptr, nullptr));
 
-  ThreadedRunner runner(
-      base::Bind([](MojoHandle b) { WriteMessage(b, kTestMessageToA); }, b));
+  ThreadedRunner runner(base::BindOnce(
+      [](MojoHandle b) { WriteMessage(b, kTestMessageToA); }, b));
   runner.Start();
 
   WriteMessage(a, kTestMessageToB);
@@ -1593,54 +1499,57 @@ TEST_F(WatcherTest, WatchesCancelEachOtherFromNotifications) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
 }
 
-TEST_F(WatcherTest, AlwaysCancel) {
-  // Basic sanity check to ensure that all possible ways to cancel a watch
+TEST_F(TrapTest, AlwaysCancel) {
+  // Basic sanity check to ensure that all possible ways to remove a trigger
   // result in a final MOJO_RESULT_CANCELLED notification.
 
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
-  MojoHandle w;
-  WatchHelper helper;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  MojoHandle t;
+  TriggerHelper helper;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  const base::Closure signal_event =
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event));
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  auto ignore_event = [](const MojoTrapEvent&) {};
+  auto signal_wait = [&] { wait.Signal(); };
 
-  // Cancel via |MojoCancelWatch()|.
-  uintptr_t context = helper.CreateContextWithCancel(
-      WatchHelper::ContextCallback(), signal_event);
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                                      MOJO_WATCH_CONDITION_SATISFIED, context));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCancelWatch(w, context));
-  event.Wait();
-  event.Reset();
+  // Cancel via |MojoRemoveTrigger()|.
+  uintptr_t context = helper.CreateContextWithCancel(ignore_event, signal_wait);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED, context,
+                           nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoRemoveTrigger(t, context, nullptr));
+  wait.Wait();
+  wait.Reset();
 
-  // Cancel by closing the watched handle.
-  context = helper.CreateContextWithCancel(WatchHelper::ContextCallback(),
-                                           signal_event);
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                                      MOJO_WATCH_CONDITION_SATISFIED, context));
+  // Cancel by closing the trigger's watched handle.
+  context = helper.CreateContextWithCancel(ignore_event, signal_wait);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED, context,
+                           nullptr));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
-  event.Wait();
-  event.Reset();
+  wait.Wait();
+  wait.Reset();
 
-  // Cancel by closing the watcher handle.
-  context = helper.CreateContextWithCancel(WatchHelper::ContextCallback(),
-                                           signal_event);
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, b, MOJO_HANDLE_SIGNAL_READABLE,
-                                      MOJO_WATCH_CONDITION_SATISFIED, context));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
-  event.Wait();
+  // Cancel by closing the trap handle.
+  context = helper.CreateContextWithCancel(ignore_event, signal_wait);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoAddTrigger(t, b, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED, context,
+                           nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
+  wait.Wait();
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
 }
 
-TEST_F(WatcherTest, ArmFailureCirculation) {
-  // Sanity check to ensure that all ready handles will eventually be returned
-  // over a finite number of calls to MojoArmWatcher().
+TEST_F(TrapTest, ArmFailureCirculation) {
+  // Sanity check to ensure that all ready trigger events will eventually be
+  // returned over a finite number of calls to MojoArmTrap().
 
   constexpr size_t kNumTestPipes = 100;
   constexpr size_t kNumTestHandles = kNumTestPipes * 2;
@@ -1655,89 +1564,84 @@ TEST_F(WatcherTest, ArmFailureCirculation) {
     WaitForSignals(handles[i + kNumTestPipes], MOJO_HANDLE_SIGNAL_READABLE);
   }
 
-  // Create a watcher and watch all of them.
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectOnlyCancel, nullptr, &w));
+  // Create a trap and watch all of them for readability.
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateTrap(&ExpectOnlyCancel, nullptr, &t));
   for (size_t i = 0; i < kNumTestHandles; ++i) {
-    EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWatch(w, handles[i], MOJO_HANDLE_SIGNAL_READABLE,
-                        MOJO_WATCH_CONDITION_SATISFIED, i));
+    EXPECT_EQ(
+        MOJO_RESULT_OK,
+        MojoAddTrigger(t, handles[i], MOJO_HANDLE_SIGNAL_READABLE,
+                       MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED, i, nullptr));
   }
 
-  // Keep trying to arm |w| until every watch gets an entry in |ready_contexts|.
-  // If MojoArmWatcher() is well-behaved, this should terminate eventually.
+  // Keep trying to arm |t| until every trigger gets an entry in
+  // |ready_contexts|. If MojoArmTrap() is well-behaved, this should terminate
+  // eventually.
   std::set<uintptr_t> ready_contexts;
   while (ready_contexts.size() < kNumTestHandles) {
-    uint32_t num_ready_contexts = 1;
-    uintptr_t ready_context;
-    MojoResult ready_result;
-    MojoHandleSignalsState ready_state;
+    uint32_t num_blocking_events = 1;
+    MojoTrapEvent blocking_event = {sizeof(blocking_event)};
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              MojoArmWatcher(w, &num_ready_contexts, &ready_context,
-                             &ready_result, &ready_state));
-    EXPECT_EQ(1u, num_ready_contexts);
-    EXPECT_EQ(MOJO_RESULT_OK, ready_result);
-    ready_contexts.insert(ready_context);
+              MojoArmTrap(t, nullptr, &num_blocking_events, &blocking_event));
+    EXPECT_EQ(1u, num_blocking_events);
+    EXPECT_EQ(MOJO_RESULT_OK, blocking_event.result);
+    ready_contexts.insert(blocking_event.trigger_context);
   }
 
   for (size_t i = 0; i < kNumTestHandles; ++i)
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[i]));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
 }
 
-TEST_F(WatcherTest, WatchNotSatisfied) {
+TEST_F(TrapTest, TriggerOnUnsatisfiedSignals) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
 
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  WatchHelper helper;
-  const uintptr_t readable_a_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, MojoResult result,
-         MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_OK, result);
-        event->Signal();
-      },
-      &event));
+  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  TriggerHelper helper;
+  const uintptr_t readable_a_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
+        wait.Signal();
+      });
 
-  MojoHandle w;
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
+  MojoHandle t;
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                      MOJO_WATCH_CONDITION_SATISFIED, readable_a_context));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                           readable_a_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   const char kMessage[] = "this is not a message";
 
   WriteMessage(b, kMessage);
-  event.Wait();
+  wait.Wait();
 
-  // Now we know |a| is readable. Cancel the watch and watch for the
-  // not-readable state.
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
-  const uintptr_t not_readable_a_context = helper.CreateContext(base::Bind(
-      [](base::WaitableEvent* event, MojoResult result,
-         MojoHandleSignalsState state) {
-        EXPECT_EQ(MOJO_RESULT_OK, result);
-        event->Signal();
-      },
-      &event));
-  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateWatcher(&w));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWatch(w, a, MOJO_HANDLE_SIGNAL_READABLE,
-                                      MOJO_WATCH_CONDITION_NOT_SATISFIED,
-                                      not_readable_a_context));
+  // Now we know |a| is readable. Remove the trigger and add a new one to watch
+  // for a not-readable state.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
+  const uintptr_t not_readable_a_context =
+      helper.CreateContext([&](const MojoTrapEvent& event) {
+        EXPECT_EQ(MOJO_RESULT_OK, event.result);
+        wait.Signal();
+      });
+  EXPECT_EQ(MOJO_RESULT_OK, helper.CreateTrap(&t));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoArmWatcher(w, nullptr, nullptr, nullptr, nullptr));
+            MojoAddTrigger(t, a, MOJO_HANDLE_SIGNAL_READABLE,
+                           MOJO_TRIGGER_CONDITION_SIGNALS_UNSATISFIED,
+                           not_readable_a_context, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoArmTrap(t, nullptr, nullptr, nullptr));
 
   // This should not block, because the event should be signaled by
   // |not_readable_a_context| when we read the only available message off of
   // |a|.
-  event.Reset();
+  wait.Reset();
   EXPECT_EQ(kMessage, ReadMessage(a));
-  event.Wait();
+  wait.Wait();
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
 }
@@ -1761,13 +1665,13 @@ MojoHandle RandomHandle(MojoHandle* handles, size_t size) {
   return handles[base::RandInt(0, static_cast<int>(size) - 1)];
 }
 
-void DoRandomThing(MojoHandle* watchers,
-                   size_t num_watchers,
+void DoRandomThing(MojoHandle* traps,
+                   size_t num_traps,
                    MojoHandle* watched_handles,
                    size_t num_watched_handles) {
   switch (base::RandInt(0, 10)) {
     case 0:
-      MojoClose(RandomHandle(watchers, num_watchers));
+      MojoClose(RandomHandle(traps, num_traps));
       break;
     case 1:
       MojoClose(RandomHandle(watched_handles, num_watched_handles));
@@ -1785,37 +1689,30 @@ void DoRandomThing(MojoHandle* watchers,
     }
     case 5:
     case 6: {
-      MojoHandle w = RandomHandle(watchers, num_watchers);
+      MojoHandle t = RandomHandle(traps, num_traps);
       MojoHandle h = RandomHandle(watched_handles, num_watched_handles);
-      MojoWatch(w, h, MOJO_HANDLE_SIGNAL_READABLE,
-                MOJO_WATCH_CONDITION_SATISFIED, static_cast<uintptr_t>(h));
+      MojoAddTrigger(t, h, MOJO_HANDLE_SIGNAL_READABLE,
+                     MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                     static_cast<uintptr_t>(h), nullptr);
       break;
     }
     case 7:
     case 8: {
-      uint32_t num_ready_contexts = 1;
-      uintptr_t ready_context;
-      MojoResult ready_result;
-      MojoHandleSignalsState ready_state;
-      if (MojoArmWatcher(RandomHandle(watchers, num_watchers),
-                         &num_ready_contexts, &ready_context, &ready_result,
-                         &ready_state) == MOJO_RESULT_FAILED_PRECONDITION &&
-          ready_result == MOJO_RESULT_OK) {
-        MojoTrapEvent event;
-        event.struct_size = sizeof(event);
-        event.trigger_context = ready_context;
-        event.result = ready_result;
-        event.signals_state = ready_state;
-        event.flags = MOJO_TRAP_EVENT_FLAG_NONE;
-        ReadAllMessages(&event);
+      uint32_t num_blocking_events = 1;
+      MojoTrapEvent blocking_event = {sizeof(blocking_event)};
+      if (MojoArmTrap(RandomHandle(traps, num_traps), nullptr,
+                      &num_blocking_events,
+                      &blocking_event) == MOJO_RESULT_FAILED_PRECONDITION &&
+          blocking_event.result == MOJO_RESULT_OK) {
+        ReadAllMessages(&blocking_event);
       }
       break;
     }
     case 9:
     case 10: {
-      MojoHandle w = RandomHandle(watchers, num_watchers);
+      MojoHandle t = RandomHandle(traps, num_traps);
       MojoHandle h = RandomHandle(watched_handles, num_watched_handles);
-      MojoCancelWatch(w, static_cast<uintptr_t>(h));
+      MojoRemoveTrigger(t, static_cast<uintptr_t>(h), nullptr);
       break;
     }
     default:
@@ -1824,41 +1721,39 @@ void DoRandomThing(MojoHandle* watchers,
   }
 }
 
-TEST_F(WatcherTest, ConcurrencyStressTest) {
+TEST_F(TrapTest, ConcurrencyStressTest) {
   // Regression test for https://crbug.com/740044. Exercises racy usage of the
-  // watcher API to weed out potential crashes.
+  // trap API to weed out potential crashes.
 
-  constexpr size_t kNumWatchers = 50;
+  constexpr size_t kNumTraps = 50;
   constexpr size_t kNumWatchedHandles = 50;
   static_assert(kNumWatchedHandles % 2 == 0, "Invalid number of test handles.");
 
   constexpr size_t kNumThreads = 10;
   static constexpr size_t kNumOperationsPerThread = 400;
 
-  MojoHandle watchers[kNumWatchers];
+  MojoHandle traps[kNumTraps];
   MojoHandle watched_handles[kNumWatchedHandles];
-  g_do_random_thing_callback =
-      base::Bind(&DoRandomThing, watchers, kNumWatchers, watched_handles,
-                 kNumWatchedHandles);
+  g_do_random_thing_callback = base::BindRepeating(
+      &DoRandomThing, traps, kNumTraps, watched_handles, kNumWatchedHandles);
 
-  for (size_t i = 0; i < kNumWatchers; ++i)
-    MojoCreateTrap(&ReadAllMessages, nullptr, &watchers[i]);
+  for (size_t i = 0; i < kNumTraps; ++i)
+    MojoCreateTrap(&ReadAllMessages, nullptr, &traps[i]);
   for (size_t i = 0; i < kNumWatchedHandles; i += 2)
     CreateMessagePipe(&watched_handles[i], &watched_handles[i + 1]);
 
   std::unique_ptr<ThreadedRunner> threads[kNumThreads];
-  auto runner_callback = base::Bind([]() {
-    for (size_t i = 0; i < kNumOperationsPerThread; ++i)
-      g_do_random_thing_callback.Run();
-  });
   for (size_t i = 0; i < kNumThreads; ++i) {
-    threads[i] = std::make_unique<ThreadedRunner>(runner_callback);
+    threads[i] = std::make_unique<ThreadedRunner>(base::BindOnce([] {
+      for (size_t i = 0; i < kNumOperationsPerThread; ++i)
+        g_do_random_thing_callback.Run();
+    }));
     threads[i]->Start();
   }
   for (size_t i = 0; i < kNumThreads; ++i)
     threads[i]->Join();
-  for (size_t i = 0; i < kNumWatchers; ++i)
-    MojoClose(watchers[i]);
+  for (size_t i = 0; i < kNumTraps; ++i)
+    MojoClose(traps[i]);
   for (size_t i = 0; i < kNumWatchedHandles; ++i)
     MojoClose(watched_handles[i]);
 }
