@@ -48,16 +48,14 @@ void CastGestureDispatcher::HandleSideSwipeContinue(
     return;
   }
 
+  // Already dispatched, don't send further progress events.
+  if (dispatched_back_) {
+    return;
+  }
+
   delegate_->GestureProgress(GestureType::GO_BACK, touch_location);
   VLOG(1) << "swipe gesture continue, elapsed time: "
           << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
-
-  if (!dispatched_back_ && touch_location.x() >= horizontal_threshold_) {
-    dispatched_back_ = true;
-    delegate_->ConsumeGesture(GestureType::GO_BACK);
-    VLOG(1) << "swipe gesture complete, elapsed time: "
-            << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
-  }
 }
 
 void CastGestureDispatcher::HandleSideSwipeEnd(
@@ -71,10 +69,25 @@ void CastGestureDispatcher::HandleSideSwipeEnd(
   if (!delegate_->CanHandleGesture(GestureType::GO_BACK)) {
     return;
   }
-  if (!dispatched_back_ && touch_location.x() < horizontal_threshold_) {
+
+  // Already dispatched, don't send further events until the next begin.
+  if (dispatched_back_) {
+    return;
+  }
+
+  // Finger lifted before horizontal threshold met, cancel the gesture.
+  if (touch_location.x() < horizontal_threshold_) {
     VLOG(1) << "swipe gesture cancelled";
     delegate_->CancelGesture(GestureType::GO_BACK, touch_location);
+    return;
   }
+
+  // Finger lifted after horizontal threshold, let the consumer know we have a
+  // back gesture.
+  dispatched_back_ = true;
+  delegate_->ConsumeGesture(GestureType::GO_BACK);
+  VLOG(1) << "swipe gesture complete, elapsed time: "
+          << current_swipe_time_.Elapsed().InMilliseconds() << "ms";
 }
 
 void CastGestureDispatcher::HandleTapDownGesture(
