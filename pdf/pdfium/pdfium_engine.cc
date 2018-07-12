@@ -31,6 +31,7 @@
 #include "pdf/draw_utils.h"
 #include "pdf/pdf_transform.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
+#include "pdf/pdfium/pdfium_document.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_read.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_write.h"
 #include "pdf/pdfium/pdfium_unsupported_features.h"
@@ -685,18 +686,6 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client, bool enable_javascript)
   find_factory_.Initialize(this);
   password_factory_.Initialize(this);
 
-  file_access_.m_FileLen = 0;
-  file_access_.m_GetBlock = &GetBlock;
-  file_access_.m_Param = this;
-
-  file_availability_.version = 1;
-  file_availability_.IsDataAvail = &IsDataAvail;
-  file_availability_.engine = this;
-
-  download_hints_.version = 1;
-  download_hints_.AddSegment = &AddSegment;
-  download_hints_.engine = this;
-
   IFSDK_PAUSE::version = 1;
   IFSDK_PAUSE::user = nullptr;
   IFSDK_PAUSE::NeedToPauseNow = Pause_NeedToPauseNow;
@@ -713,7 +702,7 @@ PDFiumEngine::~PDFiumEngine() {
   for (auto& page : pages_)
     page->Unload();
 
-  if (doc_)
+  if (doc())
     FORM_DoDocumentAAction(form(), FPDFDOC_AACTION_WC);
 }
 
@@ -721,28 +710,6 @@ PDFiumEngine::~PDFiumEngine() {
 void PDFiumEngine::SetCreateDocumentLoaderFunctionForTesting(
     CreateDocumentLoaderFunction function) {
   g_create_document_loader_for_testing = function;
-}
-
-int PDFiumEngine::GetBlock(void* param,
-                           unsigned long position,
-                           unsigned char* buffer,
-                           unsigned long size) {
-  PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
-  return engine->doc_loader_->GetBlock(position, size, buffer);
-}
-
-FPDF_BOOL PDFiumEngine::IsDataAvail(FX_FILEAVAIL* param,
-                                    size_t offset,
-                                    size_t size) {
-  auto* file_avail = static_cast<FileAvail*>(param);
-  return file_avail->engine->doc_loader_->IsDataAvailable(offset, size);
-}
-
-void PDFiumEngine::AddSegment(FX_DOWNLOADHINTS* param,
-                              size_t offset,
-                              size_t size) {
-  auto* download_hints = static_cast<DownloadHints*>(param);
-  return download_hints->engine->doc_loader_->RequestData(offset, size);
 }
 
 bool PDFiumEngine::New(const char* url, const char* headers) {
@@ -889,6 +856,7 @@ bool PDFiumEngine::HandleDocumentLoad(const pp::URLLoader& loader) {
     if (!doc_loader_->Init(std::move(loader_wrapper), url_))
       return false;
   }
+  document_ = std::make_unique<PDFiumDocument>(doc_loader_.get());
 
   // request initial data.
   doc_loader_->RequestData(0, 1);
@@ -925,11 +893,11 @@ std::string PDFiumEngine::GetMetadata(const std::string& key) {
 void PDFiumEngine::OnPendingRequestComplete() {
   if (!process_when_pending_request_complete_)
     return;
-  if (!fpdf_availability_) {
-    file_access_.m_FileLen = doc_loader_->GetDocumentSize();
-    fpdf_availability_.reset(
-        FPDFAvail_Create(&file_availability_, &file_access_));
-    DCHECK(fpdf_availability_);
+
+  if (!fpdf_availability()) {
+    document_->file_access().m_FileLen = doc_loader_->GetDocumentSize();
+    document_->CreateFPDFAvailability();
+    DCHECK(fpdf_availability());
     // Currently engine does not deal efficiently with some non-linearized
     // files.
     // See http://code.google.com/p/chromium/issues/detail?id=59400
@@ -938,12 +906,12 @@ void PDFiumEngine::OnPendingRequestComplete() {
     if (FPDFAvail_IsLinearized(fpdf_availability()) != PDF_LINEARIZED) {
       // Wait complete document.
       process_when_pending_request_complete_ = false;
-      fpdf_availability_.reset();
+      document_->ResetFPDFAvailability();
       return;
     }
   }
 
-  if (!doc_) {
+  if (!doc()) {
     LoadDocument();
     return;
   }
@@ -978,14 +946,13 @@ void PDFiumEngine::OnNewDataReceived() {
 }
 
 void PDFiumEngine::OnDocumentComplete() {
-  if (doc_)
+  if (doc())
     return FinishLoadingDocument();
 
-  file_access_.m_FileLen = doc_loader_->GetDocumentSize();
-  if (!fpdf_availability_) {
-    fpdf_availability_.reset(
-        FPDFAvail_Create(&file_availability_, &file_access_));
-    DCHECK(fpdf_availability_);
+  document_->file_access().m_FileLen = doc_loader_->GetDocumentSize();
+  if (!fpdf_availability()) {
+    document_->CreateFPDFAvailability();
+    DCHECK(fpdf_availability());
   }
   LoadDocument();
 }
@@ -1002,11 +969,12 @@ void PDFiumEngine::CancelBrowserDownload() {
 }
 
 void PDFiumEngine::FinishLoadingDocument() {
-  DCHECK(doc_);
+  DCHECK(doc());
   DCHECK(doc_loader_->IsDocumentComplete());
 
   LoadBody();
 
+  FX_DOWNLOADHINTS& download_hints = document_->download_hints();
   bool need_update = false;
   for (size_t i = 0; i < pages_.size(); ++i) {
     if (pages_[i]->available())
@@ -1015,7 +983,7 @@ void PDFiumEngine::FinishLoadingDocument() {
     pages_[i]->set_available(true);
     // We still need to call IsPageAvail() even if the whole document is
     // already downloaded.
-    FPDFAvail_IsPageAvail(fpdf_availability(), i, &download_hints_);
+    FPDFAvail_IsPageAvail(fpdf_availability(), i, &download_hints);
     need_update = true;
     if (IsPageVisible(i))
       client_->Invalidate(GetPageScreenRect(i));
@@ -1035,7 +1003,7 @@ void PDFiumEngine::FinishLoadingDocument() {
     FORM_DoPageAAction(new_page, form(), FPDFPAGE_AACTION_OPEN);
   }
 
-  if (doc_) {
+  if (doc()) {
     DocumentFeatures document_features;
     document_features.page_count = pages_.size();
     document_features.has_attachments = (FPDFDoc_GetAttachmentCount(doc()) > 0);
@@ -1055,6 +1023,18 @@ void PDFiumEngine::UnsupportedFeature(const std::string& feature) {
 
 void PDFiumEngine::FontSubstituted() {
   client_->FontSubstituted();
+}
+
+FPDF_AVAIL PDFiumEngine::fpdf_availability() const {
+  return document_ ? document_->fpdf_availability() : nullptr;
+}
+
+FPDF_DOCUMENT PDFiumEngine::doc() const {
+  return document_ ? document_->doc() : nullptr;
+}
+
+FPDF_FORMHANDLE PDFiumEngine::form() const {
+  return document_ ? document_->form() : nullptr;
 }
 
 void PDFiumEngine::ContinueFind(int32_t result) {
@@ -1162,7 +1142,7 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPDF(
   DCHECK(page_range_count);
 
   // If document is not downloaded yet, disable printing.
-  if (doc_ && !doc_loader_->IsDocumentComplete())
+  if (doc() && !doc_loader_->IsDocumentComplete())
     return pp::Buffer_Dev();
 
   KillFormFocus();
@@ -1181,7 +1161,7 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsPDF(
     const PP_PrintSettings_Dev& print_settings,
     const PP_PdfPrintSettings_Dev& pdf_print_settings) {
   DCHECK(page_range_count);
-  DCHECK(doc_);
+  DCHECK(doc());
 
   KillFormFocus();
 
@@ -2459,7 +2439,7 @@ bool PDFiumEngine::GetPageSizeAndUniformity(pp::Size* size) {
 void PDFiumEngine::AppendBlankPages(int num_pages) {
   DCHECK_NE(num_pages, 0);
 
-  if (!doc_)
+  if (!doc())
     return;
 
   selection_.clear();
@@ -2515,9 +2495,10 @@ void PDFiumEngine::AppendBlankPages(int num_pages) {
 void PDFiumEngine::LoadDocument() {
   // Check if the document is ready for loading. If it isn't just bail for now,
   // we will call LoadDocument() again later.
-  if (!doc_ && !doc_loader_->IsDocumentComplete() &&
-      !FPDFAvail_IsDocAvail(fpdf_availability(), &download_hints_)) {
-    return;
+  if (!doc() && !doc_loader_->IsDocumentComplete()) {
+    FX_DOWNLOADHINTS& download_hints = document_->download_hints();
+    if (!FPDFAvail_IsDocAvail(fpdf_availability(), &download_hints))
+      return;
   }
 
   // If we're in the middle of getting a password, just return. We will retry
@@ -2541,11 +2522,12 @@ void PDFiumEngine::LoadDocument() {
 bool PDFiumEngine::TryLoadingDoc(const std::string& password,
                                  bool* needs_password) {
   *needs_password = false;
-  if (doc_) {
+  if (doc()) {
     // This is probably not necessary, because it should have already been
     // called below in the |doc_| initialization path. However, the previous
     // call may have failed, so call it again for good measure.
-    FPDFAvail_IsDocAvail(fpdf_availability(), &download_hints_);
+    FX_DOWNLOADHINTS& download_hints = document_->download_hints();
+    FPDFAvail_IsDocAvail(fpdf_availability(), &download_hints);
     return true;
   }
 
@@ -2554,13 +2536,8 @@ bool PDFiumEngine::TryLoadingDoc(const std::string& password,
     password_cstr = password.c_str();
     password_tries_remaining_--;
   }
-  if (doc_loader_->IsDocumentComplete() &&
-      !FPDFAvail_IsLinearized(fpdf_availability())) {
-    doc_.reset(FPDF_LoadCustomDocument(&file_access_, password_cstr));
-  } else {
-    doc_.reset(FPDFAvail_GetDocument(fpdf_availability(), password_cstr));
-  }
-  if (!doc_) {
+  document_->LoadDocument(password_cstr);
+  if (!doc()) {
     if (FPDF_GetLastError() == FPDF_ERR_PASSWORD)
       *needs_password = true;
     return false;
@@ -2568,13 +2545,14 @@ bool PDFiumEngine::TryLoadingDoc(const std::string& password,
 
   // Always call FPDFAvail_IsDocAvail() so PDFium initializes internal data
   // structures.
-  FPDFAvail_IsDocAvail(fpdf_availability(), &download_hints_);
+  FX_DOWNLOADHINTS& download_hints = document_->download_hints();
+  FPDFAvail_IsDocAvail(fpdf_availability(), &download_hints);
   return true;
 }
 
 void PDFiumEngine::GetPasswordAndLoad() {
   getting_password_ = true;
-  DCHECK(!doc_);
+  DCHECK(!doc());
   DCHECK_EQ(static_cast<unsigned long>(FPDF_ERR_PASSWORD), FPDF_GetLastError());
   client_->GetDocumentPassword(password_factory_.NewCallbackWithOutput(
       &PDFiumEngine::OnGetPasswordComplete));
@@ -2602,7 +2580,7 @@ void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
     return;
   }
 
-  if (!doc_) {
+  if (!doc()) {
     client_->DocumentLoadFailed();
     return;
   }
@@ -2646,8 +2624,9 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     if (reload) {
       page_available = pages_[i]->available();
     } else if (is_linear) {
+      FX_DOWNLOADHINTS& download_hints = document_->download_hints();
       int linear_page_avail =
-          FPDFAvail_IsPageAvail(fpdf_availability(), i, &download_hints_);
+          FPDFAvail_IsPageAvail(fpdf_availability(), i, &download_hints);
       page_available = linear_page_avail == PDF_DATA_AVAIL;
     } else {
       page_available = doc_complete;
@@ -2687,8 +2666,8 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
 }
 
 void PDFiumEngine::LoadBody() {
-  DCHECK(doc_);
-  DCHECK(fpdf_availability_);
+  DCHECK(doc());
+  DCHECK(fpdf_availability());
   if (doc_loader_->IsDocumentComplete()) {
     LoadForm();
   } else if (FPDFAvail_IsLinearized(fpdf_availability()) == PDF_LINEARIZED &&
@@ -2697,7 +2676,7 @@ void PDFiumEngine::LoadBody() {
     // XFA document. And after loading form the page count and its contents may
     // be changed.
     LoadForm();
-    if (form_status_ == PDF_FORM_NOTAVAIL)
+    if (document_->form_status() == PDF_FORM_NOTAVAIL)
       return;
   }
   LoadPages();
@@ -2716,12 +2695,14 @@ void PDFiumEngine::LoadPages() {
 }
 
 void PDFiumEngine::LoadForm() {
-  if (form_)
+  if (form())
     return;
-  DCHECK(doc_);
-  form_status_ = FPDFAvail_IsFormAvail(fpdf_availability(), &download_hints_);
-  if (form_status_ != PDF_FORM_NOTAVAIL || doc_loader_->IsDocumentComplete()) {
-    form_.reset(FPDFDOC_InitFormFillEnvironment(doc(), &form_filler_));
+
+  DCHECK(doc());
+  document_->SetFormStatus();
+  if (document_->form_status() != PDF_FORM_NOTAVAIL ||
+      doc_loader_->IsDocumentComplete()) {
+    document_->InitializeForm(&form_filler_);
 #if defined(PDF_ENABLE_XFA)
     FPDF_LoadXFA(doc());
 #endif
@@ -2730,7 +2711,7 @@ void PDFiumEngine::LoadForm() {
                                     kFormHighlightColor);
     FPDF_SetFormFieldHighlightAlpha(form(), kFormHighlightAlpha);
   }
-}  // namespace chrome_pdf
+}
 
 void PDFiumEngine::CalculateVisiblePages() {
   if (!doc_loader_)
@@ -2806,14 +2787,15 @@ void PDFiumEngine::ScrollToPage(int page) {
 }
 
 bool PDFiumEngine::CheckPageAvailable(int index, std::vector<int>* pending) {
-  if (!doc_)
+  if (!doc())
     return false;
 
   const int num_pages = static_cast<int>(pages_.size());
   if (index < num_pages && pages_[index]->available())
     return true;
 
-  if (!FPDFAvail_IsPageAvail(fpdf_availability(), index, &download_hints_)) {
+  FX_DOWNLOADHINTS& download_hints = document_->download_hints();
+  if (!FPDFAvail_IsPageAvail(fpdf_availability(), index, &download_hints)) {
     if (!base::ContainsValue(*pending, index))
       pending->push_back(index);
     return false;
@@ -3330,7 +3312,7 @@ int PDFiumEngine::GetVisiblePageIndex(FPDF_PAGE page) {
 void PDFiumEngine::SetCurrentPage(int index) {
   in_flight_visible_page_.reset();
 
-  if (index == most_visible_page_ || !form_)
+  if (index == most_visible_page_ || !form())
     return;
 
   if (most_visible_page_ != -1 && called_do_document_action_) {
