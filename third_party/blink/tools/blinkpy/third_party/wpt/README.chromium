@@ -65,7 +65,7 @@ re-generate them:
   expiration date.
 4. Update certs/127.0.0.1.sxg.*.
   Please refer to
-  third_party/WebKit/LayoutTests/http/tests/loading/htxg/resources/README.md
+  third_party/WebKit/LayoutTests/http/tests/loading/sxg/resources/README.md
 5. git commit
 6. git cl upload, etc.
 
