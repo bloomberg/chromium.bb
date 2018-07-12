@@ -51,6 +51,9 @@ int main(int argc, char** argv) {
   base::fuchsia::ScopedServiceBinding<fuchsia::sys::Runner> runner_binding(
       directory, &runner);
 
+  // Quit the process after the app manager closes the Runner connection.
+  runner_binding.SetOnLastClientCallback(run_loop.QuitClosure());
+
   // The RunLoop runs until all Components have been closed, at which point the
   // application will terminate.
   run_loop.Run();
