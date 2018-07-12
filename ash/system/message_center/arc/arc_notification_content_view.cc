@@ -123,6 +123,9 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
           event_for_android_only = contains && swipe_captured_;
         }
 
+        if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN)
+          owner_->item_->CancelLongPress();
+
         if (event->type() == ui::ET_GESTURE_SCROLL_END)
           swipe_captured_ = false;
 

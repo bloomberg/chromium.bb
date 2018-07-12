@@ -35,6 +35,8 @@ void FakeNotificationsInstance::SetDoNotDisturbStatusOnAndroid(
   latest_do_not_disturb_status_ = std::move(status);
 }
 
+void FakeNotificationsInstance::CancelLongPress(const std::string& key) {}
+
 void FakeNotificationsInstance::InitDeprecated(
     mojom::NotificationsHostPtr host_ptr) {
   Init(std::move(host_ptr), base::DoNothing());

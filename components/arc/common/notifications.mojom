@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 19
+// Next MinVersion: 20
 
 module arc.mojom;
 
@@ -186,7 +186,7 @@ interface NotificationsHost {
   OpenMessageCenter@6();
 };
 
-// Next Method ID: 8
+// Next Method ID: 9
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
 interface NotificationsInstance {
   // DEPRECATED: Please use Init@5 instead.
@@ -223,7 +223,13 @@ interface NotificationsInstance {
   [MinVersion=17]
   OpenNotificationSnoozeSettings@6(string key);
 
-  // Set the Do-Not-Disturb status on Android side from Chrome side.
+  // Sets the Do-Not-Disturb status on Android side from Chrome side.
   [MinVersion=18]
   SetDoNotDisturbStatusOnAndroid@7(ArcDoNotDisturbStatus status);
+
+  // Cancels the long-press operation even during touching the view. This should
+  // be called when the on-going gesture is recognized not as a normal touch
+  // event but as a scroll event, and the on-going touch should be cancelled.
+  [MinVersion=19]
+  CancelLongPress@8(string key);
 };
