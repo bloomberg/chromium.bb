@@ -61,28 +61,6 @@ void AssistantUiController::SetAssistant(
   assistant_ = assistant;
 }
 
-void AssistantUiController::SetAssistantInteractionController(
-    AssistantInteractionController* assistant_interaction_controller) {
-  if (assistant_interaction_controller_)
-    assistant_interaction_controller_->RemoveModelObserver(this);
-
-  assistant_interaction_controller_ = assistant_interaction_controller;
-
-  if (assistant_interaction_controller_)
-    assistant_interaction_controller_->AddModelObserver(this);
-}
-
-void AssistantUiController::SetAssistantScreenContextController(
-    AssistantScreenContextController* assistant_screen_context_controller) {
-  if (assistant_screen_context_controller_)
-    assistant_screen_context_controller_->RemoveModelObserver(this);
-
-  assistant_screen_context_controller_ = assistant_screen_context_controller;
-
-  if (assistant_screen_context_controller_)
-    assistant_screen_context_controller_->AddModelObserver(this);
-}
-
 void AssistantUiController::SetAssistantSetup(
     mojom::AssistantSetup* assistant_setup) {
   assistant_setup_ = assistant_setup;
@@ -117,6 +95,16 @@ void AssistantUiController::OnWidgetDestroying(views::Widget* widget) {
 
   container_view_->GetWidget()->RemoveObserver(this);
   container_view_ = nullptr;
+}
+
+void AssistantUiController::OnAssistantControllerConstructed() {
+  assistant_controller_->interaction_controller()->AddModelObserver(this);
+  assistant_controller_->screen_context_controller()->AddModelObserver(this);
+}
+
+void AssistantUiController::OnAssistantControllerDestroying() {
+  assistant_controller_->screen_context_controller()->RemoveModelObserver(this);
+  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
 void AssistantUiController::OnInputModalityChanged(
@@ -270,13 +258,15 @@ void AssistantUiController::UpdateUiMode(
     return;
   }
 
+  InputModality input_modality = assistant_controller_->interaction_controller()
+                                     ->model()
+                                     ->input_modality();
+
   // When stylus input modality is selected, we should be in mini UI mode.
   // Otherwise we fall back to main UI mode.
-  assistant_ui_model_.SetUiMode(
-      assistant_interaction_controller_->model()->input_modality() ==
-              InputModality::kStylus
-          ? AssistantUiMode::kMiniUi
-          : AssistantUiMode::kMainUi);
+  assistant_ui_model_.SetUiMode(input_modality == InputModality::kStylus
+                                    ? AssistantUiMode::kMiniUi
+                                    : AssistantUiMode::kMainUi);
 }
 
 }  // namespace ash

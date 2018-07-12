@@ -20,11 +20,13 @@ AssistantInteractionController::AssistantInteractionController(
     : assistant_controller_(assistant_controller),
       assistant_interaction_subscriber_binding_(this) {
   AddModelObserver(this);
+  assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
 }
 
 AssistantInteractionController::~AssistantInteractionController() {
   Shell::Get()->highlighter_controller()->RemoveObserver(this);
+  assistant_controller_->RemoveObserver(this);
   RemoveModelObserver(this);
 }
 
@@ -38,17 +40,6 @@ void AssistantInteractionController::SetAssistant(
   assistant_->AddAssistantInteractionSubscriber(std::move(ptr));
 }
 
-void AssistantInteractionController::SetAssistantUiController(
-    AssistantUiController* assistant_ui_controller) {
-  if (assistant_ui_controller_)
-    assistant_ui_controller_->RemoveModelObserver(this);
-
-  assistant_ui_controller_ = assistant_ui_controller;
-
-  if (assistant_ui_controller_)
-    assistant_ui_controller_->AddModelObserver(this);
-}
-
 void AssistantInteractionController::AddModelObserver(
     AssistantInteractionModelObserver* observer) {
   assistant_interaction_model_.AddObserver(observer);
@@ -57,6 +48,14 @@ void AssistantInteractionController::AddModelObserver(
 void AssistantInteractionController::RemoveModelObserver(
     AssistantInteractionModelObserver* observer) {
   assistant_interaction_model_.RemoveObserver(observer);
+}
+
+void AssistantInteractionController::OnAssistantControllerConstructed() {
+  assistant_controller_->ui_controller()->AddModelObserver(this);
+}
+
+void AssistantInteractionController::OnAssistantControllerDestroying() {
+  assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
 
 void AssistantInteractionController::OnCommittedQueryChanged(

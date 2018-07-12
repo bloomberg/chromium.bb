@@ -33,8 +33,6 @@ namespace ash {
 
 class AssistantContainerView;
 class AssistantController;
-class AssistantInteractionController;
-class AssistantScreenContextController;
 
 namespace mojom {
 class AssistantSetup;
@@ -55,16 +53,6 @@ class ASH_EXPORT AssistantUiController
 
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
-
-  // Provides a pointer to the |assistant_interaction_controller| owned by
-  // AssistantController.
-  void SetAssistantInteractionController(
-      AssistantInteractionController* assistant_interaction_controller);
-
-  // Provides a pointer to the |assistant_screen_context_controller| owned by
-  // AssistantController.
-  void SetAssistantScreenContextController(
-      AssistantScreenContextController* assistant_screen_context_controller);
 
   // Provides a pointer to the |assistant_setup| owned by AssistantController.
   void SetAssistantSetup(mojom::AssistantSetup* assistant_setup);
@@ -100,6 +88,8 @@ class ASH_EXPORT AssistantUiController
   void OnHighlighterEnabledChanged(HighlighterEnabledState state) override;
 
   // AssistantControllerObserver:
+  void OnAssistantControllerConstructed() override;
+  void OnAssistantControllerDestroying() override;
   void OnDeepLinkReceived(const GURL& deep_link) override;
   void OnUrlOpened(const GURL& url) override;
 
@@ -119,13 +109,6 @@ class ASH_EXPORT AssistantUiController
 
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
-
-  // Owned by AssistantController.
-  AssistantInteractionController* assistant_interaction_controller_ = nullptr;
-
-  // Owned by AssistantController.
-  AssistantScreenContextController* assistant_screen_context_controller_ =
-      nullptr;
 
   // Owned by AssistantController.
   mojom::AssistantSetup* assistant_setup_ = nullptr;

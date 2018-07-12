@@ -13,6 +13,12 @@ namespace ash {
 
 class AssistantControllerObserver {
  public:
+  // Invoked when the AssistantController has been fully constructed.
+  virtual void OnAssistantControllerConstructed() {}
+
+  // Invoked when the AssistantController is starting to be destroyed.
+  virtual void OnAssistantControllerDestroying() {}
+
   // Invoked when Assistant has received the specified |deep_link|.
   virtual void OnDeepLinkReceived(const GURL& deep_link) {}
 

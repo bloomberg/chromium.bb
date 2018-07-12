@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_screen_context_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/highlighter/highlighter_controller.h"
@@ -23,28 +24,20 @@ class LayerTreeOwner;
 
 namespace ash {
 
-class AssistantInteractionController;
+class AssistantController;
 class AssistantScreenContextModelObserver;
-class AssistantUiController;
 
 class ASH_EXPORT AssistantScreenContextController
-    : public AssistantUiModelObserver,
+    : public AssistantControllerObserver,
+      public AssistantUiModelObserver,
       public HighlighterController::Observer {
  public:
-  AssistantScreenContextController();
+  explicit AssistantScreenContextController(
+      AssistantController* assistant_controller);
   ~AssistantScreenContextController() override;
 
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
-
-  // Provides a pointer to the |assistant_interaction_controller| owned by
-  // AssistantController.
-  void SetAssistantInteractionController(
-      AssistantInteractionController* assistant_interaction_controller);
-
-  // Provides a pointer to the |assistant_ui_controller| owned by
-  // AssistantController.
-  void SetAssistantUiController(AssistantUiController* assistant_ui_controller);
 
   // Returns a reference to the underlying model.
   const AssistantScreenContextModel* model() const {
@@ -62,6 +55,10 @@ class ASH_EXPORT AssistantScreenContextController
       const gfx::Rect& rect,
       mojom::AssistantController::RequestScreenshotCallback callback);
 
+  // AssistantControllerObserver:
+  void OnAssistantControllerConstructed() override;
+  void OnAssistantControllerDestroying() override;
+
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
 
@@ -76,14 +73,10 @@ class ASH_EXPORT AssistantScreenContextController
  private:
   void RequestScreenContext(const gfx::Rect& rect);
 
+  AssistantController* const assistant_controller_;  // Owned by Shell.
+
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
-
-  // Owned by AssistantController.
-  AssistantInteractionController* assistant_interaction_controller_ = nullptr;
-
-  // Owned by AssistantController.
-  AssistantUiController* assistant_ui_controller_ = nullptr;
 
   AssistantScreenContextModel assistant_screen_context_model_;
 

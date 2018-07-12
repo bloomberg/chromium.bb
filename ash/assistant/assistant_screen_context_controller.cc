@@ -4,6 +4,7 @@
 
 #include "ash/assistant/assistant_screen_context_controller.h"
 
+#include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -105,34 +106,22 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
 
 }  // namespace
 
-AssistantScreenContextController::AssistantScreenContextController()
-    : screen_context_request_factory_(this) {
+AssistantScreenContextController::AssistantScreenContextController(
+    AssistantController* assistant_controller)
+    : assistant_controller_(assistant_controller),
+      screen_context_request_factory_(this) {
+  assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
 }
 
 AssistantScreenContextController::~AssistantScreenContextController() {
   Shell::Get()->highlighter_controller()->RemoveObserver(this);
+  assistant_controller_->RemoveObserver(this);
 }
 
 void AssistantScreenContextController::SetAssistant(
     chromeos::assistant::mojom::Assistant* assistant) {
   assistant_ = std::move(assistant);
-}
-
-void AssistantScreenContextController::SetAssistantInteractionController(
-    AssistantInteractionController* assistant_interaction_controller) {
-  assistant_interaction_controller_ = assistant_interaction_controller;
-}
-
-void AssistantScreenContextController::SetAssistantUiController(
-    AssistantUiController* assistant_ui_controller) {
-  if (assistant_ui_controller_)
-    assistant_ui_controller_->RemoveModelObserver(this);
-
-  assistant_ui_controller_ = assistant_ui_controller;
-
-  if (assistant_ui_controller_)
-    assistant_ui_controller_->AddModelObserver(this);
 }
 
 void AssistantScreenContextController::AddModelObserver(
@@ -188,6 +177,14 @@ void AssistantScreenContextController::RequestScreenContext(
           screen_context_request_factory_.GetWeakPtr()));
 }
 
+void AssistantScreenContextController::OnAssistantControllerConstructed() {
+  assistant_controller_->ui_controller()->AddModelObserver(this);
+}
+
+void AssistantScreenContextController::OnAssistantControllerDestroying() {
+  assistant_controller_->ui_controller()->RemoveModelObserver(this);
+}
+
 void AssistantScreenContextController::OnUiVisibilityChanged(
     bool visible,
     AssistantSource source) {
@@ -200,12 +197,14 @@ void AssistantScreenContextController::OnUiVisibilityChanged(
     return;
   }
 
+  InputModality input_modality = assistant_controller_->interaction_controller()
+                                     ->model()
+                                     ->input_modality();
+
   // We don't initiate a contextual query for caching if we are using stylus
   // input modality because we will do so on metalayer session complete.
-  if (assistant_interaction_controller_->model()->input_modality() ==
-      InputModality::kStylus) {
+  if (input_modality == InputModality::kStylus)
     return;
-  }
 
   // Request screen context for the entire screen.
   RequestScreenContext(gfx::Rect());
