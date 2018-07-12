@@ -106,12 +106,14 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // mojom::ServiceWorkerWorkerClient implementation:
   void OnControllerChanged(blink::mojom::ControllerServiceWorkerMode) override;
 
-  // Sets the fetch context status copied from the frame; the parent frame for a
-  // dedicated worker, the main frame of the shadow page for a shared worker.
+  // Sets the fetch context status copied from a frame. For dedicated workers,
+  // it's copied from the ancestor frame (directly for non-nested workers, or
+  // indirectly via its parent worker for nested workers). For shared workers,
+  // it's copied from the shadow page.
   void set_service_worker_provider_id(int id);
   void set_is_controlled_by_service_worker(
       blink::mojom::ControllerServiceWorkerMode mode);
-  void set_parent_frame_id(int id);
+  void set_ancestor_frame_id(int id);
   void set_site_for_cookies(const blink::WebURL& site_for_cookies);
   // Sets whether the worker context is a secure context.
   // https://w3c.github.io/webappsec-secure-contexts/
@@ -188,8 +190,11 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   std::unique_ptr<blink::WebDocumentSubresourceFilter::Builder>
       subresource_filter_builder_;
+  // For dedicated workers, this is the ancestor frame (the parent frame for
+  // non-nested workers, the closest ancestor for nested workers). For shared
+  // workers, this is the shadow page.
   bool is_on_sub_frame_ = false;
-  int parent_frame_id_ = MSG_ROUTING_NONE;
+  int ancestor_frame_id_ = MSG_ROUTING_NONE;
   GURL site_for_cookies_;
   bool is_secure_context_ = false;
   GURL origin_url_;

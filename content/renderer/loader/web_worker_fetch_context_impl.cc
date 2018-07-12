@@ -181,21 +181,38 @@ void WebWorkerFetchContextImpl::SetTerminateSyncLoadEvent(
 
 std::unique_ptr<blink::WebWorkerFetchContext>
 WebWorkerFetchContextImpl::CloneForNestedWorker() {
-  // TODO(japhet?): This doens't plumb service worker state to nested workers,
-  // because dedicated workers in service worker-controlled documents are
-  // currently not spec compliant and we don't want to propagate the wrong
-  // behavior. See https://crbug.com/731604
+  mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
+  mojom::ServiceWorkerWorkerClientPtr service_worker_client_ptr;
+  service_worker_client_request = mojo::MakeRequest(&service_worker_client_ptr);
+  service_worker_worker_client_registry_->RegisterWorkerClient(
+      std::move(service_worker_client_ptr));
+
+  mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+      service_worker_worker_client_registry_ptr_info;
+  service_worker_worker_client_registry_->CloneWorkerClientRegistry(
+      mojo::MakeRequest(&service_worker_worker_client_registry_ptr_info));
+
+  mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    service_worker_container_host_->CloneForWorker(
+        mojo::MakeRequest(&host_ptr_info));
+  }
+
   auto new_context = std::make_unique<WebWorkerFetchContextImpl>(
-      renderer_preferences_, mojom::ServiceWorkerWorkerClientRequest(),
-      mojom::ServiceWorkerWorkerClientRegistryPtrInfo(),
-      mojom::ServiceWorkerContainerHostPtrInfo(), loader_factory_->Clone(),
+      renderer_preferences_, std::move(service_worker_client_request),
+      std::move(service_worker_worker_client_registry_ptr_info),
+      std::move(host_ptr_info), loader_factory_->Clone(),
       fallback_factory_->Clone(),
       throttle_provider_ ? throttle_provider_->Clone() : nullptr,
       websocket_handshake_throttle_provider_
           ? websocket_handshake_throttle_provider_->Clone()
           : nullptr,
       thread_safe_sender_.get(), service_manager_connection_->Clone());
+  new_context->service_worker_provider_id_ = service_worker_provider_id_;
+  new_context->is_controlled_by_service_worker_ =
+      is_controlled_by_service_worker_;
   new_context->is_on_sub_frame_ = is_on_sub_frame_;
+  new_context->ancestor_frame_id_ = ancestor_frame_id_;
   new_context->appcache_host_id_ = appcache_host_id_;
   return new_context;
 }
@@ -263,11 +280,11 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
 
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_service_worker_provider_id(service_worker_provider_id_);
-  extra_data->set_render_frame_id(parent_frame_id_);
+  extra_data->set_render_frame_id(ancestor_frame_id_);
   extra_data->set_initiated_in_secure_context(is_secure_context_);
   if (throttle_provider_) {
     extra_data->set_url_loader_throttles(throttle_provider_->CreateThrottles(
-        parent_frame_id_, request, WebURLRequestToResourceType(request)));
+        ancestor_frame_id_, request, WebURLRequestToResourceType(request)));
   }
   request.SetExtraData(std::move(extra_data));
   request.SetAppCacheHostID(appcache_host_id_);
@@ -306,19 +323,19 @@ blink::WebURL WebWorkerFetchContextImpl::SiteForCookies() const {
 }
 
 void WebWorkerFetchContextImpl::DidRunContentWithCertificateErrors() {
-  Send(new FrameHostMsg_DidRunContentWithCertificateErrors(parent_frame_id_));
+  Send(new FrameHostMsg_DidRunContentWithCertificateErrors(ancestor_frame_id_));
 }
 
 void WebWorkerFetchContextImpl::DidDisplayContentWithCertificateErrors() {
   Send(new FrameHostMsg_DidDisplayContentWithCertificateErrors(
-      parent_frame_id_));
+      ancestor_frame_id_));
 }
 
 void WebWorkerFetchContextImpl::DidRunInsecureContent(
     const blink::WebSecurityOrigin& origin,
     const blink::WebURL& url) {
   Send(new FrameHostMsg_DidRunInsecureContent(
-      parent_frame_id_, GURL(origin.ToString().Utf8()), url));
+      ancestor_frame_id_, GURL(origin.ToString().Utf8()), url));
 }
 
 void WebWorkerFetchContextImpl::SetSubresourceFilterBuilder(
@@ -339,7 +356,7 @@ WebWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle() {
   if (!websocket_handshake_throttle_provider_)
     return nullptr;
   return websocket_handshake_throttle_provider_->CreateThrottle(
-      parent_frame_id_);
+      ancestor_frame_id_);
 }
 
 void WebWorkerFetchContextImpl::set_service_worker_provider_id(int id) {
@@ -351,8 +368,8 @@ void WebWorkerFetchContextImpl::set_is_controlled_by_service_worker(
   is_controlled_by_service_worker_ = mode;
 }
 
-void WebWorkerFetchContextImpl::set_parent_frame_id(int id) {
-  parent_frame_id_ = id;
+void WebWorkerFetchContextImpl::set_ancestor_frame_id(int id) {
+  ancestor_frame_id_ = id;
 }
 
 void WebWorkerFetchContextImpl::set_site_for_cookies(
