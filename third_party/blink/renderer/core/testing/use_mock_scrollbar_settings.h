@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_USE_MOCK_SCROLLBAR_SETTINGS_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_USE_MOCK_SCROLLBAR_SETTINGS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_USE_MOCK_SCROLLBAR_SETTINGS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_USE_MOCK_SCROLLBAR_SETTINGS_H_
 
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -48,4 +48,4 @@ class UseMockScrollbarSettings : private ScopedOverlayScrollbarsForTest {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_USE_MOCK_SCROLLBAR_SETTINGS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_USE_MOCK_SCROLLBAR_SETTINGS_H_

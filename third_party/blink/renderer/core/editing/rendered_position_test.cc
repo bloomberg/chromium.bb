@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_selection.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/platform/testing/use_mock_scrollbar_settings.h"
+#include "third_party/blink/renderer/core/testing/use_mock_scrollbar_settings.h"
 
 namespace blink {
 
