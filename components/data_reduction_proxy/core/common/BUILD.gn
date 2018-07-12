@@ -45,6 +45,7 @@ template("common_tmpl") {
       "//components/data_reduction_proxy/proto:data_reduction_proxy_proto",
       "//components/variations",
       "//google_apis",
+      "//services/network/public/cpp",
     ]
 
     defines = [ "USE_GOOGLE_API_KEYS" ]

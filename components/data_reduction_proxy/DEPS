@@ -7,6 +7,7 @@ include_rules = [
   "+crypto",
   "+google_apis",
   "+net",
+  "+services/network/public/cpp",
 
   # Data Reduction Proxy is a layered component; subdirectories must explicitly
   # introduce the ability to use the content layer as appropriate.

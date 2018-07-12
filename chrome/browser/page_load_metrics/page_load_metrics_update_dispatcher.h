@@ -109,6 +109,7 @@ class PageLoadMetricsUpdateDispatcher {
     virtual void OnSubframeMetadataChanged() = 0;
     virtual void UpdateFeaturesUsage(
         const mojom::PageLoadFeatures& new_features) = 0;
+    virtual void UpdateDataUse(const mojom::PageLoadDataUse& new_data_use) = 0;
   };
 
   // The |client| instance must outlive this object.
@@ -121,7 +122,8 @@ class PageLoadMetricsUpdateDispatcher {
   void UpdateMetrics(content::RenderFrameHost* render_frame_host,
                      const mojom::PageLoadTiming& new_timing,
                      const mojom::PageLoadMetadata& new_metadata,
-                     const mojom::PageLoadFeatures& new_features);
+                     const mojom::PageLoadFeatures& new_features,
+                     const mojom::PageLoadDataUse& new_data_use);
 
   // This method is only intended to be called for PageLoadFeatures being
   // recorded directly from the browser process. Features coming from the
@@ -157,6 +159,8 @@ class PageLoadMetricsUpdateDispatcher {
 
   void MaybeDispatchTimingUpdates(bool did_merge_new_timing_value);
   void DispatchTimingUpdates();
+
+  void UpdateDataUse(const mojom::PageLoadDataUse& new_data_use);
 
   // The client is guaranteed to outlive this object.
   Client* const client_;
