@@ -297,9 +297,11 @@ bool UiElement::PrepareToDraw() {
   return false;
 }
 
-bool UiElement::UpdateTexture() {
+bool UiElement::HasDirtyTexture() const {
   return false;
 }
+
+void UiElement::UpdateTexture() {}
 
 bool UiElement::IsHitTestable() const {
   return IsVisible() && hit_testable_;

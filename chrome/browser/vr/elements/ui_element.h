@@ -136,7 +136,9 @@ class VR_EXPORT UiElement : public cc::AnimationTarget {
   virtual bool PrepareToDraw();
 
   // Returns true if the element updated its texture.
-  virtual bool UpdateTexture();
+  virtual bool HasDirtyTexture() const;
+
+  virtual void UpdateTexture();
 
   bool IsHitTestable() const;
 

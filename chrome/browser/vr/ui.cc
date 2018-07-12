@@ -601,6 +601,14 @@ gfx::Transform Ui::GetContentWorldSpaceTransform() {
   return GetContentElement()->world_space_transform();
 }
 
+bool Ui::SceneHasDirtyTextures() const {
+  return scene_->HasDirtyTextures();
+}
+
+void Ui::UpdateSceneTextures() {
+  scene_->UpdateTextures();
+}
+
 std::vector<TabModel>::iterator Ui::FindTab(int id,
                                             std::vector<TabModel>* tabs) {
   return std::find_if(tabs->begin(), tabs->end(),

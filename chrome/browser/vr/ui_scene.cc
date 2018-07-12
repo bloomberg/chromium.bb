@@ -71,6 +71,18 @@ UiElement* FindElement(UiElement* e, P predicate) {
   return nullptr;
 }
 
+template <typename P>
+bool AnyVisibleElementSatisfiesPredicate(UiElement* root, P predicate) {
+  if (!root->IsVisible())
+    return false;
+  if (predicate(root))
+    return true;
+  for (auto& child : root->children())
+    if (AnyVisibleElementSatisfiesPredicate(child.get(), predicate))
+      return true;
+  return false;
+}
+
 void InitializeElementRecursive(UiElement* e, SkiaSurfaceProvider* provider) {
   e->Initialize(provider);
   for (auto& child : e->children())
@@ -187,16 +199,20 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
   return scene_dirty;
 }
 
-bool UiScene::UpdateTextures() {
+bool UiScene::HasDirtyTextures() const {
+  return AnyVisibleElementSatisfiesPredicate(
+      root_element_.get(),
+      [](UiElement* element) { return element->HasDirtyTexture(); });
+}
+
+void UiScene::UpdateTextures() {
   TRACE_EVENT0("gpu", "UiScene::UpdateTextures");
-  bool needs_redraw = false;
   std::vector<UiElement*> elements = GetVisibleElementsMutable();
   for (auto* element : elements) {
-    needs_redraw |= element->UpdateTexture();
+    element->UpdateTexture();
     element->set_update_phase(kUpdatedTextures);
   }
   FrameLifecycle::set_phase(kUpdatedTextures);
-  return needs_redraw;
 }
 
 UiElement& UiScene::root_element() {
