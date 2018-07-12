@@ -746,7 +746,7 @@ Polymer({
       ],
       [
         settings.ChromeCleanerCardState.CLEANUP_SUCCEEDED, {
-          title: this.i18n('chromeCleanupTitleRemoved'),
+          title: this.i18nAdvanced('chromeCleanupTitleRemoved', {tags: ['a']}),
           explanation: null,
           icon: icons.DONE,
           actionButton: null,
