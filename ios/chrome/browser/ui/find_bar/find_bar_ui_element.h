@@ -17,13 +17,13 @@
 - (void)updateResultsLabelWithText:(NSString*)text;
 
 // The textfield with search term.
-@property(nonatomic, weak) UITextField* inputField;
+@property(nonatomic, strong) UITextField* inputField;
 // Button to go to previous search result.
-@property(nonatomic, weak) UIButton* previousButton;
+@property(nonatomic, strong) UIButton* previousButton;
 // Button to go to next search result.
-@property(nonatomic, weak) UIButton* nextButton;
+@property(nonatomic, strong) UIButton* nextButton;
 // Button to dismiss Find in Page.
-@property(nonatomic, weak) UIButton* closeButton;
+@property(nonatomic, strong) UIButton* closeButton;
 
 @end
 
