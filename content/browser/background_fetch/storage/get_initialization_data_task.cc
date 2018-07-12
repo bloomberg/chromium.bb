@@ -6,10 +6,13 @@
 
 #include "base/barrier_closure.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "ui/gfx/image/image.h"
 #include "url/origin.h"
 
 namespace content {
@@ -199,6 +202,48 @@ class GetActiveRequestsTask : public InitializationSubTask {
   DISALLOW_COPY_AND_ASSIGN(GetActiveRequestsTask);
 };
 
+// Deserializes the icon and creates an SkBitmap from it.
+class DeserializeIconTask : public InitializationSubTask {
+ public:
+  DeserializeIconTask(DatabaseTaskHost* host,
+                      const SubTaskInit& sub_task_init,
+                      base::OnceClosure done_closure,
+                      std::string* serialized_icon)
+      : InitializationSubTask(host, sub_task_init, std::move(done_closure)),
+        serialized_icon_(serialized_icon),
+        weak_factory_(this) {}
+
+  ~DeserializeIconTask() override = default;
+
+  void Start() override {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+         base::TaskPriority::BACKGROUND},
+        base::BindOnce(&DeserializeIcon, std::move(serialized_icon_)),
+        base::BindOnce(&DeserializeIconTask::StoreIcon,
+                       weak_factory_.GetWeakPtr()));
+  }
+
+ private:
+  static SkBitmap DeserializeIcon(
+      std::unique_ptr<std::string> serialized_icon) {
+    return gfx::Image::CreateFrom1xPNGBytes(
+               reinterpret_cast<const unsigned char*>(serialized_icon->c_str()),
+               serialized_icon->size())
+        .AsBitmap();
+  }
+
+  void StoreIcon(SkBitmap icon) {
+    sub_task_init().initialization_data->icon = std::move(icon);
+    FinishTask();
+  }
+
+  std::unique_ptr<std::string> serialized_icon_;
+
+  base::WeakPtrFactory<DeserializeIconTask> weak_factory_;  // Keep as last.
+};
+
 // Fills the BackgroundFetchInitializationData with all the relevant information
 // stored in the BackgroundFetchMetadata proto.
 class FillFromMetadataTask : public InitializationSubTask {
@@ -304,7 +349,17 @@ class FillFromMetadataTask : public InitializationSubTask {
       }
     }
 
-    FinishTask();
+    if (!metadata.icon().empty()) {
+      // Start an icon deserialization SubTask on another thread, then finish.
+      AddSubTask(std::make_unique<DeserializeIconTask>(
+          this, sub_task_init(),
+          base::BindOnce(&FillFromMetadataTask::FinishTask,
+                         weak_factory_.GetWeakPtr()),
+          metadata.release_icon()));
+    } else {
+      // Immediately finish.
+      FinishTask();
+    }
   }
 
   base::WeakPtrFactory<FillFromMetadataTask> weak_factory_;  // Keep as last.
@@ -325,7 +380,7 @@ class FillBackgroundFetchInitializationDataTask : public InitializationSubTask {
   ~FillBackgroundFetchInitializationDataTask() override = default;
 
   void Start() override {
-    // We need 4 queries to get the initialization data. These are wrapped
+    // We need 3 queries to get the initialization data. These are wrapped
     // in a BarrierClosure to avoid querying them serially.
     // 1. Metadata
     // 2. Active Requests
