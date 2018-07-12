@@ -30,10 +30,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-
-typedef unsigned AXID;
 
 namespace blink {
 
