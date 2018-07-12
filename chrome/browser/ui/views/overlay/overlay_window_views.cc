@@ -258,11 +258,19 @@ void OverlayWindowViews::SetUpViews() {
   play_pause_controls_view_->SetToggledTooltipText(pause_button_label);
   play_pause_controls_view_->SetInstallFocusRingOnFocus(true);
 
-  // --------------------------------------------------------------------------
-  // Paint to ui::Layers to use in the OverlaySurfaceEmbedder.
+  // Add as child views to this widget. ---------------------------------------
+  GetContentsView()->AddChildView(controls_background_view_.get());
+  GetContentsView()->AddChildView(close_controls_view_.get());
+  GetContentsView()->AddChildView(play_pause_controls_view_.get());
+
+  // Paint to ui::Layers. -----------------------------------------------------
   video_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   close_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   play_pause_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+
+  // Controls should have a transparent background. ---------------------------
+  close_controls_view_->layer()->SetFillsBoundsOpaquely(false);
+  play_pause_controls_view_->layer()->SetFillsBoundsOpaquely(false);
 
   UpdateControlsVisibility(false);
 }
@@ -287,6 +295,9 @@ void OverlayWindowViews::UpdateVideoLayerSizeWithAspectRatio(
   video_bounds_.set_origin(origin);
   video_bounds_.set_size(letterbox_region.size());
 
+  // Update the layout of the controls.
+  UpdateControlsBounds();
+
   // Update the surface layer bounds to scale with window size changes.
   controller_->UpdateLayerBounds();
 }
@@ -295,6 +306,13 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
   GetControlsBackgroundLayer()->SetVisible(is_visible);
   GetCloseControlsLayer()->SetVisible(is_visible);
   GetPlayPauseControlsLayer()->SetVisible(is_visible);
+}
+
+void OverlayWindowViews::UpdateControlsBounds() {
+  controls_background_view_->SetBoundsRect(
+      gfx::Rect(gfx::Point(0, 0), GetBounds().size()));
+  close_controls_view_->SetBoundsRect(GetCloseControlsBounds());
+  play_pause_controls_view_->SetBoundsRect(GetPlayPauseControlsBounds());
 }
 
 void OverlayWindowViews::UpdateCloseControlsSize() {
@@ -398,6 +416,9 @@ void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
 
   // Update the views::Widget bounds to adhere to sizing spec.
   SetBounds(CalculateAndUpdateWindowBounds());
+
+  // Update the layout of the controls.
+  UpdateControlsBounds();
 }
 
 void OverlayWindowViews::SetPlaybackState(PlaybackState playback_state) {

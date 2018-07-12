@@ -42,12 +42,7 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   void SetPlaybackState(PlaybackState playback_state) override;
   ui::Layer* GetWindowBackgroundLayer() override;
   ui::Layer* GetVideoLayer() override;
-  ui::Layer* GetControlsBackgroundLayer() override;
-  ui::Layer* GetCloseControlsLayer() override;
-  ui::Layer* GetPlayPauseControlsLayer() override;
   gfx::Rect GetVideoBounds() override;
-  gfx::Rect GetCloseControlsBounds() override;
-  gfx::Rect GetPlayPauseControlsBounds() override;
 
   // views::Widget:
   gfx::Size GetMinimumSize() const override;
@@ -62,7 +57,16 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   void OnNativeBlur() override;
   void OnNativeWidgetSizeChanged(const gfx::Size& new_size) override;
 
+  // Gets the bounds of the controls.
+  gfx::Rect GetCloseControlsBounds();
+  gfx::Rect GetPlayPauseControlsBounds();
+
  private:
+  // Gets the internal |ui::Layer| of the controls.
+  ui::Layer* GetControlsBackgroundLayer();
+  ui::Layer* GetCloseControlsLayer();
+  ui::Layer* GetPlayPauseControlsLayer();
+
   // Determine the intended bounds of |this|. This should be called when there
   // is reason for the bounds to change, such as switching primary displays or
   // playing a new video (i.e. different aspect ratio). This also updates
@@ -78,6 +82,9 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
 
   // Updates the controls view::Views to reflect |is_visible|.
   void UpdateControlsVisibility(bool is_visible);
+
+  // Updates the bounds of the controls.
+  void UpdateControlsBounds();
 
   // Update the size of |close_controls_view_| as the size of the window
   // changes. This will scale to one of three sizes, based off the current width

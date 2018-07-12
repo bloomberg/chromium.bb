@@ -94,12 +94,7 @@ class TestOverlayWindow : public OverlayWindow {
   void SetPlaybackState(PlaybackState playback_state) override {}
   ui::Layer* GetWindowBackgroundLayer() override { return nullptr; }
   ui::Layer* GetVideoLayer() override { return nullptr; }
-  ui::Layer* GetControlsBackgroundLayer() override { return nullptr; }
-  ui::Layer* GetCloseControlsLayer() override { return nullptr; }
-  ui::Layer* GetPlayPauseControlsLayer() override { return nullptr; }
   gfx::Rect GetVideoBounds() override { return gfx::Rect(); }
-  gfx::Rect GetCloseControlsBounds() override { return gfx::Rect(); }
-  gfx::Rect GetPlayPauseControlsBounds() override { return gfx::Rect(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestOverlayWindow);
