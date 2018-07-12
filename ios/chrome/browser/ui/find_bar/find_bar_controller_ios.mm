@@ -15,8 +15,11 @@
 #import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_ui_element.h"
+#import "ios/chrome/browser/ui/find_bar/find_bar_view.h"
 #import "ios/chrome/browser/ui/find_bar/legacy_find_bar_view.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -126,11 +129,30 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   } else {
     findBarBackground =
         [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 56)];
-    findBarBackground.backgroundColor = [UIColor whiteColor];
+    if (self.isIncognito) {
+      findBarBackground.backgroundColor =
+          [UIColor colorWithWhite:115 / 255.0 alpha:1];
+    } else {
+      findBarBackground.backgroundColor = [UIColor whiteColor];
+    }
   }
 
-  self.findBarView = [[LegacyFindBarView alloc]
-      initWithDarkAppearance:self.isIncognito && !IsIPadIdiom()];
+  if (IsUIRefreshPhase1Enabled()) {
+    FindBarView* findBarView =
+        [[FindBarView alloc] initWithDarkAppearance:self.isIncognito];
+    self.findBarView = findBarView;
+    if (self.isIncognito) {
+      findBarBackground.backgroundColor =
+          UIColorFromRGB(kIncognitoToolbarBackgroundColor);
+    } else {
+      findBarBackground.backgroundColor =
+          UIColorFromRGB(kToolbarBackgroundColor);
+    }
+  } else {
+    self.findBarView = [[LegacyFindBarView alloc]
+        initWithDarkAppearance:self.isIncognito && !IsIPadIdiom()];
+  }
+
   [findBarBackground addSubview:self.findBarView];
   self.findBarView.translatesAutoresizingMaskIntoConstraints = NO;
   NSMutableArray* constraints = [[NSMutableArray alloc] init];
@@ -199,10 +221,6 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   CGRect frame = self.view.frame;
   frame.size.height = [self findBarHeight];
   self.view.frame = frame;
-
-  if (self.isIncognito) {
-    [self.view setBackgroundColor:[UIColor colorWithWhite:115 / 255.0 alpha:1]];
-  }
 }
 
 - (void)setUpIPad {
