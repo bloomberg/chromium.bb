@@ -153,10 +153,16 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   // corresponding process type. Exposed in the header for testing.
   static content::ProcessType BitIndexToProcessType(uint32_t bit_index);
 
-  // Finds or creates a mutable ModuleInfo entry.
-  ModuleInfo* FindOrCreateModuleInfo(const base::FilePath& module_path,
-                                     uint32_t module_size,
-                                     uint32_t module_time_date_stamp);
+  ModuleInfo* CreateModuleInfo(const base::FilePath& module_path,
+                               uint32_t module_size,
+                               uint32_t module_time_date_stamp);
+
+  // Finds or creates a mutable ModuleInfo entry. Returns true if the module
+  // info was created.
+  bool FindOrCreateModuleInfo(const base::FilePath& module_path,
+                              uint32_t module_size,
+                              uint32_t module_time_date_stamp,
+                              ModuleInfo** module_info);
 
   // Returns true if the enumeration of the IMEs and the shell extensions is
   // finished.

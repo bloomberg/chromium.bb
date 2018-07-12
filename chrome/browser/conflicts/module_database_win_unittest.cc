@@ -162,17 +162,24 @@ class DummyObserver : public ModuleDatabaseObserver {
     new_module_count_++;
   }
 
+  void OnKnownModuleLoaded(const ModuleInfoKey& module_key,
+                           const ModuleInfoData& module_data) override {
+    known_module_loaded_count_++;
+  }
+
   void OnModuleDatabaseIdle() override {
     on_module_database_idle_called_ = true;
   }
 
   int new_module_count() { return new_module_count_; }
+  int known_module_loaded_count() { return known_module_loaded_count_; }
   bool on_module_database_idle_called() {
     return on_module_database_idle_called_;
   }
 
  private:
   int new_module_count_ = 0;
+  int known_module_loaded_count_ = 0;
   bool on_module_database_idle_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DummyObserver);
@@ -204,6 +211,34 @@ TEST_F(ModuleDatabaseTest, Observers) {
   EXPECT_EQ(1, after_load_observer.new_module_count());
 
   module_database()->RemoveObserver(&after_load_observer);
+}
+
+TEST_F(ModuleDatabaseTest, OnKnownModuleLoaded) {
+  DummyObserver dummy_observer;
+  module_database()->AddObserver(&dummy_observer);
+
+  EXPECT_EQ(0, dummy_observer.new_module_count());
+  EXPECT_EQ(0, dummy_observer.known_module_loaded_count());
+
+  // Assume there is one shell extension.
+  module_database()->OnShellExtensionEnumerated(dll1_, kSize1, kTime1);
+  module_database()->OnShellExtensionEnumerationFinished();
+  module_database()->OnImeEnumerationFinished();
+
+  RunSchedulerUntilIdle();
+
+  EXPECT_EQ(1, dummy_observer.new_module_count());
+  EXPECT_EQ(0, dummy_observer.known_module_loaded_count());
+
+  // Pretend the shell extension loads.
+  module_database()->OnModuleLoad(kProcessType1, dll1_, kSize1, kTime1,
+                                  kGoodAddress1);
+  RunSchedulerUntilIdle();
+
+  EXPECT_EQ(1, dummy_observer.new_module_count());
+  EXPECT_EQ(1, dummy_observer.known_module_loaded_count());
+
+  module_database()->RemoveObserver(&dummy_observer);
 }
 
 // Tests the idle cycle of the ModuleDatabase.
