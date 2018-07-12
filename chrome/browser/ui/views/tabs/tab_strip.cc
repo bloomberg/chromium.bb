@@ -1489,8 +1489,6 @@ void TabStrip::Init() {
   // So we get enter/exit on children to switch stacked layout on and off.
   set_notify_enter_exit_on_child(true);
 
-  new_tab_button_bounds_.set_size(GetLayoutSize(NEW_TAB_BUTTON, IsIncognito()));
-  new_tab_button_bounds_.Inset(0, 0, 0, -NewTabButton::GetTopOffset());
   new_tab_button_ = new NewTabButton(this, this);
   new_tab_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
@@ -1501,6 +1499,8 @@ void TabStrip::Init() {
   new_tab_button_->SetEventTargeter(
       std::make_unique<views::ViewTargeter>(new_tab_button_));
   AddChildView(new_tab_button_);
+
+  new_tab_button_bounds_.set_size(new_tab_button_->GetPreferredSize());
 
   if (drop_indicator_width == 0) {
     // Direction doesn't matter, both images are the same size.

@@ -79,6 +79,7 @@ class NewTabButton : public views::ImageButton,
   void PaintButtonContents(gfx::Canvas* canvas) override;
   void Layout() override;
   void OnThemeChanged() override;
+  gfx::Size CalculatePreferredSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // views::MaskedTargeterDelegate:
@@ -89,12 +90,6 @@ class NewTabButton : public views::ImageButton,
 
   // Returns whether this button should draw an incognito icon.
   bool ShouldDrawIncognitoIcon() const;
-
-  // Returns the gfx::Rect around the visible portion of the New Tab Button.
-  // Note: This is different than the rect around the entire New Tab Button as
-  // it extends to the top of the tabstrip for Fitts' Law interaction in a
-  // maximized window. Used for anchoring the NewTabPromo.
-  gfx::Rect GetVisibleBounds() const;
 
   // Returns the radius to use for the button corners (in newer material UI).
   int GetCornerRadius() const;
