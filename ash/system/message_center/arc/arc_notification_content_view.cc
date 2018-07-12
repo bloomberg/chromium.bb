@@ -623,11 +623,8 @@ void ArcNotificationContentView::ActivateWidget(bool activate) {
 
   // Make the widget active.
   if (activate) {
-    if (!GetWidget()->IsActive()) {
-      GetWidget()->widget_delegate()->set_can_activate(true);
-      GetWidget()->Activate();
-    }
-
+    GetWidget()->widget_delegate()->set_can_activate(true);
+    GetWidget()->Activate();
     surface_->FocusSurfaceWindow();
   } else {
     GetWidget()->widget_delegate()->set_can_activate(false);
