@@ -444,7 +444,19 @@ TEST(MediaCodecBridgeTest, H264VideoEncodeAndValidate) {
   const int bit_rate = 300000;
   const int frame_rate = 30;
   const int i_frame_interval = 20;
-  const int color_format = COLOR_FORMAT_YUV420_SEMIPLANAR;
+  const std::set<int> supported_color_formats =
+      MediaCodecUtil::GetEncoderColorFormats("video/avc");
+
+  int color_format;
+  if (supported_color_formats.count(COLOR_FORMAT_YUV420_SEMIPLANAR) > 0) {
+    color_format = COLOR_FORMAT_YUV420_SEMIPLANAR;
+  } else if (supported_color_formats.count(COLOR_FORMAT_YUV420_PLANAR) > 0) {
+    color_format = COLOR_FORMAT_YUV420_PLANAR;
+  } else {
+    VLOG(0) << "Could not run test - YUV420_PLANAR and YUV420_SEMIPLANAR "
+               "unavailable for h264 encode.";
+    return;
+  }
 
   std::unique_ptr<MediaCodecBridge> media_codec(
       MediaCodecBridgeImpl::CreateVideoEncoder(
