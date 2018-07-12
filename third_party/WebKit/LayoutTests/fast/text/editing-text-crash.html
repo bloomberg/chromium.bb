@@ -1,13 +1,6 @@
 <!DOCTYPE html>
-<script>
-if (window.testRunner)
-  testRunner.dumpAsText();
-
-window.onload = function() {
-  document.getElementById('object').appendChild(document.getElementById('meta'));
-  document.execCommand('FindString', false, 'test');
-};
-</script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <style>
   caption:first-line { visibility: hidden; }
   caption:first-letter { color: red; }
@@ -21,3 +14,9 @@ The test passes if it does not CRASH in debug builds.
     <caption dir="rtl">)))TQ?</caption>
   </table>
 </object>
+<script>
+test(() => {
+  document.getElementById('object').appendChild(document.getElementById('meta'));
+  document.execCommand('FindString', false, 'test');
+}, 'Should not crash');
+</script>
