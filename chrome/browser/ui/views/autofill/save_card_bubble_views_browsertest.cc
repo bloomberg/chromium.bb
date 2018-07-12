@@ -509,13 +509,16 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
 
   // The textfield should be prefilled with the name on the user's Google
-  // Account, and UMA should have logged its value's existence.
+  // Account, and UMA should have logged its value's existence. Because the
+  // textfield has a value, the tooltip explaining that the name came from the
+  // user's Google Account should also be visible.
   views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
       FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
   EXPECT_EQ(cardholder_name_textfield->text(),
             base::ASCIIToUTF16("John Smith"));
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCardCardholderNamePrefilled", true, 1);
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TOOLTIP));
 }
 
 // Tests the upload save bubble. Ensures that if cardholder name is explicitly
@@ -546,12 +549,14 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
 
   // The textfield should be blank, and UMA should have logged its value's
-  // absence.
+  // absence. Because the textfield is blank, the tooltip explaining that the
+  // name came from the user's Google Account should NOT be visible.
   views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
       FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
   EXPECT_TRUE(cardholder_name_textfield->text().empty());
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCardCardholderNamePrefilled", false, 1);
+  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TOOLTIP));
 }
 
 // TODO(jsaul): Only *part* of the legal message StyledLabel is clickable, and

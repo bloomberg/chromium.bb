@@ -241,7 +241,7 @@
     Cardholder name
   </message>
   <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME_TOOLTIP" desc="The tooltip text for the cardholder name textfield.">
-    This name will also be used when creating your Google payments account.
+    This name is from your Google Account.
   </message>
 
   <!-- Autofill Local card migration bubble or prompt -->
