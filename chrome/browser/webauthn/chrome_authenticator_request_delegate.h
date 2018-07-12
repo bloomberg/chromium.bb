@@ -10,6 +10,8 @@
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 
+class Profile;
+
 namespace content {
 class BrowserContext;
 class RenderFrameHost;
@@ -26,18 +28,22 @@ class ChromeAuthenticatorRequestDelegate
       public AuthenticatorRequestDialogModel::Observer {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+#if defined(OS_MACOSX)
+  static TouchIdAuthenticatorConfig TouchIdAuthenticatorConfigForProfile(
+      Profile* profile);
+#endif  // defined(OS_MACOSX)
 
   // The |render_frame_host| must outlive this instance.
   explicit ChromeAuthenticatorRequestDelegate(
       content::RenderFrameHost* render_frame_host);
   ~ChromeAuthenticatorRequestDelegate() override;
 
-  base::WeakPtr<ChromeAuthenticatorRequestDelegate> AsWeakPtr();
-
 #if defined(OS_MACOSX)
-  std::string TouchIdAuthenticatorKeychainAccessGroup() override;
-  std::string TouchIdMetadataSecret() override;
-#endif
+  base::Optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig()
+      const override;
+#endif  // defined(OS_MACOSX)
+
+  base::WeakPtr<ChromeAuthenticatorRequestDelegate> AsWeakPtr();
 
  private:
   content::RenderFrameHost* render_frame_host() const {

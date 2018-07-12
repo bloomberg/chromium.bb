@@ -816,12 +816,15 @@ void AuthenticatorImpl::Cleanup() {
 std::unique_ptr<device::FidoAuthenticator>
 AuthenticatorImpl::MaybeCreatePlatformAuthenticator() {
 #if defined(OS_MACOSX)
-  return device::fido::mac::TouchIdAuthenticator::CreateIfAvailable(
-      request_delegate_->TouchIdAuthenticatorKeychainAccessGroup(),
-      request_delegate_->TouchIdMetadataSecret());
-#else
+  auto opt_authenticator_config =
+      request_delegate_->GetTouchIdAuthenticatorConfig();
+  if (opt_authenticator_config) {
+    return device::fido::mac::TouchIdAuthenticator::CreateIfAvailable(
+        std::move(opt_authenticator_config->keychain_access_group),
+        std::move(opt_authenticator_config->metadata_secret));
+  }
+#endif  // defined(OS_MACOSX)
   return nullptr;
-#endif
 }
 
 }  // namespace content

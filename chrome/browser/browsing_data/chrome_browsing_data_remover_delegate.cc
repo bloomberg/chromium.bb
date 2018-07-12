@@ -56,6 +56,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -128,6 +129,10 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user.h"
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_MACOSX)
+#include "device/fido/mac/browsing_data_deletion.h"
+#endif  // defined(OS_MACOSX)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
@@ -782,6 +787,14 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         ->GetNetworkContext()
         ->ClearHttpAuthCache(delete_begin_,
                              CreatePendingTaskCompletionClosureForMojo());
+
+#if defined(OS_MACOSX)
+    auto authenticator_config = ChromeAuthenticatorRequestDelegate::
+        TouchIdAuthenticatorConfigForProfile(profile_);
+    device::fido::mac::DeleteWebAuthnCredentials(
+        authenticator_config.keychain_access_group,
+        authenticator_config.metadata_secret, delete_begin_, delete_end_);
+#endif  // defined(OS_MACOSX)
   }
 
   if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES) {
