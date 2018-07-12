@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -77,7 +78,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
                                 int max_title_bar_button_width);
 
   // Whether |window| hosts a remote client.
-  static bool HasRemoteClient(aura::Window* window);
+  static bool HasRemoteClient(const aura::Window* window);
 
   WindowServiceDelegate* delegate() { return delegate_; }
 
@@ -95,6 +96,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // Asks the client that created |window| to close |window|. |window| must be
   // a top-level window.
   void RequestClose(aura::Window* window);
+
+  // Returns an id useful for debugging. See ServerWindow::GetIdForDebugging()
+  // for details.
+  std::string GetIdForDebugging(aura::Window* window);
 
   // service_manager::Service:
   void OnStart() override;

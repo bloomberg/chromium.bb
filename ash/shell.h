@@ -569,7 +569,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   WindowSelectorController* window_selector_controller() {
     return window_selector_controller_.get();
   }
-  // WindowServiceOwner is null in mash.
   WindowServiceOwner* window_service_owner() {
     return window_service_owner_.get();
   }

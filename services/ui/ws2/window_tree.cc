@@ -186,6 +186,12 @@ void WindowTree::OnEmbeddingDestroyed(Embedding* embedding) {
   DeleteClientRoot(iter->get(), DeleteClientRootReason::kDeleted);
 }
 
+ClientWindowId WindowTree::ClientWindowIdForWindow(aura::Window* window) {
+  auto iter = window_to_client_window_id_map_.find(window);
+  return iter == window_to_client_window_id_map_.end() ? ClientWindowId()
+                                                       : iter->second;
+}
+
 ClientRoot* WindowTree::CreateClientRoot(aura::Window* window,
                                          bool is_top_level) {
   DCHECK(window);
@@ -589,17 +595,22 @@ bool WindowTree::DeleteWindowImpl(const ClientWindowId& window_id) {
   aura::Window* window = GetWindowByClientId(window_id);
   DVLOG(3) << "deleting window client=" << client_id_
            << " client window_id=" << window_id.ToString();
-  if (!window)
+  if (!window) {
+    DVLOG(1) << "DeleteWindow failed (no window)";
     return false;
+  }
 
+  const bool is_client_created_window = IsClientCreatedWindow(window);
   auto iter = FindClientRootWithRoot(window);
   if (iter != client_roots_.end()) {
     DeleteClientRoot(iter->get(), DeleteClientRootReason::kUnembed);
-    return true;
-  }
-
-  if (!IsClientCreatedWindow(window))
+    if (!is_client_created_window)
+      return true;
+    // If client created, fall through to delete window.
+  } else if (!is_client_created_window) {
+    DVLOG(1) << "DeleteWindow failed (client did not create window)";
     return false;
+  }
 
   const bool delete_if_owned = true;
   RemoveWindowFromKnownWindows(window, delete_if_owned);

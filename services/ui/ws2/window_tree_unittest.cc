@@ -971,6 +971,29 @@ TEST(WindowTreeTest2, DeleteWindow) {
             SingleChangeToDescription(*setup.changes()));
 }
 
+TEST(WindowTreeTest2, DeleteTopLevel) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  const ClientWindowId top_level_id =
+      setup.window_tree_test_helper()->ClientWindowIdForWindow(top_level);
+  ASSERT_TRUE(top_level);
+  aura::WindowTracker tracker;
+  tracker.Add(top_level);
+  setup.changes()->clear();
+
+  // Ask the tree to delete the window, which should result in deleting the
+  // Window as well responding with success.
+  setup.window_tree_test_helper()->DeleteWindow(top_level);
+  EXPECT_TRUE(tracker.windows().empty());
+  EXPECT_EQ("ChangeCompleted id=1 success=true",
+            SingleChangeToDescription(*setup.changes()));
+
+  // Make sure the WindowTree doesn't have a mapping for the id anymore.
+  EXPECT_FALSE(
+      setup.window_tree_test_helper()->GetWindowByClientId(top_level_id));
+}
+
 TEST(WindowTreeTest2, ExternalDeleteWindow) {
   WindowServiceTestSetup setup;
   aura::Window* window = setup.window_tree_test_helper()->NewWindow();
