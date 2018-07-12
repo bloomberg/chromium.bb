@@ -930,11 +930,8 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
   ASSIGN_MINQ_TABLE(cm->bit_depth, inter_minq);
 
 #if CUSTOMIZED_GF
-  int is_intrl_arf_boost =
+  const int is_intrl_arf_boost =
       gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE;
-#if MATCH_OLD_BITRATE
-  if (cpi->new_bwdref_update_rule == 1) is_intrl_arf_boost = 0;
-#endif
 #else
   const int is_intrl_arf_boost = cpi->refresh_alt2_ref_frame;
 #endif  // CUSTOMIZED_GF

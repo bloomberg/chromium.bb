@@ -2258,7 +2258,7 @@ static int get_refresh_mask(AV1_COMP *cpi) {
   //     LAST3_FRAME.
   refresh_mask |=
       (cpi->refresh_last_frame << cpi->ref_fb_idx[LAST_REF_FRAMES - 1]);
-#if SHIFT_BWDREF_BUF
+#if USE_SYMM_MULTI_LAYER
   refresh_mask |=
       (cpi->new_bwdref_update_rule == 1)
           ? (cpi->refresh_bwd_ref_frame << cpi->ref_fb_idx[EXTREF_FRAME - 1])

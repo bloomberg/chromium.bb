@@ -3311,7 +3311,7 @@ static INLINE void shift_last_ref_frames(AV1_COMP *cpi) {
   }
 }
 
-#if SHIFT_BWDREF_BUF
+#if USE_SYMM_MULTI_LAYER
 // This function is used to shift the virtual indices of bwd reference
 // frames as follows:
 // BWD_REF -> ALT2_REF -> EXT_REF
@@ -3351,7 +3351,7 @@ static INLINE void lshift_bwd_ref_frames(AV1_COMP *cpi) {
         sizeof(cpi->interp_filter_selected[ordered_bwd[i + 1] + LAST_FRAME]));
   }
 }
-#endif  // SHIFT_BWDREF_BUF
+#endif  // USE_SYMM_MULTI_LAYER
 
 #if USE_GF16_MULTI_LAYER
 static void update_reference_frames_gf16(AV1_COMP *cpi) {
@@ -3461,7 +3461,7 @@ static void update_reference_frames(AV1_COMP *cpi) {
     memcpy(cpi->interp_filter_selected[LAST_FRAME],
            cpi->interp_filter_selected[bwdref_to_show],
            sizeof(cpi->interp_filter_selected[bwdref_to_show]));
-#if SHIFT_BWDREF_BUF
+#if USE_SYMM_MULTI_LAYER
     if (cpi->new_bwdref_update_rule == 1) {
       lshift_bwd_ref_frames(cpi);
       // pass outdated forward reference frame (previous LAST3) to the
@@ -3470,7 +3470,7 @@ static void update_reference_frames(AV1_COMP *cpi) {
     } else {
 #endif
       cpi->ref_fb_idx[bwdref_to_show - 1] = tmp;
-#if SHIFT_BWDREF_BUF
+#if USE_SYMM_MULTI_LAYER
     }
 #endif
   } else { /* For non key/golden frames */
@@ -3497,7 +3497,7 @@ static void update_reference_frames(AV1_COMP *cpi) {
 
     // === BWDREF_FRAME ===
     if (cpi->refresh_bwd_ref_frame) {
-#if SHIFT_BWDREF_BUF
+#if USE_SYMM_MULTI_LAYER
       if (cpi->new_bwdref_update_rule) {
         // We shift the backward reference frame as follows:
         // BWDREF -> ALTREF2 -> EXTREF
@@ -3509,11 +3509,11 @@ static void update_reference_frames(AV1_COMP *cpi) {
         rshift_bwd_ref_frames(cpi);
         cpi->ref_fb_idx[BWDREF_FRAME - 1] = tmp;
       } else {
-#endif  // SHIFT_BWDREF_BUF
+#endif  // USE_SYMM_MULTI_LAYER
         ref_cnt_fb(pool->frame_bufs,
                    &cm->ref_frame_map[cpi->ref_fb_idx[BWDREF_FRAME - 1]],
                    cm->new_fb_idx);
-#if SHIFT_BWDREF_BUF
+#if USE_SYMM_MULTI_LAYER
       }
 #endif
       memcpy(cpi->interp_filter_selected[BWDREF_FRAME],
