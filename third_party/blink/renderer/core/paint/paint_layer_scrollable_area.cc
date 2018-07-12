@@ -221,16 +221,6 @@ void PaintLayerScrollableArea::Dispose() {
   if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer())
     sequencer->DidDisposeScrollableArea(*this);
 
-  {
-    // Here using the stale compositing data is in fact what we want to do
-    // because the graphics layer which hasn't been removed yet may be used in
-    // the meantime to try to deliver scroll related updates.
-    DisableCompositingQueryAsserts disabler;
-    GraphicsLayer* graphics_layer = LayerForScrolling();
-    if (graphics_layer)
-      graphics_layer->ScrollableAreaDisposed();
-  }
-
   layer_ = nullptr;
 }
 

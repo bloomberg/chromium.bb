@@ -214,6 +214,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
                      const IntRect& interest_rect) const override;
   bool ShouldThrottleRendering() const override;
   bool IsTrackingRasterInvalidations() const override;
+  void SetOverlayScrollbarsHidden(bool) override;
 
 #if DCHECK_IS_ON()
   void VerifyNotPainting() override;
@@ -270,6 +271,9 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 #endif
 
   String DebugName(const GraphicsLayer*) const override;
+
+  const ScrollableArea* GetScrollableAreaForTesting(
+      const GraphicsLayer*) const override;
 
   LayoutSize ContentOffsetInCompositingLayer() const;
 

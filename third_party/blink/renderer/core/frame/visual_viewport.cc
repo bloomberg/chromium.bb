@@ -992,6 +992,10 @@ ScrollbarTheme& VisualViewport::GetPageScrollbarTheme() const {
   return GetPage().GetScrollbarTheme();
 }
 
+void VisualViewport::SetOverlayScrollbarsHidden(bool hidden) {
+  ScrollableArea::SetScrollbarsHiddenIfOverlay(hidden);
+}
+
 String VisualViewport::DebugName(const GraphicsLayer* graphics_layer) const {
   String name;
   if (graphics_layer == inner_viewport_container_layer_.get()) {
@@ -1013,6 +1017,13 @@ String VisualViewport::DebugName(const GraphicsLayer* graphics_layer) const {
   }
 
   return name;
+}
+
+const ScrollableArea* VisualViewport::GetScrollableAreaForTesting(
+    const GraphicsLayer* layer) const {
+  if (layer == inner_viewport_scroll_layer_.get())
+    return this;
+  return nullptr;
 }
 
 }  // namespace blink

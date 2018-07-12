@@ -62,7 +62,6 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_snap_data.h"
-#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -104,7 +103,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       paint_count_(0),
       contents_layer_(nullptr),
       contents_layer_id_(0),
-      scrollable_area_(nullptr),
       rendering_context3d_(0),
       weak_ptr_factory_(this) {
 #if DCHECK_IS_ON()
@@ -932,16 +930,6 @@ void GraphicsLayer::RemoveLinkHighlight(LinkHighlight* link_highlight) {
   UpdateChildList();
 }
 
-void GraphicsLayer::SetScrollableArea(ScrollableArea* scrollable_area) {
-  if (scrollable_area_ == scrollable_area)
-    return;
-  scrollable_area_ = scrollable_area;
-}
-
-void GraphicsLayer::ScrollableAreaDisposed() {
-  scrollable_area_.Clear();
-}
-
 std::unique_ptr<base::trace_event::TracedValue> GraphicsLayer::TakeDebugInfo(
     cc::Layer* layer) {
   auto traced_value = std::make_unique<base::trace_event::TracedValue>();
@@ -973,8 +961,7 @@ std::unique_ptr<base::trace_event::TracedValue> GraphicsLayer::TakeDebugInfo(
 }
 
 void GraphicsLayer::DidChangeScrollbarsHiddenIfOverlay(bool hidden) {
-  if (scrollable_area_)
-    scrollable_area_->SetScrollbarsHiddenIfOverlay(hidden);
+  client_.SetOverlayScrollbarsHidden(hidden);
 }
 
 PaintController& GraphicsLayer::GetPaintController() const {

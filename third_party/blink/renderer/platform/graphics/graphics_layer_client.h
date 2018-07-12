@@ -35,6 +35,7 @@ namespace blink {
 class GraphicsContext;
 class GraphicsLayer;
 class IntRect;
+class ScrollableArea;
 
 enum GraphicsLayerPaintingPhaseFlags {
   kGraphicsLayerPaintBackground = (1 << 0),
@@ -94,7 +95,14 @@ class PLATFORM_EXPORT GraphicsLayerClient {
 
   virtual bool IsTrackingRasterInvalidations() const { return false; }
 
+  virtual void SetOverlayScrollbarsHidden(bool) {}
+
   virtual String DebugName(const GraphicsLayer*) const = 0;
+
+  virtual const ScrollableArea* GetScrollableAreaForTesting(
+      const GraphicsLayer*) const {
+    return nullptr;
+  }
 
 #if DCHECK_IS_ON()
   // CompositedLayerMapping overrides this to verify that it is not
