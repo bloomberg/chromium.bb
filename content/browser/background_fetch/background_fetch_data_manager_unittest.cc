@@ -1365,12 +1365,16 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
 
   std::vector<ServiceWorkerFetchRequest> requests(2u);
   BackgroundFetchOptions options;
+  options.title = kInitialTitle;
+  options.download_total = 42u;
   blink::mojom::BackgroundFetchError error;
   // Register a Background Fetch.
   BackgroundFetchRegistrationId registration_id(
       sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
 
   CreateRegistration(registration_id, requests, options, SkBitmap(), &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  UpdateRegistrationUI(registration_id, kUpdatedTitle, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   {
     std::vector<BackgroundFetchInitializationData> data =
@@ -1380,6 +1384,9 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
     EXPECT_EQ(data[0].registration_id, registration_id);
     EXPECT_EQ(data[0].registration.unique_id, kExampleUniqueId);
     EXPECT_EQ(data[0].registration.developer_id, kExampleDeveloperId);
+    EXPECT_EQ(data[0].options.title, kInitialTitle);
+    EXPECT_EQ(data[0].options.download_total, 42u);
+    EXPECT_EQ(data[0].ui_title, kUpdatedTitle);
     EXPECT_EQ(data[0].num_requests, requests.size());
     EXPECT_EQ(data[0].num_completed_requests, 0u);
     EXPECT_TRUE(data[0].active_fetch_guids.empty());

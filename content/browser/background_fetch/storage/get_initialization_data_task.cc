@@ -5,9 +5,11 @@
 #include "content/browser/background_fetch/storage/get_initialization_data_task.h"
 
 #include "base/barrier_closure.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "url/origin.h"
 
 namespace content {
@@ -61,6 +63,46 @@ class InitializationSubTask : public DatabaseTask {
   DISALLOW_COPY_AND_ASSIGN(InitializationSubTask);
 };
 
+// Fills the BackgroundFetchInitializationData with the most recent UI title.
+class GetTitleTask : public InitializationSubTask {
+ public:
+  GetTitleTask(DatabaseTaskHost* host,
+               const SubTaskInit& sub_task_init,
+               base::OnceClosure done_closure)
+      : InitializationSubTask(host, sub_task_init, std::move(done_closure)),
+        weak_factory_(this) {}
+
+  ~GetTitleTask() override = default;
+
+  void Start() override {
+    service_worker_context()->GetRegistrationUserData(
+        sub_task_init().service_worker_registration_id,
+        {TitleKey(sub_task_init().unique_id)},
+        base::BindOnce(&GetTitleTask::DidGetTitle, weak_factory_.GetWeakPtr()));
+  }
+
+ private:
+  void DidGetTitle(const std::vector<std::string>& data,
+                   blink::ServiceWorkerStatusCode status) {
+    switch (ToDatabaseStatus(status)) {
+      case DatabaseStatus::kFailed:
+        *sub_task_init().error =
+            blink::mojom::BackgroundFetchError::STORAGE_ERROR;
+        FinishTask();
+        return;
+      case DatabaseStatus::kNotFound:
+      case DatabaseStatus::kOk:
+        break;
+    }
+
+    if (!data.empty())
+      sub_task_init().initialization_data->ui_title = data.front();
+    FinishTask();
+  }
+
+  base::WeakPtrFactory<GetTitleTask> weak_factory_;  // Keep as last.
+};
+
 // Fills the BackgroundFetchInitializationData with the number of completed
 // requests.
 class GetCompletedRequestsTask : public InitializationSubTask {
@@ -76,7 +118,7 @@ class GetCompletedRequestsTask : public InitializationSubTask {
   void Start() override {
     service_worker_context()->GetRegistrationUserDataByKeyPrefix(
         sub_task_init().service_worker_registration_id,
-        {CompletedRequestKeyPrefix(sub_task_init().unique_id)},
+        CompletedRequestKeyPrefix(sub_task_init().unique_id),
         base::BindOnce(&GetCompletedRequestsTask::DidGetCompletedRequests,
                        weak_factory_.GetWeakPtr()));
   }
@@ -118,7 +160,7 @@ class GetActiveRequestsTask : public InitializationSubTask {
   void Start() override {
     service_worker_context()->GetRegistrationUserDataByKeyPrefix(
         sub_task_init().service_worker_registration_id,
-        {ActiveRequestKeyPrefix(sub_task_init().unique_id)},
+        ActiveRequestKeyPrefix(sub_task_init().unique_id),
         base::BindOnce(&GetActiveRequestsTask::DidGetActiveRequests,
                        weak_factory_.GetWeakPtr()));
   }
@@ -234,8 +276,34 @@ class FillFromMetadataTask : public InitializationSubTask {
     // Total number of requests.
     sub_task_init().initialization_data->num_requests = metadata.num_fetches();
 
-    // TODO(rayankans): Fill BackgroundFetchOptions and the icon after it is
-    // persisted.
+    // Fill BackgroundFetchOptions.
+    auto& options = sub_task_init().initialization_data->options;
+    options.title = metadata.options().title();
+    options.download_total = metadata.options().download_total();
+    options.icons.reserve(metadata.options().icons_size());
+    for (const auto& icon : metadata.options().icons()) {
+      blink::Manifest::ImageResource ir;
+      ir.src = GURL(icon.src());
+      ir.type = base::ASCIIToUTF16(icon.type());
+
+      ir.sizes.reserve(icon.sizes_size());
+      for (const auto& size : icon.sizes())
+        ir.sizes.emplace_back(size.width(), size.height());
+
+      ir.purpose.reserve(icon.purpose_size());
+      for (auto purpose : icon.purpose()) {
+        switch (purpose) {
+          case proto::BackgroundFetchOptions_ImageResource_Purpose_ANY:
+            ir.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
+            break;
+          case proto::BackgroundFetchOptions_ImageResource_Purpose_BADGE:
+            ir.purpose.push_back(
+                blink::Manifest::ImageResource::Purpose::BADGE);
+            break;
+        }
+      }
+    }
+
     FinishTask();
   }
 
@@ -257,14 +325,14 @@ class FillBackgroundFetchInitializationDataTask : public InitializationSubTask {
   ~FillBackgroundFetchInitializationDataTask() override = default;
 
   void Start() override {
-    // We need 3 queries to get the initialization data. These are wrapped
+    // We need 4 queries to get the initialization data. These are wrapped
     // in a BarrierClosure to avoid querying them serially.
     // 1. Metadata
     // 2. Active Requests
     // 3. Completed Requests
-    // TODO(rayankans): 4. UI Title
+    // 4. UI Title
     base::RepeatingClosure barrier_closure = base::BarrierClosure(
-        3u,
+        4u,
         base::BindOnce(&FillBackgroundFetchInitializationDataTask::FinishTask,
                        weak_factory_.GetWeakPtr()));
     AddSubTask(std::make_unique<FillFromMetadataTask>(this, sub_task_init(),
@@ -273,6 +341,8 @@ class FillBackgroundFetchInitializationDataTask : public InitializationSubTask {
                                                           barrier_closure));
     AddSubTask(std::make_unique<GetActiveRequestsTask>(this, sub_task_init(),
                                                        barrier_closure));
+    AddSubTask(
+        std::make_unique<GetTitleTask>(this, sub_task_init(), barrier_closure));
   }
 
  private:
