@@ -26,7 +26,8 @@ const MojoHandleSignalsState kEmptyMojoHandleSignalsState = {0u, 0u};
 const MojoHandleSignalsState kFullMojoHandleSignalsState = {~0u, ~0u};
 const MojoHandleSignals kAllSignals =
     MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-    MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE;
+    MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE |
+    MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED;
 
 using CoreTest = test::CoreTestBase;
 
@@ -209,14 +210,12 @@ TEST_F(CoreTest, MessagePipe) {
   // Check that |h[1]| is no longer writable (and will never be).
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
             hss[1].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            hss[1].satisfiable_signals);
+  EXPECT_FALSE(hss[1].satisfiable_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
 
   // Check that |h[1]| is still readable (for the moment).
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
             hss[1].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            hss[1].satisfiable_signals);
+  EXPECT_TRUE(hss[1].satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
 
   // Discard a message from |h[1]|.
   ASSERT_EQ(MOJO_RESULT_OK, core()->ReadMessage(h[1], nullptr, &message));
@@ -226,7 +225,7 @@ TEST_F(CoreTest, MessagePipe) {
   hss[1] = kFullMojoHandleSignalsState;
   EXPECT_EQ(MOJO_RESULT_OK, core()->QueryHandleSignalsState(h[1], &hss[1]));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss[1].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss[1].satisfiable_signals);
+  EXPECT_FALSE(hss[1].satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
 
   // Try writing to |h[1]|.
   ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(nullptr, &message));

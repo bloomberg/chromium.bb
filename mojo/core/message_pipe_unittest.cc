@@ -25,7 +25,8 @@ namespace {
 
 const MojoHandleSignals kAllSignals =
     MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-    MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE;
+    MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE |
+    MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED;
 
 static const char kHelloWorld[] = "hello world";
 
@@ -279,29 +280,23 @@ TEST_F(MessagePipeTest, BasicWaiting) {
   hss = MojoHandleSignalsState();
   ASSERT_EQ(MOJO_RESULT_OK,
             WaitForSignals(pipe1_, MOJO_HANDLE_SIGNAL_PEER_CLOSED, &hss));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            hss.satisfied_signals);
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            hss.satisfiable_signals);
+  ASSERT_TRUE(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+  ASSERT_TRUE(hss.satisfiable_signals & MOJO_HANDLE_SIGNAL_PEER_CLOSED);
 
-  // Port 1 should not be writable.
+  // Port 1 should not be writable now or ever again.
   hss = MojoHandleSignalsState();
 
   ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             WaitForSignals(pipe1_, MOJO_HANDLE_SIGNAL_WRITABLE, &hss));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            hss.satisfied_signals);
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            hss.satisfiable_signals);
+  ASSERT_FALSE(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
+  ASSERT_FALSE(hss.satisfiable_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
 
   // But it should still be readable.
   hss = MojoHandleSignalsState();
   ASSERT_EQ(MOJO_RESULT_OK,
             WaitForSignals(pipe1_, MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            hss.satisfied_signals);
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            hss.satisfiable_signals);
+  ASSERT_TRUE(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
+  ASSERT_TRUE(hss.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
 
   // Read from port 1.
   buffer[0] = 0;
@@ -314,7 +309,8 @@ TEST_F(MessagePipeTest, BasicWaiting) {
   ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             WaitForSignals(pipe1_, MOJO_HANDLE_SIGNAL_READABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
+  ASSERT_FALSE(hss.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
+  ASSERT_FALSE(hss.satisfiable_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
 }
 
 #if !defined(OS_IOS)

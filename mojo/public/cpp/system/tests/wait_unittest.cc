@@ -90,9 +90,6 @@ TEST_F(WaitTest, Basic) {
             Wait(p.handle1.get(), MOJO_HANDLE_SIGNAL_READABLE, &c_hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             c_hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-                MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE,
-            c_hss.satisfiable_signals);
 
   HandleSignalsState hss;
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -199,14 +196,8 @@ TEST_F(WaitManyTest, Basic) {
             WaitMany(handles, signals, 2, &result_index, c_hss));
   EXPECT_EQ(1u, result_index);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, c_hss[0].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-                MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE,
-            c_hss[0].satisfiable_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             c_hss[1].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-                MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE,
-            c_hss[1].satisfiable_signals);
 
   EXPECT_EQ(MOJO_RESULT_OK, WaitMany(handles, signals, 2, &result_index, hss));
   EXPECT_EQ(1u, result_index);

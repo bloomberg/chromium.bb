@@ -39,6 +39,10 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) UserMessage {
   // message event will be destroyed without further routing.
   virtual bool WillBeRoutedExternally();
 
+  // Returns the size in bytes of this message iff it's serialized. Zero
+  // otherwise.
+  virtual size_t GetSizeIfSerialized() const;
+
  private:
   const TypeInfo* const type_info_;
 

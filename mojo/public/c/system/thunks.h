@@ -212,6 +212,15 @@ struct MojoSystemThunks {
       const struct MojoInvitationTransportEndpoint* transport_endpoint,
       const struct MojoAcceptInvitationOptions* options,
       MojoHandle* invitation_handle);
+  MojoResult (*SetQuota)(MojoHandle handle,
+                         MojoQuotaType type,
+                         uint64_t limit,
+                         const struct MojoSetQuotaOptions* options);
+  MojoResult (*QueryQuota)(MojoHandle handle,
+                           MojoQuotaType type,
+                           const struct MojoQueryQuotaOptions* options,
+                           uint64_t* limit,
+                           uint64_t* usage);
 };
 #pragma pack(pop)
 

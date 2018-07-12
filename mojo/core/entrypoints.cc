@@ -12,6 +12,7 @@
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/platform_handle.h"
+#include "mojo/public/c/system/quota.h"
 
 namespace {
 
@@ -328,6 +329,22 @@ MojoResult MojoAcceptInvitationImpl(
                                   invitation_handle);
 }
 
+MojoResult MojoSetQuotaImpl(MojoHandle handle,
+                            MojoQuotaType type,
+                            uint64_t limit,
+                            const MojoSetQuotaOptions* options) {
+  return g_core->SetQuota(handle, type, limit, options);
+}
+
+MojoResult MojoQueryQuotaImpl(MojoHandle handle,
+                              MojoQuotaType type,
+                              const MojoQueryQuotaOptions* options,
+                              uint64_t* current_limit,
+                              uint64_t* current_usage) {
+  return g_core->QueryQuota(handle, type, options, current_limit,
+                            current_usage);
+}
+
 }  // extern "C"
 
 MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
@@ -371,7 +388,9 @@ MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
                              MojoAttachMessagePipeToInvitationImpl,
                              MojoExtractMessagePipeFromInvitationImpl,
                              MojoSendInvitationImpl,
-                             MojoAcceptInvitationImpl};
+                             MojoAcceptInvitationImpl,
+                             MojoSetQuotaImpl,
+                             MojoQueryQuotaImpl};
 
 }  // namespace
 

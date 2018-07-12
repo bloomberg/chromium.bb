@@ -67,6 +67,11 @@ struct MOJO_CPP_SYSTEM_EXPORT HandleSignalsState final
     return satisfies_any(MOJO_HANDLE_SIGNAL_PEER_REMOTE);
   }
 
+  // Indicates whether the handle has exceeded some quota limit.
+  bool quota_exceeded() const {
+    return satisfies_any(MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED);
+  }
+
   // The handle will never be |readable()| again.
   bool never_readable() const {
     return !can_satisfy_any(MOJO_HANDLE_SIGNAL_READABLE);

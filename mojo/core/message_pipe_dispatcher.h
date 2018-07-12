@@ -11,6 +11,7 @@
 #include <queue>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "mojo/core/atomic_flag.h"
 #include "mojo/core/dispatcher.h"
 #include "mojo/core/ports/port_ref.h"
@@ -51,6 +52,10 @@ class MessagePipeDispatcher : public Dispatcher {
       std::unique_ptr<ports::UserMessageEvent> message) override;
   MojoResult ReadMessage(
       std::unique_ptr<ports::UserMessageEvent>* message) override;
+  MojoResult SetQuota(MojoQuotaType type, uint64_t limit) override;
+  MojoResult QueryQuota(MojoQuotaType type,
+                        uint64_t* limit,
+                        uint64_t* usage) override;
   HandleSignalsState GetHandleSignalsState() const override;
   MojoResult AddWatcherRef(const scoped_refptr<WatcherDispatcher>& watcher,
                            uintptr_t context) override;
@@ -99,6 +104,8 @@ class MessagePipeDispatcher : public Dispatcher {
   bool port_transferred_ = false;
   AtomicFlag port_closed_;
   WatcherSet watchers_;
+  base::Optional<uint64_t> receive_queue_length_limit_;
+  base::Optional<uint64_t> receive_queue_memory_size_limit_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePipeDispatcher);
 };

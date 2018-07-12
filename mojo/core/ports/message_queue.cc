@@ -50,6 +50,7 @@ void MessageQueue::GetNextMessage(std::unique_ptr<UserMessageEvent>* message,
 
   std::pop_heap(heap_.begin(), heap_.end());
   *message = std::move(heap_.back());
+  total_queued_bytes_ -= (*message)->GetSizeIfSerialized();
   heap_.pop_back();
 
   next_sequence_num_++;
@@ -59,6 +60,7 @@ void MessageQueue::AcceptMessage(std::unique_ptr<UserMessageEvent> message,
                                  bool* has_next_message) {
   // TODO: Handle sequence number roll-over.
 
+  total_queued_bytes_ += message->GetSizeIfSerialized();
   heap_.emplace_back(std::move(message));
   std::push_heap(heap_.begin(), heap_.end());
 
@@ -72,6 +74,7 @@ void MessageQueue::AcceptMessage(std::unique_ptr<UserMessageEvent> message,
 void MessageQueue::TakeAllMessages(
     std::vector<std::unique_ptr<UserMessageEvent>>* messages) {
   *messages = std::move(heap_);
+  total_queued_bytes_ = 0;
 }
 
 }  // namespace ports

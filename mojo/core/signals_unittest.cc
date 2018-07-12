@@ -37,13 +37,17 @@ TEST_F(SignalsTest, QueryMessagePipeSignals) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(a, &state));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-                MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE,
+                MOJO_HANDLE_SIGNAL_PEER_CLOSED |
+                MOJO_HANDLE_SIGNAL_PEER_REMOTE |
+                MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED,
             state.satisfiable_signals);
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(b, &state));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-                MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE,
+                MOJO_HANDLE_SIGNAL_PEER_CLOSED |
+                MOJO_HANDLE_SIGNAL_PEER_REMOTE |
+                MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED,
             state.satisfiable_signals);
 
   WriteMessage(a, "ok");
@@ -53,7 +57,9 @@ TEST_F(SignalsTest, QueryMessagePipeSignals) {
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             state.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-                MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE,
+                MOJO_HANDLE_SIGNAL_PEER_CLOSED |
+                MOJO_HANDLE_SIGNAL_PEER_REMOTE |
+                MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED,
             state.satisfiable_signals);
 
   EXPECT_EQ("ok", ReadMessage(b));
@@ -61,7 +67,9 @@ TEST_F(SignalsTest, QueryMessagePipeSignals) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(b, &state));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-                MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE,
+                MOJO_HANDLE_SIGNAL_PEER_CLOSED |
+                MOJO_HANDLE_SIGNAL_PEER_REMOTE |
+                MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED,
             state.satisfiable_signals);
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(a));
@@ -70,7 +78,8 @@ TEST_F(SignalsTest, QueryMessagePipeSignals) {
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(b, &state));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED,
+            state.satisfiable_signals);
 }
 
 TEST_F(SignalsTest, LocalPeers) {
