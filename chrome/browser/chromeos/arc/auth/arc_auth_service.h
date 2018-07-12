@@ -76,6 +76,9 @@ class ArcAuthService : public KeyedService,
   void OnAccountInfoReady(mojom::AccountInfoPtr account_info,
                           mojom::ArcSignInStatus status);
 
+  // Callback for data removal confirmation.
+  void OnDataRemovalAccepted(bool accepted);
+
   Profile* const profile_;
   ArcBridgeService* const arc_bridge_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

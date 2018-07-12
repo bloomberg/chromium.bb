@@ -4699,6 +4699,15 @@
   <message name="IDS_HATS_DONE_BUTTON_LABEL" desc="Label used for the done button at the end of survey">
     Done
   </message>
+  <message name="IDS_ARC_DATA_REMOVAL_CONFIRMATION_HEADING" desc="Heading text in the content area of the confirmation for data removal in case ARC comes to wrong state.">
+    To use apps from Google Play, your local app data needs to be reset.
+  </message>
+  <message name="IDS_ARC_DATA_REMOVAL_CONFIRMATION_OK_BUTTON" desc="Text for the OK button of the confirmation for data removal in case ARC comes to wrong state.">
+    Clear data and restore
+  </message>
+  <message name="IDS_ARC_DATA_REMOVAL_CONFIRMATION_TITLE" desc="Title of the confirmation for data removal in case in case ARC comes to wrong state.">
+    Something went wrong
+  </message>
   <message name="IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE" desc="Title of the notification to navigate the user to first update the device encryption before running Android apps.">
     Install critical update
   </message>
