@@ -102,13 +102,10 @@ class RenderingHelper {
                      const gfx::Size& size,
                      base::WaitableEvent* done);
 
-  // Render thumbnail in the |texture_id| to the FBO buffer using target
-  // |texture_target|.
-  void RenderThumbnail(uint32_t texture_target, uint32_t texture_id);
-
-  // Queues the |video_frame| for rendering.
-  void QueueVideoFrame(size_t window_id,
-                       scoped_refptr<VideoFrameTexture> video_frame);
+  // If |render_as_thumbnails_| is true, renders |video_frame| as thumbnail.
+  // Otherwise, queues |video_frame| to |pending_frames|.
+  void ConsumeVideoFrame(size_t window_id,
+                         scoped_refptr<VideoFrameTexture> video_frame);
 
   // Flushes the pending frames. Notify the rendering_helper there won't be
   // more video frames.
@@ -147,6 +144,14 @@ class RenderingHelper {
     RenderedVideo(const RenderedVideo& other);
     ~RenderedVideo();
   };
+
+  // Render thumbnail in the |texture_id| to the FBO buffer using target
+  // |texture_target|.
+  void RenderThumbnail(uint32_t texture_target, uint32_t texture_id);
+
+  // Queues the |video_frame| for rendering.
+  void QueueVideoFrame(size_t window_id,
+                       scoped_refptr<VideoFrameTexture> video_frame);
 
   void Clear();
   void RenderContent();

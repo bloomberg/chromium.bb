@@ -365,6 +365,16 @@ static inline void GLSetViewPort(const gfx::Rect& area) {
   glScissor(area.x(), area.y(), area.width(), area.height());
 }
 
+void RenderingHelper::ConsumeVideoFrame(
+    size_t window_id,
+    scoped_refptr<VideoFrameTexture> video_frame) {
+  if (render_as_thumbnails_) {
+    RenderThumbnail(video_frame->texture_target(), video_frame->texture_id());
+  } else {
+    QueueVideoFrame(window_id, std::move(video_frame));
+  }
+}
+
 void RenderingHelper::RenderThumbnail(uint32_t texture_target,
                                       uint32_t texture_id) {
   CHECK(task_runner_->BelongsToCurrentThread());
