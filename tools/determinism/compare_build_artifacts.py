@@ -164,7 +164,7 @@ def compare_files(first_filepath, second_filepath):
   return diff_binary(first_filepath, second_filepath, file_len)
 
 
-def get_deps(build_dir, target):
+def get_deps(ninja_path, build_dir, target):
   """Returns list of object files needed to build target."""
   NODE_PATTERN = re.compile(r'label="([a-zA-Z0-9_\\/.-]+)"')
   CHECK_EXTS = ('.o', '.obj')
@@ -181,7 +181,7 @@ def get_deps(build_dir, target):
       shutil.move(build_dir, fixed_build_dir)
 
   try:
-    out = subprocess.check_output(['ninja', '-C', fixed_build_dir,
+    out = subprocess.check_output([ninja_path, '-C', fixed_build_dir,
                                    '-t', 'graph', target])
   except subprocess.CalledProcessError as e:
     print >> sys.stderr, 'error to get graph for %s: %s' % (target, e)
@@ -207,12 +207,12 @@ def get_deps(build_dir, target):
   return files
 
 
-def compare_deps(first_dir, second_dir, targets):
+def compare_deps(first_dir, second_dir, ninja_path, targets):
   """Print difference of dependent files."""
   diffs = set()
   for target in targets:
-    first_deps = get_deps(first_dir, target)
-    second_deps = get_deps(second_dir, target)
+    first_deps = get_deps(ninja_path, first_dir, target)
+    second_deps = get_deps(ninja_path, second_dir, target)
     print 'Checking %s difference: (%s deps)' % (target, len(first_deps))
     if set(first_deps) != set(second_deps):
       # Since we do not thiks this case occur, we do not do anything special
@@ -231,7 +231,7 @@ def compare_deps(first_dir, second_dir, targets):
   return list(diffs)
 
 
-def compare_build_artifacts(first_dir, second_dir, target_platform,
+def compare_build_artifacts(first_dir, second_dir, ninja_path, target_platform,
                             json_output, recursive=False):
   """Compares the artifacts from two distinct builds."""
   if not os.path.isdir(first_dir):
@@ -300,7 +300,8 @@ def compare_build_artifacts(first_dir, second_dir, target_platform,
 
   all_diffs = expected_diffs + unexpected_diffs
   diffs_to_investigate = sorted(set(all_diffs).difference(missing_files))
-  deps_diff = compare_deps(first_dir, second_dir, diffs_to_investigate)
+  deps_diff = compare_deps(first_dir, second_dir,
+                           ninja_path, diffs_to_investigate)
 
   if json_output:
     try:
@@ -326,6 +327,8 @@ def main():
   parser.add_option('-r', '--recursive', action='store_true', default=False,
                     help='Indicates if the comparison should be recursive.')
   parser.add_option('--json-output', help='JSON file to output differences')
+  parser.add_option('--ninja-path', help='path to ninja command.',
+                    default='ninja')
   target = {
       'darwin': 'mac', 'linux2': 'linux', 'win32': 'win'
   }.get(sys.platform, sys.platform)
@@ -342,6 +345,7 @@ def main():
 
   return compare_build_artifacts(os.path.abspath(options.first_build_dir),
                                  os.path.abspath(options.second_build_dir),
+                                 options.ninja_path,
                                  options.target_platform,
                                  options.json_output,
                                  options.recursive)
