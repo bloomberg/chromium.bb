@@ -22,21 +22,25 @@ namespace heap_profiling {
 namespace {
 
 #if defined(OS_ANDROID)
-// Check memory usage every 10 minutes. Trigger slow report if needed.
-const int kRepeatingCheckMemoryDelayInMinutes = 10;
-const int kThrottledReportRepeatingCheckMemoryDelayInHours = 1;
+// Check memory usage every 5 minutes.
+const int kRepeatingCheckMemoryDelayInMinutes = 5;
 
 const size_t kBrowserProcessMallocTriggerKb = 100 * 1024;    // 100 MB
 const size_t kGPUProcessMallocTriggerKb = 40 * 1024;         // 40 MB
 const size_t kRendererProcessMallocTriggerKb = 125 * 1024;   // 125 MB
+
+// If memory usage has increased by 50MB since the last report, send another.
+const uint32_t kHighWaterMarkThresholdKb = 50 * 1024;  // 50 MB
 #else
-// Check memory usage every hour. Trigger slow report if needed.
-const int kRepeatingCheckMemoryDelayInMinutes = 60;
-const int kThrottledReportRepeatingCheckMemoryDelayInHours = 12;
+// Check memory usage every 15 minutes.
+const int kRepeatingCheckMemoryDelayInMinutes = 15;
 
 const size_t kBrowserProcessMallocTriggerKb = 400 * 1024;    // 400 MB
 const size_t kGPUProcessMallocTriggerKb = 400 * 1024;        // 400 MB
 const size_t kRendererProcessMallocTriggerKb = 500 * 1024;   // 500 MB
+
+// If memory usage has increased by 500MB since the last report, send another.
+const uint32_t kHighWaterMarkThresholdKb = 500 * 1024;  // 500 MB
 #endif  // OS_ANDROID
 
 int GetContentProcessType(
@@ -145,25 +149,37 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
   for (const auto& proc : dump->process_dumps()) {
     if (!base::ContainsValue(profiled_pids, proc.pid()))
       continue;
+
+    uint32_t private_footprint_kb = proc.os_dump().private_footprint_kb;
+    auto it = pmf_at_last_upload_.find(proc.pid());
+    if (it != pmf_at_last_upload_.end()) {
+      if (private_footprint_kb > it->second + kHighWaterMarkThresholdKb) {
+        should_send_report = true;
+        it->second = private_footprint_kb;
+      }
+      continue;
+    }
+
+    // No high water mark exists yet, check the trigger threshold.
     if (IsOverTriggerThreshold(GetContentProcessType(proc.process_type()),
-                               proc.os_dump().private_footprint_kb)) {
+                               private_footprint_kb)) {
       should_send_report = true;
-      break;
+      pmf_at_last_upload_[proc.pid()] = private_footprint_kb;
     }
   }
 
   if (should_send_report) {
-    TriggerMemoryReport();
+    // Clear the watermark for all non-profiled pids.
+    for (auto it = pmf_at_last_upload_.begin();
+         it != pmf_at_last_upload_.end();) {
+      if (base::ContainsValue(profiled_pids, it->first)) {
+        ++it;
+      } else {
+        it = pmf_at_last_upload_.erase(it);
+      }
+    }
 
-    // If a report was sent, throttle the memory data collection rate to
-    // kThrottledReportRepeatingCheckMemoryDelayInHours to avoid sending too
-    // many reports from a known problematic client.
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromHours(
-                     kThrottledReportRepeatingCheckMemoryDelayInHours),
-                 base::BindRepeating(
-                     &BackgroundProfilingTriggers::PerformMemoryUsageChecks,
-                     weak_ptr_factory_.GetWeakPtr()));
+    TriggerMemoryReport();
   }
 }
 

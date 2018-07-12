@@ -31,6 +31,12 @@ class BackgroundProfilingTriggers {
   // Register a periodic timer calling |PerformMemoryUsageChecks|.
   void StartTimer();
 
+ protected:
+  // High water mark for private footprint of each profiled pid at time of
+  // upload. Results are stored in |kb|.
+  // Exposed to subclasses for testing.
+  std::map<base::ProcessId, uint32_t> pmf_at_last_upload_;
+
  private:
   friend class FakeBackgroundProfilingTriggers;
   FRIEND_TEST_ALL_PREFIXES(BackgroundProfilingTriggersTest,
