@@ -50,7 +50,6 @@
 #include "printing/buildflags/buildflags.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
-#include "services/network/public/cpp/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
@@ -422,9 +421,10 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
       base::FeatureList::IsEnabled(features::kNupPrinting);
   source->AddBoolean("pagesPerSheetEnabled", nup_printing_enabled);
 
-  bool network_service_enabled =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
-  source->AddBoolean("networkServiceEnabled", network_service_enabled);
+  bool cloud_printer_handler_enabled =
+      base::FeatureList::IsEnabled(features::kCloudPrinterHandler);
+  source->AddBoolean("cloudPrinterHandlerEnabled",
+                     cloud_printer_handler_enabled);
 }
 
 void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {

@@ -146,6 +146,9 @@ extern const char kCloseButtonsInactiveTabsDescription[];
 extern const char kCloudImportName[];
 extern const char kCloudImportDescription[];
 
+extern const char kCloudPrinterHandlerName[];
+extern const char kCloudPrinterHandlerDescription[];
+
 extern const char kForceColorProfileSRGB[];
 extern const char kForceColorProfileP3[];
 extern const char kForceColorProfileColorSpin[];

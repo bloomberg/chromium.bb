@@ -459,6 +459,12 @@ const base::Feature kPreloadLockScreen{"PreloadLockScreen",
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+// If enabled, Print Preview will use the CloudPrinterHandler instead of the
+// cloud print interface to communicate with the cloud print server. This
+// prevents Print Preview from making direct network requests. See
+// https://crbug.com/829414.
+const base::Feature kCloudPrinterHandler{"CloudPrinterHandler",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 // Enables the new Print Preview UI.
 const base::Feature kNewPrintPreview{"NewPrintPreview",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

@@ -884,10 +884,10 @@ cr.define('print_preview', function() {
         print_preview.PrinterType.LOCAL_PRINTER,
       ];
 
-      // If the network service is enabled, request cloud printers from the
-      // handler instead of trying to directly communicate with the cloud print
-      // server, which will cause a crash. See https://crbug.com/848987.
-      if (loadTimeData.getBoolean('networkServiceEnabled'))
+      // If the cloud printer handler is enabled, request cloud printers from
+      // the handler instead of trying to directly communicate with the cloud
+      // print server. See https://crbug.com/829414.
+      if (loadTimeData.getBoolean('cloudPrinterHandlerEnabled'))
         types.push(print_preview.PrinterType.CLOUD_PRINTER);
       else
         this.startLoadCloudDestinations();
