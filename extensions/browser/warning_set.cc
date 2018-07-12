@@ -188,6 +188,14 @@ Warning Warning::CreateReloadTooFrequentWarning(
                           message_parameters);
 }
 
+// static
+Warning Warning::CreateRulesetFailedToLoadWarning(
+    const ExtensionId& extension_id) {
+  return Warning(kRulesetFailedToLoad, extension_id,
+                 IDS_EXTENSION_WARNING_RULESET_FAILED_TO_LOAD,
+                 {} /*message_parameters*/);
+}
+
 std::string Warning::GetLocalizedMessage(const ExtensionSet* extensions) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

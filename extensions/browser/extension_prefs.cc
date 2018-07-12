@@ -1738,6 +1738,13 @@ bool ExtensionPrefs::GetDNRRulesetChecksum(const ExtensionId& extension_id,
                            dnr_ruleset_checksum);
 }
 
+void ExtensionPrefs::SetDNRRulesetChecksumForTesting(
+    const ExtensionId& extension_id,
+    int dnr_ruleset_checksum) {
+  UpdateExtensionPref(extension_id, kPrefDNRRulesetChecksum,
+                      std::make_unique<base::Value>(dnr_ruleset_checksum));
+}
+
 void ExtensionPrefs::SetDNRAllowedPages(const ExtensionId& extension_id,
                                         URLPatternSet set) {
   SetExtensionPrefURLPatternSet(extension_id, kPrefDNRAllowedPages, set);
