@@ -13,6 +13,7 @@ aggregate_vector_icons("ash_public_vector_icons") {
     "notification_cellular_alert.icon",
     "notification_download.icon",
     "notification_end_of_support.icon",
+    "notification_family_link.icon",
     "notification_google.icon",
     "notification_image.icon",
     "notification_installed.icon",

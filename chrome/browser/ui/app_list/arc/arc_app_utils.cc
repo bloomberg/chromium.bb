@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
+#include "chrome/browser/chromeos/arc/notification/arc_supervision_transition_notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
@@ -232,7 +233,20 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
   // as a placeholder to show the guide notification for proper configuration.
   // Handle such a case here and shows the desired notification.
   if (IsArcBlockedDueToIncompatibleFileSystem(profile)) {
+    VLOG(1) << "Attempt to launch " << app_id
+            << " while ARC++ is blocked due to incompatible file system.";
     arc::ShowArcMigrationGuideNotification(profile);
+    return false;
+  }
+
+  // In case supervision transition is in progress ARC++ is not available.
+  const ArcSupervisionTransition supervision_transition =
+      GetSupervisionTransition(profile);
+  if (supervision_transition != ArcSupervisionTransition::NO_TRANSITION) {
+    VLOG(1) << "Attempt to launch " << app_id
+            << " while supervision transition " << supervision_transition
+            << " is in progress.";
+    arc::ShowSupervisionTransitionNotification(profile);
     return false;
   }
 

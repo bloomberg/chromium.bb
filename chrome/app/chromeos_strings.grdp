@@ -4699,6 +4699,18 @@
   <message name="IDS_HATS_DONE_BUTTON_LABEL" desc="Label used for the done button at the end of survey">
     Done
   </message>
+  <message name="IDS_ARC_CHILD_TRANSITION_TO_REGULAR_TITLE" desc="Title of the toast shown when the user tries to activate ARC app and transition to regular user is not completed.">
+    Application launch blocked
+  </message>
+  <message name="IDS_ARC_CHILD_TRANSITION_TO_REGULAR_MESSAGE" desc="Message of the toast shown when the user tries to activate ARC app and transition to regular user is not completed.">
+    You cannot use Android apps while transition to regular user is in progress.
+  </message>
+  <message name="IDS_ARC_CHILD_TRANSITION_FROM_REGULAR_TITLE" desc="Title of the toast shown when the user tries to activate ARC app and transition from regular user is not completed.">
+    Application launch blocked
+  </message>
+  <message name="IDS_ARC_CHILD_TRANSITION_FROM_REGULAR_MESSAGE" desc="Message of the toast shown when the user tries to activate ARC app and transition from regular user is not completed.">
+    You cannot use Android apps while transition to child user is in progress.
+  </message>
   <message name="IDS_ARC_DATA_REMOVAL_CONFIRMATION_HEADING" desc="Heading text in the content area of the confirmation for data removal in case ARC comes to wrong state.">
     To use apps from Google Play, your local app data needs to be reset.
   </message>
