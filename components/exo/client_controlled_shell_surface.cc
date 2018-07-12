@@ -638,6 +638,7 @@ void ClientControlledShellSurface::OnWindowBoundsChanged(
 
 void ClientControlledShellSurface::OnWindowAddedToRootWindow(
     aura::Window* window) {
+  ScopedSetBoundsLocally scoped_set_bounds(this);
   ScopedLockedToRoot scoped_locked_to_root(widget_);
   UpdateWidgetBounds();
 }
@@ -770,8 +771,9 @@ void ClientControlledShellSurface::CompositorLockTimedOut() {
 // ShellSurface overrides:
 
 void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
-  if ((!client_controlled_move_resize_ && !GetWindowState()->is_dragged()) ||
-      client_controlled_move_resize_) {
+  if (((!client_controlled_move_resize_ && !GetWindowState()->is_dragged()) ||
+       client_controlled_move_resize_) &&
+      !client_controlled_state_->set_bounds_locally()) {
     {
       // Calculate a minimum window visibility required bounds.
       aura::Window* window = widget_->GetNativeWindow();
@@ -781,8 +783,8 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
           window, &root_rect);
       gfx::Rect screen_rect(root_rect);
       wm::ConvertRectToScreen(window->GetRootWindow(), &screen_rect);
-
-      if (bounds != screen_rect) {
+      if (bounds != screen_rect &&
+          !GetWindowState()->IsMaximizedOrFullscreenOrPinned()) {
         {
           ScopedSetBoundsLocally scoped_set_bounds(this);
           window->SetBounds(root_rect);
@@ -796,6 +798,10 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
                 .id();
         OnBoundsChangeEvent(state_type, state_type, display_id, screen_rect, 0);
       } else {
+        // TODO(oshima|domlaskowski): This prevent a client from moving a window
+        // between display. This is ok for now because a user needs to take an
+        // action to move right now. This will be fixed by new API.
+        ScopedLockedToRoot scoped_locked_to_root(widget_);
         ScopedSetBoundsLocally scoped_set_bounds(this);
         widget_->SetBounds(bounds);
       }

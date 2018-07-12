@@ -205,9 +205,8 @@ void ClientControlledState::HandleBoundsEvents(WindowState* window_state,
             break;
         }
         bounds_change_animation_type_ = kAnimationNone;
-      } else if (!window_state->IsMaximizedOrFullscreenOrPinned()) {
-        // In maximied, fullscreen, or pinned state, it should ignore
-        // the SetBounds from window manager or user.
+      } else if (!window_state->IsPinned()) {
+        // TODO(oshima): Define behavior for pinned app.
         delegate_->HandleBoundsRequest(window_state,
                                        window_state->GetStateType(), bounds);
       }

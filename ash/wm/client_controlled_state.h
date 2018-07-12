@@ -57,6 +57,7 @@ class ASH_EXPORT ClientControlledState : public BaseState {
   // delegating to |Delegate|. The Delegate should use this to
   // apply the bounds change to the window.
   void set_bounds_locally(bool set) { set_bounds_locally_ = set; }
+  bool set_bounds_locally() const { return set_bounds_locally_; }
 
   // Type of animation type to be applied when changing bounds locally.
   // TODO(oshima): Use transform animation for snapping.

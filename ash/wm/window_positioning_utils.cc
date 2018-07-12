@@ -148,14 +148,17 @@ void SetBoundsInScreen(aura::Window* window,
       if (active && focused != active)
         tracker.Add(active);
 
-      gfx::Point origin = bounds_in_screen.origin();
-      const gfx::Point display_origin = display.bounds().origin();
-      origin.Offset(-display_origin.x(), -display_origin.y());
-      gfx::Rect new_bounds = gfx::Rect(origin, bounds_in_screen.size());
-
-      // Set new bounds now so that the container's layout manager can adjust
-      // the bounds if necessary.
-      window->SetBounds(new_bounds);
+      // Client controlled client will have its own logic on client side
+      // to adjust bounds.
+      if (!wm::GetWindowState(window)->allow_set_bounds_direct()) {
+        gfx::Point origin = bounds_in_screen.origin();
+        const gfx::Point display_origin = display.bounds().origin();
+        origin.Offset(-display_origin.x(), -display_origin.y());
+        gfx::Rect new_bounds = gfx::Rect(origin, bounds_in_screen.size());
+        // Set new bounds now so that the container's layout manager can adjust
+        // the bounds if necessary.
+        window->SetBounds(new_bounds);
+      }
 
       dst_container->AddChild(window);
 
