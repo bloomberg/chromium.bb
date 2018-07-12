@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_data_removal_dialog.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -235,12 +236,15 @@ void ArcAuthService::ReportSupervisionChangeStatus(
           static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
       // TODO(brunokim): notify potential observers.
       break;
-    case mojom::SupervisionChangeStatus::INVALID_SUPERVISION_STATE:
     case mojom::SupervisionChangeStatus::CLOUD_DPC_DISABLING_FAILED:
     case mojom::SupervisionChangeStatus::CLOUD_DPC_ENABLING_FAILED:
-    default:
-      LOG(WARNING) << "Failed to changed supervision: " << status;
-      // TODO(crbug/841939): Block ARC++ in case of Unicorn graduation failure.
+      LOG(ERROR) << "Child transition failed: " << status;
+      ShowDataRemovalConfirmationDialog(
+          profile_, base::BindOnce(&ArcAuthService::OnDataRemovalAccepted,
+                                   weak_ptr_factory_.GetWeakPtr()));
+      break;
+    case mojom::SupervisionChangeStatus::INVALID_SUPERVISION_STATE:
+      NOTREACHED() << "Invalid status of child transition: " << status;
   }
 }
 
@@ -371,6 +375,17 @@ void ArcAuthService::OnAuthCodeFetched(bool success,
 void ArcAuthService::SetURLLoaderFactoryForTesting(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   url_loader_factory_ = std::move(url_loader_factory);
+}
+
+void ArcAuthService::OnDataRemovalAccepted(bool accepted) {
+  if (!accepted)
+    return;
+  if (!IsArcPlayStoreEnabledForProfile(profile_))
+    return;
+  VLOG(1)
+      << "Request for data removal on child transition failure is confirmed";
+  ArcSessionManager::Get()->RequestArcDataRemoval();
+  ArcSessionManager::Get()->StopAndEnableArc();
 }
 
 }  // namespace arc

@@ -31,11 +31,14 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/browser/ui/app_list/arc/arc_data_removal_dialog.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_data_remover.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
@@ -128,6 +131,9 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override {
+    if (arc_bridge_service_)
+      arc_bridge_service_->auth()->CloseInstance(&auth_instance_);
+
     // Explicitly removing the user is required; otherwise ProfileHelper keeps
     // a dangling pointer to the User.
     // TODO(nya): Consider removing all users from ProfileHelper in the
@@ -207,6 +213,19 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     // context; currently we just skip it.
     // TODO(blundell): Figure out how to enable this flow.
     ArcSessionManager::Get()->auth_context()->SkipMergeSessionForTesting();
+
+    auth_service_ = ArcAuthService::GetForBrowserContext(profile());
+    DCHECK(auth_service_);
+
+    test_shared_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_);
+    auth_service_->SetURLLoaderFactoryForTesting(test_shared_loader_factory_);
+
+    arc_bridge_service_ = ArcServiceManager::Get()->arc_bridge_service();
+    DCHECK(arc_bridge_service_);
+    arc_bridge_service_->auth()->SetInstance(&auth_instance_);
+    WaitForInstanceReady(arc_bridge_service_->auth());
   }
 
   Profile* profile() { return profile_.get(); }
@@ -215,10 +234,22 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     profile_->set_profile_name(username);
   }
 
+  network::TestURLLoaderFactory& test_url_loader_factory() {
+    return test_url_loader_factory_;
+  }
+  ArcAuthService& auth_service() { return *auth_service_; }
+  FakeAuthInstance& auth_instance() { return auth_instance_; }
+
  private:
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingProfile> profile_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+  FakeAuthInstance auth_instance_;
+  // Not owned.
+  ArcAuthService* auth_service_ = nullptr;
+  ArcBridgeService* arc_bridge_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceTest);
 };
@@ -227,40 +258,22 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 // Chrome supplies the info configured in SetAccountAndProfile() method.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  network::TestURLLoaderFactory test_url_loader_factory;
-  test_url_loader_factory.AddResponse(
+  test_url_loader_factory().AddResponse(
       arc::kAuthTokenExchangeEndPoint,
       "{ \"token\" : \"" + std::string(kFakeAuthCode) + "\" }");
 
-  FakeAuthInstance auth_instance;
-  ArcAuthService* auth_service =
-      ArcAuthService::GetForBrowserContext(profile());
-  ASSERT_TRUE(auth_service);
-
-  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory =
-      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-          &test_url_loader_factory);
-  auth_service->SetURLLoaderFactoryForTesting(test_shared_loader_factory);
-
-  ArcBridgeService* arc_bridge_service =
-      ArcServiceManager::Get()->arc_bridge_service();
-  ASSERT_TRUE(arc_bridge_service);
-  arc_bridge_service->auth()->SetInstance(&auth_instance);
-  WaitForInstanceReady(arc_bridge_service->auth());
-
   base::RunLoop run_loop;
-  auth_instance.RequestAccountInfo(run_loop.QuitClosure());
+  auth_instance().RequestAccountInfo(run_loop.QuitClosure());
   run_loop.Run();
 
-  ASSERT_TRUE(auth_instance.account_info());
-  EXPECT_EQ(kFakeUserName, auth_instance.account_info()->account_name.value());
-  EXPECT_EQ(kFakeAuthCode, auth_instance.account_info()->auth_code.value());
+  ASSERT_TRUE(auth_instance().account_info());
+  EXPECT_EQ(kFakeUserName,
+            auth_instance().account_info()->account_name.value());
+  EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
   EXPECT_EQ(mojom::ChromeAccountType::USER_ACCOUNT,
-            auth_instance.account_info()->account_type);
-  EXPECT_FALSE(auth_instance.account_info()->enrollment_token);
-  EXPECT_FALSE(auth_instance.account_info()->is_managed);
-
-  arc_bridge_service->auth()->CloseInstance(&auth_instance);
+            auth_instance().account_info()->account_type);
+  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
+  EXPECT_FALSE(auth_instance().account_info()->is_managed);
 }
 
 class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {
@@ -344,27 +357,18 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
   interceptor()->PushJobCallback(
       base::Bind(&ArcRobotAccountAuthServiceTest::ResponseJob));
 
-  ArcBridgeService* arc_bridge_service =
-      ArcServiceManager::Get()->arc_bridge_service();
-  ASSERT_TRUE(arc_bridge_service);
-
-  FakeAuthInstance auth_instance;
-  arc_bridge_service->auth()->SetInstance(&auth_instance);
-  WaitForInstanceReady(arc_bridge_service->auth());
-
   base::RunLoop run_loop;
-  auth_instance.RequestAccountInfo(run_loop.QuitClosure());
+  auth_instance().RequestAccountInfo(run_loop.QuitClosure());
   run_loop.Run();
 
-  ASSERT_TRUE(auth_instance.account_info());
-  EXPECT_EQ(kFakeUserName, auth_instance.account_info()->account_name.value());
-  EXPECT_EQ(kFakeAuthCode, auth_instance.account_info()->auth_code.value());
+  ASSERT_TRUE(auth_instance().account_info());
+  EXPECT_EQ(kFakeUserName,
+            auth_instance().account_info()->account_name.value());
+  EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
   EXPECT_EQ(mojom::ChromeAccountType::ROBOT_ACCOUNT,
-            auth_instance.account_info()->account_type);
-  EXPECT_FALSE(auth_instance.account_info()->enrollment_token);
-  EXPECT_FALSE(auth_instance.account_info()->is_managed);
-
-  arc_bridge_service->auth()->CloseInstance(&auth_instance);
+            auth_instance().account_info()->account_type);
+  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
+  EXPECT_FALSE(auth_instance().account_info()->is_managed);
 }
 
 IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetOfflineDemoAccount) {
@@ -374,27 +378,17 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetOfflineDemoAccount) {
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
 
-  ArcBridgeService* arc_bridge_service =
-      ArcServiceManager::Get()->arc_bridge_service();
-  ASSERT_TRUE(arc_bridge_service);
-
-  FakeAuthInstance auth_instance;
-  arc_bridge_service->auth()->SetInstance(&auth_instance);
-  WaitForInstanceReady(arc_bridge_service->auth());
-
   base::RunLoop run_loop;
-  auth_instance.RequestAccountInfo(run_loop.QuitClosure());
+  auth_instance().RequestAccountInfo(run_loop.QuitClosure());
   run_loop.Run();
 
-  ASSERT_TRUE(auth_instance.account_info());
-  EXPECT_TRUE(auth_instance.account_info()->account_name.value().empty());
-  EXPECT_TRUE(auth_instance.account_info()->auth_code.value().empty());
+  ASSERT_TRUE(auth_instance().account_info());
+  EXPECT_TRUE(auth_instance().account_info()->account_name.value().empty());
+  EXPECT_TRUE(auth_instance().account_info()->auth_code.value().empty());
   EXPECT_EQ(mojom::ChromeAccountType::OFFLINE_DEMO_ACCOUNT,
-            auth_instance.account_info()->account_type);
-  EXPECT_FALSE(auth_instance.account_info()->enrollment_token);
-  EXPECT_TRUE(auth_instance.account_info()->is_managed);
-
-  arc_bridge_service->auth()->CloseInstance(&auth_instance);
+            auth_instance().account_info()->account_type);
+  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
+  EXPECT_TRUE(auth_instance().account_info()->is_managed);
 }
 
 class ArcAuthServiceChildAccountTest : public ArcAuthServiceTest {
@@ -419,40 +413,129 @@ class ArcAuthServiceChildAccountTest : public ArcAuthServiceTest {
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest, ChildAccountFetch) {
   SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
   EXPECT_TRUE(profile()->IsChild());
-  network::TestURLLoaderFactory test_url_loader_factory;
-  test_url_loader_factory.AddResponse(
+  test_url_loader_factory().AddResponse(
       arc::kAuthTokenExchangeEndPoint,
       "{ \"token\" : \"" + std::string(kFakeAuthCode) + "\" }");
 
-  FakeAuthInstance auth_instance;
-  ArcAuthService* auth_service =
-      ArcAuthService::GetForBrowserContext(profile());
-  ASSERT_TRUE(auth_service);
-
-  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory =
-      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-          &test_url_loader_factory);
-  auth_service->SetURLLoaderFactoryForTesting(test_shared_loader_factory);
-
-  ArcBridgeService* arc_bridge_service =
-      ArcServiceManager::Get()->arc_bridge_service();
-  ASSERT_TRUE(arc_bridge_service);
-  arc_bridge_service->auth()->SetInstance(&auth_instance);
-  WaitForInstanceReady(arc_bridge_service->auth());
-
   base::RunLoop run_loop;
-  auth_instance.RequestAccountInfo(run_loop.QuitClosure());
+  auth_instance().RequestAccountInfo(run_loop.QuitClosure());
   run_loop.Run();
 
-  ASSERT_TRUE(auth_instance.account_info());
-  EXPECT_EQ(kFakeUserName, auth_instance.account_info()->account_name.value());
-  EXPECT_EQ(kFakeAuthCode, auth_instance.account_info()->auth_code.value());
+  ASSERT_TRUE(auth_instance().account_info());
+  EXPECT_EQ(kFakeUserName,
+            auth_instance().account_info()->account_name.value());
+  EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
   EXPECT_EQ(mojom::ChromeAccountType::CHILD_ACCOUNT,
-            auth_instance.account_info()->account_type);
-  EXPECT_FALSE(auth_instance.account_info()->enrollment_token);
-  EXPECT_FALSE(auth_instance.account_info()->is_managed);
+            auth_instance().account_info()->account_type);
+  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
+  EXPECT_FALSE(auth_instance().account_info()->is_managed);
+}
 
-  arc_bridge_service->auth()->CloseInstance(&auth_instance);
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest, ChildTransition) {
+  SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
+
+  ArcSessionManager* session = ArcSessionManager::Get();
+  ASSERT_TRUE(session);
+
+  // Used to track data removal requests.
+  ArcDataRemover data_remover(profile()->GetPrefs(),
+                              cryptohome::Identification{EmptyAccountId()});
+
+  const std::vector<mojom::SupervisionChangeStatus> success_statuses{
+      mojom::SupervisionChangeStatus::CLOUD_DPC_DISABLED,
+      mojom::SupervisionChangeStatus::CLOUD_DPC_ALREADY_DISABLED,
+      mojom::SupervisionChangeStatus::CLOUD_DPC_ENABLED,
+      mojom::SupervisionChangeStatus::CLOUD_DPC_ALREADY_ENABLED};
+
+  const std::vector<mojom::SupervisionChangeStatus> failure_statuses{
+      mojom::SupervisionChangeStatus::CLOUD_DPC_DISABLING_FAILED,
+      mojom::SupervisionChangeStatus::CLOUD_DPC_ENABLING_FAILED};
+
+  // Suppress ToS.
+  profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
+  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+
+  // Success statuses do not affect running state of ARC++.
+  for (mojom::SupervisionChangeStatus status : success_statuses) {
+    EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
+    EXPECT_FALSE(IsDataRemovalConfirmationDialogOpenForTesting());
+    auth_service().ReportSupervisionChangeStatus(status);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
+    EXPECT_FALSE(IsDataRemovalConfirmationDialogOpenForTesting());
+  }
+
+  // Test failure statuses that lead to showing data removal confirmation and
+  // ARC++ stopping. This block tests cancelation of data removal.
+  for (mojom::SupervisionChangeStatus status : failure_statuses) {
+    EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
+    // Confirmation dialog is not shown.
+    EXPECT_FALSE(IsDataRemovalConfirmationDialogOpenForTesting());
+    // No data removal request.
+    EXPECT_FALSE(data_remover.IsScheduledForTesting());
+    // Report a failure that brings confirmation dialog.
+    auth_service().ReportSupervisionChangeStatus(status);
+    base::RunLoop().RunUntilIdle();
+    // This does not cause ARC++ stopped.
+    EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
+    // Dialog should be shown.
+    EXPECT_TRUE(IsDataRemovalConfirmationDialogOpenForTesting());
+    // No data removal request.
+    EXPECT_FALSE(data_remover.IsScheduledForTesting());
+    // Cancel data removal confirmation.
+    CloseDataRemovalConfirmationDialogForTesting(false);
+    // No data removal request.
+    EXPECT_FALSE(data_remover.IsScheduledForTesting());
+    // Session state does not change.
+    EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(IsDataRemovalConfirmationDialogOpenForTesting());
+  }
+
+  // At this time accepts data removal.
+  for (mojom::SupervisionChangeStatus status : failure_statuses) {
+    EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
+    EXPECT_FALSE(IsDataRemovalConfirmationDialogOpenForTesting());
+    EXPECT_FALSE(data_remover.IsScheduledForTesting());
+    auth_service().ReportSupervisionChangeStatus(status);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
+    EXPECT_TRUE(IsDataRemovalConfirmationDialogOpenForTesting());
+    EXPECT_FALSE(data_remover.IsScheduledForTesting());
+
+    // Accept data removal confirmation.
+    CloseDataRemovalConfirmationDialogForTesting(true);
+    // Data removal request is issued.
+    EXPECT_TRUE(data_remover.IsScheduledForTesting());
+    // Session should switch to data removal.
+    EXPECT_EQ(ArcSessionManager::State::REMOVING_DATA_DIR, session->state());
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(IsDataRemovalConfirmationDialogOpenForTesting());
+    // After data removal ARC++ is automatically restarted.
+    EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
+  }
+
+  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, session->state());
+
+  // Opting out ARC++ forces confirmation dialog to close.
+  for (mojom::SupervisionChangeStatus status : failure_statuses) {
+    // Suppress ToS.
+    profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
+    profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+    session->StartArcForTesting();
+    EXPECT_EQ(ArcSessionManager::State::ACTIVE, session->state());
+
+    auth_service().ReportSupervisionChangeStatus(status);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(IsDataRemovalConfirmationDialogOpenForTesting());
+
+    profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(ArcSessionManager::State::STOPPED, session->state());
+    EXPECT_FALSE(IsDataRemovalConfirmationDialogOpenForTesting());
+  }
 }
 
 }  // namespace arc
