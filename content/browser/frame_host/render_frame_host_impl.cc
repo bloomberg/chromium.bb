@@ -3381,11 +3381,10 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                    base::Unretained(sensor_provider_proxy_.get())));
   }
 
-  // Only save decode stats when BrowserContext is on-the-record and provides a
-  // VideoPerfHistory.
+  // Only save decode stats when BrowserContext provides a VideoPerfHistory.
+  // Off-the-record contexts will internally use an ephemeral history DB.
   media::VideoDecodePerfHistory::SaveCallback save_stats_cb;
-  if (!GetSiteInstance()->GetBrowserContext()->IsOffTheRecord() &&
-      GetSiteInstance()->GetBrowserContext()->GetVideoDecodePerfHistory()) {
+  if (GetSiteInstance()->GetBrowserContext()->GetVideoDecodePerfHistory()) {
     save_stats_cb = GetSiteInstance()
                         ->GetBrowserContext()
                         ->GetVideoDecodePerfHistory()
