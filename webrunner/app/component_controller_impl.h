@@ -29,13 +29,17 @@ class ComponentControllerImpl : public fuchsia::sys::ComponentController,
                                 public chromium::web::FrameObserver,
                                 public fuchsia::ui::views_v1::ViewProvider {
  public:
-  ComponentControllerImpl(
+  ~ComponentControllerImpl() override;
+
+  // |runner| must outlive the returned object (normally it owns all
+  // ComponentControllerImpl). It's used by this class to get web::Context
+  // interface.
+  static std::unique_ptr<ComponentControllerImpl> CreateForRequest(
       WebContentRunner* runner,
       fuchsia::sys::Package package,
       fuchsia::sys::StartupInfo startup_info,
-      ::fidl::InterfaceRequest<fuchsia::sys::ComponentController>
+      fidl::InterfaceRequest<fuchsia::sys::ComponentController>
           controller_request);
-  ~ComponentControllerImpl() override;
 
   // fuchsia::sys::ComponentController implementation.
   void Kill() override;
@@ -49,28 +53,29 @@ class ComponentControllerImpl : public fuchsia::sys::ComponentController,
 
   // fuchsia::ui::views_v1::ViewProvider implementation.
   void CreateView(
-      ::fidl::InterfaceRequest<::fuchsia::ui::views_v1_token::ViewOwner>
+      fidl::InterfaceRequest<::fuchsia::ui::views_v1_token::ViewOwner>
           view_owner,
-      ::fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services)
+      fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services)
       override;
 
  private:
   friend class WebContentRunner;
 
-  // Binds |this| to a Runner::StartComponent() call.
-  void BindToRequest(fuchsia::sys::Package package,
+  ComponentControllerImpl(WebContentRunner* runner);
+
+  // Binds |this| to a Runner::StartComponent() call. Returns false on failure
+  // (e.g. when the URL in |startup_info| is invalid).
+  bool BindToRequest(fuchsia::sys::Package package,
                      fuchsia::sys::StartupInfo startup_info,
-                     ::fidl::InterfaceRequest<fuchsia::sys::ComponentController>
+                     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
                          controller_request);
 
   GURL url_;
   WebContentRunner* runner_ = nullptr;
 
-  // WebContextService client objects.
   chromium::web::FramePtr frame_;
   chromium::web::NavigationControllerPtr navigation_controller_;
 
-  // Bindings for services passed in to WebContextService.
   fidl::Binding<fuchsia::sys::ComponentController> controller_binding_;
   fidl::Binding<chromium::web::FrameObserver> frame_observer_binding_;
 
@@ -83,7 +88,7 @@ class ComponentControllerImpl : public fuchsia::sys::ComponentController,
   std::vector<WaitCallback> termination_wait_callbacks_;
 
   bool did_terminate_abnormally_ = false;
-  bool view_bound_ = false;
+  bool view_is_bound_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentControllerImpl);
 };

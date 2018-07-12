@@ -42,8 +42,7 @@ int main(int argc, char** argv) {
 
   auto web_context = CreateContext();
   base::RunLoop run_loop;
-  webrunner::WebContentRunner runner(std::move(web_context),
-                                     run_loop.QuitClosure());
+  webrunner::WebContentRunner runner(std::move(web_context));
 
   base::fuchsia::ServiceDirectory* directory =
       base::fuchsia::ServiceDirectory::GetDefault();

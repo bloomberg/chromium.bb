@@ -13,6 +13,17 @@ config("webrunner_implementation") {
   defines = [ "WEBRUNNER_IMPLEMENTATION" ]
 }
 
+# Uber-target, used by buildbots and :gn_all for discovery of all buildable
+# webrunner code.
+group("webrunner") {
+  testonly = true
+  deps = [
+    ":runner_pkg",
+    ":service_pkg",
+    ":service_unittests",
+  ]
+}
+
 fuchsia_package("runner_pkg") {
   binary = ":runner_exe"
   package_name_override = "web_runner"
@@ -39,16 +50,6 @@ executable("runner_exe") {
     ":fidl",
     "//base",
     "//url",
-  ]
-}
-
-# Uber-target, used by buildbots and :gn_all for discovery of all buildable
-# webrunner code.
-group("webrunner") {
-  testonly = true
-  deps = [
-    ":service_pkg",
-    ":service_unittests",
   ]
 }
 

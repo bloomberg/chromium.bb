@@ -22,12 +22,9 @@ class ComponentControllerImpl;
 // inside a View.
 class WebContentRunner : public fuchsia::sys::Runner {
  public:
-  // |context|: The web Context used to creates Frames.
-  // |on_all_closed|: A closure which is invoked when the last connected Frame
-  //    disconnects, signaling to the parent that the Context can be safely
-  //    destroyed.
-  WebContentRunner(chromium::web::ContextPtr context,
-                   base::OnceClosure on_all_closed);
+  // |content|: Context (e.g. persisted profile storage) under which all web
+  //   content launched through this Runner instance will be run.
+  explicit WebContentRunner(chromium::web::ContextPtr context);
   ~WebContentRunner() override;
 
   chromium::web::Context* context() { return context_.get(); }
@@ -37,17 +34,15 @@ class WebContentRunner : public fuchsia::sys::Runner {
   void DestroyComponent(ComponentControllerImpl* component);
 
   // fuchsia::sys::Runner implementation.
-  void StartComponent(
-      fuchsia::sys::Package package,
-      fuchsia::sys::StartupInfo startup_info,
-      ::fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-          controller_request) override;
+  void StartComponent(fuchsia::sys::Package package,
+                      fuchsia::sys::StartupInfo startup_info,
+                      fidl::InterfaceRequest<fuchsia::sys::ComponentController>
+                          controller_request) override;
 
  private:
   chromium::web::ContextPtr context_;
   std::set<std::unique_ptr<ComponentControllerImpl>, base::UniquePtrComparator>
       controllers_;
-  base::OnceClosure on_all_closed_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentRunner);
 };
