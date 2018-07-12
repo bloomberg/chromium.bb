@@ -10,6 +10,7 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -29,15 +30,6 @@
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::SaveCardBubbleControllerImpl);
 
 namespace autofill {
-
-namespace {
-
-// Number of seconds the bubble and icon will survive navigations, starting
-// from when the bubble is shown.
-// TODO(bondd): Share with ManagePasswordsUIController.
-const int kSurviveNavigationSeconds = 5;
-
-}  // namespace
 
 SaveCardBubbleControllerImpl::SaveCardBubbleControllerImpl(
     content::WebContents* web_contents)
@@ -267,7 +259,7 @@ void SaveCardBubbleControllerImpl::DidFinishNavigation(
 
   // Don't do anything if a navigation occurs before a user could reasonably
   // interact with the bubble.
-  if (Elapsed() < base::TimeDelta::FromSeconds(kSurviveNavigationSeconds))
+  if (Elapsed() < kCardBubbleSurviveNavigationTime)
     return;
 
   // Otherwise, get rid of the bubble and icon.
