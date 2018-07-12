@@ -195,6 +195,9 @@ function testOrderAndNestItems() {
   volumeManager.volumeInfoList.push(
       MockVolumeManagerWrapper.createMockVolumeInfo(
           VolumeManagerCommon.VolumeType.PROVIDED, 'provided:prov2'));
+  volumeManager.volumeInfoList.push(
+      MockVolumeManagerWrapper.createMockVolumeInfo(
+          VolumeManagerCommon.VolumeType.ANDROID_FILES, 'android_files:droid'));
 
   // Navigation items built above:
   //  1.  fake-entry://recent
@@ -202,6 +205,7 @@ function testOrderAndNestItems() {
   //  3.  /root/shortcut2
   //  4.  My-Files
   //        -> Downloads
+  //        -> Play Files
   //        -> Linux Files
   //  5.  removable:hoge
   //  6.  archive:a-zip

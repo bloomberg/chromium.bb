@@ -75,8 +75,63 @@ function testEntryListAddEntry() {
   assertEquals(childEntry, entryList.children[0]);
 }
 
+/** Tests methods to remove entries. */
+function testEntryListRemoveEntry() {
+  const entryList = new EntryList('My Files');
+
+  const fakeRootEntry = createFakeDisplayRoot();
+  const fakeVolumeInfo = {
+    displayRoot: fakeRootEntry,
+    label: 'Fake Filesystem',
+  };
+  const childEntry = new VolumeEntry(fakeVolumeInfo);
+  entryList.addEntry(childEntry);
+  assertTrue(entryList.removeEntry(childEntry));
+  assertEquals(0, entryList.children.length);
+}
+
+/** Tests methods findIndexByVolumeInfo, removeByVolumeType and containEntry. */
+function testEntryFindIndex() {
+  const entryList = new EntryList('My Files');
+
+  const fakeRootEntry = createFakeDisplayRoot();
+  const downloadsVolumeInfo = {
+    displayRoot: fakeRootEntry,
+    label: 'Fake Filesystem',
+    volumeType: VolumeManagerCommon.VolumeType.DOWNLOADS,
+  };
+  const downloads = new VolumeEntry(downloadsVolumeInfo);
+
+  const crostiniRootEntry = createFakeDisplayRoot();
+  const crostiniVolumeInfo = {
+    displayRoot: crostiniRootEntry,
+    label: 'Fake Filesystem',
+    volumeType: VolumeManagerCommon.VolumeType.CROSTINI,
+  };
+  const crostini = new VolumeEntry(crostiniVolumeInfo);
+
+  entryList.addEntry(downloads);
+  // Test containEntry.
+  assertTrue(entryList.containEntry(downloads));
+  assertFalse(entryList.containEntry(crostini));
+  entryList.addEntry(crostini);
+  assertTrue(entryList.containEntry(crostini));
+
+  // Test findIndexByVolumeInfo.
+  assertEquals(0, entryList.findIndexByVolumeInfo(downloadsVolumeInfo));
+  assertEquals(1, entryList.findIndexByVolumeInfo(crostiniVolumeInfo));
+
+  // Test removeByVolumeType.
+  assertTrue(
+      entryList.removeByVolumeType(VolumeManagerCommon.VolumeType.CROSTINI));
+  assertEquals(1, entryList.children.length);
+  // Now crostini volume doesn't exist anymore, so should return False.
+  assertFalse(
+      entryList.removeByVolumeType(VolumeManagerCommon.VolumeType.CROSTINI));
+}
+
 /** Tests method EntryList.getMetadata. */
-function testEntryListAddVolume(testReportCallback) {
+function testEntryListGetMetadata(testReportCallback) {
   const entryList = new EntryList('My Files');
 
   let modificationTime = null;
