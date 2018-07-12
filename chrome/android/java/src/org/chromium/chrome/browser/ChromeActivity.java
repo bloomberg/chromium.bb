@@ -883,6 +883,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @param color The color that the status bar should be set to.
      * @param isDefaultThemeColor Whether {@code color} is the default theme color.
      */
+    // TODO(danielpark): Move status bar & status bar icon color logic into helper class.
+    //                   See crbug.com/855079.
     protected void setStatusBarColor(int color, boolean isDefaultThemeColor) {
         if (UiUtils.isSystemUiThemingDisabled()) return;
 

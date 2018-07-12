@@ -26,6 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
 
@@ -63,18 +64,22 @@ public abstract class AutofillEditorBase
         }
         getActivity().setTitle(getTitleResourceId(mIsNewEntry));
 
+        View baseView = inflater.inflate(R.layout.autofill_editor_base, container, false);
+
         // Hide the top shadow on the ScrollView because the toolbar draws one.
-        FadingEdgeScrollView scrollView = (FadingEdgeScrollView) inflater.inflate(
-                R.layout.autofill_editor_base, container, false);
+        FadingEdgeScrollView scrollView =
+                (FadingEdgeScrollView) baseView.findViewById(R.id.scroll_view);
         scrollView.setEdgeVisibility(
                 FadingEdgeScrollView.DRAW_NO_EDGE, FadingEdgeScrollView.DRAW_FADING_EDGE);
-
+        scrollView.getViewTreeObserver().addOnScrollChangedListener(
+                PreferenceUtils.getShowShadowOnScrollListener(
+                        scrollView, baseView.findViewById(R.id.shadow)));
         // Inflate the editor and buttons into the "content" LinearLayout.
         LinearLayout contentLayout = (LinearLayout) scrollView.findViewById(R.id.content);
         inflater.inflate(getLayoutId(), contentLayout, true);
         inflater.inflate(R.layout.autofill_editor_base_buttons, contentLayout, true);
 
-        return scrollView;
+        return baseView;
     }
 
     @Override

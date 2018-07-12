@@ -155,6 +155,11 @@
         <item name="floatLabelPaddingLeft">@dimen/pref_autofill_field_horizontal_padding</item>
         <item name="floatLabelPaddingRight">@dimen/pref_autofill_field_horizontal_padding</item>
         <item name="floatLabelPaddingTop">@dimen/pref_autofill_field_top_margin</item>
+        <item name="actionBarStyle">@style/PreferenceActionBarModern</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+    <style name="PreferenceActionBarModern" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
+      <item name="titleTextStyle">@style/BlackHeadline1</item>
     </style>
     <style name="PreferenceTextAppearanceMedium">
         <item name="android:textSize">18sp</item>
@@ -224,12 +229,12 @@
         <item name="android:importantForAccessibility">no</item>
     </style>
 
-    <style name="ThemeWithActionBarBase" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="ThemeWithActionBarBase" parent="Theme.AppCompat.Light">
         <item name="android:windowBackground">@drawable/action_bar_activity_bg</item>
         <!-- Action bar color -->
-        <item name="colorPrimary">@color/dark_action_bar_color</item>
+        <item name="colorPrimary">@color/modern_primary_color</item>
         <!-- Status bar color -->
-        <item name="colorPrimaryDark">#161e21</item>
+        <item name="colorPrimaryDark">@android:color/black</item>
         <!-- Color of checkboxes, switches, buttons, etc. -->
         <item name="colorAccent">@color/pref_accent_color</item>
         <!-- Button style -->

@@ -13,7 +13,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
@@ -34,6 +36,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -41,19 +44,17 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.autofill.CreditCardNumberFormattingTextWatcher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
-import org.chromium.chrome.browser.widget.FadingShadow;
-import org.chromium.chrome.browser.widget.FadingShadowView;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
 
 /**
  * The editor dialog. Can be used for editing contact information, shipping address,
@@ -186,8 +187,10 @@ public class EditorDialog
      */
     private void prepareToolbar() {
         EditorDialogToolbar toolbar = (EditorDialogToolbar) mLayout.findViewById(R.id.action_bar);
+        toolbar.setBackgroundColor(ApiCompatibilityUtils.getColor(
+                toolbar.getResources(), R.color.modern_primary_color));
+        toolbar.setTitleTextAppearance(toolbar.getContext(), R.style.BlackHeadline1);
         toolbar.setTitle(mEditorModel.getTitle());
-        toolbar.setTitleTextColor(Color.WHITE);
         toolbar.setShowDeleteMenuItem(mDeleteRunnable != null);
 
         // Show the help article when the help icon is clicked on, or delete
@@ -207,7 +210,7 @@ public class EditorDialog
 
         // Cancel editing when the user hits the back arrow.
         toolbar.setNavigationContentDescription(R.string.cancel);
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
+        toolbar.setNavigationIcon(getBlackTintedBackIcon());
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -215,17 +218,19 @@ public class EditorDialog
             }
         });
 
-        // Make it appear that the toolbar is floating by adding a shadow.
-        FadingShadowView shadow = (FadingShadowView) mLayout.findViewById(R.id.shadow);
-        shadow.init(ApiCompatibilityUtils.getColor(
-                            mContext.getResources(), R.color.toolbar_shadow_color),
-                FadingShadow.POSITION_TOP);
-
         // The top shadow is handled by the toolbar, so hide the one used in the field editor.
         FadingEdgeScrollView scrollView =
                 (FadingEdgeScrollView) mLayout.findViewById(R.id.scroll_view);
         scrollView.setEdgeVisibility(
                 FadingEdgeScrollView.DRAW_NO_EDGE, FadingEdgeScrollView.DRAW_FADING_EDGE);
+
+        // The shadow's top margin doesn't get picked up in the xml; set it programmatically.
+        View shadow = mLayout.findViewById(R.id.shadow);
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) shadow.getLayoutParams();
+        params.topMargin = toolbar.getLayoutParams().height;
+        shadow.setLayoutParams(params);
+        scrollView.getViewTreeObserver().addOnScrollChangedListener(
+                PreferenceUtils.getShowShadowOnScrollListener(scrollView, shadow));
     }
 
     /**
@@ -601,5 +606,10 @@ public class EditorDialog
     @VisibleForTesting
     public List<Spinner> getDropdownFieldsForTest() {
         return mDropdownFields;
+    }
+
+    private Drawable getBlackTintedBackIcon() {
+        return TintedDrawable.constructTintedDrawable(
+                getContext(), R.drawable.ic_arrow_back_white_24dp, android.R.color.black);
     }
 }
