@@ -12,6 +12,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "components/data_use_measurement/core/data_use.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
@@ -63,7 +64,8 @@ DataReductionProxyDataUseObserver::DataReductionProxyDataUseObserver(
     : data_reduction_proxy_io_data_(data_reduction_proxy_io_data),
       data_use_ascriber_(data_use_ascriber) {
   DCHECK(data_reduction_proxy_io_data_);
-  data_use_ascriber_->AddObserver(this);
+  if (!data_reduction_proxy::params::IsDataSaverSiteBreakdownUsingPLMEnabled())
+    data_use_ascriber_->AddObserver(this);
 }
 
 DataReductionProxyDataUseObserver::~DataReductionProxyDataUseObserver() {

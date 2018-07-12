@@ -44,5 +44,11 @@ const base::Feature kDataReductionProxyRobustConnection{
 const base::Feature kDogfood{"DataReductionProxyDogfood",
                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables recording of the site-breakdown metrics using the page load metrics
+// harness, and disables the observer for data use ascriber.
+const base::Feature kDataSaverSiteBreakdownUsingPageLoadMetrics{
+    "DataSaverSiteBreakdownUsingPageLoadMetrics",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace data_reduction_proxy
