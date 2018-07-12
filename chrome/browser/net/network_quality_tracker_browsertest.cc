@@ -113,13 +113,6 @@ class NetworkQualityTrackerBrowserTest : public InProcessBrowserTest {
   NetworkQualityTrackerBrowserTest()
       : network_service_enabled_(
             base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    if (network_service_enabled_) {
-      scoped_feature_list_.InitAndEnableFeature(
-          network::features::kNetworkService);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          network::features::kNetworkService);
-    }
   }
   ~NetworkQualityTrackerBrowserTest() override {}
 
@@ -154,7 +147,6 @@ class NetworkQualityTrackerBrowserTest : public InProcessBrowserTest {
   bool network_service_enabled() const { return network_service_enabled_; }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   const bool network_service_enabled_;
 };
 

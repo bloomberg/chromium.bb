@@ -35,30 +35,17 @@ static const int32_t kConnectionTypeInvalid = -1;
 
 }  // namespace
 
-NetworkConnectionTracker::NetworkConnectionTracker()
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+NetworkConnectionTracker::NetworkConnectionTracker(
+    base::RepeatingCallback<network::mojom::NetworkService*()> callback)
+    : get_network_service_callback_(callback),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       connection_type_(kConnectionTypeInvalid),
       network_change_observer_list_(
           new base::ObserverListThreadSafe<NetworkConnectionObserver>(
               base::ObserverListPolicy::EXISTING_ONLY)),
-      binding_(this) {}
-
-void NetworkConnectionTracker::Initialize(
-    network::mojom::NetworkService* network_service) {
-  DCHECK(!binding_.is_bound());
-  DCHECK(network_service);
-  // Get NetworkChangeManagerPtr.
-  network::mojom::NetworkChangeManagerPtr manager_ptr;
-  network::mojom::NetworkChangeManagerRequest request(
-      mojo::MakeRequest(&manager_ptr));
-  network_service->GetNetworkChangeManager(std::move(request));
-
-  // Request notification from NetworkChangeManagerPtr.
-  network::mojom::NetworkChangeManagerClientPtr client_ptr;
-  network::mojom::NetworkChangeManagerClientRequest client_request(
-      mojo::MakeRequest(&client_ptr));
-  binding_.Bind(std::move(client_request));
-  manager_ptr->RequestNotifications(std::move(client_ptr));
+      binding_(this) {
+  Initialize();
+  DCHECK(binding_.is_bound());
 }
 
 NetworkConnectionTracker::~NetworkConnectionTracker() {
@@ -125,6 +112,13 @@ void NetworkConnectionTracker::RemoveNetworkConnectionObserver(
   network_change_observer_list_->RemoveObserver(observer);
 }
 
+NetworkConnectionTracker::NetworkConnectionTracker()
+    : connection_type_(kConnectionTypeInvalid),
+      network_change_observer_list_(
+          new base::ObserverListThreadSafe<NetworkConnectionObserver>(
+              base::ObserverListPolicy::EXISTING_ONLY)),
+      binding_(this) {}
+
 void NetworkConnectionTracker::OnInitialConnectionType(
     network::mojom::ConnectionType type) {
   base::AutoLock lock(lock_);
@@ -142,6 +136,42 @@ void NetworkConnectionTracker::OnNetworkChanged(
                                 static_cast<base::subtle::Atomic32>(type));
   network_change_observer_list_->Notify(
       FROM_HERE, &NetworkConnectionObserver::OnConnectionChanged, type);
+}
+
+void NetworkConnectionTracker::Initialize() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!binding_.is_bound());
+
+  network::mojom::NetworkService* network_service =
+      get_network_service_callback_.Run();
+
+  // Get NetworkChangeManagerPtr.
+  network::mojom::NetworkChangeManagerPtr manager_ptr;
+  network::mojom::NetworkChangeManagerRequest request(
+      mojo::MakeRequest(&manager_ptr));
+  network_service->GetNetworkChangeManager(std::move(request));
+
+  // Request notification from NetworkChangeManagerPtr.
+  network::mojom::NetworkChangeManagerClientPtr client_ptr;
+  network::mojom::NetworkChangeManagerClientRequest client_request(
+      mojo::MakeRequest(&client_ptr));
+  binding_.Bind(std::move(client_request));
+  manager_ptr->RequestNotifications(std::move(client_ptr));
+
+  // base::Unretained is safe as |binding_| is owned by |this|.
+  binding_.set_connection_error_handler(base::BindRepeating(
+      &NetworkConnectionTracker::HandleNetworkServicePipeBroken,
+      base::Unretained(this)));
+}
+
+void NetworkConnectionTracker::HandleNetworkServicePipeBroken() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  binding_.Close();
+  // Reset |connection_type_| to invalid, so future GetConnectionType() can be
+  // delayed after network service has restarted, and that there isn't an
+  // incorrectly cached state.
+  base::subtle::NoBarrier_Store(&connection_type_, kConnectionTypeInvalid);
+  Initialize();
 }
 
 }  // namespace content
