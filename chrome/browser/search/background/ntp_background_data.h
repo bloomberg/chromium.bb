@@ -108,7 +108,9 @@ struct AlbumPhoto {
   AlbumPhoto();
   // default_image_options are applied to the image.image_url() if options
   // (specifying resolution, cropping, etc) are not already present.
-  AlbumPhoto(const std::string& photo_url,
+  AlbumPhoto(const std::string& album_id,
+             const std::string& photo_container_id,
+             const std::string& photo_url,
              const std::string& default_image_options);
   AlbumPhoto(const AlbumPhoto&);
   AlbumPhoto(AlbumPhoto&&);
@@ -117,6 +119,13 @@ struct AlbumPhoto {
   AlbumPhoto& operator=(const AlbumPhoto&);
   AlbumPhoto& operator=(AlbumPhoto&&);
 
+  // A unique identifier for the album. This is required when requesting the
+  // album.
+  std::string album_id;
+  // A generic photo container ID based on the photo provider. For Google
+  // Photos, this corresponds to media keys for the collection. It is also
+  // required when requesting the album.
+  std::string photo_container_id;
   // The thumbnail image URL, typically lower resolution than the photo_url.
   GURL thumbnail_photo_url;
   // The image URL.
