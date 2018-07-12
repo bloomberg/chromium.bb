@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/android/jni_android.h"
@@ -21,7 +20,6 @@ namespace device {
 
 class BluetoothAdapterAndroid;
 class BluetoothDeviceAndroid;
-class BluetoothRemoteGattCharacteristicAndroid;
 
 // BluetoothRemoteGattServiceAndroid along with its owned Java class
 // org.chromium.device.bluetooth.ChromeBluetoothRemoteGattService implement
@@ -70,6 +68,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
       const override;
   device::BluetoothRemoteGattCharacteristic* GetCharacteristic(
       const std::string& identifier) const override;
+  std::vector<BluetoothRemoteGattCharacteristic*> GetCharacteristicsByUUID(
+      const BluetoothUUID& characteristic_uuid) const override;
   bool IsDiscoveryComplete() const override;
   void SetDiscoveryComplete(bool complete) override;
 
@@ -106,11 +106,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
 
   // Adapter unique instance ID.
   std::string instance_id_;
-
-  // Map of characteristics, keyed by characteristic identifier.
-  std::unordered_map<std::string,
-                     std::unique_ptr<BluetoothRemoteGattCharacteristicAndroid>>
-      characteristics_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattServiceAndroid);
 };

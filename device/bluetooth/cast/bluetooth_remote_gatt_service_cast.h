@@ -23,7 +23,6 @@ class RemoteService;
 namespace device {
 
 class BluetoothDeviceCast;
-class BluetoothRemoteGattCharacteristicCast;
 
 class BluetoothRemoteGattServiceCast : public BluetoothRemoteGattService {
  public:
@@ -39,18 +38,11 @@ class BluetoothRemoteGattServiceCast : public BluetoothRemoteGattService {
 
   // BluetoothRemoteGattService implementation:
   BluetoothDevice* GetDevice() const override;
-  std::vector<BluetoothRemoteGattCharacteristic*> GetCharacteristics()
-      const override;
   std::vector<BluetoothRemoteGattService*> GetIncludedServices() const override;
-  BluetoothRemoteGattCharacteristic* GetCharacteristic(
-      const std::string& identifier) const override;
 
  private:
   BluetoothDeviceCast* const device_;
   scoped_refptr<chromecast::bluetooth::RemoteService> remote_service_;
-
-  std::vector<std::unique_ptr<BluetoothRemoteGattCharacteristicCast>>
-      characteristics_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattServiceCast);
 };

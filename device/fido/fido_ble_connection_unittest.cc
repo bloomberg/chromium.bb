@@ -274,13 +274,6 @@ class FidoBleConnectionTest : public ::testing::Test {
     u2f_service_ = u2f_service.get();
     u2f_device_->AddMockService(std::move(u2f_service));
 
-    ON_CALL(*u2f_service_, GetCharacteristics())
-        .WillByDefault(Invoke(
-            u2f_service_, &MockBluetoothGattService::GetMockCharacteristics));
-
-    ON_CALL(*u2f_service_, GetCharacteristic(_))
-        .WillByDefault(Invoke(
-            u2f_service_, &MockBluetoothGattService::GetMockCharacteristic));
     AddU2fCharacteristics();
   }
 

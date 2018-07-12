@@ -20,7 +20,6 @@
 namespace device {
 
 class BluetoothDevice;
-class BluetoothRemoteGattCharacteristic;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWinrt
     : public BluetoothRemoteGattService {
@@ -37,11 +36,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWinrt
   BluetoothUUID GetUUID() const override;
   bool IsPrimary() const override;
   BluetoothDevice* GetDevice() const override;
-  std::vector<BluetoothRemoteGattCharacteristic*> GetCharacteristics()
-      const override;
   std::vector<BluetoothRemoteGattService*> GetIncludedServices() const override;
-  BluetoothRemoteGattCharacteristic* GetCharacteristic(
-      const std::string& identifier) const override;
 
  private:
   BluetoothRemoteGattServiceWinrt(

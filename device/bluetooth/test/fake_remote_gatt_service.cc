@@ -26,28 +26,29 @@ FakeRemoteGattService::FakeRemoteGattService(
     : service_id_(service_id),
       service_uuid_(service_uuid),
       is_primary_(is_primary),
-      device_(device),
-      last_characteristic_id_(0) {}
+      device_(device) {}
 
 FakeRemoteGattService::~FakeRemoteGattService() = default;
 
 bool FakeRemoteGattService::AllResponsesConsumed() {
   return std::all_of(
-      fake_characteristics_.begin(), fake_characteristics_.end(),
-      [](const auto& e) { return e.second->AllResponsesConsumed(); });
+      characteristics_.begin(), characteristics_.end(), [](const auto& e) {
+        return static_cast<FakeRemoteGattCharacteristic*>(e.second.get())
+            ->AllResponsesConsumed();
+      });
 }
 
 std::string FakeRemoteGattService::AddFakeCharacteristic(
     const device::BluetoothUUID& characteristic_uuid,
     mojom::CharacteristicPropertiesPtr properties) {
-  FakeCharacteristicMap::iterator it;
+  CharacteristicMap::iterator it;
   bool inserted;
 
   // Attribute instance Ids need to be unique.
   std::string new_characteristic_id = base::StringPrintf(
       "%s_%zu", GetIdentifier().c_str(), ++last_characteristic_id_);
 
-  std::tie(it, inserted) = fake_characteristics_.emplace(
+  std::tie(it, inserted) = characteristics_.emplace(
       new_characteristic_id, std::make_unique<FakeRemoteGattCharacteristic>(
                                  new_characteristic_id, characteristic_uuid,
                                  std::move(properties), this));
@@ -58,14 +59,7 @@ std::string FakeRemoteGattService::AddFakeCharacteristic(
 
 bool FakeRemoteGattService::RemoveFakeCharacteristic(
     const std::string& identifier) {
-  GetCharacteristic(identifier);
-  const auto& it = fake_characteristics_.find(identifier);
-  if (it == fake_characteristics_.end()) {
-    return false;
-  }
-
-  fake_characteristics_.erase(it);
-  return true;
+  return characteristics_.erase(identifier) != 0u;
 }
 
 std::string FakeRemoteGattService::GetIdentifier() const {
@@ -84,27 +78,10 @@ device::BluetoothDevice* FakeRemoteGattService::GetDevice() const {
   return device_;
 }
 
-std::vector<device::BluetoothRemoteGattCharacteristic*>
-FakeRemoteGattService::GetCharacteristics() const {
-  std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics;
-  for (const auto& it : fake_characteristics_)
-    characteristics.push_back(it.second.get());
-  return characteristics;
-}
-
 std::vector<device::BluetoothRemoteGattService*>
 FakeRemoteGattService::GetIncludedServices() const {
   NOTREACHED();
   return std::vector<device::BluetoothRemoteGattService*>();
-}
-
-device::BluetoothRemoteGattCharacteristic*
-FakeRemoteGattService::GetCharacteristic(const std::string& identifier) const {
-  const auto& it = fake_characteristics_.find(identifier);
-  if (it == fake_characteristics_.end())
-    return nullptr;
-
-  return it->second.get();
 }
 
 }  // namespace bluetooth

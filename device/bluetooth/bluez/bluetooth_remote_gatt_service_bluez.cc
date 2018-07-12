@@ -87,25 +87,10 @@ device::BluetoothDevice* BluetoothRemoteGattServiceBlueZ::GetDevice() const {
   return device_;
 }
 
-std::vector<device::BluetoothRemoteGattCharacteristic*>
-BluetoothRemoteGattServiceBlueZ::GetCharacteristics() const {
-  std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics;
-  for (const auto& characteristic : characteristics_)
-    characteristics.push_back(characteristic.second.get());
-  return characteristics;
-}
-
 std::vector<device::BluetoothRemoteGattService*>
 BluetoothRemoteGattServiceBlueZ::GetIncludedServices() const {
   // TODO(armansito): Return the actual included services here.
   return std::vector<device::BluetoothRemoteGattService*>();
-}
-
-device::BluetoothRemoteGattCharacteristic*
-BluetoothRemoteGattServiceBlueZ::GetCharacteristic(
-    const std::string& identifier) const {
-  auto iter = characteristics_.find(dbus::ObjectPath(identifier));
-  return iter != characteristics_.end() ? iter->second.get() : nullptr;
 }
 
 void BluetoothRemoteGattServiceBlueZ::NotifyServiceChanged() {
@@ -164,7 +149,7 @@ void BluetoothRemoteGattServiceBlueZ::GattServicePropertyChanged(
 
 void BluetoothRemoteGattServiceBlueZ::GattCharacteristicAdded(
     const dbus::ObjectPath& object_path) {
-  if (characteristics_.find(object_path) != characteristics_.end()) {
+  if (characteristics_.find(object_path.value()) != characteristics_.end()) {
     VLOG(1) << "Remote GATT characteristic already exists: "
             << object_path.value();
     return;
@@ -186,7 +171,7 @@ void BluetoothRemoteGattServiceBlueZ::GattCharacteristicAdded(
   // NOTE: Can't use std::make_unique due to private constructor.
   BluetoothRemoteGattCharacteristicBlueZ* characteristic =
       new BluetoothRemoteGattCharacteristicBlueZ(this, object_path);
-  characteristics_.emplace(object_path, base::WrapUnique(characteristic));
+  AddCharacteristic(base::WrapUnique(characteristic));
   DCHECK(characteristic->GetIdentifier() == object_path.value());
   DCHECK(characteristic->GetUUID().IsValid());
 
@@ -196,7 +181,7 @@ void BluetoothRemoteGattServiceBlueZ::GattCharacteristicAdded(
 
 void BluetoothRemoteGattServiceBlueZ::GattCharacteristicRemoved(
     const dbus::ObjectPath& object_path) {
-  CharacteristicMap::iterator iter = characteristics_.find(object_path);
+  CharacteristicMap::iterator iter = characteristics_.find(object_path.value());
   if (iter == characteristics_.end()) {
     VLOG(2) << "Unknown GATT characteristic removed: " << object_path.value();
     return;
@@ -206,7 +191,9 @@ void BluetoothRemoteGattServiceBlueZ::GattCharacteristicRemoved(
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
 
   auto characteristic = std::move(iter->second);
-  DCHECK(characteristic->object_path() == object_path);
+  DCHECK(
+      static_cast<BluetoothRemoteGattCharacteristicBlueZ*>(characteristic.get())
+          ->object_path() == object_path);
   characteristics_.erase(iter);
 
   DCHECK(GetAdapter());
@@ -216,8 +203,11 @@ void BluetoothRemoteGattServiceBlueZ::GattCharacteristicRemoved(
 void BluetoothRemoteGattServiceBlueZ::GattCharacteristicPropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
-  CharacteristicMap::iterator iter = characteristics_.find(object_path);
-  if (iter == characteristics_.end()) {
+  auto* characteristic_bluez =
+      static_cast<BluetoothRemoteGattCharacteristicBlueZ*>(
+          GetCharacteristic(object_path.value()));
+
+  if (!characteristic_bluez) {
     VLOG(3) << "Properties of unknown characteristic changed";
     return;
   }
@@ -238,12 +228,14 @@ void BluetoothRemoteGattServiceBlueZ::GattCharacteristicPropertyChanged(
   if (property_name == properties->flags.name()) {
     NotifyServiceChanged();
   } else if (property_name == properties->value.name()) {
-    DCHECK_GE(iter->second->num_of_characteristic_value_read_in_progress_, 0);
-    if (iter->second->num_of_characteristic_value_read_in_progress_ > 0) {
-      --iter->second->num_of_characteristic_value_read_in_progress_;
+    DCHECK_GE(
+        characteristic_bluez->num_of_characteristic_value_read_in_progress_, 0);
+    if (characteristic_bluez->num_of_characteristic_value_read_in_progress_ >
+        0) {
+      --characteristic_bluez->num_of_characteristic_value_read_in_progress_;
     } else {
       GetAdapter()->NotifyGattCharacteristicValueChanged(
-          iter->second.get(), properties->value.value());
+          characteristic_bluez, properties->value.value());
     }
   }
 }

@@ -107,16 +107,6 @@ class BluetoothInterfaceDeviceTest : public testing::Test {
 
     service2->AddMockCharacteristic(std::move(characteristic3));
 
-    EXPECT_CALL(*service1, GetCharacteristics())
-        .WillRepeatedly(
-            Invoke(service1.get(),
-                   &device::MockBluetoothGattService::GetMockCharacteristics));
-
-    EXPECT_CALL(*service2, GetCharacteristics())
-        .WillRepeatedly(
-            Invoke(service2.get(),
-                   &device::MockBluetoothGattService::GetMockCharacteristics));
-
     device_.AddMockService(std::move(service1));
     device_.AddMockService(std::move(service2));
 

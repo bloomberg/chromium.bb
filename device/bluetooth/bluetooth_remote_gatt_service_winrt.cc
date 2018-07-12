@@ -70,23 +70,10 @@ BluetoothDevice* BluetoothRemoteGattServiceWinrt::GetDevice() const {
   return device_;
 }
 
-std::vector<BluetoothRemoteGattCharacteristic*>
-BluetoothRemoteGattServiceWinrt::GetCharacteristics() const {
-  NOTIMPLEMENTED();
-  return {};
-}
-
 std::vector<BluetoothRemoteGattService*>
 BluetoothRemoteGattServiceWinrt::GetIncludedServices() const {
   NOTIMPLEMENTED();
   return {};
-}
-
-BluetoothRemoteGattCharacteristic*
-BluetoothRemoteGattServiceWinrt::GetCharacteristic(
-    const std::string& identifier) const {
-  NOTIMPLEMENTED();
-  return nullptr;
 }
 
 BluetoothRemoteGattServiceWinrt::BluetoothRemoteGattServiceWinrt(
