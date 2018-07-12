@@ -27206,6 +27206,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Area with references loaded"/>
 </enum>
 
+<enum name="LockedFullscreenState">
+  <int value="0" label="Exited"/>
+  <int value="1" label="Entered"/>
+</enum>
+
 <enum name="LockScreenActionAvailability">
   <int value="0" label="Available"/>
   <int value="1" label="Not available - no action handler app"/>
