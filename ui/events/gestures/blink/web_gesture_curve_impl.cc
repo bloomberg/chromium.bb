@@ -37,7 +37,7 @@ std::unique_ptr<GestureCurve> CreateDefaultPlatformCurve(
                                                 base::TimeTicks());
   }
 
-#if defined(CHROMECAST_BUILD)
+#if !defined(OS_ANDROID) && defined(CHROMECAST_BUILD)
   auto scroller = std::make_unique<Scroller>(Scroller::Config());
   scroller->Fling(0, 0, initial_velocity.x(), initial_velocity.y(), INT_MIN,
                   INT_MAX, INT_MIN, INT_MAX, base::TimeTicks());
