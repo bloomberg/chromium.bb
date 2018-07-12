@@ -134,7 +134,6 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
         "pdf_private/accessibility_crash_1.pdf",
         "pdf_private/cfuzz5.pdf",
         "pdf_private/cfuzz6.pdf",
-        "pdf_private/crash-11-14-44.pdf",
         "pdf_private/js.pdf",
         "pdf_private/segv-ecx.pdf",
         "pdf_private/tests.pdf",
