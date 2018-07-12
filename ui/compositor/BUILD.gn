@@ -67,6 +67,8 @@ jumbo_component("compositor") {
     "paint_recorder.cc",
     "paint_recorder.h",
     "property_change_reason.h",
+    "recyclable_compositor_mac.cc",
+    "recyclable_compositor_mac.h",
     "reflector.cc",
     "reflector.h",
     "scoped_animation_duration_scale_mode.cc",
@@ -101,6 +103,10 @@ jumbo_component("compositor") {
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
+
+  if (is_mac) {
+    deps += [ "//ui/accelerated_widget_mac" ]
+  }
 
   if (is_win && use_aura) {
     # TODO(sky): before we make this real need to remove

@@ -9,6 +9,7 @@ include_rules = [
   "+third_party/khronos/GLES2/gl2.h",
   "+third_party/skia",
   "+ui/base",
+  "+ui/accelerated_widget_mac",
   "+ui/display/display_switches.h",
   "+ui/gfx",
   "+ui/gl",

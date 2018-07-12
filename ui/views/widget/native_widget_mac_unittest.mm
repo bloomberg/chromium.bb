@@ -23,6 +23,7 @@
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #import "ui/base/test/scoped_fake_full_keyboard_access.h"
+#include "ui/compositor/recyclable_compositor_mac.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -102,7 +103,7 @@ class BridgedNativeWidgetTestApi {
     const float kScaleFactor = 1.0f;
     ui::CALayerFrameSink* ca_layer_frame_sink =
         ui::CALayerFrameSink::FromAcceleratedWidget(
-            bridge_->compositor_widget_->accelerated_widget());
+            bridge_->compositor_->widget()->accelerated_widget());
     gfx::CALayerParams ca_layer_params;
     ca_layer_params.is_empty = false;
     ca_layer_params.pixel_size = size;
