@@ -887,8 +887,15 @@ void VrShellGl::EnableAlertDialog(PlatformInputHandler* input_handler,
   showing_vr_dialog_ = true;
   vr_dialog_input_delegate_.reset(new PlatformUiInputDelegate(input_handler));
   vr_dialog_input_delegate_->SetSize(width, height);
-  ui_->SetAlertDialogEnabled(true, vr_dialog_input_delegate_.get(), width,
-                             height);
+  if (web_vr_mode_) {
+    ui_->SetAlertDialogEnabled(true, vr_dialog_input_delegate_.get(), width,
+                               height);
+  } else {
+    ui_->SetContentOverlayAlertDialogEnabled(
+        true, vr_dialog_input_delegate_.get(),
+        width / content_tex_buffer_size_.width(),
+        height / content_tex_buffer_size_.width());
+  }
   ScheduleOrCancelWebVrFrameTimeout();
 }
 
@@ -906,10 +913,13 @@ void VrShellGl::SetAlertDialogSize(float width, float height) {
   // ratio matters. But, if they are floating, its size should be relative to
   // the contents. During a WebXR presentation, the contents might not have been
   // initialized but, in this case, the dialogs are never floating.
-  float scale = content_tex_buffer_size_.IsEmpty()
-                    ? 1.0f
-                    : content_tex_buffer_size_.width();
-  ui_->SetAlertDialogSize(width / scale, height / scale);
+  if (web_vr_mode_) {
+    ui_->SetAlertDialogSize(width, height);
+  } else {
+    ui_->SetContentOverlayAlertDialogSize(
+        width / content_tex_buffer_size_.width(),
+        height / content_tex_buffer_size_.width());
+  }
 }
 
 void VrShellGl::SetDialogLocation(float x, float y) {
