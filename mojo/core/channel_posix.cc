@@ -144,8 +144,19 @@ class ChannelPosix : public Channel,
     // must also have the ability to extract a send right from the ports that
     // are already attached.
     MachPortRelay* relay = Core::Get()->GetMachPortRelay();
-    if (relay && remote_process().is_valid() && message->has_mach_ports())
+    if (relay && remote_process().is_valid() && message->has_mach_ports()) {
+      if (relay->port_provider()->TaskForPid(remote_process().get()) ==
+          MACH_PORT_NULL) {
+        // We also need to have a task port for the remote process before we can
+        // send it any other ports. If we don't have one yet, queue the message
+        // until OnProcessReady() is invoked.
+        base::AutoLock lock(task_port_wait_lock_);
+        pending_outgoing_with_mach_ports_.emplace_back(std::move(message));
+        return;
+      }
+
       relay->SendPortsToProcess(message.get(), remote_process().get());
+    }
 #endif
 
     bool write_error = false;
