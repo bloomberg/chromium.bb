@@ -1458,8 +1458,12 @@ ExtensionFunction::ResponseAction DownloadsOpenFunction::Run() {
   if (Fault(!web_contents, download_extension_errors::kInvisibleContext,
             &error))
     return RespondNow(Error(error));
+  // Extensions with debugger permission could fake user gestures and should
+  // not be trusted.
   if (GetSenderWebContents() &&
-      GetSenderWebContents()->HasRecentInteractiveInputEvent()) {
+      GetSenderWebContents()->HasRecentInteractiveInputEvent() &&
+      !extension()->permissions_data()->HasAPIPermission(
+          APIPermission::kDebugger)) {
     download_item->OpenDownload();
     return RespondNow(NoArguments());
   }
