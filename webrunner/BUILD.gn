@@ -47,7 +47,7 @@ executable("runner_exe") {
 group("webrunner") {
   testonly = true
   deps = [
-    ":service_exe",
+    ":service_pkg",
     ":service_unittests",
   ]
 }
@@ -112,8 +112,12 @@ component("service_lib") {
     "common/webrunner_content_client.cc",
     "common/webrunner_content_client.h",
     "common/webrunner_export.h",
-    "service/context_provider/context_provider_impl.cc",
-    "service/context_provider/context_provider_impl.h",
+    "service/context_impl.cc",
+    "service/context_impl.h",
+    "service/context_provider_impl.cc",
+    "service/context_provider_impl.h",
+    "service/frame_impl.cc",
+    "service/frame_impl.h",
     "service/switches.cc",
     "service/switches.h",
     "service/webrunner_main_delegate.cc",
@@ -161,7 +165,7 @@ repack("service_pak") {
 
 test("service_unittests") {
   sources = [
-    "service/context_provider/context_provider_impl_unittest.cc",
+    "service/context_provider_impl_unittest.cc",
   ]
   deps = [
     ":fidl",

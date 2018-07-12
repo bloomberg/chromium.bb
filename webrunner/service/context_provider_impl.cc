@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webrunner/service/context_provider/context_provider_impl.h"
+#include "webrunner/service/context_provider_impl.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <lib/zx/job.h>
@@ -17,6 +17,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
+#include "webrunner/service/common.h"
 #include "webrunner/service/switches.h"
 
 namespace webrunner {
@@ -58,7 +59,7 @@ void ContextProviderImpl::Create(
   base::LaunchOptions launch_options;
   zx::channel context_handle(context_request.TakeChannel());
   launch_options.handles_to_transfer.push_back(
-      {PA_HND(PA_USER0, 0), context_handle.get()});
+      {kContextRequestHandleId, context_handle.get()});
 
   // Isolate the child Context processes by containing them within their own
   // respective jobs.
