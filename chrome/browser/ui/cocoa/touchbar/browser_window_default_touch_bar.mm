@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/browser_window_touch_bar_mac.h"
+#import "chrome/browser/ui/cocoa/touchbar/browser_window_default_touch_bar.h"
 
 #include <memory>
 
-#include "base/mac/availability.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
+#import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -87,7 +87,7 @@ NSImage* CreateNSImageFromIcon(const gfx::VectorIcon& icon,
 
 // Creates a NSButton for the touch bar.
 NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
-                               BrowserWindowTouchBar* owner,
+                               BrowserWindowDefaultTouchBar* owner,
                                int command,
                                int tooltip_id,
                                SkColor color = kTouchBarDefaultIconColor) {
@@ -130,32 +130,50 @@ ui::TouchBarAction TouchBarActionFromCommand(int command) {
 
 // A class registered for C++ notifications. This is used to detect changes in
 // the profile preferences and the back/forward commands.
-class BrowserTouchBarNotificationBridge : public CommandObserver,
-                                          public BookmarkTabHelperObserver,
-                                          public TabStripModelObserver,
-                                          public content::WebContentsObserver {
+class TouchBarNotificationBridge : public CommandObserver,
+                                   public BookmarkTabHelperObserver,
+                                   public TabStripModelObserver,
+                                   public content::WebContentsObserver {
  public:
-  BrowserTouchBarNotificationBridge(BrowserWindowTouchBar* owner,
-                                    Browser* browser)
+  TouchBarNotificationBridge(BrowserWindowDefaultTouchBar* owner,
+                             Browser* browser)
       : owner_(owner), browser_(browser), contents_(nullptr) {
     TabStripModel* model = browser_->tab_strip_model();
-
     DCHECK(model);
     model->AddObserver(this);
 
     UpdateWebContents(model->GetActiveWebContents());
   }
 
-  ~BrowserTouchBarNotificationBridge() override {
+  ~TouchBarNotificationBridge() override {
+    if (contents_)
+      BookmarkTabHelper::FromWebContents(contents_)->RemoveObserver(this);
+
     TabStripModel* model = browser_->tab_strip_model();
     if (model)
       model->RemoveObserver(this);
-
-    if (contents_)
-      BookmarkTabHelper::FromWebContents(contents_)->RemoveObserver(this);
   }
 
-  void UpdateTouchBar() { [owner_ invalidateTouchBar]; }
+  void UpdateTouchBar() { [[owner_ controller] invalidateTouchBar]; }
+
+  void UpdateWebContents(content::WebContents* new_contents) {
+    if (contents_) {
+      BookmarkTabHelper::FromWebContents(contents_)->RemoveObserver(this);
+    }
+
+    contents_ = new_contents;
+    Observe(contents_);
+
+    bool is_starred = false;
+    if (contents_) {
+      BookmarkTabHelper* helper = BookmarkTabHelper::FromWebContents(contents_);
+      helper->AddObserver(this);
+      is_starred = helper->is_starred();
+    }
+
+    [owner_ setIsPageLoading:contents_ && contents_->IsLoading()];
+    [owner_ setIsStarred:is_starred];
+  }
 
   // BookmarkTabHelperObserver:
   void URLStarredChanged(content::WebContents* web_contents,
@@ -170,6 +188,7 @@ class BrowserTouchBarNotificationBridge : public CommandObserver,
                         int index,
                         int reason) override {
     UpdateWebContents(new_contents);
+    contents_ = new_contents;
     UpdateTouchBar();
   }
 
@@ -202,42 +221,23 @@ class BrowserTouchBarNotificationBridge : public CommandObserver,
   }
 
  private:
-  void UpdateWebContents(content::WebContents* new_contents) {
-    if (contents_) {
-      BookmarkTabHelper::FromWebContents(contents_)->RemoveObserver(this);
-    }
+  BrowserWindowDefaultTouchBar* owner_;  // Weak.
+  Browser* browser_;                     // Weak.
+  content::WebContents* contents_;       // Weak.
 
-    contents_ = new_contents;
-    Observe(contents_);
-
-    bool is_starred = false;
-    if (contents_) {
-      BookmarkTabHelper* helper = BookmarkTabHelper::FromWebContents(contents_);
-      helper->AddObserver(this);
-      is_starred = helper->is_starred();
-    }
-
-    [owner_ setIsPageLoading:contents_ && contents_->IsLoading()];
-    [owner_ setIsStarred:is_starred];
-  }
-
-  BrowserWindowTouchBar* owner_;    // Weak.
-  Browser* browser_;                // Weak.
-  content::WebContents* contents_;  // Weak.
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserTouchBarNotificationBridge);
+  DISALLOW_COPY_AND_ASSIGN(TouchBarNotificationBridge);
 };
 
 }  // namespace
 
-@interface BrowserWindowTouchBar () {
+@interface BrowserWindowDefaultTouchBar () {
   // Used to execute commands such as navigating back and forward.
   CommandUpdater* commandUpdater_;  // Weak, owned by Browser.
 
   // The browser associated with the touch bar.
   Browser* browser_;  // Weak.
 
-  NSWindow* window_;
+  BrowserWindowTouchBarController* controller_;  // Weak.
 
   // Used to monitor the optional home button pref.
   BooleanPrefMember showHomeButton_;
@@ -246,7 +246,7 @@ class BrowserTouchBarNotificationBridge : public CommandObserver,
   PrefChangeRegistrar profilePrefRegistrar_;
 
   // Used to receive and handle notifications.
-  std::unique_ptr<BrowserTouchBarNotificationBridge> notificationBridge_;
+  std::unique_ptr<TouchBarNotificationBridge> notificationBridge_;
 
   // The stop/reload button in the touch bar.
   base::scoped_nsobject<NSButton> reloadStopButton_;
@@ -271,19 +271,19 @@ class BrowserTouchBarNotificationBridge : public CommandObserver,
 - (NSView*)searchTouchBarView API_AVAILABLE(macos(10.12));
 @end
 
-@implementation BrowserWindowTouchBar
+@implementation BrowserWindowDefaultTouchBar
 
 @synthesize isPageLoading = isPageLoading_;
 @synthesize isStarred = isStarred_;
 
-- (instancetype)initWithBrowser:(Browser*)browser window:(NSWindow*)window {
+- (instancetype)initWithBrowser:(Browser*)browser
+                     controller:(BrowserWindowTouchBarController*)controller {
   if ((self = [super init])) {
     DCHECK(browser);
     browser_ = browser;
-    window_ = window;
+    controller_ = controller;
 
-    notificationBridge_.reset(
-        new BrowserTouchBarNotificationBridge(self, browser));
+    notificationBridge_.reset(new TouchBarNotificationBridge(self, browser));
 
     commandUpdater_ = browser->command_controller();
     commandUpdater_->AddCommandObserver(IDC_BACK, notificationBridge_.get());
@@ -292,13 +292,13 @@ class BrowserTouchBarNotificationBridge : public CommandObserver,
     PrefService* prefs = browser->profile()->GetPrefs();
     showHomeButton_.Init(
         prefs::kShowHomeButton, prefs,
-        base::BindRepeating(&BrowserTouchBarNotificationBridge::UpdateTouchBar,
+        base::BindRepeating(&TouchBarNotificationBridge::UpdateTouchBar,
                             base::Unretained(notificationBridge_.get())));
 
     profilePrefRegistrar_.Init(prefs);
     profilePrefRegistrar_.Add(
         DefaultSearchManager::kDefaultSearchProviderDataPrefName,
-        base::BindRepeating(&BrowserTouchBarNotificationBridge::UpdateTouchBar,
+        base::BindRepeating(&TouchBarNotificationBridge::UpdateTouchBar,
                             base::Unretained(notificationBridge_.get())));
   }
 
@@ -481,9 +481,8 @@ class BrowserTouchBarNotificationBridge : public CommandObserver,
   backForwardControl_.reset([control retain]);
 }
 
-- (void)invalidateTouchBar {
-  if ([window_ respondsToSelector:@selector(setTouchBar:)])
-    [window_ performSelector:@selector(setTouchBar:) withObject:nil];
+- (void)updateWebContents:(content::WebContents*)contents {
+  notificationBridge_->UpdateWebContents(contents);
 }
 
 - (void)updateBackForwardControl {
@@ -513,6 +512,10 @@ class BrowserTouchBarNotificationBridge : public CommandObserver,
 
   [starredButton_ setImage:CreateNSImageFromIcon(icon, iconColor)];
   [starredButton_ setAccessibilityLabel:l10n_util::GetNSString(tooltipId)];
+}
+
+- (BrowserWindowTouchBarController*)controller {
+  return controller_;
 }
 
 - (NSView*)searchTouchBarView {
@@ -582,7 +585,7 @@ class BrowserTouchBarNotificationBridge : public CommandObserver,
 @end
 
 // Private methods exposed for testing.
-@implementation BrowserWindowTouchBar (ExposedForTesting)
+@implementation BrowserWindowDefaultTouchBar (ExposedForTesting)
 
 - (void)updateReloadStopButton {
   const gfx::VectorIcon& icon =

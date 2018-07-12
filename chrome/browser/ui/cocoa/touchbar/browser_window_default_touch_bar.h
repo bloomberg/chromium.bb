@@ -1,9 +1,9 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_BROWSER_WINDOW_TOUCH_BAR_MAC_H_
-#define CHROME_BROWSER_UI_BROWSER_WINDOW_TOUCH_BAR_MAC_H_
+#ifndef CHROME_BROWSER_UI_COCOA_TOUCHBAR_BROWSER_WINDOW_DEFAULT_TOUCH_BAR_H_
+#define CHROME_BROWSER_UI_COCOA_TOUCHBAR_BROWSER_WINDOW_DEFAULT_TOUCH_BAR_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -12,11 +12,15 @@
 
 class BookmarkTabHelperObserver;
 class Browser;
-@class BrowserWindowController;
+@class BrowserWindowTouchBarController;
 
-// Provides a touch bar for the browser window. This class implements the
-// NSTouchBarDelegate and handles the items in the touch bar.
-@interface BrowserWindowTouchBar : NSObject<NSTouchBarDelegate>
+namespace content {
+class WebContents;
+}
+
+// Provides a default touch bar for the browser window. This class implements
+// the NSTouchBarDelegate and handles the items in the touch bar.
+@interface BrowserWindowDefaultTouchBar : NSObject<NSTouchBarDelegate>
 // True is the current page is loading. Used to determine if a stop or reload
 // button should be provided.
 @property(nonatomic, assign) BOOL isPageLoading;
@@ -25,23 +29,24 @@ class Browser;
 @property(nonatomic, assign) BOOL isStarred;
 
 // Designated initializer.
-- (instancetype)initWithBrowser:(Browser*)browser window:(NSWindow*)window;
+- (instancetype)initWithBrowser:(Browser*)browser
+                     controller:(BrowserWindowTouchBarController*)controller;
 
 // Creates and returns a touch bar for the browser window.
 - (NSTouchBar*)makeTouchBar API_AVAILABLE(macos(10.12.2));
 
-// Invalidate the browser window touch bar by setting |window_|'s touch bar to
-// nil.
-- (void)invalidateTouchBar;
+- (void)updateWebContents:(content::WebContents*)contents;
 
 // Updates the back/forward button. Called when creating the touch bar or when
 // the back and forward commands have changed.
 - (void)updateBackForwardControl;
 
+- (BrowserWindowTouchBarController*)controller;
+
 @end
 
 // Private methods exposed for testing.
-@interface BrowserWindowTouchBar (ExposedForTesting)
+@interface BrowserWindowDefaultTouchBar (ExposedForTesting)
 
 // Updates the reload/stop button. Called when creating the touch bar or the
 // page load state has been updated.
@@ -54,10 +59,10 @@ class Browser;
 // it's null.
 - (NSSegmentedControl*)backForwardControl;
 
-// Returns the bridge object that BrowserWindowTouchBar uses to receive
+// Returns the bridge object that BrowserWindowDefaultTouchBar uses to receive
 // notifications.
 - (BookmarkTabHelperObserver*)bookmarkTabObserver;
 
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_TOUCH_BAR_H_
+#endif  // CHROME_BROWSER_UI_COCOA_TOUCHBAR_BROWSER_WINDOW_DEFAULT_TOUCH_BAR_H_

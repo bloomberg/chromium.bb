@@ -39,7 +39,7 @@ class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
 @class BrowserWindowFullscreenTransition;
-@class BrowserWindowTouchBar;
+@class BrowserWindowTouchBarController;
 @class DevToolsController;
 @class DownloadShelfController;
 class ExtensionKeybindingRegistryCocoa;
@@ -96,7 +96,7 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   std::unique_ptr<ExclusiveAccessController> exclusiveAccessController_;
   base::scoped_nsobject<BrowserWindowFullscreenTransition>
       fullscreenTransition_;
-  base::scoped_nsobject<BrowserWindowTouchBar> touchBar_;
+  base::scoped_nsobject<BrowserWindowTouchBarController> touchBarController_;
 
   // Strong. StatusBubble is a special case of a strong reference that
   // we don't wrap in a scoped_ptr because it is acting the same
@@ -398,8 +398,9 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // UpdateAlertState.
 - (TabAlertState)alertState;
 
-// Returns the BrowserWindowTouchBar object associated with the window.
-- (BrowserWindowTouchBar*)browserWindowTouchBar;
+// Returns the BrowserWindowTouchBarController object associated with the
+// window.
+- (BrowserWindowTouchBarController*)browserWindowTouchBarController;
 
 // Indicates whether the toolbar is visible to the user. Toolbar is usually
 // triggered by moving mouse cursor to the top of the monitor.
@@ -626,8 +627,9 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 // Sets the fullscreen toolbar controller.
 - (void)setFullscreenToolbarController:(FullscreenToolbarController*)controller;
 
-// Sets |browserWindowTouchbar_|.
-- (void)setBrowserWindowTouchBar:(BrowserWindowTouchBar*)touchBar;
+// Sets |touchbarController_|.
+- (void)setBrowserWindowTouchBarController:
+    (BrowserWindowTouchBarController*)controller;
 
 @end  // @interface BrowserWindowController (TestingAPI)
 

@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
-#import "chrome/browser/ui/browser_window_touch_bar_mac.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_observer_cocoa.h"
@@ -78,6 +77,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
 #include "chrome/browser/ui/cocoa/translate/translate_bubble_bridge_views.h"
 #import "chrome/browser/ui/cocoa/translate/translate_bubble_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
@@ -1873,8 +1873,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
   fullscreenToolbarController_.reset([controller retain]);
 }
 
-- (void)setBrowserWindowTouchBar:(BrowserWindowTouchBar*)touchBar {
-  touchBar_.reset([touchBar retain]);
+- (void)setBrowserWindowTouchBarController:
+    (BrowserWindowTouchBarController*)touchBarController {
+  touchBarController_.reset([touchBarController retain]);
 }
 
 - (void)executeExtensionCommand:(const std::string&)extension_id
@@ -1895,14 +1896,14 @@ willAnimateFromState:(BookmarkBar::State)oldState
   return static_cast<BrowserWindowCocoa*>([self browserWindow])->alert_state();
 }
 
-- (BrowserWindowTouchBar*)browserWindowTouchBar {
-  if (!touchBar_) {
-    touchBar_.reset([[BrowserWindowTouchBar alloc]
+- (BrowserWindowTouchBarController*)browserWindowTouchBarController {
+  if (!touchBarController_) {
+    touchBarController_.reset([[BrowserWindowTouchBarController alloc]
         initWithBrowser:browser_.get()
                  window:[self window]]);
   }
 
-  return touchBar_.get();
+  return touchBarController_.get();
 }
 
 - (BOOL)isToolbarShowing {
