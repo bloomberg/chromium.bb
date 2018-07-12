@@ -690,7 +690,7 @@ void SandboxedUnpacker::IndexAndPersistJSONRulesetIfNeeded(
   }
 
   declarative_net_request::IndexAndPersistRules(
-      connector_.get(), data_decoder_identity_, *extension_,
+      connector_.get(), &data_decoder_identity_, *extension_,
       base::BindOnce(&SandboxedUnpacker::OnJSONRulesetIndexed, this,
                      std::move(manifest)));
 }

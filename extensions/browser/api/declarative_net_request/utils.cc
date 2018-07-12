@@ -232,7 +232,7 @@ IndexAndPersistRulesResult IndexAndPersistRulesUnsafe(
 }
 
 void IndexAndPersistRules(service_manager::Connector* connector,
-                          const service_manager::Identity& identity,
+                          service_manager::Identity* identity,
                           const Extension& extension,
                           IndexAndPersistRulesCallback callback) {
   DCHECK(IsAPIAvailable());
@@ -252,12 +252,20 @@ void IndexAndPersistRules(service_manager::Connector* connector,
   // the callee interface.
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  data_decoder::SafeJsonParser::ParseBatch(
-      connector, json_contents,
+  auto success_callback =
       base::BindRepeating(&OnSafeJSONParserSuccess,
-                          base::RetainedRef(&extension), repeating_callback),
-      base::BindRepeating(&OnSafeJSONParserError, repeating_callback),
-      identity.instance());
+                          base::RetainedRef(&extension), repeating_callback);
+  auto error_callback =
+      base::BindRepeating(&OnSafeJSONParserError, repeating_callback);
+
+  if (identity) {
+    data_decoder::SafeJsonParser::ParseBatch(connector, json_contents,
+                                             success_callback, error_callback,
+                                             identity->instance());
+  } else {
+    data_decoder::SafeJsonParser::Parse(connector, json_contents,
+                                        success_callback, error_callback);
+  }
 }
 
 bool IsValidRulesetData(const uint8_t* data,
