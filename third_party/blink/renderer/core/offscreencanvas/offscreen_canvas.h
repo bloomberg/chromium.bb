@@ -189,6 +189,7 @@ class CORE_EXPORT OffscreenCanvas final
   SkIRect current_frame_damage_rect_;
 
   bool needs_matrix_clip_restore_ = false;
+  bool next_begin_frame_should_push_frame_ = false;
 
   // cc::FrameSinkId is broken into two integer components as this can be used
   // in transfer of OffscreenCanvas across threads
