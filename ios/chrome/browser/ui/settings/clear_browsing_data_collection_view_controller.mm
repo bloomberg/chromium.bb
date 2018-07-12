@@ -21,6 +21,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_observer.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -98,13 +99,16 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
 // delegate.
 @property(nonatomic, readonly, strong) ClearBrowsingDataManager* dataManager;
 
+// Coordinator that managers an action sheet to clear browsing data.
+@property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
+
 // Restarts the counters for data types specified in the mask.
 - (void)restartCounters:(BrowsingDataRemoveMask)mask;
 
 @end
 
 @implementation ClearBrowsingDataCollectionViewController
-
+@synthesize actionSheetCoordinator = _actionSheetCoordinator;
 @synthesize dataManager = _dataManager;
 
 #pragma mark Initialization
@@ -280,7 +284,9 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
       break;
     }
     case ItemTypeClearBrowsingDataButton:
-      [self presentClearBrowsingDataConfirmationDialog];
+      UICollectionViewCell* cell =
+          [collectionView cellForItemAtIndexPath:indexPath];
+      [self presentClearBrowsingDataConfirmationDialog:cell];
       break;
   }
 }
@@ -289,7 +295,7 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
 
 // Displays an action sheet to the user confirming the clearing of user data. If
 // the clearing is confirmed, clears the data.
-- (void)presentClearBrowsingDataConfirmationDialog {
+- (void)presentClearBrowsingDataConfirmationDialog:(UICollectionViewCell*)cell {
   BrowsingDataRemoveMask dataTypeMaskToRemove =
       BrowsingDataRemoveMask::REMOVE_NOTHING;
   NSArray* dataTypeItems = [self.collectionViewModel
@@ -300,10 +306,16 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
       dataTypeMaskToRemove = dataTypeMaskToRemove | dataTypeItem.dataTypeMask;
     }
   }
-  UIAlertController* alertController = [self.dataManager
-      alertControllerWithDataTypesToRemove:dataTypeMaskToRemove];
-  if (alertController) {
-    [self presentViewController:alertController animated:YES completion:nil];
+  self.actionSheetCoordinator = [self.dataManager
+      actionSheetCoordinatorWithDataTypesToRemove:dataTypeMaskToRemove
+                               baseViewController:self
+                                       sourceRect:CGRectMake(
+                                                      CGRectGetMidX(cell.frame),
+                                                      CGRectGetMidY(cell.frame),
+                                                      1, 1)
+                                       sourceView:self.collectionView];
+  if (self.actionSheetCoordinator) {
+    [self.actionSheetCoordinator start];
   }
 }
 

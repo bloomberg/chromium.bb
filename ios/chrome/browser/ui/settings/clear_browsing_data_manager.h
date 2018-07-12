@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/settings/time_range_selector_collection_view_controller.h"
 
 @class ListModel;
+@class ActionSheetCoordinator;
 
 // Clear Browswing Data Section Identifiers.
 enum ClearBrowsingDataSectionIdentifier {
@@ -83,10 +84,15 @@ enum class ClearBrowsingDataListType {
 
 // Fills |model| with appropriate sections and items.
 - (void)loadModel:(ListModel*)model;
-// Returns a UIAlertController that has action block to clear data of type
+// Returns a ActionSheetCoordinator that has action block to clear data of type
 // |dataTypeMaskToRemove|.
-- (UIAlertController*)alertControllerWithDataTypesToRemove:
-    (BrowsingDataRemoveMask)dataTypeMaskToRemove;
+- (ActionSheetCoordinator*)
+actionSheetCoordinatorWithDataTypesToRemove:
+    (BrowsingDataRemoveMask)dataTypeMaskToRemove
+                         baseViewController:
+                             (UIViewController*)baseViewController
+                                 sourceRect:(CGRect)sourceRect
+                                 sourceView:(UIView*)sourceView;
 // Get the text to be displayed by a counter from the given |result|
 - (NSString*)counterTextFromResult:
     (const browsing_data::BrowsingDataCounter::Result&)result;

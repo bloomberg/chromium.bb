@@ -32,6 +32,8 @@ source_set("settings") {
     "clear_browsing_data_manager.mm",
     "clear_browsing_data_table_view_controller.h",
     "clear_browsing_data_table_view_controller.mm",
+    "clear_browsing_data_ui_constants.h",
+    "clear_browsing_data_ui_constants.mm",
     "compose_email_handler_collection_view_controller.h",
     "compose_email_handler_collection_view_controller.mm",
     "content_settings_collection_view_controller.h",
