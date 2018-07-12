@@ -137,8 +137,10 @@ Polymer({
       value: function() {
         const map = new Map();
         if (settings.routes.SYNC) {
-          map.set(
-              settings.routes.SYNC.path, '#sync-status .subpage-arrow button');
+          const syncId = loadTimeData.getBoolean('unifiedConsentEnabled') ?
+              '#sync-setup' :
+              '#sync-status';
+          map.set(settings.routes.SYNC.path, `${syncId} .subpage-arrow button`);
         }
         if (settings.routes.MANAGE_PASSWORDS) {
           map.set(
