@@ -28,7 +28,8 @@ class FakeModelWorker : public ModelSafeWorker {
   void ScheduleWork(base::OnceClosure work) override;
 
   const ModelSafeGroup group_;
-  base::ThreadChecker thread_checker_;
+
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeModelWorker);
 };

@@ -77,13 +77,13 @@ ModelTypeWorker::~ModelTypeWorker() {
 }
 
 ModelType ModelTypeWorker::GetModelType() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return type_;
 }
 
 void ModelTypeWorker::UpdateCryptographer(
     std::unique_ptr<Cryptographer> cryptographer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(cryptographer);
   cryptographer_ = std::move(cryptographer);
   UpdateEncryptionKeyName();
@@ -93,19 +93,19 @@ void ModelTypeWorker::UpdateCryptographer(
 
 // UpdateHandler implementation.
 bool ModelTypeWorker::IsInitialSyncEnded() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return model_type_state_.initial_sync_done();
 }
 
 void ModelTypeWorker::GetDownloadProgress(
     sync_pb::DataTypeProgressMarker* progress_marker) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   progress_marker->CopyFrom(model_type_state_.progress_marker());
 }
 
 void ModelTypeWorker::GetDataTypeContext(
     sync_pb::DataTypeContext* context) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   context->CopyFrom(model_type_state_.type_context());
 }
 
@@ -114,7 +114,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     const sync_pb::DataTypeContext& mutated_context,
     const SyncEntityList& applicable_updates,
     StatusController* status) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(rlarocque): Handle data type context conflicts.
   *model_type_state_.mutable_type_context() = mutated_context;
@@ -197,7 +197,7 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
 }
 
 void ModelTypeWorker::ApplyUpdates(StatusController* status) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This should only ever be called after one PassiveApplyUpdates.
   DCHECK(model_type_state_.initial_sync_done());
   // Download cycle is done, pass all updates to the processor.
@@ -205,7 +205,7 @@ void ModelTypeWorker::ApplyUpdates(StatusController* status) {
 }
 
 void ModelTypeWorker::PassiveApplyUpdates(StatusController* status) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This should only be called at the end of the very first download cycle.
   DCHECK(!model_type_state_.initial_sync_done());
   // Indicate to the processor that the initial download is done. The initial
@@ -247,7 +247,7 @@ void ModelTypeWorker::ApplyPendingUpdates() {
 }
 
 void ModelTypeWorker::NudgeForCommit() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   has_local_changes_ = true;
   NudgeIfReadyToCommit();
 }
@@ -260,7 +260,7 @@ void ModelTypeWorker::NudgeIfReadyToCommit() {
 // CommitContributor implementation.
 std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
     size_t max_entries) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(model_type_state_.initial_sync_done());
   // Early return if type is not ready to commit (initial sync isn't done or
   // cryptographer has pending keys).
@@ -298,7 +298,7 @@ bool ModelTypeWorker::HasLocalChangesForTest() const {
 }
 
 void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Send the responses back to the model thread. It needs to know which
   // items have been successfully committed so it can save that information in

@@ -15,8 +15,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/sync_manager.h"
@@ -143,7 +143,7 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   const std::string name_;
 
   // Checker for the UI thread (where this object is constructed).
-  base::ThreadChecker ui_thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Protects all variables below.
   mutable base::Lock lock_;

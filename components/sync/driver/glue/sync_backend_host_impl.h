@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
@@ -230,7 +230,7 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   bool invalidation_handler_registered_ = false;
 
   // Checks that we're on the same thread this was constructed on (UI thread).
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<SyncBackendHostImpl> weak_ptr_factory_;
 

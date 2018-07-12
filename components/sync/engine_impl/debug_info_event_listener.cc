@@ -20,7 +20,7 @@ DebugInfoEventListener::~DebugInfoEventListener() {}
 
 void DebugInfoEventListener::OnSyncCycleCompleted(
     const SyncCycleSnapshot& snapshot) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_pb::DebugEventInfo event_info;
   sync_pb::SyncCycleCompletedEventInfo* sync_completed_event_info =
       event_info.mutable_sync_cycle_completed_event_info();
@@ -54,31 +54,31 @@ void DebugInfoEventListener::OnInitializationComplete(
     const WeakHandle<DataTypeDebugInfoListener>& debug_listener,
     bool success,
     ModelTypeSet restored_types) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CreateAndAddEvent(sync_pb::SyncEnums::INITIALIZATION_COMPLETE);
 }
 
 void DebugInfoEventListener::OnConnectionStatusChange(ConnectionStatus status) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CreateAndAddEvent(sync_pb::SyncEnums::CONNECTION_STATUS_CHANGE);
 }
 
 void DebugInfoEventListener::OnPassphraseRequired(
     PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CreateAndAddEvent(sync_pb::SyncEnums::PASSPHRASE_REQUIRED);
 }
 
 void DebugInfoEventListener::OnPassphraseAccepted() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CreateAndAddEvent(sync_pb::SyncEnums::PASSPHRASE_ACCEPTED);
 }
 
 void DebugInfoEventListener::OnBootstrapTokenUpdated(
     const std::string& bootstrap_token,
     BootstrapTokenType type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (type == PASSPHRASE_BOOTSTRAP_TOKEN) {
     CreateAndAddEvent(sync_pb::SyncEnums::BOOTSTRAP_TOKEN_UPDATED);
     return;
@@ -90,18 +90,18 @@ void DebugInfoEventListener::OnBootstrapTokenUpdated(
 void DebugInfoEventListener::OnEncryptedTypesChanged(
     ModelTypeSet encrypted_types,
     bool encrypt_everything) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CreateAndAddEvent(sync_pb::SyncEnums::ENCRYPTED_TYPES_CHANGED);
 }
 
 void DebugInfoEventListener::OnEncryptionComplete() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CreateAndAddEvent(sync_pb::SyncEnums::ENCRYPTION_COMPLETE);
 }
 
 void DebugInfoEventListener::OnCryptographerStateChanged(
     Cryptographer* cryptographer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   cryptographer_has_pending_keys_ = cryptographer->has_pending_keys();
   cryptographer_ready_ = cryptographer->is_ready();
 }
@@ -109,7 +109,7 @@ void DebugInfoEventListener::OnCryptographerStateChanged(
 void DebugInfoEventListener::OnPassphraseTypeChanged(
     PassphraseType type,
     base::Time explicit_passphrase_time) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CreateAndAddEvent(sync_pb::SyncEnums::PASSPHRASE_TYPE_CHANGED);
 }
 
@@ -118,7 +118,7 @@ void DebugInfoEventListener::OnLocalSetPassphraseEncryption(
 
 void DebugInfoEventListener::OnActionableError(
     const SyncProtocolError& sync_error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CreateAndAddEvent(sync_pb::SyncEnums::ACTIONABLE_ERROR);
 }
 
@@ -127,7 +127,7 @@ void DebugInfoEventListener::OnMigrationRequested(ModelTypeSet types) {}
 void DebugInfoEventListener::OnProtocolEvent(const ProtocolEvent& event) {}
 
 void DebugInfoEventListener::OnNudgeFromDatatype(ModelType datatype) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_pb::DebugEventInfo event_info;
   event_info.set_nudging_datatype(
       GetSpecificsFieldNumberFromModelType(datatype));
@@ -135,7 +135,7 @@ void DebugInfoEventListener::OnNudgeFromDatatype(ModelType datatype) {
 }
 
 void DebugInfoEventListener::GetDebugInfo(sync_pb::DebugInfo* debug_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_LE(events_.size(), kMaxEntries);
 
   for (DebugEventInfoQueue::const_iterator iter = events_.begin();
@@ -151,7 +151,7 @@ void DebugInfoEventListener::GetDebugInfo(sync_pb::DebugInfo* debug_info) {
 }
 
 void DebugInfoEventListener::ClearDebugInfo() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_LE(events_.size(), kMaxEntries);
 
   events_.clear();
@@ -159,13 +159,13 @@ void DebugInfoEventListener::ClearDebugInfo() {
 }
 
 base::WeakPtr<DataTypeDebugInfoListener> DebugInfoEventListener::GetWeakPtr() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return weak_ptr_factory_.GetWeakPtr();
 }
 
 void DebugInfoEventListener::OnDataTypeConfigureComplete(
     const std::vector<DataTypeConfigurationStats>& configuration_stats) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   for (size_t i = 0; i < configuration_stats.size(); ++i) {
     DCHECK(ProtocolTypes().Has(configuration_stats[i].model_type));
@@ -236,7 +236,7 @@ void DebugInfoEventListener::OnDataTypeConfigureComplete(
 
 void DebugInfoEventListener::CreateAndAddEvent(
     sync_pb::SyncEnums::SingletonDebugEventType type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_pb::DebugEventInfo event_info;
   event_info.set_singleton_event(type);
   AddEventToQueue(event_info);
@@ -244,7 +244,7 @@ void DebugInfoEventListener::CreateAndAddEvent(
 
 void DebugInfoEventListener::AddEventToQueue(
     const sync_pb::DebugEventInfo& event_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (events_.size() >= kMaxEntries) {
     DVLOG(1) << "DebugInfoEventListener::AddEventToQueue Dropping an old event "
              << "because of full queue";

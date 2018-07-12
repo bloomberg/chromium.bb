@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_engine.h"
@@ -157,7 +158,8 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // first set (if available).
   base::Time cached_explicit_passphrase_time_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<SyncServiceCrypto> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncServiceCrypto);
