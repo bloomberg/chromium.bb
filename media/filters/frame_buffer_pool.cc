@@ -19,8 +19,12 @@
 namespace media {
 
 struct FrameBufferPool::FrameBuffer {
-  std::vector<uint8_t> data;
-  std::vector<uint8_t> alpha_data;
+  // Not using std::vector<uint8_t> as resize() calls take a really long time
+  // for large buffers.
+  std::unique_ptr<uint8_t[]> data;
+  size_t data_size = 0u;
+  std::unique_ptr<uint8_t[]> alpha_data;
+  size_t alpha_data_size = 0u;
   bool held_by_library = false;
   // Needs to be a counter since a frame buffer might be used multiple times.
   int held_by_frame = 0;
@@ -63,12 +67,17 @@ uint8_t* FrameBufferPool::GetFrameBuffer(size_t min_size, void** fb_priv) {
 
   // Resize the frame buffer if necessary.
   frame_buffer->held_by_library = true;
-  if (frame_buffer->data.size() < min_size)
-    frame_buffer->data.resize(min_size);
+  if (frame_buffer->data_size < min_size) {
+    // Free the existing |data| first so that the memory can be reused,
+    // if possible. Note that the new array is purposely not initialized.
+    frame_buffer->data.reset();
+    frame_buffer->data.reset(new uint8_t[min_size]);
+    frame_buffer->data_size = min_size;
+  }
 
   // Provide the client with a private identifier.
   *fb_priv = frame_buffer.get();
-  return frame_buffer->data.data();
+  return frame_buffer->data.get();
 }
 
 void FrameBufferPool::ReleaseFrameBuffer(void* fb_priv) {
@@ -89,9 +98,14 @@ uint8_t* FrameBufferPool::AllocateAlphaPlaneForFrameBuffer(size_t min_size,
 
   auto* frame_buffer = static_cast<FrameBuffer*>(fb_priv);
   DCHECK(IsUsed(frame_buffer));
-  if (frame_buffer->alpha_data.size() < min_size)
-    frame_buffer->alpha_data.resize(min_size);
-  return frame_buffer->alpha_data.data();
+  if (frame_buffer->alpha_data_size < min_size) {
+    // Free the existing |alpha_data| first so that the memory can be reused,
+    // if possible. Note that the new array is purposely not initialized.
+    frame_buffer->alpha_data.reset();
+    frame_buffer->alpha_data.reset(new uint8_t[min_size]);
+    frame_buffer->alpha_data_size = min_size;
+  }
+  return frame_buffer->alpha_data.get();
 }
 
 base::Closure FrameBufferPool::CreateFrameCallback(void* fb_priv) {
@@ -121,8 +135,8 @@ bool FrameBufferPool::OnMemoryDump(
   size_t bytes_reserved = 0;
   for (const auto& frame_buffer : frame_buffers_) {
     if (IsUsed(frame_buffer.get()))
-      bytes_used += frame_buffer->data.size();
-    bytes_reserved += frame_buffer->data.size();
+      bytes_used += frame_buffer->data_size + frame_buffer->alpha_data_size;
+    bytes_reserved += frame_buffer->data_size + frame_buffer->alpha_data_size;
   }
 
   memory_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
