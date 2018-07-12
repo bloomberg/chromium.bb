@@ -19,7 +19,7 @@
 namespace {
 
 // Length of the trailing button side.
-const CGFloat kButtonSize = 28;
+const CGFloat kButtonSize = 24;
 
 // Space between the location icon and the location label.
 const CGFloat kLocationImageToLabelSpacing = 2.0;
@@ -202,8 +202,6 @@ const CGFloat kButtonTrailingSpacing = 10;
 
     // Setup and activate the show button constraints.
     _showButtonConstraints = @[
-      // TODO(crbug.com/821804) Replace the temporary size when the icon is
-      // available.
       [_trailingButton.widthAnchor constraintEqualToConstant:kButtonSize],
       [_trailingButton.heightAnchor constraintEqualToConstant:kButtonSize],
       [self.trailingButton.trailingAnchor
@@ -295,9 +293,7 @@ const CGFloat kButtonTrailingSpacing = 10;
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   self.locationLabel.font =
-      [UIFont systemFontOfSize:IsRegularXRegularSizeClass()
-                                   ? kLocationBarRegularRegularFontSize
-                                   : kLocationBarFontSize];
+      [UIFont systemFontOfSize:kLocationBarSteadyFontSize];
 }
 
 #pragma mark - UIAccessibilityContainer
