@@ -197,6 +197,13 @@ static_library("utility") {
   if (is_android || enable_extensions) {
     deps += [ "//chrome/services/media_gallery_util:lib" ]
   }
+
+  if (enable_simple_browser_service) {
+    deps += [
+      "//services/content/simple_browser",
+      "//services/content/simple_browser/public/mojom",
+    ]
+  }
 }
 
 if (!is_android) {

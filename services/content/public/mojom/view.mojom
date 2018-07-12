@@ -4,11 +4,17 @@
 
 module content.mojom;
 
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "url/mojom/url.mojom";
 
 // The primary interface driving a navigable content view embedded by an
 // application which wants to display web contents.
 interface View {
+  // Prepares the visible content frame associated with this View to be embedded
+  // within another Mus window tree. The response's |token| can be passed to the
+  // desired embedder once received.
+  PrepareToEmbed() => (mojo_base.mojom.UnguessableToken token);
+
   // Initiates a navigation to |url|.
   Navigate(url.mojom.Url url);
 };

@@ -30,8 +30,13 @@ class ViewDelegateImpl : public content::ViewDelegate,
 
  private:
   // content::ViewDelegate:
+  gfx::NativeView GetNativeView() override {
+    return web_contents_->GetNativeView();
+  }
+
   void Navigate(const GURL& url) override {
     NavigationController::LoadURLParams params(url);
+    params.transition_type = ui::PAGE_TRANSITION_AUTO_TOPLEVEL;
     web_contents_->GetController().LoadURLWithParams(params);
   }
 

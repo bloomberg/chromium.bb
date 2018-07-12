@@ -163,6 +163,7 @@
 #include "components/variations/variations_http_header_provider.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -187,6 +188,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
 #include "services/service_manager/embedder/main_delegate.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -304,7 +306,10 @@
 #include "services/service_manager/runner/common/client_util.h"
 #include "ui/aura/env.h"
 #endif
-#include "services/service_manager/public/cpp/connector.h"
+
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE)
+#include "services/content/simple_browser/public/mojom/constants.mojom.h"
+#endif
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/component_updater/intervention_policy_database_component_installer.h"
@@ -2025,6 +2030,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   UMA_HISTOGRAM_TIMES("Startup.PreMainMessageLoopRunImplStep3Time",
                       base::TimeTicks::Now() - start_time_step3);
 #endif  // !defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE)
+  const char kLaunchSimpleBrowserSwitch[] = "launch-simple-browser";
+  if (parsed_command_line().HasSwitch(kLaunchSimpleBrowserSwitch)) {
+    content::BrowserContext::GetConnectorFor(profile_)->StartService(
+        service_manager::Identity(simple_browser::mojom::kServiceName));
+  }
+#endif  // BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE)
 
   return result_code_;
 }

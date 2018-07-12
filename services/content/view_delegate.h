@@ -5,6 +5,8 @@
 #ifndef SERVICES_CONTENT_VIEW_DELEGATE_H_
 #define SERVICES_CONTENT_VIEW_DELEGATE_H_
 
+#include "ui/gfx/native_widget_types.h"
+
 class GURL;
 
 namespace content {
@@ -22,6 +24,10 @@ namespace content {
 class ViewDelegate {
  public:
   virtual ~ViewDelegate() {}
+
+  // Returns a NativeView that can be embedded into a client application's
+  // window tree to display the web contents navigated by the delegate's View.
+  virtual gfx::NativeView GetNativeView() = 0;
 
   // Navigates the content object to a new URL.
   virtual void Navigate(const GURL& url) = 0;

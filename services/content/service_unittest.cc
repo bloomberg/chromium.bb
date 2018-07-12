@@ -53,6 +53,8 @@ class TestViewDelegate : public ViewDelegate {
       navigation_callback_.Run();
   }
 
+  gfx::NativeView GetNativeView() override { return nullptr; }
+
  private:
   GURL last_navigated_url_;
   base::RepeatingClosure navigation_callback_;
