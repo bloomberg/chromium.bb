@@ -420,8 +420,8 @@ public class NewTabPage
      * @param hasLogo Whether the search provider has a logo.
      * @param isGoogle Whether the search provider is Google.
      */
-    protected void setSearchProviderInfoOnView(boolean hasLogo, boolean isGoogle) {
-        mNewTabPageView.setSearchProviderInfo(hasLogo, isGoogle);
+    private void setSearchProviderInfoOnView(boolean hasLogo, boolean isGoogle) {
+        mNewTabPageLayout.setSearchProviderInfo(hasLogo, isGoogle);
     }
 
     /**
@@ -443,7 +443,7 @@ public class NewTabPage
      *                    to the NewTabPage view.
      */
     public void getSearchBoxBounds(Rect bounds, Point translation) {
-        mNewTabPageView.getSearchBoxBounds(bounds, translation);
+        mNewTabPageLayout.getSearchBoxBounds(bounds, translation, getView());
     }
 
     /**
@@ -493,7 +493,7 @@ public class NewTabPage
      */
     public void setFakeboxDelegate(FakeboxDelegate fakeboxDelegate) {
         mFakeboxDelegate = fakeboxDelegate;
-        mNewTabPageView.setFakeboxDelegate(fakeboxDelegate);
+        if (mNewTabPageView != null) mNewTabPageView.setFakeboxDelegate(fakeboxDelegate);
         if (mFakeboxDelegate != null) {
             // The toolbar can't get the reference to the native page until its initialization is
             // finished, so we can't cache it here and transfer it to the view later. We pull that

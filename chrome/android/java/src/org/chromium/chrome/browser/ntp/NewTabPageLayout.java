@@ -19,7 +19,6 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewStub;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -267,6 +266,13 @@ public class NewTabPageLayout
     }
 
     /**
+     * @return The {@link ScrollDelegate} for this class.
+     */
+    ScrollDelegate getScrollDelegate() {
+        return mScrollDelegate;
+    }
+
+    /**
      * Sets up the hint text and event handlers for the search box text view.
      */
     private void initializeSearchBoxTextView() {
@@ -404,8 +410,9 @@ public class NewTabPageLayout
         searchBoxTop += mSearchBoxView.getPaddingTop();
 
         final int scrollY = mScrollDelegate.getVerticalScrollOffset();
+        // Use int pixel size instead of float dimension to avoid precision error on the percentage.
         final float transitionLength =
-                getResources().getDimension(R.dimen.ntp_search_box_transition_length);
+                getResources().getDimensionPixelSize(R.dimen.ntp_search_box_transition_length);
         // Tab strip height is zero on phones, nonzero on tablets.
         int tabStripHeight = getResources().getDimensionPixelSize(R.dimen.tab_strip_height);
 

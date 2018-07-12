@@ -171,10 +171,10 @@ public class TileGroupTest {
     }
 
     private TileGridLayout getTileGridLayout() {
-        ViewGroup aboveTheFoldView = getRecyclerView().getAboveTheFoldView();
-        Assert.assertNotNull("Unable to retrieve the AboveTheFold view.", aboveTheFoldView);
+        ViewGroup newTabPageLayout = mNtp.getNewTabPageLayout();
+        Assert.assertNotNull("Unable to retrieve the NewTabPageLayout.", newTabPageLayout);
 
-        TileGridLayout tileGridLayout = aboveTheFoldView.findViewById(R.id.tile_grid_layout);
+        TileGridLayout tileGridLayout = newTabPageLayout.findViewById(R.id.tile_grid_layout);
         Assert.assertNotNull("Unable to retrieve the TileGridLayout.", tileGridLayout);
         return tileGridLayout;
     }
