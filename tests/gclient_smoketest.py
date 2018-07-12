@@ -39,7 +39,7 @@ class GClientSmokeBase(fake_repos.FakeReposTestBase):
     self.env['DEPOT_TOOLS_UPDATE'] = '0'
     self.env['DEPOT_TOOLS_METRICS'] = '0'
 
-  def gclient(self, cmd, cwd=None):
+  def gclient(self, cmd, cwd=None, ignore_errors=False):
     if not cwd:
       cwd = self.root_dir
     if COVERAGE:
@@ -54,6 +54,8 @@ class GClientSmokeBase(fake_repos.FakeReposTestBase):
     (stdout, stderr) = process.communicate()
     logging.debug("XXX: %s\n%s\nXXX" % (' '.join(cmd), stdout))
     logging.debug("YYY: %s\n%s\nYYY" % (' '.join(cmd), stderr))
+    if process.returncode and not ignore_errors:
+      raise subprocess.CalledProcessError(process.returncode, cmd, stdout)
     return (stdout.replace('\r\n', '\n'), stderr.replace('\r\n', '\n'),
             process.returncode)
 
@@ -158,14 +160,14 @@ class GClientSmoke(GClientSmokeBase):
 
   def testNotConfigured(self):
     res = ('', 'Error: client not configured; see \'gclient config\'\n', 1)
-    self.check(res, self.gclient(['diff']))
-    self.check(res, self.gclient(['pack']))
-    self.check(res, self.gclient(['revert']))
-    self.check(res, self.gclient(['revinfo']))
-    self.check(res, self.gclient(['runhooks']))
-    self.check(res, self.gclient(['status']))
-    self.check(res, self.gclient(['sync']))
-    self.check(res, self.gclient(['update']))
+    self.check(res, self.gclient(['diff'], ignore_errors=True))
+    self.check(res, self.gclient(['pack'], ignore_errors=True))
+    self.check(res, self.gclient(['revert'], ignore_errors=True))
+    self.check(res, self.gclient(['revinfo'], ignore_errors=True))
+    self.check(res, self.gclient(['runhooks'], ignore_errors=True))
+    self.check(res, self.gclient(['status'], ignore_errors=True))
+    self.check(res, self.gclient(['sync'], ignore_errors=True))
+    self.check(res, self.gclient(['update'], ignore_errors=True))
 
   def testConfig(self):
     # Get any bootstrapping out of the way.
@@ -249,7 +251,7 @@ class GClientSmoke(GClientSmokeBase):
     test(['config', '--spec', '["blah blah"]'], '["blah blah"]')
 
     os.remove(p)
-    results = self.gclient(['config', 'foo', 'faa', 'fuu'])
+    results = self.gclient(['config', 'foo', 'faa', 'fuu'], ignore_errors=True)
     err = ('Usage: gclient.py config [options] [url]\n\n'
            'gclient.py: error: Inconsistent arguments. Use either --spec or one'
            ' or 2 args\n')
@@ -381,7 +383,7 @@ class GClientSmokeGIT(GClientSmokeBase):
             'src/repo2/': {
                 'scm': 'git',
                 'url':
-                    self.git_base + 'repo_2@' + self.githash('repo_2', 1)[:7],
+                    self.git_base + 'repo_2@' + self.githash('repo_2', 1),
                 'revision': self.githash('repo_2', 1),
                 'was_processed': True,
             },
@@ -724,7 +726,8 @@ class GClientSmokeGIT(GClientSmokeBase):
                        % (sys.executable, self.root_dir))
     stdout, stderr, retcode = self.gclient(['sync', '--deps', 'mac', '--jobs=1',
                                             '--revision',
-                                            'src@' + self.githash('repo_5', 3)])
+                                            'src@' + self.githash('repo_5', 3)],
+                                           ignore_errors=True)
     self.assertEquals(stderr, expected_stderr)
     self.assertEquals(2, retcode)
     self.checkBlock(stdout, expectated_stdout)
@@ -740,7 +743,7 @@ class GClientSmokeGIT(GClientSmokeBase):
            'src/repo2/repo_renamed: %(base)srepo_3\n' %
           {
             'base': self.git_base,
-            'hash2': self.githash('repo_2', 1)[:7],
+            'hash2': self.githash('repo_2', 1),
           })
     self.check((out, '', 0), results)
 
@@ -783,7 +786,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     out = ('src/repo2: %(base)srepo_2@%(hash2)s\n' %
           {
             'base': self.git_base,
-            'hash2': self.githash('repo_2', 1)[:7],
+            'hash2': self.githash('repo_2', 1),
           })
     self.check((out, '', 0), results)
 
@@ -798,7 +801,7 @@ class GClientSmokeGIT(GClientSmokeBase):
            'src/repo2: %(base)srepo_2@%(hash2)s\n' %
           {
             'base': self.git_base,
-            'hash2': self.githash('repo_2', 1)[:7],
+            'hash2': self.githash('repo_2', 1),
           })
     self.check((out, '', 0), results)
 
@@ -819,7 +822,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         },
         'src/repo2': {
             'url': self.git_base + 'repo_2',
-            'rev': self.githash('repo_2', 1)[:7],
+            'rev': self.githash('repo_2', 1),
         },
        'src/repo2/repo_renamed': {
            'url': self.git_base + 'repo_3',
@@ -987,7 +990,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  # src -> src/repo2',
         '  "src/repo2": {',
         '    "url": "' + self.git_base + 'repo_2@%s",' % (
-                 self.githash('repo_2', 1)[:7]),
+                 self.githash('repo_2', 1)),
         '    "condition": \'true_str_var\',',
         '  },',
         '',
@@ -1093,7 +1096,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '}',
         '',
         '# ' + self.git_base + 'repo_2@%s, DEPS' % (
-                 self.githash('repo_2', 1)[:7]),
+                 self.githash('repo_2', 1)),
         '# ' + self.git_base + 'repo_6, DEPS',
         '# ' + self.git_base + 'repo_8, DEPS',
     ], deps_contents.splitlines())
@@ -1291,7 +1294,7 @@ class GClientSmokeGIT(GClientSmokeBase):
 
     self.maxDiff = None
     self.assertEqual([
-        'gclient_gn_args_file = "src/repo2/gclient.args"',
+        'gclient_gn_args_file = "src/repo9/gclient.args"',
         "gclient_gn_args = ['str_var']",
         'deps = {',
         '  # src',
@@ -1383,7 +1386,8 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertFalse(os.path.exists(output_deps))
 
     self.gclient(['config', self.git_base + 'repo_14', '--name', 'src'])
-    self.gclient(['sync'])
+    # We can't sync since we haven't faked a CIPD server to get packages from.
+    self.gclient(['sync'], ignore_errors=True)
     self.gclient(['flatten', '-v', '-v', '-v', '--output-deps', output_deps])
 
     with open(output_deps) as f:
@@ -1452,7 +1456,7 @@ class GClientSmokeGITMutates(GClientSmokeBase):
 
     # Commit new change to repo to make repo_2's hash use a custom_var.
     cur_deps = self.FAKE_REPOS.git_hashes['repo_1'][-1][1]['DEPS']
-    repo_2_hash = self.FAKE_REPOS.git_hashes['repo_2'][1][0][:7]
+    repo_2_hash = self.FAKE_REPOS.git_hashes['repo_2'][1][0]
     new_deps = cur_deps.replace('repo_2@%s\'' % repo_2_hash,
                                 'repo_2@\' + Var(\'r2hash\')')
     new_deps = 'vars = {\'r2hash\': \'%s\'}\n%s' % (repo_2_hash, new_deps)
@@ -1529,7 +1533,7 @@ class GClientSmokeGITMutates(GClientSmokeBase):
       return
     # Create an extra commit in repo_2 and point DEPS to its hash.
     cur_deps = self.FAKE_REPOS.git_hashes['repo_1'][-1][1]['DEPS']
-    repo_2_hash_old = self.FAKE_REPOS.git_hashes['repo_2'][1][0][:7]
+    repo_2_hash_old = self.FAKE_REPOS.git_hashes['repo_2'][1][0]
     self.FAKE_REPOS._commit_git('repo_2', {  # pylint: disable=protected-access
       'last_file': 'file created in last commit',
     })

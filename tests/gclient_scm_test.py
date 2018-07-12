@@ -184,6 +184,20 @@ Add C
 from :3
 M 100644 :7 c
 
+blob
+mark :9
+data 4
+foo
+
+commit refs/heads/feature
+mark :10
+author Alice <alice@example.com> 1490311986 -0700
+committer Alice <alice@example.com> 1490311986 -0700
+data 6
+Add D
+from :8
+M 100644 :9 d
+
 reset refs/heads/master
 from :3
 """
@@ -213,7 +227,8 @@ from :3
         stderr=STDOUT, cwd=path).communicate()
     Popen(['git', 'checkout', '-b', 'new', 'origin/master', '-q'], stdout=PIPE,
         stderr=STDOUT, cwd=path).communicate()
-    Popen(['git', 'push', 'origin', 'origin/origin:origin/master', '-q'],
+    Popen(['git', 'push', 'origin',
+           'refs/heads/origin:refs/heads/master', '-q'],
         stdout=PIPE, stderr=STDOUT, cwd=path).communicate()
     Popen(['git', 'config', '--unset', 'remote.origin.fetch'], stdout=PIPE,
         stderr=STDOUT, cwd=path).communicate()
@@ -383,6 +398,21 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
     sys.stdout.close()
 
+  def testUpdateRefRevision(self):
+    if not self.enabled:
+      return
+    options = self.Options()
+    options.force = True
+    options.revision = ('refs/heads/feature'
+                        ':9a51244740b25fa2ded5252ca00a3178d3f665a9')
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
+    file_list = []
+    scm.update(options, (), file_list)
+    self.assertEquals(scm.revinfo(options, (), None),
+                      '9a51244740b25fa2ded5252ca00a3178d3f665a9')
+    sys.stdout.close()
+
   def testUpdateMerge(self):
     if not self.enabled:
       return
@@ -395,11 +425,11 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     file_list = []
     scm.update(options, (), file_list)
     self.assertEquals(file_list, [join(self.base_path, x)
-                                  for x in ['a', 'b', 'c']])
+                                  for x in ['a', 'b', 'c', 'd']])
     # The actual commit that is created is unstable, so we verify its tree and
     # parents instead.
     self.assertEquals(scm._Capture(['rev-parse', 'HEAD:']),
-                      'd2e35c10ac24d6c621e14a1fcadceb533155627d')
+                      'f7c1b0aaff248edf8981c776dcf6014c3eb09936')
     self.assertEquals(scm._Capture(['rev-parse', 'HEAD^1']), rev)
     self.assertEquals(scm._Capture(['rev-parse', 'HEAD^2']),
                       scm._Capture(['rev-parse', 'origin/master']))
@@ -419,12 +449,12 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
         '(y)es / (q)uit / (s)kip : ', 'y')
     scm.update(options, (), file_list)
     self.assertEquals(file_list, [join(self.base_path, x)
-                                  for x in ['a', 'b', 'c']])
+                                  for x in "abcd"])
     # The actual commit that is created is unstable, so we verify its tree and
     # parent instead.
     self.assertEquals(scm._Capture(['rev-parse', 'HEAD:']),
-                      'd2e35c10ac24d6c621e14a1fcadceb533155627d')
-    self.assertEquals(scm._Capture(['rev-parse', 'HEAD^']),
+                      'f7c1b0aaff248edf8981c776dcf6014c3eb09936')
+    self.assertEquals(scm._Capture(['rev-parse', 'HEAD^^']),
                       scm._Capture(['rev-parse', 'origin/master']))
     sys.stdout.close()
 
@@ -537,7 +567,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
                  'Fix the conflict and run gclient again.\n'
                  'See \'man git-rebase\' for details.\n')
     self.assertRaisesError(exception, scm.update, options, (), [])
-    exception = ('\n____ . at refs/remotes/origin/master\n'
+    exception = ('\n____ . at refs/heads/master\n'
                  '\tYou have unstaged changes.\n'
                  '\tPlease commit, stash, or reset.\n')
     self.assertRaisesError(exception, scm.update, options, (), [])
@@ -635,8 +665,9 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
                                ).AndReturn(False)
     self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Clone', True)
     # pylint: disable=no-value-for-parameter
-    gclient_scm.GitWrapper._Clone('refs/remotes/origin/master', self.url,
-                                  options)
+    gclient_scm.GitWrapper._Clone(
+        'refs/heads/master', 'refs/remotes/origin/master', None, self.url,
+        options)
     self.mox.StubOutWithMock(gclient_scm.subprocess2, 'check_output', True)
     gclient_scm.subprocess2.check_output(
         ['git', '-c', 'core.quotePath=false', 'ls-files'], cwd=self.base_path,
@@ -667,13 +698,15 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Clone', True)
     # pylint: disable=no-value-for-parameter
     gclient_scm.GitWrapper._Clone(
-        'refs/remotes/origin/master', self.url, options
+        'refs/heads/master', 'refs/remotes/origin/master', None, self.url,
+        options
     ).AndRaise(gclient_scm.subprocess2.CalledProcessError(None, None, None,
                                                           None, None))
     self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_DeleteOrMove', True)
     gclient_scm.GitWrapper._DeleteOrMove(False)
-    gclient_scm.GitWrapper._Clone('refs/remotes/origin/master', self.url,
-                                  options)
+    gclient_scm.GitWrapper._Clone(
+        'refs/heads/master', 'refs/remotes/origin/master', None, self.url,
+        options)
     self.mox.StubOutWithMock(gclient_scm.subprocess2, 'check_output', True)
     gclient_scm.subprocess2.check_output(
         ['git', '-c', 'core.quotePath=false', 'ls-files'], cwd=self.base_path,
@@ -735,11 +768,38 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
 
     self.assertEquals(file_list, expected_file_list)
     self.assertEquals(scm.revinfo(options, (), None),
-                      '069c602044c5388d2d15c3f875b057c852003458')
+                      'a7142dc9f0009350b96a11f372b6ea658592aa95')
     # indicates detached HEAD
     self.assertEquals(self.getCurrentBranch(), None)
     self.checkInStdout(
       'Checked out refs/remotes/origin/master to a detached HEAD')
+
+    rmtree(origin_root_dir)
+
+  def testUpdateCloneRefRevision(self):
+    if not self.enabled:
+      return
+    options = self.Options()
+    options.revision = ('refs/heads/feature'
+                        ':9a51244740b25fa2ded5252ca00a3178d3f665a9')
+
+    origin_root_dir = self.root_dir
+    self.root_dir = tempfile.mkdtemp()
+    self.relpath = '.'
+    self.base_path = join(self.root_dir, self.relpath)
+
+    scm = gclient_scm.GitWrapper(origin_root_dir,
+                                 self.root_dir,
+                                 self.relpath)
+
+    file_list = []
+    scm.update(options, (), file_list)
+    self.assertEquals(scm.revinfo(options, (), None),
+                      '9a51244740b25fa2ded5252ca00a3178d3f665a9')
+    # indicates detached HEAD
+    self.assertEquals(self.getCurrentBranch(), None)
+    self.checkInStdout(
+      'Checked out 9a51244740b25fa2ded5252ca00a3178d3f665a9 to a detached HEAD')
 
     rmtree(origin_root_dir)
 
@@ -792,18 +852,19 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
 
     expected_file_list = [join(self.base_path, "a"),
                           join(self.base_path, "b"),
-                          join(self.base_path, "c")]
+                          join(self.base_path, "c"),
+                          join(self.base_path, "d")]
     file_list = []
     options.revision = 'unmanaged'
     scm.update(options, (), file_list)
 
     self.assertEquals(file_list, expected_file_list)
     self.assertEquals(scm.revinfo(options, (), None),
-                      '9a51244740b25fa2ded5252ca00a3178d3f665a9')
+                      '8980cdcc0b037755eec87c47f1a9d7e90d580015')
     # indicates detached HEAD
     self.assertEquals(self.getCurrentBranch(), None)
     self.checkInStdout(
-        'Checked out 9a51244740b25fa2ded5252ca00a3178d3f665a9 '
+        'Checked out refs/remotes/origin/feature '
         'to a detached HEAD')
 
     rmtree(origin_root_dir)
@@ -825,14 +886,15 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
 
     expected_file_list = [join(self.base_path, "a"),
                           join(self.base_path, "b"),
-                          join(self.base_path, "c")]
+                          join(self.base_path, "c"),
+                          join(self.base_path, "d")]
     file_list = []
     options.revision = 'unmanaged'
     scm.update(options, (), file_list)
 
     self.assertEquals(file_list, expected_file_list)
     self.assertEquals(scm.revinfo(options, (), None),
-                      '9a51244740b25fa2ded5252ca00a3178d3f665a9')
+                      '8980cdcc0b037755eec87c47f1a9d7e90d580015')
     # indicates detached HEAD
     self.assertEquals(self.getCurrentBranch(), None)
     self.checkInStdout(
@@ -857,15 +919,16 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
 
     expected_file_list = [join(self.base_path, "a"),
                           join(self.base_path, "b"),
-                          join(self.base_path, "c")]
+                          join(self.base_path, "c"),
+                          join(self.base_path, "d")]
     file_list = []
     options.revision = 'unmanaged'
     scm.update(options, (), file_list)
 
     self.assertEquals(file_list, expected_file_list)
     self.assertEquals(scm.revinfo(options, (), None),
-                      '9a51244740b25fa2ded5252ca00a3178d3f665a9')
-    # @refs/heads/feature is AKA @refs/remotes/origin/feature in the clone, so
+                      '8980cdcc0b037755eec87c47f1a9d7e90d580015')
+    # @refs/heads/feature is AKA @refs/heads/feature in the clone, so
     # should be treated as such by gclient.
     # TODO(mmoss): Though really, we should only allow DEPS to specify branches
     # as they are known in the upstream repo, since the mapping into the local
