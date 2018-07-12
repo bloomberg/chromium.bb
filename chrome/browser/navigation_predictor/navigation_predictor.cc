@@ -10,11 +10,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "url/gurl.h"
 
-NavigationPredictor::NavigationPredictor(Profile* profile) : profile_(profile) {
-  DCHECK(profile_);
+NavigationPredictor::NavigationPredictor(
+    content::RenderFrameHost* render_frame_host)
+    : render_frame_host_(render_frame_host) {
+  DCHECK(render_frame_host_);
 }
 NavigationPredictor::~NavigationPredictor() = default;
 
@@ -25,19 +28,20 @@ void NavigationPredictor::Create(
   if (render_frame_host->GetParent())
     return;
 
-  Profile* profile = Profile::FromBrowserContext(
-      render_frame_host->GetSiteInstance()->GetBrowserContext());
-
-  mojo::MakeStrongBinding(std::make_unique<NavigationPredictor>(profile),
-                          std::move(request));
+  mojo::MakeStrongBinding(
+      std::make_unique<NavigationPredictor>(render_frame_host),
+      std::move(request));
 }
 
-base::Optional<double> NavigationPredictor::GetEngagementScore(
-    const GURL& url) const {
-  DCHECK(url.SchemeIsHTTPOrHTTPS());
+bool NavigationPredictor::IsValidMetricFromRenderer(
+    const blink::mojom::AnchorElementMetrics& metric) const {
+  return metric.target_url.SchemeIsHTTPOrHTTPS();
+}
 
-  SiteEngagementService* service = SiteEngagementService::Get(profile_);
-  return service ? base::make_optional(service->GetScore(url)) : base::nullopt;
+SiteEngagementService* NavigationPredictor::GetEngagementService() const {
+  Profile* profile = Profile::FromBrowserContext(
+      render_frame_host_->GetSiteInstance()->GetBrowserContext());
+  return SiteEngagementService::Get(profile);
 }
 
 void NavigationPredictor::UpdateAnchorElementMetrics(
@@ -45,10 +49,22 @@ void NavigationPredictor::UpdateAnchorElementMetrics(
   // TODO(chelu): https://crbug.com/850624/. Use |metrics| to aggregate metrics
   // extracted from the browser process. Analyze and use them to take some
   // actions accordingly.
-  auto target_score = GetEngagementScore(metrics->target_url);
-  if (target_score.has_value()) {
+  if (!IsValidMetricFromRenderer(*metrics)) {
+    mojo::ReportBadMessage("Bad anchor element metrics.");
+    return;
+  }
+
+  SiteEngagementService* engagement_service = GetEngagementService();
+  DCHECK(engagement_service);
+
+  double target_score = engagement_service->GetScore(metrics->target_url);
+
+  UMA_HISTOGRAM_COUNTS_100("AnchorElementMetrics.Clicked.HrefEngagementScore2",
+                           static_cast<int>(target_score));
+
+  if (target_score > 0) {
     UMA_HISTOGRAM_COUNTS_100(
-        "AnchorElementMetrics.Clicked.HrefEngagementScore2",
-        static_cast<int>(target_score.value()));
+        "AnchorElementMetrics.Clicked.HrefEngagementScorePositive",
+        static_cast<int>(target_score));
   }
 }
