@@ -25,6 +25,7 @@ class VideoCaptureDeviceChromeOS : public VideoCaptureDeviceLinux,
  public:
   explicit VideoCaptureDeviceChromeOS(
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      scoped_refptr<V4L2CaptureDevice> v4l2,
       const VideoCaptureDeviceDescriptor& device_descriptor);
   ~VideoCaptureDeviceChromeOS() override;
 

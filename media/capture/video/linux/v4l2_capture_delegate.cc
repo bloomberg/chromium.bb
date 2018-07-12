@@ -55,8 +55,9 @@ const int kMjpegHeight = 480;
 // Typical framerate, in fps
 const int kTypicalFramerate = 30;
 
-// V4L2 color formats supported by V4L2CaptureDelegate derived classes.
-// This list is ordered by precedence of use -- but see caveats for MJPEG.
+// V4L2CaptureDevice color formats supported by V4L2CaptureDelegate derived
+// classes. This list is ordered by precedence of use -- but see caveats for
+// MJPEG.
 static struct {
   uint32_t fourcc;
   VideoPixelFormat pixel_format;
@@ -124,44 +125,6 @@ static std::string FourccToString(uint32_t fourcc) {
                             (fourcc >> 16) & 0xFF, (fourcc >> 24) & 0xFF);
 }
 
-// Running ioctl() on some devices, especially shortly after (re)opening the
-// device file descriptor or (re)starting streaming, can fail but works after
-// retrying (https://crbug.com/670262).
-// Returns false if the |request| ioctl fails too many times.
-static bool RunIoctl(int fd, int request, void* argp) {
-  int num_retries = 0;
-  for (; HANDLE_EINTR(ioctl(fd, request, argp)) < 0 &&
-         num_retries < kMaxIOCtrlRetries;
-       ++num_retries) {
-    DPLOG(WARNING) << "ioctl";
-  }
-  DPLOG_IF(ERROR, num_retries != kMaxIOCtrlRetries);
-  return num_retries != kMaxIOCtrlRetries;
-}
-
-// Creates a mojom::RangePtr with the (min, max, current, step) values of the
-// control associated with |control_id|. Returns an empty Range otherwise.
-static mojom::RangePtr RetrieveUserControlRange(int device_fd, int control_id) {
-  mojom::RangePtr capability = mojom::Range::New();
-
-  v4l2_queryctrl range = {};
-  range.id = control_id;
-  range.type = V4L2_CTRL_TYPE_INTEGER;
-  if (!RunIoctl(device_fd, VIDIOC_QUERYCTRL, &range))
-    return mojom::Range::New();
-  capability->max = range.maximum;
-  capability->min = range.minimum;
-  capability->step = range.step;
-
-  v4l2_control current = {};
-  current.id = control_id;
-  if (!RunIoctl(device_fd, VIDIOC_G_CTRL, &current))
-    return mojom::Range::New();
-  capability->current = current.value;
-
-  return capability;
-}
-
 // Determines if |control_id| is special, i.e. controls another one's state.
 static bool IsSpecialControl(int control_id) {
   switch (control_id) {
@@ -203,114 +166,12 @@ static bool IsBlacklistedControl(int control_id) {
   return false;
 }
 
-// Sets all user control to their default. Some controls are enabled by another
-// flag, usually having the word "auto" in the name, see IsSpecialControl().
-// These flags are preset beforehand, then set to their defaults individually
-// afterwards.
-static void ResetUserAndCameraControlsToDefault(int device_fd) {
-  // Set V4L2_CID_AUTO_WHITE_BALANCE to false first.
-  v4l2_control auto_white_balance = {};
-  auto_white_balance.id = V4L2_CID_AUTO_WHITE_BALANCE;
-  auto_white_balance.value = false;
-  if (!RunIoctl(device_fd, VIDIOC_S_CTRL, &auto_white_balance))
-    return;
-
-  std::vector<struct v4l2_ext_control> special_camera_controls;
-  // Set V4L2_CID_EXPOSURE_AUTO to V4L2_EXPOSURE_MANUAL.
-  v4l2_ext_control auto_exposure = {};
-  auto_exposure.id = V4L2_CID_EXPOSURE_AUTO;
-  auto_exposure.value = V4L2_EXPOSURE_MANUAL;
-  special_camera_controls.push_back(auto_exposure);
-  // Set V4L2_CID_EXPOSURE_AUTO_PRIORITY to false.
-  v4l2_ext_control priority_auto_exposure = {};
-  priority_auto_exposure.id = V4L2_CID_EXPOSURE_AUTO_PRIORITY;
-  priority_auto_exposure.value = false;
-  special_camera_controls.push_back(priority_auto_exposure);
-  // Set V4L2_CID_FOCUS_AUTO to false.
-  v4l2_ext_control auto_focus = {};
-  auto_focus.id = V4L2_CID_FOCUS_AUTO;
-  auto_focus.value = false;
-  special_camera_controls.push_back(auto_focus);
-
-  struct v4l2_ext_controls ext_controls = {};
-  ext_controls.ctrl_class = V4L2_CID_CAMERA_CLASS;
-  ext_controls.count = special_camera_controls.size();
-  ext_controls.controls = special_camera_controls.data();
-  if (HANDLE_EINTR(ioctl(device_fd, VIDIOC_S_EXT_CTRLS, &ext_controls)) < 0)
-    DPLOG(ERROR) << "VIDIOC_S_EXT_CTRLS";
-
-  std::vector<struct v4l2_ext_control> camera_controls;
-  for (const auto& control : kControls) {
-    std::vector<struct v4l2_ext_control> camera_controls;
-
-    v4l2_queryctrl range = {};
-    range.id = control.control_base | V4L2_CTRL_FLAG_NEXT_CTRL;
-    while (0 == HANDLE_EINTR(ioctl(device_fd, VIDIOC_QUERYCTRL, &range))) {
-      if (V4L2_CTRL_ID2CLASS(range.id) != V4L2_CTRL_ID2CLASS(control.class_id))
-        break;
-      range.id |= V4L2_CTRL_FLAG_NEXT_CTRL;
-
-      if (IsSpecialControl(range.id & ~V4L2_CTRL_FLAG_NEXT_CTRL))
-        continue;
-      if (IsBlacklistedControl(range.id & ~V4L2_CTRL_FLAG_NEXT_CTRL))
-        continue;
-
-      struct v4l2_ext_control ext_control = {};
-      ext_control.id = range.id & ~V4L2_CTRL_FLAG_NEXT_CTRL;
-      ext_control.value = range.default_value;
-      camera_controls.push_back(ext_control);
-    }
-
-    if (!camera_controls.empty()) {
-      struct v4l2_ext_controls ext_controls = {};
-      ext_controls.ctrl_class = control.class_id;
-      ext_controls.count = camera_controls.size();
-      ext_controls.controls = camera_controls.data();
-      if (HANDLE_EINTR(ioctl(device_fd, VIDIOC_S_EXT_CTRLS, &ext_controls)) < 0)
-        DPLOG(ERROR) << "VIDIOC_S_EXT_CTRLS";
-    }
-  }
-
-  // Now set the special flags to the default values
-  v4l2_queryctrl range = {};
-  range.id = V4L2_CID_AUTO_WHITE_BALANCE;
-  HANDLE_EINTR(ioctl(device_fd, VIDIOC_QUERYCTRL, &range));
-  auto_white_balance.value = range.default_value;
-  HANDLE_EINTR(ioctl(device_fd, VIDIOC_S_CTRL, &auto_white_balance));
-
-  special_camera_controls.clear();
-  memset(&range, 0, sizeof(struct v4l2_queryctrl));
-  range.id = V4L2_CID_EXPOSURE_AUTO;
-  HANDLE_EINTR(ioctl(device_fd, VIDIOC_QUERYCTRL, &range));
-  auto_exposure.value = range.default_value;
-  special_camera_controls.push_back(auto_exposure);
-
-  memset(&range, 0, sizeof(struct v4l2_queryctrl));
-  range.id = V4L2_CID_EXPOSURE_AUTO_PRIORITY;
-  HANDLE_EINTR(ioctl(device_fd, VIDIOC_QUERYCTRL, &range));
-  priority_auto_exposure.value = range.default_value;
-  special_camera_controls.push_back(priority_auto_exposure);
-
-  memset(&range, 0, sizeof(struct v4l2_queryctrl));
-  range.id = V4L2_CID_FOCUS_AUTO;
-  HANDLE_EINTR(ioctl(device_fd, VIDIOC_QUERYCTRL, &range));
-  auto_focus.value = range.default_value;
-  special_camera_controls.push_back(auto_focus);
-
-  memset(&ext_controls, 0, sizeof(struct v4l2_ext_controls));
-  ext_controls.ctrl_class = V4L2_CID_CAMERA_CLASS;
-  ext_controls.count = special_camera_controls.size();
-  ext_controls.controls = special_camera_controls.data();
-  if (HANDLE_EINTR(ioctl(device_fd, VIDIOC_S_EXT_CTRLS, &ext_controls)) < 0)
-    DPLOG(ERROR) << "VIDIOC_S_EXT_CTRLS";
-}
-
-// Class keeping track of a SPLANE V4L2 buffer, mmap()ed on construction and
-// munmap()ed on destruction.
+// Class keeping track of a SPLANE V4L2CaptureDevice buffer, mmap()ed on
+// construction and munmap()ed on destruction.
 class V4L2CaptureDelegate::BufferTracker
     : public base::RefCounted<BufferTracker> {
  public:
-  BufferTracker();
+  BufferTracker(V4L2CaptureDevice* v4l2);
   // Abstract method to mmap() given |fd| according to |buffer|.
   bool Init(int fd, const v4l2_buffer& buffer);
 
@@ -325,6 +186,7 @@ class V4L2CaptureDelegate::BufferTracker
   friend class base::RefCounted<BufferTracker>;
   virtual ~BufferTracker();
 
+  V4L2CaptureDevice* const v4l2_;
   uint8_t* start_;
   size_t length_;
   size_t payload_size_;
@@ -368,13 +230,39 @@ std::list<uint32_t> V4L2CaptureDelegate::GetListOfUsableFourCcs(
   return supported_formats;
 }
 
+V4L2CaptureDelegate::ScopedV4L2DeviceFD::ScopedV4L2DeviceFD(
+    V4L2CaptureDevice* v4l2)
+    : device_fd_(kInvalidId), v4l2_(v4l2) {}
+
+V4L2CaptureDelegate::ScopedV4L2DeviceFD::~ScopedV4L2DeviceFD() {
+  if (is_valid())
+    reset();
+}
+
+int V4L2CaptureDelegate::ScopedV4L2DeviceFD::get() {
+  return device_fd_;
+}
+
+void V4L2CaptureDelegate::ScopedV4L2DeviceFD::reset(int fd /*= kInvalidId*/) {
+  if (is_valid())
+    v4l2_->close(device_fd_);
+  device_fd_ = fd;
+}
+
+bool V4L2CaptureDelegate::ScopedV4L2DeviceFD::is_valid() {
+  return device_fd_ != kInvalidId;
+}
+
 V4L2CaptureDelegate::V4L2CaptureDelegate(
+    V4L2CaptureDevice* v4l2,
     const VideoCaptureDeviceDescriptor& device_descriptor,
     const scoped_refptr<base::SingleThreadTaskRunner>& v4l2_task_runner,
     int power_line_frequency)
-    : v4l2_task_runner_(v4l2_task_runner),
+    : v4l2_(v4l2),
+      v4l2_task_runner_(v4l2_task_runner),
       device_descriptor_(device_descriptor),
       power_line_frequency_(power_line_frequency),
+      device_fd_(v4l2),
       is_capturing_(false),
       timeout_count_(0),
       rotation_(0),
@@ -391,20 +279,23 @@ void V4L2CaptureDelegate::AllocateAndStart(
 
   // Need to open camera with O_RDWR after Linux kernel 3.3.
   device_fd_.reset(
-      HANDLE_EINTR(open(device_descriptor_.device_id.c_str(), O_RDWR)));
+      HANDLE_EINTR(v4l2_->open(device_descriptor_.device_id.c_str(), O_RDWR)));
   if (!device_fd_.is_valid()) {
-    SetErrorState(FROM_HERE, "Failed to open V4L2 device driver file.");
+    SetErrorState(FROM_HERE,
+                  "Failed to open V4L2CaptureDevice device driver file.");
     return;
   }
 
   ResetUserAndCameraControlsToDefault(device_fd_.get());
 
   v4l2_capability cap = {};
-  if (!((HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_QUERYCAP, &cap)) == 0) &&
+  if (!((HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_QUERYCAP, &cap)) ==
+         0) &&
         ((cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) &&
          !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)))) {
     device_fd_.reset();
-    SetErrorState(FROM_HERE, "This is not a V4L2 video capture device");
+    SetErrorState(FROM_HERE,
+                  "This is not a V4L2CaptureDevice video capture device");
     return;
   }
 
@@ -416,7 +307,8 @@ void V4L2CaptureDelegate::AllocateAndStart(
 
   v4l2_fmtdesc fmtdesc = {};
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  for (; HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_ENUM_FMT, &fmtdesc)) == 0;
+  for (; HANDLE_EINTR(
+             v4l2_->ioctl(device_fd_.get(), VIDIOC_ENUM_FMT, &fmtdesc)) == 0;
        ++fmtdesc.index) {
     best = std::find(desired_v4l2_formats.begin(), best, fmtdesc.pixelformat);
   }
@@ -428,7 +320,8 @@ void V4L2CaptureDelegate::AllocateAndStart(
   DVLOG(1) << "Chosen pixel format is " << FourccToString(*best);
   FillV4L2Format(&video_fmt_, width, height, *best);
 
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_FMT, &video_fmt_)) < 0) {
+  if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_S_FMT, &video_fmt_)) <
+      0) {
     SetErrorState(FROM_HERE, "Failed to set video capture format");
     return;
   }
@@ -443,7 +336,8 @@ void V4L2CaptureDelegate::AllocateAndStart(
   v4l2_streamparm streamparm = {};
   streamparm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   // The following line checks that the driver knows about framerate get/set.
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_G_PARM, &streamparm)) >= 0) {
+  if (HANDLE_EINTR(
+          v4l2_->ioctl(device_fd_.get(), VIDIOC_G_PARM, &streamparm)) >= 0) {
     // Now check if the device is able to accept a capture framerate set.
     if (streamparm.parm.capture.capability & V4L2_CAP_TIMEPERFRAME) {
       // |frame_rate| is float, approximate by a fraction.
@@ -452,8 +346,8 @@ void V4L2CaptureDelegate::AllocateAndStart(
           (frame_rate) ? (frame_rate * kFrameRatePrecision)
                        : (kTypicalFramerate * kFrameRatePrecision);
 
-      if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_PARM, &streamparm)) <
-          0) {
+      if (HANDLE_EINTR(
+              v4l2_->ioctl(device_fd_.get(), VIDIOC_S_PARM, &streamparm)) < 0) {
         SetErrorState(FROM_HERE, "Failed to set camera framerate");
         return;
       }
@@ -474,7 +368,7 @@ void V4L2CaptureDelegate::AllocateAndStart(
     control.id = V4L2_CID_POWER_LINE_FREQUENCY;
     control.value = power_line_frequency_;
     const int retval =
-        HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &control));
+        HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_S_CTRL, &control));
     if (retval != 0)
       DVLOG(1) << "Error setting power line frequency removal";
   }
@@ -486,8 +380,10 @@ void V4L2CaptureDelegate::AllocateAndStart(
 
   v4l2_requestbuffers r_buffer;
   FillV4L2RequestBuffer(&r_buffer, kNumVideoBuffers);
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_REQBUFS, &r_buffer)) < 0) {
-    SetErrorState(FROM_HERE, "Error requesting MMAP buffers from V4L2");
+  if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_REQBUFS, &r_buffer)) <
+      0) {
+    SetErrorState(FROM_HERE,
+                  "Error requesting MMAP buffers from V4L2CaptureDevice");
     return;
   }
   for (unsigned int i = 0; i < r_buffer.count; ++i) {
@@ -498,8 +394,8 @@ void V4L2CaptureDelegate::AllocateAndStart(
   }
 
   v4l2_buf_type capture_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_STREAMON, &capture_type)) <
-      0) {
+  if (HANDLE_EINTR(
+          v4l2_->ioctl(device_fd_.get(), VIDIOC_STREAMON, &capture_type)) < 0) {
     SetErrorState(FROM_HERE, "VIDIOC_STREAMON failed");
     return;
   }
@@ -517,8 +413,8 @@ void V4L2CaptureDelegate::StopAndDeAllocate() {
   // The order is important: stop streaming, clear |buffer_pool_|,
   // thus munmap()ing the v4l2_buffers, and then return them to the OS.
   v4l2_buf_type capture_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_STREAMOFF, &capture_type)) <
-      0) {
+  if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_STREAMOFF,
+                                &capture_type)) < 0) {
     SetErrorState(FROM_HERE, "VIDIOC_STREAMOFF failed");
     return;
   }
@@ -527,7 +423,8 @@ void V4L2CaptureDelegate::StopAndDeAllocate() {
 
   v4l2_requestbuffers r_buffer;
   FillV4L2RequestBuffer(&r_buffer, 0);
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_REQBUFS, &r_buffer)) < 0)
+  if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_REQBUFS, &r_buffer)) <
+      0)
     SetErrorState(FROM_HERE, "Failed to VIDIOC_REQBUFS with count = 0");
 
   // At this point we can close the device.
@@ -569,8 +466,8 @@ void V4L2CaptureDelegate::GetPhotoState(
   photo_capabilities->current_focus_mode = MeteringMode::NONE;
   v4l2_control auto_focus_current = {};
   auto_focus_current.id = V4L2_CID_FOCUS_AUTO;
-  if (HANDLE_EINTR(
-          ioctl(device_fd_.get(), VIDIOC_G_CTRL, &auto_focus_current)) >= 0) {
+  if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_G_CTRL,
+                                &auto_focus_current)) >= 0) {
     photo_capabilities->current_focus_mode = auto_focus_current.value
                                                  ? MeteringMode::CONTINUOUS
                                                  : MeteringMode::MANUAL;
@@ -588,8 +485,8 @@ void V4L2CaptureDelegate::GetPhotoState(
   photo_capabilities->current_exposure_mode = MeteringMode::NONE;
   v4l2_control exposure_current = {};
   exposure_current.id = V4L2_CID_EXPOSURE_AUTO;
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_G_CTRL, &exposure_current)) >=
-      0) {
+  if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_G_CTRL,
+                                &exposure_current)) >= 0) {
     photo_capabilities->current_exposure_mode =
         exposure_current.value == V4L2_EXPOSURE_MANUAL
             ? MeteringMode::MANUAL
@@ -616,8 +513,8 @@ void V4L2CaptureDelegate::GetPhotoState(
   photo_capabilities->current_white_balance_mode = MeteringMode::NONE;
   v4l2_control white_balance_current = {};
   white_balance_current.id = V4L2_CID_AUTO_WHITE_BALANCE;
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_G_CTRL,
-                         &white_balance_current)) >= 0) {
+  if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_G_CTRL,
+                                &white_balance_current)) >= 0) {
     photo_capabilities->current_white_balance_mode =
         white_balance_current.value ? MeteringMode::CONTINUOUS
                                     : MeteringMode::MANUAL;
@@ -656,7 +553,8 @@ void V4L2CaptureDelegate::SetPhotoOptions(
     v4l2_control zoom_current = {};
     zoom_current.id = V4L2_CID_ZOOM_ABSOLUTE;
     zoom_current.value = settings->zoom;
-    if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &zoom_current)) < 0)
+    if (HANDLE_EINTR(
+            v4l2_->ioctl(device_fd_.get(), VIDIOC_S_CTRL, &zoom_current)) < 0)
       DPLOG(ERROR) << "setting zoom to " << settings->zoom;
   }
 
@@ -667,20 +565,22 @@ void V4L2CaptureDelegate::SetPhotoOptions(
     white_balance_set.id = V4L2_CID_AUTO_WHITE_BALANCE;
     white_balance_set.value =
         settings->white_balance_mode == mojom::MeteringMode::CONTINUOUS;
-    HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &white_balance_set));
+    HANDLE_EINTR(
+        v4l2_->ioctl(device_fd_.get(), VIDIOC_S_CTRL, &white_balance_set));
   }
 
   if (settings->has_color_temperature) {
     v4l2_control auto_white_balance_current = {};
     auto_white_balance_current.id = V4L2_CID_AUTO_WHITE_BALANCE;
-    const int result = HANDLE_EINTR(
-        ioctl(device_fd_.get(), VIDIOC_G_CTRL, &auto_white_balance_current));
+    const int result = HANDLE_EINTR(v4l2_->ioctl(
+        device_fd_.get(), VIDIOC_G_CTRL, &auto_white_balance_current));
     // Color temperature can only be applied if Auto White Balance is off.
     if (result >= 0 && !auto_white_balance_current.value) {
       v4l2_control set_temperature = {};
       set_temperature.id = V4L2_CID_WHITE_BALANCE_TEMPERATURE;
       set_temperature.value = settings->color_temperature;
-      HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &set_temperature));
+      HANDLE_EINTR(
+          v4l2_->ioctl(device_fd_.get(), VIDIOC_S_CTRL, &set_temperature));
     }
   }
 
@@ -693,20 +593,22 @@ void V4L2CaptureDelegate::SetPhotoOptions(
         settings->exposure_mode == mojom::MeteringMode::CONTINUOUS
             ? V4L2_EXPOSURE_APERTURE_PRIORITY
             : V4L2_EXPOSURE_MANUAL;
-    HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &exposure_mode_set));
+    HANDLE_EINTR(
+        v4l2_->ioctl(device_fd_.get(), VIDIOC_S_CTRL, &exposure_mode_set));
   }
 
   if (settings->has_exposure_compensation) {
     v4l2_control auto_exposure_current = {};
     auto_exposure_current.id = V4L2_CID_EXPOSURE_AUTO;
     const int result = HANDLE_EINTR(
-        ioctl(device_fd_.get(), VIDIOC_G_CTRL, &auto_exposure_current));
+        v4l2_->ioctl(device_fd_.get(), VIDIOC_G_CTRL, &auto_exposure_current));
     // Exposure Compensation can only be applied if Auto Exposure is off.
     if (result >= 0 && auto_exposure_current.value == V4L2_EXPOSURE_MANUAL) {
       v4l2_control set_exposure = {};
       set_exposure.id = V4L2_CID_EXPOSURE_ABSOLUTE;
       set_exposure.value = settings->exposure_compensation;
-      HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &set_exposure));
+      HANDLE_EINTR(
+          v4l2_->ioctl(device_fd_.get(), VIDIOC_S_CTRL, &set_exposure));
     }
   }
 
@@ -714,28 +616,32 @@ void V4L2CaptureDelegate::SetPhotoOptions(
     v4l2_control current = {};
     current.id = V4L2_CID_BRIGHTNESS;
     current.value = settings->brightness;
-    if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &current)) < 0)
+    if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_S_CTRL, &current)) <
+        0)
       DPLOG(ERROR) << "setting brightness to " << settings->brightness;
   }
   if (settings->has_contrast) {
     v4l2_control current = {};
     current.id = V4L2_CID_CONTRAST;
     current.value = settings->contrast;
-    if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &current)) < 0)
+    if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_S_CTRL, &current)) <
+        0)
       DPLOG(ERROR) << "setting contrast to " << settings->contrast;
   }
   if (settings->has_saturation) {
     v4l2_control current = {};
     current.id = V4L2_CID_SATURATION;
     current.value = settings->saturation;
-    if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &current)) < 0)
+    if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_S_CTRL, &current)) <
+        0)
       DPLOG(ERROR) << "setting saturation to " << settings->saturation;
   }
   if (settings->has_sharpness) {
     v4l2_control current = {};
     current.id = V4L2_CID_SHARPNESS;
     current.value = settings->sharpness;
-    if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &current)) < 0)
+    if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_S_CTRL, &current)) <
+        0)
       DPLOG(ERROR) << "setting sharpness to " << settings->sharpness;
   }
 
@@ -754,16 +660,162 @@ base::WeakPtr<V4L2CaptureDelegate> V4L2CaptureDelegate::GetWeakPtr() {
 
 V4L2CaptureDelegate::~V4L2CaptureDelegate() = default;
 
+// Running v4l2_->ioctl() on some devices, especially shortly after (re)opening
+// the device file descriptor or (re)starting streaming, can fail but works
+// after retrying (https://crbug.com/670262). Returns false if the |request|
+// ioctl fails too many times.
+bool V4L2CaptureDelegate::RunIoctl(int fd, int request, void* argp) {
+  int num_retries = 0;
+  for (; HANDLE_EINTR(v4l2_->ioctl(fd, request, argp)) < 0 &&
+         num_retries < kMaxIOCtrlRetries;
+       ++num_retries) {
+    DPLOG(WARNING) << "ioctl";
+  }
+  DPLOG_IF(ERROR, num_retries != kMaxIOCtrlRetries);
+  return num_retries != kMaxIOCtrlRetries;
+}
+
+// Creates a mojom::RangePtr with the (min, max, current, step) values of the
+// control associated with |control_id|. Returns an empty Range otherwise.
+mojom::RangePtr V4L2CaptureDelegate::RetrieveUserControlRange(int device_fd,
+                                                              int control_id) {
+  mojom::RangePtr capability = mojom::Range::New();
+
+  v4l2_queryctrl range = {};
+  range.id = control_id;
+  range.type = V4L2_CTRL_TYPE_INTEGER;
+  if (!RunIoctl(device_fd, VIDIOC_QUERYCTRL, &range))
+    return mojom::Range::New();
+  capability->max = range.maximum;
+  capability->min = range.minimum;
+  capability->step = range.step;
+
+  v4l2_control current = {};
+  current.id = control_id;
+  if (!RunIoctl(device_fd, VIDIOC_G_CTRL, &current))
+    return mojom::Range::New();
+  capability->current = current.value;
+
+  return capability;
+}
+
+// Sets all user control to their default. Some controls are enabled by another
+// flag, usually having the word "auto" in the name, see IsSpecialControl().
+// These flags are preset beforehand, then set to their defaults individually
+// afterwards.
+void V4L2CaptureDelegate::ResetUserAndCameraControlsToDefault(int device_fd) {
+  // Set V4L2_CID_AUTO_WHITE_BALANCE to false first.
+  v4l2_control auto_white_balance = {};
+  auto_white_balance.id = V4L2_CID_AUTO_WHITE_BALANCE;
+  auto_white_balance.value = false;
+  if (!RunIoctl(device_fd, VIDIOC_S_CTRL, &auto_white_balance))
+    return;
+
+  std::vector<struct v4l2_ext_control> special_camera_controls;
+  // Set V4L2_CID_EXPOSURE_AUTO to V4L2_EXPOSURE_MANUAL.
+  v4l2_ext_control auto_exposure = {};
+  auto_exposure.id = V4L2_CID_EXPOSURE_AUTO;
+  auto_exposure.value = V4L2_EXPOSURE_MANUAL;
+  special_camera_controls.push_back(auto_exposure);
+  // Set V4L2_CID_EXPOSURE_AUTO_PRIORITY to false.
+  v4l2_ext_control priority_auto_exposure = {};
+  priority_auto_exposure.id = V4L2_CID_EXPOSURE_AUTO_PRIORITY;
+  priority_auto_exposure.value = false;
+  special_camera_controls.push_back(priority_auto_exposure);
+  // Set V4L2_CID_FOCUS_AUTO to false.
+  v4l2_ext_control auto_focus = {};
+  auto_focus.id = V4L2_CID_FOCUS_AUTO;
+  auto_focus.value = false;
+  special_camera_controls.push_back(auto_focus);
+
+  struct v4l2_ext_controls ext_controls = {};
+  ext_controls.ctrl_class = V4L2_CID_CAMERA_CLASS;
+  ext_controls.count = special_camera_controls.size();
+  ext_controls.controls = special_camera_controls.data();
+  if (HANDLE_EINTR(v4l2_->ioctl(device_fd, VIDIOC_S_EXT_CTRLS, &ext_controls)) <
+      0)
+    DPLOG(ERROR) << "VIDIOC_S_EXT_CTRLS";
+
+  std::vector<struct v4l2_ext_control> camera_controls;
+  for (const auto& control : kControls) {
+    std::vector<struct v4l2_ext_control> camera_controls;
+
+    v4l2_queryctrl range = {};
+    range.id = control.control_base | V4L2_CTRL_FLAG_NEXT_CTRL;
+    while (0 ==
+           HANDLE_EINTR(v4l2_->ioctl(device_fd, VIDIOC_QUERYCTRL, &range))) {
+      if (V4L2_CTRL_ID2CLASS(range.id) != V4L2_CTRL_ID2CLASS(control.class_id))
+        break;
+      range.id |= V4L2_CTRL_FLAG_NEXT_CTRL;
+
+      if (IsSpecialControl(range.id & ~V4L2_CTRL_FLAG_NEXT_CTRL))
+        continue;
+      if (IsBlacklistedControl(range.id & ~V4L2_CTRL_FLAG_NEXT_CTRL))
+        continue;
+
+      struct v4l2_ext_control ext_control = {};
+      ext_control.id = range.id & ~V4L2_CTRL_FLAG_NEXT_CTRL;
+      ext_control.value = range.default_value;
+      camera_controls.push_back(ext_control);
+    }
+
+    if (!camera_controls.empty()) {
+      struct v4l2_ext_controls ext_controls = {};
+      ext_controls.ctrl_class = control.class_id;
+      ext_controls.count = camera_controls.size();
+      ext_controls.controls = camera_controls.data();
+      if (HANDLE_EINTR(
+              v4l2_->ioctl(device_fd, VIDIOC_S_EXT_CTRLS, &ext_controls)) < 0)
+        DPLOG(ERROR) << "VIDIOC_S_EXT_CTRLS";
+    }
+  }
+
+  // Now set the special flags to the default values
+  v4l2_queryctrl range = {};
+  range.id = V4L2_CID_AUTO_WHITE_BALANCE;
+  HANDLE_EINTR(v4l2_->ioctl(device_fd, VIDIOC_QUERYCTRL, &range));
+  auto_white_balance.value = range.default_value;
+  HANDLE_EINTR(v4l2_->ioctl(device_fd, VIDIOC_S_CTRL, &auto_white_balance));
+
+  special_camera_controls.clear();
+  memset(&range, 0, sizeof(struct v4l2_queryctrl));
+  range.id = V4L2_CID_EXPOSURE_AUTO;
+  HANDLE_EINTR(v4l2_->ioctl(device_fd, VIDIOC_QUERYCTRL, &range));
+  auto_exposure.value = range.default_value;
+  special_camera_controls.push_back(auto_exposure);
+
+  memset(&range, 0, sizeof(struct v4l2_queryctrl));
+  range.id = V4L2_CID_EXPOSURE_AUTO_PRIORITY;
+  HANDLE_EINTR(v4l2_->ioctl(device_fd, VIDIOC_QUERYCTRL, &range));
+  priority_auto_exposure.value = range.default_value;
+  special_camera_controls.push_back(priority_auto_exposure);
+
+  memset(&range, 0, sizeof(struct v4l2_queryctrl));
+  range.id = V4L2_CID_FOCUS_AUTO;
+  HANDLE_EINTR(v4l2_->ioctl(device_fd, VIDIOC_QUERYCTRL, &range));
+  auto_focus.value = range.default_value;
+  special_camera_controls.push_back(auto_focus);
+
+  memset(&ext_controls, 0, sizeof(struct v4l2_ext_controls));
+  ext_controls.ctrl_class = V4L2_CID_CAMERA_CLASS;
+  ext_controls.count = special_camera_controls.size();
+  ext_controls.controls = special_camera_controls.data();
+  if (HANDLE_EINTR(v4l2_->ioctl(device_fd, VIDIOC_S_EXT_CTRLS, &ext_controls)) <
+      0)
+    DPLOG(ERROR) << "VIDIOC_S_EXT_CTRLS";
+}
+
 bool V4L2CaptureDelegate::MapAndQueueBuffer(int index) {
   v4l2_buffer buffer;
   FillV4L2Buffer(&buffer, index);
 
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_QUERYBUF, &buffer)) < 0) {
-    DLOG(ERROR) << "Error querying status of a MMAP V4L2 buffer";
+  if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_QUERYBUF, &buffer)) <
+      0) {
+    DLOG(ERROR) << "Error querying status of a MMAP V4L2CaptureDevice buffer";
     return false;
   }
 
-  const scoped_refptr<BufferTracker> buffer_tracker(new BufferTracker());
+  const scoped_refptr<BufferTracker> buffer_tracker(new BufferTracker(v4l2_));
   if (!buffer_tracker->Init(device_fd_.get(), buffer)) {
     DLOG(ERROR) << "Error creating BufferTracker";
     return false;
@@ -771,8 +823,9 @@ bool V4L2CaptureDelegate::MapAndQueueBuffer(int index) {
   buffer_tracker_pool_.push_back(buffer_tracker);
 
   // Enqueue the buffer in the drivers incoming queue.
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_QBUF, &buffer)) < 0) {
-    DLOG(ERROR) << "Error enqueuing a V4L2 buffer back into the driver";
+  if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_QBUF, &buffer)) < 0) {
+    DLOG(ERROR)
+        << "Error enqueuing a V4L2CaptureDevice buffer back into the driver";
     return false;
   }
   return true;
@@ -786,7 +839,8 @@ void V4L2CaptureDelegate::DoCapture() {
   pollfd device_pfd = {};
   device_pfd.fd = device_fd_.get();
   device_pfd.events = POLLIN;
-  const int result = HANDLE_EINTR(poll(&device_pfd, 1, kCaptureTimeoutMs));
+  const int result =
+      HANDLE_EINTR(v4l2_->poll(&device_pfd, 1, kCaptureTimeoutMs));
   if (result < 0) {
     SetErrorState(FROM_HERE, "Poll failed");
     return;
@@ -810,7 +864,8 @@ void V4L2CaptureDelegate::DoCapture() {
     v4l2_buffer buffer;
     FillV4L2Buffer(&buffer, 0);
 
-    if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_DQBUF, &buffer)) < 0) {
+    if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_DQBUF, &buffer)) <
+        0) {
       SetErrorState(FROM_HERE, "Failed to dequeue capture buffer");
       return;
     }
@@ -856,7 +911,8 @@ void V4L2CaptureDelegate::DoCapture() {
         std::move(cb).Run(std::move(blob));
     }
 
-    if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_QBUF, &buffer)) < 0) {
+    if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_QBUF, &buffer)) <
+        0) {
       SetErrorState(FROM_HERE, "Failed to enqueue capture buffer");
       return;
     }
@@ -873,23 +929,24 @@ void V4L2CaptureDelegate::SetErrorState(const base::Location& from_here,
   client_->OnError(from_here, reason);
 }
 
-V4L2CaptureDelegate::BufferTracker::BufferTracker() = default;
+V4L2CaptureDelegate::BufferTracker::BufferTracker(V4L2CaptureDevice* v4l2)
+    : v4l2_(v4l2) {}
 
 V4L2CaptureDelegate::BufferTracker::~BufferTracker() {
   if (start_ == nullptr)
     return;
-  const int result = munmap(start_, length_);
-  PLOG_IF(ERROR, result < 0) << "Error munmap()ing V4L2 buffer";
+  const int result = v4l2_->munmap(start_, length_);
+  PLOG_IF(ERROR, result < 0) << "Error munmap()ing V4L2CaptureDevice buffer";
 }
 
 bool V4L2CaptureDelegate::BufferTracker::Init(int fd,
                                               const v4l2_buffer& buffer) {
   // Some devices require mmap() to be called with both READ and WRITE.
   // See http://crbug.com/178582.
-  void* const start = mmap(NULL, buffer.length, PROT_READ | PROT_WRITE,
-                           MAP_SHARED, fd, buffer.m.offset);
+  void* const start = v4l2_->mmap(NULL, buffer.length, PROT_READ | PROT_WRITE,
+                                  MAP_SHARED, fd, buffer.m.offset);
   if (start == MAP_FAILED) {
-    DLOG(ERROR) << "Error mmap()ing a V4L2 buffer into userspace";
+    DLOG(ERROR) << "Error mmap()ing a V4L2CaptureDevice buffer into userspace";
     return false;
   }
   start_ = static_cast<uint8_t*>(start);

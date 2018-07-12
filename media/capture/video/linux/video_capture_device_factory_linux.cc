@@ -88,7 +88,7 @@ std::list<float> GetFrameRateList(int fd,
   frame_interval.width = width;
   frame_interval.height = height;
   for (; HANDLE_EINTR(ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frame_interval)) ==
-             0;
+         0;
        ++frame_interval.index) {
     if (frame_interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
       if (frame_interval.discrete.numerator != 0) {
@@ -191,8 +191,7 @@ std::string GetDeviceDisplayName(const std::string& device_id) {
 
 VideoCaptureDeviceFactoryLinux::VideoCaptureDeviceFactoryLinux(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : ui_task_runner_(ui_task_runner) {
-}
+    : v4l2_(new V4L2CaptureDeviceImpl()), ui_task_runner_(ui_task_runner) {}
 
 VideoCaptureDeviceFactoryLinux::~VideoCaptureDeviceFactoryLinux() = default;
 
@@ -201,11 +200,11 @@ VideoCaptureDeviceFactoryLinux::CreateDevice(
     const VideoCaptureDeviceDescriptor& device_descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
 #if defined(OS_CHROMEOS)
-  VideoCaptureDeviceChromeOS* self =
-      new VideoCaptureDeviceChromeOS(ui_task_runner_, device_descriptor);
+  VideoCaptureDeviceChromeOS* self = new VideoCaptureDeviceChromeOS(
+      ui_task_runner_, v4l2_.get(), device_descriptor);
 #else
   VideoCaptureDeviceLinux* self =
-      new VideoCaptureDeviceLinux(device_descriptor);
+      new VideoCaptureDeviceLinux(v4l2_.get(), device_descriptor);
 #endif
   if (!self)
     return std::unique_ptr<VideoCaptureDevice>();
@@ -239,8 +238,8 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceDescriptors(
       DLOG(ERROR) << "Couldn't open " << info.GetName().value();
       continue;
     }
-    // Test if this is a V4L2 capture device and if it has at least one
-    // supported capture format. Devices that have capture and output
+    // Test if this is a V4L2CaptureDevice capture device and if it has at least
+    // one supported capture format. Devices that have capture and output
     // capabilities at the same time are memory-to-memory and are skipped, see
     // http://crbug.com/139356.
     v4l2_capability cap;

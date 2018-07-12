@@ -18,6 +18,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/threading/thread.h"
+#include "media/capture/video/linux/v4l2_capture_device_impl.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video_capture_types.h"
 
@@ -32,6 +33,7 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   static std::list<uint32_t> GetListOfUsableFourCCs(bool favour_mjpeg);
 
   explicit VideoCaptureDeviceLinux(
+      scoped_refptr<V4L2CaptureDevice> v4l2,
       const VideoCaptureDeviceDescriptor& device_descriptor);
   ~VideoCaptureDeviceLinux() override;
 
@@ -51,6 +53,8 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
 
  private:
   static int TranslatePowerLineFrequencyToV4L2(PowerLineFrequency frequency);
+
+  const scoped_refptr<V4L2CaptureDevice> v4l2_;
 
   // Internal delegate doing the actual capture setting, buffer allocation and
   // circulation with the V4L2 API. Created in the thread where
