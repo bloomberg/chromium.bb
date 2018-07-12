@@ -196,6 +196,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       sync_service_url_(
           syncer::GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
                                     init_params.channel)),
+      user_events_separate_pref_group_(
+          init_params.user_events_separate_pref_group),
       signin_scoped_device_id_callback_(
           init_params.signin_scoped_device_id_callback),
       network_time_update_callback_(
@@ -1452,7 +1454,8 @@ void ProfileSyncService::OnUserChoseDatatypes(
 
   const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
   // Will only enable those types that are registered and preferred.
-  sync_prefs_.SetPreferredDataTypes(registered_types, chosen_types);
+  sync_prefs_.SetPreferredDataTypes(registered_types, chosen_types,
+                                    user_events_separate_pref_group_);
 
   // Now reconfigure the DTM.
   ReconfigureDatatypeManager();
@@ -1490,7 +1493,8 @@ syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
   const syncer::ModelTypeSet preferred_types =
-      Union(sync_prefs_.GetPreferredDataTypes(registered_types),
+      Union(sync_prefs_.GetPreferredDataTypes(registered_types,
+                                              user_events_separate_pref_group_),
             syncer::ControlTypes());
   const syncer::ModelTypeSet enforced_types =
       Intersection(GetDataTypesFromPreferenceProviders(), registered_types);

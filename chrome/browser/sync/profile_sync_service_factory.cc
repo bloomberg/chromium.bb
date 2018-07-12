@@ -28,6 +28,7 @@
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
@@ -184,6 +185,8 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
           ->GetURLLoaderFactoryForBrowserProcess();
   init_params.debug_identifier = profile->GetDebugName();
   init_params.channel = chrome::GetChannel();
+  init_params.user_events_separate_pref_group =
+      IsUnifiedConsentEnabled(profile);
 
   if (!client_factory_) {
     init_params.sync_client =
