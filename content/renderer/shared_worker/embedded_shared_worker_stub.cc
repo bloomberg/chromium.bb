@@ -229,27 +229,18 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   }
 
   if (subresource_loaders) {
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // S13nServiceWorker enabled, NetworkService disabled:
-      // Clear the default factory from |subresource_loaders|, as it's the
-      // NetworkService factory.
-      subresource_loaders->default_factory_info() = nullptr;
-    }
-
     loader_factories_->Update(std::make_unique<ChildURLLoaderFactoryBundleInfo>(
                                   std::move(subresource_loaders)),
                               base::nullopt /* subresource_overrides */);
   }
 
   // It is important to understand the default factory of |loader_factories_|.
-  // Since |loader_factories_| was made from
-  // CreateDefaultURLLoaderFactoryBundle, which does not set a default factory,
-  // and |subresource_loaders|, whose default factory is the restartable
-  // NetworkService (as SharedWorkerHost sets it that way), the default factory
-  // either does not exist (when NetworkService is disabled) or is a
-  // NetworkService-backed factory with auto-reconnect. Therefore, we don't need
-  // to call CloneWithoutDefault() to bypass features like AppCache, unlike the
-  // bundle created for a frame.
+  // |loader_factories_| was made from CreateDefaultURLLoaderFactoryBundle,
+  // which does not set a default factory, and |subresource_loaders|, whose
+  // default factory is the direct network factory (as SharedWorkerHost sets it
+  // that way). Therefore, the default factory either does not exist or is the
+  // direct network factory. So we don't need to call CloneWithoutDefault() to
+  // bypass features like AppCache, unlike the bundle created for a frame.
 
   impl_->StartWorkerContext(
       url_, blink::WebString::FromUTF8(name_),
