@@ -53,6 +53,9 @@ void DispatchOnLaunchedEventImpl(
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchSource", source,
                             app_runtime::LaunchSource::LAUNCH_SOURCE_LAST + 1);
 
+  launch_data->SetBoolean("isDemoSession",
+                          ExtensionsBrowserClient::Get()->IsInDemoMode());
+
   // "Forced app mode" is true for Chrome OS kiosk mode.
   launch_data->SetBoolean(
       "isKioskSession",

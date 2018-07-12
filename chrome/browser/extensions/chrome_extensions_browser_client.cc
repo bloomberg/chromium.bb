@@ -290,6 +290,15 @@ void ChromeExtensionsBrowserClient::PermitExternalProtocolHandler() {
   ExternalProtocolHandler::PermitLaunchUrl();
 }
 
+bool ChromeExtensionsBrowserClient::IsInDemoMode() {
+#if defined(OS_CHROMEOS)
+  // TODO(michaelpg): Implement for real.
+  return false;
+#else
+  return false;
+#endif
+}
+
 bool ChromeExtensionsBrowserClient::IsRunningInForcedAppMode() {
   return chrome::IsRunningInForcedAppMode();
 }

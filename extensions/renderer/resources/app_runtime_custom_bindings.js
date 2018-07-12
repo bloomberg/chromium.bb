@@ -54,6 +54,7 @@ registerArgumentMassager('app.runtime.onLaunched', function(args, dispatch) {
       }
       if (--numItems === 0) {
         var data = {
+          isDemoSession: launchData.isDemoSession,
           isKioskSession: launchData.isKioskSession,
           isPublicSession: launchData.isPublicSession,
           source: launchData.source,

@@ -191,6 +191,10 @@ bool ShellExtensionsBrowserClient::DidVersionUpdate(BrowserContext* context) {
 void ShellExtensionsBrowserClient::PermitExternalProtocolHandler() {
 }
 
+bool ShellExtensionsBrowserClient::IsInDemoMode() {
+  return false;
+}
+
 bool ShellExtensionsBrowserClient::IsRunningInForcedAppMode() {
   return false;
 }

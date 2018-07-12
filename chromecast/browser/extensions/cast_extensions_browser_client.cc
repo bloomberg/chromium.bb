@@ -172,7 +172,15 @@ bool CastExtensionsBrowserClient::DidVersionUpdate(BrowserContext* context) {
 
 void CastExtensionsBrowserClient::PermitExternalProtocolHandler() {}
 
+bool CastExtensionsBrowserClient::IsInDemoMode() {
+  return false;
+}
+
 bool CastExtensionsBrowserClient::IsRunningInForcedAppMode() {
+  return false;
+}
+
+bool CastExtensionsBrowserClient::IsAppModeForcedForApp(const ExtensionId& id) {
   return false;
 }
 
@@ -277,10 +285,6 @@ bool CastExtensionsBrowserClient::IsLockScreenContext(
 std::string CastExtensionsBrowserClient::GetApplicationLocale() {
   // TODO(b/70902491): Use system locale.
   return "en-US";
-}
-
-bool CastExtensionsBrowserClient::IsAppModeForcedForApp(const ExtensionId& id) {
-  return false;
 }
 
 }  // namespace extensions
