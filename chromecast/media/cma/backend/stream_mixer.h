@@ -28,6 +28,7 @@
 namespace chromecast {
 namespace media {
 
+class AudioOutputRedirector;
 class FilterGroup;
 class MixerOutputStream;
 class PostProcessingPipelineParser;
@@ -93,6 +94,13 @@ class StreamMixer {
       CastMediaShlib::LoopbackAudioObserver* observer);
   void RemoveLoopbackAudioObserver(
       CastMediaShlib::LoopbackAudioObserver* observer);
+
+  // Adds/removes an output redirector. Output redirectors take audio from
+  // matching inputs and pass them to secondary output instead of the normal
+  // mixer output.
+  void AddAudioOutputRedirector(
+      std::unique_ptr<AudioOutputRedirector> redirector);
+  void RemoveAudioOutputRedirector(AudioOutputRedirector* redirector);
 
   // Sets the volume multiplier for the given content |type|.
   void SetVolume(AudioContentType type, float level);
@@ -183,6 +191,10 @@ class StreamMixer {
   void RemoveLoopbackAudioObserverOnShimThread(
       CastMediaShlib::LoopbackAudioObserver* observer);
 
+  void AddAudioOutputRedirectorOnThread(
+      std::unique_ptr<AudioOutputRedirector> redirector);
+  void RemoveAudioOutputRedirectorOnThread(AudioOutputRedirector* redirector);
+
   void PostLoopbackData(int64_t expected_playback_time,
                         SampleFormat sample_format,
                         int sample_rate,
@@ -239,6 +251,9 @@ class StreamMixer {
   base::flat_set<CastMediaShlib::LoopbackAudioObserver*> loopback_observers_;
 
   base::flat_map<AudioContentType, VolumeInfo> volume_info_;
+
+  base::flat_map<AudioOutputRedirector*, std::unique_ptr<AudioOutputRedirector>>
+      audio_output_redirectors_;
 
   const bool external_audio_pipeline_supported_;
   std::unique_ptr<BaseExternalMediaVolumeChangeRequestObserver>

@@ -13,8 +13,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "chromecast/media/cma/backend/audio_fader.h"
+#include "chromecast/media/cma/backend/audio_output_redirector.h"
 #include "chromecast/media/cma/backend/filter_group.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/multi_channel_resampler.h"
 
 namespace chromecast {
@@ -39,6 +42,7 @@ MixerInput::MixerInput(Source* source,
     : source_(source),
       num_channels_(source->num_channels()),
       input_samples_per_second_(source->input_samples_per_second()),
+      output_samples_per_second_(output_samples_per_second),
       primary_(source->primary()),
       device_id_(source->device_id()),
       content_type_(source->content_type()),
@@ -46,14 +50,17 @@ MixerInput::MixerInput(Source* source,
       type_volume_multiplier_(1.0f),
       mute_volume_multiplier_(1.0f),
       slew_volume_(kDefaultSlewTimeMs),
+      volume_applied_(false),
+      previous_ended_in_silence_(false),
+      first_buffer_(true),
       resampler_buffered_frames_(0.0) {
   DCHECK(source_);
   DCHECK_GT(num_channels_, 0);
   DCHECK_GT(input_samples_per_second_, 0);
 
   int source_read_size = read_size;
-  if (output_samples_per_second > 0 &&
-      output_samples_per_second != input_samples_per_second_) {
+  if (output_samples_per_second_ > 0 &&
+      output_samples_per_second_ != input_samples_per_second_) {
     // Round up to nearest multiple of SincResampler::kKernelSize. The read size
     // must be > kKernelSize, so we round up to at least 2 * kKernelSize.
     source_read_size = std::max(source_->desired_read_size(),
@@ -61,7 +68,7 @@ MixerInput::MixerInput(Source* source,
     source_read_size =
         RoundUpMultiple(source_read_size, ::media::SincResampler::kKernelSize);
     double resample_ratio = static_cast<double>(input_samples_per_second_) /
-                            output_samples_per_second;
+                            output_samples_per_second_;
     resampler_ = std::make_unique<::media::MultiChannelResampler>(
         num_channels_, resample_ratio, source_read_size,
         base::BindRepeating(&MixerInput::ResamplerReadCallback,
@@ -101,9 +108,82 @@ void MixerInput::SetFilterGroup(FilterGroup* filter_group) {
   filter_group_ = filter_group;
 }
 
+void MixerInput::AddAudioOutputRedirector(
+    AudioOutputRedirectorInput* redirector) {
+  LOG(INFO) << "Add redirector to " << device_id_ << "(" << source_ << ")";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(redirector);
+  audio_output_redirectors_.insert(
+      std::upper_bound(
+          audio_output_redirectors_.begin(), audio_output_redirectors_.end(),
+          redirector,
+          [](AudioOutputRedirectorInput* a, AudioOutputRedirectorInput* b) {
+            return (a->Order() < b->Order());
+          }),
+      redirector);
+}
+
+void MixerInput::RemoveAudioOutputRedirector(
+    AudioOutputRedirectorInput* redirector) {
+  LOG(INFO) << "Remove redirector from " << device_id_ << "(" << source_ << ")";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(redirector);
+  audio_output_redirectors_.erase(
+      std::remove(audio_output_redirectors_.begin(),
+                  audio_output_redirectors_.end(), redirector),
+      audio_output_redirectors_.end());
+}
+
 int MixerInput::FillAudioData(int num_frames,
                               RenderingDelay rendering_delay,
                               ::media::AudioBus* dest) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(dest);
+  DCHECK_EQ(num_channels_, dest->channels());
+  DCHECK_GE(dest->frames(), num_frames);
+
+  volume_applied_ = false;
+
+  RenderingDelay redirected_delay = rendering_delay;
+  if (!audio_output_redirectors_.empty()) {
+    redirected_delay.delay_microseconds +=
+        audio_output_redirectors_[0]->GetDelayMicroseconds();
+  }
+  int filled = FillBuffer(num_frames, redirected_delay, dest);
+
+  bool redirected = false;
+  for (auto* redirector : audio_output_redirectors_) {
+    redirector->Redirect(dest, filled, rendering_delay, redirected);
+    redirected = true;
+  }
+
+  if (first_buffer_ && redirected) {
+    // If the first buffer is redirected, don't provide any data to the mixer
+    // (we want to avoid a 'blip' of sound from the first buffer if it is being
+    // redirected).
+    filled = 0;
+  } else if (previous_ended_in_silence_) {
+    if (redirected) {
+      // Previous buffer ended in silence, and the current buffer was redirected
+      // by the output chain, so maintain silence.
+      filled = 0;
+    } else {
+      // Smoothly fade in from previous silence.
+      AudioFader::FadeInHelper(dest, filled, filled, filled);
+    }
+  } else if (redirected) {
+    // Smoothly fade out to silence, since output is now being redirected.
+    AudioFader::FadeOutHelper(dest, filled, filled, filled);
+  }
+  previous_ended_in_silence_ = redirected;
+  first_buffer_ = false;
+
+  return filled;
+}
+
+int MixerInput::FillBuffer(int num_frames,
+                           RenderingDelay rendering_delay,
+                           ::media::AudioBus* dest) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(dest);
   DCHECK_EQ(num_channels_, dest->channels());
@@ -148,12 +228,12 @@ void MixerInput::SignalError(Source::MixerError error) {
   source_->OnAudioPlaybackError(error);
 }
 
-void MixerInput::VolumeScaleAccumulate(bool repeat_transition,
-                                       const float* src,
+void MixerInput::VolumeScaleAccumulate(const float* src,
                                        int frames,
                                        float* dest) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  slew_volume_.ProcessFMAC(repeat_transition, src, frames, 1, dest);
+  slew_volume_.ProcessFMAC(!volume_applied_, src, frames, 1, dest);
+  volume_applied_ = true;
 }
 
 void MixerInput::SetVolumeMultiplier(float multiplier) {

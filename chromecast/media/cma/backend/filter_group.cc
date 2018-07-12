@@ -121,17 +121,20 @@ float FilterGroup::MixAndFilter(
     DCHECK(temp_buffers_[input->num_channels()]);
     ::media::AudioBus* temp = temp_buffers_[input->num_channels()].get();
     int filled = input->FillAudioData(num_frames, rendering_delay, temp);
-    int in_c = 0;
-    for (int out_c = 0; out_c < num_channels_; ++out_c) {
-      input->VolumeScaleAccumulate(out_c != 0, temp->channel(in_c), filled,
-                                   mixed_->channel(out_c));
-      ++in_c;
-      if (in_c >= input->num_channels()) {
-        in_c = 0;
+    if (filled > 0) {
+      int in_c = 0;
+      for (int out_c = 0; out_c < num_channels_; ++out_c) {
+        input->VolumeScaleAccumulate(temp->channel(in_c), filled,
+                                     mixed_->channel(out_c));
+        ++in_c;
+        if (in_c >= input->num_channels()) {
+          in_c = 0;
+        }
       }
+
+      volume = std::max(volume, input->InstantaneousVolume());
+      content_type = std::max(content_type, input->content_type());
     }
-    volume = std::max(volume, input->InstantaneousVolume());
-    content_type = std::max(content_type, input->content_type());
   }
 
   mixed_->ToInterleaved<::media::FloatSampleTypeTraits<float>>(

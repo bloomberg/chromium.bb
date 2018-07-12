@@ -57,6 +57,23 @@ class AudioFader {
   // FillFrames() is called to fill |num_fill_frames| frames.
   int FramesNeededFromSource(int num_fill_frames) const;
 
+  // Helper methods to fade in/out an AudioBus. |buffer| contains the data to
+  // fade; |filled_frames| is the amount of data actually in |buffer| (if the
+  // buffer was partially filled, this will not be equal to buffer->frames()).
+  // |fade_frames| is the number of frames over which a complete fade should
+  // happen (ie, how many frames it takes to go from a 1.0 to 0.0 multiplier).
+  // |fade_frames_remaining| is the number of frames left in the current fade
+  // (which will be less than |fade_frames| if part of the fade has already
+  // been completed on a previous buffer).
+  static void FadeInHelper(::media::AudioBus* buffer,
+                           int filled_frames,
+                           int fade_frames,
+                           int fade_frames_remaining);
+  static void FadeOutHelper(::media::AudioBus* buffer,
+                            int filled_frames,
+                            int fade_frames,
+                            int fade_frames_remaining);
+
  private:
   enum class State {
     kSilent,

@@ -21,6 +21,8 @@ class MultiChannelResampler;
 
 namespace chromecast {
 namespace media {
+
+class AudioOutputRedirectorInput;
 class FilterGroup;
 
 // Input stream to the mixer. Handles pulling data from the data source and
@@ -91,9 +93,17 @@ class MixerInput {
   Source* source() const { return source_; }
   int num_channels() const { return num_channels_; }
   int input_samples_per_second() const { return input_samples_per_second_; }
+  int output_samples_per_second() const { return output_samples_per_second_; }
   bool primary() const { return primary_; }
   const std::string& device_id() const { return device_id_; }
   AudioContentType content_type() const { return content_type_; }
+
+  // Adds/removes an output redirector. When the mixer asks for more audio data,
+  // the lowest-ordered redirector (based on redirector->GetOrder()) is passed
+  // the audio data that would ordinarily have been mixed for local output;
+  // no audio from this MixerInput is passed to the mixer.
+  void AddAudioOutputRedirector(AudioOutputRedirectorInput* redirector);
+  void RemoveAudioOutputRedirector(AudioOutputRedirectorInput* redirector);
 
   // Reads data from the source. Returns the number of frames actually filled
   // (<= |num_frames|).
@@ -107,12 +117,9 @@ class MixerInput {
   // Scales |frames| frames at |src| by the current volume (smoothing as
   // needed). Adds the scaled result to |dest|.
   // VolumeScaleAccumulate will be called once for each channel of audio
-  // present and |repeat_transition| will be true for channels 2 through n.
+  // present.
   // |src| and |dest| should be 16-byte aligned.
-  void VolumeScaleAccumulate(bool repeat_transition,
-                             const float* src,
-                             int frames,
-                             float* dest);
+  void VolumeScaleAccumulate(const float* src, int frames, float* dest);
 
   // Sets the per-stream volume multiplier. If |multiplier| < 0, sets the
   // volume multiplier to 0.
@@ -137,11 +144,16 @@ class MixerInput {
   float InstantaneousVolume();
 
  private:
+  int FillBuffer(int num_frames,
+                 RenderingDelay rendering_delay,
+                 ::media::AudioBus* dest);
+
   void ResamplerReadCallback(int frame_delay, ::media::AudioBus* output);
 
   Source* const source_;
   const int num_channels_;
   const int input_samples_per_second_;
+  const int output_samples_per_second_;
   const bool primary_;
   const std::string device_id_;
   const AudioContentType content_type_;
@@ -152,10 +164,17 @@ class MixerInput {
   float type_volume_multiplier_;
   float mute_volume_multiplier_;
   SlewVolume slew_volume_;
+  // True if volume scale-accumulate has already been applied for at least
+  // one channel of the current buffer.
+  bool volume_applied_;
+  bool previous_ended_in_silence_;
+  bool first_buffer_;
 
   RenderingDelay mixer_rendering_delay_;
   double resampler_buffered_frames_;
   std::unique_ptr<::media::MultiChannelResampler> resampler_;
+
+  std::vector<AudioOutputRedirectorInput*> audio_output_redirectors_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
