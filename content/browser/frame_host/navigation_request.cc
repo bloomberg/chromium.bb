@@ -1294,6 +1294,13 @@ void NavigationRequest::OnStartChecksComplete(
       browser_context, navigating_frame_host->GetSiteInstance());
   DCHECK(partition);
 
+  // |loader_| should not exist if the service worker handle and app cache
+  // handles will be destroyed, since it holds raw pointers to them. See the
+  // comment in the header for |loader_|.
+  // TODO(falken): Turn this into a DCHECK if it holds, or else manually call
+  // loader_.reset() here.
+  CHECK(!loader_);
+
   // Only initialize the ServiceWorkerNavigationHandle if it can be created for
   // this frame.
   bool can_create_service_worker =
