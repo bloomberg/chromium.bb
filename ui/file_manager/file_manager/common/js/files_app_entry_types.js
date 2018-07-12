@@ -283,6 +283,58 @@ class EntryList {
   createReader() {
     return new StaticReader(this.children_);
   }
+
+  /**
+   * @param {!Entry|!FakeEntry|!FilesAppEntry} entry that should be removed as
+   * child of this EntryList.
+   * This method is specific to EntryList instance.
+   * @return {boolean} if entry was removed.
+   */
+  removeEntry(entry) {
+    const entryIndex = this.children.indexOf(entry);
+    if (entryIndex !== -1) {
+      this.children.splice(entryIndex, 1);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * @param {!VolumeInfo} volumeInfo that's desired to be removed.
+   * This method is specific to EntryList instance.
+   * @return {number} index of entry on this EntryList or -1 if not found.
+   */
+  findIndexByVolumeInfo(volumeInfo) {
+    return this.children.findIndex(
+        childEntry => childEntry.volumeInfo === volumeInfo);
+  }
+
+  /**
+   * Removes the first volume with the given type.
+   * @param {!VolumeManagerCommon.VolumeType} volumeType desired type.
+   * This method is specific to EntryList instance.
+   * @return {boolean} if entry was removed.
+   */
+  removeByVolumeType(volumeType) {
+    const childIndex = this.children.findIndex(
+        childEntry => childEntry.volumeInfo &&
+            childEntry.volumeInfo.volumeType === volumeType);
+    if (childIndex !== -1) {
+      this.children.splice(childIndex, 1);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * @param {Entry|FakeEntry|FilesAppEntry} entry that should be checked as
+   * child of this EntryList.
+   * This method is specific to EntryList instance.
+   * @return {boolean} if entry was removed.
+   */
+  containEntry(entry) {
+    return !!this.children.find(childEntry => childEntry === entry);
+  }
 }
 
 /**

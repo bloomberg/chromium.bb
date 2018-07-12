@@ -556,11 +556,11 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
       getSingleVolume(VolumeManagerCommon.VolumeType.DOWNLOADS);
   if (downloadsVolume) {
     // Only add volume if MyFiles doesn't have it yet.
-    if (!myFilesEntry.children.find(
-            childEntry =>
-                childEntry.volumeInfo === downloadsVolume.volumeInfo)) {
+    if (myFilesEntry.findIndexByVolumeInfo(downloadsVolume.volumeInfo) === -1) {
       myFilesEntry.addEntry(new VolumeEntry(downloadsVolume.volumeInfo));
     }
+  } else {
+    myFilesEntry.removeByVolumeType(VolumeManagerCommon.VolumeType.DOWNLOADS);
   }
 
   // Add Android to My Files.
@@ -568,10 +568,12 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
       getSingleVolume(VolumeManagerCommon.VolumeType.ANDROID_FILES);
   if (androidVolume) {
     // Only add volume if MyFiles doesn't have it yet.
-    if (!myFilesEntry.children.find(
-            childEntry => childEntry.volumeInfo === androidVolume.volumeInfo)) {
+    if (myFilesEntry.findIndexByVolumeInfo(androidVolume.volumeInfo) === -1) {
       myFilesEntry.addEntry(new VolumeEntry(androidVolume.volumeInfo));
     }
+  } else {
+    myFilesEntry.removeByVolumeType(
+        VolumeManagerCommon.VolumeType.ANDROID_FILES);
   }
 
   // Add Linux to My Files.
@@ -579,24 +581,21 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
       getSingleVolume(VolumeManagerCommon.VolumeType.CROSTINI);
   if (crostiniVolume) {
     // Crostini is mounted so add it if MyFiles doesn't have it yet.
-    if (!myFilesEntry.children.find(
-            childEntry =>
-                childEntry.volumeInfo === crostiniVolume.volumeInfo)) {
-      myFilesEntry.addEntry(new crostiniVolume.volumeInfo);
+    if (myFilesEntry.findIndexByVolumeInfo(crostiniVolume.volumeInfo) === -1) {
+      myFilesEntry.addEntry(new VolumeEntry(crostiniVolume.volumeInfo));
     }
     // Remove linuxFilesItem_ if exists on EntryList.
+    if (this.linuxFilesItem_)
+      myFilesEntry.removeEntry(this.linuxFilesItem_.entry);
+  } else {
+    myFilesEntry.removeByVolumeType(VolumeManagerCommon.VolumeType.CROSTINI);
     if (this.linuxFilesItem_) {
-      const fakeCrostiniIndex =
-          myFilesEntry.children.indexOf(this.linuxFilesItem_.entry);
-      if (fakeCrostiniIndex != -1) {
-        myFilesEntry.children.splice(fakeCrostiniIndex, 1);
+      const fakeEntry = this.linuxFilesItem_.entry;
+      // Here it's just a fake item, only add if MyFiles doesn't have it yet.
+      if (!myFilesEntry.containEntry(fakeEntry)) {
+        fakeEntry.navigationModel = this.linuxFilesItem_;
+        myFilesEntry.addEntry(fakeEntry);
       }
-    }
-  } else if (this.linuxFilesItem_) {
-    // Here it's just a fake item, only add if MyFiles doesn't have it yet.
-    if (!myFilesEntry.children.find(
-            childEntry => childEntry === this.linuxFilesItem_.entry)) {
-      myFilesEntry.addEntry(this.linuxFilesItem_.entry);
     }
   }
 
