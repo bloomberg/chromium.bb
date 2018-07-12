@@ -10,10 +10,16 @@ struct ModuleInfoData;
 
 class ModuleDatabaseObserver {
  public:
-  // Invoked when a new module is loaded into Chrome, but after it has been
-  // inspected on disk.
+  // Invoked when a new module is found either by loading into the process, or
+  // by being registered as a shell extension or IME. Only invoked after the
+  // module was inspected on disk.
   virtual void OnNewModuleFound(const ModuleInfoKey& module_key,
                                 const ModuleInfoData& module_data) {}
+
+  // Invoked when a registered module (shell extension or IME) that already
+  // triggered a OnNewModuleFound() call finally loads into Chrome.
+  virtual void OnKnownModuleLoaded(const ModuleInfoKey& module_key,
+                                   const ModuleInfoData& module_data) {}
 
   // Invoked when the ModuleDatabase becomes idle. This means that the
   // ModuleDatabase stopped inspecting modules and it received no new module

@@ -94,8 +94,8 @@ void ModuleDatabase::OnShellExtensionEnumerated(const base::FilePath& path,
 
   idle_timer_.Reset();
 
-  auto* module_info =
-      FindOrCreateModuleInfo(path, size_of_image, time_date_stamp);
+  ModuleInfo* module_info = nullptr;
+  FindOrCreateModuleInfo(path, size_of_image, time_date_stamp, &module_info);
   module_info->second.module_properties |=
       ModuleInfoData::kPropertyShellExtension;
 }
@@ -117,8 +117,8 @@ void ModuleDatabase::OnImeEnumerated(const base::FilePath& path,
 
   idle_timer_.Reset();
 
-  auto* module_info =
-      FindOrCreateModuleInfo(path, size_of_image, time_date_stamp);
+  ModuleInfo* module_info = nullptr;
+  FindOrCreateModuleInfo(path, size_of_image, time_date_stamp, &module_info);
   module_info->second.module_properties |= ModuleInfoData::kPropertyIme;
 }
 
@@ -150,14 +150,31 @@ void ModuleDatabase::OnModuleLoad(content::ProcessType process_type,
     return;
   }
 
-  auto* module_info =
-      FindOrCreateModuleInfo(module_path, module_size, module_time_date_stamp);
+  ModuleInfo* module_info = nullptr;
+  bool new_module = FindOrCreateModuleInfo(
+      module_path, module_size, module_time_date_stamp, &module_info);
 
+  uint32_t old_module_properties = module_info->second.module_properties;
+
+  // Mark the module as loaded.
   module_info->second.module_properties |=
       ModuleInfoData::kPropertyLoadedModule;
 
   // Update the list of process types that this module has been seen in.
   module_info->second.process_types |= ProcessTypeToBit(process_type);
+
+  // Some observers care about a known module that is just now loading. Also
+  // making sure that the module is ready to be sent to observers.
+  bool is_known_module_loading =
+      !new_module &&
+      old_module_properties != module_info->second.module_properties;
+  bool ready_for_notification =
+      module_info->second.inspection_result && RegisteredModulesEnumerated();
+  if (is_known_module_loading && ready_for_notification) {
+    for (auto& observer : observer_list_) {
+      observer.OnKnownModuleLoaded(module_info->first, module_info->second);
+    }
+  }
 }
 
 void ModuleDatabase::OnModuleAddedToBlacklist(const base::FilePath& module_path,
@@ -227,10 +244,11 @@ content::ProcessType ModuleDatabase::BitIndexToProcessType(uint32_t bit_index) {
   return static_cast<content::ProcessType>(bit_index + kFirstValidProcessType);
 }
 
-ModuleDatabase::ModuleInfo* ModuleDatabase::FindOrCreateModuleInfo(
+bool ModuleDatabase::FindOrCreateModuleInfo(
     const base::FilePath& module_path,
     uint32_t module_size,
-    uint32_t module_time_date_stamp) {
+    uint32_t module_time_date_stamp,
+    ModuleDatabase::ModuleInfo** module_info) {
   auto result = modules_.emplace(
       std::piecewise_construct,
       std::forward_as_tuple(module_path, module_size, module_time_date_stamp,
@@ -238,14 +256,16 @@ ModuleDatabase::ModuleInfo* ModuleDatabase::FindOrCreateModuleInfo(
       std::forward_as_tuple());
 
   // New modules must be inspected.
-  if (result.second) {
+  bool new_module = result.second;
+  if (new_module) {
     has_started_processing_ = true;
     idle_timer_.Reset();
 
     module_inspector_.AddModule(result.first->first);
   }
 
-  return &(*result.first);
+  *module_info = &(*result.first);
+  return new_module;
 }
 
 bool ModuleDatabase::RegisteredModulesEnumerated() {
