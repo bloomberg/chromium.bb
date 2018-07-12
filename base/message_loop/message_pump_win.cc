@@ -46,10 +46,6 @@ void MessagePumpWin::Run(Delegate* delegate) {
   s.should_quit = false;
   s.run_depth = state_ ? state_->run_depth + 1 : 1;
 
-  // TODO(stanisc): crbug.com/596190: Remove this code once the bug is fixed.
-  s.schedule_work_error_count = 0;
-  s.last_schedule_work_error_time = Time();
-
   RunState* previous_state = state_;
   state_ = &s;
 
@@ -118,8 +114,6 @@ void MessagePumpForUI::ScheduleWork() {
   InterlockedExchange(&work_state_, READY);
   UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem", MESSAGE_POST_ERROR,
                             MESSAGE_LOOP_PROBLEM_MAX);
-  state_->schedule_work_error_count++;
-  state_->last_schedule_work_error_time = Time::Now();
 }
 
 void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
@@ -444,8 +438,6 @@ void MessagePumpForIO::ScheduleWork() {
   InterlockedExchange(&work_state_, READY);  // Clarify that we didn't succeed.
   UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem", COMPLETION_POST_ERROR,
                             MESSAGE_LOOP_PROBLEM_MAX);
-  state_->schedule_work_error_count++;
-  state_->last_schedule_work_error_time = Time::Now();
 }
 
 void MessagePumpForIO::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
