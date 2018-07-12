@@ -40,6 +40,9 @@ class TestSyncService : public syncer::FakeSyncService {
     if (observer_)
       observer_->OnStateChanged(this);
   }
+  // This is a helper if the value is set through |OnUserChoseDatatypes|, which
+  // is not implemented in |FakeSyncService|. Usually
+  // |sync_prefs_.HasKeepEverythingSynced()| is used.
   bool IsSyncingEverything() { return is_syncing_everything_; }
 
  private:
@@ -48,9 +51,36 @@ class TestSyncService : public syncer::FakeSyncService {
   bool is_syncing_everything_ = false;
 };
 
-class UnifiedConsentServiceTest : public testing::Test,
-                                  public UnifiedConsentServiceClient {
+class UnifiedConsentServiceTest : public testing::Test {
  public:
+  class FakeUnifiedConsentServiceClient : public UnifiedConsentServiceClient {
+   public:
+    FakeUnifiedConsentServiceClient(UnifiedConsentServiceTest* test)
+        : test_(test) {}
+    // UnifiedConsentServiceClient:
+    void SetAlternateErrorPagesEnabled(bool enabled) override {
+      test_->alternate_error_pages_enabled_ = enabled;
+    }
+    void SetMetricsReportingEnabled(bool enabled) override {
+      test_->metrics_reporting_enabled_ = enabled;
+    }
+    void SetNetworkPredictionEnabled(bool enabled) override {
+      test_->network_predictions_enabled_ = enabled;
+    }
+    void SetSafeBrowsingEnabled(bool enabled) override {
+      test_->safe_browsing_enabled_ = enabled;
+    }
+    void SetSafeBrowsingExtendedReportingEnabled(bool enabled) override {
+      test_->safe_browsing_extended_reporting_enabled_ = enabled;
+    }
+    void SetSearchSuggestEnabled(bool enabled) override {
+      test_->search_suggest_enabled_ = enabled;
+    }
+
+   private:
+    UnifiedConsentServiceTest* test_;
+  };
+
   // testing::Test:
   void SetUp() override {
     pref_service_.registry()->RegisterBooleanPref(
@@ -63,28 +93,8 @@ class UnifiedConsentServiceTest : public testing::Test,
 
   void CreateConsentService() {
     consent_service_ = std::make_unique<UnifiedConsentService>(
-        this, &pref_service_, identity_test_environment_.identity_manager(),
-        &sync_service_);
-  }
-
-  // UnifiedConsentServiceClient:
-  void SetAlternateErrorPagesEnabled(bool enabled) override {
-    alternate_error_pages_enabled_ = enabled;
-  }
-  void SetMetricsReportingEnabled(bool enabled) override {
-    metrics_reporting_enabled_ = enabled;
-  }
-  void SetNetworkPredictionEnabled(bool enabled) override {
-    network_predictions_enabled_ = enabled;
-  }
-  void SetSafeBrowsingEnabled(bool enabled) override {
-    safe_browsing_enabled_ = enabled;
-  }
-  void SetSafeBrowsingExtendedReportingEnabled(bool enabled) override {
-    safe_browsing_extended_reporting_enabled_ = enabled;
-  }
-  void SetSearchSuggestEnabled(bool enabled) override {
-    search_suggest_enabled_ = enabled;
+        std::make_unique<FakeUnifiedConsentServiceClient>(this), &pref_service_,
+        identity_test_environment_.identity_manager(), &sync_service_);
   }
 
  protected:
@@ -146,6 +156,10 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_SyncNotActive) {
   identity_test_environment_.SetPrimaryAccount("testaccount");
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_FALSE(sync_service_.IsSyncingEverything());
+  syncer::SyncPrefs sync_prefs(&pref_service_);
+  sync_prefs.SetKeepEverythingSynced(false);
+  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_FALSE(consent_service_->IsUnifiedConsentGiven());
 
   // Make sure sync is not active.
   sync_service_.SetEngineInitialized(false);

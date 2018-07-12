@@ -22,9 +22,11 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
+#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper_delegate_impl.h"
 #include "chrome/browser/ui/webui/signin/signin_utils_desktop.h"
+#include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
@@ -35,6 +37,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/unified_consent/unified_consent_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -376,12 +379,15 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
     LoginUIService::SyncConfirmationUIClosedResult result) {
   switch (result) {
     case LoginUIService::CONFIGURE_SYNC_FIRST:
+      EnableUnifiedConsentIfNeeded();
       delegate_->ShowSyncSettings();
       break;
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
       browser_sync::ProfileSyncService* sync_service = GetProfileSyncService();
-      if (sync_service)
+      if (sync_service) {
         sync_service->SetFirstSetupComplete();
+        EnableUnifiedConsentIfNeeded();
+      }
       break;
     }
     case LoginUIService::ABORT_SIGNIN:
@@ -401,4 +407,11 @@ void DiceTurnSyncOnHelper::AbortAndDelete() {
     token_service_->RevokeCredentials(account_info_.account_id);
   }
   delete this;
+}
+
+void DiceTurnSyncOnHelper::EnableUnifiedConsentIfNeeded() {
+  if (IsUnifiedConsentEnabled(profile_)) {
+    UnifiedConsentServiceFactory::GetForProfile(profile_)
+        ->SetUnifiedConsentGiven(true);
+  }
 }

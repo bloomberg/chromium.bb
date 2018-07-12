@@ -51,7 +51,7 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
     return nullptr;
 
   return new unified_consent::UnifiedConsentService(
-      new ChromeUnifiedConsentServiceClient(profile->GetPrefs()),
+      std::make_unique<ChromeUnifiedConsentServiceClient>(profile->GetPrefs()),
       profile->GetPrefs(), IdentityManagerFactory::GetForProfile(profile),
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile));
 }
