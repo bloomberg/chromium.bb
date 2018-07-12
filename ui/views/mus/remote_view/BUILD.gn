@@ -8,7 +8,7 @@ source_set("remote_view_host") {
     "remote_view_host.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//ui/aura",
     "//ui/views",

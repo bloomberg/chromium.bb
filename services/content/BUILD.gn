@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//services/content/public/features.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
 source_set("impl") {
@@ -26,7 +27,9 @@ source_set("impl") {
 
   public_deps = [
     "//base",
+    "//services/content/public/cpp:buildflags",
     "//services/service_manager/public/cpp",
+    "//ui/gfx",
   ]
 
   deps = [
@@ -34,6 +37,14 @@ source_set("impl") {
     "//services/content/public/cpp",
     "//services/content/public/mojom",
   ]
+
+  if (enable_aura_content_view_embedding) {
+    deps += [
+      "//ui/aura",
+      "//ui/views",
+      "//ui/views/mus/remote_view:remote_view_provider",
+    ]
+  }
 }
 
 source_set("tests") {

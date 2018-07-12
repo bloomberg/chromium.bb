@@ -501,6 +501,10 @@
 #include "chrome/browser/offline_pages/offline_page_url_loader_request_interceptor.h"
 #endif
 
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE)
+#include "services/content/simple_browser/public/mojom/constants.mojom.h"
+#endif
+
 using base::FileDescriptor;
 using content::BrowserThread;
 using content::BrowserURLHandler;
@@ -3665,6 +3669,11 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 
 #if defined(OS_CHROMEOS)
   ash_service_registry::RegisterOutOfProcessServices(services);
+#endif
+
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE)
+  (*services)[simple_browser::mojom::kServiceName] = base::BindRepeating(
+      []() -> base::string16 { return base::ASCIIToUTF16("Simple Browser"); });
 #endif
 }
 

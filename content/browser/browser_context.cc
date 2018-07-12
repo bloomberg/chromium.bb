@@ -398,6 +398,12 @@ void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
     return;
   browser_context->was_notify_will_be_destroyed_called_ = true;
 
+  // Subclasses of BrowserContext may expect there to be no more
+  // RenderProcessHosts using them by the time this function returns. We
+  // therefore explicitly tear down embedded Content Service instances now to
+  // ensure that all their WebContents (and therefore RPHs) are torn down too.
+  browser_context->RemoveUserData(kContentServiceDelegateKey);
+
   // Service Workers must shutdown before the browser context is destroyed,
   // since they keep render process hosts alive and the codebase assumes that
   // render process hosts die before their profile (browser context) dies.
