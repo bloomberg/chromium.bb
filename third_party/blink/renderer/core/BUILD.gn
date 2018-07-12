@@ -349,6 +349,7 @@ generate_event_interfaces("core_event_interfaces") {
     "events/mouse_event.idl",
     "events/mutation_event.idl",
     "events/page_transition_event.idl",
+    "events/picture_in_picture_control_event.idl",
     "events/pointer_event.idl",
     "events/pop_state_event.idl",
     "events/progress_event.idl",

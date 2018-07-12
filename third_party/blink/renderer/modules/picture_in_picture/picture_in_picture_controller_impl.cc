@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/picture_in_picture_control_event.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
@@ -168,9 +169,14 @@ void PictureInPictureControllerImpl::OnPictureInPictureControlClicked() {
   if (!GetSupplementable()->IsActive())
     return;
 
-  if (picture_in_picture_element_) {
+  // TODO(crbug/856251): Allow for different strings to be passed in here.
+  // Current string is a placeholder.
+  if (RuntimeEnabledFeatures::PictureInPictureControlEnabled() &&
+      picture_in_picture_element_) {
     picture_in_picture_element_->DispatchEvent(
-        Event::CreateBubble(EventTypeNames::pictureinpicturecontrolclick));
+        PictureInPictureControlEvent::Create(
+            EventTypeNames::pictureinpicturecontrolclick,
+            "placeholder_event_name"));
   }
 }
 

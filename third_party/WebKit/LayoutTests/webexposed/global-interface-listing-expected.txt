@@ -5207,6 +5207,11 @@ interface PhotoCapabilities
     getter imageWidth
     getter redEyeReduction
     method constructor
+interface PictureInPictureControlEvent : Event
+    attribute @@toStringTag
+    getter id
+    method constructor
+    setter id
 interface PictureInPictureWindow : EventTarget
     attribute @@toStringTag
     getter height
