@@ -25,31 +25,14 @@ AssistantController::AssistantController()
       assistant_notification_controller_(
           std::make_unique<AssistantNotificationController>(this)),
       assistant_screen_context_controller_(
-          std::make_unique<AssistantScreenContextController>()),
+          std::make_unique<AssistantScreenContextController>(this)),
       assistant_ui_controller_(std::make_unique<AssistantUiController>(this)),
       weak_factory_(this) {
-  // Note that the sub-controllers have a circular dependency.
-  // TODO(dmblack): Remove this circular dependency.
-  assistant_interaction_controller_->SetAssistantUiController(
-      assistant_ui_controller_.get());
-  assistant_screen_context_controller_->SetAssistantInteractionController(
-      assistant_interaction_controller_.get());
-  assistant_screen_context_controller_->SetAssistantUiController(
-      assistant_ui_controller_.get());
-  assistant_ui_controller_->SetAssistantInteractionController(
-      assistant_interaction_controller_.get());
-  assistant_ui_controller_->SetAssistantScreenContextController(
-      assistant_screen_context_controller_.get());
+  NotifyConstructed();
 }
 
 AssistantController::~AssistantController() {
-  // Explicitly clean up the circular dependency in the sub-controllers.
-  assistant_interaction_controller_->SetAssistantUiController(nullptr);
-  assistant_screen_context_controller_->SetAssistantInteractionController(
-      nullptr);
-  assistant_screen_context_controller_->SetAssistantUiController(nullptr);
-  assistant_ui_controller_->SetAssistantInteractionController(nullptr);
-  assistant_ui_controller_->SetAssistantScreenContextController(nullptr);
+  NotifyDestroying();
 }
 
 void AssistantController::BindRequest(
@@ -166,13 +149,30 @@ void AssistantController::OnOpenUrlFromTab(const GURL& url) {
 
 void AssistantController::OpenUrl(const GURL& url) {
   if (assistant::util::IsDeepLinkUrl(url)) {
-    for (AssistantControllerObserver& observer : observers_)
-      observer.OnDeepLinkReceived(url);
+    NotifyDeepLinkReceived(url);
     return;
   }
 
   Shell::Get()->new_window_controller()->NewTabWithUrl(url);
+  NotifyUrlOpened(url);
+}
 
+void AssistantController::NotifyConstructed() {
+  for (AssistantControllerObserver& observer : observers_)
+    observer.OnAssistantControllerConstructed();
+}
+
+void AssistantController::NotifyDestroying() {
+  for (AssistantControllerObserver& observer : observers_)
+    observer.OnAssistantControllerDestroying();
+}
+
+void AssistantController::NotifyDeepLinkReceived(const GURL& deep_link) {
+  for (AssistantControllerObserver& observer : observers_)
+    observer.OnDeepLinkReceived(deep_link);
+}
+
+void AssistantController::NotifyUrlOpened(const GURL& url) {
   for (AssistantControllerObserver& observer : observers_)
     observer.OnUrlOpened(url);
 }

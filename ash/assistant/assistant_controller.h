@@ -114,6 +114,11 @@ class ASH_EXPORT AssistantController
   base::WeakPtr<AssistantController> GetWeakPtr();
 
  private:
+  void NotifyConstructed();
+  void NotifyDestroying();
+  void NotifyDeepLinkReceived(const GURL& deep_link);
+  void NotifyUrlOpened(const GURL& url);
+
   // The observer list should be initialized early so that sub-controllers may
   // register as observers during their construction.
   base::ObserverList<AssistantControllerObserver> observers_;
