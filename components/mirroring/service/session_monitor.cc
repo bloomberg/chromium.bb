@@ -105,25 +105,27 @@ SessionMonitor::SessionMonitor(
     int max_retention_bytes,
     const net::IPAddress& receiver_address,
     base::Value session_tags,
-    network::mojom::URLLoaderFactoryPtr loader_factory,
-    std::unique_ptr<WifiStatusMonitor> wifi_status_monitor)
+    network::mojom::URLLoaderFactoryPtr loader_factory)
     : max_retention_bytes_(max_retention_bytes),
       receiver_address_(receiver_address),
       session_tags_(std::move(session_tags)),
       url_loader_factory_(std::move(loader_factory)),
-      wifi_status_monitor_(std::move(wifi_status_monitor)),
       stored_snapshots_bytes_(0),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  QueryReceiverSetupInfo();
+}
 
 SessionMonitor::~SessionMonitor() {}
 
 void SessionMonitor::StartStreamingSession(
     scoped_refptr<media::cast::CastEnvironment> cast_environment,
+    std::unique_ptr<WifiStatusMonitor> wifi_status_monitor,
     SessionType session_type,
     bool is_remoting) {
   DCHECK(!event_subscribers_);
   DCHECK(!snapshot_timer_.IsRunning());
 
+  wifi_status_monitor_ = std::move(wifi_status_monitor);
   std::string session_activity =
       session_type == AUDIO_AND_VIDEO
           ? "audio+video"
@@ -156,6 +158,7 @@ void SessionMonitor::StopStreamingSession() {
     TakeSnapshot();  // Final snapshot of this streaming session.
   }
   event_subscribers_.reset();
+  wifi_status_monitor_.reset();
 }
 
 void SessionMonitor::OnStreamingError(SessionError error) {
@@ -303,6 +306,12 @@ void SessionMonitor::TakeSnapshot() {
   }
   snapshots_.emplace_back(std::make_pair(events, stats_string));
   stored_snapshots_bytes_ = snapshots_bytes;
+}
+
+std::string SessionMonitor::GetReceiverBuildVersion() const {
+  std::string build_version;
+  GetString(session_tags_, "receiverVersion", &build_version);
+  return build_version;
 }
 
 std::string SessionMonitor::GetEventLogsAndReset(

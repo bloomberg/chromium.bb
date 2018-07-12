@@ -11,6 +11,7 @@
 #include "media/capture/mojom/video_capture.mojom.h"
 #include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
+#include "media/mojo/interfaces/remoting.mojom.h"
 #include "net/base/ip_address.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
@@ -100,11 +101,18 @@ class ResourceProvider {
 
   virtual void GetVideoCaptureHost(
       media::mojom::VideoCaptureHostRequest request) = 0;
+
   virtual void GetNetworkContext(
       network::mojom::NetworkContextRequest request) = 0;
+
   virtual void CreateAudioStream(AudioStreamCreatorClient* client,
                                  const media::AudioParameters& params,
                                  uint32_t total_segments) = 0;
+
+  virtual void ConnectToRemotingSource(
+      media::mojom::RemoterPtr remoter,
+      media::mojom::RemotingSourceRequest request) = 0;
+
   // TODO(xjz): Add interface for HW encoder profiles query and VEA create
   // support.
 };

@@ -92,8 +92,6 @@ class SessionMonitorTest : public CastMessageChannel, public ::testing::Test {
 
   void CreateSessionMonitor(int max_bytes, std::string* expected_settings) {
     EXPECT_CALL(*this, Send(::testing::_)).Times(::testing::AtLeast(1));
-    auto wifi_status_monitor =
-        std::make_unique<WifiStatusMonitor>(123, &message_dispatcher_);
     network::mojom::URLLoaderFactoryPtr url_loader_factory;
     auto test_url_loader_factory =
         std::make_unique<network::TestURLLoaderFactory>();
@@ -111,7 +109,7 @@ class SessionMonitorTest : public CastMessageChannel, public ::testing::Test {
     session_tags.SetKey("shouldCaptureVideo", base::Value(true));
     session_monitor_ = std::make_unique<SessionMonitor>(
         max_bytes, receiver_address_, std::move(session_tags),
-        std::move(url_loader_factory), std::move(wifi_status_monitor));
+        std::move(url_loader_factory));
   }
 
   // Generates and sends |num_of_responses| WiFi status.
@@ -148,9 +146,11 @@ class SessionMonitorTest : public CastMessageChannel, public ::testing::Test {
         scoped_task_environment_.GetMainThreadTaskRunner(),
         scoped_task_environment_.GetMainThreadTaskRunner());
     EXPECT_TRUE(session_monitor_);
-    session_monitor_->StartStreamingSession(cast_environment_,
-                                            SessionMonitor::AUDIO_AND_VIDEO,
-                                            false /* is_remoting */);
+    auto wifi_status_monitor =
+        std::make_unique<WifiStatusMonitor>(123, &message_dispatcher_);
+    session_monitor_->StartStreamingSession(
+        cast_environment_, std::move(wifi_status_monitor),
+        SessionMonitor::AUDIO_AND_VIDEO, false /* is_remoting */);
     scoped_task_environment_.RunUntilIdle();
   }
 
@@ -220,8 +220,8 @@ class SessionMonitorTest : public CastMessageChannel, public ::testing::Test {
 TEST_F(SessionMonitorTest, ProvidesExpectedTags) {
   std::string expected_settings;
   CreateSessionMonitor(kRetentionBytes, &expected_settings);
-  SendWifiStatus(34, 2000, 5);
   StartStreamingSession();
+  SendWifiStatus(34, 2000, 5);
   std::vector<int32_t> bundle_sizes({kRetentionBytes});
   std::vector<SessionMonitor::EventsAndStats> bundles =
       AssembleBundleAndVerify(bundle_sizes);
@@ -271,11 +271,11 @@ TEST_F(SessionMonitorTest, ConfigureMaxRetentionBytes) {
   // 2500 is an estimate number of bytes for a snapshot that includes tags and
   // five WiFi status records.
   CreateSessionMonitor(2500, nullptr);
+  StartStreamingSession();
   SendWifiStatus(34, 2000, 5);
-  StartStreamingSession();
   StopStreamingSession();
-  SendWifiStatus(54, 3000, 5);
   StartStreamingSession();
+  SendWifiStatus(54, 3000, 5);
   StopStreamingSession();
   std::vector<int32_t> bundle_sizes({kRetentionBytes});
   std::vector<SessionMonitor::EventsAndStats> bundles =
@@ -289,11 +289,11 @@ TEST_F(SessionMonitorTest, ConfigureMaxRetentionBytes) {
 
 TEST_F(SessionMonitorTest, AssembleBundlesWithVaryingSizes) {
   CreateSessionMonitor(kRetentionBytes, nullptr);
+  StartStreamingSession();
   SendWifiStatus(34, 2000, 5);
-  StartStreamingSession();
   StopStreamingSession();
-  SendWifiStatus(54, 3000, 5);
   StartStreamingSession();
+  SendWifiStatus(54, 3000, 5);
   StopStreamingSession();
   std::vector<int32_t> bundle_sizes({2500, kRetentionBytes});
   std::vector<SessionMonitor::EventsAndStats> bundles =

@@ -38,6 +38,8 @@ class MessageDispatcher final : public CastMessageChannel {
   // delivered to the supplied callback if the sequence number of the response
   // matches |sequence_number|. If the timeout period elapses, the callback will
   // be run once with an unknown type of |response|.
+  // Note: Calling RequestReply() before a previous reply was made will cancel
+  // the previous request and not run its response callback.
   void RequestReply(const CastMessage& message,
                     ResponseType response_type,
                     int32_t sequence_number,
