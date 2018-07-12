@@ -95,12 +95,12 @@ void InstallOriginTrialFeaturesForTesting(
       blink::ExecutionContext::From(script_state);
 
   if (type == &blink::V8OriginTrialsTest::wrapperTypeInfo) {
-    if (blink::OriginTrials::originTrialsSampleAPIEnabled(execution_context)) {
+    if (blink::OriginTrials::OriginTrialsSampleAPIEnabled(execution_context)) {
       blink::V8OriginTrialsTest::installOriginTrialsSampleAPI(
           script_state->GetIsolate(), script_state->World(),
           v8::Local<v8::Object>(), prototype_object, interface_object);
     }
-    if (blink::OriginTrials::originTrialsSampleAPIImpliedEnabled(
+    if (blink::OriginTrials::OriginTrialsSampleAPIImpliedEnabled(
             execution_context)) {
       blink::V8OriginTrialsTest::installOriginTrialsSampleAPIImplied(
           script_state->GetIsolate(), script_state->World(),

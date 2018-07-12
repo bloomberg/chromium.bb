@@ -58,7 +58,7 @@ void InstallOriginTrialFeaturesForCore(
   // TODO(iclelland): Extract this common code out of OriginTrialFeaturesForCore
   // and OriginTrialFeaturesForModules into a block.
   if (wrapper_type_info == &V8TestObject::wrapperTypeInfo) {
-    if (OriginTrials::featureNameEnabled(execution_context)) {
+    if (OriginTrials::FeatureNameEnabled(execution_context)) {
       V8TestObject::installFeatureName(
           isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
     }

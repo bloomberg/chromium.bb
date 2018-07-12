@@ -58,7 +58,7 @@ CanvasRenderingContext::CanvasRenderingContext(
     color_params_.SetOpacityMode(kOpaque);
   }
 
-  if (!OriginTrials::lowLatencyCanvasEnabled(host->GetTopExecutionContext()))
+  if (!OriginTrials::LowLatencyCanvasEnabled(host->GetTopExecutionContext()))
     creation_attributes_.low_latency = false;
 
   // Make m_creationAttributes reflect the effective colorSpace and pixelFormat

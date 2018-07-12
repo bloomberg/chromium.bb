@@ -416,14 +416,14 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
       audio_(audio),
       video_(video),
       should_disable_hardware_noise_suppression_(
-          OriginTrials::disableHardwareNoiseSuppressionEnabled(context)),
+          OriginTrials::DisableHardwareNoiseSuppressionEnabled(context)),
       controller_(controller),
       callbacks_(callbacks) {
   if (should_disable_hardware_noise_suppression_) {
     UseCounter::Count(context,
                       WebFeature::kUserMediaDisableHardwareNoiseSuppression);
   }
-  if (OriginTrials::experimentalHardwareEchoCancellationEnabled(context)) {
+  if (OriginTrials::ExperimentalHardwareEchoCancellationEnabled(context)) {
     UseCounter::Count(
         context,
         WebFeature::kUserMediaEnableExperimentalHardwareEchoCancellation);
