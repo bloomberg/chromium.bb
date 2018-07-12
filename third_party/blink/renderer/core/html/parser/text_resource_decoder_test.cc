@@ -44,4 +44,26 @@ TEST(TextResourceDecoderTest, UTF16Pieces) {
   EXPECT_EQ("foo", decoded);
 }
 
+TEST(TextResourceDecoderTest, ContentSniffingStopsAfterSuccess) {
+  std::unique_ptr<TextResourceDecoder> decoder = TextResourceDecoder::Create(
+      TextResourceDecoderOptions::CreateWithAutoDetection(
+          TextResourceDecoderOptions::kPlainTextContent, WTF::UTF8Encoding(),
+          WTF::UTF8Encoding(), KURL("")));
+
+  std::string utf8_bytes =
+      "tnegirjji gosa gii beare s\xC3\xA1htt\xC3\xA1 \xC4\x8D\xC3"
+      "\xA1llit artihkkaliid. Maid don s\xC3\xA1ht\xC3\xA1t dievasmah";
+
+  std::string eucjp_bytes =
+      "<TITLE>"
+      "\xA5\xD1\xA5\xEF\xA1\xBC\xA5\xC1\xA5\xE3\xA1\xBC\xA5\xC8\xA1\xC3\xC5\xEA"
+      "\xBB\xF1\xBE\xF0\xCA\xF3\xA4\xCE\xA5\xD5\xA5\xA3\xA5\xB9\xA5\xB3</"
+      "TITLE>";
+
+  decoder->Decode(utf8_bytes.c_str(), utf8_bytes.length());
+  EXPECT_EQ(WTF::UTF8Encoding(), decoder->Encoding());
+  decoder->Decode(eucjp_bytes.c_str(), eucjp_bytes.length());
+  EXPECT_EQ(WTF::UTF8Encoding(), decoder->Encoding());
+}
+
 }  // namespace blink

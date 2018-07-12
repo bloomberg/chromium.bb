@@ -144,4 +144,10 @@ const TextEncoding& WindowsLatin1Encoding() {
   return global_windows_latin1_encoding;
 }
 
+const TextEncoding& UnknownEncoding() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, global_unknown_encoding,
+                                  ("Unknown"));
+  return global_unknown_encoding;
+}
+
 }  // namespace WTF
