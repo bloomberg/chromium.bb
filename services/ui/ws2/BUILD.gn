@@ -165,6 +165,7 @@ source_set("tests") {
     "focus_handler_unittest.cc",
     "screen_provider_unittest.cc",
     "user_activity_monitor_unittest.cc",
+    "window_delegate_impl_unittest.cc",
     "window_service_unittest.cc",
     "window_tree_client_unittest.cc",
     "window_tree_unittest.cc",
