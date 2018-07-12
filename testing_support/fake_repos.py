@@ -382,8 +382,10 @@ deps_os = {
 }""" % {
             'git_base': self.git_base,
             # See self.__init__() for the format. Grab's the hash of the first
-            # commit in repo_3.
-            'hash3': self.git_hashes['repo_3'][1][0]
+            # commit in repo_2. Only keep the first 7 character because of:
+            # TODO(maruel): http://crosbug.com/3591 We need to strip the hash..
+            # duh.
+            'hash3': self.git_hashes['repo_3'][1][0][:7]
         },
         'origin': 'git/repo_1@1\n',
     })
@@ -444,8 +446,9 @@ hooks = [
 """ % {
         'git_base': self.git_base,
         # See self.__init__() for the format. Grab's the hash of the first
-        # commit in repo_2.
-        'hash': self.git_hashes['repo_2'][1][0]
+        # commit in repo_2. Only keep the first 7 character because of:
+        # TODO(maruel): http://crosbug.com/3591 We need to strip the hash.. duh.
+        'hash': self.git_hashes['repo_2'][1][0][:7]
       },
       'origin': 'git/repo_1@2\n',
     })
@@ -468,8 +471,8 @@ pre_deps_hooks = [
 ]
 """ % {
          'git_base': self.git_base,
-         'hash1': self.git_hashes['repo_1'][2][0],
-         'hash2': self.git_hashes['repo_2'][1][0],
+         'hash1': self.git_hashes['repo_1'][2][0][:7],
+         'hash2': self.git_hashes['repo_2'][1][0][:7],
       },
     'origin': 'git/repo_5@2\n',
     })
@@ -493,8 +496,8 @@ pre_deps_hooks = [
 ]
 """ % {
          'git_base': self.git_base,
-         'hash1': self.git_hashes['repo_1'][2][0],
-         'hash2': self.git_hashes['repo_2'][1][0],
+         'hash1': self.git_hashes['repo_1'][2][0][:7],
+         'hash2': self.git_hashes['repo_2'][1][0][:7],
       },
     'origin': 'git/repo_5@3\n',
     })
@@ -591,7 +594,7 @@ recursedeps = [
   'src/repo8',
 ]""" % {
         'git_base': self.git_base,
-        'hash': self.git_hashes['repo_2'][1][0]
+        'hash': self.git_hashes['repo_2'][1][0][:7]
       },
       'origin': 'git/repo_6@1\n',
     })
@@ -635,7 +638,7 @@ deps_os ={
 vars = {
   'str_var': 'xyz',
 }
-gclient_gn_args_file = 'src/repo9/gclient.args'
+gclient_gn_args_file = 'src/repo2/gclient.args'
 gclient_gn_args = [
   'str_var',
 ]

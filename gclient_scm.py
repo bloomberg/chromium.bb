@@ -303,12 +303,12 @@ class GitWrapper(SCMWrapper):
         except OSError:
           pass
 
-  def _FetchAndReset(self, ref, remote_ref, revision, file_list, options):
+  def _FetchAndReset(self, revision, file_list, options):
     """Equivalent to git fetch; git reset."""
-    self._UpdateBranchHeads(options, ref, remote_ref, fetch=False)
+    self._UpdateBranchHeads(options, fetch=False)
 
     self._Fetch(options, prune=True, quiet=options.verbose)
-    self._Scrub(revision or remote_ref, options)
+    self._Scrub(revision, options)
     if file_list is not None:
       files = self._Capture(
           ['-c', 'core.quotePath=false', 'ls-files']).splitlines()
@@ -384,12 +384,11 @@ class GitWrapper(SCMWrapper):
 
     self._CheckMinVersion("1.6.6")
 
-    # If a dependency is not pinned, track refs/heads/master by default.
-    default_rev = 'refs/heads/master'
+    # If a dependency is not pinned, track the default remote branch.
+    default_rev = 'refs/remotes/%s/master' % self.remote
     url, deps_revision = gclient_utils.SplitUrlRevision(self.url)
     revision = deps_revision
     managed = True
-
     if options.revision:
       # Override the revision number.
       revision = str(options.revision)
@@ -411,37 +410,20 @@ class GitWrapper(SCMWrapper):
       verbose = ['--verbose']
       printed_path = True
 
-    ref = remote_ref = None
-    # Support the 'branch:revision' syntax.
-    if ':' in revision:
-      ref, revision = revision.split(':')
-      if not gclient_utils.IsFullGitSha(revision):
-        raise gclient_utils.Error(
-            'Invalid format: %s:%s. revision must be a git hash.' % (
-                remote_ref, revision))
-    elif not gclient_utils.IsFullGitSha(revision):
-      ref = revision
-      revision = None
+    remote_ref = scm.GIT.RefToRemoteRef(revision, self.remote)
+    if remote_ref:
+      # Rewrite remote refs to their local equivalents.
+      revision = ''.join(remote_ref)
+      rev_type = "branch"
+    elif revision.startswith('refs/'):
+      # Local branch? We probably don't want to support, since DEPS should
+      # always specify branches as they are in the upstream repo.
+      rev_type = "branch"
+    else:
+      # hash is also a tag, only make a distinction at checkout
+      rev_type = "hash"
 
-    if ref:
-      if ref.startswith('origin/'):
-        ref = ref[len('origin/'):]
-      if not ref.startswith('refs/'):
-        ref = 'refs/heads/' + ref
-      remote_ref = scm.GIT.RefToRemoteRef(ref, self.remote)
-      if remote_ref:
-        # If there is a corresponding remote ref for |ref|,  RefToRemoteRef
-        # returns a tuple, so we need to join it to get the actual remote ref.
-        # E.g. ('refs/remotes/origin/', 'branch-name')
-        #         -> 'refs/remotes/origin/branch-name
-        remote_ref = ''.join(remote_ref)
-      else:
-        # Otherwise, it returns None, so we use |ref|.
-        remote_ref = ref
-
-    # If we're using a mirror, make sure it contains the ref we are asked to
-    # sync.
-    mirror = self._GetMirror(url, options, ref)
+    mirror = self._GetMirror(url, options)
     if mirror:
       url = mirror.mirror_path
 
@@ -463,12 +445,12 @@ class GitWrapper(SCMWrapper):
         (os.path.isdir(self.checkout_path) and
          not os.path.exists(os.path.join(self.checkout_path, '.git')))):
       if mirror:
-        self._UpdateMirrorIfNotContains(mirror, options, revision)
+        self._UpdateMirrorIfNotContains(mirror, options, rev_type, revision)
       try:
-        self._Clone(ref, remote_ref, revision, url, options)
+        self._Clone(revision, url, options)
       except subprocess2.CalledProcessError:
         self._DeleteOrMove(options.force)
-        self._Clone(ref, remote_ref, revision, url, options)
+        self._Clone(revision, url, options)
       if file_list is not None:
         files = self._Capture(
           ['-c', 'core.quotePath=false', 'ls-files']).splitlines()
@@ -480,14 +462,14 @@ class GitWrapper(SCMWrapper):
       return self._Capture(['rev-parse', '--verify', 'HEAD'])
 
     if not managed:
-      self._UpdateBranchHeads(options, ref, remote_ref, fetch=False)
+      self._UpdateBranchHeads(options, fetch=False)
       self.Print('________ unmanaged solution; skipping %s' % self.relpath)
       return self._Capture(['rev-parse', '--verify', 'HEAD'])
 
     self._maybe_break_locks(options)
 
     if mirror:
-      self._UpdateMirrorIfNotContains(mirror, options, revision)
+      self._UpdateMirrorIfNotContains(mirror, options, rev_type, revision)
 
     # See if the url has changed (the unittests use git://foo for the url, let
     # that through).
@@ -514,14 +496,12 @@ class GitWrapper(SCMWrapper):
             self.checkout_path, '.git', 'objects', 'info', 'alternates'),
             'w') as fh:
           fh.write(os.path.join(url, 'objects'))
-      self._EnsureValidHeadObjectOrCheckout(ref, remote_ref, revision, options,
-                                            url)
-      self._FetchAndReset(ref, remote_ref, revision, file_list, options)
+      self._EnsureValidHeadObjectOrCheckout(revision, options, url)
+      self._FetchAndReset(revision, file_list, options)
 
       return_early = True
     else:
-      self._EnsureValidHeadObjectOrCheckout(ref, remote_ref, revision, options,
-                                            url)
+      self._EnsureValidHeadObjectOrCheckout(revision, options, url)
 
     if return_early:
       return self._Capture(['rev-parse', '--verify', 'HEAD'])
@@ -567,17 +547,16 @@ class GitWrapper(SCMWrapper):
       else:
         raise gclient_utils.Error('Invalid Upstream: %s' % upstream_branch)
 
-    if revision and not scm.GIT.IsValidRevision(
-        self.checkout_path, revision, sha_only=True):
+    if not scm.GIT.IsValidRevision(self.checkout_path, revision, sha_only=True):
       # Update the remotes first so we have all the refs.
       remote_output = scm.GIT.Capture(['remote'] + verbose + ['update'],
               cwd=self.checkout_path)
       if verbose:
         self.Print(remote_output)
 
-    self._UpdateBranchHeads(options, ref, remote_ref, fetch=True)
+    self._UpdateBranchHeads(options, fetch=True)
 
-    revision = self._AutoFetchRevision(options, revision)
+    revision = self._AutoFetchRef(options, revision)
 
     # This is a big hammer, debatable if it should even be here...
     if options.force or options.reset:
@@ -594,8 +573,8 @@ class GitWrapper(SCMWrapper):
       # to actually "Clean" the checkout; that commit is uncheckoutable on this
       # system. The best we can do is carry forward to the checkout step.
       if not (options.force or options.reset):
-        self._CheckClean(revision or ref)
-      self._CheckDetachedHead(revision or ref, options)
+        self._CheckClean(revision)
+      self._CheckDetachedHead(revision, options)
       if self._Capture(['rev-list', '-n', '1', 'HEAD']) == revision:
         self.Print('Up-to-date; skipping checkout.')
       else:
@@ -603,35 +582,43 @@ class GitWrapper(SCMWrapper):
         # it only when nuclear options are enabled.
         self._Checkout(
             options,
-            revision or ref,
+            revision,
             force=(options.force and options.delete_unversioned_trees),
             quiet=True,
         )
       if not printed_path:
-        self.Print('_____ %s at %s' % (self.relpath, revision or ref),
-                   timestamp=False)
+        self.Print('_____ %s at %s' % (self.relpath, revision), timestamp=False)
     elif current_type == 'hash':
       # case 1
       # Can't find a merge-base since we don't know our upstream. That makes
       # this command VERY likely to produce a rebase failure. For now we
       # assume origin is our upstream since that's what the old behavior was.
-      upstream_branch = revision or ref or self.remote
+      upstream_branch = self.remote
+      if options.revision or deps_revision:
+        upstream_branch = revision
       self._AttemptRebase(upstream_branch, file_list, options,
                           printed_path=printed_path, merge=options.merge)
       printed_path = True
-    elif remote_ref and remote_ref != upstream_branch:
+    elif rev_type == 'hash':
+      # case 2
+      self._AttemptRebase(upstream_branch, file_list, options,
+                          newbase=revision, printed_path=printed_path,
+                          merge=options.merge)
+      printed_path = True
+    elif remote_ref and ''.join(remote_ref) != upstream_branch:
       # case 4
+      new_base = ''.join(remote_ref)
       if not printed_path:
-        self.Print('_____ %s at %s' % (self.relpath, ref), timestamp=False)
+        self.Print('_____ %s at %s' % (self.relpath, revision), timestamp=False)
       switch_error = ("Could not switch upstream branch from %s to %s\n"
-                     % (upstream_branch, ref) +
+                     % (upstream_branch, new_base) +
                      "Please use --force or merge or rebase manually:\n" +
-                     "cd %s; git rebase %s\n" % (self.checkout_path, ref) +
-                     "OR git checkout -b <some new branch> %s" % ref)
+                     "cd %s; git rebase %s\n" % (self.checkout_path, new_base) +
+                     "OR git checkout -b <some new branch> %s" % new_base)
       force_switch = False
       if options.force:
         try:
-          self._CheckClean(ref)
+          self._CheckClean(revision)
           # case 4a
           force_switch = True
         except gclient_utils.Error as e:
@@ -642,25 +629,15 @@ class GitWrapper(SCMWrapper):
             switch_error = '%s\n%s' % (e.message, switch_error)
       if force_switch:
         self.Print("Switching upstream branch from %s to %s" %
-                   (upstream_branch, ref))
-        switch_branch = 'gclient_' + re.sub('[^A-Za-z0-9]', '_', ref)
-        self._Capture(['branch', '-f', switch_branch, ref])
+                   (upstream_branch, new_base))
+        switch_branch = 'gclient_' + remote_ref[1]
+        self._Capture(['branch', '-f', switch_branch, new_base])
         self._Checkout(options, switch_branch, force=True, quiet=True)
-        if revision:
-          self._Scrub(revision, options)
       else:
         # case 4c
         raise gclient_utils.Error(switch_error)
-    elif revision:
-      # case 2
-      self._AttemptRebase(upstream_branch, file_list, options,
-                          newbase=revision, printed_path=printed_path,
-                          merge=options.merge)
-      printed_path = True
     else:
       # case 3 - the default case
-      # The same ref as |upstream_branch| was specified, and no revision was
-      # used.
       rebase_files = self._GetDiffFilenames(upstream_branch)
       if verbose:
         self.Print('Trying fast-forward merge to branch : %s' % upstream_branch)
@@ -676,7 +653,7 @@ class GitWrapper(SCMWrapper):
         rebase_files = []
         if re.match('fatal: Not possible to fast-forward, aborting.', e.stderr):
           if not printed_path:
-            self.Print('_____ %s at %s' % (self.relpath, ref),
+            self.Print('_____ %s at %s' % (self.relpath, revision),
                        timestamp=False)
             printed_path = True
           while True:
@@ -709,7 +686,7 @@ class GitWrapper(SCMWrapper):
                       "changes or stash them before you can merge.\n",
                       e.stderr):
           if not printed_path:
-            self.Print('_____ %s at %s' % (self.relpath, ref),
+            self.Print('_____ %s at %s' % (self.relpath, revision),
                        timestamp=False)
             printed_path = True
           raise gclient_utils.Error(e.stderr)
@@ -858,16 +835,13 @@ class GitWrapper(SCMWrapper):
     return os.path.join(self._root_dir,
                         'old_' + self.relpath.replace(os.sep, '_')) + '.git'
 
-  def _GetMirror(self, url, options, ref=None):
+  def _GetMirror(self, url, options):
     """Get a git_cache.Mirror object for the argument url."""
     if not self.cache_dir:
       return None
-    # Don't try to fetch local refs in the mirror.
-    if ref and ref.startswith('refs/remotes'):
-      ref = None
     mirror_kwargs = {
         'print_func': self.filter,
-        'refs': [ref] if ref else [],
+        'refs': []
     }
     if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
       mirror_kwargs['refs'].append('refs/branch-heads/*')
@@ -875,11 +849,11 @@ class GitWrapper(SCMWrapper):
       mirror_kwargs['refs'].append('refs/tags/*')
     return git_cache.Mirror(url, **mirror_kwargs)
 
-  def _UpdateMirrorIfNotContains(self, mirror, options, revision):
+  def _UpdateMirrorIfNotContains(self, mirror, options, rev_type, revision):
     """Update a git mirror by fetching the latest commits from the remote,
     unless mirror already contains revision whose type is sha1 hash.
     """
-    if revision and mirror.contains_revision(revision):
+    if rev_type == 'hash' and mirror.contains_revision(revision):
       if options.verbose:
         self.Print('skipping mirror update, it has rev=%s already' % revision,
                    timestamp=False)
@@ -900,7 +874,7 @@ class GitWrapper(SCMWrapper):
                     lock_timeout=getattr(options, 'lock_timeout', 0))
     mirror.unlock()
 
-  def _Clone(self, ref, remote_ref, revision, url, options):
+  def _Clone(self, revision, url, options):
     """Clone a git repository from the given URL.
 
     Once we've cloned the repo, we checkout a working branch if the specified
@@ -926,7 +900,7 @@ class GitWrapper(SCMWrapper):
 
     template_dir = None
     if hasattr(options, 'no_history') and options.no_history:
-      if revision and gclient_utils.IsGitSha(revision):
+      if gclient_utils.IsGitSha(revision):
         # In the case of a subproject, the pinned sha is not necessarily the
         # head of the remote branch (so we can't just use --depth=N). Instead,
         # we tell git to fetch all the remote objects from SHA..HEAD by means of
@@ -967,18 +941,17 @@ class GitWrapper(SCMWrapper):
       gclient_utils.rmtree(tmp_dir)
       if template_dir:
         gclient_utils.rmtree(template_dir)
-    self._UpdateBranchHeads(options, ref, remote_ref, fetch=True)
-    if revision:
-      revision = self._AutoFetchRevision(options, revision)
-    self._Checkout(options, revision or remote_ref, quiet=True)
+    self._UpdateBranchHeads(options, fetch=True)
+    revision = self._AutoFetchRef(options, revision)
+    remote_ref = scm.GIT.RefToRemoteRef(revision, self.remote)
+    self._Checkout(options, ''.join(remote_ref or revision), quiet=True)
     if self._GetCurrentBranch() is None:
       # Squelch git's very verbose detached HEAD warning and use our own
       self.Print(
         ('Checked out %s to a detached HEAD. Before making any commits\n'
          'in this repo, you should use \'git checkout <branch>\' to switch to\n'
          'an existing branch or use \'git checkout %s -b <branch>\' to\n'
-         'create a new branch for your work.') % (
-             revision or remote_ref, self.remote))
+         'create a new branch for your work.') % (revision, self.remote))
 
   def _AskForData(self, prompt, options):
     if options.jobs > 1:
@@ -1078,8 +1051,7 @@ class GitWrapper(SCMWrapper):
       raise gclient_utils.Error('git version %s < minimum required %s' %
                                 (current_version, min_version))
 
-  def _EnsureValidHeadObjectOrCheckout(self, ref, remote_ref, revision, options,
-                                       url):
+  def _EnsureValidHeadObjectOrCheckout(self, revision, options, url):
     # Special case handling if all 3 conditions are met:
     #   * the mirros have recently changed, but deps destination remains same,
     #   * the git histories of mirrors are conflicting.
@@ -1098,7 +1070,7 @@ class GitWrapper(SCMWrapper):
           '%s' % e)
         )
         self._DeleteOrMove(options.force)
-        self._Clone(ref, remote_ref, revision, url, options)
+        self._Clone(revision, url, options)
       else:
         raise
 
@@ -1198,7 +1170,6 @@ class GitWrapper(SCMWrapper):
     if quiet:
       checkout_args.append('--quiet')
     checkout_args.append(ref)
-    checkout_args.append('--')
     return self._Capture(checkout_args)
 
   def _Fetch(self, options, remote=None, prune=False, quiet=False,
@@ -1233,7 +1204,7 @@ class GitWrapper(SCMWrapper):
     # Return the revision that was fetched; this will be stored in 'FETCH_HEAD'
     return self._Capture(['rev-parse', '--verify', 'FETCH_HEAD'])
 
-  def _UpdateBranchHeads(self, options, ref, remote_ref, fetch=False):
+  def _UpdateBranchHeads(self, options, fetch=False):
     """Adds, and optionally fetches, "branch-heads" and "tags" refspecs
     if requested."""
     need_fetch = fetch
@@ -1249,20 +1220,16 @@ class GitWrapper(SCMWrapper):
                     '^\\+refs/tags/\\*:.*$']
       self._Run(config_cmd, options)
       need_fetch = True
-    # Make sure we fetch the ref we're asked to sync, if any.
-    if ref and not ref.startswith(('refs/remotes',)):
-      config_cmd = ['config', 'remote.%s.fetch' % self.remote,
-                    '+%s:%s' % (ref, remote_ref), '--add']
-      self._Run(config_cmd, options)
-      need_fetch = True
     if fetch and need_fetch:
       self._Fetch(options, prune=options.force)
 
-  def _AutoFetchRevision(self, options, revision):
+  def _AutoFetchRef(self, options, revision):
     """Attempts to fetch |revision| if not available in local repo.
 
     Returns possibly updated revision."""
-    if revision and not scm.GIT.IsValidRevision(self.checkout_path, revision):
+    try:
+      self._Capture(['rev-parse', revision])
+    except subprocess2.CalledProcessError:
       self._Fetch(options, refspec=revision)
       revision = self._Capture(['rev-parse', 'FETCH_HEAD'])
     return revision
