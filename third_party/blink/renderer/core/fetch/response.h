@@ -113,10 +113,7 @@ class CORE_EXPORT Response final : public Body {
   Response(ExecutionContext*, FetchResponseData*);
   Response(ExecutionContext*, FetchResponseData*, Headers*);
 
-  void InstallBody();
-  void RefreshBody(ScriptState*);
-
-  const Member<FetchResponseData> response_;
+  const TraceWrapperMember<FetchResponseData> response_;
   const Member<Headers> headers_;
   DISALLOW_COPY_AND_ASSIGN(Response);
 };
