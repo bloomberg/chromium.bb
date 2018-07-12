@@ -41,3 +41,11 @@ message ApplicationList {
   // The owner of the vm and container.
   string owner_id = 4;
 }
+
+// Used by the container to request that the host launches a new Terminal
+// application.
+message TerminalParams {
+  // Extra parameters to use when launching a terminal application that allow
+  // executing a command inside the terminal.
+  repeated string params = 1;
+}
