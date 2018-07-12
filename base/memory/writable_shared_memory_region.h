@@ -9,6 +9,7 @@
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 
 namespace base {
 
@@ -48,6 +49,11 @@ class BASE_EXPORT WritableSharedMemoryRegion {
   // Makes the region read-only. No new writable mappings of the region can be
   // created after this call. Returns an invalid region on failure.
   static ReadOnlySharedMemoryRegion ConvertToReadOnly(
+      WritableSharedMemoryRegion region);
+
+  // Makes the region unsafe. The region cannot be converted to read-only after
+  // this call. Returns an invalid region on failure.
+  static UnsafeSharedMemoryRegion ConvertToUnsafe(
       WritableSharedMemoryRegion region);
 
   // Default constructor initializes an invalid instance.
