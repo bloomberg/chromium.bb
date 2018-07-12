@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -181,6 +182,10 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
   if (!upload_save_card_callback_.is_null()) {
     base::string16 name_provided_by_user;
     if (!cardholder_name.empty()) {
+      // Log whether the name was changed by the user or simply accepted without
+      // edits.
+      AutofillMetrics::LogSaveCardCardholderNameWasEdited(
+          cardholder_name != base::UTF8ToUTF16(account_info_.full_name));
       // Trim the cardholder name provided by the user and send it in the
       // callback so it can be included in the final request.
       DCHECK(ShouldRequestNameFromUser());
