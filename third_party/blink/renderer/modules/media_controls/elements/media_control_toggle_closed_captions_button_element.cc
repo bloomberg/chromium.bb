@@ -10,8 +10,37 @@
 #include "third_party/blink/renderer/core/html/track/text_track_list.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/language.h"
 
 namespace blink {
+
+namespace {
+
+// The CSS class to use if we should use the closed captions icon.
+const char kClosedCaptionClass[] = "closed-captions";
+
+const char* kClosedCaptionLocales[] = {
+    // English (United States)
+    "en", "en-US",
+
+    // Spanish (Latin America and Caribbean)
+    "es-419",
+
+    // Portuguese (Brazil)
+    "pt-BR",
+};
+
+// Returns true if the default language should use the closed captions icon.
+bool UseClosedCaptionsIcon() {
+  for (auto*& locale : kClosedCaptionLocales) {
+    if (locale == DefaultLanguage())
+      return true;
+  }
+
+  return false;
+}
+
+}  // namespace
 
 MediaControlToggleClosedCaptionsButtonElement::
     MediaControlToggleClosedCaptionsButtonElement(
@@ -20,6 +49,7 @@ MediaControlToggleClosedCaptionsButtonElement::
   setType(InputTypeNames::button);
   SetShadowPseudoId(
       AtomicString("-webkit-media-controls-toggle-closed-captions-button"));
+  SetClass(kClosedCaptionClass, UseClosedCaptionsIcon());
 }
 
 bool MediaControlToggleClosedCaptionsButtonElement::

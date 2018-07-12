@@ -334,6 +334,10 @@ audio::-webkit-media-controls-toggle-closed-captions-button {
 }
 
 video::-webkit-media-controls-toggle-closed-captions-button {
+  background-image: -webkit-image-set(url(ic_subtitles.svg) 1x);
+}
+
+video::-webkit-media-controls-toggle-closed-captions-button.closed-captions {
   background-image: -webkit-image-set(url(ic_closed_caption.svg) 1x);
 }
 
