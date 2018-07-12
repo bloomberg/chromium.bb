@@ -332,6 +332,7 @@
 <translation id="3234666976984236645">Να εντοπίζεται πάντα σημαντικό περιεχόμενο σε αυτόν τον ιστότοπο</translation>
 <translation id="3254409185687681395">Προσθήκη αυτής της σελίδας στους σελιδοδείκτες</translation>
 <translation id="3270847123878663523">&amp;Αναίρεση αναδιάταξης</translation>
+<translation id="3280511504953918101">Αυτό το όνομα θα χρησιμοποιηθεί επίσης κατά τη δημιουργία του λογαριασμού πληρωμών σας στο Google.</translation>
 <translation id="3282497668470633863">Προσθήκη ονόματος στην κάρτα</translation>
 <translation id="3287510313208355388">Να γίνει λήψη όταν πραγματοποιηθεί σύνδεση</translation>
 <translation id="3293642807462928945">Μάθετε περισσότερα σχετικά με την πολιτική <ph name="POLICY_NAME" /></translation>
@@ -804,6 +805,7 @@
 <translation id="6831043979455480757">Μετάφραση</translation>
 <translation id="6839929833149231406">Περιοχή</translation>
 <translation id="6852204201400771460">Επανάληψη φόρτωσης εφαρμογής;</translation>
+<translation id="6865412394715372076">Δεν είναι δυνατή η επαλήθευση της κάρτας αυτήν τη στιγμή</translation>
 <translation id="6874604403660855544">&amp;Επανάληψη προσθήκης</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Το επίπεδο πολιτικής δεν υποστηρίζεται.</translation>
@@ -1051,6 +1053,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, απάντηση, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Η σύνδεσή σας με τον τομέα <ph name="DOMAIN" /> δεν είναι κρυπτογραφημένη.</translation>
 <translation id="8718314106902482036">Η πληρωμή δεν ολοκληρώθηκε</translation>
+<translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, πρόταση αναζήτησης</translation>
 <translation id="8725066075913043281">Προσπαθήστε ξανά</translation>
 <translation id="8728672262656704056">Πραγματοποιείτε ανώνυμη περιήγηση</translation>
 <translation id="8730621377337864115">Ολοκληρώθηκε</translation>

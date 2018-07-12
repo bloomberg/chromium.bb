@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">Quét mã QR</translation>
 <translation id="1580783302095112590">Thư đã được gửi.</translation>
 <translation id="1582732959743469162">Thao tác này sẽ ngừng tất cả hoạt động tải xuống đang diễn ra.</translation>
+<translation id="1605658421715042784">Sao chép hình ảnh</translation>
 <translation id="1612730193129642006">Hiển thị lưới tab</translation>
 <translation id="1644574205037202324">Lịch sử</translation>
 <translation id="1646446875146297738">Bật tính năng 'Không theo dõi' nghĩa là một yêu cầu sẽ đi kèm với lưu lượng duyệt web của bạn. Mọi ảnh hưởng đều phụ thuộc vào việc liệu trang web có phản hồi yêu cầu không và cách thức yêu cầu được diễn giải.
@@ -58,6 +59,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="1809939268435598390">Xóa thư mục</translation>
 <translation id="1813414402673211292">Xóa Dữ liệu Duyệt</translation>
 <translation id="1820259098641718022">Đã thêm vào Danh sách đọc</translation>
+<translation id="1821253160463689938">Sử dụng cookie để ghi nhớ tùy chọn của bạn, ngay cả khi bạn không truy cập vào các trang đó</translation>
 <translation id="1876721852596493031">Gửi dữ liệu sử dụng</translation>
 <translation id="1886928167269928266">Mọi thứ</translation>
 <translation id="1911619930368729126">Tải lên Google Drive</translation>
@@ -71,6 +73,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="209018056901015185">Yêu cầu trang web cho máy tính</translation>
 <translation id="2103075008456228677">Mở history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dấu trang đã được di chuyển</translation>
+<translation id="2120297377148151361">Hoạt động và tương tác</translation>
 <translation id="213900355088104901">Để duyệt web riêng tư, hãy mở tab ẩn danh</translation>
 <translation id="2149973817440762519">Chỉnh sửa dấu trang</translation>
 <translation id="2230173723195178503">Đã tải trang web</translation>
@@ -86,6 +89,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="2386793615875593361">Đã chọn 1 ảnh</translation>
 <translation id="2435457462613246316">Hiển thị mật khẩu</translation>
 <translation id="2481538920734869610">THÊM TÀI KHOẢN</translation>
+<translation id="2523184218357549926">Gửi cho Google URL của các trang bạn truy cập</translation>
 <translation id="2523363575747517183">Trang web này đang liên tục tìm cách mở một ứng dụng khác.</translation>
 <translation id="2529021024822217800">Mở tất cả</translation>
 <translation id="2572712655377361602">Chính sách thiết bị đã chặn quyền truy cập vào ảnh của bạn</translation>
@@ -115,6 +119,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="2898963176829412617">Thư mục mới…</translation>
 <translation id="2903493209154104877">Địa chỉ</translation>
 <translation id="2909437209446960244">Các tab gần đây</translation>
+<translation id="2916171785467530738">Tự động hoàn thành cụm từ tìm kiếm và URL</translation>
 <translation id="291754862089661335">Đặt mã QR hoặc mã vạch vào khung này</translation>
 <translation id="2921219216347069551">Ko thể chia sẻ trang</translation>
 <translation id="2923448633003185837">Dán và truy cập</translation>
@@ -219,10 +224,12 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="4860895144060829044">Gọi</translation>
 <translation id="4875622588773761625">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu của mình cho trang web này không?</translation>
 <translation id="4881695831933465202">Mở</translation>
+<translation id="4882831918239250449">Kiểm soát cách chúng tôi sử dụng lịch sử duyệt web của bạn để cá nhân hóa dịch vụ Tìm kiếm, quảng cáo và các dịch vụ khác của Google</translation>
 <translation id="4904877109095351937">Đánh dấu là đã đọc</translation>
 <translation id="4930268273022498155">Xóa dữ liệu hiện có. Bạn có thể truy xuất dữ liệu bằng cách chuyển về <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Rất tiếc, đã xảy ra sự cố khi chia sẻ mục của bạn.</translation>
 <translation id="4979397965658815378">Đăng nhập bằng Tài khoản Google để nhận dấu trang, mật khẩu, lịch sử và các cài đặt khác trên tất cả thiết bị của bạn</translation>
+<translation id="5004416275253351869">Kiểm soát hoạt động trên Google</translation>
 <translation id="5005498671520578047">Sao chép mật khẩu</translation>
 <translation id="5010803260590204777">Mở tab ẩn danh để duyệt web một cách riêng tư.</translation>
 <translation id="5011684439661633295">Xin chào <ph name="FULL_ACCOUNT_NAME" />!</translation>
@@ -249,6 +256,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5548760955356983418">Tính năng tiếp nối cho phép bạn bắt đầu duyệt web trên thiết bị này và sau đó dễ dàng tiếp tục trên máy Mac của mình. Trang web hiện đang mở sẽ xuất hiện trong thanh Dock trên máy Mac của bạn.
 
 Đồng thời, bạn phải bật tính năng tiếp nối trong phần Chung của cài đặt và thiết bị của bạn phải sử dụng cùng một tài khoản iCloud.</translation>
+<translation id="5554368826343982379">Đồng bộ hóa và cá nhân hóa</translation>
 <translation id="5556459405103347317">Tải lại</translation>
 <translation id="5619279135193775234">Thư</translation>
 <translation id="5626245204502895507">Không thể tải xuống tệp vào lúc này.</translation>
@@ -340,6 +348,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Các tab gần đây</translation>
 <translation id="7006788746334555276">Cài đặt nội dung</translation>
+<translation id="7017968314960951695">Sử dụng nội dung trên trang web bạn truy cập cũng như hoạt động và tương tác trên trình duyệt để cá nhân hóa</translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
 <translation id="7031882061095297553">Đồng bộ hóa với</translation>
 <translation id="7053983685419859001">Chặn</translation>
@@ -382,6 +391,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7769602470925380267">Chấp nhận và đăng xuất</translation>
 <translation id="7772032839648071052">Xác nhận cụm mật khẩu</translation>
 <translation id="780301667611848630">Không, cảm ơn</translation>
+<translation id="7830720446622801252">Dịch vụ không được cá nhân hóa</translation>
 <translation id="7856733331829174190">Không thể tải xuống</translation>
 <translation id="7859704718976024901">Lịch sử duyệt web</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -400,6 +410,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="8076014560081431679">Cài đặt trang web đã lưu sẽ không bị xóa và có thể phản ánh thói quen duyệt web của bạn. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Đóng tất cả các tab</translation>
 <translation id="8114753159095730575">Hiện đã có tệp tải xuống. Bạn có thể sử dụng các tùy chọn ở gần cuối màn hình.</translation>
+<translation id="8160722851663543621">Gửi nội dung tìm kiếm từ thanh địa chỉ và hộp tìm kiếm cũng như một số cookie đến công cụ tìm kiếm mặc định của bạn</translation>
 <translation id="8205564605687841303">Hủy</translation>
 <translation id="8225985093977202398">Tệp và hình ảnh được lưu vào bộ nhớ đệm</translation>
 <translation id="8261506727792406068">Xóa</translation>
@@ -410,6 +421,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="842017693807136194">Đăng nhập bằng</translation>
 <translation id="8428045167754449968">Thành phố/thị trấn</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
+<translation id="8438566539970814960">Cải thiện tính năng tìm kiếm và duyệt web</translation>
 <translation id="8458397775385147834">1 dấu trang đã bị xóa</translation>
 <translation id="8487700953926739672">Khả dụng ngoại tuyến</translation>
 <translation id="8503813439785031346">Tên người dùng</translation>

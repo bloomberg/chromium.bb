@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">I-scan ang QR Code</translation>
 <translation id="1580783302095112590">Naipadala na ang mail.</translation>
 <translation id="1582732959743469162">Ihihinto nito ang lahat ng progreso para sa iyong kasalukuyang pag-download.</translation>
+<translation id="1605658421715042784">Kopyahin ang Larawan</translation>
 <translation id="1612730193129642006">Ipakita ang Grid ng Tab</translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="1646446875146297738">Ang pag-enable sa ‘Huwag Subaybayan’ ay nangangahulugan na may isasamang kahilingan sa iyong trapiko sa pagba-browse. Ang anumang epekto ay nakadepende kung tumutugon man ang website sa kahilingan, at kung paano nabibigyan ng kahulugan ang kahilingan.
@@ -58,6 +59,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="1809939268435598390">I-delete ang Folder</translation>
 <translation id="1813414402673211292">I-clear Data sa Pag-browse</translation>
 <translation id="1820259098641718022">Idinagdag sa Listahan ng Mga Babasahin</translation>
+<translation id="1821253160463689938">Gumamit ng mga cookie para matandaan ang iyong mga kagustuhan, kahit na hindi mo binibisita ang mga page na iyon</translation>
 <translation id="1876721852596493031">Magpadala ng Data</translation>
 <translation id="1886928167269928266">Mula sa Umpisa</translation>
 <translation id="1911619930368729126">I-upload sa Google Drive</translation>
@@ -71,6 +73,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="209018056901015185">Hilingin ang Site sa Desktop</translation>
 <translation id="2103075008456228677">Buksan ang history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> (na) item ang inilipat</translation>
+<translation id="2120297377148151361">Aktibidad at mga pakikipag-ugnayan</translation>
 <translation id="213900355088104901">Upang mag-browse nang pribado, magbukas ng tab na incognito</translation>
 <translation id="2149973817440762519">I-edit ang Bookmark</translation>
 <translation id="2230173723195178503">Na-load na ang webpage</translation>
@@ -86,6 +89,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="2386793615875593361">1 ang napili</translation>
 <translation id="2435457462613246316">Ipakita ang password</translation>
 <translation id="2481538920734869610">MAGDAGDAG NG ACCOUNT</translation>
+<translation id="2523184218357549926">Ipinapadala sa Google ang mga URL ng mga page na binibisita mo</translation>
 <translation id="2523363575747517183">Paulit-ulit na sinusubukang buksan ng website na ito ang isa pang application.</translation>
 <translation id="2529021024822217800">Buksan Lahat</translation>
 <translation id="2572712655377361602">Na-block ng isang patakaran ng device ang access sa iyong mga larawan</translation>
@@ -115,6 +119,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="2898963176829412617">Bagong Folder…</translation>
 <translation id="2903493209154104877">Mga Address</translation>
 <translation id="2909437209446960244">Mga Kamakailang Tab</translation>
+<translation id="2916171785467530738">Awtomatikong kumpletuhin ang Mga Paghahanap at URL</translation>
 <translation id="291754862089661335">Itapat ang QR code o barcode sa loob ng frame na ito.</translation>
 <translation id="2921219216347069551">Di Maibahagi Pahina</translation>
 <translation id="2923448633003185837">Mag-paste at Umalis</translation>
@@ -219,10 +224,12 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync. Ilagay ito upa
 <translation id="4860895144060829044">Tawagan</translation>
 <translation id="4875622588773761625">Gusto mo bang i-update ng <ph name="PASSWORD_MANAGER_BRAND" /> ang iyong password para sa site na ito?</translation>
 <translation id="4881695831933465202">Buksan</translation>
+<translation id="4882831918239250449">Kontrolin kung paano ginagamit ang iyong history ng pag-browse para i-personalize ang Paghahanap, mga ad, at iba pa</translation>
 <translation id="4904877109095351937">Markahan Bilang Nabasa Na</translation>
 <translation id="4930268273022498155">I-delete ang kasalukuyang data. Mababawi mo ito sa pamamagitan ng paglipat pabalik sa <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Paumanhin, nagkaroon ng problema sa pagbabahagi ng item mo.</translation>
 <translation id="4979397965658815378">Mag-sign in gamit ang iyong Google Account upang makuha ang iyong mga bookmark, password, history at iba pang mga setting sa lahat ng iyong device</translation>
+<translation id="5004416275253351869">Mga kontrol ng aktibidad sa Google</translation>
 <translation id="5005498671520578047">Kopyahin password</translation>
 <translation id="5010803260590204777">Magbukas ng tab na incognito upang pribadong i-browse ang web.</translation>
 <translation id="5011684439661633295">Kamusta, <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -249,6 +256,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync. Ilagay ito upa
 <translation id="5548760955356983418">Nagbibigay-daan sa iyo ang handoff na magsimula sa pagba-browse sa isang website sa device na ito at pagkatapos ay magpatuloy kaagad sa iyong Mac. Lalabas ang kasalukuyang nakabukas na website sa Dock ng iyong Mac.
 
 Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at ang iyong mga device ay dapat gumagamit ng parehong iCloud account.</translation>
+<translation id="5554368826343982379">Pag-sync at Pag-personalize</translation>
 <translation id="5556459405103347317">I-reload</translation>
 <translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">Hindi mada-download sa ngayon ang file.</translation>
@@ -340,6 +348,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Mga Kamakailang Tab</translation>
 <translation id="7006788746334555276">Mga Setting ng Nilalaman</translation>
+<translation id="7017968314960951695">Gumagamit ng content sa mga site na binibisita mo at aktibidad sa browser at mga pakikipag-ugnayan para sa pag-personalize.</translation>
 <translation id="7029809446516969842">Mga Password</translation>
 <translation id="7031882061095297553">I-sync sa</translation>
 <translation id="7053983685419859001">I-block</translation>
@@ -382,6 +391,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7769602470925380267">Tanggapin at mag-sign out</translation>
 <translation id="7772032839648071052">Kumpirmahin ang passphrase</translation>
 <translation id="780301667611848630">Hindi salamat</translation>
+<translation id="7830720446622801252">Mga Hindi Naka-personalize na Serbisyo</translation>
 <translation id="7856733331829174190">Hindi Ma-download</translation>
 <translation id="7859704718976024901">History ng Pagba-browse</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -400,6 +410,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="8076014560081431679">Hindi made-delete ang mga naka-save na setting ng site at maaari nitong ipakita ang iyong mga gawi sa pagba-browse. <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Isara ang Lahat ng Tab</translation>
 <translation id="8114753159095730575">Available ang pag-download ng file. Available ang mga opsyon malapit sa ibaba ng screen.</translation>
+<translation id="8160722851663543621">Nagpapadala ng mga paghahanap mula sa address bar at box para sa paghahanap, at ilang cookie sa iyong default na search engine</translation>
 <translation id="8205564605687841303">Kanselahin</translation>
 <translation id="8225985093977202398">Mga Naka-cache na Larawan at File</translation>
 <translation id="8261506727792406068">I-delete</translation>
@@ -410,6 +421,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="842017693807136194">Naka-sign In Gamit ang</translation>
 <translation id="8428045167754449968">Lungsod / Bayan</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
+<translation id="8438566539970814960">Mas pahusayin ang mga paghahanap at pag-browse</translation>
 <translation id="8458397775385147834">1 item ang na-delete</translation>
 <translation id="8487700953926739672">Available sa offline</translation>
 <translation id="8503813439785031346">Username</translation>

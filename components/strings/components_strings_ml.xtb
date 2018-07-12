@@ -331,6 +331,7 @@
 <translation id="3234666976984236645">ഈ സൈറ്റിൽ എപ്പോഴും പ്രധാന ഉള്ളടക്കം കണ്ടെത്തുക</translation>
 <translation id="3254409185687681395">ഈ പേജ് ബുക്‌മാര്‍ക്ക് ചെയ്യുക</translation>
 <translation id="3270847123878663523">&amp;പുനഃക്രമീകരിക്കുന്നത് പഴയപടിയാക്കുക</translation>
+<translation id="3280511504953918101">നിങ്ങളുടെ Google പേയ്മെന്റ് അക്കൗണ്ട് സൃഷ്‌ടിക്കുമ്പോഴും ഈ പേര് ഉപയോഗിക്കും.</translation>
 <translation id="3282497668470633863">കാർഡിലെ പേര് ചേർക്കുക</translation>
 <translation id="3287510313208355388">ഓൺലൈൻ ആയിരിക്കുന്ന സമയത്ത് ഡൗൺലോഡുചെയ്യുക</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> നയത്തെ കുറിച്ച് കൂടുതലറിയുക</translation>
@@ -802,6 +803,7 @@
 <translation id="6831043979455480757">വിവർത്തനം ചെയ്യുക</translation>
 <translation id="6839929833149231406">ഏരിയ</translation>
 <translation id="6852204201400771460">ആപ്പ് റീലോഡ് ചെയ്യണോ?</translation>
+<translation id="6865412394715372076">ഈ കാർഡ് ഇപ്പോൾ പരിശോധിച്ചുറപ്പിക്കാനാവില്ല</translation>
 <translation id="6874604403660855544">&amp;ചേർക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">നയ നില പിന്തുണയ്ക്കുന്നില്ല.</translation>
@@ -1047,6 +1049,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, ഉത്തരം, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> ലേക്കുള്ള നിങ്ങളുടെ കണക്ഷന്‍ എന്‍‌ക്രിപ്റ്റ് ചെയ്തിട്ടില്ല.</translation>
 <translation id="8718314106902482036">പേയ്‌മെന്റ് പൂർത്തിയായിട്ടില്ല</translation>
+<translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, തിരയൽ നിർദ്ദേശം</translation>
 <translation id="8725066075913043281">വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="8728672262656704056">നിങ്ങൾ അദൃശ്യ വിൻഡോയിലാണ്</translation>
 <translation id="8730621377337864115">പൂർത്തിയാക്കി</translation>

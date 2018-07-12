@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">สแกนโค้ด QR</translation>
 <translation id="1580783302095112590">ส่งอีเมลแล้ว</translation>
 <translation id="1582732959743469162">การดำเนินการนี้จะหยุดการดาวน์โหลดที่ดำเนินอยู่ทั้งหมด</translation>
+<translation id="1605658421715042784">คัดลอกรูปภาพ</translation>
 <translation id="1612730193129642006">แสดงตารางแท็บ</translation>
 <translation id="1644574205037202324">ประวัติการเข้าชม</translation>
 <translation id="1646446875146297738">การเปิดใช้ "ไม่ติดตาม" จะทำให้คำขอหนึ่งๆ ไปรวมอยู่กับการรับส่งข้อมูลในการเรียกดูของคุณ ผลที่จะเกิดขึ้นขึ้นอยู่กับว่าเว็บไซต์ตอบสนองต่อคำขอหรือไม่และคำขอนั้นถูกตีความอย่างไร ตัวอย่างเช่น บางเว็บไซต์อาจตอบสนองต่อคำขอนี้ด้วยการแสดงโฆษณาที่ไม่ได้อยู่บนเว็บไซต์อื่นๆ ที่คุณเคยเยี่ยมชมให้คุณเห็น เว็บไซต์จำนวนมากจะยังคงเก็บรวบรวมและใช้ข้อมูลการท่องเว็บของคุณไว้ เพื่อปรับปรุงการรักษาความปลอดภัย จัดเตรียมเนื้อหา บริการ โฆษณา และคำแนะนำบนเว็บไซต์ รวมทั้งเพื่อสร้างสถิติการรายงาน เป็นต้น <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
@@ -56,6 +57,7 @@
 <translation id="1809939268435598390">ลบโฟลเดอร์</translation>
 <translation id="1813414402673211292">นำออกข้อมูลที่เรียกดู</translation>
 <translation id="1820259098641718022">เพิ่มไปยังเรื่องรออ่านแล้ว</translation>
+<translation id="1821253160463689938">ใช้คุกกี้เพื่อให้จดจำค่ากำหนดของคุณ แม้ว่าคุณไม่ได้เข้าชมหน้าเว็บเหล่านั้น</translation>
 <translation id="1876721852596493031">ส่งข้อมูลการใช้งาน</translation>
 <translation id="1886928167269928266">ตั้งแต่ต้น</translation>
 <translation id="1911619930368729126">อัปโหลดไปยัง Google ไดรฟ์</translation>
@@ -69,6 +71,7 @@
 <translation id="209018056901015185">ขอไซต์สำหรับเดสก์ท็อป</translation>
 <translation id="2103075008456228677">เปิด history.google.com</translation>
 <translation id="2116625576999540962">ย้ายแล้ว <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> รายการ</translation>
+<translation id="2120297377148151361">กิจกรรมและการโต้ตอบ</translation>
 <translation id="213900355088104901">หากต้องการท่องเว็บแบบส่วนตัว ให้เปิดแท็บไม่ระบุตัวตน</translation>
 <translation id="2149973817440762519">แก้ไขบุ๊กมาร์ก</translation>
 <translation id="2230173723195178503">หน้าเว็บโหลดแล้ว</translation>
@@ -84,6 +87,7 @@
 <translation id="2386793615875593361">เลือก 1 รูป</translation>
 <translation id="2435457462613246316">แสดงรหัสผ่าน</translation>
 <translation id="2481538920734869610">เพิ่มบัญชี</translation>
+<translation id="2523184218357549926">ส่ง URL ของหน้าที่คุณเข้าชมไปยัง Google</translation>
 <translation id="2523363575747517183">เว็บไซต์นี้พยายามเปิดแอปพลิเคชันอื่นอยู่เรื่อยๆ</translation>
 <translation id="2529021024822217800">เปิดทั้งหมด</translation>
 <translation id="2572712655377361602">นโยบายของอุปกรณ์บล็อกการเข้าถึงรูปภาพของคุณ</translation>
@@ -113,6 +117,7 @@
 <translation id="2898963176829412617">โฟลเดอร์ใหม่…</translation>
 <translation id="2903493209154104877">ที่อยู่</translation>
 <translation id="2909437209446960244">แท็บล่าสุด</translation>
+<translation id="2916171785467530738">เติมข้อความค้นหาและ URL อัตโนมัติ</translation>
 <translation id="291754862089661335">จัดตำแหน่งโค้ด QR หรือบาร์โค้ดให้อยู่ในกรอบนี้</translation>
 <translation id="2921219216347069551">ไม่สามารถแชร์เว็บ</translation>
 <translation id="2923448633003185837">วางแล้วไป</translation>
@@ -217,10 +222,12 @@
 <translation id="4860895144060829044">โทร</translation>
 <translation id="4875622588773761625">คุณต้องการให้ <ph name="PASSWORD_MANAGER_BRAND" /> อัปเดตรหัสผ่านของคุณสำหรับเว็บไซต์นี้ไหม</translation>
 <translation id="4881695831933465202">เปิด</translation>
+<translation id="4882831918239250449">ควบคุมการใช้ประวัติการท่องเว็บเพื่อปรับเปลี่ยน Search, โฆษณา และบริการอื่นๆ ในแบบของคุณ</translation>
 <translation id="4904877109095351937">ทำเครื่องหมายว่าอ่านแล้ว</translation>
 <translation id="4930268273022498155">ลบข้อมูลที่มีอยู่ คุณสามารถดึงข้อมูลได้ด้วยการเปลี่ยนกลับเป็น <ph name="USER_EMAIL1" /></translation>
 <translation id="4941089862236492464">ขออภัย เกิดปัญหาในการแชร์รายการของคุณ</translation>
 <translation id="4979397965658815378">ลงชื่อเข้าใช้บัญชี Google เพื่อรับบุ๊กมาร์ก รหัสผ่าน ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
+<translation id="5004416275253351869">ส่วนควบคุมกิจกรรมของ Google</translation>
 <translation id="5005498671520578047">คัดลอกรหัสผ่าน</translation>
 <translation id="5010803260590204777">เปิดแท็บที่ไม่ระบุตัวตนเพื่อท่องเว็บในแบบส่วนตัว</translation>
 <translation id="5011684439661633295">สวัสดี คุณ <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -247,6 +254,7 @@
 <translation id="5548760955356983418">Handoff ช่วยให้คุณสามารถเริ่มการท่องเว็บไซต์บนอุปกรณ์นี้และใช้งานต่อบน Mac ได้อย่างง่ายดาย เว็บไซต์ที่เปิดอยู่ในปัจจุบันจะปรากฏในแท่นชาร์จของ Mac
 
 โดยต้องเปิดใช้ Handoff ในส่วน "ทั่วไป" ของการตั้งค่าและอุปกรณ์ของคุณต้องใช้บัญชี iCloud เดียวกัน</translation>
+<translation id="5554368826343982379">การซิงค์และการปรับเปลี่ยนในแบบของคุณ</translation>
 <translation id="5556459405103347317">โหลดใหม่</translation>
 <translation id="5619279135193775234">เมล</translation>
 <translation id="5626245204502895507">ไม่สามารถดาวน์โหลดไฟล์ได้ในขณะนี้</translation>
@@ -338,6 +346,7 @@
 <translation id="6979158407327259162">Google ไดรฟ์</translation>
 <translation id="7004499039102548441">แท็บล่าสุด</translation>
 <translation id="7006788746334555276">การตั้งค่าเนื้อหา</translation>
+<translation id="7017968314960951695">ใช้เนื้อหาในเว็บไซต์ที่คุณเข้าถึง ตลอดจนกิจกรรมและการโต้ตอบในเบราว์เซอร์เพื่อการปรับเปลี่ยนในแบบของคุณ</translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
 <translation id="7031882061095297553">ซิงค์กับ</translation>
 <translation id="7053983685419859001">บล็อก</translation>
@@ -380,6 +389,7 @@
 <translation id="7769602470925380267">ยอมรับและออกจากระบบ</translation>
 <translation id="7772032839648071052">ยืนยันข้อความรหัสผ่าน</translation>
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
+<translation id="7830720446622801252">บริการที่ไม่ได้ปรับเปลี่ยนในแบบของคุณ</translation>
 <translation id="7856733331829174190">ดาวน์โหลดไม่ได้</translation>
 <translation id="7859704718976024901">ประวัติการเข้าชม</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -398,6 +408,7 @@
 <translation id="8076014560081431679">การตั้งค่าเว็บไซต์ที่บันทึกไว้จะไม่ถูกลบและอาจส่งผลกับลักษณะการท่องเว็บของคุณ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">ปิดแท็บทั้งหมด</translation>
 <translation id="8114753159095730575">การดาวน์โหลดไฟล์พร้อมใช้งาน มีตัวเลือกอยู่ทางด้านล่างของหน้าจอ</translation>
+<translation id="8160722851663543621">ส่งการค้นหาจากแถบที่อยู่และช่องค้นหารวมถึงคุกกี้บางรายการไปยังเครื่องมือค้นหาเริ่มต้น</translation>
 <translation id="8205564605687841303">ยกเลิก</translation>
 <translation id="8225985093977202398">รูปภาพและไฟล์ที่แคชไว้</translation>
 <translation id="8261506727792406068">ลบ</translation>
@@ -408,6 +419,7 @@
 <translation id="842017693807136194">ลงชื่อเข้าใช้ด้วย</translation>
 <translation id="8428045167754449968">เมือง/จังหวัด</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
+<translation id="8438566539970814960">ปรับปรุงการค้นหาและการท่องเว็บให้ดียิ่งขึ้น</translation>
 <translation id="8458397775385147834">ลบแล้ว 1 รายการ</translation>
 <translation id="8487700953926739672">ใช้งานแบบออฟไลน์ได้</translation>
 <translation id="8503813439785031346">ชื่อผู้ใช้</translation>

@@ -221,12 +221,6 @@
       Dapat itakda ang patakaran sa isang URL kung saan maaaring i-download ng <ph name="PRODUCT_OS_NAME" /> ang Mga Tuntunin ng Serbisyo. Dapat ay plain text ang Mga Tuntunin ng Serbisyo, na ihahatid bilang MIME type text/plain. Hindi pinapayagan ang markup.</translation>
 <translation id="1750315445671978749">I-block ang lahat ng pag-download</translation>
 <translation id="1781356041596378058">Kinokontrol ng patakarang ito ang access sa Mga Opsyon ng Developer sa Android. Kung itatakda mo ang patakarang ito sa true, hindi maa-access ng mga user ang Mga Opsyon ng Developer. Kung itatakda mo ang patakarang ito sa false o iiwan itong hindi nakatakda, maa-access ng mga user ang Mga Opsyon ng Developer sa pamamagitan ng pag-tap nang pitong beses sa app na Mga setting ng Android.</translation>
-<translation id="178832255504524723">I-configure ang URL sa pagpapalit ng password (mga HTTP at HTTPS scheme lang). Ipapadala ng serbisyo sa pagprotekta ng password ang mga user sa URL na ito para palitan ang kanilang mga password kung nabiktima sila ng phishing.
-      Para ma-capture nang tama ng <ph name="PRODUCT_NAME" /> ang bagong fingerprint ng password sa page ng pagpapalit ng password na ito, pakitiyak na sumusunod ang iyong page ng pagpapalit ng password sa mga alituntunin sa https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Kung ie-enable ang setting na ito, ipapadala ng serbisyo sa pagprotekta ng password ang mga user sa URL na ito para palitan ang kanilang mga password kung nabiktima sila ng phishing.
-      Kung idi-disable o hindi itatakda ang setting na ito, ipapadala ng serbisyo sa pagprotekta ng password ang mga user sa https://myaccounts.google.com para palitan ang kanilang password.
-      Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="1797233582739332495">Magpakita sa user ng umuulit na prompt na nagsasaad na kinakailangan ang muling paglulunsad</translation>
 <translation id="1803646570632580723">Listahan ng mga na-pin na app na ipapakita sa launcher</translation>
 <translation id="1808715480127969042">I-block ang cookies sa mga site na ito</translation>
@@ -1419,14 +1413,6 @@
 <translation id="4980635395568992380">Uri ng data:</translation>
 <translation id="4983201894483989687">Payagan ang pagpapatakbo ng mga plugin na wala na sa panahon</translation>
 <translation id="4988291787868618635">Pagkilos na gagawin kapag naabot ang idle delay</translation>
-<translation id="4990301296093321860">Nagbibigay-daan sa iyong kontrolin ang pag-trigger ng babala ng proteksyon sa password. Inaalertuhan ng proteksyon sa password ang mga user kapag ginamit nilang muli ang kanilang pinoprotektahang password sa mga posibleng kahina-hinalang site.
-
-      Magagamit mo ang mga patakarang 'PasswordProtectionLoginURLs' at 'PasswordProtectionChangePasswordURL' para i-configure kung aling password ang poprotektahan.
-
-      Kung nakatakda ang patakarang ito sa 'PasswordProtectionWarningOff,' walang ipapakitang babala ng proteksyon sa password.
-      Kung nakatakda ang patakarang ito sa 'PasswordProtectionWarningOnPasswordReuse,' magpapakita ng babala ng proteksyon sa password kapag ginamit muli ng user ang kanyang pinoprotektahang password sa isang hindi naka-whitelist na site.
-      Kung nakatakda ang patakarang ito sa 'PasswordProtectionWarningOnPhishingReuse,' magpapakita ng babala ng proteksyon sa password kapag ginamit muli ng user ang kanyang pinoprotektahang password sa isang phishing site.
-      Kung hindi nakatakda ang patakarang ito, mati-trigger ang babala ng proteksyon sa password kapag ginamit muli ng user ang kanyang pinoprotektahang password sa isang phishing site, ngunit mababago ng user ang setting na ito.</translation>
 <translation id="4995548127349206948">Kung naka-enable ang pag-authenticate ng NTLMv2.</translation>
 <translation id="5047604665028708335">Payagan ang access sa mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="5052081091120171147">Pinupwersa ng patakarang ito na ma-import mula sa kasalukuyang default na browser ang kasaysayan ng pagba-browse kung pinagana. Kung pinagana, naaapektuhan rin ng patakarang ito ang dialog ng pag-import.
@@ -1960,13 +1946,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung iiwanang hindi nakatakda ang patakarang ito o kung walang laman ang listahan, maa-access ang lahat ng scheme sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Mga setting ng mga lokal na pinapamahalaang user</translation>
-<translation id="6654559957643809067">Nag-e-enable ang panghuhula ng network sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user sa pagbabago ng setting na ito.
-
-      Kinokontrol nito ang pag-preconnect ng DNS, pag-preconnect ng TCP at SSL at pag-prerender ng mga web page.
-
-      Kung itatakda mo ang kagustuhang ito sa 'palagi', 'huwag kailanman' o 'WiFi lang,' hindi mababago o mao-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME" />.
-
-      Kung maiiwang hindi nakatakda ang patakaran na ito, mae-enable ang panghuhula ng network ngunit magagawa ng user na baguhin ito.</translation>
 <translation id="6658245400435704251">Tinutukoy ang bilang ng mga segundo kung kailan maaaring random na antalahin ng device ang pag-download ng isang update mula sa panahon kung kailan unang na-push out ang update sa server. Maaaring hintayin ng device ang isang bahagi ng panahong ito sa pamamagitan ng oras sa orasan at ng mga natitirang bahagi sa pamamagitan ng dami ng mga pagtingin ng update. Sa anumang sitwasyon, ang scatter ay nililimitahan sa itaas sa iisang parehong tagal ng panahon upang hindi maantala nang matagal ang isang device sa paghihintay na mag-download ng isang update.</translation>
 <translation id="6665670272107384733">Itakda kung gaano kadalas kailangang ilagay ng user ang password para magamit ang mabilisang pag-unlock</translation>
 <translation id="6681229465468164801">Nagbibigay-daan sa iyo na magtakda ng listahan ng mga pattern ng url na tumutukoy sa mga site na pinipigilang magtanong sa user na bigyan siya ng access sa isang USB device.

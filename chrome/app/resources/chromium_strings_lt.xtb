@@ -157,10 +157,12 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="6394232988457703198">Turėtumėte dabar iš naujo paleisti „Chromium“.</translation>
 <translation id="6400072781405947421">„Chromium“ gali tinkamai neveikti, nes ji nebepalaikoma naudojant 10.9 versijos „Mac OS X“.</translation>
 <translation id="6403826409255603130">„Chromium“ – tai žiniatinklio naršyklė, kurią naudojant akimirksniu paleidžiami tinklalapiai ir programos. Ji greita, stabili ir lengvai naudojama. Saugiau naršykite žiniatinklį naudodami į „Chromium“ integruotą apsaugą nuo kenkėjiškų programų ir sukčiavimo.</translation>
+<translation id="641451971369018375">Palaikomas ryšys su „Google“, siekiant tobulinti naršymą ir „Chromium“</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{„Chromium“ bus paleista iš naujo po 1 sekundės}one{„Chromium“ bus paleista iš naujo po # sekundės}few{„Chromium“ bus paleista iš naujo po # sekundžių}many{„Chromium“ bus paleista iš naujo po # sekundės}other{„Chromium“ bus paleista iš naujo po # sekundžių}}</translation>
 <translation id="6475912303565314141">Ji taip pat kontroliuoja, koks puslapis rodomas, kai paleidžiate „Chromium“.</translation>
 <translation id="6485906693002546646">Sinchronizuoti „Chromium“ duomenims naudojate <ph name="PROFILE_EMAIL" />. Jei norite atnaujinti sinchronizavimo nuostatą arba naudoti „Chromium“ be „Google“ paskyros, apsilankykite <ph name="SETTINGS_LINK" /> skiltyje.</translation>
 <translation id="6510925080656968729">Pašalinti „Chromium“</translation>
+<translation id="6570579332384693436">Kad ištaisytų rašybos klaidas, „Chromium“ siunčia „Google“ tekstą, kurį įvedate teksto laukuose</translation>
 <translation id="6598877126913850652">Eiti į „Chromium“ pranešimų nustatymus</translation>
 <translation id="6664239887951090350">{0,plural, =0{„Chromium“ bus paleista iš naujo dabar}=1{„Chromium“ bus paleista iš naujo po 1 sekundės}one{„Chromium“ bus paleista iš naujo po # sekundės}few{„Chromium“ bus paleista iš naujo po # sekundžių}many{„Chromium“ bus paleista iš naujo po # sekundės}other{„Chromium“ bus paleista iš naujo po # sekundžių}}</translation>
 <translation id="6676384891291319759">Interneto prieiga</translation>

@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">Nuskaitykite QR kodą</translation>
 <translation id="1580783302095112590">El. laiškas išsiųstas.</translation>
 <translation id="1582732959743469162">Bus sustabdytas dabartinis atsisiuntimas.</translation>
+<translation id="1605658421715042784">Kopijuoti vaizdą</translation>
 <translation id="1612730193129642006">Rodyti skirtuko tinklelį</translation>
 <translation id="1644574205037202324">Istorija</translation>
 <translation id="1646446875146297738">Įgalinus „Nestebėti“, į naršymo srautą bus įtraukta užklausa. Bet koks poveikis priklauso nuo to, ar svetainė atsako į užklausą ir kaip ji interpretuojama.
@@ -58,6 +59,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="1809939268435598390">Ištrinti aplanką</translation>
 <translation id="1813414402673211292">Išvalyti naršymo duomenis</translation>
 <translation id="1820259098641718022">Pridėta prie skaitymo sąrašo</translation>
+<translation id="1821253160463689938">Naudojami slapukai, siekiant įsiminti jūsų nuostatas, net jei nesilankote tuose puslapiuose</translation>
 <translation id="1876721852596493031">Siųsti naud. duom.</translation>
 <translation id="1886928167269928266">Laiko pradžia</translation>
 <translation id="1911619930368729126">Įkelti į „Google“ diską</translation>
@@ -71,6 +73,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="209018056901015185">Užkl. dėl svet. v. komp.</translation>
 <translation id="2103075008456228677">Atidaryti history.google.com</translation>
 <translation id="2116625576999540962">Perkelta elementų: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="2120297377148151361">Veikla ir sąveikos</translation>
 <translation id="213900355088104901">Kad galėtumėte naršyti privačiai, atidarykite inkognito skirtuką</translation>
 <translation id="2149973817440762519">Redaguoti žymes</translation>
 <translation id="2230173723195178503">TInklalapis įkeltas</translation>
@@ -86,6 +89,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="2386793615875593361">Pasirinkta: 1</translation>
 <translation id="2435457462613246316">Rodyti slaptažodį</translation>
 <translation id="2481538920734869610">PRIDĖTI PASKYRĄ</translation>
+<translation id="2523184218357549926">Siunčiami „Google“ puslapių, kuriuose lankotės, URL</translation>
 <translation id="2523363575747517183">Ši svetainė pakartotinai bando atidaryti kitą programą.</translation>
 <translation id="2529021024822217800">Atidaryti viską</translation>
 <translation id="2572712655377361602">Pagal įrenginio politiką prieiga prie nuotraukų buvo užblokuota</translation>
@@ -115,6 +119,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="2898963176829412617">Naujas aplankas...</translation>
 <translation id="2903493209154104877">Adresai</translation>
 <translation id="2909437209446960244">Naujausi skirtukai</translation>
+<translation id="2916171785467530738">Automatiškai užbaigti paieškas ir URL</translation>
 <translation id="291754862089661335">QR arba brūkšninis kodas turėtų būti rodomas šiame rėmelyje</translation>
 <translation id="2921219216347069551">Neįman. bendr. pusl.</translation>
 <translation id="2923448633003185837">Įklijuoti ir eiti</translation>
@@ -219,10 +224,12 @@ Duomenys užšifruoti naudojant slaptafrazę. Įveskite ją, kad pradėtumėte s
 <translation id="4860895144060829044">Skambinti</translation>
 <translation id="4875622588773761625">Ar norite, kad „<ph name="PASSWORD_MANAGER_BRAND" />“ atnaujintų šios svetainės slaptažodį?</translation>
 <translation id="4881695831933465202">Atidaryti</translation>
+<translation id="4882831918239250449">Naršymo istorijos naudojimo paieškai, skelbimams ir kitoms funkcijoms suasmeninti valdymas</translation>
 <translation id="4904877109095351937">Pažymėti kaip skaitytus</translation>
 <translation id="4930268273022498155">Ištrinti esamus duomenis. Juos galite gauti perjungę atgal į <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Apgailestaujame, bendrinant elementą kilo problema.</translation>
 <translation id="4979397965658815378">Prisijunkite naudodami „Google“ paskyrą, kad gautumėte žymes, slaptažodžius, istoriją ir kitus nustatymus visuose įrenginiuose</translation>
+<translation id="5004416275253351869">„Google“ veiklos valdikliai</translation>
 <translation id="5005498671520578047">Kopijuoti slaptažodį</translation>
 <translation id="5010803260590204777">Norėdami naršyti žiniatinklį privačiai, atidarykite inkognito skirtuką.</translation>
 <translation id="5011684439661633295">Sveiki, <ph name="FULL_ACCOUNT_NAME" />!</translation>
@@ -249,6 +256,7 @@ Duomenys užšifruoti naudojant slaptafrazę. Įveskite ją, kad pradėtumėte s
 <translation id="5548760955356983418">Naudodami „Handoff“ galite pradėti naršyti svetainę šiame įrenginyje ir lengvai tęsti darbą „Mac“ įrenginiu. Dabartinė atidaryta svetainė bus rodoma „Mac“ įrenginio doke.
 
 Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įrenginiuose turi būti naudojama ta pati „iCloud“ paskyra.</translation>
+<translation id="5554368826343982379">Sinchronizavimas ir suasmeninimas</translation>
 <translation id="5556459405103347317">Įkelti iš naujo</translation>
 <translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">Šiuo metu negalima atsisiųsti programos.</translation>
@@ -340,6 +348,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6979158407327259162">„Google“ diskas</translation>
 <translation id="7004499039102548441">Naujausi skirtukai</translation>
 <translation id="7006788746334555276">Turinio nustatymai</translation>
+<translation id="7017968314960951695">Naudojamas svetainių, kuriose lankotės, turinys ir naršymo veikla bei sąveikos suasmeninimo tikslais</translation>
 <translation id="7029809446516969842">Slaptažodžiai</translation>
 <translation id="7031882061095297553">Sinchronizavimas su</translation>
 <translation id="7053983685419859001">Blokuoti</translation>
@@ -382,6 +391,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7769602470925380267">Sutikti ir atsijungti</translation>
 <translation id="7772032839648071052">Patvirtinti slaptafrazę</translation>
 <translation id="780301667611848630">Ačiū, ne</translation>
+<translation id="7830720446622801252">Nesuasmenintos paslaugos</translation>
 <translation id="7856733331829174190">Nepavyko atsisiųsti</translation>
 <translation id="7859704718976024901">Naršymo istorija</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -400,6 +410,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="8076014560081431679">Išsaugoti svetainių nustatymai nebus ištrinti ir gali nurodyti naršymo įpročius. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Uždaryti visus skirtukus</translation>
 <translation id="8114753159095730575">Galima atsisiųsti failą. Parinktys pasiekiamos netoli ekrano apačios.</translation>
+<translation id="8160722851663543621">Numatytajam paieškos varikliui siunčiamos į adreso juostą ir paieškos laukelį įvestos paieškos ir kai kurie slapukai</translation>
 <translation id="8205564605687841303">Atšaukti</translation>
 <translation id="8225985093977202398">Talp. vaiz. ir fail.</translation>
 <translation id="8261506727792406068">Ištrinti</translation>
@@ -410,6 +421,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="842017693807136194">Prisijungta naudojant</translation>
 <translation id="8428045167754449968">Didm. / miest.</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
+<translation id="8438566539970814960">Tobulinti paieškas ir naršymą</translation>
 <translation id="8458397775385147834">Ištrinta elementų: 1</translation>
 <translation id="8487700953926739672">Pasiekiama neprisijungus</translation>
 <translation id="8503813439785031346">Vartotojo vardas</translation>

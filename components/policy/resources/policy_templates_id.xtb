@@ -221,12 +221,6 @@
       Kebijakan ini harus disetel ke URL di tempat <ph name="PRODUCT_OS_NAME" /> dapat mendownload Persyaratan Layanan tersebut. Persyaratan Layanan ini harus dalam teks biasa, yang disajikan sebagai teks/biasa jenis MIME. Tidak ada markup yang diizinkan.</translation>
 <translation id="1750315445671978749">Blokir semua download</translation>
 <translation id="1781356041596378058">Kebijakan ini juga mengontrol akses ke Opsi Developer Android. Jika Anda menyetel kebijakan ini ke true, pengguna tidak dapat mengakses Opsi Developer. Jika Anda menyetel kebijakan ini ke false atau tidak menyetel kebijakan ini, pengguna dapat mengakses Opsi Developer dengan menge-tap tujuh kali nomor versi di aplikasi setelan Android.</translation>
-<translation id="178832255504524723">Mengonfigurasi URL ubah sandi (khusus skema HTTP dan HTTPS). Layanan perlindungan sandi akan mengarahkan pengguna ke URL ini untuk mengubah sandinya jika mereka menjadi sasaran phishing.
-      Agar <ph name="PRODUCT_NAME" /> dapat mengambil sidik jari sandi baru di halaman ubah sandi ini dengan benar, harap pastikan bahwa halaman ubah sandi Anda mengikuti pedoman di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Jika setelan ini diaktifkan, layanan perlindungan sandi akan mengarahkan pengguna ke URL ini untuk mengubah sandinya jika mereka menjadi sasaran phishing.
-      Jika setelan ini dinonaktifkan atau tidak disetel, layanan perlindungan sandi akan mengarahkan pengguna ke https://myaccounts.google.com untuk mengubah sandinya.
-      Kebijakan ini tidak tersedia di instance Windows yang tidak digabungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="1797233582739332495">Tampilkan permintaan berulang kepada pengguna yang menunjukkan bahwa peluncuran ulang diperlukan</translation>
 <translation id="1803646570632580723">Daftar aplikasi tersemat untuk ditampilkan pada peluncur</translation>
 <translation id="1808715480127969042">Cekal cookie di situs ini</translation>
@@ -680,7 +674,7 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 <translation id="2899002520262095963">Aplikasi Android dapat menggunakan konfigurasi jaringan dan sertifikat CA yang disetel melalui kebijakan ini, namun tidak memiliki akses ke beberapa opsi konfigurasi.</translation>
 <translation id="290002216614278247">Memungkinkan Anda mengunci sesi pengguna berdasarkan waktu klien atau kuota penggunaan hari ini.
 
-          |time_window_limit| menentukan durasi harian untuk mengunci sesi pengguna. Kami hanya mendukung satu aturan untuk tiap hari dalam seminggu, oleh karena itu, deret the |entries| dapat bervariasi ukurannya antara 0-7. |starts_at| dan |ends_at| adalah awal dan akhir batas durasi, jika |ends_at| lebih kecil dari |starts_at| berarti |time_limit_window| berakhir pada hari berikutnya. |last_updated_millis| adalah stempel waktu UTC untuk terakhir kali entri ini diperbarui, yang dikirim sebagai string karena stempel waktu tidak dapat ditampilkan dalam bilangan bulat.
+          |time_window_limit| menentukan durasi harian untuk mengunci sesi pengguna. Kami hanya mendukung satu aturan untuk tiap hari dalam seminggu, oleh karena itu, deret |entries| dapat bervariasi ukurannya antara 0-7. |starts_at| dan |ends_at| adalah awal dan akhir batas durasi, jika |ends_at| lebih kecil dari |starts_at| berarti |time_limit_window| berakhir pada hari berikutnya. |last_updated_millis| adalah stempel waktu UTC untuk terakhir kali entri ini diperbarui, yang dikirim sebagai string karena stempel waktu tidak dapat ditampilkan dalam bilangan bulat.
 
           |time_usage_limit| menentukan kuota penggunaan perangkat harian, jadi jika pengguna mencapai batas tersebut, sesi pengguna dikunci. Ada properti untuk tiap hari dalam seminggu, dan hanya boleh disetel jika ada kuota yang aktif untuk hari tersebut. |usage_quota_mins| adalah jumlah waktu perangkat yang dikelola dapat digunakan dalam sehari dan |reset_at| adalah waktu yang menentukan kapan kuota penggunaan diperpanjang. Nilai default untuk |reset_at| adalah tengah malam ({'hour': 0, 'minute': 0}). |last_updated_millis| adalah stempel waktu UTC untuk terakhir kali entri ini diperbarui, yang dikirim sebagai string karena stempel waktu tidak dapat ditampilkan dalam bilangan bulat.
 
@@ -1377,14 +1371,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="4980635395568992380">Jenis data:</translation>
 <translation id="4983201894483989687">Izinkan menjalankan plugin yang kedaluwarsa</translation>
 <translation id="4988291787868618635">Tindakan yang akan diambil saat penundaan waktu menganggur tercapai</translation>
-<translation id="4990301296093321860">Memungkinkan Anda mengontrol pemicu peringatan perlindungan sandi. Perlindungan sandi memberi tahu pengguna saat mereka menggunakan kembali sandi yang dilindungi di situs yang berpotensi mencurigakan.
-
-      Anda dapat menggunakan kebijakan 'PasswordProtectionLoginURLs' dan 'PasswordProtectionChangePasswordURL' untuk mengonfigurasi sandi mana yang harus dilindungi.
-
-      Jika kebijakan ini disetel ke 'PasswordProtectionWarningOff', peringatan perlindungan sandi tidak akan ditampilkan.
-      Jika kebijakan ini disetel ke 'PasswordProtectionWarningOnPasswordReuse', peringatan perlindungan sandi akan ditampilkan saat pengguna menggunakan kembali sandi yang dilindungi di situs yang tidak diizinkan.
-      Jika kebijakan ini disetel ke 'PasswordProtectionWarningOnPhishingReuse', peringatan perlindungan sandi akan ditampilkan saat pengguna menggunakan kembali sandi yang dilindungi di situs phishing.
-      Jfika kebijakan ini dibiarkan tidak disetel, peringatan perlindungan sandi akan dipicu saat pengguna menggunakan kembali sandi yang dilindungi di situs phishing, namun pengguna dapat mengubah setelan ini.</translation>
 <translation id="4995548127349206948">Apakah autentikasi NTLMv2 diaktifkan atau tidak.</translation>
 <translation id="5047604665028708335">Memungkinkan akses ke situs di luar paket konten</translation>
 <translation id="5052081091120171147">Kebijakan ini memaksa histori browseran diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada histori browseran yang diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
@@ -1881,13 +1867,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini tidak disetel atau daftar kosong, semua skema akan dapat diakses di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Setelan pengguna yang dikelola secara lokal</translation>
-<translation id="6654559957643809067">Memungkinkan prediksi jaringan dalam <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
-
-      Setelan ini mengontrol prapengambilan DNS, prakoneksi dan praperenderan TCP dan SSL halaman web.
-
-      Jika Anda menyetel preferensi ini ke 'selalu', 'tidak pernah', atau 'khusus Wi-Fi', pengguna tidak dapat mengubah atau menimpa setelan ini di <ph name="PRODUCT_NAME" />.
-
-      Jika kebijakan ini tidak disetel, prediksi jaringan akan diaktifkan namun pengguna dapat mengubahnya.</translation>
 <translation id="6658245400435704251">Menentukan jumlah waktu (dalam detik) sebuah perangkat dapat menunda download pembaruannya secara acak dari saat pembaruan tersebut pertama kali didorong ke server. Perangkat dapat menunggu dengan sebagian dari waktu ini dari segi prediksi waktu penyelesaian tugas dan sisa waktunya dari segi jumlah pemeriksaan pembaruan. Dalam keadaan apa pun, penyebaran dibatasi dengan jumlah waktu yang konstan sehingga perangkat tidak akan terus menunggu download pembaruan selamanya.</translation>
 <translation id="6665670272107384733">Setel seberapa sering pengguna harus memasukkan sandi untuk menggunakan buka kunci cepat.</translation>
 <translation id="6681229465468164801">Memungkinkan Anda menyetel daftar pola URL yang menentukan situs mana yang dicegah agar tidak meminta pengguna memberikan akses ke perangkat USB.
@@ -1939,7 +1918,7 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 <translation id="6810445994095397827">Cekal JavaScript di situs ini</translation>
 <translation id="681446116407619279">Skema autentikasi yang didukung</translation>
 <translation id="6832455357698286434">
-      Kebijakan tersebut menentukan daftar asal (URL) atau pola hostname (misalnya "*.contoh.com") yang akan diperlakukan sebagai konten aman. Tujuannya untuk mengizinkan organisasi menyiapkan server persiapan untuk pengembangan web internal, agar developer dapat menguji fitur yang memerlukan konteks aman tanpa harus menerapkan TLS di server persiapan.
+      Kebijakan tersebut menentukan daftar asal (URL) atau pola hostname (misalnya "*.example.com") yang akan diperlakukan sebagai konten aman. Tujuannya untuk mengizinkan organisasi menyiapkan server persiapan untuk pengembangan web internal, agar developer dapat menguji fitur yang memerlukan konteks aman tanpa harus menerapkan TLS di server persiapan.
       Menyetel daftar URL di kebijakan ini memiliki efek yang sama seperti menyetel tanda baris perintah '--unsafely-treat-insecure-origin-as-secure' menjadi daftar yang dipisahkan koma yang berisi URL yang sama. Jika disetel, kebijakan tersebut akan mengganti tanda baris perintah.
       Untuk informasi selengkapnya tentang konteks aman, lihat https://www.w3.org/TR/secure-contexts/
       </translation>

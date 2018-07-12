@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">അടുത്ത മാസം കാണിക്കുക</translation>
 <translation id="512758898067543763">വരി ശീർഷകം</translation>
 <translation id="5143125788380636750">ഉപസംഹാരം</translation>
-<translation id="5153163864850940242">'ചിത്രത്തിനുള്ളിലെ ചിത്രം' മോഡിലാണ് ഈ വീഡിയോ പ്ലേ ചേയ്യുന്നത്</translation>
 <translation id="5164977714490026579">മൂല്യം <ph name="MINIMUM" /> എന്നതില്‍ കൂടുതലോ സമമോ ആയിരിക്കണം.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' എന്നതിനുശേഷം ഒരു ഭാഗം നൽകുക.'<ph name="INVALIDADDRESS" />' അപൂർണ്ണമാണ്.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">മീറ്റർ</translation>
 <translation id="6166809985690652833">പിൻ കുറിപ്പ്</translation>
 <translation id="6213469881011901533">പദസഞ്ചയം</translation>
-<translation id="6310801910862476708">ചിത്രത്തിനുള്ളിലെ ചിത്രത്തിന് പുറത്ത് കടക്കുക</translation>
 <translation id="6398862346408813489">മാസം തിരഞ്ഞെടുക്കുന്ന പാനൽ കാണിക്കുക</translation>
 <translation id="6404546809543547843">ഓഡിയോ സമയ സ്‌ക്രബർ</translation>
 <translation id="6453774872122745852">കടപ്പാട്</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">മീഡിയ ഡൗൺലോഡുചെയ്യുക</translation>
 <translation id="6981594929165378967">ചേർക്കൽ</translation>
 <translation id="6989848892321993519">ഈ ടെക്‌സ്റ്റിന്റെ ദൈർഘ്യം <ph name="MIN_CHARACTERS" /> പ്രതീകങ്ങളോ അതിൽ കൂടുതലോ ആയി വർദ്ധിപ്പിക്കുക (നിങ്ങൾ നിലവിൽ ഒരു പ്രതീകം മാത്രമേ ഉപയോഗിക്കുന്നുള്ളൂ).</translation>
+<translation id="7090364526657522309">Linux ഫോണ്ട് സേവനം</translation>
 <translation id="709897737746224366">അഭ്യര്‍ത്ഥി ച്ചഫോര്‍മാറ്റ് ദയവായി പൊരുത്തപ്പെടുത്തുക.</translation>
 <translation id="7139483182332611405">പീഠിക</translation>
 <translation id="7223624360433298498">കഴിഞ്ഞ സമയം</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">ഉള്ളടക്ക പട്ടിക</translation>
 <translation id="8613126697340063924">വിദൂര പ്ലേബാക്ക് നിയന്ത്രിക്കുക</translation>
 <translation id="862370744433916922">ഉപശീർഷകം</translation>
-<translation id="8741316211671074806">ചിത്രത്തിനുള്ളിലെ ചിത്രം</translation>
 <translation id="8750798805984357768">ഈ ഓപ്ഷനുകളിലൊന്ന് ദയവായി തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="8785498733064193001">പ്ലേബാക്ക് ആരംഭിക്കുക</translation>
 <translation id="8808573423886751634">അധ്യായം</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">മറ്റുള്ളവ...</translation>
 <translation id="9138385573473225930">അലേർട്ട്</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" />-ന് ആരംഭിക്കുന്നു</translation>
+<translation id="916607977885256133">ചിത്രത്തിനുള്ളിൽ ചിത്രം</translation>
 <translation id="9168329111483466115">അടിക്കുറിപ്പ്</translation>
 <translation id="954003015749068518">ചിത്രത്തിനുള്ളിലെ ചിത്രത്തിലേക്ക് പ്രവേശിക്കുക</translation>
 <translation id="966787709310836684">മെനു</translation>

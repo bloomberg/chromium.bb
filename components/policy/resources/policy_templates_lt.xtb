@@ -223,12 +223,6 @@
       Politika turėtų būti nustatyta į URL, kuriuo „<ph name="PRODUCT_OS_NAME" />“ gali atsisiųsti paslaugų teikimo sąlygas. Paslaugų teikimo sąlygas turi sudaryti paprastasis tekstas, pateiktas kaip MIME tipo tekstas / paprastasis tekstas. Neleidžiamas joks žymėjimas.</translation>
 <translation id="1750315445671978749">Blokuoti visus atsisiuntimus</translation>
 <translation id="1781356041596378058">Ši politika taip pat valdo galimybę pasiekti „Android“ kūrėjo parinktis. Jei šią politiką nustatysite į „Tiesa“, naudotojai negalės pasiekti kūrėjo parinkčių. Jei šią politiką nustatysite į „Netiesa“ arba jos nenustatysite, naudotojai galės pasiekti kūrėjo parinktis palietę versijos numerį septynis kartus „Android“ nustatymų programoje.</translation>
-<translation id="178832255504524723">Konfigūruojamas slaptažodžio keitimo URL (tik HTTP ir HTTPS schemos). Naudojant slaptažodžio apsaugos paslaugą naudotojai bus nukreipiami šiuo URL, kad pasikeistų slaptažodžius, jei buvo sukčiaujama.
-      Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų naujo slaptažodžio kontrolinį kodą šiame slaptažodžio keitimo puslapyje, įsitikinkite, kad laikomasi šių gairių: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Įgalinus šį nustatymą, naudojant slaptažodžio apsaugos paslaugą naudotojai bus nukreipiami šiuo URL, kad pasikeistų slaptažodžius, jei buvo sukčiaujama.
-      Jei šis nustatymas išjungtas arba nenustatytas, naudojant slaptažodžio apsaugos paslaugą naudotojai bus nukreipiami adresu https://myaccounts.google.com, kad pasikeistų slaptažodį.
-      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="1797233582739332495">Pasikartojančio raginimo, kuriame nurodoma, kad būtina paleisti iš naujo, rodymas naudotojui</translation>
 <translation id="1803646570632580723">Paleidimo priemonėje prisegtų rodomų programų sąrašas</translation>
 <translation id="1808715480127969042">Blokuoti slapukus šiose svetainėse</translation>
@@ -710,12 +704,12 @@
 <translation id="2899002520262095963">„Android“ programos gali naudoti šioje politikoje nustatytas tinklo konfigūracijas ir CA sertifikatus, bet negali pasiekti kai kurių konfigūravimo parinkčių.</translation>
 <translation id="290002216614278247">Galima užrakinti naudotojo sesiją atsižvelgiant į kliento laiką arba išnaudotą dienos kvotą.
 
-          |time_window_limit| nurodo dienos laikotarpį, kuriuo naudotojo sesija turi būti užrakinta. Palaikoma tik viena kiekvienos savaitės dienos taisyklė, todėl masyvo |entries| dydis gali būti nuo 0 iki 7. |starts_at| ir |ends_at| yra laikotarpio pradžios ir pabaigos apribojimai. Kai |ends_at| vertė yra mažesnė nei |starts_at|, tai reiškia, kad |time_limit_window| baigsis kitą dieną. |last_updated_millis| yra UTC laiko žymė, nurodanti, kada šis įrašas buvo paskutinį kartą atnaujintas; ji siunčiama kaip eilutė, nes laiko žymei nepakanka sveikųjų skaičių.
+          |time_window_limit| nurodo laikotarpį, per kurį naudotojo sesija turi būti užrakinta. Palaikoma tik viena kiekvienos savaitės dienos taisyklė, todėl masyvo |entries| dydis gali būti nuo 0 iki 7. |starts_at| ir |ends_at| yra laikotarpio pradžios ir pabaigos apribojimai. Kai |ends_at| vertė yra mažesnė nei |starts_at|, tai reiškia, kad |time_limit_window| baigsis kitą dieną. |last_updated_millis| yra UTC laiko žymė, nurodanti, kada šis įrašas buvo paskutinį kartą atnaujintas; ji siunčiama kaip eilutė, nes laiko žymei nepakanka sveikųjų skaičių.
 
-          |time_usage_limit| nurodo dienos įrenginio naudojimo kvotą. Ją pasiekus, naudotojo sesija užrakinama. Kiekvienai savaitės dienai priskirta nuosavybė, kuri turi būti nustatyta tik jei tą dieną kvota yra aktyvi. |usage_quota_mins| – tai laikotarpis, kuriuo tvarkomas įrenginys gali būti naudojamas per dieną, o |reset_at| – laikas, kada atnaujinami naudojimo kvotos duomenys. Numatytoji |reset_at| vertė yra vidurnaktis ({'hour': 0, 'minute': 0}). |last_updated_millis| yra UTC laiko žymė, nurodanti, kada šis įrašas buvo paskutinį kartą atnaujintas; ji siunčiama kaip eilutė, nes laiko žymei nepakanka sveikųjų skaičių.
+          |time_usage_limit| nurodo dienos įrenginio naudojimo kvotą. Ją pasiekus, naudotojo sesija užrakinama. Kiekvienai savaitės dienai priskirta savybė, kuri turi būti nustatyta tik jei tą dieną kvota yra aktyvi. |usage_quota_mins| – tai laikotarpis, kuriuo tvarkomas įrenginys gali būti naudojamas per dieną, o |reset_at| – laikas, kada atnaujinami naudojimo kvotos duomenys. Numatytoji |reset_at| vertė yra vidurnaktis ({'hour': 0, 'minute': 0}). |last_updated_millis| yra UTC laiko žymė, nurodanti, kada šis įrašas buvo paskutinį kartą atnaujintas; ji siunčiama kaip eilutė, nes laiko žymei nepakanka sveikųjų skaičių.
 
           |overrides| teikiama siekiant laikinai nustatyti, kad viena ar daugiau ankstesnių taisyklių negaliotų.
-          * Jei nei „time_window_limit“, nei „time_usage_limit“ nėra aktyvus, |LOCK| galima naudoti įrenginiui užrakinti.
+          * Jei nei „time_window_limit“, nei „time_usage_limit“ nėra aktyvūs, |LOCK| galima naudoti įrenginiui užrakinti.
           * |LOCK| laikinai užrakina naudotojo sesiją, kol prasideda kitas „time_window_limit“ arba „time_usage_limit“ laikotarpis.
           * |UNLOCK| atrakina naudotojo sesiją atėjus „time_window_limit“ arba „time_usage_limit“ laikotarpiui.
           |created_time_millis| – tai UTC laiko žymė, skirta nepaisymams kurti, siunčiama kaip eilutė, nes laiko žymei nepakanka sveikųjų skaičių. Ji naudojama siekiant nustatyti, ar šis nepaisymas vis dar turi būti taikomas. Jei dabartinio aktyvaus laiko apribojimo funkcija (naudojimo laiko arba laikotarpio apribojimas) pradėta taikyti sukūrus nepaisymą, ši žymė negalioja. Be to, jei nepaisymas sukurtas prieš paskutinį aktyvaus „time_window_limit“ arba „time_usage_window“ laikotarpio pakeitimą, laiko žymė nebus taikoma.</translation>
@@ -1427,14 +1421,6 @@
 <translation id="4980635395568992380">Duomenų tipas:</translation>
 <translation id="4983201894483989687">Leisti paleisti pasenusius papildinius</translation>
 <translation id="4988291787868618635">Veiksmas, kuris bus atliktas, kai bus pasiektas neveikos delsos laikas</translation>
-<translation id="4990301296093321860">Galite valdyti įspėjimo dėl slaptažodžio apsaugos suaktyvinimą. Slaptažodžio apsauga įspėja naudotojus, kai jie pakartotinai naudoja apsaugotus slaptažodžius potencialiai įtartinose svetainėse.
-
-      Naudodami politikos nuostatas „PasswordProtectionLoginURLs“ ir „PasswordProtectionChangePasswordURL“ galite konfigūruoti, kurie slaptažodžiai bus apsaugoti.
-
-      Jei ši politika nustatyta kaip „PasswordProtectionWarningOff“, nebus rodomas įspėjimas dėl slaptažodžio apsaugos.
-      Jei ši politika nustatyta kaip „PasswordProtectionWarningOnPasswordReuse“, slaptažodžio apsaugos įspėjimas bus rodomas, kai naudotojas pakartotinai naudos apsaugotą slaptažodį svetainėje, kuri neįtraukta į baltąjį sąrašą.
-      Jei ši politika nustatyta kaip „PasswordProtectionWarningOnPhishingReuse“, slaptažodžio apsaugos įspėjimas bus rodomas, kai naudotojas pakartotinai naudos apsaugotą slaptažodį svetainėje, kurioje sukčiaujama.
-      Jei ši politika nenustatyta, slaptažodžio apsaugos įspėjimas bus suaktyvintas, kai naudotojas pakartotinai naudos apsaugotą slaptažodį svetainėje, kurioje sukčiaujama, bet naudotojas galės pakeisti šį nustatymą.</translation>
 <translation id="4995548127349206948">Ar įgalintas „NTLMv2“ autentifikavimas.</translation>
 <translation id="5047604665028708335">Leisti pasiekti svetaines, nesančias turinio paketuose</translation>
 <translation id="5052081091120171147">Pagal šią politiką naršymo istorija priverstinai importuojama iš esamos numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.
@@ -1971,13 +1957,6 @@
 
       Jei ši politika nenustatyta ar sąrašas yra tuščias, visos schemos bus pasiekiamos „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="6652197835259177259">Vietoje tvarkomų naudotojų paskyrų nustatymai</translation>
-<translation id="6654559957643809067">Įgalinamas tinklo numatymas sistemoje „<ph name="PRODUCT_NAME" />“ ir naudotojams neleidžiama pakeisti šio nustatymo.
-
-      Naudojant šią politiką valdomas išankstinis DNS pateikimas, išankstinis TCP ir SSL ryšys bei tinklalapių pateikimas.
-
-      Jei šią nuostatą nustatysite į „visada“, „niekada“ arba „tik „Wi-Fi“, „<ph name="PRODUCT_NAME" />“ naudotojai negalės keisti ar nepaisyti šio nustatymo.
-
-      Jei ši politika nebus nustatyta, bus įgalintas tinklo numatymas, bet naudotojas galės jį pakeisti.</translation>
 <translation id="6658245400435704251">Nurodoma, iki kiek sekundžių įrenginys gali atsitiktinai atidėti naujinio atsisiuntimą nuo tada, kai naujinys buvo pirmąkart išsiųstas iš serverio. Įrenginys gali laukti dalį šio laiko pagal realųjį laiką, o likusią dalį – pagal naujinio tikrinimo kartus. Bet kuriuo atveju yra nustatyta viršutinė sklaidos riba (tam tikra trukmė), kad įrenginys nelauktų atsisiuntimo be galo.</translation>
 <translation id="6665670272107384733">Nustatyti, kaip dažnai naudotojas turi įvesti slaptažodį, kad galėtų naudoti spartųjį atrakinimą</translation>
 <translation id="6681229465468164801">Galite nustatyti URL šablonų, kuriuose nurodomos svetainės, kurioms neleidžiama prašyti naudotojo suteikti jiems galimybės pasiekti USB įrenginį, sąrašą.

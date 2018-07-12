@@ -155,10 +155,12 @@
 <translation id="6394232988457703198">Перезапустіть Chromium.</translation>
 <translation id="6400072781405947421">Chromium може працювати неналежним чином, оскільки вже не підтримується в ОС Mac X 10.9.</translation>
 <translation id="6403826409255603130">Chromium – це веб-переглядач, який запускає веб-сторінки та програми з блискавичною швидкістю. Він швидкий, надійний і зручний у користуванні. Вбудований у Chromium захист від шкідливих програм і фішингу гарантує ще більшу безпеку під час перегляду веб-сторінок.</translation>
+<translation id="641451971369018375">Обмінюється даними з Google, щоб покращувати веб-перегляд і Chromium</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium перезапуститься через 1 секунду}one{Chromium перезапуститься через # секунду}few{Chromium перезапуститься через # секунди}many{Chromium перезапуститься через # секунд}other{Chromium перезапуститься через # секунди}}</translation>
 <translation id="6475912303565314141">Також указує сторінку, яка відкривається під час запуску Chromium.</translation>
 <translation id="6485906693002546646">Ви синхронізуєте дані Chromium через обліковий запис <ph name="PROFILE_EMAIL" />. Щоб оновити параметри синхронізації або використовувати Chromium без облікового запису Google, перейдіть на сторінку <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Видалити Chromium</translation>
+<translation id="6570579332384693436">Щоб виправляти орфографічні помилки, Chromium надсилає введений текст у Google</translation>
 <translation id="6598877126913850652">Перейти до налаштувань сповіщень Chromium</translation>
 <translation id="6664239887951090350">{0,plural, =0{Chromium перезапуститься зараз}=1{Chromium перезапуститься через 1 секунду}one{Chromium перезапуститься через # секунду}few{Chromium перезапуститься через # секунди}many{Chromium перезапуститься через # секунд}other{Chromium перезапуститься через # секунди}}</translation>
 <translation id="6676384891291319759">Доступ до Інтернету</translation>

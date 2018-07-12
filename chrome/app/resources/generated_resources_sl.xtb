@@ -454,7 +454,6 @@
 <translation id="1657406563541664238">Pomagajte izboljšati <ph name="PRODUCT_NAME" /> s samodejnim pošiljanjem statističnih podatkov o uporabi in poročil o zrušitvah Googlu</translation>
 <translation id="1658424621194652532">Ta stran dostopa do vašega mikrofona.</translation>
 <translation id="1660204651932907780">Dovoli spletnim mestom predvajanje zvoka (priporočljivo)</translation>
-<translation id="1660938185063657230">Preverjanje varnostnega ključa</translation>
 <translation id="1661156625580498328">Vsili šifriranje AES (priporočeno).</translation>
 <translation id="1661245713600520330">Stran navaja vse module, naložene v glavni proces in module, registrirane za poznejšo naložitev.</translation>
 <translation id="166179487779922818">Geslo je prekratko.</translation>
@@ -566,7 +565,6 @@
 <translation id="1818007989243628752">Izbris gesla za <ph name="USERNAME" /></translation>
 <translation id="1819721979226826163">Dotaknite se »Obvestila aplikacije &gt; Storitve Google Play«.</translation>
 <translation id="1826516787628120939">Preverjanje</translation>
-<translation id="1827750274519118478">Videoposnetek v načinu slike v sliki se bo nehal predvajati.</translation>
 <translation id="1828378091493947763">Ta vtičnik ni podprt v tej napravi</translation>
 <translation id="1828901632669367785">Tiskanje v sistemskem pogovornem oknu ...</translation>
 <translation id="1829192082282182671">Poma&amp;njšaj</translation>
@@ -2466,7 +2464,6 @@
 <translation id="4856478137399998590">Mobilna podatkovna storitev je aktivirana in pripravljena za uporabo</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Odpiranje vseh v &amp;oknu brez beleženja zgodovine}=1{Odpiranje v &amp;oknu brez beleženja zgodovine}one{Odpiranje vseh (#) v &amp;oknu brez beleženja zgodovine}two{Odpiranje vseh (#) v &amp;oknu brez beleženja zgodovine}few{Odpiranje vseh (#) v &amp;oknu brez beleženja zgodovine}other{Odpiranje vseh (#) v &amp;oknu brez beleženja zgodovine}}</translation>
 <translation id="4858913220355269194">Fritz</translation>
-<translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> – videoposnetek se predvaja v načinu slike v sliki</translation>
 <translation id="4862050643946421924">Dodajanje naprave ...</translation>
 <translation id="4862642413395066333">Podpisovanje odgovorov OCSP</translation>
 <translation id="4863769717153320198">Videti je <ph name="WIDTH" /> x <ph name="HEIGHT" /> (privzeta)</translation>
@@ -4147,7 +4144,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7427348830195639090">Stran v ozadju: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Odpiranje vseh v &amp;novem oknu}=1{Odpiranje v &amp;novem oknu}one{Odpiranje vseh (#) v &amp;novem oknu}two{Odpiranje vseh (#) v &amp;novem oknu}few{Odpiranje vseh (#) v &amp;novem oknu}other{Odpiranje vseh (#) v &amp;novem oknu}}</translation>
 <translation id="7434509671034404296">Razvijalec</translation>
-<translation id="7436470008146509879">Namestitev Linuxa v napravi <ph name="DEVICE_TYPE" /></translation>
 <translation id="7436921188514130341">Ti šment! Napaka med preimenovanjem.</translation>
 <translation id="7441830548568730290">Drugi uporabniki</translation>
 <translation id="7442465037756169001">Hangouts Meet hardware je pripravljen za nastavitev.</translation>
@@ -4446,7 +4442,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7881969471599061635">Onemogočanje podnapisov</translation>
 <translation id="7882358943899516840">Vrsta ponudnika</translation>
 <translation id="7885253890047913815">Nedavni cilji</translation>
-<translation id="7886917304091689118">Izvaja se v Chromu</translation>
 <translation id="7887334752153342268">Podvoji</translation>
 <translation id="7887864092952184874">Miška Bluetooth je seznanjena</translation>
 <translation id="7889565820482017512">Velikost prikaza</translation>
@@ -4617,7 +4612,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8118860139461251237">Upravljanje prenosov</translation>
 <translation id="81238879832906896">Rumena in bela roža</translation>
 <translation id="8124313775439841391">Upravljan ONC</translation>
-<translation id="8125562866093998907">Spletno mesto želi zaradi dodatne varnosti v vašem računu preveriti vaš varnostni ključ.</translation>
 <translation id="813082847718468539">Ogled podatkov o mestu</translation>
 <translation id="8131740175452115882">Potrdi</translation>
 <translation id="8133676275609324831">&amp;Pokaži v mapi</translation>
@@ -4996,7 +4990,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8736288397686080465">To spletno mesto je bilo posodobljeno v ozadju.</translation>
 <translation id="8737685506611670901">Odpiranje povezav za <ph name="PROTOCOL" /> namesto <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
-<translation id="8741316211671074806">Slika v sliki</translation>
 <translation id="8743390665131937741">Stopnja povečave celozaslonske lupe:</translation>
 <translation id="8743864605301774756">Posodobljeno pred 1 uro</translation>
 <translation id="874689135111202667">{0,plural, =1{Ali želite naložiti eno datoteko na to spletno mesto?}one{Ali želite naložiti # datoteko na to spletno mesto?}two{Ali želite naložiti # datoteki na to spletno mesto?}few{Ali želite naložiti # datoteke na to spletno mesto?}other{Ali želite naložiti # datotek na to spletno mesto?}}</translation>
@@ -5270,6 +5263,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9158715103698450907">Ojej!  Težava z omrežno komunikacijo med preverjanjem pristnosti.  Preverite omrežno povezavo in poskusite znova.</translation>
 <translation id="9161070040817969420">Podokvirji za: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">Pošiljanje podatkov o sistemu. Ta naprava trenutno samodejno pošilja diagnostične podatke ter podatke o uporabi naprav in aplikacij Googlu. To nastavitev je uveljavil lastnik. Če ste vklopili dodatno dejavnost v spletu in aplikacijah, bodo ti podatki shranjeni v računu, tako da jih lahko upravljate v Moji dejavnosti. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
+<translation id="916607977885256133">Slika v sliki</translation>
 <translation id="9169496697824289689">Ogled bližnjičnih tipk</translation>
 <translation id="9169931577761441333">Dodajanje aplikacije <ph name="APP_NAME" /> na začetni zaslon</translation>
 <translation id="9170397650136757332">Rahlo premaknite prst, da bodo zajeti vsi različni deli prstnega odtisa</translation>
@@ -5320,7 +5314,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="952992212772159698">Ni aktivirano</translation>
 <translation id="957960681186851048">Spletno mesto je poskušalo samodejno prenesti več datotek</translation>
 <translation id="9580706199804957">Ni se bilo mogoče povezati z Googlovimi storitvami</translation>
-<translation id="958416628331784386">Na tem zavihku se predvaja videoposnetek v načinu slike v sliki.</translation>
 <translation id="960719561871045870">Koda operaterja</translation>
 <translation id="960987915827980018">Še približno ena ura</translation>
 <translation id="962802172452141067">Drevo mape z zaznamki</translation>

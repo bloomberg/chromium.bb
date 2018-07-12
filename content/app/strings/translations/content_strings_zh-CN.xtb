@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">显示下一个月</translation>
 <translation id="512758898067543763">行标题</translation>
 <translation id="5143125788380636750">结语</translation>
-<translation id="5153163864850940242">此视频正在“画中画”模式中播放</translation>
 <translation id="5164977714490026579">值必须大于或等于 <ph name="MINIMUM" />。</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">请在“<ph name="ATSIGN" />”前面输入内容。“<ph name="INVALIDADDRESS" />”不完整。</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">计量条</translation>
 <translation id="6166809985690652833">后记</translation>
 <translation id="6213469881011901533">词汇表</translation>
-<translation id="6310801910862476708">退出“画中画”模式</translation>
 <translation id="6398862346408813489">显示月份选择面板</translation>
 <translation id="6404546809543547843">音频时间进度条</translation>
 <translation id="6453774872122745852">致谢</translation>
@@ -220,7 +218,6 @@
 <translation id="860475260694818407">目录</translation>
 <translation id="8613126697340063924">控制远程播放</translation>
 <translation id="862370744433916922">副标题</translation>
-<translation id="8741316211671074806">画中画</translation>
 <translation id="8750798805984357768">请从这些选项中选择一个。</translation>
 <translation id="8785498733064193001">开始播放</translation>
 <translation id="8808573423886751634">章节</translation>
@@ -238,6 +235,7 @@
 <translation id="9132465097189459683">其他...</translation>
 <translation id="9138385573473225930">提醒</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />，从 <ph name="WEEK_START_DATE" />开始</translation>
+<translation id="916607977885256133">画中画</translation>
 <translation id="9168329111483466115">脚注</translation>
 <translation id="954003015749068518">进入“画中画”模式</translation>
 <translation id="966787709310836684">菜单</translation>

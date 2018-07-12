@@ -157,10 +157,12 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="6394232988457703198">Mali by ste reštartovať Chromium.</translation>
 <translation id="6400072781405947421">Chromium nemusí fungovať správne, pretože v systéme Mac OS X 10.9 už nie je podporovaný.</translation>
 <translation id="6403826409255603130">Chromium je webový prehliadač, ktorý spúšťa webové stránky a aplikácie rýchlosťou svetla. Je rýchly, stabilný a ľahko sa používa. S ochranou proti škodlivému softvéru a phishingu, ktorá je zabudovaná do prehliadača Chromium, môžete prehliadať web bezpečnejšie.</translation>
+<translation id="641451971369018375">Komunikuje s Googlom s cieľom zlepšiť prehliadanie a Chromium</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium sa reštartuje o 1 sekundu}few{Chromium sa reštartujte o # sekundy}many{Chromium sa reštartujte o # sekundy}other{Chromium sa reštartujte o # sekúnd}}</translation>
 <translation id="6475912303565314141">Tiež určuje, ktorá stránka sa zobrazí pri spustení prehliadača Chromium.</translation>
 <translation id="6485906693002546646">Na synchronizáciu prehliadača Chromium používate účet <ph name="PROFILE_EMAIL" />. Ak chcete upraviť predvoľby synchronizácie alebo používať prehliadač Chromium bez účtu Google, prejdite na <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Odinštalovať Chromium</translation>
+<translation id="6570579332384693436">Chromium odošle text zadaný v textových poliach Googlu s cieľom opraviť pravopisné chyby</translation>
 <translation id="6598877126913850652">Prejsť do nastavení upozornení prehliadača Chromium</translation>
 <translation id="6664239887951090350">{0,plural, =0{Chromium sa teraz reštartuje}=1{Chromium sa reštartuje o 1 sekundu}few{Chromium sa reštartuje o # sekundy}many{Chromium sa reštartuje o # sekundy}other{Chromium sa reštartuje o # sekúnd}}</translation>
 <translation id="6676384891291319759">Prístup do siete Internet</translation>

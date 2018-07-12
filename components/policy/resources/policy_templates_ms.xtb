@@ -223,12 +223,6 @@
       Dasar ini harus ditetapkan kepada URL yang <ph name="PRODUCT_OS_NAME" /> boleh gunakan untuk memuat turun Syarat Perkhidmatan. Syarat Perkhidmatan mestilah dalam teks biasa, bertindak sebagai teks jenis MIME/biasa. Penanda tidak dibenarkan.</translation>
 <translation id="1750315445671978749">Sekat semua muat turun</translation>
 <translation id="1781356041596378058">Dasar ini turut mengawal akses ke Pilihan Pembangun Android. Jika anda menetapkan dasar ini kepada benar, pengguna tidak dapat mengakses Pilihan Pembangun. Jika anda menetapkan dasar ini kepada palsu atau membiarkannya tidak ditetapkan, pengguna dapat mengakses Pilihan Pembangun dengan mengetik nombor binaan sebanyak tujuh kali dalam apl tetapan Android.</translation>
-<translation id="178832255504524723">Konfigurasikan URL tukar kata laluan (skema HTTP dan HTTPS sahaja). Perkhidmatan perlindungan kata laluan akan menghantar pengguna ke URL ini untuk menukar kata laluan mereka jika mereka terkena pancingan data.
-      Untuk membolehkan <ph name="PRODUCT_NAME" /> menangkap cap jari kata laluan yang baharu itu dengan betul di halaman tukar kata laluan ini, sila pastikan halaman tukar kata laluan anda mematuhi garis panduan di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Jika tetapan ini didayakan, maka perkhidmatan perlindungan kata laluan akan menghantar pengguna ke URL ini untuk menukar kata laluan mereka jika mereka terkena pancingan data.
-      Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perkhidmatan perlindungan kata laluan akan menghantar pengguna ke https://myaccounts.google.com untuk menukar kata laluan mereka.
-      Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="1797233582739332495">Tunjukkan gesaan berulang kepada pengguna yang menunjukkan pelancaran semula diperlukan</translation>
 <translation id="1803646570632580723">Senarai apl berpin untuk dipaparkan dalam pelancar</translation>
 <translation id="1808715480127969042">Sekat kuki pada tapak ini</translation>
@@ -1427,14 +1421,6 @@
 <translation id="4980635395568992380">Jenis data:</translation>
 <translation id="4983201894483989687">Benarkan pemalam yang lapuk dijalankan</translation>
 <translation id="4988291787868618635">Tindakan yang perlu diambil apabila kelewatan melahu dicapai</translation>
-<translation id="4990301296093321860">Membenarkan anda mengawal pencetusan amaran perlindungan kata laluan. Perlindungan kata laluan memaklumi pengguna apabila mereka menggunakan semula kata laluan yang dilindungi pada tapak yang mungkin mencurigakan.
-
-      Anda boleh menggunakan dasar 'PasswordProtectionLoginURLs' dan 'PasswordProtectionChangePasswordURL' untuk menatarajah kata laluan yang hendak dilindungi.
-
-      Jika dasar ini ditetapkan kepada 'PasswordProtectionWarningOff', tiada amaran perlindungan kata laluan akan ditunjukkan.
-      Jika dasar ini ditetapkan kepada 'PasswordProtectionWarningOnPasswordReuse', amaran perlindungan kata laluan akan ditunjukkan apabila pengguna menggunakan semula kata laluan yang dilindungi pada mana-mana tapak yang tidak disenaraiputihkan.
-      Jika dasar ini ditetapkan kepada 'PasswordProtectionWarningOnPhishingReuse', amaran perlindungan kata laluan akan ditunjukkan apabila pengguna menggunakan semula kata laluan yang dilindungi pada tapak pancingan data.
-      Jika dasar ini dibiarkan tidak ditetapkan, amaran perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan yang dilindungi pada tapak pancingan data tetapi pengguna boleh menukar tetapan ini.</translation>
 <translation id="4995548127349206948">Sama ada pengesahan NTLMv2 didayakan.</translation>
 <translation id="5047604665028708335">Benarkan akses ke tapak di luar pek kandungan</translation>
 <translation id="5052081091120171147">Jika didayakan, dasar ini memaksa sejarah penyemakan imbas diimport dari penyemak imbas lalai semasa. Jika didayakan, dasar ini juga memberikan kesan terhadap dialog import.
@@ -1967,13 +1953,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika dasar ini dibiarkan tanpa ditetapkan atau senarai tersebut kosong, semua skim akan boleh diakses dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Tetapan pengguna terurus setempat</translation>
-<translation id="6654559957643809067">Membolehkan ramalan rangkaian dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
-
-      Tetapan ini akan mengawal praambilan DNS, TCP dan prasambungan dan prapemaparan SSL halaman web.
-
-      Jika anda menetapkan pilihan tetapan kepada 'sentiasa', 'jangan sekali-kali' atau 'Wi-Fi sahaja', pengguna tidak boleh mengubah atau mengatasi tetapan ini dalam <ph name="PRODUCT_NAME" />.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, ramalan rangkaian akan didayakan tetapi pengguna akan boleh mengubahnya.</translation>
 <translation id="6658245400435704251">Menyatakan bilangan saat sehingga peranti boleh melambatkan muat turun kemas kini secara rawak dari masa kemas kini mula ditolak keluar ke pelayan. Peranti mungkin menunggu sebahagian masa ini dari segi masa jam dinding dan bahagian yang selebihnya dari segi bilangan semakan kemas kini. Dalam apa jua keadaan, serakan atas disempadani oleh jumlah masa yang tetap supaya peranti tidak sekali-kali akan tersekat menunggu selama-lamanya untuk memuat turun kemas kini.</translation>
 <translation id="6665670272107384733">Tetapkan kekerapan pengguna perlu memasukkan kata laluan untuk menggunakan buka kunci pantas</translation>
 <translation id="6681229465468164801">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dihalang daripada meminta pengguna memberi tapak tersebut akses kepada peranti USB.

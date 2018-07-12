@@ -157,10 +157,12 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="6394232988457703198">Dapat mo nang i-restart ngayon ang Chromium.</translation>
 <translation id="6400072781405947421">Maaaring hindi gumana nang maayos ang Chromium dahil hindi na ito sinusuportahan sa Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Ang Chromium ay isang web browser na nagpapatakbo ng mga webpage at application sa bilis ng kidlat. Ito ay mabilis, maaasahan, at madaling gamitin. Mas maingat na mag-browse sa web gamit ang proteksyon ng Chromium laban sa malware at phishing.</translation>
+<translation id="641451971369018375">Nakikipag-ugnayan sa Google para pahusayin ang pag-browse at Chromium</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Magre-restart ang Chromium pagkalipas ng 1 segundo}one{Magre-restart ang Chromium pagkalipas ng # segundo}other{Magre-restart ang Chromium pagkalipas ng # na segundo}}</translation>
 <translation id="6475912303565314141">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chromium.</translation>
 <translation id="6485906693002546646">Ginagamit mo ang <ph name="PROFILE_EMAIL" /> upang i-sync ang iyong bagay sa Chromium. Upang ma-update ang iyong kagustuhan sa pag-sync o upang magamit ang Chromium nang walang Google account, bisitahin ang <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">I-uninstall ang Chromium</translation>
+<translation id="6570579332384693436">Para maayos ang mga error sa pagbabaybay, ipinapadala ng Chromium sa Google ang text na na-type mo sa mga text field</translation>
 <translation id="6598877126913850652">Pumunta sa mga setting ng notification ng Chromium</translation>
 <translation id="6664239887951090350">{0,plural, =0{Muli nang ilulunsad ang Chromium}=1{Muling ilulunsad ang Chromium sa loob ng 1 segundo}one{Muling ilulunsad ang Chromium sa loob ng # segundo}other{Muling ilulunsad ang Chromium sa loob ng # na segundo}}</translation>
 <translation id="6676384891291319759">I-access ang Internet</translation>

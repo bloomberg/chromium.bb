@@ -330,6 +330,7 @@
 <translation id="3234666976984236645">Mindig észlelje a fontos tartalmat ezen a webhelyen</translation>
 <translation id="3254409185687681395">Könyvjelző hozzáadása ehhez az oldalhoz</translation>
 <translation id="3270847123878663523">&amp;Átrendezés visszavonása</translation>
+<translation id="3280511504953918101">Ezt a név jelenik meg majd a Google Payments-fiók létrehozásakor is.</translation>
 <translation id="3282497668470633863">Adja meg a kártyán szereplő nevet</translation>
 <translation id="3287510313208355388">Letöltés online állapotban</translation>
 <translation id="3293642807462928945">További információ a(z) <ph name="POLICY_NAME" /> házirendről</translation>
@@ -801,6 +802,7 @@
 <translation id="6831043979455480757">Fordítás</translation>
 <translation id="6839929833149231406">Körzet</translation>
 <translation id="6852204201400771460">Újratölti az alkalmazást?</translation>
+<translation id="6865412394715372076">Ez a kártya jelenleg nem ellenőrizhető</translation>
 <translation id="6874604403660855544">&amp;Hozzáadás újra</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Ezt a házirendszintet a rendszer nem támogatja.</translation>
@@ -1048,6 +1050,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />. A válasz: <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">A kapcsolat (<ph name="DOMAIN" />) nem titkosított.</translation>
 <translation id="8718314106902482036">A fizetés nem fejeződött be</translation>
+<translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, keresési javaslat</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="8728672262656704056">Ön inkognitómódra váltott</translation>
 <translation id="8730621377337864115">Kész</translation>

@@ -24,6 +24,7 @@
 <translation id="3805899903892079518">Chromium не може да приступа сликама или видео снимцима. Омогућите приступ у iOS Settings (Подешавања iOS-а) &gt; Privacy (Приватност) &gt; Photos (Слике).</translation>
 <translation id="4024541897090868497">Да би вам картице биле доступне на свим уређајима, пријавите се у Chromium.</translation>
 <translation id="4241912885070669028">Одјављујете се са налога којим управља <ph name="SIGNOUT_MANAGED_DOMAIN" />. То ће избрисати Chromium податке са овог уређаја, али ће подаци остати на Google налогу.</translation>
+<translation id="4272892696084633551">Помозите нам да побољшамо Chromium-ове функције и учинак</translation>
 <translation id="4555020257205549924">Када је ова функција укључена, Chromium ће нудити да преводи странице написане на другим језицима помоћу Google преводиоца. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Овде ће се приказати картице које сте отворили у Chromium-у на другим уређајима.</translation>
 <translation id="495292094137889840">Почните да користите Chromium QR скенер</translation>
@@ -33,6 +34,7 @@
 <translation id="5945387852661427312">Пријављујете се помоћу налога којим управља <ph name="DOMAIN" /> и дајете његовом администратору контролу над својим Chromium подацима. Подаци ће постати трајно повезани са тим налогом. Одјављивањем из Chromium-а ћете избрисати податке са овог уређаја, али ће они остати сачувани на Google налогу.</translation>
 <translation id="6068866989048414399">Chromium услови коришћења услуге</translation>
 <translation id="6268381023930128611">Желите ли да се одјавите из Chromium-а?</translation>
+<translation id="641451971369018375">Комуницира са Google-ом ради побољшања прегледања и Chromium-а</translation>
 <translation id="6424492062988593837">Chromium је управо постао бољи! Доступна је нова верзија.</translation>
 <translation id="6604711459180487467">Побољшајте доживљај у Chromium-у на основу локације.</translation>
 <translation id="6626296268883197964">Ако користите ову апликацију, прихватате Chromium <ph name="BEGIN_LINK_TOS" />услове коришћења услуге<ph name="END_LINK_TOS" /> и <ph name="BEGIN_LINK_PRIVACY" />Обавештење о приватности<ph name="END_LINK_PRIVACY" />.</translation>

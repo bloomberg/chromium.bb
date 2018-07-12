@@ -222,12 +222,6 @@
       Politica trebuie setată la o adresă URL de la care <ph name="PRODUCT_OS_NAME" /> poate descărca Termenii și condițiile. Termenii și condițiile trebuie să fie în format de text simplu, de tip MIME text/plain. Nu se permite limbajul de markup.</translation>
 <translation id="1750315445671978749">Blochează toate descărcările</translation>
 <translation id="1781356041596378058">Această politică controlează și accesul la Opțiunile pentru dezvoltatori Android. Dacă această politică este activată, utilizatorii nu pot accesa Opțiunile pentru dezvoltatori. Dacă această politică este dezactivată sau nu este configurată, utilizatorii pot accesa Opțiunile pentru dezvoltatori atingând de șapte ori numărul versiunii din aplicația Setări Android.</translation>
-<translation id="178832255504524723">Configurează adresa URL de modificare a parolei (doar schemele HTTP și HTTPS). Serviciul de protecție prin parolă va direcționa utilizatorii la această adresă URL pentru a-și schimba parolele în cazul în care acestea au fost compromise prin phishing.
-      Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect noua amprentă a parolei pe această pagină de schimbare a parolei, asigură-te că pagina de schimbare a parolei respectă regulile prevăzute în https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Dacă această setare este activată, serviciul de protecție prin parolă va direcționa utilizatorii la această adresă URL pentru a-și schimba parolele în cazul în care acestea au fost compromise prin phishing.
-      Dacă această setare este dezactivată sau nu este configurată, serviciul de protecție prin parolă va direcționa utilizatorii la https://myaccounts.google.com pentru a-și schimba parola.
-      Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="1797233582739332495">Afișează utilizatorului o solicitare recurentă prin care se indică faptul că relansarea este obligatorie</translation>
 <translation id="1803646570632580723">Listare aplicații fixate de afișat în lansator</translation>
 <translation id="1808715480127969042">Blochează cookie-urile de pe aceste site-uri</translation>
@@ -1391,14 +1385,6 @@
 <translation id="4980635395568992380">Tip de date:</translation>
 <translation id="4983201894483989687">Permite rularea pluginurilor învechite</translation>
 <translation id="4988291787868618635">Măsura care se va lua la atingerea intervalului maxim de inactivitate</translation>
-<translation id="4990301296093321860">Îți permite să controlezi declanșarea avertismentului privind protecția prin parolă. Protecția prin parolă îi avertizează pe utilizatori când refolosesc parola protejată pe site-uri potențial suspecte.
-
-      Poți folosi politicile „PasswordProtectionLoginURLs” și „PasswordProtectionChangePasswordURL” pentru a configura parola protejată.
-
-      Dacă această politică este setată la „PasswordProtectionWarningOff”, nu se va afișa niciun avertisment privind protecția prin parolă.
-      Dacă această politică este setată la „PasswordProtectionWarningOnPasswordReuse”, avertismentul privind protecția prin parolă se va afișa când utilizatorii refolosesc parolele protejate pe site-uri care nu sunt trecute în lista albă.
-      Dacă această politică este setată la „PasswordProtectionWarningOnPhishingReuse”, avertismentul privind protecția prin parolă se va afișa când utilizatorii refolosesc parolele protejate pe site-uri de phishing.
-      Dacă această politică nu este configurată, avertismentul privind protecția prin parolă se va declanșa când utilizatorii refolosesc parolele protejate pe site-uri de phishing, dar utilizatorul poate modifica această setare.</translation>
 <translation id="4995548127349206948">Dacă este activată autentificarea NTLMv2.</translation>
 <translation id="5047604665028708335">Se permite accesul la site-urile din afara pachetelor de conținut</translation>
 <translation id="5052081091120171147">Dacă este activată, această politică forțează importarea istoricului de navigare din browserul prestabilit actual. Dacă este activată, această politică afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, istoricul de navigare nu va fi importat. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
@@ -1899,13 +1885,6 @@
 
       Dacă această politică este neconfigurată sau dacă lista este goală, toate schemele vor putea fi accesate în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Setări pentru utilizatorii gestionați local</translation>
-<translation id="6654559957643809067">Activează anticiparea în rețea în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice această setare.
-
-      Aceasta controlează atât preluarea anticipată a datelor DNS, cât și conectarea anticipată TCP și SSL și încărcarea anticipată a paginilor web.
-
-      Dacă setezi această preferință la „întotdeauna”, „niciodată” sau „numai prin Wi-Fi”, utilizatorii nu pot modifica sau suprascrie această setare în <ph name="PRODUCT_NAME" />.
-
-      Dacă această politică nu este configurată, anticiparea în rețea va fi activată, dar utilizatorul o va putea modifica.</translation>
 <translation id="6658245400435704251">Specifică numărul de secunde până la care un dispozitiv poate întârzia în mod aleatoriu descărcarea unei actualizări, din momentul în care respectiva actualizare a fost publicată pe server. O parte din perioada în care dispozitivul așteaptă efectuarea actualizării poate fi exprimată în termeni temporali, iar partea rămasă printr-un număr de verificări ale existenței unei actualizări. În orice caz, difuzarea are ca limită superioară o valoare constantă de timp, astfel încât un dispozitiv nu poate rămâne niciodată blocat definitiv în așteptarea descărcării unei actualizări.</translation>
 <translation id="6665670272107384733">Setează frecvența cu care un utilizator trebuie să introducă parola pentru a folosi deblocarea rapidă</translation>
 <translation id="6681229465468164801">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile împiedicate să ceară utilizatorului să le acorde acces la un dispozitiv USB.

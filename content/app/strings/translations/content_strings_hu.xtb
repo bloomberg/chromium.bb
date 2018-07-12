@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">A következő hónap megjelenítése</translation>
 <translation id="512758898067543763">sorfejléc</translation>
 <translation id="5143125788380636750">végszó</translation>
-<translation id="5153163864850940242">A videó lejátszása kép a képben módban történik</translation>
 <translation id="5164977714490026579">Az érték legyen nagyobb vagy egyenlő, mint <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Kérjük, adja meg a „<ph name="ATSIGN" />” előtti részt is. A „<ph name="INVALIDADDRESS" />” cím nem teljes.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">mérő</translation>
 <translation id="6166809985690652833">utószó</translation>
 <translation id="6213469881011901533">szószedet</translation>
-<translation id="6310801910862476708">Kilépés a kép a képben funkcióból</translation>
 <translation id="6398862346408813489">A hónapválasztási panel megjelenítése</translation>
 <translation id="6404546809543547843">hang idővonalának vezérlője</translation>
 <translation id="6453774872122745852">köszönetnyilvánítás</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">médiafájlok letöltése</translation>
 <translation id="6981594929165378967">beszúrás</translation>
 <translation id="6989848892321993519">Legalább <ph name="MIN_CHARACTERS" /> karakter hosszú szöveget adjon meg (jelenleg 1 karaktert használ).</translation>
+<translation id="7090364526657522309">Linux betűtípus-szolgáltatás</translation>
 <translation id="709897737746224366">Kérjük, tartsa magát a kívánt formátumhoz.</translation>
 <translation id="7139483182332611405">bevezető</translation>
 <translation id="7223624360433298498">eltelt idő</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">tartalomjegyzék</translation>
 <translation id="8613126697340063924">távoli lejátszás kezelése</translation>
 <translation id="862370744433916922">felirat</translation>
-<translation id="8741316211671074806">Kép a képben</translation>
 <translation id="8750798805984357768">Kérjük, válassza ki az egyik opciót.</translation>
 <translation id="8785498733064193001">lejátszás indítása</translation>
 <translation id="8808573423886751634">fejezet</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">Más...</translation>
 <translation id="9138385573473225930">értesítés</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />. hét (<ph name="WEEK_START_DATE" />-i dátummal kezdődik)</translation>
+<translation id="916607977885256133">Kép a képben</translation>
 <translation id="9168329111483466115">lábjegyzet</translation>
 <translation id="954003015749068518">belépés a kép a képben funkcióba</translation>
 <translation id="966787709310836684">menü</translation>

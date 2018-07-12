@@ -454,7 +454,6 @@
 <translation id="1657406563541664238">Auta parantamaan tuotetta <ph name="PRODUCT_NAME" /> lähettämällä automaattisesti käyttötilastoja ja virheraportteja Googlelle.</translation>
 <translation id="1658424621194652532">Tämä sivu käyttää mikrofoniasi.</translation>
 <translation id="1660204651932907780">Salli sivustojen toistaa ääniä (suositus)</translation>
-<translation id="1660938185063657230">Vahvista suojausavain</translation>
 <translation id="1661156625580498328">Pakota AES-salaus (suositus).</translation>
 <translation id="1661245713600520330">Tällä sivulla luetellaan kaikki pääprosessiin ladatut moduulit sekä myöhemmin ladattavaksi rekisteröidyt moduulit.</translation>
 <translation id="166179487779922818">Salasana on liian lyhyt.</translation>
@@ -566,7 +565,6 @@
 <translation id="1818007989243628752">Poista salasana: <ph name="USERNAME" /></translation>
 <translation id="1819721979226826163">Valitse Sovellusilmoitukset &gt; Google Play Palvelut.</translation>
 <translation id="1826516787628120939">Tarkistetaan</translation>
-<translation id="1827750274519118478">Videon toisto kuva kuvassa ‑tilassa lopetetaan.</translation>
 <translation id="1828378091493947763">Laite ei tue tätä laajennusta.</translation>
 <translation id="1828901632669367785">Tulosta järjestelmän tulostusikkunalla...</translation>
 <translation id="1829192082282182671">L&amp;oitonna</translation>
@@ -2464,7 +2462,6 @@
 <translation id="4856478137399998590">Tiedonsiirtopalvelu on aktivoitu ja valmis käyttöön</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Avaa kaikki incognito-ikkunassa}=1{Avaa incognito-ikkunassa}other{Avaa kaikki # incognito-ikkunassa}}</translation>
 <translation id="4858913220355269194">Litti</translation>
-<translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> – Video toistetaan kuva kuvassa ‑tilassa</translation>
 <translation id="4862050643946421924">Laitetta lisätään…</translation>
 <translation id="4862642413395066333">OCSP-vastauksien allekirjoittaminen</translation>
 <translation id="4863769717153320198">Näyttää olevan <ph name="WIDTH" /> x <ph name="HEIGHT" /> (oletus)</translation>
@@ -4147,7 +4144,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7427348830195639090">Taustasivu: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Avaa kaikki uudessa ikkunassa}=1{Avaa kaikki uudessa ikkunassa}other{Avaa kaikki # uudessa ikkunassa}}</translation>
 <translation id="7434509671034404296">Kehittäjille</translation>
-<translation id="7436470008146509879">Määritä Linux: <ph name="DEVICE_TYPE" /></translation>
 <translation id="7436921188514130341">Harmin paikka! Uudelleennimeämisen aikana tapahtui virhe.</translation>
 <translation id="7441830548568730290">Muut käyttäjät</translation>
 <translation id="7442465037756169001">Hangouts Meet ‑laitteistosi on valmis määritettäväksi.</translation>
@@ -4445,7 +4441,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7881969471599061635">Poista tekstitykset käytöstä</translation>
 <translation id="7882358943899516840">Palveluntarjoajan tyyppi</translation>
 <translation id="7885253890047913815">Uusimmat kohteet</translation>
-<translation id="7886917304091689118">Käynnissä Chromessa</translation>
 <translation id="7887334752153342268">Monista</translation>
 <translation id="7887864092952184874">Laitepari muodostettu Bluetooth-hiiren kanssa</translation>
 <translation id="7889565820482017512">Näyttökoko</translation>
@@ -4616,7 +4611,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8118860139461251237">hallinnoida latauksiasi</translation>
 <translation id="81238879832906896">Kelta-valkoinen kukka</translation>
 <translation id="8124313775439841391">Hallinnoitu ONC</translation>
-<translation id="8125562866093998907">Sivusto haluaa vahvistaa suojausavaimesi parantaakseen tilisi turvallisuutta.</translation>
 <translation id="813082847718468539">Näytä sivuston tiedot</translation>
 <translation id="8131740175452115882">Vahvista</translation>
 <translation id="8133676275609324831">Näytä kan&amp;siossa</translation>
@@ -4995,7 +4989,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8736288397686080465">Tämä sivusto on päivitetty taustalla.</translation>
 <translation id="8737685506611670901">Avata <ph name="PROTOCOL" />-linkit palvelun <ph name="REPLACED_HANDLER_TITLE" /> sijaan.</translation>
 <translation id="8737709691285775803">Shill</translation>
-<translation id="8741316211671074806">Kuva kuvassa</translation>
 <translation id="8743390665131937741">Koko näytön zoomauksen taso:</translation>
 <translation id="8743864605301774756">Päivitetty 1 t sitten</translation>
 <translation id="874689135111202667">{0,plural, =1{Ladataanko sivustoon yksi tiedosto?}other{Ladataanko sivustoon # tiedostoa?}}</translation>
@@ -5269,6 +5262,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="9158715103698450907">Hups! Todennuksen aikana tapahtui verkkovirhe. Tarkista internetyhteytesi ja yritä uudelleen.</translation>
 <translation id="9161070040817969420">Alakehykset sivustolle <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">Lähetä järjestelmädataa. Tämä laite lähettää tällä hetkellä diagnostiikkadataa ja laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Omistaja on ottanut tämän asetuksen käyttöön. Jos olet ottanut käyttöön verkko- ja sovellustoiminnan lisäominaisuuksia, tietoja säilytetään tililläsi, joten voit hallinnoida niitä Omat tapahtumat ‑sivulla. <ph name="BEGIN_LINK1" />Lisätietoja<ph name="END_LINK1" /></translation>
+<translation id="916607977885256133">Kuva kuvassa</translation>
 <translation id="9169496697824289689">Näytä pikanäppäimet</translation>
 <translation id="9169931577761441333">Lisää <ph name="APP_NAME" /> aloitusnäytölle</translation>
 <translation id="9170397650136757332">Tallenna sormenjälkesi kokonaisuudessaan liikuttamalla sormeasi varovasti.</translation>
@@ -5319,7 +5313,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="952992212772159698">Ei aktivoitu</translation>
 <translation id="957960681186851048">Tämä sivusto yrittää ladata useita tiedostoja automaattisesti</translation>
 <translation id="9580706199804957">Google-palveluihin ei saatu yhteyttä.</translation>
-<translation id="958416628331784386">Tämä välilehti toistaa videota kuva kuvassa ‑tilassa.</translation>
 <translation id="960719561871045870">Operaattorikoodi</translation>
 <translation id="960987915827980018">Noin tunti jäljellä</translation>
 <translation id="962802172452141067">Kirjanmerkkien kansiopuu</translation>

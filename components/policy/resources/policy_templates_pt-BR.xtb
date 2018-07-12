@@ -217,12 +217,6 @@
       A política deve ser definida para um URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> possa fazer o download dos Termos de Serviço. Os Termos de Serviço devem estar em texto sem formação, com tipo de texto MIME text/plain. Não são permitidas marcações.</translation>
 <translation id="1750315445671978749">Bloquear todos os downloads</translation>
 <translation id="1781356041596378058">Esta política também controla o acesso às Opções do desenvolvedor do Android. Se você configurar essa política como true, os usuários não poderão acessar as Opções do desenvolvedor. Se configurá-la como false ou deixá-la sem definição, os usuários poderão acessar as Opções do desenvolvedor tocado sete vezes no número da versão no app Config. do Android.</translation>
-<translation id="178832255504524723">Configura o URL de alteração de senha (somente esquemas HTTP e HTTPS). O serviço de proteção de senha enviará esse URL aos usuários para alterar senhas, caso eles tenham sofrido phishing.
-      Para que o <ph name="PRODUCT_NAME" /> capture corretamente a impressão digital da nova senha nessa página de alteração de senha, verifique se a página de alteração segue as diretrizes que constam em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se esta configuração estiver ativada, o serviço de proteção de senha enviará esse URL aos usuários para que alterem as respectivas senhas, caso tenham sofrido phishing.
-      Se esta configuração estiver desativada ou se não estiver definida, o serviço de proteção de senha redirecionará os usuários para https://myaccounts.google.com para que alterem a senha.
-      Esta política não está disponível em instâncias do Windows que não estejam vinculadas a um domínio <ph name="MS_AD_NAME" />.</translation>
 <translation id="1797233582739332495">Mostrar um prompt recorrente ao usuário indicando que é necessário reiniciar</translation>
 <translation id="1803646570632580723">Lista de aplicativos fixados a serem mostrados no iniciador</translation>
 <translation id="1808715480127969042">Bloquear cookies nestes sites</translation>
@@ -1374,14 +1368,6 @@
 <translation id="4980635395568992380">Tipo do dado:</translation>
 <translation id="4983201894483989687">Permitir a execução de plug-ins que estão desatualizados</translation>
 <translation id="4988291787868618635">Ação a ser realizada quando o intervalo de inatividade for atingido</translation>
-<translation id="4990301296093321860">Permite que você controle o acionamento do aviso de proteção de senha. A proteção de senha alerta o usuário quando ele reutiliza a senha protegida em sites possivelmente suspeitos.
-
-      É possível usar as políticas "PasswordProtectionLoginURLs" e "PasswordProtectionChangePasswordURL" para configurar qual senha proteger.
-
-      Se esta política for definida como "PasswordProtectionWarningOff", nenhum aviso de proteção de senha será exibido.
-      Se esta política for definida como "PasswordProtectionWarningOnPasswordReuse", o aviso de proteção de senha será exibido quando o usuário reutilizar as senhas protegidas em sites que não estejam na lista de permissões.
-      Se esta política for definida como "PasswordProtectionWarningOnPhishingReuse", o aviso de proteção de senha será exibido quando o usuário reutilizar as senhas protegidas em sites de phishing.
-      Se esta política não for definida, o aviso de proteção de senha será acionado quando o usuário reutilizar senhas protegidas em sites de phishing, mas ele conseguirá alterar essa configuração.</translation>
 <translation id="4995548127349206948">Se a autenticação NTLMv2 está ativada.</translation>
 <translation id="5047604665028708335">Permitir acesso a sites fora de pacotes de conteúdo</translation>
 <translation id="5052081091120171147">Se ativada, esta política força a importação do histórico de navegação a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum histórico de navegação é importado. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
@@ -1873,13 +1859,6 @@
 
       Se esta política não for definida ou se a lista estiver vazia, todos os esquemas serão acessíveis no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Configurações de usuários gerenciados localmente</translation>
-<translation id="6654559957643809067">Ativa a previsão de redes no <ph name="PRODUCT_NAME" /> e impede que os usuários alterem essa configuração.
-
-      Controla a pré-chamada de DNS, a pré-conexão de SSL e TCP e o pré-processamento de páginas da Web.
-
-      Se você configurar essa preferência para "sempre", "nunca" ou "apenas Wi-Fi", os usuários não poderão alterá-la ou substituí-la no <ph name="PRODUCT_NAME" />.
-
-      Se esta política não é configurada, a previsão de redes fica ativada, e o usuário pode alterá-la.</translation>
 <translation id="6658245400435704251">Especifica o número de segundos que um dispositivo pode chegar a atrasar aleatoriamente o download de uma atualização a partir do momento em que a atualização foi lançada no servidor. O dispositivo pode esperar uma parte desse intervalo de tempo em tempo cronológico e o restante contado em número de verificações de atualizações. Em todo caso, a dispersão tem como limite máximo uma quantidade constante de tempo para que o dispositivo nunca fique parado indefinidamente esperando para fazer o download de uma atualização.</translation>
 <translation id="6665670272107384733">Definir com que frequência o usuário precisa digitar a senha para usar o desbloqueio rápido</translation>
 <translation id="6681229465468164801">Permite definir uma lista de padrões de URL que especificam quais sites não podem pedir que o usuário conceda acesso a um dispositivo USB.

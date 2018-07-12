@@ -155,10 +155,12 @@
 <translation id="6394232988457703198">Chromium jetzt neu starten.</translation>
 <translation id="6400072781405947421">Chromium funktioniert unter Umständen nicht ordnungsgemäß, da es unter Mac OS X 10.9 nicht mehr unterstützt wird.</translation>
 <translation id="6403826409255603130">Chromium ist ein Webbrowser, der Webseiten und Apps in Sekundenschnelle lädt und dabei äußerst stabil und nutzerfreundlich ist. Dank des integrierten Malware- und Phishing-Schutzes können Sie bedenkenlos im Internet surfen.</translation>
+<translation id="641451971369018375">Mit Google kommunizieren, um das Surferlebnis und Chromium zu verbessern</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium wird in 1 Sekunde neu gestartet}other{Chromium wird in # Sekunden neu gestartet}}</translation>
 <translation id="6475912303565314141">Die Erweiterung legt auch die Seite fest, die beim Start von Chromium angezeigt wird.</translation>
 <translation id="6485906693002546646">Ihre E-Mail-Adresse <ph name="PROFILE_EMAIL" /> wird zurzeit für die Synchronisierung Ihrer Chromium-Inhalte verwendet. Wenn Sie Ihre Synchronisierungseinstellungen ändern oder Chromium ohne Google-Konto verwenden möchten, rufen Sie <ph name="SETTINGS_LINK" /> auf.</translation>
 <translation id="6510925080656968729">Chromium deinstallieren</translation>
+<translation id="6570579332384693436">Zur Behebung von Tippfehlern sendet Chromium eingegebenen Text an Google</translation>
 <translation id="6598877126913850652">Zu Chromium-Benachrichtigungseinstellungen wechseln</translation>
 <translation id="6664239887951090350">{0,plural, =0{Chromium wird jetzt neu gestartet}=1{Chromium wird in 1 Sekunde neu gestartet}other{Chromium wird in # Sekunden neu gestartet}}</translation>
 <translation id="6676384891291319759">Internetzugriff</translation>

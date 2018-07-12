@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Прикажи следећи месец</translation>
 <translation id="512758898067543763">заглавље реда</translation>
 <translation id="5143125788380636750">епилог</translation>
-<translation id="5153163864850940242">Видео се репродукује у режиму слике у слици</translation>
 <translation id="5164977714490026579">Вредност сме да буде најмање <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Унесите неки део пре „<ph name="ATSIGN" />“. Адреса „<ph name="INVALIDADDRESS" />“ је непотпуна.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">мерач</translation>
 <translation id="6166809985690652833">поговор</translation>
 <translation id="6213469881011901533">речник термина</translation>
-<translation id="6310801910862476708">Изађи из режима слике у слици</translation>
 <translation id="6398862346408813489">Прикажи таблу за избор месеца</translation>
 <translation id="6404546809543547843">клизач за трајање аудио-садржаја</translation>
 <translation id="6453774872122745852">признања</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">преузми медије</translation>
 <translation id="6981594929165378967">уметање</translation>
 <translation id="6989848892321993519">Продужите овај текст на бар <ph name="MIN_CHARACTERS" /> знак(ов)а (тренутно користите 1 знак).</translation>
+<translation id="7090364526657522309">Linux услуга за фонтове</translation>
 <translation id="709897737746224366">Изаберите захтевани формат.</translation>
 <translation id="7139483182332611405">предговор</translation>
 <translation id="7223624360433298498">протекло време</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">садржај</translation>
 <translation id="8613126697340063924">контролишите репродукцију на удаљеном уређају</translation>
 <translation id="862370744433916922">титл</translation>
-<translation id="8741316211671074806">Слика у слици</translation>
 <translation id="8750798805984357768">Изаберите неку од ових опција.</translation>
 <translation id="8785498733064193001">започните репродукцију</translation>
 <translation id="8808573423886751634">поглавље</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">Друго...</translation>
 <translation id="9138385573473225930">обавештење</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, од <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Слика у слици</translation>
 <translation id="9168329111483466115">фуснота</translation>
 <translation id="954003015749068518">уђи у режим слике у слици</translation>
 <translation id="966787709310836684">мени</translation>

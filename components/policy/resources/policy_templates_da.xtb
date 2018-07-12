@@ -221,12 +221,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
       Politikken skal indstilles til en webadresse, hvorfra <ph name="PRODUCT_OS_NAME" /> kan downloade servicevilkårene. Servicevilkårene skal være almindelig tekst vist som MIME-tekst. Markering er ikke tilladt.</translation>
 <translation id="1750315445671978749">Bloker alle downloads</translation>
 <translation id="1781356041596378058">Denne politik styrer også adgangen til Indstillinger for udviklere i Android. Hvis du angiver denne politik til Sand, kan brugerne ikke få adgang til Indstillinger for udviklere. Hvis du angiver denne politik til Falsk eller ikke angiver den, kan brugerne få adgang til Indstillinger for udviklere ved at trykke syv gange på build-nummeret i Android-appen Indstillinger.</translation>
-<translation id="178832255504524723">Konfigurer webadressen til ændring af adgangskoder (kun HTTP- og HTTPS-adresser). Tjenesten til adgangskodebeskyttelse sender brugerne videre til denne webadresse, så de kan ændre deres adgangskoder, hvis de er blevet udsat for phishing.
-      Sørg for, at din side til ændring af adgangskoder følger retningslinjerne på https://www.chromium.org/developers/design-documents/create-amazing-password-forms, så <ph name="PRODUCT_NAME" /> registrerer det nye fingeraftryk som adgangskode på korrekt vis på den pågældende side til ændring af adgangskoder.
-
-      Hvis denne indstilling er aktiveret, sender tjenesten til adgangskodebeskyttelse brugerne videre til denne webadresse, så de kan ændre deres adgangskoder, hvis de er blevet udsat for phishing.
-      Hvis denne indstilling er deaktiveret eller ikke er angivet, sender tjenesten til adgangskodebeskyttelse brugerne videre til https://myaccounts.google.com, så de kan ændre deres adgangskoder.
-      Politikken er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="1797233582739332495">Vis brugeren en fast meddelelse, som indikerer, at en genstart er påkrævet</translation>
 <translation id="1803646570632580723">Liste over fastgjorte apps, der skal vises på applisten</translation>
 <translation id="1808715480127969042">Bloker cookies på disse websites</translation>
@@ -1389,14 +1383,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4980635395568992380">Datatype:</translation>
 <translation id="4983201894483989687">Tillad, at der køres forældede plugins</translation>
 <translation id="4988291787868618635">Påkrævet handling for inaktivitetsforsinkelse</translation>
-<translation id="4990301296093321860">Dette giver dig mulighed for at styre aktivering af advarsler om adgangskodebeskyttelse. Advarsler om adgangskodebeskyttelse giver brugere besked, når de genbruger deres beskyttede adgangskode på websites, der potentielt kan være mistænkelige.
-
-      Du kan bruge politikkerne "PasswordProtectionLoginURLs" og "PasswordProtectionChangePasswordURL" til at konfigurere, hvilken adgangskode der skal beskyttes.
-
-      Hvis denne politik er indstillet til "PasswordProtectionWarningOff", vises der ingen advarsel om adgangskodebeskyttelse.
-      Hvis denne politik er indstillet til "PasswordProtectionWarningOnPasswordReuse", vises advarslen om adgangskodebeskyttelse, når brugeren genbruger sin beskyttede adgangskode på et website, der ikke er hvidlistet.
-      Hvis denne politik er indstillet til "PasswordProtectionWarningOnPhishingReuse", vises advarslen om adgangskodebeskyttelse, når brugeren genbruger sin beskyttede adgangskode på et phishingwebsite.
-      Hvis denne politik ikke er indstillet, udløses advarslen, når brugeren genbruger sin beskyttede adgangskode på et phishingwebsite, men brugeren kan ændre denne indstilling.</translation>
 <translation id="4995548127349206948">Om NTLMv2-godkendelse er aktiveret.</translation>
 <translation id="5047604665028708335">Tillad adgang til websites uden for indholdspakker.</translation>
 <translation id="5052081091120171147">Denne politik tvinger import af browserhistorikken fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres der ikke nogen browserdata. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
@@ -1891,13 +1877,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis denne politik ikke indstilles, eller hvis listen er tom, vil alle skemaer være tilgængelige i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Indstillinger for lokalt administrerede brugere</translation>
-<translation id="6654559957643809067">Aktiverer netværksforudsigelse i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
-
-      Dette styrer både forudhentning af DNS og forhåndstilslutning af TCP og SSL samt forhåndsgengivelse af websider.
-
-      Hvis du angiver denne indstilling til "altid", "aldrig" eller "kun Wi-Fi", kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME" />.
-
-      Hvis denne politik ikke indstilles, aktiveres netværksforudsigelse, men brugeren vil kunne ændre det.</translation>
 <translation id="6658245400435704251">Angiver det antal sekunder, som en enhed på en tilfældig måde maksimalt kan forsinke en download af en opdatering fra det tidspunkt, hvor opdateringen først blev sendt ud til serveren. Enheden kan afsætte en del af denne tid i form af faktisk ventetid og den igangværende tid i form af det antal af opdateringer, der skal kontrolleres. Uanset hvad, er spredningen bundet af en øvre grænse til en konstant mængde af tid, således at en enhed aldrig kommer til at sidde fast og til evig tid vente på, at en opdatering downloades.</translation>
 <translation id="6665670272107384733">Konfigurer, hvor ofte brugeren skal indtaste adgangskoden for at bruge hurtig oplåsning.</translation>
 <translation id="6681229465468164801">Giver dig mulighed for at angive en liste med webadressemønstre, der angiver websites, som ikke må anmode brugeren om adgang til en USB-enhed.

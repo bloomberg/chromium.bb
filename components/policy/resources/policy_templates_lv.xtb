@@ -223,12 +223,6 @@
       Politikā ir jāiestata vietrādis URL, kur operētājsistēma <ph name="PRODUCT_OS_NAME" /> var lejupielādēt pakalpojumu sniegšanas noteikumus. Tiem ir jābūt rakstītiem kā vienkāršam tekstam, kas jārāda kā MIME veids “teksts/vienkāršs”. Iezīmēšana nav atļauta.</translation>
 <translation id="1750315445671978749">Bloķēt visas lejupielādes</translation>
 <translation id="1781356041596378058">Šī politika arī kontrolē piekļuvi Android izstrādātājiem paredzētajām opcijām. Ja iestatīsiet šo politiku kā patiesu, lietotāji nevarēs piekļūt izstrādātājiem paredzētajām opcijām. Ja iestatīsiet šo politiku kā aplamu vai neiestatīsiet politiku, lietotāji varēs piekļūt izstrādātājiem paredzētajām opcijām, septiņas reizes pieskaroties versijas numuram Android iestatījumu lietotnē.</translation>
-<translation id="178832255504524723">Izmantojot šo politiku, var konfigurēt paroles maiņas URL (tikai HTTP un HTTPS shēmas). Paroles aizsardzības pakalpojums novirzīs lietotājus uz šo URL, lai nomainītu paroles, ja tās ir pikšķerētas.
-      Lai <ph name="PRODUCT_NAME" /> pareizi tvertu jauno paroles ciparfailu šajā paroles maiņas lapā, paroles maiņas lapai ir jāatbilst šīm vadlīnijām: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Ja šis iestatījums ir iespējots, paroles aizsardzības pakalpojums novirzīs lietotājus uz šo URL, lai nomainītu pikšķerētas paroles.
-      Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, paroles aizsardzības pakalpojums novirzīs lietotājus uz vietni https://myaccounts.google.com, lai nomainītu paroli.
-      Šī politika nav pieejama Windows instancēs, kas nav savienotas ar <ph name="MS_AD_NAME" /> domēnu.</translation>
 <translation id="1797233582739332495">Periodiski rādīt lietotājam uzvedni par obligātu atkārtotu palaišanu</translation>
 <translation id="1803646570632580723">Saraksts ar piespraustām lietotnēm, kuras rādīt palaišanas lapā</translation>
 <translation id="1808715480127969042">Bloķē sīkfailus šajās vietnēs</translation>
@@ -1425,14 +1419,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4980635395568992380">Datu tips:</translation>
 <translation id="4983201894483989687">Atļauj palaist novecojušus spraudņus</translation>
 <translation id="4988291787868618635">Darbība, kas ir jāveic, kad ir aizritējis laiks līdz dīkstāvei</translation>
-<translation id="4990301296093321860">Ļauj kontrolēt, kad aktivizēt paroles brīdinājuma rādīšanu. Paroles aizsardzība brīdina lietotājus, ja tie atkārtoti izmanto savu aizsargāto paroli aizdomīgās vietnēs.
-
-      Varat izmantot politiku “PasswordProtectionLoginURLs” un “'PasswordProtectionChangePasswordURL”, lai konfigurētu, kuru paroli aizsargāt.
-
-      Ja šai politikai ir iestatīta vērtība “PasswordProtectionWarningOff”, paroles aizsardzības brīdinājums netiks rādīts.
-      Ja šai politikai ir iestatīta vērtība “PasswordProtectionWarningOnPasswordReuse”, paroles aizsardzības brīdinājums tiks rādīts, kad lietotāji Google pakalpojumu paroles izmantos vietnēs, kas nav iekļautas baltajā sarakstā.
-      Ja šai politikai ir iestatīta vērtība “PasswordProtectionWarningOnPhishingReuse”, paroles aizsardzības brīdinājums tiks rādīts, kad lietotāji Google pakalpojumu paroles izmantos pikšķerēšanas vietnē.
-      Ja šī politika nav iestatīta, paroles aizsardzības brīdinājums tiks aktivizēts, kad lietotāji Google pakalpojumu paroles izmantos pikšķerēšanas vietnēs (lietotāji to var mainīt).</translation>
 <translation id="4995548127349206948">Vai ir iespējota NTLMv2 autentifikācija.</translation>
 <translation id="5047604665028708335">Atļaut piekļuvi vietnēm, kas nav iekļautas satura pakotnēs.</translation>
 <translation id="5052081091120171147">Šī politika (ja tā ir iespējota) liek importēt pārlūkošanas vēsturi no pašreizējā noklusējuma pārlūka. Ja šī politika ir iespējota, tā arī maina importēšanas dialoglodziņu.
@@ -1967,13 +1953,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šī politika nav iestatīta vai saraksts ir tukšs, pārlūkā <ph name="PRODUCT_NAME" /> varēs piekļūt visām shēmām.</translation>
 <translation id="6652197835259177259">Lokāli pārvaldītu lietotāju iestatījumi</translation>
-<translation id="6654559957643809067">Pārlūkā <ph name="PRODUCT_NAME" /> tiek iespējotas tīkla prognozes, un lietotājiem tiek liegta iespēja mainīt šo iestatījumu.
-
-      Šī politika kontrolē DNS iepriekšēju ielādi, TCP un SSL iepriekšēju savienojuma izveidi un tīmekļa lapu iepriekšēju atveidi.
-
-      Ja iestatīsiet opciju “Vienmēr”, “Nekad” vai “Tikai Wi-Fi”, lietotāji pārlūkā <ph name="PRODUCT_NAME" /> nevarēs mainīt vai ignorēt šo iestatījumu.
-
-      Ja šī politika netiks iestatīta, tīkla prognozes tiks iespējotas, taču lietotājs varēs mainīt šo iestatījumu.</translation>
 <translation id="6658245400435704251">Norāda sekunžu skaitu, kuru laikā ierīce var nejaušā secībā atlikt atjauninājuma lejupielādi, sākot ar laiku, kad serveris pirmo reizi nosūtīja atjauninājumu. Daļa no šī ierīces gaidīšanas laika var būt pulksteņa laiks, un daļa — atjauninājuma pārbaužu skaits. Jebkurā gadījumā izkliede ir saistīta ar noteiktu laika periodu, lai ierīces nebūtu bezgalīgi jāgaida atjauninājuma lejupielāde.</translation>
 <translation id="6665670272107384733">Paroles ievadīšanas biežuma iestatīšana, lai varētu izmantot ātro atbloķēšanu</translation>
 <translation id="6681229465468164801">Ļauj iestatīt vietrāžu URL modeļu sarakstu ar vietnēm, kurām nav atļauts lūgt lietotājam piešķirt piekļuvi USB ierīcei.

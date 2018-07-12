@@ -223,12 +223,6 @@
       정책은 <ph name="PRODUCT_OS_NAME" />에서 서비스 약관을 다운로드할 수 있는 URL로 설정되어야 합니다. 서비스 약관은 일반 텍스트여야 하며 MIME 유형 text/plain으로 제공됩니다. 마크업은 허용되지 않습니다.</translation>
 <translation id="1750315445671978749">모든 다운로드 차단</translation>
 <translation id="1781356041596378058">이 정책은 Android 개발자 옵션 액세스 권한도 제어합니다. 이 정책을 true로 설정하는 경우 사용자는 개발자 옵션에 액세스할 수 없습니다. 이 정책을 false로 설정하거나 설정하지 않은 채로 두는 경우 Android 설정 앱에서 빌드 번호를 7번 탭하면 개발자 옵션에 액세스할 수 있습니다.</translation>
-<translation id="178832255504524723">비밀번호 변경 URL(HTTP 및 HTTPS 스키마만 해당)을 설정합니다. 사용자가 피싱을 당했을 때 비밀번호 보호 서비스에서 사용자가 비밀번호를 변경할 수 있도록 이 URL로 안내합니다.
-      <ph name="PRODUCT_NAME" />이(가) 비밀번호 변경 페이지에서 새로운 비밀번호 지문을 올바르게 캡처하도록 하려면 비밀번호 변경 페이지가 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 페이지의 가이드라인을 준수하는지 확인해 주세요.
-
-      이 설정을 사용 설정하면 사용자가 피싱을 당했을 때 비밀번호 보호 서비스에서 사용자가 비밀번호를 변경할 수 있도록 이 URL로 안내합니다.
-      이 설정을 사용 중지하거나 설정하지 않으면 비밀번호 보호 서비스에서 사용자가 비밀번호를 변경할 수 있도록 https://myaccounts.google.com으로 안내합니다.
-      <ph name="MS_AD_NAME" /> 도메인에 가입되어 있지 않은 Windows 인스턴스에는 이 정책을 사용할 수 없습니다.</translation>
 <translation id="1797233582739332495">사용자에게 재실행이 필요하다는 메시지를 반복하여 표시</translation>
 <translation id="1803646570632580723">런처에 표시되는 고정된 앱 목록</translation>
 <translation id="1808715480127969042">이 사이트에서 쿠키 차단</translation>
@@ -1422,14 +1416,6 @@
 <translation id="4980635395568992380">데이터 유형:</translation>
 <translation id="4983201894483989687">오래된 플러그인 실행 허용</translation>
 <translation id="4988291787868618635">유휴 지연 시간에 도달하면 수행할 작업</translation>
-<translation id="4990301296093321860">비밀번호 보호 경고 실행을 제어할 수 있습니다. 비밀번호 보호 알림은 사용자가 의심스러워 보이는 사이트에서 보호된 비밀번호를 재사용할 때 사용자에게 경고를 표시하는 기능입니다.
-
-      'PasswordProtectionLoginURLs' 및 'PasswordProtectionChangePasswordURL' 정책을 사용하여 어떤 비밀번호를 보호할지 구성할 수 있습니다.
-
-      이 정책이 'PasswordProtectionWarningOff'로 설정되어 있으면 비밀번호 보호 경고가 표시되지 않습니다.
-      이 정책이 'PasswordProtectionWarningOnPasswordReuse'로 설정되어 있으면 허용되지 않은 사이트에서 사용자가 보호된 비밀번호를 재사용할 때 비밀번호 보호 경고가 표시됩니다.
-      이 정책이 'PasswordProtectionWarningOnPhishingReuse'로 설정되어 있으면 피싱 사이트에서 사용자가 보호된 비밀번호를 재사용할 때 비밀번호 보호 경고가 표시됩니다.
-      이 정책이 설정되어 있지 않으면 피싱 사이트에서 사용자가 보호된 비밀번호를 재사용할 때 비밀번호 보호 경고가 실행되지만, 사용자가 이 설정을 변경할 수 있습니다.</translation>
 <translation id="4995548127349206948">NTLMv2 인증의 사용 설정 여부입니다.</translation>
 <translation id="5047604665028708335">콘텐츠 팩 외부 사이트에 대한 액세스를 허용합니다.</translation>
 <translation id="5052081091120171147">이 정책을 사용하도록 설정하면 현재 기본 브라우저에서 강제로 인터넷 사용기록을 가져옵니다. 또한 가져오기 대화상자에 영향을 미칩니다.
@@ -1963,13 +1949,6 @@
 
       이 정책이 설정되지 않았거나 목록이 비어있는 경우 <ph name="PRODUCT_NAME" />의 모든 스키마에 액세스할 수 있습니다.</translation>
 <translation id="6652197835259177259">로컬 관리 사용자 설정</translation>
-<translation id="6654559957643809067"><ph name="PRODUCT_NAME" />에서 네트워크 예측을 사용하도록 설정하고 사용자가 이 설정을 변경하지 못하게 합니다.
-
-      이는 DNS 프리패치, TCP와 SSL 사전 연결, 웹페이지 사전 렌더링을 컨트롤합니다.
-
-      이 환경설정을 '항상 사용', '사용 안함' 또는 'Wi-Fi에서만 사용'으로 설정하면 사용자는 <ph name="PRODUCT_NAME" />에서 이 설정을 변경하거나 무시할 수 없습니다.
-
-      이 정책이 설정되지 않으면 네트워크 예측이 사용 설정되지만, 사용자가 변경할 수 있습니다.</translation>
 <translation id="6658245400435704251">업데이트를 처음 서버로 푸시한 시점부터 기기가 몇 초까지 임의로 업데이트의 다운로드를 지연시킬 수 있는지 지정합니다. 기기가 이 시간의 일부를 일반 시계 시간 기준으로, 그리고 나머지 시간을 업데이트 확인 횟수 기준으로 지연시킵니다. 모든 경우, 기기가 고착되어 업데이트 다운로드를 계속 기다리지 않도록 분산의 상한이 일정 시간으로 제한되어 있습니다.</translation>
 <translation id="6665670272107384733">빠른 잠금 해제를 사용하기 위해 사용자가 비밀번호를 얼마나 자주 입력해야 하는지 설정</translation>
 <translation id="6681229465468164801">사용자에게 USB 기기 액세스 권한 허용을 요청하지 못하도록 차단된 사이트를 지정하는 URL 패턴 목록을 설정하도록 허용합니다.

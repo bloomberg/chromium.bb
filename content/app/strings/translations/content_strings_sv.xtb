@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Visa nästa månad</translation>
 <translation id="512758898067543763">radrubrik</translation>
 <translation id="5143125788380636750">epilog</translation>
-<translation id="5153163864850940242">Videon spelas upp i läget bild-i-bild</translation>
 <translation id="5164977714490026579">Värdet måste vara större än eller lika med <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Ange en del följt av <ph name="ATSIGN" />. <ph name="INVALIDADDRESS" /> är ofullständig.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">mätare</translation>
 <translation id="6166809985690652833">efterord</translation>
 <translation id="6213469881011901533">ordlista</translation>
-<translation id="6310801910862476708">Avsluta bild-i-bild-läge</translation>
 <translation id="6398862346408813489">Visa panelen för val av månad</translation>
 <translation id="6404546809543547843">tidsreglage för ljud</translation>
 <translation id="6453774872122745852">författarens tack</translation>
@@ -220,7 +218,6 @@
 <translation id="860475260694818407">innehållsförteckning</translation>
 <translation id="8613126697340063924">styra fjärruppspelning</translation>
 <translation id="862370744433916922">undertext</translation>
-<translation id="8741316211671074806">Bild i bild</translation>
 <translation id="8750798805984357768">Välj ett av följande alternativ.</translation>
 <translation id="8785498733064193001">starta uppspelning</translation>
 <translation id="8808573423886751634">kapitel</translation>
@@ -238,6 +235,7 @@
 <translation id="9132465097189459683">Annat ...</translation>
 <translation id="9138385573473225930">varning</translation>
 <translation id="9155987714137265666"><ph name="WEEK" /> som börjar den <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Bild-i-bild</translation>
 <translation id="9168329111483466115">fotnot</translation>
 <translation id="954003015749068518">öppna bild-i-bild-läge</translation>
 <translation id="966787709310836684">meny</translation>

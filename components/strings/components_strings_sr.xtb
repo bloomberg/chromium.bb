@@ -332,6 +332,7 @@
 <translation id="3234666976984236645">Увек откривај важан садржај на овом сајту</translation>
 <translation id="3254409185687681395">Обележите ову страницу</translation>
 <translation id="3270847123878663523">&amp;Опозови промену редоследа</translation>
+<translation id="3280511504953918101">Ово име ће се користити и за отварање налога за Google плаћања.</translation>
 <translation id="3282497668470633863">Додајте име на картици</translation>
 <translation id="3287510313208355388">Преузми када сам онлајн</translation>
 <translation id="3293642807462928945">Сазнајте више о смерницама <ph name="POLICY_NAME" /></translation>
@@ -802,6 +803,7 @@
 <translation id="6831043979455480757">Преведи</translation>
 <translation id="6839929833149231406">Област</translation>
 <translation id="6852204201400771460">Желите ли да поново учитате апликацију?</translation>
+<translation id="6865412394715372076">Тренутно не можемо да верификујемо ову картицу</translation>
 <translation id="6874604403660855544">&amp;Понови додавање</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Ниво смерница није подржан.</translation>
@@ -1049,6 +1051,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, одговор, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Ваша веза са доменом <ph name="DOMAIN" /> није шифрована.</translation>
 <translation id="8718314106902482036">Плаћање није довршено</translation>
+<translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, предлог за претрагу</translation>
 <translation id="8725066075913043281">Пробајте поново</translation>
 <translation id="8728672262656704056">Прешли сте у режим Без архивирања</translation>
 <translation id="8730621377337864115">Готово</translation>

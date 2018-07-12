@@ -329,6 +329,7 @@
 <translation id="3234666976984236645">Rileva sempre contenuti importanti di questo sito</translation>
 <translation id="3254409185687681395">Aggiungi ai Preferiti</translation>
 <translation id="3270847123878663523">&amp;Annulla ridisposizione</translation>
+<translation id="3280511504953918101">Questo nome verrà utilizzato anche durante la creazione del tuo account pagamenti Google.</translation>
 <translation id="3282497668470633863">Aggiungi il nome indicato sulla carta</translation>
 <translation id="3287510313208355388">Scarica quando è online</translation>
 <translation id="3293642807462928945">Scopri di più sulla norma <ph name="POLICY_NAME" /></translation>
@@ -799,6 +800,7 @@
 <translation id="6831043979455480757">Traduci</translation>
 <translation id="6839929833149231406">Area</translation>
 <translation id="6852204201400771460">Ricaricare l'app?</translation>
+<translation id="6865412394715372076">Al momento non è possibile verificare questa carta.</translation>
 <translation id="6874604403660855544">&amp;Ripeti aggiunta</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Il livello della norma non è supportato.</translation>
@@ -1045,6 +1047,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, risposta, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">La connessione a <ph name="DOMAIN" /> non è criptata.</translation>
 <translation id="8718314106902482036">Pagamento non completato</translation>
+<translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, suggerimento di ricerca</translation>
 <translation id="8725066075913043281">Riprova</translation>
 <translation id="8728672262656704056">Sei passato alla navigazione in incognito</translation>
 <translation id="8730621377337864115">Fine</translation>

@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Mostra el mes següent</translation>
 <translation id="512758898067543763">capçalera de la fila</translation>
 <translation id="5143125788380636750">epíleg</translation>
-<translation id="5153163864850940242">Aquest vídeo s'està reproduint en mode de pantalla en pantalla</translation>
 <translation id="5164977714490026579">El valor ha de ser més gran o igual que <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Introduïu un nom d'usuari seguit de "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" no és una adreça completa.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">comptador</translation>
 <translation id="6166809985690652833">cloenda</translation>
 <translation id="6213469881011901533">glossari</translation>
-<translation id="6310801910862476708">Surt del mode de pantalla en pantalla</translation>
 <translation id="6398862346408813489">Mostra el tauler de la selecció de mes</translation>
 <translation id="6404546809543547843">barra de moment de l'àudio</translation>
 <translation id="6453774872122745852">agraïments</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">baixa els fitxers multimèdia</translation>
 <translation id="6981594929165378967">inserció</translation>
 <translation id="6989848892321993519">Allarga aquest text fins a <ph name="MIN_CHARACTERS" /> caràcters o més (ara n'utilitzes 1).</translation>
+<translation id="7090364526657522309">Servei de tipus de lletra de Linux</translation>
 <translation id="709897737746224366">Feu servir el format sol·licitat.</translation>
 <translation id="7139483182332611405">prefaci</translation>
 <translation id="7223624360433298498">temps transcorregut</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">taula de continguts</translation>
 <translation id="8613126697340063924">reproducció amb comandament</translation>
 <translation id="862370744433916922">subtítol</translation>
-<translation id="8741316211671074806">Pantalla en pantalla</translation>
 <translation id="8750798805984357768">Seleccioneu una d'aquestes opcions.</translation>
 <translation id="8785498733064193001">inicia la reproducció</translation>
 <translation id="8808573423886751634">capítol</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">Altres...</translation>
 <translation id="9138385573473225930">alerta</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, a partir del dia <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Pantalla en pantalla</translation>
 <translation id="9168329111483466115">nota al peu</translation>
 <translation id="954003015749068518">ves al mode de pantalla en pantalla</translation>
 <translation id="966787709310836684">menú</translation>

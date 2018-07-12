@@ -101,6 +101,7 @@
 <translation id="1782483593938241562">End date <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Change the default download location at any time</translation>
 <translation id="1807246157184219062">Light</translation>
+<translation id="1821253160463689938">Uses cookies to remember your preferences, even if you don't visit those pages</translation>
 <translation id="1829244130665387512">Find in page</translation>
 <translation id="1832521218263067499">Security incidents</translation>
 <translation id="1853692000353488670">New incognito tab</translation>
@@ -141,6 +142,7 @@
 <translation id="2096012225669085171">Sync and personalise across devices</translation>
 <translation id="2100273922101894616">Auto Sign-in</translation>
 <translation id="2111511281910874386">Go to page</translation>
+<translation id="2120297377148151361">Activity and interactions</translation>
 <translation id="2122601567107267586">Could not open app</translation>
 <translation id="2126426811489709554">Powered by Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> saved</translation>
@@ -190,6 +192,8 @@
 <translation id="2498359688066513246">Help &amp; feedback</translation>
 <translation id="2501278716633472235">Go back</translation>
 <translation id="2512222046227390255">Auto-fill forms</translation>
+<translation id="2513403576141822879">For more settings that relate to privacy, security and data collection, see <ph name="BEGIN_LINK" />Sync and Google services<ph name="END_LINK" /></translation>
+<translation id="2523184218357549926">Sends URLs of pages that you visit to Google</translation>
 <translation id="2526148617758225454">Data Saver is on. Manage it in Settings.</translation>
 <translation id="2532336938189706096">Web View</translation>
 <translation id="2536728043171574184">Viewing an offline copy of this page</translation>
@@ -252,6 +256,7 @@
 <translation id="3089395242580810162">Open in incognito tab</translation>
 <translation id="311456632243022227">Multiple links opened in Chrome</translation>
 <translation id="3115898365077584848">Show info</translation>
+<translation id="3129938255108848489">Shows suggestions for similar pages when a page can't be found</translation>
 <translation id="3137521801621304719">Leave incognito mode</translation>
 <translation id="3148434565183091099">To get your bookmarks on all your devices, sign in to Chrome.</translation>
 <translation id="3157842584138209013">See how much data that you've saved from the More Options button</translation>
@@ -381,6 +386,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4351244548802238354">Close dialogue</translation>
 <translation id="4378154925671717803">Phone</translation>
 <translation id="4384468725000734951">Using Sogou for search</translation>
+<translation id="4398088515904522762">To use this feature, turn on <ph name="BEGIN_LINK" />Activity and interactions<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">No bookmarks</translation>
 <translation id="4409723563706114196">Use page predictions</translation>
 <translation id="4412992751769744546">Allow third-party cookies</translation>
@@ -515,6 +521,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="5447765697759493033">This site will not be translated</translation>
 <translation id="545042621069398927">Speeding up your download.</translation>
 <translation id="5456381639095306749">Download page</translation>
+<translation id="5466407412363861127">This feature uses <ph name="BEGIN_LINK" />sync<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">Open in maps app</translation>
 <translation id="5487521232677179737">Clear data</translation>
 <translation id="5487729733663684359">Chrome updates are no longer supported for this version of Android.</translation>
@@ -585,6 +592,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="5937580074298050696"><ph name="AMOUNT" /> saved</translation>
 <translation id="5939518447894949180">Reset</translation>
 <translation id="5942872142862698679">Using Google for search</translation>
+<translation id="5952764234151283551">Sends the URL of a page that you're trying to reach to Google</translation>
 <translation id="5956665950594638604">Open the Chrome Help Centre in a new tab</translation>
 <translation id="5958275228015807058">Find your files and pages in Downloads</translation>
 <translation id="5962718611393537961">Tap to collapse</translation>
@@ -712,10 +720,12 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="699220179437400583">Automatically report details of possible security incidents to Google</translation>
 <translation id="6992289844737586249">Ask first before allowing sites to use your microphone (recommended)</translation>
 <translation id="7016516562562142042">Allowed for current search engine</translation>
+<translation id="7017968314960951695">Uses content on sites that you visit and browser activity and interactions for personalisation</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> downloaded</translation>
 <translation id="7022756207310403729">Open in browser</translation>
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="7031882061095297553">Sync to</translation>
+<translation id="7032663816368481562">When you tap More like this <ph name="ICON" /> in the address bar, show quick links to related pages. The URLs of pages that you visit are sent to Google.</translation>
 <translation id="7034608350006174882">Cards and addresses using Google Pay</translation>
 <translation id="7053983685419859001">Block</translation>
 <translation id="7055152154916055070">Redirect blocked:</translation>
@@ -793,6 +803,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7665369617277396874">Add account</translation>
 <translation id="7682724950699840886">Try the following tips: make sure that there is enough space on your device; try to export again.</translation>
 <translation id="7698359219371678927">Create email in <ph name="APP_NAME" /></translation>
+<translation id="7704317875155739195">Auto-complete searches and URLs</translation>
 <translation id="773466115871691567">Always translate pages in <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Protects you and your device from dangerous sites</translation>
@@ -847,6 +858,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8105951947646329362">Suggest related pages</translation>
 <translation id="8116925261070264013">Muted</translation>
 <translation id="813082847718468539">View site information</translation>
+<translation id="8160722851663543621">Sends searches from the address bar and search box, and some cookies to your default search engine</translation>
 <translation id="8168435359814927499">Content</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> files left</translation>
 <translation id="8190358571722158785">1 day left</translation>
@@ -871,6 +883,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8413126021676339697">Show full history</translation>
 <translation id="8420510748452002155">Non-personalised services</translation>
 <translation id="8428213095426709021">Settings</translation>
+<translation id="8438566539970814960">Make searches and browsing better</translation>
 <translation id="8441146129660941386">Seek backward</translation>
 <translation id="8445448999790540984">Can’t export passwords</translation>
 <translation id="8447861592752582886">Revoke device permission</translation>
@@ -880,6 +893,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8497726226069778601">Nothing to see here… yet</translation>
 <translation id="8503559462189395349">Chrome Passwords</translation>
 <translation id="8503813439785031346">Username</translation>
+<translation id="8504988642345501642">When you scroll up, show quick links to related pages. The URLs of pages that you visit are sent to Google.</translation>
 <translation id="8514477925623180633">Export passwords stored with Chrome</translation>
 <translation id="8514577642972634246">Enter incognito mode</translation>
 <translation id="851751545965956758">Block sites from connecting to devices</translation>

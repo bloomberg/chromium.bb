@@ -153,10 +153,12 @@
 <translation id="6394232988457703198">Należy teraz ponownie uruchomić Chromium.</translation>
 <translation id="6400072781405947421">Chromium może działać nieprawidłowo, bo nie jest już zgodny z systemem Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium to przeglądarka obsługująca strony i aplikacje z szybkością błyskawicy. Jest szybka, stabilna i łatwa w użyciu. Bezpiecznie przeglądaj internet dzięki wbudowanej w Chromium ochronie przed złośliwym oprogramowaniem i phishingiem.</translation>
+<translation id="641451971369018375">Wysyła do Google dane, które pomagają ulepszać Chromium i funkcje przeglądania</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium uruchomi się ponownie za sekundę}few{Chromium uruchomi się ponownie za # sekundy}many{Chromium uruchomi się ponownie za # sekund}other{Chromium uruchomi się ponownie za # sekundy}}</translation>
 <translation id="6475912303565314141">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chromium.</translation>
 <translation id="6485906693002546646">Używasz adresu <ph name="PROFILE_EMAIL" /> do synchronizowania danych w Chromium. Aby zaktualizować ustawienia synchronizacji lub używać Chromium bez konta Google, wejdź na stronę <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Odinstaluj Chromium</translation>
+<translation id="6570579332384693436">Aby naprawić błędy pisowni, Chromium wysyła tekst wpisany w polach tekstowych do Google</translation>
 <translation id="6598877126913850652">Otwórz ustawienia powiadomień Chromium</translation>
 <translation id="6664239887951090350">{0,plural, =0{Chromium uruchomi się ponownie teraz}=1{Chromium uruchomi się ponownie za sekundę}few{Chromium uruchomi się ponownie za # sekundy}many{Chromium uruchomi się ponownie za # sekund}other{Chromium uruchomi się ponownie za # sekundy}}</translation>
 <translation id="6676384891291319759">Skorzystaj z internetu</translation>

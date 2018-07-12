@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Zobrazit další měsíc</translation>
 <translation id="512758898067543763">záhlaví řádku</translation>
 <translation id="5143125788380636750">epilog</translation>
-<translation id="5153163864850940242">Toto video se přehrává v režimu obrazu v obraze</translation>
 <translation id="5164977714490026579">Hodnota musí být větší nebo rovna <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Zadejte část před znakem <ph name="ATSIGN" />. Adresa <ph name="INVALIDADDRESS" /> není úplná.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">měřič</translation>
 <translation id="6166809985690652833">doslov</translation>
 <translation id="6213469881011901533">glosář</translation>
-<translation id="6310801910862476708">Ukončit režim obrazu v obraze</translation>
 <translation id="6398862346408813489">Zobrazit panel pro výběr měsíců</translation>
 <translation id="6404546809543547843">posuvník času zvuku</translation>
 <translation id="6453774872122745852">poděkování</translation>
@@ -220,7 +218,6 @@
 <translation id="860475260694818407">obsah</translation>
 <translation id="8613126697340063924">ovládání vzdáleného přehrávání</translation>
 <translation id="862370744433916922">titulek</translation>
-<translation id="8741316211671074806">Obraz v obraze</translation>
 <translation id="8750798805984357768">Vyberte jednu z těchto možností.</translation>
 <translation id="8785498733064193001">zahájit přehrávání</translation>
 <translation id="8808573423886751634">kapitola</translation>
@@ -238,6 +235,7 @@
 <translation id="9132465097189459683">Jiné…</translation>
 <translation id="9138385573473225930">upozornění</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, začíná <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Obraz v obraze</translation>
 <translation id="9168329111483466115">poznámka pod čarou</translation>
 <translation id="954003015749068518">spustit režim obrazu v obraze</translation>
 <translation id="966787709310836684">nabídka</translation>

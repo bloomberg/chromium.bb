@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">Scan QR Code</translation>
 <translation id="1580783302095112590">Mail sent.</translation>
 <translation id="1582732959743469162">This will stop all progress for your current download.</translation>
+<translation id="1605658421715042784">Copy image</translation>
 <translation id="1612730193129642006">Show Tab Grid</translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="1646446875146297738">Enabling ‘Do Not Track’ means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request, and how the request is interpreted.
@@ -58,6 +59,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="1809939268435598390">Delete Folder</translation>
 <translation id="1813414402673211292">Clear Browsing Data</translation>
 <translation id="1820259098641718022">Added to Reading List</translation>
+<translation id="1821253160463689938">Uses cookies to remember your preferences, even if you don't visit those pages</translation>
 <translation id="1876721852596493031">Send usage data</translation>
 <translation id="1886928167269928266">Beginning of Time</translation>
 <translation id="1911619930368729126">Upload to Google Drive</translation>
@@ -71,6 +73,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="209018056901015185">Request Desktop Site</translation>
 <translation id="2103075008456228677">Open history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items moved</translation>
+<translation id="2120297377148151361">Activity and interactions</translation>
 <translation id="213900355088104901">To browse privately, open an incognito tab</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
 <translation id="2230173723195178503">Web page loaded</translation>
@@ -86,6 +89,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2386793615875593361">1 selected</translation>
 <translation id="2435457462613246316">Show password</translation>
 <translation id="2481538920734869610">ADD ACCOUNT</translation>
+<translation id="2523184218357549926">Sends URLs of pages that you visit to Google</translation>
 <translation id="2523363575747517183">This website is repeatedly trying to open another application.</translation>
 <translation id="2529021024822217800">Open All</translation>
 <translation id="2572712655377361602">A device policy blocked access to your photos</translation>
@@ -115,6 +119,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2898963176829412617">New Folder…</translation>
 <translation id="2903493209154104877">Addresses</translation>
 <translation id="2909437209446960244">Recent Tabs</translation>
+<translation id="2916171785467530738">Autocomplete searches and URLs</translation>
 <translation id="291754862089661335">Position QR code or bar code in this frame</translation>
 <translation id="2921219216347069551">Cannot Share Page</translation>
 <translation id="2923448633003185837">Paste and Go</translation>
@@ -219,10 +224,12 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="4860895144060829044">Call</translation>
 <translation id="4875622588773761625">Do you want <ph name="PASSWORD_MANAGER_BRAND" /> to update your password for this site?</translation>
 <translation id="4881695831933465202">Open</translation>
+<translation id="4882831918239250449">Control how your browsing history is used to personalise Search, ads and more</translation>
 <translation id="4904877109095351937">Mark Read</translation>
 <translation id="4930268273022498155">Delete existing data. You can retrieve it by switching back to <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Sorry, there was a problem sharing your item.</translation>
 <translation id="4979397965658815378">Sign in with your Google Account to get your bookmarks, passwords, history and other settings on all your devices</translation>
+<translation id="5004416275253351869">Google activity controls</translation>
 <translation id="5005498671520578047">Copy password</translation>
 <translation id="5010803260590204777">Open an incognito tab to browse the web privately.</translation>
 <translation id="5011684439661633295">Hi <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -249,6 +256,7 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="5548760955356983418">Handoff lets you start browsing a website on this device and then easily continue on your Mac. The current open website will appear in the Dock of your Mac.
 
 Handoff must also be enabled in the General section of Settings, and your devices must use the same iCloud account.</translation>
+<translation id="5554368826343982379">Sync and personalisation</translation>
 <translation id="5556459405103347317">Reload</translation>
 <translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">The file could not be downloaded at this time.</translation>
@@ -340,6 +348,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Recent tabs</translation>
 <translation id="7006788746334555276">Content Settings</translation>
+<translation id="7017968314960951695">Uses content on sites that you visit and browser activity and interactions for personalisation</translation>
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="7031882061095297553">Sync to</translation>
 <translation id="7053983685419859001">Block</translation>
@@ -382,6 +391,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7769602470925380267">Accept and sign out</translation>
 <translation id="7772032839648071052">Confirm passphrase</translation>
 <translation id="780301667611848630">No, thank you</translation>
+<translation id="7830720446622801252">Non-personalised services</translation>
 <translation id="7856733331829174190">Couldn't download</translation>
 <translation id="7859704718976024901">Browsing history</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -400,6 +410,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8076014560081431679">Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Close All Tabs</translation>
 <translation id="8114753159095730575">File download is available. Options available near bottom of screen.</translation>
+<translation id="8160722851663543621">Sends searches from the address bar and search box, and some cookies to your default search engine</translation>
 <translation id="8205564605687841303">Cancel</translation>
 <translation id="8225985093977202398">Cached Images and Files</translation>
 <translation id="8261506727792406068">Delete</translation>
@@ -410,6 +421,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="842017693807136194">Signed in with</translation>
 <translation id="8428045167754449968">City / Town</translation>
 <translation id="8428213095426709021">Settings</translation>
+<translation id="8438566539970814960">Make searches and browsing better</translation>
 <translation id="8458397775385147834">1 item deleted</translation>
 <translation id="8487700953926739672">Available offline</translation>
 <translation id="8503813439785031346">Username</translation>

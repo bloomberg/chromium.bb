@@ -24,6 +24,7 @@
 <translation id="3805899903892079518">Chromium nie ma dostępu do Twoich zdjęć ani filmów. Aby włączyć dostęp w iOS, wybierz Ustawienia &gt; Prywatność &gt; Zdjęcia.</translation>
 <translation id="4024541897090868497">Aby korzystać ze swoich kart na wszystkich urządzeniach, zaloguj się w Chromium.</translation>
 <translation id="4241912885070669028">Wylogowujesz się z konta, którym zarządza <ph name="SIGNOUT_MANAGED_DOMAIN" />. Spowoduje to usunięcie danych Chromium z tego urządzenia, ale pozostaną one na koncie Google.</translation>
+<translation id="4272892696084633551">Pomóż w ulepszaniu funkcji i działania Chromium</translation>
 <translation id="4555020257205549924">Gdy ta funkcja jest włączona, Chromium oferuje tłumaczenie stron w innych językach przy użyciu Tłumacza Google. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Tutaj wyświetlą się karty otwarte w Chromium na innych urządzeniach.</translation>
 <translation id="495292094137889840">Skaner QR w Chromium</translation>
@@ -33,6 +34,7 @@
 <translation id="5945387852661427312">Logujesz się na konto, którym zarządza <ph name="DOMAIN" />, i przekazujesz jego administratorowi kontrolę nad Twoimi danymi Chromium. Zostaną one trwale przypisane do tego konta. Gdy się wylogujesz, znikną one z tego urządzenia, ale pozostaną zapisane na Twoim koncie Google.</translation>
 <translation id="6068866989048414399">Warunki korzystania z Chromium</translation>
 <translation id="6268381023930128611">Wylogować z Chromium?</translation>
+<translation id="641451971369018375">Wysyła do Google dane, które pomagają ulepszać Chromium i funkcje przeglądania</translation>
 <translation id="6424492062988593837">Chromium jest teraz jeszcze lepsze! Dostępna jest nowa wersja.</translation>
 <translation id="6604711459180487467">Dzięki dostępowi do Twojej lokalizacji Chromium będzie działać lepiej.</translation>
 <translation id="6626296268883197964">Korzystając z tej aplikacji, akceptujesz <ph name="BEGIN_LINK_TOS" />Warunki korzystania z Chromium<ph name="END_LINK_TOS" /> i <ph name="BEGIN_LINK_PRIVACY" />Informacje na temat ochrony prywatności w Chromium<ph name="END_LINK_PRIVACY" />.</translation>

@@ -205,12 +205,6 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
       Jako hodnotu této zásady zadejte adresu URL, ze které může systém <ph name="PRODUCT_OS_NAME" /> smluvní podmínky stáhnout. Smluvní podmínky musejí být uloženy ve formátu prostého textu s typem MIME „text/plain“. Nejsou povoleny žádné značky.</translation>
 <translation id="1750315445671978749">Blokovat veškerá stahování</translation>
 <translation id="1781356041596378058">Tato zásada také ovládá přístup k možnostem Pro vývojáře v systému Android. Pokud tuto zásadu nastavíte na hodnotu True, uživatelé nebudou mít přístup k sekci Pro vývojáře. Pokud tuto zásadu nastavíte na hodnotu False nebo ji nenastavíte, uživatelé budou moci možnosti Pro vývojáře otevřít tak, že v aplikaci Nastavení Android sedmkrát klepnou na číslo sestavení.</translation>
-<translation id="178832255504524723">Konfiguruje adresu URL pro změnu hesla (pouze schémata HTTP a HTTPS). Pokud uživatelé podlehli phishingovému útoku, bude služba pro ochranu hesel uživatele odesílat na tuto adresu URL, aby si změnili heslo.
-      Aby prohlížeč <ph name="PRODUCT_NAME" /> na stránce pro změnu hesla mohl správně pořídit otisk nového hesla, měla by odpovídat pokynům na stránce https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Pokud je toto nastavení zapnuto, bude služba pro ochranu hesel uživatele, kteří podlehli phishingovému útoku, odesílat na tuto adresu URL, aby si změnili heslo.
-      Pokud je toto nastavení vypnuto nebo není nastaveno, bude služba pro ochranu hesel uživatele za účelem změny hesla odesílat na adresu https://accounts.google.com.
-      V instancích systému Windows, které nejsou zařazeny do domény <ph name="MS_AD_NAME" />, tato zásada není k dispozici.</translation>
 <translation id="1797233582739332495">Zobrazovat uživateli opakovaně výzvu s oznámením, že je vyžadován restart</translation>
 <translation id="1803646570632580723">Seznam připnutých aplikací, které se zobrazují ve spouštěči</translation>
 <translation id="1808715480127969042">Blokovat soubory cookie na těchto stránkách</translation>
@@ -1386,14 +1380,6 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 <translation id="4980635395568992380">Typ údajů:</translation>
 <translation id="4983201894483989687">Povolit spouštění zastaralých pluginů</translation>
 <translation id="4988291787868618635">Akce prováděná po určité době nečinnosti</translation>
-<translation id="4990301296093321860">Umožňuje ovládat spouštění upozornění ohledně ochrany hesla. Upozornění ohledně ochrany hesla se uživatelům zobrazí, pokud své chráněné heslo použijí na potenciálně podezřelých webech.
-
-      Pomocí zásad PasswordProtectionLoginURLs a PasswordProtectionChangePasswordURL můžete nakonfigurovat, která hesla mají být chráněna.
-
-      Pokud tuto zásadu nastavíte na hodnotu PasswordProtectionWarningOff, upozornění ohledně ochrany hesla se zobrazovat nebude.
-      Pokud tuto zásadu nastavíte na hodnotu PasswordProtectionWarningOnPasswordReuse, zobrazí se upozornění ohledně ochrany hesla, když uživatel použije chráněné heslo na webu, který není uveden na seznamu povolených.
-      Pokud tuto zásadu nastavíte na hodnotu PasswordProtectionWarningOnPhishingReuse, zobrazí se upozornění ohledně ochrany hesla, když uživatel použije chráněné heslo na phishingovém webu.
-      Pokud tuto zásadu ponecháte nenastavenou, aktivuje se upozornění ohledně ochrany hesla v případě, že uživatel chráněné heslo použije na phishingovém webu. Uživatel však toto nastavení bude moci změnit.</translation>
 <translation id="4995548127349206948">Povolení nebo zakázání ověření NTLMv2.</translation>
 <translation id="5047604665028708335">Povolit přístup k webům mimo obsahové balíčky</translation>
 <translation id="5052081091120171147">Je-li tato zásada aktivovaná, vynucuje import historie procházení z aktuálního výchozího prohlížeče. Aktivace této zásady má také vliv na dialogové okno importu
@@ -1925,13 +1911,6 @@ Adresy URL, které používají schémata uvedená v tomto seznamu, se nebudou n
 
 Pokud bude tato zásada ponechána nenastavená nebo bude seznam prázdný, bude v prohlížeči <ph name="PRODUCT_NAME" /> možné používat všechna schémata.</translation>
 <translation id="6652197835259177259">Nastavení místně spravovaných uživatelů</translation>
-<translation id="6654559957643809067">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> předvídání sítě a brání uživatelům, aby toto nastavení změnili.
-
-Zásada ovlivňuje předběžné načítání záznamů DNS, předběžná připojení TCP a SSL a předběžné vykreslování webových stránek.
-
-Pokud zásadu nastavíte na hodnotu Vždy, Nikdy nebo Pouze Wi-Fi, uživatelé ji v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit.
-
-Není-li tato zásada nastavena na konkrétní hodnotu, bude předvídání sítě aktivováno, ale uživatelé budou moci nastavení změnit.</translation>
 <translation id="6658245400435704251">Určí počet sekund, o který může zařízení náhodně zdržet stahování aktualizace od doby, kdy byla poprvé zveřejněna na serveru. Zařízení může čekat určitý čas a pokusit se o určitý počet kontrol aktualizací. Zpoždění je však v každém případě omezeno neměnným maximálním časovým limitem tak, aby zařízení nečekalo na stažení aktualizace donekonečna.</translation>
 <translation id="6665670272107384733">Nastavit, jak často musí uživatel zadat heslo, pokud chce používat rychlé odemknutí</translation>
 <translation id="6681229465468164801">Umožňuje nastavit seznam vzorů adres URL webů, které uživatele nesmějí žádat o přístup k zařízení USB.

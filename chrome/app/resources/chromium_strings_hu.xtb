@@ -155,10 +155,12 @@
 <translation id="6394232988457703198">Indítsa újra a Chromiumot most.</translation>
 <translation id="6400072781405947421">Előfordulhat, hogy a Chromium nem működik majd megfelelően, mert a továbbiakban nem támogatja a Mac OS X 10.9 rendszert.</translation>
 <translation id="6403826409255603130">A Chromium olyan böngésző, amely villámgyorsan futtatja a weboldalakat és az alkalmazásokat. Gyors, stabil és könnyen használható. A beépített, adathalászat és kártékony programok elleni védelemmel biztonságosabban böngészhet az interneten.</translation>
+<translation id="641451971369018375">Kommunikáció a Google-lal a böngészés és a Chromium javítása érdekében</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{A Chromium 1 másodpercen belül újraindul}other{A Chromium # másodpercen belül újraindul}}</translation>
 <translation id="6475912303565314141">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chromium indításakor.</translation>
 <translation id="6485906693002546646">Chromiumos dolgainak szinkronizálásához a(z) <ph name="PROFILE_EMAIL" /> fiókot használja. Szinkronizálási beállításainak frissítéséhez, illetve a Chromium Google-fiók nélküli használatához keresse fel a <ph name="SETTINGS_LINK" /> linket.</translation>
 <translation id="6510925080656968729">Chromium eltávolítása</translation>
+<translation id="6570579332384693436">A nyelvtani hibák javítása érdekében a Chromium elküldi a szövegmezőkbe gépelt szöveget a Google-nak</translation>
 <translation id="6598877126913850652">A Chromium értesítési beállításainak megnyitása</translation>
 <translation id="6664239887951090350">{0,plural, =0{A Chromium most újraindul}=1{A Chromium 1 másodpercen belül újraindul}other{A Chromium # másodpercen belül újraindul}}</translation>
 <translation id="6676384891291319759">Internetelérés</translation>

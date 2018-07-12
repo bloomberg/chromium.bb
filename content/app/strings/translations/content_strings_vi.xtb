@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Hiển thị tháng tiếp theo</translation>
 <translation id="512758898067543763">tiêu đề hàng</translation>
 <translation id="5143125788380636750">lời kết</translation>
-<translation id="5153163864850940242">Video này đang phát ở chế độ Hình trong hình</translation>
 <translation id="5164977714490026579">Giá trị phải lớn hơn hoặc bằng <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Vui lòng nhập phần đứng trước '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' không hoàn chỉnh.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">thước đo</translation>
 <translation id="6166809985690652833">lời bạt</translation>
 <translation id="6213469881011901533">bảng thuật ngữ</translation>
-<translation id="6310801910862476708">Thoát chế độ hình trong hình</translation>
 <translation id="6398862346408813489">Hiển thị bảng lựa chọn tháng</translation>
 <translation id="6404546809543547843">trình kiểm soát thời gian âm thanh</translation>
 <translation id="6453774872122745852">lời cảm ơn</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">tải xuống phương tiện</translation>
 <translation id="6981594929165378967">chèn</translation>
 <translation id="6989848892321993519">Vui lòng kéo dài văn bản này thành <ph name="MIN_CHARACTERS" /> ký tự trở lên (bạn hiện đang sử dụng 1 ký tự).</translation>
+<translation id="7090364526657522309">Dịch vụ phông chữ trên Linux</translation>
 <translation id="709897737746224366">Vui lòng khớp với định dạng được yêu cầu.</translation>
 <translation id="7139483182332611405">lời nói đầu</translation>
 <translation id="7223624360433298498">thời gian trôi qua</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">mục lục</translation>
 <translation id="8613126697340063924">điều khiển phát lại từ xa</translation>
 <translation id="862370744433916922">phụ đề</translation>
-<translation id="8741316211671074806">Chế độ hình trong hình</translation>
 <translation id="8750798805984357768">Vui lòng chọn một trong các tùy chọn sau.</translation>
 <translation id="8785498733064193001">bắt đầu phát lại</translation>
 <translation id="8808573423886751634">chương</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">Khác...</translation>
 <translation id="9138385573473225930">thông báo</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, bắt đầu vào <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Ảnh trong ảnh</translation>
 <translation id="9168329111483466115">chú thích cuối trang</translation>
 <translation id="954003015749068518">vào chế độ hình trong hình</translation>
 <translation id="966787709310836684">menu</translation>

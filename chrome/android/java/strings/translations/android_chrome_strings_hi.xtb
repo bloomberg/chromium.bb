@@ -101,6 +101,7 @@
 <translation id="1782483593938241562">खत्म होने की तारीख: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">डिफ़ॉल्ट डाउनलोड स्थान किसी भी समय बदलें</translation>
 <translation id="1807246157184219062">हल्का</translation>
+<translation id="1821253160463689938">आपकी पसंद याद रखने के लिए कुकी का इस्तेमाल करती है, भले ही आप उन पेजों पर नहीं जाते</translation>
 <translation id="1829244130665387512">पेज में ढूंढें</translation>
 <translation id="1832521218263067499">सुरक्षा संबंधी घटनाएं</translation>
 <translation id="1853692000353488670">नया गुप्त टैब</translation>
@@ -141,6 +142,7 @@
 <translation id="2096012225669085171">सभी डिवाइस में सिंक करना और मनमुताबिक बनाना</translation>
 <translation id="2100273922101894616">स्वतः प्रवेश करें</translation>
 <translation id="2111511281910874386">पेज पर जाएं</translation>
+<translation id="2120297377148151361">गतिविधि और इंटरैक्शन</translation>
 <translation id="2122601567107267586">ऐप नहीं खोला जा सका</translation>
 <translation id="2126426811489709554">Chrome के द्वारा संचालित</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> बचाया गया</translation>
@@ -190,6 +192,8 @@
 <translation id="2498359688066513246">सहायता और फ़ीडबैक</translation>
 <translation id="2501278716633472235">वापस जाएं</translation>
 <translation id="2512222046227390255">फ़ॉर्म अपने आप भरने दें</translation>
+<translation id="2513403576141822879">निजता, सुरक्षा और डेटा इकट्ठा करने से जुड़ी ज़्यादा सेटिंग के लिए, <ph name="BEGIN_LINK" />सिंक और Google सेवाएं<ph name="END_LINK" /> देखें</translation>
+<translation id="2523184218357549926">आपके जिन पेजों पर जाते हैं उनके यूआरएल Google को भेजती है</translation>
 <translation id="2526148617758225454">डेटा सर्वर चालू है. उसे सेटिंग में प्रबंधित करें.</translation>
 <translation id="2532336938189706096">वेब दृश्य</translation>
 <translation id="2536728043171574184">इस पृष्‍ठ की ऑफ़लाइन कॉपी देख रहे हैं</translation>
@@ -252,6 +256,7 @@
 <translation id="3089395242580810162">गुप्त टैब में खोलें</translation>
 <translation id="311456632243022227">एकाधिक लिंक Chrome में खोले गए</translation>
 <translation id="3115898365077584848">जानकारी दिखाएं</translation>
+<translation id="3129938255108848489">जब कोई पेज नहीं मिल पा रहा हो तो मिलते-जुलते पेज के सुझाव दिखाती है</translation>
 <translation id="3137521801621304719">गुप्त मोड छोड़ें</translation>
 <translation id="3148434565183091099">अपने सभी डिवाइस पर अपने बुकमार्क प्राप्‍त करने के लिए, Chrome में प्रवेश करें.</translation>
 <translation id="3157842584138209013">अधिक विकल्प बटन से देखें कि आपने कितना डेटा बचाया है</translation>
@@ -381,6 +386,7 @@
 <translation id="4351244548802238354">संवाद बंद करें</translation>
 <translation id="4378154925671717803">फ़ोन</translation>
 <translation id="4384468725000734951">खोजने के लिए Sogou का उपयोग करना</translation>
+<translation id="4398088515904522762">इस सुविधा का इस्तेमाल करने के लिए, <ph name="BEGIN_LINK" />गतिविधि और इंटरैक्शन<ph name="END_LINK" /> चालू करें.</translation>
 <translation id="4404568932422911380">कोई बुकमार्क नहीं</translation>
 <translation id="4409723563706114196">पेज पूर्वानुमानों का इस्तेमाल करें</translation>
 <translation id="4412992751769744546">तृतीय-पक्ष कुकी को अनुमति दें</translation>
@@ -515,6 +521,7 @@
 <translation id="5447765697759493033">इस साइट का अनुवाद नहीं किया जाएगा</translation>
 <translation id="545042621069398927">आपके डाउनलोड की गति बढ़ाई जा रही है.</translation>
 <translation id="5456381639095306749">पेज डाउनलोड करें</translation>
+<translation id="5466407412363861127">यह सुविधा <ph name="BEGIN_LINK" />सिंक<ph name="END_LINK" /> का इस्तेमाल करती है.</translation>
 <translation id="548278423535722844">मैप ऐप्लिकेशन में खोलें</translation>
 <translation id="5487521232677179737">डेटा साफ़ करें</translation>
 <translation id="5487729733663684359">Chrome अपडेट अब Android के इस वर्शन के लिए समर्थित नहीं हैं.</translation>
@@ -585,6 +592,7 @@
 <translation id="5937580074298050696"><ph name="AMOUNT" /> सेव किए गए</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
 <translation id="5942872142862698679">खोजने के लिए Google का उपयोग करना</translation>
+<translation id="5952764234151283551">आप जिस पेज पर जाने की कोशिश कर रहे हैं उसका यूआरएल Google को भेजती है</translation>
 <translation id="5956665950594638604">Chrome सहायता केंद्र को नए टैब में खोलें</translation>
 <translation id="5958275228015807058">डाउनलोड में जाकर अपनी फ़ाइलें और पेज पाएं</translation>
 <translation id="5962718611393537961">संक्षिप्त करने के लिए टैप करें</translation>
@@ -712,10 +720,12 @@
 <translation id="699220179437400583">Google को संभावित सुरक्षा घटनाओं के विवरणों की अपने आप रिपोर्ट करें</translation>
 <translation id="6992289844737586249">साइट को अपने माइक्रोफ़ोन का उपयोग करने देने से पहले अनुमति लेना आवश्यक बनाएं (अनुशंसित)</translation>
 <translation id="7016516562562142042">अभी वाले खोज इंजन के लिए अनुमति दी गई</translation>
+<translation id="7017968314960951695">आप जिन साइटों पर जाते हैं उनकी गतिविधि और ब्राउज़र गतिविधि के साथ ही इंटरैक्शन का इस्तेमाल मनमुताबिक बनाने के लिए करती है</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> को डाउनलोड किया गया</translation>
 <translation id="7022756207310403729">ब्राउज़र में खोलें</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
 <translation id="7031882061095297553">इसमें समन्वयित करें</translation>
+<translation id="7032663816368481562">जब आप पता बार में 'इसके जैसे और ज़्यादा' <ph name="ICON" /> पर टैप करते हैं, तो संबंधित पेज पर तेज़ी से पहुंचाने वाले लिंक दिखाती है. आपके देखे गए पेजों के यूआरएल Google को भेजे जाते हैं.</translation>
 <translation id="7034608350006174882">Google Pay का इस्तेमाल करने वाले कार्ड और पते</translation>
 <translation id="7053983685419859001">अवरोधित करें</translation>
 <translation id="7055152154916055070">रीडायरेक्ट ब्लॉक किया गया:</translation>
@@ -793,6 +803,7 @@
 <translation id="7665369617277396874">खाता जोड़ें</translation>
 <translation id="7682724950699840886">ये सलाह आज़माएं: पक्का करें कि आपके डिवाइस पर ज़रूरी जगह उपलब्ध है, फिर दोबारा निर्यात करके देखें.</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" /> में ईमेल बनाएं</translation>
+<translation id="7704317875155739195">खोजों और यूआरएल को अपने आप पूरा करें</translation>
 <translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> भाषा के पेज का हमेशा अनुवाद करें</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">आपको और आपके डिवाइस को खतरनाक साइटों से बचाती है</translation>
@@ -847,6 +858,7 @@
 <translation id="8105951947646329362">मिलते-जुलते पेज सुझाएं</translation>
 <translation id="8116925261070264013">आवाज़ बंद की गई</translation>
 <translation id="813082847718468539">साइट जानकारी देखें</translation>
+<translation id="8160722851663543621">पता बार और खोज बॉक्स की खोजों और कुछ कुकी को आपके डिफ़ॉल्ट खोज इंजन पर भेजती है</translation>
 <translation id="8168435359814927499">सामग्री</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> फ़ाइलें बची हैं</translation>
 <translation id="8190358571722158785">1 दिन शेष</translation>
@@ -871,6 +883,7 @@
 <translation id="8413126021676339697">संपूर्ण इतिहास दिखाएं</translation>
 <translation id="8420510748452002155">मनमुताबिक नहीं बनाई गई सेवाएं</translation>
 <translation id="8428213095426709021">सेटिंग</translation>
+<translation id="8438566539970814960">खोजों और ब्राउज़िेंग को बेहतर बनाएं</translation>
 <translation id="8441146129660941386">पीछे जाएं</translation>
 <translation id="8445448999790540984">पासवर्ड निर्यात नहीं कर सकते</translation>
 <translation id="8447861592752582886">डिवाइस अनुमति निरस्त करें</translation>
@@ -880,6 +893,7 @@
 <translation id="8497726226069778601">यहां देखने के लिए…अभी तक कुछ भी नहीं है</translation>
 <translation id="8503559462189395349">Chrome पासवर्ड</translation>
 <translation id="8503813439785031346">उपयोगकर्ता नाम</translation>
+<translation id="8504988642345501642">जब आप स्क्रोल करते हैं, तो संबंधित पेजों पर तेज़ी से पहुंचाने वाले लिंक दिखाती है. आप जिन पेजों पर जाते हैं उनके यूआरएल Google को भेजती है.</translation>
 <translation id="8514477925623180633">Chrome के ज़रिए संग्रहित पासवर्ड निर्यात करें</translation>
 <translation id="8514577642972634246">गुप्त मोड में प्रवेश करें</translation>
 <translation id="851751545965956758">साइटों को डिवाइसों से कनेक्ट करने से ब्लॉक करें</translation>

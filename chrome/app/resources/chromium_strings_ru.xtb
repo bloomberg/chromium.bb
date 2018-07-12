@@ -153,10 +153,12 @@
 <translation id="6394232988457703198">Перезапустите Chromium</translation>
 <translation id="6400072781405947421">В работе Chromium могут возникать сбои, так как браузер больше не поддерживает Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium – браузер, который открывает веб-страницы и приложения за секунды. Он быстр, стабилен в работе и прост в использовании. Встроенная в Chromium защита от мошенничества и вредоносного ПО обеспечивает максимально безопасную работу в Интернете.</translation>
+<translation id="641451971369018375">Обмен информацией с Google для улучшения работы Chromium</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium перезапустится через 1 секунду}one{Chromium перезапустится через # секунду}few{Chromium перезапустится через # секунды}many{Chromium перезапустится через # секунд}other{Chromium перезапустится через # секунды}}</translation>
 <translation id="6475912303565314141">Кроме того, расширение изменило стартовую страницу Chromium.</translation>
 <translation id="6485906693002546646">Для синхронизации данных Chromium используется аккаунт <ph name="PROFILE_EMAIL" />. Изменить параметры синхронизации или отключить аккаунт можно в <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Удаление Chromium</translation>
+<translation id="6570579332384693436">Для проверки правописания Chromium отправляет введенный вами текст в Google.</translation>
 <translation id="6598877126913850652">Открыть настройки уведомлений Chromium</translation>
 <translation id="6664239887951090350">{0,plural, =0{Chromium перезапускается}=1{Chromium перезапустится через 1 секунду}one{Chromium перезапустится через # секунду}few{Chromium перезапустится через # секунды}many{Chromium перезапустится через # секунд}other{Chromium перезапустится через # секунды}}</translation>
 <translation id="6676384891291319759">Доступ в Интернет</translation>

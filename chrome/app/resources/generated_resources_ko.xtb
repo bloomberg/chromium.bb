@@ -454,7 +454,6 @@
 <translation id="1657406563541664238">사용 통계 및 비정상 종료 보고서가 Google로 자동 전송되게 하여 <ph name="PRODUCT_NAME" /> 개선에 도움 주기</translation>
 <translation id="1658424621194652532">마이크에 액세스하는 페이지입니다.</translation>
 <translation id="1660204651932907780">사이트에서 소리를 재생하도록 허용(권장)</translation>
-<translation id="1660938185063657230">보안 키 인증</translation>
 <translation id="1661156625580498328">AES 암호화를 적용합니다(권장).</translation>
 <translation id="1661245713600520330">이 페이지에는 기본 프로세스에 로드된 모든 모듈과 나중에 로드하도록 등록된 모듈이 표시되어 있습니다.</translation>
 <translation id="166179487779922818">비밀번호가 너무 짧습니다.</translation>
@@ -566,7 +565,6 @@
 <translation id="1818007989243628752"><ph name="USERNAME" />님의 비밀번호 삭제</translation>
 <translation id="1819721979226826163">앱 알림 &gt; Google Play 서비스를 탭합니다.</translation>
 <translation id="1826516787628120939">확인 중</translation>
-<translation id="1827750274519118478">PIP 모드 동영상 재생이 중지됩니다.</translation>
 <translation id="1828378091493947763">이 기기에서 지원되지 않는 플러그인입니다.</translation>
 <translation id="1828901632669367785">시스템 대화상자를 사용하여 인쇄...</translation>
 <translation id="1829192082282182671">축소(&amp;O)</translation>
@@ -2464,7 +2462,6 @@
 <translation id="4856478137399998590">모바일 데이터 서비스가 활성화되었으며 사용할 준비가 되었습니다.</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{시크릿 창에서 모두 열기(I)}=1{시크릿 창에서 열기(I)}other{시크릿 창에서 #개 모두 열기(I)}}</translation>
 <translation id="4858913220355269194">축구왕</translation>
-<translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> - PIP 모드로 동영상 재생 중</translation>
 <translation id="4862050643946421924">기기 추가 중...</translation>
 <translation id="4862642413395066333">OCSP 응답 서명</translation>
 <translation id="4863769717153320198"><ph name="WIDTH" />x<ph name="HEIGHT" />(권장)처럼 보입니다.</translation>
@@ -3132,7 +3129,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - 카메라 또는 마이크 녹음</translation>
 <translation id="5835754902560991078">매우 짧게(0.6초)</translation>
 <translation id="5838456317242088717">현재 시크릿 세션</translation>
-<translation id="5842053879378944309"><ph name="APP_NAME" />(을)를 통해 USB 보안 키 사용</translation>
+<translation id="5842053879378944309"><ph name="APP_NAME" /> 로그인 시 USB 보안 키 사용</translation>
 <translation id="5842497610951477805">블루투스 사용</translation>
 <translation id="5843250171025351504">사용 중인 기기가 더 이상 관리자가 지정한 최소 클라이언트 버전을 준수하지 않습니다. 로그인하려면 업데이트하세요.</translation>
 <translation id="5846929185714966548">탭 4</translation>
@@ -3803,7 +3800,7 @@
 <translation id="6885771755599377173">시스템 정보 미리보기</translation>
 <translation id="6886871292305414135">새 탭에서 링크 열기(&amp;T)</translation>
 <translation id="6892812721183419409"><ph name="USER" />(으)로 링크 열기</translation>
-<translation id="6896398788631624004">보안 키를 연결하고 활성화하세요.</translation>
+<translation id="6896398788631624004">보안 키를 꽂고 활성화하세요.</translation>
 <translation id="6896758677409633944">복사</translation>
 <translation id="6898440773573063262">이제 키오스크 애플리케이션이 기기에서 자동 실행되도록 설정할 수 있습니다.</translation>
 <translation id="6898699227549475383">조직(O)</translation>
@@ -4145,7 +4142,6 @@
 <translation id="7427348830195639090">백그라운드 페이지: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{모두 새 창에서 열기(N)}=1{새 창에서 열기(N)}other{#개 모두 새 창에서 열기(N)}}</translation>
 <translation id="7434509671034404296">개발자 정보</translation>
-<translation id="7436470008146509879"><ph name="DEVICE_TYPE" />에 Linux 설치하기</translation>
 <translation id="7436921188514130341">이름 변경 중에 오류가 발생했습니다.</translation>
 <translation id="7441830548568730290">다른 사용자</translation>
 <translation id="7442465037756169001">행아웃 미팅 하드웨어 설정 준비가 완료되었습니다.</translation>
@@ -4444,7 +4440,6 @@
 <translation id="7881969471599061635">자막 사용 중지</translation>
 <translation id="7882358943899516840">공급자 유형</translation>
 <translation id="7885253890047913815">최근 대상</translation>
-<translation id="7886917304091689118">Chrome에서 실행 중</translation>
 <translation id="7887334752153342268">새 탭에서 보기</translation>
 <translation id="7887864092952184874">블루투스 마우스 페어링됨</translation>
 <translation id="7889565820482017512">디스플레이 크기</translation>
@@ -4615,7 +4610,6 @@
 <translation id="8118860139461251237">다운로드 관리</translation>
 <translation id="81238879832906896">노란색과 흰색 꽃</translation>
 <translation id="8124313775439841391">관리되는 ONC</translation>
-<translation id="8125562866093998907">사이트에서 계정 보안 강화를 위해 보안 키를 인증하려 합니다.</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>
 <translation id="8131740175452115882">확인</translation>
 <translation id="8133676275609324831">폴더 열기(&amp;S)</translation>
@@ -4994,7 +4988,6 @@
 <translation id="8736288397686080465">이 사이트는 백그라운드에서 업데이트되었습니다.</translation>
 <translation id="8737685506611670901"><ph name="REPLACED_HANDLER_TITLE" /> 대신 <ph name="PROTOCOL" /> 링크 열기</translation>
 <translation id="8737709691285775803">Shill</translation>
-<translation id="8741316211671074806">PIP 모드</translation>
 <translation id="8743390665131937741">전체화면 돋보기 확대/축소 수준:</translation>
 <translation id="8743864605301774756">1시간 전에 업데이트되었습니다.</translation>
 <translation id="874689135111202667">{0,plural, =1{파일 1개를 이 사이트에 업로드하시겠습니까?}other{파일 #개를 이 사이트에 업로드하시겠습니까?}}</translation>
@@ -5173,7 +5166,7 @@
 <translation id="9024331582947483881">전체화면</translation>
 <translation id="9025098623496448965">예, 로그인 화면으로 돌아갑니다.</translation>
 <translation id="9026731007018893674">다운로드</translation>
-<translation id="9026852570893462412">이 과정은 몇 분 정도 소요될 수 있습니다. 가상 머신을 다운로드합니다.</translation>
+<translation id="9026852570893462412">이 과정은 몇 분 정도 걸릴 수 있습니다. 가상 머신을 다운로드합니다.</translation>
 <translation id="9027459031423301635">새 탭에서 링크 열기(&amp;T)</translation>
 <translation id="9030515284705930323">조직에서 내 계정이 Google Play 스토어를 사용하도록 설정하지 않았습니다. 자세한 정보는 관리자에게 문의하세요.</translation>
 <translation id="9033857511263905942">붙여넣기(&amp;P)</translation>
@@ -5268,6 +5261,7 @@
 <translation id="9158715103698450907">인증하는 중에 네트워크 통신 문제가 발생했습니다.  네트워크 연결을 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="9161070040817969420">다음 사이트의 서브프레임: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">시스템 데이터를 전송합니다. 이 기기는 현재 진단과 기기 및 앱 사용 데이터를 Google로 자동 전송하고 있습니다. 이 설정은 소유자가 지정했습니다. 추가 웹 및 앱 활동을 사용 설정하면 이 정보가 계정에 저장되어 내 활동에서 관리할 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
+<translation id="916607977885256133">PIP 모드</translation>
 <translation id="9169496697824289689">단축키 보기</translation>
 <translation id="9169931577761441333">홈 화면에 <ph name="APP_NAME" /> 추가</translation>
 <translation id="9170397650136757332">이제 지문의 다른 부분도 모두 인식되도록 손가락을 살짝 움직이세요.</translation>
@@ -5276,7 +5270,7 @@
 <translation id="9173995187295789444">블루투스 기기 검색 중...</translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> - 블루투스 기기 연결됨</translation>
 <translation id="9177499212658576372">현재 <ph name="NETWORK_TYPE" /> 네트워크에 연결되어 있습니다.</translation>
-<translation id="9180281769944411366">이 과정은 몇 분 정도 소요될 수 있습니다. Linux 컨테이너를 시작합니다.</translation>
+<translation id="9180281769944411366">이 과정은 몇 분 정도 걸릴 수 있습니다. Linux 컨테이너를 시작합니다.</translation>
 <translation id="9180380851667544951">사이트에서 화면을 공유할 수 있습니다.</translation>
 <translation id="9188441292293901223"><ph name="DEVICE_TYPE" />을(를) 잠금 해제하려면 휴대전화의 Android를 최신 버전으로 업데이트하세요.</translation>
 <translation id="9190063653747922532">L2TP/IPSec + 사전 공유 키</translation>
@@ -5318,7 +5312,6 @@
 <translation id="952992212772159698">활성화되지 않음</translation>
 <translation id="957960681186851048">이 사이트에서 여러 파일을 자동으로 다운로드하려고 함</translation>
 <translation id="9580706199804957">Google 서비스에 연결할 수 없음</translation>
-<translation id="958416628331784386">이 탭에서는 PIP 모드로 동영상이 재생되고 있습니다.</translation>
 <translation id="960719561871045870">운영자 코드</translation>
 <translation id="960987915827980018">약 1시간 남음</translation>
 <translation id="962802172452141067">북마크 폴더 구조</translation>

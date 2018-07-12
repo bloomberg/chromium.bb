@@ -453,7 +453,6 @@
 <translation id="1657406563541664238">Hjälp till att göra <ph name="PRODUCT_NAME" /> bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google</translation>
 <translation id="1658424621194652532">Den här sidan använder din mikrofon.</translation>
 <translation id="1660204651932907780">Tillåt att ljud spelas upp på webbplatser (rekommenderas)</translation>
-<translation id="1660938185063657230">Verifiera säkerhetsnyckeln</translation>
 <translation id="1661156625580498328">Tillämpa AES-kryptering (rekommenderas).</translation>
 <translation id="1661245713600520330">På den här sidan listas alla moduler som har lästs in i huvudprocessen och moduler som har registrerats för att läsas in senare.</translation>
 <translation id="166179487779922818">Lösenordet är för kort.</translation>
@@ -565,7 +564,6 @@
 <translation id="1818007989243628752">Radera lösenordet för <ph name="USERNAME" /></translation>
 <translation id="1819721979226826163">Tryck på Appaviseringar &gt; Google Play-tjänster.</translation>
 <translation id="1826516787628120939">Kontrollerar</translation>
-<translation id="1827750274519118478">Videouppspelningen i bild-i-bild-läge stoppas.</translation>
 <translation id="1828378091493947763">Enheten har inte stöd för det här pluginprogrammet</translation>
 <translation id="1828901632669367785">Skriv ut via systemets dialogruta ...</translation>
 <translation id="1829192082282182671">Zooma ut</translation>
@@ -2465,7 +2463,6 @@
 <translation id="4856478137399998590">Datatjänsten har aktiverats och är klar att användas</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Öppna alla i ett &amp;inkognitofönster}=1{Öppna i ett &amp;inkognitofönster}other{Öppna alla (#) i ett &amp;inkognitofönster}}</translation>
 <translation id="4858913220355269194">Fotboll</translation>
-<translation id="4862042298115071399"><ph name="WINDOW_TITLE" />– video spelas upp bild-i-bild</translation>
 <translation id="4862050643946421924">Enheten läggs till …</translation>
 <translation id="4862642413395066333">Signera OCSP-svar</translation>
 <translation id="4863769717153320198">Ser ut som <ph name="WIDTH" /> × <ph name="HEIGHT" /> (standard)</translation>
@@ -4146,7 +4143,6 @@
 <translation id="7427348830195639090">Bakgrundssida: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Öppna alla i ett &amp;nytt fönster}=1{Öppna i ett &amp;nytt fönster}other{Öppna alla (#) i ett &amp;nytt fönster}}</translation>
 <translation id="7434509671034404296">Utvecklare</translation>
-<translation id="7436470008146509879">Konfigurera Linux på <ph name="DEVICE_TYPE" /></translation>
 <translation id="7436921188514130341">Ett fel uppstod när namnet skulle bytas.</translation>
 <translation id="7441830548568730290">Andra användare</translation>
 <translation id="7442465037756169001">Hangouts Meet hardware är klar att konfigurera.</translation>
@@ -4445,7 +4441,6 @@
 <translation id="7881969471599061635">Inaktivera undertexter</translation>
 <translation id="7882358943899516840">Leverantörstyp</translation>
 <translation id="7885253890047913815">Senaste platserna</translation>
-<translation id="7886917304091689118">Körs i Chrome</translation>
 <translation id="7887334752153342268">Duplicera</translation>
 <translation id="7887864092952184874">Bluetooth-musen har kopplats</translation>
 <translation id="7889565820482017512">Visningsstorlek</translation>
@@ -4616,7 +4611,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8118860139461251237">Hantera dina nedladdningar</translation>
 <translation id="81238879832906896">Gul och vit blomma</translation>
 <translation id="8124313775439841391">Hanterad ONC</translation>
-<translation id="8125562866093998907">Webbplatsen vill verifiera din säkerhetsnyckel som ett ytterligare skydd för ditt konto.</translation>
 <translation id="813082847718468539">Visa information om webbplatsen</translation>
 <translation id="8131740175452115882">Bekräfta</translation>
 <translation id="8133676275609324831">&amp;Visa i mapp</translation>
@@ -4995,7 +4989,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8736288397686080465">Den här webbplatsen har uppdaterats i bakgrunden.</translation>
 <translation id="8737685506611670901">Öppna <ph name="PROTOCOL" />-länkar i stället för <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
-<translation id="8741316211671074806">Bild i bild</translation>
 <translation id="8743390665131937741">Zoomnivå för helskärmsförstorare</translation>
 <translation id="8743864605301774756">Uppdaterad för en timme sedan</translation>
 <translation id="874689135111202667">{0,plural, =1{Vill du ladda upp en fil på webbplatsen?}other{Vill du ladda upp # filer på webbplatsen?}}</translation>
@@ -5269,6 +5262,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9158715103698450907">Hoppsan! Ett nätverkskommunikationsproblem uppstod under autentiseringen. Kontrollera nätverksanslutningen och försök igen.</translation>
 <translation id="9161070040817969420">Underordnade ramar för: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">Skicka systemdata. Skicka automatiskt diagnostik- och användningsdata för enheten och appar till Google. Ägaren har låst inställningen. Om du har aktiverat ytterligare webb- och appaktivitet lagras den informationen i kontot så att du kan hantera den på sidan Min aktivitet. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
+<translation id="916607977885256133">Bild-i-bild</translation>
 <translation id="9169496697824289689">Visa kortkommandon</translation>
 <translation id="9169931577761441333">Lägg till <ph name="APP_NAME" /> på startskärmen</translation>
 <translation id="9170397650136757332">Flytta nu fingret något så att hela fingeravtrycket läggs till</translation>
@@ -5319,7 +5313,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="952992212772159698">Inte aktiverat</translation>
 <translation id="957960681186851048">Den här webbplatsen försökte ladda ned flera filer automatiskt</translation>
 <translation id="9580706199804957">Det gick inte att ansluta till Googles tjänster</translation>
-<translation id="958416628331784386">På den här fliken spelas en video upp bild-i-bild</translation>
 <translation id="960719561871045870">Operatörskod</translation>
 <translation id="960987915827980018">Ca 1 timme kvar</translation>
 <translation id="962802172452141067">Mappstruktur för bokmärken</translation>

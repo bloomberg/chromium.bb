@@ -157,10 +157,12 @@
 <translation id="6394232988457703198">አሁን Chromiumን ዳግም ማስጀመር አለብዎት።</translation>
 <translation id="6400072781405947421">Chromium ከእንግዲህ በMac OS X 10.9 ላይ ስለማይደገፍ በአግባቡ ላይሰራ ይችላል።</translation>
 <translation id="6403826409255603130">Chromium ድረ-ገጾችን እና መተግበሪያዎችን እጅግ በጣም ፈጣን በሆነ ፍጥነት የሚያሄድ ድር አሳሽ ነው። ፈጣን፣ የረጋ እና ለመጠቀም ቀላል ነው። Chromium ውስጥ አብሮ በተሰራላቸው የተንኮል-አዘል ሶፍትዌር እና የማስገሪያ መከላከያዎች አማካኝነት ደህንነትዎ ይበልጥ በተጠበቀ ሁኔታ ድሩን ያስሱ።</translation>
+<translation id="641451971369018375">አሰሳን እና Chromiumን ለማሻሻል ከGoogle ጋር ይገናኛል</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium በ1 ሰከንድ ውስጥ ዳግም ይጀምራል}one{Chromium በ# ሰከንዶች ውስጥ ዳግም ይጀምራል}other{Chromium በ# ሰከንዶች ውስጥ ዳግም ይጀምራል}}</translation>
 <translation id="6475912303565314141">እንዲሁም Chromiumን ሲጀምሩት የሚታየውን ገጽ ይቆጣጠራል።</translation>
 <translation id="6485906693002546646">የChromium ነገሮችዎን ለማመሳሰል <ph name="PROFILE_EMAIL" />ን እየተጠቀሙ ነው። የማመሳሰል ምርጫዎን ለማዘመን ወይም Chromium ያለGoogle መለያ መጠቀም የሚፈልጉ ከሆኑ <ph name="SETTINGS_LINK" />ን ይጎብኙ።</translation>
 <translation id="6510925080656968729">Chromiumን ያራግፉ</translation>
+<translation id="6570579332384693436">የሥርዓተ ፊደል አጻጻፍ ስህተቶችን ለማስተካከል፣ Chromium እርስዎ በጽሑፍ መስኮች ውስጥ የሚተይቡትን ጽሑፍ ወደ Google ይልካል</translation>
 <translation id="6598877126913850652">ወደ የChromium ማሳወቂያ ቅንብሮች ይሂዱ</translation>
 <translation id="6664239887951090350">{0,plural, =0{Chromium አሁን ዳግም ይጀመራል}=1{Chromium በ1 ሰከንድ ውስጥ ዳግም ይጀመራል}one{Chromium በ# ሰከንዶች ውስጥ ዳግም ይጀመራል}other{Chromium በ# ሰከንዶች ውስጥ ዳግም ይጀመራል}}</translation>
 <translation id="6676384891291319759">በይነመረብን ተዳረስ</translation>

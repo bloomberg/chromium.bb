@@ -331,6 +331,7 @@
 <translation id="3234666976984236645">ሁልጊዜ በዚህ ጣቢያ ላይ ያለ አስፈላጊ ይዘትን አግኝ</translation>
 <translation id="3254409185687681395">ለእዚህ ገጽ ዕልባት አብጅ</translation>
 <translation id="3270847123878663523">&amp;ዳግም ደርድርን ቀልብስ</translation>
+<translation id="3280511504953918101">ይህ ስም የእርስዎን የGoogle ክፍያዎች መለያ በመፍጠር ወቅት በተጨማሪ ጥቅም ላይ ይውላል።</translation>
 <translation id="3282497668470633863">በካርድ ላይ ስም ያክሉ</translation>
 <translation id="3287510313208355388">መስመር ላይ ሲሆኑ ያውርዱ</translation>
 <translation id="3293642807462928945">ስለ<ph name="POLICY_NAME" /> መመሪያው ተጨማሪ ይወቁ</translation>
@@ -802,6 +803,7 @@
 <translation id="6831043979455480757">መተርጎም</translation>
 <translation id="6839929833149231406">አካባቢ</translation>
 <translation id="6852204201400771460">መተግበሪያ ዳግም ይጫን?</translation>
+<translation id="6865412394715372076">ይህ ካርድ አሁን ላይ ሊረጋገጥ አይችልም</translation>
 <translation id="6874604403660855544">&amp;አክልን ድገም</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">የመመሪያ ደረጃ አይደገፍም።</translation>
@@ -1049,6 +1051,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />፣ መልስ፣ <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">ከ<ph name="DOMAIN" /> ጋር ያለዎት ግንኙነት አልተመሰጠረም</translation>
 <translation id="8718314106902482036">ክፍያ አልተጠናቀቀም</translation>
+<translation id="8719263113926255150"><ph name="ENTITY" />፣ <ph name="DESCRIPTION" />፣ የፍለጋ ጥቆማ ሐሳብ</translation>
 <translation id="8725066075913043281">እንደገና ይሞክሩ</translation>
 <translation id="8728672262656704056">ማንነት የማያሳውቅ ሁነታ ውስጥ ገብተዋል</translation>
 <translation id="8730621377337864115">ተከናውኗል</translation>

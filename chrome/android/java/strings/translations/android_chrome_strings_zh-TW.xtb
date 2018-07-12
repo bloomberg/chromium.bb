@@ -101,6 +101,7 @@
 <translation id="1782483593938241562">結束日期：<ph name="DATE" /></translation>
 <translation id="1792959175193046959">你隨時可以變更預設的下載位置</translation>
 <translation id="1807246157184219062">淺色</translation>
+<translation id="1821253160463689938">使用 Cookie 記住你的偏好設定 (即使你沒有造訪這些網頁)</translation>
 <translation id="1829244130665387512">在網頁中尋找</translation>
 <translation id="1832521218263067499">安全性事件</translation>
 <translation id="1853692000353488670">新增無痕式分頁</translation>
@@ -141,6 +142,7 @@
 <translation id="2096012225669085171">讓多部裝置保持同步，並提供人化體驗</translation>
 <translation id="2100273922101894616">自動登入</translation>
 <translation id="2111511281910874386">前往指定頁面</translation>
+<translation id="2120297377148151361">活動與互動行為</translation>
 <translation id="2122601567107267586">無法開啟應用程式</translation>
 <translation id="2126426811489709554">技術提供：Chrome</translation>
 <translation id="2131665479022868825">已節省 <ph name="DATA" /></translation>
@@ -190,6 +192,8 @@
 <translation id="2498359688066513246">說明與意見回饋</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2512222046227390255">自動填入表單</translation>
+<translation id="2513403576141822879">如需更多隱私權、安全性和資料收集的相關設定，請參閱<ph name="BEGIN_LINK" />同步處理和 Google 服務<ph name="END_LINK" /></translation>
+<translation id="2523184218357549926">將你造訪的網頁網址傳送給 Google</translation>
 <translation id="2526148617758225454">Data Saver 已開啟，您可以在 [設定] 中管理這項擴充功能。</translation>
 <translation id="2532336938189706096">網頁檢視</translation>
 <translation id="2536728043171574184">目前瀏覽的是這個網頁的離線複本</translation>
@@ -252,6 +256,7 @@
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
 <translation id="311456632243022227">多個連結已在 Chrome 中開啟</translation>
 <translation id="3115898365077584848">顯示資訊</translation>
+<translation id="3129938255108848489">找不到網頁時顯示類似的網頁建議</translation>
 <translation id="3137521801621304719">離開無痕模式</translation>
 <translation id="3148434565183091099">如要在所有裝置上使用您的書籤，請登入 Chrome。</translation>
 <translation id="3157842584138209013">如要查看節省的數據用量，請點選 [更多選項] 按鈕</translation>
@@ -381,6 +386,7 @@
 <translation id="4351244548802238354">關閉對話方塊</translation>
 <translation id="4378154925671717803">電話</translation>
 <translation id="4384468725000734951">現已使用 Sogou 搜尋</translation>
+<translation id="4398088515904522762">如要使用這項功能，請開啟<ph name="BEGIN_LINK" />活動與互動行為<ph name="END_LINK" />設定。</translation>
 <translation id="4404568932422911380">沒有書籤</translation>
 <translation id="4409723563706114196">使用網頁預測功能</translation>
 <translation id="4412992751769744546">允許第三方 Cookie</translation>
@@ -515,6 +521,7 @@
 <translation id="5447765697759493033">系統不會翻譯這個網站</translation>
 <translation id="545042621069398927">正在加快下載速度。</translation>
 <translation id="5456381639095306749">下載網頁</translation>
+<translation id="5466407412363861127">這項功能會進行<ph name="BEGIN_LINK" />同步處理<ph name="END_LINK" />。</translation>
 <translation id="548278423535722844">在地圖應用程式中開啟</translation>
 <translation id="5487521232677179737">清除資料</translation>
 <translation id="5487729733663684359">這個 Android 版本已停止支援 Chrome 更新。</translation>
@@ -585,6 +592,7 @@
 <translation id="5937580074298050696">已儲存 <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">重設</translation>
 <translation id="5942872142862698679">現已使用 Google 搜尋</translation>
+<translation id="5952764234151283551">將你嘗試瀏覽的網頁網址傳送給 Google</translation>
 <translation id="5956665950594638604">在新分頁中開啟 Chrome 說明中心</translation>
 <translation id="5958275228015807058">前往「下載」主畫面尋找你的檔案和網頁</translation>
 <translation id="5962718611393537961">輕觸即可收合</translation>
@@ -712,10 +720,12 @@
 <translation id="699220179437400583">自動將疑似安全性事件的詳細資料回報給 Google</translation>
 <translation id="6992289844737586249">允許網站使用您的麥克風前，必須先詢問您 (建議)</translation>
 <translation id="7016516562562142042">允許目前的搜尋引擎存取位置資訊</translation>
+<translation id="7017968314960951695">使用你所造訪網站的內容、瀏覽器活動和瀏覽器互動行為，提供個人化的使用體驗</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> 下載完成</translation>
 <translation id="7022756207310403729">在瀏覽器中開啟</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7031882061095297553">同步處理</translation>
+<translation id="7032663816368481562">當你輕觸網址列中的「更多類似內容」圖示 <ph name="ICON" /> 時顯示相關網頁的快速連結。系統會將你所造訪網頁的網址傳送給 Google。</translation>
 <translation id="7034608350006174882">使用 Google Pay 儲存的卡片和地址資訊</translation>
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7055152154916055070">已禁止重新導向：</translation>
@@ -793,6 +803,7 @@
 <translation id="7665369617277396874">新增帳戶</translation>
 <translation id="7682724950699840886">請嘗試按照下列提示操作：確認你的裝置上有足夠空間，然後嘗試重新匯出。</translation>
 <translation id="7698359219371678927">在「<ph name="APP_NAME" />」中建立電子郵件</translation>
+<translation id="7704317875155739195">自動完成搜尋字詞與網址</translation>
 <translation id="773466115871691567">一律翻譯<ph name="SOURCE_LANGUAGE" />網頁</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">保護你和你的裝置不受危險網站攻擊</translation>
@@ -847,6 +858,7 @@
 <translation id="8105951947646329362">建議相關的網頁</translation>
 <translation id="8116925261070264013">已設為靜音</translation>
 <translation id="813082847718468539">查看網站資訊</translation>
+<translation id="8160722851663543621">將網址列和搜尋框中的搜尋字詞以及部分 Cookie 傳送給你的預設搜尋引擎</translation>
 <translation id="8168435359814927499">內容</translation>
 <translation id="8186512483418048923">還剩 <ph name="FILES" /> 個檔案</translation>
 <translation id="8190358571722158785">還剩 1 天</translation>
@@ -871,6 +883,7 @@
 <translation id="8413126021676339697">顯示完整記錄</translation>
 <translation id="8420510748452002155">非個人化服務</translation>
 <translation id="8428213095426709021">設定</translation>
+<translation id="8438566539970814960">改善搜尋和瀏覽體驗</translation>
 <translation id="8441146129660941386">倒轉到特定的播放時間點</translation>
 <translation id="8445448999790540984">無法匯出密碼</translation>
 <translation id="8447861592752582886">撤銷裝置權限</translation>
@@ -880,6 +893,7 @@
 <translation id="8497726226069778601">目前還沒有任何常用網頁…</translation>
 <translation id="8503559462189395349">Chrome 密碼</translation>
 <translation id="8503813439785031346">使用者名稱</translation>
+<translation id="8504988642345501642">當你向上捲動時顯示相關網頁的快速連結。系統會將你所造訪網頁的網址傳送給 Google。</translation>
 <translation id="8514477925623180633">將使用 Chrome 儲存的密碼匯出</translation>
 <translation id="8514577642972634246">進入無痕模式</translation>
 <translation id="851751545965956758">禁止網站連線至裝置</translation>

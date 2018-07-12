@@ -454,7 +454,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1657406563541664238">Pomozte <ph name="PRODUCT_NAME" /> zlepšit tím, že budete Googlu automaticky zasílat statistiky využití a zprávy o selhání aplikace</translation>
 <translation id="1658424621194652532">Tato stránka používá váš mikrofon.</translation>
 <translation id="1660204651932907780">Povolit webům přehrávat zvuky (doporučeno)</translation>
-<translation id="1660938185063657230">Ověření Bezpečnostního klíče</translation>
 <translation id="1661156625580498328">Vynutit šifrování AES (doporučeno).</translation>
 <translation id="1661245713600520330">Tato stránka uvádí všechny moduly načtené v hlavním procesu a moduly registrované k pozdějšímu načtení.</translation>
 <translation id="166179487779922818">Heslo je příliš krátké.</translation>
@@ -566,7 +565,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1818007989243628752">Smazat heslo uživatele <ph name="USERNAME" /></translation>
 <translation id="1819721979226826163">Klepněte na Oznámení z aplikací &gt; Služby Google Play.</translation>
 <translation id="1826516787628120939">Probíhá kontrola</translation>
-<translation id="1827750274519118478">Video v režimu obraz v obraze se přestane přehrávat.</translation>
 <translation id="1828378091493947763">Tento plugin v tomto zařízení není podporován</translation>
 <translation id="1828901632669367785">Vytisknout prostřednictvím dialogového okna systému...</translation>
 <translation id="1829192082282182671">&amp;Oddálit</translation>
@@ -2463,7 +2461,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4856478137399998590">Datové služby jsou aktivovány a můžete je začít používat</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Otevřít vše v &amp;anonymním okně}=1{Otevřít v &amp;anonymním okně}few{Otevřít vše (#) v &amp;anonymním okně}many{Otevřít vše (#) v &amp;anonymním okně}other{Otevřít vše (#) v &amp;anonymním okně}}</translation>
 <translation id="4858913220355269194">Fotbal</translation>
-<translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> – video se přehrává v režimu obrazu v obraze</translation>
 <translation id="4862050643946421924">Přidávání zařízení...</translation>
 <translation id="4862642413395066333">Podepisování odpovědí OCSP</translation>
 <translation id="4863769717153320198">Vypadá jako <ph name="WIDTH" /> × <ph name="HEIGHT" /> (výchozí)</translation>
@@ -4143,7 +4140,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7427348830195639090">Stránka na pozadí: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Otevřít vše v &amp;novém okně}=1{Otevřít v &amp;novém okně}few{Otevřít vše (#) v &amp;novém okně}many{Otevřít vše (#) v &amp;novém okně}other{Otevřít vše (#) v &amp;novém okně}}</translation>
 <translation id="7434509671034404296">Vývojář</translation>
-<translation id="7436470008146509879">Nainstalujte si do zařízení <ph name="DEVICE_TYPE" /> systém Linux</translation>
 <translation id="7436921188514130341">Aj, chyba! Při přejmenovávání došlo k chybě.</translation>
 <translation id="7441830548568730290">Ostatní uživatelé</translation>
 <translation id="7442465037756169001">Hangouts Meet hardware je připraven k nastavení.</translation>
@@ -4440,7 +4436,6 @@ V zařízení se systémem Chrome OS můžete aktivovat funkce ladění, abyste
 <translation id="7881969471599061635">Vypnout titulky</translation>
 <translation id="7882358943899516840">Typ poskytovatele</translation>
 <translation id="7885253890047913815">Nedávné cíle</translation>
-<translation id="7886917304091689118">Spuštěno v Chromu</translation>
 <translation id="7887334752153342268">Duplikovat</translation>
 <translation id="7887864092952184874">Myš Bluetooth byla spárována</translation>
 <translation id="7889565820482017512">Velikost zobrazení</translation>
@@ -4611,7 +4606,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8118860139461251237">Správa stahování</translation>
 <translation id="81238879832906896">Žluto-bílá květina</translation>
 <translation id="8124313775439841391">Spravovaná ONC</translation>
-<translation id="8125562866093998907">Web chce kvůli lepšímu zabezpečení vašeho účtu ověřit váš bezpečnostní klíč.</translation>
 <translation id="813082847718468539">Zobrazit informace o stránkách</translation>
 <translation id="8131740175452115882">Potvrdit</translation>
 <translation id="8133676275609324831">Zobrazit ve &amp;složce</translation>
@@ -4990,7 +4984,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8736288397686080465">Tento web byl na pozadí aktualizován.</translation>
 <translation id="8737685506611670901">Otevírat odkazy <ph name="PROTOCOL" /> namísto aplikace <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
-<translation id="8741316211671074806">Obraz v obraze</translation>
 <translation id="8743390665131937741">Úroveň přiblížení lupy celé obrazovky:</translation>
 <translation id="8743864605301774756">Aktualizováno před 1 h</translation>
 <translation id="874689135111202667">{0,plural, =1{Nahrát jeden soubor na tento web?}few{Nahrát # soubory na tento web?}many{Nahrát # souboru na tento web?}other{Nahrát # souborů na tento web?}}</translation>
@@ -5264,6 +5257,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9158715103698450907">Jejda! Během ověřování došlo k problému s komunikací se sítí. Zkontrolujte prosím připojení k síti a zkuste to znovu.</translation>
 <translation id="9161070040817969420">Dílčí rámce webu: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">Odesílání údajů o systému. Toto zařízení v současné době do Googlu automaticky odesílá diagnostické údaje a údaje o využití zařízení a aplikací. Toto nastavení je vynuceno vlastníkem. Pokud jste zapnuli další Aktivitu na webu a v aplikacích, budou tyto informace uloženy ve vašem účtu a budete je moci spravovat na panelu Moje aktivita. <ph name="BEGIN_LINK1" />Další informace<ph name="END_LINK1" /></translation>
+<translation id="916607977885256133">Obraz v obraze</translation>
 <translation id="9169496697824289689">Zobrazit klávesové zkratky</translation>
 <translation id="9169931577761441333">Přidat aplikaci <ph name="APP_NAME" /> na plochu</translation>
 <translation id="9170397650136757332">Nyní prst lehce natočte, aby se zaznamenaly všechny části otisku</translation>
@@ -5314,7 +5308,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="952992212772159698">Není aktivováno</translation>
 <translation id="957960681186851048">Tento web se pokusil automaticky stáhnout několik souborů</translation>
 <translation id="9580706199804957">Ke službám Google se nelze připojit</translation>
-<translation id="958416628331784386">Na této kartě se přehrává video v režimu obrazu v obraze</translation>
 <translation id="960719561871045870">Kód operátora</translation>
 <translation id="960987915827980018">Zbývá přibližně hodina</translation>
 <translation id="962802172452141067">Strom seznamu záložek</translation>

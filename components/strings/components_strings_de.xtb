@@ -332,6 +332,7 @@
 <translation id="3234666976984236645">Wichtige Inhalte auf dieser Website immer erkennen</translation>
 <translation id="3254409185687681395">Lesezeichen für diese Seite erstellen</translation>
 <translation id="3270847123878663523">&amp;Neu anordnen rückgängig machen</translation>
+<translation id="3280511504953918101">Dieser Name wird auch zum Erstellen Ihres Google-Zahlungskontos verwendet.</translation>
 <translation id="3282497668470633863">Angabe für "Name auf der Karte" hinzufügen</translation>
 <translation id="3287510313208355388">Herunterladen, sobald eine Internetverbindung besteht</translation>
 <translation id="3293642807462928945">Weitere Informationen zur "<ph name="POLICY_NAME" />"-Richtlinie</translation>
@@ -802,6 +803,7 @@
 <translation id="6831043979455480757">Übersetzen</translation>
 <translation id="6839929833149231406">Stadtteil</translation>
 <translation id="6852204201400771460">App neu laden?</translation>
+<translation id="6865412394715372076">Diese Karte kann momentan nicht geprüft werden</translation>
 <translation id="6874604403660855544">&amp;Hinzufügen wiederholen</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Richtlinienebene wird nicht unterstützt.</translation>
@@ -1049,6 +1051,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, Antwort, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Die Verbindung zu <ph name="DOMAIN" /> ist nicht verschlüsselt.</translation>
 <translation id="8718314106902482036">Zahlung nicht abgeschlossen</translation>
+<translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, Suchvorschlag</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8728672262656704056">Sie haben den Inkognitomodus aktiviert</translation>
 <translation id="8730621377337864115">Fertig</translation>

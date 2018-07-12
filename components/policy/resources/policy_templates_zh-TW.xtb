@@ -220,12 +220,6 @@
       你需將政策設為可供 <ph name="PRODUCT_OS_NAME" /> 下載《服務條款》的網址。《服務條款》需為純文字內容，以 MIME 類型 text/plain 提供。不允許任何標記。</translation>
 <translation id="1750315445671978749">封鎖所有下載作業</translation>
 <translation id="1781356041596378058">這項政策也可以控制 Android 開發人員選項的存取權。如果將這項政策設為 true，使用者將無法存取開發人員選項。如果將這項政策設為 false 或不予設定，使用者只要在 Android 設定應用程式中輕觸版本號碼 7 次，即可存取開發人員選項。</translation>
-<translation id="178832255504524723">設定變更密碼網址 (僅限 HTTP 和 HTTPS 配置)。密碼保護服務會將遭到網路詐騙的使用者傳送至這個網址，讓使用者變更密碼。
-      為了讓 <ph name="PRODUCT_NAME" /> 能在這個變更密碼頁面中正確擷取新的密碼指紋，請確認變更密碼頁面符合相關規範，網址是：https://www.chromium.org/developers/design-documents/create-amazing-password-forms。
-
-      如果啟用這項設定，密碼保護服務會將遭到網路詐騙的使用者傳送至這個網址，讓使用者變更密碼。
-      如果停用這項設定或不予設定，則密碼保護服務會將使用者傳送至 https://myaccounts.google.com，讓使用者變更密碼。
-      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="1797233582739332495">顯示週期性提示，要求使用者重新啟動瀏覽器</translation>
 <translation id="1803646570632580723">要顯示在啟動器中的固定應用程式清單</translation>
 <translation id="1808715480127969042">封鎖這些網站的 Cookie</translation>
@@ -1379,14 +1373,6 @@
 <translation id="4980635395568992380">資料類型：</translation>
 <translation id="4983201894483989687">允許執行過舊的外掛程式</translation>
 <translation id="4988291787868618635">在達到閒置延遲時間時要採取的動作</translation>
-<translation id="4990301296093321860">讓你控制密碼保護警告訊息的觸發設定。當使用者在疑似不安全的網站上重複使用受保護的密碼時，密碼保護功能就會向使用者發出警示。
-
-      你可以使用「PasswordProtectionLoginURLs」和「PasswordProtectionChangePasswordURL」政策設定要保護的密碼。
-
-      如果將這項政策設為「PasswordProtectionWarningOff」，系統就不會顯示密碼保護警告訊息。
-      如果將這項政策設為「PasswordProtectionWarningOnPasswordReuse」，當使用者在任何非許可的網站上重複使用受保護的密碼時，系統就會顯示密碼保護警告訊息。
-      如果將這項政策設為「PasswordProtectionWarningOnPhishingReuse」，當使用者在網路詐騙網站上重複使用受保護的密碼時，系統就會顯示密碼保護警告訊息。
-      如果未設定這項政策，當使用者在網路詐騙網站上重複使用受保護的密碼時時，就會觸發密碼保護警告訊息，但使用者可以變更這項設定。</translation>
 <translation id="4995548127349206948">是否啟用 NTLMv2 驗證功能。</translation>
 <translation id="5047604665028708335">允許存取內容套件以外的網站</translation>
 <translation id="5052081091120171147">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入瀏覽記錄 (也會影響匯入對話方塊的選項)。如果停用這項政策，則不會匯入瀏覽記錄。如果未設定這項政策，系統會自動匯入瀏覽記錄，或詢問使用者是否要匯入瀏覽記錄。</translation>
@@ -1883,13 +1869,6 @@
 
       如果你未設定這項政策或留空，則可在 <ph name="PRODUCT_NAME" /> 中使用所有協定。</translation>
 <translation id="6652197835259177259">本機管理化環境下的使用者設定</translation>
-<translation id="6654559957643809067">啟用 <ph name="PRODUCT_NAME" /> 的網路預測功能，並且禁止使用者變更這項設定。
-
-      這項設定是用於控制 DNS 預先擷取、TCP 和 SSL 預先連線及網頁預先轉譯機制。
-
-      如果您將這項偏好設定設為「一律」、「永遠不要」或「僅限 WiFi」，使用者將無法在 <ph name="PRODUCT_NAME" /> 中變更或覆寫這項設定。   
-
-      如未設定這項政策，系統會啟用網路預測功能，但使用者可以自行變更。</translation>
 <translation id="6658245400435704251">指定裝置可以任意延遲下載某項更新的秒數上限 (以該項更新初次被推送到伺服器的時間為準)。你可以將這項裝置等待時間的其中一部分設定為等待的時間長度，剩下的部分則設定為檢查更新的次數。不論採取哪種方式，分散時間皆不得超過固定時間長度，這樣就可以避免裝置由於持續等待下載某項更新而停止回應。</translation>
 <translation id="6665670272107384733">設定使用者使用快速解鎖功能時需輸入密碼的頻率</translation>
 <translation id="6681229465468164801">允許你設定網址模式清單，指定禁止要求使用者授予 USB 裝置存取權的網站。

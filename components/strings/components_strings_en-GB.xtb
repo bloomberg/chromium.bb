@@ -332,6 +332,7 @@
 <translation id="3234666976984236645">Always detect important content on this site</translation>
 <translation id="3254409185687681395">Bookmark this page</translation>
 <translation id="3270847123878663523">&amp;Undo Reorder</translation>
+<translation id="3280511504953918101">This name will also be used when creating your Google payments account.</translation>
 <translation id="3282497668470633863">Add name on card</translation>
 <translation id="3287510313208355388">Download when online</translation>
 <translation id="3293642807462928945">Learn more about <ph name="POLICY_NAME" /> policy</translation>
@@ -803,6 +804,7 @@
 <translation id="6831043979455480757">Translate</translation>
 <translation id="6839929833149231406">Area</translation>
 <translation id="6852204201400771460">Reload app?</translation>
+<translation id="6865412394715372076">This card can't be verified at the moment</translation>
 <translation id="6874604403660855544">&amp;Redo add</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Policy level is not supported.</translation>
@@ -1049,6 +1051,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, answer, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Your connection to <ph name="DOMAIN" /> is not encrypted.</translation>
 <translation id="8718314106902482036">Payment not completed</translation>
+<translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, search suggestion</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8728672262656704056">You’ve gone incognito</translation>
 <translation id="8730621377337864115">Done</translation>

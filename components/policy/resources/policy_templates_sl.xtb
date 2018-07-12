@@ -223,12 +223,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Pravilnik naj bo nastavljen na URL, s katerega lahko <ph name="PRODUCT_OS_NAME" /> prenese pogoje storitve. Ti morajo biti v obliki navadnega besedila vrste MIME in brez označevanja.</translation>
 <translation id="1750315445671978749">Blokiraj vse prenose</translation>
 <translation id="1781356041596378058">Ta pravilnik prav tako nadzira dostop do možnosti za razvijalce za Android. Če ta pravilnik omogočite, uporabniki ne morejo dostopati do možnosti za razvijalce. Če ta pravilnik onemogočite ali ga ne nastavite, uporabniki lahko dostopajo do možnosti za razvijalce, tako da se v aplikaciji Nastavitve za Android sedemkrat dotaknejo številke gradnje.</translation>
-<translation id="178832255504524723">Konfigurirajte URL za spremembo gesla (samo sheme HTTP in HTTPS). Storitev za zaščito gesla pošlje uporabnike, pri katerih je prišlo do lažnega predstavljanja, na ta URL, da spremenijo geslo.
-      Če želite, da bo <ph name="PRODUCT_NAME" /> pravilno zajel prstni odtis novega gesla na tej strani za spremembo gesla, poskrbite, da je stran za spremembo gesla skladna s smernicami na naslovu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Če je ta nastavitev omogočena, storitev za zaščito gesel pošlje uporabnike na ta URL, da spremenijo gesla, če so bila uporabljena za lažno predstavljanje.
-      Če je ta nastavitev onemogočena ali ni nastavljena, storitev za zaščito gesel pošlje uporabnike na naslov https://myaccounts.google.com, da spremenijo geslo.
-      Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="1797233582739332495">Uporabniku prikaži ponavljajoč se poziv, ki obvešča, da je potreben vnovičen zagon</translation>
 <translation id="1803646570632580723">Seznam pripetih aplikacij v zaganjalniku</translation>
 <translation id="1808715480127969042">Blokiraj piškotke na teh mestih</translation>
@@ -1434,14 +1428,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4980635395568992380">Vrsta podatkov:</translation>
 <translation id="4983201894483989687">Dovoli izvajanje zastarelih vtičnikov</translation>
 <translation id="4988291787868618635">Dejanje, ki naj se izvede, ko preteče časovni zamik nedejavnosti</translation>
-<translation id="4990301296093321860">Omogoča, da nadzirate sprožitev opozorila zaščite z geslom. Zaščita z geslom opozori uporabnike, ko zaščiteno geslo znova uporabijo na spletnih mestih, ki so morda sumljiva.
-
-      S pravilnikoma use »PasswordProtectionLoginURLs« in »PasswordProtectionChangePasswordURL« lahko konfigurirate, katero geslo želite zaščititi.
-
-      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOff«, ni prikazano nobeno opozorilo zaščite z geslom.
-      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOnPasswordReuse«, je opozorilo zaščite z geslom prikazano, ko uporabnik znova uporabi zaščiteno geslo na katerem koli spletnem mestu, ki ni uvrščeno na seznam dovoljenih.
-      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOnPhishingReuse«, je opozorilo zaščite z geslom prikazano, ko uporabnik znova uporabi zaščiteno geslo na spletnem mestu z lažnim predstavljanjem.
-      Če ta pravilnik ni nastavljen, je opozorilo zaščite z geslom sproženo, ko uporabnik znova uporabi zaščiteno geslo na spletnem mestu z lažnim predstavljanjem, vendar lahko uporabnik to spremeni.</translation>
 <translation id="4995548127349206948">Ali je omogočeno preverjanje pristnosti NTLMv2.</translation>
 <translation id="5047604665028708335">Omogoči dostop do spletnih mest zunaj paketov vsebine</translation>
 <translation id="5052081091120171147">Če je ta pravilnik omogočen, se zgodovina brskanja uvozi iz trenutnega privzetega brskalnika. Če je omogočen, ta pravilnik vpliva tudi na pogovorno okno za uvoz.
@@ -1977,13 +1963,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
 Če ta pravilnik ni nastavljen ali je seznam prazen, bodo v brskalniku <ph name="PRODUCT_NAME" /> dostopne vse sheme.</translation>
 <translation id="6652197835259177259">Nastavitve lokalno upravljanih uporabnikov</translation>
-<translation id="6654559957643809067">Omogoča omrežno predvidevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje te nastavitve.
-
-      Ta pravilnik nadzira vnaprejšnji prenos podatkov DNS, vnaprejšnje povezovanje TCP in SSL ter vnaprejšnje upodabljanje spletnih strani.
-
-      Če nastavite to nastavitev na »vedno«, »nikoli« ali »samo Wi-Fi«, uporabniki te nastavitve v brskalniku <ph name="PRODUCT_NAME" /> ne morejo spremeniti ali preglasiti.
-
-      Če ta pravilnik ni nastavljen, bo omrežno predvidevanje omogočeno, vendar bo lahko uporabnik to spremenil.</translation>
 <translation id="6658245400435704251">Določa število sekund, do katerega lahko naprava naključno odloži prenos posodobitve od trenutka, ko je bila posodobitev prvič na voljo v strežniku. Naprava lahko del tega časa čaka v smislu dejansko pretečenega časa, preostali del pa v smislu števila preverjanj za posodobitve. Razpršitev je v vsakem primeru omejena navzgor na nespremenljiv čas, tako da se ne more zgoditi, da bi naprava neomejen čas čakala na prenos posodobitve.</translation>
 <translation id="6665670272107384733">Nastavi, kako pogosto mora uporabnik vnesti geslo, če želi uporabljati hitro odklepanje</translation>
 <translation id="6681229465468164801">Omogoča nastavitev seznama vzorcev URL-jev, ki določa, katerim spletnim mestom je preprečeno pozivanje uporabnikov k odobritvi dostopa do naprave USB.

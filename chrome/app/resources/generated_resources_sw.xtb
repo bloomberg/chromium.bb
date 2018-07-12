@@ -451,7 +451,6 @@
 <translation id="1657406563541664238">Saidia kuboresha <ph name="PRODUCT_NAME" /> kwa kutumia Google takwimu za matumizi na ripoti wakati wowote huduma hii inapoacha kufanya kazi.</translation>
 <translation id="1658424621194652532">Ukarasa huu unafikia maikrofoni yako.</translation>
 <translation id="1660204651932907780">Ruhusu tovuti kucheza sauti (inapendekezwa)</translation>
-<translation id="1660938185063657230">Thibitisha Ufunguo wako wa Usalama</translation>
 <translation id="1661156625580498328">Imarisha usimbaji wa AES (inapendekezwa).</translation>
 <translation id="1661245713600520330">Ukurasa huu unaorodhesha vipengee vyote vilivyopakiwa katika mchakato halisi na vilivyosajiliwa kupakiwa baadaye.</translation>
 <translation id="166179487779922818">Nenosiri ni fupi mno.</translation>
@@ -563,7 +562,6 @@
 <translation id="1818007989243628752">Futa nenosiri la <ph name="USERNAME" /></translation>
 <translation id="1819721979226826163">Gusa Arifa za programu &gt; Huduma za Google Play.</translation>
 <translation id="1826516787628120939">Inakagua</translation>
-<translation id="1827750274519118478">Video iliyo katika hali ya Picha ndani ya Picha itaacha kucheza.</translation>
 <translation id="1828378091493947763">Programu-jalizi hii haitumiki kwenye kifaa hiki</translation>
 <translation id="1828901632669367785">Chapisha kwa Kutumia Kidadisi cha Mfumo...</translation>
 <translation id="1829192082282182671">Fif&amp;iza</translation>
@@ -1487,7 +1485,7 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> inataka kuunganisha</translation>
 <translation id="3274763671541996799">Umeamua kutumia skrini nzima.</translation>
 <translation id="3275778913554317645">Fungua kama dirisha</translation>
-<translation id="3279230909244266691">Huenda mchakato ukachukua dakika kadhaa. Inaanzisha mashine dhahania.</translation>
+<translation id="3279230909244266691">Huenda mchakato ukachukua dakika kadhaa. Inaanzisha kompyuta iliyo mbali.</translation>
 <translation id="3279741024917655738">Onyesha video za skrini kamili kwenye</translation>
 <translation id="3280237271814976245">Hifadhi k&amp;ama...</translation>
 <translation id="3280243678470289153">Endelea kutumia Chrome</translation>
@@ -2304,7 +2302,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4598776695426288251">Wi-Fi inapatikana kupitia vifaa vingi</translation>
 <translation id="4602466770786743961">Ruhusu <ph name="HOST" /> ifikie kamera na maikrofoni yako kila wakati</translation>
 <translation id="4608500690299898628">Ta&amp;futa</translation>
-<translation id="4608520674724523647">Mchoro wa usajili uliokamilika</translation>
+<translation id="4608520674724523647">Inaashiria usajili uliokamilika</translation>
 <translation id="4610162781778310380">Hitilafu imetokea katika <ph name="PLUGIN_NAME" /></translation>
 <translation id="4610637590575890427">Je, ulitaka kwenda <ph name="SITE" />?</translation>
 <translation id="4611114513649582138">Muunganisho wa data unapatikana</translation>
@@ -2457,7 +2455,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4856478137399998590">Huduma yako ya data ya simu ya mkononi imeamilishwa na iko tayari kutumia</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Fungua Zote katika &amp;Dirisha Fiche}=1{Fungua katika &amp;Dirisha Fiche}other{Fungua Zote (#) katika &amp;Dirisha Fiche}}</translation>
 <translation id="4858913220355269194">Fritz</translation>
-<translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> - Video inacheza katika hali ya Picha ndani ya Picha</translation>
 <translation id="4862050643946421924">Inaongeza kifaa...</translation>
 <translation id="4862642413395066333">Kuweka Sahihi Majibu ya OCSP</translation>
 <translation id="4863769717153320198">Inaonekana kama <ph name="WIDTH" /> x <ph name="HEIGHT" /> (Chaguomsingi)</translation>
@@ -3796,7 +3793,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6885771755599377173">Onyesho la Kuchungulia la Maelezo ya Mfumo</translation>
 <translation id="6886871292305414135">Fungua kiungo katika &amp;kichupo kipya</translation>
 <translation id="6892812721183419409">Fungua Kiungo ukitumia <ph name="USER" /></translation>
-<translation id="6896398788631624004">Weka Ufunguo Salama na uuwashe</translation>
+<translation id="6896398788631624004">Weka Ufunguo Salama na uanzishe utumiaji wake</translation>
 <translation id="6896758677409633944">Nakili</translation>
 <translation id="6898440773573063262">Programu za skrini nzima sasa zinaweza kusanidiwa ili zijifungue kiotomatiki kwenye kifaa hiki.</translation>
 <translation id="6898699227549475383">Shirika (O)</translation>
@@ -4138,7 +4135,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7427348830195639090">Ukurasa wa Mandharinyuma: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Fungua Zote katika &amp;Dirisha Jipya}=1{Fungua katika &amp;Dirisha Jipya}other{Fungua Zote (#) katika Dirisha Jipya}}</translation>
 <translation id="7434509671034404296">Wasanidi Programu</translation>
-<translation id="7436470008146509879">Weka mipangilio ya Linux kwenye <ph name="DEVICE_TYPE" /> yako</translation>
 <translation id="7436921188514130341">Samahani. Hitilafu imetokea wakati wa kubadilisha jina.</translation>
 <translation id="7441830548568730290">Watumiaji wengine</translation>
 <translation id="7442465037756169001">Maunzi yako ya Hangouts Meet yako tayari kuwekwa.</translation>
@@ -4438,7 +4434,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7881969471599061635">Zima manukuu</translation>
 <translation id="7882358943899516840">Aina ya mtoa huduma</translation>
 <translation id="7885253890047913815">Printa ulizotumia hivi karibuni</translation>
-<translation id="7886917304091689118">Umefunguka katika Chrome</translation>
 <translation id="7887334752153342268">Maradufu</translation>
 <translation id="7887864092952184874">Kipanya cha Bluetooth kimeoanishwa</translation>
 <translation id="7889565820482017512">Ukubwa wa Onyesho</translation>
@@ -4609,7 +4604,6 @@ Weka faili yako ya funguo mahali salama. Utaihitaji kuunda matoleo mapya ya kien
 <translation id="8118860139461251237">Kudhibiti maudhui unayopakua</translation>
 <translation id="81238879832906896">Ua la rangi ya manjano na nyeupe</translation>
 <translation id="8124313775439841391">ONC Inayodhibitiwa</translation>
-<translation id="8125562866093998907">Tovuti ingependa kuthibitisha Ufunguo wako wa Usalama ili kuboresha usalama wa akaunti yako.</translation>
 <translation id="813082847718468539">Angalia maelezo ya tovuti</translation>
 <translation id="8131740175452115882">Thibitisha</translation>
 <translation id="8133676275609324831">&amp;Onyesha katika folda</translation>
@@ -4989,7 +4983,6 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8736288397686080465">Tovuti hii imesasishwa chini chini.</translation>
 <translation id="8737685506611670901">Fungua viungo vya <ph name="PROTOCOL" /> badala ya <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
-<translation id="8741316211671074806">Picha ndani ya picha</translation>
 <translation id="8743390665131937741">Kiwango cha ukuzaji wa skrini nzima:</translation>
 <translation id="8743864605301774756">Ulisasishwa saa 1 iliyopita</translation>
 <translation id="874689135111202667">{0,plural, =1{Ungependa kupakia faili moja kwenye tovuti hii?}other{Ungependa kupakia faili # kwenye tovuti hii?}}</translation>
@@ -5168,7 +5161,7 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="9024331582947483881">skrini nzima</translation>
 <translation id="9025098623496448965">Sawa, Nirudishe nyuma hadi kwenye skrini ya kuingia katika akaunti</translation>
 <translation id="9026731007018893674">pakua</translation>
-<translation id="9026852570893462412">Huenda mchakato huu ukachukua dakika kadhaa. Inapakua mashine dhahania.</translation>
+<translation id="9026852570893462412">Huenda mchakato huu ukachukua dakika kadhaa. Inapakua kompyuta iliyo mbali.</translation>
 <translation id="9027459031423301635">Fungua Kiungo katika Kichupo &amp;Kipya</translation>
 <translation id="9030515284705930323">Shirika lako halijaruhusu Duka la Google Play kwa akaunti yako. Wasiliana na msimamizi wako kwa maelezo zaidi.</translation>
 <translation id="9033857511263905942">&amp;Bandika</translation>
@@ -5263,6 +5256,7 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="9158715103698450907">Lo! Tatizo la mawasiliano katika mtandao lilitokea wakati wa uthibitishaji. Tafadhali kagua muunganisho wa mtandao wako na ujaribu tena.</translation>
 <translation id="9161070040817969420">Fremu ndogo za: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">Tuma data ya mfumo. Tuma kiotomatiki data ya uchanganuzi na matumizi ya kifaa na programu kwa Google. Mipangilio hii husimamiwa na mmiliki. Ukiwasha Historia ya Shughuli kwenye Wavuti na Programu, maelezo haya yatahifadhiwa kwenye akaunti yako ili uweze kuyadhibiti katika Shughuli Zangu. <ph name="BEGIN_LINK1" />Pata Maelezo Zaidi<ph name="END_LINK1" /></translation>
+<translation id="916607977885256133">Picha ndani ya Picha</translation>
 <translation id="9169496697824289689">Angalia njia za mkato za kibodi</translation>
 <translation id="9169931577761441333">Ongeza <ph name="APP_NAME" /> kwenye Skrini ya Mwanzo</translation>
 <translation id="9170397650136757332">Sasa sogeza kidole chako taratibu ili kupiga picha sehemu zote za alama ya kidole chako</translation>
@@ -5313,7 +5307,6 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="952992212772159698">Haijaamilishwa</translation>
 <translation id="957960681186851048">Tovuti hii imejaribu kupakua faili nyingi kiotomatiki</translation>
 <translation id="9580706199804957">Imeshindwa kuunganisha kwenye huduma za Google</translation>
-<translation id="958416628331784386">Kichupo hiki kinacheza video katika hali ya Picha ndani ya Picha.</translation>
 <translation id="960719561871045870">Msimbo wa mtoa huduma</translation>
 <translation id="960987915827980018">Takriban saa 1 imesalia</translation>
 <translation id="962802172452141067">Kielelezo cha folda ya alamisho</translation>

@@ -67,7 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> ali <ph name="SEARCH" /> <ph name="SEPARATOR" /> <ph name="DOWN" /></translation>
 <translation id="353037708190149633">Shranjevanje vseh odprtih strani v trenutnem oknu kot zaznamke v novi mapi</translation>
 <translation id="355103131818127604">Odpiranje povezave na novem zavihku v ozadju</translation>
-<translation id="3622741593887335780">Povečava (v stojalu ALI ko je omogočena celozaslonska lupa)</translation>
+<translation id="3622741593887335780">Povečava (kadar je omogočena zasidrana ALI celozaslonska lupa)</translation>
 <translation id="3649256019230929621">Pomanjšanje olna</translation>
 <translation id="3655154169297074232">Zavihki in okna</translation>
 <translation id="3668361878347172356">Uveljavitev zadnjega dejanja</translation>
@@ -136,7 +136,7 @@
 <translation id="6425378783626925378">Klik ikone od 1 do 8 na polici</translation>
 <translation id="6435207348963613811">Označevanje prejšnjega elementa na polici</translation>
 <translation id="6445033640292336367">Premik zavihka na prvotno mesto</translation>
-<translation id="6474744297082284761">Pomanjšava (v stojalu ALI ko je omogočena celozaslonska lupa)</translation>
+<translation id="6474744297082284761">Pomanjšava (kadar je omogočena zasidrana ALI celozaslonska lupa)</translation>
 <translation id="649811797655257835">Izberite datoteko, nato pritisnite <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Odpiranje okna, ki najdlje ni bilo uporabljeno</translation>
 <translation id="666343722268997814">Odpiranje priročnega menija za označen element</translation>

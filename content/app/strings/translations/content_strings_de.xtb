@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Nächsten Monat anzeigen</translation>
 <translation id="512758898067543763">Zeilenüberschrift</translation>
 <translation id="5143125788380636750">Epilog</translation>
-<translation id="5153163864850940242">Dieses Video wird im Bild-in-Bild-Modus wiedergegeben</translation>
 <translation id="5164977714490026579">Wert muss größer als oder gleich <ph name="MINIMUM" /> sein.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Geben Sie etwas vor dem <ph name="ATSIGN" />-Zeichen ein. Die Angabe "<ph name="INVALIDADDRESS" />" ist unvollständig.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">Messinstrument</translation>
 <translation id="6166809985690652833">Nachwort</translation>
 <translation id="6213469881011901533">Glossar</translation>
-<translation id="6310801910862476708">Bild-im-Bild-Modus beenden</translation>
 <translation id="6398862346408813489">Auswahlbereich für Monatsanzeige</translation>
 <translation id="6404546809543547843">Audio-Zeitachse</translation>
 <translation id="6453774872122745852">Danksagung</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">Medien herunterladen</translation>
 <translation id="6981594929165378967">Einfügen</translation>
 <translation id="6989848892321993519">Verlängern Sie diesen Text auf mindestens <ph name="MIN_CHARACTERS" /> Zeichen. Derzeit verwenden Sie 1 Zeichen.</translation>
+<translation id="7090364526657522309">Linux-Schriftartendienst</translation>
 <translation id="709897737746224366">Ihre Eingabe muss mit dem geforderten Format übereinstimmen.</translation>
 <translation id="7139483182332611405">Vorbemerkung</translation>
 <translation id="7223624360433298498">Vergangene Zeit</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">Inhaltsverzeichnis</translation>
 <translation id="8613126697340063924">Remote-Wiedergabe steuern</translation>
 <translation id="862370744433916922">Untertitel</translation>
-<translation id="8741316211671074806">Bild im Bild</translation>
 <translation id="8750798805984357768">Wählen Sie eine dieser Optionen aus.</translation>
 <translation id="8785498733064193001">Wiedergabe starten</translation>
 <translation id="8808573423886751634">Kapitel</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">Andere...</translation>
 <translation id="9138385573473225930">Benachrichtigung</translation>
 <translation id="9155987714137265666"><ph name="WEEK" /> ab dem <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Bild-in-Bild</translation>
 <translation id="9168329111483466115">Fußnote</translation>
 <translation id="954003015749068518">Bild-im-Bild-Modus aktivieren</translation>
 <translation id="966787709310836684">Menü</translation>

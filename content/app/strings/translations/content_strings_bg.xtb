@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Показване на следващия месец</translation>
 <translation id="512758898067543763">заглавка на ред</translation>
 <translation id="5143125788380636750">епилог</translation>
-<translation id="5153163864850940242">Този видеоклип се възпроизвежда в режим „Картина в картината“</translation>
 <translation id="5164977714490026579">Стойността трябва да е по-голяма или равна на <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="5307600278924710095">Моля, въведете текст преди „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ е непълно.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">индикатор</translation>
 <translation id="6166809985690652833">послеслов</translation>
 <translation id="6213469881011901533">терминологичен речник</translation>
-<translation id="6310801910862476708">Изход от „Картина в картината“</translation>
 <translation id="6398862346408813489">Показване на панела за избиране на месец</translation>
 <translation id="6404546809543547843">времеви плъзгач за аудиозаписа</translation>
 <translation id="6453774872122745852">признания</translation>
@@ -171,6 +169,7 @@
 <translation id="6941933287844615239">изтегляне на мултимедията</translation>
 <translation id="6981594929165378967">вмъкване</translation>
 <translation id="6989848892321993519">Моля, удължете този текст до поне <ph name="MIN_CHARACTERS" /> знака (понастоящем използвате 1 знак).</translation>
+<translation id="7090364526657522309">Услуга за шрифтове на Linux</translation>
 <translation id="709897737746224366">Моля, спазвайте изисквания формат.</translation>
 <translation id="7139483182332611405">предисловие</translation>
 <translation id="7223624360433298498">изминало време</translation>
@@ -220,7 +219,6 @@
 <translation id="860475260694818407">съдържание</translation>
 <translation id="8613126697340063924">управление на отдалеченото възпроизвеждане</translation>
 <translation id="862370744433916922">подзаглавие</translation>
-<translation id="8741316211671074806">Картина в картината</translation>
 <translation id="8750798805984357768">Моля, изберете една от тези опции.</translation>
 <translation id="8785498733064193001">начало на възпроизвеждането</translation>
 <translation id="8808573423886751634">глава</translation>
@@ -238,6 +236,7 @@
 <translation id="9132465097189459683">Други...</translation>
 <translation id="9138385573473225930">сигнал</translation>
 <translation id="9155987714137265666"><ph name="WEEK" /> – започва от <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Картина в картината</translation>
 <translation id="9168329111483466115">бележка под линия</translation>
 <translation id="954003015749068518">вход в режима „Картина в картината“</translation>
 <translation id="966787709310836684">меню</translation>

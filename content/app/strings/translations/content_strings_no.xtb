@@ -114,7 +114,6 @@
 <translation id="5117590920725113268">Se neste måned</translation>
 <translation id="512758898067543763">radoverskrift</translation>
 <translation id="5143125788380636750">epilog</translation>
-<translation id="5153163864850940242">Denne videoen spilles av i bilde-i-bilde</translation>
 <translation id="5164977714490026579">Verdien må være større enn eller lik <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Skriv inn en del etterfulgt av «<ph name="ATSIGN" />». «<ph name="INVALIDADDRESS" />» er ufullstendig.</translation>
@@ -146,7 +145,6 @@
 <translation id="6164829606128959761">måler</translation>
 <translation id="6166809985690652833">etterord</translation>
 <translation id="6213469881011901533">ordliste</translation>
-<translation id="6310801910862476708">Avslutt bilde-i-bilde</translation>
 <translation id="6398862346408813489">Se panelet for valg av måned</translation>
 <translation id="6404546809543547843">lydtidslinje</translation>
 <translation id="6453774872122745852">omtale</translation>
@@ -220,7 +218,6 @@
 <translation id="860475260694818407">innholdsfortegnelse</translation>
 <translation id="8613126697340063924">kontrollér ekstern avspilling</translation>
 <translation id="862370744433916922">undertittel</translation>
-<translation id="8741316211671074806">Bilde-i-bilde</translation>
 <translation id="8750798805984357768">Velg ett av følgende alternativer.</translation>
 <translation id="8785498733064193001">start avspillingen</translation>
 <translation id="8808573423886751634">kapittel</translation>
@@ -238,6 +235,7 @@
 <translation id="9132465097189459683">Andre</translation>
 <translation id="9138385573473225930">varsel</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, med start <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Bilde i bilde</translation>
 <translation id="9168329111483466115">fotnote</translation>
 <translation id="954003015749068518">start bilde-i-bilde</translation>
 <translation id="966787709310836684">meny</translation>

@@ -157,10 +157,12 @@
 <translation id="6394232988457703198">Сада треба поново да покренете Chromium.</translation>
 <translation id="6400072781405947421">Chromium можда неће исправно функционисати зато што више није подржан на систему Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium је веб прегледач који покреће веб-странице и апликације муњевитом брзином. Брз је, стабилан и једноставан за коришћење. Прегледајте Веб безбедније са заштитом од малвера и „пецања“ која је уграђена у Chromium.</translation>
+<translation id="641451971369018375">Комуницира са Google-ом ради побољшања прегледања и Chromium-а</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium ће се рестартовати за 1 секунду}one{Chromium ће се рестартовати за # секунду}few{Chromium ће се рестартовати за # секунде}other{Chromium ће се рестартовати за # секунди}}</translation>
 <translation id="6475912303565314141">Контролише и страницу која се приказује када покренете Chromium.</translation>
 <translation id="6485906693002546646">Користите <ph name="PROFILE_EMAIL" /> за синхронизацију Chromium садржаја. Да бисте ажурирали подешавање синхронизације или користили Chromium без Google налога, посетите <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Деинсталирај Chromium</translation>
+<translation id="6570579332384693436">Да би исправио правописне грешке, Chromium шаље Google-овим серверима текст који уносите у поља за текст.</translation>
 <translation id="6598877126913850652">Иди на подешавања обавештења за Chromium</translation>
 <translation id="6664239887951090350">{0,plural, =0{Поново ћемо покренути Chromium}=1{Поново ћемо покренути Chromium за 1 секунду}one{Поново ћемо покренути Chromium за # секунду}few{Поново ћемо покренути Chromium за # секунде}other{Поново ћемо покренути Chromium за # секунди}}</translation>
 <translation id="6676384891291319759">Приступите Интернету</translation>

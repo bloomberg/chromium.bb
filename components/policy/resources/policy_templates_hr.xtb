@@ -223,12 +223,6 @@
       Pravilo treba biti postavljeno na URL s kojeg <ph name="PRODUCT_OS_NAME" /> može preuzeti Uvjete pružanja usluge. Uvjeti pružanja usluge moraju biti običan tekst, poslužen kao vrsta "text/plain" protokola MIME. Jezik za označavanje nije dopušten.</translation>
 <translation id="1750315445671978749">Blokiranje svih preuzimanja</translation>
 <translation id="1781356041596378058">To pravilo kontrolira i pristup Opcijama za razvojne programere Androida. Ako to pravilo postavite na True, korisnici ne mogu pristupiti Opcijama za razvojne programere. Ako to pravilo postavite na False ili ga ne postavite, korisnici mogu pristupiti Opcijama za razvojne programere tako što će sedam puta dodirnuti broj međuverzije u aplikaciji postavki Androida.</translation>
-<translation id="178832255504524723">Konfigurirajte URL za promjenu zaporke (samo sheme HTTP i HTTPS). To je URL na koji će usluga za zaštitu zaporke slati korisnike da promijene zaporku u slučaju krađe identiteta.
-      Da bi <ph name="PRODUCT_NAME" /> pravilno snimio otisak prsta nove zaporke na toj stranici za promjenu zaporke, stranica za promjenu zaporke mora slijediti smjernice na https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Ako se ta postavka omogući, usluga za zaštitu zaporke slat će korisnike na taj URL da bi promijenili zaporku ako dođe do pokušaja krađe identiteta.
-      Ako se ta postavka onemogući ili ne postavi, usluga za zaštitu zaporke slat će korisnike na https://myaccounts.google.com da bi promijenili zaporku.
-      To pravilo nije dostupno na instancama Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="1797233582739332495">Prikaži korisniku ponavljajuću obavijest o obaveznom ponovnom pokretanju</translation>
 <translation id="1803646570632580723">Popis prikvačenih aplikacija za prikazivanje u pokretaču</translation>
 <translation id="1808715480127969042">Blokiraj kolačiće na ovim web-lokacijama</translation>
@@ -1383,14 +1377,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="4980635395568992380">Vrste podataka:</translation>
 <translation id="4983201894483989687">Dopusti pokretanje dodataka koji su zastarjeli</translation>
 <translation id="4988291787868618635">Radnja koja će se izvršiti kada nastupi odgoda neaktivnosti</translation>
-<translation id="4990301296093321860">Omogućuje vam da odredite okidač na temelju kojeg će zaštita zaporke prikazati upozorenje. Zaštita zaporke to upozorenje prikazuje korisnicima kada ponovo upotrijebe svoju zaštićenu zaporku na potencijalno sumnjivim web-lokacijama.
-
-      Pomoću pravila "PasswordProtectionLoginURLs" i "PasswordProtectionChangePasswordURL" možete konfigurirati koju ćete zaporku zaštititi.
-
-      Ako se to pravilo postavi na "PasswordProtectionWarningOff", upozorenje zaštite zaporke neće se prikazati.
-      Ako se to pravilo postavi na "PasswordProtectionWarningOnPasswordReuse", upozorenje zaštite zaporke prikazat će se kada korisnik ponovo upotrijebi svoju zaštićenu zaporku na web-lokaciji koja nije dopuštena.
-      Ako se to pravilo postavi na "PasswordProtectionWarningOnPhishingReuse", upozorenje zaštite zaporke prikazat će se kada korisnik ponovo upotrijebi svoju zaštićenu zaporku na web-lokaciji za krađu identiteta.
-      Ako se to pravilo ne postavi, upozorenje zaštite zaporke prikazat će se kada korisnik ponovo upotrijebi svoju zaštićenu zaporku na web-lokaciji za krađu identiteta, ali će korisnik moći promijeniti tu postavku.</translation>
 <translation id="4995548127349206948">Je li NTLMv2 autentifikacija omogućena.</translation>
 <translation id="5047604665028708335">Dopusti pristup web-lokacijama izvan paketa sadržaja</translation>
 <translation id="5052081091120171147">Ako je omogućeno, ovo pravilo prisilno uvozi povijest pregledavanja iz trenutačno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, povijest pregledavanja se ne uvozi. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti povijest pregledavanja ili do uvoza može doći automatski.</translation>
@@ -1891,13 +1877,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       Ako se to pravilo ne postavi ili ako je popis prazan, sve će sheme biti dostupne na usluzi <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Postavke lokalno upravljanih korisnika</translation>
-<translation id="6654559957643809067">Omogućuje mrežno predviđanje u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene tu postavku.
-
-      Time se kontrolira prethodno dohvaćanje DNS-a, TCP i SSL pretpovezivanje i prethodno generiranje web-stranica.
-
-      Ako postavite tu postavku na "Uvijek", "Nikad" ili "Samo na Wi-Fi-ju", korisnici neće moći promijeniti niti nadjačati tu postavku u proizvodu <ph name="PRODUCT_NAME" />.
-
-      Ako se to pravilo ne postavi, mrežno predviđanje bit će omogućeno, no korisnik će to moći promijeniti.</translation>
 <translation id="6658245400435704251">Određuje do koliko sekundi uređaj može nasumično odgađati preuzimanje ažuriranja od trenutka kad je ažuriranje prvi put poslano na poslužitelj. Uređaj može dio tog vremena čekati u smislu stvarnog proteka vremena, a preostalo vrijeme u smislu broja provjera ažuriranja. U bilo kojem slučaju, gornja granica raspršivanja konstantan je iznos vremena tako da uređaj nikad ne može zauvijek zapeti čekajući ažuriranje.</translation>
 <translation id="6665670272107384733">Odredi koliko često korisnik mora unijeti zaporku za upotrebu brzog otključavanja</translation>
 <translation id="6681229465468164801">Omogućuje vam postavljanje popisa uzoraka URL-ova koji navode web-lokacije kojima se sprječava da od korisnika traže dopuštenje za pristup USB uređaju.

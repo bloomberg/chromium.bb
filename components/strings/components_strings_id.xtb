@@ -332,6 +332,7 @@
 <translation id="3234666976984236645">Selalu deteksi konten penting di situs ini</translation>
 <translation id="3254409185687681395">Bookmark halaman ini</translation>
 <translation id="3270847123878663523">&amp;Urungkan Pengaturan Ulang</translation>
+<translation id="3280511504953918101">Nama ini juga akan digunakan saat membuat akun pembayaran Google Anda.</translation>
 <translation id="3282497668470633863">Tambahkan nama di kartu</translation>
 <translation id="3287510313208355388">Download saat online</translation>
 <translation id="3293642807462928945">Pelajari lebih lanjut tentang kebijakan <ph name="POLICY_NAME" /></translation>
@@ -803,6 +804,7 @@
 <translation id="6831043979455480757">Terjemahkan</translation>
 <translation id="6839929833149231406">Area</translation>
 <translation id="6852204201400771460">Muat ulang aplikasi?</translation>
+<translation id="6865412394715372076">Kartu ini tidak dapat diverifikasi sekarang</translation>
 <translation id="6874604403660855544">&amp;Ulangi penambahan</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Tingkat kebijakan tidak didukung.</translation>
@@ -1049,6 +1051,7 @@
 <translation id="8680536109547170164"><ph name="QUERY" />, dengan jawaban, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Sambungan ke <ph name="DOMAIN" /> tidak dienkripsi.</translation>
 <translation id="8718314106902482036">Pembayaran belum selesai</translation>
+<translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, saran penelusuran</translation>
 <translation id="8725066075913043281">Coba lagi</translation>
 <translation id="8728672262656704056">Anda masuk mode penyamaran</translation>
 <translation id="8730621377337864115">Selesai</translation>

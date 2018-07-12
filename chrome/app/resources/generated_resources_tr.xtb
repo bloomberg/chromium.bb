@@ -454,7 +454,6 @@
 <translation id="1657406563541664238">Google'a otomatik olarak kullanım istatistikleri ve kilitlenme raporları göndererek <ph name="PRODUCT_NAME" /> ürününü iyileştirmemize yardımcı olun.</translation>
 <translation id="1658424621194652532">Bu sayfa mikrofonunuza erişiyor.</translation>
 <translation id="1660204651932907780">Sitelerin ses çalmasına izin ver (önerilir)</translation>
-<translation id="1660938185063657230">Güvenlik Anahtarınızı doğrulayın</translation>
 <translation id="1661156625580498328">AES şifrelemesini uygula (önerilir).</translation>
 <translation id="1661245713600520330">Bu sayfada, ana işleme yüklenen tüm modüller ve ilerideki bir noktada yüklenmek için kaydedilmiş modüller listelenir.</translation>
 <translation id="166179487779922818">Şifre çok kısa.</translation>
@@ -566,7 +565,6 @@
 <translation id="1818007989243628752"><ph name="USERNAME" /> kullanıcısının şifresini sil</translation>
 <translation id="1819721979226826163">Uygulama bildirimleri &gt; Google Play hizmetlerine dokunun.</translation>
 <translation id="1826516787628120939">Kontrol ediliyor</translation>
-<translation id="1827750274519118478">Videonun pencere içinde pencere modunda oynatılması durdurulacak.</translation>
 <translation id="1828378091493947763">Bu eklenti, bu cihazda desteklenmiyor</translation>
 <translation id="1828901632669367785">Sistem İletişim Kutusunu Kullanarak Yazdır…</translation>
 <translation id="1829192082282182671">U&amp;zaklaştır</translation>
@@ -2466,7 +2464,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4856478137399998590">Mobil veri hizmetiniz etkinleştirildi ve kullanıma hazır</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Tümünü &amp;Gizli Pencerede Aç}=1{&amp;Gizli Pencerede Aç}other{Tümünü (#) &amp;Gizli Pencerede Aç}}</translation>
 <translation id="4858913220355269194">Futbolcu</translation>
-<translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> - Video Pencere İçinde Pencere modunda oynatılıyor</translation>
 <translation id="4862050643946421924">Cihaz ekleniyor...</translation>
 <translation id="4862642413395066333">İmza OCSP Yanıtları</translation>
 <translation id="4863769717153320198"><ph name="WIDTH" /> x <ph name="HEIGHT" /> şeklinde görünür (Varsayılan)</translation>
@@ -4148,7 +4145,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7427348830195639090">Arka Plan Sayfası: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Tümünü &amp;Yeni Pencerede Aç}=1{&amp;Yeni Pencerede Aç}other{Tümünü (#) &amp;Yeni Pencerede Aç}}</translation>
 <translation id="7434509671034404296">Geliştirici</translation>
-<translation id="7436470008146509879"><ph name="DEVICE_TYPE" /> cihazınızda Linux'ı kurun</translation>
 <translation id="7436921188514130341">Hay aksi! Yeniden adlandırma sırasında bir hata oluştu.</translation>
 <translation id="7441830548568730290">Diğer kullanıcılar</translation>
 <translation id="7442465037756169001">Hangouts Meet hardware cihazınız kuruluma hazır.</translation>
@@ -4446,7 +4442,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7881969471599061635">Altyazıları devre dışı bırak</translation>
 <translation id="7882358943899516840">Sağlayıcı türü</translation>
 <translation id="7885253890047913815">En Son Hedefler</translation>
-<translation id="7886917304091689118">Chrome'da çalıştırılıyor</translation>
 <translation id="7887334752153342268">Yinele</translation>
 <translation id="7887864092952184874">Bluetooth fare eşlendi</translation>
 <translation id="7889565820482017512">Görüntü Boyutu</translation>
@@ -4617,7 +4612,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8118860139461251237">İndirilen öğelerinizi yönetme</translation>
 <translation id="81238879832906896">Sarı ve beyaz çiçek</translation>
 <translation id="8124313775439841391">Yönetilen ONC</translation>
-<translation id="8125562866093998907">Site, hesabınızla ilgili ek güvenlik için Güvenlik Anahtarınızı doğrulamak istiyor.</translation>
 <translation id="813082847718468539">Site bilgilerini görüntüle</translation>
 <translation id="8131740175452115882">Onayla</translation>
 <translation id="8133676275609324831">Klasörde &amp;göster</translation>
@@ -4996,7 +4990,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8736288397686080465">Bu site arka planda güncellendi.</translation>
 <translation id="8737685506611670901"><ph name="REPLACED_HANDLER_TITLE" /> yerine <ph name="PROTOCOL" /> bağlantılarını açma</translation>
 <translation id="8737709691285775803">Shill</translation>
-<translation id="8741316211671074806">Pencere İçinde Pencere</translation>
 <translation id="8743390665131937741">Tam ekran yakınlaştırma düzeyi:</translation>
 <translation id="8743864605301774756">1 saat önce güncellendi</translation>
 <translation id="874689135111202667">{0,plural, =1{Bu siteye bir dosya yüklensin mi?}other{Bu siteye # dosya yüklensin mi?}}</translation>
@@ -5270,6 +5263,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="9158715103698450907">Hata! Kimlik doğrulama sırasında bir ağ iletişim sorunu oldu. Lütfen ağ bağlantınızı kontrol edin ve tekrar deneyin.</translation>
 <translation id="9161070040817969420"><ph name="PARENT_SITE" /> için alt çerçeveler</translation>
 <translation id="916501514001398070">Sistem verilerini gönderin. Bu cihaz şu anda teşhis, cihaz ve uygulama kullanım verilerini Google'a otomatik olarak göndermektedir. Bu ayar, cihaz sahibi tarafından uygulanır. Ayrıca Web ve Uygulama Etkinliği'ni etkinleştirdiyseniz bu bilgi, Etkinliğim sayfasında yönetebilmeniz için hesabınızda depolanır. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi<ph name="END_LINK1" /></translation>
+<translation id="916607977885256133">Pencere içinde Pencere</translation>
 <translation id="9169496697824289689">Klavye kısayollarını görüntüle</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" /> uygulamasını Ana ekrana ekle</translation>
 <translation id="9170397650136757332">Şimdi parmak izinizin tüm farklı noktalarını yakalamak için parmağınızı çok az hareket ettirin</translation>
@@ -5320,7 +5314,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="952992212772159698">Etkin değil</translation>
 <translation id="957960681186851048">Bu site birden fazla dosyayı otomatik olarak indirmeye çalıştı</translation>
 <translation id="9580706199804957">Google hizmetlerine bağlanamadı</translation>
-<translation id="958416628331784386">Bu sekmede bir video Pencere İçinde Pencere modunda oynatılıyor.</translation>
 <translation id="960719561871045870">Operatör kodu</translation>
 <translation id="960987915827980018">Yaklaşık 1 saat kaldı</translation>
 <translation id="962802172452141067">Yer işareti klasör ağacı</translation>
