@@ -18,6 +18,9 @@
  */
 
 // https://w3c.github.io/DOM-Parsing/#the-domparser-interface
+// The `HTMLString` reference below is from Trusted Types:
+// https://github.com/WICG/trusted-types/, which is still WIP.
+// https://crbug.com/739170.
 
 enum SupportedType {
     "text/html",
@@ -32,5 +35,5 @@ enum SupportedType {
     ConstructorCallWith=Document,
     Exposed=Window
 ] interface DOMParser {
-    [NewObject] Document parseFromString(DOMString str, SupportedType type);
+    [NewObject, RaisesException] Document parseFromString(HTMLString str, SupportedType type);
 };
