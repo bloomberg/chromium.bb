@@ -30,19 +30,25 @@ class RingBuffer {
 
   size_t CurrentIndex() const { return current_index_; }
 
-  // tests if a value was saved to this index
-  bool IsFilledIndex(size_t n) const { return BufferIndex(n) < current_index_; }
+  // Returns true if a value was saved to index |n|.
+  bool IsFilledIndex(size_t n) const {
+    return IsFilledIndexByBufferIndex(BufferIndex(n));
+  }
 
+  // Returns the element at index |n| (% |kSize|).
+  //
   // n = 0 returns the oldest value and
   // n = bufferSize() - 1 returns the most recent value.
   const T& ReadBuffer(size_t n) const {
-    DCHECK(IsFilledIndex(n));
-    return buffer_[BufferIndex(n)];
+    const size_t buffer_index = BufferIndex(n);
+    CHECK(IsFilledIndexByBufferIndex(buffer_index));
+    return buffer_[buffer_index];
   }
 
   T* MutableReadBuffer(size_t n) {
-    DCHECK(IsFilledIndex(n));
-    return &buffer_[BufferIndex(n)];
+    const size_t buffer_index = BufferIndex(n);
+    CHECK(IsFilledIndexByBufferIndex(buffer_index));
+    return &buffer_[buffer_index];
   }
 
   void SaveToBuffer(const T& value) {
@@ -75,7 +81,7 @@ class RingBuffer {
     }
 
     operator bool() const {
-      return buffer_.IsFilledIndex(index_) && !out_of_range_;
+      return !out_of_range_ && buffer_.IsFilledIndex(index_);
     }
 
    private:
@@ -106,6 +112,14 @@ class RingBuffer {
  private:
   inline size_t BufferIndex(size_t n) const {
     return (current_index_ + n) % kSize;
+  }
+
+  // This specialization of |IsFilledIndex| is a micro-optimization that enables
+  // us to do e.g. `CHECK(IsFilledIndex(n))` without calling |BufferIndex|
+  // twice. Since |BufferIndex| involves a % operation, it's not quite free at a
+  // micro-scale.
+  inline bool IsFilledIndexByBufferIndex(size_t buffer_index) const {
+    return buffer_index < current_index_;
   }
 
   T buffer_[kSize];
