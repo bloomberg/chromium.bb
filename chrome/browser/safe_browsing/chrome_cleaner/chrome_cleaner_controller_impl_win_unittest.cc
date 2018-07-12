@@ -493,9 +493,7 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
   Profile* profile2 = profile_manager.CreateTestingProfile(kTestProfileName2);
   ASSERT_TRUE(profile2);
 
-  // Set the last used profile so that it can be found by
-  // ProfileManager::GetLastUsedProfile().
-  profile_manager.UpdateLastUser(profile1);
+  MockChromeCleanerProcess::AddMockExtensionsToProfile(profile1);
 
   const int num_profiles =
       profile_manager.profile_manager()->GetNumberOfProfiles();
@@ -587,6 +585,8 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
 
 // Extension names only reported on Windows Chrome build.
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  scanner_results_on_infected.FetchExtensionNames(profile1);
+  scanner_results_on_cleaning.FetchExtensionNames(profile1);
   EXPECT_EQ(!scanner_results_on_infected.extension_names().empty(),
             ExpectedExtensionsReported());
   EXPECT_EQ(!scanner_results_on_cleaning.extension_names().empty(),

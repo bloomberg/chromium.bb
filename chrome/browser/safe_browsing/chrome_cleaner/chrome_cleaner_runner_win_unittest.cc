@@ -254,10 +254,6 @@ class ChromeCleanerRunnerTest
     testing_profile_ = profile_manager_.CreateTestingProfile("Profile 1");
     MockChromeCleanerProcess::AddMockExtensionsToProfile(testing_profile_);
 
-    // Set the last used profile so that it can be found by
-    // ProfileManager::GetLastUsedProfile().
-    profile_manager_.UpdateLastUser(testing_profile_);
-
     UwsFoundState uws_found_state;
     MockChromeCleanerProcess::ItemsReporting registry_keys_reporting;
     MockChromeCleanerProcess::ItemsReporting extensions_reporting;
@@ -419,6 +415,7 @@ TEST_P(ChromeCleanerRunnerTest, WithMockCleanerProcess) {
     }
 
     if (cleaner_process_options_.extension_ids()) {
+      received_scanner_results_.FetchExtensionNames(testing_profile_);
       EXPECT_THAT(received_scanner_results_.extension_names(),
                   UnorderedElementsAreArray(
                       *cleaner_process_options_.expected_extension_names()));
