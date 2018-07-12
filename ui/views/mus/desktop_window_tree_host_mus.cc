@@ -311,9 +311,40 @@ void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
 
   NativeWidgetAura::SetShadowElevationFromInitParams(window(), params);
 
-  // Transient parents are connected using the Window created by WindowTreeHost,
-  // which is owned by the window manager. This way the window manager can
-  // properly identify and honor transients.
+  // Widget's |InitParams::parent| has different meanings depending on the
+  // NativeWidgetPrivate implementation that the Widget creates (each Widget
+  // creates a NativeWidgetPrivate). When DesktopNativeWidgetAura is used as
+  // the NativeWidgetPrivate implementation, |InitParams::parent| means the
+  // entirety of the contents of the new Widget should be stacked above the
+  // entirety of the contents of the Widget for |InitParams::parent|, and
+  // the new Widget should be deleted when the Widget for
+  // |InitParams::parent| is deleted. Aura and mus provide support for
+  // transient windows, which provides both the stacking and ownership needed to
+  // support |InitParams::parent|.
+  //
+  // DesktopNativeWidgetAura internally creates two aura::Windows (one by
+  // WindowTreeHost, the other in |DesktopNativeWidgetAura::content_window_|).
+  // To have the entirety of the contents of the Widget appear on top of the
+  // entirety of the contents of another Widget, the stacking is done on the
+  // WindowTreeHost's window. For these reasons, the following code uses the
+  // Window associated with the WindowTreeHost of the |params.parent|.
+  //
+  // Views/Aura provide support for child-modal windows. Child-modal windows
+  // are windows that are modal to their transient parent. Because this code
+  // implements |InitParams::parent| in terms of transient parents, it means
+  // it is not possible to support both |InitParams::parent| as well as a
+  // child-modal window. This is *only* an issue if a Widget that uses a
+  // DesktopNativeWidgetAura needs to be child-modal to another window. At
+  // the current time NativeWidgetAura is always used for child-modal windows,
+  // so this isn't an issue.
+  //
+  // If we end up needing to use DesktopNativeWidgetAura for child-modal
+  // Widgets then we need something different. Possibilities include:
+  // . Have mus ignore child-modal windows and instead implement child-modal
+  //   entirely in the client (this is what we do on Windows). To get this
+  //   right likely means we need the ability to disable windows (see
+  //   HWNDMessageHandler::InitModalType() for how Windows OS does this).
+  // . Implement |InitParams::parent| using a different (new) API.
   if (params.parent && params.parent->GetHost()) {
     aura::client::GetTransientWindowClient()->AddTransientChild(
         params.parent->GetHost()->window(), window());
@@ -733,6 +764,9 @@ void DesktopWindowTreeHostMus::SetWindowIcons(const gfx::ImageSkia& window_icon,
 }
 
 void DesktopWindowTreeHostMus::InitModalType(ui::ModalType modal_type) {
+  // See comment in Init() related to |InitParams::parent| as to why this DCHECK
+  // is here.
+  DCHECK_NE(modal_type, ui::MODAL_TYPE_CHILD);
   window()->SetProperty(aura::client::kModalKey, modal_type);
 }
 
