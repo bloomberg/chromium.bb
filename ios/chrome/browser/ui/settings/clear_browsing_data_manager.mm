@@ -28,6 +28,8 @@
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
@@ -38,6 +40,7 @@
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data_ui_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
@@ -216,33 +219,36 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
   return l10n_util::GetNSString(IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY);
 }
 
-- (UIAlertController*)alertControllerWithDataTypesToRemove:
-    (BrowsingDataRemoveMask)dataTypeMaskToRemove {
+- (ActionSheetCoordinator*)
+actionSheetCoordinatorWithDataTypesToRemove:
+    (BrowsingDataRemoveMask)dataTypeMaskToRemove
+                         baseViewController:
+                             (UIViewController*)baseViewController
+                                 sourceRect:(CGRect)sourceRect
+                                 sourceView:(UIView*)sourceView {
   if (dataTypeMaskToRemove == BrowsingDataRemoveMask::REMOVE_NOTHING) {
     // Nothing to clear (no data types selected).
     return nil;
   }
   __weak ClearBrowsingDataManager* weakSelf = self;
-  UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:nil
-                       message:nil
-                preferredStyle:UIAlertControllerStyleActionSheet];
+  ActionSheetCoordinator* actionCoordinator = [[ActionSheetCoordinator alloc]
+      initWithBaseViewController:baseViewController
+                           title:l10n_util::GetNSString(
+                                     IDS_IOS_CONFIRM_CLEAR_BUTTON_TITLE)
+                         message:nil
+                            rect:sourceRect
+                            view:sourceView];
+  [actionCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON)
+                action:^{
+                  [weakSelf clearDataForDataTypes:dataTypeMaskToRemove];
+                }
+                 style:UIAlertActionStyleDestructive];
+  [actionCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                               action:nil
+                                style:UIAlertActionStyleCancel];
 
-  UIAlertAction* clearDataAction = [UIAlertAction
-      actionWithTitle:l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON)
-                style:UIAlertActionStyleDestructive
-              handler:^(UIAlertAction* action) {
-                [weakSelf clearDataForDataTypes:dataTypeMaskToRemove];
-              }];
-  clearDataAction.accessibilityLabel =
-      l10n_util::GetNSString(IDS_IOS_CONFIRM_CLEAR_BUTTON);
-  UIAlertAction* cancelAction =
-      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                               style:UIAlertActionStyleCancel
-                             handler:nil];
-  [alertController addAction:clearDataAction];
-  [alertController addAction:cancelAction];
-  return alertController;
+  return actionCoordinator;
 }
 
 - (void)addClearDataButtonToModel:(ListModel*)model {
@@ -322,6 +328,8 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
         l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON);
     collectionClearButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
     collectionClearButtonItem.textColor = [[MDCPalette cr_redPalette] tint500];
+    collectionClearButtonItem.accessibilityIdentifier =
+        kClearBrowsingDataButtonIdentifier;
     clearButtonItem = collectionClearButtonItem;
   } else {
     TableViewTextButtonItem* tableViewClearButtonItem =

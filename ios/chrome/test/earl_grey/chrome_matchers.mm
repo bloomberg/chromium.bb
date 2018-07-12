@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data_ui_constants.h"
 #import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
@@ -305,6 +306,13 @@ id<GREYMatcher> SignOutAccountsButton() {
 id<GREYMatcher> ClearBrowsingDataCollectionView() {
   return grey_accessibilityID(
       kClearBrowsingDataCollectionViewAccessibilityIdentifier);
+}
+
+id<GREYMatcher> ConfirmClearBrowsingDataButton() {
+  return grey_allOf(
+      grey_accessibilityLabel(l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON)),
+      grey_accessibilityTrait(UIAccessibilityTraitButton),
+      grey_not(grey_accessibilityID(kClearBrowsingDataButtonIdentifier)), nil);
 }
 
 id<GREYMatcher> SettingsMenuButton() {

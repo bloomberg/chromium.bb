@@ -123,6 +123,9 @@ id<GREYMatcher> SignOutAccountsButton();
 // Returns matcher for the clear browsing data collection view.
 id<GREYMatcher> ClearBrowsingDataCollectionView();
 
+// Matcher for the clear browsing data action sheet item.
+id<GREYMatcher> ConfirmClearBrowsingDataButton();
+
 // Returns matcher for the settings button in the tools menu.
 id<GREYMatcher> SettingsMenuButton();
 
