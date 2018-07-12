@@ -1062,9 +1062,11 @@ public class AwContents implements SmartClipProvider {
         }
 
         public WindowAndroidWrapper(WindowAndroid windowAndroid) {
-            mWindowAndroid = windowAndroid;
-            mCleanupReference =
-                    new CleanupReference(this, new DestroyRunnable(windowAndroid));
+            try (ScopedSysTraceEvent e =
+                            ScopedSysTraceEvent.scoped("WindowAndroidWrapper.constructor")) {
+                mWindowAndroid = windowAndroid;
+                mCleanupReference = new CleanupReference(this, new DestroyRunnable(windowAndroid));
+            }
         }
 
         public WindowAndroid getWindowAndroid() {
@@ -1080,15 +1082,21 @@ public class AwContents implements SmartClipProvider {
         WindowAndroidWrapper wrapper = sContextWindowMap.get(context);
         if (wrapper != null) return wrapper;
 
-        boolean contextWrapsActivity = activityFromContext(context) != null;
-        if (contextWrapsActivity) {
-            final boolean listenToActivityState = false;
-            wrapper = new WindowAndroidWrapper(
-                    new ActivityWindowAndroid(context, listenToActivityState));
-        } else {
-            wrapper = new WindowAndroidWrapper(new WindowAndroid(context));
+        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped("AwContents.getWindowAndroid")) {
+            boolean contextWrapsActivity = activityFromContext(context) != null;
+            if (contextWrapsActivity) {
+                ActivityWindowAndroid activityWindow;
+                try (ScopedSysTraceEvent e2 =
+                                ScopedSysTraceEvent.scoped("AwContents.createActivityWindow")) {
+                    final boolean listenToActivityState = false;
+                    activityWindow = new ActivityWindowAndroid(context, listenToActivityState);
+                }
+                wrapper = new WindowAndroidWrapper(activityWindow);
+            } else {
+                wrapper = new WindowAndroidWrapper(new WindowAndroid(context));
+            }
+            sContextWindowMap.put(context, wrapper);
         }
-        sContextWindowMap.put(context, wrapper);
         return wrapper;
     }
 
@@ -1426,7 +1434,9 @@ public class AwContents implements SmartClipProvider {
     }
 
     public static Activity activityFromContext(Context context) {
-        return WindowAndroid.activityFromContext(context);
+        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped("AwContents.activityFromContext")) {
+            return WindowAndroid.activityFromContext(context);
+        }
     }
     /**
      * Disables contents of JS-to-Java bridge objects to be inspectable using
