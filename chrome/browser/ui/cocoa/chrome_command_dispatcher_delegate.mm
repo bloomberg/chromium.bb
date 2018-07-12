@@ -15,6 +15,8 @@
 #import "chrome/browser/ui/cocoa/browser_window_views_mac.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "ui/content_accelerators/accelerator_util.h"
+#include "ui/views/widget/widget.h"
 
 @implementation ChromeCommandDispatcherDelegate
 
@@ -26,17 +28,58 @@
 - (BOOL)eventHandledByExtensionCommand:(NSEvent*)event
                               priority:(ui::AcceleratorManager::HandlerPriority)
                                            priority {
-  if ([event window]) {
-    BrowserWindowController* controller =
-        BrowserWindowControllerForWindow([event window]);
-    // |controller| is only set in Cocoa. In toolkit-views extension commands
-    // are handled by BrowserView.
-    if ([controller respondsToSelector:@selector(handledByExtensionCommand:
-                                                                  priority:)]) {
+  NSWindow* window = [event window];
+  if (!window)
+    return NO;
+
+  // Logic for handling Cocoa windows.
+  BrowserWindowController* controller =
+      BrowserWindowControllerForWindow(window);
+  if (controller) {
+    if ([controller respondsToSelector:@selector
+                    (handledByExtensionCommand:priority:)]) {
       if ([controller handledByExtensionCommand:event priority:priority])
         return YES;
     }
+    return NO;
   }
+
+  // Logic for handling Views windows.
+  //
+  // There are 3 ways for extensions to register accelerators in Views:
+  //  1) As regular extension commands, see ExtensionKeybindingRegistryViews.
+  //     This always has high priority.
+  //  2) As page/browser popup actions, see
+  //     ExtensionActionPlatformDelegateViews. This always has high priority.
+  //  3) As a bookmark override. This always has regular priority, and is
+  //     actually handled as a special case of the IDC_BOOKMARK_PAGE browser
+  //     command. See BookmarkCurrentPageAllowingExtensionOverrides.
+  //
+  // The only reasonable way to access the registered accelerators for (1) and
+  // (2) is to use the FocusManager. That is what we do here. But that will also
+  // trigger any other sources of registered accelerators. This is actually
+  // desired.
+  //
+  // TODO(erikchen): Once we no longer support Cocoa, we should rename this
+  // method to be eventHandledByViewsFocusManager.
+  //
+  // Note: FocusManager is also given an opportunity to consume the accelerator
+  // in the RenderWidgetHostView event handling path. That logic doesn't trigger
+  // when the focused view is not a RenderWidgetHostView, which is why this
+  // logic is necessary. Duplicating the logic adds a bit of redundant work,
+  // but doesn't cause problems.
+  content::NativeWebKeyboardEvent keyboard_event(event);
+  ui::Accelerator accelerator =
+      ui::GetAcceleratorFromNativeWebKeyboardEvent(keyboard_event);
+  if (views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window)) {
+    if (priority == ui::AcceleratorManager::HandlerPriority::kHighPriority) {
+      if (!widget->GetFocusManager()->HasPriorityHandler(accelerator)) {
+        return NO;
+      }
+    }
+    return widget->GetFocusManager()->ProcessAccelerator(accelerator);
+  }
+
   return NO;
 }
 
