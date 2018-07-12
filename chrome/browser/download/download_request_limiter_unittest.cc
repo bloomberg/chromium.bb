@@ -453,6 +453,125 @@ TEST_F(DownloadRequestLimiterTest, RendererInitiated) {
             download_request_limiter_->GetDownloadUiStatus(web_contents()));
 }
 
+// Test that history back will not change the tab download state if all the
+// previous navigations are renderer-initiated.
+TEST_F(DownloadRequestLimiterTest, HistoryBack) {
+  NavigateAndCommit(GURL("http://foo.com/bar"));
+  LoadCompleted();
+
+  // Do one download so we end up in PROMPT.
+  CanDownload();
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+
+  // Renderer-initiated navigation to a different host shouldn't reset the
+  // state.
+  content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://foobar.com/bar"), web_contents()->GetMainFrame());
+  LoadCompleted();
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+
+  // History back shouldn't reset the state, either.
+  auto backward_navigation =
+      content::NavigationSimulator::CreateHistoryNavigation(-1 /* Offset */,
+                                                            web_contents());
+  backward_navigation->Start();
+  backward_navigation->Commit();
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+
+  // Browser-initiated navigation to a different host, which should reset the
+  // state.
+  NavigateAndCommit(GURL("http://foobar.com"));
+  LoadCompleted();
+  EXPECT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+  CanDownload();
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+
+  // History back should reset the state as it is going to a different host.
+  backward_navigation = content::NavigationSimulator::CreateHistoryNavigation(
+      -1 /* Offset */, web_contents());
+  backward_navigation->Start();
+  backward_navigation->Commit();
+  EXPECT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+}
+
+// Tab download state shouldn't change when forward/back between to a
+// renderer-initiated page.
+TEST_F(DownloadRequestLimiterTest, HistoryForwardBack) {
+  NavigateAndCommit(GURL("http://foo.com/bar"));
+  LoadCompleted();
+
+  // Do one download so we end up in PROMPT.
+  CanDownload();
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+
+  // Renderer-initiated navigation to a different host shouldn't reset the
+  // state.
+  content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://foobar.com/bar"), web_contents()->GetMainFrame());
+  LoadCompleted();
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+
+  // History back shouldn't reset the state, either.
+  auto backward_navigation =
+      content::NavigationSimulator::CreateHistoryNavigation(-1 /* Offset */,
+                                                            web_contents());
+  backward_navigation->Start();
+  backward_navigation->Commit();
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+
+  // History forward shouldn't reset the state, as the host is encountered
+  // before.
+  auto forward_navigation =
+      content::NavigationSimulator::CreateHistoryNavigation(1 /* Offset */,
+                                                            web_contents());
+  forward_navigation->Start();
+  forward_navigation->Commit();
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+
+  // History backward again, nothing should change.
+  backward_navigation = content::NavigationSimulator::CreateHistoryNavigation(
+      -1 /* Offset */, web_contents());
+  backward_navigation->Start();
+  backward_navigation->Commit();
+  EXPECT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+  EXPECT_EQ(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT,
+            download_request_limiter_->GetDownloadUiStatus(web_contents()));
+}
+
 TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnUserGesture) {
   NavigateAndCommit(GURL("http://foo.com/bar"));
   LoadCompleted();
