@@ -9,9 +9,6 @@
  * The names passed to the tests are file names to select. They are generated
  * from COMPLEX_DRIVE_ENTRY_SET (see setupAndWaitUntilReady).
  *
- * TODO(sashab): Update selector paths to use the [full-path-for-testing]
- * selector rather than nth-child.
- *
  * TODO(sashab): Generate the entries used in these tests at runtime, by
  * creating entries with pre-set combinations of permissions and ensuring the
  * outcome is always as expected.
@@ -611,8 +608,7 @@ function checkContextMenuForDriveFolderInTree(
 testcase.checkCopyEnabledForReadWriteFolderInTree = function() {
   checkContextMenuForDriveFolderInTree(
       'copy',
-      '#directory-tree .tree-item:nth-child(1) .tree-item:nth-child(1) ' +
-          '.tree-item:nth-child(1)',
+      '#directory-tree [full-path-for-testing="/root/photos"]:not([hidden])',
       true);
 };
 
@@ -623,8 +619,8 @@ testcase.checkCopyEnabledForReadWriteFolderInTree = function() {
 testcase.checkCopyEnabledForReadOnlyFolderInTree = function() {
   checkContextMenuForDriveFolderInTree(
       'copy',
-      '#directory-tree .tree-item:nth-child(1) .tree-item:nth-child(1) ' +
-          '.tree-item:nth-child(2)',
+      '#directory-tree [full-path-for-testing="/root/Read-Only Folder"]' +
+          ':not([hidden])',
       true);
 };
 
@@ -635,8 +631,7 @@ testcase.checkCopyEnabledForReadOnlyFolderInTree = function() {
 testcase.checkCutEnabledForReadWriteFolderInTree = function() {
   checkContextMenuForDriveFolderInTree(
       'cut',
-      '#directory-tree .tree-item:nth-child(1) .tree-item:nth-child(1) ' +
-          '.tree-item:nth-child(1)',
+      '#directory-tree [full-path-for-testing="/root/photos"]:not([hidden])',
       true);
 };
 
@@ -647,8 +642,8 @@ testcase.checkCutEnabledForReadWriteFolderInTree = function() {
 testcase.checkCutDisabledForReadOnlyFolderInTree = function() {
   checkContextMenuForDriveFolderInTree(
       'cut',
-      '#directory-tree .tree-item:nth-child(1) .tree-item:nth-child(1) ' +
-          '.tree-item:nth-child(2)',
+      '#directory-tree [full-path-for-testing="/root/Read-Only Folder"]' +
+          ':not([hidden])',
       false);
 };
 
@@ -661,8 +656,7 @@ testcase.checkPasteEnabledForReadWriteFolderInTree = function() {
   copyEntryToClipboard('hello.txt', () => {
     checkContextMenuForDriveFolderInTree(
         'paste-into-folder',
-        '#directory-tree .tree-item:nth-child(1) .tree-item:nth-child(1) ' +
-            '.tree-item:nth-child(1)',
+        '#directory-tree [full-path-for-testing="/root/photos"]:not([hidden])',
         true);
   });
 };
@@ -676,8 +670,8 @@ testcase.checkPasteDisabledForReadOnlyFolderInTree = function() {
   copyEntryToClipboard('hello.txt', () => {
     checkContextMenuForDriveFolderInTree(
         'paste-into-folder',
-        '#directory-tree .tree-item:nth-child(1) .tree-item:nth-child(1) ' +
-            '.tree-item:nth-child(3)',
+        '#directory-tree [full-path-for-testing="/root/Read-Only Folder"]' +
+            ':not([hidden])',
         false);
   });
 };

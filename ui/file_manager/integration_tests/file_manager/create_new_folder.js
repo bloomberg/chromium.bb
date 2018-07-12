@@ -9,15 +9,9 @@
  * When we are not in guest mode, we fill Google Drive with the basic entry set
  * which causes an extra tree-item to be added.
  */
-var TREEITEM_DRIVE;
-var TREEITEM_DOWNLOADS;
-if (!chrome.extension.inIncognitoContext) {
-  TREEITEM_DRIVE = '#directory-tree > div:nth-child(1) ';
-  TREEITEM_DOWNLOADS = '#directory-tree > div:nth-child(2) ';
-} else {
-  // In guest mode Google Drive is not mounted so the folder indices differ.
-  TREEITEM_DOWNLOADS = '#directory-tree > div:nth-child(1) ';
-}
+var TREEITEM_DRIVE = '#directory-tree [entry-label="My Drive"] ';
+var TREEITEM_DOWNLOADS =
+    '#directory-tree [volume-type-for-testing="downloads"] ';
 var EXPAND_ICON = '> .tree-row > .expand-icon';
 var EXPANDED_SUBTREE = '> .tree-children[expanded]';
 
