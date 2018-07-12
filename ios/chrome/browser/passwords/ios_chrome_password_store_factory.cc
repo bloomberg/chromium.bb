@@ -27,6 +27,7 @@
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 // static
 scoped_refptr<password_manager::PasswordStore>
@@ -55,10 +56,9 @@ void IOSChromePasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
       GetForBrowserState(browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserStateIfExists(browser_state);
-  net::URLRequestContextGetter* request_context_getter =
-      browser_state->GetRequestContext();
   password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
-      password_store.get(), sync_service, request_context_getter,
+      password_store.get(), sync_service,
+      browser_state->GetSharedURLLoaderFactory(),
       browser_state->GetStatePath());
 }
 

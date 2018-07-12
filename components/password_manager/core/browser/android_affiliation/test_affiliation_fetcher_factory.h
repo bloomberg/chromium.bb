@@ -7,9 +7,9 @@
 
 #include <vector>
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace password_manager {
 
@@ -23,10 +23,10 @@ class AffiliationFetcherDelegate;
 class TestAffiliationFetcherFactory {
  public:
   // Constructs a fetcher to retrieve affiliations for each facet in |facet_ids|
-  // using the specified |request_context_getter|, and will provide the results
+  // using the specified |url_loader_factory|, and will provide the results
   // to the |delegate| on the same thread that creates the instance.
   virtual AffiliationFetcher* CreateInstance(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::vector<FacetURI>& facet_ids,
       AffiliationFetcherDelegate* delegate) = 0;
 

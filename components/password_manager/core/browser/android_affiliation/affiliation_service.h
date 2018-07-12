@@ -20,9 +20,9 @@ class FilePath;
 class SequencedTaskRunner;
 }  // namespace base
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace password_manager {
 
@@ -105,8 +105,9 @@ class AffiliationService : public KeyedService {
 
   // Initializes the service by creating its backend and transferring it to the
   // thread corresponding to |backend_task_runner_|.
-  void Initialize(net::URLRequestContextGetter* request_context_getter,
-                  const base::FilePath& db_path);
+  void Initialize(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const base::FilePath& db_path);
 
   // Looks up facets affiliated with the facet identified by |facet_uri| and
   // branding information, and invokes |result_callback| with the results. It is

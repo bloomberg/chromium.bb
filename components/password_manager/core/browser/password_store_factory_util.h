@@ -15,19 +15,19 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/model/syncable_service.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace password_manager {
 
 // Activates or deactivates affiliation-based matching for |password_store|,
 // depending on whether or not the |sync_service| is syncing passwords stored
-// therein. The AffiliationService will use |request_context_getter| to fetch
+// therein. The AffiliationService will use |url_loader_factory| to fetch
 // affiliation information. This function should be called whenever there is a
 // possibility that syncing passwords has just started or ended.
 void ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
     PasswordStore* password_store,
     syncer::SyncService* sync_service,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const base::FilePath& profile_path);
 
 // Creates a LoginDatabase. Looks in |profile_path| for the database file.

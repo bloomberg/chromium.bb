@@ -21,13 +21,12 @@
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace password_manager {
-
-namespace {
 
 // Enumeration listing the possible outcomes of fetching affiliation information
 // from the Affiliation API. This is used in UMA histograms, so do not change
@@ -39,32 +38,13 @@ enum AffiliationFetchResult {
   AFFILIATION_FETCH_RESULT_MAX
 };
 
-// Records the given fetch |result| into the respective UMA histogram, as well
-// as the response and error codes of |fetcher| if it is non-null.
-void ReportStatistics(AffiliationFetchResult result,
-                      const net::URLFetcher* fetcher) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.AffiliationFetcher.FetchResult",
-                            result, AFFILIATION_FETCH_RESULT_MAX);
-  if (fetcher) {
-    base::UmaHistogramSparse(
-        "PasswordManager.AffiliationFetcher.FetchHttpResponseCode",
-        fetcher->GetResponseCode());
-    // Network error codes are negative. See: src/net/base/net_error_list.h.
-    base::UmaHistogramSparse(
-        "PasswordManager.AffiliationFetcher.FetchErrorCode",
-        -fetcher->GetStatus().error());
-  }
-}
-
-}  // namespace
-
 static TestAffiliationFetcherFactory* g_testing_factory = nullptr;
 
 AffiliationFetcher::AffiliationFetcher(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::vector<FacetURI>& facet_uris,
     AffiliationFetcherDelegate* delegate)
-    : request_context_getter_(request_context_getter),
+    : url_loader_factory_(std::move(url_loader_factory)),
       requested_facet_uris_(facet_uris),
       delegate_(delegate) {
   for (const FacetURI& uri : requested_facet_uris_) {
@@ -72,19 +52,19 @@ AffiliationFetcher::AffiliationFetcher(
   }
 }
 
-AffiliationFetcher::~AffiliationFetcher() {
-}
+AffiliationFetcher::~AffiliationFetcher() = default;
 
 // static
 AffiliationFetcher* AffiliationFetcher::Create(
-    net::URLRequestContextGetter* context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::vector<FacetURI>& facet_uris,
     AffiliationFetcherDelegate* delegate) {
   if (g_testing_factory) {
-    return g_testing_factory->CreateInstance(context_getter, facet_uris,
-                                             delegate);
+    return g_testing_factory->CreateInstance(std::move(url_loader_factory),
+                                             facet_uris, delegate);
   }
-  return new AffiliationFetcher(context_getter, facet_uris, delegate);
+  return new AffiliationFetcher(std::move(url_loader_factory), facet_uris,
+                                delegate);
 }
 
 // static
@@ -94,7 +74,7 @@ void AffiliationFetcher::SetFactoryForTesting(
 }
 
 void AffiliationFetcher::StartRequest() {
-  DCHECK(!fetcher_);
+  DCHECK(!simple_url_loader_);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("affiliation_lookup", R"(
@@ -127,20 +107,25 @@ void AffiliationFetcher::StartRequest() {
             }
           }
         })");
-  fetcher_ = net::URLFetcher::Create(BuildQueryURL(), net::URLFetcher::POST,
-                                     this, traffic_annotation);
-  fetcher_->SetRequestContext(request_context_getter_.get());
-  fetcher_->SetUploadData("application/x-protobuf", PreparePayload());
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                         net::LOAD_DO_NOT_SEND_COOKIES |
-                         net::LOAD_DO_NOT_SEND_AUTH_DATA |
-                         net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE);
-  fetcher_->SetAutomaticallyRetryOn5xx(false);
-  fetcher_->SetAutomaticallyRetryOnNetworkChanges(0);
-  fetcher_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = BuildQueryURL();
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
+      net::LOAD_DO_NOT_SEND_AUTH_DATA | net::LOAD_BYPASS_CACHE |
+      net::LOAD_DISABLE_CACHE;
+  resource_request->method = "POST";
+  simple_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  simple_url_loader_->AttachStringForUpload(PreparePayload(),
+                                            "application/x-protobuf");
+  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&AffiliationFetcher::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
 }
 
-GURL AffiliationFetcher::BuildQueryURL() const {
+// static
+GURL AffiliationFetcher::BuildQueryURL() {
   return net::AppendQueryParameter(
       GURL("https://www.googleapis.com/affiliation/v1/affiliation:lookup"),
       "key", google_apis::GetAPIKey());
@@ -163,6 +148,7 @@ std::string AffiliationFetcher::PreparePayload() const {
 }
 
 bool AffiliationFetcher::ParseResponse(
+    const std::string& serialized_response,
     AffiliationFetcherDelegate::Result* result) const {
   // This function parses the response protocol buffer message for a list of
   // equivalence classes, and stores them into |results| after performing some
@@ -177,11 +163,6 @@ bool AffiliationFetcher::ParseResponse(
   //     side issues likely not remedied by re-fetching. Report failure in this
   //     case so the caller can be notified and it can act accordingly.
   //   * The |result| will be free of duplicate or empty equivalence classes.
-
-  std::string serialized_response;
-  if (!fetcher_->GetResponseAsString(&serialized_response)) {
-    NOTREACHED();
-  }
 
   affiliation_pb::LookupAffiliationResponse response;
   if (!response.ParseFromString(serialized_response))
@@ -238,24 +219,41 @@ bool AffiliationFetcher::ParseResponse(
   return true;
 }
 
-void AffiliationFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK_EQ(source, fetcher_.get());
-
+void AffiliationFetcher::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
   // Note that invoking the |delegate_| may destroy |this| synchronously, so the
   // invocation must happen last.
   std::unique_ptr<AffiliationFetcherDelegate::Result> result_data(
       new AffiliationFetcherDelegate::Result);
-  if (fetcher_->GetStatus().status() == net::URLRequestStatus::SUCCESS &&
-      fetcher_->GetResponseCode() == net::HTTP_OK) {
-    if (ParseResponse(result_data.get())) {
-      ReportStatistics(AFFILIATION_FETCH_RESULT_SUCCESS, nullptr);
+  if (response_body) {
+    if (ParseResponse(*response_body, result_data.get())) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "PasswordManager.AffiliationFetcher.FetchResult",
+          AFFILIATION_FETCH_RESULT_SUCCESS, AFFILIATION_FETCH_RESULT_MAX);
       delegate_->OnFetchSucceeded(std::move(result_data));
     } else {
-      ReportStatistics(AFFILIATION_FETCH_RESULT_MALFORMED, nullptr);
+      UMA_HISTOGRAM_ENUMERATION(
+          "PasswordManager.AffiliationFetcher.FetchResult",
+          AFFILIATION_FETCH_RESULT_MALFORMED, AFFILIATION_FETCH_RESULT_MAX);
       delegate_->OnMalformedResponse();
     }
   } else {
-    ReportStatistics(AFFILIATION_FETCH_RESULT_FAILURE, fetcher_.get());
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.AffiliationFetcher.FetchResult",
+                              AFFILIATION_FETCH_RESULT_FAILURE,
+                              AFFILIATION_FETCH_RESULT_MAX);
+    int response_code = -1;
+    if (simple_url_loader_->ResponseInfo() &&
+        simple_url_loader_->ResponseInfo()->headers) {
+      response_code =
+          simple_url_loader_->ResponseInfo()->headers->response_code();
+    }
+    base::UmaHistogramSparse(
+        "PasswordManager.AffiliationFetcher.FetchHttpResponseCode",
+        response_code);
+    // Network error codes are negative. See: src/net/base/net_error_list.h.
+    base::UmaHistogramSparse(
+        "PasswordManager.AffiliationFetcher.FetchErrorCode",
+        -simple_url_loader_->NetError());
     delegate_->OnFetchFailed();
   }
 }
