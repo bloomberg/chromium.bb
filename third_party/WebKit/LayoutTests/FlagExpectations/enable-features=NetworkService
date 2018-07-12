@@ -7,21 +7,18 @@ Bug(none) external/wpt/html/browsers/offline/appcache/workers/appcache-worker.ht
 crbug.com/829417 external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Timeout ]
 crbug.com/771118 external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
 
-# Passes on NetworkService and fails on non-NetworkService because
-# NetworkService isn't affected by https://crbug.com/595993.
-Bug(none) external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Pass ]
-crbug.com/830472 external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Pass ]
-
 Bug(none) http/tests/misc/redirect-to-about-blank.html [ Timeout ]
 Bug(none) http/tests/security/cors-rfc1918 [ Crash Timeout ]
 Bug(none) http/tests/security/mime-type-execute-as-html-01.html [ Failure ]
 Bug(none) http/tests/security/mime-type-execute-as-html-04.html [ Failure ]
 Bug(none) http/tests/security/powerfulFeatureRestrictions/old-powerful-features-on-insecure-origin.html [ Pass Timeout ]
 
-# Only passes with Network Servce enabled (unfortunately this expectation still
-# allows Timeout from the top-level exctations though).
+# Only passes with Network Servce enabled (unfortunately these expectations still
+# allow Failure or Timeout from the top-level expectations though).
 crbug.com/800898 external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Pass ]
 crbug.com/800898 external/wpt/workers/worker-from-blob-url.window.html [ Pass ]
+crbug.com/595993 external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Pass ]
+crbug.com/862886 external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Pass ]
 
 # Flaky on non-NetworkService (disabled), consistent failing on NetworkService. Probably due to DCHECK.
 crbug.com/849670 http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Failure ]
