@@ -13,7 +13,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrShellDelegate;
 import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
 import org.chromium.content_public.browser.WebContents;
 

@@ -25,7 +25,7 @@ def _EnterVrViaNfc(current_page, action_runner):
   current_page.platform.LaunchAndroidApplication(
       start_intent=intent.Intent(
           component=
-          'org.chromium.chrome.browser.vr_shell.nfc_apk/.SimNfcActivity'),
+          'org.chromium.chrome.browser.vr.nfc_apk/.SimNfcActivity'),
       is_app_ready_predicate=isNfcAppReady,
       app_has_webviews=False).Close()
 

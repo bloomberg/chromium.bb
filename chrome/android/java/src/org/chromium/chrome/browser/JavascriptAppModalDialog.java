@@ -22,7 +22,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.jsdialog.JavascriptModalDialogView;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrShellDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 /**

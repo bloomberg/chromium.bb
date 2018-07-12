@@ -11,7 +11,7 @@
 
 namespace vr {
 
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr_shell
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr
 enum VrCoreCompatibility {
   VR_CORE_COMPATIBILITY_VR_NOT_SUPPORTED = 0,
   VR_CORE_COMPATIBILITY_VR_NOT_AVAILABLE = 1,

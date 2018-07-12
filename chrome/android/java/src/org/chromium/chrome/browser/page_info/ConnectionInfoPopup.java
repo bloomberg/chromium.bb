@@ -29,8 +29,8 @@ import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView.ButtonType;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.vr_shell.UiUnsupportedMode;
-import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.vr.UiUnsupportedMode;
+import org.chromium.chrome.browser.vr.VrShellDelegate;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 

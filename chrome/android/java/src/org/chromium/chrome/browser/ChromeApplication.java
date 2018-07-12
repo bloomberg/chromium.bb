@@ -34,9 +34,9 @@ import org.chromium.chrome.browser.crash.PureJavaExceptionReporter;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.vr_shell.OnExitVrRequestListener;
-import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
-import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
+import org.chromium.chrome.browser.vr.VrIntentUtils;
+import org.chromium.chrome.browser.vr.VrShellDelegate;
 
 /**
  * Basic application functionality that should be shared among all browser applications that use

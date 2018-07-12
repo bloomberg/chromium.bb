@@ -7,7 +7,7 @@
 #include "chrome/browser/vr/test/xr_browser_test.h"
 
 // Browser test equivalent of
-// chrome/android/javatests/src/.../browser/vr_shell/WebVrInputTest.java.
+// chrome/android/javatests/src/.../browser/vr/WebVrInputTest.java.
 // End-to-end tests for user input interaction with WebVR.
 
 namespace vr {

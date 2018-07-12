@@ -11,7 +11,7 @@ import android.os.StrictMode;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
-import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
+import org.chromium.chrome.browser.vr.VrIntentUtils;
 
 /**
  * Dispatches incoming intents to the appropriate activity based on the current configuration and

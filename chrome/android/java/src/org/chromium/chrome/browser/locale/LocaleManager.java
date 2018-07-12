@@ -31,9 +31,9 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
-import org.chromium.chrome.browser.vr_shell.OnExitVrRequestListener;
-import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
-import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
+import org.chromium.chrome.browser.vr.VrIntentUtils;
+import org.chromium.chrome.browser.vr.VrShellDelegate;
 import org.chromium.chrome.browser.widget.PromoDialog;
 import org.chromium.ui.base.PageTransition;
 

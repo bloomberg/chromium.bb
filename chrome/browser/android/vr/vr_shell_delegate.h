@@ -28,7 +28,7 @@ class GvrDevice;
 
 namespace vr {
 
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr_shell
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr
 enum class VrSupportLevel : int {
   kVrNotAvailable = 0,
   kVrCardboard = 1,
