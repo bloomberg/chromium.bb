@@ -303,6 +303,58 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionKeyUpdated) {
   EXPECT_EQ("clicked", test_listener.message());
 }
 
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionOverrideChromeShortcut) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(RunExtensionTest("keybinding/page_action")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  CommandService* command_service = CommandService::Get(browser()->profile());
+// Simulate the user setting the keybinding to override the print shortcut.
+#if defined(OS_MACOSX)
+  std::string print_shortcut = "Command+P";
+#else
+  std::string print_shortcut = "Ctrl+P";
+#endif
+  command_service->UpdateKeybindingPrefs(
+      extension->id(), manifest_values::kPageActionCommandEvent,
+      print_shortcut);
+
+  {
+    // Load a page. The extension will detect the navigation and request to show
+    // the page action icon.
+    ResultCatcher catcher;
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
+    ASSERT_TRUE(catcher.GetNextResult());
+  }
+
+  ExtensionTestMessageListener test_listener(false);  // Won't reply.
+  test_listener.set_extension_id(extension->id());
+
+  bool control_is_modifier = false;
+  bool command_is_modifier = false;
+#if defined(OS_MACOSX)
+  command_is_modifier = true;
+#else
+  control_is_modifier = true;
+#endif
+
+  // Activate the omnibox. This checks to ensure that the extension shortcut
+  // still works even if the WebContents isn't focused.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_L,
+                                              control_is_modifier, false, false,
+                                              command_is_modifier));
+
+  // Activate the shortcut.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_P,
+                                              control_is_modifier, false, false,
+                                              command_is_modifier));
+
+  EXPECT_TRUE(test_listener.WaitUntilSatisfied());
+  EXPECT_EQ("clicked", test_listener.message());
+}
+
 // This test validates that the getAll query API function returns registered
 // commands as well as synthesized ones and that inactive commands (like the
 // synthesized ones are in nature) have no shortcuts.
