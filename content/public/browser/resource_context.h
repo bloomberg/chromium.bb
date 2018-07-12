@@ -9,7 +9,6 @@
 #include "content/common/content_export.h"
 
 namespace net {
-class HostResolver;
 class URLRequestContext;
 }
 
@@ -23,7 +22,6 @@ class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
  public:
   ResourceContext();
   ~ResourceContext() override;
-  virtual net::HostResolver* GetHostResolver() = 0;
 
   // DEPRECATED: This is no longer a valid given isolated apps/sites and
   // storage partitioning. This getter returns the default context associated

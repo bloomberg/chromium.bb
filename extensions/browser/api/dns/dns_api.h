@@ -12,8 +12,8 @@
 #include "net/base/completion_callback.h"
 #include "net/dns/host_resolver.h"
 
-namespace content {
-class ResourceContext;
+namespace net {
+class URLRequestContextGetter;
 }
 
 namespace extensions {
@@ -38,8 +38,7 @@ class DnsResolveFunction : public UIThreadExtensionFunction {
 
   std::string hostname_;
 
-  // Not owned.
-  content::ResourceContext* resource_context_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   bool response_;  // The value sent in SendResponse().
 

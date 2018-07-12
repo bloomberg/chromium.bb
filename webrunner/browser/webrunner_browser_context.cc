@@ -22,10 +22,6 @@ class WebRunnerBrowserContext::ResourceContext
   ~ResourceContext() override = default;
 
   // ResourceContext implementation.
-  net::HostResolver* GetHostResolver() override {
-    DCHECK(getter_);
-    return getter_->GetURLRequestContext()->host_resolver();
-  }
   net::URLRequestContext* GetRequestContext() override {
     DCHECK(getter_);
     return getter_->GetURLRequestContext();

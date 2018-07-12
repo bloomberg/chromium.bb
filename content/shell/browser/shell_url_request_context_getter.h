@@ -20,7 +20,6 @@
 
 namespace net {
 class CertVerifier;
-class HostResolver;
 class NetLog;
 class NetworkDelegate;
 class ProxyConfigService;
@@ -45,8 +44,6 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   net::URLRequestContext* GetURLRequestContext() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override;
-
-  net::HostResolver* host_resolver();
 
   void NotifyContextShuttingDown();
 

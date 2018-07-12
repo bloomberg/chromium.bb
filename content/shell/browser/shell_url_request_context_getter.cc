@@ -208,8 +208,4 @@ scoped_refptr<base::SingleThreadTaskRunner>
   return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 }
 
-net::HostResolver* ShellURLRequestContextGetter::host_resolver() {
-  return url_request_context_->host_resolver();
-}
-
 }  // namespace content

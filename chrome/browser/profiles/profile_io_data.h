@@ -449,7 +449,6 @@ class ProfileIOData {
     ~ResourceContext() override;
 
     // ResourceContext implementation:
-    net::HostResolver* GetHostResolver() override;
     net::URLRequestContext* GetRequestContext() override;
 
    private:
@@ -457,7 +456,6 @@ class ProfileIOData {
 
     ProfileIOData* const io_data_;
 
-    net::HostResolver* host_resolver_;
     net::URLRequestContext* request_context_;
   };
 

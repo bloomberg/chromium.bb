@@ -38,11 +38,6 @@ class CastBrowserContext::CastResourceContext :
   ~CastResourceContext() override {}
 
   // ResourceContext implementation:
-  net::HostResolver* GetHostResolver() override {
-    return url_request_context_factory_->GetMainGetter()->
-        GetURLRequestContext()->host_resolver();
-  }
-
   net::URLRequestContext* GetRequestContext() override {
     return url_request_context_factory_->GetMainGetter()->
         GetURLRequestContext();

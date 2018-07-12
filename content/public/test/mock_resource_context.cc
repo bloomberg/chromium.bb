@@ -17,10 +17,6 @@ MockResourceContext::MockResourceContext(
 
 MockResourceContext::~MockResourceContext() {}
 
-net::HostResolver* MockResourceContext::GetHostResolver()  {
-  return nullptr;
-}
-
 net::URLRequestContext* MockResourceContext::GetRequestContext()  {
   CHECK(test_request_context_);
   return test_request_context_;

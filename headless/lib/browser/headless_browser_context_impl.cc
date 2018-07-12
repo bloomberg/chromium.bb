@@ -35,7 +35,6 @@ class HeadlessResourceContext : public content::ResourceContext {
   ~HeadlessResourceContext() override;
 
   // ResourceContext implementation:
-  net::HostResolver* GetHostResolver() override;
   net::URLRequestContext* GetRequestContext() override;
 
   // Configure the URL request context getter to be used for resource fetching.
@@ -63,11 +62,6 @@ HeadlessResourceContext::HeadlessResourceContext() {
 
 HeadlessResourceContext::~HeadlessResourceContext() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-}
-
-net::HostResolver* HeadlessResourceContext::GetHostResolver() {
-  CHECK(url_request_context_getter_);
-  return url_request_context_getter_->GetURLRequestContext()->host_resolver();
 }
 
 net::URLRequestContext* HeadlessResourceContext::GetRequestContext() {

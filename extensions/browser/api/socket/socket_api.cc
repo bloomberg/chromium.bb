@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
 #include "extensions/browser/api/socket/socket.h"
@@ -31,6 +30,8 @@
 #include "net/base/network_interfaces.h"
 #include "net/base/url_util.h"
 #include "net/log/net_log_with_source.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace extensions {
 
@@ -177,9 +178,7 @@ void SocketAsyncApiFunction::OnFirewallHoleOpened(
 
 #endif  // OS_CHROMEOS
 
-SocketExtensionWithDnsLookupFunction::SocketExtensionWithDnsLookupFunction()
-    : resource_context_(NULL) {
-}
+SocketExtensionWithDnsLookupFunction::SocketExtensionWithDnsLookupFunction() {}
 
 SocketExtensionWithDnsLookupFunction::~SocketExtensionWithDnsLookupFunction() {
 }
@@ -187,14 +186,17 @@ SocketExtensionWithDnsLookupFunction::~SocketExtensionWithDnsLookupFunction() {
 bool SocketExtensionWithDnsLookupFunction::PrePrepare() {
   if (!SocketAsyncApiFunction::PrePrepare())
     return false;
-  resource_context_ = browser_context()->GetResourceContext();
-  return resource_context_ != NULL;
+  url_request_context_getter_ =
+      content::BrowserContext::GetDefaultStoragePartition(browser_context())
+          ->GetURLRequestContext();
+  return true;
 }
 
 void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
     const net::HostPortPair& host_port_pair) {
   net::HostResolver* host_resolver =
-      HostResolverWrapper::GetInstance()->GetHostResolver(resource_context_);
+      HostResolverWrapper::GetInstance()->GetHostResolver(
+          url_request_context_getter_.get());
   DCHECK(host_resolver);
 
   net::HostResolver::RequestInfo request_info(host_port_pair);

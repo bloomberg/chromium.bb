@@ -8,12 +8,14 @@
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
 #include "extensions/common/api/dns.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_with_source.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
 using extensions::api::dns::ResolveCallbackResolveInfo;
@@ -23,7 +25,7 @@ namespace Resolve = extensions::api::dns::Resolve;
 namespace extensions {
 
 DnsResolveFunction::DnsResolveFunction()
-    : resource_context_(), response_(false), addresses_(new net::AddressList) {}
+    : response_(false), addresses_(new net::AddressList) {}
 
 DnsResolveFunction::~DnsResolveFunction() {}
 
@@ -32,7 +34,9 @@ ExtensionFunction::ResponseAction DnsResolveFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   hostname_ = params->hostname;
-  resource_context_ = browser_context()->GetResourceContext();
+  url_request_context_getter_ =
+      content::BrowserContext::GetDefaultStoragePartition(browser_context())
+          ->GetURLRequestContext();
 
   bool result = BrowserThread::PostTask(
       BrowserThread::IO,
@@ -46,7 +50,8 @@ void DnsResolveFunction::WorkOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   net::HostResolver* host_resolver =
-      HostResolverWrapper::GetInstance()->GetHostResolver(resource_context_);
+      HostResolverWrapper::GetInstance()->GetHostResolver(
+          url_request_context_getter_.get());
   DCHECK(host_resolver);
 
   // Yes, we are passing zero as the port. There are some interesting but not

@@ -36,14 +36,12 @@ class ProxyResolvingClientSocketFactory;
 namespace content {
 
 class P2PSocketHost;
-class ResourceContext;
 
 class P2PSocketDispatcherHost
     : public content::BrowserMessageFilter,
       public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
-  P2PSocketDispatcherHost(content::ResourceContext* resource_context,
-                          net::URLRequestContextGetter* url_context);
+  explicit P2PSocketDispatcherHost(net::URLRequestContextGetter* url_context);
 
   // content::BrowserMessageFilter overrides.
   void OnChannelClosing() override;
@@ -111,7 +109,6 @@ class P2PSocketDispatcherHost
 
   void StopRtpDumpOnIOThread(bool incoming, bool outgoing);
 
-  content::ResourceContext* resource_context_;
   scoped_refptr<net::URLRequestContextGetter> url_context_;
   // Initialized on browser IO thread.
   std::unique_ptr<network::ProxyResolvingClientSocketFactory>
