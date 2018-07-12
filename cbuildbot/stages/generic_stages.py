@@ -66,7 +66,8 @@ class BuilderStage(object):
     assert match, 'Class name %s does not end with Stage' % cls.__name__
     return match.group(1)
 
-  def __init__(self, builder_run, suffix=None, attempt=None, max_retry=None):
+  def __init__(self, builder_run, suffix=None, attempt=None, max_retry=None,
+               build_root=None):
     """Create a builder stage.
 
     Args:
@@ -77,6 +78,7 @@ class BuilderStage(object):
         also specified.
       max_retry: The maximum number of retries. Defaults to None. Is only valid
         if |attempt| is also specified.
+      build_root: Override the builder_run build_root.
     """
     self._run = builder_run
 
@@ -96,9 +98,7 @@ class BuilderStage(object):
     # TODO(mtennant): Replace self._boards with a self._run.boards?
     self._boards = self._run.config.boards
 
-    # TODO(mtennant): Try to rely on just self._run.buildroot directly, if
-    # the os.path.abspath can be applied there instead.
-    self._build_root = os.path.abspath(self._run.buildroot)
+    self._build_root = os.path.abspath(build_root or self._run.buildroot)
 
     self.build_config = self._run.config.name
 

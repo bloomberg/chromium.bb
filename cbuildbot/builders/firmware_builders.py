@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 from chromite.cbuildbot.builders import generic_builders
+from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import workspace_stages
 
 
@@ -20,8 +21,23 @@ class FirmwareBranchBuilder(generic_builders.ManifestVersionedBuilder):
     firmware_branch = self._run.config.workspace_branch
 
     self._RunStage(workspace_stages.WorkspaceCleanStage,
-                   workspace_dir=workspace_dir)
+                   build_root=workspace_dir)
 
     self._RunStage(workspace_stages.WorkspaceSyncStage,
-                   workspace_dir=workspace_dir,
+                   build_root=workspace_dir,
                    workspace_branch=firmware_branch)
+
+    self._RunStage(build_stages.UprevStage,
+                   build_root=workspace_dir)
+
+    self._RunStage(build_stages.InitSDKStage,
+                   build_root=workspace_dir)
+
+    for board in self._run.config.boards:
+      self._RunStage(workspace_stages.WorkspaceSetupBoardStage,
+                     build_root=workspace_dir,
+                     board=board)
+
+      self._RunStage(workspace_stages.WorkspaceBuildPackagesStage,
+                     build_root=workspace_dir,
+                     board=board)
