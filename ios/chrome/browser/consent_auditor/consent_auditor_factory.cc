@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/consent_auditor/consent_auditor.h"
+#include "components/consent_auditor/consent_auditor_impl.h"
 #include "components/consent_auditor/consent_sync_bridge.h"
 #include "components/consent_auditor/consent_sync_bridge_impl.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -76,7 +76,7 @@ std::unique_ptr<KeyedService> ConsentAuditorFactory::BuildServiceInstanceFor(
         IOSUserEventServiceFactory::GetForBrowserState(ios_browser_state);
   }
 
-  return std::make_unique<consent_auditor::ConsentAuditor>(
+  return std::make_unique<consent_auditor::ConsentAuditorImpl>(
       ios_browser_state->GetPrefs(), std::move(consent_sync_bridge),
       user_event_service,
       // The browser version and locale do not change runtime, so we can pass
@@ -91,5 +91,5 @@ bool ConsentAuditorFactory::ServiceIsNULLWhileTesting() const {
 
 void ConsentAuditorFactory::RegisterBrowserStatePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  consent_auditor::ConsentAuditor::RegisterProfilePrefs(registry);
+  consent_auditor::ConsentAuditorImpl::RegisterProfilePrefs(registry);
 }

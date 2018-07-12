@@ -83,12 +83,7 @@ const bool kUnifiedConsentParam[] = {
 
 static std::unique_ptr<KeyedService> CreateFakeConsentAuditor(
     web::BrowserState* context) {
-  ios::ChromeBrowserState* ios_context =
-      ios::ChromeBrowserState::FromBrowserState(context);
-  syncer::UserEventService* const user_event_service =
-      IOSUserEventServiceFactory::GetForBrowserState(ios_context);
-  return std::make_unique<consent_auditor::FakeConsentAuditor>(
-      ios_context->GetPrefs(), user_event_service);
+  return std::make_unique<consent_auditor::FakeConsentAuditor>();
 }
 
 // These tests verify that Chrome correctly records user's consent to Chrome

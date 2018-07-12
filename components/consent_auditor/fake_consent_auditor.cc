@@ -8,14 +8,7 @@
 
 namespace consent_auditor {
 
-FakeConsentAuditor::FakeConsentAuditor(
-    PrefService* pref_service,
-    syncer::UserEventService* user_event_service)
-    : ConsentAuditor(pref_service,
-                     /*consent_sync_bridge=*/nullptr,
-                     user_event_service,
-                     /*app_version=*/std::string(),
-                     /*app_locale=*/std::string()) {}
+FakeConsentAuditor::FakeConsentAuditor() {}
 
 FakeConsentAuditor::~FakeConsentAuditor() {}
 
@@ -30,6 +23,19 @@ void FakeConsentAuditor::RecordGaiaConsent(
   recorded_confirmation_ids_.push_back(confirmation_grd_id);
   recorded_features_.push_back(feature);
   recorded_statuses_.push_back(status);
+}
+
+void FakeConsentAuditor::RecordLocalConsent(
+    const std::string& feature,
+    const std::string& description_text,
+    const std::string& confirmation_text) {
+  NOTIMPLEMENTED();
+}
+
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
+FakeConsentAuditor::GetControllerDelegateOnUIThread() {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 }  // namespace consent_auditor

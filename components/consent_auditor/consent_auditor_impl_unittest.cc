@@ -1,8 +1,8 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/consent_auditor/consent_auditor.h"
+#include "components/consent_auditor/consent_auditor_impl.h"
 
 #include <map>
 #include <memory>
@@ -104,25 +104,25 @@ class FakeConsentSyncBridge : public syncer::ConsentSyncBridge {
 
 }  // namespace
 
-class ConsentAuditorTest : public testing::Test {
+class ConsentAuditorImplTest : public testing::Test {
  public:
   void SetUp() override {
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     user_event_service_ = std::make_unique<syncer::FakeUserEventService>();
-    ConsentAuditor::RegisterProfilePrefs(pref_service_->registry());
+    ConsentAuditorImpl::RegisterProfilePrefs(pref_service_->registry());
     app_version_ = kCurrentAppVersion;
     app_locale_ = kCurrentAppLocale;
-    BuildConsentAuditor();
+    BuildConsentAuditorImpl();
   }
 
   // TODO(vitaliii): Add a real builder class instead.
-  void BuildConsentAuditor() {
-    consent_auditor_ = std::make_unique<ConsentAuditor>(
+  void BuildConsentAuditorImpl() {
+    consent_auditor_ = std::make_unique<ConsentAuditorImpl>(
         pref_service_.get(), std::move(consent_sync_bridge_),
         user_event_service_.get(), app_version_, app_locale_);
   }
 
-  // These have no effect before |BuildConsentAuditor|.
+  // These have no effect before |BuildConsentAuditorImpl|.
   void SetAppVersion(const std::string& new_app_version) {
     app_version_ = new_app_version;
   }
@@ -150,14 +150,14 @@ class ConsentAuditorTest : public testing::Test {
     }
   }
 
-  ConsentAuditor* consent_auditor() { return consent_auditor_.get(); }
+  ConsentAuditorImpl* consent_auditor() { return consent_auditor_.get(); }
   PrefService* pref_service() const { return pref_service_.get(); }
   syncer::FakeUserEventService* user_event_service() {
     return user_event_service_.get();
   }
 
  private:
-  std::unique_ptr<ConsentAuditor> consent_auditor_;
+  std::unique_ptr<ConsentAuditorImpl> consent_auditor_;
 
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<syncer::FakeUserEventService> user_event_service_;
@@ -168,10 +168,10 @@ class ConsentAuditorTest : public testing::Test {
   variations::testing::VariationParamsManager params_manager_;
 };
 
-TEST_F(ConsentAuditorTest, LocalConsentPrefRepresentation) {
+TEST_F(ConsentAuditorImplTest, LocalConsentPrefRepresentation) {
   SetAppVersion(kCurrentAppVersion);
   SetAppLocale(kCurrentAppLocale);
-  BuildConsentAuditor();
+  BuildConsentAuditorImpl();
 
   // No consents are written at first.
   EXPECT_FALSE(pref_service()->HasPrefPath(prefs::kLocalConsentsDictionary));
@@ -223,7 +223,7 @@ TEST_F(ConsentAuditorTest, LocalConsentPrefRepresentation) {
   SetAppLocale(kFeature2NewAppLocale);
   // We rebuild consent auditor to emulate restarting Chrome. This is the only
   // way to change app version or app locale.
-  BuildConsentAuditor();
+  BuildConsentAuditorImpl();
 
   consent_auditor()->RecordLocalConsent("feature2", kFeature2NewDescription,
                                         kFeature2NewConfirmation);
@@ -238,7 +238,7 @@ TEST_F(ConsentAuditorTest, LocalConsentPrefRepresentation) {
   EXPECT_EQ(2u, consents->size());
 }
 
-TEST_F(ConsentAuditorTest, RecordingEnabled) {
+TEST_F(ConsentAuditorImplTest, RecordingEnabled) {
   SetIsSeparateConsentTypeEnabledFeature(false);
 
   consent_auditor()->RecordGaiaConsent(kAccountId, Feature::CHROME_SYNC, {}, 0,
@@ -247,7 +247,7 @@ TEST_F(ConsentAuditorTest, RecordingEnabled) {
   EXPECT_EQ(1U, events.size());
 }
 
-TEST_F(ConsentAuditorTest, RecordingDisabled) {
+TEST_F(ConsentAuditorImplTest, RecordingDisabled) {
   SetIsSeparateConsentTypeEnabledFeature(false);
 
   base::test::ScopedFeatureList scoped_feature_list;
@@ -258,12 +258,12 @@ TEST_F(ConsentAuditorTest, RecordingDisabled) {
   EXPECT_EQ(0U, events.size());
 }
 
-TEST_F(ConsentAuditorTest, RecordGaiaConsentAsUserEvent) {
+TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserEvent) {
   SetIsSeparateConsentTypeEnabledFeature(false);
   SetConsentSyncBridge(nullptr);
   SetAppVersion(kCurrentAppVersion);
   SetAppLocale(kCurrentAppLocale);
-  BuildConsentAuditor();
+  BuildConsentAuditorImpl();
 
   std::vector<int> kDescriptionMessageIds = {12, 37, 42};
   int kConfirmationMessageId = 47;
@@ -289,7 +289,7 @@ TEST_F(ConsentAuditorTest, RecordGaiaConsentAsUserEvent) {
   EXPECT_EQ(kCurrentAppLocale, consent.locale());
 }
 
-TEST_F(ConsentAuditorTest, RecordGaiaConsentAsUserConsent) {
+TEST_F(ConsentAuditorImplTest, RecordGaiaConsentAsUserConsent) {
   SetIsSeparateConsentTypeEnabledFeature(true);
 
   auto wrapped_fake_bridge = std::make_unique<FakeConsentSyncBridge>();
@@ -300,7 +300,7 @@ TEST_F(ConsentAuditorTest, RecordGaiaConsentAsUserConsent) {
   SetUserEventService(nullptr);
   SetAppVersion(kCurrentAppVersion);
   SetAppLocale(kCurrentAppLocale);
-  BuildConsentAuditor();
+  BuildConsentAuditorImpl();
 
   std::vector<int> kDescriptionMessageIds = {12, 37, 42};
   int kConfirmationMessageId = 47;
@@ -330,17 +330,17 @@ TEST_F(ConsentAuditorTest, RecordGaiaConsentAsUserConsent) {
   EXPECT_EQ(kCurrentAppLocale, consent.locale());
 }
 
-TEST_F(ConsentAuditorTest, ShouldReturnNoSyncDelegateWhenNoBridge) {
+TEST_F(ConsentAuditorImplTest, ShouldReturnNoSyncDelegateWhenNoBridge) {
   SetIsSeparateConsentTypeEnabledFeature(false);
   SetConsentSyncBridge(nullptr);
-  BuildConsentAuditor();
+  BuildConsentAuditorImpl();
 
   // There is no bridge (i.e. separate sync type for consents is disabled),
   // thus, there should be no delegate as well.
   EXPECT_EQ(nullptr, consent_auditor()->GetControllerDelegateOnUIThread());
 }
 
-TEST_F(ConsentAuditorTest, ShouldReturnSyncDelegateWhenBridgePresent) {
+TEST_F(ConsentAuditorImplTest, ShouldReturnSyncDelegateWhenBridgePresent) {
   SetIsSeparateConsentTypeEnabledFeature(true);
   auto fake_bridge = std::make_unique<FakeConsentSyncBridge>();
 
@@ -352,7 +352,7 @@ TEST_F(ConsentAuditorTest, ShouldReturnSyncDelegateWhenBridgePresent) {
 
   SetConsentSyncBridge(std::move(fake_bridge));
   SetUserEventService(nullptr);
-  BuildConsentAuditor();
+  BuildConsentAuditorImpl();
 
   // There is a bridge (i.e. separate sync type for consents is enabled), thus,
   // there should be a delegate as well.
