@@ -656,18 +656,15 @@ void KeyboardController::PopulateKeyboardContent(
     case KeyboardControllerState::WILL_HIDE:
       ChangeState(KeyboardControllerState::SHOWN);
       return;
-    case KeyboardControllerState::HIDDEN: {
-      // If the container is not animating, makes sure the position and opacity
-      // are at begin states for animation.
-      container_behavior_->InitializeShowAnimationStartingState(
-          keyboard_window);
-      break;
-    }
     default:
-      NOTREACHED();
+      break;
   }
 
   DCHECK_EQ(state_, KeyboardControllerState::HIDDEN);
+
+  // If the container is not animating, makes sure the position and opacity
+  // are at begin states for animation.
+  container_behavior_->InitializeShowAnimationStartingState(keyboard_window);
 
   keyboard::LogKeyboardControlEvent(keyboard::KEYBOARD_CONTROL_SHOW);
   RecordUkmKeyboardShown();
