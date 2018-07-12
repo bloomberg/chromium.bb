@@ -215,7 +215,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
   init.setFetches(BackgroundFetchSettledFetches::Create(script_state, fetches));
 
   BackgroundFetchUpdateEvent* event = BackgroundFetchUpdateEvent::Create(
-      EventTypeNames::backgroundfetched, init, unique_id, script_state,
+      EventTypeNames::backgroundfetchfail, init, unique_id, script_state,
       observer, worker_global_scope_->registration());
 
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
