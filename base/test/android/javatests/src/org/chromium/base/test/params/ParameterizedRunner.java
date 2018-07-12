@@ -85,8 +85,9 @@ public final class ParameterizedRunner extends Suite {
 
     private void validateOnlyOneClassParameterField() {
         if (getTestClass().getAnnotatedFields(ClassParameter.class).size() > 1) {
-            throw new IllegalParameterArgumentException(
-                    "%s class has more than one @ClassParameter, only one is allowed");
+            throw new IllegalParameterArgumentException(String.format(Locale.getDefault(),
+                    "%s class has more than one @ClassParameter, only one is allowed",
+                    getTestClass().getName()));
         }
     }
 
