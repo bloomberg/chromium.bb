@@ -24,11 +24,12 @@ TestComponentCreator::~TestComponentCreator() {
 }
 
 optimization_guide::ComponentInfo
-TestComponentCreator::CreateComponentInfoWithNoScriptWhitelist(
-    std::vector<std::string> whitelisted_host_suffixes) {
+TestComponentCreator::CreateComponentInfoWithWhitelist(
+    optimization_guide::proto::OptimizationType optimization_type,
+    const std::vector<std::string>& whitelisted_host_suffixes) {
   std::string version_string = base::IntToString(next_component_version_++);
   base::FilePath hints_path = GetFilePath(version_string);
-  WriteConfigToFile(hints_path, whitelisted_host_suffixes);
+  WriteConfigToFile(optimization_type, hints_path, whitelisted_host_suffixes);
   return optimization_guide::ComponentInfo(base::Version(version_string),
                                            hints_path);
 }
@@ -41,18 +42,19 @@ base::FilePath TestComponentCreator::GetFilePath(std::string file_path_suffix) {
 }
 
 void TestComponentCreator::WriteConfigToFile(
+    optimization_guide::proto::OptimizationType optimization_type,
     base::FilePath file_path,
-    std::vector<std::string> whitelisted_noscript_host_suffixes) {
+    std::vector<std::string> whitelisted_host_suffixes) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   optimization_guide::proto::Configuration config;
-  for (auto whitelisted_noscript_site : whitelisted_noscript_host_suffixes) {
+  for (auto whitelisted_noscript_site : whitelisted_host_suffixes) {
     optimization_guide::proto::Hint* hint = config.add_hints();
     hint->set_key(whitelisted_noscript_site);
     hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
     optimization_guide::proto::Optimization* optimization =
         hint->add_whitelisted_optimizations();
-    optimization->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+    optimization->set_optimization_type(optimization_type);
   }
 
   std::string serialized_config;

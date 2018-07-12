@@ -39,7 +39,7 @@ const char* GetDestinationFromContext(WebURLRequest::RequestContext context) {
     case WebURLRequest::kRequestContextXMLHttpRequest:
     case WebURLRequest::kRequestContextSubresource:
     case WebURLRequest::kRequestContextPrefetch:
-      return "";
+      return "\"\"";
     case WebURLRequest::kRequestContextCSPReport:
       return "report";
     case WebURLRequest::kRequestContextAudio:
@@ -132,9 +132,9 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
         }
       }
 
-      String value = String::Format(
-          "destination=\"%s\", target=\"subresource\", site=\"%s\"",
-          destination_value, site_value);
+      String value =
+          String::Format("destination=%s, target=subresource, site=%s",
+                         destination_value, site_value);
       request.AddHTTPHeaderField("Sec-Metadata", AtomicString(value));
     }
   }

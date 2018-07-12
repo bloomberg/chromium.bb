@@ -22,10 +22,12 @@ class TestComponentCreator {
   TestComponentCreator();
   ~TestComponentCreator();
 
-  // Creates component data based on |whitelisted_host_suffixes| to a temp file
+  // Creates component data based on |whitelisted_host_suffixes| for
+  // optimization with type |optimization_type| to a temp file
   // and returns the ComponentInfo for it.
-  optimization_guide::ComponentInfo CreateComponentInfoWithNoScriptWhitelist(
-      std::vector<std::string> whitelisted_host_suffixes);
+  optimization_guide::ComponentInfo CreateComponentInfoWithWhitelist(
+      optimization_guide::proto::OptimizationType optimization_type,
+      const std::vector<std::string>& whitelisted_host_suffixes);
 
  private:
   // Returns the scoped temp directory path with the |file_path_suffix| that is
@@ -33,11 +35,12 @@ class TestComponentCreator {
   // The file itself will not be automatically created.
   base::FilePath GetFilePath(std::string file_path_suffix);
 
-  // Writes a configuration of hints with the
-  // |whitelisted_noscript_host_suffixes| to the file path.
+  // Writes a configuration of hints for |optimization_type| with the
+  // |whitelisted_host_suffixes| to the file path.
   void WriteConfigToFile(
+      optimization_guide::proto::OptimizationType optimization_type,
       base::FilePath file_path,
-      std::vector<std::string> whitelisted_noscript_host_suffixes);
+      std::vector<std::string> whitelisted_host_suffixes);
 
   std::unique_ptr<base::ScopedTempDir> scoped_temp_dir_;
   int next_component_version_;

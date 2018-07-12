@@ -106,6 +106,9 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
             url_request, previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
       return content::RESOURCE_LOADING_HINTS_ON;
     }
+    // Remove RESOURCE_LOADING_HINTS_ON from |previews_state| since we decided
+    // not to commit to it.
+    previews_state = previews_state & ~content::RESOURCE_LOADING_HINTS_ON;
   }
 
   if (previews_state & content::NOSCRIPT_ON) {
