@@ -43,16 +43,17 @@ class ArcAppShortcutsSearchProviderTest : public AppListTestBase {
 };
 
 TEST_F(ArcAppShortcutsSearchProviderTest, Basic) {
+  constexpr size_t kMaxResults = 4;
   constexpr char kQuery[] = "shortlabel";
 
   auto provider = std::make_unique<ArcAppShortcutsSearchProvider>(
-      profile(), controller_.get());
+      kMaxResults, profile(), controller_.get());
   EXPECT_TRUE(provider->results().empty());
   arc::IconDecodeRequest::DisableSafeDecodingForTesting();
 
   provider->Start(base::UTF8ToUTF16(kQuery));
   const auto& results = provider->results();
-  EXPECT_EQ(3u, results.size());
+  EXPECT_EQ(kMaxResults, results.size());
   // Verify search results.
   for (size_t i = 0; i < results.size(); ++i) {
     EXPECT_EQ(base::StringPrintf("ShortLabel %zu", i),

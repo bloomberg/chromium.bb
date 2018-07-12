@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/i18n/string_search.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcut_search_result.h"
@@ -17,9 +16,11 @@
 namespace app_list {
 
 ArcAppShortcutsSearchProvider::ArcAppShortcutsSearchProvider(
+    int max_results,
     Profile* profile,
     AppListControllerDelegate* list_controller)
-    : profile_(profile),
+    : max_results_(max_results),
+      profile_(profile),
       list_controller_(list_controller),
       weak_ptr_factory_(this) {}
 
@@ -40,30 +41,19 @@ void ArcAppShortcutsSearchProvider::Start(const base::string16& query) {
 
   // Invalidate the weak ptr to prevent previous callback run.
   weak_ptr_factory_.InvalidateWeakPtrs();
-  // Pass empty package name to do query for all packages.
-  app_instance->GetAppShortcutItems(
-      std::string(),
+  app_instance->GetAppShortcutGlobalQueryItems(
+      base::UTF16ToUTF8(query), max_results_,
       base::BindOnce(&ArcAppShortcutsSearchProvider::OnGetAppShortcutItems,
-                     weak_ptr_factory_.GetWeakPtr(), query));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcAppShortcutsSearchProvider::OnGetAppShortcutItems(
-    const base::string16& query,
     std::vector<arc::mojom::AppShortcutItemPtr> shortcut_items) {
   SearchProvider::Results search_results;
-  base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents finder(query);
   for (auto& item : shortcut_items) {
-    // TODO(warx): Use tokenized string match.
-    const base::string16& short_label = base::UTF8ToUTF16(item->short_label);
-    if (!finder.Search(short_label, nullptr, nullptr))
-      continue;
-
     search_results.emplace_back(std::make_unique<ArcAppShortcutSearchResult>(
         std::move(item), profile_, list_controller_));
-    DCHECK(!short_label.empty());
-    search_results.back()->set_relevance(query.length() / short_label.length());
   }
-
   SwapResults(&search_results);
 }
 
