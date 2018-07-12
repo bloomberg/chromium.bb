@@ -538,6 +538,10 @@ bool BrowserView::IsTabStripVisible() const {
 }
 
 bool BrowserView::IsIncognito() const {
+  // TODO(pbos): This is confusing or incorrect as IsIncognito() returns true
+  // for Guest sessions. We should probably rename this function and audit
+  // callers to make sure that's actually what was intended, or make this return
+  // false for Guest sessions.
   return browser_->profile()->IsOffTheRecord();
 }
 
@@ -2675,6 +2679,9 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
     signin_metrics::AccessPoint access_point,
     bool focus_first_profile_button) {
 #if !defined(OS_CHROMEOS)
+  // Never show any avatar bubble in Incognito.
+  if (!IsRegularOrGuestSession())
+    return;
   views::Button* avatar_button = toolbar_->avatar_button();
   if (!avatar_button)
     avatar_button = frame_->GetNewAvatarMenuButton();
