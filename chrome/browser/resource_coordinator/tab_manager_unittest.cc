@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
@@ -133,6 +134,9 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
                 task_runner_)),
         scoped_set_tick_clock_for_testing_(task_runner_->GetMockTickClock()) {
     base::MessageLoopCurrent::Get()->SetTaskRunner(task_runner_);
+
+    // Start with a non-zero time.
+    task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(42));
   }
 
   std::unique_ptr<WebContents> CreateWebContents() {
@@ -316,11 +320,30 @@ class TabManagerWithProactiveDiscardExperimentEnabledTest
     scoped_feature_list_.InitAndEnableFeature(
         features::kProactiveTabFreezeAndDiscard);
 
+    // Pretend that Chrome is in use.
+    metrics::DesktopSessionDurationTracker::Initialize();
+    MarkChromeInUse(true);
+
     TabManagerTest::SetUp();
 
     // Use test constants for proactive discarding parameters.
     tab_manager_->proactive_freeze_discard_params_ =
         GetTestProactiveDiscardParams();
+  }
+
+  void TearDown() override {
+    TabManagerTest::TearDown();
+    metrics::DesktopSessionDurationTracker::CleanupForTesting();
+  }
+
+  void MarkChromeInUse(bool in_use) {
+    auto* tracker = metrics::DesktopSessionDurationTracker::Get();
+    if (in_use) {
+      tracker->OnVisibilityChanged(true, base::TimeDelta());
+      tracker->OnUserEvent();
+    } else {
+      tracker->OnVisibilityChanged(false, base::TimeDelta());
+    }
   }
 
   ProactiveTabFreezeAndDiscardParams GetTestProactiveDiscardParams() {
@@ -1544,6 +1567,77 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
 
   // The background tab shouldn't have been discarded while offline.
   EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(1)));
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
+       NoProactiveDiscardWhenChromeNotInUse) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Create 2 tabs.
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
+  tab_strip->GetWebContentsAt(0)->WasShown();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(0), TabLoadTracker::LoadingState::LOADED);
+
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  tab_strip->GetWebContentsAt(1)->WasHidden();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(1), TabLoadTracker::LoadingState::LOADED);
+
+  // Run tasks to let state transitions happen.
+  task_runner_->RunUntilIdle();
+
+  // No tab should be frozen or discarded initially.
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(1)));
+
+  // Fast-forward time when Chrome is not in use.
+  MarkChromeInUse(false);
+  task_runner_->FastForwardBy(kFreezeTimeout);
+
+  // The background tab should be frozen normally.
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(1)));
+
+  // Fast-forward time again when Chrome is not in use.
+  task_runner_->FastForwardBy(base::TimeDelta::FromDays(1));
+
+  // No discard should happen when Chrome is not in use.
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(1)));
+
+  // Fast-forward time less than the discard timeout when Chrome is in use.
+  constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromSeconds(42);
+  MarkChromeInUse(true);
+  task_runner_->FastForwardBy(kShortDelay);
+
+  // No discard should happen yet.
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(1)));
+
+  // Fast-forward time enough for the discard timeout to expire.
+  task_runner_->FastForwardBy(kLowOccludedTimeout - kShortDelay);
+
+  // The background tab should be discarded.
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabDiscarded(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabDiscarded(tab_strip->GetWebContentsAt(1)));
 
   tab_strip->CloseAllTabs();
 }
