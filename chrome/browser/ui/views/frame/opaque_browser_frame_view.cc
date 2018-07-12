@@ -122,17 +122,23 @@ OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {}
 // OpaqueBrowserFrameView, BrowserNonClientFrameView implementation:
 
 void OpaqueBrowserFrameView::OnBrowserViewInitViewsComplete() {
+  BrowserNonClientFrameView::OnBrowserViewInitViewsComplete();
+
   // After views are initialized, we know the top area height for the
   // first time, so redraw the frame buttons at the appropriate size.
   MaybeRedrawFrameButtons();
 }
 
 void OpaqueBrowserFrameView::OnMaximizedStateChanged() {
+  BrowserNonClientFrameView::OnMaximizedStateChanged();
+
   // The top area height can change depending on the maximized state.
   MaybeRedrawFrameButtons();
 }
 
 void OpaqueBrowserFrameView::OnFullscreenStateChanged() {
+  BrowserNonClientFrameView::OnFullscreenStateChanged();
+
   // The top area height is 0 when the window is fullscreened.
   MaybeRedrawFrameButtons();
 }
