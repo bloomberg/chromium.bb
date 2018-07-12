@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <hb.h>
 
@@ -22,8 +23,7 @@ class CaseMappingHarfBuzzBufferFiller {
   CaseMappingHarfBuzzBufferFiller(CaseMapIntend,
                                   AtomicString locale,
                                   hb_buffer_t* harf_buzz_buffer,
-                                  const UChar* buffer,
-                                  unsigned buffer_length,
+                                  const String& text,
                                   unsigned start_index,
                                   unsigned num_characters);
 

@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/platform/fonts/shaping/case_mapping_harf_buzz_buffer_filler.h"
 
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-
 namespace blink {
 
 static const uint16_t* ToUint16(const UChar* src) {
@@ -21,33 +19,35 @@ CaseMappingHarfBuzzBufferFiller::CaseMappingHarfBuzzBufferFiller(
     CaseMapIntend case_map_intend,
     AtomicString locale,
     hb_buffer_t* harf_buzz_buffer,
-    const UChar* buffer,
-    unsigned buffer_length,
+    const String& text,
     unsigned start_index,
     unsigned num_characters)
     : harf_buzz_buffer_(harf_buzz_buffer) {
   if (case_map_intend == CaseMapIntend::kKeepSameCase) {
-    hb_buffer_add_utf16(harf_buzz_buffer_, ToUint16(buffer), buffer_length,
-                        start_index, num_characters);
-  } else {
-    String case_mapped_text;
-    if (case_map_intend == CaseMapIntend::kUpperCase) {
-      case_mapped_text = String(buffer, buffer_length).UpperUnicode(locale);
+    if (text.Is8Bit()) {
+      hb_buffer_add_latin1(harf_buzz_buffer_, text.Characters8(), text.length(),
+                           start_index, num_characters);
     } else {
-      case_mapped_text = String(buffer, buffer_length).LowerUnicode(locale);
+      hb_buffer_add_utf16(harf_buzz_buffer_, ToUint16(text.Characters16()),
+                          text.length(), start_index, num_characters);
     }
+  } else {
+    String case_mapped_text = case_map_intend == CaseMapIntend::kUpperCase
+                                  ? text.UpperUnicode(locale)
+                                  : text.LowerUnicode(locale);
+    case_mapped_text.Ensure16Bit();
 
-    if (case_mapped_text.length() != buffer_length) {
-      FillSlowCase(case_map_intend, locale, buffer, buffer_length, start_index,
-                   num_characters);
+    if (case_mapped_text.length() != text.length()) {
+      FillSlowCase(case_map_intend, locale, text.Characters16(), text.length(),
+                   start_index, num_characters);
       return;
     }
 
-    DCHECK_EQ(case_mapped_text.length(), buffer_length);
+    DCHECK_EQ(case_mapped_text.length(), text.length());
     DCHECK(!case_mapped_text.Is8Bit());
     hb_buffer_add_utf16(harf_buzz_buffer_,
                         ToUint16(case_mapped_text.Characters16()),
-                        buffer_length, start_index, num_characters);
+                        text.length(), start_index, num_characters);
   }
 }
 

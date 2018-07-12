@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/character.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 
 namespace blink {
 
@@ -56,8 +57,7 @@ void TextRun::SetText(const String& string) {
     data_.characters16 = string.Characters16();
 }
 
-std::unique_ptr<UChar[]> TextRun::NormalizedUTF16(
-    unsigned* result_length) const {
+String TextRun::NormalizedUTF16() const {
   const UChar* source;
   String string_for8_bit_run;
   if (Is8Bit()) {
@@ -68,8 +68,8 @@ std::unique_ptr<UChar[]> TextRun::NormalizedUTF16(
     source = Characters16();
   }
 
-  auto buffer = std::make_unique<UChar[]>(len_ + 1);
-  *result_length = 0;
+  StringBuffer<UChar> buffer(len_);
+  unsigned result_length = 0;
 
   bool error = false;
   unsigned position = 0;
@@ -92,12 +92,12 @@ std::unique_ptr<UChar[]> TextRun::NormalizedUTF16(
       character = kZeroWidthSpaceCharacter;
     }
 
-    U16_APPEND(buffer, *result_length, len_, character, error);
+    U16_APPEND(buffer.Characters(), result_length, len_, character, error);
     DCHECK(!error);
   }
 
-  DCHECK(*result_length <= len_);
-  return buffer;
+  DCHECK(result_length <= len_);
+  return String::Adopt(buffer);
 }
 
 unsigned TextRun::IndexOfSubRun(const TextRun& sub_run) const {

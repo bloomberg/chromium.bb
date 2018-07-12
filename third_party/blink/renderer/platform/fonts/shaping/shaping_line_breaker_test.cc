@@ -85,7 +85,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineLatin) {
   LazyLineBreakIterator break_iterator(string, "en-US", LineBreakType::kNormal);
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(string.Characters16(), 56);
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   // "Test run with multiple"
@@ -157,7 +157,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineLatinMultiLine) {
   LazyLineBreakIterator break_iterator(string, "en-US", LineBreakType::kNormal);
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(string.Characters16(), 24);
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
   scoped_refptr<ShapeResult> first = shaper.Shape(&font, direction, 0, 4);
   scoped_refptr<ShapeResult> mid_third = shaper.Shape(&font, direction, 0, 16);
@@ -184,7 +184,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineLatinBreakAll) {
                                        LineBreakType::kBreakAll);
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(string.Characters16(), 29);
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
   scoped_refptr<ShapeResult> midpoint = shaper.Shape(&font, direction, 0, 16);
 
@@ -206,7 +206,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineZeroAvailableWidth) {
   LazyLineBreakIterator break_iterator(string, "en-US", LineBreakType::kNormal);
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
@@ -236,7 +236,7 @@ TEST_F(ShapingLineBreakerTest, DISABLED_ShapeLineArabicThaiHanLatin) {
                                        LineBreakType::kNormal);
   TextDirection direction = TextDirection::kRtl;
 
-  HarfBuzzShaper shaper(mixed_string, 8);
+  HarfBuzzShaper shaper(mixed_string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
   scoped_refptr<ShapeResult> words[] = {shaper.Shape(&font, direction, 0, 1),
                                  shaper.Shape(&font, direction, 2, 4),
@@ -276,7 +276,7 @@ TEST_F(ShapingLineBreakerTest, ShapeLineRangeEndMidWord) {
   LazyLineBreakIterator break_iterator(string, "en-US", LineBreakType::kNormal);
   TextDirection direction = TextDirection::kLtr;
 
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction, 0, 2);
 
   ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
@@ -312,7 +312,7 @@ TEST_P(BreakOpportunityTest, Next) {
   String string(data.string);
   LazyLineBreakIterator break_iterator(string);
 
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
 
   ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
@@ -331,7 +331,7 @@ TEST_P(BreakOpportunityTest, Previous) {
   const BreakOpportunityTestData& data = GetParam();
   String string(data.string);
   LazyLineBreakIterator break_iterator(string);
-  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
 
   ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);

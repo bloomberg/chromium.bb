@@ -70,8 +70,7 @@ NGLineBreaker::NGLineBreaker(
       container_builder_(container_builder),
       exclusion_space_(exclusion_space),
       break_iterator_(items_data_.text_content),
-      shaper_(items_data_.text_content.Characters16(),
-              items_data_.text_content.length()),
+      shaper_(items_data_.text_content),
       spacing_(items_data_.text_content),
       handled_floats_end_item_index_(handled_float_index),
       base_direction_(node_.BaseDirection()),
@@ -614,8 +613,7 @@ void NGLineBreaker::AppendHyphen(const NGInlineItem& item,
   const ComputedStyle& style = *item.Style();
   TextDirection direction = style.Direction();
   String hyphen_string = style.HyphenString();
-  hyphen_string.Ensure16Bit();
-  HarfBuzzShaper shaper(hyphen_string.Characters16(), hyphen_string.length());
+  HarfBuzzShaper shaper(hyphen_string);
   scoped_refptr<ShapeResult> hyphen_result =
       shaper.Shape(&style.GetFont(), direction);
   NGTextFragmentBuilder builder(node_, constraint_space_.GetWritingMode());

@@ -40,7 +40,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Only look for system fonts for now.
   font.Update(nullptr);
 
-  HarfBuzzShaper shaper(converted_input_buffer, converted_length);
+  HarfBuzzShaper shaper(String(converted_input_buffer, converted_length));
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
   return 0;
 }

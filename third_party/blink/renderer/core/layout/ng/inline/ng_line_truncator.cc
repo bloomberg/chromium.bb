@@ -54,7 +54,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
       font_data && font_data->GlyphForCharacter(kHorizontalEllipsisCharacter)
           ? String(&kHorizontalEllipsisCharacter, 1)
           : String(u"...");
-  HarfBuzzShaper shaper(ellipsis_text.Characters16(), ellipsis_text.length());
+  HarfBuzzShaper shaper(ellipsis_text);
   scoped_refptr<ShapeResult> ellipsis_shape_result =
       shaper.Shape(&font, line_direction_);
   LayoutUnit ellipsis_width = ellipsis_shape_result->SnappedWidth();
