@@ -225,6 +225,8 @@ static_library("browser") {
       "autofill_credit_card_policy_handler.h",
       "autofill_policy_handler.cc",
       "autofill_policy_handler.h",
+      "autofill_profile_policy_handler.cc",
+      "autofill_profile_policy_handler.h",
     ]
   }
 
@@ -463,6 +465,7 @@ source_set("unit_tests") {
     sources += [
       "autofill_credit_card_policy_handler_unittest.cc",
       "autofill_policy_handler_unittest.cc",
+      "autofill_profile_policy_handler_unittest.cc",
     ]
   }
 
