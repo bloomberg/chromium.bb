@@ -36,3 +36,21 @@ interface AudioLog {
   // Called when an audio component wants to forward a log message.
   OnLogMessage(string message);
 };
+
+enum AudioLogComponent {
+  kInputController,
+  kOutputController,
+  kOutputStream,
+};
+
+// This interface is implemented by the browser process to allow clients to
+// create AudioLog instances for tracking the behavior of an audio component.
+// The only client for this interface is the audio service.
+interface AudioLogFactory {
+  // Creates an AudioLog object for tracking the behavior for one instance of
+  // the given |component|.  Each instance of an "owning" class must create its
+  // own AudioLog. The created AudioLog object is bound to |audio_log_request|.
+  CreateAudioLog(AudioLogComponent component,
+                 int32 component_id,
+                 AudioLog& audio_log_request);
+};
