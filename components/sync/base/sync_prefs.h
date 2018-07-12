@@ -140,15 +140,31 @@ class SyncPrefs : public SessionSyncPrefs,
   // The returned set is guaranteed to be a subset of
   // |registered_types|.  Returns |registered_types| directly if
   // HasKeepEverythingSynced() is true.
-  ModelTypeSet GetPreferredDataTypes(ModelTypeSet registered_types) const;
+  // |user_events_separate_pref_group| is true when USER_EVENTS model type has
+  // a separate pref group instead of being bundled with the TYPED_URLS. This
+  // is used when Unified Consent is enabled.
+  //
+  // TODO(https://crbug.com/862983): |user_events_separate_pref_group| is only
+  // temporary and should removed once Unified Consent feature is is launched.
+  ModelTypeSet GetPreferredDataTypes(
+      ModelTypeSet registered_types,
+      bool user_events_separate_pref_group) const;
+
   // |preferred_types| should be a subset of |registered_types|.  All
   // types in |preferred_types| are marked preferred, and all types in
   // |registered_types| \ |preferred_types| are marked not preferred.
   // Changes are still made to the prefs even if
   // HasKeepEverythingSynced() is true, but won't be visible until
   // SetKeepEverythingSynced(false) is called.
+  // |user_events_separate_pref_group| is true when USER_EVENTS model type has
+  // a separate pref group instead of being bundled with the TYPED_URLS. This
+  // is used when Unified Consent is enabled.
+  //
+  // TODO(https://crbug.com/862983): |user_events_separate_pref_group| is only
+  // temporary and should removed once Unified Consent feature is is launched.
   void SetPreferredDataTypes(ModelTypeSet registered_types,
-                             ModelTypeSet preferred_types);
+                             ModelTypeSet preferred_types,
+                             bool user_events_separate_pref_group);
 
   // This pref is set outside of sync.
   bool IsManaged() const;
@@ -231,11 +247,10 @@ class SyncPrefs : public SessionSyncPrefs,
   // Returns a ModelTypeSet based on |types| expanded to include pref groups
   // (see |pref_groups_|), but as a subset of |registered_types|.
   ModelTypeSet ResolvePrefGroups(ModelTypeSet registered_types,
-                                 ModelTypeSet types) const;
+                                 ModelTypeSet types,
+                                 bool user_events_separate_pref_group) const;
 
  private:
-  void RegisterPrefGroups();
-
   static void RegisterDataTypePreferredPref(
       user_prefs::PrefRegistrySyncable* prefs,
       ModelType type,
@@ -255,16 +270,6 @@ class SyncPrefs : public SessionSyncPrefs,
   BooleanPrefMember pref_sync_managed_;
 
   bool local_sync_enabled_;
-
-  // Groups of prefs that always have the same value as a "master" pref.
-  // For example, the APPS group has {APP_NOTIFICATIONS, APP_SETTINGS}
-  // (as well as APPS, but that is implied), so
-  //   pref_groups_[APPS] =       { APP_NOTIFICATIONS,
-  //                                          APP_SETTINGS }
-  //   pref_groups_[EXTENSIONS] = { EXTENSION_SETTINGS }
-  // etc.
-  using PrefGroupsMap = std::map<ModelType, ModelTypeSet>;
-  PrefGroupsMap pref_groups_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

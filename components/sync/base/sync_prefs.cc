@@ -16,6 +16,54 @@
 
 namespace syncer {
 
+namespace {
+// Groups of prefs that always have the same value as a "master" pref.
+// For example, the APPS group has {APP_NOTIFICATIONS, APP_SETTINGS}
+// (as well as APPS, but that is implied), so
+//   pref_groups_[APPS] =       { APP_NOTIFICATIONS,
+//                                          APP_SETTINGS }
+//   pref_groups_[EXTENSIONS] = { EXTENSION_SETTINGS }
+// etc.
+using PrefGroupsMap = std::map<ModelType, ModelTypeSet>;
+PrefGroupsMap ComputePrefGroups(bool user_events_separate_pref_group) {
+  PrefGroupsMap pref_groups;
+  pref_groups[APPS].Put(APP_NOTIFICATIONS);
+  pref_groups[APPS].Put(APP_SETTINGS);
+  pref_groups[APPS].Put(APP_LIST);
+  pref_groups[APPS].Put(ARC_PACKAGE);
+  pref_groups[APPS].Put(READING_LIST);
+
+  pref_groups[AUTOFILL].Put(AUTOFILL_PROFILE);
+  pref_groups[AUTOFILL].Put(AUTOFILL_WALLET_DATA);
+  pref_groups[AUTOFILL].Put(AUTOFILL_WALLET_METADATA);
+
+  pref_groups[EXTENSIONS].Put(EXTENSION_SETTINGS);
+
+  pref_groups[PREFERENCES].Put(DICTIONARY);
+  pref_groups[PREFERENCES].Put(PRIORITY_PREFERENCES);
+  pref_groups[PREFERENCES].Put(SEARCH_ENGINES);
+
+  pref_groups[TYPED_URLS].Put(HISTORY_DELETE_DIRECTIVES);
+  pref_groups[TYPED_URLS].Put(SESSIONS);
+  pref_groups[TYPED_URLS].Put(FAVICON_IMAGES);
+  pref_groups[TYPED_URLS].Put(FAVICON_TRACKING);
+
+  if (!user_events_separate_pref_group) {
+    pref_groups[TYPED_URLS].Put(USER_EVENTS);
+  }
+
+  pref_groups[PROXY_TABS].Put(SESSIONS);
+  pref_groups[PROXY_TABS].Put(FAVICON_IMAGES);
+  pref_groups[PROXY_TABS].Put(FAVICON_TRACKING);
+
+  // TODO(zea): Put favicons in the bookmarks group as well once it handles
+  // those favicons.
+
+  return pref_groups;
+}
+
+}  // namespace
+
 SessionSyncPrefs::~SessionSyncPrefs() {}
 
 CryptoSyncPrefs::~CryptoSyncPrefs() {}
@@ -24,7 +72,6 @@ SyncPrefObserver::~SyncPrefObserver() {}
 
 SyncPrefs::SyncPrefs(PrefService* pref_service) : pref_service_(pref_service) {
   DCHECK(pref_service);
-  RegisterPrefGroups();
   // Watch the preference that indicates sync is managed so we can take
   // appropriate action.
   pref_sync_managed_.Init(
@@ -220,7 +267,8 @@ void SyncPrefs::SetKeepEverythingSynced(bool keep_everything_synced) {
 }
 
 ModelTypeSet SyncPrefs::GetPreferredDataTypes(
-    ModelTypeSet registered_types) const {
+    ModelTypeSet registered_types,
+    bool user_events_separate_pref_group) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced)) {
@@ -234,13 +282,16 @@ ModelTypeSet SyncPrefs::GetPreferredDataTypes(
       preferred_types.Put(it.Get());
     }
   }
-  return ResolvePrefGroups(registered_types, preferred_types);
+  return ResolvePrefGroups(registered_types, preferred_types,
+                           user_events_separate_pref_group);
 }
 
 void SyncPrefs::SetPreferredDataTypes(ModelTypeSet registered_types,
-                                      ModelTypeSet preferred_types) {
+                                      ModelTypeSet preferred_types,
+                                      bool user_events_separate_pref_group) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  preferred_types = ResolvePrefGroups(registered_types, preferred_types);
+  preferred_types = ResolvePrefGroups(registered_types, preferred_types,
+                                      user_events_separate_pref_group);
   DCHECK(registered_types.HasAll(preferred_types));
   for (ModelTypeSet::Iterator i = registered_types.First(); i.Good(); i.Inc()) {
     SetDataTypePreferred(i.Get(), preferred_types.Has(i.Get()));
@@ -396,37 +447,6 @@ void SyncPrefs::SetManagedForTest(bool is_managed) {
   pref_service_->SetBoolean(prefs::kSyncManaged, is_managed);
 }
 
-void SyncPrefs::RegisterPrefGroups() {
-  pref_groups_[APPS].Put(APP_NOTIFICATIONS);
-  pref_groups_[APPS].Put(APP_SETTINGS);
-  pref_groups_[APPS].Put(APP_LIST);
-  pref_groups_[APPS].Put(ARC_PACKAGE);
-  pref_groups_[APPS].Put(READING_LIST);
-
-  pref_groups_[AUTOFILL].Put(AUTOFILL_PROFILE);
-  pref_groups_[AUTOFILL].Put(AUTOFILL_WALLET_DATA);
-  pref_groups_[AUTOFILL].Put(AUTOFILL_WALLET_METADATA);
-
-  pref_groups_[EXTENSIONS].Put(EXTENSION_SETTINGS);
-
-  pref_groups_[PREFERENCES].Put(DICTIONARY);
-  pref_groups_[PREFERENCES].Put(PRIORITY_PREFERENCES);
-  pref_groups_[PREFERENCES].Put(SEARCH_ENGINES);
-
-  pref_groups_[TYPED_URLS].Put(HISTORY_DELETE_DIRECTIVES);
-  pref_groups_[TYPED_URLS].Put(SESSIONS);
-  pref_groups_[TYPED_URLS].Put(FAVICON_IMAGES);
-  pref_groups_[TYPED_URLS].Put(FAVICON_TRACKING);
-  pref_groups_[TYPED_URLS].Put(USER_EVENTS);
-
-  pref_groups_[PROXY_TABS].Put(SESSIONS);
-  pref_groups_[PROXY_TABS].Put(FAVICON_IMAGES);
-  pref_groups_[PROXY_TABS].Put(FAVICON_TRACKING);
-
-  // TODO(zea): Put favicons in the bookmarks group as well once it handles
-  // those favicons.
-}
-
 // static
 void SyncPrefs::RegisterDataTypePreferredPref(
     user_prefs::PrefRegistrySyncable* registry,
@@ -467,13 +487,16 @@ void SyncPrefs::SetDataTypePreferred(ModelType type, bool is_preferred) {
   pref_service_->SetBoolean(pref_name, is_preferred);
 }
 
-ModelTypeSet SyncPrefs::ResolvePrefGroups(ModelTypeSet registered_types,
-                                          ModelTypeSet types) const {
+ModelTypeSet SyncPrefs::ResolvePrefGroups(
+    ModelTypeSet registered_types,
+    ModelTypeSet types,
+    bool user_events_separate_pref_group) const {
   ModelTypeSet types_with_groups = types;
-  for (PrefGroupsMap::const_iterator i = pref_groups_.begin();
-       i != pref_groups_.end(); ++i) {
-    if (types.Has(i->first))
-      types_with_groups.PutAll(i->second);
+  for (const auto& pref_group :
+       ComputePrefGroups(user_events_separate_pref_group)) {
+    if (types.Has(pref_group.first)) {
+      types_with_groups.PutAll(pref_group.second);
+    }
   }
   types_with_groups.RetainAll(registered_types);
   return types_with_groups;

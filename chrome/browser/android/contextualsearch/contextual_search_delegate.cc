@@ -377,10 +377,8 @@ bool ContextualSearchDelegate::CanSendPageURL(
   // History.
   browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  syncer::SyncPrefs sync_prefs(profile->GetPrefs());
   if (service == NULL || !service->CanSyncStart() ||
-      !sync_prefs.GetPreferredDataTypes(syncer::UserTypes())
-           .Has(syncer::PROXY_TABS) ||
+      !service->GetPreferredDataTypes().Has(syncer::PROXY_TABS) ||
       !service->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES)) {
     return false;
   }

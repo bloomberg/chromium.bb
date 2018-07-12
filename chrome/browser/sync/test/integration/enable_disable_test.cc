@@ -26,6 +26,8 @@ using syncer::UserSelectableTypes;
 
 namespace {
 
+const bool kUserEventsSeparatePrefGroup = false;
+
 // Some types show up in multiple groups. This means that there are at least two
 // user selectable groups that will cause these types to become enabled. This
 // affects our tests because we cannot assume that before enabling a multi type
@@ -38,8 +40,8 @@ ModelTypeSet MultiGroupTypes(const SyncPrefs& sync_prefs,
   ModelTypeSet multi;
   for (ModelTypeSet::Iterator si = selectable_types.First(); si.Good();
        si.Inc()) {
-    const ModelTypeSet grouped_types =
-        sync_prefs.ResolvePrefGroups(registered_types, ModelTypeSet(si.Get()));
+    const ModelTypeSet grouped_types = sync_prefs.ResolvePrefGroups(
+        registered_types, ModelTypeSet(si.Get()), kUserEventsSeparatePrefGroup);
     for (ModelTypeSet::Iterator gi = grouped_types.First(); gi.Good();
          gi.Inc()) {
       if (seen.Has(gi.Get())) {
@@ -108,7 +110,8 @@ class EnableDisableSingleClientTest : public SyncTest {
 
   ModelTypeSet ResolveGroup(ModelType type) {
     return Difference(
-        sync_prefs_->ResolvePrefGroups(registered_types_, ModelTypeSet(type)),
+        sync_prefs_->ResolvePrefGroups(registered_types_, ModelTypeSet(type),
+                                       kUserEventsSeparatePrefGroup),
         ProxyTypes());
   }
 
