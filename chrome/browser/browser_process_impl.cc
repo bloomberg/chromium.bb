@@ -178,7 +178,7 @@
 #include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
-#if !defined(OS_ANDROID)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #endif
 
@@ -334,12 +334,7 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 
 #if !defined(OS_ANDROID)
   KeepAliveRegistry::GetInstance()->RemoveObserver(this);
-
-  // TabLifecycleUnitSource must be deleted before TabManager because it has a
-  // raw pointer to a UsageClock owned by TabManager.
-  tab_lifecycle_unit_source_.reset();
-  tab_manager_.reset();
-#endif
+#endif  // !defined(OS_ANDROID)
 
   g_browser_process = NULL;
 }
@@ -877,19 +872,18 @@ gcm::GCMDriver* BrowserProcessImpl::gcm_driver() {
 
 resource_coordinator::TabManager* BrowserProcessImpl::GetTabManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#if defined(OS_ANDROID)
-  return nullptr;
-#else
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   if (!tab_manager_) {
     tab_manager_ = std::make_unique<resource_coordinator::TabManager>();
     tab_lifecycle_unit_source_ =
         std::make_unique<resource_coordinator::TabLifecycleUnitSource>(
-            tab_manager_->intervention_policy_database(),
-            tab_manager_->usage_clock());
+            tab_manager_->intervention_policy_database());
     tab_lifecycle_unit_source_->AddObserver(tab_manager_.get());
   }
   return tab_manager_.get();
-#endif  // defined(OS_ANDROID)
+#else
+  return nullptr;
+#endif
 }
 
 shell_integration::DefaultWebClientState

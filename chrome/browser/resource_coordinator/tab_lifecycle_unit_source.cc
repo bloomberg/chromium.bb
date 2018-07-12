@@ -48,11 +48,9 @@ class TabLifecycleUnitSource::TabLifecycleUnitHolder
 };
 
 TabLifecycleUnitSource::TabLifecycleUnitSource(
-    InterventionPolicyDatabase* intervention_policy_database,
-    UsageClock* usage_clock)
+    InterventionPolicyDatabase* intervention_policy_database)
     : browser_tab_strip_tracker_(this, nullptr, this),
-      intervention_policy_database_(intervention_policy_database),
-      usage_clock_(usage_clock) {
+      intervention_policy_database_(intervention_policy_database) {
   DCHECK(!instance_);
 
   // In unit tests, tabs might already exist when TabLifecycleUnitSource is
@@ -158,7 +156,7 @@ void TabLifecycleUnitSource::TabInsertedAt(TabStripModel* tab_strip_model,
     TabLifecycleUnitHolder::CreateForWebContents(contents);
     auto* holder = TabLifecycleUnitHolder::FromWebContents(contents);
     holder->set_lifecycle_unit(std::make_unique<TabLifecycleUnit>(
-        &tab_lifecycle_observers_, usage_clock_, contents, tab_strip_model));
+        &tab_lifecycle_observers_, contents, tab_strip_model));
     TabLifecycleUnit* lifecycle_unit = holder->lifecycle_unit();
     if (GetFocusedTabStripModel() == tab_strip_model && foreground)
       UpdateFocusedTabTo(lifecycle_unit);

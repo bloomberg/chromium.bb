@@ -11,9 +11,6 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
-#include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
-#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
@@ -25,7 +22,6 @@
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/test_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/time.h"
-#include "chrome/browser/resource_coordinator/usage_clock.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/test/base/testing_profile.h"
@@ -33,6 +29,9 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 
 namespace resource_coordinator {
 
@@ -82,9 +81,6 @@ class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
   void SetUp() override {
     ChromeTestHarnessWithLocalDB::SetUp();
 
-    metrics::DesktopSessionDurationTracker::Initialize();
-    usage_clock_ = std::make_unique<UsageClock>();
-
     // Force TabManager/TabLifecycleUnitSource creation.
     g_browser_process->GetTabManager();
 
@@ -119,8 +115,6 @@ class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
     while (!tab_strip_model_->empty())
       tab_strip_model_->DetachWebContentsAt(0);
     tab_strip_model_.reset();
-    usage_clock_.reset();
-    metrics::DesktopSessionDurationTracker::CleanupForTesting();
     ChromeTestHarnessWithLocalDB::TearDown();
   }
 
@@ -146,7 +140,6 @@ class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
   content::WebContents* web_contents_;  // Owned by tab_strip_model_.
   std::unique_ptr<TabStripModel> tab_strip_model_;
   base::SimpleTestTickClock test_clock_;
-  std::unique_ptr<UsageClock> usage_clock_;
 
  private:
   TestTabStripModelDelegate tab_strip_model_delegate_;
@@ -160,8 +153,8 @@ void TabLifecycleUnitTest::TestCannotDiscardBasedOnHeuristicUsage(
     void (SiteCharacteristicsDataWriter::*notify_feature_usage_method)()) {
   testing::GetLocalSiteCharacteristicsDataImplForWC(web_contents_)
       ->ClearObservationsAndInvalidateReadOperationForTesting();
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
   auto* observer = ResourceCoordinatorTabHelper::FromWebContents(web_contents_)
                        ->local_site_characteristics_wc_observer_for_testing();
   test_clock_.Advance(base::TimeDelta::FromSeconds(1));
@@ -200,21 +193,21 @@ void TabLifecycleUnitTest::TestCannotDiscardBasedOnHeuristicUsage(
 }
 
 TEST_F(TabLifecycleUnitTest, AsTabLifecycleUnitExternal) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
   EXPECT_EQ(&tab_lifecycle_unit,
             tab_lifecycle_unit.AsTabLifecycleUnitExternal());
 }
 
 TEST_F(TabLifecycleUnitTest, CanDiscardByDefault) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 }
 
 TEST_F(TabLifecycleUnitTest, SetFocused) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
   EXPECT_EQ(NowTicks(), tab_lifecycle_unit.GetLastFocusedTime());
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
@@ -233,8 +226,8 @@ TEST_F(TabLifecycleUnitTest, SetFocused) {
 }
 
 TEST_F(TabLifecycleUnitTest, AutoDiscardable) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
 
   EXPECT_TRUE(tab_lifecycle_unit.IsAutoDiscardable());
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
@@ -255,8 +248,8 @@ TEST_F(TabLifecycleUnitTest, AutoDiscardable) {
 }
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardCrashed) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
 
   web_contents_->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, 0);
   ExpectCanDiscardFalseTrivialAllReasons(&tab_lifecycle_unit);
@@ -264,8 +257,8 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardCrashed) {
 
 #if !defined(OS_CHROMEOS)
 TEST_F(TabLifecycleUnitTest, CannotDiscardActive) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
 
   tab_strip_model_->ActivateTabAt(0, false);
 
@@ -276,8 +269,8 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardActive) {
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardInvalidURL) {
   content::WebContents* web_contents = AddNewHiddenWebContentsToTabStrip();
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents,
+                                      tab_strip_model_.get());
   // TODO(sebmarchand): Fix this test, this doesn't really test that it's not
   // possible to discard an invalid URL, TestWebContents::GetLastCommittedURL()
   // doesn't return the URL set with "SetLastCommittedURL" if this one is
@@ -289,15 +282,15 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardInvalidURL) {
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardEmptyURL) {
   content::WebContents* web_contents = AddNewHiddenWebContentsToTabStrip();
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents,
+                                      tab_strip_model_.get());
 
   ExpectCanDiscardFalseTrivialAllReasons(&tab_lifecycle_unit);
 }
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardVideoCapture) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
 
   content::MediaStreamDevices video_devices(1);
   video_devices[0] =
@@ -320,8 +313,8 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardVideoCapture) {
 }
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardRecentlyAudible) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
 
   // Cannot discard when the "recently audible" bit is set.
   tab_lifecycle_unit.SetRecentlyAudible(true);
@@ -352,8 +345,8 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardRecentlyAudible) {
 }
 
 TEST_F(TabLifecycleUnitTest, CanDiscardNeverAudibleTab) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
 
   tab_lifecycle_unit.SetRecentlyAudible(false);
   // Since the tab was never audible, it should be possible to discard it,
@@ -362,8 +355,8 @@ TEST_F(TabLifecycleUnitTest, CanDiscardNeverAudibleTab) {
 }
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardPDF) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
 
   content::WebContentsTester::For(web_contents_)
       ->SetMainFrameMimeType("application/pdf");
@@ -409,8 +402,8 @@ TEST_F(TabLifecycleUnitTest, CannotProactivelyDiscardTabIfOriginOptedOut) {
       url::Origin::Create(web_contents_->GetLastCommittedURL()),
       {OriginInterventions::OPT_OUT, OriginInterventions::DEFAULT});
 
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
   // Proactive discarding shouldn't be possible, urgent and external discarding
   // should still be possible.
   {
@@ -444,8 +437,8 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeTabIfOriginOptedOut) {
       InterventionPolicyDatabase::OriginInterventionPolicies(
           OriginInterventions::DEFAULT, OriginInterventions::OPT_OUT));
 
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
                                                    LoadingState::LOADED);
   DecisionDetails decision_details;
@@ -463,8 +456,8 @@ TEST_F(TabLifecycleUnitTest, OptInTabsGetsDiscarded) {
       InterventionPolicyDatabase::OriginInterventionPolicies(
           OriginInterventions::OPT_IN, OriginInterventions::DEFAULT));
 
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
 
   // Mark the tab as recently audible, this should protect it from being
   // discarded.
@@ -485,8 +478,8 @@ TEST_F(TabLifecycleUnitTest, CanFreezeOptedInTabs) {
       url::Origin::Create(web_contents_->GetLastCommittedURL()),
       {OriginInterventions::DEFAULT, OriginInterventions::OPT_IN});
 
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
                                                    LoadingState::LOADED);
 
@@ -501,8 +494,8 @@ TEST_F(TabLifecycleUnitTest, CanFreezeOptedInTabs) {
 }
 
 TEST_F(TabLifecycleUnitTest, CannotFreezeAFrozenTab) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
                                                    LoadingState::LOADED);
   {
@@ -517,8 +510,8 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeAFrozenTab) {
 }
 
 TEST_F(TabLifecycleUnitTest, NotifiedOfWebContentsVisibilityChanges) {
-  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
-                                      web_contents_, tab_strip_model_.get());
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
 
   ::testing::StrictMock<MockLifecycleUnitObserver> observer;
   tab_lifecycle_unit.AddObserver(&observer);
