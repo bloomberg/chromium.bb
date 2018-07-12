@@ -26,7 +26,9 @@ class VR_EXPORT TexturedElement : public UiElement {
 
   void Initialize(SkiaSurfaceProvider* provider) final;
 
-  bool UpdateTexture() override;
+  bool HasDirtyTexture() const override;
+  void UpdateTexture() override;
+
   void Render(UiElementRenderer* renderer,
               const CameraModel& model) const final;
 

@@ -50,8 +50,10 @@ class VR_EXPORT UiScene {
   bool OnBeginFrame(const base::TimeTicks& current_time,
                     const gfx::Transform& head_pose);
 
-  // Returns true if any textures were redrawn.
-  bool UpdateTextures();
+  // Returns true if any visible textures need to be redrawn.
+  bool HasDirtyTextures() const;
+
+  void UpdateTextures();
 
   UiElement& root_element();
 

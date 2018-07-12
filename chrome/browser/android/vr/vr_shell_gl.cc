@@ -1547,7 +1547,7 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   // Update the render position of all UI elements (including desktop).
   TRACE_EVENT_BEGIN0("gpu", "SceneUpdate");
   base::TimeTicks scene_start = base::TimeTicks::Now();
-  bool scene_changed =
+  bool ui_updated =
       ui_->scene()->OnBeginFrame(current_time, render_info_.head_pose);
 
   // WebVR handles controller input in OnVsync.
@@ -1560,22 +1560,24 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
     ui_controller_update_time_.AddSample(controller_time);
   }
 
-  if (!graphics_delegate_->MakeSkiaContextCurrent()) {
-    ForceExitVr();
-    return;
-  }
-  bool textures_changed = ui_->scene()->UpdateTextures();
-  if (!graphics_delegate_->MakeMainContextCurrent()) {
-    ForceExitVr();
-    return;
+  if (ui_->SceneHasDirtyTextures()) {
+    if (!graphics_delegate_->MakeSkiaContextCurrent()) {
+      ForceExitVr();
+      return;
+    }
+    ui_->UpdateSceneTextures();
+    if (!graphics_delegate_->MakeMainContextCurrent()) {
+      ForceExitVr();
+      return;
+    }
+    ui_updated = true;
   }
 
   // TODO(mthiesse): Determine if a visible controller is actually drawn in the
   // viewport.
   bool controller_dirty = ui_->IsControllerVisible();
 
-  bool ui_updated =
-      scene_changed || textures_changed || content_frame_available_;
+  ui_updated |= content_frame_available_;
   ReportUiStatusForTesting(scene_start, ui_updated);
 
   // TODO(mthiesse): Refine this notion of when we need to redraw. If only a

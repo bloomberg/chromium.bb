@@ -214,7 +214,10 @@ bool UiTest::RunForSeconds(float seconds) {
 bool UiTest::OnBeginFrame() const {
   bool changed = false;
   changed |= scene_->OnBeginFrame(current_time_, kStartHeadPose);
-  changed |= scene_->UpdateTextures();
+  if (scene_->HasDirtyTextures()) {
+    scene_->UpdateTextures();
+    changed = true;
+  }
   return changed;
 }
 

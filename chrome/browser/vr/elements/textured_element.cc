@@ -37,21 +37,25 @@ bool TexturedElement::PrepareToDraw() {
   return true;
 }
 
-bool TexturedElement::UpdateTexture() {
-  if (!GetTexture()->dirty() || !IsVisible())
+bool TexturedElement::HasDirtyTexture() const {
+  DCHECK(IsVisible());  // We shouldn't be querying non visible elements.
+  if (!GetTexture()->dirty())
     return false;
-
   // Elements can be dirtied by user input.  If the texture draw depends on
   // measurement, defer until the next frame.
-  if (TextureDependsOnMeasurement() && !GetTexture()->measured())
-    return false;
+  return !TextureDependsOnMeasurement() || GetTexture()->measured();
+}
+
+void TexturedElement::UpdateTexture() {
+  if (!HasDirtyTexture())
+    return;
 
   // If GL isn't ready yet, or we're in unit tests, pretend we drew a texture to
   // accurate articulate that we would have.  When GL is initialized, all
   // textures are dirtied again.
   if (!initialized_) {
     GetTexture()->DrawEmptyTexture();
-    return true;
+    return;
   }
 
   if (!texture_size_.IsEmpty()) {
@@ -64,7 +68,6 @@ bool TexturedElement::UpdateTexture() {
     GetTexture()->DrawEmptyTexture();
     texture_handle_ = 0;
   }
-  return true;
 }
 
 void TexturedElement::SetForegroundColor(SkColor color) {

@@ -181,6 +181,10 @@ class VR_EXPORT Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void SetContentUsesQuadLayer(bool uses_quad_buffers);
   gfx::Transform GetContentWorldSpaceTransform();
 
+  // Scene wrappers.
+  bool SceneHasDirtyTextures() const;
+  void UpdateSceneTextures();
+
  private:
   void OnSpeechRecognitionEnded();
   void InitializeModel(const UiInitialState& ui_initial_state);
