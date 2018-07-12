@@ -9,15 +9,13 @@ class Profile;
 
 namespace content {
 struct RendererPreferences;
-class WebContents;
 }
 
 namespace renderer_preferences_util {
 
 // Copies system configuration preferences into |prefs|.
 void UpdateFromSystemSettings(content::RendererPreferences* prefs,
-                              Profile* profile,
-                              content::WebContents* web_contents);
+                              Profile* profile);
 
 }  // namespace renderer_preferences_util
 

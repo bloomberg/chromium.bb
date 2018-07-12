@@ -45,7 +45,7 @@ ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
   content::RendererPreferences* prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(
-      prefs, Profile::FromBrowserContext(browser_context), web_contents_);
+      prefs, Profile::FromBrowserContext(browser_context));
 
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
