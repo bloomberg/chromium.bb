@@ -105,32 +105,23 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
     focus_ring_ = views::FocusRing::Install(this);
   }
 
-  SetBorder(views::CreateEmptyBorder(gfx::Insets(GetTopOffset(), 0, 0, 0)));
+  // In newer material UI, the button is placed vertically exactly in the
+  // center of the tabstrip.  In older UI, the new tab button is placed at a
+  // fixed distance from the bottom of the tabstrip.
+  const int extra_vertical_space =
+      GetLayoutConstant(TAB_HEIGHT) -
+      GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) -
+      GetLayoutSize(NEW_TAB_BUTTON, is_incognito_).height();
+  constexpr int kNewTabButtonBottomOffset = 4;
+  const int top = MD::IsNewerMaterialUi()
+                      ? (extra_vertical_space / 2)
+                      : (extra_vertical_space - kNewTabButtonBottomOffset);
+  SetBorder(views::CreateEmptyBorder(gfx::Insets(top, 0, 0, 0)));
 }
 
 NewTabButton::~NewTabButton() {
   if (destroyed_)
     *destroyed_ = true;
-}
-
-// static
-int NewTabButton::GetTopOffset() {
-  // We're only interested in the button's height which doesn't change based
-  // on incognito or not, so we used `is_incognito=false`.
-  const int extra_vertical_space =
-      GetLayoutConstant(TAB_HEIGHT) -
-      GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) -
-      GetLayoutSize(NEW_TAB_BUTTON, false /* is_incognito */).height();
-
-  // In newer material UI, the button is placed vertically exactly in the
-  // center of the tabstrip.
-  if (MD::IsNewerMaterialUi())
-    return extra_vertical_space / 2;
-
-  // In the non-touch-optimized UI, the new tab button is placed at a fixed
-  // distance from the bottom of the tabstrip.
-  constexpr int kNewTabButtonBottomOffset = 4;
-  return extra_vertical_space - kNewTabButtonBottomOffset;
 }
 
 // static
