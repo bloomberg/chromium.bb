@@ -804,6 +804,12 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
   bool has_clip_path =
       ClipPathClipper::LocalClipPathBoundingBox(GetLayoutObject()).has_value();
   if (UpdateMaskLayer(has_mask || has_clip_path)) {
+    // TODO(crbug.com/856818): Remove this speculative fix.
+    // It is speculated that the clip path of an element become valid without
+    // invalidating its cache, resulting in the associated clip nodes not
+    // being created, and the newly created mask layer having bad layer state.
+    GetLayoutObject().InvalidateClipPathCache();
+
     graphics_layer_->SetMaskLayer(mask_layer_.get());
     layer_config_changed = true;
   }
