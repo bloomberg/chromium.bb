@@ -422,6 +422,14 @@ customBackgrounds.closeCustomizationDialog = function() {
   $(customBackgrounds.IDS.EDIT_BG).focus();
 };
 
+/* Hide custom background options based on the network state
+ * @param {bool} online The current state of the network
+ */
+customBackgrounds.networkStateChanged = function(online) {
+  $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).hidden = !online;
+  $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).hidden = !online;
+};
+
 /**
  * Initialize the custom backgrounds dialogs. Set the text and event handlers
  * for the various elements.
@@ -446,6 +454,18 @@ customBackgrounds.initCustomBackgrounds = function() {
       configData.translatedStrings.selectionDone;
   $(customBackgrounds.IDS.CANCEL).textContent =
       configData.translatedStrings.selectionCancel;
+
+  window.addEventListener('online', function(event) {
+    customBackgrounds.networkStateChanged(true);
+  });
+
+  window.addEventListener('offline', function(event) {
+    customBackgrounds.networkStateChanged(false);
+  });
+
+  if (!window.navigator.onLine) {
+    customBackgrounds.networkStateChanged(false);
+  }
 
   // TODO(kmilka): files should be validated and have errors shown as needed.
   // crbug.com/848981.
