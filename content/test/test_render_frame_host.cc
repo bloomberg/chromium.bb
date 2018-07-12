@@ -513,14 +513,6 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
 void TestRenderFrameHost::PrepareForCommitInternal(
     const GURL& redirect_url,
     const net::HostPortPair& socket_address) {
-  if (!IsBrowserSideNavigationEnabled()) {
-    // Non PlzNavigate
-    if (is_waiting_for_beforeunload_ack())
-      SendBeforeUnloadACK(true);
-    return;
-  }
-
-  // PlzNavigate
   NavigationRequest* request = frame_tree_node_->navigation_request();
   CHECK(request);
   bool have_to_make_network_request =
@@ -571,12 +563,11 @@ void TestRenderFrameHost::PrepareForCommitIfNecessary() {
   }
 }
 
-void TestRenderFrameHost::AbortNavigationCommit() {
-  if (navigation_request_) {
-    RenderFrameHostImpl::OnCrossDocumentCommitProcessed(
-        navigation_request_->navigation_handle()->GetNavigationId(),
-        blink::mojom::CommitResult::Aborted);
-  }
+void TestRenderFrameHost::SimulateCommitProcessed(int64_t navigation_id,
+                                                  bool was_successful) {
+  RenderFrameHostImpl::OnCrossDocumentCommitProcessed(
+      navigation_id, was_successful ? blink::mojom::CommitResult::Ok
+                                    : blink::mojom::CommitResult::Aborted);
 }
 
 WebBluetoothServiceImpl*

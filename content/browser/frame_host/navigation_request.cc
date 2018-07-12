@@ -1607,9 +1607,9 @@ void NavigationRequest::CommitErrorPage(
   }
 
   navigation_handle_->ReadyToCommitNavigation(render_frame_host, true);
-  render_frame_host->FailedNavigation(common_params_, request_params_,
-                                      has_stale_copy_in_cache_, net_error_,
-                                      error_page_content);
+  render_frame_host->FailedNavigation(
+      navigation_handle_->GetNavigationId(), common_params_, request_params_,
+      has_stale_copy_in_cache_, net_error_, error_page_content);
 }
 
 void NavigationRequest::CommitNavigation() {
@@ -1650,8 +1650,9 @@ void NavigationRequest::CommitNavigation() {
     associated_site_instance_id_.reset();
   }
   render_frame_host->CommitNavigation(
-      response_.get(), std::move(url_loader_client_endpoints_), common_params_,
-      request_params_, is_view_source_, std::move(subresource_loader_params_),
+      navigation_handle_->GetNavigationId(), response_.get(),
+      std::move(url_loader_client_endpoints_), common_params_, request_params_,
+      is_view_source_, std::move(subresource_loader_params_),
       std::move(subresource_overrides_), devtools_navigation_token_);
 
   // Give SpareRenderProcessHostManager a heads-up about the most recently used

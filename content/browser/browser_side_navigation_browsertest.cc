@@ -35,6 +35,7 @@
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/browser/shell_network_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/did_commit_provisional_load_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
@@ -46,6 +47,96 @@
 #include "url/gurl.h"
 
 namespace content {
+
+namespace {
+
+class InterceptAndCancelDidCommitProvisionalLoad
+    : public DidCommitProvisionalLoadInterceptor {
+ public:
+  explicit InterceptAndCancelDidCommitProvisionalLoad(WebContents* web_contents)
+      : DidCommitProvisionalLoadInterceptor(web_contents) {}
+  ~InterceptAndCancelDidCommitProvisionalLoad() override {}
+
+  void Wait(size_t number_of_messages) {
+    while (intercepted_messages_.size() < number_of_messages) {
+      loop_.reset(new base::RunLoop);
+      loop_->Run();
+    }
+  }
+
+  const std::vector<::FrameHostMsg_DidCommitProvisionalLoad_Params>&
+  intercepted_messages() const {
+    return intercepted_messages_;
+  }
+
+  std::vector<::service_manager::mojom::InterfaceProviderRequest>&
+  intercepted_requests() {
+    return intercepted_requests_;
+  }
+
+ protected:
+  bool WillDispatchDidCommitProvisionalLoad(
+      RenderFrameHost* render_frame_host,
+      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+      service_manager::mojom::InterfaceProviderRequest*
+          interface_provider_request) override {
+    intercepted_messages_.push_back(*params);
+    intercepted_requests_.push_back(std::move(*interface_provider_request));
+    if (loop_)
+      loop_->Quit();
+    // Do not send the message to the RenderFrameHostImpl.
+    return false;
+  }
+
+  std::vector<::FrameHostMsg_DidCommitProvisionalLoad_Params>
+      intercepted_messages_;
+  std::vector<::service_manager::mojom::InterfaceProviderRequest>
+      intercepted_requests_;
+  std::unique_ptr<base::RunLoop> loop_;
+};
+
+// Record every WebContentsObserver's event related to navigation. The goal is
+// to check these events happen and happen in the expected right order.
+class NavigationRecorder : public WebContentsObserver {
+ public:
+  NavigationRecorder(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  // WebContentsObserver implementation.
+  void DidStartNavigation(NavigationHandle* navigation_handle) override {
+    records_.push_back("start " + navigation_handle->GetURL().path());
+    WakeUp();
+  }
+  void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override {
+    records_.push_back("ready-to-commit " + navigation_handle->GetURL().path());
+    WakeUp();
+  }
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    records_.push_back("did-commit " + navigation_handle->GetURL().path());
+    WakeUp();
+  }
+
+  void WaitForEvents(size_t numbers_of_events) {
+    while (records_.size() < numbers_of_events) {
+      loop_.reset(new base::RunLoop);
+      loop_->Run();
+      loop_.reset();
+    }
+  }
+
+  const std::vector<std::string> records() { return records_; }
+
+ private:
+  void WakeUp() {
+    if (loop_)
+      loop_->Quit();
+  }
+
+  std::unique_ptr<base::RunLoop> loop_;
+  std::vector<std::string> records_;
+};
+
+}  // namespace
 
 // Test with BrowserSideNavigation enabled (aka PlzNavigate).
 // If you don't need a custom embedded test server, please use the next class
@@ -925,6 +1016,88 @@ IN_PROC_BROWSER_TEST_F(NavigationDownloadBrowserTest,
   main_response.Done();
 
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+}
+
+// This test reproduces the following race condition:
+// 1) A first navigation starts, the headers are received, the navigation
+//    reaches ready-to-commit. It is sent to the renderer to be committed.
+// 2) In the meantime, a second navigation reaches ready-to-commit in the
+//    browser.
+// 3) Before the renderer gets notified of the new navigation, the
+//    first navigation is committed.
+// 4) The browser gets notified of the commit of the first navigation. This
+//    should not destroy the NavigationRequest corresponding to the second
+//    navigation.
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
+                       RaceNewNavigationCommitWhileOldOneFinishesLoading) {
+  // Start the test with an initial document.
+  GURL main_url(embedded_test_server()->GetURL("/simple_page.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* render_frame_host = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+
+  NavigationRecorder recorder(shell()->web_contents());
+  // Note: These two pages contain an image that will never load. The goal is to
+  // prevent RenderFrameHostImpl::DidStopLoading() to be called since it will
+  // cancel any pending navigation.
+  GURL page_1(embedded_test_server()->GetURL("/infinite_load_1.html"));
+  GURL page_2(embedded_test_server()->GetURL("/infinite_load_2.html"));
+  // Intercept and cancel any FrameMsgHost_DidCommitProvisionalLoad events.
+  InterceptAndCancelDidCommitProvisionalLoad interceptor(
+      shell()->web_contents());
+
+  // 1) Navigate to page_1.
+  shell()->LoadURL(page_1);
+
+  // 2) The browser receives the response's headers. The navigation commits in
+  //    the browser.
+  recorder.WaitForEvents(2);
+  EXPECT_EQ(2u, recorder.records().size());
+  EXPECT_STREQ("start /infinite_load_1.html", recorder.records()[0].c_str());
+  EXPECT_STREQ("ready-to-commit /infinite_load_1.html",
+               recorder.records()[1].c_str());
+
+  // 3) Wait for the renderer to receive the response's body, but do not notify
+  //    the browser of it right now. It is delayed in 6).
+  interceptor.Wait(1);
+  EXPECT_EQ(1u, interceptor.intercepted_messages().size());
+
+  // 4) In the meantime, the browser starts a navigation to page_2.
+  shell()->LoadURL(page_2);
+
+  // 5) The response's headers are received, the navigation reaches
+  // ready-to-commit in the browser. This should not delete the ongoing
+  // NavigationRequest.
+  recorder.WaitForEvents(4);
+  EXPECT_EQ(4u, recorder.records().size());
+  EXPECT_STREQ("start /infinite_load_2.html", recorder.records()[2].c_str());
+  EXPECT_STREQ("ready-to-commit /infinite_load_2.html",
+               recorder.records()[3].c_str());
+
+  // 6) The browser receives the first DidCommitProvisionalLoad message. This
+  //    should not delete the second navigation. This is the end of the first
+  //    navigation.
+  render_frame_host->DidCommitProvisionalLoadForTesting(
+      std::make_unique<::FrameHostMsg_DidCommitProvisionalLoad_Params>(
+          interceptor.intercepted_messages()[0]),
+      std::move(interceptor.intercepted_requests()[0]));
+  recorder.WaitForEvents(5);
+  EXPECT_EQ(5u, recorder.records().size());
+  EXPECT_STREQ("did-commit /infinite_load_1.html",
+               recorder.records()[4].c_str());
+
+  // 7) Wait for the renderer to receive the second response's body. This is the
+  //    end of the second navigation.
+  interceptor.Wait(2);
+  EXPECT_EQ(2u, interceptor.intercepted_messages().size());
+  render_frame_host->DidCommitProvisionalLoadForTesting(
+      std::make_unique<::FrameHostMsg_DidCommitProvisionalLoad_Params>(
+          interceptor.intercepted_messages()[1]),
+      std::move(interceptor.intercepted_requests()[1]));
+  recorder.WaitForEvents(6);
+  EXPECT_EQ(6u, recorder.records().size());
+  EXPECT_STREQ("did-commit /infinite_load_2.html",
+               recorder.records()[5].c_str());
 }
 
 }  // namespace content

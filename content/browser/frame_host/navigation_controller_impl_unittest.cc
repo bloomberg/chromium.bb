@@ -5330,7 +5330,14 @@ TEST_F(NavigationControllerTest, MainFrameNavigationUIData) {
   controller.LoadURLWithParams(params);
   int entry_id = controller.GetPendingEntry()->GetUniqueID();
 
+  NavigationRequest* request =
+      main_test_rfh()->frame_tree_node()->navigation_request();
+  CHECK(request);
+
   main_test_rfh()->PrepareForCommit();
+  main_test_rfh()->SimulateCommitProcessed(
+      request->navigation_handle()->GetNavigationId(),
+      true /* was_successful */);
   main_test_rfh()->SendNavigate(entry_id, true, url1);
 
   EXPECT_TRUE(observer.is_main_frame());

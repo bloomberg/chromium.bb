@@ -442,6 +442,10 @@ TEST_F(WebContentsImplTest, DirectNavigationToViewSourceWebUI) {
   load_params.is_renderer_initiated = false;
   controller().LoadURLWithParams(load_params);
 
+  NavigationRequest* request =
+      main_test_rfh()->frame_tree_node()->navigation_request();
+  CHECK(request);
+
   int entry_id = cont.GetPendingEntry()->GetUniqueID();
   // Did we get the expected message?
   EXPECT_TRUE(process()->sink().GetFirstMessageMatching(
@@ -455,6 +459,9 @@ TEST_F(WebContentsImplTest, DirectNavigationToViewSourceWebUI) {
       FrameHostMsg_DidStartProvisionalLoad(1, kRewrittenURL,
                                            std::vector<GURL>(),
                                            base::TimeTicks::Now()));
+  main_test_rfh()->SimulateCommitProcessed(
+      request->navigation_handle()->GetNavigationId(),
+      true /* was_successful */);
   main_test_rfh()->SendNavigateWithParams(&params,
                                           false /* was_within_same_document */);
 

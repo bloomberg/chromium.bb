@@ -172,9 +172,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // interaction with the IO thread up until the response is ready to commit.
   void PrepareForCommitIfNecessary();
 
-  // Used to simulate the abort of a navigation waiting to be committed in this
-  // RenderFrameHost.
-  void AbortNavigationCommit();
+  // Used to simulate the commit of a navigation having been processed in the
+  // renderer.
+  void SimulateCommitProcessed(int64_t navigation_id, bool was_successful);
 
   // Send a message with the sandbox flags and feature policy
   void SendFramePolicy(blink::WebSandboxFlags sandbox_flags,

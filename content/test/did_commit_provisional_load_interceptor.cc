@@ -40,10 +40,11 @@ class DidCommitProvisionalLoadInterceptor::FrameAgent
       std::unique_ptr<::FrameHostMsg_DidCommitProvisionalLoad_Params> params,
       ::service_manager::mojom::InterfaceProviderRequest
           interface_provider_request) override {
-    interceptor_->WillDispatchDidCommitProvisionalLoad(
-        rfhi_, params.get(), &interface_provider_request);
-    GetForwardingInterface()->DidCommitProvisionalLoad(
-        std::move(params), std::move(interface_provider_request));
+    if (interceptor_->WillDispatchDidCommitProvisionalLoad(
+            rfhi_, params.get(), &interface_provider_request)) {
+      GetForwardingInterface()->DidCommitProvisionalLoad(
+          std::move(params), std::move(interface_provider_request));
+    }
   }
 
  private:
