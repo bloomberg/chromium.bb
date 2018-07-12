@@ -59,6 +59,7 @@
 #include "net/url_request/url_request_filter.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 #if !BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -244,6 +245,9 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
                        NavigationDataProcessed) {
   // The network service code path doesn't go through ResourceDispatcherHost.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+  // Servicified service worker doesn't set NavigationData.
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     return;
 
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->base_url());
