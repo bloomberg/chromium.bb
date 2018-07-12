@@ -58,22 +58,30 @@ std::vector<std::string> GetEffectivePatternsAsStrings(
       extension.permissions_data()->active_permissions().effective_hosts());
 }
 
+std::vector<std::string> GetScriptablePatternsAsStrings(
+    const Extension& extension) {
+  return GetPatternsAsStrings(
+      extension.permissions_data()->active_permissions().scriptable_hosts());
+}
+
+std::vector<std::string> GetExplicitPatternsAsStrings(
+    const Extension& extension) {
+  return GetPatternsAsStrings(
+      extension.permissions_data()->active_permissions().explicit_hosts());
+}
+
 scoped_refptr<const Extension> CreateExtensionWithPermissions(
-    const std::set<URLPattern>& scriptable_hosts,
-    const std::set<URLPattern>& explicit_hosts,
+    const URLPatternSet& scriptable_hosts,
+    const URLPatternSet& explicit_hosts,
     Manifest::Location location,
     const std::string& name) {
   ListBuilder scriptable_host_list;
-  for (std::set<URLPattern>::const_iterator pattern = scriptable_hosts.begin();
-       pattern != scriptable_hosts.end(); ++pattern) {
-    scriptable_host_list.Append(pattern->GetAsString());
-  }
+  for (const auto& pattern : scriptable_hosts)
+    scriptable_host_list.Append(pattern.GetAsString());
 
   ListBuilder explicit_host_list;
-  for (std::set<URLPattern>::const_iterator pattern = explicit_hosts.begin();
-       pattern != explicit_hosts.end(); ++pattern) {
-    explicit_host_list.Append(pattern->GetAsString());
-  }
+  for (const auto& pattern : explicit_hosts)
+    explicit_host_list.Append(pattern.GetAsString());
 
   DictionaryBuilder script;
   script.Set("matches", scriptable_host_list.Build())
@@ -92,31 +100,6 @@ scoped_refptr<const Extension> CreateExtensionWithPermissions(
                        .Build())
       .SetID(crx_file::id_util::GenerateId(name))
       .Build();
-}
-
-// TODO(devlin): Implement this in terms of GetPatternsAsStrings().
-testing::AssertionResult SetsAreEqual(const std::set<URLPattern>& set1,
-                                      const std::set<URLPattern>& set2) {
-  // Take the (set1 - set2) U (set2 - set1). This is then the set of all
-  // elements which are in either set1 or set2, but not both.
-  // If the sets are equal, this is none.
-  std::set<URLPattern> difference = base::STLSetUnion<std::set<URLPattern>>(
-      base::STLSetDifference<std::set<URLPattern>>(set1, set2),
-      base::STLSetDifference<std::set<URLPattern>>(set2, set1));
-
-  std::string error;
-  for (std::set<URLPattern>::const_iterator iter = difference.begin();
-       iter != difference.end(); ++iter) {
-    if (iter->GetAsString() == "chrome://favicon/*")
-      continue;  // Grr... This is auto-added for extensions with <all_urls>
-    error = base::StringPrintf(
-        "%s\n%s contains %s and the other does not.", error.c_str(),
-        (set1.count(*iter) ? "Set1" : "Set2"), iter->GetAsString().c_str());
-  }
-
-  if (!error.empty())
-    return testing::AssertionFailure() << error;
-  return testing::AssertionSuccess();
 }
 
 class RuntimeHostPermissionsEnabledScope {
@@ -153,11 +136,14 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantAndWithholdHostPermissions) {
   for (const auto& test_case : test_cases) {
     std::string test_case_name = base::JoinString(test_case, ",");
     SCOPED_TRACE(test_case_name);
-    std::set<URLPattern> patterns;
+    URLPatternSet patterns;
     for (const auto& pattern : test_case)
-      patterns.insert(URLPattern(URLPattern::SCHEME_ALL, pattern));
+      patterns.AddPattern(URLPattern(URLPattern::SCHEME_ALL, pattern));
     scoped_refptr<const Extension> extension = CreateExtensionWithPermissions(
         patterns, patterns, Manifest::INTERNAL, test_case_name);
+
+    const std::vector<std::string> patterns_strings =
+        GetPatternsAsStrings(patterns);
 
     PermissionsUpdater(profile()).InitializePermissions(extension.get());
 
@@ -167,62 +153,46 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantAndWithholdHostPermissions) {
     ASSERT_TRUE(modifier.CanAffectExtension());
 
     // By default, all permissions are granted.
-    EXPECT_TRUE(SetsAreEqual(
-        permissions_data->active_permissions().scriptable_hosts().patterns(),
-        patterns));
-    EXPECT_TRUE(SetsAreEqual(
-        permissions_data->active_permissions().explicit_hosts().patterns(),
-        patterns));
-    EXPECT_TRUE(permissions_data->withheld_permissions()
-                    .scriptable_hosts()
-                    .patterns()
-                    .empty());
-    EXPECT_TRUE(permissions_data->withheld_permissions()
-                    .explicit_hosts()
-                    .patterns()
-                    .empty());
+    EXPECT_THAT(GetScriptablePatternsAsStrings(*extension),
+                testing::UnorderedElementsAreArray(patterns_strings));
+    EXPECT_THAT(GetExplicitPatternsAsStrings(*extension),
+                testing::UnorderedElementsAreArray(patterns_strings));
+    EXPECT_TRUE(
+        permissions_data->withheld_permissions().scriptable_hosts().is_empty());
+    EXPECT_TRUE(
+        permissions_data->withheld_permissions().explicit_hosts().is_empty());
 
     // Then, withhold host permissions.
     modifier.SetWithholdHostPermissions(true);
 
-    EXPECT_TRUE(permissions_data->active_permissions()
-                    .scriptable_hosts()
-                    .patterns()
-                    .empty());
-    // Note: can't use explicit_hosts().empty() here, since chrome://favicon/
-    // will remain will still be present in explicit_hosts() (it's not really a
-    // host permission and isn't withheld). SetsAreEqual() ignores
-    // chrome://favicon in its checks.
-    EXPECT_TRUE(SetsAreEqual(
-        permissions_data->active_permissions().explicit_hosts().patterns(),
-        std::set<URLPattern>()));
+    // Note: We don't use URLPatternSet::is_empty() here, since
+    // chrome://favicon/ can still be present in the set (it's not really a
+    // host permission and isn't withheld). GetPatternsAsStrings() ignores
+    // chrome://favicon.
+    EXPECT_THAT(GetScriptablePatternsAsStrings(*extension), testing::IsEmpty());
+    EXPECT_THAT(GetExplicitPatternsAsStrings(*extension), testing::IsEmpty());
 
-    EXPECT_TRUE(SetsAreEqual(
-        permissions_data->withheld_permissions().scriptable_hosts().patterns(),
-        patterns));
-    EXPECT_TRUE(SetsAreEqual(
-        permissions_data->withheld_permissions().explicit_hosts().patterns(),
-        patterns));
+    EXPECT_THAT(
+        GetPatternsAsStrings(
+            permissions_data->withheld_permissions().scriptable_hosts()),
+        testing::UnorderedElementsAreArray(patterns_strings));
+    EXPECT_THAT(GetPatternsAsStrings(
+                    permissions_data->withheld_permissions().explicit_hosts()),
+                testing::UnorderedElementsAreArray(patterns_strings));
 
     // Finally, re-grant the withheld permissions.
     modifier.SetWithholdHostPermissions(false);
 
     // We should be back to our initial state - all requested permissions are
     // granted.
-    EXPECT_TRUE(SetsAreEqual(
-        permissions_data->active_permissions().scriptable_hosts().patterns(),
-        patterns));
-    EXPECT_TRUE(SetsAreEqual(
-        permissions_data->active_permissions().explicit_hosts().patterns(),
-        patterns));
-    EXPECT_TRUE(permissions_data->withheld_permissions()
-                    .scriptable_hosts()
-                    .patterns()
-                    .empty());
-    EXPECT_TRUE(permissions_data->withheld_permissions()
-                    .explicit_hosts()
-                    .patterns()
-                    .empty());
+    EXPECT_THAT(GetScriptablePatternsAsStrings(*extension),
+                testing::UnorderedElementsAreArray(patterns_strings));
+    EXPECT_THAT(GetExplicitPatternsAsStrings(*extension),
+                testing::UnorderedElementsAreArray(patterns_strings));
+    EXPECT_TRUE(
+        permissions_data->withheld_permissions().scriptable_hosts().is_empty());
+    EXPECT_TRUE(
+        permissions_data->withheld_permissions().explicit_hosts().is_empty());
   }
 }
 
@@ -232,54 +202,49 @@ TEST_F(ScriptingPermissionsModifierUnitTest, SwitchBehavior) {
   // Permissions can only be withheld with the appropriate feature turned on.
   auto enabled_scope = std::make_unique<RuntimeHostPermissionsEnabledScope>();
 
-  URLPattern all_hosts(URLPattern::SCHEME_ALL, "<all_urls>");
-  std::set<URLPattern> all_host_patterns;
-  all_host_patterns.insert(all_hosts);
+  URLPatternSet all_hosts_patterns(
+      {URLPattern(URLPattern::SCHEME_ALL, URLPattern::kAllUrlsPattern)});
 
   scoped_refptr<const Extension> extension = CreateExtensionWithPermissions(
-      all_host_patterns, all_host_patterns, Manifest::INTERNAL, "a");
+      all_hosts_patterns, all_hosts_patterns, Manifest::INTERNAL, "a");
   PermissionsUpdater updater(profile());
   updater.InitializePermissions(extension.get());
   const PermissionsData* permissions_data = extension->permissions_data();
 
   // By default, the extension should have all its permissions.
-  EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions().scriptable_hosts().patterns(),
-      all_host_patterns));
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension),
+              testing::UnorderedElementsAre(URLPattern::kAllUrlsPattern));
   EXPECT_TRUE(
-      permissions_data->withheld_permissions().scriptable_hosts().is_empty());
+      permissions_data->withheld_permissions().effective_hosts().is_empty());
   ScriptingPermissionsModifier modifier(profile(), extension);
   EXPECT_FALSE(modifier.HasWithheldHostPermissions());
 
   // Revoke access.
   modifier.SetWithholdHostPermissions(true);
   EXPECT_TRUE(modifier.HasWithheldHostPermissions());
-  EXPECT_TRUE(
-      permissions_data->active_permissions().scriptable_hosts().is_empty());
-  EXPECT_TRUE(SetsAreEqual(
-      permissions_data->withheld_permissions().scriptable_hosts().patterns(),
-      all_host_patterns));
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
+  EXPECT_THAT(GetPatternsAsStrings(
+                  permissions_data->withheld_permissions().effective_hosts()),
+              testing::UnorderedElementsAre(URLPattern::kAllUrlsPattern));
 
   // Remove the switch. The extension should have permission again.
   enabled_scope.reset();
   updater.InitializePermissions(extension.get());
   EXPECT_FALSE(modifier.CanAffectExtension());
-  EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions().scriptable_hosts().patterns(),
-      all_host_patterns));
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension),
+              testing::UnorderedElementsAre(URLPattern::kAllUrlsPattern));
   EXPECT_TRUE(
-      permissions_data->withheld_permissions().scriptable_hosts().is_empty());
+      permissions_data->withheld_permissions().effective_hosts().is_empty());
 
   // Reapply the switch; the extension should go back to having permissions
   // withheld.
   enabled_scope = std::make_unique<RuntimeHostPermissionsEnabledScope>();
   updater.InitializePermissions(extension.get());
   EXPECT_TRUE(modifier.HasWithheldHostPermissions());
-  EXPECT_TRUE(
-      permissions_data->active_permissions().scriptable_hosts().is_empty());
-  EXPECT_TRUE(SetsAreEqual(
-      permissions_data->withheld_permissions().scriptable_hosts().patterns(),
-      all_host_patterns));
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
+  EXPECT_THAT(GetPatternsAsStrings(
+                  permissions_data->withheld_permissions().effective_hosts()),
+              testing::UnorderedElementsAre(URLPattern::kAllUrlsPattern));
 }
 
 TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
@@ -288,12 +253,11 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
   // Permissions can only be withheld with the appropriate feature turned on.
   RuntimeHostPermissionsEnabledScope enabled_scope;
 
-  URLPattern all_hosts(URLPattern::SCHEME_ALL, "<all_urls>");
-  std::set<URLPattern> all_host_patterns;
-  all_host_patterns.insert(all_hosts);
+  URLPatternSet all_hosts_patterns(
+      {URLPattern(URLPattern::SCHEME_ALL, URLPattern::kAllUrlsPattern)});
 
   scoped_refptr<const Extension> extension = CreateExtensionWithPermissions(
-      all_host_patterns, all_host_patterns, Manifest::INTERNAL, "extension");
+      all_hosts_patterns, all_hosts_patterns, Manifest::INTERNAL, "extension");
   PermissionsUpdater(profile()).InitializePermissions(extension.get());
 
   ScriptingPermissionsModifier modifier(profile(), extension);
