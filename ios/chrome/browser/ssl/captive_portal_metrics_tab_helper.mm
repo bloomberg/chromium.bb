@@ -39,19 +39,20 @@ CaptivePortalMetricsTabHelper::CaptivePortalMetricsTabHelper(
 CaptivePortalMetricsTabHelper::~CaptivePortalMetricsTabHelper() = default;
 
 void CaptivePortalMetricsTabHelper::TimerTriggered() {
-  TestForCaptivePortal(base::Bind(&HandleTimeoutCaptivePortalDetectionResult));
+  TestForCaptivePortal(
+      base::BindOnce(&HandleTimeoutCaptivePortalDetectionResult));
 }
 
 void CaptivePortalMetricsTabHelper::TestForCaptivePortal(
-    const captive_portal::CaptivePortalDetector::DetectionCallback& callback) {
+    captive_portal::CaptivePortalDetector::DetectionCallback callback) {
   CaptivePortalDetectorTabHelper* tab_helper =
       CaptivePortalDetectorTabHelper::FromWebState(web_state_);
   // TODO(crbug.com/760873): replace test with DCHECK when this method is only
   // called on WebStates attached to tabs.
   if (tab_helper) {
     tab_helper->detector()->DetectCaptivePortal(
-        GURL(captive_portal::CaptivePortalDetector::kDefaultURL), callback,
-        NO_TRAFFIC_ANNOTATION_YET);
+        GURL(captive_portal::CaptivePortalDetector::kDefaultURL),
+        std::move(callback), NO_TRAFFIC_ANNOTATION_YET);
   }
 }
 

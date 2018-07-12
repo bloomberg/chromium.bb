@@ -33,7 +33,7 @@ class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector {
     GURL landing_url;
   };
 
-  typedef base::Callback<void(const Results& results)> DetectionCallback;
+  typedef base::OnceCallback<void(const Results& results)> DetectionCallback;
 
   // The test URL.  When connected to the Internet, it should return a
   // blank page with a 204 status code.  When behind a captive portal,
@@ -50,7 +50,7 @@ class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector {
   // |callback|.
   void DetectCaptivePortal(
       const GURL& url,
-      const DetectionCallback& callback,
+      DetectionCallback callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Cancels captive portal check.
