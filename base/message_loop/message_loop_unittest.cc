@@ -2238,6 +2238,13 @@ TEST_P(MessageLoopTest, SequenceLocalStorageDifferentMessageLoops) {
   EXPECT_NE(slot.Get(), 11);
 }
 
+INSTANTIATE_TEST_CASE_P(
+    ,
+    MessageLoopTest,
+    ::testing::Values(TaskSchedulerAvailability::NO_TASK_SCHEDULER,
+                      TaskSchedulerAvailability::WITH_TASK_SCHEDULER),
+    MessageLoopTest::ParamInfoToString);
+
 namespace {
 
 class PostTaskOnDestroy {
@@ -2267,7 +2274,7 @@ class PostTaskOnDestroy {
 //  1) Not getting stuck clearing its task queue.
 //  2) DCHECKing when clearing pending tasks many times still doesn't yield an
 //     empty queue.
-TEST_P(MessageLoopTest, ExpectDeathWithStubbornPostTaskOnDestroy) {
+TEST(MessageLoopDestructionTest, ExpectDeathWithStubbornPostTaskOnDestroy) {
   std::unique_ptr<MessageLoop> loop = std::make_unique<MessageLoop>();
 
   EXPECT_DCHECK_DEATH({
@@ -2276,18 +2283,11 @@ TEST_P(MessageLoopTest, ExpectDeathWithStubbornPostTaskOnDestroy) {
   });
 }
 
-TEST_P(MessageLoopTest, DestroysFineWithReasonablePostTaskOnDestroy) {
+TEST(MessageLoopDestructionTest, DestroysFineWithReasonablePostTaskOnDestroy) {
   std::unique_ptr<MessageLoop> loop = std::make_unique<MessageLoop>();
 
   PostTaskOnDestroy::PostTaskWithPostingDestructor(10);
   loop.reset();
 }
-
-INSTANTIATE_TEST_CASE_P(
-    ,
-    MessageLoopTest,
-    ::testing::Values(TaskSchedulerAvailability::NO_TASK_SCHEDULER,
-                      TaskSchedulerAvailability::WITH_TASK_SCHEDULER),
-    MessageLoopTest::ParamInfoToString);
 
 }  // namespace base
