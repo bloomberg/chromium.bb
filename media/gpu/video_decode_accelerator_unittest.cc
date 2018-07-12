@@ -258,8 +258,6 @@ class GLRenderingVDAClient
   // will start delaying the call to ReusePictureBuffer() for kReuseDelay.
   // |decode_calls_per_second| is the number of VDA::Decode calls per second.
   // If |decode_calls_per_second| > 0, |num_in_flight_decodes| must be 1.
-  // |render_as_thumbnails| indicates if the decoded picture will be rendered
-  // as thumbnails at the end of tests.
   // |num_frames| is the number of frames that must be verified to be decoded
   // during the test.
   struct Config {
@@ -277,7 +275,6 @@ class GLRenderingVDAClient
     bool fake_decoder = false;
     size_t delay_reuse_after_frame_num = std::numeric_limits<size_t>::max();
     size_t decode_calls_per_second = 0;
-    bool render_as_thumbnails = false;
     size_t num_frames = 0;
   };
 
@@ -603,13 +600,8 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
       base::Bind(&GLRenderingVDAClient::ReturnPicture, AsWeakPtr(),
                  picture.picture_buffer_id()));
   ASSERT_TRUE(pending_textures_.insert(*texture_it).second);
-
-  if (config_.render_as_thumbnails) {
-    rendering_helper_->RenderThumbnail(video_frame->texture_target(),
-                                       video_frame->texture_id());
-  } else {
-    rendering_helper_->QueueVideoFrame(config_.window_id, video_frame);
-  }
+  rendering_helper_->ConsumeVideoFrame(config_.window_id,
+                                       std::move(video_frame));
 }
 
 void GLRenderingVDAClient::ReturnPicture(int32_t picture_buffer_id) {
@@ -1182,7 +1174,6 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
     config.profile = video_file->profile;
     config.fake_decoder = g_fake_decoder;
     config.delay_reuse_after_frame_num = delay_reuse_after_frame_num;
-    config.render_as_thumbnails = render_as_thumbnails;
     config.num_frames = video_file->num_frames;
 
     clients_[index] = std::make_unique<GLRenderingVDAClient>(
