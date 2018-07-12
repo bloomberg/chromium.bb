@@ -342,7 +342,7 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
                 "url('" + theme_info.custom_background_url.spec() + "')");
     builder.Set("imageTiling", std::string(kCSSBackgroundRepeatNo));
     builder.Set("imageHorizontalAlignment",
-                std::string(kCSSBackgroundPositionLeft));
+                std::string(kCSSBackgroundPositionCenter));
     builder.Set("imageVerticalAlignment",
                 std::string(kCSSBackgroundPositionTopCover));
   }
