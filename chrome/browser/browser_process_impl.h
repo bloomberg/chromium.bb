@@ -382,7 +382,7 @@ class BrowserProcessImpl : public BrowserProcess,
 
   std::unique_ptr<ChromeDeviceClient> device_client_;
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if !defined(OS_ANDROID)
   // Any change to this #ifdef must be reflected as well in
   // chrome/browser/resource_coordinator/tab_manager_browsertest.cc
   std::unique_ptr<resource_coordinator::TabManager> tab_manager_;

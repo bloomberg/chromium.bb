@@ -26,6 +26,7 @@ class WebContents;
 
 namespace resource_coordinator {
 
+class UsageClock;
 class TabLifecycleObserver;
 
 // Time during which a tab cannot be discarded after having played audio.
@@ -46,9 +47,11 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // |observers| is a list of observers to notify when the discarded state or
   // the auto-discardable state of this tab changes. It can be modified outside
   // of this TabLifecycleUnit, but only on the sequence on which this
-  // constructor is invoked. |web_contents| and |tab_strip_model| are the
-  // WebContents and TabStripModel associated with this tab.
+  // constructor is invoked. |usage_clock| is a clock that measures Chrome usage
+  // time. |web_contents| and |tab_strip_model| are the WebContents and
+  // TabStripModel associated with this tab.
   TabLifecycleUnit(base::ObserverList<TabLifecycleObserver>* observers,
+                   UsageClock* usage_clock,
                    content::WebContents* web_contents,
                    TabStripModel* tab_strip_model);
   ~TabLifecycleUnit() override;

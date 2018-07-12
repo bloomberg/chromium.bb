@@ -955,7 +955,7 @@ void TabManager::PerformStateTransitions() {
     DecisionDetails freeze_details;
     if (lifecycle_unit->CanFreeze(&freeze_details)) {
       const base::TimeDelta time_not_visible =
-          now - lifecycle_unit->GetLastActiveTime();
+          now - lifecycle_unit->GetWallTimeWhenHidden();
       const base::TimeDelta time_until_freeze =
           proactive_freeze_discard_params_.freeze_timeout - time_not_visible;
 
@@ -978,8 +978,8 @@ void TabManager::PerformStateTransitions() {
     if (lifecycle_unit->CanDiscard(DiscardReason::kProactive,
                                    &discard_details)) {
       if (!oldest_discardable_lifecycle_unit ||
-          lifecycle_unit->GetLastActiveTime() <
-              oldest_discardable_lifecycle_unit->GetLastActiveTime()) {
+          lifecycle_unit->GetWallTimeWhenHidden() <
+              oldest_discardable_lifecycle_unit->GetWallTimeWhenHidden()) {
         oldest_discardable_lifecycle_unit = lifecycle_unit;
         oldest_discardable_lifecycle_unit_decision_details =
             std::move(discard_details);
@@ -998,7 +998,7 @@ void TabManager::PerformStateTransitions() {
   // GetTimeInBackgroundBeforeProactiveDiscard().
   if (ShouldProactivelyDiscardTabs() && oldest_discardable_lifecycle_unit) {
     const base::TimeDelta time_not_visible =
-        now - oldest_discardable_lifecycle_unit->GetLastActiveTime();
+        now - oldest_discardable_lifecycle_unit->GetWallTimeWhenHidden();
     const base::TimeDelta time_until_discard =
         GetTimeInBackgroundBeforeProactiveDiscard() - time_not_visible;
 
