@@ -1795,7 +1795,8 @@
               "device_type": "bullhead",
               "os": "Android"
             }
-          ]
+          ],
+          "hard_timeout": 960
         },
         "test": "content_unittests"
       },

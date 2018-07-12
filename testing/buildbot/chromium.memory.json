@@ -636,6 +636,7 @@
               "os": "Android"
             }
           ],
+          "hard_timeout": 960,
           "output_links": [
             {
               "link": [
@@ -812,6 +813,7 @@
               "os": "Android"
             }
           ],
+          "hard_timeout": 960,
           "output_links": [
             {
               "link": [
@@ -821,7 +823,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 3
         },
         "test": "content_shell_test_apk"
       },
@@ -1721,6 +1724,7 @@
               "os": "Android"
             }
           ],
+          "hard_timeout": 300,
           "output_links": [
             {
               "link": [
