@@ -1903,5 +1903,11 @@
         'args',
       ],
     },
+    'modifications': {
+      'Oreo Phone Tester': {
+        # TODO(crbug.com/863089): Enable this once it's passing.
+        'experiment_percentage': 100,
+      },
+    },
   },
 }
