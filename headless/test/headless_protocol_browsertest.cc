@@ -50,12 +50,6 @@ class HeadlessProtocolBrowserTest
     browser_devtools_client_->SetRawProtocolListener(this);
   }
 
-  std::string EncodeQuery(const std::string& query) {
-    url::RawCanonOutputT<char> buffer;
-    url::EncodeURIComponent(query.data(), query.size(), &buffer);
-    return std::string(buffer.data(), buffer.length());
-  }
-
   void RunDevTooledTest() override {
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath src_dir;
@@ -70,10 +64,13 @@ class HeadlessProtocolBrowserTest
       FinishTest();
       return;
     }
-    GURL test_url = embedded_test_server()->GetURL("/protocol/" + script_name_);
+    GURL test_url = embedded_test_server()->GetURL("harness.test",
+                                                   "/protocol/" + script_name_);
+    GURL target_url = embedded_test_server()->GetURL(
+        "127.0.0.1", "/protocol/" + script_name_);
     GURL page_url = embedded_test_server()->GetURL(
         "harness.test", "/protocol/inspector-protocol-test.html?test=" +
-                            test_url.spec() + "&script=" + EncodeQuery(script));
+                            test_url.spec() + "&target=" + target_url.spec());
     devtools_client_->GetPage()->Navigate(page_url.spec());
   }
 
