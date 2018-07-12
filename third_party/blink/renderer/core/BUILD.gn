@@ -305,6 +305,7 @@ jumbo_source_set("testing") {
     "testing/type_conversions.h",
     "testing/union_types_test.cc",
     "testing/union_types_test.h",
+    "testing/use_mock_scrollbar_settings.h",
     "testing/v8/web_core_test_support.cc",
     "testing/v8/web_core_test_support.h",
     "testing/worker_internals.cc",
