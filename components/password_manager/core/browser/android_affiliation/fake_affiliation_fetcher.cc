@@ -3,17 +3,17 @@
 // found in the LICENSE file.
 
 #include "components/password_manager/core/browser/android_affiliation/fake_affiliation_fetcher.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #include <utility>
 
 namespace password_manager {
 
 password_manager::FakeAffiliationFetcher::FakeAffiliationFetcher(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::vector<FacetURI>& facet_ids,
     AffiliationFetcherDelegate* delegate)
-    : AffiliationFetcher(request_context_getter, facet_ids, delegate) {
-}
+    : AffiliationFetcher(std::move(url_loader_factory), facet_ids, delegate) {}
 
 password_manager::FakeAffiliationFetcher::~FakeAffiliationFetcher() {
 }
@@ -25,10 +25,6 @@ void password_manager::FakeAffiliationFetcher::SimulateSuccess(
 
 void password_manager::FakeAffiliationFetcher::SimulateFailure() {
   delegate()->OnFetchFailed();
-}
-
-void password_manager::FakeAffiliationFetcher::StartRequest() {
-  // Fake. Does nothing.
 }
 
 password_manager::ScopedFakeAffiliationFetcherFactory::
@@ -54,11 +50,11 @@ FakeAffiliationFetcher* ScopedFakeAffiliationFetcherFactory::PeekNextFetcher() {
 }
 
 AffiliationFetcher* ScopedFakeAffiliationFetcherFactory::CreateInstance(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::vector<FacetURI>& facet_ids,
     AffiliationFetcherDelegate* delegate) {
-  FakeAffiliationFetcher* fetcher =
-      new FakeAffiliationFetcher(request_context_getter, facet_ids, delegate);
+  FakeAffiliationFetcher* fetcher = new FakeAffiliationFetcher(
+      std::move(url_loader_factory), facet_ids, delegate);
   pending_fetchers_.push(fetcher);
   return fetcher;
 }

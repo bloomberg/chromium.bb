@@ -9,10 +9,15 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/null_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_api.pb.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "net/base/url_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -55,25 +60,31 @@ class MockAffiliationFetcherDelegate
 class AffiliationFetcherTest : public testing::Test {
  public:
   AffiliationFetcherTest()
-      : request_context_getter_(new net::TestURLRequestContextGetter(
-            base::MakeRefCounted<base::NullTaskRunner>())) {}
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {
+    test_url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(
+        [&](const network::ResourceRequest& request) {
+          intercepted_body_ = network::GetUploadData(request);
+          intercepted_headers_ = request.headers;
+        }));
+  }
 
   ~AffiliationFetcherTest() override {}
 
  protected:
   void VerifyRequestPayload(const std::vector<FacetURI>& expected_facet_uris) {
-    net::TestURLFetcher* url_fetcher =
-        test_url_fetcher_factory_.GetFetcherByID(0);
-    ASSERT_NE(nullptr, url_fetcher);
-
     affiliation_pb::LookupAffiliationRequest request;
-    ASSERT_TRUE(request.ParseFromString(url_fetcher->upload_data()));
+    ASSERT_TRUE(request.ParseFromString(intercepted_body_));
 
     std::vector<FacetURI> actual_uris;
     for (int i = 0; i < request.facet_size(); ++i)
       actual_uris.push_back(FacetURI::FromCanonicalSpec(request.facet(i)));
 
-    EXPECT_EQ("application/x-protobuf", url_fetcher->upload_content_type());
+    std::string content_type;
+    intercepted_headers_.GetHeader(net::HttpRequestHeaders::kContentType,
+                                   &content_type);
+    EXPECT_EQ("application/x-protobuf", content_type);
     EXPECT_THAT(actual_uris,
                 testing::UnorderedElementsAreArray(expected_facet_uris));
 
@@ -82,41 +93,37 @@ class AffiliationFetcherTest : public testing::Test {
     EXPECT_TRUE(request.mask().branding_info());
   }
 
-  void ServiceURLRequest(const std::string& response) {
-    net::TestURLFetcher* url_fetcher =
-        test_url_fetcher_factory_.GetFetcherByID(0);
-    ASSERT_NE(nullptr, url_fetcher);
+  GURL interception_url() { return AffiliationFetcher::BuildQueryURL(); }
 
-    url_fetcher->set_response_code(200);
-    url_fetcher->SetResponseString(response);
-    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+  void SetupSuccessfulResponse(const std::string& response) {
+    test_url_loader_factory_.AddResponse(interception_url().spec(), response);
   }
 
-  void SimulateServerError() {
-    net::TestURLFetcher* url_fetcher =
-        test_url_fetcher_factory_.GetFetcherByID(0);
-    ASSERT_NE(nullptr, url_fetcher);
-
-    url_fetcher->set_response_code(500);
-    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+  void SetupServerErrorResponse() {
+    test_url_loader_factory_.AddResponse(interception_url().spec(), "",
+                                         net::HTTP_INTERNAL_SERVER_ERROR);
   }
 
-  void SimulateNetworkError() {
-    net::TestURLFetcher* url_fetcher =
-        test_url_fetcher_factory_.GetFetcherByID(0);
-    ASSERT_NE(nullptr, url_fetcher);
-    url_fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                                  net::ERR_NETWORK_CHANGED));
-    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+  void SetupNetworkErrorResponse() {
+    network::ResourceResponseHead head =
+        network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR);
+    head.mime_type = "application/protobuf";
+    network::URLLoaderCompletionStatus status(net::ERR_NETWORK_CHANGED);
+    test_url_loader_factory_.AddResponse(interception_url(), head, "", status);
   }
 
-  net::TestURLRequestContextGetter* request_context_getter() {
-    return request_context_getter_.get();
+  void WaitForResponse() { scoped_task_environment_.RunUntilIdle(); }
+
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory() {
+    return test_shared_loader_factory_;
   }
 
  private:
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
-  net::TestURLFetcherFactory test_url_fetcher_factory_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+  std::string intercepted_body_;
+  net::HttpRequestHeaders intercepted_headers_;
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationFetcherTest);
 };
@@ -140,14 +147,15 @@ TEST_F(AffiliationFetcherTest, BasicReqestAndResponse) {
   requested_uris.push_back(
       FacetURI::FromCanonicalSpec(kNotExampleAndroidFacetURI));
 
+  SetupSuccessfulResponse(test_response.SerializeAsString());
   MockAffiliationFetcherDelegate mock_delegate;
-  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
-      request_context_getter(), requested_uris, &mock_delegate));
-  fetcher->StartRequest();
-
   EXPECT_CALL(mock_delegate, OnFetchSucceededProxy());
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+      test_shared_loader_factory(), requested_uris, &mock_delegate));
+  fetcher->StartRequest();
+  WaitForResponse();
+
   ASSERT_NO_FATAL_FAILURE(VerifyRequestPayload(requested_uris));
-  ASSERT_NO_FATAL_FAILURE(ServiceURLRequest(test_response.SerializeAsString()));
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_delegate));
 
   ASSERT_EQ(2u, mock_delegate.result().size());
@@ -178,14 +186,15 @@ TEST_F(AffiliationFetcherTest, AndroidBrandingInfoIsReturnedIfPresent) {
   std::vector<FacetURI> requested_uris;
   requested_uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
+  SetupSuccessfulResponse(test_response.SerializeAsString());
   MockAffiliationFetcherDelegate mock_delegate;
-  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
-      request_context_getter(), requested_uris, &mock_delegate));
-  fetcher->StartRequest();
-
   EXPECT_CALL(mock_delegate, OnFetchSucceededProxy());
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+      test_shared_loader_factory(), requested_uris, &mock_delegate));
+  fetcher->StartRequest();
+  WaitForResponse();
+
   ASSERT_NO_FATAL_FAILURE(VerifyRequestPayload(requested_uris));
-  ASSERT_NO_FATAL_FAILURE(ServiceURLRequest(test_response.SerializeAsString()));
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_delegate));
 
   ASSERT_EQ(1u, mock_delegate.result().size());
@@ -208,15 +217,15 @@ TEST_F(AffiliationFetcherTest, MissingEquivalenceClassesAreCreated) {
   std::vector<FacetURI> requested_uris;
   requested_uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
+  SetupSuccessfulResponse(empty_test_response.SerializeAsString());
   MockAffiliationFetcherDelegate mock_delegate;
-  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
-      request_context_getter(), requested_uris, &mock_delegate));
-  fetcher->StartRequest();
-
   EXPECT_CALL(mock_delegate, OnFetchSucceededProxy());
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+      test_shared_loader_factory(), requested_uris, &mock_delegate));
+  fetcher->StartRequest();
+  WaitForResponse();
+
   ASSERT_NO_FATAL_FAILURE(VerifyRequestPayload(requested_uris));
-  ASSERT_NO_FATAL_FAILURE(
-      ServiceURLRequest(empty_test_response.SerializeAsString()));
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_delegate));
 
   ASSERT_EQ(1u, mock_delegate.result().size());
@@ -239,13 +248,14 @@ TEST_F(AffiliationFetcherTest, DuplicateEquivalenceClassesAreIgnored) {
   std::vector<FacetURI> requested_uris;
   requested_uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
+  SetupSuccessfulResponse(test_response.SerializeAsString());
   MockAffiliationFetcherDelegate mock_delegate;
-  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
-      request_context_getter(), requested_uris, &mock_delegate));
-  fetcher->StartRequest();
-
   EXPECT_CALL(mock_delegate, OnFetchSucceededProxy());
-  ASSERT_NO_FATAL_FAILURE(ServiceURLRequest(test_response.SerializeAsString()));
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+      test_shared_loader_factory(), requested_uris, &mock_delegate));
+  fetcher->StartRequest();
+  WaitForResponse();
+
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_delegate));
 
   ASSERT_EQ(1u, mock_delegate.result().size());
@@ -266,13 +276,14 @@ TEST_F(AffiliationFetcherTest, EmptyEquivalenceClassesAreIgnored) {
   std::vector<FacetURI> requested_uris;
   requested_uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
+  SetupSuccessfulResponse(test_response.SerializeAsString());
   MockAffiliationFetcherDelegate mock_delegate;
-  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
-      request_context_getter(), requested_uris, &mock_delegate));
-  fetcher->StartRequest();
-
   EXPECT_CALL(mock_delegate, OnFetchSucceededProxy());
-  ASSERT_NO_FATAL_FAILURE(ServiceURLRequest(test_response.SerializeAsString()));
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+      test_shared_loader_factory(), requested_uris, &mock_delegate));
+  fetcher->StartRequest();
+  WaitForResponse();
+
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_delegate));
 
   ASSERT_EQ(1u, mock_delegate.result().size());
@@ -297,13 +308,14 @@ TEST_F(AffiliationFetcherTest, UnrecognizedFacetURIsAreIgnored) {
   std::vector<FacetURI> requested_uris;
   requested_uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
+  SetupSuccessfulResponse(test_response.SerializeAsString());
   MockAffiliationFetcherDelegate mock_delegate;
-  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
-      request_context_getter(), requested_uris, &mock_delegate));
-  fetcher->StartRequest();
-
   EXPECT_CALL(mock_delegate, OnFetchSucceededProxy());
-  ASSERT_NO_FATAL_FAILURE(ServiceURLRequest(test_response.SerializeAsString()));
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+      test_shared_loader_factory(), requested_uris, &mock_delegate));
+  fetcher->StartRequest();
+  WaitForResponse();
+
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_delegate));
 
   ASSERT_EQ(1u, mock_delegate.result().size());
@@ -320,13 +332,13 @@ TEST_F(AffiliationFetcherTest, FailureBecauseResponseIsNotAProtobuf) {
   std::vector<FacetURI> uris;
   uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
+  SetupSuccessfulResponse(kMalformedResponse);
   MockAffiliationFetcherDelegate mock_delegate;
-  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
-      request_context_getter(), uris, &mock_delegate));
-  fetcher->StartRequest();
-
   EXPECT_CALL(mock_delegate, OnMalformedResponse());
-  ASSERT_NO_FATAL_FAILURE(ServiceURLRequest(kMalformedResponse));
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+      test_shared_loader_factory(), uris, &mock_delegate));
+  fetcher->StartRequest();
+  WaitForResponse();
 }
 
 // Partially overlapping equivalence classes violate the invariant that
@@ -344,39 +356,39 @@ TEST_F(AffiliationFetcherTest,
   std::vector<FacetURI> uris;
   uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
+  SetupSuccessfulResponse(test_response.SerializeAsString());
   MockAffiliationFetcherDelegate mock_delegate;
-  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
-      request_context_getter(), uris, &mock_delegate));
-  fetcher->StartRequest();
-
   EXPECT_CALL(mock_delegate, OnMalformedResponse());
-  ASSERT_NO_FATAL_FAILURE(ServiceURLRequest(test_response.SerializeAsString()));
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+      test_shared_loader_factory(), uris, &mock_delegate));
+  fetcher->StartRequest();
+  WaitForResponse();
 }
 
 TEST_F(AffiliationFetcherTest, FailOnServerError) {
   std::vector<FacetURI> uris;
   uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
+  SetupServerErrorResponse();
   MockAffiliationFetcherDelegate mock_delegate;
-  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
-      request_context_getter(), uris, &mock_delegate));
-  fetcher->StartRequest();
-
   EXPECT_CALL(mock_delegate, OnFetchFailed());
-  ASSERT_NO_FATAL_FAILURE(SimulateServerError());
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+      test_shared_loader_factory(), uris, &mock_delegate));
+  fetcher->StartRequest();
+  WaitForResponse();
 }
 
 TEST_F(AffiliationFetcherTest, FailOnNetworkError) {
   std::vector<FacetURI> uris;
   uris.push_back(FacetURI::FromCanonicalSpec(kExampleWebFacet1URI));
 
+  SetupNetworkErrorResponse();
   MockAffiliationFetcherDelegate mock_delegate;
-  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
-      request_context_getter(), uris, &mock_delegate));
-  fetcher->StartRequest();
-
   EXPECT_CALL(mock_delegate, OnFetchFailed());
-  ASSERT_NO_FATAL_FAILURE(SimulateNetworkError());
+  std::unique_ptr<AffiliationFetcher> fetcher(AffiliationFetcher::Create(
+      test_shared_loader_factory(), uris, &mock_delegate));
+  fetcher->StartRequest();
+  WaitForResponse();
 }
 
 }  // namespace password_manager

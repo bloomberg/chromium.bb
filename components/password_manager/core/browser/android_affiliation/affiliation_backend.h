@@ -32,9 +32,9 @@ class TickClock;
 class Time;
 }  // namespace base
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactoryInfo;
+}  // namespace network
 
 namespace password_manager {
 
@@ -57,12 +57,11 @@ class AffiliationBackend : public FacetManagerHost,
  public:
   using StrategyOnCacheMiss = AffiliationService::StrategyOnCacheMiss;
 
-  // Constructs an instance that will use |request_context_getter| for all
+  // Constructs an instance that will use |url_loader_factory| for all
   // network requests, use |task_runner| for asynchronous tasks, and will rely
   // on |time_source| and |time_tick_source| to tell the current time/ticks.
   // Construction is very cheap, expensive steps are deferred to Initialize().
   AffiliationBackend(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       base::Clock* time_source,
       const base::TickClock* time_tick_source);
@@ -70,7 +69,9 @@ class AffiliationBackend : public FacetManagerHost,
 
   // Performs the I/O-heavy part of initialization. The database used to cache
   // affiliation information locally will be opened/created at |db_path|.
-  void Initialize(const base::FilePath& db_path);
+  void Initialize(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+                      url_loader_factory_info,
+                  const base::FilePath& db_path);
 
   // Implementations for methods of the same name in AffiliationService. They
   // are not documented here again. See affiliation_service.h for details:
@@ -140,7 +141,7 @@ class AffiliationBackend : public FacetManagerHost,
   // sequence.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::Clock* clock_;
   const base::TickClock* tick_clock_;

@@ -19,10 +19,11 @@ namespace password_manager {
 // responses to users of AffiliationFetcher.
 class FakeAffiliationFetcher : public AffiliationFetcher {
  public:
-  FakeAffiliationFetcher(net::URLRequestContextGetter* request_context_getter,
-                         const std::vector<FacetURI>& facet_ids,
-                         AffiliationFetcherDelegate* delegate);
-  ~FakeAffiliationFetcher() override;
+  FakeAffiliationFetcher(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const std::vector<FacetURI>& facet_ids,
+      AffiliationFetcherDelegate* delegate);
+  ~FakeAffiliationFetcher();
 
   // Simulates successful completion of the request with |fake_result|. Note
   // that the consumer may choose to destroy |this| from within this call.
@@ -34,8 +35,6 @@ class FakeAffiliationFetcher : public AffiliationFetcher {
   void SimulateFailure();
 
  private:
-  void StartRequest() override;
-
   DISALLOW_COPY_AND_ASSIGN(FakeAffiliationFetcher);
 };
 
@@ -66,7 +65,7 @@ class ScopedFakeAffiliationFetcherFactory
 
   // AffiliationFetcherFactory:
   AffiliationFetcher* CreateInstance(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::vector<FacetURI>& facet_ids,
       AffiliationFetcherDelegate* delegate) override;
 
