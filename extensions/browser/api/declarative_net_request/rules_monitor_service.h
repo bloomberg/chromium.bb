@@ -41,8 +41,9 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
 
   bool HasAnyRegisteredRulesets() const;
 
-  // Returns true if the given |extension| has a registered declarative ruleset.
-  bool HasRegisteredRuleset(const Extension* extension) const;
+  // Returns true if there is registered declarative ruleset corresponding to
+  // the given |extension_id|.
+  bool HasRegisteredRuleset(const ExtensionId& extension_id) const;
 
  private:
   struct LoadRulesetInfo;

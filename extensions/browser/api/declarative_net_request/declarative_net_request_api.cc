@@ -26,13 +26,13 @@ namespace {
 // Returns true if the given |extension| has a registered ruleset. If it
 // doesn't, returns false and populates |error|.
 bool HasRegisteredRuleset(content::BrowserContext* context,
-                          const Extension* extension,
+                          const ExtensionId& extension_id,
                           std::string* error) {
   const auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
       declarative_net_request::RulesMonitorService>::Get(context);
   DCHECK(rules_monitor_service);
 
-  if (rules_monitor_service->HasRegisteredRuleset(extension))
+  if (rules_monitor_service->HasRegisteredRuleset(extension_id))
     return true;
 
   *error = "The extension must have a ruleset in order to call this function.";
@@ -119,7 +119,7 @@ void DeclarativeNetRequestUpdateAllowedPagesFunction::OnAllowedPagesUpdated() {
 bool DeclarativeNetRequestUpdateAllowedPagesFunction::PreRunValidation(
     std::string* error) {
   return UIThreadExtensionFunction::PreRunValidation(error) &&
-         HasRegisteredRuleset(browser_context(), extension(), error);
+         HasRegisteredRuleset(browser_context(), extension_id(), error);
 }
 
 DeclarativeNetRequestAddAllowedPagesFunction::
@@ -160,7 +160,7 @@ DeclarativeNetRequestGetAllowedPagesFunction::
 bool DeclarativeNetRequestGetAllowedPagesFunction::PreRunValidation(
     std::string* error) {
   return UIThreadExtensionFunction::PreRunValidation(error) &&
-         HasRegisteredRuleset(browser_context(), extension(), error);
+         HasRegisteredRuleset(browser_context(), extension_id(), error);
 }
 
 ExtensionFunction::ResponseAction

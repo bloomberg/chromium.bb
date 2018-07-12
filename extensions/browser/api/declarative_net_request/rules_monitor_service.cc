@@ -70,9 +70,9 @@ bool RulesMonitorService::HasAnyRegisteredRulesets() const {
 }
 
 bool RulesMonitorService::HasRegisteredRuleset(
-    const Extension* extension) const {
-  return extension && extensions_with_rulesets_.find(extension->id()) !=
-                          extensions_with_rulesets_.end();
+    const ExtensionId& extension_id) const {
+  return extensions_with_rulesets_.find(extension_id) !=
+         extensions_with_rulesets_.end();
 }
 
 // Helper to pass information related to the ruleset being loaded.
