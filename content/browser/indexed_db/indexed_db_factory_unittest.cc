@@ -212,7 +212,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreNoSweeping) {
             EXPECT_FALSE(store_ptr->close_timer()->IsRunning());
             factory->TestReleaseBackingStore(store_ptr, false);
             EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
-            store_ptr->close_timer()->user_task().Run();
+            store_ptr->close_timer()->FireNow();
 
             // Backing store should be totally closed.
             EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
@@ -228,7 +228,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreNoSweeping) {
 
             // Sweep should NOT be occurring.
             EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
-            store_ptr->close_timer()->user_task().Run();
+            store_ptr->close_timer()->FireNow();
 
             // Backing store should be totally closed.
             EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
@@ -271,7 +271,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreRunPreCloseTasks) {
             EXPECT_FALSE(store_ptr->close_timer()->IsRunning());
             factory->TestReleaseBackingStore(store_ptr, false);
             EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
-            store_ptr->close_timer()->user_task().Run();
+            store_ptr->close_timer()->FireNow();
 
             // Backing store should be totally closed.
             EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
@@ -287,8 +287,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreRunPreCloseTasks) {
 
             // Sweep should be occuring.
             EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
-            store_ptr->close_timer()->user_task().Run();
-            store_ptr->close_timer()->AbandonAndStop();
+            store_ptr->close_timer()->FireNow();
             ASSERT_NE(nullptr, store_ptr->pre_close_task_queue());
             EXPECT_TRUE(store_ptr->pre_close_task_queue()->started());
 
@@ -312,8 +311,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreRunPreCloseTasks) {
 
             // Sweep should be occuring.
             EXPECT_TRUE(store_ptr->close_timer()->IsRunning());
-            store_ptr->close_timer()->user_task().Run();
-            store_ptr->close_timer()->AbandonAndStop();
+            store_ptr->close_timer()->FireNow();
             ASSERT_NE(nullptr, store_ptr->pre_close_task_queue());
             EXPECT_TRUE(store_ptr->pre_close_task_queue()->started());
 

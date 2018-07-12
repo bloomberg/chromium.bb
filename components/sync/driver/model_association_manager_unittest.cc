@@ -221,7 +221,7 @@ TEST_F(SyncModelAssociationManagerTest, SlowTypeAsFailedType) {
   GetController(controllers_, APPS)->FinishStart(DataTypeController::OK);
 
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(BOOKMARKS, _));
-  model_association_manager.GetTimerForTesting()->user_task().Run();
+  model_association_manager.GetTimerForTesting()->FireNow();
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING,
             GetController(controllers_, BOOKMARKS)->state());
@@ -354,7 +354,7 @@ TEST_F(SyncModelAssociationManagerTest, AbortDuringAssociation) {
             DataTypeController::ASSOCIATING);
 
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(BOOKMARKS, _));
-  model_association_manager.GetTimerForTesting()->user_task().Run();
+  model_association_manager.GetTimerForTesting()->FireNow();
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING,
             GetController(controllers_, BOOKMARKS)->state());
