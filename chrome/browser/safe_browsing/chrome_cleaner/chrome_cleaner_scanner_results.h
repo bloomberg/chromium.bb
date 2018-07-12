@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/profiles/profile.h"
 
 namespace safe_browsing {
 
@@ -30,6 +31,8 @@ class ChromeCleanerScannerResults {
   ChromeCleanerScannerResults& operator=(
       const ChromeCleanerScannerResults& other);
 
+  void FetchExtensionNames(Profile* profile);
+
   const FileCollection& files_to_delete() const { return files_to_delete_; }
   const RegistryKeyCollection& registry_keys() const { return registry_keys_; }
   const ExtensionCollection& extension_names() const {
@@ -39,6 +42,7 @@ class ChromeCleanerScannerResults {
  private:
   FileCollection files_to_delete_;
   RegistryKeyCollection registry_keys_;
+  ExtensionCollection extension_ids_;
   ExtensionCollection extension_names_;
 };
 
