@@ -24,7 +24,7 @@ void XRPresentationContext::SetCanvasGetContextResult(
 CanvasRenderingContext* XRPresentationContext::Factory::Create(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attrs) {
-  if (!OriginTrials::webXREnabled(host->GetTopExecutionContext()))
+  if (!OriginTrials::WebXREnabled(host->GetTopExecutionContext()))
     return nullptr;
   return new XRPresentationContext(host, attrs);
 }

@@ -420,7 +420,7 @@ def origin_trial_feature_name(definition_or_member):
 def origin_trial_function_call(feature_name, execution_context=None):
     """Returns a function call to determine if an origin trial is enabled."""
     return 'OriginTrials::{feature_name}Enabled({context})'.format(
-        feature_name=uncapitalize(feature_name),
+        feature_name=feature_name,
         context=execution_context if execution_context else "execution_context")
 
 

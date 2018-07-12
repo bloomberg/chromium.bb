@@ -180,7 +180,7 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
   // Unknown type.
   if (context_type == CanvasRenderingContext::kContextTypeCount ||
       (context_type == CanvasRenderingContext::kContextXRPresent &&
-       !OriginTrials::webXREnabled(execution_context)))
+       !OriginTrials::WebXREnabled(execution_context)))
     return nullptr;
 
   CanvasRenderingContextFactory* factory =

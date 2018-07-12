@@ -5010,7 +5010,7 @@ Event* Document::createEvent(ScriptState* script_state,
       // createEvent for TouchEvent should throw DOM exception if touch event
       // feature detection is not enabled. See crbug.com/392584#c22
       if (DeprecatedEqualIgnoringCase(event_type, "TouchEvent") &&
-          !OriginTrials::touchEventFeatureDetectionEnabled(execution_context))
+          !OriginTrials::TouchEventFeatureDetectionEnabled(execution_context))
         break;
       return event;
     }

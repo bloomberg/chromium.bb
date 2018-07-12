@@ -945,7 +945,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     }
   }
 
-  if (OriginTrials::featureNameEnabled(executionContext)) {
+  if (OriginTrials::FeatureNameEnabled(executionContext)) {
     v8::Local<v8::Value> originTrialMemberValue;
     if (!v8Object->Get(context, keys[27].Get(isolate)).ToLocal(&originTrialMemberValue)) {
       exceptionState.RethrowV8Exception(block.Exception());
@@ -961,7 +961,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     }
   }
 
-  if (OriginTrials::featureName1Enabled(executionContext)) {
+  if (OriginTrials::FeatureName1Enabled(executionContext)) {
     v8::Local<v8::Value> originTrialSecondMemberValue;
     if (!v8Object->Get(context, keys[28].Get(isolate)).ToLocal(&originTrialSecondMemberValue)) {
       exceptionState.RethrowV8Exception(block.Exception());
@@ -1654,7 +1654,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     }
   }
 
-  if (OriginTrials::featureNameEnabled(executionContext)) {
+  if (OriginTrials::FeatureNameEnabled(executionContext)) {
     v8::Local<v8::Value> originTrialMemberValue;
     bool originTrialMemberHasValueOrDefault = false;
     if (impl.hasOriginTrialMember()) {
@@ -1667,7 +1667,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     }
   }
 
-  if (OriginTrials::featureName1Enabled(executionContext)) {
+  if (OriginTrials::FeatureName1Enabled(executionContext)) {
     v8::Local<v8::Value> originTrialSecondMemberValue;
     bool originTrialSecondMemberHasValueOrDefault = false;
     if (impl.hasOriginTrialSecondMember()) {

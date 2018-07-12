@@ -20,7 +20,7 @@ from idl_reader import IdlReader
 from utilities import (create_component_info_provider, write_file,
                        idl_filename_to_component)
 from v8_utilities import (binding_header_filename, v8_class_name,
-                          v8_class_name_or_partial, uncapitalize)
+                          v8_class_name_or_partial)
 
 # Make sure extension is .py, not .pyc or .pyo, so doesn't depend on caching
 MODULE_PYNAME = os.path.splitext(os.path.basename(__file__))[0] + '.py'
@@ -39,7 +39,7 @@ def get_install_functions(interfaces, feature_names):
         be installed on those interfaces.
     """
     return [
-        {'condition': 'OriginTrials::%sEnabled' % uncapitalize(feature_name),
+        {'condition': 'OriginTrials::%sEnabled' % feature_name,
          'name': feature_name,
          'install_method': 'install%s' % feature_name,
          'interface_is_global': interface_info.is_global,
