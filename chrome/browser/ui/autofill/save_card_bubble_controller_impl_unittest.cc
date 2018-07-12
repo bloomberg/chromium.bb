@@ -475,8 +475,9 @@ TEST_F(SaveCardBubbleControllerImplTest,
   ShowLocalBubble();
 
   base::HistogramTester histogram_tester;
-  // The bubble should still stick around for up to kSurviveNavigationSeconds
-  // (5) seconds regardless of navigation.
+  // The bubble should still stick around for up to
+  // kCardBubbleSurviveNavigationTime (5 seconds) regardless of
+  // navigation.
   controller()->set_elapsed(base::TimeDelta::FromSeconds(3));
 
   controller()->SimulateNavigation();
@@ -500,8 +501,9 @@ TEST_F(SaveCardBubbleControllerImplTest,
   CloseAndReshowBubble();
 
   base::HistogramTester histogram_tester;
-  // The bubble should still stick around for up to kSurviveNavigationSeconds
-  // (5) seconds regardless of navigation.
+  // The bubble should still stick around for up to
+  // kCardBubbleSurviveNavigationTime (5 seconds) regardless of
+  // navigation.
   controller()->set_elapsed(base::TimeDelta::FromSeconds(3));
 
   controller()->SimulateNavigation();
@@ -524,8 +526,8 @@ TEST_F(SaveCardBubbleControllerImplTest,
   ShowUploadBubble();
 
   base::HistogramTester histogram_tester;
-  // The bubble should still stick around for up to kSurviveNavigationSeconds
-  // (5) seconds regardless of navigation.
+  // The bubble should still stick around for up to
+  // kCardBubbleSurviveNavigationTime (5 seconds) regardless of navigation.
   controller()->set_elapsed(base::TimeDelta::FromSeconds(3));
 
   controller()->SimulateNavigation();
@@ -548,8 +550,9 @@ TEST_F(SaveCardBubbleControllerImplTest,
   ShowUploadBubble(/*should_request_name_from_user=*/true);
 
   base::HistogramTester histogram_tester;
-  // The bubble should still stick around for up to kSurviveNavigationSeconds
-  // (5) seconds regardless of navigation.
+  // The bubble should still stick around for up to
+  // kCardBubbleSurviveNavigationTime (5 seconds) regardless of
+  // navigation.
   controller()->set_elapsed(base::TimeDelta::FromSeconds(3));
 
   controller()->SimulateNavigation();
@@ -574,8 +577,9 @@ TEST_F(SaveCardBubbleControllerImplTest,
   CloseAndReshowBubble();
 
   base::HistogramTester histogram_tester;
-  // The bubble should still stick around for up to kSurviveNavigationSeconds
-  // (5) seconds regardless of navigation.
+  // The bubble should still stick around for up to
+  // kCardBubbleSurviveNavigationTime (5 seconds) regardless of
+  // navigation.
   controller()->set_elapsed(base::TimeDelta::FromSeconds(3));
 
   controller()->SimulateNavigation();
@@ -599,8 +603,9 @@ TEST_F(SaveCardBubbleControllerImplTest,
   CloseAndReshowBubble();
 
   base::HistogramTester histogram_tester;
-  // The bubble should still stick around for up to kSurviveNavigationSeconds
-  // (5) seconds regardless of navigation.
+  // The bubble should still stick around for up to
+  // kCardBubbleSurviveNavigationTime (5 seconds) regardless of
+  // navigation.
   controller()->set_elapsed(base::TimeDelta::FromSeconds(3));
 
   controller()->SimulateNavigation();

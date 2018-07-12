@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "chrome/browser/ui/autofill/local_card_migration_bubble.h"
+#include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -20,13 +21,6 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     autofill::LocalCardMigrationBubbleControllerImpl);
 
 namespace autofill {
-
-namespace {
-// Number of seconds the bubble and icon will survive navigations, starting
-// from when the bubble is shown.
-// TODO(crbug.com/862397): Share with ManagePasswordsUIController.
-const int kSurviveNavigationSeconds = 5;
-}  // namespace
 
 // TODO(crbug.com/862405): Build a base class for this
 // and SaveCardBubbleControllerImpl.
@@ -117,7 +111,7 @@ void LocalCardMigrationBubbleControllerImpl::DidFinishNavigation(
 
   // Don't do anything if a navigation occurs before a user could reasonably
   // interact with the bubble.
-  if (Elapsed() < base::TimeDelta::FromSeconds(kSurviveNavigationSeconds))
+  if (Elapsed() < kCardBubbleSurviveNavigationTime)
     return;
 
   // Otherwise, get rid of the bubble and icon.
