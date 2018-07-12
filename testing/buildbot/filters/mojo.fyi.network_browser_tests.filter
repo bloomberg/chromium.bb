@@ -272,8 +272,6 @@
 -ExtensionWebRequestApiTest.WebRequestTestOSDD
 # Note WebRequestUnloadImmediately is disabled on Linux
 -ExtensionWebRequestApiTest.WebRequestUnloadImmediately
-# http://crbug.com/853118 Flaky with serivicified network stack.
--LocalNTPInterceptionWebRequestAPITest.OneGoogleBarRequestsHidden
 
 # WebRequest implementation needs to handle extension
 # installation/uninstallation events.
