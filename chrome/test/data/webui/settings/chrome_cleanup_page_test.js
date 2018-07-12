@@ -437,6 +437,10 @@ suite('ChromeCleanupHandler', function() {
 
     const actionButton = chromeCleanupPage.$$('#action-button');
     assertFalse(!!actionButton);
+
+    const title = chromeCleanupPage.$$('#status-title');
+    assertTrue(!!title);
+    assertTrue(!!title.querySelector('a'));
   });
 
   test('logsUploadingOnScanOffered', function() {
