@@ -30,6 +30,7 @@ extern const char kHistogramServiceWorkerLoad[];
 
 extern const char kHistogramServiceWorkerParseStartInbox[];
 extern const char kHistogramServiceWorkerFirstContentfulPaintInbox[];
+extern const char kHistogramServiceWorkerFirstInputDelay[];
 extern const char kHistogramServiceWorkerFirstMeaningfulPaintInbox[];
 extern const char
     kHistogramServiceWorkerParseStartToFirstMeaningfulPaintInbox[];
@@ -66,6 +67,9 @@ class ServiceWorkerPageLoadMetricsObserver
   // page_load_metrics::PageLoadMetricsObserver implementation:
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
+  void OnFirstInputInPage(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnParseStart(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
