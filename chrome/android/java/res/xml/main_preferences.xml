@@ -14,7 +14,7 @@
         android:key="sign_in"
         android:order="1"
         android:title="@string/sign_in_to_chrome"/>
-    <Preference
+    <org.chromium.chrome.browser.preferences.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.preferences.SyncAndServicesPreferences"
         android:key="sync_and_services"
         android:order="2"
