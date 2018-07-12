@@ -12,25 +12,23 @@
  */
 
 /**
- * @typedef {object} DataFile JSON data created by html_report python script
- * @prop {FileEntry[]} file_nodes - List of file entries
- * @prop {string[]} source_paths - Array of source_paths referenced by index in
- * the symbols.
- * @prop {string[]} components - Array of components referenced by index in the
- * symbols.
- * @prop {object} meta - Metadata about the data
+ * @typedef {object} Meta
+ * @prop {string[]} components
+ * @prop {number} total
+ * @prop {boolean} diff_mode
  */
-
+/**
+ * @typedef {object} SymbolEntry JSON object representing a single symbol.
+ * @prop {string} n Name of the symbol.
+ * @prop {number} b Byte size of the symbol, divided by num_aliases.
+ * @prop {string} t Single character string to indicate the symbol type.
+ */
 /**
  * @typedef {object} FileEntry JSON object representing a single file and its
  * symbols.
- * @prop {number} p - source_path
- * @prop {number} c - component_index
- * @prop {Array<{n:string,b:number,t:string}>} s - Symbols belonging to this
- * node. Array of objects.
- *    n - name of the symbol
- *    b - size of the symbol in bytes, divided by num_aliases.
- *    t - single character string to indicate the symbol type
+ * @prop {number} p Path to the file (source_path).
+ * @prop {number} c Index of the file's component in meta (component_index).
+ * @prop {SymbolEntry[]} s - Symbols belonging to this node. Array of objects.
  */
 
 importScripts('./shared.js');
@@ -83,21 +81,13 @@ function sortTree(node) {
 
 /**
  * Make a node with some default arguments
- * @param {Partial<TreeNode> & {shortName?:string}} options
+ * @param {Partial<TreeNode> & {shortName:string}} options
  * Values to use for the node. If a value is
  * omitted, a default will be used instead.
- * @param {string} [sep] Path seperator, such as '/'. Used for creating a
- * default shortName. Not required if `shortName` is supplied.
  * @returns {TreeNode}
  */
-function createNode(options, sep) {
-  const {
-    idPath,
-    type,
-    shortName = basename(idPath, sep),
-    size = 0,
-    childStats = {},
-  } = options;
+function createNode(options) {
+  const {idPath, type, shortName, size = 0, childStats = {}} = options;
   return {
     children: [],
     parent: null,
@@ -121,6 +111,7 @@ function createNode(options, sep) {
  * children in the tree.
  * @param {TreeNode} node Node to format
  * @param {number} depth How many levels of children to keep.
+ * @returns {TreeNode}
  */
 function formatNode(node, depth = 1) {
   const childDepth = depth - 1;
@@ -163,14 +154,11 @@ class TreeBuilder {
     this._filterTest = options.filterTest;
     this._sep = options.sep || _PATH_SEP;
 
-    this.rootNode = createNode(
-      {
-        idPath: this._sep,
-        shortName: this._sep,
-        type: this._containerType(this._sep),
-      },
-      this._sep
-    );
+    this.rootNode = createNode({
+      idPath: this._sep,
+      shortName: this._sep,
+      type: this._containerType(this._sep),
+    });
     /** @type {Map<string, TreeNode>} Cache for directory nodes */
     this._parents = new Map();
 
@@ -311,10 +299,11 @@ class TreeBuilder {
       // get parent from cache if it exists, otherwise create it
       parentNode = this._parents.get(parentPath);
       if (parentNode == null) {
-        parentNode = createNode(
-          {idPath: parentPath, type: this._containerType(childNode.idPath)},
-          this._sep
-        );
+        parentNode = createNode({
+          idPath: parentPath,
+          shortName: basename(parentPath, this._sep),
+          type: this._containerType(childNode.idPath),
+        });
         this._parents.set(parentPath, parentNode);
       }
     }
@@ -338,33 +327,23 @@ class TreeBuilder {
     // browser it could add a line break there on small screen sizes.
     const idPath = this._getPath(fileEntry);
     // make node for this
-    const fileNode = createNode(
-      {
-        idPath,
-        shortName: basename(filePath, this._sep),
-        type: _CONTAINER_TYPES.FILE,
-      },
-      this._sep
-    );
+    const fileNode = createNode({
+      idPath,
+      shortName: basename(filePath, this._sep),
+      type: _CONTAINER_TYPES.FILE,
+    });
     // build child nodes for this file's symbols and attach to self
     for (const symbol of fileEntry[_KEYS.FILE_SYMBOLS]) {
       const size = symbol[_KEYS.SIZE];
-      // Turn all unknown types into other.
-      const type = _SYMBOL_TYPE_SET.has(symbol[_KEYS.TYPE])
-        ? symbol[_KEYS.TYPE]
-        : _OTHER_SYMBOL_TYPE;
-
-      const symbolNode = createNode(
-        {
-          // Join file path to symbol name with a ":"
-          idPath: `${idPath}:${symbol[_KEYS.SYMBOL_NAME]}`,
-          shortName: symbol[_KEYS.SYMBOL_NAME],
-          size,
-          type,
-          childStats: {[type]: {size, count: 1}},
-        },
-        this._sep
-      );
+      const type = symbol[_KEYS.TYPE];
+      const symbolNode = createNode({
+        // Join file path to symbol name with a ":"
+        idPath: `${idPath}:${symbol[_KEYS.SYMBOL_NAME]}`,
+        shortName: symbol[_KEYS.SYMBOL_NAME],
+        size,
+        type: symbol[_KEYS.TYPE],
+        childStats: {[type]: {size, count: 1}},
+      });
 
       if (this._filterTest(symbolNode)) {
         TreeBuilder._attachToParent(symbolNode, fileNode);
@@ -470,6 +449,7 @@ class DataFetcher {
   /**
    * Transforms a binary stream into a newline delimited JSON (.ndjson) stream.
    * Each yielded value corresponds to one line in the stream.
+   * @returns {AsyncIterable<Meta | FileEntry>}
    */
   async *newlineDelimtedJsonStream() {
     const response = await this.fetch();
@@ -571,12 +551,12 @@ const fetcher = new DataFetcher('data.ndjson');
 /**
  * Assemble a tree when this worker receives a message.
  * @param {string} options Query string containing options for the builder.
- * @param {(msg: TreeProgress) => void} callback
+ * @param {(msg: TreeProgress) => void} onProgress
  */
-async function buildTree(options, callback) {
+async function buildTree(options, onProgress) {
   const {groupBy, filterTest} = parseOptions(options);
 
-  /** Object from the first line of the data file */
+  /** @type {Meta | null} Object from the first line of the data file */
   let meta = null;
 
   const getPathMap = {
@@ -625,7 +605,7 @@ async function buildTree(options, callback) {
       message.error = data.error.message;
     }
 
-    callback(message);
+    onProgress(message);
   }
 
   /** @type {number} ID from setInterval */
@@ -643,32 +623,34 @@ async function buildTree(options, callback) {
     }
     clearInterval(interval);
 
-    postToUi({root: builder.build(), percent: 1});
+    return {
+      root: builder.build(),
+      percent: 1,
+      diffMode: meta && meta.diff_mode,
+    };
   } catch (error) {
     if (interval != null) clearInterval(interval);
     if (error.name === 'AbortError') {
       console.info(error.message);
     } else {
       console.error(error);
+      throw error;
     }
-    postToUi({error});
   }
 }
 
-/** @type {{[action:string]: (id:number,data:any) => Promise<void>}} */
+/** @type {{[action:string]: (data:any) => Promise<any>}} */
 const actions = {
-  load(id, data) {
-    return buildTree(data, msg => {
-      msg.id = id;
+  load(data) {
+    return buildTree(data, progress => {
       // @ts-ignore
-      self.postMessage(msg);
+      self.postMessage(progress);
     });
   },
-  async open(id, path) {
+  async open(path) {
+    if (!builder) throw new Error('Called open before load');
     const node = builder.find(path);
-    const result = await formatNode(node);
-    // @ts-ignore
-    self.postMessage({id, result});
+    return formatNode(node);
   },
 };
 
@@ -680,7 +662,9 @@ const actions = {
 self.onmessage = async event => {
   const {id, action, data} = event.data;
   try {
-    await actions[action](id, data);
+    const result = await actions[action](data);
+    // @ts-ignore
+    self.postMessage({id, result});
   } catch (err) {
     // @ts-ignore
     self.postMessage({id, error: err.message});

@@ -5,6 +5,7 @@
 """Creates an html report that allows you to view binary size by component."""
 
 import codecs
+import collections
 import json
 import logging
 import os
@@ -39,18 +40,18 @@ _COMPACT_SYMBOL_NAME_KEY = 'n'
 _COMPACT_SYMBOL_BYTE_SIZE_KEY = 'b'
 _COMPACT_SYMBOL_TYPE_KEY = 't'
 
-_SYMBOL_TYPE_DESCRIPTIONS = {
-  'b': '.bss',
-  'd': '.data and .data.*',
-  'r': '.rodata',
-  't': '.text',
-  'v': 'Vtable Entry',
-  '*': 'Generated Symbols (typeinfo, thunks, etc)',
-  'x': 'Dex Non-Method Entries',
-  'm': 'Dex Methods',
-  'p': 'Locale Pak Entries',
-  'P': 'Non-Locale Pak Entries',
-  'o': 'Other Entries',
+_SMALL_SYMBOL_DESCRIPTIONS = {
+  'b': 'Other small uninitialized data',
+  'd': 'Other small initialized data',
+  'r': 'Other small readonly data',
+  't': 'Other small code',
+  'v': 'Other small vtable entries',
+  '*': 'Other small generated symbols',
+  'x': 'Other small dex non-method entries',
+  'm': 'Other small dex methods',
+  'p': 'Other small locale pak entries',
+  'P': 'Other small non-locale pak entries',
+  'o': 'Other small entries',
 }
 
 # The display name of the bucket where we put symbols without path.
@@ -66,6 +67,7 @@ _TEMPLATE_FILES = [
   'favicon.ico',
   'options.css',
   'infocard.css',
+  'start-worker.js',
   'shared.js',
   'state.js',
   'infocard-ui.js',
@@ -246,57 +248,50 @@ def _MakeTreeViewList(symbols, min_symbol_size):
   total_size = 0
 
   # Build a container for symbols smaller than min_symbol_size
-  small_symbols = {}
-  small_file_node = None
-  if min_symbol_size > 0:
-    component_index = components.GetOrAdd('')
-    small_file_node = {
-      _COMPACT_FILE_PATH_KEY: _NAME_SMALL_SYMBOL_BUCKET,
-      _COMPACT_FILE_COMPONENT_INDEX_KEY: component_index,
-      _COMPACT_FILE_SYMBOLS_KEY: [],
-    }
-    file_nodes[_NAME_SMALL_SYMBOL_BUCKET] = small_file_node
+  small_symbols = collections.defaultdict(dict)
 
   # Bundle symbols by the file they belong to,
   # and add all the file buckets into file_nodes
   for symbol in symbols:
     symbol_type = _GetSymbolType(symbol)
+    if symbol_type not in _SMALL_SYMBOL_DESCRIPTIONS:
+      symbol_type = 'o'
+
     total_size += symbol.pss
     symbol_size = round(symbol.pss, 2)
     if symbol_size.is_integer():
       symbol_size = int(symbol_size)
 
-    if abs(symbol_size) >= min_symbol_size or symbol_type == 'm':
-      path = symbol.source_path or symbol.object_path
-      file_node = file_nodes.get(path)
-      if file_node is None:
-        component_index = components.GetOrAdd(symbol.component)
+    path = symbol.source_path or symbol.object_path
+    file_node = file_nodes.get(path)
+    if file_node is None:
+      component_index = components.GetOrAdd(symbol.component)
+      file_node = {
+        _COMPACT_FILE_PATH_KEY: path,
+        _COMPACT_FILE_COMPONENT_INDEX_KEY: component_index,
+        _COMPACT_FILE_SYMBOLS_KEY: [],
+      }
+      file_nodes[path] = file_node
 
-        file_node = {
-          _COMPACT_FILE_PATH_KEY: path,
-          _COMPACT_FILE_COMPONENT_INDEX_KEY: component_index,
-          _COMPACT_FILE_SYMBOLS_KEY: [],
-        }
-        file_nodes[path] = file_node
-
+    # Dex methods (type "m") are whitelisted for the method_count mode on the
+    # UI. It's important to see details on all the methods, and most fall below
+    # the default byte size.
+    if symbol_type == 'm' or abs(symbol_size) >= min_symbol_size:
       file_node[_COMPACT_FILE_SYMBOLS_KEY].append({
         _COMPACT_SYMBOL_NAME_KEY: symbol.template_name,
         _COMPACT_SYMBOL_TYPE_KEY: symbol_type,
         _COMPACT_SYMBOL_BYTE_SIZE_KEY: symbol_size,
       })
     else:
-      if symbol_type not in _SYMBOL_TYPE_DESCRIPTIONS:
-        symbol_type = 'o'
-
-      small_type_symbol = small_symbols.get(symbol_type)
+      small_type_symbol = small_symbols[path].get(symbol_type)
       if small_type_symbol is None:
         small_type_symbol = {
-          _COMPACT_SYMBOL_NAME_KEY: _SYMBOL_TYPE_DESCRIPTIONS[symbol_type],
+          _COMPACT_SYMBOL_NAME_KEY: _SMALL_SYMBOL_DESCRIPTIONS[symbol_type],
           _COMPACT_SYMBOL_TYPE_KEY: symbol_type,
           _COMPACT_SYMBOL_BYTE_SIZE_KEY: 0,
         }
-        small_symbols[symbol_type] = small_type_symbol
-        small_file_node[_COMPACT_FILE_SYMBOLS_KEY].append(small_type_symbol)
+        small_symbols[path][symbol_type] = small_type_symbol
+        file_node[_COMPACT_FILE_SYMBOLS_KEY].append(small_type_symbol)
 
       small_type_symbol[_COMPACT_SYMBOL_BYTE_SIZE_KEY] += symbol_size
 
