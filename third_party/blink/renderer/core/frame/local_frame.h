@@ -36,6 +36,7 @@
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
@@ -99,9 +100,6 @@ class TextSuggestionController;
 class WebComputedAXTree;
 class WebPluginContainerImpl;
 class WebURLLoaderFactory;
-
-// TODO(tkent): Introduce axid.h.
-using AXID = unsigned;
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 

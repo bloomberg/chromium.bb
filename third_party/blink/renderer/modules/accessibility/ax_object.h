@@ -33,6 +33,7 @@
 #include <ostream>
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
@@ -67,8 +68,6 @@ enum class AOMIntProperty;
 enum class AOMFloatProperty;
 enum class AOMRelationProperty;
 enum class AOMRelationListProperty;
-
-typedef unsigned AXID;
 
 class AXSparseAttributeClient {
  public:

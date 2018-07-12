@@ -10,5 +10,6 @@ blink_core_sources("accessibility") {
     "ax_object_cache.h",
     "ax_object_cache_base.cc",
     "ax_object_cache_base.h",
+    "axid.h",
   ]
 }
