@@ -147,6 +147,18 @@ bool PlatformSharedMemoryRegion::ConvertToReadOnly() {
   return true;
 }
 
+bool PlatformSharedMemoryRegion::ConvertToUnsafe() {
+  if (!IsValid())
+    return false;
+
+  CHECK_EQ(mode_, Mode::kWritable)
+      << "Only writable shared memory region can be converted to unsafe";
+
+  handle_.readonly_fd.reset();
+  mode_ = Mode::kUnsafe;
+  return true;
+}
+
 bool PlatformSharedMemoryRegion::MapAt(off_t offset,
                                        size_t size,
                                        void** memory,

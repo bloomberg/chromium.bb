@@ -75,6 +75,26 @@ TEST_F(PlatformSharedMemoryRegionTest, ReportedSizeIsRequestedSize) {
   }
 }
 
+// Tests that a writable region can be converted to read-only.
+TEST_F(PlatformSharedMemoryRegionTest, ConvertWritableToReadOnly) {
+  PlatformSharedMemoryRegion region =
+      PlatformSharedMemoryRegion::CreateWritable(kRegionSize);
+  ASSERT_TRUE(region.IsValid());
+  EXPECT_EQ(region.GetMode(), PlatformSharedMemoryRegion::Mode::kWritable);
+  ASSERT_TRUE(region.ConvertToReadOnly());
+  EXPECT_EQ(region.GetMode(), PlatformSharedMemoryRegion::Mode::kReadOnly);
+}
+
+// Tests that a writable region can be converted to unsafe.
+TEST_F(PlatformSharedMemoryRegionTest, ConvertWritableToUnsafe) {
+  PlatformSharedMemoryRegion region =
+      PlatformSharedMemoryRegion::CreateWritable(kRegionSize);
+  ASSERT_TRUE(region.IsValid());
+  EXPECT_EQ(region.GetMode(), PlatformSharedMemoryRegion::Mode::kWritable);
+  ASSERT_TRUE(region.ConvertToUnsafe());
+  EXPECT_EQ(region.GetMode(), PlatformSharedMemoryRegion::Mode::kUnsafe);
+}
+
 // Tests that the platform-specific handle converted to read-only cannot be used
 // to perform a writable mapping with low-level system APIs like mmap().
 TEST_F(PlatformSharedMemoryRegionTest, ReadOnlyHandleIsNotWritable) {
@@ -165,6 +185,17 @@ TEST_F(PlatformSharedMemoryRegionTest,
       PlatformSharedMemoryRegion::CreateWritable(kRegionSize);
   ASSERT_TRUE(region.IsValid());
   ASSERT_TRUE(region.ConvertToReadOnly());
+  FDPair fds = region.GetPlatformHandle();
+  EXPECT_LT(fds.readonly_fd, 0);
+}
+
+// Tests that the second handle is closed after a conversion to unsafe on
+// POSIX.
+TEST_F(PlatformSharedMemoryRegionTest, ConvertToUnsafeInvalidatesSecondHandle) {
+  PlatformSharedMemoryRegion region =
+      PlatformSharedMemoryRegion::CreateWritable(kRegionSize);
+  ASSERT_TRUE(region.IsValid());
+  ASSERT_TRUE(region.ConvertToUnsafe());
   FDPair fds = region.GetPlatformHandle();
   EXPECT_LT(fds.readonly_fd, 0);
 }
@@ -282,6 +313,35 @@ TEST_F(PlatformSharedMemoryRegionTest,
   ASSERT_TRUE(region.IsValid());
   EXPECT_TRUE(region.ConvertToReadOnly());
   EXPECT_DEATH_IF_SUPPORTED(region.ConvertToReadOnly(), kErrorRegex);
+}
+
+// Tests that it's prohibited to convert a read-only region to unsafe.
+TEST_F(PlatformSharedMemoryRegionTest, ReadOnlyRegionConvertToUnsafeDeathTest) {
+#ifdef OFFICIAL_BUILD
+  const char kErrorRegex[] = "";
+#else
+  const char kErrorRegex[] =
+      "Only writable shared memory region can be converted to unsafe";
+#endif
+  PlatformSharedMemoryRegion region =
+      PlatformSharedMemoryRegion::CreateWritable(kRegionSize);
+  ASSERT_TRUE(region.IsValid());
+  ASSERT_TRUE(region.ConvertToReadOnly());
+  EXPECT_DEATH_IF_SUPPORTED(region.ConvertToUnsafe(), kErrorRegex);
+}
+
+// Tests that it's prohibited to convert an unsafe region to unsafe.
+TEST_F(PlatformSharedMemoryRegionTest, UnsafeRegionConvertToUnsafeDeathTest) {
+#ifdef OFFICIAL_BUILD
+  const char kErrorRegex[] = "";
+#else
+  const char kErrorRegex[] =
+      "Only writable shared memory region can be converted to unsafe";
+#endif
+  PlatformSharedMemoryRegion region =
+      PlatformSharedMemoryRegion::CreateUnsafe(kRegionSize);
+  ASSERT_TRUE(region.IsValid());
+  EXPECT_DEATH_IF_SUPPORTED(region.ConvertToUnsafe(), kErrorRegex);
 }
 
 }  // namespace subtle

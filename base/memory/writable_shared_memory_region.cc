@@ -42,6 +42,15 @@ ReadOnlySharedMemoryRegion WritableSharedMemoryRegion::ConvertToReadOnly(
   return ReadOnlySharedMemoryRegion::Deserialize(std::move(handle));
 }
 
+UnsafeSharedMemoryRegion WritableSharedMemoryRegion::ConvertToUnsafe(
+    WritableSharedMemoryRegion region) {
+  subtle::PlatformSharedMemoryRegion handle = std::move(region.handle_);
+  if (!handle.ConvertToUnsafe())
+    return {};
+
+  return UnsafeSharedMemoryRegion::Deserialize(std::move(handle));
+}
+
 WritableSharedMemoryRegion::WritableSharedMemoryRegion() = default;
 WritableSharedMemoryRegion::WritableSharedMemoryRegion(
     WritableSharedMemoryRegion&& region) = default;

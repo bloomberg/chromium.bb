@@ -173,6 +173,12 @@ class BASE_EXPORT PlatformSharedMemoryRegion {
   bool ConvertToReadOnly(void* mapped_addr);
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
+  // Converts the region to unsafe. Returns whether the operation succeeded.
+  // Makes the current instance invalid on failure. Can be called only in
+  // kWritable mode, all other modes will CHECK-fail. The object will have
+  // kUnsafe mode after this call on success.
+  bool ConvertToUnsafe();
+
   // Maps |size| bytes of the shared memory region starting with the given
   // |offset| into the caller's address space. |offset| must be aligned to value
   // of |SysInfo::VMAllocationGranularity()|. Fails if requested bytes are out
