@@ -345,6 +345,16 @@ NSEvent* SynthesizeKeyEvent(NSWindow* window,
   NSString* charactersIgnoringModifiers =
       [[[NSString alloc] initWithCharacters:&shifted_character
                                      length:1] autorelease];
+
+  // Control + [Shift] Tab is special.
+  if (keycode == ui::VKEY_TAB && (flags & NSControlKeyMask)) {
+    if (flags & NSShiftKeyMask) {
+      charactersIgnoringModifiers = @"\x19";
+    } else {
+      charactersIgnoringModifiers = @"\x9";
+    }
+  }
+
   NSString* characters;
   // The following were determined empirically on OSX 10.9.
   if (flags & NSControlKeyMask) {

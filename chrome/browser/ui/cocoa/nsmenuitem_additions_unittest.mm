@@ -291,6 +291,13 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
   key = KeyEvent(0x100108, @"s", @"\u0441", 1);
   ExpectKeyFiresItem(key, MenuItem(@"s", 0x100000), false);
   ExpectKeyDoesntFireItem(key, MenuItem(@"c", 0x100000));
+
+  // ctr + shift + tab produces the "End of Medium" keyEquivalent, even though
+  // it should produce the "Horizontal Tab" keyEquivalent. Check to make sure
+  // it matches anyways.
+  key = KeyEvent(0x60103, @"\x19", @"\x19", 1);
+  ExpectKeyFiresItem(key, MenuItem(@"\x9", NSShiftKeyMask | NSControlKeyMask),
+                     false);
 }
 
 NSString* keyCodeToCharacter(NSUInteger keyCode,
