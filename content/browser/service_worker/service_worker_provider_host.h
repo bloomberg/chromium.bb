@@ -23,7 +23,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
-#include "content/common/service_worker/service_worker_provider_host_info.h"
+#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
@@ -167,7 +167,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // |process_id|.
   static std::unique_ptr<ServiceWorkerProviderHost> Create(
       int process_id,
-      ServiceWorkerProviderHostInfo info,
+      mojom::ServiceWorkerProviderHostInfoPtr info,
       base::WeakPtr<ServiceWorkerContextCore> context);
 
   ~ServiceWorkerProviderHost() override;
@@ -175,14 +175,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const std::string& client_uuid() const { return client_uuid_; }
   base::TimeTicks create_time() const { return create_time_; }
   int process_id() const { return render_process_id_; }
-  int provider_id() const { return info_.provider_id; }
+  int provider_id() const { return info_->provider_id; }
   int frame_id() const;
-  int route_id() const { return info_.route_id; }
+  int route_id() const { return info_->route_id; }
   const WebContentsGetter& web_contents_getter() const {
     return web_contents_getter_;
   }
 
-  bool is_parent_frame_secure() const { return info_.is_parent_frame_secure; }
+  bool is_parent_frame_secure() const { return info_->is_parent_frame_secure; }
 
   // Returns whether this provider host is secure enough to have a service
   // worker controller.
@@ -246,7 +246,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // CompleteStartWorkerPreparation() is called).
   ServiceWorkerVersion* running_hosted_version() const {
     DCHECK(!running_hosted_version_ ||
-           info_.type ==
+           info_->type ==
                blink::mojom::ServiceWorkerProviderType::kForServiceWorker);
     return running_hosted_version_.get();
   }
@@ -308,7 +308,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const GURL& topmost_frame_url() const;
 
   blink::mojom::ServiceWorkerProviderType provider_type() const {
-    return info_.type;
+    return info_->type;
   }
   bool IsProviderForServiceWorker() const;
   bool IsProviderForClient() const;
@@ -386,8 +386,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // For service worker clients. Completes initialization of
   // provider hosts used for navigation requests.
-  void CompleteNavigationInitialized(int process_id,
-                                     ServiceWorkerProviderHostInfo info);
+  void CompleteNavigationInitialized(
+      int process_id,
+      mojom::ServiceWorkerProviderHostInfoPtr info);
 
   // For service worker execution contexts. Completes initialization of this
   // provider host. It is called once a renderer process has been found to host
@@ -468,7 +469,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                            RegisterWithoutLiveSWRegistration);
 
   ServiceWorkerProviderHost(int process_id,
-                            ServiceWorkerProviderHostInfo info,
+                            mojom::ServiceWorkerProviderHostInfoPtr info,
                             base::WeakPtr<ServiceWorkerContextCore> context);
 
   // ServiceWorkerRegistration::Listener overrides.
@@ -578,7 +579,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Otherwise, |kDocumentMainThreadId|.
   int render_thread_id_;
 
-  ServiceWorkerProviderHostInfo info_;
+  mojom::ServiceWorkerProviderHostInfoPtr info_;
 
   // Only set when this object is pre-created for a navigation. It indicates the
   // tab where the navigation occurs.
