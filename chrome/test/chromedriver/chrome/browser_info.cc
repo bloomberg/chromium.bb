@@ -31,22 +31,6 @@ BrowserInfo::BrowserInfo()
       is_android(false) {
 }
 
-BrowserInfo::BrowserInfo(std::string android_package,
-                         std::string browser_name,
-                         std::string browser_version,
-                         int major_version,
-                         int build_no,
-                         int blink_revision,
-                         bool is_android)
-    : android_package(android_package),
-      browser_name(browser_name),
-      browser_version(browser_version),
-      major_version(major_version),
-      build_no(build_no),
-      blink_revision(blink_revision),
-      is_android(is_android) {
-}
-
 BrowserInfo::~BrowserInfo() {}
 
 Status ParseBrowserInfo(const std::string& data, BrowserInfo* browser_info) {

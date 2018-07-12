@@ -112,6 +112,9 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
   caps->SetString("version",
                   session->chrome->GetBrowserInfo()->browser_version);
   caps->SetString("chrome.chromedriverVersion", kChromeDriverVersion);
+  caps->SetString(
+      "goog:chromeOptions.debuggerAddress",
+      session->chrome->GetBrowserInfo()->debugger_address.ToString());
   caps->SetString("platform", session->chrome->GetOperatingSystemName());
   caps->SetString("pageLoadStrategy", session->chrome->page_load_strategy());
   caps->SetBoolean("javascriptEnabled", true);
