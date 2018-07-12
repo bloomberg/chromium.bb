@@ -24,6 +24,7 @@ namespace extensions {
 class InfoMap;
 class ExtensionPrefs;
 class ExtensionRegistry;
+class WarningService;
 
 namespace declarative_net_request {
 class RulesetMatcher;
@@ -86,6 +87,7 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   InfoMap* const info_map_;
   const ExtensionPrefs* const prefs_;
   ExtensionRegistry* const extension_registry_;
+  WarningService* const warning_service_;
 
   // Must be the last member variable. See WeakPtrFactory documentation for
   // details.

@@ -571,6 +571,8 @@ class ExtensionPrefs : public KeyedService {
   // |dnr_ruleset_checksum|.
   bool GetDNRRulesetChecksum(const ExtensionId& extension_id,
                              int* dnr_ruleset_checksum) const;
+  void SetDNRRulesetChecksumForTesting(const ExtensionId& extension_id,
+                                       int dnr_ruleset_checksum);
 
   // Sets the set of allowed pages for the given |extension_id|.
   void SetDNRAllowedPages(const ExtensionId& extension_id, URLPatternSet set);

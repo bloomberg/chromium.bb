@@ -27,6 +27,9 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/warning_service.h"
+#include "extensions/browser/warning_service_factory.h"
+#include "extensions/browser/warning_set.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/file_util.h"
@@ -254,6 +257,7 @@ RulesMonitorService::RulesMonitorService(
       info_map_(ExtensionSystem::Get(browser_context)->info_map()),
       prefs_(ExtensionPrefs::Get(browser_context)),
       extension_registry_(ExtensionRegistry::Get(browser_context)),
+      warning_service_(WarningService::Get(browser_context)),
       weak_factory_(this) {
   registry_observer_.Add(extension_registry_);
 }
@@ -311,9 +315,12 @@ void RulesMonitorService::OnExtensionUnloaded(
 void RulesMonitorService::OnRulesetLoaded(
     LoadRulesetInfo info,
     std::unique_ptr<RulesetMatcher> matcher) {
-  // TODO(crbug.com/852058): Disable extension when ruleset loading fails.
-  if (!matcher)
+  if (!matcher) {
+    // The ruleset failed to load. Notify the user.
+    warning_service_->AddWarnings(
+        {Warning::CreateRulesetFailedToLoadWarning(info.extension->id())});
     return;
+  }
 
   // It's possible that the extension has been disabled since the initial load
   // ruleset request. If it's disabled, do nothing.
@@ -338,6 +345,7 @@ void BrowserContextKeyedAPIFactory<
   DependsOn(ExtensionRegistryFactory::GetInstance());
   DependsOn(ExtensionPrefsFactory::GetInstance());
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+  DependsOn(WarningServiceFactory::GetInstance());
 }
 
 }  // namespace extensions

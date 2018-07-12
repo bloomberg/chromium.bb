@@ -48,6 +48,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
@@ -56,6 +57,9 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/browser/warning_service.h"
+#include "extensions/browser/warning_set.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/constants.h"
@@ -73,6 +77,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -197,6 +202,35 @@ class ScopedRulesetManagerTestObserver {
   scoped_refptr<InfoMap> info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedRulesetManagerTestObserver);
+};
+
+// Helper to wait for warnings thrown for a given extension.
+class WarningServiceObserver : public WarningService::Observer {
+ public:
+  WarningServiceObserver(WarningService* warning_service,
+                         const ExtensionId& extension_id)
+      : observer_(this), extension_id_(extension_id) {
+    observer_.Add(warning_service);
+  }
+
+  // Should only be called once per WarningServiceObserver lifetime.
+  void WaitForWarning() { run_loop_.Run(); }
+
+ private:
+  // WarningService::TestObserver override:
+  void ExtensionWarningsChanged(
+      const ExtensionIdSet& affected_extensions) override {
+    if (!base::ContainsKey(affected_extensions, extension_id_))
+      return;
+
+    run_loop_.Quit();
+  }
+
+  ScopedObserver<WarningService, WarningService::Observer> observer_;
+  const ExtensionId extension_id_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WarningServiceObserver);
 };
 
 class DeclarativeNetRequestBrowserTest
@@ -1817,6 +1851,56 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
     SCOPED_TRACE("Page load after ruleset corruption");
     verify_page_load(false);
   }
+}
+
+// Tests that we surface a warning to the user if it's ruleset fails to load.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       WarningOnFailedRulesetLoad) {
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("*");
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
+
+  const ExtensionId extension_id = last_loaded_extension_id();
+  const auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
+      declarative_net_request::RulesMonitorService>::Get(profile());
+  EXPECT_TRUE(rules_monitor_service->HasRegisteredRuleset(extension_id));
+
+  // Mimic extension prefs corruption by overwriting the indexed ruleset
+  // checksum.
+  const int kInvalidRulesetChecksum = -1;
+  ExtensionPrefs::Get(profile())->SetDNRRulesetChecksumForTesting(
+      extension_id, kInvalidRulesetChecksum);
+
+  TestExtensionRegistryObserver registry_observer(
+      ExtensionRegistry::Get(profile()), extension_id);
+  DisableExtension(extension_id);
+  ASSERT_TRUE(registry_observer.WaitForExtensionUnloaded());
+  EXPECT_FALSE(rules_monitor_service->HasRegisteredRuleset(extension_id));
+
+  // Both loading the indexed ruleset and reindexing the ruleset should fail
+  // now.
+  base::HistogramTester tester;
+  WarningService* warning_service = WarningService::Get(profile());
+  WarningServiceObserver warning_observer(warning_service, extension_id);
+  EnableExtension(extension_id);
+
+  // Wait till we surface a warning.
+  warning_observer.WaitForWarning();
+  EXPECT_THAT(warning_service->GetWarningTypesAffectingExtension(extension_id),
+              ::testing::ElementsAre(Warning::kRulesetFailedToLoad));
+
+  EXPECT_FALSE(rules_monitor_service->HasRegisteredRuleset(extension_id));
+
+  // Verify that loading the ruleset failed due to checksum mismatch.
+  EXPECT_EQ(1, tester.GetBucketCount(
+                   "Extensions.DeclarativeNetRequest.LoadRulesetResult",
+                   RulesetMatcher::LoadRulesetResult::
+                       kLoadErrorRulesetVerification /*sample*/));
+
+  // Verify that re-indexing the ruleset failed.
+  tester.ExpectUniqueSample(
+      "Extensions.DeclarativeNetRequest.RulesetReindexSuccessful",
+      false /*sample*/, 1 /*count*/);
 }
 
 // Test fixture to verify that host permissions for the request url and the
