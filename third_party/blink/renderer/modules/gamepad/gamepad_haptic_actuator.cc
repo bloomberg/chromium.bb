@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_dispatcher.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace {
 

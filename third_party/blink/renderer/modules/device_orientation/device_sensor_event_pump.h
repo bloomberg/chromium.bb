@@ -17,6 +17,7 @@
 #include "third_party/blink/public/platform/modules/device_orientation/web_device_motion_listener.h"
 #include "third_party/blink/public/platform/modules/device_orientation/web_device_orientation_listener.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

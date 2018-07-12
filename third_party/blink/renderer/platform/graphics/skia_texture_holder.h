@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SKIA_TEXTURE_HOLDER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/platform/graphics/texture_holder.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 

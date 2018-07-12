@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using blink::mojom::blink::MediaDeviceInfoPtr;
 using blink::mojom::blink::MediaDeviceType;
