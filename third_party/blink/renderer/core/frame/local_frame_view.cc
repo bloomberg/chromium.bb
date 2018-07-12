@@ -2379,8 +2379,7 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
       &current_update_lifecycle_phases_target_state_, target_state);
 
   if (ShouldThrottleRendering()) {
-    UpdateViewportIntersectionsForSubtree(
-        std::min(target_state, DocumentLifecycle::kCompositingClean));
+    UpdateThrottlingStatusForSubtree();
     return Lifecycle().GetState() == target_state;
   }
 
@@ -2410,7 +2409,7 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
   }
 
   if (target_state == DocumentLifecycle::kLayoutClean) {
-    UpdateViewportIntersectionsForSubtree(target_state);
+    UpdateThrottlingStatusForSubtree();
     return Lifecycle().GetState() == target_state;
   }
 
@@ -2420,7 +2419,9 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
   // OOPIF local frame roots that are throttled can return now that layout
   // is clean and intersection observations can be calculated.
   if (ShouldThrottleRendering()) {
-    UpdateViewportIntersectionsForSubtree(target_state);
+    if (target_state == DocumentLifecycle::kPaintClean)
+      UpdateViewportIntersectionsForSubtree();
+    UpdateThrottlingStatusForSubtree();
     return Lifecycle().GetState() == target_state;
   }
 
@@ -2440,6 +2441,8 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
       frame_view.CheckDoesNotNeedLayout();
       frame_view.allows_layout_invalidation_after_layout_clean_ = false;
     });
+
+    bool should_update_intersection_observations = false;
 
     {
       TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
@@ -2463,6 +2466,13 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
         frame_->GetPage()->GlobalRootScrollerController().DidUpdateCompositing(
             *this);
       }
+
+      // Save off this value now, since PrePaintTreeWalk will clear out
+      // the NeedsPaintPropertyUpdate bits.
+      should_update_intersection_observations =
+          layout_view->NeedsPaintPropertyUpdate() ||
+          layout_view->DescendantNeedsPaintPropertyUpdate() ||
+          needs_intersection_observation_;
 
       if (target_state >= DocumentLifecycle::kPrePaintClean) {
         UpdateCompositedSelectionIfNeeded();
@@ -2513,6 +2523,14 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
         }
       }
 
+      if (should_update_intersection_observations) {
+        TRACE_EVENT0("blink,benchmark",
+                     "LocalFrameView::UpdateViewportIntersectionsForSubtree");
+        SCOPED_UMA_AND_UKM_TIMER("Blink.IntersectionObservation.UpdateTime",
+                                 UkmMetricNames::kIntersectionObservation);
+        UpdateViewportIntersectionsForSubtree();
+      }
+
       DCHECK(!frame_->Selection().NeedsLayoutSelectionUpdate());
       DCHECK(ShouldThrottleRendering() ||
              (frame_->GetDocument()->Printing() &&
@@ -2526,13 +2544,7 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
     });
   }
 
-  {
-    TRACE_EVENT0("blink,benchmark",
-                 "LocalFrameView::UpdateViewportIntersectionsForSubtree");
-    SCOPED_UMA_AND_UKM_TIMER("Blink.IntersectionObservation.UpdateTime",
-                             UkmMetricNames::kIntersectionObservation);
-    UpdateViewportIntersectionsForSubtree(target_state);
-  }
+  UpdateThrottlingStatusForSubtree();
 
   return Lifecycle().GetState() == target_state;
 }
@@ -2581,6 +2593,7 @@ void LocalFrameView::PrePaint() {
   {
     SCOPED_UMA_AND_UKM_TIMER("Blink.PrePaint.UpdateTime",
                              UkmMetricNames::kPrePaint);
+
     PrePaintTreeWalk().WalkTree(*this);
   }
 
@@ -3865,8 +3878,7 @@ void LocalFrameView::CollectAnnotatedRegions(
     CollectAnnotatedRegions(*curr, regions);
 }
 
-void LocalFrameView::UpdateViewportIntersectionsForSubtree(
-    DocumentLifecycle::LifecycleState target_state) {
+void LocalFrameView::UpdateViewportIntersectionsForSubtree() {
   // TODO(dcheng): Since LocalFrameView tree updates are deferred, FrameViews
   // might still be in the LocalFrameView hierarchy even though the associated
   // Document is already detached. Investigate if this check and a similar check
@@ -3875,18 +3887,28 @@ void LocalFrameView::UpdateViewportIntersectionsForSubtree(
   if (!GetFrame().GetDocument()->IsActive())
     return;
 
-  if (target_state == DocumentLifecycle::kPaintClean) {
-    RecordDeferredLoadingStats();
-    if (!NeedsLayout()) {
-      // Notify javascript IntersectionObservers
-      if (GetFrame().GetDocument()->GetIntersectionObserverController()) {
-        GetFrame()
-            .GetDocument()
-            ->GetIntersectionObserverController()
-            ->ComputeTrackedIntersectionObservations();
-      }
+  RecordDeferredLoadingStats();
+  if (!NeedsLayout()) {
+    // Notify javascript IntersectionObservers
+    if (GetFrame().GetDocument()->GetIntersectionObserverController()) {
+      GetFrame()
+          .GetDocument()
+          ->GetIntersectionObserverController()
+          ->ComputeTrackedIntersectionObservations();
     }
   }
+
+  for (Frame* child = frame_->Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    child->View()->UpdateViewportIntersectionsForSubtree();
+  }
+
+  needs_intersection_observation_ = false;
+}
+
+void LocalFrameView::UpdateThrottlingStatusForSubtree() {
+  if (!GetFrame().GetDocument()->IsActive())
+    return;
 
   // Don't throttle display:none frames (see updateRenderThrottlingStatus).
   HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
@@ -3899,11 +3921,9 @@ void LocalFrameView::UpdateViewportIntersectionsForSubtree(
                                  kDontNotifyChildren);
   }
 
-  for (Frame* child = frame_->Tree().FirstChild(); child;
-       child = child->Tree().NextSibling()) {
-    child->View()->UpdateViewportIntersectionsForSubtree(target_state);
-  }
-  needs_intersection_observation_ = false;
+  ForAllChildLocalFrameViews([](LocalFrameView& child_view) {
+    child_view.UpdateThrottlingStatusForSubtree();
+  });
 }
 
 void LocalFrameView::UpdateRenderThrottlingStatusForTesting() {

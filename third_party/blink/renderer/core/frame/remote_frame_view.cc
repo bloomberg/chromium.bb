@@ -63,11 +63,8 @@ RemoteFrameView* RemoteFrameView::Create(RemoteFrame* remote_frame) {
   return view;
 }
 
-void RemoteFrameView::UpdateViewportIntersectionsForSubtree(
-    DocumentLifecycle::LifecycleState target_state) {
+void RemoteFrameView::UpdateViewportIntersectionsForSubtree() {
   if (!remote_frame_->OwnerLayoutObject())
-    return;
-  if (target_state < DocumentLifecycle::kPaintClean)
     return;
 
   LocalFrameView* local_root_view =
