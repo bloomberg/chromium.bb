@@ -84,7 +84,12 @@ enum amdgpu_bo_handle_type {
 	amdgpu_bo_handle_type_kms = 1,
 
 	/** DMA-buf fd handle */
-	amdgpu_bo_handle_type_dma_buf_fd = 2
+	amdgpu_bo_handle_type_dma_buf_fd = 2,
+
+	/** KMS handle, but re-importing as a DMABUF handle through
+	 *  drmPrimeHandleToFD is forbidden. (Glamor does that)
+	 */
+	amdgpu_bo_handle_type_kms_noimport = 3,
 };
 
 /** Define known types of GPU VM VA ranges */
