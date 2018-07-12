@@ -1599,7 +1599,7 @@
     },
     'virtual_reality': {
       # Includes VR, AR, and XR.
-      'filepath': '|/vr/'\
+      'filepath': '/vr/'\
                   '|/xr'\
                   '|third_party/arcore'\
                   '|third_party/gvr'\
@@ -2036,7 +2036,7 @@
                         'cywang@chromium.org',
                         'vovoy@chromium.org'],
     'crostini': ['crostini-ui@chromium.org'],
-    'custom_tabs': ['lizeb+watch-custom-tabs@chromium.org'],    
+    'custom_tabs': ['lizeb+watch-custom-tabs@chromium.org'],
     'dbus': ['hashimoto+watch@chromium.org'],
     'deep_memory_profiler': ['dmikurube@chromium.org'],
     'device_bluetooth': ['mattreynolds+watch@chromium.org',
