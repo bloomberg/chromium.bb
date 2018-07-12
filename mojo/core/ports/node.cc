@@ -305,6 +305,9 @@ int Node::GetStatus(const PortRef& port_ref, PortStatus* port_status) {
   port_status->receiving_messages = CanAcceptMoreMessages(port);
   port_status->peer_closed = port->peer_closed;
   port_status->peer_remote = port->peer_node_name != name_;
+  port_status->queued_message_count =
+      port->message_queue.queued_message_count();
+  port_status->queued_num_bytes = port->message_queue.queued_num_bytes();
   return OK;
 }
 

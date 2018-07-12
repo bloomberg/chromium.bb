@@ -676,5 +676,11 @@ bool UserMessageImpl::WillBeRoutedExternally() {
   return result == MOJO_RESULT_OK || result == MOJO_RESULT_FAILED_PRECONDITION;
 }
 
+size_t UserMessageImpl::GetSizeIfSerialized() const {
+  if (!IsSerialized())
+    return 0;
+  return user_payload_size_;
+}
+
 }  // namespace core
 }  // namespace mojo

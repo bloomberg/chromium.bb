@@ -24,6 +24,7 @@
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/message_pipe.h"
+#include "mojo/public/c/system/quota.h"
 #include "mojo/public/c/system/trap.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
@@ -132,6 +133,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
                                        ports::PortRef remote_peer_port);
   virtual MojoResult ExtractMessagePipe(base::StringPiece name,
                                         MojoHandle* message_pipe_handle);
+
+  // Quota API.
+  virtual MojoResult SetQuota(MojoQuotaType type, uint64_t limit);
+  virtual MojoResult QueryQuota(MojoQuotaType type,
+                                uint64_t* limit,
+                                uint64_t* usage);
 
   ///////////// General-purpose API for all handle types /////////
 

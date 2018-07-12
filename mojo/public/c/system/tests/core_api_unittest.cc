@@ -21,7 +21,8 @@ const MojoHandleSignals kSignalReadadableWritable =
 
 const MojoHandleSignals kSignalAll =
     MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-    MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE;
+    MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE |
+    MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED;
 
 TEST(CoreAPITest, GetTimeTicksNow) {
   const MojoTimeTicks start = MojoGetTimeTicksNow();
@@ -139,7 +140,8 @@ TEST(CoreAPITest, BasicMessagePipe) {
                  &state));
 
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
+  EXPECT_FALSE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
+  EXPECT_FALSE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h1));
 }

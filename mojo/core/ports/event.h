@@ -139,6 +139,8 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) UserMessageEvent : public Event {
                                  const void* buffer,
                                  size_t num_bytes);
 
+  size_t GetSizeIfSerialized() const;
+
  private:
   UserMessageEvent(const PortName& port_name, uint64_t sequence_num);
 

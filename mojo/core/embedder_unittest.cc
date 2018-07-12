@@ -221,7 +221,8 @@ TEST_F(EmbedderTest, MultiprocessChannels) {
     ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
               WaitForSignals(mp2, MOJO_HANDLE_SIGNAL_READABLE, &state));
     ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
-    ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
+    ASSERT_FALSE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
+    ASSERT_FALSE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
 
     ASSERT_EQ(MOJO_RESULT_OK, MojoClose(mp2));
   });
@@ -264,7 +265,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessChannelsClient,
   ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             WaitForSignals(mp1, MOJO_HANDLE_SIGNAL_READABLE, &state));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
+  ASSERT_FALSE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
+  ASSERT_FALSE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
   ASSERT_EQ(MOJO_RESULT_OK, MojoClose(mp1));
 }
 

@@ -26,6 +26,7 @@
 #include "mojo/public/c/system/invitation.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/platform_handle.h"
+#include "mojo/public/c/system/quota.h"
 #include "mojo/public/c/system/trap.h"
 #include "mojo/public/c/system/types.h"
 
@@ -329,6 +330,17 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
       const MojoInvitationTransportEndpoint* transport_endpoint,
       const MojoAcceptInvitationOptions* options,
       MojoHandle* invitation_handle);
+
+  // Quota API.
+  MojoResult SetQuota(MojoHandle handle,
+                      MojoQuotaType type,
+                      uint64_t limit,
+                      const MojoSetQuotaOptions* options);
+  MojoResult QueryQuota(MojoHandle handle,
+                        MojoQuotaType type,
+                        const MojoQueryQuotaOptions* options,
+                        uint64_t* limit,
+                        uint64_t* usage);
 
   void GetActiveHandlesForTest(std::vector<MojoHandle>* handles);
 

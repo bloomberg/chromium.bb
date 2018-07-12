@@ -16,6 +16,7 @@
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/platform_handle.h"
+#include "mojo/public/c/system/quota.h"
 #include "mojo/public/c/system/system_export.h"
 #include "mojo/public/c/system/trap.h"
 #include "mojo/public/c/system/types.h"

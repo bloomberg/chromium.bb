@@ -35,10 +35,25 @@ base::ProtectedMemory<MojoGetSystemThunksFunction> g_get_thunks;
 
 PROTECTED_MEMORY_SECTION base::ProtectedMemory<MojoSystemThunks> g_thunks;
 
+MojoResult NotImplemented(const char* name) {
+  DLOG(ERROR) << "Function 'Mojo" << name
+              << "()' not supported in this version of Mojo Core.";
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
 }  // namespace
 
-#define INVOKE_THUNK(name, ...) \
-  base::UnsanitizedCfiCall(g_thunks, &MojoSystemThunks::name)(__VA_ARGS__)
+// Macro to verify that the thunk symbol |name| is actually present in the
+// runtime version of Mojo Core that is currently in use.
+#define FUNCTION_IS_IMPLEMENTED(name)                                       \
+  (reinterpret_cast<uintptr_t>(static_cast<const void*>(&g_thunks->name)) - \
+       reinterpret_cast<uintptr_t>(static_cast<const void*>(&g_thunks)) <   \
+   g_thunks->size)
+
+#define INVOKE_THUNK(name, ...)                                              \
+  FUNCTION_IS_IMPLEMENTED(name)                                              \
+  ? base::UnsanitizedCfiCall(g_thunks, &MojoSystemThunks::name)(__VA_ARGS__) \
+  : NotImplemented(#name)
 
 namespace mojo {
 
@@ -436,6 +451,21 @@ MojoResult MojoAcceptInvitation(
     MojoHandle* invitation_handle) {
   return INVOKE_THUNK(AcceptInvitation, transport_endpoint, options,
                       invitation_handle);
+}
+
+MojoResult MojoSetQuota(MojoHandle handle,
+                        MojoQuotaType type,
+                        uint64_t limit,
+                        const MojoSetQuotaOptions* options) {
+  return INVOKE_THUNK(SetQuota, handle, type, limit, options);
+}
+
+MojoResult MojoQueryQuota(MojoHandle handle,
+                          MojoQuotaType type,
+                          const MojoQueryQuotaOptions* options,
+                          uint64_t* limit,
+                          uint64_t* usage) {
+  return INVOKE_THUNK(QueryQuota, handle, type, options, limit, usage);
 }
 
 }  // extern "C"

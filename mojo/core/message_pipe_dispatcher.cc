@@ -193,6 +193,56 @@ MojoResult MessagePipeDispatcher::ReadMessage(
   return MOJO_RESULT_OK;
 }
 
+MojoResult MessagePipeDispatcher::SetQuota(MojoQuotaType type, uint64_t limit) {
+  switch (type) {
+    case MOJO_QUOTA_TYPE_RECEIVE_QUEUE_LENGTH:
+      if (limit == MOJO_QUOTA_LIMIT_NONE)
+        receive_queue_length_limit_.reset();
+      else
+        receive_queue_length_limit_ = limit;
+      break;
+
+    case MOJO_QUOTA_TYPE_RECEIVE_QUEUE_MEMORY_SIZE:
+      if (limit == MOJO_QUOTA_LIMIT_NONE)
+        receive_queue_memory_size_limit_.reset();
+      else
+        receive_queue_memory_size_limit_ = limit;
+      break;
+
+    default:
+      return MOJO_RESULT_INVALID_ARGUMENT;
+  }
+
+  return MOJO_RESULT_OK;
+}
+
+MojoResult MessagePipeDispatcher::QueryQuota(MojoQuotaType type,
+                                             uint64_t* limit,
+                                             uint64_t* usage) {
+  ports::PortStatus port_status;
+  if (node_controller_->node()->GetStatus(port_, &port_status) != ports::OK) {
+    CHECK(in_transit_ || port_transferred_ || port_closed_);
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  }
+
+  switch (type) {
+    case MOJO_QUOTA_TYPE_RECEIVE_QUEUE_LENGTH:
+      *limit = receive_queue_length_limit_.value_or(MOJO_QUOTA_LIMIT_NONE);
+      *usage = port_status.queued_message_count;
+      break;
+
+    case MOJO_QUOTA_TYPE_RECEIVE_QUEUE_MEMORY_SIZE:
+      *limit = receive_queue_memory_size_limit_.value_or(MOJO_QUOTA_LIMIT_NONE);
+      *usage = port_status.queued_num_bytes;
+      break;
+
+    default:
+      return MOJO_RESULT_INVALID_ARGUMENT;
+  }
+
+  return MOJO_RESULT_OK;
+}
+
 HandleSignalsState MessagePipeDispatcher::GetHandleSignalsState() const {
   base::AutoLock lock(signal_lock_);
   return GetHandleSignalsStateNoLock();
@@ -328,7 +378,15 @@ HandleSignalsState MessagePipeDispatcher::GetHandleSignalsStateNoLock() const {
   } else {
     rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_PEER_CLOSED;
   }
-  rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_PEER_CLOSED;
+  if (receive_queue_length_limit_ &&
+      port_status.queued_message_count > *receive_queue_length_limit_) {
+    rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED;
+  } else if (receive_queue_memory_size_limit_ &&
+             port_status.queued_num_bytes > *receive_queue_memory_size_limit_) {
+    rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED;
+  }
+  rv.satisfiable_signals |=
+      MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED;
   return rv;
 }
 

@@ -189,6 +189,12 @@ UserMessageEvent::UserMessageEvent(const PortName& port_name,
                                    uint64_t sequence_num)
     : Event(Type::kUserMessage, port_name), sequence_num_(sequence_num) {}
 
+size_t UserMessageEvent::GetSizeIfSerialized() const {
+  if (!message_)
+    return 0;
+  return message_->GetSizeIfSerialized();
+}
+
 size_t UserMessageEvent::GetSerializedDataSize() const {
   DCHECK_EQ(ports_.size(), port_descriptors_.size());
   base::CheckedNumeric<size_t> size = sizeof(UserMessageEventData);

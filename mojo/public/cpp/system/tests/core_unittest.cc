@@ -24,7 +24,8 @@ const MojoHandleSignals kSignalReadableWritable =
 
 const MojoHandleSignals kSignalAll =
     MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-    MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE;
+    MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE |
+    MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED;
 
 TEST(CoreCppTest, GetTimeTicksNow) {
   const MojoTimeTicks start = GetTimeTicksNow();
@@ -195,7 +196,8 @@ TEST(CoreCppTest, Basic) {
                 Wait(h0.get(), MOJO_HANDLE_SIGNAL_READABLE, &state));
 
       EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
-      EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
+      EXPECT_FALSE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
+      EXPECT_FALSE(state.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
     }
     // |hv0| should have been closed when |h0| went out of scope, so this close
     // should fail.

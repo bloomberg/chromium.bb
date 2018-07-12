@@ -248,8 +248,8 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport, QueueMessages) {
     HandleSignalsState hss;
     ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
               WaitForSignals(h, MOJO_HANDLE_SIGNAL_READABLE, &hss));
-    ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
-    ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
+    ASSERT_FALSE(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
+    ASSERT_FALSE(hss.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
   });
   EXPECT_EQ(static_cast<int>(kNumMessages % 100), exit_code);
 }
@@ -265,9 +265,6 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckSharedBuffer,
   // pipe before we do.
   CHECK(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
   CHECK(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
-  CHECK_EQ(hss.satisfiable_signals,
-           MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-               MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE);
 
   // It should have a shared buffer.
   std::string read_buffer(100, '\0');
@@ -304,9 +301,6 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckSharedBuffer,
            MOJO_RESULT_OK);
   CHECK(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
   CHECK(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
-  CHECK_EQ(hss.satisfiable_signals,
-           MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-               MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE);
 
   read_buffer = std::string(100, '\0');
   num_bytes = static_cast<uint32_t>(read_buffer.size());
@@ -396,8 +390,8 @@ TEST_F(MultiprocessMessagePipeTest, SharedBufferPassing) {
     hss = HandleSignalsState();
     ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
               WaitForSignals(h, MOJO_HANDLE_SIGNAL_READABLE, &hss));
-    ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
-    ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
+    ASSERT_FALSE(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
+    ASSERT_FALSE(hss.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
   });
 }
 
@@ -409,9 +403,6 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckPlatformHandleFile,
            MOJO_RESULT_OK);
   CHECK(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
   CHECK(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
-  CHECK_EQ(hss.satisfiable_signals,
-           MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-               MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE);
 
   std::string read_buffer(100, '\0');
   uint32_t num_bytes = static_cast<uint32_t>(read_buffer.size());
@@ -484,8 +475,8 @@ TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
     HandleSignalsState hss;
     ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
               WaitForSignals(h, MOJO_HANDLE_SIGNAL_READABLE, &hss));
-    ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
-    ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
+    ASSERT_FALSE(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
+    ASSERT_FALSE(hss.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
   });
 }
 
@@ -509,9 +500,6 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckMessagePipe, MultiprocessMessagePipeTest, h) {
   // pipe before we do.
   CHECK(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
   CHECK(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
-  CHECK_EQ(hss.satisfiable_signals,
-           MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-               MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE);
 
   // It should have a message pipe.
   MojoHandle handles[10];
@@ -526,9 +514,6 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckMessagePipe, MultiprocessMessagePipeTest, h) {
            MOJO_RESULT_OK);
   CHECK(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
   CHECK(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
-  CHECK_EQ(hss.satisfiable_signals,
-           MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-               MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE);
 
   std::string read_buffer(100, '\0');
   uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());
@@ -629,7 +614,8 @@ DEFINE_TEST_CLIENT_WITH_PIPE(DataPipeConsumer, MultiprocessMessagePipeTest, h) {
   CHECK(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
   CHECK_EQ(hss.satisfiable_signals,
            MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-               MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+               MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE |
+               MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED);
 
   // It should have a message pipe.
   MojoHandle handles[10];
@@ -646,7 +632,8 @@ DEFINE_TEST_CLIENT_WITH_PIPE(DataPipeConsumer, MultiprocessMessagePipeTest, h) {
   CHECK(hss.satisfied_signals & MOJO_HANDLE_SIGNAL_WRITABLE);
   CHECK_EQ(hss.satisfiable_signals,
            MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-               MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+               MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_PEER_REMOTE |
+               MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED);
 
   std::string read_buffer(100, '\0');
   uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer.size());

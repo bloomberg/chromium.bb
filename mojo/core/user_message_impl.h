@@ -169,6 +169,7 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl : public ports::UserMessage {
 
   // UserMessage:
   bool WillBeRoutedExternally() override;
+  size_t GetSizeIfSerialized() const override;
 
   // The event which owns this serialized message. Not owned.
   ports::UserMessageEvent* const message_event_;

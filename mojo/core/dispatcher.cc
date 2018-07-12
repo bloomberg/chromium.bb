@@ -106,6 +106,16 @@ MojoResult Dispatcher::ExtractMessagePipe(base::StringPiece name,
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
+MojoResult Dispatcher::SetQuota(MojoQuotaType type, uint64_t limit) {
+  return MOJO_RESULT_INVALID_ARGUMENT;
+}
+
+MojoResult Dispatcher::QueryQuota(MojoQuotaType type,
+                                  uint64_t* limit,
+                                  uint64_t* usage) {
+  return MOJO_RESULT_INVALID_ARGUMENT;
+}
+
 HandleSignalsState Dispatcher::GetHandleSignalsState() const {
   return HandleSignalsState();
 }

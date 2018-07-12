@@ -177,6 +177,8 @@ MOJO_STATIC_ASSERT(sizeof(MojoInitializeOptions) == 24,
 //       execution context (e.g. in another process.) Note that this signal is
 //       maintained with best effort but may at any time be slightly out of sync
 //       with the actual location of the peer handle.
+//   |MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED| - One or more quotas set on the handle
+//       is currently exceeded.
 
 typedef uint32_t MojoHandleSignals;
 
@@ -187,6 +189,7 @@ const MojoHandleSignals MOJO_HANDLE_SIGNAL_WRITABLE = 1 << 1;
 const MojoHandleSignals MOJO_HANDLE_SIGNAL_PEER_CLOSED = 1 << 2;
 const MojoHandleSignals MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE = 1 << 3;
 const MojoHandleSignals MOJO_HANDLE_SIGNAL_PEER_REMOTE = 1 << 4;
+const MojoHandleSignals MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED = 1 << 5;
 #else
 #define MOJO_HANDLE_SIGNAL_NONE ((MojoHandleSignals)0)
 #define MOJO_HANDLE_SIGNAL_READABLE ((MojoHandleSignals)1 << 0)
@@ -194,6 +197,7 @@ const MojoHandleSignals MOJO_HANDLE_SIGNAL_PEER_REMOTE = 1 << 4;
 #define MOJO_HANDLE_SIGNAL_PEER_CLOSED ((MojoHandleSignals)1 << 2)
 #define MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE ((MojoHandleSignals)1 << 3);
 #define MOJO_HANDLE_SIGNAL_PEER_REMOTE ((MojoHandleSignals)1 << 4);
+#define MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED ((MojoHandleSignals)1 << 5);
 #endif
 
 // |MojoHandleSignalsState|: Returned by watch notification callbacks and

@@ -16,6 +16,10 @@ bool UserMessage::WillBeRoutedExternally() {
   return true;
 }
 
+size_t UserMessage::GetSizeIfSerialized() const {
+  return 0;
+}
+
 }  // namespace ports
 }  // namespace core
 }  // namespace mojo

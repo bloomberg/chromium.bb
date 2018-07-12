@@ -1466,6 +1466,34 @@ MojoResult Core::AcceptInvitation(
   return MOJO_RESULT_OK;
 }
 
+MojoResult Core::SetQuota(MojoHandle handle,
+                          MojoQuotaType type,
+                          uint64_t limit,
+                          const MojoSetQuotaOptions* options) {
+  RequestContext request_context;
+  if (options && options->struct_size < sizeof(*options))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  auto dispatcher = GetDispatcher(handle);
+  if (!dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  return dispatcher->SetQuota(type, limit);
+}
+
+MojoResult Core::QueryQuota(MojoHandle handle,
+                            MojoQuotaType type,
+                            const MojoQueryQuotaOptions* options,
+                            uint64_t* limit,
+                            uint64_t* usage) {
+  RequestContext request_context;
+  if (options && options->struct_size < sizeof(*options))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  auto dispatcher = GetDispatcher(handle);
+  if (!dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  return dispatcher->QueryQuota(type, limit, usage);
+}
+
 void Core::GetActiveHandlesForTest(std::vector<MojoHandle>* handles) {
   base::AutoLock lock(handles_->GetLock());
   handles_->GetActiveHandlesForTest(handles);

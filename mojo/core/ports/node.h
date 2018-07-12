@@ -41,6 +41,8 @@ struct PortStatus {
   bool receiving_messages;
   bool peer_closed;
   bool peer_remote;
+  size_t queued_message_count;
+  size_t queued_num_bytes;
 };
 
 class MessageFilter;

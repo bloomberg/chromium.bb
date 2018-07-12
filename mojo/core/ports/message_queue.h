@@ -62,10 +62,19 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) MessageQueue {
   void TakeAllMessages(
       std::vector<std::unique_ptr<UserMessageEvent>>* messages);
 
+  // The number of messages queued here, regardless of whether the next expected
+  // message has arrived yet.
+  size_t queued_message_count() const { return heap_.size(); }
+
+  // The aggregate memory size in bytes of all messages queued here, regardless
+  // of whether the next expected message has arrived yet.
+  size_t queued_num_bytes() const { return total_queued_bytes_; }
+
  private:
   std::vector<std::unique_ptr<UserMessageEvent>> heap_;
   uint64_t next_sequence_num_;
   bool signalable_ = true;
+  size_t total_queued_bytes_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 };

@@ -293,6 +293,7 @@ source_set("test_sources") {
     "message_unittest.cc",
     "options_validation_unittest.cc",
     "platform_handle_dispatcher_unittest.cc",
+    "quota_unittest.cc",
     "shared_buffer_dispatcher_unittest.cc",
     "shared_buffer_unittest.cc",
     "signals_unittest.cc",
