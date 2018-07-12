@@ -20,9 +20,9 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace gcm {
@@ -123,7 +123,7 @@ RegistrationRequest::RegistrationRequest(
     const net::BackoffEntry::Policy& backoff_policy,
     const RegistrationCallback& callback,
     int max_retry_count,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     GCMStatsRecorder* recorder,
     const std::string& source_to_record)
     : callback_(callback),
@@ -131,7 +131,7 @@ RegistrationRequest::RegistrationRequest(
       custom_request_handler_(std::move(custom_request_handler)),
       registration_url_(registration_url),
       backoff_entry_(&backoff_policy),
-      request_context_getter_(request_context_getter),
+      url_loader_factory_(std::move(url_loader_factory)),
       retries_left_(max_retry_count),
       recorder_(recorder),
       source_to_record_(source_to_record),
@@ -143,7 +143,7 @@ RegistrationRequest::~RegistrationRequest() {}
 
 void RegistrationRequest::Start() {
   DCHECK(!callback_.is_null());
-  DCHECK(!url_fetcher_.get());
+  DCHECK(!url_loader_.get());
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("gcm_registration", R"(
         semantics {
@@ -173,34 +173,36 @@ void RegistrationRequest::Start() {
           policy_exception_justification:
             "Not implemented, considered not useful."
         })");
-  url_fetcher_ = net::URLFetcher::Create(
-      registration_url_, net::URLFetcher::POST, this, traffic_annotation);
-  url_fetcher_->SetRequestContext(request_context_getter_.get());
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SAVE_COOKIES);
-
-  std::string extra_headers;
-  BuildRequestHeaders(&extra_headers);
-  url_fetcher_->SetExtraRequestHeaders(extra_headers);
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = registration_url_;
+  request->method = "POST";
+  request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  BuildRequestHeaders(&request->headers);
 
   std::string body;
   BuildRequestBody(&body);
 
   DVLOG(1) << "Performing registration for: " << request_info_.app_id();
   DVLOG(1) << "Registration request: " << body;
-  url_fetcher_->SetUploadData(kRegistrationRequestContentType, body);
+  url_loader_ =
+      network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
+  url_loader_->AttachStringForUpload(body, kRegistrationRequestContentType);
   recorder_->RecordRegistrationSent(request_info_.app_id(), source_to_record_);
   request_start_time_ = base::TimeTicks::Now();
-  url_fetcher_->Start();
+  url_loader_->SetAllowHttpErrorResults(true);
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&RegistrationRequest::OnURLLoadComplete,
+                     base::Unretained(this), url_loader_.get()));
 }
 
-void RegistrationRequest::BuildRequestHeaders(std::string* extra_headers) {
-  net::HttpRequestHeaders headers;
-  headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
-                    std::string(kLoginHeader) + " " +
-                        base::NumberToString(request_info_.android_id) + ":" +
-                        base::NumberToString(request_info_.security_token));
-  *extra_headers = headers.ToString();
+void RegistrationRequest::BuildRequestHeaders(
+    net::HttpRequestHeaders* headers) {
+  headers->SetHeader(net::HttpRequestHeaders::kAuthorization,
+                     std::string(kLoginHeader) + " " +
+                         base::NumberToString(request_info_.android_id) + ":" +
+                         base::NumberToString(request_info_.security_token));
 }
 
 void RegistrationRequest::BuildRequestBody(std::string* body) {
@@ -218,7 +220,7 @@ void RegistrationRequest::BuildRequestBody(std::string* body) {
 void RegistrationRequest::RetryWithBackoff() {
   DCHECK_GT(retries_left_, 0);
   --retries_left_;
-  url_fetcher_.reset();
+  url_loader_.reset();
   backoff_entry_.InformOfRequest(false);
 
   DVLOG(1) << "Delaying GCM registration of app: " << request_info_.app_id()
@@ -235,17 +237,20 @@ void RegistrationRequest::RetryWithBackoff() {
 }
 
 RegistrationRequest::Status RegistrationRequest::ParseResponse(
-    const net::URLFetcher* source, std::string* token) {
-  if (!source->GetStatus().is_success()) {
+    const network::SimpleURLLoader* source,
+    std::unique_ptr<std::string> body,
+    std::string* token) {
+  if (source->NetError() != net::OK) {
     DVLOG(1) << "Registration URL fetching failed.";
     return URL_FETCHING_FAILED;
   }
 
   std::string response;
-  if (!source->GetResponseAsString(&response)) {
+  if (!body) {
     DVLOG(1) << "Failed to get registration response body.";
     return NO_RESPONSE_BODY;
   }
+  response = std::move(*body);
 
   // If we are able to parse a meaningful known error, let's do so. Note that
   // some errors will have HTTP_OK response code!
@@ -257,11 +262,17 @@ RegistrationRequest::Status RegistrationRequest::ParseResponse(
     return GetStatusFromError(error);
   }
 
+  // Can't even get any header info.
+  if (!source->ResponseInfo() || !source->ResponseInfo()->headers) {
+    DVLOG(1) << "Registration HTTP response info or header missing";
+    return HTTP_NOT_OK;
+  }
+
   // If we cannot tell what the error is, but at least we know response code was
   // not OK.
-  if (source->GetResponseCode() != net::HTTP_OK) {
+  if (source->ResponseInfo()->headers->response_code() != net::HTTP_OK) {
     DVLOG(1) << "Registration HTTP response code not OK: "
-             << source->GetResponseCode();
+             << source->ResponseInfo()->headers->response_code();
     return HTTP_NOT_OK;
   }
 
@@ -274,9 +285,11 @@ RegistrationRequest::Status RegistrationRequest::ParseResponse(
   return RESPONSE_PARSING_FAILED;
 }
 
-void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
+void RegistrationRequest::OnURLLoadComplete(
+    const network::SimpleURLLoader* source,
+    std::unique_ptr<std::string> body) {
   std::string token;
-  Status status = ParseResponse(source, &token);
+  Status status = ParseResponse(source, std::move(body), &token);
   recorder_->RecordRegistrationResponse(request_info_.app_id(),
                                         source_to_record_, status);
 

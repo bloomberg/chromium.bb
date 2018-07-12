@@ -42,6 +42,7 @@
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 namespace gcm {
@@ -331,6 +332,7 @@ void GCMClientImpl::Initialize(
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
+    const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
     std::unique_ptr<Encryptor> encryptor,
     GCMClient::Delegate* delegate) {
   DCHECK_EQ(UNINITIALIZED, state_);
@@ -338,6 +340,7 @@ void GCMClientImpl::Initialize(
   DCHECK(delegate);
 
   url_request_context_getter_ = url_request_context_getter;
+  url_loader_factory_ = url_loader_factory;
   chrome_build_info_ = chrome_build_info;
 
   gcm_store_.reset(
@@ -974,7 +977,7 @@ void GCMClientImpl::Register(
           std::move(request_handler), GetGCMBackoffPolicy(),
           base::Bind(&GCMClientImpl::OnRegisterCompleted,
                      weak_ptr_factory_.GetWeakPtr(), registration_info),
-          kMaxRegistrationRetries, url_request_context_getter_, &recorder_,
+          kMaxRegistrationRetries, url_loader_factory_, &recorder_,
           source_to_record));
   registration_request->Start();
   pending_registration_requests_.insert(

@@ -30,6 +30,10 @@ class IPEndPoint;
 class URLRequestContextGetter;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace gcm {
 
 struct AccountMapping;
@@ -241,6 +245,7 @@ class GCMClient {
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
+      const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
       std::unique_ptr<Encryptor> encryptor,
       Delegate* delegate) = 0;
 

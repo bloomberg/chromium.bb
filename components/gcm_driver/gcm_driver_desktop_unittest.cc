@@ -34,6 +34,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -166,6 +168,8 @@ class GCMDriverTest : public testing::Test {
   TestingPrefServiceSimple prefs_;
   base::MessageLoopForUI message_loop_;
   base::Thread io_thread_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+
   std::unique_ptr<GCMDriverDesktop> driver_;
   std::unique_ptr<FakeGCMAppHandler> gcm_app_handler_;
   std::unique_ptr<FakeGCMConnectionObserver> gcm_connection_observer_;
@@ -187,8 +191,7 @@ GCMDriverTest::GCMDriverTest()
     : io_thread_("IOThread"),
       registration_result_(GCMClient::UNKNOWN_ERROR),
       send_result_(GCMClient::UNKNOWN_ERROR),
-      unregistration_result_(GCMClient::UNKNOWN_ERROR) {
-}
+      unregistration_result_(GCMClient::UNKNOWN_ERROR) {}
 
 GCMDriverTest::~GCMDriverTest() {
 }
@@ -244,7 +247,9 @@ void GCMDriverTest::CreateDriver() {
       std::unique_ptr<GCMClientFactory>(new FakeGCMClientFactory(
           base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner())),
       chrome_build_info, kTestChannelStatusRequestURL, "user-agent-string",
-      &prefs_, temp_dir_.GetPath(), request_context, nullptr,
+      &prefs_, temp_dir_.GetPath(), request_context,
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory_),
       base::ThreadTaskRunnerHandle::Get(), io_thread_.task_runner(),
       message_loop_.task_runner()));
 

@@ -12,7 +12,12 @@
 #include "net/base/backoff_entry.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace gcm {
 
@@ -44,15 +49,46 @@ class GCMRequestTestBase : public testing::Test {
     return url_request_context_getter_.get();
   }
 
+  // The code is in transition away from URLRequestContextGetter +
+  // URLFetcherFactory to SharedURLLoaderFactory. For now, both are needed.
+  // Things that use url_loader_factory() will be matched with test APIs with
+  // "ForURL" in their names below.
+  network::SharedURLLoaderFactory* url_loader_factory() const {
+    return shared_factory_.get();
+  }
+
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
+  }
+
+  // This is a version for the TestURLLoaderFactory path; it also needs a URL.
+  void SetResponseForURLAndComplete(const std::string& url,
+                                    net::HttpStatusCode status_code,
+                                    const std::string& response_body,
+                                    int net_error_code = net::OK);
+
+  // Note: may return null if URL isn't pending.
+  const net::HttpRequestHeaders* GetExtraHeadersForURL(const std::string& url);
+
+  // Returns false if URL isn't pending or extraction failed.
+  bool GetUploadDataForURL(const std::string& url, std::string* data_out);
+
+  // See docs for VerifyFetcherUploadData.
+  void VerifyFetcherUploadDataForURL(
+      const std::string& url,
+      std::map<std::string, std::string>* expected_pairs);
+
  private:
   // Fast forward the timer used in the test to retry the request immediately.
   void FastForwardToTriggerNextRetry();
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
-  scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
 
+  scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
   net::TestURLFetcherFactory url_fetcher_factory_;
+
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 
   // Tracks the number of retries so far.
   int retry_count_;
