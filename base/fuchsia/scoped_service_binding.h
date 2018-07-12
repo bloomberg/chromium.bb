@@ -26,15 +26,27 @@ class ScopedServiceBinding {
 
   ~ScopedServiceBinding() { directory_->RemoveService(Interface::Name_); }
 
+  void SetOnLastClientCallback(base::OnceClosure on_last_client_callback) {
+    on_last_client_callback_ = std::move(on_last_client_callback);
+    bindings_.set_empty_set_handler(
+        fit::bind_member(this, &ScopedServiceBinding::OnBindingSetEmpty));
+  }
+
  private:
   void BindClient(zx::channel channel) {
     bindings_.AddBinding(impl_,
                          fidl::InterfaceRequest<Interface>(std::move(channel)));
   }
 
+  void OnBindingSetEmpty() {
+    bindings_.set_empty_set_handler(nullptr);
+    std::move(on_last_client_callback_).Run();
+  }
+
   ServiceDirectory* const directory_;
   Interface* const impl_;
   fidl::BindingSet<Interface> bindings_;
+  base::OnceClosure on_last_client_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedServiceBinding);
 };
