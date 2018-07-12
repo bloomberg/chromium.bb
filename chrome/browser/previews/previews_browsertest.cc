@@ -12,11 +12,44 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/optimization_guide_service_observer.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_component_creator.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+
+namespace {
+
+// A test observer which can be configured to wait until the server hints are
+// processed.
+class TestOptimizationGuideServiceObserver
+    : public optimization_guide::OptimizationGuideServiceObserver {
+ public:
+  TestOptimizationGuideServiceObserver()
+      : run_loop_(std::make_unique<base::RunLoop>()) {}
+
+  ~TestOptimizationGuideServiceObserver() override {}
+
+  void WaitForNotification() {
+    run_loop_->Run();
+    run_loop_.reset(new base::RunLoop());
+  }
+
+ private:
+  void OnHintsProcessed(
+      const optimization_guide::proto::Configuration& config,
+      const optimization_guide::ComponentInfo& component_info) override {
+    run_loop_->Quit();
+  }
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestOptimizationGuideServiceObserver);
+};
+
+}  // namespace
 
 class PreviewsBrowserTest : public InProcessBrowserTest {
  public:
@@ -142,9 +175,8 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 
 // Previews InfoBar (which these tests triggers) does not work on Mac.
 // See crbug.com/782322 for detail.
-// Also occasional flakes on win7 (crbug.com/789542) and Ubuntu 16.04
-// (crbug.com/831838)
-#if defined(OS_ANDROID)
+// Also occasional flakes on win7 (crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_NoScriptPreviewsEnabled NoScriptPreviewsEnabled
 #define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
   NoScriptPreviewsEnabledHttpRedirectToHttps
@@ -240,6 +272,11 @@ class PreviewsOptimizationGuideBrowserTest : public PreviewsBrowserTest {
     base::RunLoop().RunUntilIdle();
   }
 
+  void AddTestOptimizationGuideServiceObserver(
+      TestOptimizationGuideServiceObserver* observer) {
+    g_browser_process->optimization_guide_service()->AddObserver(observer);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   optimization_guide::testing::TestComponentCreator test_component_creator_;
@@ -259,8 +296,13 @@ class PreviewsOptimizationGuideBrowserTest : public PreviewsBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(PreviewsOptimizationGuideBrowserTest,
                        MAYBE_NoScriptPreviewsEnabledByWhitelist) {
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   // Whitelist test URL for NoScript.
   SetNoScriptWhitelist({https_url().host()});
+  observer.WaitForNotification();
 
   ui_test_utils::NavigateToURL(browser(), https_url());
 
@@ -271,8 +313,13 @@ IN_PROC_BROWSER_TEST_F(PreviewsOptimizationGuideBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PreviewsOptimizationGuideBrowserTest,
                        NoScriptPreviewsNotEnabledByWhitelist) {
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   // Whitelist random site for NoScript.
   SetNoScriptWhitelist({"foo.com"});
+  observer.WaitForNotification();
 
   ui_test_utils::NavigateToURL(browser(), https_url());
 

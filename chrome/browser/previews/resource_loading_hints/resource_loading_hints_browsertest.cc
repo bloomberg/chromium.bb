@@ -14,6 +14,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/optimization_guide_service_observer.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_component_creator.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_features.h"
@@ -22,6 +24,33 @@
 #include "net/test/embedded_test_server/http_response.h"
 
 namespace {
+
+// A test observer which can be configured to wait until the server hints are
+// processed.
+class TestOptimizationGuideServiceObserver
+    : public optimization_guide::OptimizationGuideServiceObserver {
+ public:
+  TestOptimizationGuideServiceObserver()
+      : run_loop_(std::make_unique<base::RunLoop>()) {}
+
+  ~TestOptimizationGuideServiceObserver() override {}
+
+  void WaitForNotification() {
+    run_loop_->Run();
+    run_loop_.reset(new base::RunLoop());
+  }
+
+ private:
+  void OnHintsProcessed(
+      const optimization_guide::proto::Configuration& config,
+      const optimization_guide::ComponentInfo& component_info) override {
+    run_loop_->Quit();
+  }
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestOptimizationGuideServiceObserver);
+};
 
 // Retries fetching |histogram_name| until it contains at least |count| samples.
 void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
@@ -93,7 +122,8 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   }
 
   void SetResourceLoadingHintsWhitelist(
-      std::vector<std::string> whitelisted_resource_loading_hints_sites) {
+      const std::vector<std::string>&
+          whitelisted_resource_loading_hints_sites) {
     const optimization_guide::ComponentInfo& component_info =
         test_component_creator_.CreateComponentInfoWithWhitelist(
             optimization_guide::proto::RESOURCE_LOADING,
@@ -103,6 +133,11 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
 
     // Wait for hints to be processed by PreviewsOptimizationGuide.
     base::RunLoop().RunUntilIdle();
+  }
+
+  void AddTestOptimizationGuideServiceObserver(
+      TestOptimizationGuideServiceObserver* observer) {
+    g_browser_process->optimization_guide_service()->AddObserver(observer);
   }
 
   const GURL& https_url() const { return https_url_; }
@@ -180,8 +215,14 @@ class ResourceLoadingHintsBrowserTest
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
                        MAYBE_ResourceLoadingHintsHttpsWhitelisted) {
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   // Whitelist test URL for resource loading hints.
   SetResourceLoadingHintsWhitelist({https_url().host()});
+  observer.WaitForNotification();
+
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), https_url());
@@ -215,7 +256,13 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
     MAYBE_ResourceLoadingHintsHttpsWhitelistedRedirectToHttps) {
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   SetResourceLoadingHintsWhitelist({https_url().host()});
+  observer.WaitForNotification();
+
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), redirect_url());
 
@@ -251,8 +298,14 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
                        ResourceLoadingHintsHttp) {
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   // Whitelist test HTTP URL for resource loading hints.
   SetResourceLoadingHintsWhitelist({https_url().host()});
+  observer.WaitForNotification();
+
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), http_url());
@@ -269,8 +322,14 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
                        ResourceLoadingHintsHttpsWhitelistedNoTransform) {
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+
   // Whitelist test URL for resource loading hints.
   SetResourceLoadingHintsWhitelist({https_url().host()});
+  observer.WaitForNotification();
+
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), https_no_transform_url());
