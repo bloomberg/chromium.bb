@@ -53,7 +53,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "folder_supervised.icon",
     "forward_arrow_touch.icon",
     "globe.icon",
-    "google_pay_logo_with_vertical_separator.icon",
+    "google_pay_logo.icon",
     "horizontal_menu.icon",
     "incognito.icon",
     "input.icon",
