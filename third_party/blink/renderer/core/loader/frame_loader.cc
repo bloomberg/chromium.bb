@@ -1479,18 +1479,6 @@ void FrameLoader::StartLoad(
       resource_request, frame_load_request, type, navigation_type,
       std::move(extra_data), navigation_timings);
 
-  // This seems to correspond to step 9 of the specification:
-  // "9. Abort the active document of browsingContext."
-  // https://html.spec.whatwg.org/#navigate
-  frame_->GetDocument()->CancelParsing();
-  frame_->GetDocument()->CheckCompleted();
-
-  // document.onreadystatechange can fire in CancelParsing(), which can:
-  // 1) Detach this frame.
-  // 2) Stop the provisional DocumentLoader (i.e window.stop())
-  if (!frame_->GetPage() || !provisional_document_loader_)
-    return;
-
   if (frame_load_request.Form())
     Client()->DispatchWillSubmitForm(frame_load_request.Form());
 
@@ -1533,8 +1521,18 @@ bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
   // for a placeholder simply being replaced with a new DocumentLoader.
   if (had_placeholder_client_document_loader)
     provisional_document_loader_->SetSentDidFinishLoad();
-  DetachDocumentLoader(provisional_document_loader_);
 
+  // This seems to correspond to step 9 of the specification:
+  // "9. Abort the active document of browsingContext."
+  // https://html.spec.whatwg.org/#navigate
+  frame_->GetDocument()->Abort();
+  // document.onreadystatechange can fire in Abort(), which can:
+  // 1) Detach this frame.
+  // 2) Stop the provisional DocumentLoader (i.e window.stop()).
+  if (!frame_->GetPage())
+    return false;
+
+  DetachDocumentLoader(provisional_document_loader_);
   // Detaching the provisional DocumentLoader above may leave the frame without
   // any loading DocumentLoader. It can causes the 'load' event to fire, which
   // can be used to detach this frame.

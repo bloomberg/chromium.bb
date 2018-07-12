@@ -8,7 +8,6 @@ frame "iframe" - didCommitLoadForFrame
 CONSOLE MESSAGE: line 12: iframe: clicking
 CONSOLE MESSAGE: line 5: iframe: onreadystatechange
 frame "iframe" - didFailLoadWithError
-frame "iframe" - didFailProvisionalLoadWithError
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame
 CONSOLE MESSAGE: line 8: main frame: iframe is done
