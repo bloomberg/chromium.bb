@@ -2519,23 +2519,6 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi, MACROBLOCK *const x,
   if (rate) *rate = rate_i;
   if (dist) *dist = dist_i;
   if (rsse) *rsse = sse;
-  /*
-  {
-    static int count = 0;
-    RD_STATS rd_stats_y;
-    if (count >= 159984) {
-      printf("Gotcha\n");
-    }
-    printf("Count: %d\n", count++);
-    av1_invalid_rd_stats(&rd_stats_y);
-    select_tx_type_yrd(cpi, x, &rd_stats_y, plane_bsize, mi_row, mi_col,
-                       INT64_MAX);
-    printf("Full RD:      %d %"PRId64", skip %d sse %"PRId64"\n",
-  rd_stats_y.rate, rd_stats_y.dist, rd_stats_y.skip, rd_stats_y.sse);
-    printf("DNN Model RD: %d %"PRId64"\n", rate_i, dist_i);
-    assert(IMPLIES(rd_stats_y.rate == 0, rd_stats_y.dist == sse << 4));
-  }
-  */
   return;
 }
 
@@ -4846,11 +4829,13 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   const int s1 = x->skip_cost[skip_ctx][1];
   int64_t skip_rd = RDCOST(x->rdmult, s1, rd_stats->sse);
   this_rd = RDCOST(x->rdmult, rd_stats->rate + s0, rd_stats->dist);
-  if (skip_rd < this_rd) {
+  if (skip_rd <= this_rd) {
     this_rd = skip_rd;
     rd_stats->rate = 0;
     rd_stats->dist = rd_stats->sse;
     rd_stats->skip = 1;
+  } else {
+    rd_stats->skip = 0;
   }
   if (this_rd > ref_best_rd) is_cost_valid = 0;
 
@@ -5356,23 +5341,7 @@ static void set_skip_flag(MACROBLOCK *x, RD_STATS *rd_stats, int bsize,
   mbmi->tx_size = tx_size;
   memset(x->blk_skip, 1, sizeof(x->blk_skip[0]) * n4);
   rd_stats->skip = 1;
-
-  // Rate.
-  const int tx_size_ctx = get_txsize_entropy_ctx(tx_size);
-  ENTROPY_CONTEXT ctxa[MAX_MIB_SIZE];
-  ENTROPY_CONTEXT ctxl[MAX_MIB_SIZE];
-  av1_get_entropy_contexts(bsize, &xd->plane[0], ctxa, ctxl);
-  TXB_CTX txb_ctx;
-  // Because plane is 0, plane_bsize equal to bsize
-  get_txb_ctx(bsize, tx_size, 0, ctxa, ctxl, &txb_ctx);
-  int rate = x->coeff_costs[tx_size_ctx][PLANE_TYPE_Y]
-                 .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
-  if (tx_size > TX_4X4) {
-    int ctx = txfm_partition_context(
-        xd->above_txfm_context, xd->left_txfm_context, mbmi->sb_type, tx_size);
-    rate += x->txfm_partition_cost[ctx][0];
-  }
-  rd_stats->rate = rate;
+  rd_stats->rate = 0;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     dist = ROUND_POWER_OF_TWO(dist, (xd->bd - 8) * 2);
   rd_stats->dist = rd_stats->sse = (dist << 4);
@@ -5463,6 +5432,8 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
   rd = select_tx_size_fix_type(cpi, x, &this_rd_stats, bsize, ref_best_rd,
                                found_rd_info ? matched_rd_info : NULL);
+  assert(IMPLIES(this_rd_stats.skip && !this_rd_stats.invalid_rate,
+                 this_rd_stats.rate == 0));
 
   ref_best_rd = AOMMIN(rd, ref_best_rd);
   if (rd < best_rd) {
