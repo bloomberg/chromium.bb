@@ -4,13 +4,14 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/stale_revalidation_resource_client.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 
 namespace blink {
 
 StaleRevalidationResourceClient::StaleRevalidationResourceClient(
     Resource* stale_resource)
-    : stale_resource_(stale_resource) {}
+    : start_time_(CurrentTimeTicks()), stale_resource_(stale_resource) {}
 
 StaleRevalidationResourceClient::~StaleRevalidationResourceClient() = default;
 
@@ -19,6 +20,13 @@ void StaleRevalidationResourceClient::NotifyFinished(Resource* resource) {
   if (stale_resource_ && IsMainThread())
     GetMemoryCache()->Remove(stale_resource_);
   ClearResource();
+
+  TimeTicks finish_time = resource->LoadFinishTime();
+  if (!finish_time.is_null()) {
+    UMA_HISTOGRAM_LONG_TIMES(
+        "Blink.ResourceFetcher.StaleWhileRevalidateDuration",
+        finish_time - start_time_);
+  }
 }
 
 void StaleRevalidationResourceClient::Trace(blink::Visitor* visitor) {
