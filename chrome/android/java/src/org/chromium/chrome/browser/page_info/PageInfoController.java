@@ -10,7 +10,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -20,7 +19,6 @@ import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.StyleSpan;
 import android.text.style.TextAppearanceSpan;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -30,7 +28,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
@@ -40,25 +37,19 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.page_info.PageInfoView.ConnectionInfoParams;
 import org.chromium.chrome.browser.page_info.PageInfoView.PageInfoViewParams;
-import org.chromium.chrome.browser.page_info.PageInfoView.PermissionParams;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
-import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
-import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
-import org.chromium.components.location.LocationUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.DeviceFormFactor;
-import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.widget.Toast;
 
@@ -67,14 +58,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Java side of Android implementation of the page info UI.
  */
-public class PageInfoController implements ModalDialogView.Controller {
+public class PageInfoController
+        implements ModalDialogView.Controller, SystemSettingsActivityRequiredListener {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({OPENED_FROM_MENU, OPENED_FROM_TOOLBAR, OPENED_FROM_VR})
     private @interface OpenedFromSource {}
@@ -91,30 +81,10 @@ public class PageInfoController implements ModalDialogView.Controller {
     public static final int TRUSTED_OFFLINE_PAGE = 2;
     public static final int UNTRUSTED_OFFLINE_PAGE = 3;
 
-    /**
-     * An entry in the settings dropdown for a given permission. There are two options for each
-     * permission: Allow and Block.
-     */
-    private static final class PageInfoPermissionEntry {
-        public final String name;
-        public final int type;
-        public final ContentSetting setting;
-
-        PageInfoPermissionEntry(String name, int type, ContentSetting setting) {
-            this.name = name;
-            this.type = type;
-            this.setting = setting;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
     private final Context mContext;
     private final WindowAndroid mWindowAndroid;
     private final Tab mTab;
+    private final PermissionParamsListBuilder mPermissionParamsListBuilder;
 
     // A pointer to the C++ object for this UI.
     private long mNativePageInfoController;
@@ -139,9 +109,6 @@ public class PageInfoController implements ModalDialogView.Controller {
 
     // The security level of the page (a valid ConnectionSecurityLevel).
     private int mSecurityLevel;
-
-    // Permissions available to be displayed.
-    private List<PageInfoPermissionEntry> mDisplayedPermissions;
 
     // Creation date of an offline copy, if web contents contains an offline page.
     private String mOfflinePageCreationDate;
@@ -196,8 +163,6 @@ public class PageInfoController implements ModalDialogView.Controller {
             clipboard.setPrimaryClip(clip);
             Toast.makeText(mContext, R.string.url_copied, Toast.LENGTH_SHORT).show();
         };
-
-        mDisplayedPermissions = new ArrayList<PageInfoPermissionEntry>();
 
         // Work out the URL and connection message and status visibility.
         mFullUrl = isShowingOfflinePage() ? offlinePageUrl : mTab.getOriginalUrl();
@@ -300,6 +265,8 @@ public class PageInfoController implements ModalDialogView.Controller {
         }
 
         mView = new PageInfoView(mContext, viewParams);
+        mPermissionParamsListBuilder = new PermissionParamsListBuilder(
+                mContext, mWindowAndroid, mFullUrl, this, mView::setPermissions);
 
         // This needs to come after other member initialization.
         mNativePageInfoController = nativeInit(this, mTab.getWebContents());
@@ -333,19 +300,6 @@ public class PageInfoController implements ModalDialogView.Controller {
     }
 
     /**
-     * Finds the Image resource of the icon to use for the given permission.
-     *
-     * @param permission A valid ContentSettingsType that can be displayed in the PageInfo dialog to
-     *                   retrieve the image for.
-     * @return The resource ID of the icon to use for that permission.
-     */
-    private int getImageResourceForPermission(int permission) {
-        int icon = ContentSettingsResources.getIcon(permission);
-        assert icon != 0 : "Icon requested for invalid permission: " + permission;
-        return icon;
-    }
-
-    /**
      * Whether to show a 'Details' link to the connection info popup. The link is only shown for
      * HTTPS connections.
      */
@@ -353,18 +307,6 @@ public class PageInfoController implements ModalDialogView.Controller {
         return mContentPublisher == null && !isShowingOfflinePage() && mParsedUrl != null
                 && mParsedUrl.getScheme() != null
                 && mParsedUrl.getScheme().equals(UrlConstants.HTTPS_SCHEME);
-    }
-
-    private boolean hasAndroidPermission(int contentSettingType) {
-        String[] androidPermissions =
-                PrefServiceBridge.getAndroidPermissionsForContentSetting(contentSettingType);
-        if (androidPermissions == null) return true;
-        for (int i = 0; i < androidPermissions.length; i++) {
-            if (!mWindowAndroid.hasPermission(androidPermissions[i])) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -376,8 +318,8 @@ public class PageInfoController implements ModalDialogView.Controller {
      */
     @CalledByNative
     private void addPermissionSection(String name, int type, int currentSettingValue) {
-        mDisplayedPermissions.add(new PageInfoPermissionEntry(
-                name, type, ContentSetting.fromInt(currentSettingValue)));
+        mPermissionParamsListBuilder.addPermissionEntry(
+                name, type, ContentSetting.fromInt(currentSettingValue));
     }
 
     /**
@@ -385,123 +327,7 @@ public class PageInfoController implements ModalDialogView.Controller {
      */
     @CalledByNative
     private void updatePermissionDisplay() {
-        List<PermissionParams> permissionParamsList = new ArrayList<>();
-        for (PageInfoPermissionEntry permission : mDisplayedPermissions) {
-            permissionParamsList.add(createPermissionParams(permission));
-        }
-        mView.setPermissions(permissionParamsList);
-    }
-
-    private Runnable createPermissionClickCallback(
-            Intent intentOverride, String[] androidPermissions) {
-        return () -> {
-            if (intentOverride == null && mWindowAndroid != null) {
-                // Try and immediately request missing Android permissions where possible.
-                for (int i = 0; i < androidPermissions.length; i++) {
-                    if (!mWindowAndroid.canRequestPermission(androidPermissions[i])) continue;
-
-                    // If any permissions can be requested, attempt to request them all.
-                    mWindowAndroid.requestPermissions(androidPermissions, new PermissionCallback() {
-                        @Override
-                        public void onRequestPermissionsResult(
-                                String[] permissions, int[] grantResults) {
-                            boolean allGranted = true;
-                            for (int i = 0; i < grantResults.length; i++) {
-                                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                                    allGranted = false;
-                                    break;
-                                }
-                            }
-                            if (allGranted) updatePermissionDisplay();
-                        }
-                    });
-                    return;
-                }
-            }
-
-            runAfterDismiss(() -> {
-                Intent settingsIntent;
-                if (intentOverride != null) {
-                    settingsIntent = intentOverride;
-                } else {
-                    settingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    settingsIntent.setData(Uri.parse("package:" + mContext.getPackageName()));
-                }
-                settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                mContext.startActivity(settingsIntent);
-            });
-        };
-    }
-
-    private PermissionParams createPermissionParams(PageInfoPermissionEntry permission) {
-        PermissionParams permissionParams = new PermissionParams();
-
-        permissionParams.iconResource = getImageResourceForPermission(permission.type);
-        if (permission.setting == ContentSetting.ALLOW) {
-            LocationUtils locationUtils = LocationUtils.getInstance();
-            Intent intentOverride = null;
-            String[] androidPermissions = null;
-            if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION
-                    && !locationUtils.isSystemLocationSettingEnabled()) {
-                permissionParams.warningTextResource = R.string.page_info_android_location_blocked;
-                intentOverride = locationUtils.getSystemLocationSettingsIntent();
-            } else if (!hasAndroidPermission(permission.type)) {
-                permissionParams.warningTextResource =
-                        R.string.page_info_android_permission_blocked;
-                androidPermissions =
-                        PrefServiceBridge.getAndroidPermissionsForContentSetting(permission.type);
-            }
-
-            if (permissionParams.warningTextResource != 0) {
-                permissionParams.iconResource = R.drawable.exclamation_triangle;
-                permissionParams.iconTintColorResource = R.color.default_icon_color_blue;
-                permissionParams.clickCallback =
-                        createPermissionClickCallback(intentOverride, androidPermissions);
-            }
-        }
-
-        // The ads permission requires an additional static subtitle.
-        if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS) {
-            permissionParams.subtitleTextResource = R.string.page_info_permission_ads_subtitle;
-        }
-
-        SpannableStringBuilder builder = new SpannableStringBuilder();
-        SpannableString nameString = new SpannableString(permission.name);
-        final StyleSpan boldSpan = new StyleSpan(android.graphics.Typeface.BOLD);
-        nameString.setSpan(boldSpan, 0, nameString.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-
-        builder.append(nameString);
-        builder.append(" – "); // en-dash.
-        String status_text = "";
-        switch (permission.setting) {
-            case ALLOW:
-                status_text = mContext.getString(R.string.page_info_permission_allowed);
-                break;
-            case BLOCK:
-                status_text = mContext.getString(R.string.page_info_permission_blocked);
-                break;
-            default:
-                assert false : "Invalid setting " + permission.setting + " for permission "
-                               + permission.type;
-        }
-        if (WebsitePreferenceBridge.isPermissionControlledByDSE(permission.type, mFullUrl, false)) {
-            status_text = statusTextForDSEPermission(permission.setting);
-        }
-        builder.append(status_text);
-        permissionParams.status = builder;
-
-        return permissionParams;
-    }
-
-    /**
-     * Returns the permission string for the Default Search Engine.
-     */
-    private String statusTextForDSEPermission(ContentSetting setting) {
-        if (setting == ContentSetting.ALLOW) {
-            return mContext.getString(R.string.page_info_dse_permission_allowed);
-        }
-
-        return mContext.getString(R.string.page_info_dse_permission_blocked);
+        mView.setPermissions(mPermissionParamsListBuilder.build());
     }
 
     /**
@@ -562,6 +388,21 @@ public class PageInfoController implements ModalDialogView.Controller {
             };
         }
         mView.setConnectionInfo(connectionInfoParams);
+    }
+
+    @Override
+    public void onSystemSettingsActivityRequired(Intent intentOverride) {
+        runAfterDismiss(() -> {
+            Intent settingsIntent;
+            if (intentOverride != null) {
+                settingsIntent = intentOverride;
+            } else {
+                settingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                settingsIntent.setData(Uri.parse("package:" + mContext.getPackageName()));
+            }
+            settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mContext.startActivity(settingsIntent);
+        });
     }
 
     /**
