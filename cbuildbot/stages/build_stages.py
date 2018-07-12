@@ -407,16 +407,7 @@ class InitSDKStage(generic_stages.BuilderStage):
     super(InitSDKStage, self).__init__(builder_run, **kwargs)
     self.force_chroot_replace = chroot_replace
 
-  def DepotToolsEnsureBootstrap(self):
-    """Ensure that depot_tools binaries are populated."""
-    depot_tools_path = constants.DEPOT_TOOLS_DIR
-    ensure_bootstrap_script = os.path.join(depot_tools_path, 'ensure_bootstrap')
-    cros_build_lib.RunCommand([ensure_bootstrap_script], cwd=depot_tools_path)
-
   def PerformStage(self):
-    # This prepares depot_tools in the source tree, in advance.
-    self.DepotToolsEnsureBootstrap()
-
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     replace = self._run.config.chroot_replace or self.force_chroot_replace
     pre_ver = post_ver = None

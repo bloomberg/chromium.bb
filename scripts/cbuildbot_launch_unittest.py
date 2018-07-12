@@ -90,25 +90,6 @@ class CbuildbotLaunchTest(cros_test_lib.MockTestCase):
     self.assertNotIn('LC_MONETARY', os.environ)
 
 
-class RunDepotToolsEnsureBootstrap(cros_test_lib.RunCommandTestCase,
-                                   cros_test_lib.TempDirTestCase):
-  """Test the helper function DepotToolsEnsureBootstrap."""
-
-  def testEnsureBootstrap(self):
-    """Verify that the script is run if present."""
-    script = os.path.join(self.tempdir, 'ensure_bootstrap')
-    osutils.Touch(script, makedirs=True)
-
-    cbuildbot_launch.DepotToolsEnsureBootstrap(self.tempdir)
-    self.assertCommandCalled(
-        [script], extra_env={'PATH': mock.ANY}, cwd=self.tempdir)
-
-  def testEnsureBootstrapMissing(self):
-    """Verify that the script is NOT run if not present."""
-    cbuildbot_launch.DepotToolsEnsureBootstrap(self.tempdir)
-    self.assertEqual(self.rc.call_count, 0)
-
-
 class RunTests(cros_test_lib.RunCommandTestCase):
   """Tests for cbuildbot_launch script."""
 
