@@ -135,14 +135,23 @@ ParsedFeaturePolicy ParseFeaturePolicy(
   return allowlists;
 }
 
+// This method defines the feature names which will be recognized by the parser
+// for the Feature-Policy HTTP header and the <iframe> "allow" attribute, as
+// well as the features which will be recognized by the document or iframe
+// policy object.
+//
+// Features which are implemented behind a flag should generally also have the
+// same flag controlling whether they are in this map. Note that features which
+// are shipping as part of an origin trial should add their feature names to
+// this map unconditionally, as the trial token could be added after the HTTP
+// header needs to be parsed. This also means that top-level documents which
+// simply want to embed another page which uses an origin trial feature, without
+// using the feature themselves, can use feature policy to allow use of the
+// feature in subframes. (The framed document will still require a valid origin
+// trial token to use the feature in this scenario.)
 const FeatureNameMap& GetDefaultFeatureNameMap() {
   DEFINE_STATIC_LOCAL(FeatureNameMap, default_feature_name_map, ());
   if (default_feature_name_map.IsEmpty()) {
-    default_feature_name_map.Set("accelerometer",
-                                 mojom::FeaturePolicyFeature::kAccelerometer);
-    default_feature_name_map.Set(
-        "ambient-light-sensor",
-        mojom::FeaturePolicyFeature::kAmbientLightSensor);
     default_feature_name_map.Set("camera",
                                  mojom::FeaturePolicyFeature::kCamera);
     default_feature_name_map.Set("encrypted-media",
@@ -151,27 +160,20 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                  mojom::FeaturePolicyFeature::kFullscreen);
     default_feature_name_map.Set("geolocation",
                                  mojom::FeaturePolicyFeature::kGeolocation);
-    default_feature_name_map.Set("gyroscope",
-                                 mojom::FeaturePolicyFeature::kGyroscope);
-    default_feature_name_map.Set("magnetometer",
-                                 mojom::FeaturePolicyFeature::kMagnetometer);
     default_feature_name_map.Set("microphone",
                                  mojom::FeaturePolicyFeature::kMicrophone);
     default_feature_name_map.Set("midi",
                                  mojom::FeaturePolicyFeature::kMidiFeature);
-    default_feature_name_map.Set("payment",
-                                 mojom::FeaturePolicyFeature::kPayment);
     default_feature_name_map.Set("speaker",
                                  mojom::FeaturePolicyFeature::kSpeaker);
     default_feature_name_map.Set("sync-xhr",
                                  mojom::FeaturePolicyFeature::kSyncXHR);
-    default_feature_name_map.Set("usb", mojom::FeaturePolicyFeature::kUsb);
+    // Under origin trial: Should be made conditional on WebVR and WebXR
+    // runtime flags once it is out of trial.
     default_feature_name_map.Set("vr", mojom::FeaturePolicyFeature::kWebVr);
-    if (RuntimeEnabledFeatures::PictureInPictureAPIEnabled()) {
-      default_feature_name_map.Set(
-          "picture-in-picture", mojom::FeaturePolicyFeature::kPictureInPicture);
-    }
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
+      default_feature_name_map.Set("animations",
+                                   mojom::FeaturePolicyFeature::kAnimations);
       default_feature_name_map.Set("document-write",
                                    mojom::FeaturePolicyFeature::kDocumentWrite);
       default_feature_name_map.Set(
@@ -187,13 +189,31 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
       default_feature_name_map.Set(
           "vertical-scroll", mojom::FeaturePolicyFeature::kVerticalScroll);
     }
-    if (RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled()) {
-      default_feature_name_map.Set("animations",
-                                   mojom::FeaturePolicyFeature::kAnimations);
-    }
     if (RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled()) {
       default_feature_name_map.Set("autoplay",
                                    mojom::FeaturePolicyFeature::kAutoplay);
+    }
+    if (RuntimeEnabledFeatures::PaymentRequestEnabled()) {
+      default_feature_name_map.Set("payment",
+                                   mojom::FeaturePolicyFeature::kPayment);
+    }
+    if (RuntimeEnabledFeatures::PictureInPictureAPIEnabled()) {
+      default_feature_name_map.Set(
+          "picture-in-picture", mojom::FeaturePolicyFeature::kPictureInPicture);
+    }
+    if (RuntimeEnabledFeatures::SensorEnabled()) {
+      default_feature_name_map.Set("accelerometer",
+                                   mojom::FeaturePolicyFeature::kAccelerometer);
+      default_feature_name_map.Set(
+          "ambient-light-sensor",
+          mojom::FeaturePolicyFeature::kAmbientLightSensor);
+      default_feature_name_map.Set("gyroscope",
+                                   mojom::FeaturePolicyFeature::kGyroscope);
+      default_feature_name_map.Set("magnetometer",
+                                   mojom::FeaturePolicyFeature::kMagnetometer);
+    }
+    if (RuntimeEnabledFeatures::WebUSBEnabled()) {
+      default_feature_name_map.Set("usb", mojom::FeaturePolicyFeature::kUsb);
     }
   }
   return default_feature_name_map;
