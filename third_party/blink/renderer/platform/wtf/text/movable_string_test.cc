@@ -57,11 +57,22 @@ TEST_F(MovableStringTest, Unpark) {
   base::HistogramTester histogram_tester;
 
   MovableString movable(String("abc").Impl());
+  auto before_address =
+      reinterpret_cast<uintptr_t>(movable.ToString().Characters8());
   EXPECT_FALSE(movable.Impl()->is_parked());
   EXPECT_TRUE(movable.Impl()->Park());
   EXPECT_TRUE(movable.Impl()->is_parked());
 
   String unparked = movable.ToString();
+  auto after_address = reinterpret_cast<uintptr_t>(unparked.Characters8());
+#if DCHECK_IS_ON()
+  // See comments in Park() and Unpark() for why the addresses are guaranteed to
+  // be different.
+  EXPECT_NE(before_address, after_address);
+#else
+  // Strings are not actually moved.
+  EXPECT_EQ(before_address, after_address);
+#endif
   EXPECT_EQ(String("abc"), unparked);
   EXPECT_FALSE(movable.Impl()->is_parked());
 
@@ -77,16 +88,18 @@ TEST_F(MovableStringTest, Unpark) {
 TEST_F(MovableStringTest, TableSimple) {
   base::HistogramTester histogram_tester;
 
+  auto& table = MovableStringTable::Instance();
+  EXPECT_EQ(0u, table.Size());
+
   std::vector<char> data(20000, 'a');
   MovableString movable(String(data.data(), data.size()).ReleaseImpl());
   ASSERT_FALSE(movable.Impl()->is_parked());
 
-  auto& table = MovableStringTable::Instance();
-  EXPECT_EQ(1u, table.table_.size());
+  EXPECT_EQ(1u, table.Size());
 
   // Small strings are not in the table.
   MovableString small(String("abc").ReleaseImpl());
-  EXPECT_EQ(1u, table.table_.size());
+  EXPECT_EQ(1u, table.Size());
 
   // No parking as the current state is not "backgrounded".
   table.SetRendererBackgrounded(false);
@@ -141,23 +154,23 @@ TEST_F(MovableStringTest, TableMultiple) {
   MovableString movable2(String(data.data(), data.size()).ReleaseImpl());
 
   auto& table = MovableStringTable::Instance();
-  EXPECT_EQ(2u, table.table_.size());
+  EXPECT_EQ(2u, table.Size());
 
   movable2 = MovableString();
-  EXPECT_EQ(1u, table.table_.size());
+  EXPECT_EQ(1u, table.Size());
 
   MovableString copy = movable;
   movable = MovableString();
-  EXPECT_EQ(1u, table.table_.size());
+  EXPECT_EQ(1u, table.Size());
   copy = MovableString();
-  EXPECT_EQ(0u, table.table_.size());
+  EXPECT_EQ(0u, table.Size());
 
   String str(data.data(), data.size());
   MovableString movable3(str.Impl());
-  EXPECT_EQ(1u, table.table_.size());
+  EXPECT_EQ(1u, table.Size());
   // De-duplicated.
   MovableString other_movable3(str.Impl());
-  EXPECT_EQ(1u, table.table_.size());
+  EXPECT_EQ(1u, table.Size());
   EXPECT_EQ(movable3.Impl(), other_movable3.Impl());
 
   // If all the references to a string are in the table, park it.
@@ -169,9 +182,9 @@ TEST_F(MovableStringTest, TableMultiple) {
 
   // Only drop it from the table when the last one is gone.
   movable3 = MovableString();
-  EXPECT_EQ(1u, table.table_.size());
+  EXPECT_EQ(1u, table.Size());
   other_movable3 = MovableString();
-  EXPECT_EQ(0u, table.table_.size());
+  EXPECT_EQ(0u, table.Size());
 
   histogram_tester.ExpectUniqueSample("Memory.MovableStringsCount", 1, 1);
   histogram_tester.ExpectUniqueSample("Memory.MovableStringsTotalSizeKb",
@@ -180,6 +193,28 @@ TEST_F(MovableStringTest, TableMultiple) {
   histogram_tester.ExpectBucketCount(
       "Memory.MovableStringParkingAction",
       MovableStringImpl::ParkingAction::kParkedInBackground, 1);
+}
+
+TEST_F(MovableStringTest, TableDeduplication) {
+  auto& table = MovableStringTable::Instance();
+  size_t size_kb = 20;
+  std::vector<char> data(size_kb * 1000, 'a');
+
+  String a(data.data(), data.size());
+  String b = a;
+  {
+    MovableString movable_a(a.Impl());
+    EXPECT_EQ(1u, table.Size());
+    {
+      MovableString movable_b(b.Impl());
+      // De-duplicated, as a and b share the same |Impl()|.
+      EXPECT_EQ(1u, table.Size());
+      EXPECT_EQ(movable_a.Impl(), movable_b.Impl());
+    }
+    // |movable_a| still in scope.
+    EXPECT_EQ(1u, table.Size());
+  }
+  EXPECT_EQ(0u, table.Size());
 }
 
 }  // namespace WTF

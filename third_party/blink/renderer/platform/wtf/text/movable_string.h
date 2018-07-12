@@ -50,7 +50,7 @@ class WTF_EXPORT MovableStringImpl final
   // See the matching String methods.
   bool Is8Bit() const;
   bool IsNull() const;
-  unsigned length() const { return string_.length(); }
+  unsigned length() const { return length_; }
   unsigned CharactersSizeInBytes() const;
 
   // A parked string cannot be accessed until it has been |Unpark()|-ed.
@@ -62,8 +62,15 @@ class WTF_EXPORT MovableStringImpl final
  private:
   void Unpark();
 
-  String string_;
+  bool is_null_;
+  bool is_8bit_;
   bool is_parked_;
+  unsigned length_;
+
+  String string_;
+#if DCHECK_IS_ON()
+  String parked_string_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(MovableStringImpl);
 };
@@ -106,11 +113,12 @@ class WTF_EXPORT MovableStringTable final {
   }
 
   scoped_refptr<MovableStringImpl> Add(scoped_refptr<StringImpl>&&);
+  void OnUnpark(MovableStringImpl*, StringImpl*);
 
-  // This is for ~MovableStringImpl to unregister a string before
+  // This is for ~MovableStringImpl() to unregister a string before
   // destruction since the table is holding raw pointers. It should not be used
   // directly.
-  void Remove(StringImpl*);
+  void Remove(MovableStringImpl*, StringImpl*);
 
   void SetRendererBackgrounded(bool backgrounded);
   bool IsRendererBackgrounded() const;
@@ -119,13 +127,17 @@ class WTF_EXPORT MovableStringTable final {
   void MaybeParkAll();
 
  private:
+  size_t Size() const;
+
   bool backgrounded_;
   // Could bet a set where the hashing function is
   // MovableStringImpl::string_.Impl(), but clearer this way.
-  std::map<StringImpl*, MovableStringImpl*> table_;
+  std::map<StringImpl*, MovableStringImpl*> unparked_strings_;
+  std::set<MovableStringImpl*> parked_strings_;
 
   FRIEND_TEST_ALL_PREFIXES(MovableStringTest, TableSimple);
   FRIEND_TEST_ALL_PREFIXES(MovableStringTest, TableMultiple);
+  FRIEND_TEST_ALL_PREFIXES(MovableStringTest, TableDeduplication);
 
   DISALLOW_COPY_AND_ASSIGN(MovableStringTable);
 };
