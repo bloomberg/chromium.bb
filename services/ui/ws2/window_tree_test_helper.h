@@ -102,9 +102,10 @@ class WindowTreeTestHelper {
 
   void DestroyEmbedding(Embedding* embedding);
 
- private:
+  aura::Window* GetWindowByClientId(const ClientWindowId& id);
   ClientWindowId ClientWindowIdForWindow(aura::Window* window);
 
+ private:
   WindowTree* window_tree_;
 
   // Next id to use for creating a window (including top-level windows).

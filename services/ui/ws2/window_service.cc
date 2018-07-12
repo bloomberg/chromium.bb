@@ -81,7 +81,7 @@ void WindowService::SetFrameDecorationValues(
 }
 
 // static
-bool WindowService::HasRemoteClient(aura::Window* window) {
+bool WindowService::HasRemoteClient(const aura::Window* window) {
   return ServerWindow::GetMayBeNull(window);
 }
 
@@ -93,6 +93,13 @@ void WindowService::RequestClose(aura::Window* window) {
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   DCHECK(window && server_window->IsTopLevel());
   server_window->owning_window_tree()->RequestClose(server_window);
+}
+
+std::string WindowService::GetIdForDebugging(aura::Window* window) {
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  if (!server_window)
+    return std::string();
+  return server_window->GetIdForDebugging();
 }
 
 void WindowService::OnStart() {

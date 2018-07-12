@@ -95,6 +95,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   WindowService* window_service() { return window_service_; }
 
+  ClientWindowId ClientWindowIdForWindow(aura::Window* window);
+
  private:
   friend class ClientRoot;
   // TODO(sky): WindowTree should be refactored such that it is not

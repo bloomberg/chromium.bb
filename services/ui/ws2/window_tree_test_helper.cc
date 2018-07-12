@@ -160,6 +160,11 @@ void WindowTreeTestHelper::DestroyEmbedding(Embedding* embedding) {
   window_tree_->OnEmbeddedClientConnectionLost(embedding);
 }
 
+aura::Window* WindowTreeTestHelper::GetWindowByClientId(
+    const ClientWindowId& id) {
+  return window_tree_->GetWindowByClientId(id);
+}
+
 ClientWindowId WindowTreeTestHelper::ClientWindowIdForWindow(
     aura::Window* window) {
   return window_tree_->MakeClientWindowId(TransportIdForWindow(window));

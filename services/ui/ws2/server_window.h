@@ -5,6 +5,7 @@
 #ifndef SERVICES_UI_WS2_SERVER_WINDOW_H_
 #define SERVICES_UI_WS2_SERVER_WINDOW_H_
 
+#include <string>
 #include <vector>
 
 #include "base/component_export.h"
@@ -117,6 +118,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   }
   void SetDragDropDelegate(
       std::unique_ptr<DragDropDelegate> drag_drop_delegate);
+
+  // Returns an id useful for debugging. This returns the id from the client
+  // that created the window, otherwise |frame_sink_id_|.
+  std::string GetIdForDebugging();
 
  private:
   friend class ServerWindowTestHelper;

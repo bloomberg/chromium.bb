@@ -486,11 +486,6 @@ bool ServerWindow::IsTopLevel() const {
   return owning_window_tree_ && owning_window_tree_->IsTopLevel(window_);
 }
 
-void ServerWindow::SetDragDropDelegate(
-    std::unique_ptr<DragDropDelegate> drag_drop_delegate) {
-  drag_drop_delegate_ = std::move(drag_drop_delegate);
-}
-
 void ServerWindow::AttachCompositorFrameSink(
     viz::mojom::CompositorFrameSinkRequest compositor_frame_sink,
     viz::mojom::CompositorFrameSinkClientPtr client) {
@@ -500,6 +495,17 @@ void ServerWindow::AttachCompositorFrameSink(
           ->GetHostFrameSinkManager();
   host_frame_sink_manager->CreateCompositorFrameSink(
       frame_sink_id_, std::move(compositor_frame_sink), std::move(client));
+}
+
+void ServerWindow::SetDragDropDelegate(
+    std::unique_ptr<DragDropDelegate> drag_drop_delegate) {
+  drag_drop_delegate_ = std::move(drag_drop_delegate);
+}
+
+std::string ServerWindow::GetIdForDebugging() {
+  return owning_window_tree_
+             ? owning_window_tree_->ClientWindowIdForWindow(window_).ToString()
+             : frame_sink_id_.ToString();
 }
 
 ServerWindow::ServerWindow(aura::Window* window,
