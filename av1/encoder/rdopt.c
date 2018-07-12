@@ -2241,10 +2241,12 @@ static void get_2x2_normalized_sses_and_sads(
 }
 
 #if CONFIG_COLLECT_RD_STATS
-// NOTE: CONFIG_COLLECT_RD_STATS has 3 possible values
-// 0: Do not collect any RD stats
-// 1: Collect RD stats for transform units
-// 2: Collect RD stats for partition units
+  // NOTE: CONFIG_COLLECT_RD_STATS has 3 possible values
+  // 0: Do not collect any RD stats
+  // 1: Collect RD stats for transform units
+  // 2: Collect RD stats for partition units
+
+#if CONFIG_COLLECT_RD_STATS == 1
 static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
                                     const RD_STATS *const rd_stats, int blk_row,
                                     int blk_col, BLOCK_SIZE plane_bsize,
@@ -2335,6 +2337,7 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   fprintf(fout, "\n");
   fclose(fout);
 }
+#endif  // CONFIG_COLLECT_RD_STATS == 1
 
 #if CONFIG_COLLECT_RD_STATS == 2
 static void PrintPredictionUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
@@ -2356,6 +2359,7 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int diff_stride = block_size_wide[plane_bsize];
+  int bw, bh;
   get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL, &bw,
                      &bh);
   const int num_samples = bw * bh;
