@@ -144,6 +144,10 @@ void OAuth2LoginManager::OnRefreshTokenAvailable(
   }
   // Only restore session cookies for the primary account in the profile.
   if (GetPrimaryAccountId() == user_email) {
+    // The refresh token has changed, so stop any ongoing actions that were
+    // based on the old refresh token.
+    Stop();
+
     // Token is loaded. Undo the flagging before token loading.
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
         AccountId::FromUserEmail(user_email),
