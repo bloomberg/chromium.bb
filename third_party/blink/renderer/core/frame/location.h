@@ -67,11 +67,11 @@ class CORE_EXPORT Location final : public ScriptWrappable {
 
   void assign(LocalDOMWindow* current_window,
               LocalDOMWindow* entered_window,
-              const String&,
+              const USVStringOrTrustedURL&,
               ExceptionState&);
   void replace(LocalDOMWindow* current_window,
                LocalDOMWindow* entered_window,
-               const String&,
+               const USVStringOrTrustedURL&,
                ExceptionState&);
   void reload(LocalDOMWindow* current_window);
 

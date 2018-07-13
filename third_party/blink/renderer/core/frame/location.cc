@@ -223,7 +223,7 @@ void Location::setHash(LocalDOMWindow* current_window,
 
 void Location::assign(LocalDOMWindow* current_window,
                       LocalDOMWindow* entered_window,
-                      const String& url,
+                      const USVStringOrTrustedURL& stringOrUrl,
                       ExceptionState& exception_state) {
   // TODO(yukishiino): Remove this check once we remove [CrossOrigin] from
   // the |assign| DOM operation's definition in Location.idl.  See the comment
@@ -233,13 +233,43 @@ void Location::assign(LocalDOMWindow* current_window,
     return;
   }
 
+  DCHECK(stringOrUrl.IsUSVString() ||
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+  DCHECK(!stringOrUrl.IsNull());
+
+  if (stringOrUrl.IsUSVString() &&
+      current_window->document()->RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedURL` assignment.");
+    return;
+  }
+
+  String url = stringOrUrl.IsUSVString()
+                   ? stringOrUrl.GetAsUSVString()
+                   : stringOrUrl.GetAsTrustedURL()->toString();
+
   SetLocation(url, current_window, entered_window, &exception_state);
 }
 
 void Location::replace(LocalDOMWindow* current_window,
                        LocalDOMWindow* entered_window,
-                       const String& url,
+                       const USVStringOrTrustedURL& stringOrUrl,
                        ExceptionState& exception_state) {
+  DCHECK(stringOrUrl.IsUSVString() ||
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+  DCHECK(!stringOrUrl.IsNull());
+
+  if (stringOrUrl.IsUSVString() &&
+      current_window->document()->RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedURL` assignment.");
+    return;
+  }
+
+  String url = stringOrUrl.IsUSVString()
+                   ? stringOrUrl.GetAsUSVString()
+                   : stringOrUrl.GetAsTrustedURL()->toString();
+
   SetLocation(url, current_window, entered_window, &exception_state,
               SetLocationPolicy::kReplaceThisFrame);
 }
