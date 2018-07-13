@@ -67,6 +67,7 @@ loadTimeData.data = new Proxy(
       METADATA_BOX_MODIFICATION_TIME: 'Modified time',
       MOVE_FILE_NAME: 'Moving $1...',
       MOVE_ITEMS_REMAINING: 'Moving $1 items...',
+      MY_FILES_ROOT_LABEL: 'My Files',
       NAME_COLUMN_LABEL: 'Name',
       OFFLINE_COLUMN_LABEL: 'Available offline',
       OPEN_WITH_VERB_BUTTON_LABEL: 'Open with $1',
