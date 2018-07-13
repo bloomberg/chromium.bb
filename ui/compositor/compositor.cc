@@ -195,8 +195,6 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   settings.always_request_presentation_time =
       command_line->HasSwitch(cc::switches::kAlwaysRequestPresentationTime);
 
-  base::TimeTicks before_create = base::TimeTicks::Now();
-
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 
   cc::LayerTreeHost::InitParams params;
@@ -206,8 +204,6 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   params.main_task_runner = task_runner_;
   params.mutator_host = animation_host_.get();
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
-  UMA_HISTOGRAM_TIMES("GPU.CreateBrowserCompositor",
-                      base::TimeTicks::Now() - before_create);
 
   if (base::FeatureList::IsEnabled(features::kUiCompositorScrollWithLayers) &&
       host_->GetInputHandler()) {
