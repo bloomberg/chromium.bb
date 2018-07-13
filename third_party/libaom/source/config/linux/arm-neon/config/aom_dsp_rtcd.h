@@ -2513,7 +2513,12 @@ void aom_lpf_horizontal_14_c(uint8_t* s,
                              const uint8_t* blimit,
                              const uint8_t* limit,
                              const uint8_t* thresh);
-#define aom_lpf_horizontal_14 aom_lpf_horizontal_14_c
+void aom_lpf_horizontal_14_neon(uint8_t* s,
+                                int pitch,
+                                const uint8_t* blimit,
+                                const uint8_t* limit,
+                                const uint8_t* thresh);
+#define aom_lpf_horizontal_14 aom_lpf_horizontal_14_neon
 
 void aom_lpf_horizontal_14_dual_c(uint8_t* s,
                                   int pitch,
@@ -2530,7 +2535,12 @@ void aom_lpf_horizontal_4_c(uint8_t* s,
                             const uint8_t* blimit,
                             const uint8_t* limit,
                             const uint8_t* thresh);
-#define aom_lpf_horizontal_4 aom_lpf_horizontal_4_c
+void aom_lpf_horizontal_4_neon(uint8_t* s,
+                               int pitch,
+                               const uint8_t* blimit,
+                               const uint8_t* limit,
+                               const uint8_t* thresh);
+#define aom_lpf_horizontal_4 aom_lpf_horizontal_4_neon
 
 void aom_lpf_horizontal_4_dual_c(uint8_t* s,
                                  int pitch,
@@ -2613,7 +2623,12 @@ void aom_lpf_vertical_4_c(uint8_t* s,
                           const uint8_t* blimit,
                           const uint8_t* limit,
                           const uint8_t* thresh);
-#define aom_lpf_vertical_4 aom_lpf_vertical_4_c
+void aom_lpf_vertical_4_neon(uint8_t* s,
+                             int pitch,
+                             const uint8_t* blimit,
+                             const uint8_t* limit,
+                             const uint8_t* thresh);
+#define aom_lpf_vertical_4 aom_lpf_vertical_4_neon
 
 void aom_lpf_vertical_4_dual_c(uint8_t* s,
                                int pitch,
@@ -2630,7 +2645,12 @@ void aom_lpf_vertical_6_c(uint8_t* s,
                           const uint8_t* blimit,
                           const uint8_t* limit,
                           const uint8_t* thresh);
-#define aom_lpf_vertical_6 aom_lpf_vertical_6_c
+void aom_lpf_vertical_6_neon(uint8_t* s,
+                             int pitch,
+                             const uint8_t* blimit,
+                             const uint8_t* limit,
+                             const uint8_t* thresh);
+#define aom_lpf_vertical_6 aom_lpf_vertical_6_neon
 
 void aom_lpf_vertical_6_dual_c(uint8_t* s,
                                int pitch,
