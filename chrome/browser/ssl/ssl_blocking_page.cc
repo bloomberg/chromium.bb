@@ -95,9 +95,19 @@ SSLBlockingPage* SSLBlockingPage::Create(
   if (overridable) {
     UMA_HISTOGRAM_BOOLEAN("interstitial.ssl_overridable.is_recurrent_error",
                           is_recurrent_error);
+    if (cert_error == net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED) {
+      UMA_HISTOGRAM_BOOLEAN(
+          "interstitial.ssl_overridable.is_recurrent_error.ct_error",
+          is_recurrent_error);
+    }
   } else {
     UMA_HISTOGRAM_BOOLEAN("interstitial.ssl_nonoverridable.is_recurrent_error",
                           is_recurrent_error);
+    if (cert_error == net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED) {
+      UMA_HISTOGRAM_BOOLEAN(
+          "interstitial.ssl_nonoverridable.is_recurrent_error.ct_error",
+          is_recurrent_error);
+    }
   }
 
   return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
