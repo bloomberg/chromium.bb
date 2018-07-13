@@ -11,6 +11,7 @@
 #include "ash/accessibility/accessibility_focus_ring.h"
 #include "ash/accessibility/accessibility_focus_ring_group.h"
 #include "ash/accessibility/accessibility_layer.h"
+#include "ash/accessibility/layer_animation_info.h"
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "base/bind.h"

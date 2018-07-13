@@ -81,6 +81,8 @@ component("ash") {
     "accessibility/focus_ring_layer.h",
     "accessibility/key_accessibility_enabler.cc",
     "accessibility/key_accessibility_enabler.h",
+    "accessibility/layer_animation_info.cc",
+    "accessibility/layer_animation_info.h",
     "accessibility/spoken_feedback_enabler.cc",
     "accessibility/spoken_feedback_enabler.h",
     "accessibility/touch_accessibility_enabler.cc",
