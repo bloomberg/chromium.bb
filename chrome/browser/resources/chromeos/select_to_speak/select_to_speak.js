@@ -832,15 +832,21 @@ SelectToSpeak.prototype = {
           console.debug('-'.repeat(event.charIndex) + '^');
           if (this.currentNodeGroupIndex_ + 1 < nodeGroup.nodes.length) {
             let next = nodeGroup.nodes[this.currentNodeGroupIndex_ + 1];
+            let nodeUpdated = false;
             // Check if we've reached this next node yet using the
             // character index of the event. Add 1 for the space character
-            // between words, and another to make it to the start of the
+            // between node names, and another to make it to the start of the
             // next node name.
-            if (event.charIndex + 2 >= next.startChar) {
+            while (event.charIndex + 2 >= next.startChar &&
+                   this.currentNodeGroupIndex_ + 1 < nodeGroup.nodes.length) {
               // Move to the next node.
               this.currentNodeGroupIndex_ += 1;
               this.currentNode_ = next;
               this.currentNodeWord_ = null;
+              next = nodeGroup.nodes[this.currentNodeGroupIndex_ + 1];
+              nodeUpdated = true;
+            }
+            if (nodeUpdated) {
               if (!this.wordHighlight_) {
                 // If we are doing a per-word highlight, we will test the
                 // node after figuring out what the currently highlighted
