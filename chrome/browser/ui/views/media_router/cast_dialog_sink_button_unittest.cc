@@ -17,18 +17,6 @@ namespace media_router {
 
 namespace {
 
-class MockButtonListener : public views::ButtonListener {
- public:
-  MockButtonListener() = default;
-  ~MockButtonListener() override = default;
-
-  MOCK_METHOD2(ButtonPressed,
-               void(views::Button* sender, const ui::Event& event));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockButtonListener);
-};
-
 class CastDialogSinkButtonTest : public ChromeViewsTestBase {
  public:
   CastDialogSinkButtonTest() = default;

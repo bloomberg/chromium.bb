@@ -1092,14 +1092,12 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
 
   block_all_button_ = new InlineSettingsRadioButton(
       l10n_util::GetStringUTF16(block_notifications_message_id));
-  block_all_button_->set_listener(this);
   block_all_button_->SetBorder(
       views::CreateEmptyBorder(kSettingsRadioButtonPadding));
   settings_row_->AddChildView(block_all_button_);
 
   dont_block_button_ = new InlineSettingsRadioButton(
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_DONT_BLOCK_NOTIFICATIONS));
-  dont_block_button_->set_listener(this);
   dont_block_button_->SetBorder(
       views::CreateEmptyBorder(kSettingsRadioButtonPadding));
   settings_row_->AddChildView(dont_block_button_);

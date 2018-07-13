@@ -397,6 +397,10 @@ ContentSettingBubbleContents::~ContentSettingBubbleContents() {
   RemoveAllChildViews(true);
 }
 
+void ContentSettingBubbleContents::WindowClosing() {
+  content_setting_bubble_model_->CommitChanges();
+}
+
 gfx::Size ContentSettingBubbleContents::CalculatePreferredSize() const {
   gfx::Size preferred_size(views::View::CalculatePreferredSize());
   int preferred_width =
@@ -438,6 +442,16 @@ void ContentSettingBubbleContents::OnListItemRemovedAt(int index) {
   DCHECK(list_item_container_);
   list_item_container_->RemoveRowAtIndex(index);
   SizeToContents();
+}
+
+int ContentSettingBubbleContents::GetSelectedRadioOption() {
+  for (RadioGroup::const_iterator i(radio_group_.begin());
+       i != radio_group_.end(); ++i) {
+    if ((*i)->checked())
+      return i - radio_group_.begin();
+  }
+  NOTREACHED();
+  return 0;
 }
 
 void ContentSettingBubbleContents::OnNativeThemeChanged(
@@ -496,7 +510,6 @@ void ContentSettingBubbleContents::Init() {
          i != radio_group.radio_items.end(); ++i) {
       auto radio = std::make_unique<views::RadioButton>(*i, 0);
       radio->SetEnabled(bubble_content.radio_group_enabled);
-      radio->set_listener(this);
       radio->SetMultiLine(true);
       radio_group_.push_back(radio.get());
       rows.push_back({std::move(radio), LayoutRowType::INDENTED});
@@ -536,8 +549,7 @@ void ContentSettingBubbleContents::Init() {
   if (bubble_content.manage_text_style ==
       ContentSettingBubbleModel::ManageTextStyle::kCheckbox) {
     auto manage_checkbox =
-        std::make_unique<views::Checkbox>(bubble_content.manage_text);
-    manage_checkbox->set_listener(this);
+        std::make_unique<views::Checkbox>(bubble_content.manage_text, this);
     manage_checkbox_ = manage_checkbox.get();
     rows.push_back({std::move(manage_checkbox), LayoutRowType::DEFAULT});
   }
@@ -561,8 +573,7 @@ void ContentSettingBubbleContents::Init() {
     AddChildView(row.view.release());
   }
 
-  if (list_item_container_)
-    content_setting_bubble_model_->set_owner(this);
+  content_setting_bubble_model_->set_owner(this);
 }
 
 views::View* ContentSettingBubbleContents::CreateExtraView() {
@@ -605,7 +616,6 @@ views::View* ContentSettingBubbleContents::CreateExtraView() {
 }
 
 bool ContentSettingBubbleContents::Accept() {
-  content_setting_bubble_model_->OnDoneClicked();
   return true;
 }
 
@@ -669,10 +679,7 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
     GetWidget()->Close();
     content_setting_bubble_model_->OnManageButtonClicked();
   } else {
-    RadioGroup::const_iterator i(
-        std::find(radio_group_.begin(), radio_group_.end(), sender));
-    DCHECK(i != radio_group_.end());
-    content_setting_bubble_model_->OnRadioClicked(i - radio_group_.begin());
+    NOTREACHED();
   }
 }
 

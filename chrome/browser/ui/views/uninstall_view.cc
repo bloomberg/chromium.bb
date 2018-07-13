@@ -115,8 +115,7 @@ void UninstallView::SetupControls() {
           views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
       layout->StartRow(views::GridLayout::kFixedSize, column_set_id);
       change_default_browser_ = new views::Checkbox(
-          l10n_util::GetStringUTF16(IDS_UNINSTALL_SET_DEFAULT_BROWSER));
-      change_default_browser_->set_listener(this);
+          l10n_util::GetStringUTF16(IDS_UNINSTALL_SET_DEFAULT_BROWSER), this);
       layout->AddView(change_default_browser_);
       browsers_combo_ = new views::Combobox(this);
       layout->AddView(browsers_combo_);

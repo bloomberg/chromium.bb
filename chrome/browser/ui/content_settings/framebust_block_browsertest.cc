@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/browser/ui/content_settings/fake_owner.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -160,15 +161,15 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, AllowRadioButtonSelected) {
             settings_map->GetContentSetting(
                 url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
 
-  {
-    // Create a content bubble and simulate clicking on the first radio button
-    // before closing it.
-    ContentSettingFramebustBlockBubbleModel framebust_block_bubble_model(
-        browser()->content_setting_bubble_model_delegate(), GetWebContents(),
-        browser()->profile());
+  // Create a content bubble and simulate clicking on the first radio button
+  // before closing it.
+  ContentSettingFramebustBlockBubbleModel framebust_block_bubble_model(
+      browser()->content_setting_bubble_model_delegate(), GetWebContents(),
+      browser()->profile());
+  std::unique_ptr<FakeOwner> owner = FakeOwner::Create(
+      framebust_block_bubble_model, kDisallowRadioButtonIndex);
 
-    framebust_block_bubble_model.OnRadioClicked(kAllowRadioButtonIndex);
-  }
+  owner->SetSelectedRadioOptionAndCommit(kAllowRadioButtonIndex);
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             settings_map->GetContentSetting(
@@ -191,15 +192,16 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, DisallowRadioButtonSelected) {
             settings_map->GetContentSetting(
                 url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
 
-  {
-    // Create a content bubble and simulate clicking on the second radio button
-    // before closing it.
-    ContentSettingFramebustBlockBubbleModel framebust_block_bubble_model(
-        browser()->content_setting_bubble_model_delegate(), GetWebContents(),
-        browser()->profile());
+  // Create a content bubble and simulate clicking on the second radio button
+  // before closing it.
+  ContentSettingFramebustBlockBubbleModel framebust_block_bubble_model(
+      browser()->content_setting_bubble_model_delegate(), GetWebContents(),
+      browser()->profile());
 
-    framebust_block_bubble_model.OnRadioClicked(kDisallowRadioButtonIndex);
-  }
+  std::unique_ptr<FakeOwner> owner =
+      FakeOwner::Create(framebust_block_bubble_model, kAllowRadioButtonIndex);
+
+  owner->SetSelectedRadioOptionAndCommit(kDisallowRadioButtonIndex);
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             settings_map->GetContentSetting(

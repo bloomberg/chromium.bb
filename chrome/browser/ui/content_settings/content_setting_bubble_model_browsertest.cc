@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/browser/ui/content_settings/fake_owner.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -234,6 +235,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMediaStreamTest,
 
 class ContentSettingBubbleModelPopupTest : public InProcessBrowserTest {
  protected:
+  static constexpr int kDisallowButtonIndex = 1;
+
   void SetUpInProcessBrowserTestFixture() override {
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
@@ -262,6 +265,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelPopupTest,
           browser()->content_setting_bubble_model_delegate(),
           browser()->tab_strip_model()->GetActiveWebContents(),
           browser()->profile(), CONTENT_SETTINGS_TYPE_POPUPS));
+  std::unique_ptr<FakeOwner> owner =
+      FakeOwner::Create(*model, kDisallowButtonIndex);
 
   histograms.ExpectBucketCount(
         "ContentSettings.Popups",
@@ -277,8 +282,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelPopupTest,
         "ContentSettings.Popups",
         content_settings::POPUPS_ACTION_CLICKED_MANAGE_POPUPS_BLOCKING, 1);
 
-  model->OnRadioClicked(model->kAllowButtonIndex);
-  delete model.release();
+  owner->SetSelectedRadioOptionAndCommit(model->kAllowButtonIndex);
   histograms.ExpectBucketCount(
         "ContentSettings.Popups",
         content_settings::POPUPS_ACTION_SELECTED_ALWAYS_ALLOW_POPUPS_FROM, 1);

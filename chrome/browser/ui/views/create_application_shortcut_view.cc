@@ -242,9 +242,8 @@ void CreateChromeApplicationShortcutView::ButtonPressed(
 views::Checkbox* CreateChromeApplicationShortcutView::AddCheckbox(
     const base::string16& text,
     bool checked) {
-  views::Checkbox* checkbox = new views::Checkbox(text);
+  views::Checkbox* checkbox = new views::Checkbox(text, this);
   checkbox->SetChecked(checked);
-  checkbox->set_listener(this);
   return checkbox;
 }
 

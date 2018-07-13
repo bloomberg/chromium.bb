@@ -24,19 +24,6 @@ using ::testing::Return;
 using ::testing::StrictMock;
 
 namespace views {
-class FakeButtonListener : public views::ButtonListener {
- public:
-  FakeButtonListener() {}
-  ~FakeButtonListener() override;
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeButtonListener);
-};
-
-FakeButtonListener::~FakeButtonListener() {}
-void FakeButtonListener::ButtonPressed(views::Button* sender,
-                                       const ui::Event& event) {}
 
 namespace {
 
@@ -80,7 +67,7 @@ class GlobalErrorBubbleViewTest : public testing::Test {
   GlobalErrorBubbleViewTest()
       : mock_global_error_with_standard_bubble_(
             std::make_unique<StrictMock<MockGlobalErrorWithStandardBubble>>()),
-        button_(&mock_button_listener_, base::string16()),
+        button_(nullptr, base::string16()),
         view_(std::make_unique<GlobalErrorBubbleView>(
             &arg_view_,
             gfx::Rect(anchor_point_, gfx::Size()),
@@ -95,7 +82,6 @@ class GlobalErrorBubbleViewTest : public testing::Test {
   views::View arg_view_;
   const gfx::Point anchor_point_;
   views::BubbleBorder::Arrow arrow_;
-  FakeButtonListener mock_button_listener_;
   views::LabelButton button_;
   std::unique_ptr<GlobalErrorBubbleView> view_;
 

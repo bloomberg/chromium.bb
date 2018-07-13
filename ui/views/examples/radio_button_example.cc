@@ -17,10 +17,7 @@
 namespace views {
 namespace examples {
 
-RadioButtonExample::RadioButtonExample()
-    : ExampleBase("Radio Button"),
-      count_(0) {
-}
+RadioButtonExample::RadioButtonExample() : ExampleBase("Radio Button") {}
 
 RadioButtonExample::~RadioButtonExample() {
 }
@@ -35,7 +32,6 @@ void RadioButtonExample::CreateExampleView(View* container) {
         base::UTF8ToUTF16(base::StringPrintf(
             "Radio %d in group %d", static_cast<int>(i) + 1, group)),
         group);
-    radio_buttons_[i]->set_listener(this);
   }
 
   GridLayout* layout = container->SetLayoutManager(
@@ -63,8 +59,6 @@ void RadioButtonExample::ButtonPressed(Button* sender, const ui::Event& event) {
                 BoolToOnOff(radio_buttons_[0]->checked()),
                 BoolToOnOff(radio_buttons_[1]->checked()),
                 BoolToOnOff(radio_buttons_[2]->checked()));
-  } else {
-    PrintStatus("Pressed! count:%d", ++count_);
   }
 }
 

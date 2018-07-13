@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/browser/ui/content_settings/fake_owner.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -213,16 +214,19 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
                                                GetDefaultVideoDevice(),
                                                std::string(),
                                                std::string());
-  {
-    std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        new ContentSettingMediaStreamBubbleModel(nullptr, web_contents(),
-                                                 profile()));
-    const ContentSettingBubbleModel::BubbleContent& bubble_content =
-        content_setting_bubble_model->bubble_content();
-    // Test if the correct radio item is selected for the blocked mediastream
-    // setting.
-    EXPECT_EQ(1, bubble_content.radio_group.default_item);
-  }
+
+  std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+      new ContentSettingMediaStreamBubbleModel(nullptr, web_contents(),
+                                               profile()));
+  const ContentSettingBubbleModel::BubbleContent& bubble_content =
+      content_setting_bubble_model->bubble_content();
+  // Test if the correct radio item is selected for the blocked mediastream
+  // setting.
+  EXPECT_EQ(1, bubble_content.radio_group.default_item);
+
+  std::unique_ptr<FakeOwner> owner =
+      FakeOwner::Create(*content_setting_bubble_model, 1);
+  content_setting_bubble_model->CommitChanges();
 
   // Test that the media settings where not changed.
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
@@ -238,13 +242,8 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
                 std::string()));
 
-  {
-    std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        new ContentSettingMediaStreamBubbleModel(nullptr, web_contents(),
-                                                 profile()));
-    // Change the radio setting.
-    content_setting_bubble_model->OnRadioClicked(0);
-  }
+  owner->SetSelectedRadioOptionAndCommit(0);
+
   // Test that the media setting were change correctly.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
@@ -298,8 +297,11 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubble) {
     // Test if the correct radio item is selected for the blocked mediastream
     // setting.
     EXPECT_EQ(1, bubble_content.radio_group.default_item);
+
+    std::unique_ptr<FakeOwner> owner =
+        FakeOwner::Create(*content_setting_bubble_model, 1);
     // Change the radio setting.
-    content_setting_bubble_model->OnRadioClicked(0);
+    owner->SetSelectedRadioOptionAndCommit(0);
   }
   // Test that the setting was changed.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -322,8 +324,11 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubble) {
         l10n_util::GetStringUTF16(IDS_MEDIASTREAM_SETTING_CHANGED_MESSAGE));
 
     EXPECT_EQ(0, bubble_content.radio_group.default_item);
+
+    std::unique_ptr<FakeOwner> owner =
+        FakeOwner::Create(*content_setting_bubble_model, 0);
     // Restore the radio setting (to block).
-    content_setting_bubble_model->OnRadioClicked(1);
+    owner->SetSelectedRadioOptionAndCommit(1);
   }
   // Test that the media settings were changed again.
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
@@ -387,6 +392,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
                                                  profile()));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
+    std::unique_ptr<FakeOwner> owner = FakeOwner::Create(
+        *content_setting_bubble_model, bubble_content.radio_group.default_item);
     EXPECT_TRUE(bubble_content.custom_link.empty());
 
     EXPECT_EQ(1U, bubble_content.media_menus.size());
@@ -401,6 +408,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
     content_setting_bubble_model->OnMediaMenuClicked(
         content::MEDIA_DEVICE_AUDIO_CAPTURE,
         fake_audio_device2.id);
+    content_setting_bubble_model->CommitChanges();
   }
   {
     std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
@@ -408,6 +416,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
                                                  profile()));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
+    std::unique_ptr<FakeOwner> owner = FakeOwner::Create(
+        *content_setting_bubble_model, bubble_content.radio_group.default_item);
     EXPECT_EQ(1U, bubble_content.media_menus.size());
     EXPECT_EQ(content::MEDIA_DEVICE_AUDIO_CAPTURE,
               bubble_content.media_menus.begin()->first);
@@ -419,6 +429,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
     // active capture.
     EXPECT_FALSE(bubble_content.custom_link_enabled);
     EXPECT_TRUE(bubble_content.custom_link.empty());
+    content_setting_bubble_model->CommitChanges();
   }
 
   // Simulate that an audio stream is being captured.
@@ -442,6 +453,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
                                                  profile()));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
+    std::unique_ptr<FakeOwner> owner = FakeOwner::Create(
+        *content_setting_bubble_model, bubble_content.radio_group.default_item);
     // Settings not changed yet, so the "settings changed" message should not be
     // shown.
     EXPECT_TRUE(bubble_content.custom_link.empty());
@@ -457,6 +470,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
     content_setting_bubble_model->OnMediaMenuClicked(
         content::MEDIA_DEVICE_AUDIO_CAPTURE,
         fake_audio_device3.id);
+    content_setting_bubble_model->CommitChanges();
   }
 
   {
@@ -465,6 +479,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
                                                  profile()));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
+    std::unique_ptr<FakeOwner> owner = FakeOwner::Create(
+        *content_setting_bubble_model, bubble_content.radio_group.default_item);
     // Test that the reload hint is displayed.
     EXPECT_FALSE(bubble_content.custom_link_enabled);
     EXPECT_EQ(
@@ -487,6 +503,8 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
                                                  profile()));
     const ContentSettingBubbleModel::BubbleContent& bubble_content =
         content_setting_bubble_model->bubble_content();
+    std::unique_ptr<FakeOwner> owner = FakeOwner::Create(
+        *content_setting_bubble_model, bubble_content.radio_group.default_item);
     // Test that the reload hint is not displayed any more, because this is a
     // new permission request.
     EXPECT_FALSE(bubble_content.custom_link_enabled);
@@ -889,6 +907,8 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
       NULL, web_contents(), profile(), &registry);
+  std::unique_ptr<FakeOwner> owner =
+      FakeOwner::Create(content_setting_bubble_model, 0);
 
   {
     ProtocolHandler handler = registry.GetHandlerFor("mailto");
@@ -898,7 +918,7 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   }
 
   // "0" is the "Allow" radio button.
-  content_setting_bubble_model.OnRadioClicked(0);
+  owner->SetSelectedRadioOptionAndCommit(0);
   {
     ProtocolHandler handler = registry.GetHandlerFor("mailto");
     ASSERT_FALSE(handler.IsEmpty());
@@ -907,7 +927,7 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   }
 
   // "1" is the "Deny" radio button.
-  content_setting_bubble_model.OnRadioClicked(1);
+  owner->SetSelectedRadioOptionAndCommit(1);
   {
     ProtocolHandler handler = registry.GetHandlerFor("mailto");
     EXPECT_TRUE(handler.IsEmpty());
@@ -916,7 +936,7 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   }
 
   // "2" is the "Ignore button.
-  content_setting_bubble_model.OnRadioClicked(2);
+  owner->SetSelectedRadioOptionAndCommit(2);
   {
     ProtocolHandler handler = registry.GetHandlerFor("mailto");
     EXPECT_TRUE(handler.IsEmpty());
@@ -926,7 +946,7 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   }
 
   // "0" is the "Allow" radio button.
-  content_setting_bubble_model.OnRadioClicked(0);
+  owner->SetSelectedRadioOptionAndCommit(0);
   {
     ProtocolHandler handler = registry.GetHandlerFor("mailto");
     ASSERT_FALSE(handler.IsEmpty());
@@ -952,9 +972,12 @@ TEST_F(ContentSettingBubbleModelTest, RPHDefaultDone) {
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
       NULL, web_contents(), profile(), &registry);
+  std::unique_ptr<FakeOwner> owner = FakeOwner::Create(
+      content_setting_bubble_model,
+      content_setting_bubble_model.bubble_content().radio_group.default_item);
 
   // If nothing is selected, the default action "Ignore" should be performed.
-  content_setting_bubble_model.OnDoneClicked();
+  content_setting_bubble_model.CommitChanges();
   {
     ProtocolHandler handler = registry.GetHandlerFor("mailto");
     EXPECT_TRUE(handler.IsEmpty());
