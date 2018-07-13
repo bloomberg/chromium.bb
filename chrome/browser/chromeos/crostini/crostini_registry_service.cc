@@ -34,10 +34,6 @@ constexpr char kCrostiniWindowAppIdPrefix[] = "org.chromium.termina.";
 // This comes after kCrostiniWindowAppIdPrefix
 constexpr char kWMClassPrefix[] = "wmclass.";
 
-// This prefix is used when generating the crostini app list id, and used as a
-// prefix when generating shelf ids for windows we couldn't match to an app.
-constexpr char kCrostiniAppIdPrefix[] = "crostini:";
-
 constexpr char kCrostiniRegistryPref[] = "crostini.registry";
 constexpr char kCrostiniIconFolder[] = "crostini.icons";
 

@@ -36,6 +36,10 @@ class ApplicationList;
 
 namespace crostini {
 
+// This prefix is used when generating the crostini app list id, and used as a
+// prefix when generating shelf ids for windows we couldn't match to an app.
+constexpr char kCrostiniAppIdPrefix[] = "crostini:";
+
 // The CrostiniRegistryService stores information about Desktop Entries (apps)
 // in Crostini. We store this in prefs so that it is readily available even when
 // the VM isn't running. The registrations here correspond to .desktop files,

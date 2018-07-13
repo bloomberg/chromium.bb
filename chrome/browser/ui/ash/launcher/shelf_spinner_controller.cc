@@ -8,6 +8,8 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
 #include "ui/gfx/canvas.h"
@@ -93,6 +95,18 @@ void ShelfSpinnerController::Close(const std::string& app_id) {
   app_controller_map_.erase(it);
   owner_->CloseLauncherItem(shelf_id);
   UpdateShelfItemIcon(safe_app_id);
+}
+
+void ShelfSpinnerController::CloseCrostiniSpinners() {
+  std::vector<std::string> app_ids_to_close;
+  crostini::CrostiniRegistryService* registry_service =
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(OwnerProfile());
+  for (const auto& app_id_controller_pair : app_controller_map_) {
+    if (registry_service->IsCrostiniShelfAppId(app_id_controller_pair.first))
+      app_ids_to_close.push_back(app_id_controller_pair.first);
+  }
+  for (const auto& app_id : app_ids_to_close)
+    Close(app_id);
 }
 
 bool ShelfSpinnerController::HasApp(const std::string& app_id) const {

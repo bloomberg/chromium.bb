@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -181,6 +182,23 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   // Non-crostini apps (i.e. arc++) are filtered out here.
   if (shelf_app_id.empty())
     return;
+
+  // Failed to uniquely identify the Crostini app that this window is for.
+  // The spinners on the shelf have internal app IDs which are valid
+  // extensions IDs. If the ID here starts with "crostini:" then it implies
+  // that it has failed to identify the exact app that's starting.
+  // The existing spinner that fails to be linked back should be closed,
+  // otherwise it will be left on the shelf indefinetely until it is closed
+  // manually by the user.
+  // When the condition is triggered here, the container is up and at least
+  // one app is starting. It's safe to close all the spinners since their
+  // respective apps take at most another few seconds to start.
+  // Work is ongoing to make this occur as infrequently as possible.
+  // See https://crbug.com/854911.
+  if (base::StartsWith(shelf_app_id, crostini::kCrostiniAppIdPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    owner()->GetShelfSpinnerController()->CloseCrostiniSpinners();
+  }
 
   RegisterAppWindow(window, shelf_app_id);
 
