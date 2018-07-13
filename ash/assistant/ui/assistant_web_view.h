@@ -37,7 +37,9 @@ class AssistantWebView : public views::View,
   void ChildPreferredSizeChanged(views::View* child) override;
 
   // AssistantControllerObserver:
-  void OnDeepLinkReceived(const GURL& deep_link) override;
+  void OnDeepLinkReceived(
+      assistant::util::DeepLinkType type,
+      const std::map<std::string, std::string>& params) override;
 
  private:
   void InitLayout();

@@ -59,25 +59,28 @@ void AssistantWebView::InitLayout() {
   AddChildView(caption_bar_);
 }
 
-void AssistantWebView::OnDeepLinkReceived(const GURL& deep_link) {
-  if (!assistant::util::IsWebDeepLink(deep_link))
+void AssistantWebView::OnDeepLinkReceived(
+    assistant::util::DeepLinkType type,
+    const std::map<std::string, std::string>& params) {
+  if (!assistant::util::IsWebDeepLinkType(type))
     return;
 
   ReleaseWebContents();
 
   web_contents_id_token_ = base::UnguessableToken::Create();
 
-  const int preferred_height_dip =
-      kMaxHeightDip - caption_bar_->GetPreferredSize().height();
+  gfx::Size preferred_size_dip =
+      gfx::Size(kPreferredWidthDip,
+                kMaxHeightDip - caption_bar_->GetPreferredSize().height());
 
-  ash::mojom::ManagedWebContentsParamsPtr params(
+  ash::mojom::ManagedWebContentsParamsPtr web_contents_params(
       ash::mojom::ManagedWebContentsParams::New());
-  params->url = assistant::util::GetWebUrl(deep_link).value();
-  params->min_size_dip = gfx::Size(kPreferredWidthDip, preferred_height_dip);
-  params->max_size_dip = gfx::Size(kPreferredWidthDip, preferred_height_dip);
+  web_contents_params->url = GetWebUrl(type).value();
+  web_contents_params->min_size_dip = preferred_size_dip;
+  web_contents_params->max_size_dip = preferred_size_dip;
 
   assistant_controller_->ManageWebContents(
-      web_contents_id_token_.value(), std::move(params),
+      web_contents_id_token_.value(), std::move(web_contents_params),
       base::BindOnce(&AssistantWebView::OnWebContentsReady,
                      web_contents_request_factory_.GetWeakPtr()));
 }

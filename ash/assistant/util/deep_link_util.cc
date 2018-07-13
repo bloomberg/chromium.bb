@@ -65,6 +65,29 @@ GURL CreateAssistantSettingsDeepLink() {
   return GURL(kAssistantSettingsPrefix);
 }
 
+std::map<std::string, std::string> GetDeepLinkParams(const GURL& deep_link) {
+  std::map<std::string, std::string> params;
+
+  if (!IsDeepLinkUrl(deep_link))
+    return params;
+
+  if (!deep_link.has_query())
+    return params;
+
+  // Key-value pairs are '&' delimited and the keys/values are '=' delimited.
+  // Example: "googleassistant://onboarding?k1=v1&k2=v2".
+  base::StringPairs pairs;
+  if (!base::SplitStringIntoKeyValuePairs(deep_link.query(), '=', '&',
+                                          &pairs)) {
+    return params;
+  }
+
+  for (const auto& pair : pairs)
+    params[pair.first] = pair.second;
+
+  return params;
+};
+
 DeepLinkType GetDeepLinkType(const GURL& url) {
   for (const auto& supported_deep_link : kSupportedDeepLinks) {
     if (base::StartsWith(url.spec(), supported_deep_link.second,
@@ -84,8 +107,10 @@ bool IsDeepLinkUrl(const GURL& url) {
 }
 
 base::Optional<GURL> GetWebUrl(const GURL& deep_link) {
-  DeepLinkType type = GetDeepLinkType(deep_link);
+  return GetWebUrl(GetDeepLinkType(deep_link));
+}
 
+base::Optional<GURL> GetWebUrl(DeepLinkType type) {
   if (!IsWebDeepLinkType(type))
     return base::nullopt;
 
@@ -112,35 +137,6 @@ bool IsWebDeepLink(const GURL& deep_link) {
 
 bool IsWebDeepLinkType(DeepLinkType type) {
   return kWebDeepLinks.count(type) != 0;
-}
-
-bool ParseDeepLinkParams(const GURL& deep_link,
-                         std::map<std::string, std::string>& params) {
-  if (!IsDeepLinkUrl(deep_link))
-    return false;
-
-  // If the deep link does not have a query then there are no key-value pairs to
-  // be parsed. We still return true in this case because omission of parameters
-  // in a deep link does not cause a parse attempt to fail.
-  if (!deep_link.has_query())
-    return true;
-
-  // Key-value pairs are '&' delimited and the keys/values are '=' delimited.
-  // Example: "googleassistant://onboarding?k1=v1&k2=v2".
-  base::StringPairs pairs;
-  if (!base::SplitStringIntoKeyValuePairs(deep_link.query(), '=', '&',
-                                          &pairs)) {
-    return false;
-  }
-
-  // Insert the parsed values into the caller provided map of |params|.
-  for (std::pair<std::string, std::string>& pair : pairs) {
-    if (params.count(pair.first) > 0) {
-      params[pair.first] = pair.second;
-    }
-  }
-
-  return true;
 }
 
 }  // namespace util

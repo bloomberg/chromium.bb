@@ -181,8 +181,10 @@ void AssistantUiController::OnHighlighterEnabledChanged(
   }
 }
 
-void AssistantUiController::OnDeepLinkReceived(const GURL& url) {
-  if (!assistant::util::IsWebDeepLink(url))
+void AssistantUiController::OnDeepLinkReceived(
+    assistant::util::DeepLinkType type,
+    const std::map<std::string, std::string>& params) {
+  if (!assistant::util::IsWebDeepLinkType(type))
     return;
 
   ShowUi(AssistantSource::kDeepLink);

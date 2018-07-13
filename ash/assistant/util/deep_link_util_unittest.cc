@@ -31,6 +31,36 @@ TEST_F(DeepLinkUnitTest, CreateAssistantSettingsDeepLink) {
             CreateAssistantSettingsDeepLink());
 }
 
+TEST_F(DeepLinkUnitTest, GetDeepLinkParams) {
+  std::map<std::string, std::string> params;
+
+  auto ParseDeepLinkParams = [&params](const std::string& url) {
+    params = GetDeepLinkParams(GURL(url));
+  };
+
+  // OK: Supported deep link w/ parameters.
+  ParseDeepLinkParams("googleassistant://onboarding?k1=v1&k2=v2");
+  ASSERT_EQ(2, static_cast<int>(params.size()));
+  ASSERT_EQ("v1", params["k1"]);
+  ASSERT_EQ("v2", params["k2"]);
+
+  // OK: Supported deep link w/o parameters.
+  ParseDeepLinkParams("googleassistant://onboarding");
+  ASSERT_TRUE(params.empty());
+
+  // FAIL: Unsupported deep link.
+  ParseDeepLinkParams("googleassistant://unsupported?k1=v1&k2=v2");
+  ASSERT_TRUE(params.empty());
+
+  // FAIL: Non-deep link URLs.
+  ParseDeepLinkParams("https://www.google.com/search?q=query");
+  ASSERT_TRUE(params.empty());
+
+  // FAIL: Empty URLs.
+  ParseDeepLinkParams(std::string());
+  ASSERT_TRUE(params.empty());
+}
+
 TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
   const std::map<std::string, DeepLinkType> test_cases = {
       // OK: Supported deep links.
@@ -167,6 +197,25 @@ TEST_F(DeepLinkUnitTest, GetWebUrl) {
     ASSERT_EQ(test_case.second, GetWebUrl(GURL(test_case.first)).has_value());
 }
 
+// TODO(dmblack): Assert actual web URLs when available.
+TEST_F(DeepLinkUnitTest, GetWebUrlByType) {
+  const std::map<DeepLinkType, bool> test_cases = {
+      // OK: Supported web deep link types.
+      {DeepLinkType::kExplore, true},
+      {DeepLinkType::kReminders, true},
+      {DeepLinkType::kSettings, true},
+
+      // FAIL: Non-web deep link types.
+      {DeepLinkType::kFeedback, false},
+      {DeepLinkType::kOnboarding, false},
+
+      // FAIL: Unsupported deep link types.
+      {DeepLinkType::kUnsupported, false}};
+
+  for (const auto& test_case : test_cases)
+    ASSERT_EQ(test_case.second, GetWebUrl(test_case.first).has_value());
+}
+
 TEST_F(DeepLinkUnitTest, IsWebDeepLink) {
   const std::map<std::string, bool> test_cases = {
       // OK: Supported web deep links.
@@ -212,88 +261,6 @@ TEST_F(DeepLinkUnitTest, IsWebDeepLinkType) {
 
   for (const auto& test_case : test_cases)
     ASSERT_EQ(test_case.second, IsWebDeepLinkType(test_case.first));
-}
-
-TEST_F(DeepLinkUnitTest, ParseDeepLinkParams) {
-  auto AssertParamsParsed = [](const std::string& deep_link,
-                               std::map<std::string, std::string>& params) {
-    ASSERT_TRUE(ParseDeepLinkParams(GURL(deep_link), params));
-  };
-
-  auto AssertParamsNotParsed = [](const std::string& deep_link,
-                                  std::map<std::string, std::string>& params) {
-    ASSERT_FALSE(ParseDeepLinkParams(GURL(deep_link), params));
-  };
-
-  std::map<std::string, std::string> params;
-
-  auto ResetParams = [&params]() {
-    params["k1"] = "default";
-    params["k2"] = "default";
-  };
-
-  ResetParams();
-
-  // OK: All parameters present.
-  AssertParamsParsed("googleassistant://onboarding?k1=v1&k2=v2", params);
-  ASSERT_EQ("v1", params["k1"]);
-  ASSERT_EQ("v2", params["k2"]);
-
-  ResetParams();
-
-  // OK: Some parameters present.
-  AssertParamsParsed("googleassistant://onboarding?k1=v1", params);
-  ASSERT_EQ("v1", params["k1"]);
-  ASSERT_EQ("default", params["k2"]);
-
-  ResetParams();
-
-  // OK: Unknown parameters present.
-  AssertParamsParsed("googleassistant://onboarding?k1=v1&k3=v3", params);
-  ASSERT_EQ("v1", params["k1"]);
-  ASSERT_EQ("default", params["k2"]);
-
-  ResetParams();
-
-  // OK: No parameters present.
-  AssertParamsParsed("googleassistant://onboarding", params);
-  ASSERT_EQ("default", params["k1"]);
-  ASSERT_EQ("default", params["k2"]);
-
-  ResetParams();
-
-  // OK: Parameters are case sensitive.
-  AssertParamsParsed("googleassistant://onboarding?K1=v1", params);
-  ASSERT_EQ("default", params["k1"]);
-  ASSERT_EQ("default", params["k2"]);
-
-  ResetParams();
-
-  // FAIL: Deep links are case sensitive.
-  AssertParamsNotParsed("GOOGLEASSISTANT://ONBOARDING?k1=v1", params);
-  ASSERT_EQ("default", params["k1"]);
-  ASSERT_EQ("default", params["k2"]);
-
-  ResetParams();
-
-  // FAIL: Malformed parameters.
-  AssertParamsNotParsed("googleassistant://onboarding?k1=", params);
-  ASSERT_EQ("default", params["k1"]);
-  ASSERT_EQ("default", params["k2"]);
-
-  ResetParams();
-
-  // FAIL: Non-deep link URLs.
-  AssertParamsNotParsed("https://www.google.com/search?q=query", params);
-  ASSERT_EQ("default", params["k1"]);
-  ASSERT_EQ("default", params["k2"]);
-
-  ResetParams();
-
-  // FAIL: Empty URLs.
-  AssertParamsNotParsed(std::string(), params);
-  ASSERT_EQ("default", params["k1"]);
-  ASSERT_EQ("default", params["k2"]);
 }
 
 }  // namespace util

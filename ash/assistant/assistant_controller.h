@@ -86,7 +86,9 @@ class ASH_EXPORT AssistantController
                          RequestScreenshotCallback callback) override;
 
   // AssistantControllerObserver:
-  void OnDeepLinkReceived(const GURL& deep_link) override;
+  void OnDeepLinkReceived(
+      assistant::util::DeepLinkType type,
+      const std::map<std::string, std::string>& params) override;
 
   // mojom::ManagedWebContentsOpenUrlDelegate:
   void OnOpenUrlFromTab(const GURL& url) override;

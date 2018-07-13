@@ -90,7 +90,9 @@ class ASH_EXPORT AssistantUiController
   // AssistantControllerObserver:
   void OnAssistantControllerConstructed() override;
   void OnAssistantControllerDestroying() override;
-  void OnDeepLinkReceived(const GURL& deep_link) override;
+  void OnDeepLinkReceived(
+      assistant::util::DeepLinkType type,
+      const std::map<std::string, std::string>& params) override;
   void OnUrlOpened(const GURL& url) override;
 
   // AssistantUiModelObserver:

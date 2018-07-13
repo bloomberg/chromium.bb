@@ -30,6 +30,12 @@ enum class DeepLinkType {
 // Returns a deep link to top level Assistant Settings.
 ASH_EXPORT GURL CreateAssistantSettingsDeepLink();
 
+// Returns the parsed parameters for the specified |deep_link|. If the supplied
+// argument is not a supported deep link or if no parameters are found, an empty
+// map is returned.
+ASH_EXPORT std::map<std::string, std::string> GetDeepLinkParams(
+    const GURL& deep_link);
+
 // Returns the deep link type of the specified |url|. If the specified url is
 // not a supported deep link, DeepLinkType::kUnsupported is returned.
 ASH_EXPORT DeepLinkType GetDeepLinkType(const GURL& url);
@@ -45,20 +51,16 @@ ASH_EXPORT bool IsDeepLinkUrl(const GURL& url);
 // IsWebDeepLink(GURL) API.
 ASH_EXPORT base::Optional<GURL> GetWebUrl(const GURL& deep_link);
 
+// Returns the web URL for a deep link of the specified |type|. A return value
+// will only be present if the deep link type is a web deep link type as
+// identified by the IsWebDeepLinkType(DeepLinkType) API.
+ASH_EXPORT base::Optional<GURL> GetWebUrl(DeepLinkType type);
+
 // Returns true if the specified |deep_link| is a web deep link.
 ASH_EXPORT bool IsWebDeepLink(const GURL& deep_link);
 
 // Returns true if the specified deep link |type| is a web deep link.
 ASH_EXPORT bool IsWebDeepLinkType(DeepLinkType type);
-
-// Parses the specified |deep_link| for the values corresponding to the keys in
-// |params|. If a value for a key in |params| is found, it is inserted into the
-// map. If not, the existing value in the map is untouched, so it is recommended
-// to initiate the map with default values prior to utilizing this API. The
-// return value is true if the deep link was successfully parse, false
-// otherwise.
-ASH_EXPORT bool ParseDeepLinkParams(const GURL& deep_link,
-                                    std::map<std::string, std::string>& params);
 
 }  // namespace util
 }  // namespace assistant
