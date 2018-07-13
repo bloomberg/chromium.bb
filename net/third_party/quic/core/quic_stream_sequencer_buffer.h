@@ -223,11 +223,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   // Number of bytes in buffer.
   size_t num_bytes_buffered_;
 
-  // For debugging use after free, assigned to 123456 in constructor and 654321
-  // in destructor. As long as it's not 123456, this means either use after free
-  // or memory corruption.
-  int32_t destruction_indicator_;
-
   // Currently received data.
   QuicIntervalSet<QuicStreamOffset> bytes_received_;
 
