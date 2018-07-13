@@ -631,6 +631,13 @@ typedef struct SPEED_FEATURES {
 
   // Dynamically estimate final rd from prediction error and mode cost
   int inter_mode_rd_model_estimation;
+
+  // Skip some ref frames in compound motion search by single motion search
+  // result. Has three levels for now: 0 referring to no skipping, and 1 - 3
+  // increasing aggressiveness of skipping in order.
+  // Note: The search order might affect the result. It is better to search same
+  // single inter mode as a group.
+  int prune_comp_search_by_single_result;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
