@@ -6,9 +6,9 @@ This documentation concerns `vr_browser_test.h`, `vr_browser_test.cc`, and files
 that use them.
 
 These files port the framework used by VR instrumentation tests (located in
-`//chrome/android/javatests/src/org/chromium/chrome/browser/vr_shell/` and
+`//chrome/android/javatests/src/org/chromium/chrome/browser/vr/` and
 documented in
-`//chrome/android/javatests/src/org/chromium/chrome/browser/vr_shell/*.md`) for
+`//chrome/android/javatests/src/org/chromium/chrome/browser/vr/*.md`) for
 use in browser tests in order to test VR features on desktop platforms.
 
 This is pretty much a direct port, with the same JavaScript/HTML files being
