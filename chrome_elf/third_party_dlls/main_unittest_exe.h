@@ -21,11 +21,14 @@ enum ExitCode {
   kUnsupportedTestId = -7,
   kEmptyLog = -8,
   kUnexpectedLog = -9,
+  kUnexpectedSectionPath = -10,
+  kBadLogEntrySize = -11,
 };
 
 enum TestId {
   kTestOnlyInitialization = 1,
   kTestSingleDllLoad = 2,
+  kTestLogPath = 3,
 };
 
 }  // namespace main_unittest_exe

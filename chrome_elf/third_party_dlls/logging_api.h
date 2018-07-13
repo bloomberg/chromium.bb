@@ -32,15 +32,16 @@ enum LogType : uint8_t {
 //   (Full path not required for a blacklisted load attempt log.)
 struct LogEntry {
   LogType type;
-  uint8_t basename_hash[20];
-  uint8_t code_id_hash[20];
+  uint32_t module_size;
+  uint32_t time_date_stamp;
+
   // Number of characters in |path| string, not including null terminator.
   uint32_t path_len;
   // UTF-8 full module path, null termination guaranteed.
   char path[1];
 };
 
-static_assert(sizeof(LogEntry) == 52,
+static_assert(sizeof(LogEntry) == 20,
               "Ensure expectations for padding and alignment are correct.  "
               "If this changes, double check GetLogEntrySize() calculation.");
 

@@ -26,8 +26,8 @@ HANDLE g_notification_event = nullptr;
 
 // This structure will be translated into LogEntry when draining log.
 struct LogEntryInternal {
-  uint8_t basename_hash[elf_sha1::kSHA1Length];
-  uint8_t code_id_hash[elf_sha1::kSHA1Length];
+  uint32_t image_size;
+  uint32_t time_date_stamp;
   std::string full_path;
 };
 
@@ -36,8 +36,8 @@ void TranslateEntry(LogType log_type,
                     const LogEntryInternal& src,
                     LogEntry* dst) {
   dst->type = log_type;
-  ::memcpy(dst->basename_hash, src.basename_hash, elf_sha1::kSHA1Length);
-  ::memcpy(dst->code_id_hash, src.code_id_hash, elf_sha1::kSHA1Length);
+  dst->module_size = src.image_size;
+  dst->time_date_stamp = src.time_date_stamp;
 
   // Sanity check - there should be no LogEntryInternal with a too long path.
   // LogLoadAttempt() ensures this.
@@ -71,8 +71,7 @@ class Log {
   void AddEntry(LogEntryInternal&& entry) {
     // Sanity checks.  If load blocked, do not add duplicate logs.
     if (entries_.size() == kMaxLogEntries ||
-        (log_type_ == LogType::kBlocked &&
-         ContainsEntry(entry.basename_hash, entry.code_id_hash))) {
+        (log_type_ == LogType::kBlocked && ContainsEntry(entry))) {
       return;
     }
     entries_.push_back(std::move(entry));
@@ -114,11 +113,12 @@ class Log {
  private:
   // Logs are currently unordered, so just loop.
   // - Returns true if the given hashes already exist in the log.
-  bool ContainsEntry(const uint8_t* basename_hash,
-                     const uint8_t* code_id_hash) const {
+  bool ContainsEntry(const LogEntryInternal& new_entry) const {
     for (auto entry : entries_) {
-      if (!elf_sha1::CompareHashes(basename_hash, entry.basename_hash) &&
-          !elf_sha1::CompareHashes(code_id_hash, entry.code_id_hash)) {
+      // Compare strings last, only if everything else matches, for efficiency.
+      if (new_entry.image_size == entry.image_size &&
+          new_entry.time_date_stamp == entry.time_date_stamp &&
+          new_entry.full_path.compare(entry.full_path) == 0) {
         return true;
       }
     }
@@ -162,22 +162,18 @@ Log& GetAllowedLog() {
 
 // This is called from inside a hook shim, so don't bother with return status.
 void LogLoadAttempt(LogType log_type,
-                    const std::string& basename_hash,
-                    const std::string& code_id_hash,
+                    uint32_t image_size,
+                    uint32_t time_date_stamp,
                     const std::string& full_image_path) {
   assert(g_log_mutex);
-  assert(!basename_hash.empty() && !code_id_hash.empty());
-  assert(basename_hash.length() == elf_sha1::kSHA1Length &&
-         code_id_hash.length() == elf_sha1::kSHA1Length);
 
   if (::WaitForSingleObject(g_log_mutex, kMaxMutexWaitMs) != WAIT_OBJECT_0)
     return;
 
   // Build the new log entry.
   LogEntryInternal entry;
-  ::memcpy(&entry.basename_hash[0], basename_hash.data(),
-           elf_sha1::kSHA1Length);
-  ::memcpy(&entry.code_id_hash[0], code_id_hash.data(), elf_sha1::kSHA1Length);
+  entry.image_size = image_size;
+  entry.time_date_stamp = time_date_stamp;
   entry.full_path = full_image_path;
 
   // Edge condition.  Ensure the path length is <= max(uint32_t) - 1.

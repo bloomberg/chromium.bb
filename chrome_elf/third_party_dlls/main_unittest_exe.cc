@@ -10,6 +10,7 @@
 #include <shellapi.h>
 
 #include "base/files/file.h"
+#include "base/files/file_util.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
@@ -45,6 +46,23 @@ void RegRedirect(registry_util::RegistryOverrideManager* rom) {
   base::string16 temp;
   rom->OverrideRegistry(HKEY_CURRENT_USER, &temp);
   nt::SetTestingOverride(nt::HKCU, temp);
+}
+
+// Compare an argument path with a module-load log path.
+// - |arg_path| is a UTF-16 drive path.
+// - |log.section_path| is UTF-8, and will be a device path, so convert to drive
+//   letter before comparing.
+bool MatchPath(const wchar_t* arg_path, const third_party_dlls::LogEntry& log) {
+  base::FilePath drive_path;
+  if (!base::DevicePathToDriveLetterPath(
+          base::FilePath(base::UTF8ToUTF16(log.path)), &drive_path)) {
+    return false;
+  }
+
+  if (drive_path.value().compare(arg_path) != 0)
+    return false;
+
+  return true;
 }
 
 }  // namespace
@@ -110,7 +128,9 @@ int main() {
     case kTestOnlyInitialization:
       break;
     // Single DLL load.
-    case kTestSingleDllLoad: {
+    case kTestSingleDllLoad:
+    // Single DLL load with log path scrutiny.
+    case kTestLogPath: {
       if (argument_count < 4)
         return kMissingArgument;
       const wchar_t* dll_name = argv[3];
@@ -127,12 +147,18 @@ int main() {
       bytes = DrainLog(&buffer[0], bytes, nullptr);
       third_party_dlls::LogEntry* entry =
           reinterpret_cast<third_party_dlls::LogEntry*>(&buffer[0]);
+      if (!bytes || bytes < third_party_dlls::GetLogEntrySize(entry->path_len))
+        return kBadLogEntrySize;
+
       if ((code == kDllLoadFailed &&
            entry->type != third_party_dlls::kBlocked) ||
           (code == kDllLoadSuccess &&
            entry->type != third_party_dlls::kAllowed)) {
         return kUnexpectedLog;
       }
+
+      if (test_id == kTestLogPath && !MatchPath(dll_name, *entry))
+        return kUnexpectedSectionPath;
 
       return code;
     }
