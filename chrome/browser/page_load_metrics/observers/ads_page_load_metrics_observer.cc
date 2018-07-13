@@ -147,24 +147,12 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
 
   AdTypes ad_types = DetectAds(navigation_handle);
 
+  // If an existing subframe is navigating to an ad and was one to begin with,
+  // then keep tracking it as an ad.
   const auto& id_and_data = ad_frames_data_.find(frame_tree_node_id);
-  if (id_and_data != ad_frames_data_.end()) {
-    // An existing subframe is navigating again.
-    if (id_and_data->second) {
-      // The subframe was an ad to begin with, keep tracking it as an ad.
-      ProcessOngoingNavigationResource(frame_tree_node_id);
-
-      if (frame_tree_node_id == id_and_data->second->frame_tree_node_id) {
-        // This is the top-most frame in the ad.
-        ADS_HISTOGRAM("Navigations.AdFrameRenavigatedToAd",
-                      UMA_HISTOGRAM_BOOLEAN, AD_TYPE_ALL, ad_types.any());
-      }
-      return;
-    }
-    // This frame was previously not an ad, process it as usual. If it had
-    // any child frames that were ads, those will still be recorded.
-    ADS_HISTOGRAM("Navigations.NonAdFrameRenavigatedToAd",
-                  UMA_HISTOGRAM_BOOLEAN, AD_TYPE_ALL, ad_types.any());
+  if (id_and_data != ad_frames_data_.end() && id_and_data->second) {
+    ProcessOngoingNavigationResource(frame_tree_node_id);
+    return;
   }
 
   // Determine who the parent frame's ad ancestor is.
