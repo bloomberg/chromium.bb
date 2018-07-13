@@ -12,7 +12,7 @@
 int MaterialRefreshLayoutProvider::GetDistanceMetric(int metric) const {
   switch (metric) {
     case views::DistanceMetric::DISTANCE_CONTROL_VERTICAL_TEXT_PADDING:
-      return 8;
+      return 6;
   }
   return HarmonyLayoutProvider::GetDistanceMetric(metric);
 }
