@@ -54,7 +54,7 @@ CompositorElementIdFromUniqueObjectId(UniqueObjectId id) {
 CompositorElementIdNamespace NamespaceFromCompositorElementId(
     CompositorElementId element_id) {
   return static_cast<CompositorElementIdNamespace>(
-      element_id.ToInternalValue() %
+      element_id.GetInternalValue() %
       static_cast<uint64_t>(
           CompositorElementIdNamespace::kMaxRepresentableNamespaceId));
 }

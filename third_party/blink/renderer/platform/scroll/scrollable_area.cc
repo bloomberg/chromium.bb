@@ -719,7 +719,7 @@ CompositorElementId ScrollableArea::GetScrollbarElementId(
           ? CompositorElementIdNamespace::kHorizontalScrollbar
           : CompositorElementIdNamespace::kVerticalScrollbar;
   return CompositorElementIdFromUniqueObjectId(
-      scrollable_element_id.ToInternalValue(), element_id_namespace);
+      scrollable_element_id.GetInternalValue(), element_id_namespace);
 }
 
 void ScrollableArea::Trace(blink::Visitor* visitor) {

@@ -60,9 +60,7 @@ struct CC_EXPORT ElementId {
   void AddToTracedValue(base::trace_event::TracedValue* res) const;
   std::unique_ptr<base::Value> AsValue() const;
 
-  // Returns the element id as its underlying representation.
-  // TODO(wkorman): Remove or rename this method. http://crbug.com/752327
-  ElementIdType ToInternalValue() const;
+  ElementIdType GetInternalValue() const;
 
   std::string ToString() const;
 

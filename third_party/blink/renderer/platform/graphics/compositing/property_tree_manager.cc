@@ -125,7 +125,7 @@ void PropertyTreeManager::SetupRootEffectNode() {
   static UniqueObjectId unique_id = NewUniqueObjectId();
 
   effect_node.stable_id =
-      CompositorElementIdFromUniqueObjectId(unique_id).ToInternalValue();
+      CompositorElementIdFromUniqueObjectId(unique_id).GetInternalValue();
   effect_node.transform_id = kRealRootNodeId;
   effect_node.clip_id = kSecondaryRootNodeId;
   effect_node.has_render_surface = true;
@@ -325,11 +325,11 @@ void PropertyTreeManager::EmitClipMaskLayer() {
   // See PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded().
   DCHECK_EQ(static_cast<uint64_t>(cc::EffectNode::INVALID_STABLE_ID),
             mask_isolation.stable_id);
-  mask_isolation.stable_id = mask_isolation_id.ToInternalValue();
+  mask_isolation.stable_id = mask_isolation_id.GetInternalValue();
 
   cc::EffectNode& mask_effect = *GetEffectTree().Node(
       GetEffectTree().Insert(cc::EffectNode(), current_effect_id_));
-  mask_effect.stable_id = mask_effect_id.ToInternalValue();
+  mask_effect.stable_id = mask_effect_id.GetInternalValue();
   mask_effect.clip_id = clip_id;
   mask_effect.has_render_surface = true;
   mask_effect.blend_mode = SkBlendMode::kDstIn;
@@ -578,7 +578,7 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
   cc::EffectNode& effect_node = *GetEffectTree().Node(
       GetEffectTree().Insert(cc::EffectNode(), current_effect_id_));
   effect_node.stable_id =
-      next_effect->GetCompositorElementId().ToInternalValue();
+      next_effect->GetCompositorElementId().GetInternalValue();
   effect_node.clip_id = output_clip_id;
   // Every effect is supposed to have render surface enabled for grouping,
   // but we can get away without one if the effect is opacity-only and has only
