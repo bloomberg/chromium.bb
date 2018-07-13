@@ -352,6 +352,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'extra_args': [
               '--run-ref-build',
               '--test-shard-map-filename=win10_highdpi_shard_map.json',
+              '--assert-gpu-compositing',
           ],
         }
       ],
@@ -371,6 +372,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'extra_args': [
               '--run-ref-build',
               '--test-shard-map-filename=win10_shard_map.json',
+              '--assert-gpu-compositing',
           ],
         },
         {
@@ -440,6 +442,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'extra_args': [
               '--run-ref-build',
               '--test-shard-map-filename=win7_nvidia_shard_map.json',
+              '--assert-gpu-compositing',
           ],
         },
         # crbug.com/735679 enable performance_browser_tests
@@ -495,6 +498,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'extra_args': [
               '--run-ref-build',
               '--test-shard-map-filename=mac_1012_low_end_26_shard_map.json',
+              '--assert-gpu-compositing',
           ],
         },
         {
@@ -524,6 +528,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'extra_args': [
               '--run-ref-build',
               '--test-shard-map-filename=linux_perf_shard_map.json',
+              '--assert-gpu-compositing',
           ],
         },
         {
@@ -561,6 +566,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'extra_args': [
             '--run-ref-build',
             '--test-shard-map-filename=mac_1013_high_end_26_shard_map.json',
+              '--assert-gpu-compositing',
           ],
           'num_shards': 26
         },
