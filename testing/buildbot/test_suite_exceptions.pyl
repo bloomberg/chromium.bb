@@ -1584,17 +1584,6 @@
           ],
         },
       },
-      'mac10.12_retina-blink-rel-dummy': {
-        'swarming': {
-          'dimension_sets': [
-            { # This should match WebKit Mac10.12 (retina) on chromium.webkit.
-              'gpu': '8086:0a2e',
-              'hidpi': '1',
-              'os': 'Mac-10.12',
-            },
-          ],
-        },
-      },
       'mac10.13-blink-rel-dummy': {
         'swarming': {
           'dimension_sets': [

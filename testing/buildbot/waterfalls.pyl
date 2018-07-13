@@ -2215,6 +2215,8 @@
           ],
         },
       },
+      # TODO(crbug.com/863070): We no longer have 10.12 Retina bots, so we are
+      # moving the jobs to 10.13. This bot needs to be renamed to 10.13 later.
       'mac10.12_retina-blink-rel-dummy': {
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -2224,7 +2226,7 @@
             {
               'gpu': '1002:6821',
               'hidpi': '1',
-              'os': 'Mac-10.12.6',
+              'os': 'Mac-10.13.5',
               'pool': 'Chrome-GPU',
             }
           ],
@@ -3075,6 +3077,8 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
+      # TODO(crbug.com/863070): We no longer have 10.12 Retina bots, so we are
+      # moving the jobs to 10.13. This bot needs to be renamed to 10.13 later.
       'WebKit Mac10.12 (retina)': {
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -3084,7 +3088,7 @@
             {
               'gpu': '1002:6821',
               'hidpi': '1',
-              'os': 'Mac-10.12.6',
+              'os': 'Mac-10.13.5',
               'pool': 'Chrome-GPU',
             }
           ],
