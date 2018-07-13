@@ -62,6 +62,10 @@ using chrome_test_util::SettingsDoneButton;
   [self openGoogleServicesSettings];
   [self assertSyncPersonalizedServicesCollapsed:YES];
   [self assertNonPersonalizedServicesCollapsed:NO];
+  [self toggleNonPersonalizedServicesSection];
+  [self assertNonPersonalizedServicesCollapsed:YES];
+  [self toggleNonPersonalizedServicesSection];
+  [self assertNonPersonalizedServicesCollapsed:NO];
 }
 
 #pragma mark - Helpers
@@ -73,6 +77,14 @@ using chrome_test_util::SettingsDoneButton;
       grey_accessibilityID(@"google_services_settings_view_controller");
   [[EarlGrey selectElementWithMatcher:self.scollViewMatcher]
       assertWithMatcher:grey_notNil()];
+}
+
+- (void)toggleNonPersonalizedServicesSection {
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityLabel(GetNSString(
+              IDS_IOS_GOOGLE_SERVICES_SETTINGS_NON_PERSONALIZED_SERVICES_TEXT))]
+      performAction:grey_tap()];
 }
 
 - (void)assertCellWithTitleID:(int)titleID detailTextID:(int)detailTextID {
