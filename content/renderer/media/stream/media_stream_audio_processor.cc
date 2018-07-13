@@ -442,7 +442,7 @@ bool MediaStreamAudioProcessor::WouldModifyAudio(
     return true;
 
 #if !defined(OS_IOS)
-  if (properties.enable_sw_echo_cancellation ||
+  if (properties.EchoCancellationIsWebRtcProvided() ||
       properties.goog_auto_gain_control) {
     return true;
   }
@@ -556,9 +556,10 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   // Return immediately if none of the goog constraints requiring
   // webrtc::AudioProcessing are enabled.
-  if (!properties.enable_sw_echo_cancellation && !goog_experimental_aec &&
-      !properties.goog_noise_suppression && !properties.goog_highpass_filter &&
-      !goog_typing_detection && !properties.goog_auto_gain_control &&
+  if (!properties.EchoCancellationIsWebRtcProvided() &&
+      !goog_experimental_aec && !properties.goog_noise_suppression &&
+      !properties.goog_highpass_filter && !goog_typing_detection &&
+      !properties.goog_auto_gain_control &&
       !properties.goog_experimental_noise_suppression) {
     // Sanity-check: WouldModifyAudio() should return true iff
     // |audio_mirroring_| is true.
@@ -591,7 +592,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   }
 
   // Check if experimental echo canceller should be used.
-  if (properties.enable_sw_echo_cancellation) {
+  if (properties.EchoCancellationIsWebRtcProvided()) {
     base::Optional<bool> override_aec3;
     // In unit tests not creating a message filter, |aec_dump_message_filter_|
     // will be null. We can just ignore that. Other unit tests and browser tests
@@ -626,7 +627,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     playout_data_source_->AddPlayoutSink(this);
   }
 
-  if (properties.enable_sw_echo_cancellation) {
+  if (properties.EchoCancellationIsWebRtcProvided()) {
     EnableEchoCancellation(audio_processing_.get());
 
     // Prepare for logging echo information. Do not log any echo information

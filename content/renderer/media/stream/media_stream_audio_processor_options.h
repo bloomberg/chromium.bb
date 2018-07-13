@@ -33,6 +33,16 @@ using webrtc::AudioProcessing;
 
 // Simple struct with audio-processing properties.
 struct CONTENT_EXPORT AudioProcessingProperties {
+  enum class EchoCancellationType {
+    // Echo cancellation disabled.
+    kEchoCancellationDisabled,
+    // The WebRTC-provided AEC2 echo canceller.
+    kEchoCancellationAec2,
+    // System echo canceller, for example an OS-provided or hardware echo
+    // canceller.
+    kEchoCancellationSystem
+  };
+
   // Creates an AudioProcessingProperties object with fields initialized to
   // their default values.
   AudioProcessingProperties();
@@ -42,9 +52,14 @@ struct CONTENT_EXPORT AudioProcessingProperties {
   // Disables properties that are enabled by default.
   void DisableDefaultProperties();
 
-  bool enable_sw_echo_cancellation = true;
-  bool disable_hw_echo_cancellation = true;
-  bool enable_experimental_hw_echo_cancellation = false;
+  // Returns whether echo cancellation is enabled.
+  bool EchoCancellationEnabled() const;
+
+  // Returns whether WebRTC-provided echo cancellation is enabled.
+  bool EchoCancellationIsWebRtcProvided() const;
+
+  EchoCancellationType echo_cancellation_type =
+      EchoCancellationType::kEchoCancellationAec2;
   bool disable_hw_noise_suppression = false;
   bool goog_audio_mirroring = false;
   bool goog_auto_gain_control = true;
