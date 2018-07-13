@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
 #include "third_party/blink/renderer/core/dom/id_target_observer_registry.h"
+#include "third_party/blink/renderer/core/dom/node_child_removal_tracker.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/tree_scope_adopter.h"
@@ -115,7 +116,13 @@ Element* TreeScope::getElementById(const AtomicString& element_id) const {
     return nullptr;
   if (!elements_by_id_)
     return nullptr;
-  return elements_by_id_->GetElementById(element_id, *this);
+  Element* element = elements_by_id_->GetElementById(element_id, *this);
+  if (element && &RootNode() == &GetDocument() &&
+      GetDocument().InDOMNodeRemovedHandler()) {
+    if (NodeChildRemovalTracker::IsBeingRemoved(element))
+      GetDocument().CountDetachingNodeAccessInDOMNodeRemovedHandler();
+  }
+  return element;
 }
 
 const HeapVector<Member<Element>>& TreeScope::GetAllElementsById(

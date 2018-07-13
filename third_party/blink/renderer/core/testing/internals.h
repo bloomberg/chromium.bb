@@ -526,6 +526,7 @@ class Internals final : public ScriptWrappable {
   bool isUseCounted(Document*, uint32_t feature);
   bool isCSSPropertyUseCounted(Document*, const String&);
   bool isAnimatedCSSPropertyUseCounted(Document*, const String&);
+  void clearUseCounter(Document*, uint32_t feature);
 
   Vector<String> getCSSPropertyLonghands() const;
   Vector<String> getCSSPropertyShorthands() const;

@@ -27,6 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_CHILD_REMOVAL_TRACKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_CHILD_REMOVAL_TRACKER_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -49,7 +50,7 @@ class NodeChildRemovalTracker {
   // Using raw pointers are safe because these NodeChildRemovalTrackers are
   // guaranteed to be on a stack.
   NodeChildRemovalTracker* previous_;
-  static NodeChildRemovalTracker* last_;
+  CORE_EXPORT static NodeChildRemovalTracker* last_;
 };
 
 inline NodeChildRemovalTracker::NodeChildRemovalTracker(Node& node)

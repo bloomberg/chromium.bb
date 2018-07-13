@@ -1289,6 +1289,10 @@ bool UseCounter::HasRecordedMeasurement(WebFeature feature) const {
   return features_recorded_.QuickGet(static_cast<int>(feature));
 }
 
+void UseCounter::ClearMeasurementForTesting(WebFeature feature) {
+  features_recorded_.QuickClear(static_cast<int>(feature));
+}
+
 // Static
 void UseCounter::CountIfFeatureWouldBeBlockedByFeaturePolicy(
     const LocalFrame& frame,
@@ -1394,6 +1398,11 @@ bool UseCounter::IsCounted(Document& document, WebFeature feature) {
 bool UseCounter::IsCounted(CSSPropertyID unresolved_property) {
   return css_recorded_.QuickGet(
       MapCSSPropertyIdToCSSSampleIdForHistogram(unresolved_property));
+}
+
+void UseCounter::ClearCountForTesting(Document& document, WebFeature feature) {
+  if (DocumentLoader* loader = document.Loader())
+    loader->GetUseCounter().ClearMeasurementForTesting(feature);
 }
 
 void UseCounter::AddObserver(Observer* observer) {

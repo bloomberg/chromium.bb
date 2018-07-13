@@ -38,6 +38,10 @@ Please do not add tests unrelated to DOM standard.
 
     See [legacy_dom_conformance/README.md](legacy_dom_conformance/README.md)
 
+*   legacy_mutation_event/
+
+    See [Legacy MutationEvent events](https://w3c.github.io/uievents/#legacy-mutationevent-events)
+
 *   node/
 
     For [Node interface](https://dom.spec.whatwg.org/#interface-node)

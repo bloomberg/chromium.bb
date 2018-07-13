@@ -737,6 +737,18 @@ bool EventTarget::FireEventListeners(Event* event,
       } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerout,
                                        WebFeature::kPointerOverOutFired,
                                        document)) {
+      } else if (event->eventPhase() == Event::kCapturingPhase ||
+                 event->eventPhase() == Event::kBubblingPhase) {
+        if (CheckTypeThenUseCount(
+                event, EventTypeNames::DOMNodeRemoved,
+                WebFeature::kDOMNodeRemovedEventListenedAtNonTarget,
+                document)) {
+        } else if (CheckTypeThenUseCount(
+                       event, EventTypeNames::DOMNodeRemovedFromDocument,
+                       WebFeature::
+                           kDOMNodeRemovedFromDocumentEventListenedAtNonTarget,
+                       document)) {
+        }
       }
     }
   }
