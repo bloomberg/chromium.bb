@@ -2572,7 +2572,6 @@ crbug.com/704259 external/wpt/content-security-policy/reporting/reporting-api-re
 crbug.com/704259 external/wpt/content-security-policy/reporting/reporting-api-sends-reports-on-violation.https.sub.html [ Skip ]
 
 # These HTTP tests that started failing after a web-platform-tests import.
-crbug.com/711529 http/tests/origin_trials/sample-api-workers.html [ Crash Timeout ]
 crbug.com/711529 http/tests/permissions/test-api-surface.html [ Timeout ]
 crbug.com/711529 http/tests/permissions/test-query.html [ Timeout ]
 
