@@ -145,9 +145,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                               int line_number,
                               const GURL& source_url) override;
   void OnControlleeAdded(ServiceWorkerVersion* version,
-                         ServiceWorkerProviderHost* provider_host) override;
+                         const std::string& client_uuid,
+                         const ServiceWorkerClientInfo& client_info) override;
   void OnControlleeRemoved(ServiceWorkerVersion* version,
-                           ServiceWorkerProviderHost* provider_host) override;
+                           const std::string& client_uuid) override;
 
   ServiceWorkerContextWrapper* wrapper() const { return wrapper_; }
   ServiceWorkerStorage* storage() { return storage_.get(); }

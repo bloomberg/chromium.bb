@@ -1465,7 +1465,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, true));
 
   // Removing the controllee should cause the resources to be deleted.
-  registration_->active_version()->RemoveControllee(host.get());
+  registration_->active_version()->RemoveControllee(host.get()->client_uuid());
   registration_->active_version()->Doom();
   base::RunLoop().RunUntilIdle();
   verify_ids.clear();
@@ -1687,7 +1687,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
 
   // Removing the controllee should cause the old version's resources to be
   // deleted.
-  registration_->active_version()->RemoveControllee(host.get());
+  registration_->active_version()->RemoveControllee(host.get()->client_uuid());
   registration_->active_version()->Doom();
   base::RunLoop().RunUntilIdle();
   verify_ids.clear();

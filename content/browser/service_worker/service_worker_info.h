@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <vector>
 
 #include "base/callback.h"
@@ -20,25 +21,10 @@
 namespace content {
 
 enum class EmbeddedWorkerStatus;
+struct ServiceWorkerClientInfo;
 
 struct CONTENT_EXPORT ServiceWorkerVersionInfo {
  public:
-  struct CONTENT_EXPORT ClientInfo {
-   public:
-    ClientInfo();
-    ClientInfo(int process_id,
-               int route_id,
-               const base::Callback<WebContents*(void)>& web_contents_getter,
-               blink::mojom::ServiceWorkerProviderType type);
-    ClientInfo(const ClientInfo& other);
-    ~ClientInfo();
-    int process_id;
-    int route_id;
-    // |web_contents_getter| is only set for PlzNavigate.
-    base::Callback<WebContents*(void)> web_contents_getter;
-    blink::mojom::ServiceWorkerProviderType type;
-  };
-
   ServiceWorkerVersionInfo();
   ServiceWorkerVersionInfo(
       EmbeddedWorkerStatus running_status,
@@ -65,7 +51,7 @@ struct CONTENT_EXPORT ServiceWorkerVersionInfo {
   int devtools_agent_route_id;
   base::Time script_response_time;
   base::Time script_last_modified;
-  std::map<std::string, ClientInfo> clients;
+  std::map<std::string, ServiceWorkerClientInfo> clients;
 };
 
 struct CONTENT_EXPORT ServiceWorkerRegistrationInfo {

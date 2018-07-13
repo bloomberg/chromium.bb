@@ -101,13 +101,9 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
                        const ErrorInfo& info) override;
   void OnReportConsoleMessage(int64_t version_id,
                               const ConsoleMessage& message) override;
-  void OnControlleeAdded(
-      int64_t version_id,
-      const std::string& uuid,
-      int process_id,
-      int route_id,
-      const base::Callback<WebContents*(void)>& web_contents_getter,
-      blink::mojom::ServiceWorkerProviderType type) override;
+  void OnControlleeAdded(int64_t version_id,
+                         const std::string& uuid,
+                         const ServiceWorkerClientInfo& info) override;
   void OnControlleeRemoved(int64_t version_id,
                            const std::string& uuid) override;
   void OnRegistrationCompleted(int64_t registration_id,

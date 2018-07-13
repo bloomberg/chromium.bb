@@ -277,21 +277,12 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
 
   if (context_)
     context_->UnregisterProviderHostByClientID(client_uuid_);
+  if (controller_)
+    controller_->RemoveControllee(client_uuid_);
 
-  // Stop listening to registrations. This must be done before removing the
-  // controllee below, otherwise it can trigger activation of a waiting worker
-  // and OnSkippedWaiting can be called which would associate the version
-  // with this provider being destroyed.
+  // Remove |this| as an observer of ServiceWorkerRegistrations.
+  // TODO(falken): Use ScopedObserver instead of this explicit call.
   RemoveAllMatchingRegistrations();
-
-  // Clear |document_url_| so the activation of a waiting worker upon
-  // RemoveControllee() won't associate the new version with this provider being
-  // destroyed.
-  // TODO(falken): Is this still needed given that we call
-  // RemoveAllMatchingRegistrations?
-  document_url_ = GURL();
-  if (controller_.get())
-    controller_->RemoveControllee(this);
 }
 
 int ServiceWorkerProviderHost::frame_id() const {
@@ -424,7 +415,7 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
     version->AddControllee(this);
 
   if (previous_version.get())
-    previous_version->RemoveControllee(this);
+    previous_version->RemoveControllee(client_uuid_);
 
   // SetController message should be sent only for clients.
   DCHECK(IsProviderForClient());

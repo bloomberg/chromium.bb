@@ -831,7 +831,7 @@ TEST_F(ServiceWorkerJobTest,
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, version->status());
 
-  registration->active_version()->RemoveControllee(host);
+  registration->active_version()->RemoveControllee(host->client_uuid());
   base::RunLoop().RunUntilIdle();
 
   // The version should be stopped since there is no controllee.
@@ -1422,7 +1422,7 @@ TEST_F(ServiceWorkerJobTest, RegisterWhileUninstalling) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, new_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED, new_version->status());
 
-  old_version->RemoveControllee(host);
+  old_version->RemoveControllee(host->client_uuid());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(registration->is_uninstalling());
@@ -1479,7 +1479,7 @@ TEST_F(ServiceWorkerJobTest, RegisterAndUnregisterWhileUninstalling) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, new_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED, new_version->status());
 
-  old_version->RemoveControllee(host);
+  old_version->RemoveControllee(host->client_uuid());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(registration->is_uninstalling());
@@ -1525,7 +1525,7 @@ TEST_F(ServiceWorkerJobTest, RegisterSameScriptMultipleTimesWhileUninstalling) {
   EXPECT_FALSE(registration->is_uninstalling());
   EXPECT_EQ(new_version, registration->waiting_version());
 
-  old_version->RemoveControllee(host);
+  old_version->RemoveControllee(host->client_uuid());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(registration->is_uninstalling());
@@ -1582,7 +1582,7 @@ TEST_F(ServiceWorkerJobTest, RegisterMultipleTimesWhileUninstalling) {
   EXPECT_FALSE(registration->is_uninstalling());
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, second_version->status());
 
-  first_version->RemoveControllee(host);
+  first_version->RemoveControllee(host->client_uuid());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(registration->is_uninstalling());
@@ -1665,8 +1665,9 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall) {
   RunUnregisterJob(options.scope);
 
   // Register another script. While installing, old_version loses controllee.
-  helper->set_install_callback(base::BindRepeating(
-      &ServiceWorkerVersion::RemoveControllee, old_version, host));
+  helper->set_install_callback(
+      base::BindRepeating(&ServiceWorkerVersion::RemoveControllee, old_version,
+                          host->client_uuid()));
   EXPECT_EQ(registration, RunRegisterJob(script2, options));
 
   EXPECT_FALSE(registration->is_uninstalling());
@@ -1706,8 +1707,9 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringRejectedInstall) {
 
   // Register another script that fails to install. While installing,
   // old_version loses controllee.
-  helper->set_install_callback(base::BindRepeating(
-      &ServiceWorkerVersion::RemoveControllee, old_version, host));
+  helper->set_install_callback(
+      base::BindRepeating(&ServiceWorkerVersion::RemoveControllee, old_version,
+                          host->client_uuid()));
   helper->set_install_event_result(
       blink::mojom::ServiceWorkerEventStatus::REJECTED);
   EXPECT_EQ(registration, RunRegisterJob(script2, options));
@@ -1744,8 +1746,9 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall_RejectActivate) {
 
   // Register another script that fails to activate. While installing,
   // old_version loses controllee.
-  helper->set_install_callback(base::BindRepeating(
-      &ServiceWorkerVersion::RemoveControllee, old_version, host));
+  helper->set_install_callback(
+      base::BindRepeating(&ServiceWorkerVersion::RemoveControllee, old_version,
+                          host->client_uuid()));
   helper->set_activate_event_result(
       blink::mojom::ServiceWorkerEventStatus::REJECTED);
   EXPECT_EQ(registration, RunRegisterJob(script2, options));
@@ -1876,7 +1879,7 @@ TEST_F(ServiceWorkerJobTest, ActivateCancelsOnShutdown) {
 
   // Remove the controllee. The new version should be activating, and delayed
   // until the runner runs again.
-  first_version->RemoveControllee(host);
+  first_version->RemoveControllee(host->client_uuid());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(new_version.get(), registration->active_version());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, new_version->status());
