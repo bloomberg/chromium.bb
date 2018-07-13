@@ -86,7 +86,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   gfx::ImageSkia GetFaviconForTabIconView() override;
 
   // OpaqueBrowserFrameViewLayoutDelegate implementation:
-  bool IsIncognito() const override;
   bool ShouldShowWindowIcon() const override;
   bool ShouldShowWindowTitle() const override;
   base::string16 GetWindowTitle() const override;
@@ -102,6 +101,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   int GetTabStripHeight() const override;
   bool IsToolbarVisible() const override;
   gfx::Size GetTabstripPreferredSize() const override;
+  gfx::Size GetNewTabButtonPreferredSize() const override;
   int GetTopAreaHeight() const override;
   bool UseCustomFrame() const override;
 
