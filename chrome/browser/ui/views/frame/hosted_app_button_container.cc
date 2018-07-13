@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
@@ -71,8 +72,7 @@ class HostedAppButtonContainer::ContentSettingsContainer
   explicit ContentSettingsContainer(BrowserView* browser_view);
   ~ContentSettingsContainer() override = default;
 
-  // Updates the visibility of each content setting.
-  void RefreshContentSettingViews() {
+  void UpdateContentSettingViewsVisibility() {
     for (auto* v : content_setting_views_)
       v->Update();
   }
@@ -141,6 +141,10 @@ HostedAppButtonContainer::GetContentSettingViewsForTesting() const {
 HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
     BrowserView* browser_view)
     : browser_view_(browser_view) {
+  DCHECK(
+      extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
+          browser_view->browser()));
+
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       views::LayoutProvider::Get()->GetDistanceMetric(
@@ -216,8 +220,8 @@ HostedAppButtonContainer::~HostedAppButtonContainer() {
     immersive_controller->RemoveObserver(this);
 }
 
-void HostedAppButtonContainer::RefreshContentSettingViews() {
-  content_settings_container_->RefreshContentSettingViews();
+void HostedAppButtonContainer::UpdateContentSettingViewsVisibility() {
+  content_settings_container_->UpdateContentSettingViewsVisibility();
 }
 
 void HostedAppButtonContainer::SetPaintAsActive(bool active) {

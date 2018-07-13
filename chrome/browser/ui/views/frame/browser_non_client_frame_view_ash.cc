@@ -494,7 +494,7 @@ void BrowserNonClientFrameViewAsh::ResetWindowControls() {
   }
 
   if (hosted_app_button_container_)
-    hosted_app_button_container_->RefreshContentSettingViews();
+    hosted_app_button_container_->UpdateContentSettingViewsVisibility();
 }
 
 void BrowserNonClientFrameViewAsh::UpdateWindowIcon() {

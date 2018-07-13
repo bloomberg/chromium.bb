@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -189,6 +190,11 @@ bool BrowserNonClientFrameView::ShouldPaintAsSingleTabMode() const {
 }
 
 SkColor BrowserNonClientFrameView::GetFrameColor(bool active) const {
+  extensions::HostedAppBrowserController* hosted_app_controller =
+      browser_view()->browser()->hosted_app_controller();
+  if (hosted_app_controller && hosted_app_controller->GetThemeColor())
+    return *hosted_app_controller->GetThemeColor();
+
   ThemeProperties::OverwritableByUserThemeProperty color_id;
   if (ShouldPaintAsSingleTabMode()) {
     color_id = ThemeProperties::COLOR_TOOLBAR;
