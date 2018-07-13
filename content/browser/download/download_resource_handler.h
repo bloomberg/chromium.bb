@@ -44,7 +44,8 @@ class CONTENT_EXPORT DownloadResourceHandler
   // |id| should be invalid if the id should be automatically assigned.
   DownloadResourceHandler(net::URLRequest* request,
                           const std::string& request_origin,
-                          download::DownloadSource download_source);
+                          download::DownloadSource download_source,
+                          bool follow_cross_origin_redirects);
 
   // static
   // This function is passed into ResourceDispatcherHostImpl during its
@@ -61,7 +62,8 @@ class CONTENT_EXPORT DownloadResourceHandler
   static std::unique_ptr<ResourceHandler> CreateForNewRequest(
       net::URLRequest* request,
       const std::string& request_origin,
-      download::DownloadSource download_source);
+      download::DownloadSource download_source,
+      bool follow_cross_origin_redirects);
 
   void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
@@ -116,6 +118,9 @@ class CONTENT_EXPORT DownloadResourceHandler
   // Marked as a std::unique_ptr<> to indicate ownership of the structure, but
   // deletion must occur on the IO thread.
   std::unique_ptr<DownloadTabInfo> tab_info_;
+
+  bool follow_cross_origin_redirects_;
+  url::Origin first_origin_;
 
   DownloadRequestCore core_;
 

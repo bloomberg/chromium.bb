@@ -3968,6 +3968,7 @@ void RenderFrameImpl::DidAddMessageToConsole(
 
 void RenderFrameImpl::DownloadURL(
     const blink::WebURLRequest& request,
+    CrossOriginRedirects cross_origin_redirect_behavior,
     mojo::ScopedMessagePipeHandle blob_url_token) {
   if (ShouldThrottleDownload())
     return;
@@ -3980,6 +3981,8 @@ void RenderFrameImpl::DownloadURL(
   params.initiator_origin = request.RequestorOrigin();
   if (request.GetSuggestedFilename().has_value())
     params.suggested_name = request.GetSuggestedFilename()->Utf16();
+  params.follow_cross_origin_redirects =
+      (cross_origin_redirect_behavior == CrossOriginRedirects::kFollow);
   params.blob_url_token = blob_url_token.release();
 
   Send(new FrameHostMsg_DownloadUrl(params));
@@ -6157,7 +6160,9 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   if (info.default_policy == blink::kWebNavigationPolicyDownload) {
     blink::mojom::BlobURLTokenPtrInfo blob_url_token =
         CloneBlobURLToken(info.blob_url_token.get());
-    DownloadURL(info.url_request, blob_url_token.PassHandle());
+    DownloadURL(info.url_request,
+                blink::WebLocalFrameClient::CrossOriginRedirects::kNavigate,
+                blob_url_token.PassHandle());
   } else {
     OpenURL(info, /*send_referrer=*/true,
             /*is_history_navigation_in_new_child=*/false);

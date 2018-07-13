@@ -211,6 +211,13 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
     do_not_prompt_for_login_ = do_not_prompt;
   }
 
+  // If |follow_cross_origin_redirects| is true, we will follow cross origin
+  // redirects while downloading, otherwise, we'll attempt to navigate to the
+  // URL.
+  void set_follow_cross_origin_redirects(bool follow_cross_origin_redirects) {
+    follow_cross_origin_redirects_ = follow_cross_origin_redirects;
+  }
+
   // Sets whether to download the response body even if the server returns
   // non-successful HTTP response code, like "HTTP NOT FOUND".
   void set_fetch_error_body(bool fetch_error_body) {
@@ -284,6 +291,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   bool prompt() const { return save_info_.prompt_for_save_location; }
   const GURL& url() const { return url_; }
   bool do_not_prompt_for_login() const { return do_not_prompt_for_login_; }
+  bool follow_cross_origin_redirects() const {
+    return follow_cross_origin_redirects_;
+  }
   bool fetch_error_body() const { return fetch_error_body_; }
   bool is_transient() const { return transient_; }
   std::string guid() const { return guid_; }
@@ -321,6 +331,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   DownloadSaveInfo save_info_;
   GURL url_;
   bool do_not_prompt_for_login_;
+  bool follow_cross_origin_redirects_;
   bool fetch_error_body_;
   bool transient_;
   std::string guid_;

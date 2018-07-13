@@ -288,6 +288,7 @@ class TestSaveImageFromDataURL : public RenderFrameMessageFilter {
       const url::Origin& initiator,
       const base::string16& suggested_name,
       const bool use_prompt,
+      const bool follow_cross_origin_redirects,
       blink::mojom::BlobURLTokenPtrInfo blob_url_token) const override {
     url_string_ = url.spec();
     is_downloaded_ = true;

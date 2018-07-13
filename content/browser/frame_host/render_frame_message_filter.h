@@ -85,6 +85,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter
       const url::Origin& initiator,
       const base::string16& suggested_name,
       const bool use_prompt,
+      const bool follow_cross_origin_redirects,
       blink::mojom::BlobURLTokenPtrInfo blob_url_token) const;
 
  private:

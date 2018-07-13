@@ -338,6 +338,7 @@ void RenderFrameMessageFilter::DownloadUrl(
     const url::Origin& initiator,
     const base::string16& suggested_name,
     const bool use_prompt,
+    const bool follow_cross_origin_redirects,
     blink::mojom::BlobURLTokenPtrInfo blob_url_token) const {
   if (!resource_context_)
     return;
@@ -374,6 +375,7 @@ void RenderFrameMessageFilter::DownloadUrl(
   parameters->set_content_initiated(true);
   parameters->set_suggested_name(suggested_name);
   parameters->set_prompt(use_prompt);
+  parameters->set_follow_cross_origin_redirects(follow_cross_origin_redirects);
   parameters->set_referrer(referrer.url);
   parameters->set_referrer_policy(
       Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
@@ -483,7 +485,8 @@ void RenderFrameMessageFilter::OnDownloadUrl(
 
   DownloadUrl(params.render_view_id, params.render_frame_id, params.url,
               params.referrer, params.initiator_origin, params.suggested_name,
-              false, std::move(blob_url_token));
+              false, params.follow_cross_origin_redirects,
+              std::move(blob_url_token));
 }
 
 void RenderFrameMessageFilter::OnSaveImageFromDataURL(
@@ -499,7 +502,7 @@ void RenderFrameMessageFilter::OnSaveImageFromDataURL(
     return;
 
   DownloadUrl(render_view_id, render_frame_id, data_url, Referrer(),
-              url::Origin(), base::string16(), true, nullptr);
+              url::Origin(), base::string16(), true, true, nullptr);
 }
 
 void RenderFrameMessageFilter::OnAre3DAPIsBlocked(int render_frame_id,
