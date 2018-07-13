@@ -150,17 +150,14 @@ Status D3D11H264Accelerator::SubmitFrameMetadata(
   used_for_reference_flags_ = 0;
   non_existing_frame_flags_ = 0;
 
-  int i = 0;
-
   // TODO(liberato): this is similar to H264Accelerator.  can they share code?
 
-  for (auto it = dpb.begin(); it != dpb.end(); it++) {
+  int i = 0;
+  for (auto it = dpb.begin(); it != dpb.end(); i++, it++) {
     scoped_refptr<D3D11H264Picture> our_ref_pic(
         static_cast<D3D11H264Picture*>(it->get()));
-    if (!our_ref_pic->ref) {
-      i++;
+    if (!our_ref_pic->ref)
       continue;
-    }
     ref_frame_list_[i].Index7Bits = our_ref_pic->level_;
     ref_frame_list_[i].AssociatedFlag = our_ref_pic->long_term;
     field_order_cnt_list_[i][0] = our_ref_pic->top_field_order_cnt;
@@ -168,10 +165,9 @@ Status D3D11H264Accelerator::SubmitFrameMetadata(
     frame_num_list_[i] = ref_frame_list_[i].AssociatedFlag
                              ? our_ref_pic->long_term_pic_num
                              : our_ref_pic->frame_num;
-    int ref = 3;
+    unsigned ref = 3;
     used_for_reference_flags_ |= ref << (2 * i);
     non_existing_frame_flags_ |= (our_ref_pic->nonexisting) << i;
-    i++;
   }
   slice_info_.clear();
   return RetrieveBitstreamBuffer() ? Status::kOk : Status::kFail;
@@ -219,6 +215,9 @@ Status D3D11H264Accelerator::SubmitSlice(
   FROM_SPS_TO_PP2(wFrameHeightInMbsMinus1, pic_height_in_map_units_minus1);
   pic_param.CurrPic.Index7Bits = our_pic->level_;
   pic_param.CurrPic.AssociatedFlag = slice_hdr->bottom_field_flag;
+  // The H.264 specification now calls this |max_num_ref_frames|, while
+  // DXVA_PicParams_H264 continues to use the old name, |num_ref_frames|.
+  // See DirectX Video Acceleration for H.264/MPEG-4 AVC Decoding (4.2).
   FROM_SPS_TO_PP2(num_ref_frames, max_num_ref_frames);
 
   FROM_SLICE_TO_PP(field_pic_flag);
@@ -231,12 +230,13 @@ Status D3D11H264Accelerator::SubmitSlice(
   FROM_PPS_TO_PP(constrained_intra_pred_flag);
   FROM_PPS_TO_PP(weighted_pred_flag);
   FROM_PPS_TO_PP(weighted_bipred_idc);
+  // From "DirectX Video Acceleration Specification for H.264/AVC Decoding":
+  // "The value shall be 1 unless the restricted-mode profile in use explicitly
+  // supports the value 0."
   pic_param.MbsConsecutiveFlag = 1;
   FROM_SPS_TO_PP(frame_mbs_only_flag);
   FROM_PPS_TO_PP(transform_8x8_mode_flag);
-  // TODO(liberato): sandersd@ believes that this should only be set for level
-  // >= 3.1 .  verify this and fix as needed.
-  pic_param.MinLumaBipredSize8x8Flag = 1;
+  pic_param.MinLumaBipredSize8x8Flag = sps_.level_idc >= 31;
   pic_param.IntraPicFlag = slice_hdr->IsISlice();
   FROM_SPS_TO_PP(bit_depth_luma_minus8);
   FROM_SPS_TO_PP(bit_depth_chroma_minus8);
@@ -260,13 +260,15 @@ Status D3D11H264Accelerator::SubmitSlice(
   FROM_PPS_TO_PP(pic_init_qs_minus26);
   FROM_PPS_TO_PP(chroma_qp_index_offset);
   FROM_PPS_TO_PP(second_chroma_qp_index_offset);
+  // |ContinuationFlag| indicates that we've filled in the remaining fields.
   pic_param.ContinuationFlag = 1;
   FROM_PPS_TO_PP(pic_init_qp_minus26);
   FROM_PPS_TO_PP2(num_ref_idx_l0_active_minus1,
                   num_ref_idx_l0_default_active_minus1);
   FROM_PPS_TO_PP2(num_ref_idx_l1_active_minus1,
                   num_ref_idx_l1_default_active_minus1);
-  // UNUSED: Reserved8BitsA
+  // UNUSED: Reserved8BitsA.  Must be zero unless bit 13 of
+  // ConfigDecoderSpecific is set.
   memcpy(pic_param.FrameNumList, frame_num_list_,
          sizeof pic_param.FrameNumList);
   pic_param.UsedForReferenceFlags = used_for_reference_flags_;
@@ -281,15 +283,18 @@ Status D3D11H264Accelerator::SubmitSlice(
   FROM_PPS_TO_PP2(pic_order_present_flag,
                   bottom_field_pic_order_in_frame_present_flag);
   FROM_PPS_TO_PP(num_slice_groups_minus1);
-  CHECK_EQ(0u, pic_param.num_slice_groups_minus1);
-  // UNUSED: slice_group_map_type
+  if (pic_param.num_slice_groups_minus1) {
+    // TODO(liberato): UMA?
+    // TODO(liberato): media log?
+    LOG(ERROR) << "num_slice_groups_minus1 == "
+               << pic_param.num_slice_groups_minus1;
+    return Status::kFail;
+  }
+  // UNUSED: slice_group_map_type (undocumented)
   FROM_PPS_TO_PP(deblocking_filter_control_present_flag);
   FROM_PPS_TO_PP(redundant_pic_cnt_present_flag);
-  // UNUSED: Reserved8BitsB
-  // UNUSED: slice_group_change_rate
-  //
-  //
-  //
+  // UNUSED: Reserved8BitsB (unused, should always be zero).
+  // UNUSED: slice_group_change_rate (undocumented)
 
   pic_param.StatusReportFeedbackNumber = 1;
 
