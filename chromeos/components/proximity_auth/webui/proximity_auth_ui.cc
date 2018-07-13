@@ -50,6 +50,11 @@ ProximityAuthUI::ProximityAuthUI(
       "chromeos/services/multidevice_setup/public/mojom/"
       "multidevice_setup_constants.mojom.js",
       IDR_MULTIDEVICE_SETUP_CONSTANTS_MOJOM_JS);
+  source->AddResourcePath(
+      "chromeos/services/device_sync/public/mojom/device_sync.mojom.js",
+      IDR_DEVICE_SYNC_MOJOM_JS);
+  source->AddResourcePath("mojo/public/mojom/base/time.mojom.js",
+                          IDR_TIME_MOJOM_JS);
 
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
