@@ -8,30 +8,16 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/invalidation/public/identity_provider.h"
-#include "components/signin/core/browser/signin_manager_base.h"
-
-class ProfileOAuth2TokenService;
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace invalidation {
 
 // An identity provider implementation that's backed by
 // ProfileOAuth2TokenService and SigninManager.
 class ProfileIdentityProvider : public IdentityProvider,
-                                public OAuth2TokenService::Observer,
-                                public SigninManagerBase::Observer {
+                                public identity::IdentityManager::Observer {
  public:
-  ProfileIdentityProvider(SigninManagerBase* signin_manager,
-                          ProfileOAuth2TokenService* token_service);
-#if defined(UNIT_TEST)
-  // Provide a testing constructor that allows for a null SigninManager instance
-  // to be passed, as there are tests that don't interact with the login
-  // functionality and it is a pain to set up FakeSigninManager(Base).
-  // TODO(809452): Eliminate this testing constructor when this class is
-  // converted to take in IdentityManager, at which point the tests can use
-  // IdentityTestEnvironment.
-  ProfileIdentityProvider(ProfileOAuth2TokenService* token_service)
-      : signin_manager_(nullptr), token_service_(token_service) {}
-#endif
+  ProfileIdentityProvider(identity::IdentityManager* identity_manager);
   ~ProfileIdentityProvider() override;
 
   // IdentityProvider:
@@ -44,19 +30,17 @@ class ProfileIdentityProvider : public IdentityProvider,
   void InvalidateAccessToken(const OAuth2TokenService::ScopeSet& scopes,
                              const std::string& access_token) override;
 
-  // SigninManagerBase::Observer:
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
-
-  // OAuth2TokenService::Observer:
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
-  void OnRefreshTokenRevoked(const std::string& account_id) override;
+  // identity::IdentityManager::Observer:
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
+  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
+                                       bool is_valid) override;
+  void OnRefreshTokenRemovedForAccount(
+      const AccountInfo& account_info) override;
 
  private:
-  SigninManagerBase* const signin_manager_;
-  ProfileOAuth2TokenService* const token_service_;
+  identity::IdentityManager* const identity_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileIdentityProvider);
 };
