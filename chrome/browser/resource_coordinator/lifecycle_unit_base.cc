@@ -30,6 +30,10 @@ LifecycleUnitState LifecycleUnitBase::GetState() const {
   return state_;
 }
 
+base::TimeTicks LifecycleUnitBase::GetStateChangeTime() const {
+  return state_change_time_;
+}
+
 base::TimeTicks LifecycleUnitBase::GetWallTimeWhenHidden() const {
   return wall_time_when_hidden_;
 }
@@ -56,6 +60,7 @@ void LifecycleUnitBase::SetState(LifecycleUnitState state,
     return;
   LifecycleUnitState last_state = state_;
   state_ = state;
+  state_change_time_ = NowTicks();
   OnLifecycleUnitStateChanged(last_state, reason);
   for (auto& observer : observers_)
     observer.OnLifecycleUnitStateChanged(this, last_state);

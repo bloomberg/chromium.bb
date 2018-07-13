@@ -120,6 +120,9 @@ class LifecycleUnit {
   // Returns the current state of this LifecycleUnit.
   virtual LifecycleUnitState GetState() const = 0;
 
+  // Returns the last time at which the state of this LifecycleUnit changed.
+  virtual base::TimeTicks GetStateChangeTime() const = 0;
+
   // Request that the LifecycleUnit be loaded, return true if the request is
   // successful.
   virtual bool Load() = 0;
