@@ -4389,7 +4389,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   MB_MODE_INFO best_mbmi = *mbmi;
   /* Y Search for intra prediction mode */
-  for (int mode_idx = DC_PRED; mode_idx < INTRA_MODES; ++mode_idx) {
+  for (int mode_idx = INTRA_MODE_START; mode_idx < INTRA_MODE_END; ++mode_idx) {
     RD_STATS this_rd_stats;
     int this_rate, this_rate_tokenonly, s;
     int64_t this_distortion, this_rd, this_model_rd;
@@ -6379,9 +6379,9 @@ static INLINE int mv_check_bounds(const MvLimits *mv_limits, const MV *mv) {
          (mv->col >> 3) > mv_limits->col_max;
 }
 
-static INLINE int get_single_mode(int this_mode, int ref_idx,
-                                  int is_comp_pred) {
-  int single_mode;
+static INLINE PREDICTION_MODE get_single_mode(PREDICTION_MODE this_mode,
+                                              int ref_idx, int is_comp_pred) {
+  PREDICTION_MODE single_mode;
   if (is_comp_pred) {
     single_mode =
         ref_idx ? compound_ref1_mode(this_mode) : compound_ref0_mode(this_mode);
@@ -6394,7 +6394,8 @@ static INLINE int get_single_mode(int this_mode, int ref_idx,
 /* If the current mode shares the same mv with other modes with higher prority,
  * skip this mode. This priority order is nearest > global > near. */
 static int skip_repeated_mv(const AV1_COMMON *const cm,
-                            const MACROBLOCK *const x, int this_mode,
+                            const MACROBLOCK *const x,
+                            PREDICTION_MODE this_mode,
                             const MV_REFERENCE_FRAME ref_frames[2]) {
   const int is_comp_pred = ref_frames[1] > INTRA_FRAME;
   const uint8_t ref_frame_type = av1_ref_frame_type(ref_frames);
@@ -6420,7 +6421,8 @@ static int skip_repeated_mv(const AV1_COMMON *const cm,
     }
   } else {
     for (int i = 0; i < 2; ++i) {
-      const int single_mode = get_single_mode(this_mode, i, is_comp_pred);
+      const PREDICTION_MODE single_mode =
+          get_single_mode(this_mode, i, is_comp_pred);
       if (single_mode == NEARMV) {
         if (mbmi_ext->ref_mv_count[ref_frame_type] == 0) {
           // NEARMV has the same motion vector as NEARESTMV in compound mode
@@ -7298,12 +7300,12 @@ static void do_masked_motion_search_indexed(
 // near mv modes to reduce distortion in subsequent blocks and also improve
 // visual quality.
 #define NEW_MV_DISCOUNT_FACTOR 8
-static INLINE void get_this_mv(int_mv *this_mv, int this_mode, int ref_idx,
-                               int ref_mv_idx,
+static INLINE void get_this_mv(int_mv *this_mv, PREDICTION_MODE this_mode,
+                               int ref_idx, int ref_mv_idx,
                                const MV_REFERENCE_FRAME *ref_frame,
                                const MB_MODE_INFO_EXT *mbmi_ext);
 static int discount_newmv_test(const AV1_COMP *const cpi, const MACROBLOCK *x,
-                               int this_mode, int_mv this_mv) {
+                               PREDICTION_MODE this_mode, int_mv this_mv) {
   if (this_mode == NEWMV && this_mv.as_int != 0 &&
       !cpi->rc.is_src_frame_alt_ref) {
     // Only discount new_mv when nearst_mv and all near_mv are zero, and the
@@ -7655,9 +7657,12 @@ static int64_t pick_interinter_mask(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 }
 
-static int interinter_compound_motion_search(
-    const AV1_COMP *const cpi, MACROBLOCK *x, const int_mv *const cur_mv,
-    const BLOCK_SIZE bsize, const int this_mode, int mi_row, int mi_col) {
+static int interinter_compound_motion_search(const AV1_COMP *const cpi,
+                                             MACROBLOCK *x,
+                                             const int_mv *const cur_mv,
+                                             const BLOCK_SIZE bsize,
+                                             const PREDICTION_MODE this_mode,
+                                             int mi_row, int mi_col) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   int_mv tmp_mv[2];
@@ -7684,9 +7689,10 @@ static int interinter_compound_motion_search(
 
 static int64_t build_and_cost_compound_type(
     const AV1_COMP *const cpi, MACROBLOCK *x, const int_mv *const cur_mv,
-    const BLOCK_SIZE bsize, const int this_mode, int *rs2, int rate_mv,
-    BUFFER_SET *ctx, int *out_rate_mv, uint8_t **preds0, uint8_t **preds1,
-    int16_t *residual1, int16_t *diff10, int *strides, int mi_row, int mi_col) {
+    const BLOCK_SIZE bsize, const PREDICTION_MODE this_mode, int *rs2,
+    int rate_mv, BUFFER_SET *ctx, int *out_rate_mv, uint8_t **preds0,
+    uint8_t **preds1, int16_t *residual1, int16_t *diff10, int *strides,
+    int mi_row, int mi_col) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -8855,13 +8861,14 @@ static int64_t skip_mode_rd(RD_STATS *rd_stats, const AV1_COMP *const cpi,
 }
 
 #ifndef NDEBUG
-static INLINE int is_single_inter_mode(int this_mode) {
+static INLINE int is_single_inter_mode(PREDICTION_MODE this_mode) {
   return this_mode >= SINGLE_INTER_MODE_START &&
          this_mode < SINGLE_INTER_MODE_END;
 }
 #endif
 
-static INLINE int get_ref_mv_offset(int single_mode, uint8_t ref_mv_idx) {
+static INLINE int get_ref_mv_offset(PREDICTION_MODE single_mode,
+                                    uint8_t ref_mv_idx) {
   assert(is_single_inter_mode(single_mode));
   int ref_mv_offset;
   if (single_mode == NEARESTMV) {
@@ -8874,13 +8881,14 @@ static INLINE int get_ref_mv_offset(int single_mode, uint8_t ref_mv_idx) {
   return ref_mv_offset;
 }
 
-static INLINE void get_this_mv(int_mv *this_mv, int this_mode, int ref_idx,
-                               int ref_mv_idx,
+static INLINE void get_this_mv(int_mv *this_mv, PREDICTION_MODE this_mode,
+                               int ref_idx, int ref_mv_idx,
                                const MV_REFERENCE_FRAME *ref_frame,
                                const MB_MODE_INFO_EXT *mbmi_ext) {
   const uint8_t ref_frame_type = av1_ref_frame_type(ref_frame);
   const int is_comp_pred = ref_frame[1] > INTRA_FRAME;
-  const int single_mode = get_single_mode(this_mode, ref_idx, is_comp_pred);
+  const PREDICTION_MODE single_mode =
+      get_single_mode(this_mode, ref_idx, is_comp_pred);
   assert(is_single_inter_mode(single_mode));
   if (single_mode == NEWMV) {
     this_mv->as_int = INVALID_MV;
@@ -8905,7 +8913,7 @@ static INLINE void get_this_mv(int_mv *this_mv, int this_mode, int ref_idx,
 }
 
 // This function update the non-new mv for the current prediction mode
-static INLINE int build_cur_mv(int_mv *cur_mv, int this_mode,
+static INLINE int build_cur_mv(int_mv *cur_mv, PREDICTION_MODE this_mode,
                                const AV1_COMMON *cm, const MACROBLOCK *x) {
   const MACROBLOCKD *xd = &x->e_mbd;
   const MB_MODE_INFO *mbmi = xd->mi[0];
@@ -8915,7 +8923,8 @@ static INLINE int build_cur_mv(int_mv *cur_mv, int this_mode,
     int_mv this_mv;
     get_this_mv(&this_mv, this_mode, i, mbmi->ref_mv_idx, mbmi->ref_frame,
                 x->mbmi_ext);
-    const int single_mode = get_single_mode(this_mode, i, is_comp_pred);
+    const PREDICTION_MODE single_mode =
+        get_single_mode(this_mode, i, is_comp_pred);
     if (single_mode == NEWMV) {
       cur_mv[i] = this_mv;
     } else {
@@ -8966,7 +8975,7 @@ static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
-  const int this_mode = mbmi->mode;
+  const PREDICTION_MODE this_mode = mbmi->mode;
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
   int rate_sum, rs2;
@@ -9094,9 +9103,10 @@ static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
 }
 
 static INLINE int is_single_newmv_valid(HandleInterModeArgs *args,
-                                        MB_MODE_INFO *mbmi, int this_mode) {
+                                        MB_MODE_INFO *mbmi,
+                                        PREDICTION_MODE this_mode) {
   for (int ref_idx = 0; ref_idx < 2; ++ref_idx) {
-    const int single_mode = get_single_mode(this_mode, ref_idx, 1);
+    const PREDICTION_MODE single_mode = get_single_mode(this_mode, ref_idx, 1);
     const MV_REFERENCE_FRAME ref = mbmi->ref_frame[ref_idx];
     if (single_mode == NEWMV &&
         args->single_newmv_valid[mbmi->ref_mv_idx][ref] == 0) {
@@ -9122,7 +9132,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   MB_MODE_INFO *mbmi = xd->mi[0];
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   const int is_comp_pred = has_second_ref(mbmi);
-  const int this_mode = mbmi->mode;
+  const PREDICTION_MODE this_mode = mbmi->mode;
   int i;
   int refs[2] = { mbmi->ref_frame[0],
                   (mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1]) };
