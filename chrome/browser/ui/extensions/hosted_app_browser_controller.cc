@@ -246,7 +246,9 @@ base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_->profile());
   const Extension* extension =
       registry->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
-  return AppThemeColorInfo::GetThemeColor(extension);
+  if (extension)
+    return AppThemeColorInfo::GetThemeColor(extension);
+  return base::nullopt;
 }
 
 base::string16 HostedAppBrowserController::GetTitle() const {

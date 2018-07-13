@@ -44,8 +44,7 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
                            SkColor inactive_icon_color);
   ~HostedAppButtonContainer() override;
 
-  // Updates the visibility of each content setting.
-  void RefreshContentSettingViews();
+  void UpdateContentSettingViewsVisibility();
 
   // Sets the container to paints its buttons the active/inactive color.
   void SetPaintAsActive(bool active);
@@ -56,6 +55,7 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
 
  private:
   friend class HostedAppNonClientFrameViewAshTest;
+  friend class HostedAppGlassBrowserFrameViewTest;
   friend class ImmersiveModeControllerAshHostedAppBrowserTest;
 
   static void DisableAnimationForTesting();

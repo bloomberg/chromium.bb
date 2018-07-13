@@ -13,9 +13,11 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -70,6 +72,8 @@ base::win::ScopedHICON CreateHICONFromSkBitmapSizedTo(
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, public:
 
+constexpr char GlassBrowserFrameView::kClassName[];
+
 GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
                                              BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
@@ -106,6 +110,19 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     window_title_->set_id(VIEW_ID_WINDOW_TITLE);
     AddChildView(window_title_);
+  }
+
+  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
+          browser_view->browser())) {
+    // TODO(alancutter): Avoid snapshotting GetTitlebarFeatureColor() values
+    // here and call it on demand in
+    // HostedAppButtonContainer::UpdateIconsColor() via a delegate interface.
+    hosted_app_button_container_ = new HostedAppButtonContainer(
+        browser_view, GetTitlebarFeatureColor(true),
+        GetTitlebarFeatureColor(false));
+    AddChildView(hosted_app_button_container_);
+    // TODO(https://crbug.com/854479): Add FrameHeaderOriginText animation here.
+    hosted_app_button_container_->StartTitlebarAnimation(base::TimeDelta());
   }
 
   minimize_button_ =
@@ -353,6 +370,8 @@ void GlassBrowserFrameView::ResetWindowControls() {
   maximize_button_->SetState(views::Button::STATE_NORMAL);
   restore_button_->SetState(views::Button::STATE_NORMAL);
   close_button_->SetState(views::Button::STATE_NORMAL);
+  if (hosted_app_button_container_)
+    hosted_app_button_container_->UpdateContentSettingViewsVisibility();
 }
 
 void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
@@ -400,6 +419,15 @@ bool GlassBrowserFrameView::IsMaximized() const {
 
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, views::View overrides:
+
+const char* GlassBrowserFrameView::GetClassName() const {
+  return kClassName;
+}
+
+void GlassBrowserFrameView::ChildPreferredSizeChanged(views::View* child) {
+  if (browser_view()->initialized() && child == hosted_app_button_container_)
+    Layout();
+}
 
 void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   TRACE_EVENT0("views.frame", "GlassBrowserFrameView::OnPaint");
@@ -463,6 +491,13 @@ bool GlassBrowserFrameView::DoesIntersectRect(const views::View* target,
       profile_switcher_view->GetMirroredBounds().Intersects(rect);
   return hit_incognito_icon || hit_profile_switcher_button ||
          !frame()->client_view()->bounds().Intersects(rect);
+}
+
+void GlassBrowserFrameView::ActivationChanged(bool active) {
+  BrowserNonClientFrameView::ActivationChanged(active);
+
+  if (hosted_app_button_container_)
+    hosted_app_button_container_->SetPaintAsActive(active);
 }
 
 int GlassBrowserFrameView::ClientBorderThickness(bool restored) const {
@@ -546,6 +581,14 @@ int GlassBrowserFrameView::TitlebarHeight(bool restored) const {
   return TitlebarMaximizedVisualHeight() + FrameTopBorderThickness(false);
 }
 
+SkColor GlassBrowserFrameView::GetTitlebarFeatureColor(bool active) const {
+  const SkAlpha title_alpha =
+      active ? SK_AlphaOPAQUE : kInactiveTitlebarFeatureAlpha;
+  return SkColorSetA(color_utils::BlendTowardOppositeLuma(GetFrameColor(active),
+                                                          SK_AlphaOPAQUE),
+                     title_alpha);
+}
+
 int GlassBrowserFrameView::WindowTopY() const {
   // The window top is SM_CYSIZEFRAME pixels when maximized (see the comment in
   // FrameTopBorderThickness()) and floor(system dsf) pixels when restored.
@@ -614,7 +657,9 @@ bool GlassBrowserFrameView::IsToolbarVisible() const {
 bool GlassBrowserFrameView::ShowCustomIcon() const {
   // Don't show the window icon when the incognito badge is visible, since
   // they're competing for the same space.
-  return !profile_indicator_icon() && ShouldCustomDrawSystemTitlebar() &&
+  // Hosted app windows don't include the window icon as per UI mocks.
+  return !profile_indicator_icon() && !hosted_app_button_container_ &&
+         ShouldCustomDrawSystemTitlebar() &&
          browser_view()->ShouldShowWindowIcon();
 }
 
@@ -630,6 +675,11 @@ bool GlassBrowserFrameView::ShowSystemIcon() const {
 
 SkColor GlassBrowserFrameView::GetTitlebarColor() const {
   return GetFrameColor();
+}
+
+HostedAppButtonContainer*
+GlassBrowserFrameView::GetHostedAppButtonContainerForTesting() const {
+  return hosted_app_button_container_;
 }
 
 Windows10CaptionButton* GlassBrowserFrameView::CreateCaptionButton(
@@ -709,12 +759,8 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   }
 
   if (ShowCustomTitle()) {
-    const SkAlpha title_alpha =
-        ShouldPaintAsActive() ? SK_AlphaOPAQUE : kInactiveTitlebarFeatureAlpha;
-    const SkColor title_color = SkColorSetA(
-        color_utils::BlendTowardOppositeLuma(titlebar_color, SK_AlphaOPAQUE),
-        title_alpha);
-    window_title_->SetEnabledColor(title_color);
+    window_title_->SetEnabledColor(
+        GetTitlebarFeatureColor(ShouldPaintAsActive()));
   }
 }
 
@@ -837,26 +883,45 @@ void GlassBrowserFrameView::LayoutTitleBar() {
   // Don't include the area above the screen when maximized. However it only
   // looks centered if we start from y=0 when restored.
   const int window_top = IsMaximized() ? WindowTopY() : 0;
-  int x = IsMaximized()
-              ? kIconMaximizedLeftMargin
-              : display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
+  int next_leading_x =
+      IsMaximized()
+          ? kIconMaximizedLeftMargin
+          : display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
+  int next_trailing_x = MinimizeButtonX();
 
   const int y = window_top + (titlebar_visual_height - icon_size) / 2;
-  window_icon_bounds = gfx::Rect(x, y, icon_size, icon_size);
+  window_icon_bounds = gfx::Rect(next_leading_x, y, icon_size, icon_size);
 
   constexpr int kIconTitleSpacing = 5;
   if (ShowCustomIcon()) {
     window_icon_->SetBoundsRect(window_icon_bounds);
-    x = window_icon_bounds.right() + kIconTitleSpacing;
+    next_leading_x = window_icon_bounds.right() + kIconTitleSpacing;
   } else if (profile_indicator_icon()) {
-    x = profile_indicator_icon()->bounds().right() + kIconTitleSpacing;
+    next_leading_x =
+        profile_indicator_icon()->bounds().right() + kIconTitleSpacing;
+  }
+
+  if (hosted_app_button_container_) {
+    DCHECK(!GetProfileSwitcherButton());
+    gfx::Size container_size = hosted_app_button_container_->GetPreferredSize();
+    const int container_width = std::min(
+        container_size.width(), std::max(0, next_trailing_x - next_leading_x));
+    const int container_height = container_size.height();
+    DCHECK_LE(container_height, titlebar_visual_height);
+    // Align right.
+    hosted_app_button_container_->SetBounds(
+        next_trailing_x - container_width,
+        (titlebar_visual_height - container_height) / 2, container_width,
+        container_height);
+    hosted_app_button_container_->Layout();
+    next_trailing_x = hosted_app_button_container_->bounds().x();
   }
 
   if (ShowCustomTitle()) {
     window_title_->SetText(browser_view()->GetWindowTitle());
-    const int max_text_width = std::max(0, MinimizeButtonX() - x);
-    window_title_->SetBounds(x, window_icon_bounds.y(), max_text_width,
-                             window_icon_bounds.height());
+    const int max_text_width = std::max(0, next_trailing_x - next_leading_x);
+    window_title_->SetBounds(next_leading_x, window_icon_bounds.y(),
+                             max_text_width, window_icon_bounds.height());
     window_title_->SetAutoColorReadabilityEnabled(false);
   }
 }
