@@ -341,6 +341,13 @@
         text-align: center;
         white-space: normal;
       }
+
+      /* URLs should always be displayed using a LTR embedding - see
+       * https://url.spec.whatwg.org/#url-rendering. */
+      .url-directionality {
+        direction: ltr;
+        unicode-bidi: embed;
+      }
     </style>
   </template>
 </dom-module>

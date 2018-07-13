@@ -43,7 +43,9 @@
             <div class="favicon-image" style$="[[computeSiteIcon(item.host)]]">
             </div>
             <div class="middle" >
-              <div class="protocol-host">[[item.host]]</div>
+              <div class="protocol-host">
+                <span class="url-directionality">[[item.host]]</span>
+              </div>
               <div class="secondary protocol-default"
                   hidden$="[[!item.is_default]]">
                 $i18n{handlerIsDefault}
@@ -77,7 +79,8 @@
             <div class="favicon-image" style$="[[computeSiteIcon(item.host)]]">
             </div>
             <div class="middle" >
-              <div class="protocol-host">[[item.host]]</div>
+              <div class="protocol-host">
+                <span class="url-directionality">[[item.host]]</span></div>
               <div class="secondary protocol-protocol">
                 [[item.protocol_display_name]]
               </div>
