@@ -33,17 +33,12 @@ QuicStreamSequencerBuffer::QuicStreamSequencerBuffer(size_t max_capacity_bytes)
     : max_buffer_capacity_bytes_(max_capacity_bytes),
       blocks_count_(CalculateBlockCount(max_capacity_bytes)),
       total_bytes_read_(0),
-      blocks_(nullptr),
-      destruction_indicator_(123456) {
-  CHECK_GT(blocks_count_, 1u)
-      << "blocks_count_ = " << blocks_count_
-      << ", max_buffer_capacity_bytes_ = " << max_buffer_capacity_bytes_;
+      blocks_(nullptr) {
   Clear();
 }
 
 QuicStreamSequencerBuffer::~QuicStreamSequencerBuffer() {
   Clear();
-  destruction_indicator_ = 654321;
 }
 
 void QuicStreamSequencerBuffer::Clear() {
@@ -75,7 +70,6 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
     QuicStringPiece data,
     size_t* const bytes_buffered,
     QuicString* error_details) {
-  CHECK_EQ(destruction_indicator_, 123456) << "This object has been destructed";
   *bytes_buffered = 0;
   size_t size = data.size();
   if (size == 0) {
@@ -229,8 +223,6 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
                                                size_t dest_count,
                                                size_t* bytes_read,
                                                QuicString* error_details) {
-  CHECK_EQ(destruction_indicator_, 123456) << "This object has been destructed";
-
   *bytes_read = 0;
   for (size_t i = 0; i < dest_count && ReadableBytes() > 0; ++i) {
     char* dest = reinterpret_cast<char*>(dest_iov[i].iov_base);
@@ -287,8 +279,6 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
 
 int QuicStreamSequencerBuffer::GetReadableRegions(struct iovec* iov,
                                                   int iov_count) const {
-  CHECK_EQ(destruction_indicator_, 123456) << "This object has been destructed";
-
   DCHECK(iov != nullptr);
   DCHECK_GT(iov_count, 0);
 
@@ -358,8 +348,6 @@ void QuicStreamSequencerBuffer::Read(QuicString* buffer) {
 }
 
 bool QuicStreamSequencerBuffer::MarkConsumed(size_t bytes_used) {
-  CHECK_EQ(destruction_indicator_, 123456) << "This object has been destructed";
-
   if (bytes_used > ReadableBytes()) {
     return false;
   }
