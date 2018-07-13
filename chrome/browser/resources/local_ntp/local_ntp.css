@@ -98,6 +98,12 @@ button {
 }
 
 .non-google-page #ntp-contents {
+  /* The inherited height from #ntp-contents applies from the "top" location,
+   * but uses the size of the overall NTP content area, resulting in an
+   * unnecessary scrollbar. This height corresponds to MV tile height for a
+   * single row, but also works for a row of icons, and works well on small
+   * screens (like Pixelbook), as well as high-res screens. */
+  height: 155px;
   left: calc(50% - var(--content-width)/2);
   position: absolute;
   top: calc(50% - 155px);
