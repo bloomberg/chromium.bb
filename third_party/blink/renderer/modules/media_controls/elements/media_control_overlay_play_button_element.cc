@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
@@ -15,6 +16,7 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_source.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
@@ -290,9 +292,15 @@ bool MediaControlOverlayPlayButtonElement::ShouldCausePlayPause(
 
   // If the click happened on the internal button or a margin around it then
   // we should play/pause.
-  return IsPointInRect(*internal_button_->getBoundingClientRect(),
-                       kInnerButtonTouchPaddingSize, mouse_event->clientX(),
-                       mouse_event->clientY());
+  DOMRect* box = internal_button_->getBoundingClientRect();
+  float zoom = ComputedStyleRef().EffectiveZoom() /
+               GetDocument().GetLayoutView()->ZoomFactor();
+  box->setX(box->x() * zoom);
+  box->setY(box->y() * zoom);
+  box->setWidth(box->width() * zoom);
+  box->setHeight(box->height() * zoom);
+  return IsPointInRect(*box, kInnerButtonTouchPaddingSize,
+                       mouse_event->clientX(), mouse_event->clientY());
 }
 
 WebSize MediaControlOverlayPlayButtonElement::GetSizeOrDefault() const {
