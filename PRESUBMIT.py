@@ -1864,6 +1864,7 @@ def _GetOwnersFilesToCheckForIpcOwners(input_api):
   # matching the above patterns, which trigger false positives.
   exclude_paths = [
       'third_party/crashpad/*',
+      'third_party/third_party/blink/renderer/platform/bindings/*',
       'third_party/win_build_output/*',
   ]
 
