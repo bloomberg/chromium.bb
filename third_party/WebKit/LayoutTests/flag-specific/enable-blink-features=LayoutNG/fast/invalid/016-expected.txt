@@ -11,5 +11,4 @@ layer at (0,0) size 800x600
 layer at (10,46) size 100x100 clip at (11,47) size 98x98
   LayoutNGBlockFlow {SPAN} at (2,2) size 100x100 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
-    LayoutNGBlockFlow (anonymous) at (2,2) size 96x0
-      LayoutInline {SPAN} at (0,0) size 0x0
+    LayoutInline {SPAN} at (0,0) size 0x0

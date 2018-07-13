@@ -6,15 +6,15 @@ layer at (0,0) size 800x322
       LayoutNGBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 130x19
           text run at (0,0) width 130: "These should match:"
-      LayoutNGBlockFlow (floating) {DIV} at (0,36) size 100x100 [bgcolor=#560063]
       LayoutNGBlockFlow (anonymous) at (0,36) size 784x105
+        LayoutNGBlockFlow (floating) {DIV} at (0,0) size 100x100 [bgcolor=#560063]
         LayoutImage {IMG} at (100,0) size 100x100
         LayoutText {#text} at (0,0) size 0x0
         LayoutBR {BR} at (200,85) size 0x0
       LayoutNGBlockFlow {P} at (0,157) size 784x20
         LayoutText {#text} at (0,0) size 236x19
           text run at (0,0) width 236: "These should not match (at this time):"
-      LayoutNGBlockFlow (floating) {DIV} at (0,193) size 100x100 [bgcolor=#560063]
       LayoutNGBlockFlow (anonymous) at (0,193) size 784x105
+        LayoutNGBlockFlow (floating) {DIV} at (0,0) size 100x100 [bgcolor=#560063]
         LayoutImage {IMG} at (100,0) size 100x100
         LayoutText {#text} at (0,0) size 0x0

@@ -413,6 +413,7 @@ crbug.com/835810 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass
 
 ### Image/text failures
 #crbug.com/714962 virtual/layout_ng/fast/inline/001.html [ Failure ]
+crbug.com/714962 virtual/layout_ng/fast/inline/absolute-positioned-block-in-centred-block.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/continuation-outlines-with-layers-2.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/drawStyledEmptyInlinesWithWS.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/emptyInlinesWithinLists.html [ Failure ]
@@ -886,6 +887,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/rule-in-nested-wit
 crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/scale-transform-text.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/scrolling-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/shadow-breaking.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/shrink-to-column-height-for-pagination.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/single-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/abspos-containing-block-outside-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/adjacent-spanners-with-margin.html [ Failure ]
@@ -968,6 +970,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/table-margin-colla
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/tall-content-in-inner-with-fixed-height.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/tall-float2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/three-inner-rows.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/unbreakable-block-too-tall-to-fit.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/unbreakable-content-taller-than-height-crash.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/vertical-lr/abspos-auto-position-on-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/vertical-lr/break-properties.html [ Failure ]

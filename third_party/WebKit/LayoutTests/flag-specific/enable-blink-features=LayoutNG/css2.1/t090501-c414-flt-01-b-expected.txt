@@ -16,8 +16,7 @@ layer at (0,0) size 800x144
             LayoutText {#text} at (8,8) size 141x39
               text run at (8,8) width 115: "\x{21E8} This blue block"
               text run at (8,28) width 141: "should be on the right."
-          LayoutNGBlockFlow (anonymous) at (8,8) size 736x60
-            LayoutText {#text} at (176,0) size 380x59
-              text run at (176,0) width 380: "Teal rectangle. Teal rectangle. Teal rectangle. Teal rectangle."
-              text run at (176,20) width 380: "Teal rectangle. Teal rectangle. Teal rectangle. Teal rectangle."
-              text run at (176,40) width 380: "Teal rectangle. Teal rectangle. Teal rectangle. Teal rectangle."
+          LayoutText {#text} at (184,8) size 380x59
+            text run at (184,8) width 380: "Teal rectangle. Teal rectangle. Teal rectangle. Teal rectangle."
+            text run at (184,28) width 380: "Teal rectangle. Teal rectangle. Teal rectangle. Teal rectangle."
+            text run at (184,48) width 380: "Teal rectangle. Teal rectangle. Teal rectangle. Teal rectangle."
