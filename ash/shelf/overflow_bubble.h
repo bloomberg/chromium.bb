@@ -5,9 +5,14 @@
 #ifndef ASH_SHELF_OVERFLOW_BUBBLE_H_
 #define ASH_SHELF_OVERFLOW_BUBBLE_H_
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/views/pointer_watcher.h"
 #include "ui/views/widget/widget_observer.h"
+
+namespace views {
+class Widget;
+}
 
 namespace ui {
 class PointerEvent;
@@ -21,8 +26,8 @@ class ShelfView;
 
 // OverflowBubble shows shelf items that won't fit on the main shelf in a
 // separate bubble.
-class OverflowBubble : public views::PointerWatcher,
-                       public views::WidgetObserver {
+class ASH_EXPORT OverflowBubble : public views::PointerWatcher,
+                                  public views::WidgetObserver {
  public:
   // |shelf| is the shelf that spawns the bubble.
   explicit OverflowBubble(Shelf* shelf);
@@ -36,7 +41,6 @@ class OverflowBubble : public views::PointerWatcher,
   void Hide();
 
   bool IsShowing() const { return !!bubble_; }
-  ShelfView* shelf_view() { return shelf_view_; }
   OverflowBubbleView* bubble_view() { return bubble_; }
 
  private:
@@ -53,9 +57,6 @@ class OverflowBubble : public views::PointerWatcher,
   Shelf* shelf_;
   OverflowBubbleView* bubble_;       // Owned by views hierarchy.
   OverflowButton* overflow_button_;  // Owned by ShelfView.
-
-  // ShelfView containing the overflow items. Owned by |bubble_|.
-  ShelfView* shelf_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowBubble);
 };

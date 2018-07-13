@@ -11,12 +11,9 @@
 #include "base/macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
-namespace views {
-class View;
-}
-
 namespace ash {
 class Shelf;
+class ShelfView;
 
 // OverflowBubbleView hosts a ShelfView to display overflown items.
 // Exports to access this class from OverflowBubbleViewTestAPI.
@@ -28,11 +25,14 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView,
 
   // |anchor| is the overflow button on the main shelf. |shelf_view| is the
   // ShelfView containing the overflow items.
-  void InitOverflowBubble(views::View* anchor, views::View* shelf_view);
+  void InitOverflowBubble(views::View* anchor, ShelfView* shelf_view);
 
-  // views::BubbleDialogDelegateView overrides:
+  // views::BubbleDialogDelegateView:
   int GetDialogButtons() const override;
   gfx::Rect GetBubbleBounds() override;
+  bool CanActivate() const override;
+
+  ShelfView* shelf_view() { return shelf_view_; }
 
  private:
   friend class OverflowBubbleViewTestAPI;
@@ -53,7 +53,7 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView,
   void UpdateShelfBackground(SkColor color) override;
 
   Shelf* shelf_;
-  views::View* shelf_view_;  // Owned by views hierarchy.
+  ShelfView* shelf_view_;  // Owned by views hierarchy.
   gfx::Vector2d scroll_offset_;
 
   ShelfBackgroundAnimator background_animator_;

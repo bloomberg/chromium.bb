@@ -11,6 +11,7 @@
 
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/focus_cycler.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
@@ -76,6 +77,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/window_util.h"
 
 using testing::ElementsAre;
 using testing::IsEmpty;
@@ -384,7 +386,7 @@ class ShelfViewTest : public AshTestBase {
     ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
                                  button->GetBoundsInScreen().origin(),
                                  ui::EventTimeForNow(), 0, 0);
-    test_api_->shelf_view()->ButtonPressed(
+    shelf_view_->ButtonPressed(
         button, release_event,
         views::test::InkDropHostViewTestApi(button).GetInkDrop());
     shelf_view_->PointerReleasedOnButton(button, ShelfView::MOUSE, false);
@@ -397,7 +399,7 @@ class ShelfViewTest : public AshTestBase {
                                  button->GetBoundsInScreen().origin(),
                                  ui::EventTimeForNow(), ui::EF_IS_DOUBLE_CLICK,
                                  0);
-    test_api_->shelf_view()->ButtonPressed(
+    shelf_view_->ButtonPressed(
         button, release_event,
         views::test::InkDropHostViewTestApi(button).GetInkDrop());
     shelf_view_->PointerReleasedOnButton(button, ShelfView::MOUSE, false);
@@ -518,7 +520,7 @@ class ShelfViewTest : public AshTestBase {
     ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 
     ShelfViewTestAPI test_api_for_overflow(
-        test_api_->overflow_bubble()->shelf_view());
+        test_api_->overflow_bubble()->bubble_view()->shelf_view());
 
     int total_item_count = model_->item_count();
 
@@ -1206,8 +1208,7 @@ TEST_F(ShelfViewTest, ShelfRipOff) {
   ui::test::EventGenerator* generator = GetEventGenerator();
 
   // The test makes some assumptions that the shelf is bottom aligned.
-  ASSERT_EQ(test_api_->shelf_view()->shelf()->alignment(),
-            SHELF_ALIGNMENT_BOTTOM);
+  ASSERT_EQ(shelf_view_->shelf()->alignment(), SHELF_ALIGNMENT_BOTTOM);
 
   // The rip off threshold. Taken from |kRipOffDistance| in shelf_view.cc.
   const int kRipOffDistance = 48;
@@ -1240,7 +1241,7 @@ TEST_F(ShelfViewTest, ShelfRipOff) {
   test_api_->ShowOverflowBubble();
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
   ShelfViewTestAPI test_api_for_overflow(
-      test_api_->overflow_bubble()->shelf_view());
+      test_api_->overflow_bubble()->bubble_view()->shelf_view());
 
   // Verify that when an app from the main shelf is dragged to a location on the
   // overflow shelf, it is ripped off.
@@ -1273,8 +1274,7 @@ TEST_F(ShelfViewTest, DragAndDropPinnedRunningApp) {
   ui::test::EventGenerator* generator = GetEventGenerator();
 
   // The test makes some assumptions that the shelf is bottom aligned.
-  ASSERT_EQ(test_api_->shelf_view()->shelf()->alignment(),
-            SHELF_ALIGNMENT_BOTTOM);
+  ASSERT_EQ(shelf_view_->shelf()->alignment(), SHELF_ALIGNMENT_BOTTOM);
 
   // The rip off threshold. Taken from |kRipOffDistance| in shelf_view.cc.
   constexpr int kRipOffDistance = 48;
@@ -1338,7 +1338,7 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
   ShelfButton* platform_button = GetButtonByID(platform_button_id);
 
   ShelfTooltipManager* tooltip_manager = test_api_->tooltip_manager();
-  EXPECT_TRUE(test_api_->shelf_view()->GetWidget()->GetNativeWindow());
+  EXPECT_TRUE(shelf_view_->GetWidget()->GetNativeWindow());
   ui::test::EventGenerator* generator = GetEventGenerator();
 
   generator->MoveMouseTo(app_button->GetBoundsInScreen().CenterPoint());
@@ -1572,7 +1572,7 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 
   ShelfViewTestAPI test_for_overflow_view(
-      test_api_->overflow_bubble()->shelf_view());
+      test_api_->overflow_bubble()->bubble_view()->shelf_view());
 
   int ripped_index = test_for_overflow_view.GetLastVisibleIndex();
   gfx::Size bubble_size =
@@ -1650,7 +1650,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 
   ShelfViewTestAPI test_for_overflow_view(
-      test_api_->overflow_bubble()->shelf_view());
+      test_api_->overflow_bubble()->bubble_view()->shelf_view());
   int first_index = test_for_overflow_view.GetFirstVisibleIndex();
   int last_index = test_for_overflow_view.GetLastVisibleIndex();
 
@@ -1696,7 +1696,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 
   ShelfViewTestAPI test_api_for_overflow_view(
-      test_api_->overflow_bubble()->shelf_view());
+      test_api_->overflow_bubble()->bubble_view()->shelf_view());
 
   ShelfButton* button = test_api_for_overflow_view.GetButton(
       test_api_for_overflow_view.GetLastVisibleIndex());
@@ -1716,7 +1716,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
   ASSERT_TRUE(test_api_for_secondary.IsShowingOverflowBubble());
 
   ShelfViewTestAPI test_api_for_overflow_view_of_secondary(
-      test_api_for_secondary.overflow_bubble()->shelf_view());
+      test_api_for_secondary.overflow_bubble()->bubble_view()->shelf_view());
 
   ShelfButton* button_in_secondary =
       test_api_for_overflow_view_of_secondary.GetButton(
@@ -1872,11 +1872,13 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
   test_api_->ShowOverflowBubble();
 
   // Make sure the point we chose is not on the shelf or its overflow bubble.
-  ASSERT_FALSE(test_api_->shelf_view()->GetBoundsInScreen().Contains(
-      generator->current_location()));
   ASSERT_FALSE(
-      test_api_->overflow_bubble()->shelf_view()->GetBoundsInScreen().Contains(
-          generator->current_location()));
+      shelf_view_->GetBoundsInScreen().Contains(generator->current_location()));
+  ASSERT_FALSE(test_api_->overflow_bubble()
+                   ->bubble_view()
+                   ->shelf_view()
+                   ->GetBoundsInScreen()
+                   .Contains(generator->current_location()));
   generator->PressLeftButton();
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
   generator->ReleaseLeftButton();
@@ -1894,7 +1896,7 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
   test_api_->ShowOverflowBubble();
   ShelfViewTestAPI test_api_for_overflow(
-      test_api_->overflow_bubble()->shelf_view());
+      test_api_->overflow_bubble()->bubble_view()->shelf_view());
   ShelfButton* button_on_overflow_shelf =
       test_api_for_overflow.GetButton(model_->ItemIndexByID(overflow_app_id2));
   generator->set_current_location(GetButtonCenter(button_on_overflow_shelf));
@@ -1915,7 +1917,7 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
   test_api_->ShowOverflowBubble();
   ShelfViewTestAPI test_api_for_overflow2(
-      test_api_->overflow_bubble()->shelf_view());
+      test_api_->overflow_bubble()->bubble_view()->shelf_view());
   button_on_overflow_shelf =
       test_api_for_overflow2.GetButton(model_->ItemIndexByID(overflow_app_id1));
   ShelfButton* button_on_overflow_shelf1 =
@@ -3389,6 +3391,234 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchContextMenu) {
               IsEmpty());
 
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+}
+
+class ShelfViewFocusTest : public ShelfViewTest {
+ public:
+  ShelfViewFocusTest() = default;
+  ~ShelfViewFocusTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    ShelfViewTest::SetUp();
+
+    // Add two app shortcuts for testing.
+    AddAppShortcut();
+    AddAppShortcut();
+
+    // Focus the shelf.
+    Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
+    Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
+  }
+
+  void DoTab() {
+    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+    generator.PressKey(ui::KeyboardCode::VKEY_TAB, ui::EventFlags::EF_NONE);
+  }
+
+  void DoShiftTab() {
+    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+    generator.PressKey(ui::KeyboardCode::VKEY_TAB,
+                       ui::EventFlags::EF_SHIFT_DOWN);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShelfViewFocusTest);
+};
+
+// Tests that the number of buttons is as expected and the shelf's widget
+// intially has focus.
+TEST_F(ShelfViewFocusTest, Basic) {
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+
+  // There are five buttons. The back button and launcher are always there, the
+  // browser shortcut is added in ShelfViewTest and the two test apps added in
+  // ShelfViewFocusTest.
+  EXPECT_EQ(5, test_api_->GetButtonCount());
+  EXPECT_TRUE(shelf_view_->shelf_widget()->IsActive());
+
+  // The item at index 1 instead of index 0 is focused initially because index 0
+  // is the back button which is only visible in tablet mode.
+  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+}
+
+// Tests that the expected views have focus when cycling through shelf items
+// with tab.
+TEST_F(ShelfViewFocusTest, ForwardCycling) {
+  // Pressing tab once should advance focus to the next element.
+  DoTab();
+  EXPECT_TRUE(test_api_->GetViewAt(2)->HasFocus());
+
+  DoTab();
+  DoTab();
+  EXPECT_TRUE(test_api_->GetViewAt(4)->HasFocus());
+
+  // The last element is currently focused so pressing tab once should advance
+  // focus to the first element.
+  DoTab();
+  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+}
+
+// Tests that the expected views have focus when cycling backwards through shelf
+// items with shift tab.
+TEST_F(ShelfViewFocusTest, BackwardCycling) {
+  // The first element is currently focused so pressing shift tab once should
+  // advance focus to the last element.
+  DoShiftTab();
+  EXPECT_TRUE(test_api_->GetViewAt(4)->HasFocus());
+
+  // Pressing shift tab once should advance focus to the previous element.
+  DoShiftTab();
+  EXPECT_TRUE(test_api_->GetViewAt(3)->HasFocus());
+}
+
+// Verify that the overflow bubble does not activate when it is opened.
+TEST_F(ShelfViewFocusTest, OverflowNotActivatedWhenOpened) {
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  ::wm::ActivateWindow(window.get());
+
+  AddButtonsUntilOverflow();
+  test_api_->ShowOverflowBubble();
+  EXPECT_TRUE(::wm::IsActiveWindow(window.get()));
+}
+
+class ShelfViewOverflowFocusTest : public ShelfViewFocusTest {
+ public:
+  ShelfViewOverflowFocusTest() = default;
+  ~ShelfViewOverflowFocusTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    ShelfViewFocusTest::SetUp();
+
+    // Add app shortcuts until the overflow button is visible. At this point
+    // there will be two items on the overflow shelf.
+    AddButtonsUntilOverflow();
+
+    // Add two more shortcuts for a total of four items on the overflow shelf.
+    AddAppShortcut();
+    AddAppShortcut();
+    items_ = test_api_->GetButtonCount();
+    last_item_on_main_shelf_index_ = shelf_view_->last_visible_index();
+  }
+
+  // Opens the overflow bubble. Focuses the main shelf for testing purposes.
+  void OpenOverflow() {
+    test_api_->ShowOverflowBubble();
+    overflow_shelf_test_api_ = std::make_unique<ShelfViewTestAPI>(
+        shelf_view_->overflow_bubble()->bubble_view()->shelf_view());
+
+    Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
+    Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
+  }
+
+ protected:
+  int items_ = 0;
+  int last_item_on_main_shelf_index_ = 0;
+  std::unique_ptr<ShelfViewTestAPI> overflow_shelf_test_api_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShelfViewOverflowFocusTest);
+};
+
+// Tests that the overflow button is visible and that not all the items are
+// visible on the main shelf.
+TEST_F(ShelfViewOverflowFocusTest, Basic) {
+  EXPECT_TRUE(test_api_->IsOverflowButtonVisible());
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+
+  EXPECT_EQ(last_item_on_main_shelf_index_, items_ - 5);
+  EXPECT_TRUE(shelf_view_->shelf_widget()->IsActive());
+  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+}
+
+TEST_F(ShelfViewOverflowFocusTest, OpenOverflow) {
+  OpenOverflow();
+  ASSERT_TRUE(overflow_shelf_test_api_);
+  EXPECT_TRUE(test_api_->IsShowingOverflowBubble());
+  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+}
+
+// Tests that when cycling through the items with tab, the items in the overflow
+// shelf are ignored because it is not visible.
+TEST_F(ShelfViewOverflowFocusTest, ForwardCycling) {
+  // Focus the last visible item on the shelf.
+  shelf_view_->shelf_widget()->GetFocusManager()->SetFocusedView(
+      test_api_->GetViewAt(last_item_on_main_shelf_index_));
+  EXPECT_TRUE(test_api_->GetViewAt(last_item_on_main_shelf_index_)->HasFocus());
+
+  DoTab();
+  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+}
+
+// Tests that when cycling through the items with shift tab, the items in the
+// overflow shelf are ignored because it is not visible.
+TEST_F(ShelfViewOverflowFocusTest, BackwardCycling) {
+  DoShiftTab();
+  EXPECT_TRUE(test_api_->GetViewAt(last_item_on_main_shelf_index_)->HasFocus());
+}
+
+// Tests that cycling through elements with tab works as expected when the
+// overflow bubble is open.
+TEST_F(ShelfViewOverflowFocusTest, ForwardCyclingWithBubbleOpen) {
+  OpenOverflow();
+
+  // Focus the last item on the main shelf.
+  shelf_view_->shelf_widget()->GetFocusManager()->SetFocusedView(
+      test_api_->GetViewAt(last_item_on_main_shelf_index_));
+
+  // Tests that after pressing tab once more, the overflow bubble widget now is
+  // active, and the first item on the overflow bubble shelf has focus.
+  DoTab();
+  EXPECT_TRUE(
+      test_api_->overflow_bubble()->bubble_view()->GetWidget()->IsActive());
+  const int first_index_overflow_shelf = last_item_on_main_shelf_index_ + 1;
+  EXPECT_TRUE(overflow_shelf_test_api_->GetViewAt(first_index_overflow_shelf)
+                  ->HasFocus());
+
+  // Focus the last item on the overflow shelf.
+  test_api_->overflow_bubble()
+      ->bubble_view()
+      ->GetWidget()
+      ->GetFocusManager()
+      ->SetFocusedView(
+          overflow_shelf_test_api_->GetViewAt(first_index_overflow_shelf + 3));
+
+  // Tests that after pressing tab once more, the main shelf widget now is
+  // active, and the first item on the main shelf has focus.
+  DoTab();
+  EXPECT_TRUE(shelf_view_->shelf_widget()->IsActive());
+  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+}
+
+// Tests that backwards cycling through elements with shift tab works as
+// expected when the overflow bubble is open.
+TEST_F(ShelfViewOverflowFocusTest, BackwardCyclingWithBubbleOpen) {
+  OpenOverflow();
+
+  // Tests that after pressing shift tab once, the overflow shelf bubble is
+  // active and the last item on the overflow shelf has focus.
+  DoShiftTab();
+  EXPECT_TRUE(
+      test_api_->overflow_bubble()->bubble_view()->GetWidget()->IsActive());
+  const int first_index_overflow_shelf = last_item_on_main_shelf_index_ + 1;
+  EXPECT_TRUE(
+      overflow_shelf_test_api_->GetViewAt(first_index_overflow_shelf + 3)
+          ->HasFocus());
+
+  // Focus the first item on the overflow shelf.
+  test_api_->overflow_bubble()
+      ->bubble_view()
+      ->GetWidget()
+      ->GetFocusManager()
+      ->SetFocusedView(
+          overflow_shelf_test_api_->GetViewAt(first_index_overflow_shelf));
+
+  // Tests that after pressing shift tab once, the main shelf is active and
+  // the last item on the main shelf has focus.
+  DoShiftTab();
+  EXPECT_TRUE(shelf_view_->shelf_widget()->IsActive());
+  EXPECT_TRUE(test_api_->GetViewAt(last_item_on_main_shelf_index_)->HasFocus());
 }
 
 }  // namespace ash

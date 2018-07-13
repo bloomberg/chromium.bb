@@ -200,6 +200,20 @@ class ASH_EXPORT ShelfView : public views::View,
 
   const ShelfButton* drag_view() const { return drag_view_; }
 
+  // Returns true when this ShelfView is used for Overflow Bubble.
+  // In this mode, it does not show app list, panel and overflow button.
+  // Note:
+  //   * When Shelf can contain only one item (overflow button) due to very
+  //     small resolution screen, overflow bubble can show app list and panel
+  //     button.
+  bool is_overflow_mode() const { return overflow_mode_; }
+
+  int first_visible_index() const { return first_visible_index_; }
+  int last_visible_index() const { return last_visible_index_; }
+  ShelfWidget* shelf_widget() const { return shelf_widget_; }
+  OverflowBubble* overflow_bubble() { return overflow_bubble_.get(); }
+  views::ViewModel* view_model() { return view_model_.get(); }
+
  private:
   friend class ShelfViewTestAPI;
 
@@ -214,14 +228,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Minimum distance before drag starts.
   static const int kMinimumDragDistance;
-
-  // Returns true when this ShelfView is used for Overflow Bubble.
-  // In this mode, it does not show app list, panel and overflow button.
-  // Note:
-  //   * When Shelf can contain only one item (overflow button) due to very
-  //     small resolution screen, overflow bubble can show app list and panel
-  //     button.
-  bool is_overflow_mode() const { return overflow_mode_; }
 
   bool dragging() const { return drag_pointer_ != NONE; }
 

@@ -9,14 +9,16 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/wm/window_util.h"
 #include "base/i18n/rtl.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -48,7 +50,7 @@ OverflowBubbleView::~OverflowBubbleView() {
 }
 
 void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
-                                            views::View* shelf_view) {
+                                            ShelfView* shelf_view) {
   shelf_view_ = shelf_view;
 
   SetAnchorView(anchor);
@@ -59,9 +61,8 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   else
     set_margins(gfx::Insets(kEndPadding, 0));
   set_shadow(views::BubbleBorder::NO_ASSETS);
-  // Overflow bubble should not get focus. If it get focus when it is shown,
-  // active state item is changed to running state.
-  set_can_activate(false);
+  set_close_on_deactivate(false);
+  set_accept_events(true);
 
   // Makes bubble view has a layer and clip its children layers.
   SetPaintToLayer();
@@ -194,6 +195,18 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
   else if (bounds.bottom() > monitor_rect.bottom())
     bounds.Offset(monitor_rect.bottom() - bounds.bottom(), 0);
   return bounds;
+}
+
+bool OverflowBubbleView::CanActivate() const {
+  if (!GetWidget())
+    return false;
+
+  // Do not activate the bubble unless the current active window is the shelf
+  // window.
+  aura::Window* active_window = wm::GetActiveWindow();
+  aura::Window* bubble_window = GetWidget()->GetNativeWindow();
+  aura::Window* shelf_window = shelf_->shelf_widget()->GetNativeWindow();
+  return active_window == bubble_window || active_window == shelf_window;
 }
 
 void OverflowBubbleView::UpdateShelfBackground(SkColor color) {
