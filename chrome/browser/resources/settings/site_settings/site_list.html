@@ -71,7 +71,9 @@
                   style$="[[computeSiteIcon(item.origin)]]">
               </div>
               <div class="middle no-min-width">
-                <div class="text-elide">[[item.displayName]]</div>
+                <div class="text-elide">
+                  <span class="url-directionality">[[item.displayName]]</span>
+                </div>
 
                 <!-- This div must not contain extra whitespace. -->
                 <div class="secondary text-elide"

@@ -105,9 +105,9 @@ suite('ProtocolHandlers', function() {
 
       // Check that item hosts are rendered correctly.
       const hosts = testElement.root.querySelectorAll('.protocol-host');
-      assertEquals('www.google.com', hosts[0].textContent);
-      assertEquals('www.google1.com', hosts[1].textContent);
-      assertEquals('www.google2.com', hosts[2].textContent);
+      assertEquals('www.google.com', hosts[0].textContent.trim());
+      assertEquals('www.google1.com', hosts[1].textContent.trim());
+      assertEquals('www.google2.com', hosts[2].textContent.trim());
 
       // Check that item default subtexts are rendered correctly.
       const defText = testElement.root.querySelectorAll('.protocol-default');
@@ -130,7 +130,7 @@ suite('ProtocolHandlers', function() {
 
       // Check that item hosts are rendered correctly.
       const hosts = testElement.root.querySelectorAll('.protocol-host');
-      assertEquals('www.google.com', hosts[0].textContent);
+      assertEquals('www.google.com', hosts[0].textContent.trim());
 
       // Check that item default subtexts are rendered correctly.
       const defText = testElement.root.querySelectorAll('.protocol-protocol');

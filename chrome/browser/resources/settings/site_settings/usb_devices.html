@@ -31,7 +31,9 @@
         <div class="list-item">
           <div class="favicon-image"
               style$="[[computeSiteIcon(item.origin)]]"></div>
-          <div class="middle">[[item.origin]]</div>
+          <div class="middle">
+            <span class="url-directionality">[[item.origin]]</span>
+          </div>
 
           <paper-icon-button-light class="icon-more-vert">
             <button on-click="showMenu_" title="$i18n{moreActions}"></button>
