@@ -44,7 +44,7 @@ class FakeCommandBufferServiceBase : public CommandBufferServiceBase {
   int32_t GetNextFreeTransferBufferId();
 
   void FlushHelper(int32_t put_offset);
-  void SetGetBufferHelper(int transfer_buffer_id);
+  void SetGetBufferHelper(int transfer_buffer_id, int32_t token);
   scoped_refptr<gpu::Buffer> CreateTransferBufferHelper(size_t size,
                                                         int32_t* id);
   void DestroyTransferBufferHelper(int32_t id);
@@ -80,8 +80,11 @@ class MockClientCommandBuffer : public CommandBuffer,
 
   int32_t GetServicePutOffset() { return put_offset_; }
 
+  void SetTokenForSetGetBuffer(int32_t token) { token_ = token; }
+
  private:
   int32_t put_offset_ = 0;
+  int32_t token_ = 10000;  // All token checks in the tests should pass.
 };
 
 class MockClientCommandBufferMockFlush : public MockClientCommandBuffer {

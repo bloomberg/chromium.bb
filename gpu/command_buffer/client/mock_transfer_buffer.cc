@@ -44,8 +44,7 @@ bool MockTransferBuffer::Initialize(unsigned int starting_buffer_size,
                                     unsigned int result_size,
                                     unsigned int /* min_buffer_size */,
                                     unsigned int /* max_buffer_size */,
-                                    unsigned int alignment,
-                                    unsigned int /* size_to_flush */) {
+                                    unsigned int alignment) {
   // Just check they match.
   return size_ == starting_buffer_size && result_size_ == result_size &&
          alignment_ == alignment && !initialize_fail_;

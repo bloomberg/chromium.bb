@@ -17,21 +17,17 @@
 
 namespace gpu {
 
-TransferBuffer::TransferBuffer(
-    CommandBufferHelper* helper)
+TransferBuffer::TransferBuffer(CommandBufferHelper* helper)
     : helper_(helper),
       result_size_(0),
       default_buffer_size_(0),
       min_buffer_size_(0),
       max_buffer_size_(0),
       alignment_(0),
-      size_to_flush_(0),
-      bytes_since_last_flush_(0),
       buffer_id_(-1),
       result_buffer_(NULL),
       result_shm_offset_(0),
-      usable_(true) {
-}
+      usable_(true) {}
 
 TransferBuffer::~TransferBuffer() {
   Free();
@@ -45,19 +41,16 @@ base::SharedMemoryHandle TransferBuffer::shared_memory_handle() const {
   return buffer_->backing()->shared_memory_handle();
 }
 
-bool TransferBuffer::Initialize(
-    unsigned int default_buffer_size,
-    unsigned int result_size,
-    unsigned int min_buffer_size,
-    unsigned int max_buffer_size,
-    unsigned int alignment,
-    unsigned int size_to_flush) {
+bool TransferBuffer::Initialize(unsigned int default_buffer_size,
+                                unsigned int result_size,
+                                unsigned int min_buffer_size,
+                                unsigned int max_buffer_size,
+                                unsigned int alignment) {
   result_size_ = result_size;
-  default_buffer_size_ = default_buffer_size;
-  min_buffer_size_ = min_buffer_size;
-  max_buffer_size_ = max_buffer_size;
   alignment_ = alignment;
-  size_to_flush_ = size_to_flush;
+  default_buffer_size_ = base::bits::Align(default_buffer_size, alignment);
+  min_buffer_size_ = base::bits::Align(min_buffer_size, alignment);
+  max_buffer_size_ = base::bits::Align(max_buffer_size, alignment);
   ReallocateRingBuffer(default_buffer_size_ - result_size);
   return HaveBuffer();
 }
@@ -71,8 +64,10 @@ void TransferBuffer::Free() {
     buffer_ = NULL;
     result_buffer_ = NULL;
     result_shm_offset_ = 0;
-    ring_buffer_.reset();
-    bytes_since_last_flush_ = 0;
+    previous_ring_buffers_.push_back(std::move(ring_buffer_));
+    last_allocated_size_ = 0;
+    high_water_mark_ = GetPreviousRingBufferUsedBytes();
+    bytes_since_last_shrink_ = 0;
   }
 }
 
@@ -91,10 +86,6 @@ void TransferBuffer::DiscardBlock(void* p) {
 
 void TransferBuffer::FreePendingToken(void* p, unsigned int token) {
   ring_buffer_->FreePendingToken(p, token);
-  if (bytes_since_last_flush_ >= size_to_flush_ && size_to_flush_ > 0) {
-    helper_->Flush();
-    bytes_since_last_flush_ = 0;
-  }
 }
 
 unsigned int TransferBuffer::GetSize() const {
@@ -119,6 +110,7 @@ void TransferBuffer::AllocateRingBuffer(unsigned int size) {
     scoped_refptr<gpu::Buffer> buffer =
         helper_->command_buffer()->CreateTransferBuffer(size, &id);
     if (id != -1) {
+      last_allocated_size_ = size;
       DCHECK(buffer.get());
       buffer_ = buffer;
       ring_buffer_ = std::make_unique<RingBuffer>(
@@ -127,10 +119,11 @@ void TransferBuffer::AllocateRingBuffer(unsigned int size) {
       buffer_id_ = id;
       result_buffer_ = buffer_->memory();
       result_shm_offset_ = 0;
+      bytes_since_last_shrink_ = 0;
       return;
     }
     // we failed so don't try larger than this.
-    max_buffer_size_ = size / 2;
+    max_buffer_size_ = base::bits::Align(size / 2, alignment_);
   }
   usable_ = false;
 }
@@ -139,16 +132,21 @@ static unsigned int ComputePOTSize(unsigned int dimension) {
   return (dimension == 0) ? 0 : 1 << base::bits::Log2Ceiling(dimension);
 }
 
-void TransferBuffer::ReallocateRingBuffer(unsigned int size) {
+void TransferBuffer::ReallocateRingBuffer(unsigned int size, bool shrink) {
   // What size buffer would we ask for if we needed a new one?
   unsigned int needed_buffer_size = ComputePOTSize(size + result_size_);
   DCHECK_EQ(needed_buffer_size % alignment_, 0u)
       << "Buffer size is not a multiple of alignment_";
   needed_buffer_size = std::max(needed_buffer_size, min_buffer_size_);
-  needed_buffer_size = std::max(needed_buffer_size, default_buffer_size_);
+  if (!HaveBuffer())
+    needed_buffer_size = std::max(needed_buffer_size, default_buffer_size_);
   needed_buffer_size = std::min(needed_buffer_size, max_buffer_size_);
 
-  if (usable_ && (!HaveBuffer() || needed_buffer_size > buffer_->size())) {
+  unsigned int current_size = HaveBuffer() ? buffer_->size() : 0;
+  if (current_size == needed_buffer_size)
+    return;
+
+  if (usable_ && (shrink || needed_buffer_size > current_size)) {
     if (HaveBuffer()) {
       Free();
     }
@@ -156,11 +154,49 @@ void TransferBuffer::ReallocateRingBuffer(unsigned int size) {
   }
 }
 
+unsigned int TransferBuffer::GetPreviousRingBufferUsedBytes() {
+  while (!previous_ring_buffers_.empty() &&
+         previous_ring_buffers_.front()->GetUsedSize() == 0) {
+    previous_ring_buffers_.pop_front();
+  }
+  unsigned int total = 0;
+  for (auto& buffer : previous_ring_buffers_) {
+    total += buffer->GetUsedSize();
+  }
+  return total;
+}
+
+void TransferBuffer::ShrinkOrExpandRingBufferIfNecessary(
+    unsigned int size_to_allocate) {
+  unsigned int available_size = GetFreeSize();
+  high_water_mark_ =
+      std::max(high_water_mark_, last_allocated_size_ - available_size +
+                                     size_to_allocate +
+                                     GetPreviousRingBufferUsedBytes());
+  if (size_to_allocate > available_size) {
+    // Try to expand the ring buffer.
+    ReallocateRingBuffer(high_water_mark_);
+  } else if (bytes_since_last_shrink_ > high_water_mark_ * kShrinkThreshold) {
+    // The intent of the above check is to limit the frequency of buffer shrink
+    // attempts. Unfortunately if an application uploads a large amount of data
+    // once and from then on uploads only a small amount per frame, it will be a
+    // very long time before we attempt to shrink (or forever, if no data is
+    // uploaded).
+    // TODO(jdarpinian): Change this heuristic to be based on frame number
+    // instead, and consider shrinking at the end of each frame (for clients
+    // that have a notion of frames).
+    bytes_since_last_shrink_ = 0;
+    ReallocateRingBuffer(high_water_mark_ + high_water_mark_ / 4,
+                         true /* shrink */);
+    high_water_mark_ = size_to_allocate + GetPreviousRingBufferUsedBytes();
+  }
+}
+
 void* TransferBuffer::AllocUpTo(
     unsigned int size, unsigned int* size_allocated) {
   DCHECK(size_allocated);
 
-  ReallocateRingBuffer(size);
+  ShrinkOrExpandRingBufferIfNecessary(size);
 
   if (!HaveBuffer()) {
     return NULL;
@@ -168,12 +204,12 @@ void* TransferBuffer::AllocUpTo(
 
   unsigned int max_size = ring_buffer_->GetLargestFreeOrPendingSize();
   *size_allocated = std::min(max_size, size);
-  bytes_since_last_flush_ += *size_allocated;
+  bytes_since_last_shrink_ += *size_allocated;
   return ring_buffer_->Alloc(*size_allocated);
 }
 
 void* TransferBuffer::Alloc(unsigned int size) {
-  ReallocateRingBuffer(size);
+  ShrinkOrExpandRingBufferIfNecessary(size);
 
   if (!HaveBuffer()) {
     return NULL;
@@ -183,8 +219,7 @@ void* TransferBuffer::Alloc(unsigned int size) {
   if (size > max_size) {
     return NULL;
   }
-
-  bytes_since_last_flush_ += size;
+  bytes_since_last_shrink_ += size;
   return ring_buffer_->Alloc(size);
 }
 
