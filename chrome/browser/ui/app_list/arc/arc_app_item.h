@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 
 class ArcAppContextMenu;
@@ -51,6 +52,8 @@ class ArcAppItem : public ChromeAppListItem,
 
   // ChromeAppListItem overrides:
   app_list::AppContextMenu* GetAppContextMenu() override;
+
+  void Launch(int event_flags, arc::UserInteractionType interaction);
 
   std::unique_ptr<ArcAppIcon> arc_app_icon_;
   std::unique_ptr<ArcAppContextMenu> context_menu_;
