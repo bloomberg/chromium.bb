@@ -71,12 +71,9 @@
 -ProfileWithoutMediaCacheBrowserTest.NoSeparateMediaCache
 
 # components/update_client/ still uses URLFetcher.
-# https://crbug.com/844973
--UpdateServiceTest.NoUpdate
+# After bug 844973 was fixed, these two still fail/crash:
 -UpdateServiceTest.PolicyCorrupted
 -UpdateServiceTest.SuccessfulUpdate
--UpdateServiceTest.TwoUpdateCheckErrors
--UpdateServiceTest.UpdateCheckError
 
 # about:net-internals should be largely removed before shipping the network
 # service.
