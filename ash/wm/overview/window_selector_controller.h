@@ -73,6 +73,9 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   class OverviewBlurController;
   friend class WindowSelectorTest;
 
+  // There is no need to blur or unblur the wallpaper for tests.
+  static void SetDoNotChangeWallpaperBlurForTests();
+
   // Dispatched when window selection begins.
   void OnSelectionStarted();
 

@@ -661,13 +661,6 @@ bool WindowSelector::ShouldAnimateWallpaper(aura::Window* root_window) {
   if (!grid)
     return false;
 
-  // It is possible we leave overview mode to enter split view mode with both
-  // windows snapped. Do not animate the wallpaper in this case.
-  if (Shell::Get()->split_view_controller()->state() ==
-      SplitViewController::BOTH_SNAPPED) {
-    return false;
-  }
-
   // If one of the windows covers the workspace, we do not need to animate.
   for (const auto& selector_item : grid->window_list()) {
     if (CanCoverAvailableWorkspace(selector_item->GetWindow()))

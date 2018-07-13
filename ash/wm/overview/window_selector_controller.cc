@@ -32,6 +32,10 @@ namespace ash {
 
 namespace {
 
+// Do not blur or unblur the wallpaper when entering or exiting overview mode
+// when this is true.
+bool g_disable_wallpaper_blur_for_tests = false;
+
 // Amount of blur to apply on the wallpaper when we enter or exit overview mode.
 constexpr double kWallpaperBlurSigma = 10.f;
 constexpr double kWallpaperClearBlurSigma = 0.f;
@@ -71,7 +75,8 @@ bool ShouldExcludeWindowFromOverview(const aura::Window* window) {
 }
 
 bool IsBlurEnabled() {
-  return Shell::Get()->wallpaper_controller()->IsBlurEnabled();
+  return !g_disable_wallpaper_blur_for_tests &&
+         Shell::Get()->wallpaper_controller()->IsBlurEnabled();
 }
 
 }  // namespace
@@ -157,8 +162,9 @@ class WindowSelectorController::OverviewBlurController
   // |roots_to_animate_| accordingly. Applys blur or unblur immediately if
   // the wallpaper does not need blur animation.
   void OnBlurChange() {
-    bool should_blur = state_ == WallpaperAnimationState::kAddingBlur;
-    double value = should_blur ? kWallpaperBlurSigma : kWallpaperClearBlurSigma;
+    const bool should_blur = state_ == WallpaperAnimationState::kAddingBlur;
+    const double value =
+        should_blur ? kWallpaperBlurSigma : kWallpaperClearBlurSigma;
     for (aura::Window* root : roots_to_animate_)
       root->RemoveObserver(this);
     roots_to_animate_.clear();
@@ -166,17 +172,18 @@ class WindowSelectorController::OverviewBlurController
     WindowSelector* window_selector =
         Shell::Get()->window_selector_controller()->window_selector();
     DCHECK(window_selector);
+
     for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
-      if (!window_selector->ShouldAnimateWallpaper(root)) {
-        animation_.Reset(should_blur ? 1.0 : 0.0);
-        ApplyBlur(root, value);
-      } else {
+      if (!should_blur || window_selector->ShouldAnimateWallpaper(root)) {
         root->AddObserver(this);
         roots_to_animate_.push_back(root);
+      } else {
+        animation_.Reset(should_blur ? 1.0 : 0.0);
+        ApplyBlur(root, value);
       }
     }
 
-    // Run the animation if one of the roots needs to be aniamted.
+    // Run the animation if one of the roots needs to be animated.
     if (roots_to_animate_.empty()) {
       state_ = WallpaperAnimationState::kNormal;
     } else if (should_blur) {
@@ -436,6 +443,11 @@ void WindowSelectorController::RemoveAndDestroyAnimationObserver(
       std::remove_if(delayed_animations_.begin(), delayed_animations_.end(),
                      IsEqual(animation_observer)),
       delayed_animations_.end());
+}
+
+// static
+void WindowSelectorController::SetDoNotChangeWallpaperBlurForTests() {
+  g_disable_wallpaper_blur_for_tests = true;
 }
 
 void WindowSelectorController::OnSelectionStarted() {
