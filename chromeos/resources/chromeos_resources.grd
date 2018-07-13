@@ -8,6 +8,14 @@
   </outputs>
   <release seq="1">
     <includes>
+      <include name="IDR_DEVICE_SYNC_MOJOM_JS"
+          file="${mojom_root}/chromeos/services/device_sync/public/mojom/device_sync.mojom.js"
+          use_base_dir="false"
+          type="BINDATA" />
+      <include name="IDR_TIME_MOJOM_JS"
+          file="${mojom_root}/mojo/public/mojom/base/time.mojom.js"
+          use_base_dir="false"
+          type="BINDATA" />
       <include name="IDR_MULTIDEVICE_SETUP_MOJOM_JS"
           file="${mojom_root}/chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.js"
           use_base_dir="false"
