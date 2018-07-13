@@ -15,7 +15,7 @@ typedef NS_ENUM(NSUInteger, TabGridPage) {
 // An object implementing this protocol can change the active "page" of the tab
 // grid.
 @protocol TabGridPaging<NSObject>
-// Current active page of the tab grid. The active page is the page that
+// Active page of the tab grid. The active page is the page that
 // contains the most recent active tab.
 @property(nonatomic, assign) TabGridPage activePage;
 @end

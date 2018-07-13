@@ -151,6 +151,8 @@
 - (void)start {
   TabGridViewController* mainViewController =
       [[TabGridViewController alloc] init];
+  mainViewController.dispatcher =
+      static_cast<id<ApplicationCommands>>(self.dispatcher);
   self.transitionHandler = [[TabGridTransitionHandler alloc] init];
   self.transitionHandler.provider = mainViewController;
   mainViewController.modalPresentationStyle = UIModalPresentationCustom;

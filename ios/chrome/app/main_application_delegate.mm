@@ -124,7 +124,7 @@
   [_appState
       applicationDidEnterBackground:application
                        memoryHelper:_memoryHelper
-                tabSwitcherIsActive:[_mainController isTabSwitcherActive]];
+            incognitoContentVisible:_mainController.incognitoContentVisible];
 }
 
 // Called when returning to the foreground.

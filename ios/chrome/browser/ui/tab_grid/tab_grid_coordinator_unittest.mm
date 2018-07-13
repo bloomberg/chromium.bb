@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
 #import "ios/chrome/test/block_cleanup_test.h"
 #include "testing/gtest_mac.h"
+#include "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -41,8 +42,10 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
  public:
   TabGridCoordinatorTest() {
     UIWindow* window = [UIApplication sharedApplication].keyWindow;
-    coordinator_ = [[TabGridCoordinator alloc] initWithWindow:window
-                                   applicationCommandEndpoint:nil];
+    coordinator_ = [[TabGridCoordinator alloc]
+                    initWithWindow:window
+        applicationCommandEndpoint:OCMProtocolMock(
+                                       @protocol(ApplicationCommands))];
     coordinator_.animationsDisabledForTesting = YES;
     // TabGirdCoordinator will make its view controller the root, so stash the
     // original root view controller before starting |coordinator_|.

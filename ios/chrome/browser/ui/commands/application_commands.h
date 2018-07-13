@@ -98,6 +98,9 @@
 // Shows the Add Account UI, presenting from |baseViewController|.
 - (void)showAddAccountFromViewController:(UIViewController*)baseViewController;
 
+// Sets whether the UI is displaying incognito content.
+- (void)setIncognitoContentVisible:(BOOL)incognitoContentVisible;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_APPLICATION_COMMANDS_H_

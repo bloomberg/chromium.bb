@@ -120,7 +120,8 @@ class StackViewControllerTest : public BlockCleanupTest {
                initWithMainCardSet:static_cast<CardSet*>(main_card_set_)
                         otrCardSet:static_cast<CardSet*>(otr_card_set_)
                      activeCardSet:static_cast<CardSet*>(main_card_set_)
-        applicationCommandEndpoint:nil];
+        applicationCommandEndpoint:OCMProtocolMock(
+                                       @protocol(ApplicationCommands))];
     // Resize the view and call VC lifecycle events
     CGRect frame = CGRectMake(0.0, 0.0, kViewportDimension, kViewportDimension);
     [view_controller_ view].frame = frame;
