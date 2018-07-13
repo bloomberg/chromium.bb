@@ -60,6 +60,14 @@ const char kSpdyProxyRealm[] = "/SpdyProxy";
 // already.
 typedef autofill::SavePasswordProgressLogger Logger;
 
+enum class ShouldShowPromptResults {
+  kOldNoNewNo = 0,
+  kOldNoNewYes,
+  kOldYesNewNo,
+  kOldYesNewYes,
+  kMaxValue = kOldYesNewYes,
+};
+
 bool URLsEqualUpToScheme(const GURL& a, const GURL& b) {
   return (a.GetContent() == b.GetContent());
 }
@@ -171,6 +179,8 @@ bool AreAllFieldsEmpty(const PasswordForm& form) {
 
 // Helper function that determines whether update or save prompt should be
 // shown for credentials in |provisional_save_manager|.
+// TODO(https://crbug.com/831123): Move to NewPasswordFormManager when the old
+// PasswordFormManager is gone.
 bool IsPasswordUpdate(const PasswordFormManager& provisional_save_manager) {
   return (!provisional_save_manager.GetBestMatches().empty() &&
           provisional_save_manager
@@ -223,6 +233,22 @@ PasswordFormManager* FindMatchedManager(
   return matched_manager_it == pending_login_managers.end()
              ? nullptr
              : matched_manager_it->get();
+}
+
+void LogShouldShouldPromptComparison(bool should_show_prompt_old,
+                                     bool should_show_prompt) {
+  ShouldShowPromptResults outcome = ShouldShowPromptResults::kMaxValue;
+  if (!should_show_prompt_old && !should_show_prompt)
+    outcome = ShouldShowPromptResults::kOldNoNewNo;
+  if (!should_show_prompt_old && should_show_prompt)
+    outcome = ShouldShowPromptResults::kOldNoNewYes;
+  if (should_show_prompt_old && !should_show_prompt)
+    outcome = ShouldShowPromptResults::kOldYesNewNo;
+  if (should_show_prompt_old && should_show_prompt)
+    outcome = ShouldShowPromptResults::kOldYesNewYes;
+
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ShouldShowPromptComparison",
+                            outcome);
 }
 
 }  // namespace
@@ -783,6 +809,24 @@ bool PasswordManager::ShouldBlockPasswordForSameOriginButDifferentScheme(
 }
 
 bool PasswordManager::ShouldPromptUserToSavePassword() const {
+  if (IsPasswordUpdate(*provisional_save_manager_)) {
+    // Updating a credential might erase a useful stored value by accident.
+    // Always ask the user to confirm.
+    return true;
+  }
+
+  // User successfully signed-in with PSL match credentials. These credentials
+  // should be automatically saved in order to be autofilled on next login.
+  if (provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch())
+    return false;
+
+  if (provisional_save_manager_->has_generated_password())
+    return false;
+
+  return provisional_save_manager_->IsNewLogin();
+}
+
+bool PasswordManager::ShouldPromptUserToSavePasswordOld() const {
   return (provisional_save_manager_->IsNewLogin() ||
           provisional_save_manager_
               ->is_possible_change_password_form_without_username() ||
@@ -912,6 +956,9 @@ void PasswordManager::OnLoginSuccessful() {
   // If the form is eligible only for saving fallback, it shouldn't go here.
   DCHECK(!provisional_save_manager_->GetPendingCredentials()
               .only_for_fallback_saving);
+
+  LogShouldShouldPromptComparison(ShouldPromptUserToSavePasswordOld(),
+                                  ShouldPromptUserToSavePassword());
   if (ShouldPromptUserToSavePassword()) {
     bool empty_password = provisional_save_manager_->GetPendingCredentials()
                               .username_value.empty();

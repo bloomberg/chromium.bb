@@ -3651,8 +3651,8 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
 // user stores a single username/password pair on origin A, and later submits a
 // username-less password-reset form on origin B. In the bug, A and B were
 // PSL-matches (different, but with the same eTLD+1), and Chrome ended up
-// overwriting the old password with the new one. This test checks that it no
-// longer is the case.
+// overwriting the old password with the new one. This test checks that update
+// bubble is shown instead of silent update.
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
                        NoSilentOverwriteOnPSLMatch) {
   // Store a password at origin A.
@@ -3690,12 +3690,21 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('testform').submit();"));
   observer_done.Wait();
 
-  // Check that the password for origin A was not updated automatically.
+  // Check that the password for origin A was not updated automatically and the
+  // update bubble is shown instead.
   WaitForPasswordStore();  // Let the navigation take its effect on storing.
-  EXPECT_THAT(
-      password_store->stored_passwords().at(signin_form.signon_realm),
-      ElementsAre(testing::Field(&autofill::PasswordForm::password_value,
-                                 signin_form.password_value)));
+  CheckThatCredentialsStored("user", "oldpassword");
+  std::unique_ptr<BubbleObserver> prompt_observer(
+      new BubbleObserver(WebContents()));
+  EXPECT_TRUE(prompt_observer->IsUpdatePromptShownAutomatically());
+
+  // Check that the password is updated correctly if the user clicks Update.
+  const autofill::PasswordForm& stored_form =
+      password_store->stored_passwords().begin()->second[0];
+  prompt_observer->AcceptUpdatePrompt(stored_form);
+
+  WaitForPasswordStore();
+  CheckThatCredentialsStored("user", "new password");
 }
 
 INSTANTIATE_TEST_CASE_P(All,

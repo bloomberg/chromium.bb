@@ -42893,6 +42893,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="19" label="SCHEME_FILESYSTEM"/>
 </enum>
 
+<enum name="ShouldShowPromptResults">
+  <summary>
+    The results of the new and the old algorithm for detecting whether to show a
+    password prompt for the user.
+  </summary>
+  <int value="0" label="Old no, new no"/>
+  <int value="1" label="Old no, new yes"/>
+  <int value="2" label="Old yes, new no"/>
+  <int value="3" label="Old yes, new yes"/>
+</enum>
+
 <enum name="ShowAllSavedPasswordsContext">
   <int value="0" label="None"/>
   <int value="1" label="Under password suggestions"/>

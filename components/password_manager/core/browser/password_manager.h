@@ -214,6 +214,11 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // |provisional_save_manager_|.
   bool ShouldPromptUserToSavePassword() const;
 
+  // The old version of ShouldPromptUserToSavePassword, it is left for
+  // comparison and metric sending.
+  // TODO(crbug.com/856543): Remove it after M-70.
+  bool ShouldPromptUserToSavePasswordOld() const;
+
   // Called when the login was deemed successful. It handles the special case
   // when the provisionally saved password is a sync credential, and otherwise
   // asks the user about saving the password or saves it directly, as
