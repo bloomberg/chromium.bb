@@ -280,6 +280,12 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
                        ResourceLoadingHintsHttpsNoWhitelisted) {
+  TestOptimizationGuideServiceObserver observer;
+  AddTestOptimizationGuideServiceObserver(&observer);
+  base::RunLoop().RunUntilIdle();
+  SetResourceLoadingHintsWhitelist({});
+  observer.WaitForNotification();
+
   base::HistogramTester histogram_tester;
   // The URL is not whitelisted.
   ui_test_utils::NavigateToURL(browser(), https_url());
