@@ -318,8 +318,6 @@ class BrowserView : public BrowserWindow,
   void SetFocusToLocationBar(bool select_all) override;
   void UpdateReloadStopState(bool is_loading, bool force) override;
   void UpdateToolbar(content::WebContents* contents) override;
-  // Reverts user modifications to the omnibox text. Delegates to ToolbarView.
-  void RevertToolbarUrl() override;
   void ResetToolbarTabState(content::WebContents* contents) override;
   void FocusToolbar() override;
   ToolbarActionsBar* GetToolbarActionsBar() override;

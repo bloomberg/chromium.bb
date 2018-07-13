@@ -184,9 +184,6 @@ class BrowserWindow : public ui::BaseWindow {
   // Updates the toolbar with the state for the specified |contents|.
   virtual void UpdateToolbar(content::WebContents* contents) = 0;
 
-  // Reverts user modifications to the omnibox text.
-  virtual void RevertToolbarUrl() = 0;
-
   // Resets the toolbar's tab state for |contents|.
   virtual void ResetToolbarTabState(content::WebContents* contents) = 0;
 

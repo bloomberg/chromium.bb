@@ -56,7 +56,6 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
-#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -78,7 +77,6 @@
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/base_session_service_test_helper.h"
@@ -2786,32 +2784,4 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestPopupBounds) {
     EXPECT_EQ(122, bounds.height());
     browser->window()->Close();
   }
-}
-
-// Opens a page, modifies omnibox text, click on a link in the page that
-// navigates to itself, and verifies the user's entered omnibox text is reset
-IN_PROC_BROWSER_TEST_F(BrowserTest, ResetUrlOnReNavigation) {
-  // Navigate to links.html
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL links_url = embedded_test_server()->GetURL("/links.html");
-  ui_test_utils::NavigateToURL(browser(), links_url);
-  OmniboxView* omnibox_view =
-      browser()->window()->GetLocationBar()->GetOmniboxView();
-  EXPECT_EQ(ASCIIToUTF16(links_url.GetContent()), omnibox_view->GetText());
-
-  // Insert temporary text into omnibox
-  base::string16 temporary_text = ASCIIToUTF16("temporary text");
-  omnibox_view->SetUserText(temporary_text);
-  EXPECT_EQ(temporary_text, omnibox_view->GetText());
-
-  // Renavigate: click a link navigating to the same URL as the current URL.
-  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver observer(contents);
-  contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      ASCIIToUTF16("document.getElementById('self').click();"));
-  observer.Wait();
-  EXPECT_TRUE(observer.last_navigation_succeeded());
-  // Verifying the user-entered temporary text has been cleared and replaced
-  // with the URL of the current page
-  EXPECT_EQ(ASCIIToUTF16(links_url.GetContent()), omnibox_view->GetText());
 }

@@ -425,15 +425,6 @@ void BrowserWindowCocoa::UpdateToolbar(content::WebContents* contents) {
   [controller_ updateToolbarWithContents:contents];
 }
 
-void BrowserWindowCocoa::RevertToolbarUrl() {
-  // This method was added to BrowserWindow in order to address issue 830491
-  // where navigating a link to the current page would not reset the omnibox
-  // text. Uncertain if the same issue exists on Mac, as the corresponding test
-  // (BrowserTest, ResetUrlOnReNavigation) is passing.
-  // TODO(manuk): Do we need this on Mac? Might resolve itself when macviews
-  // launches.
-}
-
 void BrowserWindowCocoa::ResetToolbarTabState(content::WebContents* contents) {
   [controller_ resetTabState:contents];
 }
