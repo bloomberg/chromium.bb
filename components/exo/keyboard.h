@@ -129,6 +129,11 @@ class Keyboard : public ui::EventHandler,
   // Delay until a key state change expected to be acknowledged is expired.
   const base::TimeDelta expiration_delay_for_pending_key_acks_;
 
+  // True when the ARC app window is focused.
+  // TODO(yhanada, https://crbug.com/847500): Remove this when we find a way to
+  // fix https://crbug.com/847500 without breaking ARC++ apps.
+  bool focus_belongs_to_arc_app_ = false;
+
   base::ObserverList<KeyboardObserver> observer_list_;
 
   base::WeakPtrFactory<Keyboard> weak_ptr_factory_;
