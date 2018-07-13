@@ -26,6 +26,7 @@ _silence_exceptions = False
 
 # Used to pass parameters to forked processes without pickling.
 _fork_params = None
+_fork_kwargs = None
 
 
 class _ImmediateResult(object):
@@ -66,7 +67,7 @@ class _FuncWrapper(object):
 
   def __call__(self, index, _=None):
     try:
-      return self._func(*_fork_params[index])
+      return self._func(*_fork_params[index], **_fork_kwargs)
     except Exception, e:
       # Only keep the exception type for builtin exception types or else risk
       # further marshalling exceptions.
@@ -150,14 +151,18 @@ def _CheckForException(value):
     sys.exit(1)
 
 
-def _MakeProcessPool(job_params):
+def _MakeProcessPool(job_params, **job_kwargs):
   global _all_pools
   global _fork_params
+  global _fork_kwargs
   assert _fork_params is None
+  assert _fork_kwargs is None
   pool_size = min(len(job_params), multiprocessing.cpu_count())
   _fork_params = job_params
+  _fork_kwargs = job_kwargs
   ret = multiprocessing.Pool(pool_size)
   _fork_params = None
+  _fork_kwargs = None
   if _all_pools is None:
     _all_pools = []
     atexit.register(_TerminatePools)
@@ -175,14 +180,17 @@ def ForkAndCall(func, args, decode_func=None):
     pool = None
     result = _ImmediateResult(func(*args))
   else:
-    pool = _MakeProcessPool([args])
+    pool = _MakeProcessPool([args])  # Omit |kwargs|.
     result = pool.apply_async(_FuncWrapper(func), (0,))
     pool.close()
   return _WrappedResult(result, pool=pool, decode_func=decode_func)
 
 
-def BulkForkAndCall(func, arg_tuples):
+def BulkForkAndCall(func, arg_tuples, **kwargs):
   """Calls |func| in a fork'ed process for each set of args within |arg_tuples|.
+
+  Args:
+    kwargs: Common key word arguments to be passed to |func|.
 
   Yields the return values as they come in.
   """
@@ -192,10 +200,10 @@ def BulkForkAndCall(func, arg_tuples):
 
   if DISABLE_ASYNC:
     for args in arg_tuples:
-      yield func(*args)
+      yield func(*args, **kwargs)
     return
 
-  pool = _MakeProcessPool(arg_tuples)
+  pool = _MakeProcessPool(arg_tuples, **kwargs)
   wrapped_func = _FuncWrapper(func)
   for result in pool.imap_unordered(wrapped_func, xrange(len(arg_tuples))):
     _CheckForException(result)
@@ -215,7 +223,7 @@ def CallOnThread(func, *args, **kwargs):
   return result
 
 
-def EncodeDictOfLists(d, key_transform=None):
+def EncodeDictOfLists(d, key_transform=None, value_transform=None):
   """Serializes a dict where values are lists of strings.
 
   Does not support '' as keys, nor [''] as values.
@@ -226,7 +234,11 @@ def EncodeDictOfLists(d, key_transform=None):
   if key_transform:
     keys = (key_transform(k) for k in keys)
   keys = '\x01'.join(keys)
-  values = '\x01'.join('\x02'.join(x) for x in d.itervalues())
+  if value_transform:
+    values = '\x01'.join('\x02'.join(value_transform(y) for y in x) for x in
+                         d.itervalues())
+  else:
+    values = '\x01'.join('\x02'.join(x) for x in d.itervalues())
   return keys, values
 
 
