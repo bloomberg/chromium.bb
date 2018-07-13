@@ -114,6 +114,8 @@ CATransactionCoordinator::CATransactionCoordinator() = default;
 CATransactionCoordinator::~CATransactionCoordinator() = default;
 
 void CATransactionCoordinator::Synchronize() {
+  if (disabled_for_testing_)
+    return;
   if (@available(macos 10.11, *))
     SynchronizeImpl();
 }
