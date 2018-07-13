@@ -108,7 +108,7 @@ public class LayerTitleCache implements TitleCache {
         // If content view core is null, tab does not have direct access to the favicon, and we
         // will initially show default favicon. But favicons are stored in the history database, so
         // we will fetch favicons asynchronously from database.
-        boolean fetchFaviconFromHistory = tab.getContentViewCore() == null;
+        boolean fetchFaviconFromHistory = tab.getWebContents() == null;
 
         String titleString = getTitleForTab(tab, defaultTitle);
         getUpdatedTitleInternal(tab, titleString, fetchFaviconFromHistory);

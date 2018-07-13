@@ -4,6 +4,7 @@
 
 package org.chromium.content_public.browser;
 
+import android.content.Context;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -92,6 +93,17 @@ public interface WebContents extends Parcelable {
      *        from WebContents to the caller.
      */
     void setInternalsHolder(InternalsHolder holder);
+
+    /**
+     * Initialize various content objects of {@link WebContents} lifetime.
+     * @param context The context used to create this object.
+     * @param productVersion Product version for accessibility.
+     * @param viewDelegate Delegate to add/remove anchor views.
+     * @param accessDelegate Handles dispatching all hidden or super methods to the containerView.
+     * @param windowAndroid An instance of the WindowAndroid.
+     */
+    void initialize(Context context, String productVersion, ViewAndroidDelegate viewDelegate,
+            ViewEventSink.InternalAccessDelegate accessDelegate, WindowAndroid windowAndroid);
 
     /**
      * @return The top level WindowAndroid associated with this WebContents.  This can be null.

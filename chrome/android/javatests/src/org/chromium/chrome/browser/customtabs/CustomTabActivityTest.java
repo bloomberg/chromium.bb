@@ -854,8 +854,7 @@ public class CustomTabActivityTest {
             @Override
             public boolean isSatisfied() {
                 Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                return currentTab != null
-                        && currentTab.getContentViewCore() != null;
+                return currentTab != null && currentTab.getWebContents() != null;
             }
         });
         DOMUtils.clickNode(mCustomTabActivityTestRule.getWebContents(), "select");

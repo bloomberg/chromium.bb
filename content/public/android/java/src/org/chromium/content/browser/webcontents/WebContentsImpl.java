@@ -5,6 +5,7 @@
 package org.chromium.content.browser.webcontents;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -23,14 +24,19 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.AppWebMessagePort;
+import org.chromium.content.browser.Gamepad;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content.browser.RenderCoordinatesImpl;
+import org.chromium.content.browser.TapDisambiguator;
+import org.chromium.content.browser.ViewEventSinkImpl;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
 import org.chromium.content.browser.framehost.RenderFrameHostDelegate;
 import org.chromium.content.browser.framehost.RenderFrameHostImpl;
+import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.input.SelectPopup;
+import org.chromium.content.browser.input.TextSuggestionHost;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
@@ -40,6 +46,7 @@ import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.RenderFrameHost;
+import org.chromium.content_public.browser.ViewEventSink.InternalAccessDelegate;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContents.UserDataFactory;
 import org.chromium.content_public.browser.WebContentsInternals;
@@ -199,6 +206,32 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     private static WebContentsImpl create(
             long nativeWebContentsAndroid, NavigationController navigationController) {
         return new WebContentsImpl(nativeWebContentsAndroid, navigationController);
+    }
+
+    @Override
+    public void initialize(Context context, String productVersion, ViewAndroidDelegate viewDelegate,
+            InternalAccessDelegate internalDispatcher, WindowAndroid windowAndroid) {
+        // Makes sure |initialize| is not called more than once.
+        assert ViewEventSinkImpl.from(this) == null;
+
+        // TODO(jinsukkim): Consider creating objects using observer pattern so that WebContents
+        //     doesn't have to have direct references to them.
+        ViewEventSinkImpl.create(context, this);
+
+        setViewAndroidDelegate(viewDelegate);
+        setTopLevelNativeWindow(windowAndroid);
+
+        ImeAdapterImpl.create(this, ImeAdapterImpl.createDefaultInputMethodManagerWrapper(context));
+        SelectionPopupControllerImpl.create(context, windowAndroid, this);
+        WebContentsAccessibilityImpl.create(
+                context, viewDelegate.getContainerView(), this, productVersion);
+        TapDisambiguator.create(context, this, viewDelegate.getContainerView());
+        TextSuggestionHost.create(context, this, windowAndroid);
+        SelectPopup.create(context, this);
+        Gamepad.create(context, this);
+
+        ViewEventSinkImpl.from(this).setAccessDelegate(internalDispatcher);
+        getRenderCoordinates().setDeviceScaleFactor(windowAndroid.getDisplay().getDipScale());
     }
 
     @CalledByNative

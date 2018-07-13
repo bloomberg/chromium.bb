@@ -64,7 +64,6 @@ import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.ChildProcessImportance;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ContentViewStatics;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
@@ -108,7 +107,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 
 /**
- * Exposes the native AwContents class, and together these classes wrap the ContentViewCore
+ * Exposes the native AwContents class, and together these classes wrap the WebContents
  * and Browser components that are required to implement Android WebView API. This is the
  * primary entry point for the WebViewProvider implementation; it holds a 1:1 object
  * relationship with application WebView instances.
@@ -311,7 +310,6 @@ public class AwContents implements SmartClipProvider {
     private AwGLFunctor mFullScreenFunctor; // Only non-null when in fullscreen mode.
     private final Context mContext;
     private final int mAppTargetSdkVersion;
-    private ContentViewCore mContentViewCore;
     private AwViewAndroidDelegate mViewAndroidDelegate;
     private WindowAndroidWrapper mWindowAndroid;
     private WebContents mWebContents;
@@ -372,7 +370,7 @@ public class AwContents implements SmartClipProvider {
     private boolean mWindowFocused;
 
     // These come from the compositor and are updated synchronously (in contrast to the values in
-    // ContentViewCore, which are updated at end of every frame).
+    // RenderCoordinates, which are updated at end of every frame).
     private float mPageScaleFactor = 1.0f;
     private float mMinPageScaleFactor = 1.0f;
     private float mMaxPageScaleFactor = 1.0f;
@@ -873,11 +871,11 @@ public class AwContents implements SmartClipProvider {
         }
     }
 
-    private void createContentViewCore(ViewAndroidDelegate viewDelegate,
+    private void initWebContents(ViewAndroidDelegate viewDelegate,
             InternalAccessDelegate internalDispatcher, WebContents webContents,
             WindowAndroid windowAndroid) {
-        mContentViewCore = ContentViewCore.create(mContext, PRODUCT_VERSION, webContents,
-                viewDelegate, internalDispatcher, windowAndroid);
+        webContents.initialize(
+                mContext, PRODUCT_VERSION, viewDelegate, internalDispatcher, windowAndroid);
         mViewEventSink = ViewEventSink.from(mWebContents);
         mViewEventSink.setHideKeyboardOnBlur(false);
         SelectionPopupController controller = SelectionPopupController.fromWebContents(webContents);
@@ -1141,7 +1139,6 @@ public class AwContents implements SmartClipProvider {
     private void setNewAwContentsPreO(long newAwContentsPtr) {
         if (mNativeAwContents != 0) {
             destroyNatives();
-            mContentViewCore = null;
             mWebContents = null;
             mWebContentsInternalsHolder = null;
             mWebContentsInternals = null;
@@ -1149,7 +1146,7 @@ public class AwContents implements SmartClipProvider {
             mJavascriptInjector = null;
         }
 
-        assert mNativeAwContents == 0 && mCleanupReference == null && mContentViewCore == null;
+        assert mNativeAwContents == 0 && mCleanupReference == null && mWebContents == null;
 
         mNativeAwContents = newAwContentsPtr;
         updateNativeAwGLFunctor();
@@ -1162,7 +1159,7 @@ public class AwContents implements SmartClipProvider {
         mWindowAndroid = getWindowAndroid(mContext);
         mViewAndroidDelegate =
                 new AwViewAndroidDelegate(mContainerView, mContentsClient, mScrollOffsetManager);
-        createContentViewCore(mViewAndroidDelegate, mInternalAccessAdapter, mWebContents,
+        initWebContents(mViewAndroidDelegate, mInternalAccessAdapter, mWebContents,
                 mWindowAndroid.getWindowAndroid());
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate, mAutofillProvider);
@@ -1226,7 +1223,7 @@ public class AwContents implements SmartClipProvider {
         final boolean wasFocused = mContainerViewFocused;
         final boolean wasWindowFocused = mWindowFocused;
 
-        // Properly clean up existing mContentViewCore and mNativeAwContents.
+        // Properly clean up existing mNativeAwContents.
         if (wasFocused) onFocusChanged(false, 0, null);
         if (wasWindowFocused) onWindowFocusChanged(false);
         if (wasViewVisible) setViewVisibilityInternal(false);
@@ -1237,7 +1234,7 @@ public class AwContents implements SmartClipProvider {
         // Save injected JavaScript interfaces.
         Map<String, Pair<Object, Class>> javascriptInterfaces =
                 new HashMap<String, Pair<Object, Class>>();
-        if (mContentViewCore != null) {
+        if (mWebContents != null) {
             javascriptInterfaces.putAll(getJavascriptInjector().getInterfaces());
         }
 
@@ -1246,7 +1243,7 @@ public class AwContents implements SmartClipProvider {
         // setNewAwContents). We resume the load here.
         nativeResumeLoadingCreatedPopupWebContents(mNativeAwContents);
 
-        // Finally refresh all view state for mContentViewCore and mNativeAwContents.
+        // Finally refresh all view state for mNativeAwContents.
         if (!wasPaused) onResume();
         if (wasAttached) {
             onAttachedToWindow();
@@ -1338,7 +1335,6 @@ public class AwContents implements SmartClipProvider {
 
             mWebContentsObserver.destroy();
             mWebContentsObserver = null;
-            mContentViewCore = null;
             mNativeAwContents = 0;
             mWebContents = null;
             mWebContentsInternals = null;
@@ -1348,7 +1344,6 @@ public class AwContents implements SmartClipProvider {
             mCleanupReference = null;
         }
 
-        assert mContentViewCore == null;
         assert mWebContents == null;
         assert mNavigationController == null;
         assert mNativeAwContents == 0;
@@ -1382,11 +1377,6 @@ public class AwContents implements SmartClipProvider {
             Log.d(TAG, "AwContents is kept alive past CleanupReference by finalizer");
         }
         return mIsDestroyed || destroyRunnableHasRun || weakRefsCleared;
-    }
-
-    @VisibleForTesting
-    public ContentViewCore getContentViewCore() {
-        return mContentViewCore;
     }
 
     @VisibleForTesting
@@ -1471,7 +1461,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     //--------------------------------------------------------------------------------------------
-    //  WebView[Provider] method implementations (where not provided by ContentViewCore)
+    //  WebView[Provider] method implementations
     //--------------------------------------------------------------------------------------------
 
     public void onDraw(Canvas canvas) {
@@ -1824,7 +1814,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     int getEffectiveBackgroundColor() {
-        // Do not ask the ContentViewCore for the background color, as it will always
+        // Do not ask the WebContents for the background color, as it will always
         // report white prior to initial navigation or post destruction,  whereas we want
         // to use the client supplied base value in those cases.
         if (isDestroyedOrNoOperation(NO_WARN)
@@ -2387,7 +2377,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
-     * @see ContentViewCore.evaluateJavaScript(String, JavaScriptCallback)
+     * @see WebContents.evaluateJavaScript(String, JavaScriptCallback)
      */
     public void evaluateJavaScript(String script, final Callback<String> callback) {
         if (TRACE) Log.i(TAG, "%s evaluateJavascript=%s", this, script);
@@ -3379,7 +3369,7 @@ public class AwContents implements SmartClipProvider {
                 mSettings.setSpatialNavigationEnabled(true);
             }
 
-            // Following check is dup'ed from |ContentViewCore.dispatchKeyEvent| to avoid
+            // Following check is dup'ed from |ContentUiEventHandler.dispatchKeyEvent| to avoid
             // embedder-specific customization, which is necessary only for WebView.
             if (GamepadList.dispatchKeyEvent(event)) return true;
 

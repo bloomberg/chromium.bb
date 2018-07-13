@@ -13,7 +13,7 @@ import org.chromium.device.gamepad.GamepadList;
  * Encapsulates component class {@link GamepadList} for use in content, with regards
  * to its state according to content being attached to/detached from window.
  */
-class Gamepad implements WindowEventObserver {
+public class Gamepad implements WindowEventObserver {
     private Context mContext;
 
     public static Gamepad create(Context context, WebContents webContents) {

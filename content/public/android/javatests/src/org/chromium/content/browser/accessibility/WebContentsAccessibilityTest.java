@@ -31,7 +31,6 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 import java.lang.reflect.Method;
@@ -61,7 +60,7 @@ public class WebContentsAccessibilityTest {
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
 
     /*
-     * Enable accessibility and wait until ContentViewCore.getAccessibilityNodeProvider()
+     * Enable accessibility and wait until WebContentsAccessibility.getAccessibilityNodeProvider()
      * returns something not null.
      */
     private AccessibilityNodeProvider enableAccessibilityAndWaitForNodeProvider() {
@@ -285,7 +284,6 @@ public class WebContentsAccessibilityTest {
         AccessibilityNodeProvider provider = enableAccessibilityAndWaitForNodeProvider();
 
         // Find a node in the accessibility tree with input type TYPE_CLASS_TEXT.
-        ContentViewCore contentViewCore = mActivityTestRule.getContentViewCore();
         int editFieldVirtualViewId =
                 waitForNodeWithTextInputType(provider, InputType.TYPE_CLASS_TEXT);
         AccessibilityNodeInfo editTextNode =

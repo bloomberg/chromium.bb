@@ -24,7 +24,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.ContentViewCoreImpl;
 import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -129,19 +128,6 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
                         .getOnCursorUpdateHelper();
             }
         });
-    }
-
-    /**
-     * Returns the current ContentViewCore or null if there is no ContentView.
-     */
-    public ContentViewCoreImpl getContentViewCore() {
-        try {
-            return ThreadUtils.runOnUiThreadBlocking(() -> {
-                return (ContentViewCoreImpl) getActivity().getActiveShell().getContentViewCore();
-            });
-        } catch (ExecutionException e) {
-            return null;
-        }
     }
 
     /**
@@ -293,7 +279,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     // TODO(aelias): This method needs to be removed once http://crbug.com/179511 is fixed.
     // Meanwhile, we have to wait if the page has the <meta viewport> tag.
     /**
-     * Waits till the ContentViewCore receives the expected page scale factor
+     * Waits till the RenderCoordinates receives the expected page scale factor
      * from the compositor and asserts that this happens.
      */
     public void assertWaitForPageScaleFactorMatch(float expectedScale) {
@@ -309,7 +295,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
 
     /**
      * Annotation for tests that should be executed a second time after replacing
-     * the ContentViewCore's container view.
+     * the container view.
      * <p>Please note that activity launch is only invoked once before both runs,
      * and that any state changes produced by the first run are visible to the second run.
      */

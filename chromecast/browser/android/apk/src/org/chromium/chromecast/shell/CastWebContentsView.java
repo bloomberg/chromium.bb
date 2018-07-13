@@ -11,7 +11,6 @@ import android.widget.FrameLayout;
 import org.chromium.chromecast.base.ScopeFactory;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.embedder_support.view.ContentViewRenderView;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -37,7 +36,7 @@ class CastWebContentsView {
 
             ContentView contentView = ContentView.createContentView(context, webContents);
             // TODO(derekjchow): productVersion
-            ContentViewCore contentViewCore = ContentViewCore.create(context, "", webContents,
+            webContents.initialize(context, "",
                     ViewAndroidDelegate.createBasicDelegate(contentView), contentView, window);
 
             // Enable display of current webContents.
@@ -61,7 +60,7 @@ class CastWebContentsView {
             WindowAndroid window = new WindowAndroid(context);
             ContentView contentView = ContentView.createContentView(context, webContents);
             // TODO(derekjchow): productVersion
-            ContentViewCore contentViewCore = ContentViewCore.create(context, "", webContents,
+            webContents.initialize(context, "",
                     ViewAndroidDelegate.createBasicDelegate(contentView), contentView, window);
             // Enable display of current webContents.
             webContents.onShow();

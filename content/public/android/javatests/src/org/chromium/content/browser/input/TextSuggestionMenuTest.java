@@ -27,7 +27,6 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.TimeoutException;
@@ -54,7 +53,6 @@ public class TextSuggestionMenuTest {
     @LargeTest
     public void testDeleteWordMarkedWithSuggestionMarker()
             throws InterruptedException, Throwable, TimeoutException {
-        final ContentViewCore cvc = mRule.getContentViewCore();
         WebContents webContents = mRule.getWebContents();
 
         DOMUtils.focusNode(webContents, "div");
@@ -88,7 +86,6 @@ public class TextSuggestionMenuTest {
     @LargeTest
     public void testDeleteWordMarkedWithSpellingMarker()
             throws InterruptedException, Throwable, TimeoutException {
-        final ContentViewCore cvc = mRule.getContentViewCore();
         WebContents webContents = mRule.getWebContents();
 
         DOMUtils.focusNode(webContents, "div");
@@ -142,7 +139,6 @@ public class TextSuggestionMenuTest {
     @Test
     @LargeTest
     public void testApplySuggestion() throws InterruptedException, Throwable, TimeoutException {
-        final ContentViewCore cvc = mRule.getContentViewCore();
         WebContents webContents = mRule.getWebContents();
 
         DOMUtils.focusNode(webContents, "div");
@@ -222,7 +218,6 @@ public class TextSuggestionMenuTest {
     @LargeTest
     public void testApplyMisspellingSuggestion()
             throws InterruptedException, Throwable, TimeoutException {
-        final ContentViewCore cvc = mRule.getContentViewCore();
         WebContents webContents = mRule.getWebContents();
 
         DOMUtils.focusNode(webContents, "div");
@@ -271,7 +266,6 @@ public class TextSuggestionMenuTest {
     @Test
     @LargeTest
     public void suggestionMenuDismissal() throws InterruptedException, Throwable, TimeoutException {
-        final ContentViewCore cvc = mRule.getContentViewCore();
         WebContents webContents = mRule.getWebContents();
 
         DOMUtils.focusNode(webContents, "div");

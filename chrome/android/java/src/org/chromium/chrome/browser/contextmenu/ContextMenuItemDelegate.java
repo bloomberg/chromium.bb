@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.contextmenu;
 import android.support.annotation.IntDef;
 
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.common.Referrer;
 
 import java.lang.annotation.Retention;
