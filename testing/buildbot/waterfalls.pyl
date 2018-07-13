@@ -1536,9 +1536,7 @@
             {
               'gpu': '1002:6821',
               'hidpi': '1',
-              # TODO(crbug.com/856799): upgrade to 10.13.5 as soon as
-              # there is some capacity.
-              'os': 'Mac-10.12.6',
+              'os': 'Mac-10.13.5',
               'pool': 'Chrome-GPU',
             },
           ],
