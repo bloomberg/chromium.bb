@@ -1395,13 +1395,18 @@ util.isNewNavigationEnabled = function() {
  * @param {function()} successCallback Called when the read is completed.
  * @param {function(DOMError)} errorCallback Called when an error occurs.
  * @param {function():boolean} shouldStop Callback to check if the read process
- *     should stop or not. When this callback is called and it returns false,
+ *     should stop or not. When this callback is called and it returns true,
  *     the remaining recursive reads will be aborted.
+ * @param {number=} opt_maxDepth Max depth to delve directories recursively.
+ *     If 0 is specified, only the rootEntry will be read. If -1 is specified
+ *     or opt_maxDepth is unspecified, the depth of recursion is unlimited.
  */
 util.readEntriesRecursively = function(
-    rootEntry, entriesCallback, successCallback, errorCallback, shouldStop) {
+    rootEntry, entriesCallback, successCallback, errorCallback, shouldStop,
+    opt_maxDepth) {
   var numRunningTasks = 0;
   var error = null;
+  const maxDepth = opt_maxDepth === undefined ? -1 : opt_maxDepth;
   var maybeRunCallback = function() {
     if (numRunningTasks === 0) {
       if (shouldStop())
@@ -1412,7 +1417,7 @@ util.readEntriesRecursively = function(
         successCallback();
     }
   };
-  var processEntry = function(entry) {
+  var processEntry = function(entry, depth) {
     var onError = function(fileError) {
       if (!error)
         error = fileError;
@@ -1427,8 +1432,8 @@ util.readEntriesRecursively = function(
       }
       entriesCallback(entries);
       for (var i = 0; i < entries.length; i++) {
-        if (entries[i].isDirectory)
-          processEntry(entries[i]);
+        if (entries[i].isDirectory && (maxDepth === -1 || depth < maxDepth))
+          processEntry(entries[i], depth + 1);
       }
       // Read remaining entries.
       reader.readEntries(onSuccess, onError);
@@ -1439,7 +1444,7 @@ util.readEntriesRecursively = function(
     reader.readEntries(onSuccess, onError);
   };
 
-  processEntry(rootEntry);
+  processEntry(rootEntry, 0);
 };
 
 /**

@@ -801,6 +801,22 @@ VolumeItem.prototype.setContextMenu_ = function(menu) {
 };
 
 /**
+ * @override
+ */
+VolumeItem.prototype.updateSubDirectories = function(
+    recursive, opt_successCallback, opt_errorCallback) {
+  if (this.volumeInfo.volumeType ===
+      VolumeManagerCommon.VolumeType.MEDIA_VIEW) {
+    // If this is a media-view volume, we don't show child directories.
+    // (Instead, we provide flattend files in the file list.)
+    opt_successCallback && opt_successCallback();
+  } else {
+    DirectoryItem.prototype.updateSubDirectories.call(
+        this, recursive, opt_successCallback, opt_errorCallback);
+  }
+};
+
+/**
  * Change current entry to this volume's root directory.
  * @override
  */

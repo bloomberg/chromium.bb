@@ -1245,6 +1245,11 @@ DirectoryModel.prototype.createDirectoryContents_ =
   if (!locationInfo)
     return null;
 
+  if (locationInfo.rootType == VolumeManagerCommon.RootType.MEDIA_VIEW) {
+    return DirectoryContents.createForMediaView(
+        context, /** @type {!DirectoryEntry} */ (entry));
+  }
+
   if (locationInfo.isSpecialSearchRoot) {
     // Drive special search.
     var searchType;
