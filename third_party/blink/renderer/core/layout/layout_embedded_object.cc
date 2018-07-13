@@ -49,17 +49,6 @@ LayoutEmbeddedObject::LayoutEmbeddedObject(Element* element)
 
 LayoutEmbeddedObject::~LayoutEmbeddedObject() = default;
 
-PaintLayerType LayoutEmbeddedObject::LayerTypeRequired() const {
-  // This can't just use LayoutEmbeddedContent::layerTypeRequired, because
-  // PaintLayerCompositor doesn't loop through LayoutEmbeddedObjects the way it
-  // does frames in order to update the self painting bit on their Layer.
-  // Also, unlike iframes, embeds don't used the usesCompositing bit on
-  // LayoutView in requiresAcceleratedCompositing.
-  if (RequiresAcceleratedCompositing())
-    return kNormalPaintLayer;
-  return LayoutEmbeddedContent::LayerTypeRequired();
-}
-
 static String LocalizedUnavailablePluginReplacementText(
     Node* node,
     LayoutEmbeddedObject::PluginAvailability availability) {

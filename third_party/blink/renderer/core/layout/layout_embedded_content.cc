@@ -112,6 +112,9 @@ EmbeddedContentView* LayoutEmbeddedContent::GetEmbeddedContentView() const {
 }
 
 PaintLayerType LayoutEmbeddedContent::LayerTypeRequired() const {
+  if (RequiresAcceleratedCompositing())
+    return kNormalPaintLayer;
+
   PaintLayerType type = LayoutReplaced::LayerTypeRequired();
   if (type != kNoPaintLayer)
     return type;
