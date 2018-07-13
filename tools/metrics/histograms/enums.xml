@@ -30744,6 +30744,13 @@ Called by update_use_counter_css.py.-->
   <int value="3" label="Supported with type"/>
 </enum>
 
+<enum name="MediaLauncherActivityMediaType">
+  <int value="0" label="Audio"/>
+  <int value="1" label="Image"/>
+  <int value="2" label="Video"/>
+  <int value="3" label="Unknown"/>
+</enum>
+
 <enum name="MediaLoadType">
   <int value="0" label="URL"/>
   <int value="1" label="MediaSource"/>
