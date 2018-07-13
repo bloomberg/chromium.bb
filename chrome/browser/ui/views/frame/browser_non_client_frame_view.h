@@ -28,6 +28,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns the padding on the left, right, and bottom of the avatar icon.
   static int GetAvatarIconPadding();
 
+  // Returns the padding on the sides of the tabstrip.
+  static int GetTabstripPadding();
+
   BrowserView* browser_view() const { return browser_view_; }
   BrowserFrame* frame() const { return frame_; }
 

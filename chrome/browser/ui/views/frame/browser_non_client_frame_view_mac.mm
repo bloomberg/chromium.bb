@@ -54,7 +54,8 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
 
   gfx::Rect bounds = gfx::Rect(0, kTabstripTopInset, width(),
                                tabstrip->GetPreferredSize().height());
-  bounds.Inset(GetTabStripLeftInset(), 0, GetAfterTabstripItemWidth() + 4, 0);
+  bounds.Inset(GetTabStripLeftInset(), 0,
+               GetAfterTabstripItemWidth() + GetTabstripPadding(), 0);
   return bounds;
 }
 

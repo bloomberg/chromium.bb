@@ -126,7 +126,7 @@ gfx::Size OpaqueBrowserFrameViewLayout::GetMinimumSize(
 }
 
 int OpaqueBrowserFrameViewLayout::GetTabStripLeftInset() const {
-  return leading_button_start_ + OpaqueBrowserFrameView::GetAvatarIconPadding();
+  return leading_button_start_ + OpaqueBrowserFrameView::GetTabstripPadding();
 }
 
 gfx::Rect OpaqueBrowserFrameViewLayout::GetWindowBoundsForClientBounds(
@@ -323,9 +323,8 @@ bool OpaqueBrowserFrameViewLayout::ShouldIncognitoIconBeOnRight() const {
 }
 
 int OpaqueBrowserFrameViewLayout::TabStripCaptionSpacing() const {
-  // For Material Refresh, the end of the tabstrip contains empty space to
-  // ensure the window remains draggable, which is sufficient padding to the
-  // other tabstrip contents.
+  // In Refresh, any necessary padding after the tabstrip is contained within
+  // the tabs and/or new tab button.
   if (MD::IsRefreshUi())
     return 0;
 
