@@ -13,10 +13,10 @@
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/route_message_observer.h"
+#include "chrome/browser/media/router/route_message_util.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/presentation_connection_message.h"
 #include "url/gurl.h"
 
 namespace media_router {
@@ -295,10 +295,14 @@ void MediaRouterAndroid::OnMessage(const MediaRoute::Id& route_id,
   if (it == message_observers_.end())
     return;
 
-  std::vector<content::PresentationConnectionMessage> messages;
-  messages.emplace_back(message);
-  for (auto& observer : *it->second.get())
-    observer.OnMessagesReceived(messages);
+  const mojom::RouteMessagePtr& route_message =
+      message_util::RouteMessageFromString(message);
+
+  for (auto& observer : *it->second.get()) {
+    std::vector<mojom::RouteMessagePtr> messages;
+    messages.emplace_back(route_message->Clone());
+    observer.OnMessagesReceived(std::move(messages));
+  }
 }
 
 void MediaRouterAndroid::RemoveRoute(const MediaRoute::Id& route_id) {

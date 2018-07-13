@@ -109,13 +109,14 @@ void DialMediaRouteProvider::CreateRoute(const std::string& media_source,
   // create a MediaRoute immediately in order to start exchanging messages with
   // the Cast SDK to complete the launch sequence. The first messages that the
   // MRP needs to send are the RECEIVER_ACTION and NEW_SESSION.
-  std::vector<content::PresentationConnectionMessage> messages = {
+  std::vector<mojom::RouteMessagePtr> messages;
+  messages.emplace_back(
       DialInternalMessageUtil::CreateReceiverActionCastMessage(
-          activity->launch_info, *sink),
-      DialInternalMessageUtil::CreateNewSessionMessage(activity->launch_info,
-                                                       *sink)};
+          activity->launch_info, *sink));
+  messages.emplace_back(DialInternalMessageUtil::CreateNewSessionMessage(
+      activity->launch_info, *sink));
   DVLOG(2) << "Sending RECEIVER_ACTION and NEW_SESSION for route " << route_id;
-  message_sender_->SendMessages(route_id, messages);
+  message_sender_->SendMessages(route_id, std::move(messages));
 }
 
 void DialMediaRouteProvider::JoinRoute(const std::string& media_source,
@@ -270,7 +271,9 @@ void DialMediaRouteProvider::SendCustomDialLaunchMessage(
 
   DVLOG(2) << "Sending CUSTOM_DIAL_LAUNCH message for route " << route_id;
 
-  message_sender_->SendMessages(route_id, {message_and_seq_number.first});
+  std::vector<mojom::RouteMessagePtr> messages;
+  messages.emplace_back(std::move(message_and_seq_number.first));
+  message_sender_->SendMessages(route_id, std::move(messages));
 }
 
 void DialMediaRouteProvider::HandleCustomDialLaunchResponse(
@@ -301,9 +304,11 @@ void DialMediaRouteProvider::DoTerminateRoute(const DialActivity& activity,
                                               TerminateRouteCallback callback) {
   const MediaRoute::Id& route_id = activity.route.media_route_id();
   DVLOG(2) << "Terminating route " << route_id;
-  message_sender_->SendMessages(
-      route_id, {DialInternalMessageUtil::CreateReceiverActionStopMessage(
-                    activity.launch_info, sink)});
+  std::vector<mojom::RouteMessagePtr> messages;
+  messages.emplace_back(
+      DialInternalMessageUtil::CreateReceiverActionStopMessage(
+          activity.launch_info, sink));
+  message_sender_->SendMessages(route_id, std::move(messages));
   activity_manager_->StopApp(
       route_id,
       base::BindOnce(&DialMediaRouteProvider::HandleStopAppResult,

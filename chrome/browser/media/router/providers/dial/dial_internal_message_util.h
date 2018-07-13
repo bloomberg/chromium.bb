@@ -10,7 +10,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/media/router/discovery/dial/parsed_dial_app_info.h"
-#include "content/public/common/presentation_connection_message.h"
+#include "chrome/common/media_router/mojo/media_router.mojom.h"
 
 namespace media_router {
 
@@ -92,29 +92,29 @@ class DialInternalMessageUtil {
 
   // Returns a NEW_SESSION message to be sent to the page when the user requests
   // an app launch.
-  static content::PresentationConnectionMessage CreateNewSessionMessage(
+  static mojom::RouteMessagePtr CreateNewSessionMessage(
       const DialLaunchInfo& launch_info,
       const MediaSinkInternal& sink);
 
   // Returns a RECEIVER_ACTION / CAST message to be sent to the page when the
   // user requests an app launch.
-  static content::PresentationConnectionMessage CreateReceiverActionCastMessage(
+  static mojom::RouteMessagePtr CreateReceiverActionCastMessage(
       const DialLaunchInfo& launch_info,
       const MediaSinkInternal& sink);
 
   // Returns a RECEIVER_ACTION / STOP message to be sent to the page when an app
   // is stopped by DialMediaRouteProvider.
-  static content::PresentationConnectionMessage CreateReceiverActionStopMessage(
+  static mojom::RouteMessagePtr CreateReceiverActionStopMessage(
       const DialLaunchInfo& launch_info,
       const MediaSinkInternal& sink);
 
   // Returns a CUSTOM_DIAL_LAUNCH request message to be sent to the page.
   // Generates and returns the next number to associate a DIAL launch sequence
   // with.
-  static std::pair<content::PresentationConnectionMessage, int>
-  CreateCustomDialLaunchMessage(const DialLaunchInfo& launch_info,
-                                const MediaSinkInternal& sink,
-                                const ParsedDialAppInfo& app_info);
+  static std::pair<mojom::RouteMessagePtr, int> CreateCustomDialLaunchMessage(
+      const DialLaunchInfo& launch_info,
+      const MediaSinkInternal& sink,
+      const ParsedDialAppInfo& app_info);
 };
 
 }  // namespace media_router

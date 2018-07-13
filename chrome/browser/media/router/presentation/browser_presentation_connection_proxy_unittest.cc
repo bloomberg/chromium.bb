@@ -8,6 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
+#include "chrome/browser/media/router/route_message_util.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/common/media_router/media_source.h"
@@ -16,6 +17,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using media_router::mojom::RouteMessagePtr;
 using ::testing::_;
 using ::testing::Invoke;
 
@@ -126,8 +128,6 @@ TEST_F(BrowserPresentationConnectionProxyTest, OnMessagesReceived) {
   message_1.message = std::string("foo");
   content::PresentationConnectionMessage message_2;
   message_2.data = std::vector<uint8_t>({1, 2, 3});
-  std::vector<content::PresentationConnectionMessage> messages = {message_1,
-                                                                  message_2};
 
   EXPECT_CALL(*controller_connection_proxy(), OnMessageInternal(_, _))
       .WillOnce(Invoke(
@@ -140,7 +140,13 @@ TEST_F(BrowserPresentationConnectionProxyTest, OnMessagesReceived) {
                        OnMessageCallback& callback) {
             ExpectMessageAndRunCallback(message_2, message, callback);
           }));
-  browser_connection_proxy()->OnMessagesReceived(messages);
+
+  std::vector<RouteMessagePtr> route_messages;
+  route_messages.emplace_back(
+      message_util::RouteMessageFromString(message_1.message.value()));
+  route_messages.emplace_back(
+      message_util::RouteMessageFromData(message_2.data.value()));
+  browser_connection_proxy()->OnMessagesReceived(std::move(route_messages));
   base::RunLoop().RunUntilIdle();
 }
 

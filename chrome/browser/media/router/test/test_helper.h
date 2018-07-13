@@ -22,6 +22,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if !defined(OS_ANDROID)
+
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service.h"
 #include "chrome/browser/media/router/discovery/dial/dial_url_fetcher.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
@@ -63,9 +64,6 @@ MATCHER_P(StateChangeInfoEquals, other, "") {
   return arg.state == other.state && arg.close_reason == other.close_reason &&
          arg.message == other.message;
 }
-
-std::string PresentationConnectionMessageToString(
-    const content::PresentationConnectionMessage& message);
 
 class MockIssuesObserver : public IssuesObserver {
  public:

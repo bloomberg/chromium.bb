@@ -10,12 +10,14 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
+#include "chrome/browser/media/router/route_message_util.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "net/http/http_status_code.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using media_router::mojom::RouteMessagePtr;
 using ::testing::_;
 using ::testing::IsEmpty;
 using ::testing::SaveArg;
@@ -121,11 +123,10 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     }
   }
 
-  void ExpectDialInternalMessageType(
-      const content::PresentationConnectionMessage& message,
-      DialInternalMessageType expected_type) {
-    ASSERT_TRUE(message.message);
-    auto internal_message = DialInternalMessage::From(*message.message);
+  void ExpectDialInternalMessageType(const RouteMessagePtr& message,
+                                     DialInternalMessageType expected_type) {
+    ASSERT_TRUE(message->message);
+    auto internal_message = DialInternalMessage::From(message->message.value());
     ASSERT_TRUE(internal_message);
     EXPECT_EQ(expected_type, internal_message->type);
   }
@@ -154,9 +155,12 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     EXPECT_FALSE(route_->is_incognito());
 
     const MediaRoute::Id& route_id = route_->media_route_id();
-    std::vector<content::PresentationConnectionMessage> received_messages;
+    std::vector<RouteMessagePtr> received_messages;
     EXPECT_CALL(mock_router_, OnRouteMessagesReceived(route_id, _))
-        .WillOnce(SaveArg<1>(&received_messages));
+        .WillOnce([&](const auto& route_id, auto messages) {
+          for (auto& message : messages)
+            received_messages.emplace_back(std::move(message));
+        });
     provider_->StartListeningForRouteMessages(route_->media_route_id());
     base::RunLoop().RunUntilIdle();
 
@@ -190,9 +194,12 @@ class DialMediaRouteProviderTest : public ::testing::Test {
 
     // The page sends CLIENT_CONNECT message to the MRP. In response, the MRP
     // sends back CUSTOM_DIAL_LAUNCH message.
-    std::vector<content::PresentationConnectionMessage> received_messages;
+    std::vector<RouteMessagePtr> received_messages;
     EXPECT_CALL(mock_router_, OnRouteMessagesReceived(route_id, _))
-        .WillOnce(SaveArg<1>(&received_messages));
+        .WillOnce([&](const auto& route_id, auto messages) {
+          for (auto& message : messages)
+            received_messages.emplace_back(std::move(message));
+        });
     std::move(app_info_cb)
         .Run(sink_.sink().id(), "YouTube",
              DialAppInfoResult(
@@ -203,7 +210,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     ExpectDialInternalMessageType(received_messages[0],
                                   DialInternalMessageType::kCustomDialLaunch);
     auto internal_message =
-        DialInternalMessage::From(*received_messages[0].message);
+        DialInternalMessage::From(received_messages[0]->message.value());
     ASSERT_TRUE(internal_message);
     EXPECT_GE(internal_message->sequence_number, 0);
     custom_dial_launch_seq_number_ = internal_message->sequence_number;
@@ -312,9 +319,13 @@ class DialMediaRouteProviderTest : public ::testing::Test {
   // Sets up expectations following a successful route termination.
   void ExpectTerminateRouteCommon() {
     const MediaRoute::Id& route_id = route_->media_route_id();
-    std::vector<content::PresentationConnectionMessage> received_messages;
+
+    std::vector<RouteMessagePtr> received_messages;
     EXPECT_CALL(mock_router_, OnRouteMessagesReceived(route_id, _))
-        .WillOnce(SaveArg<1>(&received_messages));
+        .WillOnce([&](const auto& route_id, auto messages) {
+          for (auto& message : messages)
+            received_messages.emplace_back(std::move(message));
+        });
     EXPECT_CALL(
         mock_router_,
         OnPresentationConnectionStateChanged(
@@ -516,29 +527,42 @@ TEST_F(DialMediaRouteProviderTest, AddSinkQueryDifferentApps) {
 }
 
 TEST_F(DialMediaRouteProviderTest, ListenForRouteMessages) {
-  std::vector<content::PresentationConnectionMessage> messages1 = {
-      content::PresentationConnectionMessage("message1")};
+  std::vector<RouteMessagePtr> messages1;
+  messages1.emplace_back(message_util::RouteMessageFromString("message1"));
   MediaRoute::Id route_id = "route_id";
   auto& message_sender = provider_->message_sender_;
   EXPECT_CALL(mock_router_, OnRouteMessagesReceived(_, _)).Times(0);
-  message_sender->SendMessages(route_id, messages1);
+  message_sender->SendMessages(route_id, std::move(messages1));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(mock_router_, OnRouteMessagesReceived(route_id, messages1));
+  EXPECT_CALL(mock_router_, OnRouteMessagesReceived(route_id, _))
+      .WillOnce([&](const auto& route_id, auto messages) {
+        EXPECT_EQ(1UL, messages.size());
+        EXPECT_EQ(message_util::RouteMessageFromString("message1"),
+                  messages[0]);
+      });
+
   provider_->StartListeningForRouteMessages(route_id);
   base::RunLoop().RunUntilIdle();
 
-  std::vector<content::PresentationConnectionMessage> messages2 = {
-      content::PresentationConnectionMessage("message2")};
-  EXPECT_CALL(mock_router_, OnRouteMessagesReceived(route_id, messages2));
-  message_sender->SendMessages(route_id, messages2);
+  EXPECT_CALL(mock_router_, OnRouteMessagesReceived(route_id, _))
+      .WillOnce([&](const auto& route_id, auto messages) {
+        EXPECT_EQ(1UL, messages.size());
+        EXPECT_EQ(message_util::RouteMessageFromString("message2"),
+                  messages[0]);
+      });
+
+  std::vector<RouteMessagePtr> messages2;
+  messages2.emplace_back(message_util::RouteMessageFromString("message2"));
+  message_sender->SendMessages(route_id, std::move(messages2));
   base::RunLoop().RunUntilIdle();
 
   provider_->StopListeningForRouteMessages(route_id);
-  std::vector<content::PresentationConnectionMessage> messages3 = {
-      content::PresentationConnectionMessage("message3")};
   EXPECT_CALL(mock_router_, OnRouteMessagesReceived(_, _)).Times(0);
-  message_sender->SendMessages(route_id, messages3);
+
+  std::vector<RouteMessagePtr> messages3;
+  messages3.emplace_back(message_util::RouteMessageFromString("message3"));
+  message_sender->SendMessages(route_id, std::move(messages3));
   base::RunLoop().RunUntilIdle();
 }
 

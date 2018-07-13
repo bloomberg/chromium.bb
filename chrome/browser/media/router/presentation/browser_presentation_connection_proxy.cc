@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/media/router/media_router.h"
+#include "chrome/browser/media/router/route_message_util.h"
 
 namespace media_router {
 
@@ -56,13 +57,15 @@ void BrowserPresentationConnectionProxy::OnMessage(
 }
 
 void BrowserPresentationConnectionProxy::OnMessagesReceived(
-    const std::vector<content::PresentationConnectionMessage>& messages) {
+    std::vector<mojom::RouteMessagePtr> messages) {
   DVLOG(2) << __func__ << ", number of messages : " << messages.size();
   // TODO(imcheng): It would be slightly more efficient to send messages in
   // a single batch.
-  for (const auto& message : messages) {
+  for (auto& message : messages) {
     target_connection_ptr_->OnMessage(
-        message, base::BindOnce(&OnMessageReceivedByRenderer));
+        message_util::PresentationConnectionFromRouteMessage(
+            std::move(message)),
+        base::BindOnce(&OnMessageReceivedByRenderer));
   }
 }
 }  // namespace media_router

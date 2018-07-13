@@ -129,11 +129,10 @@ TEST_F(DialInternalMessageUtilTest, CreateReceiverActionCastMessage) {
       "type":"receiver_action"
     })";
 
-  content::PresentationConnectionMessage message =
-      DialInternalMessageUtil::CreateReceiverActionCastMessage(launch_info_,
-                                                               sink_);
-  ASSERT_TRUE(message.message);
-  ExpectMessagesEqual(kReceiverActionCastMessage, *message.message);
+  auto message = DialInternalMessageUtil::CreateReceiverActionCastMessage(
+      launch_info_, sink_);
+  ASSERT_TRUE(message->message);
+  ExpectMessagesEqual(kReceiverActionCastMessage, message->message.value());
 }
 
 TEST_F(DialInternalMessageUtilTest, CreateReceiverActionStopMessage) {
@@ -158,11 +157,10 @@ TEST_F(DialInternalMessageUtilTest, CreateReceiverActionStopMessage) {
       "type":"receiver_action"
     })";
 
-  content::PresentationConnectionMessage message =
-      DialInternalMessageUtil::CreateReceiverActionStopMessage(launch_info_,
-                                                               sink_);
-  ASSERT_TRUE(message.message);
-  ExpectMessagesEqual(kReceiverActionStopMessage, *message.message);
+  auto message = DialInternalMessageUtil::CreateReceiverActionStopMessage(
+      launch_info_, sink_);
+  ASSERT_TRUE(message->message);
+  ExpectMessagesEqual(kReceiverActionStopMessage, message->message.value());
 }
 
 TEST_F(DialInternalMessageUtilTest, CreateNewSessionMessage) {
@@ -196,10 +194,10 @@ TEST_F(DialInternalMessageUtilTest, CreateNewSessionMessage) {
     "type":"new_session"
   })";
 
-  content::PresentationConnectionMessage message =
+  auto message =
       DialInternalMessageUtil::CreateNewSessionMessage(launch_info_, sink_);
-  ASSERT_TRUE(message.message);
-  ExpectMessagesEqual(kNewSessionMessage, *message.message);
+  ASSERT_TRUE(message->message);
+  ExpectMessagesEqual(kNewSessionMessage, message->message.value());
 }
 
 TEST_F(DialInternalMessageUtilTest, CreateCustomDialLaunchMessage) {
@@ -231,9 +229,9 @@ TEST_F(DialInternalMessageUtilTest, CreateCustomDialLaunchMessage) {
                                                              sink_, app_info);
   const auto& message = message_and_seq_num.first;
   int seq_num = message_and_seq_num.second;
-  ASSERT_TRUE(message.message);
+  ASSERT_TRUE(message->message);
   ExpectMessagesEqual(base::StringPrintf(kCustomDialLaunchMessage, seq_num),
-                      *message.message);
+                      message->message.value());
 }
 
 }  // namespace media_router
