@@ -92,6 +92,12 @@ Polymer({
    */
   joinConfigOptions_: undefined,
 
+  /**
+   * Selected domain join configuration option.
+   * @private {!JoinConfigType|undefined}
+   */
+  selectedConfigOption_: undefined,
+
   /** @private */
   realmChanged_: function() {
     this.adWelcomeMessage =
@@ -101,6 +107,7 @@ Polymer({
   /** @private */
   disabledChanged_: function() {
     this.$.gaiaCard.classList.toggle('disabled', this.disabled);
+    this.setInputsDisabled_();
   },
 
   /** @override */
@@ -284,7 +291,8 @@ Polymer({
   /** @private */
   onJoinConfigSelected_: function(value) {
     this.resetValidity_();
-    var option = this.joinConfigOptions_[value];
+    this.selectedConfigOption_ = this.joinConfigOptions_[value];
+    var option = this.selectedConfigOption_;
     this.$.userInput.value = option['ad_username'] || '';
     this.$.passwordInput.value = option['ad_password'] || '';
     this.$.orgUnitInput.value = option['computer_ou'] || '';
@@ -310,6 +318,18 @@ Polymer({
       this.machineNameError =
           loadTimeData.getString('adJoinErrorMachineNameInvalid');
     }
+    this.setInputsDisabled_();
+  },
+
+  /** @private */
+  setInputsDisabled_: function() {
+    var option = this.selectedConfigOption_;
+    if (!option)
+      return;
+    this.$.userInput.disabled = ('ad_username' in option);
+    this.$.passwordInput.disabled = ('ad_password' in option);
+    this.$.orgUnitInput.disabled = ('computer_ou' in option);
+    this.$.encryptionList.disabled = ('encryption_types' in option);
   },
 
   /** @private */
