@@ -125,6 +125,9 @@ extern const char kBundledConnectionHelpDescription[];
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 
+extern const char kCommittedInterstitialsName[];
+extern const char kCommittedInterstitialsDescription[];
+
 extern const char kCanvas2DImageChromiumName[];
 extern const char kCanvas2DImageChromiumDescription[];
 
@@ -1017,9 +1020,6 @@ extern const char kSpeculativeServiceWorkerStartOnQueryInputDescription[];
 
 extern const char kSpellingFeedbackFieldTrialName[];
 extern const char kSpellingFeedbackFieldTrialDescription[];
-
-extern const char kSSLCommittedInterstitialsName[];
-extern const char kSSLCommittedInterstitialsDescription[];
 
 extern const char kStopInBackgroundName[];
 extern const char kStopInBackgroundDescription[];

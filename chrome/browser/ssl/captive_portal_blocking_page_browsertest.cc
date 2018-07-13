@@ -10,11 +10,9 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_test_utils.h"
@@ -25,7 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -71,7 +69,8 @@ enum ExpectLoginURL {
 };
 
 bool AreCommittedInterstitialsEnabled() {
-  return base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kCommittedInterstitials);
 }
 
 class CaptivePortalBlockingPageForTesting : public CaptivePortalBlockingPage {
@@ -250,8 +249,7 @@ class CaptivePortalBlockingPageTest : public InProcessBrowserTest,
         {{"sendingThreshold", "1.0"}}, command_line);
 
     if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kSSLCommittedInterstitials);
+      command_line->AppendSwitch(switches::kCommittedInterstitials);
     }
   }
 
@@ -283,7 +281,6 @@ class CaptivePortalBlockingPageTest : public InProcessBrowserTest,
 
  private:
   std::unique_ptr<TestingThrottleInstaller> testing_throttle_installer_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPageTest);
 };
 
