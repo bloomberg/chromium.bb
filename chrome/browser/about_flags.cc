@@ -2034,10 +2034,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalSecurityFeaturesDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnablePotentiallyAnnoyingSecurityFeatures)},
 #endif  // OS_CHROMEOS
-    {"ssl-committed-interstitials",
-     flag_descriptions::kSSLCommittedInterstitialsName,
-     flag_descriptions::kSSLCommittedInterstitialsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kSSLCommittedInterstitials)},
+    {"committed-interstitials", flag_descriptions::kCommittedInterstitialsName,
+     flag_descriptions::kCommittedInterstitialsDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kCommittedInterstitials)},
     {"enable-site-per-process", flag_descriptions::kStrictSiteIsolationName,
      flag_descriptions::kStrictSiteIsolationDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kSitePerProcess)},

@@ -6,7 +6,6 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -14,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -27,7 +25,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -109,7 +106,8 @@ const base::FilePath::CharType kDocRoot[] =
 const char kTestCertificateIssuerName[] = "Test Root CA";
 
 bool AreCommittedInterstitialsEnabled() {
-  return base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kCommittedInterstitials);
 }
 
 bool IsShowingInterstitial(content::WebContents* tab) {
@@ -497,8 +495,7 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest,
     // Browser will both run and display insecure content.
     command_line->AppendSwitch(switches::kAllowRunningInsecureContent);
     if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kSSLCommittedInterstitials);
+      command_line->AppendSwitch(switches::kCommittedInterstitials);
     }
   }
 
@@ -557,7 +554,6 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest,
   net::EmbeddedTestServer https_server_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(SecurityStateTabHelperTest);
 };
 
@@ -597,8 +593,7 @@ class DidChangeVisibleSecurityStateTest
     // Browser will both run and display insecure content.
     command_line->AppendSwitch(switches::kAllowRunningInsecureContent);
     if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kSSLCommittedInterstitials);
+      command_line->AppendSwitch(switches::kCommittedInterstitials);
     }
   }
 
@@ -610,7 +605,6 @@ class DidChangeVisibleSecurityStateTest
   net::EmbeddedTestServer https_server_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(DidChangeVisibleSecurityStateTest);
 };
 

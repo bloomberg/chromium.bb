@@ -764,7 +764,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarDangerous) {
   // interstitial and proceeding through it will redirect the navigation to a
   // tab.
   if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
-      base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCommittedInterstitials)) {
     return;
   }
 

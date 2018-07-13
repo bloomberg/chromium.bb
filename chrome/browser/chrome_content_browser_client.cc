@@ -2626,7 +2626,8 @@ void ChromeContentBrowserClient::AllowCertificateError(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCommittedInterstitials)) {
     // We deny the request here in order to trigger the committed interstitials
     // code path (committing certificate error pages as navigations) instead of
     // the old code path.
@@ -3939,7 +3940,8 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   throttles.push_back(std::make_unique<PolicyBlacklistNavigationThrottle>(
       handle, handle->GetWebContents()->GetBrowserContext()));
 
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCommittedInterstitials)) {
     throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
         handle,
         std::make_unique<CertificateReportingServiceCertReporter>(web_contents),

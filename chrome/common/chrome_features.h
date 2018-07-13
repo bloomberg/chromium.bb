@@ -276,8 +276,6 @@ extern const base::Feature kSitePerProcess;
 extern const base::Feature kSitePerProcessOnlyForHighMemoryClients;
 extern const char kSitePerProcessOnlyForHighMemoryClientsParamName[];
 
-extern const base::Feature kSSLCommittedInterstitials;
-
 #if defined(OS_CHROMEOS)
 extern const base::Feature kNativeSmb;
 #endif

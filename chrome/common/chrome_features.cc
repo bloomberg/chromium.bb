@@ -527,11 +527,6 @@ const char kSitePerProcessOnlyForHighMemoryClientsParamName[] =
 const base::Feature kSiteSettings{"SiteSettings",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables committed error pages instead of transient navigation entries for
-// SSL interstitial error pages (i.e. certificate errors).
-const base::Feature kSSLCommittedInterstitials{
-    "SSLCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 // Enables or disables the ability to add a Samba Share to the Files app
 const base::Feature kNativeSmb{"NativeSmb", base::FEATURE_DISABLED_BY_DEFAULT};
