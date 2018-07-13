@@ -337,15 +337,6 @@
       },
     },
   },
-  'components_browsertests': {
-    'remove_from': [
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',
-      # chromium.win
-      'Win7 Tests (dbg)(1)',
-      'Win10 Tests x64 (dbg)',
-    ],
-  },
   'components_unittests': {
     'modifications': {
       # chromium.memory
@@ -728,12 +719,6 @@
         },
       },
     },
-  },
-  'mash_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'Mojo ChromiumOS',
-    ],
   },
   'nacl_helper_nonsfi_unittests': {
     'remove_from': [
