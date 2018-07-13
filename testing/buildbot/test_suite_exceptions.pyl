@@ -257,15 +257,6 @@
       # chromium.memory
       'Android CFI',  # https://crbug.com/862581
     ],
-    'key_removals': {
-      # chromium.android.fyi
-      'Nougat Phone Tester': [
-        'args',
-      ],
-      'x86 Cloud Tester': [
-        'args',
-      ],
-    },
     'modifications': {
       # chromium.android
       'android-kitkat-arm-rel': {
@@ -337,18 +328,6 @@
     },
   },
   'chrome_sync_shell_test_apk': {
-    'key_removals': {
-      # chromium.android.fyi
-      'Nougat Phone Tester': [
-        'args',
-      ],
-      'x64 Device Tester': [
-        'args',
-      ],
-      'x86 Cloud Tester': [
-        'args',
-      ],
-    },
     'modifications': {
       # chromium.android
       'KitKat Phone Tester (dbg)': {
@@ -480,17 +459,6 @@
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100,  # https://crbug.com/861730
       },
-    },
-  },
-  'content_shell_test_apk': {
-    'key_removals': {
-      # chromium.android.fyi
-      'Nougat Phone Tester': [
-        'args',
-      ],
-      'x86 Cloud Tester': [
-        'args',
-      ],
     },
   },
   'content_unittests': {
@@ -1849,15 +1817,6 @@
       # from Android N5X Swarm).
       'Android N5 Swarm',
     ],
-    'key_removals': {
-      # chromium.android.fyi
-      'Nougat Phone Tester': [
-        'args',
-      ],
-      'x86 Cloud Tester': [
-        'args',
-      ],
-    },
     'modifications': {
       'Oreo Phone Tester': {
         # TODO(crbug.com/863089): Enable this once it's passing.

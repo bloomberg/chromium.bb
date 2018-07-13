@@ -1216,6 +1216,10 @@
         "test": "cc_unittests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1303,6 +1307,10 @@
         "test": "chrome_public_test_vr_apk"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -1481,6 +1489,10 @@
         "test": "content_browsertests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3236,6 +3248,10 @@
         "test": "webkit_unit_tests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -3680,6 +3696,10 @@
         "test": "chrome_public_test_vr_apk"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5152,6 +5172,10 @@
         "test": "cc_unittests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5200,6 +5224,10 @@
         "test": "chrome_public_test_vr_apk"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -5301,6 +5329,10 @@
         "test": "content_browsertests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -6287,6 +6319,10 @@
         "test": "webkit_unit_tests"
       },
       {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
