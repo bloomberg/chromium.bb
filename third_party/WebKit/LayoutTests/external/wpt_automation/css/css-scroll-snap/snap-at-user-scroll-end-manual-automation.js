@@ -36,10 +36,9 @@ function waitForAnimationEnd() {
 }
 
 function inject_input() {
-  return smoothScroll(100, 20, 20, 'downright', 4000).then(() => {
+  return smoothScroll(2, 20, 20, 'downright', 4000).then(() => {
     return waitForAnimationEnd();
   }).then(() => {
-    return mouseClickInTarget('#btn', undefined, 'left',
-        /* shouldScrollToTarget = */ false);
+    return mouseClickInTarget('#btn');
   });
 }
