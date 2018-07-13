@@ -221,11 +221,8 @@ void KeyframeEffect::UpdateTickingState(UpdateTickingType type) {
 }
 
 void KeyframeEffect::Pause(base::TimeDelta pause_offset) {
-  for (auto& keyframe_model : keyframe_models_) {
-    base::TimeTicks pause_time = keyframe_model->time_offset() +
-                                 keyframe_model->start_time() + pause_offset;
-    keyframe_model->SetRunState(KeyframeModel::PAUSED, pause_time);
-  }
+  for (auto& keyframe_model : keyframe_models_)
+    keyframe_model->Pause(pause_offset);
 
   if (has_bound_element_animations()) {
     animation_->SetNeedsCommit();
@@ -260,12 +257,11 @@ void KeyframeEffect::AddKeyframeModel(
 
 void KeyframeEffect::PauseKeyframeModel(int keyframe_model_id,
                                         double time_offset) {
-  const base::TimeDelta time_delta = base::TimeDelta::FromSecondsD(time_offset);
+  const base::TimeDelta pause_offset =
+      base::TimeDelta::FromSecondsD(time_offset);
   for (auto& keyframe_model : keyframe_models_) {
     if (keyframe_model->id() == keyframe_model_id) {
-      keyframe_model->SetRunState(KeyframeModel::PAUSED,
-                                  time_delta + keyframe_model->start_time() +
-                                      keyframe_model->time_offset());
+      keyframe_model->Pause(pause_offset);
     }
   }
 

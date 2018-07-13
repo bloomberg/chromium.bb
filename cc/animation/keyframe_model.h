@@ -95,6 +95,9 @@ class CC_ANIMATION_EXPORT KeyframeModel {
     time_offset_ = monotonic_time;
   }
 
+  // Pause the keyframe effect at local time |pause_offset|.
+  void Pause(base::TimeDelta pause_offset);
+
   Direction direction() { return direction_; }
   void set_direction(Direction direction) { direction_ = direction; }
 
@@ -168,7 +171,35 @@ class CC_ANIMATION_EXPORT KeyframeModel {
                 int group_id,
                 int target_property_id);
 
-  base::TimeDelta ConvertToActiveTime(base::TimeTicks monotonic_time) const;
+  // Return local time for this keyframe model given the absolute monotonic
+  // time.
+  //
+  // Local time represents the time value that is used to tick this keyframe
+  // model and is relative to its start time. It is closely related to the local
+  // time concept in web animations [1]. It is:
+  //  - for playing animation : wall time - start time - paused duration
+  //  - for paused animation  : paused time
+  //  - otherwise             : zero
+  //
+  // Here is small diagram that shows how active, local, and monotonic times
+  // relate to each other and to the run state.
+  //
+  //      run state   Starting  (R)unning  Paused (R) Paused (R)  Finished
+  //                    ^                                          ^
+  //                    |                                          |
+  // monotonic time  ------------------------------------------------->
+  //                    |                                          |
+  //     local time     +-----------------+      +---+      +--------->
+  //                    |                                          |
+  //    active time     +          +------+      +---+      +------+
+  //                      (-offset)
+  //
+  // [1] https://drafts.csswg.org/web-animations/#local-time-section
+  base::TimeDelta ConvertMonotonicTimeToLocalTime(
+      base::TimeTicks monotonic_time) const;
+
+  base::TimeDelta TrimLocalTimeToCurrentIteration(
+      base::TimeDelta local_time) const;
 
   std::unique_ptr<AnimationCurve> curve_;
 
@@ -199,12 +230,12 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   bool needs_synchronized_start_time_;
   bool received_finished_event_;
 
-  // These are used in TrimTimeToCurrentIteration to account for time
+  // These are used when converting monotonic to local time to account for time
   // spent while paused. This is not included in AnimationState since it
   // there is absolutely no need for clients of this controller to know
   // about these values.
   base::TimeTicks pause_time_;
-  base::TimeDelta total_paused_time_;
+  base::TimeDelta total_paused_duration_;
 
   // KeyframeModels lead dual lives. An active keyframe model will be
   // conceptually owned by two controllers, one on the impl thread and one on
