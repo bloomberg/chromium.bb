@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -825,5 +826,24 @@ TEST_F(SessionStorageDatabaseTest, DeleteAllOrigins) {
   CheckDatabaseConsistency();
 }
 
+TEST_F(SessionStorageDatabaseTest, WipeDBOnNewVersion) {
+  // Write data for a namespace.
+  DOMStorageValuesMap data;
+  data[kKey1] = kValue1;
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data));
+  CheckDatabaseConsistency();
+
+  leveldb::Slice version_key =
+      leveldb::Slice(reinterpret_cast<const char*>(
+                         SessionStorageMetadata::kDatabaseVersionBytes),
+                     sizeof(SessionStorageMetadata::kDatabaseVersionBytes));
+  db_->db()->Put(leveldb::WriteOptions(), version_key, "something");
+  ResetDatabase();
+
+  CheckDatabaseConsistency();
+  CheckEmptyDatabase();
+  data.clear();
+  CheckAreaData(kNamespace1, kOrigin1, data);
+}
 
 }  // namespace content
