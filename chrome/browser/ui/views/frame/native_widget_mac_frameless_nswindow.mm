@@ -13,8 +13,8 @@
 @end
 
 @implementation NativeWidgetMacFramelessNSWindowFrame
-- (BOOL)_hidingTitlebar {
-  return YES;
+- (CGFloat)_titlebarHeight {
+  return 0;
 }
 @end
 

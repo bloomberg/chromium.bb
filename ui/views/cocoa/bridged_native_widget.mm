@@ -456,6 +456,11 @@ void BridgedNativeWidget::SetRootView(views::View* view) {
     // this should be treated as an error and caught early.
     CHECK(bridged_view_);
   }
+
+  // Layer backing the content view improves resize performance, reduces memory
+  // use (no backing store), and clips sublayers to rounded window corners.
+  [bridged_view_ setWantsLayer:YES];
+
   [window_ setContentView:bridged_view_];
 }
 
