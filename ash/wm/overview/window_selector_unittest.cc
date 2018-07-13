@@ -133,6 +133,7 @@ class WindowSelectorTest : public AshTestBase {
         GetPrimaryShelf()->GetShelfViewForTesting());
     shelf_view_test_api_->SetAnimationDuration(1);
     ScopedTransformOverviewWindow::SetImmediateCloseForTests();
+    WindowSelectorController::SetDoNotChangeWallpaperBlurForTests();
   }
 
   aura::Window* CreateWindow(const gfx::Rect& bounds) {
