@@ -57,11 +57,11 @@ bool IsCorrectSyncType(const Extension& extension, syncer::ModelType type) {
 }
 
 // Predicate for PendingExtensionManager.
+// TODO(treib,devlin): The !is_theme check shouldn't be necessary anymore after
+// all the bad data from crbug.com/558299 has been cleaned up, after M52 or so.
 bool ShouldAllowInstall(const Extension* extension) {
-  // Note: In the past, there was a bug where some themes incorrectly ended up
-  // here, see https://crbug.com/558299. Make sure that doesn't happen anymore.
-  CHECK(!extension->is_theme());
-  return extensions::sync_helper::IsSyncable(extension);
+  return !extension->is_theme() &&
+         extensions::sync_helper::IsSyncable(extension);
 }
 
 syncer::SyncDataList ToSyncerSyncDataList(
@@ -493,8 +493,11 @@ void ExtensionSyncService::ApplySyncData(
     check_for_updates = true;
   } else if (state == NOT_INSTALLED) {
     if (!extension_service()->pending_extension_manager()->AddFromSync(
-            id, extension_sync_data.update_url(), extension_sync_data.version(),
-            ShouldAllowInstall, extension_sync_data.remote_install())) {
+            id,
+            extension_sync_data.update_url(),
+            extension_sync_data.version(),
+            ShouldAllowInstall,
+            extension_sync_data.remote_install())) {
       LOG(WARNING) << "Could not add pending extension for " << id;
       // This means that the extension is already pending installation, with a
       // non-INTERNAL location.  Add to pending_sync_data, even though it will
@@ -558,6 +561,12 @@ void ExtensionSyncService::ApplyBookmarkAppSyncData(
 void ExtensionSyncService::SetSyncStartFlareForTesting(
     const syncer::SyncableService::StartSyncFlare& flare) {
   flare_ = flare;
+}
+
+void ExtensionSyncService::DeleteThemeDoNotUse(const Extension& theme) {
+  DCHECK(theme.is_theme());
+  GetSyncBundle(syncer::EXTENSIONS)->PushSyncDeletion(
+      theme.id(), CreateSyncData(theme).GetSyncData());
 }
 
 extensions::ExtensionService* ExtensionSyncService::extension_service() const {
