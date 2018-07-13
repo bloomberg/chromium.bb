@@ -76,16 +76,16 @@ allows imports and refactoring to be across all targets.
 ### Extracting .srcjars
 
 Most generated .java files in GN are stored as `.srcjars`. Android Studio does
-not support them. It is very slow to build all these generated files and they
-rarely change. The generator script does not do anything with them by default.
-If `--full` is passed then the generator script builds and extracts them all to
-`extracted-srcjars/` subdirectories for each target that contains them. This is
-the reason that the `_all` pseudo module may contain multiple copies of
-generated files.
+not support them. The generator script builds and extracts them to
+`extracted-srcjars/` subdirectories for each target that contains generated
+files. This is the reason that the `_all` pseudo module may contain multiple
+copies of generated files. It can be slow to build all these generated files,
+so if `--fast` is passed then the generator script skips building and
+extracting them.
 
 *** note
-** TLDR:** Re-generate project files with `--full` when generated files change (
-includes `R.java`) and to remove some red underlines in java files.
+** TLDR:** Always re-generate project files when generated files change (this
+includes `R.java`).
 ***
 
 ### Native Files
