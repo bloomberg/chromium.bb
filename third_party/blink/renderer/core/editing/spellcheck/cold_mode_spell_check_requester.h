@@ -45,18 +45,20 @@ class ColdModeSpellCheckRequester
   const Element* CurrentFocusedEditable() const;
 
   void RequestCheckingForNextChunk();
+  void SetHasFullyChecked();
 
   // The LocalFrame this cold mode checker belongs to.
   const Member<LocalFrame> frame_;
 
   // The root editable element checked in the last invocation. |nullptr| if not
-  // invoked yet or nothing was checked in the last invocation.
+  // invoked yet or didn't find any root editable element to check.
   Member<const Element> root_editable_;
 
-  // If the last invocation checked a chunk of text, the id and ending position
-  // of the chunk; Otherwise, |kInvalidChunkIndex| and null.
+  // If |root_editable_| is non-null and hasn't been fully checked, the id of
+  // the last checked chunk and the remaining range to check;
+  // Otherwise, |kInvalidChunkIndex| and null.
   int last_chunk_index_;
-  Position last_chunk_end_;
+  Member<Range> remaining_check_range_;
 
   // A test-only flag for forcing lifecycle advancing.
   mutable bool needs_more_invocation_for_testing_;

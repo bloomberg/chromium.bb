@@ -36,7 +36,7 @@ ColdModeSpellCheckRequester* ColdModeSpellCheckRequester::Create(
 void ColdModeSpellCheckRequester::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(root_editable_);
-  visitor->Trace(last_chunk_end_);
+  visitor->Trace(remaining_check_range_);
 }
 
 ColdModeSpellCheckRequester::ColdModeSpellCheckRequester(LocalFrame& frame)
@@ -49,8 +49,13 @@ bool ColdModeSpellCheckRequester::FullyChecked() const {
     needs_more_invocation_for_testing_ = false;
     return false;
   }
-  return !root_editable_ ||
-         last_chunk_end_ == Position::LastPositionInNode(*root_editable_);
+  // Note that DOM mutations between cold mode invocations may corrupt the
+  // stored states, in which case we also consider checking as finished.
+  return !root_editable_ || !remaining_check_range_ ||
+         remaining_check_range_->collapsed() ||
+         !remaining_check_range_->IsConnected() ||
+         !root_editable_->contains(
+             remaining_check_range_->commonAncestorContainer());
 }
 
 SpellCheckRequester& ColdModeSpellCheckRequester::GetSpellCheckRequester()
@@ -89,39 +94,59 @@ void ColdModeSpellCheckRequester::Invoke(IdleDeadline* deadline) {
   }
 
   if (root_editable_ != current_focused) {
+    ClearProgress();
     root_editable_ = current_focused;
     last_chunk_index_ = 0;
-    last_chunk_end_ = Position::FirstPositionInNode(*root_editable_);
+    remaining_check_range_ = Range::Create(root_editable_->GetDocument());
+    remaining_check_range_->selectNodeContents(
+        const_cast<Element*>(root_editable_.Get()), ASSERT_NO_EXCEPTION);
   }
 
-  while (!FullyChecked() && deadline->timeRemaining() > 0)
+  while (deadline->timeRemaining() > 0) {
+    if (FullyChecked()) {
+      SetHasFullyChecked();
+      return;
+    }
     RequestCheckingForNextChunk();
+  }
 }
 
 void ColdModeSpellCheckRequester::ClearProgress() {
   root_editable_ = nullptr;
   last_chunk_index_ = kInvalidChunkIndex;
-  last_chunk_end_ = Position();
+  if (!remaining_check_range_)
+    return;
+  remaining_check_range_->Dispose();
+  remaining_check_range_ = nullptr;
+}
+
+void ColdModeSpellCheckRequester::SetHasFullyChecked() {
+  DCHECK(root_editable_);
+  last_chunk_index_ = kInvalidChunkIndex;
+  if (!remaining_check_range_)
+    return;
+  remaining_check_range_->Dispose();
+  remaining_check_range_ = nullptr;
 }
 
 void ColdModeSpellCheckRequester::RequestCheckingForNextChunk() {
   DCHECK(root_editable_);
+  DCHECK(!FullyChecked());
 
-  const Position editable_end = Position::LastPositionInNode(*root_editable_);
+  const EphemeralRange remaining_range(remaining_check_range_);
   const int remaining_length = TextIterator::RangeLength(
-      EphemeralRange(last_chunk_end_, editable_end),
+      remaining_range,
       // Same behavior used in |CalculateCharacterSubrange()|
       TextIteratorBehavior::EmitsObjectReplacementCharacterBehavior());
   if (remaining_length == 0) {
-    // Fully checked.
-    last_chunk_end_ = Position::LastPositionInNode(*root_editable_);
+    SetHasFullyChecked();
     return;
   }
 
-  const int chunk_index = last_chunk_index_;
-  const Position chunk_start = last_chunk_end_;
+  const int chunk_index = last_chunk_index_ + 1;
+  const Position chunk_start = remaining_range.StartPosition();
   const Position chunk_end =
-      CalculateCharacterSubrange(EphemeralRange(chunk_start, editable_end), 0,
+      CalculateCharacterSubrange(remaining_range, 0,
                                  std::min(remaining_length, kColdModeChunkSize))
           .EndPosition();
 
@@ -131,13 +156,15 @@ void ColdModeSpellCheckRequester::RequestCheckingForNextChunk() {
   const Position extended_end =
       EndOfSentence(CreateVisiblePosition(chunk_end)).DeepEquivalent();
   const Position check_end =
-      extended_end.IsNull() ? chunk_end : std::min(extended_end, editable_end);
+      extended_end.IsNull() || extended_end < chunk_end
+          ? chunk_end
+          : std::min(extended_end, remaining_range.EndPosition());
   const EphemeralRange check_range(chunk_start, check_end);
 
   GetSpellCheckRequester().RequestCheckingFor(check_range, chunk_index);
 
   last_chunk_index_ = chunk_index;
-  last_chunk_end_ = check_range.EndPosition();
+  remaining_check_range_->setStart(check_range.EndPosition());
 }
 
 }  // namespace blink
