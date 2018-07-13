@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "chromeos/services/assistant/utils.h"
 #include "libassistant/shared/public/assistant_export.h"
 #include "libassistant/shared/public/platform_api.h"
 #include "libassistant/shared/public/platform_factory.h"
@@ -73,12 +74,12 @@ void PlatformApiImpl::DummyAuthProvider::Reset() {}
 ////////////////////////////////////////////////////////////////////////////////
 
 PlatformApiImpl::PlatformApiImpl(
-    const std::string& config,
     service_manager::Connector* connector,
-    device::mojom::BatteryMonitorPtr battery_monitor)
+    device::mojom::BatteryMonitorPtr battery_monitor,
+    bool enable_hotword)
     : audio_input_provider_(connector),
-      audio_output_provider_(config, this),
-      system_provider_(std::move(battery_monitor)) {}
+      audio_output_provider_(CreateLibAssistantConfig(!enable_hotword), this),
+      system_provider_(std::move(battery_monitor), !enable_hotword) {}
 
 PlatformApiImpl::~PlatformApiImpl() = default;
 

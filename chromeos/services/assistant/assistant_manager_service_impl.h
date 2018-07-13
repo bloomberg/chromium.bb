@@ -63,7 +63,7 @@ class AssistantManagerServiceImpl
   AssistantManagerServiceImpl(service_manager::Connector* connector,
                               device::mojom::BatteryMonitorPtr battery_monitor,
                               Service* service,
-                              const std::string& config_str);
+                              bool enable_hotword);
 
   ~AssistantManagerServiceImpl() override;
 
@@ -188,7 +188,7 @@ class AssistantManagerServiceImpl
 
   State state_ = State::STOPPED;
   PlatformApiImpl platform_api_;
-  const std::string config_str_;
+  bool enable_hotword_;
   std::unique_ptr<action::CrosActionModule> action_module_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
