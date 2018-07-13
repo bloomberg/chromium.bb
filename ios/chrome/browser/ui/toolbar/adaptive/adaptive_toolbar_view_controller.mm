@@ -6,6 +6,7 @@
 
 #import "base/logging.h"
 #include "base/metrics/user_metrics.h"
+#include "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_long_press_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view.h"
@@ -18,12 +19,20 @@
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/common/material_timing.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+const CGFloat kRotationInRadians = 5.0 / 180 * M_PI;
+// Scale factor for the animation, must be < 1.
+const CGFloat kScaleFactorDiff = 0.25;
+const CGFloat kTabGridAnimationsTotalDuration = 0.5;
+}  // namespace
 
 @interface AdaptiveToolbarViewController ()
 
@@ -152,8 +161,41 @@
   [self.view.progressBar setProgress:progress animated:YES completion:nil];
 }
 
-- (void)setTabCount:(int)tabCount {
-  [self.view.tabGridButton setTabCount:tabCount];
+- (void)setTabCount:(int)tabCount addedInBackground:(BOOL)inBackground {
+  if (self.view.tabGridButton.tabCount == tabCount)
+    return;
+
+  CGFloat scaleSign = tabCount > self.view.tabGridButton.tabCount ? 1 : -1;
+  self.view.tabGridButton.tabCount = tabCount;
+
+  CGFloat scaleFactor = 1 + scaleSign * kScaleFactorDiff;
+
+  CGAffineTransform baseTransform =
+      inBackground ? CGAffineTransformMakeRotation(kRotationInRadians)
+                   : CGAffineTransformIdentity;
+
+  auto animations = ^{
+    [UIView addKeyframeWithRelativeStartTime:0
+                            relativeDuration:0.5
+                                  animations:^{
+                                    self.view.tabGridButton.transform =
+                                        CGAffineTransformScale(baseTransform,
+                                                               scaleFactor,
+                                                               scaleFactor);
+                                  }];
+    [UIView addKeyframeWithRelativeStartTime:0.5
+                            relativeDuration:0.5
+                                  animations:^{
+                                    self.view.tabGridButton.transform =
+                                        CGAffineTransformIdentity;
+                                  }];
+  };
+
+  [UIView animateKeyframesWithDuration:kTabGridAnimationsTotalDuration
+                                 delay:0
+                               options:UIViewAnimationCurveEaseInOut
+                            animations:animations
+                            completion:nil];
 }
 
 - (void)setPageBookmarked:(BOOL)bookmarked {

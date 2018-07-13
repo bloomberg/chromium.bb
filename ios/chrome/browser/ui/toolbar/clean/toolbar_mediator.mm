@@ -146,14 +146,15 @@
               atIndex:(int)index
            activating:(BOOL)activating {
   DCHECK_EQ(_webStateList, webStateList);
-  [self.consumer setTabCount:_webStateList->count()];
+  [self.consumer setTabCount:_webStateList->count()
+           addedInBackground:!activating];
 }
 
 - (void)webStateList:(WebStateList*)webStateList
     didDetachWebState:(web::WebState*)webState
               atIndex:(int)index {
   DCHECK_EQ(_webStateList, webStateList);
-  [self.consumer setTabCount:_webStateList->count()];
+  [self.consumer setTabCount:_webStateList->count() addedInBackground:NO];
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -192,7 +193,7 @@
     [self updateConsumer];
   }
   if (self.webStateList) {
-    [self.consumer setTabCount:_webStateList->count()];
+    [self.consumer setTabCount:_webStateList->count() addedInBackground:NO];
   }
 }
 
@@ -210,7 +211,7 @@
     _webStateList->AddObserver(_webStateListObserver.get());
 
     if (self.consumer) {
-      [self.consumer setTabCount:_webStateList->count()];
+      [self.consumer setTabCount:_webStateList->count() addedInBackground:NO];
     }
   }
 }

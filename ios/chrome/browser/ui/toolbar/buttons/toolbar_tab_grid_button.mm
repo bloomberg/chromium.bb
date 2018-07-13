@@ -29,8 +29,10 @@ const CGFloat kLabelMargin = 7;
 @implementation ToolbarTabGridButton
 
 @synthesize tabCountLabel = _tabCountLabel;
+@synthesize tabCount = _tabCount;
 
 - (void)setTabCount:(int)tabCount {
+  _tabCount = tabCount;
   // Update the text shown in the title of this button. Note that
   // the button's title may be empty or contain an easter egg, but the
   // accessibility value will always be equal to |tabCount|.
