@@ -236,7 +236,6 @@ DirectoryItem.prototype.updateSubElementsFromList = function(recursive) {
           if (currentElement.expanded) {
             currentElement.updateSubDirectories(true /* recursive */);
           }
-
           // Show the expander even without knowing if there are children.
           currentElement.mayHaveChildren_ = true;
         } else {
@@ -613,7 +612,11 @@ SubDirectoryItem.prototype = {
  */
 SubDirectoryItem.prototype.updateSharedStatusIcon = function() {
   var icon = this.querySelector('.icon');
-  this.parentTree_.metadataModel.notifyEntriesChanged([this.dirEntry_]);
+  // TODO(crbug.com/857343): Evaluate if this can be fully removed.
+  // This line invalidates the metadata model cache and was causing some
+  // directories to not display modificationTime which comes from metadata
+  // because it invalidated before displaying it.
+  // this.parentTree_.metadataModel.notifyEntriesChanged([this.dirEntry_]);
   this.parentTree_.metadataModel.get([this.dirEntry_], ['shared']).then(
       function(metadata) {
         icon.classList.toggle('shared', !!(metadata[0] && metadata[0].shared));

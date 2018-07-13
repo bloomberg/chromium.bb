@@ -150,6 +150,7 @@ LocationLine.prototype.update_ = function(components) {
     // Add a component.
     var component = components[i];
     var button = document.createElement('button');
+    button.id = 'breadcrumb-path-' + i;
     button.classList.add(
         'breadcrumb-path', 'entry-name', 'imitate-paper-button');
     var nameElement = document.createElement('div');

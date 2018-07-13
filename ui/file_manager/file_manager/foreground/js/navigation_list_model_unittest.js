@@ -45,7 +45,7 @@ function testModel() {
   var addNewServicesItem = new NavigationModelMenuItem(
       'menu-button-label', '#add-new-services', 'menu-button-icon');
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem);
+      volumeManager, shortcutListModel, recentItem, addNewServicesItem, true);
   model.linuxFilesItem = new NavigationModelFakeItem(
       'linux-files-label', NavigationModelItemType.CROSTINI,
       {toURL: () => 'fake-entry://linux-files'});
@@ -69,7 +69,7 @@ function testNoRecentOrLinuxFiles() {
   var addNewServicesItem = new NavigationModelMenuItem(
       'menu-button-label', '#add-new-services', 'menu-button-icon');
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem);
+      volumeManager, shortcutListModel, recentItem, addNewServicesItem, true);
 
   assertEquals(4, model.length);
   assertEquals('drive', model.item(0).volumeInfo.volumeId);
@@ -87,7 +87,7 @@ function testAddAndRemoveShortcuts() {
   var recentItem = null;
   var addNewServicesItem = null;
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem);
+      volumeManager, shortcutListModel, recentItem, addNewServicesItem, true);
 
   assertEquals(3, model.length);
 
@@ -122,7 +122,7 @@ function testAddAndRemoveVolumes() {
   var recentItem = null;
   var addNewServicesItem = null;
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem);
+      volumeManager, shortcutListModel, recentItem, addNewServicesItem, true);
 
   assertEquals(3, model.length);
 
@@ -217,7 +217,7 @@ function testOrderAndNestItems() {
 
   // Constructor already calls orderAndNestItems_.
   const model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem, true);
+      volumeManager, shortcutListModel, recentItem, addNewServicesItem, false);
 
   // Check items order and that MTP/Archive/Removable respect the original
   // order.
