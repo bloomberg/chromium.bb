@@ -14843,6 +14843,8 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
         NOTREACHED();
       }
 
+      if (workarounds().clear_pixel_unpack_buffer_before_copyteximage)
+        state_.PushTextureUnpackState();
       GLuint temp_texture;
       {
         // Copy from the read framebuffer into |temp_texture|.
@@ -14868,6 +14870,8 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
       api()->glFramebufferTexture2DEXTFn(
           framebuffer_target, GL_COLOR_ATTACHMENT0, source_texture_target,
           source_texture_service_id, 0);
+      if (workarounds().clear_pixel_unpack_buffer_before_copyteximage)
+        state_.RestoreUnpackState();
 
       api()->glDeleteTexturesFn(1, &temp_texture);
     } else {
@@ -14881,8 +14885,12 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
         texture_manager()->WorkaroundCopyTexImageCubeMap(&texture_state_,
             &state_, &framebuffer_state_, texture_ref, func_name, args);
       }
+      if (workarounds().clear_pixel_unpack_buffer_before_copyteximage)
+        state_.PushTextureUnpackState();
       api()->glCopyTexImage2DFn(target, level, final_internal_format, x, y,
                                 width, height, border);
+      if (workarounds().clear_pixel_unpack_buffer_before_copyteximage)
+        state_.RestoreUnpackState();
     }
   }
   if (reset_source_texture_base_level_max_level) {
