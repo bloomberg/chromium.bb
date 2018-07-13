@@ -37,10 +37,9 @@ class ASH_EXPORT TabletModeAppWindowDragController {
 
   std::unique_ptr<TabletModeWindowDragDelegate> drag_delegate_;
 
-  bool is_in_window_drag_ = false;
   gfx::Point initial_location_in_screen_;
 
-  // Tracks the amount of the drag. Only valid if |is_in_window_drag_| is true.
+  // Tracks the amount of the drag. Only valid if window is being dragged.
   gfx::PointF gesture_drag_amount_;
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeAppWindowDragController);

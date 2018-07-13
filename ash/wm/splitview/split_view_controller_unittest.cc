@@ -2173,6 +2173,15 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
                          float scroll_delta,
                          aura::Window* window) {
     base::TimeTicks timestamp = base::TimeTicks::Now();
+    SendScrollStartAndUpdate(start, scroll_delta, timestamp, window);
+
+    EndScrollSequence(start, scroll_delta, timestamp, window);
+  }
+
+  void SendScrollStartAndUpdate(const gfx::Point& start,
+                                float scroll_delta,
+                                base::TimeTicks& timestamp,
+                                aura::Window* window) {
     SendGestureEventToController(
         start.x(), start.y(), timestamp,
         ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0), window);
@@ -2182,7 +2191,12 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
         start.x(), start.y() + scroll_delta, timestamp,
         ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, scroll_delta),
         window);
+  }
 
+  void EndScrollSequence(const gfx::Point& start,
+                         float scroll_delta,
+                         base::TimeTicks& timestamp,
+                         aura::Window* window) {
     timestamp += base::TimeDelta::FromMilliseconds(100);
     SendGestureEventToController(
         start.x(), start.y() + scroll_delta, timestamp,
@@ -2224,8 +2238,18 @@ TEST_F(SplitViewAppDraggingTest, DragMaximizedWindow) {
 
   // Drag the window long enough (pass one fourth of the screen vertical
   // height) to snap the window to splitscreen.
-  SendGestureEvents(gfx::Point(0, 0), display_bounds.height() / 4 + 5,
-                    window.get());
+  const float long_scroll_delta = display_bounds.height() / 4 + 5;
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  gfx::Point start = gfx::Point(0, 0);
+  SendScrollStartAndUpdate(start, long_scroll_delta, timestamp, window.get());
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
+  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(
+      window_selector_controller->window_selector()->IsWindowInOverview(
+          window.get()));
+  EndScrollSequence(start, long_scroll_delta, timestamp, window.get());
+  EXPECT_TRUE(window_selector_controller->IsSelecting());
   EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
   EXPECT_EQ(split_view_controller()->left_window(), window.get());
   EXPECT_EQ(split_view_controller()->state(),
@@ -2238,8 +2262,15 @@ TEST_F(SplitViewAppDraggingTest, DragMaximizedWindow) {
       static_cast<aura::test::TestWindowDelegate*>(window->delegate());
   delegate->set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
-  SendGestureEvents(gfx::Point(0, 0), display_bounds.height() / 4 + 5,
-                    window.get());
+  timestamp = base::TimeTicks::Now();
+  SendScrollStartAndUpdate(start, long_scroll_delta, timestamp, window.get());
+  window_selector_controller = Shell::Get()->window_selector_controller();
+  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(
+      window_selector_controller->window_selector()->IsWindowInOverview(
+          window.get()));
+  EndScrollSequence(start, long_scroll_delta, timestamp, window.get());
+  EXPECT_FALSE(window_selector_controller->IsSelecting());
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
 }
