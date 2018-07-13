@@ -10,9 +10,8 @@
 namespace blink {
 
 /**
- * TraceWrapperV8Reference is used to trace from Blink to V8. If wrapper
- * tracing is disabled, the reference is a weak v8::Persistent. Otherwise,
- * the reference is (strongly) traced by wrapper tracing.
+ * TraceWrapperV8Reference is used to trace from Blink to V8. The reference is
+ * (strongly) traced by wrapper tracing.
  *
  * TODO(mlippautz): Use a better handle type than v8::Persistent.
  */
