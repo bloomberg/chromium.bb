@@ -314,6 +314,11 @@
 			</array>
 		</dict>
 	</array>
+	<key>LSEnvironment</key>
+	<dict>
+		<key>MallocNanoZone</key>
+		<string>0</string>
+	</dict>
 	<key>LSFileQuarantineEnabled</key>
 	<true/>
 	<key>LSHasLocalizedDisplayName</key>
