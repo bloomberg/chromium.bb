@@ -1160,6 +1160,9 @@ Handoff must also be enabled in the General section of Settings, and your device
         Edit
       </message>
       <message name="IDS_IOS_READING_LIST_EMPTY_MESSAGE" desc="Message to explain to the user how to add entries to the reading list" meaning="[Length: unlimited]">
+        Your reading list is available offline. To add a page to your reading list, tap  <ph name="SHARE_OPENING_ICON">SHARE_OPENING_ICON<ex>(menu icon)</ex></ph>  then <ph name="READ_LATER_TEXT">READ_LATER_TEXT<ex>Read Later</ex></ph>.
+      </message>
+      <message name="IDS_IOS_READING_LIST_EMPTY_MESSAGE_LEGACY" desc="Message to explain to the user how to add entries to the reading list" meaning="[Length: unlimited]">
         Your reading list is available offline. To add a page to your reading list, tap <ph name="SHARE_OPENING_ICON">SHARE_OPENING_ICON<ex>Menu > Share > Read Later</ex></ph>.
       </message>
       <message name="IDS_IOS_READING_LIST_JUST_NOW" desc="String indicating that an event (adding item, distillation) happened less than one minute ago. [Length: 25em]">
