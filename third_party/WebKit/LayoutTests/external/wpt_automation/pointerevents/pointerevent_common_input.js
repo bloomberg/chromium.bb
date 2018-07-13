@@ -107,7 +107,7 @@ function mouseChordedButtonPress(targetSelector) {
   });
 }
 
-function mouseClickInTarget(targetSelector, targetFrame, button, shouldScrollToTarget = true) {
+function mouseClickInTarget(targetSelector, targetFrame, button) {
   var targetDocument = document;
   var frameLeft = 0;
   var frameTop = 0;
@@ -122,8 +122,7 @@ function mouseClickInTarget(targetSelector, targetFrame, button, shouldScrollToT
   }
   return new Promise(function(resolve, reject) {
     if (window.chrome && chrome.gpuBenchmarking) {
-      if (shouldScrollToTarget)
-        scrollPageIfNeeded(targetSelector, targetDocument);
+      scrollPageIfNeeded(targetSelector, targetDocument);
       var target = targetDocument.querySelector(targetSelector);
       var targetRect = target.getBoundingClientRect();
       var xPosition = frameLeft + targetRect.left + boundaryOffset;

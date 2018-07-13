@@ -73,15 +73,24 @@ SnapContainerData::SnapContainerData(ScrollSnapType type,
 
 SnapContainerData::SnapContainerData(const SnapContainerData& other) = default;
 
-SnapContainerData::SnapContainerData(SnapContainerData&& other) = default;
+SnapContainerData::SnapContainerData(SnapContainerData&& other)
+    : scroll_snap_type_(other.scroll_snap_type_),
+      max_position_(other.max_position_),
+      proximity_range_(other.proximity_range_),
+      snap_area_list_(std::move(other.snap_area_list_)) {}
 
 SnapContainerData::~SnapContainerData() = default;
 
 SnapContainerData& SnapContainerData::operator=(
     const SnapContainerData& other) = default;
 
-SnapContainerData& SnapContainerData::operator=(SnapContainerData&& other) =
-    default;
+SnapContainerData& SnapContainerData::operator=(SnapContainerData&& other) {
+  scroll_snap_type_ = other.scroll_snap_type_;
+  max_position_ = other.max_position_;
+  proximity_range_ = other.proximity_range_;
+  snap_area_list_ = std::move(other.snap_area_list_);
+  return *this;
+}
 
 void SnapContainerData::AddSnapAreaData(SnapAreaData snap_area_data) {
   snap_area_list_.push_back(snap_area_data);
