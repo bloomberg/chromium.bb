@@ -117,6 +117,11 @@ const char kSandboxMojoPipeTokenSwitch[] = "sandbox-mojo-pipe-token";
 // to be spawned.
 const char kSandboxedProcessIdSwitch[] = "sandboxed-process-id";
 
+// Used to limit trace locations that will be scanned. Trace locations should be
+// specified as integers, separated by commas. For example:
+//   --scan-locations=1,2,3,5
+const char kScanLocationsSwitch[] = "scan-locations";
+
 // Set the timeout for the scanning phase, in minutes. 0 disables the timeout
 // entirely.
 const char kScanningTimeoutMinutesSwitch[] = "scanning-timeout";

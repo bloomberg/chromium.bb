@@ -2,6 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+static_library("test_util") {
+  testonly = true
+
+  sources = [
+    "test_name_helper.cc",
+  ]
+
+  deps = [
+    "//testing/gtest",
+  ]
+}
+
 source_set("test_branding_header") {
   # This is NOT testonly because it's used by RegistryOverrideManager, which is
   # shipped on official builds.
