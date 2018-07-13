@@ -45,7 +45,7 @@ class CORE_EXPORT V8VoidCallbackFunctionTestInterfaceSequenceArg final : public 
 };
 
 template <>
-class CORE_TEMPLATE_CLASS_EXPORT V8PersistentCallbackFunction<V8VoidCallbackFunctionTestInterfaceSequenceArg> final : public V8PersistentCallbackFunctionBase {
+class V8PersistentCallbackFunction<V8VoidCallbackFunctionTestInterfaceSequenceArg> final : public V8PersistentCallbackFunctionBase {
   using V8CallbackFunction = V8VoidCallbackFunctionTestInterfaceSequenceArg;
 
  public:

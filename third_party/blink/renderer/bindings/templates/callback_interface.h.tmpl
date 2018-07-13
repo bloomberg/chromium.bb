@@ -58,7 +58,7 @@ class {{exported}}{{v8_class}} final : public CallbackInterfaceBase {
 };
 
 template <>
-class {{exported|replace('_EXPORT', '_TEMPLATE_CLASS_EXPORT')}}V8PersistentCallbackInterface<{{v8_class}}> final : public V8PersistentCallbackInterfaceBase {
+class V8PersistentCallbackInterface<{{v8_class}}> final : public V8PersistentCallbackInterfaceBase {
   using V8CallbackInterface = {{v8_class}};
 
  public:

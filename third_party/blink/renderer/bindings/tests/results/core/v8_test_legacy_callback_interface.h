@@ -48,7 +48,7 @@ class CORE_EXPORT V8TestLegacyCallbackInterface final : public CallbackInterface
 };
 
 template <>
-class CORE_TEMPLATE_CLASS_EXPORT V8PersistentCallbackInterface<V8TestLegacyCallbackInterface> final : public V8PersistentCallbackInterfaceBase {
+class V8PersistentCallbackInterface<V8TestLegacyCallbackInterface> final : public V8PersistentCallbackInterfaceBase {
   using V8CallbackInterface = V8TestLegacyCallbackInterface;
 
  public:

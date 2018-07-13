@@ -44,7 +44,7 @@ class MODULES_EXPORT V8VoidCallbackFunctionModules final : public CallbackFuncti
 };
 
 template <>
-class MODULES_TEMPLATE_CLASS_EXPORT V8PersistentCallbackFunction<V8VoidCallbackFunctionModules> final : public V8PersistentCallbackFunctionBase {
+class V8PersistentCallbackFunction<V8VoidCallbackFunctionModules> final : public V8PersistentCallbackFunctionBase {
   using V8CallbackFunction = V8VoidCallbackFunctionModules;
 
  public:

@@ -42,7 +42,4 @@
 
 #endif  // !defined(COMPONENT_BUILD)
 
-// TODO(thakis): Remove all references to this, https://crbug.com/859989
-#define MODULES_TEMPLATE_CLASS_EXPORT
-
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MODULES_EXPORT_H_

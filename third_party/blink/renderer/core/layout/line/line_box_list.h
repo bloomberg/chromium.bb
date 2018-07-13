@@ -47,7 +47,7 @@ class LineLayoutBoxModel;
 class LineLayoutItem;
 
 template <typename InlineBoxType>
-class CORE_TEMPLATE_CLASS_EXPORT InlineBoxList {
+class InlineBoxList {
   DISALLOW_NEW();
 
  public:

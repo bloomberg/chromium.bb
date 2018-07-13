@@ -50,7 +50,7 @@ String PlainText(const EphemeralRangeInFlatTree&,
 // text comes back in chunks so as to optimize for performance of the iteration.
 
 template <typename Strategy>
-class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
+class TextIteratorAlgorithm {
   STACK_ALLOCATED();
 
  public:

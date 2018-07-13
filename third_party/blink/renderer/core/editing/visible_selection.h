@@ -43,7 +43,7 @@ class SelectionAdjuster;
 const TextAffinity kSelDefaultAffinity = TextAffinity::kDownstream;
 
 template <typename Strategy>
-class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
+class VisibleSelectionTemplate {
   DISALLOW_NEW();
 
  public:
