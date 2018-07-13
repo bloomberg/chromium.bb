@@ -160,4 +160,22 @@ suite('SiteEntry', function() {
             TEST_MULTIPLE_SITE_GROUP.origins.length,
             browserProxy.getCallCount('setOriginPermissions'));
       });
+
+  test(
+      'moving from grouped to ungrouped does not get stuck in opened state',
+      function() {
+        // Clone this object to avoid propogating changes made in this test.
+        testElement.siteGroup =
+            JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+        Polymer.dom.flush();
+        toggleButton.click();
+        assertTrue(testElement.$.collapseChild.opened);
+
+        // Remove all origins except one, then make sure it's not still
+        // expanded.
+        testElement.siteGroup.origins.splice(1);
+        assertEquals(1, testElement.siteGroup.origins.length);
+        testElement.onSiteGroupChanged_(testElement.siteGroup);
+        assertFalse(testElement.$.collapseChild.opened);
+      });
 });
