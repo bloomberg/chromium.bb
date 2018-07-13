@@ -12,8 +12,8 @@
 #include "url/gurl.h"
 
 namespace ash {
-
-using namespace assistant::util;
+namespace assistant {
+namespace util {
 
 class DeepLinkUnitTest : public AshTestBase {
  protected:
@@ -26,233 +26,203 @@ class DeepLinkUnitTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(DeepLinkUnitTest);
 };
 
-TEST_F(DeepLinkUnitTest, IsDeepLink) {
-  auto AssertDeepLinkUrl = [](const GURL& url) {
-    ASSERT_TRUE(IsDeepLinkUrl(url));
-  };
-
-  auto AssertNotDeepLinkUrl = [](const GURL& url) {
-    ASSERT_FALSE(IsDeepLinkUrl(url));
-  };
-
-  // OK: Supported deep links.
-  AssertDeepLinkUrl(GURL("googleassistant://explore"));
-  AssertDeepLinkUrl(GURL("googleassistant://explore?param=true"));
-  AssertDeepLinkUrl(GURL("googleassistant://onboarding"));
-  AssertDeepLinkUrl(GURL("googleassistant://onboarding?param=true"));
-  AssertDeepLinkUrl(GURL("googleassistant://reminders"));
-  AssertDeepLinkUrl(GURL("googleassistant://reminders?param=true"));
-  AssertDeepLinkUrl(GURL("googleassistant://settings"));
-  AssertDeepLinkUrl(GURL("googleassistant://settings?param=true"));
-
-  // FAIL: Deep links are case sensitive.
-  AssertNotDeepLinkUrl(GURL("GOOGLEASSISTANT://EXPLORE"));
-  AssertNotDeepLinkUrl(GURL("GOOGLEASSISTANT://ONBOARDING"));
-  AssertNotDeepLinkUrl(GURL("GOOGLEASSISTANT://REMINDERS"));
-  AssertNotDeepLinkUrl(GURL("GOOGLEASSISTANT://SETTINGS"));
-
-  // FAIL: Unsupported deep links.
-  AssertNotDeepLinkUrl(GURL("googleassistant://"));
-  AssertNotDeepLinkUrl(GURL("googleassistant://unsupported"));
-
-  // FAIL: Non-deep link URLs.
-  AssertNotDeepLinkUrl(GURL());
-  AssertNotDeepLinkUrl(GURL("https://www.google.com/"));
-}
-
-TEST_F(DeepLinkUnitTest, IsAssistantExploreDeepLink) {
-  auto AssertExploreDeepLink = [](const GURL& url) {
-    ASSERT_TRUE(IsAssistantExploreDeepLink(url));
-  };
-
-  auto AssertNotExploreDeepLink = [](const GURL& url) {
-    ASSERT_FALSE(IsAssistantExploreDeepLink(url));
-  };
-
-  // OK: Supported Assistant explore deep links.
-  AssertExploreDeepLink(GURL("googleassistant://explore"));
-  AssertExploreDeepLink(GURL("googleassistant://explore?param=true"));
-
-  // FAIL: Deep links are case sensitive.
-  AssertNotExploreDeepLink(GURL("GOOGLEASSISTANT://EXPLORE"));
-
-  // FAIL: Non-Assistant explore deep links.
-  AssertNotExploreDeepLink(GURL("googleassistant://onboarding"));
-  AssertNotExploreDeepLink(GURL("googleassistant://onboarding?param=true"));
-  AssertNotExploreDeepLink(GURL("googleassistant://reminders"));
-  AssertNotExploreDeepLink(GURL("googleassistant://reminders?param=true"));
-  AssertNotExploreDeepLink(GURL("googleassistant://settings"));
-  AssertNotExploreDeepLink(GURL("googleassistant://settings?param=true"));
-
-  // FAIL: Non-deep link URLs.
-  AssertNotExploreDeepLink(GURL());
-  AssertNotExploreDeepLink(GURL("https://www.google.com/"));
-}
-
-TEST_F(DeepLinkUnitTest, IsAssistantOnboardingDeepLink) {
-  auto AssertOnboardingDeepLink = [](const GURL& url) {
-    ASSERT_TRUE(IsAssistantOnboardingDeepLink(url));
-  };
-
-  auto AssertNotOnboardingDeepLink = [](const GURL& url) {
-    ASSERT_FALSE(IsAssistantOnboardingDeepLink(url));
-  };
-
-  // OK: Supported Assistant onboarding deep links.
-  AssertOnboardingDeepLink(GURL("googleassistant://onboarding"));
-  AssertOnboardingDeepLink(GURL("googleassistant://onboarding?param=true"));
-
-  // FAIL: Deep links are case sensitive.
-  AssertNotOnboardingDeepLink(GURL("GOOGLEASSISTANT://ONBOARDING"));
-
-  // FAIL: Non-Assistant onboarding deep links.
-  AssertNotOnboardingDeepLink(GURL("googleassistant://explore"));
-  AssertNotOnboardingDeepLink(GURL("googleassistant://explore?param=true"));
-  AssertNotOnboardingDeepLink(GURL("googleassistant://reminders"));
-  AssertNotOnboardingDeepLink(GURL("googleassistant://reminders?param=true"));
-  AssertNotOnboardingDeepLink(GURL("googleassistant://settings"));
-  AssertNotOnboardingDeepLink(GURL("googleassistant://settings?param=true"));
-
-  // FAIL: Non-deep link URLs.
-  AssertNotOnboardingDeepLink(GURL());
-  AssertNotOnboardingDeepLink(GURL("https://www.google.com/"));
-}
-
-TEST_F(DeepLinkUnitTest, IsAssistantRemindersDeepLink) {
-  auto AssertRemindersDeepLink = [](const GURL& url) {
-    ASSERT_TRUE(IsAssistantRemindersDeepLink(url));
-  };
-
-  auto AssertNotRemindersDeepLink = [](const GURL& url) {
-    ASSERT_FALSE(IsAssistantRemindersDeepLink(url));
-  };
-
-  // OK: Supported Assistant reminders deep links.
-  AssertRemindersDeepLink(GURL("googleassistant://reminders"));
-  AssertRemindersDeepLink(GURL("googleassistant://reminders?param=true"));
-
-  // FAIL: Deep links are case sensitive.
-  AssertNotRemindersDeepLink(GURL("GOOGLEASSISTANT://REMINDERS"));
-
-  // FAIL: Non-Assistant reminders deep links.
-  AssertNotRemindersDeepLink(GURL("googleassistant://explore"));
-  AssertNotRemindersDeepLink(GURL("googleassistant://explore?param=true"));
-  AssertNotRemindersDeepLink(GURL("googleassistant://onboarding"));
-  AssertNotRemindersDeepLink(GURL("googleassistant://onboarding?param=true"));
-  AssertNotRemindersDeepLink(GURL("googleassistant://settings"));
-  AssertNotRemindersDeepLink(GURL("googleassistant://settings?param=true"));
-
-  // FAIL: Non-deep link URLs.
-  AssertNotRemindersDeepLink(GURL());
-  AssertNotRemindersDeepLink(GURL("https://www.google.com/"));
-}
-
 TEST_F(DeepLinkUnitTest, CreateAssistantSettingsDeepLink) {
   ASSERT_EQ(GURL("googleassistant://settings"),
             CreateAssistantSettingsDeepLink());
 }
 
-TEST_F(DeepLinkUnitTest, IsAssistantSettingsDeepLink) {
-  auto AssertSettingsDeepLink = [](const GURL& url) {
-    ASSERT_TRUE(IsAssistantSettingsDeepLink(url));
-  };
+TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
+  const std::map<std::string, DeepLinkType> test_cases = {
+      // OK: Supported deep links.
+      {"googleassistant://explore", DeepLinkType::kExplore},
+      {"googleassistant://onboarding", DeepLinkType::kOnboarding},
+      {"googleassistant://reminders", DeepLinkType::kReminders},
+      {"googleassistant://send-feedback", DeepLinkType::kFeedback},
+      {"googleassistant://settings", DeepLinkType::kSettings},
 
-  auto AssertNotSettingsDeepLink = [](const GURL& url) {
-    ASSERT_FALSE(IsAssistantSettingsDeepLink(url));
-  };
+      // OK: Parameterized deep links.
+      {"googleassistant://explore?param=true", DeepLinkType::kExplore},
+      {"googleassistant://onboarding?param=true", DeepLinkType::kOnboarding},
+      {"googleassistant://reminders?param=true", DeepLinkType::kReminders},
+      {"googleassistant://send-feedback?param=true", DeepLinkType::kFeedback},
+      {"googleassistant://settings?param=true", DeepLinkType::kSettings},
 
-  // OK: Supported Assistant Settings deep links.
-  AssertSettingsDeepLink(GURL("googleassistant://settings"));
-  AssertSettingsDeepLink(GURL("googleassistant://settings?param=true"));
+      // UNSUPPORTED: Deep links are case sensitive.
+      {"GOOGLEASSISTANT://EXPLORE", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://ONBOARDING", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://REMINDERS", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://SEND-FEEDBACK", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://SETTINGS", DeepLinkType::kUnsupported},
 
-  // FAIL: Deep links are case sensitive.
-  AssertNotSettingsDeepLink(GURL("GOOGLEASSISTANT://SETTINGS"));
+      // UNSUPPORTED: Unknown deep links.
+      {"googleassistant://", DeepLinkType::kUnsupported},
+      {"googleassistant://unsupported", DeepLinkType::kUnsupported},
 
-  // FAIL: Non-Assistant Settings deep links.
-  AssertNotSettingsDeepLink(GURL("googleassistant://explore"));
-  AssertNotSettingsDeepLink(GURL("googleassistant://explore?param=true"));
-  AssertNotSettingsDeepLink(GURL("googleassistant://onboarding"));
-  AssertNotSettingsDeepLink(GURL("googleassistant://onboarding?param=true"));
-  AssertNotSettingsDeepLink(GURL("googleassistant://reminders"));
-  AssertNotSettingsDeepLink(GURL("googleassistant://reminders?param=true"));
+      // UNSUPPORTED: Non-deep link URLs.
+      {std::string(), DeepLinkType::kUnsupported},
+      {"https://www.google.com/", DeepLinkType::kUnsupported}};
 
-  // FAIL: Non-deep link URLs.
-  AssertNotSettingsDeepLink(GURL());
-  AssertNotSettingsDeepLink(GURL("https://www.google.com/"));
+  for (const auto& test_case : test_cases)
+    ASSERT_EQ(test_case.second, GetDeepLinkType(GURL(test_case.first)));
+}
+
+// TODO(dmblack): Implement.
+TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
+  const std::map<std::string, DeepLinkType> test_cases = {
+      // OK: Supported deep link types.
+      {"googleassistant://explore", DeepLinkType::kExplore},
+      {"googleassistant://onboarding", DeepLinkType::kOnboarding},
+      {"googleassistant://reminders", DeepLinkType::kReminders},
+      {"googleassistant://send-feedback", DeepLinkType::kFeedback},
+      {"googleassistant://settings", DeepLinkType::kSettings},
+
+      // OK: Parameterized deep link types.
+      {"googleassistant://explore?param=true", DeepLinkType::kExplore},
+      {"googleassistant://onboarding?param=true", DeepLinkType::kOnboarding},
+      {"googleassistant://reminders?param=true", DeepLinkType::kReminders},
+      {"googleassistant://send-feedback?param=true", DeepLinkType::kFeedback},
+      {"googleassistant://settings?param=true", DeepLinkType::kSettings},
+
+      // UNSUPPORTED: Deep links are case sensitive.
+      {"GOOGLEASSISTANT://EXPLORE", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://ONBOARDING", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://REMINDERS", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://SEND-FEEDBACK", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://SETTINGS", DeepLinkType::kUnsupported},
+
+      // UNSUPPORTED: Unknown deep links.
+      {"googleassistant://", DeepLinkType::kUnsupported},
+      {"googleassistant://unsupported", DeepLinkType::kUnsupported},
+
+      // UNSUPPORTED: Non-deep link URLs.
+      {std::string(), DeepLinkType::kUnsupported},
+      {"https://www.google.com/", DeepLinkType::kUnsupported}};
+
+  for (const auto& test_case : test_cases)
+    ASSERT_TRUE(IsDeepLinkType(GURL(test_case.first), test_case.second));
+}
+
+TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
+  const std::map<std::string, bool> test_cases = {
+      // OK: Supported deep links.
+      {"googleassistant://explore", true},
+      {"googleassistant://onboarding", true},
+      {"googleassistant://reminders", true},
+      {"googleassistant://send-feedback", true},
+      {"googleassistant://settings", true},
+
+      // OK: Parameterized deep links.
+      {"googleassistant://explore?param=true", true},
+      {"googleassistant://onboarding?param=true", true},
+      {"googleassistant://reminders?param=true", true},
+      {"googleassistant://send-feedback?param=true", true},
+      {"googleassistant://settings?param=true", true},
+
+      // FAIL: Deep links are case sensitive.
+      {"GOOGLEASSISTANT://EXPLORE", false},
+      {"GOOGLEASSISTANT://ONBOARDING", false},
+      {"GOOGLEASSISTANT://REMINDERS", false},
+      {"GOOGLEASSISTANT://SEND-FEEDBACK", false},
+      {"GOOGLEASSISTANT://SETTINGS", false},
+
+      // FAIL: Unknown deep links.
+      {"googleassistant://", false},
+      {"googleassistant://unsupported", false},
+
+      // FAIL: Non-deep link URLs.
+      {std::string(), false},
+      {"https://www.google.com/", false}};
+
+  for (const auto& test_case : test_cases)
+    ASSERT_EQ(test_case.second, IsDeepLinkUrl(GURL(test_case.first)));
 }
 
 // TODO(dmblack): Assert actual web URLs when available.
 TEST_F(DeepLinkUnitTest, GetWebUrl) {
-  auto AssertWebUrlPresent = [](const GURL& url) {
-    ASSERT_TRUE(GetWebUrl(url).has_value());
-  };
+  const std::map<std::string, bool> test_cases = {
+      // OK: Supported web deep links.
+      {"googleassistant://explore", true},
+      {"googleassistant://reminders", true},
+      {"googleassistant://settings", true},
 
-  auto AssertWebUrlAbsent = [](const GURL& url) {
-    ASSERT_FALSE(GetWebUrl(url).has_value());
-  };
+      // OK: Parameterized deep links.
+      {"googleassistant://explore?param=true", true},
+      {"googleassistant://reminders?param=true", true},
+      {"googleassistant://settings?param=true", true},
 
-  // OK: Supported web deep links.
-  AssertWebUrlPresent(GURL("googleassistant://explore"));
-  AssertWebUrlPresent(GURL("googleassistant://explore?param=true"));
-  AssertWebUrlPresent(GURL("googleassistant://reminders"));
-  AssertWebUrlPresent(GURL("googleassistant://reminders?param=true"));
-  AssertWebUrlPresent(GURL("googleassistant://settings"));
-  AssertWebUrlPresent(GURL("googleassistant://settings?param=true"));
+      // FAIL: Deep links are case sensitive.
+      {"GOOGLEASSISTANT://EXPLORE", false},
+      {"GOOGLEASSISTANT://REMINDERS", false},
+      {"GOOGLEASSISTANT://SETTINGS", false},
 
-  // FAIL: Deep links are case sensitive.
-  AssertWebUrlAbsent(GURL("GOOGLEASSISTANT://EXPLORE"));
-  AssertWebUrlAbsent(GURL("GOOGLEASSISTANT://REMINDERS"));
-  AssertWebUrlAbsent(GURL("GOOGLEASSISTANT://SETTINGS"));
+      // FAIL: Non-web deep links.
+      {"googleassistant://onboarding", false},
+      {"googleassistant://send-feedback", false},
 
-  // FAIL: Non-web deep links.
-  AssertWebUrlAbsent(GURL("googleassistant://onboarding"));
-  AssertWebUrlAbsent(GURL("googleassistant://onboarding?param=true"));
+      // FAIL: Non-deep link URLs.
+      {std::string(), false},
+      {"https://www.google.com/", false}};
 
-  // FAIL: Non-deep link URLS.
-  AssertWebUrlAbsent(GURL());
-  AssertWebUrlAbsent(GURL("https://www.google.com/"));
+  for (const auto& test_case : test_cases)
+    ASSERT_EQ(test_case.second, GetWebUrl(GURL(test_case.first)).has_value());
 }
 
 TEST_F(DeepLinkUnitTest, IsWebDeepLink) {
-  auto AssertWebDeepLink = [](const GURL& url) {
-    ASSERT_TRUE(IsWebDeepLink(url));
-  };
+  const std::map<std::string, bool> test_cases = {
+      // OK: Supported web deep links.
+      {"googleassistant://explore", true},
+      {"googleassistant://reminders", true},
+      {"googleassistant://settings", true},
 
-  auto AssertNotWebDeepLink = [](const GURL& url) {
-    ASSERT_FALSE(IsWebDeepLink(url));
-  };
+      // OK: Parameterized deep links.
+      {"googleassistant://explore?param=true", true},
+      {"googleassistant://reminders?param=true", true},
+      {"googleassistant://settings?param=true", true},
 
-  // OK: Supported web deep links.
-  AssertWebDeepLink(GURL("googleassistant://explore"));
-  AssertWebDeepLink(GURL("googleassistant://explore?param=true"));
-  AssertWebDeepLink(GURL("googleassistant://reminders"));
-  AssertWebDeepLink(GURL("googleassistant://reminders?param=true"));
-  AssertWebDeepLink(GURL("googleassistant://settings"));
-  AssertWebDeepLink(GURL("googleassistant://settings?param=true"));
+      // FAIL: Deep links are case sensitive.
+      {"GOOGLEASSISTANT://EXPLORE", false},
+      {"GOOGLEASSISTANT://REMINDERS", false},
+      {"GOOGLEASSISTANT://SETTINGS", false},
 
-  // FAIL: Deep links are case sensitive.
-  AssertNotWebDeepLink(GURL("GOOGLEASSISTANT://EXPLORE"));
-  AssertNotWebDeepLink(GURL("GOOGLEASSISTANT://REMINDERS"));
-  AssertNotWebDeepLink(GURL("GOOGLEASSISTANT://SETTINGS"));
+      // FAIL: Non-web deep links.
+      {"googleassistant://onboarding", false},
+      {"googleassistant://send-feedback", false},
 
-  // FAIL: Non-web deep links.
-  AssertNotWebDeepLink(GURL("googleassistant://onboarding"));
-  AssertNotWebDeepLink(GURL("googleassistant://onboarding?param=true"));
+      // FAIL: Non-deep link URLs.
+      {std::string(), false},
+      {"https://www.google.com/", false}};
 
-  // FAIL: Non-deep link URLs.
-  AssertNotWebDeepLink(GURL());
-  AssertNotWebDeepLink(GURL("https://www.google.com/"));
+  for (const auto& test_case : test_cases)
+    ASSERT_EQ(test_case.second, IsWebDeepLink(GURL(test_case.first)));
+}
+
+TEST_F(DeepLinkUnitTest, IsWebDeepLinkType) {
+  const std::map<DeepLinkType, bool> test_cases = {
+      // OK: Supported web deep link types.
+      {DeepLinkType::kExplore, true},
+      {DeepLinkType::kReminders, true},
+      {DeepLinkType::kSettings, true},
+
+      // FAIL: Non-web deep link types.
+      {DeepLinkType::kFeedback, false},
+      {DeepLinkType::kOnboarding, false},
+
+      // FAIL: Unsupported deep link types.
+      {DeepLinkType::kUnsupported, false}};
+
+  for (const auto& test_case : test_cases)
+    ASSERT_EQ(test_case.second, IsWebDeepLinkType(test_case.first));
 }
 
 TEST_F(DeepLinkUnitTest, ParseDeepLinkParams) {
-  auto AssertParamsParsed = [](const GURL& deep_link,
+  auto AssertParamsParsed = [](const std::string& deep_link,
                                std::map<std::string, std::string>& params) {
-    ASSERT_TRUE(ParseDeepLinkParams(deep_link, params));
+    ASSERT_TRUE(ParseDeepLinkParams(GURL(deep_link), params));
   };
 
-  auto AssertParamsNotParsed = [](const GURL& deep_link,
+  auto AssertParamsNotParsed = [](const std::string& deep_link,
                                   std::map<std::string, std::string>& params) {
-    ASSERT_FALSE(ParseDeepLinkParams(deep_link, params));
+    ASSERT_FALSE(ParseDeepLinkParams(GURL(deep_link), params));
   };
 
   std::map<std::string, std::string> params;
@@ -265,65 +235,67 @@ TEST_F(DeepLinkUnitTest, ParseDeepLinkParams) {
   ResetParams();
 
   // OK: All parameters present.
-  AssertParamsParsed(GURL("googleassistant://onboarding?k1=v1&k2=v2"), params);
+  AssertParamsParsed("googleassistant://onboarding?k1=v1&k2=v2", params);
   ASSERT_EQ("v1", params["k1"]);
   ASSERT_EQ("v2", params["k2"]);
 
   ResetParams();
 
   // OK: Some parameters present.
-  AssertParamsParsed(GURL("googleassistant://onboarding?k1=v1"), params);
+  AssertParamsParsed("googleassistant://onboarding?k1=v1", params);
   ASSERT_EQ("v1", params["k1"]);
   ASSERT_EQ("default", params["k2"]);
 
   ResetParams();
 
   // OK: Unknown parameters present.
-  AssertParamsParsed(GURL("googleassistant://onboarding?k1=v1&k3=v3"), params);
+  AssertParamsParsed("googleassistant://onboarding?k1=v1&k3=v3", params);
   ASSERT_EQ("v1", params["k1"]);
   ASSERT_EQ("default", params["k2"]);
 
   ResetParams();
 
   // OK: No parameters present.
-  AssertParamsParsed(GURL("googleassistant://onboarding"), params);
+  AssertParamsParsed("googleassistant://onboarding", params);
   ASSERT_EQ("default", params["k1"]);
   ASSERT_EQ("default", params["k2"]);
 
   ResetParams();
 
   // OK: Parameters are case sensitive.
-  AssertParamsParsed(GURL("googleassistant://onboarding?K1=v1"), params);
+  AssertParamsParsed("googleassistant://onboarding?K1=v1", params);
   ASSERT_EQ("default", params["k1"]);
   ASSERT_EQ("default", params["k2"]);
 
   ResetParams();
 
   // FAIL: Deep links are case sensitive.
-  AssertParamsNotParsed(GURL("GOOGLEASSISTANT://ONBOARDING?k1=v1"), params);
+  AssertParamsNotParsed("GOOGLEASSISTANT://ONBOARDING?k1=v1", params);
   ASSERT_EQ("default", params["k1"]);
   ASSERT_EQ("default", params["k2"]);
 
   ResetParams();
 
   // FAIL: Malformed parameters.
-  AssertParamsNotParsed(GURL("googleassistant://onboarding?k1="), params);
+  AssertParamsNotParsed("googleassistant://onboarding?k1=", params);
   ASSERT_EQ("default", params["k1"]);
   ASSERT_EQ("default", params["k2"]);
 
   ResetParams();
 
   // FAIL: Non-deep link URLs.
-  AssertParamsNotParsed(GURL("https://www.google.com/search?q=query"), params);
+  AssertParamsNotParsed("https://www.google.com/search?q=query", params);
   ASSERT_EQ("default", params["k1"]);
   ASSERT_EQ("default", params["k2"]);
 
   ResetParams();
 
   // FAIL: Empty URLs.
-  AssertParamsNotParsed(GURL(), params);
+  AssertParamsNotParsed(std::string(), params);
   ASSERT_EQ("default", params["k1"]);
   ASSERT_EQ("default", params["k2"]);
 }
 
+}  // namespace util
+}  // namespace assistant
 }  // namespace ash
