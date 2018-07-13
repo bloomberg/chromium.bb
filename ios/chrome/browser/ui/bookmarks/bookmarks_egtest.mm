@@ -7,6 +7,7 @@
 #import <XCTest/XCTest.h>
 #include <vector>
 
+#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -175,6 +176,13 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 @end
 
 @implementation BookmarksTestCase
+
+// TODO(crbug.com/863476): Temporarily disable bookmarks on iOS12.
++ (NSArray*)testInvocations {
+  if (base::ios::IsRunningOnIOS12OrLater())
+    return @[];
+  return [super testInvocations];
+}
 
 - (void)setUp {
   [super setUp];
@@ -1755,6 +1763,13 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
 @implementation BookmarksTestCaseEntries
 
+// TODO(crbug.com/863476): Temporarily disable bookmarks on iOS12.
++ (NSArray*)testInvocations {
+  if (base::ios::IsRunningOnIOS12OrLater())
+    return @[];
+  return [super testInvocations];
+}
+
 - (void)setUp {
   [super setUp];
 
@@ -2765,6 +2780,13 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
 @implementation BookmarksTestCasePromo
 
+// TODO(crbug.com/863476): Temporarily disable bookmarks on iOS12.
++ (NSArray*)testInvocations {
+  if (base::ios::IsRunningOnIOS12OrLater())
+    return @[];
+  return [super testInvocations];
+}
+
 - (void)setUp {
   [super setUp];
 
@@ -2979,6 +3001,13 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
 @implementation BookmarksTestCaseAccessibility
 
+// TODO(crbug.com/863476): Temporarily disable bookmarks on iOS12.
++ (NSArray*)testInvocations {
+  if (base::ios::IsRunningOnIOS12OrLater())
+    return @[];
+  return [super testInvocations];
+}
+
 - (void)setUp {
   [super setUp];
 
@@ -3154,6 +3183,13 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 @end
 
 @implementation BookmarksTestCaseFolders
+
+// TODO(crbug.com/863476): Temporarily disable bookmarks on iOS12.
++ (NSArray*)testInvocations {
+  if (base::ios::IsRunningOnIOS12OrLater())
+    return @[];
+  return [super testInvocations];
+}
 
 - (void)setUp {
   [super setUp];
