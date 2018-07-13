@@ -19,24 +19,10 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace update_client {
-
-namespace {
-
-std::string GetBodyFromRequest(const network::ResourceRequest& request) {
-  auto body = request.request_body;
-  if (!body)
-    return std::string();
-
-  CHECK_EQ(1u, body->elements()->size());
-  auto& element = body->elements()->at(0);
-  CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
-  return std::string(element.bytes(), element.length());
-}
-
-}  // namespace
 
 URLLoaderPostInterceptor::URLLoaderPostInterceptor(
     network::TestURLLoaderFactory* url_loader_factory)
@@ -188,7 +174,7 @@ void URLLoaderPostInterceptor::InitializeWithInterceptor() {
         if (it == filtered_urls_.end())
           return;
 
-        std::string request_body = GetBodyFromRequest(request);
+        std::string request_body = network::GetUploadData(request);
         requests_.push_back({request_body, request.headers, request.url});
         if (expectations_.empty())
           return;
