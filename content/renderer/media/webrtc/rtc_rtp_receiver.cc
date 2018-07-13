@@ -123,7 +123,7 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
     return state_;
   }
 
-  void SetState(RtpReceiverState state) {
+  void set_state(RtpReceiverState state) {
     DCHECK(main_task_runner_->BelongsToCurrentThread());
     DCHECK(state.main_task_runner() == main_task_runner_);
     DCHECK(state.signaling_task_runner() == signaling_task_runner_);
@@ -170,7 +170,7 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
   const scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
   // Task runners and webrtc receiver: Same information as stored in
   // |state_| but const and safe to touch on the signaling thread to
-  // avoid race with SetState().
+  // avoid race with set_state().
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner_;
   const scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver_;
@@ -226,8 +226,8 @@ const RtpReceiverState& RTCRtpReceiver::state() const {
   return internal_->state();
 }
 
-void RTCRtpReceiver::SetState(RtpReceiverState state) {
-  internal_->SetState(std::move(state));
+void RTCRtpReceiver::set_state(RtpReceiverState state) {
+  internal_->set_state(std::move(state));
 }
 
 uintptr_t RTCRtpReceiver::Id() const {

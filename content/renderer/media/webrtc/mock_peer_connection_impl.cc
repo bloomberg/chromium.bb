@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "content/renderer/media/webrtc/mock_data_channel_impl.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
+#include "content/renderer/media/webrtc/webrtc_util.h"
 #include "third_party/webrtc/api/rtpreceiverinterface.h"
 #include "third_party/webrtc/rtc_base/refcountedobject.h"
 
@@ -209,10 +210,18 @@ std::vector<webrtc::RtpSource> FakeRtpReceiver::GetSources() const {
 FakeRtpTransceiver::FakeRtpTransceiver(
     cricket::MediaType media_type,
     rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
-    rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver)
+    rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver,
+    base::Optional<std::string> mid,
+    bool stopped,
+    webrtc::RtpTransceiverDirection direction,
+    base::Optional<webrtc::RtpTransceiverDirection> current_direction)
     : media_type_(media_type),
       sender_(std::move(sender)),
-      receiver_(std::move(receiver)) {}
+      receiver_(std::move(receiver)),
+      mid_(ToAbslOptional(mid)),
+      stopped_(stopped),
+      direction_(direction),
+      current_direction_(ToAbslOptional(current_direction)) {}
 
 FakeRtpTransceiver::~FakeRtpTransceiver() {}
 
@@ -221,7 +230,7 @@ cricket::MediaType FakeRtpTransceiver::media_type() const {
 }
 
 absl::optional<std::string> FakeRtpTransceiver::mid() const {
-  return absl::nullopt;
+  return mid_;
 }
 
 rtc::scoped_refptr<webrtc::RtpSenderInterface> FakeRtpTransceiver::sender()
@@ -235,11 +244,11 @@ rtc::scoped_refptr<webrtc::RtpReceiverInterface> FakeRtpTransceiver::receiver()
 }
 
 bool FakeRtpTransceiver::stopped() const {
-  return false;
+  return stopped_;
 }
 
 webrtc::RtpTransceiverDirection FakeRtpTransceiver::direction() const {
-  return webrtc::RtpTransceiverDirection::kSendRecv;
+  return direction_;
 }
 
 void FakeRtpTransceiver::SetDirection(
@@ -249,7 +258,7 @@ void FakeRtpTransceiver::SetDirection(
 
 absl::optional<webrtc::RtpTransceiverDirection>
 FakeRtpTransceiver::current_direction() const {
-  return absl::nullopt;
+  return current_direction_;
 }
 
 void FakeRtpTransceiver::Stop() {

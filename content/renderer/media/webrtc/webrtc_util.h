@@ -15,6 +15,12 @@ base::Optional<typename OptionalT::value_type> ToBaseOptional(
   return optional ? base::make_optional(*optional) : base::nullopt;
 }
 
+template <typename OptionalT>
+absl::optional<typename OptionalT::value_type> ToAbslOptional(
+    const OptionalT& optional) {
+  return optional ? absl::make_optional(*optional) : absl::nullopt;
+}
+
 template <typename OptionalT1, typename OptionalT2>
 bool OptionalEquals(const OptionalT1& lhs, const OptionalT2& rhs) {
   if (!lhs)

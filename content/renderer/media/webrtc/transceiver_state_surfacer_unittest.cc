@@ -64,7 +64,8 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
             ? cricket::MEDIA_TYPE_AUDIO
             : cricket::MEDIA_TYPE_VIDEO,
         CreateWebRtcSender(local_track, local_stream_id),
-        CreateWebRtcReceiver(remote_track_id, remote_stream_id));
+        CreateWebRtcReceiver(remote_track_id, remote_stream_id), base::nullopt,
+        false, webrtc::RtpTransceiverDirection::kSendRecv, base::nullopt);
   }
 
   rtc::scoped_refptr<webrtc::RtpSenderInterface> CreateWebRtcSender(

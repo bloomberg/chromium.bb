@@ -137,15 +137,15 @@ class RTCRtpSender::RTCRtpSenderInternal
  public:
   RTCRtpSenderInternal(
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-      scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
+      scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_map,
       RtpSenderState state)
       : native_peer_connection_(std::move(native_peer_connection)),
-        stream_map_(std::move(stream_map)),
+        track_map_(std::move(track_map)),
         main_task_runner_(state.main_task_runner()),
         signaling_task_runner_(state.signaling_task_runner()),
         webrtc_sender_(state.webrtc_sender()),
         state_(std::move(state)) {
-    DCHECK(stream_map_);
+    DCHECK(track_map_);
     DCHECK(state_.is_initialized());
   }
 
@@ -169,9 +169,7 @@ class RTCRtpSender::RTCRtpSenderInternal
     std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref;
     webrtc::MediaStreamTrackInterface* webrtc_track = nullptr;
     if (!with_track.IsNull()) {
-      track_ref =
-          stream_map_->track_adapter_map()->GetOrCreateLocalTrackAdapter(
-              with_track);
+      track_ref = track_map_->GetOrCreateLocalTrackAdapter(with_track);
       webrtc_track = track_ref->webrtc_track();
     }
     signaling_task_runner_->PostTask(
@@ -312,7 +310,7 @@ class RTCRtpSender::RTCRtpSenderInternal
   }
 
   const scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
-  const scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map_;
+  const scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_map_;
   // Task runners and webrtc sender: Same information as stored in
   // |state_| but const and safe to touch on the signaling thread to
   // avoid race with set_state().
@@ -348,10 +346,10 @@ uintptr_t RTCRtpSender::getId(const webrtc::RtpSenderInterface* webrtc_sender) {
 
 RTCRtpSender::RTCRtpSender(
     scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-    scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
+    scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_map,
     RtpSenderState state)
     : internal_(new RTCRtpSenderInternal(std::move(native_peer_connection),
-                                         std::move(stream_map),
+                                         std::move(track_map),
                                          std::move(state))) {}
 
 RTCRtpSender::RTCRtpSender(const RTCRtpSender& other)

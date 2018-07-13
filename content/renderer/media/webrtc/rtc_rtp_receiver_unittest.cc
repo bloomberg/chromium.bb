@@ -16,7 +16,6 @@
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
 #include "content/renderer/media/webrtc/test/webrtc_stats_report_obtainer.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -34,10 +33,8 @@ class RTCRtpReceiverTest : public ::testing::Test {
   void SetUp() override {
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
-    stream_map_ = new WebRtcMediaStreamAdapterMap(
-        dependency_factory_.get(), main_thread_,
-        new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get(),
-                                             main_thread_));
+    track_map_ = new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get(),
+                                                      main_thread_);
     peer_connection_ = new rtc::RefCountedObject<MockPeerConnectionImpl>(
         dependency_factory_.get(), nullptr);
   }
@@ -96,9 +93,7 @@ class RTCRtpReceiverTest : public ::testing::Test {
       base::RunLoop* run_loop) {
     mock_webrtc_receiver_ =
         new rtc::RefCountedObject<webrtc::MockRtpReceiver>();
-    *track_ref =
-        stream_map_->track_adapter_map()->GetOrCreateRemoteTrackAdapter(
-            webrtc_track);
+    *track_ref = track_map_->GetOrCreateRemoteTrackAdapter(webrtc_track);
     run_loop->Quit();
   }
 
@@ -109,7 +104,7 @@ class RTCRtpReceiverTest : public ::testing::Test {
 
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map_;
+  scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_map_;
   rtc::scoped_refptr<MockPeerConnectionImpl> peer_connection_;
   rtc::scoped_refptr<webrtc::MockRtpReceiver> mock_webrtc_receiver_;
   std::unique_ptr<RTCRtpReceiver> receiver_;

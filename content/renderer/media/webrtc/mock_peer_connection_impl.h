@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/api/stats/rtcstatsreport.h"
@@ -67,10 +68,17 @@ class FakeRtpReceiver : public webrtc::RtpReceiverInterface {
 
 class FakeRtpTransceiver : public webrtc::RtpTransceiverInterface {
  public:
-  FakeRtpTransceiver(cricket::MediaType media_type,
-                     rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
-                     rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver);
+  FakeRtpTransceiver(
+      cricket::MediaType media_type,
+      rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
+      rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver,
+      base::Optional<std::string> mid,
+      bool stopped,
+      webrtc::RtpTransceiverDirection direction,
+      base::Optional<webrtc::RtpTransceiverDirection> current_direction);
   ~FakeRtpTransceiver() override;
+
+  FakeRtpTransceiver& operator=(const FakeRtpTransceiver& other) = default;
 
   cricket::MediaType media_type() const override;
   absl::optional<std::string> mid() const override;
@@ -89,6 +97,10 @@ class FakeRtpTransceiver : public webrtc::RtpTransceiverInterface {
   cricket::MediaType media_type_;
   rtc::scoped_refptr<webrtc::RtpSenderInterface> sender_;
   rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver_;
+  absl::optional<std::string> mid_;
+  bool stopped_;
+  webrtc::RtpTransceiverDirection direction_;
+  absl::optional<webrtc::RtpTransceiverDirection> current_direction_;
 };
 
 // TODO(hbos): The use of fakes and mocks is the wrong approach for testing of

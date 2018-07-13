@@ -562,6 +562,7 @@ jumbo_component("platform") {
     "exported/web_rtc_rtp_contributing_source.cc",
     "exported/web_rtc_rtp_receiver.cc",
     "exported/web_rtc_rtp_sender.cc",
+    "exported/web_rtc_rtp_transceiver.cc",
     "exported/web_rtc_session_description.cc",
     "exported/web_rtc_session_description_request.cc",
     "exported/web_rtc_stats.cc",
