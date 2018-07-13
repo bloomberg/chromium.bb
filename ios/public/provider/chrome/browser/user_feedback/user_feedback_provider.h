@@ -45,12 +45,6 @@ class UserFeedbackProvider {
   // Returns view controller to present to the user to collect their feedback.
   virtual UIViewController* CreateViewController(
       id<UserFeedbackDataSource> data_source);
-  // Returns view controller to present to the user to collect their feedback.
-  // DEPRECATED: Use CreateViewController with a single parameter of
-  // |data_source| instead.
-  virtual UIViewController* CreateViewController(
-      id<UserFeedbackDataSource> dataSource,
-      id<ApplicationCommands> dispatcher);
   // Uploads collected feedback reports.
   virtual void Synchronize();
 
