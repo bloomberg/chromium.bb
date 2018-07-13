@@ -739,7 +739,8 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
 
   base::AutoLock lock(lock_);
   const PaintImage::FrameKey frame_key = draw_image.frame_key();
-  ImageData* image_data = GetImageDataForDrawImage(draw_image);
+  const InUseCacheKey cache_key = InUseCacheKey::FromDrawImage(draw_image);
+  ImageData* image_data = GetImageDataForDrawImage(draw_image, cache_key);
   scoped_refptr<ImageData> new_data;
   if (!image_data) {
     // We need an ImageData, create one now.
@@ -752,13 +753,13 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
              image_data->upload.task) {
     // We had an existing upload task, ref the image and return the task.
     image_data->ValidateBudgeted();
-    RefImage(draw_image);
+    RefImage(draw_image, cache_key);
     return TaskResult(image_data->upload.task);
   } else if (task_type == DecodeTaskType::kStandAloneDecodeTask &&
              image_data->decode.stand_alone_task) {
     // We had an existing out of raster task, ref the image and return the task.
     image_data->ValidateBudgeted();
-    RefImage(draw_image);
+    RefImage(draw_image, cache_key);
     return TaskResult(image_data->decode.stand_alone_task);
   }
 
@@ -776,7 +777,7 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
 
   // Ref the image before creating a task - this ref is owned by the caller, and
   // it is their responsibility to release it by calling UnrefImage.
-  RefImage(draw_image);
+  RefImage(draw_image, cache_key);
 
   // If we already have an image and it is locked (or lock-able), just return
   // that. The image must be budgeted before we attempt to lock it.
@@ -790,7 +791,7 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
   if (task_type == DecodeTaskType::kPartOfUploadTask) {
     // Ref image and create a upload and decode tasks. We will release this ref
     // in UploadTaskCompleted.
-    RefImage(draw_image);
+    RefImage(draw_image, cache_key);
     task = base::MakeRefCounted<ImageUploadTaskImpl>(
         this, draw_image,
         GetImageDecodeTaskAndRef(draw_image, tracing_info, task_type),
@@ -807,7 +808,7 @@ void GpuImageDecodeCache::UnrefImage(const DrawImage& draw_image) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::UnrefImage");
   base::AutoLock lock(lock_);
-  UnrefImageInternal(draw_image);
+  UnrefImageInternal(draw_image, InUseCacheKey::FromDrawImage(draw_image));
 }
 
 DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
@@ -823,7 +824,8 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
     return DecodedDrawImage();
 
   base::AutoLock lock(lock_);
-  ImageData* image_data = GetImageDataForDrawImage(draw_image);
+  const InUseCacheKey cache_key = InUseCacheKey::FromDrawImage(draw_image);
+  ImageData* image_data = GetImageDataForDrawImage(draw_image, cache_key);
   if (!image_data) {
     // We didn't find the image, create a new entry.
     auto data = CreateImageData(draw_image);
@@ -835,8 +837,8 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
   // decoding/uploading.
   // Note that refing the image will attempt to budget the image, if not already
   // done.
-  RefImage(draw_image);
-  RefImageDecode(draw_image);
+  RefImage(draw_image, cache_key);
+  RefImageDecode(draw_image, cache_key);
 
   // We may or may not need to decode and upload the image we've found, the
   // following functions early-out to if we already decoded.
@@ -844,7 +846,7 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
   UploadImageIfNecessary(draw_image, image_data);
   // Unref the image decode, but not the image. The image ref will be released
   // in DrawWithImageFinished.
-  UnrefImageDecode(draw_image);
+  UnrefImageDecode(draw_image, cache_key);
 
   if (image_data->mode == DecodedDataMode::kTransferCache) {
     DCHECK(use_transfer_cache_);
@@ -892,7 +894,7 @@ void GpuImageDecodeCache::DrawWithImageFinished(
     return;
 
   base::AutoLock lock(lock_);
-  UnrefImageInternal(draw_image);
+  UnrefImageInternal(draw_image, InUseCacheKey::FromDrawImage(draw_image));
 
   // We are mid-draw and holding the context lock, ensure we clean up any
   // textures (especially at-raster), which may have just been marked for
@@ -1068,7 +1070,8 @@ void GpuImageDecodeCache::DecodeImageInTask(const DrawImage& draw_image,
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::DecodeImage");
   base::AutoLock lock(lock_);
-  ImageData* image_data = GetImageDataForDrawImage(draw_image);
+  ImageData* image_data = GetImageDataForDrawImage(
+      draw_image, InUseCacheKey::FromDrawImage(draw_image));
   DCHECK(image_data);
   DCHECK(image_data->is_budgeted) << "Must budget an image for pre-decoding";
   DecodeImageIfNecessary(draw_image, image_data, task_type);
@@ -1083,7 +1086,8 @@ void GpuImageDecodeCache::UploadImageInTask(const DrawImage& draw_image) {
     context_lock.emplace(context_);
 
   base::AutoLock lock(lock_);
-  ImageData* image_data = GetImageDataForDrawImage(draw_image);
+  ImageData* image_data = GetImageDataForDrawImage(
+      draw_image, InUseCacheKey::FromDrawImage(draw_image));
   DCHECK(image_data);
   DCHECK(image_data->is_budgeted) << "Must budget an image for pre-decoding";
   UploadImageIfNecessary(draw_image, image_data);
@@ -1095,8 +1099,9 @@ void GpuImageDecodeCache::OnImageDecodeTaskCompleted(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::OnImageDecodeTaskCompleted");
   base::AutoLock lock(lock_);
+  auto cache_key = InUseCacheKey::FromDrawImage(draw_image);
   // Decode task is complete, remove our reference to it.
-  ImageData* image_data = GetImageDataForDrawImage(draw_image);
+  ImageData* image_data = GetImageDataForDrawImage(draw_image, cache_key);
   DCHECK(image_data);
   if (task_type == DecodeTaskType::kPartOfUploadTask) {
     DCHECK(image_data->decode.task);
@@ -1109,7 +1114,7 @@ void GpuImageDecodeCache::OnImageDecodeTaskCompleted(
 
   // While the decode task is active, we keep a ref on the decoded data.
   // Release that ref now.
-  UnrefImageDecode(draw_image);
+  UnrefImageDecode(draw_image, cache_key);
 }
 
 void GpuImageDecodeCache::OnImageUploadTaskCompleted(
@@ -1118,7 +1123,8 @@ void GpuImageDecodeCache::OnImageUploadTaskCompleted(
                "GpuImageDecodeCache::OnImageUploadTaskCompleted");
   base::AutoLock lock(lock_);
   // Upload task is complete, remove our reference to it.
-  ImageData* image_data = GetImageDataForDrawImage(draw_image);
+  InUseCacheKey cache_key = InUseCacheKey::FromDrawImage(draw_image);
+  ImageData* image_data = GetImageDataForDrawImage(draw_image, cache_key);
   DCHECK(image_data);
   DCHECK(image_data->upload.task);
   image_data->upload.task = nullptr;
@@ -1126,8 +1132,8 @@ void GpuImageDecodeCache::OnImageUploadTaskCompleted(
   // While the upload task is active, we keep a ref on both the image it will be
   // populating, as well as the decode it needs to populate it. Release these
   // refs now.
-  UnrefImageDecode(draw_image);
-  UnrefImageInternal(draw_image);
+  UnrefImageDecode(draw_image, cache_key);
+  UnrefImageInternal(draw_image, cache_key);
 }
 
 // Checks if an existing image decode exists. If not, returns a task to produce
@@ -1140,12 +1146,14 @@ scoped_refptr<TileTask> GpuImageDecodeCache::GetImageDecodeTaskAndRef(
                "GpuImageDecodeCache::GetImageDecodeTaskAndRef");
   lock_.AssertAcquired();
 
+  auto cache_key = InUseCacheKey::FromDrawImage(draw_image);
+
   // This ref is kept alive while an upload task may need this decode. We
   // release this ref in UploadTaskCompleted.
   if (task_type == DecodeTaskType::kPartOfUploadTask)
-    RefImageDecode(draw_image);
+    RefImageDecode(draw_image, cache_key);
 
-  ImageData* image_data = GetImageDataForDrawImage(draw_image);
+  ImageData* image_data = GetImageDataForDrawImage(draw_image, cache_key);
   DCHECK(image_data);
   if (image_data->decode.is_locked()) {
     // We should never be creating a decode task for a not budgeted image.
@@ -1163,29 +1171,31 @@ scoped_refptr<TileTask> GpuImageDecodeCache::GetImageDecodeTaskAndRef(
   if (!existing_task) {
     // Ref image decode and create a decode task. This ref will be released in
     // DecodeTaskCompleted.
-    RefImageDecode(draw_image);
+    RefImageDecode(draw_image, cache_key);
     existing_task = base::MakeRefCounted<GpuImageDecodeTaskImpl>(
         this, draw_image, tracing_info, task_type);
   }
   return existing_task;
 }
 
-void GpuImageDecodeCache::RefImageDecode(const DrawImage& draw_image) {
+void GpuImageDecodeCache::RefImageDecode(const DrawImage& draw_image,
+                                         const InUseCacheKey& cache_key) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::RefImageDecode");
   lock_.AssertAcquired();
-  auto found = in_use_cache_.find(InUseCacheKey::FromDrawImage(draw_image));
+  auto found = in_use_cache_.find(cache_key);
   DCHECK(found != in_use_cache_.end());
   ++found->second.ref_count;
   ++found->second.image_data->decode.ref_count;
   OwnershipChanged(draw_image, found->second.image_data.get());
 }
 
-void GpuImageDecodeCache::UnrefImageDecode(const DrawImage& draw_image) {
+void GpuImageDecodeCache::UnrefImageDecode(const DrawImage& draw_image,
+                                           const InUseCacheKey& cache_key) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::UnrefImageDecode");
   lock_.AssertAcquired();
-  auto found = in_use_cache_.find(InUseCacheKey::FromDrawImage(draw_image));
+  auto found = in_use_cache_.find(cache_key);
   DCHECK(found != in_use_cache_.end());
   DCHECK_GT(found->second.image_data->decode.ref_count, 0u);
   DCHECK_GT(found->second.ref_count, 0u);
@@ -1197,12 +1207,12 @@ void GpuImageDecodeCache::UnrefImageDecode(const DrawImage& draw_image) {
   }
 }
 
-void GpuImageDecodeCache::RefImage(const DrawImage& draw_image) {
+void GpuImageDecodeCache::RefImage(const DrawImage& draw_image,
+                                   const InUseCacheKey& cache_key) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::RefImage");
   lock_.AssertAcquired();
-  InUseCacheKey key = InUseCacheKey::FromDrawImage(draw_image);
-  auto found = in_use_cache_.find(key);
+  auto found = in_use_cache_.find(cache_key);
 
   // If no secondary cache entry was found for the given |draw_image|, then
   // the draw_image only exists in the |persistent_cache_|. Create an in-use
@@ -1213,7 +1223,7 @@ void GpuImageDecodeCache::RefImage(const DrawImage& draw_image) {
     DCHECK(IsCompatible(found_image->second.get(), draw_image));
     found = in_use_cache_
                 .insert(InUseCache::value_type(
-                    key, InUseCacheEntry(found_image->second)))
+                    cache_key, InUseCacheEntry(found_image->second)))
                 .first;
   }
 
@@ -1223,9 +1233,10 @@ void GpuImageDecodeCache::RefImage(const DrawImage& draw_image) {
   OwnershipChanged(draw_image, found->second.image_data.get());
 }
 
-void GpuImageDecodeCache::UnrefImageInternal(const DrawImage& draw_image) {
+void GpuImageDecodeCache::UnrefImageInternal(const DrawImage& draw_image,
+                                             const InUseCacheKey& cache_key) {
   lock_.AssertAcquired();
-  auto found = in_use_cache_.find(InUseCacheKey::FromDrawImage(draw_image));
+  auto found = in_use_cache_.find(cache_key);
   DCHECK(found != in_use_cache_.end());
   DCHECK_GT(found->second.image_data->upload.ref_count, 0u);
   DCHECK_GT(found->second.ref_count, 0u);
@@ -1799,14 +1810,14 @@ bool GpuImageDecodeCache::TryLockImage(HaveContextLock have_context_lock,
 // |draw_image|. First looks for an exact entry in our |in_use_cache_|. If one
 // cannot be found, it looks for a compatible entry in our |persistent_cache_|.
 GpuImageDecodeCache::ImageData* GpuImageDecodeCache::GetImageDataForDrawImage(
-    const DrawImage& draw_image) {
+    const DrawImage& draw_image,
+    const InUseCacheKey& key) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::GetImageDataForDrawImage");
   lock_.AssertAcquired();
   DCHECK(!draw_image.paint_image().GetSkImage()->isTextureBacked());
 
-  auto found_in_use =
-      in_use_cache_.find(InUseCacheKey::FromDrawImage(draw_image));
+  auto found_in_use = in_use_cache_.find(key);
   if (found_in_use != in_use_cache_.end())
     return found_in_use->second.image_data.get();
 
