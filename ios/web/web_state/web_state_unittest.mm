@@ -8,9 +8,8 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "base/values.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -21,8 +20,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::WaitUntilConditionOrTimeout;
-using testing::kWaitForJSCompletionTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForJSCompletionTimeout;
 
 namespace web {
 

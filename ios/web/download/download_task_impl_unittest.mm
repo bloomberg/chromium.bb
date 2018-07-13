@@ -15,7 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#import "ios/testing/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/web/net/cookies/wk_cookie_util.h"
 #import "ios/web/public/download/download_task_observer.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -34,9 +34,10 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::kWaitForDownloadTimeout;
-using testing::kWaitForFileOperationTimeout;
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForCookiesTimeout;
+using base::test::ios::kWaitForDownloadTimeout;
+using base::test::ios::kWaitForFileOperationTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace web {
 
@@ -167,7 +168,7 @@ class DownloadTaskImplTest : public PlatformTest {
         completionHandler:^{
           cookie_was_set = true;
         }];
-    return WaitUntilConditionOrTimeout(testing::kWaitForCookiesTimeout, ^{
+    return WaitUntilConditionOrTimeout(kWaitForCookiesTimeout, ^{
       return cookie_was_set;
     });
   }

@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -32,7 +33,6 @@
 #include "ios/chrome/browser/passwords/test_helpers.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/ssl_status.h"
@@ -57,9 +57,9 @@ using password_manager::PasswordStoreConsumer;
 using test_helpers::SetPasswordFormFillData;
 using testing::NiceMock;
 using testing::Return;
-using testing::kWaitForActionTimeout;
-using testing::kWaitForJSCompletionTimeout;
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForActionTimeout;
+using base::test::ios::kWaitForJSCompletionTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 using testing::WithArg;
 using testing::_;
 

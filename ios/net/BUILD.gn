@@ -87,7 +87,7 @@ source_set("test_support") {
   deps = [
     ":net",
     "//base",
-    "//ios/testing:ios_test_support",
+    "//base/test:test_support",
     "//net:test_support",
   ]
   sources = [
@@ -104,7 +104,7 @@ test("ios_net_unittests") {
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",
-    "//ios/testing:ios_test_support",
+    "//base/test:test_support",
     "//net:test_support",
     "//testing/gtest",
     "//url",

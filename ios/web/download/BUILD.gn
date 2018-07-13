@@ -31,7 +31,7 @@ source_set("download_unittests") {
   testonly = true
   deps = [
     "//base",
-    "//ios/testing:ios_test_support",
+    "//base/test:test_support",
     "//ios/testing:ocmock_support",
     "//ios/web/download",
     "//ios/web/net/cookies",
@@ -54,7 +54,7 @@ source_set("download_inttests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   deps = [
-    "//ios/testing:ios_test_support",
+    "//base/test:test_support",
     "//ios/web/public",
     "//ios/web/public/download",
     "//ios/web/public/test",

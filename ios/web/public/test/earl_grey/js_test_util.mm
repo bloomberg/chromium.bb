@@ -7,8 +7,8 @@
 #import <EarlGrey/EarlGrey.h>
 #import <WebKit/WebKit.h>
 
+#import "base/test/ios/wait_util.h"
 #include "base/timer/elapsed_timer.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 
@@ -16,8 +16,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::kWaitForJSCompletionTimeout;
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForJSCompletionTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace web {
 

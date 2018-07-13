@@ -8,6 +8,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -19,7 +20,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/matchers.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
@@ -169,8 +169,9 @@ id<GREYMatcher> GoButtonMatcher() {
                                     error:&error];
                     return error == nil;
                   }];
-  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
-             @"Tab History View not displayed.");
+  GREYAssert(
+      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
+      @"Tab History View not displayed.");
 }
 
 // Open back navigation history.
@@ -455,9 +456,9 @@ id<GREYMatcher> GoButtonMatcher() {
                                     error:&error];
                     return !error;
                   }];
-  GREYAssert(
-      [interactableCondition waitWithTimeout:testing::kWaitForUIElementTimeout],
-      @"Web view did not become interactable.");
+  GREYAssert([interactableCondition
+                 waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
+             @"Web view did not become interactable.");
 
   web::WebState* currentWebState = chrome_test_util::GetCurrentWebState();
   [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(currentWebState)]
@@ -475,8 +476,9 @@ id<GREYMatcher> GoButtonMatcher() {
                                     error:&error];
                     return (error == nil);
                   }];
-  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
-             @"No keyboard with 'Go' button showed up.");
+  GREYAssert(
+      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
+      @"No keyboard with 'Go' button showed up.");
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Go")]
       performAction:grey_tap()];

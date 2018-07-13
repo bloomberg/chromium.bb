@@ -76,6 +76,7 @@ source_set("unit_tests") {
   deps = [
     ":download",
     "//base",
+    "//base/test:test_support",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/download",
@@ -89,7 +90,6 @@ source_set("unit_tests") {
     "//ios/chrome/test:test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/fakes",
-    "//ios/testing:ios_test_support",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//net:test_support",
@@ -109,6 +109,7 @@ source_set("eg_tests") {
 
   deps = [
     "//base",
+    "//base/test:test_support",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser:browser",
@@ -120,7 +121,6 @@ source_set("eg_tests") {
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing:embedded_test_server_support",
-    "//ios/testing:ios_test_support",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web/public",
     "//ui/base",

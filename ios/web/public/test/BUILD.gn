@@ -13,7 +13,6 @@ source_set("test") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//ios/testing:ios_test_support",
     "//ios/web:web",
     "//ios/web/interstitials",
     "//ios/web/navigation:core",

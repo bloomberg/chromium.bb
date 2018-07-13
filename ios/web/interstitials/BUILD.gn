@@ -32,7 +32,7 @@ source_set("interstitials_unittests") {
   deps = [
     ":interstitials",
     "//base",
-    "//ios/testing:ios_test_support",
+    "//base/test:test_support",
     "//ios/testing:ocmock_support",
     "//ios/web",
     "//ios/web/navigation:core",

@@ -6,6 +6,7 @@
 #import <XCTest/XCTest.h>
 
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -33,7 +34,6 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -69,9 +69,9 @@ void AssertSyncInitialized(bool is_initialized) {
   ConditionBlock condition = ^{
     return chrome_test_util::IsSyncInitialized() == is_initialized;
   };
-  GREYAssert(
-      testing::WaitUntilConditionOrTimeout(kSyncOperationTimeout, condition),
-      @"Sync was not initialized");
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(kSyncOperationTimeout,
+                                                          condition),
+             @"Sync was not initialized");
 }
 
 // Waits for |entity_count| entities of type |entity_type|, and fails with
@@ -81,9 +81,9 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
     return chrome_test_util::GetNumberOfSyncEntities(entity_type) ==
            entity_count;
   };
-  GREYAssert(
-      testing::WaitUntilConditionOrTimeout(kSyncOperationTimeout, condition),
-      @"Expected %d entities of the specified type", entity_count);
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(kSyncOperationTimeout,
+                                                          condition),
+             @"Expected %d entities of the specified type", entity_count);
 }
 
 // Waits for |entity_count| entities of type |entity_type| with name |name|, and
@@ -99,9 +99,9 @@ void AssertNumberOfEntitiesWithName(int entity_count,
     DCHECK(success || error);
     return !!success;
   };
-  GREYAssert(
-      testing::WaitUntilConditionOrTimeout(kSyncOperationTimeout, condition),
-      @"Expected %d entities of the specified type", entity_count);
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(kSyncOperationTimeout,
+                                                          condition),
+             @"Expected %d entities of the specified type", entity_count);
 }
 }  // namespace
 
@@ -332,9 +332,9 @@ void AssertNumberOfEntitiesWithName(int entity_count,
   ConditionBlock condition = ^{
     return chrome_test_util::IsAutofillProfilePresent(kGuid, kUpdatedFullName);
   };
-  GREYAssert(
-      testing::WaitUntilConditionOrTimeout(kSyncOperationTimeout, condition),
-      errorMessage);
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(kSyncOperationTimeout,
+                                                          condition),
+             errorMessage);
 }
 
 // Test that autofill profile deleted from FakeServer gets deleted from client
@@ -367,9 +367,9 @@ void AssertNumberOfEntitiesWithName(int entity_count,
   ConditionBlock condition = ^{
     return !chrome_test_util::IsAutofillProfilePresent(kGuid, kFullName);
   };
-  GREYAssert(
-      testing::WaitUntilConditionOrTimeout(kSyncOperationTimeout, condition),
-      @"Autofill profile was not deleted.");
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(kSyncOperationTimeout,
+                                                          condition),
+             @"Autofill profile was not deleted.");
 }
 
 // Tests that tabs opened on this client are committed to the Sync server and

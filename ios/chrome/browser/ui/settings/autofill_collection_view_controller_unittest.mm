@@ -7,6 +7,7 @@
 #include "base/guid.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -14,7 +15,6 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #include "ios/chrome/browser/ui/settings/personal_data_manager_data_changed_observer.h"
-#import "ios/testing/wait_util.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -136,8 +136,8 @@ TEST_F(AutofillCollectionViewControllerTest, TestOneProfileItemDeleted) {
     this->DeleteItem(i, j, ^{
       completion_called = YES;
     });
-    EXPECT_TRUE(testing::WaitUntilConditionOrTimeout(
-        testing::kWaitForUIElementTimeout, ^bool() {
+    EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForUIElementTimeout, ^bool() {
           return completion_called;
         }));
   };

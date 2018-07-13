@@ -9,8 +9,8 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "base/values.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "net/base/mac/url_conversions.h"
 
@@ -18,8 +18,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::kWaitForDownloadTimeout;
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForDownloadTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 // A helper delegate class that allows downloading responses with invalid
 // SSL certs.
@@ -77,8 +77,8 @@ UIImage* LoadImage(const GURL& image_url) {
 }
 }
 
-using testing::WaitUntilConditionOrTimeout;
-using testing::kWaitForUIElementTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForUIElementTimeout;
 
 namespace web {
 namespace test {

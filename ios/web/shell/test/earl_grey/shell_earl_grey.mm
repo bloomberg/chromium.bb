@@ -6,7 +6,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 
-#import "ios/testing/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -28,8 +28,9 @@
                                  block:^BOOL {
                                    return !web::shell_test_util::IsLoading();
                                  }];
-  GREYAssert([condition waitWithTimeout:testing::kWaitForPageLoadTimeout],
-             @"Page did not complete loading.");
+  GREYAssert(
+      [condition waitWithTimeout:base::test::ios::kWaitForPageLoadTimeout],
+      @"Page did not complete loading.");
 
   web::WebState* webState = web::shell_test_util::GetCurrentWebState();
   if (webState->ContentIsHTML())
@@ -47,8 +48,9 @@
                     return web::test::IsWebViewContainingText(
                         web::shell_test_util::GetCurrentWebState(), text);
                   }];
-  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
-             @"Failed waiting for web view containing %s", text.c_str());
+  GREYAssert(
+      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
+      @"Failed waiting for web view containing %s", text.c_str());
 }
 
 + (void)waitForWebViewContainingElement:
@@ -59,9 +61,10 @@
                     return web::test::IsWebViewContainingElement(
                         web::shell_test_util::GetCurrentWebState(), selector);
                   }];
-  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
-             @"Failed waiting for web view containing element %s",
-             selector.GetSelectorDescription().c_str());
+  GREYAssert(
+      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
+      @"Failed waiting for web view containing element %s",
+      selector.GetSelectorDescription().c_str());
 }
 
 + (void)waitForWebViewNotContainingElement:
@@ -72,9 +75,10 @@
                     return !web::test::IsWebViewContainingElement(
                         web::shell_test_util::GetCurrentWebState(), selector);
                   }];
-  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
-             @"Failed waiting for web view not containing element %s",
-             selector.GetSelectorDescription().c_str());
+  GREYAssert(
+      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
+      @"Failed waiting for web view not containing element %s",
+      selector.GetSelectorDescription().c_str());
 }
 
 @end

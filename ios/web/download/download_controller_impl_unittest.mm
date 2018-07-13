@@ -8,7 +8,6 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#import "ios/testing/wait_util.h"
 #include "ios/web/public/test/fakes/fake_download_controller_delegate.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_state.h"

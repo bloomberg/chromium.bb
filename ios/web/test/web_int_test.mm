@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #import "base/test/ios/wait_util.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/web_state/web_state_observer.h"
@@ -18,7 +17,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace web {
 
@@ -107,7 +107,7 @@ bool WebIntTest::ExecuteBlockAndWaitForLoad(const GURL& url,
   // Need to use a pointer to |observer| as the block wants to capture it by
   // value (even if marked with __block) which would not work.
   IntTestWebStateObserver* observer_ptr = &observer;
-  return WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+  return WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return observer_ptr->IsExpectedPageLoaded();
   });
 }

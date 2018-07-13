@@ -37,7 +37,7 @@ source_set("earl_grey_test_support") {
 
   deps = [
     "//base",
-    "//ios/testing:ios_test_support",
+    "//base/test:test_support",
     "//ios/web_view/shell",
   ]
 

@@ -9,7 +9,6 @@
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/web_client.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
@@ -21,9 +20,9 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::WaitUntilConditionOrTimeout;
-using testing::kWaitForJSCompletionTimeout;
-using testing::kWaitForPageLoadTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForJSCompletionTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
 
 namespace {
 // Returns CRWWebController for the given |web_state|.

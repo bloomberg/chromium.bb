@@ -6,6 +6,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -20,7 +21,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/disabled_test_macros.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/features.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
@@ -117,8 +117,8 @@ void WaitForContextMenuItemDisappeared(
                     error:&error];
     return error == nil;
   };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(
-                 testing::kWaitForUIElementTimeout, condition),
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForUIElementTimeout, condition),
              @"Waiting for matcher %@ failed.", context_menu_item_button);
 }
 

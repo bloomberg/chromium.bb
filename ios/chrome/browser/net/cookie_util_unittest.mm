@@ -9,11 +9,11 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/net/cookies/cookie_store_ios_test_util.h"
 #import "ios/net/cookies/ns_http_system_cookie_store.h"
 #import "ios/net/cookies/system_cookie_store.h"
-#import "ios/testing/wait_util.h"
 #include "ios/web/public/features.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/test/web_test.h"
@@ -25,8 +25,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::WaitUntilConditionOrTimeout;
-using testing::kWaitForCookiesTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForCookiesTimeout;
 
 namespace {
 

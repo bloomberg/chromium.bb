@@ -4,6 +4,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -14,7 +15,6 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #include "ios/testing/embedded_test_server_handlers.h"
-#import "ios/testing/wait_util.h"
 #include "ios/web/public/features.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -52,7 +52,7 @@ bool WaitForOpenInButton() WARN_UNUSED_RESULT;
 bool WaitForOpenInButton() {
   // These downloads usually take longer and need a longer timeout.
   const NSTimeInterval kLongDownloadTimeout = 25;
-  return testing::WaitUntilConditionOrTimeout(kLongDownloadTimeout, ^{
+  return base::test::ios::WaitUntilConditionOrTimeout(kLongDownloadTimeout, ^{
     NSError* error = nil;
     [[EarlGrey selectElementWithMatcher:OpenInButton()]
         assertWithMatcher:grey_notNil()

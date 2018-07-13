@@ -6,7 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

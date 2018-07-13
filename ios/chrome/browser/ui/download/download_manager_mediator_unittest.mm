@@ -8,10 +8,10 @@
 
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/download/google_drive_app_util.h"
 #import "ios/chrome/test/fakes/fake_download_manager_consumer.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/fakes/fake_download_task.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "net/base/net_errors.h"
@@ -24,7 +24,7 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
 
@@ -81,10 +81,11 @@ TEST_F(DownloadManagerMediatorTest, Start) {
   // Starting download is async for task and sync for consumer.
   EXPECT_EQ(kDownloadManagerStateInProgress, consumer_.state);
   EXPECT_FALSE(consumer_.installDriveButtonVisible);
-  ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForDownloadTimeout, ^{
-    base::RunLoop().RunUntilIdle();
-    return task()->GetState() == web::DownloadTask::State::kInProgress;
-  }));
+  ASSERT_TRUE(
+      WaitUntilConditionOrTimeout(base::test::ios::kWaitForDownloadTimeout, ^{
+        base::RunLoop().RunUntilIdle();
+        return task()->GetState() == web::DownloadTask::State::kInProgress;
+      }));
 
   // Download file should be located in download directory.
   base::FilePath file =
@@ -103,10 +104,11 @@ TEST_F(DownloadManagerMediatorTest, StartFailure) {
   mediator_.StartDowloading();
 
   // Writer is created by a background task, so wait for failure.
-  ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForDownloadTimeout, ^{
-    base::RunLoop().RunUntilIdle();
-    return consumer_.state == kDownloadManagerStateFailed;
-  }));
+  ASSERT_TRUE(
+      WaitUntilConditionOrTimeout(base::test::ios::kWaitForDownloadTimeout, ^{
+        base::RunLoop().RunUntilIdle();
+        return consumer_.state == kDownloadManagerStateFailed;
+      }));
   EXPECT_FALSE(consumer_.installDriveButtonVisible);
 }
 

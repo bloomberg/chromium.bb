@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 
-#include "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_view_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"

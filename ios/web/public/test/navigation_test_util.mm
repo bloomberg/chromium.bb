@@ -4,7 +4,7 @@
 
 #import "ios/web/public/test/navigation_test_util.h"
 
-#import "ios/testing/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -12,7 +12,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
 
 namespace web {
 namespace test {
@@ -25,7 +26,7 @@ void LoadUrl(web::WebState* web_state, const GURL& url) {
 }
 
 bool WaitForPageToFinishLoading(WebState* web_state) {
-  return WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+  return WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return !web_state->IsLoading();
   });
 }

@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/mac/foundation_util.h"
-#import "ios/testing/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/test/js_test_util.h"
 #import "ios/web/public/web_view_creation_util.h"
@@ -23,8 +23,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::kWaitForPageLoadTimeout;
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 // A WKNavigationDelegate that is used to check if a WKWebView has finished
 // a navigation. Used for testing purposes.

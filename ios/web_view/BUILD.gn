@@ -347,10 +347,10 @@ test("ios_web_view_unittests") {
   deps = [
     ":run_all_unittests",
     "test:test_support",
+    "//base/test:test_support",
     "//components/autofill/core/browser:test_support",
     "//components/autofill/ios/browser:test_support",
     "//components/prefs:test_support",
-    "//ios/testing:ios_test_support",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//testing/gtest",

@@ -5,7 +5,7 @@
 #import <EarlGrey/EarlGrey.h>
 
 #include "base/run_loop.h"
-#import "ios/testing/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/service_manager_connection.h"
 #import "ios/web/shell/test/app/web_shell_test_util.h"
@@ -72,8 +72,9 @@ void WaitForCallback(const std::string& callback_name,
                                  block:^BOOL {
                                    return *callback_called_flag;
                                  }];
-  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
-             @"Failed waiting for %s callback", callback_name.c_str());
+  GREYAssert(
+      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
+      @"Failed waiting for %s callback", callback_name.c_str());
 }
 }
 

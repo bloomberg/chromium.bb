@@ -101,6 +101,7 @@ source_set("external_url_eg_tests") {
   deps = [
     ":translate",
     "//base",
+    "//base/test:test_support",
     "//components/language/ios/browser",
     "//components/strings",
     "//components/translate/core/browser",
@@ -110,7 +111,6 @@ source_set("external_url_eg_tests") {
     "//ios/chrome/browser/ui/translate:translate_ui",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing:ios_test_support",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web/public/test",
     "//ios/web/public/test/http_server",

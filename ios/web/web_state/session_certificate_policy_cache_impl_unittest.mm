@@ -5,7 +5,7 @@
 #import "ios/web/web_state/session_certificate_policy_cache_impl.h"
 
 #include "base/bind.h"
-#import "ios/testing/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "ios/web/public/certificate_policy_cache.h"
 #import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
@@ -21,8 +21,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::WaitUntilConditionOrTimeout;
-using testing::kWaitForJSCompletionTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForJSCompletionTimeout;
 
 namespace {
 // Synchronously checks |cache| for the specified cert and returns the judgment.

@@ -6,9 +6,9 @@
 
 #import "base/mac/foundation_util.h"
 #import "base/numerics/safe_conversions.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
 #import "ios/chrome/test/root_view_controller_test.h"
-#import "ios/testing/wait_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 
@@ -167,8 +167,8 @@ TEST_F(GridViewControllerTest, MoveUnselectedItem) {
 TEST_F(GridViewControllerTest, ReplaceScrolledOffScreenCell) {
   // This test requires that the collection view be placed on the screen.
   SetRootViewController(view_controller_);
-  EXPECT_TRUE(testing::WaitUntilConditionOrTimeout(
-      testing::kWaitForUIElementTimeout, ^bool {
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
         return view_controller_.collectionView.visibleCells.count > 0;
       }));
   NSArray* items = view_controller_.items;

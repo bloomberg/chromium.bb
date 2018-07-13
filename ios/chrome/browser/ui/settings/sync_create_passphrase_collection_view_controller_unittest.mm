@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/compiler_specific.h"
+#import "base/test/ios/wait_util.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -14,7 +15,6 @@
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
 #import "ios/chrome/browser/ui/settings/passphrase_collection_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/testing/wait_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -186,8 +186,8 @@ TEST_F(SyncCreatePassphraseCollectionViewControllerTest, TestOnStateChanged) {
   [sync_controller onSyncStateChanged];
   // Calling -onStateChanged with an accepted secondary passphrase should
   // cause the controller to be popped off the navigation stack.
-  EXPECT_TRUE(testing::WaitUntilConditionOrTimeout(
-      testing::kWaitForUIElementTimeout, ^bool() {
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool() {
         return [nav_controller_ topViewController] != sync_controller;
       }));
 }

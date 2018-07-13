@@ -7,13 +7,13 @@
 #include <memory>
 
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/block_popups_collection_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/testing/wait_util.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -151,8 +151,8 @@ TEST_F(BlockPopupsCollectionViewControllerTest, TestOneAllowedItemDeleted) {
     this->DeleteItem(i, j, ^{
       completion_called = YES;
     });
-    EXPECT_TRUE(testing::WaitUntilConditionOrTimeout(
-        testing::kWaitForUIElementTimeout, ^bool() {
+    EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForUIElementTimeout, ^bool() {
           return completion_called;
         }));
   };

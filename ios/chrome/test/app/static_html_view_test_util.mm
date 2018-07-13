@@ -8,16 +8,16 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/testing/wait_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-using testing::WaitUntilConditionOrTimeout;
-using testing::kWaitForJSCompletionTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForJSCompletionTimeout;
 
 namespace chrome_test_util {
 

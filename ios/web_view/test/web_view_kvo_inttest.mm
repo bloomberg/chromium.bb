@@ -7,7 +7,6 @@
 
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web_view/test/observer.h"
 #import "ios/web_view/test/web_view_int_test.h"
 #import "ios/web_view/test/web_view_test_util.h"

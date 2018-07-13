@@ -8,11 +8,11 @@
 
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
-#import "ios/testing/wait_util.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_profile_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
@@ -28,8 +28,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::kWaitForActionTimeout;
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForActionTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace ios_web_view {
 

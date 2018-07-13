@@ -39,10 +39,10 @@ source_set("eg_tests") {
   ]
   deps = [
     ":ntp_tiles",
+    "//base/test:test_support",
     "//components/ntp_tiles:ntp_tiles",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing:ios_test_support",
     "//ios/web/public/test/http_server:http_server",
   ]
 }

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 
+#import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
@@ -16,7 +17,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 
@@ -30,8 +30,8 @@ using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ClearBrowsingDataCollectionView;
 using chrome_test_util::SettingsMenuButton;
 using chrome_test_util::ToolsMenuView;
-using testing::WaitUntilConditionOrTimeout;
-using testing::kWaitForPageLoadTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
 
 namespace {
 
@@ -166,7 +166,7 @@ id<GREYAction> ScrollDown() {
   };
   NSString* errorMessage =
       isVisible ? @"Toolbar was not visible" : @"Toolbar was visible";
-  GREYAssert(testing::WaitUntilConditionOrTimeout(
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
                  kWaitForToolbarAnimationTimeout, condition),
              errorMessage);
 }

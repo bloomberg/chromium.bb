@@ -56,7 +56,6 @@ source_set("test_support") {
     ":test_constants",
     "//base",
     "//base/test:test_support",
-    "//ios/testing:ios_test_support",
     "//ios/web",
     "//ios/web/navigation:core",
     "//ios/web/public/test/fakes",

@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/testing/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,9 +17,9 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::kWaitForJSCompletionTimeout;
-using testing::kWaitForPageLoadTimeout;
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForJSCompletionTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace web {
 

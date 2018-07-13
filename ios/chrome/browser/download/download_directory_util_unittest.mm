@@ -6,17 +6,17 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#import "ios/testing/wait_util.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-using testing::WaitUntilConditionOrTimeout;
-using testing::kWaitForFileOperationTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForFileOperationTimeout;
 
 using DownloadDirectoryTest = PlatformTest;
 

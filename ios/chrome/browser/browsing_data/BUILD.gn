@@ -117,7 +117,6 @@ source_set("unit_tests") {
     "//components/sync_preferences:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/sessions:serialisation",
-    "//ios/testing:ios_test_support",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
