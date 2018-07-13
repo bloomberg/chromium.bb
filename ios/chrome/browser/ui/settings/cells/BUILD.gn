@@ -26,6 +26,8 @@ source_set("cells") {
     "passphrase_error_item.mm",
     "password_details_item.h",
     "password_details_item.mm",
+    "settings_collapsible_item.h",
+    "settings_collapsible_item.mm",
     "settings_detail_item.h",
     "settings_detail_item.mm",
     "settings_switch_item.h",

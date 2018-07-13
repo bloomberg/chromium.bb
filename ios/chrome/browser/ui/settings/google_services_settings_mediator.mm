@@ -5,8 +5,10 @@
 #import "ios/chrome/browser/ui/settings/google_services_settings_mediator.h"
 
 #import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_collapsible_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -98,7 +100,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:PersonalizedSectionIdentifier];
   [model setSectionIdentifier:PersonalizedSectionIdentifier
                  collapsedKey:kGoogleServicesSettingsPersonalizedSectionKey];
-  [model addItem:[self syncPersonalizationItem]
+  SettingsCollapsibleItem* syncPersonalizationItem =
+      [self syncPersonalizationItem];
+  syncPersonalizationItem.collapsed =
+      [model sectionIsCollapsed:PersonalizedSectionIdentifier];
+  [model addItem:syncPersonalizationItem
       toSectionWithIdentifier:PersonalizedSectionIdentifier];
   [model addItem:[self syncBookmarksItem]
       toSectionWithIdentifier:PersonalizedSectionIdentifier];
@@ -125,9 +131,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 // Creates SyncPersonalizationItemType item.
-- (CollectionViewItem*)syncPersonalizationItem {
-  CollectionViewTextItem* item =
-      [[CollectionViewTextItem alloc] initWithType:SyncPersonalizationItemType];
+- (SettingsCollapsibleItem*)syncPersonalizationItem {
+  SettingsCollapsibleItem* item = [[SettingsCollapsibleItem alloc]
+      initWithType:SyncPersonalizationItemType];
   item.text =
       GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_PERSONALIZATION_TEXT);
   item.numberOfTextLines = 0;
@@ -252,7 +258,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:NonPersonalizedSectionIdentifier];
   [model setSectionIdentifier:NonPersonalizedSectionIdentifier
                  collapsedKey:kGoogleServicesSettingsNonPersonalizedSectionKey];
-  [model addItem:[self nonPersonalizedServicesItem]
+  SettingsCollapsibleItem* nonPersonalizedServicesItem =
+      [self nonPersonalizedServicesItem];
+  nonPersonalizedServicesItem.collapsed =
+      [model sectionIsCollapsed:NonPersonalizedSectionIdentifier];
+  [model addItem:nonPersonalizedServicesItem
       toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
   [model addItem:[self autocompleteSearchesAndURLsItem]
       toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
@@ -266,8 +276,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 // Creates NonPersonalizedServicesItemType item.
-- (CollectionViewItem*)nonPersonalizedServicesItem {
-  CollectionViewTextItem* item = [[CollectionViewTextItem alloc]
+- (SettingsCollapsibleItem*)nonPersonalizedServicesItem {
+  SettingsCollapsibleItem* item = [[SettingsCollapsibleItem alloc]
       initWithType:NonPersonalizedServicesItemType];
   item.text = GetNSString(
       IDS_IOS_GOOGLE_SERVICES_SETTINGS_NON_PERSONALIZED_SERVICES_TEXT);
