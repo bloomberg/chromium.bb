@@ -193,7 +193,8 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
                                         SkFilterQuality requested_quality,
                                         ImageProvider* image_provider,
                                         uint32_t* transfer_cache_entry_id,
-                                        SkFilterQuality* raster_quality) const;
+                                        SkFilterQuality* raster_quality,
+                                        bool* needs_mips) const;
 
   void SetColorsAndPositions(const SkColor* colors,
                              const SkScalar* positions,

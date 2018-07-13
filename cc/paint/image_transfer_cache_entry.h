@@ -23,9 +23,9 @@ static constexpr uint32_t kInvalidImageTransferCacheEntryId =
 class CC_PAINT_EXPORT ClientImageTransferCacheEntry
     : public ClientTransferCacheEntryBase<TransferCacheEntryType::kImage> {
  public:
-  explicit ClientImageTransferCacheEntry(
-      const SkPixmap* pixmap,
-      const SkColorSpace* target_color_space);
+  explicit ClientImageTransferCacheEntry(const SkPixmap* pixmap,
+                                         const SkColorSpace* target_color_space,
+                                         bool needs_mips);
   ~ClientImageTransferCacheEntry() final;
 
   uint32_t Id() const final;
@@ -38,6 +38,7 @@ class CC_PAINT_EXPORT ClientImageTransferCacheEntry
   uint32_t id_;
   const SkPixmap* const pixmap_;
   const SkColorSpace* const target_color_space_;
+  const bool needs_mips_;
   size_t size_ = 0;
   static base::AtomicSequenceNumber s_next_id_;
 };
@@ -59,8 +60,13 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
   bool fits_on_gpu() const { return fits_on_gpu_; }
   const sk_sp<SkImage>& image() { return image_; }
 
+  // Ensures the cached image has mips.
+  void EnsureMips();
+
  private:
+  GrContext* context_;
   sk_sp<SkImage> image_;
+  bool has_mips_ = false;
   size_t size_ = 0;
   bool fits_on_gpu_ = false;
 };

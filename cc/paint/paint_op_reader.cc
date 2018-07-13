@@ -303,6 +303,11 @@ void PaintOpReader::Read(PaintImage* image) {
   if (!valid_)
     return;
 
+  bool needs_mips;
+  ReadSimple(&needs_mips);
+  if (!valid_)
+    return;
+
   // If we encountered a decode failure, we may write an invalid id for the
   // image. In these cases, just return, leaving the image as nullptr.
   if (transfer_cache_entry_id == kInvalidImageTransferCacheEntryId)
@@ -311,6 +316,8 @@ void PaintOpReader::Read(PaintImage* image) {
   if (auto* entry =
           options_.transfer_cache->GetEntryAs<ServiceImageTransferCacheEntry>(
               transfer_cache_entry_id)) {
+    if (needs_mips)
+      entry->EnsureMips();
     *image = PaintImageBuilder::WithDefault()
                  .set_id(PaintImage::GetNextId())
                  .set_image(entry->image(), PaintImage::kNonLazyStableId)

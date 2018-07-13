@@ -22,11 +22,13 @@ DecodedDrawImage::DecodedDrawImage(
     const SkSize& src_rect_offset,
     const SkSize& scale_adjustment,
     SkFilterQuality filter_quality,
+    bool needs_mips,
     bool is_budgeted)
     : transfer_cache_entry_id_(transfer_cache_entry_id),
       src_rect_offset_(src_rect_offset),
       scale_adjustment_(scale_adjustment),
       filter_quality_(filter_quality),
+      transfer_cache_entry_needs_mips_(needs_mips),
       is_budgeted_(is_budgeted) {}
 
 DecodedDrawImage::DecodedDrawImage()

@@ -294,7 +294,8 @@ class CC_EXPORT GpuImageDecodeCache
               size_t size,
               const gfx::ColorSpace& target_color_space,
               SkFilterQuality quality,
-              int mip_level,
+              int upload_scale_mip_level,
+              bool needs_mips,
               bool is_bitmap_backed);
 
     bool IsGpuOrTransferCache() const;
@@ -305,7 +306,8 @@ class CC_EXPORT GpuImageDecodeCache
     const size_t size;
     gfx::ColorSpace target_color_space;
     SkFilterQuality quality;
-    int mip_level;
+    int upload_scale_mip_level;
+    bool needs_mips = false;
     bool is_bitmap_backed;
     bool is_budgeted = false;
 
@@ -345,7 +347,7 @@ class CC_EXPORT GpuImageDecodeCache
     explicit InUseCacheKey(const DrawImage& draw_image);
 
     PaintImage::FrameKey frame_key;
-    int mip_level;
+    int upload_scale_mip_level;
     SkFilterQuality filter_quality;
     gfx::ColorSpace target_color_space;
   };
@@ -442,6 +444,9 @@ class CC_EXPORT GpuImageDecodeCache
                                                 PaintImage::FrameKeyHash>;
   PersistentCache::iterator RemoveFromPersistentCache(
       PersistentCache::iterator it);
+
+  // Adds mips to an image if required.
+  void UpdateMipsIfNeeded(const DrawImage& draw_image, ImageData* image_data);
 
   const SkColorType color_type_;
   const bool use_transfer_cache_ = false;
