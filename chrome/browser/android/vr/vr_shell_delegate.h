@@ -30,9 +30,10 @@ namespace vr {
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr
 enum class VrSupportLevel : int {
-  kVrNotAvailable = 0,
-  kVrCardboard = 1,
-  kVrDaydream = 2,  // Supports both Cardboard and Daydream viewer.
+  kVrDisabled = 0,
+  kVrNeedsUpdate = 1,  // VR Support is available, but needs update.
+  kVrCardboard = 2,
+  kVrDaydream = 3,  // Supports both Cardboard and Daydream viewer.
 };
 
 class VrShell;
