@@ -198,7 +198,7 @@ class TestingBrowserProcess : public BrowserProcess {
 
   // |tab_manager_| is null by default and will be created when
   // GetTabManager() is invoked on supported platforms.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if !defined(OS_ANDROID)
   std::unique_ptr<resource_coordinator::TabManager> tab_manager_;
   std::unique_ptr<resource_coordinator::TabLifecycleUnitSource>
       tab_lifecycle_unit_source_;
