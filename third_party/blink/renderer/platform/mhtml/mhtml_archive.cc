@@ -194,7 +194,9 @@ MHTMLArchive* MHTMLArchive::Create(const KURL& url,
     else
       archive->AddSubresource(resources[i].Get());
   }
-  return archive;
+  if (archive->MainResource())
+    return archive;
+  return nullptr;
 }
 
 bool MHTMLArchive::CanLoadArchive(const KURL& url) {
