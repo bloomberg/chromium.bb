@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "components/viz/host/host_frame_sink_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -19,10 +20,13 @@ class ClientSurfaceEmbedder;
 class Window;
 }  // namespace aura
 
+namespace viz {
+class SurfaceInfo;
+}
+
 namespace ui {
 namespace ws2 {
 
-class WindowHostFrameSinkClient;
 class WindowTree;
 
 // WindowTree creates a ClientRoot for each window the client is embedded in. A
@@ -31,7 +35,8 @@ class WindowTree;
 // maintaining state associated with the root, as well as notifying the client
 // of any changes to the root Window.
 class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
-    : public aura::WindowObserver {
+    : public aura::WindowObserver,
+      public viz::HostFrameSinkClient {
  public:
   ClientRoot(WindowTree* window_tree, aura::Window* window, bool is_top_level);
   ~ClientRoot() override;
@@ -62,6 +67,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
 
+  // viz::HostFrameSinkClient:
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
+  void OnFrameTokenChanged(uint32_t frame_token) override;
+
   WindowTree* window_tree_;
   aura::Window* window_;
   const bool is_top_level_;
@@ -74,9 +83,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 
   std::unique_ptr<aura::ClientSurfaceEmbedder> client_surface_embedder_;
-  // viz::HostFrameSinkClient registered with the HostFrameSinkManager for the
-  // window.
-  std::unique_ptr<WindowHostFrameSinkClient> window_host_frame_sink_client_;
+
+  // If non-null then the fallback SurfaceInfo was supplied before the primary
+  // surface. This will be pushed to the Layer once the primary surface is
+  // supplied.
+  std::unique_ptr<viz::SurfaceInfo> fallback_surface_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientRoot);
 };
