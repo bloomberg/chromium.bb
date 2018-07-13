@@ -1595,6 +1595,7 @@ chrome_java_sources = [
 ]
 
 chrome_vr_java_sources = [
+  "java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java",
   "java/src/org/chromium/chrome/browser/vr/AndroidUiGestureTarget.java",
   "java/src/org/chromium/chrome/browser/vr/AndroidVSyncHelper.java",
   "java/src/org/chromium/chrome/browser/vr/VrClassesWrapperImpl.java",

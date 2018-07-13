@@ -30,6 +30,7 @@ class VrAssetsComponentInstallerPolicy : public ComponentInstallerPolicy {
   ~VrAssetsComponentInstallerPolicy() override {}
 
  private:
+  static bool ShouldRegisterVrAssetsComponentOnStartup();
   static void RegisterComponent(ComponentUpdateService* cus);
   static void UpdateComponent(ComponentUpdateService* cus);
   static void OnRegisteredComponent(ComponentUpdateService* cus);
@@ -52,14 +53,19 @@ class VrAssetsComponentInstallerPolicy : public ComponentInstallerPolicy {
   update_client::InstallerAttributes GetInstallerAttributes() const override;
   std::vector<std::string> GetMimeTypes() const override;
 
+  static bool registered_component_;
   static bool registration_pending_;
   static bool ondemand_update_pending_;
 
+  friend bool ShouldRegisterVrAssetsComponentOnStartup();
   friend void RegisterVrAssetsComponent(ComponentUpdateService* cus);
   friend void UpdateVrAssetsComponent(ComponentUpdateService* cus);
 
   DISALLOW_COPY_AND_ASSIGN(VrAssetsComponentInstallerPolicy);
 };
+
+// Returns true if the assets component should be registered at startup.
+bool ShouldRegisterVrAssetsComponentOnStartup();
 
 // Call once to make the component update service aware of the VR Assets
 // component.

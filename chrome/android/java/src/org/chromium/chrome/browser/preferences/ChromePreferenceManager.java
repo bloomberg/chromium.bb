@@ -138,6 +138,9 @@ public class ChromePreferenceManager {
     private static final String TRUSTED_WEB_ACTIVITY_LAST_DISCLOSURE_TIME =
             "trusted_web_activity_last_disclosure_time:";
 
+    private static final String SHOULD_REGISTER_VR_ASSETS_COMPONENT_ON_STARTUP =
+            "should_register_vr_assets_component_on_startup";
+
     private static class LazyHolder {
         static final ChromePreferenceManager INSTANCE = new ChromePreferenceManager();
     }
@@ -530,6 +533,14 @@ public class ChromePreferenceManager {
      */
     public void setVerifiedDigitalAssetLinks(Set<String> links) {
         mSharedPreferences.edit().putStringSet(VERIFIED_DIGITAL_ASSET_LINKS, links).apply();
+    }
+
+    public boolean getShouldRegisterVrAssetsComponentOnStartup() {
+        return mSharedPreferences.getBoolean(SHOULD_REGISTER_VR_ASSETS_COMPONENT_ON_STARTUP, false);
+    }
+
+    public void setShouldRegisterVrAssetsComponentOnStartup(boolean shouldRegister) {
+        writeBoolean(SHOULD_REGISTER_VR_ASSETS_COMPONENT_ON_STARTUP, shouldRegister);
     }
 
     /**

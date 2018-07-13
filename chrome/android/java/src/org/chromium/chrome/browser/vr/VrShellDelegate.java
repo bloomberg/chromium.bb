@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.webapps.WebappActivity;
@@ -750,6 +751,8 @@ public class VrShellDelegate
             nativeRegisterVrAssetsComponent();
             sRegisteredVrAssetsComponent = true;
         }
+        ChromePreferenceManager.getInstance().setShouldRegisterVrAssetsComponentOnStartup(
+                isDaydreamCurrentViewer);
     }
 
     /**
