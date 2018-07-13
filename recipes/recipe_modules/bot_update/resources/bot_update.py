@@ -355,8 +355,7 @@ def gclient_sync(
 
   args = ['sync', '--verbose', '--reset', '--force',
           '--ignore_locks', '--output-json', gclient_output_file,
-          '--nohooks', '--noprehooks', '--delete_unversioned_trees',
-          '--reset-fetch-config']
+          '--nohooks', '--noprehooks', '--delete_unversioned_trees']
   if with_branch_heads:
     args += ['--with_branch_heads']
   if with_tags:
