@@ -151,6 +151,9 @@ const char kSystemGestureStartHeight[] = "system-gesture-start-height";
 const char kBackGestureHorizontalThreshold[] =
     "back-gesture-horizontal-threshold";
 
+// Whether to enable detection and dispatch of a 'drag from the top' gesture.
+const char kEnableTopDragGesture[] = "enable-top-drag-gesture";
+
 extern const char kCastMemoryPressureCriticalFraction[] =
     "memory-pressure-critical-fraction";
 extern const char kCastMemoryPressureModerateFraction[] =

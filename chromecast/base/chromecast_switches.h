@@ -75,6 +75,7 @@ extern const char kEnableInput[];
 extern const char kSystemGestureStartWidth[];
 extern const char kSystemGestureStartHeight[];
 extern const char kBackGestureHorizontalThreshold[];
+extern const char kEnableTopDragGesture[];
 
 // Background color used when Chromium hasn't rendered anything yet.
 extern const char kCastAppBackgroundColor[];
