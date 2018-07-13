@@ -60,6 +60,8 @@ viz_component("common") {
     "gpu/context_cache_controller.cc",
     "gpu/context_cache_controller.h",
     "gpu/context_lost_observer.h",
+    "gpu/context_lost_reason.cc",
+    "gpu/context_lost_reason.h",
     "gpu/context_provider.cc",
     "gpu/context_provider.h",
     "gpu/raster_context_provider.cc",

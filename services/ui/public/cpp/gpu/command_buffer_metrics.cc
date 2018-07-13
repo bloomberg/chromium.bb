@@ -5,77 +5,14 @@
 #include "services/ui/public/cpp/gpu/command_buffer_metrics.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "components/viz/common/gpu/context_lost_reason.h"
 
 namespace ui {
 namespace command_buffer_metrics {
 
 namespace {
 
-enum CommandBufferContextLostReason {
-  // Don't add new values here.
-  CONTEXT_INIT_FAILED,
-  CONTEXT_LOST_GPU_CHANNEL_ERROR,
-  CONTEXT_PARSE_ERROR_INVALID_SIZE,
-  CONTEXT_PARSE_ERROR_OUT_OF_BOUNDS,
-  CONTEXT_PARSE_ERROR_UNKNOWN_COMMAND,
-  CONTEXT_PARSE_ERROR_INVALID_ARGS,
-  CONTEXT_PARSE_ERROR_GENERIC_ERROR,
-  CONTEXT_LOST_GUILTY,
-  CONTEXT_LOST_INNOCENT,
-  CONTEXT_LOST_UNKNOWN,
-  CONTEXT_LOST_OUT_OF_MEMORY,
-  CONTEXT_LOST_MAKECURRENT_FAILED,
-  CONTEXT_LOST_INVALID_GPU_MESSAGE,
-  // Add new values here and update kMaxValue.
-  // Also update //tools/metrics/histograms/histograms.xml
-  kMaxValue = CONTEXT_LOST_INVALID_GPU_MESSAGE
-};
-
-CommandBufferContextLostReason GetContextLostReason(
-    gpu::error::Error error,
-    gpu::error::ContextLostReason reason) {
-  if (error == gpu::error::kLostContext) {
-    switch (reason) {
-      case gpu::error::kGuilty:
-        return CONTEXT_LOST_GUILTY;
-      case gpu::error::kInnocent:
-        return CONTEXT_LOST_INNOCENT;
-      case gpu::error::kUnknown:
-        return CONTEXT_LOST_UNKNOWN;
-      case gpu::error::kOutOfMemory:
-        return CONTEXT_LOST_OUT_OF_MEMORY;
-      case gpu::error::kMakeCurrentFailed:
-        return CONTEXT_LOST_MAKECURRENT_FAILED;
-      case gpu::error::kGpuChannelLost:
-        return CONTEXT_LOST_GPU_CHANNEL_ERROR;
-      case gpu::error::kInvalidGpuMessage:
-        return CONTEXT_LOST_INVALID_GPU_MESSAGE;
-    }
-  }
-  switch (error) {
-    case gpu::error::kInvalidSize:
-      return CONTEXT_PARSE_ERROR_INVALID_SIZE;
-    case gpu::error::kOutOfBounds:
-      return CONTEXT_PARSE_ERROR_OUT_OF_BOUNDS;
-    case gpu::error::kUnknownCommand:
-      return CONTEXT_PARSE_ERROR_UNKNOWN_COMMAND;
-    case gpu::error::kInvalidArguments:
-      return CONTEXT_PARSE_ERROR_INVALID_ARGS;
-    case gpu::error::kGenericError:
-      return CONTEXT_PARSE_ERROR_GENERIC_ERROR;
-    case gpu::error::kDeferCommandUntilLater:
-    case gpu::error::kDeferLaterCommands:
-    case gpu::error::kNoError:
-    case gpu::error::kLostContext:
-      NOTREACHED();
-      return CONTEXT_LOST_UNKNOWN;
-  }
-  NOTREACHED();
-  return CONTEXT_LOST_UNKNOWN;
-}
-
-void RecordContextLost(ContextType type,
-                       CommandBufferContextLostReason reason) {
+void RecordContextLost(ContextType type, viz::ContextLostReason reason) {
   switch (type) {
     case ContextType::BROWSER_COMPOSITOR:
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.BrowserCompositor", reason);
@@ -153,14 +90,14 @@ std::string ContextTypeToString(ContextType type) {
 }
 
 void UmaRecordContextInitFailed(ContextType type) {
-  RecordContextLost(type, CONTEXT_INIT_FAILED);
+  RecordContextLost(type, viz::CONTEXT_INIT_FAILED);
 }
 
 void UmaRecordContextLost(ContextType type,
                           gpu::error::Error error,
                           gpu::error::ContextLostReason reason) {
-  CommandBufferContextLostReason converted_reason =
-      GetContextLostReason(error, reason);
+  viz::ContextLostReason converted_reason =
+      viz::GetContextLostReason(error, reason);
   RecordContextLost(type, converted_reason);
 }
 
