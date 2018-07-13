@@ -458,9 +458,11 @@ const char kPrepareWriteValue[] = "PrepareWriteValue";
 // Bluetooth GATT Characteristic signals.
 const char kValueUpdatedSignal[] = "ValueUpdated";
 
-// Possible keys for option dict used in ReadValue and WriteValue.
+// Possible keys for option dict used in ReadValue, WriteValue and
+// PrepareWriteValue.
 const char kOptionOffset[] = "offset";
 const char kOptionDevice[] = "device";
+const char kOptionHasSubsequentWrite[] = "has-subsequent-write";
 
 // Bluetooth GATT Characteristic properties.
 const char kUUIDProperty[] = "UUID";
