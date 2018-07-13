@@ -67,8 +67,6 @@ class LayoutEmbeddedObject final : public LayoutEmbeddedContent {
   void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
   bool NeedsPreferredWidthsRecalculation() const override;
 
-  PaintLayerType LayerTypeRequired() const final;
-
   CompositingReasons AdditionalCompositingReasons() const override;
 
   PluginAvailability plugin_availability_ = kPluginAvailable;

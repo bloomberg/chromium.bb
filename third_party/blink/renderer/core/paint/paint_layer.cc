@@ -2917,11 +2917,6 @@ bool PaintLayer::ChildBackgroundIsKnownToBeOpaqueInRect(
 }
 
 bool PaintLayer::ShouldBeSelfPaintingLayer() const {
-  if (GetLayoutObject().IsLayoutEmbeddedContent() &&
-      ToLayoutEmbeddedContent(GetLayoutObject())
-          .RequiresAcceleratedCompositing())
-    return true;
-
   // TODO(crbug.com/839341): Remove ScrollTimeline check once we support
   // main-thread AnimationWorklet and don't need to promote the scroll-source.
   return GetLayoutObject().LayerTypeRequired() == kNormalPaintLayer ||
