@@ -1464,13 +1464,9 @@ void SplitViewController::EndWindowDragImpl(
         InsertWindowToOverview(previous_snapped_window);
       }
     } else {
-      // Maximize the window if we are not supposed to snap the window. End
-      // the overview mode first if it's active at the moment.
+      // End the overview mode if it's active at the moment. The dragged window
+      // will be restored back to its previous state before dragging.
       EndOverview();
-      // TODO(minch): Remove the logic that maximize the window explicitly,
-      // since window will be maximized in tablet mode if it is not snapped.
-      wm::WMEvent maximize_event(wm::WM_EVENT_MAXIMIZE);
-      wm::GetWindowState(window)->OnWMEvent(&maximize_event);
     }
   } else {
     aura::Window* previous_snapped_window =
