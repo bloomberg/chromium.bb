@@ -502,6 +502,10 @@ crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/newmulticol/regula
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-sub-001.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-super-001.xht [ Failure ]
 
+### Will be fixed by crrev.com/c/1131562
+crbug.com/635619 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-gap-percentage-001.html [ Failure ]
+crbug.com/635619 virtual/layout_ng_experimental/fast/multicol/span/preferred-widths.html [ Failure ]
+
 ### Missing refs, these are also skipped for existing layout.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floating-replaced-height-008.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-108.xht [ Skip ]

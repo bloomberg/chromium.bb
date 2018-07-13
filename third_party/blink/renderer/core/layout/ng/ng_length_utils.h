@@ -107,11 +107,12 @@ MinMaxSize ComputeMinAndMaxContentContribution(
 
 // Resolves the computed value in style.logicalWidth (Length) to a layout unit,
 // then constrains the result by the resolved min logical width and max logical
-// width from the ComputedStyle object.
+// width from the ComputedStyle object. Calls Node::ComputeMinMaxSize if needed.
+// override_minmax is provided *solely* for use by unit tests.
 CORE_EXPORT LayoutUnit
 ComputeInlineSizeForFragment(const NGConstraintSpace&,
-                             const ComputedStyle&,
-                             const base::Optional<MinMaxSize>&);
+                             NGLayoutInputNode,
+                             const MinMaxSize* override_minmax = nullptr);
 
 // Same as ComputeInlineSizeForFragment, but uses height instead of width.
 CORE_EXPORT LayoutUnit ComputeBlockSizeForFragment(const NGConstraintSpace&,
@@ -204,15 +205,10 @@ NGBoxStrut CalculateBorderScrollbarPadding(
     const NGConstraintSpace& constraint_space,
     const NGBlockNode node);
 
-inline NGLogicalSize CalculateBorderBoxSize(
+NGLogicalSize CalculateBorderBoxSize(
     const NGConstraintSpace& constraint_space,
-    const ComputedStyle& style,
-    const base::Optional<MinMaxSize>& min_and_max,
-    LayoutUnit block_content_size = NGSizeIndefinite) {
-  return NGLogicalSize(
-      ComputeInlineSizeForFragment(constraint_space, style, min_and_max),
-      ComputeBlockSizeForFragment(constraint_space, style, block_content_size));
-}
+    const NGBlockNode& node,
+    LayoutUnit block_content_size = NGSizeIndefinite);
 
 NGLogicalSize CalculateContentBoxSize(
     const NGLogicalSize border_box_size,

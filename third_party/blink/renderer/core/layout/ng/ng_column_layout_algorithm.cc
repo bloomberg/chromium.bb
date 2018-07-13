@@ -71,13 +71,10 @@ NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(NGBlockNode node,
     : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {}
 
 scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
-  base::Optional<MinMaxSize> min_max_size;
-  if (NeedMinMaxSize(ConstraintSpace(), Style()))
-    min_max_size = ComputeMinMaxSize(MinMaxSizeInput());
   NGBoxStrut border_scrollbar_padding =
       CalculateBorderScrollbarPadding(ConstraintSpace(), Node());
   NGLogicalSize border_box_size =
-      CalculateBorderBoxSize(ConstraintSpace(), Style(), min_max_size);
+      CalculateBorderBoxSize(ConstraintSpace(), Node());
   NGLogicalSize content_box_size =
       CalculateContentBoxSize(border_box_size, border_scrollbar_padding);
   NGLogicalSize column_size = CalculateColumnSize(content_box_size);
