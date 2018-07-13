@@ -17,13 +17,16 @@
 #include "ash/shell_test_api.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
+#include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller_test_api.h"
+#include "base/debug/stack_trace.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/paint/display_item_list.h"
 #include "components/exo/buffer.h"
@@ -1059,6 +1062,173 @@ TEST_F(ClientControlledShellSurfaceTest, ClientIniatedResize) {
   event_generator->PressLeftButton();
   shell_surface->StartDrag(HTTOP, gfx::Point(0, 0));
   ASSERT_FALSE(window_state->is_dragged());
+}
+
+namespace {
+
+class ClientControlledShellSurfaceDisplayTest : public test::ExoTestBase {
+ public:
+  ClientControlledShellSurfaceDisplayTest() = default;
+  ~ClientControlledShellSurfaceDisplayTest() override = default;
+
+  static ash::WindowResizer* CreateDragWindowResizer(
+      aura::Window* window,
+      const gfx::Point& point_in_parent,
+      int window_component) {
+    return ash::CreateWindowResizer(window, point_in_parent, window_component,
+                                    ::wm::WINDOW_MOVE_SOURCE_MOUSE)
+        .release();
+  }
+
+  int bounds_change_count() const { return bounds_change_count_; }
+
+  const std::vector<gfx::Rect>& requested_bounds() const {
+    return requested_bounds_;
+  }
+
+  const std::vector<int64_t>& requested_display_ids() const {
+    return requested_display_ids_;
+  }
+
+  void OnBoundsChangeEvent(ash::mojom::WindowStateType current_state,
+                           ash::mojom::WindowStateType requested_state,
+                           int64_t display_id,
+                           const gfx::Rect& bounds,
+                           bool is_resize,
+                           int bounds_change) {
+    bounds_change_count_++;
+    requested_bounds_.push_back(bounds);
+    requested_display_ids_.push_back(display_id);
+  }
+
+  void Reset() {
+    bounds_change_count_ = 0;
+    requested_bounds_.clear();
+    requested_display_ids_.clear();
+  }
+
+  gfx::Point CalculateDragPoint(const ash::WindowResizer& resizer,
+                                int delta_x,
+                                int delta_y) {
+    gfx::Point location = resizer.GetInitialLocation();
+    location.set_x(location.x() + delta_x);
+    location.set_y(location.y() + delta_y);
+    return location;
+  }
+
+ private:
+  int bounds_change_count_ = 0;
+  std::vector<gfx::Rect> requested_bounds_;
+  std::vector<int64_t> requested_display_ids_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClientControlledShellSurfaceDisplayTest);
+};
+
+}  // namespace
+
+TEST_F(ClientControlledShellSurfaceDisplayTest, MoveToAnotherDisplayByDrag) {
+  UpdateDisplay("800x600,800x600");
+  aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  shell_surface->set_client_controlled_move_resize(false);
+
+  gfx::Size window_size(200, 200);
+  std::unique_ptr<Buffer> desktop_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(window_size)));
+  surface->Attach(desktop_buffer.get());
+  gfx::Rect initial_bounds(-150, 10, 200, 200);
+  shell_surface->SetGeometry(initial_bounds);
+  surface->Commit();
+  shell_surface->GetWidget()->Show();
+
+  EXPECT_EQ(initial_bounds,
+            shell_surface->GetWidget()->GetWindowBoundsInScreen());
+
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  EXPECT_EQ(root_windows[0], window->GetRootWindow());
+
+  std::unique_ptr<ash::WindowResizer> resizer(
+      CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));
+
+  // Drag the pointer to the right. Once it reaches the right edge of the
+  // primary display, it warps to the secondary.
+  resizer->Drag(CalculateDragPoint(*resizer, 800, 0), 0);
+
+  shell_surface->set_bounds_changed_callback(base::BindRepeating(
+      &ClientControlledShellSurfaceDisplayTest::OnBoundsChangeEvent,
+      base::Unretained(this)));
+
+  resizer->CompleteDrag();
+
+  EXPECT_EQ(root_windows[1], window->GetRootWindow());
+  ASSERT_EQ(1, bounds_change_count());
+  EXPECT_EQ(gfx::Rect(650, 10, 200, 200), requested_bounds()[0]);
+
+  display::Display secondary_display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]);
+  EXPECT_EQ(secondary_display.id(), requested_display_ids()[0]);
+}
+
+TEST_F(ClientControlledShellSurfaceDisplayTest,
+       MoveToAnotherDisplayByShortcut) {
+  UpdateDisplay("400x600,800x600");
+  aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  shell_surface->set_client_controlled_move_resize(false);
+
+  gfx::Size window_size(200, 200);
+  std::unique_ptr<Buffer> desktop_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(window_size)));
+  surface->Attach(desktop_buffer.get());
+  gfx::Rect initial_bounds(-174, 10, 200, 200);
+  shell_surface->SetGeometry(initial_bounds);
+  surface->Commit();
+  shell_surface->GetWidget()->Show();
+
+  EXPECT_EQ(initial_bounds,
+            shell_surface->GetWidget()->GetWindowBoundsInScreen());
+
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  EXPECT_EQ(root_windows[0], window->GetRootWindow());
+
+  shell_surface->set_bounds_changed_callback(base::BindRepeating(
+      &ClientControlledShellSurfaceDisplayTest::OnBoundsChangeEvent,
+      base::Unretained(this)));
+
+  display::Display primary_display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+  display::Display secondary_display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]);
+
+  EXPECT_TRUE(ash::wm::MoveWindowToDisplay(window, secondary_display.id()));
+
+  EXPECT_EQ(root_windows[1], window->GetRootWindow());
+  ASSERT_EQ(1, bounds_change_count());
+  EXPECT_EQ(gfx::Rect(226, 10, 200, 200), requested_bounds()[0]);
+  EXPECT_EQ(secondary_display.id(), requested_display_ids()[0]);
+
+  gfx::Rect secondary_position(1100, 10, 200, 200);
+  shell_surface->SetGeometry(secondary_position);
+  surface->Commit();
+  EXPECT_EQ(secondary_position, window->GetBoundsInScreen());
+
+  Reset();
+
+  // Moving to the outside of another display. It should first try to
+  // move to outside, then move it back to inside.
+  EXPECT_TRUE(ash::wm::MoveWindowToDisplay(window, primary_display.id()));
+  EXPECT_EQ(root_windows[0], window->GetRootWindow());
+  ASSERT_EQ(2, bounds_change_count());
+  // Should fit in the primary display.
+  EXPECT_EQ(gfx::Rect(700, 10, 200, 200), requested_bounds()[0]);
+  EXPECT_EQ(primary_display.id(), requested_display_ids()[0]);
+
+  EXPECT_EQ(gfx::Rect(374, 10, 200, 200), requested_bounds()[1]);
+  EXPECT_EQ(primary_display.id(), requested_display_ids()[1]);
 }
 
 TEST_F(ClientControlledShellSurfaceTest, CaptionButtonModel) {
