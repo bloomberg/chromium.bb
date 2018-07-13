@@ -303,8 +303,6 @@ void SearchBoxView::OnWallpaperProminentColorsReceived(
 
   SetSearchBoxColor(
       prominent_colors[static_cast<int>(ColorProfileType::DARK_MUTED)]);
-  SetBackgroundColor(
-      prominent_colors[static_cast<int>(ColorProfileType::LIGHT_VIBRANT)]);
   UpdateSearchIcon();
   close_button()->SetImage(
       views::Button::STATE_NORMAL,

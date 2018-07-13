@@ -51,7 +51,7 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);
 
-  // Transits the UI from folder view to root lelve apps grid view when
+  // Transits the UI from folder view to root level apps grid view when
   // re-parenting a child item of |folder_item|.
   void ReparentFolderItemTransit(AppListFolderItem* folder_item);
 

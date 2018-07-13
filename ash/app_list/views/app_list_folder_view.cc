@@ -505,7 +505,7 @@ void AppListFolderView::ScheduleShowHideAnimation(bool show,
 
   items_grid_view_->pagination_model()->SelectPage(0, false);
 
-  // Animate the background corner raidus, opacity and bounds.
+  // Animate the background corner radius, opacity and bounds.
   background_animation_ = std::make_unique<BackgroundAnimation>(show, this);
   background_animation_->Show();
 
