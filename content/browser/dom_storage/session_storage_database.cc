@@ -19,6 +19,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
+#include "content/browser/dom_storage/session_storage_metadata.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -492,7 +493,24 @@ leveldb::Status SessionStorageDatabase::TryToOpen(
   // delete the old database here before we open it.
   leveldb::DestroyDB(db_name, options);
 #endif
-  return leveldb_env::OpenDB(options, db_name, db);
+  leveldb::Status s = leveldb_env::OpenDB(options, db_name, db);
+  if (!s.ok())
+    return s;
+
+  // If there is a version entry from the new implementation, treat the database
+  // as corrupt.
+  leveldb::Slice version_key =
+      leveldb::Slice(reinterpret_cast<const char*>(
+                         SessionStorageMetadata::kDatabaseVersionBytes),
+                     sizeof(SessionStorageMetadata::kDatabaseVersionBytes));
+  std::string dummy;
+  s = (*db)->Get(leveldb::ReadOptions(), version_key, &dummy);
+  if (s.IsNotFound())
+    return leveldb::Status::OK();
+
+  db->reset();
+  return leveldb::Status::Corruption(
+      "Cannot read a database that is a higher schema version.", dummy);
 }
 
 bool SessionStorageDatabase::IsOpen() const {
