@@ -490,7 +490,8 @@ TEST_F(MediaStreamAudioProcessorTest, TestAec3Switch_AecOff) {
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new rtc::RefCountedObject<WebRtcAudioDeviceImpl>());
   AudioProcessingProperties properties;
-  properties.enable_sw_echo_cancellation = false;
+  properties.echo_cancellation_type = AudioProcessingProperties::
+      EchoCancellationType::kEchoCancellationDisabled;
   scoped_refptr<MediaStreamAudioProcessorUnderTest> audio_processor(
       new rtc::RefCountedObject<MediaStreamAudioProcessorUnderTest>(
           properties, webrtc_audio_device.get()));

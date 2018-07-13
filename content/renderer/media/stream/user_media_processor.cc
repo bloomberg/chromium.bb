@@ -47,6 +47,7 @@
 #include "url/origin.h"
 
 namespace content {
+
 namespace {
 
 void CopyFirstString(const blink::StringConstraint& constraint,
@@ -102,29 +103,31 @@ void SurfaceAudioProcessingSettings(blink::WebMediaStreamSource* source) {
   MediaStreamAudioSource* source_impl =
       static_cast<MediaStreamAudioSource*>(source->GetExtraData());
   bool sw_echo_cancellation = false, auto_gain_control = false,
-       noise_supression = false, hw_echo_cancellation = false;
+       noise_supression = false, system_echo_cancellation = false;
   if (ProcessedLocalAudioSource* processed_source =
           ProcessedLocalAudioSource::From(source_impl)) {
     AudioProcessingProperties properties =
         processed_source->audio_processing_properties();
-    sw_echo_cancellation = properties.enable_sw_echo_cancellation;
+    sw_echo_cancellation = properties.EchoCancellationIsWebRtcProvided();
     auto_gain_control = properties.goog_auto_gain_control;
     noise_supression = properties.goog_noise_suppression;
     // The ECHO_CANCELLER flag will be set if either:
     // - The device advertises the ECHO_CANCELLER flag and
-    //   disable_hw_echo_cancellation is false; or if
+    //   echo_cancellation_type is kEchoCancellationDisabled or
+    //   kEchoCancellationAec2 (that is, system ec is disabled);
+    //   or if
     // - The device advertises the EXPERIMENTAL_ECHO_CANCELLER flag and
-    //   enable_experimental_hw_echo_cancellation is true.
+    //   echo_cancellation_type is kEchoCancellationSystem.
     // See: ProcessedLocalAudioSource::EnsureSourceIsStarted().
     const media::AudioParameters& params = processed_source->device().input;
-    hw_echo_cancellation =
+    system_echo_cancellation =
         params.IsValid() &&
         (params.effects() & media::AudioParameters::ECHO_CANCELLER);
   }
 
   using blink::WebMediaStreamSource;
   const WebMediaStreamSource::EchoCancellationMode echo_cancellation_mode =
-      hw_echo_cancellation
+      system_echo_cancellation
           ? WebMediaStreamSource::EchoCancellationMode::kHardware
           : sw_echo_cancellation
                 ? WebMediaStreamSource::EchoCancellationMode::kSoftware

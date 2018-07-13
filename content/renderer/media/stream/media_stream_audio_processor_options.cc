@@ -69,8 +69,7 @@ AudioProcessingProperties& AudioProcessingProperties::operator=(
     const AudioProcessingProperties& other) = default;
 
 void AudioProcessingProperties::DisableDefaultProperties() {
-  enable_sw_echo_cancellation = false;
-  disable_hw_echo_cancellation = false;
+  echo_cancellation_type = EchoCancellationType::kEchoCancellationDisabled;
   goog_auto_gain_control = false;
   goog_experimental_echo_cancellation = false;
   goog_typing_noise_detection = false;
@@ -78,6 +77,15 @@ void AudioProcessingProperties::DisableDefaultProperties() {
   goog_experimental_noise_suppression = false;
   goog_highpass_filter = false;
   goog_experimental_auto_gain_control = false;
+}
+
+bool AudioProcessingProperties::EchoCancellationEnabled() const {
+  return echo_cancellation_type !=
+         EchoCancellationType::kEchoCancellationDisabled;
+}
+
+bool AudioProcessingProperties::EchoCancellationIsWebRtcProvided() const {
+  return echo_cancellation_type == EchoCancellationType::kEchoCancellationAec2;
 }
 
 EchoInformation::EchoInformation()
