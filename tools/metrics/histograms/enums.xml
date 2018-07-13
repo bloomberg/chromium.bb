@@ -10034,6 +10034,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DidNavigateToAd">
+  <obsolete>
+    Removed July 2018.
+  </obsolete>
   <int value="0" label="Navigated to Non-Ad"/>
   <int value="1" label="Navigated to Ad"/>
 </enum>
