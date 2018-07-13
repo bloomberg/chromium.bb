@@ -10,7 +10,8 @@ import unittest
 import concurrent
 
 
-def _ForkTestHelper(test_instance, parent_pid, arg1, arg2, _=None):
+def _ForkTestHelper(arg1, arg2, pickle_me_not, test_instance, parent_pid):
+  _ = pickle_me_not  # Suppress lint warning.
   test_instance.assertNotEquals(os.getpid(), parent_pid)
   return arg1 + arg2
 
@@ -96,12 +97,13 @@ class ConcurrentTest(unittest.TestCase):
   def testForkAndCall_normal(self):
     parent_pid = os.getpid()
     result = concurrent.ForkAndCall(
-        _ForkTestHelper, (self, parent_pid, 1, 2, Unpicklable()))
+        _ForkTestHelper, (1, 2, Unpicklable(), self, parent_pid))
     self.assertEquals(3, result.get())
 
   def testForkAndCall_exception(self):
     parent_pid = os.getpid()
-    result = concurrent.ForkAndCall(_ForkTestHelper, (self, parent_pid, 1, 'a'))
+    result = concurrent.ForkAndCall(
+        _ForkTestHelper, (1, 'a', None, self, parent_pid))
     self.assertRaises(TypeError, result.get)
 
   def testBulkForkAndCall_none(self):
@@ -111,20 +113,35 @@ class ConcurrentTest(unittest.TestCase):
   def testBulkForkAndCall_few(self):
     parent_pid = os.getpid()
     results = concurrent.BulkForkAndCall(_ForkTestHelper, [
-        (self, parent_pid, 1, 2, Unpicklable()),
-        (self, parent_pid, 3, 4)])
+        (1, 2, Unpicklable(), self, parent_pid),
+        (3, 4, None, self, parent_pid)])
+    self.assertEquals({3, 7}, set(results))
+
+  def testBulkForkAndCall_few_kwargs(self):
+    parent_pid = os.getpid()
+    results = concurrent.BulkForkAndCall(_ForkTestHelper,
+        [(1, 2, Unpicklable()), (3, 4, None)],
+        test_instance=self, parent_pid=parent_pid)
     self.assertEquals({3, 7}, set(results))
 
   def testBulkForkAndCall_many(self):
     parent_pid = os.getpid()
-    args = [(self, parent_pid, 1, 2, Unpicklable())] * 100
+    args = [(1, 2, Unpicklable(), self, parent_pid) for _ in xrange(100)]
     results = concurrent.BulkForkAndCall(_ForkTestHelper, args)
+    self.assertEquals([3] * 100, list(results))
+
+  def testBulkForkAndCall_many_kwargs(self):
+    parent_pid = os.getpid()
+    args = [(1, 2) for _ in xrange(100)]
+    results = concurrent.BulkForkAndCall(
+        _ForkTestHelper, args, pickle_me_not=Unpicklable(), test_instance=self,
+        parent_pid=parent_pid)
     self.assertEquals([3] * 100, list(results))
 
   def testBulkForkAndCall_exception(self):
     parent_pid = os.getpid()
     results = concurrent.BulkForkAndCall(_ForkTestHelper, [
-        (self, parent_pid, 1, 'a')])
+        (1, 'a', self, parent_pid)])
     self.assertRaises(TypeError, results.next)
 
 if __name__ == '__main__':

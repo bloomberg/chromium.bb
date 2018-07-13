@@ -487,19 +487,21 @@ class _BulkObjectFileAnalyzerWorker(object):
       for path in paths:
         # Note: _ResolveStringPieces relies upon .a not being grouped.
         if path.endswith('.a'):
-          yield path, self._tool_prefix, self._output_directory
+          yield (path,)
         else:
           object_paths.append(path)
 
       BATCH_SIZE = 50  # Chosen arbitrarily.
       for i in xrange(0, len(object_paths), BATCH_SIZE):
         batch = object_paths[i:i + BATCH_SIZE]
-        yield batch, self._tool_prefix, self._output_directory
+        yield (batch,)
 
     params = list(iter_job_params())
     # Order of the jobs doesn't matter since each job owns independent paths,
     # and our output is a dict where paths are the key.
-    results = concurrent.BulkForkAndCall(_RunNmOnIntermediates, params)
+    results = concurrent.BulkForkAndCall(
+        _RunNmOnIntermediates, params, tool_prefix=self._tool_prefix,
+        output_directory=self._output_directory)
 
     # Names are still mangled.
     all_paths_by_name = self._paths_by_name
@@ -530,12 +532,13 @@ class _BulkObjectFileAnalyzerWorker(object):
         (addr - adjust, s) for addr, s in elf_string_positions)
     string_data = _ReadFileChunks(elf_path, abs_string_positions)
 
-    params = (
-        (chunk, string_data, self._tool_prefix, self._output_directory)
+    params = ((chunk,)
         for chunk in self._encoded_string_addresses_by_path_chunks)
     # Order of the jobs doesn't matter since each job owns independent paths,
     # and our output is a dict where paths are the key.
-    results = concurrent.BulkForkAndCall(_ResolveStringPieces, params)
+    results = concurrent.BulkForkAndCall(
+        _ResolveStringPieces, params, string_data=string_data,
+        tool_prefix=self._tool_prefix, output_directory=self._output_directory)
     results = list(results)
 
     final_result = []
