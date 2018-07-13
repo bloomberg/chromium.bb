@@ -438,7 +438,7 @@ void PanelLayoutManager::SetChildBounds(Window* child,
   }
 
   SetChildBoundsDirect(child, bounds);
-  wm::SnapWindowToPixelBoundary(child);
+  ::wm::SnapWindowToPixelBoundary(child);
   Relayout();
 }
 

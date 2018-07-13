@@ -6,6 +6,7 @@
 
 namespace wm {
 
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSnapChildrenToPixelBoundary, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);
 
 }  // namespace wm

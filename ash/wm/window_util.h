@@ -79,9 +79,6 @@ ASH_EXPORT bool MoveWindowToDisplay(aura::Window* window, int64_t display_id);
 ASH_EXPORT bool MoveWindowToEventRoot(aura::Window* window,
                                       const ui::Event& event);
 
-// Snap the window's layer to physical pixel boundary.
-ASH_EXPORT void SnapWindowToPixelBoundary(aura::Window* window);
-
 // Mark the container window so that InstallSnapLayoutManagerToContainers
 // installs the SnapToPixelLayoutManager.
 ASH_EXPORT void SetSnapsChildrenToPhysicalPixelBoundary(

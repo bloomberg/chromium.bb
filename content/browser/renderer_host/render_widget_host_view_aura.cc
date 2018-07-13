@@ -98,6 +98,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/scoped_tooltip_disabler.h"
 #include "ui/wm/public/tooltip_client.h"
@@ -2137,15 +2138,8 @@ void RenderWidgetHostViewAura::SnapToPhysicalPixelBoundary() {
   // to avoid the web contents area looking blurry we translate the web contents
   // in the +x, +y direction to land on the nearest pixel boundary. This may
   // cause the bottom and right edges to be clipped slightly, but that's ok.
-#if defined(OS_CHROMEOS)
-  aura::Window* snapped = window_->GetToplevelWindow();
-#else
-  aura::Window* snapped = window_->GetRootWindow();
-#endif
-
-  if (snapped && snapped != window_)
-    ui::SnapLayerToPhysicalPixelBoundary(snapped->layer(), window_->layer());
-
+  // We want to snap it to the nearest ancestor.
+  wm::SnapWindowToPixelBoundary(window_);
   has_snapped_to_boundary_ = true;
 }
 
