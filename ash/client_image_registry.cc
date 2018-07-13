@@ -19,7 +19,8 @@ const gfx::ImageSkia* ClientImageRegistry::GetImage(
     const base::UnguessableToken& token) const {
   auto iter = images_.find(token);
   if (iter == images_.end()) {
-    NOTREACHED();
+    // No DCHECK here as otherwise ash would crash if a bad client supplies a
+    // random value.
     return nullptr;
   }
 
