@@ -100,7 +100,7 @@ TEST_F(ThirdPartyConflictsManagerTest, InitializeBothUpdaters) {
 
   ASSERT_TRUE(final_state().has_value());
   EXPECT_EQ(final_state().value(),
-            ThirdPartyConflictsManager::State::kInitialized);
+            ThirdPartyConflictsManager::State::kWarningAndBlockingInitialized);
 }
 
 TEST_F(ThirdPartyConflictsManagerTest, InvalidModuleList) {

@@ -87,10 +87,13 @@ class ThirdPartyConflictsManager
     // The initialization failed because there was no Module List version
     // available to install.
     kNoModuleListAvailableFailure,
-    // The instance is initialized. If their respective feature is enabled, the
-    // |incompatible_applications_updater_| & |module_blacklist_cache_updater_|
-    // instances are initialized.
-    kInitialized,
+    // Only the IncompatibleApplicationsWarning feature is enabled and active.
+    kWarningInitialized,
+    // Only the ThirdPartyModulesBlocking feature is enabled and active.
+    kBlockingInitialized,
+    // Both the IncompatibleApplicationsWarning and ThirdPartyModulesBlocking
+    // features are enabled and active.
+    kWarningAndBlockingInitialized,
     // The instance is about to be deleted.
     kDestroyed,
   };
