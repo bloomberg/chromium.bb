@@ -209,6 +209,7 @@ DirectoryItem.prototype = {
 DirectoryItem.prototype.updateSubElementsFromList = function(recursive) {
   var index = 0;
   var tree = this.parentTree_;
+  var item;
   while (this.entries_[index]) {
     var currentEntry = this.entries_[index];
     var currentElement = this.items[index];
@@ -217,7 +218,14 @@ DirectoryItem.prototype.updateSubElementsFromList = function(recursive) {
         currentEntry) || '';
 
     if (index >= this.items.length) {
-      var item = new SubDirectoryItem(label, currentEntry, this, tree);
+      // If currentEntry carries its navigationModel we generate an item
+      // accordingly. Used for Crostini when displayed within My Files.
+      if (currentEntry.navigationModel) {
+        item = DirectoryTree.createDirectoryItem(
+            currentEntry.navigationModel, tree);
+      } else {
+        item = new SubDirectoryItem(label, currentEntry, this, tree);
+      }
       this.add(item);
       index++;
     } else if (util.isSameEntry(currentEntry, currentElement.entry)) {
@@ -237,7 +245,14 @@ DirectoryItem.prototype.updateSubElementsFromList = function(recursive) {
       }
       index++;
     } else if (currentEntry.toURL() < currentElement.entry.toURL()) {
-      var item = new SubDirectoryItem(label, currentEntry, this, tree);
+      // If currentEntry carries its navigationModel we generate an item
+      // accordingly. Used for Crostini when displayed within My Files.
+      if (currentEntry.navigationModel) {
+        item = DirectoryTree.createDirectoryItem(
+            currentEntry.navigationModel, tree);
+      } else {
+        item = new SubDirectoryItem(label, currentEntry, this, tree);
+      }
       this.addAt(item, index);
       index++;
     } else if (currentEntry.toURL() > currentElement.entry.toURL()) {
@@ -556,6 +571,10 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
   var location = tree.volumeManager.getLocationInfo(item.entry);
   if (location && location.rootType && location.isRootEntry) {
     icon.setAttribute('volume-type-icon', location.rootType);
+    if (window.IN_TEST && location.volumeInfo) {
+      item.setAttribute(
+          'volume-type-for-testing', location.volumeInfo.volumeType);
+    }
   } else {
     icon.setAttribute('file-type-icon', 'folder');
     item.updateSharedStatusIcon();
@@ -677,7 +696,7 @@ EntryListItem.prototype.updateSubDirectories = function(
   if (this.entry && this.entry.children) {
     for (let childEntry of this.entry.children) {
       if (childEntry instanceof VolumeEntry) {
-        // For VolumeEntry we wan't to display its root.
+        // For VolumeEntry we want to display its root.
         this.entries_.push(childEntry.rootEntry);
       } else {
         this.entries_.push(childEntry);
@@ -1359,6 +1378,11 @@ FakeItem.prototype.updateSubDirectories = function(
   return opt_successCallback && opt_successCallback();
 };
 
+/**
+ * FakeItem doesn't really have shared status/icon so we define here as no-op.
+ */
+FakeItem.prototype.updateSharedStatusIcon = function() {};
+
 ////////////////////////////////////////////////////////////////////////////////
 // DirectoryTree
 
@@ -1572,14 +1596,20 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
   // Starts with TOP_SECTION so first section doesn't get the separator line.
   var previousSection = NavigationSection.TOP;
   while (modelIndex < this.dataModel.length) {
+    const currentItem = this.items[itemIndex];
     if (itemIndex < this.items.length &&
-        this.items[itemIndex].modelItem === this.dataModel.item(modelIndex)) {
-      var modelItem = this.items[itemIndex].modelItem;
+        currentItem.modelItem === this.dataModel.item(modelIndex)) {
+      var modelItem = currentItem.modelItem;
       if (previousSection !== modelItem.section)
-        this.items[itemIndex].setAttribute('section-start', previousSection);
+        currentItem.setAttribute('section-start', previousSection);
       previousSection = modelItem.section;
-      if (recursive && this.items[itemIndex] instanceof VolumeItem)
-        this.items[itemIndex].updateSubDirectories(true);
+      if (recursive && currentItem instanceof VolumeItem)
+        currentItem.updateSubDirectories(true);
+      // EntryListItem can contain volumes that might have been updated: ask
+      // them to re-draw. It only needs to update the first level of children,
+      // so it doesn't need to be recursive.
+      if (currentItem instanceof EntryListItem)
+        currentItem.updateSubDirectories(false);
     } else {
       var modelItem = this.dataModel.item(modelIndex);
       if (modelItem) {

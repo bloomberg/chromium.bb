@@ -12,7 +12,7 @@ testcase.showMyFiles = function() {
     'Recent: FakeItem',
     'My Files: EntryListItem',
     'Downloads: SubDirectoryItem',
-    'Linux Files: SubDirectoryItem',
+    'Linux Files: FakeItem',
     'Google Drive: DriveVolumeItem',
     'My Drive: SubDirectoryItem',
     'Shared with me: SubDirectoryItem',
