@@ -42,6 +42,7 @@
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/rsa.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
@@ -140,7 +141,8 @@ void EnterWrongPin(chromeos::CertificateProviderService* service) {
   // Check that we have an error message displayed.
   chromeos::RequestPinView* view =
       service->pin_dialog_manager()->active_view_for_testing();
-  EXPECT_EQ(SK_ColorRED, view->error_label_for_testing()->enabled_color());
+  EXPECT_EQ(gfx::kGoogleRed600,
+            view->error_label_for_testing()->enabled_color());
 }
 
 class CertificateProviderApiTest : public extensions::ExtensionApiTest {
