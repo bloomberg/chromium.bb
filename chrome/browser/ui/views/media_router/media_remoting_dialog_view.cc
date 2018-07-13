@@ -4,8 +4,13 @@
 
 #include "chrome/browser/ui/views/media_router/media_remoting_dialog_view.h"
 
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/layout/box_layout.h"
@@ -14,9 +19,47 @@
 namespace media_router {
 
 // static
-void MediaRemotingDialogView::ShowDialog(views::View* anchor_view) {
-  DCHECK(!instance_);
-  instance_ = new MediaRemotingDialogView(anchor_view);
+void MediaRemotingDialogView::GetPermission(content::WebContents* web_contents,
+                                            PermissionCallback callback) {
+  HideDialog();  // Close the previous dialog if it is still showing.
+
+  DCHECK(web_contents);
+  DCHECK(callback);
+
+  // Check whether user has set the permission.
+  PrefService* const pref_service =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext())
+          ->GetPrefs();
+  DCHECK(pref_service);
+  const PrefService::Preference* pref =
+      pref_service->FindPreference(prefs::kMediaRouterMediaRemotingEnabled);
+  if (pref && !pref->IsDefaultValue()) {
+    std::move(callback).Run(pref->GetValue()->GetBool());
+    return;
+  }
+
+  // Show dialog.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser) {
+    std::move(callback).Run(false);
+    return;
+  }
+  BrowserActionsContainer* browser_actions =
+      BrowserView::GetBrowserViewForBrowser(browser)
+          ->toolbar()
+          ->browser_actions();
+  // |browser_actions| may be null in toolbar-less browser windows.
+  // TODO(takumif): Show the dialog at some default position if the toolbar is
+  // missing.
+  if (!browser_actions) {
+    std::move(callback).Run(false);
+    return;
+  }
+  views::View* anchor_view = browser_actions->GetViewForId(
+      ComponentToolbarActionsFactory::kMediaRouterActionId);
+
+  instance_ = new MediaRemotingDialogView(anchor_view, pref_service,
+                                          std::move(callback));
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(instance_);
   widget->Show();
@@ -59,21 +102,17 @@ int MediaRemotingDialogView::GetDialogButtons() const {
 }
 
 bool MediaRemotingDialogView::Accept() {
-  // TODO(https://crbug.com/849020): Notify the Media Remoting feature that it
-  // should be enabled.
-  bool should_close_dialog = true;
-  return should_close_dialog;
+  ReportPermission(true);
+  return true;
 }
 
 bool MediaRemotingDialogView::Cancel() {
-  // TODO(https://crbug.com/849020): Notify the Media Remoting feature that it
-  // shouldn't be enabled.
-  bool should_close_dialog = true;
-  return should_close_dialog;
+  ReportPermission(false);
+  return true;
 }
 
 bool MediaRemotingDialogView::Close() {
-  return Cancel();
+  return true;
 }
 
 gfx::Size MediaRemotingDialogView::CalculatePreferredSize() const {
@@ -82,10 +121,15 @@ gfx::Size MediaRemotingDialogView::CalculatePreferredSize() const {
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
-MediaRemotingDialogView::MediaRemotingDialogView(views::View* anchor_view)
+MediaRemotingDialogView::MediaRemotingDialogView(views::View* anchor_view,
+                                                 PrefService* pref_service,
+                                                 PermissionCallback callback)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+      permission_callback_(std::move(callback)),
+      pref_service_(pref_service),
       dialog_title_(
           l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_REMOTING_DIALOG_TITLE)) {
+  DCHECK(pref_service_);
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 }
@@ -108,6 +152,14 @@ void MediaRemotingDialogView::Init() {
 void MediaRemotingDialogView::WindowClosing() {
   if (instance_ == this)
     instance_ = nullptr;
+}
+
+void MediaRemotingDialogView::ReportPermission(bool allowed) {
+  DCHECK(remember_choice_checkbox_);
+  DCHECK(permission_callback_);
+  if (remember_choice_checkbox_->checked())
+    pref_service_->SetBoolean(prefs::kMediaRouterMediaRemotingEnabled, allowed);
+  std::move(permission_callback_).Run(allowed);
 }
 
 // static
