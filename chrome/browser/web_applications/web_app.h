@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "chrome/browser/shell_integration.h"
-#include "chrome/common/web_application_info.h"
+#include "ui/gfx/image/image_family.h"
+#include "url/gurl.h"
 
 class Profile;
 
@@ -25,10 +25,6 @@ class TaskRunner;
 
 namespace extensions {
 class Extension;
-}
-
-namespace gfx {
-class ImageFamily;
 }
 
 namespace user_prefs {
