@@ -102,7 +102,9 @@ class TestVRSystem : public IVRSystem {
   }
   ETrackedDeviceClass GetTrackedDeviceClass(
       TrackedDeviceIndex_t unDeviceIndex) override {
-    NOTIMPLEMENTED();
+    // Not yet implemented, but avoid calling NOTIMPLEMENTED() because it floods
+    // logs, and will be called to enumerate input devices.
+    // TODO(crbug.com/863487) - implement this and test input.
     return TrackedDeviceClass_Invalid;
   }
   bool IsTrackedDeviceConnected(TrackedDeviceIndex_t unDeviceIndex) override {

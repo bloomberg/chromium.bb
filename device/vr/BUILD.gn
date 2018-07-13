@@ -90,6 +90,8 @@ if (enable_vr) {
         "//third_party/openvr:openvr",
       ]
       sources += [
+        "openvr/openvr_api_wrapper.cc",
+        "openvr/openvr_api_wrapper.h",
         "openvr/openvr_device.cc",
         "openvr/openvr_device.h",
         "openvr/openvr_device_provider.cc",
