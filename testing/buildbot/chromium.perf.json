@@ -447,7 +447,8 @@
           "--browser=release_x64",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=win10_highdpi_shard_map.json"
+          "--test-shard-map-filename=win10_highdpi_shard_map.json",
+          "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -661,7 +662,8 @@
           "--browser=release_x64",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=win7_nvidia_shard_map.json"
+          "--test-shard-map-filename=win7_nvidia_shard_map.json",
+          "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -1322,7 +1324,8 @@
           "--browser=release",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=linux_perf_shard_map.json"
+          "--test-shard-map-filename=linux_perf_shard_map.json",
+          "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -1493,7 +1496,8 @@
           "--browser=release",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=mac_1012_low_end_26_shard_map.json"
+          "--test-shard-map-filename=mac_1012_low_end_26_shard_map.json",
+          "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -1623,7 +1627,8 @@
           "--browser=release",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=mac_1013_high_end_26_shard_map.json"
+          "--test-shard-map-filename=mac_1013_high_end_26_shard_map.json",
+          "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -1794,7 +1799,8 @@
           "--browser=release_x64",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=win10_shard_map.json"
+          "--test-shard-map-filename=win10_shard_map.json",
+          "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
