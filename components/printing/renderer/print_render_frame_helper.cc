@@ -1280,13 +1280,20 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
                                         : printable_area_in_points.width();
         double printable_height = rotate ? printable_area_in_points.width()
                                          : printable_area_in_points.height();
-        double scale_width =
-            printable_width /
-            static_cast<double>(preset_options.uniform_page_size.width);
-        double scale_height =
-            printable_height /
-            static_cast<double>(preset_options.uniform_page_size.height);
-        fit_to_page_scale_factor = std::min(scale_width, scale_height);
+
+        // Ensure we do not divide by 0.
+        if (preset_options.uniform_page_size.width == 0 ||
+            preset_options.uniform_page_size.height == 0) {
+          fit_to_page_scale_factor = 0.0f;
+        } else {
+          double scale_width =
+              printable_width /
+              static_cast<double>(preset_options.uniform_page_size.width);
+          double scale_height =
+              printable_height /
+              static_cast<double>(preset_options.uniform_page_size.height);
+          fit_to_page_scale_factor = std::min(scale_width, scale_height);
+        }
       } else {
         fit_to_page_scale_factor = 0.0f;
       }
