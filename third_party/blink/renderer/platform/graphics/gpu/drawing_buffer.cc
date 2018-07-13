@@ -239,6 +239,10 @@ DrawingBuffer::ContextProviderWeakPtr() {
   return context_provider_->GetWeakPtr();
 }
 
+const DrawingBuffer::WebGLContextLimits& DrawingBuffer::webgl_context_limits() {
+  return webgl_context_limits_;
+}
+
 void DrawingBuffer::SetIsHidden(bool hidden) {
   if (is_hidden_ == hidden)
     return;
@@ -700,6 +704,10 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
 
   auto webgl_preferences =
       ContextProvider()->GetGpuFeatureInfo().webgl_preferences;
+  webgl_context_limits_.max_active_webgl_contexts =
+      webgl_preferences.max_active_webgl_contexts;
+  webgl_context_limits_.max_active_webgl_contexts_on_worker =
+      webgl_preferences.max_active_webgl_contexts_on_worker;
 
   int max_sample_count = 0;
   gl_->GetIntegerv(GL_MAX_SAMPLES_ANGLE, &max_sample_count);

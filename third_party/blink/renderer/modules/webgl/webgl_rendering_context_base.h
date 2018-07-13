@@ -1709,6 +1709,14 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool CopyRenderingResultsFromDrawingBuffer(CanvasResourceProvider*,
                                              SourceDrawingBuffer) const;
   void HoldReferenceToDrawingBuffer(DrawingBuffer*);
+
+  static void InitializeWebGLContextLimits(
+      const DrawingBuffer::WebGLContextLimits&);
+  static unsigned CurrentMaxGLContexts();
+
+  static bool webgl_context_limits_initialized_;
+  static unsigned max_active_webgl_contexts_;
+  static unsigned max_active_webgl_contexts_on_worker_;
 };
 
 // TODO(fserb): remove this.

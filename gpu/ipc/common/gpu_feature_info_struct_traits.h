@@ -107,6 +107,9 @@ struct StructTraits<gpu::mojom::WebglPreferencesDataView,
   static bool Read(gpu::mojom::WebglPreferencesDataView data,
                    gpu::WebglPreferences* out) {
     out->msaa_sample_count = data.msaa_sample_count();
+    out->max_active_webgl_contexts = data.max_active_webgl_contexts();
+    out->max_active_webgl_contexts_on_worker =
+        data.max_active_webgl_contexts_on_worker();
     return data.ReadAntiAliasingMode(&out->anti_aliasing_mode);
   }
 
@@ -117,6 +120,16 @@ struct StructTraits<gpu::mojom::WebglPreferencesDataView,
 
   static uint32_t msaa_sample_count(const gpu::WebglPreferences& prefs) {
     return prefs.msaa_sample_count;
+  }
+
+  static uint32_t max_active_webgl_contexts(
+      const gpu::WebglPreferences& prefs) {
+    return prefs.max_active_webgl_contexts;
+  }
+
+  static uint32_t max_active_webgl_contexts_on_worker(
+      const gpu::WebglPreferences& prefs) {
+    return prefs.max_active_webgl_contexts_on_worker;
   }
 };
 

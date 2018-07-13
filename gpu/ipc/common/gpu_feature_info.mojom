@@ -28,6 +28,8 @@ enum AntialiasingMode {
 struct WebglPreferences {
   AntialiasingMode anti_aliasing_mode;
   uint32 msaa_sample_count;
+  uint32 max_active_webgl_contexts;
+  uint32 max_active_webgl_contexts_on_worker;
 };
 
 // gpu:GpuFeatureInfo

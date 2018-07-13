@@ -19,12 +19,6 @@ const char kDisableGpuRasterization[] = "disable-gpu-rasterization";
 // impl-side painting.
 const char kEnableGpuRasterization[] = "enable-gpu-rasterization";
 
-// Passes encoded GpuPreferences to GPU process.
-const char kGpuPreferences[] = "gpu-preferences";
-
-// Ignores GPU blacklist.
-const char kIgnoreGpuBlacklist[] = "ignore-gpu-blacklist";
-
 // Select a different set of GPU blacklist entries with the specificed
 // test_group ID.
 const char kGpuBlacklistTestGroup[] = "gpu-blacklist-test-group";
@@ -32,6 +26,16 @@ const char kGpuBlacklistTestGroup[] = "gpu-blacklist-test-group";
 // Select a different set of GPU driver bug list entries with the specificed
 // test_group ID.
 const char kGpuDriverBugListTestGroup[] = "gpu-driver-bug-list-test-group";
+
+// Passes encoded GpuPreferences to GPU process.
+const char kGpuPreferences[] = "gpu-preferences";
+
+// Ignores GPU blacklist.
+const char kIgnoreGpuBlacklist[] = "ignore-gpu-blacklist";
+
+// Allows user to override maximum number of active WebGL contexts per
+// renderer process.
+const char kMaxActiveWebGLContexts[] = "max-active-webgl-contexts";
 
 // Allows explicitly specifying the shader disk cache size for embedded devices.
 // Default value is 6MB. On Android, 2MB is default and 128KB for low-end

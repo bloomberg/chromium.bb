@@ -25,6 +25,10 @@ const size_t kDefaultMaxProgramCacheMemoryBytes = 2 * 1024 * 1024;
 const size_t kLowEndMaxProgramCacheMemoryBytes = 128 * 1024;
 #endif
 
+// NOTE: if you modify this structure then you must also modify the
+// following two files to keep them in sync:
+//   src/gpu/ipc/common/gpu_preferences.mojom
+//   src/gpu/ipc/common/gpu_preferences_struct_traits.h
 struct GPU_EXPORT GpuPreferences {
  public:
   GpuPreferences();
@@ -150,6 +154,13 @@ struct GPU_EXPORT GpuPreferences {
   // Emulate ESSL lowp and mediump float precisions by mutating the shaders to
   // round intermediate values in ANGLE.
   bool emulate_shader_precision = false;
+
+  // ===================================
+  // Settings from //gpu/config/gpu_switches.h
+
+  // Allows user to override the maximum number of WebGL contexts. A value of 0
+  // uses the defaults, which are encoded in the GPU process's code.
+  uint32_t max_active_webgl_contexts = 0;
 
   // ===================================
   // Settings from //ui/gl/gl_switches.h
