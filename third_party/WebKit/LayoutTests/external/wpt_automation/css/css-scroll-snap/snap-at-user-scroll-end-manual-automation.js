@@ -17,9 +17,9 @@ function waitForAnimationEnd() {
   var last_window_y = window.scrollY;
   return new Promise((resolve, reject) => {
     function tick(frames) {
-      // We requestAnimationFrame either for 500 frames or until 5 frames with
+      // We requestAnimationFrame either for 500 frames or until 15 frames with
       // no change have been observed.
-      if (frames >= MAX_FRAME || frames - last_changed_frame > 5) {
+      if (frames >= MAX_FRAME || frames - last_changed_frame > 15) {
         resolve();
       } else {
         if (window.scrollX != last_window_x ||
@@ -36,9 +36,10 @@ function waitForAnimationEnd() {
 }
 
 function inject_input() {
-  return smoothScroll(2, 20, 20, 'downright', 4000).then(() => {
+  return smoothScroll(100, 20, 20, 'downright', 4000).then(() => {
     return waitForAnimationEnd();
   }).then(() => {
-    return mouseClickInTarget('#btn');
+    return mouseClickInTarget('#btn', undefined, 'left',
+        /* shouldScrollToTarget = */ false);
   });
 }
