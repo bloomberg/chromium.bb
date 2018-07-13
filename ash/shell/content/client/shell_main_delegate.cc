@@ -14,8 +14,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "components/services/font/font_service_app.h"
-#include "components/services/font/public/interfaces/constants.mojom.h"
 #include "content/public/utility/content_utility_client.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/ui/ime/test_ime_driver/public/mojom/constants.mojom.h"
@@ -26,10 +24,6 @@
 namespace ash {
 namespace shell {
 namespace {
-
-std::unique_ptr<service_manager::Service> CreateFontService() {
-  return std::make_unique<font_service::FontServiceApp>();
-}
 
 std::unique_ptr<service_manager::Service> CreateQuickLaunch() {
   return std::make_unique<quick_launch::QuickLaunchApplication>();
@@ -55,11 +49,6 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
 
   // ContentUtilityClient:
   void RegisterServices(StaticServiceMap* services) override {
-    {
-      service_manager::EmbeddedServiceInfo info;
-      info.factory = base::BindRepeating(&CreateFontService);
-      (*services)[font_service::mojom::kServiceName] = info;
-    }
     {
       service_manager::EmbeddedServiceInfo info;
       info.factory = base::BindRepeating(&CreateQuickLaunch);

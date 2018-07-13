@@ -21,7 +21,6 @@
 #include "base/json/json_reader.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/services/font/public/interfaces/constants.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
@@ -80,7 +79,6 @@ ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
 std::vector<content::ContentBrowserClient::ServiceManifestInfo>
 ShellContentBrowserClient::GetExtraServiceManifests() {
   return {
-      {font_service::mojom::kServiceName, IDR_ASH_SHELL_FONT_SERVICE_MANIFEST},
       {quick_launch::mojom::kServiceName, IDR_ASH_SHELL_QUICK_LAUNCH_MANIFEST},
       {shortcut_viewer::mojom::kServiceName,
        IDR_ASH_SHELL_SHORTCUT_VIEWER_MANIFEST},
@@ -93,8 +91,6 @@ ShellContentBrowserClient::GetExtraServiceManifests() {
 
 void ShellContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
-  (*services)[font_service::mojom::kServiceName] = base::BindRepeating(
-      &base::ASCIIToUTF16, font_service::mojom::kServiceName);
   (*services)[quick_launch::mojom::kServiceName] = base::BindRepeating(
       &base::ASCIIToUTF16, quick_launch::mojom::kServiceName);
   (*services)[shortcut_viewer::mojom::kServiceName] = base::BindRepeating(
