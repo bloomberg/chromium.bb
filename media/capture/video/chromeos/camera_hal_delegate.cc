@@ -287,7 +287,7 @@ void CameraHalDelegate::UpdateBuiltInCameraInfoOnIpcThread() {
 
 void CameraHalDelegate::OnGotNumberOfCamerasOnIpcThread(int32_t num_cameras) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  if (num_cameras <= 0) {
+  if (num_cameras < 0) {
     builtin_camera_info_updated_.Signal();
     LOG(ERROR) << "Failed to get number of cameras: " << num_cameras;
     return;
@@ -315,6 +315,12 @@ void CameraHalDelegate::OnSetCallbacksOnIpcThread(int32_t result) {
                << base::safe_strerror(-result);
     return;
   }
+
+  if (num_builtin_cameras_ == 0) {
+    builtin_camera_info_updated_.Signal();
+    return;
+  }
+
   for (size_t camera_id = 0; camera_id < num_builtin_cameras_; ++camera_id) {
     GetCameraInfoOnIpcThread(
         camera_id,
