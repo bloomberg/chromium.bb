@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_image_downloader.mojom.h"
 #include "ash/public/interfaces/assistant_setup.mojom.h"
@@ -27,7 +28,6 @@ class UnguessableToken;
 
 namespace ash {
 
-class AssistantControllerObserver;
 class AssistantInteractionController;
 class AssistantNotificationController;
 class AssistantScreenContextController;
@@ -35,6 +35,7 @@ class AssistantUiController;
 
 class ASH_EXPORT AssistantController
     : public mojom::AssistantController,
+      public AssistantControllerObserver,
       public mojom::ManagedWebContentsOpenUrlDelegate {
  public:
   AssistantController();
@@ -83,6 +84,9 @@ class ASH_EXPORT AssistantController
       mojom::WebContentsManagerPtr web_contents_manager) override;
   void RequestScreenshot(const gfx::Rect& rect,
                          RequestScreenshotCallback callback) override;
+
+  // AssistantControllerObserver:
+  void OnDeepLinkReceived(const GURL& deep_link) override;
 
   // mojom::ManagedWebContentsOpenUrlDelegate:
   void OnOpenUrlFromTab(const GURL& url) override;

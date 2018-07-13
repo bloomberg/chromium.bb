@@ -17,35 +17,39 @@ namespace ash {
 namespace assistant {
 namespace util {
 
-// Returns true if the specified |url| is a deep link, false otherwise.
-ASH_EXPORT bool IsDeepLinkUrl(const GURL& url);
-
-// Returns true if the specified |url| is an Assistant explore deep link,
-// false otherwise.
-ASH_EXPORT bool IsAssistantExploreDeepLink(const GURL& url);
-
-// Returns true if the specified |url| is an Assistant onboarding deep link,
-// false otherwise.
-ASH_EXPORT bool IsAssistantOnboardingDeepLink(const GURL& url);
-
-// Returns true if the specified |url| is an Assistant reminders deep link,
-// false otherwise.
-ASH_EXPORT bool IsAssistantRemindersDeepLink(const GURL& url);
+// Enumeration of deep link types.
+enum class DeepLinkType {
+  kUnsupported,
+  kExplore,
+  kFeedback,
+  kOnboarding,
+  kReminders,
+  kSettings,
+};
 
 // Returns a deep link to top level Assistant Settings.
 ASH_EXPORT GURL CreateAssistantSettingsDeepLink();
 
-// Returns true if the specified |url| is an Assistant Settings deep link, false
-// otherwise.
-ASH_EXPORT bool IsAssistantSettingsDeepLink(const GURL& url);
+// Returns the deep link type of the specified |url|. If the specified url is
+// not a supported deep link, DeepLinkType::kUnsupported is returned.
+ASH_EXPORT DeepLinkType GetDeepLinkType(const GURL& url);
+
+// Returns true if the specified |url| is a deep link of the given |type|.
+ASH_EXPORT bool IsDeepLinkType(const GURL& url, DeepLinkType type);
+
+// Returns true if the specified |url| is a deep link, false otherwise.
+ASH_EXPORT bool IsDeepLinkUrl(const GURL& url);
 
 // Returns the web URL for the specified |deep_link|. A return value will only
 // be present if |deep_link| is a web deep link as identified by the
 // IsWebDeepLink(GURL) API.
 ASH_EXPORT base::Optional<GURL> GetWebUrl(const GURL& deep_link);
 
-// Returns true if the specified |url| is a web deep link, false otherwise.
-ASH_EXPORT bool IsWebDeepLink(const GURL& url);
+// Returns true if the specified |deep_link| is a web deep link.
+ASH_EXPORT bool IsWebDeepLink(const GURL& deep_link);
+
+// Returns true if the specified deep link |type| is a web deep link.
+ASH_EXPORT bool IsWebDeepLinkType(DeepLinkType type);
 
 // Parses the specified |deep_link| for the values corresponding to the keys in
 // |params|. If a value for a key in |params| is found, it is inserted into the

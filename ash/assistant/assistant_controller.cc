@@ -28,11 +28,13 @@ AssistantController::AssistantController()
           std::make_unique<AssistantScreenContextController>(this)),
       assistant_ui_controller_(std::make_unique<AssistantUiController>(this)),
       weak_factory_(this) {
+  AddObserver(this);
   NotifyConstructed();
 }
 
 AssistantController::~AssistantController() {
   NotifyDestroying();
+  RemoveObserver(this);
 }
 
 void AssistantController::BindRequest(
@@ -141,6 +143,15 @@ void AssistantController::DownloadImage(
 
   AccountId account_id = user_session->user_info->account_id;
   assistant_image_downloader_->Download(account_id, url, std::move(callback));
+}
+
+void AssistantController::OnDeepLinkReceived(const GURL& deep_link) {
+  // TODO(dmblack): Possibly use a new FeedbackSource (this method defaults to
+  // kFeedbackSourceAsh). This may be useful for differentiating feedback UI and
+  // behavior for Assistant.
+  using assistant::util::DeepLinkType;
+  if (assistant::util::IsDeepLinkType(deep_link, DeepLinkType::kFeedback))
+    Shell::Get()->new_window_controller()->OpenFeedbackPage();
 }
 
 void AssistantController::OnOpenUrlFromTab(const GURL& url) {

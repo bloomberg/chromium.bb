@@ -4,6 +4,8 @@
 
 #include "ash/assistant/util/deep_link_util.h"
 
+#include <set>
+
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "url/gurl.h"
@@ -14,7 +16,9 @@ namespace util {
 
 namespace {
 
+// Supported deep link prefixes.
 constexpr char kAssistantExplorePrefix[] = "googleassistant://explore";
+constexpr char kAssistantFeedbackPrefix[] = "googleassistant://send-feedback";
 constexpr char kAssistantOnboardingPrefix[] = "googleassistant://onboarding";
 constexpr char kAssistantRemindersPrefix[] = "googleassistant://reminders";
 constexpr char kAssistantSettingsPrefix[] = "googleassistant://settings";
@@ -43,58 +47,71 @@ constexpr char kAssistantSettingsWebUrl[] = R"(data:text/html,
   </html>
 )";
 
+// Map of supported deep link types to their prefixes.
+const std::map<DeepLinkType, std::string> kSupportedDeepLinks = {
+    {DeepLinkType::kExplore, kAssistantExplorePrefix},
+    {DeepLinkType::kFeedback, kAssistantFeedbackPrefix},
+    {DeepLinkType::kOnboarding, kAssistantOnboardingPrefix},
+    {DeepLinkType::kReminders, kAssistantRemindersPrefix},
+    {DeepLinkType::kSettings, kAssistantSettingsPrefix}};
+
+// Set of deep link types which open web contents in the Assistant UI.
+const std::set<DeepLinkType> kWebDeepLinks = {
+    DeepLinkType::kExplore, DeepLinkType::kReminders, DeepLinkType::kSettings};
+
 }  // namespace
-
-bool IsDeepLinkUrl(const GURL& url) {
-  return IsAssistantExploreDeepLink(url) ||
-         IsAssistantOnboardingDeepLink(url) ||
-         IsAssistantRemindersDeepLink(url) || IsAssistantSettingsDeepLink(url);
-}
-
-bool IsAssistantExploreDeepLink(const GURL& url) {
-  return base::StartsWith(url.spec(), kAssistantExplorePrefix,
-                          base::CompareCase::SENSITIVE);
-}
-
-bool IsAssistantOnboardingDeepLink(const GURL& url) {
-  return base::StartsWith(url.spec(), kAssistantOnboardingPrefix,
-                          base::CompareCase::SENSITIVE);
-}
-
-bool IsAssistantRemindersDeepLink(const GURL& url) {
-  return base::StartsWith(url.spec(), kAssistantRemindersPrefix,
-                          base::CompareCase::SENSITIVE);
-}
 
 GURL CreateAssistantSettingsDeepLink() {
   return GURL(kAssistantSettingsPrefix);
 }
 
-bool IsAssistantSettingsDeepLink(const GURL& url) {
-  return base::StartsWith(url.spec(), kAssistantSettingsPrefix,
-                          base::CompareCase::SENSITIVE);
+DeepLinkType GetDeepLinkType(const GURL& url) {
+  for (const auto& supported_deep_link : kSupportedDeepLinks) {
+    if (base::StartsWith(url.spec(), supported_deep_link.second,
+                         base::CompareCase::SENSITIVE)) {
+      return supported_deep_link.first;
+    }
+  }
+  return DeepLinkType::kUnsupported;
+}
+
+bool IsDeepLinkType(const GURL& url, DeepLinkType type) {
+  return GetDeepLinkType(url) == type;
+}
+
+bool IsDeepLinkUrl(const GURL& url) {
+  return GetDeepLinkType(url) != DeepLinkType::kUnsupported;
 }
 
 base::Optional<GURL> GetWebUrl(const GURL& deep_link) {
-  if (!IsWebDeepLink(deep_link))
+  DeepLinkType type = GetDeepLinkType(deep_link);
+
+  if (!IsWebDeepLinkType(type))
     return base::nullopt;
 
-  if (IsAssistantExploreDeepLink(deep_link))
-    return GURL(kAssistantExploreWebUrl);
+  switch (type) {
+    case DeepLinkType::kExplore:
+      return GURL(kAssistantExploreWebUrl);
+    case DeepLinkType::kReminders:
+      return GURL(kAssistantRemindersWebUrl);
+    case DeepLinkType::kSettings:
+      return GURL(kAssistantSettingsWebUrl);
+    case DeepLinkType::kUnsupported:
+    case DeepLinkType::kFeedback:
+    case DeepLinkType::kOnboarding:
+      NOTREACHED();
+      return base::nullopt;
+  }
 
-  if (IsAssistantRemindersDeepLink(deep_link))
-    return GURL(kAssistantRemindersWebUrl);
-
-  if (IsAssistantSettingsDeepLink(deep_link))
-    return GURL(kAssistantSettingsWebUrl);
-
-  NOTIMPLEMENTED();
   return base::nullopt;
 }
 
-bool IsWebDeepLink(const GURL& url) {
-  return IsAssistantExploreDeepLink(url) || IsAssistantRemindersDeepLink(url) ||
-         IsAssistantSettingsDeepLink(url);
+bool IsWebDeepLink(const GURL& deep_link) {
+  return IsWebDeepLinkType(GetDeepLinkType(deep_link));
+}
+
+bool IsWebDeepLinkType(DeepLinkType type) {
+  return kWebDeepLinks.count(type) != 0;
 }
 
 bool ParseDeepLinkParams(const GURL& deep_link,
