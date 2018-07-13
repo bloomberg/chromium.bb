@@ -66,9 +66,9 @@ void WriteIntoPipe(int write_fd, const std::string& message) {
   }
 #if defined(OS_WIN)
   DWORD result = 0;
-  WriteFile(handle, "\n", 1, &result, nullptr);
+  WriteFile(handle, "\0", 1, &result, nullptr);
 #else
-  int result = write(write_fd, "\n", 1);
+  int result = write(write_fd, "\0", 1);
 #endif
   if (!result) {
     LOG(ERROR) << "Could not write into pipe";
@@ -145,11 +145,11 @@ bool PipeReader::HandleReadResult(int result) {
 
   read_buffer_->DidRead(result);
 
-  // Go over the last read chunk, look for \n, extract messages.
+  // Go over the last read chunk, look for \0, extract messages.
   int offset = 0;
   for (int i = read_buffer_->GetSize() - result; i < read_buffer_->GetSize();
        ++i) {
-    if (read_buffer_->StartOfBuffer()[i] == '\n') {
+    if (read_buffer_->StartOfBuffer()[i] == '\0') {
       std::string str(read_buffer_->StartOfBuffer() + offset, i - offset);
 
       BrowserThread::PostTask(
@@ -190,7 +190,8 @@ DevToolsPipeHandler::DevToolsPipeHandler()
     return;
   }
 
-  browser_target_ = DevToolsAgentHost::CreateForDiscovery();
+  browser_target_ = DevToolsAgentHost::CreateForBrowser(
+      nullptr, DevToolsAgentHost::CreateServerSocketCallback());
   browser_target_->AttachClient(this);
 
   pipe_reader_.reset(new PipeReader(weak_factory_.GetWeakPtr(), read_fd_));
