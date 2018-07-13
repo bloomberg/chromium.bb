@@ -17,30 +17,24 @@ namespace win {
 // tests.
 class DEVICE_BLUETOOTH_EXPORT BluetoothClassicWrapper {
  public:
-  static BluetoothClassicWrapper* GetInstance();
-  static void DeleteInstance();
-  static void SetInstanceForTest(BluetoothClassicWrapper* instance);
+  BluetoothClassicWrapper();
+  virtual ~BluetoothClassicWrapper();
 
   virtual HBLUETOOTH_RADIO_FIND FindFirstRadio(
-      const BLUETOOTH_FIND_RADIO_PARAMS* params,
-      HANDLE* out_handle);
-  virtual DWORD GetRadioInfo(HANDLE handle,
-                             PBLUETOOTH_RADIO_INFO out_radio_info);
+      const BLUETOOTH_FIND_RADIO_PARAMS* params);
+  virtual DWORD GetRadioInfo(PBLUETOOTH_RADIO_INFO out_radio_info);
   virtual BOOL FindRadioClose(HBLUETOOTH_RADIO_FIND handle);
-  virtual BOOL IsConnectable(HANDLE handle);
+  virtual BOOL IsConnectable();
   virtual HBLUETOOTH_DEVICE_FIND FindFirstDevice(
       const BLUETOOTH_DEVICE_SEARCH_PARAMS* params,
       BLUETOOTH_DEVICE_INFO* out_device_info);
   virtual BOOL FindNextDevice(HBLUETOOTH_DEVICE_FIND handle,
                               BLUETOOTH_DEVICE_INFO* out_device_info);
   virtual BOOL FindDeviceClose(HBLUETOOTH_DEVICE_FIND handle);
-  virtual BOOL EnableDiscovery(HANDLE handle, BOOL is_enable);
-  virtual BOOL EnableIncomingConnections(HANDLE handle, BOOL is_enable);
+  virtual BOOL EnableDiscovery(BOOL is_enable);
+  virtual BOOL EnableIncomingConnections(BOOL is_enable);
   virtual DWORD LastError();
-
- protected:
-  BluetoothClassicWrapper();
-  virtual ~BluetoothClassicWrapper();
+  virtual bool HasHandle();
 
  private:
   base::win::ScopedHandle opened_radio_handle_;

@@ -19,8 +19,6 @@
 
 namespace {
 
-static device::win::BluetoothLowEnergyWrapper* g_instance_ = nullptr;
-
 using device::win::DeviceRegistryPropertyValue;
 using device::win::DevicePropertyValue;
 using device::win::BluetoothLowEnergyDeviceInfo;
@@ -649,24 +647,6 @@ bool ExtractBluetoothAddressFromDeviceInstanceIdForTesting(
     BLUETOOTH_ADDRESS* btha,
     std::string* error) {
   return ExtractBluetoothAddressFromDeviceInstanceId(instance_id, btha, error);
-}
-
-BluetoothLowEnergyWrapper* BluetoothLowEnergyWrapper::GetInstance() {
-  if (g_instance_ == nullptr) {
-    g_instance_ = new BluetoothLowEnergyWrapper();
-  }
-  return g_instance_;
-}
-
-void BluetoothLowEnergyWrapper::DeleteInstance() {
-  delete g_instance_;
-  g_instance_ = nullptr;
-}
-
-void BluetoothLowEnergyWrapper::SetInstanceForTest(
-    BluetoothLowEnergyWrapper* instance) {
-  delete g_instance_;
-  g_instance_ = instance;
 }
 
 BluetoothLowEnergyWrapper::BluetoothLowEnergyWrapper() {}

@@ -190,7 +190,6 @@ BTH_LE_UUID CanonicalStringToBTH_LE_UUID(base::StringPiece uuid) {
 BluetoothTestWin::BluetoothTestWin()
     : ui_task_runner_(new base::TestSimpleTaskRunner()),
       bluetooth_task_runner_(new base::TestSimpleTaskRunner()),
-      fake_bt_classic_wrapper_(nullptr),
       fake_bt_le_wrapper_(nullptr) {}
 BluetoothTestWin::~BluetoothTestWin() {}
 
@@ -210,23 +209,28 @@ void BluetoothTestWin::InitWithDefaultAdapter() {
 void BluetoothTestWin::InitWithoutDefaultAdapter() {
   auto adapter =
       base::WrapRefCounted(new BluetoothAdapterWin(base::DoNothing()));
-  adapter->InitForTest(ui_task_runner_, bluetooth_task_runner_);
+  adapter->InitForTest(nullptr, nullptr, ui_task_runner_,
+                       bluetooth_task_runner_);
   adapter_ = std::move(adapter);
 }
 
 void BluetoothTestWin::InitWithFakeAdapter() {
-  fake_bt_classic_wrapper_ = new win::BluetoothClassicWrapperFake();
-  fake_bt_le_wrapper_ = new win::BluetoothLowEnergyWrapperFake();
-  fake_bt_le_wrapper_->AddObserver(this);
-  win::BluetoothClassicWrapper::SetInstanceForTest(fake_bt_classic_wrapper_);
-  win::BluetoothLowEnergyWrapper::SetInstanceForTest(fake_bt_le_wrapper_);
-  fake_bt_classic_wrapper_->SimulateARadio(
+  auto fake_bt_classic_wrapper =
+      std::make_unique<win::BluetoothClassicWrapperFake>();
+  fake_bt_classic_wrapper->SimulateARadio(
       base::SysUTF8ToWide(kTestAdapterName),
       CanonicalStringToBLUETOOTH_ADDRESS(kTestAdapterAddress));
 
+  auto fake_bt_le_wrapper =
+      std::make_unique<win::BluetoothLowEnergyWrapperFake>();
+  fake_bt_le_wrapper_ = fake_bt_le_wrapper.get();
+  fake_bt_le_wrapper_->AddObserver(this);
+
   auto adapter =
       base::WrapRefCounted(new BluetoothAdapterWin(base::DoNothing()));
-  adapter->InitForTest(nullptr, bluetooth_task_runner_);
+  adapter->InitForTest(std::move(fake_bt_classic_wrapper),
+                       std::move(fake_bt_le_wrapper), nullptr,
+                       bluetooth_task_runner_);
   adapter_ = std::move(adapter);
   FinishPendingTasks();
 }

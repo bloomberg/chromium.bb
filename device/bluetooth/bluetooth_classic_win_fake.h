@@ -25,21 +25,20 @@ class BluetoothClassicWrapperFake : public BluetoothClassicWrapper {
   ~BluetoothClassicWrapperFake() override;
 
   HBLUETOOTH_RADIO_FIND FindFirstRadio(
-      const BLUETOOTH_FIND_RADIO_PARAMS* params,
-      HANDLE* out_handle) override;
-  DWORD GetRadioInfo(HANDLE handle,
-                     PBLUETOOTH_RADIO_INFO out_radio_info) override;
+      const BLUETOOTH_FIND_RADIO_PARAMS* params) override;
+  DWORD GetRadioInfo(PBLUETOOTH_RADIO_INFO out_radio_info) override;
   BOOL FindRadioClose(HBLUETOOTH_RADIO_FIND handle) override;
-  BOOL IsConnectable(HANDLE handle) override;
+  BOOL IsConnectable() override;
   HBLUETOOTH_DEVICE_FIND FindFirstDevice(
       const BLUETOOTH_DEVICE_SEARCH_PARAMS* params,
       BLUETOOTH_DEVICE_INFO* out_device_info) override;
   BOOL FindNextDevice(HBLUETOOTH_DEVICE_FIND handle,
                       BLUETOOTH_DEVICE_INFO* out_device_info) override;
   BOOL FindDeviceClose(HBLUETOOTH_DEVICE_FIND handle) override;
-  BOOL EnableDiscovery(HANDLE handle, BOOL is_enable) override;
-  BOOL EnableIncomingConnections(HANDLE handle, BOOL is_enable) override;
+  BOOL EnableDiscovery(BOOL is_enable) override;
+  BOOL EnableIncomingConnections(BOOL is_enable) override;
   DWORD LastError() override;
+  bool HasHandle() override;
 
   BluetoothRadio* SimulateARadio(base::string16 name,
                                  BLUETOOTH_ADDRESS address);
