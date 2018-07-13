@@ -147,10 +147,6 @@ LocationBarView::LocationBarView(Browser* browser,
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
                  base::Unretained(this)));
-
-  // TODO(tommycli): This is a placeholder duration. Replace this with the real
-  // value once UX decides.
-  text_indent_animation_.SetSlideDuration(60);
 }
 
 LocationBarView::~LocationBarView() {}
@@ -477,7 +473,7 @@ void LocationBarView::Layout() {
   constexpr int kTextIndentDp = 12;
   int leading_edit_item_padding =
       ui::MaterialDesignController::IsRefreshUi()
-          ? text_indent_animation_.CurrentValueBetween(0, kTextIndentDp)
+          ? GetOmniboxPopupView()->IsOpen() ? kTextIndentDp : 0
           : item_padding;
   // We always subtract the left padding of the OmniboxView itself to allow for
   // an extended I-beam click target without affecting actual layout.
@@ -1202,9 +1198,6 @@ bool LocationBarView::CanStartDragForView(View* sender,
 void LocationBarView::AnimationProgressed(const gfx::Animation* animation) {
   if (animation == &size_animation_) {
     GetWidget()->non_client_view()->Layout();
-  } else if (animation == &text_indent_animation_) {
-    Layout();
-    SchedulePaint();
   } else if (animation == &hover_animation_) {
     RefreshBackground();
   } else {
@@ -1248,10 +1241,8 @@ void LocationBarView::OnPopupVisibilityChanged() {
     focus_ring_->SchedulePaint();
 
   if (ui::MaterialDesignController::IsRefreshUi()) {
-    if (GetOmniboxPopupView()->IsOpen())
-      text_indent_animation_.Show();
-    else
-      text_indent_animation_.Hide();
+    Layout();
+    SchedulePaint();
   }
 }
 

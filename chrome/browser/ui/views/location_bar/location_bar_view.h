@@ -455,9 +455,6 @@ class LocationBarView : public LocationBar,
   // Animation to control showing / hiding the location bar.
   gfx::SlideAnimation size_animation_{this};
 
-  // Animation to indent the text when opening the suggestions dropdown.
-  gfx::SlideAnimation text_indent_animation_{this};
-
   // Animation to change whole location bar background color on hover.
   gfx::SlideAnimation hover_animation_{this};
 
