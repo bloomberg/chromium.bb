@@ -497,10 +497,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
         if (mTabModelSelector == null) return;
 
         Tab currentTab = mTabModelSelector.getTabById(tabId);
-        if (currentTab == null || currentTab.getWebContents() == null
-                || currentTab.getContentViewCore() == null) {
-            return;
-        }
+        if (currentTab == null || currentTab.getWebContents() == null) return;
 
         DistillablePageUtils.setDelegate(
                 currentTab.getWebContents(), (isDistillable, isLast, isMobileOptimized) -> {

@@ -258,8 +258,8 @@ public class FindToolbar extends LinearLayout
                 // If we're called during onRestoreInstanceState() the current
                 // view won't have been set yet. TODO(husky): Find a better fix.
                 assert mCurrentTab != null;
-                assert mCurrentTab.getContentViewCore() != null;
-                if (mCurrentTab.getContentViewCore() == null) return;
+                assert mCurrentTab.getWebContents() != null;
+                if (mCurrentTab.getWebContents() == null) return;
 
                 if (s.length() > 0) {
                     // Don't clearResults() as that would cause flicker.
@@ -543,11 +543,11 @@ public class FindToolbar extends LinearLayout
     }
 
     /**
-     * Checks to see if a ContentViewCore is available to hook into.
+     * Checks to see if a WebContents is available to hook into.
      */
     protected boolean isWebContentAvailable() {
         Tab currentTab = mTabModelSelector.getCurrentTab();
-        return currentTab != null && currentTab.getContentViewCore() != null;
+        return currentTab != null && currentTab.getWebContents() != null;
     }
 
     /**
@@ -732,7 +732,7 @@ public class FindToolbar extends LinearLayout
 
     private void setResultsBarVisibility(boolean visibility) {
         if (visibility && mResultBar == null && mCurrentTab != null
-                && mCurrentTab.getContentViewCore() != null) {
+                && mCurrentTab.getWebContents() != null) {
             assert mFindInPageBridge != null;
 
             mResultBar = new FindResultBar(getContext(), mCurrentTab, mFindInPageBridge);

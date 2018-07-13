@@ -25,7 +25,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.DropdownPopupWindowInterface;
 import org.chromium.ui.R;
@@ -77,7 +76,6 @@ public class AutofillPopupWithKeyboardTest {
         new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
                 "John Smith", "Acme Inc", "1 Main\nApt A", "CA", "San Francisco", "", "94102", "",
                 "US", "(415) 888-9999", "john@acme.inc", "en"));
-        final AtomicReference<ContentViewCore> viewCoreRef = new AtomicReference<ContentViewCore>();
         final AtomicReference<WebContents> webContentsRef = new AtomicReference<WebContents>();
         final AtomicReference<ViewGroup> viewRef = new AtomicReference<ViewGroup>();
         ThreadUtils.runOnUiThreadBlocking(() -> {

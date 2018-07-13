@@ -110,8 +110,8 @@ public class TabLoadObserver extends EmptyTabObserver {
                 }
 
                 if (mExpectedScale != null) {
-                    if (mTab.getContentViewCore() == null) {
-                        updateFailureReason("tab has no content view core");
+                    if (mTab.getWebContents() == null) {
+                        updateFailureReason("tab has no web contents");
                         return false;
                     }
 

@@ -22,8 +22,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.OverlayPanelEventFilter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.TestContentViewCore;
-import org.chromium.content_public.browser.ContentViewCore;
 
 /**
  * Class responsible for testing the OverlayPanelEventFilter.
@@ -110,11 +108,9 @@ public class OverlayPanelEventFilterTest {
     private final class MockOverlayPanel extends OverlayPanel {
         private boolean mWasTapDetectedOnPanel = false;
         private boolean mWasScrollDetectedOnPanel = false;
-        private ContentViewCore mContentViewCore;
 
         public MockOverlayPanel(Context context, OverlayPanelManager panelManager) {
             super(context, null, panelManager);
-            mContentViewCore = new TestContentViewCore(context, "");
         }
 
         @Override

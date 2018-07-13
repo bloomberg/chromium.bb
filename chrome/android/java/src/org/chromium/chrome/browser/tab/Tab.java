@@ -103,7 +103,6 @@ import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.ChildProcessImportance;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.ImeAdapter;
@@ -193,13 +192,10 @@ public class Tab
     /** Controls overscroll pull-to-refresh behavior for this tab. */
     private SwipeRefreshHandler mSwipeRefreshHandler;
 
-    /** {@link ContentViewCore} showing the current page, or {@code null} if the tab is frozen. */
-    private ContentViewCore mContentViewCore;
-
     /** {@link WebContents} showing the current page, or {@code null} if the tab is frozen. */
     private WebContents mWebContents;
 
-    /** Listens to gesture events fired by the ContentViewCore. */
+    /** Listens to gesture events fired by the content layer. */
     private GestureStateListener mGestureStateListener;
 
     /** The parent view of the ContentView and the InfoBarContainer. */
@@ -1137,14 +1133,6 @@ public class Tab
     }
 
     /**
-     * @return The {@link ContentViewCore} associated with the current page, or {@code null} if
-     *         there is no current page or the current page is displayed using a native view.
-     */
-    public ContentViewCore getContentViewCore() {
-        return isNativePage() ? null : mContentViewCore;
-    }
-
-    /**
      * @return The {@link NativePage} associated with the current page, or {@code null} if there is
      *         no current page or the current page is displayed using something besides
      *         {@link NativePage}.
@@ -1162,7 +1150,7 @@ public class Tab
     }
 
     /**
-     * Set whether or not the {@link ContentViewCore} should be using a desktop user agent for the
+     * Set whether or not the content layer should be using a desktop user agent for the
      * currently loaded page.
      * @param useDesktop     If {@code true}, use a desktop user agent.  Otherwise use a mobile one.
      * @param reloadOnChange Reload the page if the user agent has changed.
@@ -1175,7 +1163,7 @@ public class Tab
     }
 
     /**
-     * @return Whether or not the {@link ContentViewCore} is using a desktop user agent.
+     * @return Whether or not the content layer is using a desktop user agent.
      */
     public boolean getUseDesktopUserAgent() {
         return getWebContents() != null
@@ -1358,7 +1346,7 @@ public class Tab
     }
 
     /**
-     * Hides the current {@link NativePage}, if any, and shows the {@link ContentViewCore}'s view.
+     * Hides the current {@link NativePage}, if any, and shows the {@link WebContents}'s view.
      */
     protected void showRenderedPage() {
         updateTitle();
@@ -1422,13 +1410,7 @@ public class Tab
                 }
             }
 
-            ContentViewCore contentViewCore = ContentViewCore.fromWebContents(webContents);
-
-            if (contentViewCore == null) {
-                initContentViewCore(webContents);
-            } else {
-                setContentViewCore(webContents, contentViewCore);
-            }
+            initWebContents(webContents);
 
             if (!creatingWebContents && webContents.isLoadingToDifferentDocument()) {
                 didStartPageLoad(webContents.getVisibleUrl(), false);
@@ -1535,7 +1517,7 @@ public class Tab
     /**
      * Finishes the tab reparenting process. Attaches the tab to the new activity, and updates the
      * tab and related objects to reference the new activity. This updates many delegates inside the
-     * tab and {@link ContentViewCore} both on java and native sides.
+     * tab and {@link WebContents} both on java and native sides.
      *
      * @param activity The new activity this tab should be associated with.
      * @param tabDelegateFactory The new delegate factory this tab should be using.
@@ -1557,7 +1539,7 @@ public class Tab
 
     /**
      * Attaches the tab to the new activity and updates the tab and related objects to reference the
-     * new activity. This updates many delegates inside the tab and {@link ContentViewCore} both on
+     * new activity. This updates many delegates inside the tab and {@link WebContents} both on
      * java and native sides.
      * TODO(ltian:) explore calling this for all types of tabs.
      *
@@ -1767,28 +1749,23 @@ public class Tab
     }
 
     /**
-     * Creates and initializes the {@link ContentViewCore}.
+     * initializes the {@link WebContents}.
      *
-     * @param webContents The WebContents object that will be used to build the
-     *                    {@link ContentViewCore}.
+     * @param webContents The WebContents object that will initialize all the browser components.
      */
-    protected void initContentViewCore(WebContents webContents) {
-        setContentViewCore(webContents, createContentViewCore(webContents));
-    }
-
-    private ContentViewCore createContentViewCore(WebContents webContents) {
+    protected void initWebContents(WebContents webContents) {
         ContentView cv = ContentView.createContentView(mThemedApplicationContext, webContents);
         cv.setContentDescription(mThemedApplicationContext.getResources().getString(
                 R.string.accessibility_content_view));
-        ContentViewCore cvc = ContentViewCore.create(mThemedApplicationContext, PRODUCT_VERSION,
-                webContents, new TabViewAndroidDelegate(this, cv), cv, getWindowAndroid());
+        webContents.initialize(mThemedApplicationContext, PRODUCT_VERSION,
+                new TabViewAndroidDelegate(this, cv), cv, getWindowAndroid());
         SelectionPopupController.fromWebContents(webContents)
                 .setActionModeCallback(new ChromeActionModeCallback(this, webContents));
-        return cvc;
+        initBrowserComponents(webContents);
     }
 
     /**
-     * Completes the {@link ContentViewCore} specific initialization around a native WebContents
+     * Completes the browser content components initialization around a native WebContents
      * pointer. {@link #getNativePage()} will still return the {@link NativePage} if there is one.
      * All initialization that needs to reoccur after a web contents swap should be added here.
      * <p />
@@ -1796,11 +1773,10 @@ public class Tab
      * state as this tab this call will fail.
      *
      * @param webContents The new web contents.
-     * @param cvc The new content view core.
      */
-    private void setContentViewCore(WebContents webContents, ContentViewCore cvc) {
+    private void initBrowserComponents(WebContents webContents) {
         try {
-            TraceEvent.begin("ChromeTab.setContentViewCore");
+            TraceEvent.begin("ChromeTab.initBrowserComponents");
             NativePage previousNativePage = mNativePage;
             mNativePage = null;
             destroyNativePageInternal(previousNativePage);
@@ -1813,8 +1789,7 @@ public class Tab
 
             mWebContents = webContents;
             ContentUtils.setUserAgentOverride(mWebContents);
-            mContentViewCore = cvc;
-            mContentView = webContents.getViewAndroidDelegate().getContainerView();
+            mContentView = mWebContents.getViewAndroidDelegate().getContainerView();
 
             mWebContents.setImportance(mImportance);
             mContentView.setOnHierarchyChangeListener(this);
@@ -1835,7 +1810,7 @@ public class Tab
                 }
             }
 
-            initWebContents(mWebContents, parentId);
+            initNativeWebContents(mWebContents, parentId);
 
             // In the case where restoring a Tab or showing a prerendered one we already have a
             // valid infobar container, no need to recreate one.
@@ -1883,11 +1858,11 @@ public class Tab
 
             getAppBannerManager().setIsEnabledForTab(mDelegateFactory.canShowAppBanners(this));
         } finally {
-            TraceEvent.end("ChromeTab.setContentViewCore");
+            TraceEvent.end("ChromeTab.initBrowserComponents");
         }
     }
 
-    private void initWebContents(WebContents webContents, int parentTabId) {
+    private void initNativeWebContents(WebContents webContents, int parentTabId) {
         assert mNativeTabAndroid != 0;
         nativeInitWebContents(mNativeTabAndroid, mIncognito, mIsDetached, webContents, parentTabId,
                 mWebContentsDelegate,
@@ -1950,7 +1925,7 @@ public class Tab
      * Constructs and shows a sad tab (Aw, Snap!).
      */
     protected void showSadTab() {
-        if (getContentViewCore() != null) {
+        if (getWebContents() != null) {
             // If the tab has crashed twice in a row change the sad tab view to the "Send Feedback"
             // version and change the onClickListener.
             final boolean showSendFeedbackView = mSadTabSuccessiveRefreshCounter >= 1;
@@ -2040,7 +2015,7 @@ public class Tab
     }
 
     /**
-     * Cleans up all internal state, destroying any {@link NativePage} or {@link ContentViewCore}
+     * Cleans up all internal state, destroying any {@link NativePage} or {@link WebContents}
      * currently associated with this {@link Tab}.  This also destroys the native counterpart
      * to this class, which means that all subclasses should erase their native pointers after
      * this method is called.  Once this call is made this {@link Tab} should no longer be used.
@@ -2060,7 +2035,7 @@ public class Tab
         NativePage currentNativePage = mNativePage;
         mNativePage = null;
         destroyNativePageInternal(currentNativePage);
-        destroyContentViewCore(true);
+        destroyWebContents(true);
 
         // Destroys the native tab after destroying the ContentView but before destroying the
         // InfoBarContainer. The native tab should be destroyed before the infobar container as
@@ -2096,7 +2071,7 @@ public class Tab
 
         // If we have a ContentView, or a NativePage, or the url is not empty, we have a WebContents
         // so cache the WebContent's url. If not use the cached version.
-        if (getContentViewCore() != null || getNativePage() != null || !TextUtils.isEmpty(url)) {
+        if (getWebContents() != null || isNativePage() || !TextUtils.isEmpty(url)) {
             mUrl = url;
         }
 
@@ -2116,9 +2091,9 @@ public class Tab
         if (isFrozen()) return;
 
         // When restoring the tabs, the title will no longer be populated, so request it from the
-        // ContentViewCore or NativePage (if present).
+        // WebContents or NativePage (if present).
         String title = "";
-        if (mNativePage != null) {
+        if (isNativePage()) {
             title = mNativePage.getTitle();
         } else if (getWebContents() != null) {
             title = getWebContents().getTitle();
@@ -2181,7 +2156,7 @@ public class Tab
      */
     public Bitmap getFavicon() {
         // If we have no content or a native page, return null.
-        if (getContentViewCore() == null) return null;
+        if (getWebContents() == null) return null;
 
         // Use the cached favicon only if the page wasn't changed.
         if (mFavicon != null && mFaviconUrl != null && mFaviconUrl.equals(getUrl())) {
@@ -2206,7 +2181,7 @@ public class Tab
 
         if (mPendingLoadParams != null) {
             assert isFrozen();
-            initContentViewCore(WebContentsFactory.createWebContents(isIncognito(), isHidden()));
+            initWebContents(WebContentsFactory.createWebContents(isIncognito(), isHidden()));
             loadUrl(mPendingLoadParams);
             mPendingLoadParams = null;
             return true;
@@ -2263,7 +2238,6 @@ public class Tab
         try {
             TraceEvent.begin("Tab.unfreezeContents");
             assert mFrozenContentsState != null;
-            assert getContentViewCore() == null;
 
             WebContents webContents =
                     mFrozenContentsState.restoreContentsFromByteBuffer(isHidden());
@@ -2279,7 +2253,7 @@ public class Tab
             webContents.setSize(compositorView.getWidth(), compositorView.getHeight());
 
             mFrozenContentsState = null;
-            initContentViewCore(webContents);
+            initWebContents(webContents);
 
             if (mFailedToRestore) {
                 String url = TextUtils.isEmpty(mUrl) ? UrlConstants.NTP_URL : mUrl;
@@ -2422,11 +2396,11 @@ public class Tab
     }
 
     /**
-     * Destroys the current {@link ContentViewCore}.
+     * Destroys the current {@link WebContents}.
      * @param deleteNativeWebContents Whether or not to delete the native WebContents pointer.
      */
-    private final void destroyContentViewCore(boolean deleteNativeWebContents) {
-        if (mContentViewCore == null) return;
+    private final void destroyWebContents(boolean deleteNativeWebContents) {
+        if (mWebContents == null) return;
 
         mContentView.setOnHierarchyChangeListener(null);
         mContentView.setOnSystemUiVisibilityChangeListener(null);
@@ -2448,7 +2422,6 @@ public class Tab
             manager.removeListener(mGestureStateListener);
         }
 
-        mContentViewCore = null;
         mWebContents = null;
         mWebContentsDelegate = null;
 
@@ -2572,8 +2545,6 @@ public class Tab
     @CalledByNative
     public void swapWebContents(
             WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
-        ContentViewCore contentViewCore = createContentViewCore(webContents);
-
         int originalWidth = 0;
         int originalHeight = 0;
         if (mContentView != null && mWebContents != null) {
@@ -2589,7 +2560,7 @@ public class Tab
             originalHeight = bounds.bottom - bounds.top;
         }
 
-        destroyContentViewCore(false /* do not delete native web contents */);
+        destroyWebContents(false /* do not delete native web contents */);
         NativePage previousNativePage = mNativePage;
         mNativePage = null;
 
@@ -2604,7 +2575,7 @@ public class Tab
                     mNativeTabAndroid, webContents, bounds.right, bounds.bottom);
         }
         webContents.onShow();
-        setContentViewCore(webContents, contentViewCore);
+        initWebContents(webContents);
 
         destroyNativePageInternal(previousNativePage);
         for (TabObserver observer : mObservers) {
@@ -2747,7 +2718,7 @@ public class Tab
      */
     @VisibleForTesting
     public boolean isFrozen() {
-        return getNativePage() == null && getContentViewCore() == null;
+        return !isNativePage() && getWebContents() == null;
     }
 
     /**

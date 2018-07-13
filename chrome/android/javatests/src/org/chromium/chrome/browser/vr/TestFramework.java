@@ -18,7 +18,6 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;
@@ -73,7 +72,6 @@ public class TestFramework {
 
     private ChromeActivityTestRule mRule;
     private WebContents mFirstTabWebContents;
-    private ContentViewCore mFirstTabCvc;
     private View mFirstTabContentView;
 
     /**
@@ -83,7 +81,6 @@ public class TestFramework {
     public TestFramework(ChromeActivityTestRule rule) {
         mRule = rule;
         mFirstTabWebContents = mRule.getWebContents();
-        mFirstTabCvc = mRule.getActivity().getActivityTab().getContentViewCore();
         mFirstTabContentView = mRule.getActivity().getActivityTab().getContentView();
         Assert.assertFalse("Test did not start in VR", VrShellDelegate.isInVr());
     }

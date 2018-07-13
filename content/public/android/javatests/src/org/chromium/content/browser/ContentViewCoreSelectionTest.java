@@ -60,7 +60,6 @@ public class ContentViewCoreSelectionTest {
             + "<input id=\"disabled_text\" type=\"text\" disabled value=\"Sample Text\" />"
             + "<div id=\"rich_div\" contentEditable=\"true\" >Rich Editor</div>"
             + "</form></body></html>");
-    private ContentViewCoreImpl mContentViewCore;
     private WebContents mWebContents;
     private SelectionPopupControllerImpl mSelectionPopupController;
 
@@ -107,7 +106,6 @@ public class ContentViewCoreSelectionTest {
         mActivityTestRule.launchContentShellWithUrl(DATA_URL);
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
-        mContentViewCore = mActivityTestRule.getContentViewCore();
         mWebContents = mActivityTestRule.getWebContents();
         mSelectionPopupController =
                 SelectionPopupControllerImpl.fromWebContents(mActivityTestRule.getWebContents());
