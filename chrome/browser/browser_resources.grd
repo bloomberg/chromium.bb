@@ -540,8 +540,14 @@
         <include name="IDR_ADDITIONAL_MODULE_IDS" file="${additional_modules_list_file}" use_base_dir="false" type="BINDATA" />
       </if>
       <if expr="chromeos">
-        <include name="IDR_SOUND_STARTUP_WAV" file="resources\chromeos\sounds\startup.wav" type="BINDATA" />
-        <include name="IDR_SOUND_STARTUP2_WAV" file="resources\chromeos\sounds\startup2.wav" type="BINDATA" />
+        <if expr="_google_chrome">
+          <then>
+            <include name="IDR_SOUND_STARTUP_WAV" file="internal\resources\chromeos\sounds\startup.wav" type="BINDATA" />
+          </then>
+          <else>
+            <include name="IDR_SOUND_STARTUP_WAV" file="resources\chromeos\sounds\startup.wav" type="BINDATA" />
+          </else>
+        </if>
         <include name="IDR_SOUND_LOCK_WAV" file="resources\chromeos\sounds\lock.wav" type="BINDATA" />
         <include name="IDR_SOUND_UNLOCK_WAV" file="resources\chromeos\sounds\unlock.wav" type="BINDATA" />
         <include name="IDR_SOUND_SHUTDOWN_WAV" file="resources\chromeos\sounds\shutdown.wav" type="BINDATA" />
