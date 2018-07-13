@@ -39,11 +39,11 @@ class WebFramesManagerImplTest : public PlatformTest {
 // Tests that the WebFrame for the main frame is returned.
 TEST_F(WebFramesManagerImplTest, GetMainWebFrame) {
   GURL security_origin;
-  WebFrameImpl web_frame("web_frame", /*is_main_frame=*/true, security_origin,
-                         &test_web_state_);
-  WebFrameImpl* web_frame_ptr = &web_frame;
+  auto web_frame = std::make_unique<WebFrameImpl>(
+      "web_frame", /*is_main_frame=*/true, security_origin, &test_web_state_);
+  WebFrameImpl* web_frame_ptr = web_frame.get();
 
-  frames_manager_->AddFrame(web_frame);
+  frames_manager_->AddFrame(std::move(web_frame));
 
   EXPECT_EQ(web_frame_ptr, frames_manager_->GetMainWebFrame());
   auto frames = frames_manager_->GetAllWebFrames();
@@ -57,11 +57,12 @@ TEST_F(WebFramesManagerImplTest, NoMainWebFrame) {
 
   GURL security_origin;
   const std::string web_frame_frame_id = "web_frame";
-  WebFrameImpl web_frame(web_frame_frame_id, /*is_main_frame=*/true,
-                         security_origin, &test_web_state_);
+  auto web_frame =
+      std::make_unique<WebFrameImpl>(web_frame_frame_id, /*is_main_frame=*/true,
+                                     security_origin, &test_web_state_);
 
-  frames_manager_->AddFrame(web_frame);
-  frames_manager_->RemoveFrame(web_frame_frame_id);
+  frames_manager_->AddFrame(std::move(web_frame));
+  frames_manager_->RemoveFrameWithId(web_frame_frame_id);
 
   EXPECT_EQ(nullptr, frames_manager_->GetMainWebFrame());
   EXPECT_EQ(0ul, frames_manager_->GetAllWebFrames().size());
@@ -71,15 +72,17 @@ TEST_F(WebFramesManagerImplTest, NoMainWebFrame) {
 // objects.
 TEST_F(WebFramesManagerImplTest, AddFrames) {
   GURL security_origin;
-  WebFrameImpl main_web_frame("main_web_frame", /*is_main_frame=*/true,
-                              security_origin, &test_web_state_);
-  WebFrameImpl* main_web_frame_ptr = &main_web_frame;
-  frames_manager_->AddFrame(main_web_frame);
+  auto main_web_frame =
+      std::make_unique<WebFrameImpl>("main_web_frame", /*is_main_frame=*/true,
+                                     security_origin, &test_web_state_);
+  WebFrameImpl* main_web_frame_ptr = main_web_frame.get();
+  frames_manager_->AddFrame(std::move(main_web_frame));
 
-  WebFrameImpl child_web_frame("child_web_frame", /*is_main_frame=*/false,
-                               security_origin, &test_web_state_);
-  WebFrameImpl* child_web_frame_ptr = &child_web_frame;
-  frames_manager_->AddFrame(child_web_frame);
+  auto child_web_frame =
+      std::make_unique<WebFrameImpl>("child_web_frame", /*is_main_frame=*/false,
+                                     security_origin, &test_web_state_);
+  WebFrameImpl* child_web_frame_ptr = child_web_frame.get();
+  frames_manager_->AddFrame(std::move(child_web_frame));
 
   auto frames = frames_manager_->GetAllWebFrames();
   EXPECT_EQ(2ul, frames.size());
@@ -90,23 +93,25 @@ TEST_F(WebFramesManagerImplTest, AddFrames) {
 // Tests that the WebFramesManagerImpl correctly removes a WebFrame instance.
 TEST_F(WebFramesManagerImplTest, RemoveFrame) {
   GURL security_origin;
-  WebFrameImpl main_web_frame("main_web_frame", /*is_main_frame=*/true,
-                              security_origin, &test_web_state_);
-  WebFrameImpl* main_web_frame_ptr = &main_web_frame;
-  frames_manager_->AddFrame(main_web_frame);
+  auto main_web_frame =
+      std::make_unique<WebFrameImpl>("main_web_frame", /*is_main_frame=*/true,
+                                     security_origin, &test_web_state_);
+  WebFrameImpl* main_web_frame_ptr = main_web_frame.get();
+  frames_manager_->AddFrame(std::move(main_web_frame));
 
   const std::string child_web_frame_1_frame_id = "child_web_frame_1_frame_id";
-  WebFrameImpl child_web_frame_1(child_web_frame_1_frame_id,
-                                 /*is_main_frame=*/false, security_origin,
-                                 &test_web_state_);
-  frames_manager_->AddFrame(child_web_frame_1);
+  auto child_web_frame_1 = std::make_unique<WebFrameImpl>(
+      child_web_frame_1_frame_id,
+      /*is_main_frame=*/false, security_origin, &test_web_state_);
+  frames_manager_->AddFrame(std::move(child_web_frame_1));
 
-  WebFrameImpl child_web_frame_2("child_web_frame_2", /*is_main_frame=*/false,
-                                 security_origin, &test_web_state_);
-  WebFrameImpl* child_web_frame_2_ptr = &child_web_frame_2;
-  frames_manager_->AddFrame(child_web_frame_2);
+  auto child_web_frame_2 = std::make_unique<WebFrameImpl>(
+      "child_web_frame_2", /*is_main_frame=*/false, security_origin,
+      &test_web_state_);
+  WebFrameImpl* child_web_frame_2_ptr = child_web_frame_2.get();
+  frames_manager_->AddFrame(std::move(child_web_frame_2));
 
-  frames_manager_->RemoveFrame(child_web_frame_1_frame_id);
+  frames_manager_->RemoveFrameWithId(child_web_frame_1_frame_id);
 
   auto frames = frames_manager_->GetAllWebFrames();
   EXPECT_EQ(2ul, frames.size());
@@ -114,24 +119,55 @@ TEST_F(WebFramesManagerImplTest, RemoveFrame) {
   EXPECT_TRUE(ContainsWebFrame(frames, child_web_frame_2_ptr));
 }
 
+// Tests that all frames are removed after a call to |RemoveAllFrames|.
+TEST_F(WebFramesManagerImplTest, RemoveAllFrames) {
+  GURL security_origin;
+  frames_manager_->AddFrame(
+      std::make_unique<WebFrameImpl>("main_web_frame", /*is_main_frame=*/true,
+                                     security_origin, &test_web_state_));
+  frames_manager_->AddFrame(std::make_unique<WebFrameImpl>(
+      "web_frame", /*is_main_frame=*/false, security_origin, &test_web_state_));
+
+  ASSERT_EQ(2ul, frames_manager_->GetAllWebFrames().size());
+  frames_manager_->RemoveAllWebFrames();
+  EXPECT_EQ(nullptr, frames_manager_->GetMainWebFrame());
+  EXPECT_EQ(0ul, frames_manager_->GetAllWebFrames().size());
+}
+
 // Tests that the WebFramesManagerImpl correctly ignores attempted removal of an
 // already removed WebFrame.
 TEST_F(WebFramesManagerImplTest, RemoveNonexistantFrame) {
   GURL security_origin;
   const std::string main_web_frame_frame_id = "main_web_frame";
-  WebFrameImpl main_web_frame(main_web_frame_frame_id, /*is_main_frame=*/true,
-                              security_origin, &test_web_state_);
-  WebFrameImpl* main_web_frame_ptr = &main_web_frame;
+  auto main_web_frame = std::make_unique<WebFrameImpl>(
+      main_web_frame_frame_id, /*is_main_frame=*/true, security_origin,
+      &test_web_state_);
+  WebFrameImpl* main_web_frame_ptr = main_web_frame.get();
 
-  frames_manager_->AddFrame(main_web_frame);
+  frames_manager_->AddFrame(std::move(main_web_frame));
   auto frames = frames_manager_->GetAllWebFrames();
   EXPECT_EQ(1ul, frames.size());
   EXPECT_TRUE(ContainsWebFrame(frames, main_web_frame_ptr));
 
-  frames_manager_->RemoveFrame(main_web_frame_frame_id);
+  frames_manager_->RemoveFrameWithId(main_web_frame_frame_id);
   EXPECT_EQ(0ul, frames_manager_->GetAllWebFrames().size());
-  frames_manager_->RemoveFrame(main_web_frame_frame_id);
+  frames_manager_->RemoveFrameWithId(main_web_frame_frame_id);
   EXPECT_EQ(0ul, frames_manager_->GetAllWebFrames().size());
+}
+
+// Tests that a WebFrame is correctly returned by its frame id.
+TEST_F(WebFramesManagerImplTest, GetFrameWithId) {
+  GURL security_origin;
+
+  const std::string web_frame_frame_id = "web_frame_frame_id";
+  auto web_frame = std::make_unique<WebFrameImpl>(
+      web_frame_frame_id, /*is_main_frame=*/false, security_origin,
+      &test_web_state_);
+  WebFrameImpl* web_frame_ptr = web_frame.get();
+  frames_manager_->AddFrame(std::move(web_frame));
+
+  EXPECT_EQ(web_frame_ptr, frames_manager_->GetFrameWithId(web_frame_frame_id));
+  EXPECT_EQ(nullptr, frames_manager_->GetFrameWithId("invalid_id"));
 }
 
 }  // namespace web
