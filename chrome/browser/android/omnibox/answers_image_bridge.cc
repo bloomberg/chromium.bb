@@ -75,5 +75,5 @@ static int JNI_AnswersImage_RequestAnswersImage(
   base::android::ConvertJavaStringToUTF8(env, java_url, &url);
   return bitmap_fetcher_service->RequestImage(
       GURL(url), new AnswersImageObserverAndroid(env, java_callback),
-      NO_TRAFFIC_ANNOTATION_YET);
+      TRAFFIC_ANNOTATION_WITHOUT_PROTO("Omnibox answers image"));
 }

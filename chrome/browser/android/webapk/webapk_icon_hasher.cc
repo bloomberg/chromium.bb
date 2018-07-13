@@ -87,7 +87,8 @@ WebApkIconHasher::WebApkIconHasher(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = icon_url;
   simple_url_loader_ = network::SimpleURLLoader::Create(
-      std::move(resource_request), NO_TRAFFIC_ANNOTATION_YET);
+      std::move(resource_request),
+      TRAFFIC_ANNOTATION_WITHOUT_PROTO("webapk icon hasher"));
   simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory,
       base::BindOnce(&WebApkIconHasher::OnSimpleLoaderComplete,

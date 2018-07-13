@@ -237,7 +237,8 @@ void DownloadAsFile(content::WebContents* web_contents, const GURL& url) {
       web_contents->GetBrowserContext());
   std::unique_ptr<download::DownloadUrlParameters> dl_params(
       content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
-          web_contents, url, NO_TRAFFIC_ANNOTATION_YET));
+          web_contents, url,
+          TRAFFIC_ANNOTATION_WITHOUT_PROTO("Offline pages download file")));
 
   content::NavigationEntry* entry =
       web_contents->GetController().GetLastCommittedEntry();
