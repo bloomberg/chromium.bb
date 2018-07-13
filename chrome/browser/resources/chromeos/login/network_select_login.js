@@ -90,7 +90,7 @@ Polymer({
     if (this.isConnected) {
       items.push({
         customItemName: 'proxySettingsMenuName',
-        polymerIcon: 'oobe-welcome-20:add-proxy',
+        polymerIcon: 'oobe-network-20:add-proxy',
         customData: {
           onTap: function() {
             self.OpenInternetDetailDialog_();
@@ -100,7 +100,7 @@ Polymer({
     }
     items.push({
       customItemName: 'addWiFiNetworkMenuName',
-      polymerIcon: 'oobe-welcome-20:add-wifi',
+      polymerIcon: 'oobe-network-20:add-wifi',
       customData: {
         onTap: function() {
           self.OpenAddWiFiNetworkDialog_();
