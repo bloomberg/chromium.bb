@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 #include "chrome/browser/chromeos/prefs/pref_connector_service.h"
-#include "components/services/font/public/interfaces/constants.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -38,7 +37,6 @@ struct Service {
 // Services shared between mash and non-mash configs.
 constexpr Service kCommonServices[] = {
     {"autoclick_app", IDS_ASH_AUTOCLICK_APP_NAME},
-    {font_service::mojom::kServiceName, IDS_ASH_FONT_SERVICE_NAME},
     {quick_launch::mojom::kServiceName, IDS_ASH_QUICK_LAUNCH_APP_NAME},
     {shortcut_viewer::mojom::kServiceName, IDS_ASH_SHORTCUT_VIEWER_APP_NAME},
     {tap_visualizer::mojom::kServiceName, IDS_ASH_TAP_VISUALIZER_APP_NAME},

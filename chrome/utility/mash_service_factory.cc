@@ -33,8 +33,10 @@ enum class MashService {
   kQuickLaunch = 2,
   kShortcutViewer = 3,
   kTapVisualizer = 4,
-  kFont = 5,
-  kMaxValue = kFont,
+  kFontDeprecated = 5,  // Font Service is not in use for mash, but run
+                        // in-process in the browser
+                        // process. https://crbug.com/862553
+  kMaxValue = kFontDeprecated,
 };
 
 using ServiceFactoryFunction = std::unique_ptr<service_manager::Service>();
