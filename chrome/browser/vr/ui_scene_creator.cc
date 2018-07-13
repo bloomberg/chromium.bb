@@ -2459,9 +2459,7 @@ void UiSceneCreator::CreateOverflowMenu() {
     text->SetFieldWidth(kOverflowMenuMinimumWidth -
                         2 * kOverflowMenuItemXPadding);
     text->SetAlignment(kTextAlignmentLeft);
-    text->AddBinding(VR_BIND_FUNC(
-        SkColor, Model, model_, model->color_scheme().url_bar_button.foreground,
-        Text, text.get(), SetColor));
+    VR_BIND_COLOR(model_, text.get(), &ColorScheme::menu_text, &Text::SetColor);
     layout->AddChild(std::move(text));
 
     auto spacer = Create<Rect>(kNone, kPhaseNone);

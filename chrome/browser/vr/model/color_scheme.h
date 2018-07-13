@@ -88,6 +88,7 @@ struct VR_UI_EXPORT ColorScheme {
   ButtonColors url_bar_button;
   SkColor url_text_emphasized;
   SkColor url_text_deemphasized;
+  SkColor menu_text;
   SkColor omnibox_background;
   TextSelectionColors omnibox_text_selection;
   SkColor hyperlink;
