@@ -323,7 +323,7 @@ void PrivetNotificationService::Start() {
 }
 
 void PrivetNotificationService::OnNotificationsEnabledChanged() {
-#if defined(ENABLE_MDNS)
+#if BUILDFLAG(ENABLE_MDNS)
   if (IsForced()) {
     StartLister();
   } else if (*enable_privet_notification_member_) {
@@ -352,7 +352,7 @@ void PrivetNotificationService::OnNotificationsEnabledChanged() {
 
 void PrivetNotificationService::StartLister() {
   ReportPrivetUmaEvent(PRIVET_LISTER_STARTED);
-#if defined(ENABLE_MDNS)
+#if BUILDFLAG(ENABLE_MDNS)
   traffic_detector_ = nullptr;
 #endif  // ENABLE_MDNS
   service_discovery_client_ =
