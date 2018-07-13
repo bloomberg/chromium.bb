@@ -71,8 +71,10 @@ bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session,
   session->AddHandler(std::make_unique<protocol::MemoryHandler>());
   session->AddHandler(std::make_unique<protocol::SecurityHandler>());
   session->AddHandler(std::make_unique<protocol::SystemInfoHandler>());
-  session->AddHandler(std::make_unique<protocol::TetheringHandler>(
-      socket_callback_, tethering_task_runner_));
+  if (tethering_task_runner_) {
+    session->AddHandler(std::make_unique<protocol::TetheringHandler>(
+        socket_callback_, tethering_task_runner_));
+  }
   session->AddHandler(
       std::make_unique<protocol::TracingHandler>(nullptr, GetIOContext()));
   return true;
