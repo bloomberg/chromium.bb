@@ -1510,6 +1510,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "components_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_unittests"
       },
       {
@@ -2912,6 +2918,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_browsertests"
       },
       {
         "args": [
