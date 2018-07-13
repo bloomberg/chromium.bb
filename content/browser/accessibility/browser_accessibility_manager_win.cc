@@ -151,7 +151,10 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       FireWinAccessibilityEvent(EVENT_OBJECT_REORDER, node);
       break;
     case Event::LIVE_REGION_CHANGED:
-      FireWinAccessibilityEvent(EVENT_OBJECT_LIVEREGIONCHANGED, node);
+      // NVDA and JAWS are inconsistent about speaking this event in content.
+      // Because of this, and because Firefox does not currently fire it, we
+      // are avoiding this event for now.
+      // FireWinAccessibilityEvent(EVENT_OBJECT_LIVEREGIONCHANGED, node);
       break;
     case Event::LOAD_COMPLETE:
       FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_LOAD_COMPLETE, node);
