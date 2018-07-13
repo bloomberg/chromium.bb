@@ -26,6 +26,7 @@ namespace resource_coordinator {
 class InterventionPolicyDatabase;
 class TabLifecycleObserver;
 class TabLifecycleUnitExternal;
+class UsageClock;
 
 // Creates and destroys LifecycleUnits as tabs are created and destroyed.
 class TabLifecycleUnitSource : public BrowserListObserver,
@@ -34,7 +35,8 @@ class TabLifecycleUnitSource : public BrowserListObserver,
                                public TabStripModelObserver {
  public:
   explicit TabLifecycleUnitSource(
-      InterventionPolicyDatabase* intervention_policy_database);
+      InterventionPolicyDatabase* intervention_policy_database,
+      UsageClock* usage_clock);
   ~TabLifecycleUnitSource() override;
 
   static TabLifecycleUnitSource* GetInstance();
@@ -138,6 +140,9 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // The intervention policy database used to assist freezing/discarding
   // decisions.
   InterventionPolicyDatabase* intervention_policy_database_;
+
+  // A clock that advances when Chrome is in use.
+  UsageClock* const usage_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitSource);
 };

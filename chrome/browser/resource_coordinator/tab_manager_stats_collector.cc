@@ -341,7 +341,7 @@ void RecordLifecycleStateChangeUkm(
   auto visibility = lifecycle_unit->GetVisibility();
   base::TimeDelta time_since_visible;  // Zero.
   if (visibility != content::Visibility::VISIBLE)
-    time_since_visible = NowTicks() - lifecycle_unit->GetLastActiveTime();
+    time_since_visible = NowTicks() - lifecycle_unit->GetWallTimeWhenHidden();
   builder.SetTimeSinceVisibilityStateChangeMs(
       time_since_visible.InMilliseconds());
   builder.SetVisibilityState(static_cast<int64_t>(visibility));
