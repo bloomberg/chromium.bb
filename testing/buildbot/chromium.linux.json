@@ -2221,9 +2221,6 @@
         "test": "remoting_unittests"
       },
       {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -2920,9 +2917,6 @@
         "test": "printing_unittests"
       },
       {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
