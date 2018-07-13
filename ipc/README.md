@@ -167,7 +167,7 @@ interface PngDecoder {
 ```
 
 and you'll also want to define the implementation within
-`//services/data_decoder`, pluging in some appropriate binder so the service
+`//services/data_decoder`, plugging in some appropriate binder so the service
 knows how to bind incoming interface requests to your implementation:
 
 ``` cpp
@@ -687,7 +687,7 @@ if such a use case is blocking your work.
 
 ### Using Legacy IPC Traits
 
-InsSome circumstances there may be a C++ enum, struct, or class that you want
+In some circumstances there may be a C++ enum, struct, or class that you want
 to use in a Mojom via [type mapping](/mojo/public/cpp/bindings#Type-Mapping),
 and that type may already have `IPC::ParamTraits` defined (possibly via
 `IPC_STRUCT_TRAITS*` macros) for legacy IPC.
