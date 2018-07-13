@@ -5,9 +5,16 @@
 #ifndef IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_PROVIDER_H_
 #define IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_PROVIDER_H_
 
+namespace web {
+struct FormActivityParams;
+class WebState;
+}  // namespace web
+
 @protocol FormInputAccessoryViewDelegate;
 @protocol FormInputAccessoryViewProvider;
 @class FormInputAccessoryViewController;
+
+#import <UIKit/UIKit.h>
 
 // Block type to indicate that a FormInputAccessoryViewProvider has an accessory
 // view to provide.
