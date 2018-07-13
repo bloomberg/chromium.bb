@@ -542,6 +542,8 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         } else if (ViewUtils.hasFocus(containerView)
                 && resultCode == InputMethodManager.RESULT_UNCHANGED_SHOWN) {
             // If the OSK was already there, focus the form immediately.
+            // Also, the VR soft keyboard always reports RESULT_UNCHANGED_SHOWN as it
+            // doesn't affect the size of the web contents.
             mWebContents.scrollFocusedEditableNodeIntoView();
         }
     }

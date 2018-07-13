@@ -10,6 +10,7 @@ import android.os.ResultReceiver;
 import android.view.View;
 import android.view.inputmethod.CursorAnchorInfo;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -67,6 +68,10 @@ public class VrInputMethodManagerWrapper implements InputMethodManagerWrapper {
         EditorInfo outAttrs = new EditorInfo();
         view.onCreateInputConnection(outAttrs);
         mKeyboard.showSoftInput(true);
+
+        // Since the VR keyboard doesn't take content space, we report back to the ImeAdapter that
+        // the keyboard was always showing.
+        resultReceiver.send(InputMethodManager.RESULT_UNCHANGED_SHOWN, null);
     }
 
     @Override
