@@ -146,18 +146,26 @@ public class MediaViewerUtils {
     }
 
     /**
-     * Checks whether a given MIME type is a valid media MIME type.
+     * Determines the media type from the given MIME type.
      * @param mimeType The MIME type to check.
-     * @return Whether the MIME type is a valid media MIME type.
+     * @return MediaLauncherActivity.MediaType enum value for determined media type.
      */
-    public static boolean isMediaMIMEType(String mimeType) {
-        if (TextUtils.isEmpty(mimeType)) return false;
+    static int getMediaTypeFromMIMEType(String mimeType) {
+        if (TextUtils.isEmpty(mimeType)) return MediaLauncherActivity.MediaType.UNKNOWN;
 
         String[] pieces = mimeType.toLowerCase(Locale.getDefault()).split("/");
-        if (pieces.length != 2) return false;
+        if (pieces.length != 2) return MediaLauncherActivity.MediaType.UNKNOWN;
 
-        return (MIMETYPE_AUDIO.equals(pieces[0]) || MIMETYPE_IMAGE.equals(pieces[0])
-                || MIMETYPE_VIDEO.equals(pieces[0]));
+        switch (pieces[0]) {
+            case MIMETYPE_AUDIO:
+                return MediaLauncherActivity.MediaType.AUDIO;
+            case MIMETYPE_IMAGE:
+                return MediaLauncherActivity.MediaType.IMAGE;
+            case MIMETYPE_VIDEO:
+                return MediaLauncherActivity.MediaType.VIDEO;
+            default:
+                return MediaLauncherActivity.MediaType.UNKNOWN;
+        }
     }
 
     /**
