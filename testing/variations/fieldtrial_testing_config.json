@@ -518,26 +518,6 @@
             ]
         }
     ],
-    "AutofillRestrictUnownedFieldsToFormlessCheckout": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "AutofillRestrictUnownedFieldsToFormlessCheckout"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillSingleClick": [
         {
             "platforms": [
@@ -549,6 +529,29 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "AutofillSmallFormSupport": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "disable_features": [
+                        "AutofillEnforceMinRequiredFieldsForHeuristics",
+                        "AutofillEnforceMinRequiredFieldsForQuery",
+                        "AutofillEnforceMinRequiredFieldsForUpload",
+                        "AutofillRestrictUnownedFieldsToFormlessCheckout"
+                    ]
                 }
             ]
         }
