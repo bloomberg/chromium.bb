@@ -2517,7 +2517,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       !message->GetString("fieldIdentifier", &params.field_identifier) ||
       !message->GetString("fieldType", &params.field_type) ||
       !message->GetString("type", &params.type) ||
-      !message->GetString("value", &params.value)) {
+      !message->GetString("value", &params.value) ||
+      !message->GetBoolean("hasUserGesture", &params.has_user_gesture)) {
     params.input_missing = true;
   }
 

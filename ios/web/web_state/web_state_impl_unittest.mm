@@ -405,6 +405,7 @@ TEST_P(WebStateImplTest, ObserverTest) {
   params.value = "value";
   params.input_missing = true;
   params.is_main_frame = false;
+  params.has_user_gesture = true;
   web_state_->OnFormActivityRegistered(params);
   ASSERT_TRUE(observer->form_activity_info());
   EXPECT_EQ(web_state_.get(), observer->form_activity_info()->web_state);
@@ -418,6 +419,7 @@ TEST_P(WebStateImplTest, ObserverTest) {
   EXPECT_EQ(params.value, observer->form_activity_info()->form_activity.value);
   EXPECT_TRUE(observer->form_activity_info()->form_activity.input_missing);
   EXPECT_FALSE(observer->form_activity_info()->form_activity.is_main_frame);
+  EXPECT_TRUE(observer->form_activity_info()->form_activity.has_user_gesture);
 
   // Test that FaviconUrlUpdated() is called.
   ASSERT_FALSE(observer->update_favicon_url_candidates_info());

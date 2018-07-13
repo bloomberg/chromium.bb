@@ -198,6 +198,7 @@ AutofillSuggestionState::AutofillSuggestionState(
   NSString* strongValue =
       base::SysUTF8ToNSString(_suggestionState.get()->typed_value);
   BOOL is_main_frame = params.is_main_frame;
+  BOOL has_user_gesture = params.has_user_gesture;
 
   // Build a block for each provider that will invoke its completion with YES
   // if the provider can provide suggestions for the specified form/field/type
@@ -222,6 +223,7 @@ AutofillSuggestionState::AutofillSuggestionState(
                                                   type:strongType
                                             typedValue:strongValue
                                            isMainFrame:is_main_frame
+                                        hasUserGesture:has_user_gesture
                                               webState:webState
                                      completionHandler:completion];
         };

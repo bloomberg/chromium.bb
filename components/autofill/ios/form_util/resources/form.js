@@ -64,7 +64,7 @@ __gCrWeb.form.formMutationMessageToSend = null;
 __gCrWeb.form.messageToSend = null;
 
 /**
- * The last HTML element that was focused by the user.
+ * The last HTML element that had focus.
  */
 __gCrWeb.form.lastFocusedElement = null;
 
@@ -354,7 +354,8 @@ var formActivity_ = function(evt) {
     'fieldIdentifier': __gCrWeb.form.getFieldIdentifier(target),
     'fieldType': fieldType,
     'type': evt.type,
-    'value': value
+    'value': value,
+    'hasUserGesture': evt.isTrusted
   };
   sendMessageOnNextLoop_(msg);
 };
@@ -477,7 +478,8 @@ __gCrWeb.form['trackFormMutations'] = function(delay) {
               'fieldIdentifier': '',
               'fieldType': '',
               'type': 'form_changed',
-              'value': ''
+              'value': '',
+              'hasUserGesture': false
             };
             return sendFormMutationMessageAfterDelay_(msg, delay);
           }

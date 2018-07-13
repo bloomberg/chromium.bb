@@ -42,6 +42,10 @@ struct FormActivityParams {
 
   // |is_main_frame| is true when the activity was registered in the main frame.
   bool is_main_frame = false;
+
+  // |has_user_gesture| is true when the activity was registered as a result of
+  // a user action, and not by an event created and dispatched by JavaScript.
+  bool has_user_gesture = false;
 };
 
 }  // namespace web

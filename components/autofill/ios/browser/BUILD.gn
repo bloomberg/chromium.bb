@@ -79,6 +79,7 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     "//base",
+    "//base/test:test_support",
     "//components/autofill/core/browser:test_support",
     "//components/prefs",
     "//ios/web/public",

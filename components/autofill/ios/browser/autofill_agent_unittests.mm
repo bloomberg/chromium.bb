@@ -5,7 +5,9 @@
 #import "components/autofill/ios/browser/autofill_agent.h"
 
 #include "base/strings/utf_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #include "components/prefs/pref_service.h"
@@ -17,10 +19,13 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::test::ios::WaitUntilCondition;
 
 // Test fixture for AutofillAgent testing.
 class AutofillAgentTests : public PlatformTest {
@@ -34,8 +39,11 @@ class AutofillAgentTests : public PlatformTest {
     mock_js_injection_receiver_ =
         [OCMockObject mockForClass:[CRWJSInjectionReceiver class]];
     test_web_state_.SetJSInjectionReceiver(mock_js_injection_receiver_);
+    test_web_state_.SetContentIsHTML(true);
+    test_web_state_.SetCurrentURL(GURL("https://example.com"));
 
     prefs_ = autofill::test::PrefServiceForTesting();
+    prefs_->SetBoolean(autofill::prefs::kAutofillEnabled, true);
     autofill_agent_ =
         [[AutofillAgent alloc] initWithPrefService:prefs_.get()
                                           webState:&test_web_state_];
@@ -143,4 +151,54 @@ TEST_F(AutofillAgentTests, OnFormDataFilledWithNameCollisionTest) {
   test_web_state_.WasShown();
 
   EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
+}
+
+// Tests that when a user initiated form activity is registered the script to
+// extract forms is executed.
+TEST_F(AutofillAgentTests, SuggestionsAvailable_UserInitiatedActivity) {
+  [[mock_js_injection_receiver_ expect]
+      executeJavaScript:@"__gCrWeb.autofill.extractForms(1, true);"
+      completionHandler:[OCMArg any]];
+  [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
+                                            fieldName:@"address"
+                                      fieldIdentifier:@"address"
+                                            fieldType:@"text"
+                                                 type:@"focus"
+                                           typedValue:@""
+                                          isMainFrame:YES
+                                       hasUserGesture:YES
+                                             webState:&test_web_state_
+                                    completionHandler:nil];
+  test_web_state_.WasShown();
+
+  EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
+}
+
+// Tests that when a non user initiated form activity is registered the
+// completion callback passed to the call to check if suggestions are available
+// is invoked with no suggestions.
+TEST_F(AutofillAgentTests, SuggestionsAvailable_NonUserInitiatedActivity) {
+  __block BOOL completion_handler_success = NO;
+  __block BOOL completion_handler_called = NO;
+
+  [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
+                                            fieldName:@"address"
+                                      fieldIdentifier:@"address"
+                                            fieldType:@"text"
+                                                 type:@"focus"
+                                           typedValue:@""
+                                          isMainFrame:YES
+                                       hasUserGesture:NO
+                                             webState:&test_web_state_
+                                    completionHandler:^(BOOL success) {
+                                      completion_handler_success = success;
+                                      completion_handler_called = YES;
+                                    }];
+  test_web_state_.WasShown();
+
+  // Wait until the expected handler is called.
+  WaitUntilCondition(^bool() {
+    return completion_handler_called;
+  });
+  EXPECT_FALSE(completion_handler_success);
 }

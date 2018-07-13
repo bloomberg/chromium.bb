@@ -1371,6 +1371,7 @@ TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
                                                        type:@"focus"
                                                  typedValue:@""
                                                 isMainFrame:YES
+                                             hasUserGesture:YES
                                                    webState:web_state()
                                           completionHandler:^(BOOL success) {
                                             completion_handler_success =
@@ -1407,6 +1408,7 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNonUsernameField) {
                                                      type:@"focus"
                                                typedValue:@""
                                               isMainFrame:YES
+                                           hasUserGesture:YES
                                                  webState:web_state()
                                         completionHandler:^(BOOL success) {
                                           completion_handler_success = success;
@@ -1436,6 +1438,7 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNoPasswordForms) {
                                                      type:@"focus"
                                                typedValue:@""
                                               isMainFrame:YES
+                                           hasUserGesture:YES
                                                  webState:web_state()
                                         completionHandler:^(BOOL success) {
                                           completion_handler_success = success;

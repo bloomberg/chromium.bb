@@ -59,6 +59,7 @@
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
                                isMainFrame:(BOOL)isMainFrame
+                            hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
                          completionHandler:
                              (SuggestionsAvailableCompletion)completion {
