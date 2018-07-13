@@ -36,7 +36,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   MOCK_METHOD3(OnVideoSizeChanged, void(int player_id, int width, int height));
   MOCK_METHOD2(OnAudibleStateChanged, void(int player_id, bool is_audible_now));
   MOCK_METHOD1(OnWaitingForDecryptionKey, void(int player_id));
-  MOCK_METHOD0(GetFullscreenPlayer, MediaPlayerAndroid*());
   MOCK_METHOD1(GetPlayer, MediaPlayerAndroid*(int player_id));
   MOCK_METHOD3(RequestPlay,
                bool(int player_id, base::TimeDelta duration, bool has_audio));

@@ -25,7 +25,6 @@
 #include "media/base/android/media_codec_bridge_impl.h"
 #include "media/base/android/media_crypto_context.h"
 #include "media/base/media.h"
-#include "media/base/surface_manager.h"
 #include "media/base/video_codecs.h"
 #include "media/gpu/android/avda_surface_bundle.h"
 #include "media/gpu/media_gpu_export.h"

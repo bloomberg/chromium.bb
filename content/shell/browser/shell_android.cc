@@ -84,11 +84,6 @@ void Shell::LoadProgressChanged(WebContents* source, double progress) {
   Java_Shell_onLoadProgressChanged(env, java_object_, progress);
 }
 
-ScopedJavaLocalRef<jobject> Shell::GetContentVideoViewEmbedder() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_Shell_getContentVideoViewEmbedder(env, java_object_);
-}
-
 void Shell::SetOverlayMode(bool use_overlay_mode) {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_Shell_setOverlayMode(env, java_object_, use_overlay_mode);

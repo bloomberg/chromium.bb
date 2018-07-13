@@ -235,7 +235,6 @@ android_library("chrome_java") {
     "//components/download/public/background_service:public_java",
     "//components/download/public/common:public_java",
     "//components/embedder_support/android:content_view_java",
-    "//components/embedder_support/android:media_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/feature_engagement:feature_engagement_java",
     "//components/gcm_driver/android:gcm_driver_java",

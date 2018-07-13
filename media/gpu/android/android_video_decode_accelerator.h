@@ -369,11 +369,6 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // been defered until the first Decode() call.
   bool defer_surface_creation_;
 
-  // Has a value if a SetSurface() call has occurred and a new surface should be
-  // switched to when possible. Cleared during OnSurfaceDestroyed() and if all
-  // pictures have been rendered in DequeueOutput().
-  base::Optional<int32_t> pending_surface_id_;
-
   // Copy of the VDA::Config we were given.
   Config config_;
 

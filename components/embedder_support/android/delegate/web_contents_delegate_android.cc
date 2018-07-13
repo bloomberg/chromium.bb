@@ -334,16 +334,6 @@ void WebContentsDelegateAndroid::ShowRepostFormWarningDialog(
   Java_WebContentsDelegateAndroid_showRepostFormWarningDialog(env, obj);
 }
 
-ScopedJavaLocalRef<jobject>
-WebContentsDelegateAndroid::GetContentVideoViewEmbedder() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
-  if (obj.is_null())
-    return ScopedJavaLocalRef<jobject>();
-
-  return Java_WebContentsDelegateAndroid_getContentVideoViewEmbedder(env, obj);
-}
-
 bool WebContentsDelegateAndroid::ShouldBlockMediaRequest(const GURL& url) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);

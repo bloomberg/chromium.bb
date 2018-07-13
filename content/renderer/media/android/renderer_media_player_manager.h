@@ -78,9 +78,6 @@ class RendererMediaPlayerManager :
   // Requests stopping remote playback
   void RequestRemotePlaybackStop(int player_id) override;
 
-  // Requests the player to enter fullscreen.
-  void EnterFullscreen(int player_id);
-
   // Registers and unregisters a WebMediaPlayerAndroid object.
   int RegisterMediaPlayer(media::RendererMediaPlayerInterface* player) override;
   void UnregisterMediaPlayer(int player_id) override;

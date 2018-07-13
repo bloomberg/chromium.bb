@@ -128,6 +128,15 @@ class AndroidVideoDecodeAcceleratorTest
     gl::init::ShutdownGL(false);
   }
 
+  std::unique_ptr<AndroidOverlay> OverlayFactory(const base::UnguessableToken&,
+                                                 AndroidOverlayConfig config) {
+    // This shouldn't be called by AVDA.  Our mock surface chooser won't use it
+    // either, though it'd be nice to check to token.  Note that this isn't the
+    // same as an emtpy factory callback; that means "no factory".  This one
+    // looks like a working factory, as long as nobody calls it.
+    return nullptr;
+  }
+
   // Create and initialize AVDA with |config_|, and return the result.
   bool InitializeAVDA(bool force_defer_surface_creation = false) {
     // Because VDA has a custom deleter, we must assign it to |vda_| carefully.
@@ -135,7 +144,9 @@ class AndroidVideoDecodeAcceleratorTest
         codec_allocator_.get(), std::move(chooser_that_is_usually_null_),
         base::BindRepeating(&MakeContextCurrent),
         base::BindRepeating(&GetContextGroup, context_group_),
-        AndroidOverlayMojoFactoryCB(), device_info_.get());
+        base::BindRepeating(&AndroidVideoDecodeAcceleratorTest::OverlayFactory,
+                            base::Unretained(this)),
+        device_info_.get());
     vda_.reset(avda);
     avda->force_defer_surface_creation_for_testing_ =
         force_defer_surface_creation;
@@ -149,7 +160,7 @@ class AndroidVideoDecodeAcceleratorTest
   // Initialize |vda_|, providing a new surface for it.  You may get the surface
   // by asking |codec_allocator_|.
   void InitializeAVDAWithOverlay() {
-    config_.overlay_info.surface_id = 123;
+    config_.overlay_info.routing_token = base::UnguessableToken::Create();
     ASSERT_TRUE(InitializeAVDA());
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(chooser_->factory_);
@@ -300,8 +311,6 @@ TEST_P(AndroidVideoDecodeAcceleratorTest,
   // signal success before we provide a surface.  It should still ask for a
   // surface, though.
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
-
-  config_.overlay_info.surface_id = SurfaceManager::kNoSurfaceID;
 
   EXPECT_CALL(*chooser_, MockUpdateState()).Times(0);
   EXPECT_CALL(client_, NotifyInitializationComplete(true));
@@ -538,7 +547,7 @@ TEST_P(AndroidVideoDecodeAcceleratorTest,
 
   EXPECT_CALL(*chooser_, MockUpdateState()).Times(1);
   OverlayInfo overlay_info = config_.overlay_info;
-  overlay_info.surface_id++;
+  overlay_info.routing_token = base::UnguessableToken::Create();
   avda()->SetOverlayInfo(overlay_info);
 }
 

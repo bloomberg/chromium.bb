@@ -248,10 +248,6 @@ void RendererMediaPlayerManager::OnRemoteRouteAvailabilityChanged(
     player->OnRemoteRouteAvailabilityChanged(availability);
 }
 
-void RendererMediaPlayerManager::EnterFullscreen(int player_id) {
-  Send(new MediaPlayerHostMsg_EnterFullscreen(routing_id(), player_id));
-}
-
 int RendererMediaPlayerManager::RegisterMediaPlayer(
     media::RendererMediaPlayerInterface* player) {
   media_players_[next_media_player_id_] = player;

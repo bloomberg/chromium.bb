@@ -97,10 +97,6 @@ class CastWebViewDefault : public CastWebView,
   std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;
-#if defined(OS_ANDROID)
-  base::android::ScopedJavaLocalRef<jobject> GetContentVideoViewEmbedder()
-      override;
-#endif  // defined(OS_ANDROID)
 
   CastWebContentsManager* const web_contents_manager_;
   content::BrowserContext* const browser_context_;

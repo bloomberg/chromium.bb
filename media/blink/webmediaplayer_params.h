@@ -37,7 +37,6 @@ class WebSurfaceLayerBridgeObserver;
 namespace media {
 
 class SwitchableAudioRendererSink;
-class SurfaceManager;
 
 // Holds parameters for constructing WebMediaPlayerImpl without having
 // to plumb arguments through various abstraction layers.
@@ -74,7 +73,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
           video_frame_compositor_task_runner,
       const AdjustAllocatedMemoryCB& adjust_allocated_memory_cb,
       blink::WebContentDecryptionModule* initial_cdm,
-      SurfaceManager* surface_manager,
       RequestRoutingTokenCallback request_routing_token_cb,
       base::WeakPtr<MediaObserver> media_observer,
       base::TimeDelta max_keyframe_distance_to_disable_background_video,
@@ -128,8 +126,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return adjust_allocated_memory_cb_;
   }
 
-  SurfaceManager* surface_manager() const { return surface_manager_; }
-
   base::WeakPtr<MediaObserver> media_observer() const {
     return media_observer_;
   }
@@ -181,7 +177,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   AdjustAllocatedMemoryCB adjust_allocated_memory_cb_;
 
   blink::WebContentDecryptionModule* initial_cdm_;
-  SurfaceManager* surface_manager_;
   RequestRoutingTokenCallback request_routing_token_cb_;
   base::WeakPtr<MediaObserver> media_observer_;
   base::TimeDelta max_keyframe_distance_to_disable_background_video_;

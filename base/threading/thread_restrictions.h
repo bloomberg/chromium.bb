@@ -40,7 +40,6 @@ class BrowserGpuMemoryBufferManager;
 class BrowserMainLoop;
 class BrowserProcessSubThread;
 class BrowserShutdownProfileDumper;
-class BrowserSurfaceViewManager;
 class BrowserTestBase;
 class CategorizedWorkerPool;
 class GpuProcessTransportFactory;
@@ -428,7 +427,6 @@ class BASE_EXPORT ThreadRestrictions {
   friend class base::StackSamplingProfiler;
   friend class content::BrowserMainLoop;
   friend class content::BrowserShutdownProfileDumper;
-  friend class content::BrowserSurfaceViewManager;
   friend class content::BrowserTestBase;
   friend class content::NestedMessagePumpAndroid;
   friend class content::ScopedAllowWaitForAndroidLayoutTests;

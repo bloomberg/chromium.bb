@@ -23,7 +23,6 @@ import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndr
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
-import org.chromium.content_public.browser.ContentVideoViewEmbedder;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
@@ -203,11 +202,6 @@ public class OverlayPanelContent {
             @Override
             public boolean isFullscreenForTabOrPending() {
                 return mIsFullscreen;
-            }
-
-            @Override
-            public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
-                return null;  // Have a no-op embedder be used.
             }
 
             @Override

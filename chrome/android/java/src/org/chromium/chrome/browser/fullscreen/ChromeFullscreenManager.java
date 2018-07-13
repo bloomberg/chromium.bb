@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.vr.VrShellDelegate;
 import org.chromium.chrome.browser.widget.ControlContainer;
-import org.chromium.content_public.browser.ContentVideoView;
 import org.chromium.content_public.common.BrowserControlsState;
 
 import java.lang.annotation.Retention;
@@ -275,10 +274,6 @@ public class ChromeFullscreenManager
         onWindowFocusChanged(hasFocus);
         // {@link ContentVideoView#getContentVideoView} requires native to have been initialized.
         if (!LibraryLoader.getInstance().isInitialized()) return;
-        ContentVideoView videoView = ContentVideoView.getInstance();
-        if (videoView != null) {
-            videoView.onFullscreenWindowFocused();
-        }
     }
 
     @Override

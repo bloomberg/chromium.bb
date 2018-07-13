@@ -21,7 +21,6 @@ WebMediaPlayerParams::WebMediaPlayerParams(
         video_frame_compositor_task_runner,
     const AdjustAllocatedMemoryCB& adjust_allocated_memory_cb,
     blink::WebContentDecryptionModule* initial_cdm,
-    SurfaceManager* surface_manager,
     RequestRoutingTokenCallback request_routing_token_cb,
     base::WeakPtr<MediaObserver> media_observer,
     base::TimeDelta max_keyframe_distance_to_disable_background_video,
@@ -42,7 +41,6 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       video_frame_compositor_task_runner_(video_frame_compositor_task_runner),
       adjust_allocated_memory_cb_(adjust_allocated_memory_cb),
       initial_cdm_(initial_cdm),
-      surface_manager_(surface_manager),
       request_routing_token_cb_(std::move(request_routing_token_cb)),
       media_observer_(media_observer),
       max_keyframe_distance_to_disable_background_video_(

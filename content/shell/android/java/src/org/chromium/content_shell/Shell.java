@@ -4,7 +4,6 @@
 
 package org.chromium.content_shell;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.ClipDrawable;
 import android.text.TextUtils;
@@ -27,11 +26,9 @@ import android.widget.TextView.OnEditorActionListener;
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.components.embedder_support.media.ActivityContentVideoViewEmbedder;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.embedder_support.view.ContentViewRenderView;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
-import org.chromium.content_public.browser.ContentVideoViewEmbedder;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -345,27 +342,6 @@ public class Shell extends LinearLayout {
             @Override
             public void onDestroyActionMode(ActionMode mode) {
                 helper.onDestroyActionMode();
-            }
-        };
-    }
-
-    @CalledByNative
-    public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
-        return new ActivityContentVideoViewEmbedder((Activity) getContext()) {
-            @Override
-            public void enterFullscreenVideo(View view, boolean isVideoLoaded) {
-                super.enterFullscreenVideo(view, isVideoLoaded);
-                if (mContentViewRenderView != null) {
-                    mContentViewRenderView.setOverlayVideoMode(true);
-                }
-            }
-
-            @Override
-            public void exitFullscreenVideo() {
-                super.exitFullscreenVideo();
-                if (mContentViewRenderView != null) {
-                    mContentViewRenderView.setOverlayVideoMode(false);
-                }
             }
         };
     }

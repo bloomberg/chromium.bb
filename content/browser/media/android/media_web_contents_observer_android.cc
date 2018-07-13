@@ -8,11 +8,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
-#include "content/browser/media/android/browser_surface_view_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/common/media/media_player_messages_android.h"
-#include "content/common/media/surface_view_manager_messages_android.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
@@ -53,19 +51,6 @@ MediaWebContentsObserverAndroid::GetMediaPlayerManager(
   return manager;
 }
 
-BrowserSurfaceViewManager*
-MediaWebContentsObserverAndroid::GetSurfaceViewManager(
-    RenderFrameHost* render_frame_host) {
-  auto it = surface_view_managers_.find(render_frame_host);
-  if (it != surface_view_managers_.end())
-    return it->second.get();
-
-  BrowserSurfaceViewManager* manager =
-      new BrowserSurfaceViewManager(render_frame_host);
-  surface_view_managers_[render_frame_host] = base::WrapUnique(manager);
-  return manager;
-}
-
 void MediaWebContentsObserverAndroid::SuspendAllMediaPlayers() {
   web_contents()->ForEachFrame(
       base::BindRepeating(&SuspendAllMediaPlayersInRenderFrame));
@@ -94,7 +79,6 @@ void MediaWebContentsObserverAndroid::RenderFrameDeleted(
   MediaWebContentsObserver::RenderFrameDeleted(render_frame_host);
 
   media_player_managers_.erase(render_frame_host);
-  surface_view_managers_.erase(render_frame_host);
 }
 
 bool MediaWebContentsObserverAndroid::OnMessageReceived(
@@ -104,9 +88,6 @@ bool MediaWebContentsObserverAndroid::OnMessageReceived(
     return true;
 
   if (OnMediaPlayerMessageReceived(msg, render_frame_host))
-    return true;
-
-  if (OnSurfaceViewManagerMessageReceived(msg, render_frame_host))
     return true;
 
   return false;
@@ -130,9 +111,6 @@ bool MediaWebContentsObserverAndroid::OnMediaPlayerMessageReceived(
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MediaWebContentsObserverAndroid, msg)
-    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_EnterFullscreen,
-                        media_player_manager,
-                        BrowserMediaPlayerManager::OnEnterFullscreen)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Initialize, media_player_manager,
                         BrowserMediaPlayerManager::OnInitialize)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Start, media_player_manager,
@@ -160,22 +138,6 @@ bool MediaWebContentsObserverAndroid::OnMediaPlayerMessageReceived(
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_RequestRemotePlaybackStop,
                         media_player_manager,
                         BrowserMediaPlayerManager::OnRequestRemotePlaybackStop)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-bool MediaWebContentsObserverAndroid::OnSurfaceViewManagerMessageReceived(
-    const IPC::Message& msg,
-    RenderFrameHost* render_frame_host) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MediaWebContentsObserverAndroid, msg)
-    IPC_MESSAGE_FORWARD(SurfaceViewManagerHostMsg_CreateFullscreenSurface,
-                        GetSurfaceViewManager(render_frame_host),
-                        BrowserSurfaceViewManager::OnCreateFullscreenSurface)
-    IPC_MESSAGE_FORWARD(SurfaceViewManagerHostMsg_NaturalSizeChanged,
-                        GetSurfaceViewManager(render_frame_host),
-                        BrowserSurfaceViewManager::OnNaturalSizeChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

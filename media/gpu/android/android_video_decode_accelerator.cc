@@ -39,7 +39,6 @@
 #include "media/base/video_decoder_config.h"
 #include "media/gpu/android/android_video_surface_chooser_impl.h"
 #include "media/gpu/android/avda_picture_buffer_manager.h"
-#include "media/gpu/android/content_video_view_overlay.h"
 #include "media/gpu/android/device_info.h"
 #include "media/gpu/android/promotion_hint_aggregator_impl.h"
 #include "media/media_buildflags.h"
@@ -125,7 +124,7 @@ bool ShouldDeferSurfaceCreation(AVDACodecAllocator* codec_allocator,
                                 DeviceInfo* device_info) {
   // TODO(liberato): We might still want to defer if we've got a routing
   // token.  It depends on whether we want to use it right away or not.
-  if (overlay_info.HasValidSurfaceId() || overlay_info.HasValidRoutingToken())
+  if (overlay_info.HasValidRoutingToken())
     return false;
 
   return codec == kCodecH264 && codec_allocator->IsAnyRegisteredAVDA() &&
@@ -379,10 +378,6 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  // SetSurface() can't be called before Initialize(), so we pick up our first
-  // surface ID from the codec configuration.
-  DCHECK(!pending_surface_id_);
-
   // We signaled that we support deferred initialization, so see if the client
   // does also.
   deferred_initialization_pending_ = config.is_deferred_initialization_allowed;
@@ -394,7 +389,6 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
                                  codec_config_->codec, device_info_)) {
     // We should never be here if a SurfaceView is required.
     // TODO(liberato): This really isn't true with AndroidOverlay.
-    DCHECK(!config_.overlay_info.HasValidSurfaceId());
     defer_surface_creation_ = true;
   }
 
@@ -452,7 +446,6 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
   // surface creation for other reasons, in which case the sync path with just
   // signal success optimistically.
   if (during_initialize_ && !deferred_initialization_pending_) {
-    DCHECK(!config_.overlay_info.HasValidSurfaceId());
     DCHECK(!config_.overlay_info.HasValidRoutingToken());
     // Note that we might still send feedback to |surface_chooser_|, which might
     // call us back.  However, it will only ever tell us to use TextureOwner,
@@ -465,11 +458,7 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
   // told not to use an overlay (kNoSurfaceID or a null routing token), then we
   // leave the factory blank.
   AndroidOverlayFactoryCB factory;
-  if (config_.overlay_info.HasValidSurfaceId()) {
-    factory = base::BindRepeating(&ContentVideoViewOverlay::Create,
-                                  config_.overlay_info.surface_id);
-  } else if (config_.overlay_info.HasValidRoutingToken() &&
-             overlay_factory_cb_) {
+  if (config_.overlay_info.HasValidRoutingToken() && overlay_factory_cb_) {
     factory = base::BindRepeating(overlay_factory_cb_,
                                   *config_.overlay_info.routing_token);
   }
@@ -1340,20 +1329,15 @@ void AndroidVideoDecodeAccelerator::SetOverlayInfo(
 
   // Note that these might be kNoSurfaceID / empty.  In that case, we will
   // revoke the factory.
-  int32_t surface_id = overlay_info.surface_id;
   OverlayInfo::RoutingToken routing_token = overlay_info.routing_token;
 
   // We don't want to change the factory unless this info has actually changed.
   // We'll get the same info many times if some other part of the config is now
   // different, such as fullscreen state.
   base::Optional<AndroidOverlayFactoryCB> new_factory;
-  if (surface_id != previous_info.surface_id ||
-      routing_token != previous_info.routing_token) {
+  if (routing_token != previous_info.routing_token) {
     if (routing_token && overlay_factory_cb_)
       new_factory = base::BindRepeating(overlay_factory_cb_, *routing_token);
-    else if (surface_id != SurfaceManager::kNoSurfaceID)
-      new_factory =
-          base::BindRepeating(&ContentVideoViewOverlay::Create, surface_id);
   }
 
   surface_chooser_helper_.UpdateChooserState(new_factory);

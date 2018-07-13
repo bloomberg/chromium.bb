@@ -10,7 +10,6 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "media/base/media_export.h"
-#include "media/base/surface_manager.h"
 
 namespace media {
 
@@ -25,16 +24,11 @@ struct MEDIA_EXPORT OverlayInfo {
   // Convenience functions to return true if and only if this specifies a
   // surface ID / routing token that is not kNoSurfaceID / empty.  I.e., if we
   // provide enough info to create an overlay.
-  bool HasValidSurfaceId() const;
   bool HasValidRoutingToken() const;
 
   // Whether |other| refers to the same (surface_id, routing_token) pair as
   // |this|.
   bool RefersToSameOverlayAs(const OverlayInfo& other);
-
-  // This is the SurfaceManager surface id, or SurfaceManager::kNoSurfaceID to
-  // indicate that no surface from SurfaceManager should be used.
-  int surface_id = SurfaceManager::kNoSurfaceID;
 
   // The routing token for AndroidOverlay, if any.
   RoutingToken routing_token;

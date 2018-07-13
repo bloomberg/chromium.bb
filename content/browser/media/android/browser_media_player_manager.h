@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "content/browser/android/content_video_view.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
 #include "media/base/android/media_player_android.h"
@@ -37,8 +36,7 @@ class WebContents;
 // MediaPlayerAndroid objects are converted to IPCs and then sent to the render
 // process.
 class CONTENT_EXPORT BrowserMediaPlayerManager
-    : public media::MediaPlayerManager,
-      public ContentVideoView::Client {
+    : public media::MediaPlayerManager {
  public:
   // Permits embedders to provide an extended version of the class.
   typedef BrowserMediaPlayerManager* (*Factory)(RenderFrameHost*);
@@ -57,10 +55,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 #endif
 
   ~BrowserMediaPlayerManager() override;
-
-  // ContentVideoView::Client implementation.
-  void DidExitFullscreen(bool release_media_player) override;
-  void SetVideoSurface(gl::ScopedJavaSurface surface) override;
 
   // Called when browser player wants the renderer media element to seek.
   // Any actual seek started by renderer will be handled by browser in OnSeek().
@@ -87,13 +81,11 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   media::MediaResourceGetter* GetMediaResourceGetter() override;
   media::MediaUrlInterceptor* GetMediaUrlInterceptor() override;
-  media::MediaPlayerAndroid* GetFullscreenPlayer() override;
   media::MediaPlayerAndroid* GetPlayer(int player_id) override;
   bool RequestPlay(int player_id, base::TimeDelta duration,
                    bool has_audio) override;
 
   // Message handlers.
-  virtual void OnEnterFullscreen(int player_id);
   virtual void OnInitialize(
       const MediaPlayerHostMsg_Initialize_Params& media_player_params);
   virtual void OnStart(int player_id);
@@ -171,10 +163,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // requested, a player may be in a paused or error state and the manager
   // will release its resources later.
   ActivePlayerMap active_players_;
-
-  // The fullscreen video view object or NULL if video is not played in
-  // fullscreen.
-  std::unique_ptr<ContentVideoView> video_view_;
 
   // Player ID of the fullscreen media player.
   int fullscreen_player_id_;

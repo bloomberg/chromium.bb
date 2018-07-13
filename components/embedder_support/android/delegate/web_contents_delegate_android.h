@@ -102,8 +102,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
       const content::NativeWebKeyboardEvent& event) override;
   bool TakeFocus(content::WebContents* source, bool reverse) override;
   void ShowRepostFormWarningDialog(content::WebContents* source) override;
-  base::android::ScopedJavaLocalRef<jobject> GetContentVideoViewEmbedder()
-      override;
   bool ShouldBlockMediaRequest(const GURL& url) override;
   void EnterFullscreenModeForTab(
       content::WebContents* web_contents,

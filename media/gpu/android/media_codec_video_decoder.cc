@@ -797,7 +797,6 @@ void MediaCodecVideoDecoder::ReleaseCodec() {
 }
 
 AndroidOverlayFactoryCB MediaCodecVideoDecoder::CreateOverlayFactoryCb() {
-  DCHECK(!overlay_info_.HasValidSurfaceId());
   if (!overlay_factory_cb_ || !overlay_info_.HasValidRoutingToken())
     return AndroidOverlayFactoryCB();
 

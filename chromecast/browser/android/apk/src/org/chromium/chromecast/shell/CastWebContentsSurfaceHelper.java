@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.os.Handler;
 
 import org.chromium.base.Log;
-import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.chromecast.base.Both;
 import org.chromium.chromecast.base.Consumer;
@@ -22,9 +21,7 @@ import org.chromium.chromecast.base.Observable;
 import org.chromium.chromecast.base.ScopeFactories;
 import org.chromium.chromecast.base.ScopeFactory;
 import org.chromium.chromecast.base.Unit;
-import org.chromium.components.embedder_support.media.ActivityContentVideoViewEmbedder;
 import org.chromium.content.browser.MediaSessionImpl;
-import org.chromium.content_public.browser.ContentVideoViewEmbedder;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -39,7 +36,6 @@ import org.chromium.content_public.browser.WebContents;
  * is destroyed, or CastWebContentsActivity is closed, CastContentWindowAndroid should be
  * notified by intent.
  */
-@JNINamespace("chromecast::shell")
 class CastWebContentsSurfaceHelper {
     private static final String TAG = "cr_CastWebContents";
 
@@ -56,7 +52,6 @@ class CastWebContentsSurfaceHelper {
     private final Handler mHandler;
 
     private String mInstanceId;
-    private ContentVideoViewEmbedderSetter mContentVideoViewEmbedderSetter;
     private MediaSessionGetter mMediaSessionGetter;
 
     // TODO(vincentli) interrupt touch event from Fragment's root view when it's false.
@@ -115,9 +110,6 @@ class CastWebContentsSurfaceHelper {
             Consumer<Uri> finishCallback) {
         mFinishCallback = finishCallback;
         mHandler = new Handler();
-        mContentVideoViewEmbedderSetter =
-                (WebContents webContents, ContentVideoViewEmbedder embedder)
-                -> nativeSetContentVideoViewEmbedder(webContents, embedder);
 
         mMediaSessionGetter =
                 (WebContents webContents) -> MediaSessionImpl.fromWebContents(webContents);
@@ -173,9 +165,6 @@ class CastWebContentsSurfaceHelper {
 
         // Miscellaneous actions responding to WebContents lifecycle.
         mWebContentsState.watch((WebContents webContents) -> {
-            // Set ContentVideoViewEmbedder to allow video playback.
-            mContentVideoViewEmbedderSetter.set(
-                    webContents, new ActivityContentVideoViewEmbedder(hostActivity));
             // Whenever our app is visible, volume controls should modify the music stream.
             // For more information read:
             // http://developer.android.com/training/managing-audio/volume-playback.html
@@ -237,16 +226,4 @@ class CastWebContentsSurfaceHelper {
     interface MediaSessionGetter {
         MediaSessionImpl get(WebContents webContents);
     }
-
-    @RemovableInRelease
-    void setContentVideoViewEmbedderSetterForTesting(ContentVideoViewEmbedderSetter cvves) {
-        mContentVideoViewEmbedderSetter = cvves;
-    }
-
-    interface ContentVideoViewEmbedderSetter {
-        void set(WebContents webContents, ContentVideoViewEmbedder embedder);
-    }
-
-    private native void nativeSetContentVideoViewEmbedder(
-            WebContents webContents, ContentVideoViewEmbedder embedder);
 }

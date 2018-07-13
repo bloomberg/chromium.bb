@@ -113,10 +113,6 @@ class TestGpuService : public mojom::GpuService {
 
   void LoadedShader(const std::string& key, const std::string& data) override {}
 
-  void DestroyingVideoSurface(
-      int32_t surface_id,
-      DestroyingVideoSurfaceCallback callback) override {}
-
   void WakeUpGpu() override {}
 
   void GpuSwitched() override {}

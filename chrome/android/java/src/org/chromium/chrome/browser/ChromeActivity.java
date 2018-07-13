@@ -147,7 +147,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.content_public.browser.ContentVideoView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
@@ -1778,12 +1777,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @return Whether the fullscreen mode is currently showing.
      */
     protected boolean exitFullscreenIfShowing() {
-        ContentVideoView view = ContentVideoView.getInstance();
-        if (view != null && view.createdWithContext(this)) {
-            view.exitFullscreen(false);
-            return true;
-        }
-
         ChromeFullscreenManager fullscreenManager = getFullscreenManager();
         if (fullscreenManager != null && fullscreenManager.getPersistentFullscreenMode()) {
             fullscreenManager.exitPersistentFullscreenMode();

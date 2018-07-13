@@ -152,8 +152,6 @@ class Shell : public WebContentsDelegate,
                            bool to_different_document) override;
 #if defined(OS_ANDROID)
   void LoadProgressChanged(WebContents* source, double progress) override;
-  base::android::ScopedJavaLocalRef<jobject>
-      GetContentVideoViewEmbedder() override;
   void SetOverlayMode(bool use_overlay_mode) override;
 #endif
   void EnterFullscreenModeForTab(

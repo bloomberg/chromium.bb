@@ -136,7 +136,6 @@ import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWra
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
-import org.chromium.content_public.browser.ContentVideoView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
@@ -2071,13 +2070,8 @@ public class ChromeTabbedActivity
 
     @Override
     protected void showAppMenuForKeyboardEvent() {
-        if (!mUIInitialized || isFullscreenVideoPlaying()) return;
+        if (!mUIInitialized) return;
         super.showAppMenuForKeyboardEvent();
-    }
-
-    private boolean isFullscreenVideoPlaying() {
-        ContentVideoView view = ContentVideoView.getInstance();
-        return view != null && view.createdWithContext(this);
     }
 
     @Override
