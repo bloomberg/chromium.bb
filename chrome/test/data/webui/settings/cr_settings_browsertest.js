@@ -975,6 +975,7 @@ CrSettingsSiteEntryTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'test_local_data_browser_proxy.js',
     'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_entry_tests.js',

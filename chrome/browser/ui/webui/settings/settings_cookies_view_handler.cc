@@ -52,11 +52,6 @@ int GetCategoryLabelID(CookieTreeNode::DetailedInfo::NodeType node_type) {
   } kCategoryLabels[] = {
       // Multiple keys (node_type) may have the same value (id).
 
-      {CookieTreeNode::DetailedInfo::TYPE_COOKIES,
-       IDS_SETTINGS_COOKIES_SINGLE_COOKIE},
-      {CookieTreeNode::DetailedInfo::TYPE_COOKIE,
-       IDS_SETTINGS_COOKIES_SINGLE_COOKIE},
-
       {CookieTreeNode::DetailedInfo::TYPE_DATABASES,
        IDS_SETTINGS_COOKIES_DATABASE_STORAGE},
       {CookieTreeNode::DetailedInfo::TYPE_DATABASE,
@@ -177,6 +172,10 @@ void CookiesViewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "localData.getCookieDetails",
       base::BindRepeating(&CookiesViewHandler::HandleGetCookieDetails,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "localData.getNumCookiesString",
+      base::BindRepeating(&CookiesViewHandler::HandleGetNumCookiesString,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "localData.removeCookie",
@@ -310,6 +309,61 @@ void CookiesViewHandler::HandleGetCookieDetails(const base::ListValue* args) {
   SendCookieDetails(node);
 }
 
+void CookiesViewHandler::HandleGetNumCookiesString(
+    const base::ListValue* args) {
+  CHECK_EQ(2U, args->GetSize());
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+  base::string16 etld_plus1;
+  CHECK(args->GetString(1, &etld_plus1));
+
+  AllowJavascript();
+  CHECK(cookies_tree_model_.get());
+  // This method is only interested in the number of cookies, so don't save the
+  // filter and keep the existing |sorted_sites_| list.
+  if (etld_plus1 != filter_)
+    cookies_tree_model_->UpdateSearchResults(etld_plus1);
+
+  int num_cookies = 0;
+  const CookieTreeNode* root = cookies_tree_model_->GetRoot();
+  for (int i = 0; i < root->child_count(); ++i) {
+    const CookieTreeNode* site = root->GetChild(i);
+    const base::string16& title = site->GetTitle();
+    if (!base::EndsWith(title, etld_plus1,
+                        base::CompareCase::INSENSITIVE_ASCII)) {
+      continue;
+    }
+
+    for (int j = 0; j < site->child_count(); ++j) {
+      const CookieTreeNode* category = site->GetChild(j);
+      if (category->GetDetailedInfo().node_type !=
+          CookieTreeNode::DetailedInfo::TYPE_COOKIES) {
+        continue;
+      }
+
+      for (int k = 0; k < category->child_count(); ++k) {
+        if (category->GetChild(k)->GetDetailedInfo().node_type !=
+            CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
+          continue;
+        }
+
+        ++num_cookies;
+      }
+    }
+  }
+
+  if (etld_plus1 != filter_) {
+    // Restore the original |filter_|.
+    cookies_tree_model_->UpdateSearchResults(filter_);
+  }
+  const base::string16 string =
+      num_cookies > 0 ? l10n_util::GetPluralStringFUTF16(
+                            IDS_SETTINGS_SITE_SETTINGS_NUM_COOKIES, num_cookies)
+                      : base::string16();
+
+  ResolveJavascriptCallback(base::Value(callback_id), base::Value(string));
+}
+
 void CookiesViewHandler::HandleGetDisplayList(const base::ListValue* args) {
   CHECK(request_.callback_id_.empty());
   CHECK_EQ(2U, args->GetSize());
@@ -417,32 +471,35 @@ void CookiesViewHandler::SendLocalDataList(const CookieTreeNode* parent) {
   std::unique_ptr<base::ListValue> site_list(new base::ListValue);
   for (int i = 0; i < list_item_count; ++i) {
     const CookieTreeNode* site = parent->GetChild(sorted_sites_[i].second);
-    std::string description;
+    base::string16 description;
     for (int k = 0; k < site->child_count(); ++k) {
+      if (description.size()) {
+        description += base::ASCIIToUTF16(", ");
+      }
       const CookieTreeNode* category = site->GetChild(k);
       const auto node_type = category->GetDetailedInfo().node_type;
-      if (node_type == CookieTreeNode::DetailedInfo::TYPE_QUOTA) {
-        // TODO(crbug.com/642955): Omit quota values until bug is addressed.
-        continue;
-      }
-      int ids_value = GetCategoryLabelID(node_type);
-      if (!ids_value) {
-        // If we don't have a label to call it by, don't show it. Please add
-        // a label ID if an expected category is not appearing in the UI.
-        continue;
-      }
-      if (description.size()) {
-        description += ", ";
-      }
       int item_count = category->child_count();
-      if (category->GetDetailedInfo().node_type ==
-              CookieTreeNode::DetailedInfo::TYPE_COOKIES &&
-          item_count > 1) {
-        description +=
-            l10n_util::GetStringFUTF8(IDS_SETTINGS_COOKIES_PLURAL_COOKIES,
-                                      base::FormatNumber(item_count));
-      } else {
-        description += l10n_util::GetStringUTF8(ids_value);
+      switch (node_type) {
+        case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
+          // TODO(crbug.com/642955): Omit quota values until bug is addressed.
+          continue;
+        case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
+          DCHECK_EQ(0, item_count);
+          item_count = 1;
+          FALLTHROUGH;
+        case CookieTreeNode::DetailedInfo::TYPE_COOKIES:
+          description += l10n_util::GetPluralStringFUTF16(
+              IDS_SETTINGS_SITE_SETTINGS_NUM_COOKIES, item_count);
+          break;
+        default:
+          int ids_value = GetCategoryLabelID(node_type);
+          if (!ids_value) {
+            // If we don't have a label to call it by, don't show it. Please add
+            // a label ID if an expected category is not appearing in the UI.
+            continue;
+          }
+          description += l10n_util::GetStringUTF16(ids_value);
+          break;
       }
     }
     std::unique_ptr<base::DictionaryValue> list_info(new base::DictionaryValue);

@@ -6,7 +6,6 @@
  * @fileoverview
  * 'site-entry' is an element representing a single eTLD+1 site entity.
  */
-
 Polymer({
   is: 'site-entry',
 
@@ -28,6 +27,24 @@ Polymer({
      * @private
      */
     displayName_: String,
+
+    /**
+     * The string to display when there is a non-zero number of cookies.
+     * @private
+     */
+    cookieString_: {
+      type: String,
+      value: '',
+    },
+  },
+
+  /** @private {?settings.LocalDataBrowserProxy} */
+  localDataBrowserProxy_: null,
+
+  /** @override */
+  created: function() {
+    this.localDataBrowserProxy_ =
+        settings.LocalDataBrowserProxyImpl.getInstance();
   },
 
   /**
@@ -75,9 +92,28 @@ Polymer({
   onSiteGroupChanged_: function(siteGroup) {
     this.displayName_ = this.siteRepresentation_(siteGroup, -1);
 
-    // Ensure ungrouped |siteGroup|s do not get stuck in an opened state.
-    if (!this.grouped_(SiteGroup) && this.$.collapseChild.opened)
-      this.toggleCollapsible_();
+    if (!this.grouped_(SiteGroup)) {
+      // Ensure ungrouped |siteGroup|s do not get stuck in an opened state.
+      if (this.$.collapseChild.opened)
+        this.toggleCollapsible_();
+      // Ungrouped site-entries should not show cookies.
+      if (this.cookieString_) {
+        this.cookieString_ = '';
+        this.fire('site-entry-resized');
+      }
+    }
+    if (!siteGroup || !this.grouped_(siteGroup))
+      return;
+
+    this.localDataBrowserProxy_.getNumCookiesString(this.displayName_)
+        .then(string => {
+          // If there was no cookie string previously and now there is, or vice
+          // versa, the height of this site-entry will have changed.
+          if ((this.cookieString_ == '') != (string == ''))
+            this.fire('site-entry-resized');
+
+          this.cookieString_ = string;
+        });
   },
 
   /**

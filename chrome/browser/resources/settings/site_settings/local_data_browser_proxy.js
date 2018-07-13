@@ -69,6 +69,13 @@ cr.define('settings', function() {
     getCookieDetails(site) {}
 
     /**
+     * Gets the number of cookies formatted in a plural string, given a site.
+     * @param {string} site The site to count cookies for.
+     * @return {!Promise<string>}
+     */
+    getNumCookiesString(site) {}
+
+    /**
      * Reloads all local data.
      * TODO(dschuyler): rename function to reload().
      * @return {!Promise} To signal completion.
@@ -110,6 +117,11 @@ cr.define('settings', function() {
     /** @override */
     getCookieDetails(site) {
       return cr.sendWithPromise('localData.getCookieDetails', site);
+    }
+
+    /** @override */
+    getNumCookiesString(site) {
+      return cr.sendWithPromise('localData.getNumCookiesString', site);
     }
 
     /** @override */

@@ -5,7 +5,7 @@
 suite('SiteEntry', function() {
   /**
    * An example eTLD+1 Object with multiple origins grouped under it.
-   * @type {SiteGroup}
+   * @type {!SiteGroup}
    */
   const TEST_MULTIPLE_SITE_GROUP = test_util.createSiteGroup('example.com', [
     'http://example.com',
@@ -15,17 +15,33 @@ suite('SiteEntry', function() {
 
   /**
    * An example eTLD+1 Object with a single origin in it.
-   * @type {SiteGroup}
+   * @type {!SiteGroup}
    */
   const TEST_SINGLE_SITE_GROUP = test_util.createSiteGroup('foo.com', [
     'https://login.foo.com',
   ]);
+
+  const TEST_COOKIE_LIST = {
+    id: 'foo',
+    children: [
+      {},
+      {},
+      {},
+      {},
+    ]
+  };
 
   /**
    * The mock proxy object to use during test.
    * @type {TestSiteSettingsPrefsBrowserProxy}
    */
   let browserProxy;
+
+  /**
+   * The mock local data proxy object to use during test.
+   * @type {TestLocalDataBrowserProxy}
+   */
+  let localDataBrowserProxy;
 
   /**
    * A site list element created before each test.
@@ -42,7 +58,9 @@ suite('SiteEntry', function() {
   // Initialize a site-list before each test.
   setup(function() {
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
+    localDataBrowserProxy = new TestLocalDataBrowserProxy();
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+    settings.LocalDataBrowserProxyImpl.instance_ = localDataBrowserProxy;
 
     PolymerTest.clearBody();
     testElement = document.createElement('site-entry');
@@ -178,4 +196,38 @@ suite('SiteEntry', function() {
         testElement.onSiteGroupChanged_(testElement.siteGroup);
         assertFalse(testElement.$.collapseChild.opened);
       });
+
+  test('cookies only show when non-zero for grouped entries', function() {
+    localDataBrowserProxy.setCookieDetails(TEST_COOKIE_LIST);
+    testElement.siteGroup = TEST_MULTIPLE_SITE_GROUP;
+    Polymer.dom.flush();
+    const cookiesLabel = testElement.$.cookies;
+    assertEquals('', cookiesLabel.textContent.trim());
+    assertTrue(cookiesLabel.hidden);
+
+    // When the number of cookies is more than zero, the label appears.
+    testElement.onSiteGroupChanged_(TEST_MULTIPLE_SITE_GROUP);
+    return localDataBrowserProxy.whenCalled('getNumCookiesString')
+        .then((args) => {
+          assertEquals('example.com', args);
+          assertFalse(cookiesLabel.hidden);
+          assertEquals(
+              `${TEST_COOKIE_LIST.children.length} cookies`,
+              cookiesLabel.textContent.trim());
+        });
+  });
+
+  test('cookies do not show for ungrouped entries', function() {
+    testElement.siteGroup = TEST_SINGLE_SITE_GROUP;
+    Polymer.dom.flush();
+    const cookiesLabel = testElement.$.cookies;
+    assertTrue(cookiesLabel.hidden);
+    assertEquals('', cookiesLabel.textContent.trim());
+
+    testElement.onSiteGroupChanged_(TEST_SINGLE_SITE_GROUP);
+    // Make sure there was never any call to the back end to retrieve cookies.
+    assertEquals(0, localDataBrowserProxy.getCallCount('getNumCookiesString'));
+    assertEquals('', cookiesLabel.textContent.trim());
+    assertTrue(cookiesLabel.hidden);
+  });
 });

@@ -174,7 +174,9 @@ js_library("site_details_permission") {
 js_library("site_entry") {
   deps = [
     ":constants",
+    ":local_data_browser_proxy",
     ":site_settings_behavior",
+    ":site_settings_prefs_browser_proxy",
     "..:route",
     "//third_party/polymer/v1_0/components-chromium/iron-collapse:iron-collapse-extracted",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
