@@ -63,16 +63,6 @@
       'Linux TSan Tests',  # https://crbug.com/831674
     ],
   },
-  'blink_platform_unittests': {
-    'modifications': {
-      'android-kitkat-arm-rel': {
-        'experiment_percentage': 100,
-      },
-      'android-marshmallow-arm64-rel': {
-        'experiment_percentage': 100,
-      },
-    },
-  },
   'browser_tests': {
     'remove_from': [
       # chromium.clang
