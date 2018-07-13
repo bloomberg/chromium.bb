@@ -395,6 +395,7 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/stack_view",
     "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/browser/ui/tab_switcher",
+    "//ios/chrome/browser/ui/tabs",
     "//ios/chrome/browser/ui/tabs:coordinator",
     "//ios/chrome/browser/ui/tabs/requirements",
     "//ios/chrome/browser/ui/toolbar:toolbar_ui",

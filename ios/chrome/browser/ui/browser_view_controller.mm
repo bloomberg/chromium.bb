@@ -194,6 +194,7 @@
 #import "ios/chrome/browser/ui/stack_view/page_animation_util.h"
 #import "ios/chrome/browser/ui/static_content/static_html_native_content.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_controller.h"
+#import "ios/chrome/browser/ui/tabs/background_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
@@ -5330,14 +5331,28 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)animateNewTabInBackgroundFromPoint:(CGPoint)originPoint
                             withCompletion:(ProceduralBlock)completion {
-  // TODO(crbug.com/843576): Add animation.
-  completion();
+  self.inNewTabAnimation = YES;
+  const CGFloat kAnimatedViewSize = 50;
+  BackgroundTabAnimationView* animatedView = [[BackgroundTabAnimationView alloc]
+      initWithFrame:CGRectMake(0, 0, kAnimatedViewSize, kAnimatedViewSize)];
+  __weak UIView* weakAnimatedView = animatedView;
+  auto completionBlock = ^() {
+    self.inNewTabAnimation = NO;
+    [weakAnimatedView removeFromSuperview];
+    if (completion)
+      completion();
+  };
+  [self.view addSubview:animatedView];
+  [animatedView animateFrom:originPoint
+      toTabGridButtonWithCompletion:completionBlock];
 }
 
 - (void)animateNewTab:(Tab*)tab
     inBackgroundWithCompletion:(ProceduralBlock)completion {
-  // TODO(crbug.com/843576): Do not execute this method once the new animation
-  // is implemented.
+  if (IsUIRefreshPhase1Enabled()) {
+    self.inNewTabAnimation = NO;
+    return;
+  }
 
   // SnapshotTabHelper::UpdateSnapshot will force a screen redraw, so take the
   // snapshot before adding the views needed for the background animation.

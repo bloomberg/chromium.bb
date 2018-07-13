@@ -5,6 +5,8 @@
 source_set("tabs") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "background_tab_animation_view.h",
+    "background_tab_animation_view.mm",
     "tab_strip_controller+placeholder_view.h",
     "tab_strip_controller.h",
     "tab_strip_controller.mm",
@@ -22,6 +24,7 @@ source_set("tabs") {
     "//ios/chrome/browser/tabs",
   ]
   deps = [
+    "resources:open_new_tab_background",
     "resources:tabstrip_background_tab",
     "resources:tabstrip_background_tab_legacy",
     "resources:tabstrip_foreground_tab",
@@ -67,6 +70,7 @@ source_set("tabs") {
     "//ios/chrome/browser/ui/tabs/requirements",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web_state_list",
+    "//ios/chrome/common",
     "//ios/third_party/material_components_ios",
     "//ios/web",
     "//third_party/google_toolbox_for_mac",
