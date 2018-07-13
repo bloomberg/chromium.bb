@@ -105,24 +105,23 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 
 namespace blink {
+
+bool WebGLRenderingContextBase::webgl_context_limits_initialized_ = false;
+unsigned WebGLRenderingContextBase::max_active_webgl_contexts_ = 0;
+unsigned WebGLRenderingContextBase::max_active_webgl_contexts_on_worker_ = 0;
 
 namespace {
 
 constexpr TimeDelta kDurationBetweenRestoreAttempts = TimeDelta::FromSeconds(1);
 const int kMaxGLErrorsAllowedToConsole = 256;
-const unsigned kMaxGLActiveContextsOnWorker = 4;
 
-#if defined(OS_ANDROID)
-const unsigned kMaxGLActiveContexts = 8;
-#else   // defined(OS_ANDROID)
-const unsigned kMaxGLActiveContexts = 16;
-#endif  // defined(OS_ANDROID)
-
-unsigned CurrentMaxGLContexts() {
-  return IsMainThread() ? kMaxGLActiveContexts : kMaxGLActiveContextsOnWorker;
+Mutex& WebGLContextLimitMutex() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
+  return mutex;
 }
 
 using WebGLRenderingContextBaseSet =
@@ -178,6 +177,25 @@ ScopedRGBEmulationColorMask::~ScopedRGBEmulationColorMask() {
     context_->ContextGL()->ColorMask(color_mask_[0], color_mask_[1],
                                      color_mask_[2], color_mask_[3]);
   }
+}
+
+void WebGLRenderingContextBase::InitializeWebGLContextLimits(
+    const DrawingBuffer::WebGLContextLimits& limits) {
+  MutexLocker locker(WebGLContextLimitMutex());
+  if (!webgl_context_limits_initialized_) {
+    // These do not change over the lifetime of the browser.
+    max_active_webgl_contexts_ = limits.max_active_webgl_contexts;
+    max_active_webgl_contexts_on_worker_ =
+        limits.max_active_webgl_contexts_on_worker;
+    webgl_context_limits_initialized_ = true;
+  }
+}
+
+unsigned WebGLRenderingContextBase::CurrentMaxGLContexts() {
+  MutexLocker locker(WebGLContextLimitMutex());
+  DCHECK(webgl_context_limits_initialized_);
+  return IsMainThread() ? max_active_webgl_contexts_
+                        : max_active_webgl_contexts_on_worker_;
 }
 
 void WebGLRenderingContextBase::ForciblyLoseOldestContext(
@@ -1032,6 +1050,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     return;
   }
 
+  InitializeWebGLContextLimits(buffer->webgl_context_limits());
   drawing_buffer_ = std::move(buffer);
   GetDrawingBuffer()->Bind(GL_FRAMEBUFFER);
   SetupFlags();

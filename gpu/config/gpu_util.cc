@@ -484,6 +484,23 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
     }
   }
 
+// Set default context limits for WebGL.
+#if defined(OS_ANDROID)
+  gpu_feature_info.webgl_preferences.max_active_webgl_contexts = 8u;
+#else
+  gpu_feature_info.webgl_preferences.max_active_webgl_contexts = 16u;
+#endif
+  gpu_feature_info.webgl_preferences.max_active_webgl_contexts_on_worker = 4u;
+
+  uint32_t override_val = gpu_preferences.max_active_webgl_contexts;
+  if (override_val) {
+    // It shouldn't be common for users to override this. If they do,
+    // just override both values.
+    gpu_feature_info.webgl_preferences.max_active_webgl_contexts = override_val;
+    gpu_feature_info.webgl_preferences.max_active_webgl_contexts_on_worker =
+        override_val;
+  }
+
   return gpu_feature_info;
 }
 

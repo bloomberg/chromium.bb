@@ -14,11 +14,11 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/service_utils.h"
+#include "gpu/config/gpu_switches.h"
 #include "media/media_buildflags.h"
 
 namespace {
 
-#if defined(OS_WIN)
 bool GetUintFromSwitch(const base::CommandLine* command_line,
                        const base::StringPiece& switch_string,
                        uint32_t* value) {
@@ -27,7 +27,6 @@ bool GetUintFromSwitch(const base::CommandLine* command_line,
   std::string switch_value(command_line->GetSwitchValueASCII(switch_string));
   return base::StringToUint(switch_value, value);
 }
-#endif  // defined(OS_WIN)
 
 void RunTaskOnTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -81,6 +80,8 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       command_line->HasSwitch(switches::kDisableSoftwareRasterizer);
   gpu_preferences.log_gpu_control_list_decisions =
       command_line->HasSwitch(switches::kLogGpuControlListDecisions);
+  GetUintFromSwitch(command_line, switches::kMaxActiveWebGLContexts,
+                    &gpu_preferences.max_active_webgl_contexts);
   gpu_preferences.gpu_startup_dialog =
       command_line->HasSwitch(switches::kGpuStartupDialog);
   gpu_preferences.disable_gpu_watchdog =
