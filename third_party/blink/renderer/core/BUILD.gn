@@ -28,13 +28,6 @@ rel_blink_core_gen_dir = rebase_path(blink_core_output_dir, root_build_dir)
 # Config for code that builds as part of core.
 config("config") {
   defines = [ "BLINK_CORE_IMPLEMENTATION=1" ]
-
-  cflags = []
-  if (is_win) {
-    # Suppress __declspec(dllexport)/extern conflict (C4910).
-    cflags += [ "/wd4910" ]
-  }
-
   if (is_chromecast) {
     defines += [ "BLINK_MEDIA_LOG=LOG(INFO)" ]
   }

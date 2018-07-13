@@ -157,10 +157,11 @@ class NGInlineItemsBuilderTemplate {
 };
 
 template <>
-String NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::ToString();
+CORE_EXPORT String
+NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::ToString();
 
 template <>
-bool NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::Append(
+CORE_EXPORT bool NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::Append(
     const String&,
     LayoutObject*,
     const Vector<NGInlineItem*>&);
