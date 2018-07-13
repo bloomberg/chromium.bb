@@ -58,6 +58,9 @@ enum SandboxType {
   // The profiling service process.
   SANDBOX_TYPE_PROFILING,
 
+  // The audio service process.
+  SANDBOX_TYPE_AUDIO,
+
   SANDBOX_TYPE_AFTER_LAST_TYPE,  // Placeholder to ease iteration.
 };
 

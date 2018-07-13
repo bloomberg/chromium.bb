@@ -1,7 +1,7 @@
 {
   "name": "audio",
   "display_name": "Audio",
-  "sandbox_type": "none",
+  "sandbox_type": "audio",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
