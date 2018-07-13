@@ -24,7 +24,8 @@ ArcKioskAppLauncher::ArcKioskAppLauncher(content::BrowserContext* context,
   prefs_->AddObserver(this);
   aura::Env::GetInstance()->AddObserver(this);
   // Launching the app by app id in landscape mode and in non-touch mode.
-  arc::LaunchApp(context, app_id_, ui::EF_NONE);
+  arc::LaunchApp(context, app_id_, ui::EF_NONE,
+                 arc::UserInteractionType::NOT_USER_INITIATED);
 }
 
 ArcKioskAppLauncher::~ArcKioskAppLauncher() {
