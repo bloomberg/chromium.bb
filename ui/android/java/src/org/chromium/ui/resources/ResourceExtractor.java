@@ -149,18 +149,85 @@ public class ResourceExtractor {
                 activeLocales.add(locale);
             }
         }
-        if (activeLocales.isEmpty() && BuildConfig.COMPRESSED_LOCALES.length > 0) {
+        if (activeLocales.isEmpty()) {
+            assert BuildConfig.COMPRESSED_LOCALES.length > 0;
             assert Arrays.asList(BuildConfig.COMPRESSED_LOCALES).contains(FALLBACK_LOCALE);
             activeLocales.add(FALLBACK_LOCALE);
         }
+
+        // * For regular APKs, the locale pak files are stored under:
+        //      base.apk!/assets/locales/<locale>.pak
+        //
+        //   where <locale> is a Chromium-specific locale name.
+        //
+        // * When using app bundles, the locale pak files are stored in
+        //   language-specific directories that look like:
+        //      <split>.apk!/assets/locales#lang_<lang>/<locale>.pak
+        //
+        //   Where <lang> is an Android-specific ISO-639-1 language identifier.
+        //
+        //   Moreover, when the bundle uses APK splits, there is no guarantee that the split
+        //   corresponding to the current device locale is installed yet, but the one matching
+        //   uiLanguage should be there, since the value is determined by loading a resource string
+        //   from the current application's asset manager.
+        //
+        AssetManager assetManager = ContextUtils.getApplicationAssets();
+        String localesSrcDir;
+        String langSpecificPath = COMPRESSED_LOCALES_DIR + "#lang_" + uiLanguage;
+        String defaultLocalePakName =
+                LocalizationUtils.getDefaultCompressedPakLocaleForLanguage(uiLanguage) + ".pak";
+
+        if (assetPathHasFile(assetManager, langSpecificPath, defaultLocalePakName)) {
+            // This is an app bundle, and the split containing the pak files for
+            // the current locale is installed.
+            localesSrcDir = langSpecificPath;
+        } else if (assetPathHasFile(
+                           assetManager, COMPRESSED_LOCALES_DIR, activeLocales.get(0) + ".pak")) {
+            // This is a regular APK, and all pak files are available.
+            localesSrcDir = COMPRESSED_LOCALES_DIR;
+        } else {
+            // This is an app bundle, but the split containing the pak files for the current UI
+            // locale is *not* installed yet. This should never happen in theory, and there is
+            // little that can be done at this point, so return an empty list. Nothing will get
+            // extracted, and Chromium may later crash when trying to access the PAK file from
+            // native code.
+            Log.e(TAG, "Android Locale: %s misses split for .pak files: %s", defaultLocale,
+                    Arrays.toString(activeLocales.toArray()));
+            return new String[] {};
+        }
+
+        // Return the list of locale pak file paths corresponding to the current language.
         String[] localePakFiles = new String[activeLocales.size()];
         for (int n = 0; n < activeLocales.size(); ++n) {
-            localePakFiles[n] = COMPRESSED_LOCALES_DIR + '/' + activeLocales.get(n) + ".pak";
+            localePakFiles[n] = localesSrcDir + '/' + activeLocales.get(n) + ".pak";
         }
+        Log.i(TAG, "Using app bundle locale directory: " + localesSrcDir);
         Log.i(TAG, "UI Language: %s requires .pak files: %s", uiLanguage,
                 Arrays.toString(activeLocales.toArray()));
 
         return localePakFiles;
+    }
+
+    /**
+     * Check that an AssetManager instance has a specific asset file.
+     *
+     * @param assetManager The application's AssetManager instance.
+     * @param assetPath Asset directory path (e.g. "assets/locales").
+     * @param assetFile Asset file name inside assetPath.
+     * @return true iff the asset file is available.
+     */
+    private static boolean assetPathHasFile(
+            AssetManager assetManager, String assetPath, String assetFile) {
+        String assetFilePath = assetPath + '/' + assetFile;
+        try {
+            InputStream input = assetManager.open(assetFilePath);
+            input.close();
+            Log.i(TAG, "Found asset file: " + assetFilePath);
+            return true;
+        } catch (IOException e) {
+            Log.i(TAG, "Missing asset file: " + assetFilePath);
+            return false;
+        }
     }
 
     /**

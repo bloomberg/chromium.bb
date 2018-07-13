@@ -27,6 +27,7 @@ EMPTY_ANDROID_MANIFEST_PATH = os.path.join(
 
 # A variation of this lists also exists in:
 # //base/android/java/src/org/chromium/base/LocaleUtils.java
+# //ui/android/java/src/org/chromium/base/LocalizationUtils.java
 CHROME_TO_ANDROID_LOCALE_MAP = {
     'en-GB': 'en-rGB',
     'en-US': 'en-rUS',

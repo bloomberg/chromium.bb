@@ -1557,6 +1557,8 @@ android_app_bundle("chrome_public_bundle") {
   # To ease local testing, also generate the .apks archive containing split
   # APKs for this bundle.
   generate_apks = true
+
+  enable_language_splits = true
 }
 
 android_app_bundle("chrome_modern_public_bundle") {

@@ -55,6 +55,8 @@ def _ParseArgs(args):
   parser.add_argument('--uncompress-shared-libraries', action='append',
                       help='Whether to store native libraries uncompressed. '
                       'This is a string to allow @FileArg usage.')
+  parser.add_argument('--split-dimensions',
+                      help="GN-list of split dimensions to support.")
   parser.add_argument('--keystore-path', help='Keystore path')
   parser.add_argument('--keystore-password', help='Keystore password')
   parser.add_argument('--key-name', help='Keystore key name')
@@ -74,14 +76,15 @@ def _ParseArgs(args):
 
   # Merge all uncompressed assets into a set.
   uncompressed_list = []
-  for l in options.uncompressed_assets:
-    for entry in build_utils.ParseGnList(l):
-      # Each entry has the following format: 'zipPath' or 'srcPath:zipPath'
-      pos = entry.find(':')
-      if pos >= 0:
-        uncompressed_list.append(entry[pos + 1:])
-      else:
-        uncompressed_list.append(entry)
+  if options.uncompressed_assets:
+    for l in options.uncompressed_assets:
+      for entry in build_utils.ParseGnList(l):
+        # Each entry has the following format: 'zipPath' or 'srcPath:zipPath'
+        pos = entry.find(':')
+        if pos >= 0:
+          uncompressed_list.append(entry[pos + 1:])
+        else:
+          uncompressed_list.append(entry)
 
   options.uncompressed_assets = set(uncompressed_list)
 
@@ -89,8 +92,16 @@ def _ParseArgs(args):
   if options.uncompress_shared_libraries:
     uncompressed_libs = set(options.uncompress_shared_libraries)
     if len(uncompressed_libs) > 1:
-      raise Exception('Inconsistent uses of --uncompress-native-libs!')
+      parser.error('Inconsistent uses of --uncompress-native-libs!')
     options.uncompress_shared_libraries = 'True' in uncompressed_libs
+
+  # Check that all split dimensions are valid
+  if options.split_dimensions:
+    options.split_dimensions = build_utils.ParseGnList(options.split_dimensions)
+    for dim in options.split_dimensions:
+      if dim.upper() not in _ALL_SPLIT_DIMENSIONS:
+        parser.error('Invalid split dimension "%s" (expected one of: %s)' % (
+            dim, ', '.join(x.lower() for x in _ALL_SPLIT_DIMENSIONS)))
 
   return options
 
@@ -160,19 +171,20 @@ def _RewriteLanguageAssetPath(src_path):
     return src_path
 
   locale = src_path[len(_LOCALES_SUBDIR):-4]
-  locale = resource_utils.CHROME_TO_ANDROID_LOCALE_MAP.get(locale, locale)
+  android_locale = resource_utils.CHROME_TO_ANDROID_LOCALE_MAP.get(
+      locale, locale)
 
   # The locale format is <lang>-<region> or <lang>. Extract the language.
-  pos = locale.find('-')
+  pos = android_locale.find('-')
   if pos >= 0:
-    language = locale[:pos]
+    android_language = android_locale[:pos]
   else:
-    language = locale
+    android_language = android_locale
 
-  if language == _FALLBACK_LANGUAGE:
+  if android_language == _FALLBACK_LANGUAGE:
     return 'assets/locales/%s.pak' % locale
 
-  return 'assets/locales#lang_%s/%s.pak' % (language, locale)
+  return 'assets/locales#lang_%s/%s.pak' % (android_language, locale)
 
 
 def _SplitModuleForAssetTargeting(src_module_zip, tmp_dir, split_dimensions):
@@ -224,10 +236,9 @@ def main(args):
   args = build_utils.ExpandFileArgs(args)
   options = _ParseArgs(args)
 
-  # TODO(crbug.com/846633): Enable language-based configuration splits once
-  # Chromium detects the appropriate fallback locales when needed.
-  # split_dimensions = [ 'LANGUAGE' ]
   split_dimensions = []
+  if options.split_dimensions:
+    split_dimensions = [x.upper() for x in options.split_dimensions]
 
   bundle_config = _GenerateBundleConfigJson(options.uncompressed_assets,
                                             options.uncompress_shared_libraries,
