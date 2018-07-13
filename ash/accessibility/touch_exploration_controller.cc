@@ -593,8 +593,8 @@ ui::EventRewriteStatus TouchExplorationController::InOneFingerPassthrough(
   }
   // |event| locations are in DIP; see |RewriteEvent|. We need to dispatch
   // screen coordinates.
-  gfx::PointF location_f(ConvertDIPToScreenInPixels(event.location_f()) -
-                         passthrough_offset_);
+  gfx::PointF location_f(
+      ConvertDIPToScreenInPixels(event.location_f() - passthrough_offset_));
   std::unique_ptr<ui::TouchEvent> new_event(new ui::TouchEvent(
       event.type(), gfx::Point(), event.time_stamp(), event.pointer_details()));
   new_event->set_location_f(location_f);
@@ -701,21 +701,20 @@ void TouchExplorationController::SendSimulatedClickOrTap() {
 }
 
 void TouchExplorationController::SendSimulatedTap() {
-  gfx::PointF screen_point(ConvertDIPToScreenInPixels(anchor_point_dip_));
   std::unique_ptr<ui::TouchEvent> touch_press;
   touch_press.reset(new ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(),
                                        Now(),
                                        initial_press_->pointer_details()));
-  touch_press->set_location_f(screen_point);
-  touch_press->set_root_location_f(screen_point);
+  touch_press->set_location_f(anchor_point_dip_);
+  touch_press->set_root_location_f(anchor_point_dip_);
   DispatchEvent(touch_press.get());
 
   std::unique_ptr<ui::TouchEvent> touch_release;
   touch_release.reset(new ui::TouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(),
                                          Now(),
                                          initial_press_->pointer_details()));
-  touch_release->set_location_f(screen_point);
-  touch_release->set_root_location_f(screen_point);
+  touch_release->set_location_f(anchor_point_dip_);
+  touch_release->set_root_location_f(anchor_point_dip_);
   DispatchEvent(touch_release.get());
 }
 
@@ -898,6 +897,13 @@ void TouchExplorationController::OnPassthroughTimerFired() {
 
 void TouchExplorationController::DispatchEvent(ui::Event* event) {
   SetTouchAccessibilityFlag(event);
+  if (event->IsLocatedEvent()) {
+    ui::LocatedEvent* located_event = event->AsLocatedEvent();
+    gfx::PointF screen_point(
+        ConvertDIPToScreenInPixels(located_event->location_f()));
+    located_event->set_location_f(screen_point);
+    located_event->set_root_location_f(screen_point);
+  }
   ignore_result(
       root_window_->GetHost()->dispatcher()->OnEventFromSource(event));
 }
