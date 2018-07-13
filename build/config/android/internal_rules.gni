@@ -1237,6 +1237,9 @@ if (enable_java_templates) {
     _enable_custom_resources = defined(invoker.enable_build_hooks_android) &&
                                invoker.enable_build_hooks_android
 
+    # Turned off because of existing code which fails the assertion
+    _enable_thread_annotations = false
+
     _desugar = defined(invoker.supports_android) && invoker.supports_android
     _emma_instrument = invoker.emma_instrument
 
@@ -1256,7 +1259,8 @@ if (enable_java_templates) {
     _deps = []
     _previous_output_jar = _input_jar_path
 
-    if (_enable_assert || _enable_custom_resources) {
+    if (_enable_assert || _enable_custom_resources ||
+        _enable_thread_annotations) {
       _java_bytecode_rewriter_target = "${target_name}__bytecode_rewrite"
       _java_bytecode_rewriter_input_jar = _previous_output_jar
       _java_bytecode_rewriter_output_jar =
@@ -1291,6 +1295,9 @@ if (enable_java_templates) {
         }
         if (_enable_custom_resources) {
           args += [ "--enable-custom-resources" ]
+        }
+        if (_enable_thread_annotations) {
+          args += [ "--enable-thread-annotations" ]
         }
         args += [
           "--extra-classpath-jar",
