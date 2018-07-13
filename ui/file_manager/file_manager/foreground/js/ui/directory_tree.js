@@ -1855,7 +1855,8 @@ DirectoryTree.prototype.updateTreeByEntry_ = function(entry) {
         // If entry exists.
         // e.g. /a/b is deleted while watching /a.
         for (var i = 0; i < this.items.length; i++) {
-          if (this.items[i] instanceof VolumeItem)
+          if (this.items[i] instanceof VolumeItem ||
+              this.items[i] instanceof EntryListItem)
             this.items[i].updateItemByEntry(entry);
         }
       }.bind(this),
