@@ -74,7 +74,7 @@ int GetLayoutConstant(LayoutConstant constant) {
     case TAB_ALERT_INDICATOR_ICON_WIDTH:
       return touch_optimized_material ? 12 : 16;
     case TAB_HEIGHT: {
-      constexpr int kTabHeight[] = {29, 33, 41, 36, 41};
+      constexpr int kTabHeight[] = {29, 33, 41, 34, 41};
       return kTabHeight[mode] + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
     }
     case TAB_PRE_TITLE_PADDING:
