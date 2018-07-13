@@ -3114,11 +3114,10 @@
     Manifest
   </message>
 
-  <message name="IDS_SETTINGS_COOKIES_SINGLE_COOKIE" desc="The text displayed when there is one cookie in the Cookies table">
-    1 cookie
-  </message>
-  <message name="IDS_SETTINGS_COOKIES_PLURAL_COOKIES" desc="The text displayed when there are two or more cookies in the Cookies table">
-    <ph name="COOKIES">$1<ex>42</ex></ph> cookies
+  <message name="IDS_SETTINGS_SITE_SETTINGS_NUM_COOKIES" desc="A label showing the number of cookies set on a site.">
+    {NUM_COOKIES, plural,
+        =1 {1 cookie}
+        other {# cookies}}
   </message>
   <message name="IDS_SETTINGS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL" desc="The Database Description label">
     Description

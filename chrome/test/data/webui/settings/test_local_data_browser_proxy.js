@@ -17,6 +17,7 @@ class TestLocalDataBrowserProxy extends TestBrowserProxy {
       'removeShownItems',
       'removeItem',
       'getCookieDetails',
+      'getNumCookiesString',
       'reloadCookies',
       'removeCookie',
     ]);
@@ -30,10 +31,10 @@ class TestLocalDataBrowserProxy extends TestBrowserProxy {
 
   /**
    * Test-only helper.
-   * @param {!CookieList} cookieList
+   * @param {!CookieList} cookieDetails
    */
-  setCookieDetails(cookieList) {
-    this.cookieDetails_ = cookieList;
+  setCookieDetails(cookieDetails) {
+    this.cookieDetails_ = cookieDetails;
   }
 
   /**
@@ -78,6 +79,18 @@ class TestLocalDataBrowserProxy extends TestBrowserProxy {
   getCookieDetails(site) {
     this.methodCalled('getCookieDetails', site);
     return Promise.resolve(this.cookieDetails_ || {id: '', children: []});
+  }
+
+  /** @override */
+  getNumCookiesString(site) {
+    this.methodCalled('getNumCookiesString', site);
+    if (this.cookieDetails_) {
+      const numCookies = this.cookieDetails_.children.length;
+      return Promise.resolve(
+          `${this.cookieDetails_.children.length} ` +
+          (numCookies == 1 ? 'cookie' : 'cookies'));
+    }
+    return Promise.resolve('');
   }
 
   /** @override */

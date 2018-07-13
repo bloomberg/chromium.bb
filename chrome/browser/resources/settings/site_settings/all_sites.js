@@ -46,6 +46,8 @@ Polymer({
         settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
     this.addWebUIListener(
         'contentSettingSitePermissionChanged', this.populateList_.bind(this));
+    this.addEventListener(
+        'site-entry-resized', this.resizeListIfScrollTargetActive_.bind(this));
     this.populateList_();
   },
 
@@ -73,5 +75,15 @@ Polymer({
     this.browserProxy_.getAllSites(contentTypes).then((response) => {
       this.siteGroupList = response;
     });
+  },
+
+  /**
+   * Called when a list item changes its size, and thus the positions and sizes
+   * of the items in the entire list also need updating.
+   * @private
+   */
+  resizeListIfScrollTargetActive_: function() {
+    if (settings.getCurrentRoute() == this.subpageRoute)
+      this.$.allSitesList.fire('iron-resize');
   },
 });
