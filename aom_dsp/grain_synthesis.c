@@ -400,7 +400,11 @@ static void generate_luma_grain_block(
     const aom_film_grain_t *params, int **pred_pos_luma, int *luma_grain_block,
     int luma_block_size_y, int luma_block_size_x, int luma_grain_stride,
     int left_pad, int top_pad, int right_pad, int bottom_pad) {
-  if (params->num_y_points == 0) return;
+  if (params->num_y_points == 0) {
+    memset(luma_grain_block, 0,
+           sizeof(*luma_grain_block) * luma_block_size_y * luma_grain_stride);
+    return;
+  }
 
   int bit_depth = params->bit_depth;
   int gauss_sec_shift = 12 - bit_depth + params->grain_scale_shift;
