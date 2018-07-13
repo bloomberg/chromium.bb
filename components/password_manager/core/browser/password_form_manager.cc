@@ -783,43 +783,24 @@ bool PasswordFormManager::IsMatch(const autofill::PasswordForm& form) const {
   return !form.blacklisted_by_user && form.scheme == observed_form_.scheme;
 }
 
-// Assuming that the user submitted a form with |current_password| and no
-// username, this function attempts to find a saved credential which likely
-// represents the same account, and should therefore be updated with the new
-// password from the submitted form (instead of creating a new username-less
-// stored credential with the new password). This can return null if there is no
-// such password. Note that |current_password| may be empty, e.g., for sign-up
-// forms. If it is not empty and there is a saved form with the same current
-// password, the latter is a likely candidate to be returned.
 const PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
-    const base::string16& current_password) const {
-  // First, filter out PSL-matches from |best_matches_|. Only credentials saved
-  // for the same origin as the submitted form should be considered for
-  // updating. A PSL match which does not have a copy in the origin of the
-  // submitted form was not accepted by the user as representing the same
-  // account, so it is unlikely that the user would like it updated.
-  std::vector<const PasswordForm*> same_origin_matches;
-  for (const auto& key_value : best_matches_) {
-    if (!key_value.second->is_public_suffix_match)
-      same_origin_matches.push_back(key_value.second);
-  }
-
-  if (same_origin_matches.size() == 1 && !has_generated_password_) {
+    const base::string16& password) const {
+  // This function is called for forms that do not contain a username field.
+  // This means that we cannot update credentials based on a matching username
+  // and that we may need to show an update prompt.
+  if (best_matches_.size() == 1 && !has_generated_password_) {
     // In case the submitted form contained no username but a password, and if
     // the user has only one credential stored, return it as the one that should
     // be updated.
-    return same_origin_matches[0];
+    return best_matches_.begin()->second;
   }
-
-  // Otherwise the old password provides guidance for selecting from multiple
-  // entries, so give up if there is none.
-  if (current_password.empty())
+  if (password.empty())
     return nullptr;
 
-  // Return any existing credential that has the same password saved already.
-  for (const PasswordForm* saved_form : same_origin_matches) {
-    if (saved_form->password_value == current_password)
-      return saved_form;
+  // Return any existing credential that has the same |password| saved already.
+  for (const auto& key_value : best_matches_) {
+    if (key_value.second->password_value == password)
+      return key_value.second;
   }
   return nullptr;
 }
