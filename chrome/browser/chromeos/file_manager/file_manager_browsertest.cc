@@ -198,6 +198,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("selectCreateFolderDownloads"),
                       TestCase("createFolderDownloads").InGuestMode(),
                       TestCase("createFolderDownloads"),
+                      TestCase("createFolderNestedDownloads"),
                       TestCase("createFolderDrive"),
                       TestCase("createFolderDrive").EnableDriveFs()));
 

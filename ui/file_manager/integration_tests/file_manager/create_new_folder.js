@@ -53,12 +53,16 @@ function selectFirstListItem(windowId) {
  * @param {string} windowId ID of the target window.
  * @param {string} path Initial path.
  * @param {Array<TestEntryInfo>} initialEntrySet Initial set of entries.
+ * @param {string} rootLabel label path's root.
  * @return {Promise} Promise to be fulfilled on success.
  */
-function createNewFolder(windowId, path, initialEntrySet) {
+function createNewFolder(windowId, path, initialEntrySet, rootLabel) {
   var caller = getCaller();
-  return Promise.resolve(
-  ).then(function() {
+  return Promise.resolve()
+    .then(function() {
+      return navigateWithDirectoryTree(windowId, path, rootLabel);
+    })
+    .then(function() {
     // Push Ctrl + E.
     return remoteCall.callRemoteTestUtil(
         'fakeKeyDown', windowId,
@@ -165,7 +169,7 @@ testcase.selectCreateFolderDownloads = function() {
   }).then(function() {
     return remoteCall.waitForElement(windowId, '#detail-table');
   }).then(function() {
-    return createNewFolder(windowId, PATH, BASIC_LOCAL_ENTRY_SET);
+    return createNewFolder(windowId, '', BASIC_LOCAL_ENTRY_SET, 'Downloads');
   });
 
   testPromise(promise);
@@ -182,7 +186,27 @@ testcase.createFolderDownloads = function() {
   }).then(function() {
     return remoteCall.waitForElement(windowId, '#detail-table');
   }).then(function() {
-    return createNewFolder(windowId, PATH, BASIC_LOCAL_ENTRY_SET);
+    return createNewFolder(windowId, '', BASIC_LOCAL_ENTRY_SET, 'Downloads');
+  });
+
+  testPromise(promise);
+};
+
+testcase.createFolderNestedDownloads = function() {
+  var PATH = RootPath.DOWNLOADS;
+  const expectedPhotosInitialSet = [];
+
+  var windowId = null;
+  var promise = new Promise(function(callback) {
+    setupAndWaitUntilReady(null, PATH, callback);
+  }).then(function(results) {
+    windowId = results.windowId;
+    return expandRoot(windowId, TREEITEM_DOWNLOADS);
+  }).then(function() {
+    return remoteCall.waitForElement(windowId, '#detail-table');
+  }).then(function() {
+    return createNewFolder(
+        windowId, '/photos', expectedPhotosInitialSet, 'Downloads');
   });
 
   testPromise(promise);
@@ -199,7 +223,7 @@ testcase.createFolderDrive = function() {
   }).then(function() {
     return remoteCall.waitForElement(windowId, '#detail-table');
   }).then(function() {
-    return createNewFolder(windowId, PATH, BASIC_DRIVE_ENTRY_SET);
+    return createNewFolder(windowId, '', BASIC_DRIVE_ENTRY_SET, 'My Drive');
   });
 
   testPromise(promise);
