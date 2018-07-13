@@ -147,8 +147,10 @@ IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
     [touch_bar_controller() setSelectionRange:kEmptyRange];
     [web_textfield_controller() resetNumInvalidations];
 
-    [touch_bar_controller() webContentsTextSelectionChanged:kText range:kRange];
-    EXPECT_EQ(kEmptyText, [touch_bar_controller() text]);
+    [touch_bar_controller()
+        webContentsTextSelectionChanged:base::SysNSStringToUTF16(kText)
+                                  range:kRange];
+    EXPECT_TRUE([kEmptyText isEqualToString:[touch_bar_controller() text]]);
     EXPECT_EQ(gfx::Range(kEmptyRange),
               gfx::Range([touch_bar_controller() selectionRange]));
     EXPECT_EQ(1, [web_textfield_controller() numInvalidations]);
@@ -163,11 +165,14 @@ IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
     [touch_bar_controller() setSelectionRange:kEmptyRange];
     [web_textfield_controller() resetNumInvalidations];
 
-    [touch_bar_controller() webContentsTextSelectionChanged:kText range:kRange];
-    EXPECT_EQ(kText, [touch_bar_controller() text]);
+    [touch_bar_controller()
+        webContentsTextSelectionChanged:base::SysNSStringToUTF16(kText)
+                                  range:kRange];
+    EXPECT_TRUE([kText isEqualToString:[touch_bar_controller() text]]);
     EXPECT_EQ(gfx::Range(kRange),
               gfx::Range([touch_bar_controller() selectionRange]));
-    EXPECT_EQ(kText, [touch_bar_controller() firstSuggestion]);
+    EXPECT_TRUE(
+        [kText isEqualToString:[touch_bar_controller() firstSuggestion]]);
     EXPECT_EQ(1, [web_textfield_controller() numInvalidations]);
   }
 }
