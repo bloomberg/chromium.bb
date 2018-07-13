@@ -7,9 +7,15 @@
 
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
+class PrefService;
+
 namespace views {
 class Checkbox;
 }  // namespace views
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace media_router {
 
@@ -19,11 +25,13 @@ namespace media_router {
 // then mirroring it remotely.
 class MediaRemotingDialogView : public views::BubbleDialogDelegateView {
  public:
-  // Instantiates and shows the singleton dialog. The dialog must not be
-  // currently shown.
-  // TODO(https://crbug.com/849020): This method needs to take a callback to
-  // call when the user interacts with the dialog.
-  static void ShowDialog(views::View* anchor_view);
+  using PermissionCallback = base::OnceCallback<void(bool)>;
+  // Checks the existing preference value, and if unset, instantiates and shows
+  // the singleton dialog to get user's permission. |callback| runs on the same
+  // stack if the preference was set, or asynchronously when user sets the
+  // permission through the dialog.
+  static void GetPermission(content::WebContents* web_contents,
+                            PermissionCallback callback);
 
   // No-op if the dialog is currently not shown.
   static void HideDialog();
@@ -49,16 +57,25 @@ class MediaRemotingDialogView : public views::BubbleDialogDelegateView {
   gfx::Size CalculatePreferredSize() const override;
 
  private:
-  explicit MediaRemotingDialogView(views::View* anchor_view);
+  explicit MediaRemotingDialogView(views::View* anchor_view,
+                                   PrefService* pref_service,
+                                   PermissionCallback callback);
   ~MediaRemotingDialogView() override;
 
   // views::BubbleDialogDelegateView:
   void Init() override;
   void WindowClosing() override;
 
+  // Runs |permission_callback_| to report whether remoting is allowed by user.
+  void ReportPermission(bool allowed);
+
   // The singleton dialog instance. This is a nullptr when a dialog is not
   // shown.
   static MediaRemotingDialogView* instance_;
+
+  PermissionCallback permission_callback_;
+
+  PrefService* const pref_service_;
 
   // Title shown at the top of the dialog.
   base::string16 dialog_title_;
