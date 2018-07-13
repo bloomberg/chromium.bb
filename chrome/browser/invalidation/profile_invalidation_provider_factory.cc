@@ -11,8 +11,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_content_client.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
@@ -27,14 +25,14 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
 #include "components/invalidation/impl/invalidation_service_android.h"
+#else
+#include "chrome/browser/signin/identity_manager_factory.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -80,8 +78,7 @@ ProfileInvalidationProviderFactory::ProfileInvalidationProviderFactory()
         BrowserContextDependencyManager::GetInstance()),
       testing_factory_(NULL) {
 #if !defined(OS_ANDROID)
-  DependsOn(SigninManagerFactory::GetInstance());
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
 #endif
 }
@@ -120,8 +117,7 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
 
   if (!identity_provider) {
     identity_provider.reset(new ProfileIdentityProvider(
-        SigninManagerFactory::GetForProfile(profile),
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile)));
+        IdentityManagerFactory::GetForProfile(profile)));
   }
 
   std::unique_ptr<TiclInvalidationService> service(new TiclInvalidationService(

@@ -19,10 +19,10 @@
 #include "components/invalidation/impl/ticl_invalidation_service.h"
 #include "components/invalidation/impl/ticl_settings_provider.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,7 +43,7 @@ class TiclProfileSettingsProviderTest : public testing::Test {
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   gcm::FakeGCMDriver gcm_driver_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  FakeProfileOAuth2TokenService token_service_;
+  identity::IdentityTestEnvironment identity_test_env_;
 
   std::unique_ptr<TiclInvalidationService> invalidation_service_;
 
@@ -65,7 +65,7 @@ void TiclProfileSettingsProviderTest::SetUp() {
   invalidation_service_.reset(new TiclInvalidationService(
       "TestUserAgent",
       std::unique_ptr<IdentityProvider>(
-          new ProfileIdentityProvider(&token_service_)),
+          new ProfileIdentityProvider(identity_test_env_.identity_manager())),
       std::unique_ptr<TiclSettingsProvider>(
           new TiclProfileSettingsProvider(&pref_service_)),
       &gcm_driver_, request_context_getter_, nullptr /* url_loader_factory */));

@@ -20,8 +20,8 @@
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -69,7 +69,8 @@ class TiclInvalidationServiceTestDelegate {
     gcm_driver_.reset(new gcm::FakeGCMDriver());
     invalidation_service_.reset(new TiclInvalidationService(
         "TestUserAgent",
-        std::make_unique<ProfileIdentityProvider>(&token_service_),
+        std::make_unique<ProfileIdentityProvider>(
+            identity_test_env_.identity_manager()),
         std::unique_ptr<TiclSettingsProvider>(new FakeTiclSettingsProvider),
         gcm_driver_.get(), nullptr, nullptr));
   }
@@ -98,7 +99,7 @@ class TiclInvalidationServiceTestDelegate {
     fake_invalidator_->EmitOnIncomingInvalidation(invalidation_map);
   }
 
-  FakeProfileOAuth2TokenService token_service_;
+  identity::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   syncer::FakeInvalidator* fake_invalidator_;  // Owned by the service.
 

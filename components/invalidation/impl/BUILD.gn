@@ -52,10 +52,10 @@ static_library("impl") {
     "//components/keyed_service/core",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/signin/core/browser",
     "//google_apis",
     "//jingle:notifier",
     "//net:net",
+    "//services/identity/public/cpp",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
 
@@ -181,6 +181,7 @@ source_set("unit_tests") {
       "//components/sync_preferences:test_support",
       "//google_apis:test_support",
       "//net",
+      "//services/identity/public/cpp:test_support",
     ]
   }
 }

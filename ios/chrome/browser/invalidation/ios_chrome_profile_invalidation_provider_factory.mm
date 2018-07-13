@@ -21,8 +21,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/web/public/web_client.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -54,9 +53,8 @@ IOSChromeProfileInvalidationProviderFactory::
     : BrowserStateKeyedServiceFactory(
           "InvalidationService",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(ios::SigninManagerFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(IOSChromeGCMProfileServiceFactory::GetInstance());
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
 IOSChromeProfileInvalidationProviderFactory::
@@ -71,8 +69,7 @@ IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   std::unique_ptr<TiclInvalidationService> service(new TiclInvalidationService(
       web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE),
       std::make_unique<invalidation::ProfileIdentityProvider>(
-          ios::SigninManagerFactory::GetForBrowserState(browser_state),
-          ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state)),
+          IdentityManagerFactory::GetForBrowserState(browser_state)),
       std::make_unique<invalidation::TiclProfileSettingsProvider>(
           browser_state->GetPrefs()),
       IOSChromeGCMProfileServiceFactory::GetForBrowserState(browser_state)
