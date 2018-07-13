@@ -205,8 +205,7 @@ void DialogExample::StartTextfieldRow(GridLayout* layout,
 }
 
 void DialogExample::AddCheckbox(GridLayout* layout, Checkbox** member) {
-  Checkbox* checkbox = new Checkbox(base::string16());
-  checkbox->set_listener(this);
+  Checkbox* checkbox = new Checkbox(base::string16(), this);
   checkbox->SetChecked(true);
   layout->AddView(checkbox);
   *member = checkbox;

@@ -27,12 +27,10 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   static const char kViewClassName[];
 
   // |force_md| forces MD even when --secondary-ui-md flag is not set.
-  explicit Checkbox(const base::string16& label, bool force_md = false);
+  explicit Checkbox(const base::string16& label,
+                    ButtonListener* listener = nullptr,
+                    bool force_md = false);
   ~Checkbox() override;
-
-  // Sets a listener for this checkbox. Checkboxes aren't required to have them
-  // since their state can be read independently of them being toggled.
-  void set_listener(ButtonListener* listener) { listener_ = listener; }
 
   // Sets/Gets whether or not the checkbox is checked.
   virtual void SetChecked(bool checked);

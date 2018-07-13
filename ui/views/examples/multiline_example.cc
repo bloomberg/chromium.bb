@@ -145,14 +145,12 @@ void MultilineExample::CreateExampleView(View* container) {
   label_->SetMultiLine(true);
   label_->SetBorder(CreateSolidBorder(2, SK_ColorCYAN));
 
-  label_checkbox_ = new Checkbox(ASCIIToUTF16("views::Label:"));
+  label_checkbox_ = new Checkbox(ASCIIToUTF16("views::Label:"), this);
   label_checkbox_->SetChecked(true);
-  label_checkbox_->set_listener(this);
   label_checkbox_->set_request_focus_on_press(false);
 
-  elision_checkbox_ = new Checkbox(ASCIIToUTF16("elide text?"));
+  elision_checkbox_ = new Checkbox(ASCIIToUTF16("elide text?"), this);
   elision_checkbox_->SetChecked(false);
-  elision_checkbox_->set_listener(this);
   elision_checkbox_->set_request_focus_on_press(false);
 
   textfield_ = new Textfield();

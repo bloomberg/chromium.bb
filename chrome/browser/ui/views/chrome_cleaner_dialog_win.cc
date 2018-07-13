@@ -74,9 +74,8 @@ ChromeCleanerDialog::ChromeCleanerDialog(
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   logs_permission_checkbox_ = new views::Checkbox(
-      l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_LOGS_PERMISSION));
+      l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_LOGS_PERMISSION), this);
   logs_permission_checkbox_->SetChecked(dialog_controller_->LogsEnabled());
-  logs_permission_checkbox_->set_listener(this);
   if (dialog_controller_->LogsManaged())
     logs_permission_checkbox_->SetState(views::Checkbox::STATE_DISABLED);
 

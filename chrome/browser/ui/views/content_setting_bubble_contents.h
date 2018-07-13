@@ -16,6 +16,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link_listener.h"
 
@@ -54,11 +55,13 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
 
   // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
+  void WindowClosing() override;
 
   // ContentSettingBubbleModel::Owner:
   void OnListItemAdded(
       const ContentSettingBubbleModel::ListItem& item) override;
   void OnListItemRemovedAt(int index) override;
+  int GetSelectedRadioOption() override;
 
  protected:
   // views::WidgetDelegate:

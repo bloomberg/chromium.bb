@@ -326,8 +326,6 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
                                       web_contents,
                                       profile,
                                       CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS),
-      selected_item_(0),
-      interacted_(false),
       registry_(registry),
       pending_handler_(ProtocolHandler::EmptyProtocolHandler()),
       previous_handler_(ProtocolHandler::EmptyProtocolHandler()) {
@@ -372,14 +370,17 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
   else
     radio_group.default_item = RPH_IGNORE;
 
-  selected_item_ = radio_group.default_item;
   set_radio_group_enabled(true);
   set_radio_group(radio_group);
 }
 
-ContentSettingRPHBubbleModel::~ContentSettingRPHBubbleModel() {
-  if (!web_contents() || !interacted_)
+ContentSettingRPHBubbleModel::~ContentSettingRPHBubbleModel() {}
+
+void ContentSettingRPHBubbleModel::CommitChanges() {
+  if (!web_contents())
     return;
+
+  PerformActionForSelectedItem();
 
   // The user has one chance to deal with the RPH content setting UI,
   // then we remove it.
@@ -389,19 +390,6 @@ ContentSettingRPHBubbleModel::~ContentSettingRPHBubbleModel() {
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
       content::Source<WebContents>(web_contents()),
       content::NotificationService::NoDetails());
-}
-
-void ContentSettingRPHBubbleModel::OnRadioClicked(int radio_index) {
-  if (selected_item_ == radio_index)
-    return;
-
-  selected_item_ = radio_index;
-  PerformActionForSelectedItem();
-}
-
-void ContentSettingRPHBubbleModel::OnDoneClicked() {
-  if (!interacted_)
-    PerformActionForSelectedItem();
 }
 
 void ContentSettingRPHBubbleModel::RegisterProtocolHandler() {
@@ -446,12 +434,11 @@ void ContentSettingRPHBubbleModel::ClearOrSetPreviousHandler() {
 }
 
 void ContentSettingRPHBubbleModel::PerformActionForSelectedItem() {
-  interacted_ = true;
-  if (selected_item_ == RPH_ALLOW)
+  if (selected_item() == RPH_ALLOW)
     RegisterProtocolHandler();
-  else if (selected_item_ == RPH_BLOCK)
+  else if (selected_item() == RPH_BLOCK)
     UnregisterProtocolHandler();
-  else if (selected_item_ == RPH_IGNORE)
+  else if (selected_item() == RPH_IGNORE)
     IgnoreProtocolHandler();
   else
     NOTREACHED();
@@ -743,14 +730,15 @@ ContentSettingSingleRadioGroup::ContentSettingSingleRadioGroup(
                                       web_contents,
                                       profile,
                                       content_type),
-      block_setting_(CONTENT_SETTING_BLOCK),
-      selected_item_(0) {
+      block_setting_(CONTENT_SETTING_BLOCK) {
   SetRadioGroup();
 }
 
-ContentSettingSingleRadioGroup::~ContentSettingSingleRadioGroup() {
+ContentSettingSingleRadioGroup::~ContentSettingSingleRadioGroup() {}
+
+void ContentSettingSingleRadioGroup::CommitChanges() {
   if (settings_changed()) {
-    ContentSetting setting = selected_item_ == kAllowButtonIndex
+    ContentSetting setting = selected_item() == kAllowButtonIndex
                                  ? CONTENT_SETTING_ALLOW
                                  : block_setting_;
     SetNarrowestContentSetting(setting);
@@ -758,7 +746,7 @@ ContentSettingSingleRadioGroup::~ContentSettingSingleRadioGroup() {
 }
 
 bool ContentSettingSingleRadioGroup::settings_changed() const {
-  return selected_item_ != bubble_content().radio_group.default_item;
+  return selected_item() != bubble_content().radio_group.default_item;
 }
 
 // Initialize the radio group by setting the appropriate labels for the
@@ -875,7 +863,6 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
 
   set_radio_group_enabled(is_valid && setting_source == SETTING_SOURCE_USER);
 
-  selected_item_ = radio_group.default_item;
   set_radio_group(radio_group);
 }
 
@@ -890,10 +877,6 @@ void ContentSettingSingleRadioGroup::SetNarrowestContentSetting(
                                   content_type(), setting);
 }
 
-void ContentSettingSingleRadioGroup::OnRadioClicked(int radio_index) {
-  selected_item_ = radio_index;
-}
-
 // ContentSettingCookiesBubbleModel --------------------------------------------
 
 class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
@@ -902,6 +885,9 @@ class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
                                    WebContents* web_contents,
                                    Profile* profile);
   ~ContentSettingCookiesBubbleModel() override;
+
+  // ContentSettingBubbleModel:
+  void CommitChanges() override;
 
  private:
   void OnCustomLinkClicked() override;
@@ -920,13 +906,16 @@ ContentSettingCookiesBubbleModel::ContentSettingCookiesBubbleModel(
   set_custom_link_enabled(true);
 }
 
-ContentSettingCookiesBubbleModel::~ContentSettingCookiesBubbleModel() {
+ContentSettingCookiesBubbleModel::~ContentSettingCookiesBubbleModel() {}
+
+void ContentSettingCookiesBubbleModel::CommitChanges() {
   // On some plattforms e.g. MacOS X it is possible to close a tab while the
   // cookies settings bubble is open. This resets the web contents to NULL.
   if (settings_changed() && web_contents()) {
     CollectedCookiesInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents()));
   }
+  ContentSettingSingleRadioGroup::CommitChanges();
 }
 
 void ContentSettingCookiesBubbleModel::OnCustomLinkClicked() {
@@ -949,6 +938,9 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup,
                                  WebContents* web_contents,
                                  Profile* profile);
   ~ContentSettingPopupBubbleModel() override;
+
+  // ContentSettingBubbleModel:
+  void CommitChanges() override;
 
   // PopupBlockerTabHelper::Observer:
   void BlockedPopupAdded(int32_t id, const GURL& url) override;
@@ -1047,14 +1039,17 @@ void ContentSettingPopupBubbleModel::OnListItemClicked(int index,
   }
 }
 
-ContentSettingPopupBubbleModel::~ContentSettingPopupBubbleModel() {
+void ContentSettingPopupBubbleModel::CommitChanges() {
   // User selected to always allow pop-ups from.
   if (settings_changed() && selected_item() == kAllowButtonIndex) {
     // Increases the counter.
     content_settings::RecordPopupsAction(
         content_settings::POPUPS_ACTION_SELECTED_ALWAYS_ALLOW_POPUPS_FROM);
   }
+  ContentSettingSingleRadioGroup::CommitChanges();
+}
 
+ContentSettingPopupBubbleModel::~ContentSettingPopupBubbleModel() {
   if (web_contents()) {
     auto* helper = PopupBlockerTabHelper::FromWebContents(web_contents());
     helper->RemoveObserver(this);
@@ -1087,7 +1082,6 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
     WebContents* web_contents,
     Profile* profile)
     : ContentSettingBubbleModel(delegate, web_contents, profile),
-      selected_item_(0),
       state_(TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED) {
   // TODO(msramek): The media bubble has three states - mic only, camera only,
   // and both. There is a lot of duplicated code which does the same thing
@@ -1113,7 +1107,9 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
   SetCustomLink();
 }
 
-ContentSettingMediaStreamBubbleModel::~ContentSettingMediaStreamBubbleModel() {
+ContentSettingMediaStreamBubbleModel::~ContentSettingMediaStreamBubbleModel() {}
+
+void ContentSettingMediaStreamBubbleModel::CommitChanges() {
   // On some platforms (e.g. MacOS X) it is possible to close a tab while the
   // media stream bubble is open. This resets the web contents to NULL.
   if (!web_contents())
@@ -1126,8 +1122,8 @@ ContentSettingMediaStreamBubbleModel::~ContentSettingMediaStreamBubbleModel() {
   }
 
   // Update the media settings if the radio button selection was changed.
-  if (selected_item_ != bubble_content().radio_group.default_item)
-    UpdateSettings(radio_item_setting_[selected_item_]);
+  if (selected_item() != bubble_content().radio_group.default_item)
+    UpdateSettings(radio_item_setting_[selected_item()]);
 }
 
 ContentSettingMediaStreamBubbleModel*
@@ -1251,7 +1247,13 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
       radio_block_label_id = IDS_ALLOWED_MEDIASTREAM_CAMERA_BLOCK;
     }
   }
-  selected_item_ =
+
+  base::string16 radio_allow_label =
+      l10n_util::GetStringFUTF16(radio_allow_label_id, display_host);
+  base::string16 radio_block_label =
+      l10n_util::GetStringUTF16(radio_block_label_id);
+
+  radio_group.default_item =
       (MicrophoneAccessed() && content_settings->IsContentBlocked(
                                    CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)) ||
               (CameraAccessed() &&
@@ -1259,13 +1261,6 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
                    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA))
           ? 1
           : 0;
-
-  base::string16 radio_allow_label =
-      l10n_util::GetStringFUTF16(radio_allow_label_id, display_host);
-  base::string16 radio_block_label =
-      l10n_util::GetStringUTF16(radio_block_label_id);
-
-  radio_group.default_item = selected_item_;
   radio_group.radio_items.push_back(radio_allow_label);
   radio_group.radio_items.push_back(radio_block_label);
 
@@ -1394,10 +1389,6 @@ void ContentSettingMediaStreamBubbleModel::SetCustomLink() {
   }
 }
 
-void ContentSettingMediaStreamBubbleModel::OnRadioClicked(int radio_index) {
-  selected_item_ = radio_index;
-}
-
 void ContentSettingMediaStreamBubbleModel::OnMediaMenuClicked(
     content::MediaStreamType type,
     const std::string& selected_device_id) {
@@ -1462,7 +1453,7 @@ void ContentSettingSubresourceFilterBubbleModel::OnLearnMoreClicked() {
   delegate()->ShowLearnMorePage(CONTENT_SETTINGS_TYPE_ADS);
 }
 
-void ContentSettingSubresourceFilterBubbleModel::OnDoneClicked() {
+void ContentSettingSubresourceFilterBubbleModel::CommitChanges() {
   if (is_checked_) {
     ChromeSubresourceFilterClient::FromWebContents(web_contents())
         ->OnReloadRequested();
@@ -1486,10 +1477,12 @@ ContentSettingDownloadsBubbleModel::ContentSettingDownloadsBubbleModel(
   SetRadioGroup();
 }
 
-ContentSettingDownloadsBubbleModel::~ContentSettingDownloadsBubbleModel() {
+ContentSettingDownloadsBubbleModel::~ContentSettingDownloadsBubbleModel() {}
+
+void ContentSettingDownloadsBubbleModel::CommitChanges() {
   if (profile() &&
-      selected_item_ != bubble_content().radio_group.default_item) {
-    ContentSetting setting = selected_item_ == kAllowButtonIndex
+      selected_item() != bubble_content().radio_group.default_item) {
+    ContentSetting setting = selected_item() == kAllowButtonIndex
                                  ? CONTENT_SETTING_ALLOW
                                  : CONTENT_SETTING_BLOCK;
     auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
@@ -1538,7 +1531,6 @@ void ContentSettingDownloadsBubbleModel::SetRadioGroup() {
       return;
   }
   set_radio_group(radio_group);
-  selected_item_ = radio_group.default_item;
 
   SettingInfo info;
   HostContentSettingsMap* map =
@@ -1551,10 +1543,6 @@ void ContentSettingDownloadsBubbleModel::SetRadioGroup() {
       url, url, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS);
 
   set_radio_group_enabled(is_valid && info.source == SETTING_SOURCE_USER);
-}
-
-void ContentSettingDownloadsBubbleModel::OnRadioClicked(int radio_index) {
-  selected_item_ = radio_index;
 }
 
 void ContentSettingDownloadsBubbleModel::SetTitle() {

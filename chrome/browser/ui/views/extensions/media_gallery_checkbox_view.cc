@@ -39,8 +39,8 @@ MediaGalleryCheckboxView::MediaGalleryCheckboxView(
   if (menu_controller)
     set_context_menu_controller(menu_controller);
 
-  checkbox_ = new views::Checkbox(pref_info.GetGalleryDisplayName());
-  checkbox_->set_listener(button_listener);
+  checkbox_ =
+      new views::Checkbox(pref_info.GetGalleryDisplayName(), button_listener);
   if (menu_controller)
     checkbox_->set_context_menu_controller(menu_controller);
   checkbox_->SetElideBehavior(gfx::ELIDE_MIDDLE);

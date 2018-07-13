@@ -87,6 +87,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
    public:
     virtual void OnListItemAdded(const ListItem& item) {}
     virtual void OnListItemRemovedAt(int index) {}
+    virtual int GetSelectedRadioOption() = 0;
 
    protected:
     virtual ~Owner() = default;
@@ -178,7 +179,6 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  virtual void OnRadioClicked(int radio_index) {}
   virtual void OnListItemClicked(int index, int event_flags) {}
   virtual void OnCustomLinkClicked() {}
   virtual void OnManageButtonClicked() {}
@@ -187,9 +187,8 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   virtual void OnMediaMenuClicked(content::MediaStreamType type,
                                   const std::string& selected_device_id) {}
 
-  // Called by the view code when the bubble is closed by the user using the
-  // Done button.
-  virtual void OnDoneClicked() {}
+  // Called by the view code when the bubble is closed
+  virtual void CommitChanges() {}
 
   // TODO(msramek): The casting methods below are only necessary because
   // ContentSettingBubbleController in the Cocoa UI needs to know the type of
@@ -228,6 +227,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   content::WebContents* web_contents() const { return web_contents_; }
   Profile* profile() const { return profile_; }
   Delegate* delegate() const { return delegate_; }
+  int selected_item() const { return owner_->GetSelectedRadioOption(); }
 
   void set_title(const base::string16& title) { bubble_content_.title = title; }
   void set_message(const base::string16& message) {
@@ -322,8 +322,8 @@ class ContentSettingRPHBubbleModel : public ContentSettingSimpleBubbleModel {
                                ProtocolHandlerRegistry* registry);
   ~ContentSettingRPHBubbleModel() override;
 
-  void OnRadioClicked(int radio_index) override;
-  void OnDoneClicked() override;
+  // ContentSettingBubbleModel:
+  void CommitChanges() override;
 
  private:
   void RegisterProtocolHandler();
@@ -332,10 +332,6 @@ class ContentSettingRPHBubbleModel : public ContentSettingSimpleBubbleModel {
   void ClearOrSetPreviousHandler();
   void PerformActionForSelectedItem();
 
-  int selected_item_;
-  // Initially false, set to true if the user explicitly interacts with the
-  // bubble.
-  bool interacted_;
   ProtocolHandlerRegistry* registry_;
   ProtocolHandler pending_handler_;
   ProtocolHandler previous_handler_;
@@ -354,6 +350,7 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
 
   // ContentSettingBubbleModel:
   ContentSettingMediaStreamBubbleModel* AsMediaStreamBubbleModel() override;
+  void CommitChanges() override;
   void OnManageButtonClicked() override;
 
  private:
@@ -387,12 +384,9 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
                                   const std::string& device);
 
   // ContentSettingBubbleModel implementation.
-  void OnRadioClicked(int radio_index) override;
   void OnMediaMenuClicked(content::MediaStreamType type,
                           const std::string& selected_device) override;
 
-  // The index of the selected radio item.
-  int selected_item_;
   // The content settings that are associated with the individual radio
   // buttons.
   ContentSetting radio_item_setting_[2];
@@ -422,7 +416,7 @@ class ContentSettingSubresourceFilterBubbleModel
   ContentSettingSubresourceFilterBubbleModel* AsSubresourceFilterBubbleModel()
       override;
   void OnLearnMoreClicked() override;
-  void OnDoneClicked() override;
+  void CommitChanges() override;
 
   bool is_checked_ = false;
 
@@ -439,6 +433,7 @@ class ContentSettingDownloadsBubbleModel : public ContentSettingBubbleModel {
 
   // ContentSettingBubbleModel overrides:
   ContentSettingDownloadsBubbleModel* AsDownloadsBubbleModel() override;
+  void CommitChanges() override;
 
  private:
   void SetRadioGroup();
@@ -446,10 +441,7 @@ class ContentSettingDownloadsBubbleModel : public ContentSettingBubbleModel {
   void SetManageText();
 
   // ContentSettingBubbleModel overrides:
-  void OnRadioClicked(int radio_index) override;
   void OnManageButtonClicked() override;
-
-  int selected_item_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingDownloadsBubbleModel);
 };
@@ -462,9 +454,11 @@ class ContentSettingSingleRadioGroup : public ContentSettingSimpleBubbleModel {
                                  ContentSettingsType content_type);
   ~ContentSettingSingleRadioGroup() override;
 
+  // ContentSettingSimpleBubbleModel:
+  void CommitChanges() override;
+
  protected:
   bool settings_changed() const;
-  int selected_item() const { return selected_item_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FramebustBlockBrowserTest, AllowRadioButtonSelected);
@@ -473,10 +467,8 @@ class ContentSettingSingleRadioGroup : public ContentSettingSimpleBubbleModel {
 
   void SetRadioGroup();
   void SetNarrowestContentSetting(ContentSetting setting);
-  void OnRadioClicked(int radio_index) override;
 
   ContentSetting block_setting_;
-  int selected_item_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingSingleRadioGroup);
 };

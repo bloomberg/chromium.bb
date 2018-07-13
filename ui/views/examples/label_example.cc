@@ -200,14 +200,11 @@ void LabelExample::AddCustomLabel(View* container) {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 1);
-  multiline_ = new Checkbox(base::ASCIIToUTF16("Multiline"));
-  multiline_->set_listener(this);
+  multiline_ = new Checkbox(base::ASCIIToUTF16("Multiline"), this);
   layout->AddView(multiline_);
-  shadows_ = new Checkbox(base::ASCIIToUTF16("Shadows"));
-  shadows_->set_listener(this);
+  shadows_ = new Checkbox(base::ASCIIToUTF16("Shadows"), this);
   layout->AddView(shadows_);
-  selectable_ = new Checkbox(base::ASCIIToUTF16("Selectable"));
-  selectable_->set_listener(this);
+  selectable_ = new Checkbox(base::ASCIIToUTF16("Selectable"), this);
   layout->AddView(selectable_);
   layout->AddPaddingRow(0, 8);
 

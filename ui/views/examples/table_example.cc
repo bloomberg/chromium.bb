@@ -41,22 +41,18 @@ TableExample::~TableExample() {
 }
 
 void TableExample::CreateExampleView(View* container) {
-  column1_visible_checkbox_ = new Checkbox(
-      ASCIIToUTF16("Fruit column visible"));
+  column1_visible_checkbox_ =
+      new Checkbox(ASCIIToUTF16("Fruit column visible"), this);
   column1_visible_checkbox_->SetChecked(true);
-  column1_visible_checkbox_->set_listener(this);
-  column2_visible_checkbox_ = new Checkbox(
-      ASCIIToUTF16("Color column visible"));
+  column2_visible_checkbox_ =
+      new Checkbox(ASCIIToUTF16("Color column visible"), this);
   column2_visible_checkbox_->SetChecked(true);
-  column2_visible_checkbox_->set_listener(this);
-  column3_visible_checkbox_ = new Checkbox(
-      ASCIIToUTF16("Origin column visible"));
+  column3_visible_checkbox_ =
+      new Checkbox(ASCIIToUTF16("Origin column visible"), this);
   column3_visible_checkbox_->SetChecked(true);
-  column3_visible_checkbox_->set_listener(this);
-  column4_visible_checkbox_ = new Checkbox(
-      ASCIIToUTF16("Price column visible"));
+  column4_visible_checkbox_ =
+      new Checkbox(ASCIIToUTF16("Price column visible"), this);
   column4_visible_checkbox_->SetChecked(true);
-  column4_visible_checkbox_->set_listener(this);
 
   GridLayout* layout = container->SetLayoutManager(
       std::make_unique<views::GridLayout>(container));

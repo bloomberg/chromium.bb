@@ -619,12 +619,12 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
 
   if (model_->ShouldShowAlwaysTranslateShortcut()) {
     layout->StartRow(views::GridLayout::kFixedSize, kCheckboxColumnSetId);
-    before_always_translate_checkbox_ =
-        new views::Checkbox(l10n_util::GetStringFUTF16(
+    before_always_translate_checkbox_ = new views::Checkbox(
+        l10n_util::GetStringFUTF16(
             IDS_TRANSLATE_BUBBLE_ALWAYS_TRANSLATE_LANG,
-            model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex())));
+            model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex())),
+        this);
     before_always_translate_checkbox_->set_id(BUTTON_ID_ALWAYS_TRANSLATE);
-    before_always_translate_checkbox_->set_listener(this);
     layout->AddView(before_always_translate_checkbox_);
   }
 
@@ -810,9 +810,8 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
   // In an incognito window, "Always translate" checkbox shouldn't be shown.
   if (!is_in_incognito_window_) {
     advanced_always_translate_checkbox_ = new views::Checkbox(
-        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ALWAYS));
+        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ALWAYS), this);
     advanced_always_translate_checkbox_->set_id(BUTTON_ID_ALWAYS_TRANSLATE);
-    advanced_always_translate_checkbox_->set_listener(this);
   }
 
   views::View* view = new AdvancedViewContainer();

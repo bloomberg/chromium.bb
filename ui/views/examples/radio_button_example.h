@@ -38,9 +38,6 @@ class VIEWS_EXAMPLES_EXPORT RadioButtonExample : public ExampleBase,
   LabelButton* select_;
   LabelButton* status_;
 
-  // The number of times the button is pressed.
-  int count_;
-
   DISALLOW_COPY_AND_ASSIGN(RadioButtonExample);
 };
 

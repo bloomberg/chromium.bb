@@ -33,8 +33,10 @@ namespace views {
 // static
 const char Checkbox::kViewClassName[] = "Checkbox";
 
-Checkbox::Checkbox(const base::string16& label, bool force_md)
-    : LabelButton(NULL, label),
+Checkbox::Checkbox(const base::string16& label,
+                   ButtonListener* listener,
+                   bool force_md)
+    : LabelButton(listener, label),
       checked_(false),
       label_ax_id_(0),
       use_md_(force_md ||

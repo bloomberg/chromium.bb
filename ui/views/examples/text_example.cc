@@ -135,8 +135,7 @@ TextExample::~TextExample() {
 }
 
 Checkbox* TextExample::AddCheckbox(GridLayout* layout, const char* name) {
-  Checkbox* checkbox = new Checkbox(base::ASCIIToUTF16(name));
-  checkbox->set_listener(this);
+  Checkbox* checkbox = new Checkbox(base::ASCIIToUTF16(name), this);
   layout->AddView(checkbox);
   return checkbox;
 }
