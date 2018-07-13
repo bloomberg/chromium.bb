@@ -3476,6 +3476,8 @@ static void decode_mt_init(AV1Decoder *pbi) {
         // Main thread acts as a worker and uses the thread data in pbi
         thread_data->td = &pbi->td;
       }
+      thread_data->error_info.error_code = AOM_CODEC_OK;
+      thread_data->error_info.setjmp = 0;
     }
   }
   const int use_highbd = cm->use_highbitdepth ? 1 : 0;
