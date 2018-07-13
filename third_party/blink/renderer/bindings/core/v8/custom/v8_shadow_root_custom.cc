@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_trusted_html.h"
+#include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
@@ -26,6 +27,7 @@ void V8ShadowRoot::innerHTMLAttributeSetterCustom(
 
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext,
                                  "ShadowRoot", "innerHTML");
+  CEReactionsScope ce_reactions_scope;
 
   // Prepare the value to be set.
   StringOrTrustedHTML cpp_value;

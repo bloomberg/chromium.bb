@@ -386,6 +386,9 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   {% if attribute.has_setter_exception_state %}
   {{define_exception_state}}
   {% endif %}
+  {% if attribute.is_ce_reactions %}
+  CEReactionsScope ce_reactions_scope;
+  {% endif %}
 
   // Prepare the value to be set.
   {% if attribute.idl_type != 'EventHandler' %}
@@ -494,10 +497,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
       contextData && contextData->ActivityLogger()) {
     contextData->ActivityLogger()->LogSetter("{{interface_name}}.{{attribute.name}}", v8Value);
   }
-  {% endif %}
-
-  {% if attribute.is_ce_reactions %}
-  CEReactionsScope ceReactionsScope;
   {% endif %}
 
   {% if attribute.has_custom_setter %}
