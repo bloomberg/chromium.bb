@@ -107,7 +107,7 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
 
   // Starts setting up drag in root level apps grid view for re-parenting a
   // folder item.
-  // |drag_point_in_root_grid| is in the cooridnates of root level AppsGridView.
+  // |drag_point_in_root_grid| is in the coordinates of root level AppsGridView.
   void StartSetupDragInRootLevelAppsGridView(
       AppListItemView* original_drag_view,
       const gfx::Point& drag_point_in_root_grid,
