@@ -17,6 +17,7 @@
 #include "ash/accessibility/accessibility_focus_ring_layer.h"
 #include "ash/accessibility/accessibility_highlight_layer.h"
 #include "ash/accessibility/focus_ring_layer.h"
+#include "ash/accessibility/layer_animation_info.h"
 #include "base/logging.h"
 
 namespace ash {
@@ -217,8 +218,7 @@ void AccessibilityFocusRingController::AnimateCursorRing(
     base::TimeTicks timestamp) {
   CHECK(cursor_layer_);
 
-  AccessibilityFocusRingGroup::ComputeOpacity(&cursor_animation_info_,
-                                              timestamp);
+  ComputeOpacity(&cursor_animation_info_, timestamp);
   if (cursor_animation_info_.opacity == 0.0) {
     cursor_layer_.reset();
     return;
@@ -230,10 +230,7 @@ void AccessibilityFocusRingController::AnimateCaretRing(
     base::TimeTicks timestamp) {
   CHECK(caret_layer_);
 
-  // TODO(katie): Move ComputeOpacity into a separate source file, as it is used
-  // by more than just AccessibilityFocusRingGroup.
-  AccessibilityFocusRingGroup::ComputeOpacity(&caret_animation_info_,
-                                              timestamp);
+  ComputeOpacity(&caret_animation_info_, timestamp);
   if (caret_animation_info_.opacity == 0.0) {
     caret_layer_.reset();
     return;

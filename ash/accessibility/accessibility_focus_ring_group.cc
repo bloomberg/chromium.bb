@@ -10,6 +10,7 @@
 #include "ash/accessibility/accessibility_focus_ring.h"
 #include "ash/accessibility/accessibility_focus_ring_layer.h"
 #include "ash/accessibility/accessibility_layer.h"
+#include "ash/accessibility/layer_animation_info.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -138,7 +139,7 @@ void AccessibilityFocusRingGroup::AnimateFocusRings(base::TimeTicks timestamp) {
     focus_layers_[0]->Set(AccessibilityFocusRing::Interpolate(
         previous_focus_rings_[0], focus_rings_[0], fraction));
   } else {
-    ComputeOpacity(&(focus_animation_info_), timestamp);
+    ash::ComputeOpacity(&(focus_animation_info_), timestamp);
     for (size_t i = 0; i < focus_layers_.size(); ++i)
       focus_layers_[i]->SetOpacity(focus_animation_info_.opacity);
   }
@@ -168,39 +169,6 @@ void AccessibilityFocusRingGroup::ClearFocusRects(
     AccessibilityLayerDelegate* delegate) {
   focus_rects_.clear();
   UpdateFocusRingsFromFocusRects(delegate);
-}
-
-void AccessibilityFocusRingGroup::ComputeOpacity(
-    LayerAnimationInfo* animation_info,
-    base::TimeTicks timestamp) {
-  // It's quite possible for the first 1 or 2 animation frames to be
-  // for a timestamp that's earlier than the time we received the
-  // mouse movement, so we just treat those as a delta of zero.
-  if (timestamp < animation_info->start_time)
-    timestamp = animation_info->start_time;
-
-  base::TimeDelta start_delta = timestamp - animation_info->start_time;
-  base::TimeDelta change_delta = timestamp - animation_info->change_time;
-  base::TimeDelta fade_in_time = animation_info->fade_in_time;
-  base::TimeDelta fade_out_time = animation_info->fade_out_time;
-
-  if (change_delta > fade_in_time + fade_out_time) {
-    animation_info->opacity = 0.0;
-    return;
-  }
-
-  float opacity;
-  if (start_delta < fade_in_time) {
-    opacity = start_delta.InSecondsF() / fade_in_time.InSecondsF();
-  } else {
-    opacity = 1.0 - (change_delta.InSecondsF() /
-                     (fade_in_time + fade_out_time).InSecondsF());
-  }
-
-  // Layer::SetOpacity will throw an error if we're not within 0...1.
-  opacity = std::min(std::max(opacity, 0.0f), 1.0f);
-
-  animation_info->opacity = opacity;
 }
 
 int AccessibilityFocusRingGroup::GetMargin() const {

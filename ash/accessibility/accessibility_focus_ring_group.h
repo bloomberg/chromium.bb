@@ -11,23 +11,13 @@
 #include "ash/accessibility/accessibility_focus_ring.h"
 #include "ash/accessibility/accessibility_focus_ring_layer.h"
 #include "ash/accessibility/accessibility_layer.h"
+#include "ash/accessibility/layer_animation_info.h"
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
-
-// TODO(katie): Move into a separate source file as it can be used by more than
-// just AccessibilityFocusRingGroup.
-struct LayerAnimationInfo {
-  base::TimeTicks start_time;
-  base::TimeTicks change_time;
-  base::TimeDelta fade_in_time;
-  base::TimeDelta fade_out_time;
-  float opacity = 0;
-  bool smooth = false;
-};
 
 // AccessibilityFocusRingGroup handles tracking all the elements of a group of
 // focus rings, including their positions, colors, and animation behavior.
