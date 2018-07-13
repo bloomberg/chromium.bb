@@ -146,12 +146,20 @@ void AssistantController::DownloadImage(
 }
 
 void AssistantController::OnDeepLinkReceived(const GURL& deep_link) {
+  using assistant::util::DeepLinkType;
+
   // TODO(dmblack): Possibly use a new FeedbackSource (this method defaults to
   // kFeedbackSourceAsh). This may be useful for differentiating feedback UI and
   // behavior for Assistant.
-  using assistant::util::DeepLinkType;
   if (assistant::util::IsDeepLinkType(deep_link, DeepLinkType::kFeedback))
-    Shell::Get()->new_window_controller()->OpenFeedbackPage();
+    return Shell::Get()->new_window_controller()->OpenFeedbackPage();
+
+  // TODO(updowndota): Pass any parameters necessary to |assistant_setup_| that
+  // it requires to relaunch Assistant UI on completion of opt in flow.
+  if (assistant::util::IsDeepLinkType(deep_link, DeepLinkType::kOnboarding)) {
+    assistant_setup_->StartAssistantOptInFlow();
+    assistant_ui_controller_->HideUi(AssistantSource::kDeepLink);
+  }
 }
 
 void AssistantController::OnOpenUrlFromTab(const GURL& url) {
