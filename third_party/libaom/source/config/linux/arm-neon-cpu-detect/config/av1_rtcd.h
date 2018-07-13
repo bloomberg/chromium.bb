@@ -69,7 +69,28 @@ void apply_selfguided_restoration_c(const uint8_t* dat,
                                     int32_t* tmpbuf,
                                     int bit_depth,
                                     int highbd);
-#define apply_selfguided_restoration apply_selfguided_restoration_c
+void apply_selfguided_restoration_neon(const uint8_t* dat,
+                                       int width,
+                                       int height,
+                                       int stride,
+                                       int eps,
+                                       const int* xqd,
+                                       uint8_t* dst,
+                                       int dst_stride,
+                                       int32_t* tmpbuf,
+                                       int bit_depth,
+                                       int highbd);
+RTCD_EXTERN void (*apply_selfguided_restoration)(const uint8_t* dat,
+                                                 int width,
+                                                 int height,
+                                                 int stride,
+                                                 int eps,
+                                                 const int* xqd,
+                                                 uint8_t* dst,
+                                                 int dst_stride,
+                                                 int32_t* tmpbuf,
+                                                 int bit_depth,
+                                                 int highbd);
 
 void av1_build_compound_diffwtd_mask_c(uint8_t* mask,
                                        DIFFWTD_MASK_TYPE mask_type,
@@ -910,7 +931,26 @@ void av1_selfguided_restoration_c(const uint8_t* dgd8,
                                   int sgr_params_idx,
                                   int bit_depth,
                                   int highbd);
-#define av1_selfguided_restoration av1_selfguided_restoration_c
+void av1_selfguided_restoration_neon(const uint8_t* dgd8,
+                                     int width,
+                                     int height,
+                                     int dgd_stride,
+                                     int32_t* flt0,
+                                     int32_t* flt1,
+                                     int flt_stride,
+                                     int sgr_params_idx,
+                                     int bit_depth,
+                                     int highbd);
+RTCD_EXTERN void (*av1_selfguided_restoration)(const uint8_t* dgd8,
+                                               int width,
+                                               int height,
+                                               int dgd_stride,
+                                               int32_t* flt0,
+                                               int32_t* flt1,
+                                               int flt_stride,
+                                               int sgr_params_idx,
+                                               int bit_depth,
+                                               int highbd);
 
 void av1_upsample_intra_edge_c(uint8_t* p, int sz);
 #define av1_upsample_intra_edge av1_upsample_intra_edge_c
@@ -1114,6 +1154,9 @@ static void setup_rtcd_internal(void) {
 
   (void)flags;
 
+  apply_selfguided_restoration = apply_selfguided_restoration_c;
+  if (flags & HAS_NEON)
+    apply_selfguided_restoration = apply_selfguided_restoration_neon;
   av1_build_compound_diffwtd_mask_d16 = av1_build_compound_diffwtd_mask_d16_c;
   if (flags & HAS_NEON)
     av1_build_compound_diffwtd_mask_d16 =
@@ -1142,6 +1185,9 @@ static void setup_rtcd_internal(void) {
   av1_jnt_convolve_y = av1_jnt_convolve_y_c;
   if (flags & HAS_NEON)
     av1_jnt_convolve_y = av1_jnt_convolve_y_neon;
+  av1_selfguided_restoration = av1_selfguided_restoration_c;
+  if (flags & HAS_NEON)
+    av1_selfguided_restoration = av1_selfguided_restoration_neon;
   av1_wiener_convolve_add_src = av1_wiener_convolve_add_src_c;
   if (flags & HAS_NEON)
     av1_wiener_convolve_add_src = av1_wiener_convolve_add_src_neon;

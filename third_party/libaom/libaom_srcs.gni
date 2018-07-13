@@ -29,7 +29,7 @@ aom_av1_common_intrin_neon = [
   "//third_party/libaom/source/libaom/av1/common/arm/blend_a64_vmask_neon.c",
   "//third_party/libaom/source/libaom/av1/common/arm/reconinter_neon.c",
   "//third_party/libaom/source/libaom/av1/common/arm/wiener_convolve_neon.c",
-  "//third_party/libaom/source/libaom/av1/common/arm/intrapred_neon.c",
+  "//third_party/libaom/source/libaom/av1/common/arm/selfguided_neon.c",
   "//third_party/libaom/source/libaom/av1/common/cdef_block_neon.c",
 ]
 
@@ -181,6 +181,8 @@ aom_av1_encoder_intrin_avx2 = [
   "//third_party/libaom/source/libaom/av1/encoder/x86/av1_quantize_avx2.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/av1_highbd_quantize_avx2.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/error_intrin_avx2.c",
+  "//third_party/libaom/source/libaom/av1/encoder/x86/av1_fwd_txfm_avx2.h",
+  "//third_party/libaom/source/libaom/av1/encoder/x86/av1_fwd_txfm2d_avx2.c",
 ]
 
 aom_av1_encoder_intrin_msa = [
@@ -325,6 +327,7 @@ aom_dsp_common_asm_ssse3 = [
 aom_dsp_common_intrin_avx2 = [
   "//third_party/libaom/source/libaom/aom_dsp/x86/aom_subpixel_8t_intrin_avx2.c",
   "//third_party/libaom/source/libaom/aom_dsp/x86/common_avx2.h",
+  "//third_party/libaom/source/libaom/aom_dsp/x86/txfm_common_avx2.h",
   "//third_party/libaom/source/libaom/aom_dsp/x86/convolve_avx2.h",
   "//third_party/libaom/source/libaom/aom_dsp/x86/fft_avx2.c",
   "//third_party/libaom/source/libaom/aom_dsp/x86/highbd_convolve_avx2.c",
