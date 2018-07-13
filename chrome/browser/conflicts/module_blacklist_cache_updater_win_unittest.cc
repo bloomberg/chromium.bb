@@ -198,8 +198,9 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, OneThirdPartyModule) {
   auto module_blacklist_cache_updater = CreateModuleBlacklistCacheUpdater();
 
   // Simulate some arbitrary module loading into the process.
+  ModuleInfoKey module_key(dll1_, 0, 0, 0);
   module_blacklist_cache_updater->OnNewModuleFound(
-      ModuleInfoKey(dll1_, 0, 0, 0), CreateLoadedModuleInfoData());
+      module_key, CreateLoadedModuleInfoData());
   module_blacklist_cache_updater->OnModuleDatabaseIdle();
 
   RunUntilIdle();
@@ -216,6 +217,9 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, OneThirdPartyModule) {
                                      &blacklisted_modules, &md5_digest));
 
   EXPECT_EQ(1u, blacklisted_modules.size());
+  ASSERT_EQ(
+      ModuleBlacklistCacheUpdater::ModuleBlockingDecision::kBlacklisted,
+      module_blacklist_cache_updater->GetModuleBlockingDecision(module_key));
 }
 
 TEST_F(ModuleBlacklistCacheUpdaterTest, IgnoreMicrosoftModules) {
@@ -257,6 +261,9 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, IgnoreMicrosoftModules) {
                                      &blacklisted_modules, &md5_digest));
 
   EXPECT_EQ(0u, blacklisted_modules.size());
+  ASSERT_EQ(
+      ModuleBlacklistCacheUpdater::ModuleBlockingDecision::kAllowedMicrosoft,
+      module_blacklist_cache_updater->GetModuleBlockingDecision(module_key));
 }
 
 // Tests that modules with a matching certificate subject are whitelisted.
@@ -266,8 +273,9 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, WhitelistMatchingCertificateSubject) {
   auto module_blacklist_cache_updater = CreateModuleBlacklistCacheUpdater();
 
   // Simulate the module loading into the process.
+  ModuleInfoKey module_key(dll1_, 0, 0, 0);
   module_blacklist_cache_updater->OnNewModuleFound(
-      ModuleInfoKey(dll1_, 0, 0, 0), CreateSignedLoadedModuleInfoData());
+      module_key, CreateSignedLoadedModuleInfoData());
   module_blacklist_cache_updater->OnModuleDatabaseIdle();
 
   RunUntilIdle();
@@ -284,6 +292,10 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, WhitelistMatchingCertificateSubject) {
                                      &blacklisted_modules, &md5_digest));
 
   EXPECT_EQ(0u, blacklisted_modules.size());
+  ASSERT_EQ(
+      ModuleBlacklistCacheUpdater::ModuleBlockingDecision::
+          kAllowedSameCertificate,
+      module_blacklist_cache_updater->GetModuleBlockingDecision(module_key));
 }
 
 // Make sure IMEs are allowed while shell extensions are blacklisted.
@@ -297,7 +309,7 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, RegisteredModules) {
   ModuleInfoData module_data1 = CreateLoadedModuleInfoData();
   module_data1.module_properties |= ModuleInfoData::kPropertyIme;
 
-  ModuleInfoKey module_key2(dll2_, 456u, 789u, 0);
+  ModuleInfoKey module_key2(dll2_, 456u, 789u, 1);
   ModuleInfoData module_data2 = CreateLoadedModuleInfoData();
   module_data2.module_properties |= ModuleInfoData::kPropertyShellExtension;
 
@@ -321,6 +333,12 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, RegisteredModules) {
 
   // Make sure the only blacklisted module is the shell extension.
   ASSERT_EQ(1u, blacklisted_modules.size());
+  ASSERT_EQ(
+      ModuleBlacklistCacheUpdater::ModuleBlockingDecision::kAllowedIME,
+      module_blacklist_cache_updater->GetModuleBlockingDecision(module_key1));
+  ASSERT_EQ(
+      ModuleBlacklistCacheUpdater::ModuleBlockingDecision::kBlacklisted,
+      module_blacklist_cache_updater->GetModuleBlockingDecision(module_key2));
 
   third_party_dlls::PackedListModule expected;
   const std::string module_basename = base::UTF16ToUTF8(

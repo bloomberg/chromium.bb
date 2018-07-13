@@ -64,6 +64,43 @@ class SequencedTaskRunner;
 // blacklist.
 class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
  public:
+  // The decision that explains why a particular module was added to the
+  // blacklist or not.
+  //
+  // Note that this enum is very similar to the ModuleWarningDecision in
+  // IncompatibleApplicationsUpdater. This is done so that it is easier to keep
+  // the 2 features separate, as they can be independently enabled/disabled.
+  enum ModuleBlockingDecision {
+    // Explicitly defined as zero so it is the default value when a
+    // ModuleBlockingDecision variable is value-initialized
+    // (std::vector::resize()).
+    kUnknown = 0,
+    // A shell extension or IME that is not loaded in the process yet.
+    kNotLoaded,
+    // Input method editors are allowed.
+    kAllowedIME,
+    // Allowed because the certificate's subject of the module matches the
+    // certificate's subject of the executable. The certificate is not
+    // validated.
+    kAllowedSameCertificate,
+    // Allowed because the path of the executable is the parent of the path of
+    // the module. Only used in non-official builds.
+    kAllowedSameDirectory,
+    // Allowed because it is signed by Microsoft. The certificate is not
+    // validated.
+    kAllowedMicrosoft,
+    // Explicitly whitelisted by the Module List component.
+    kAllowedWhitelisted,
+    // Unwanted, but allowed to load by the Module List component. This is
+    // usually because blocking the module would cause more stability issues
+    // than allowing it. If the IncompatibleApplicationsWarning feature is
+    // enabled, this module may cause a warning, depending on if it can be tied
+    // back to an installed application.
+    kTolerated,
+    // Blacklisted and will be blocked next launch.
+    kBlacklisted,
+  };
+
   struct CacheUpdateResult {
     base::MD5Digest old_md5_digest;
     base::MD5Digest new_md5_digest;
@@ -102,11 +139,17 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   // ModuleDatabaseObserver:
   void OnNewModuleFound(const ModuleInfoKey& module_key,
                         const ModuleInfoData& module_data) override;
+  void OnKnownModuleLoaded(const ModuleInfoKey& module_key,
+                           const ModuleInfoData& module_data) override;
   void OnModuleDatabaseIdle() override;
 
   // Callback for |module_load_attempt_log_listener_|;
   void OnNewModulesBlocked(
       std::vector<third_party_dlls::PackedListModule>&& blocked_modules);
+
+  // Returns the blocking decision for a module.
+  ModuleBlockingDecision GetModuleBlockingDecision(
+      ModuleInfoKey module_key) const;
 
  private:
   void OnTimerExpired();
@@ -140,6 +183,10 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   // Ensures that the cache is updated when new blocked modules arrives even if
   // OnModuleDatabaseIdle() is never called again.
   base::OneShotTimer timer_;
+
+  // Holds the blocking decision for all known modules. The index is the module
+  // id.
+  std::vector<ModuleBlockingDecision> module_blocking_decisions_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -192,6 +192,25 @@ TEST_F(IncompatibleApplicationsUpdaterTest, NoIncompatibleApplications) {
   EXPECT_TRUE(IncompatibleApplicationsUpdater::GetCachedApplications().empty());
 }
 
+TEST_F(IncompatibleApplicationsUpdaterTest, NoTiedApplications) {
+  auto incompatible_applications_updater =
+      CreateIncompatibleApplicationsUpdater();
+
+  // Simulate the module loading into the process.
+  ModuleInfoKey module_key(dll1_, 0, 0, 0);
+  incompatible_applications_updater->OnNewModuleFound(
+      module_key, CreateLoadedModuleInfoData());
+  incompatible_applications_updater->OnModuleDatabaseIdle();
+
+  EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());
+  EXPECT_TRUE(IncompatibleApplicationsUpdater::GetCachedApplications().empty());
+
+  EXPECT_EQ(
+      incompatible_applications_updater->GetModuleWarningDecision(module_key),
+      IncompatibleApplicationsUpdater::ModuleWarningDecision::
+          kNoTiedApplication);
+}
+
 TEST_F(IncompatibleApplicationsUpdaterTest, OneIncompatibility) {
   AddIncompatibleApplication(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
 
@@ -199,8 +218,9 @@ TEST_F(IncompatibleApplicationsUpdaterTest, OneIncompatibility) {
       CreateIncompatibleApplicationsUpdater();
 
   // Simulate the module loading into the process.
+  ModuleInfoKey module_key(dll1_, 0, 0, 0);
   incompatible_applications_updater->OnNewModuleFound(
-      ModuleInfoKey(dll1_, 0, 0, 0), CreateLoadedModuleInfoData());
+      module_key, CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
 
   EXPECT_TRUE(IncompatibleApplicationsUpdater::HasCachedApplications());
@@ -208,6 +228,9 @@ TEST_F(IncompatibleApplicationsUpdaterTest, OneIncompatibility) {
       IncompatibleApplicationsUpdater::GetCachedApplications();
   ASSERT_EQ(1u, application_names.size());
   EXPECT_EQ(L"Foo", application_names[0].info.name);
+  EXPECT_EQ(
+      incompatible_applications_updater->GetModuleWarningDecision(module_key),
+      IncompatibleApplicationsUpdater::ModuleWarningDecision::kIncompatible);
 }
 
 TEST_F(IncompatibleApplicationsUpdaterTest, SameModuleMultipleApplications) {
@@ -218,14 +241,18 @@ TEST_F(IncompatibleApplicationsUpdaterTest, SameModuleMultipleApplications) {
       CreateIncompatibleApplicationsUpdater();
 
   // Simulate the module loading into the process.
+  ModuleInfoKey module_key(dll1_, 0, 0, 0);
   incompatible_applications_updater->OnNewModuleFound(
-      ModuleInfoKey(dll1_, 0, 0, 0), CreateLoadedModuleInfoData());
+      module_key, CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
 
   EXPECT_TRUE(IncompatibleApplicationsUpdater::HasCachedApplications());
   auto application_names =
       IncompatibleApplicationsUpdater::GetCachedApplications();
   ASSERT_EQ(2u, application_names.size());
+  EXPECT_EQ(
+      incompatible_applications_updater->GetModuleWarningDecision(module_key),
+      IncompatibleApplicationsUpdater::ModuleWarningDecision::kIncompatible);
 }
 
 TEST_F(IncompatibleApplicationsUpdaterTest,
@@ -237,19 +264,27 @@ TEST_F(IncompatibleApplicationsUpdaterTest,
       CreateIncompatibleApplicationsUpdater();
 
   // Simulate the module loading into the process.
+  ModuleInfoKey module_key1(dll1_, 0, 0, 0);
   incompatible_applications_updater->OnNewModuleFound(
-      ModuleInfoKey(dll1_, 0, 0, 0), CreateLoadedModuleInfoData());
+      module_key1, CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
 
   // Add an additional module.
+  ModuleInfoKey module_key2(dll2_, 0, 0, 1);
   incompatible_applications_updater->OnNewModuleFound(
-      ModuleInfoKey(dll2_, 0, 0, 0), CreateLoadedModuleInfoData());
+      module_key2, CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
 
   EXPECT_TRUE(IncompatibleApplicationsUpdater::HasCachedApplications());
   auto application_names =
       IncompatibleApplicationsUpdater::GetCachedApplications();
   ASSERT_EQ(2u, application_names.size());
+  EXPECT_EQ(
+      incompatible_applications_updater->GetModuleWarningDecision(module_key1),
+      IncompatibleApplicationsUpdater::ModuleWarningDecision::kIncompatible);
+  EXPECT_EQ(
+      incompatible_applications_updater->GetModuleWarningDecision(module_key2),
+      IncompatibleApplicationsUpdater::ModuleWarningDecision::kIncompatible);
 }
 
 // This is meant to test that cached incompatible applications are persisted
@@ -289,7 +324,7 @@ TEST_F(IncompatibleApplicationsUpdaterTest, StaleEntriesRemoved) {
   incompatible_applications_updater->OnNewModuleFound(
       ModuleInfoKey(dll1_, 0, 0, 0), CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnNewModuleFound(
-      ModuleInfoKey(dll2_, 0, 0, 0), CreateLoadedModuleInfoData());
+      ModuleInfoKey(dll2_, 0, 0, 1), CreateLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
 
   EXPECT_TRUE(IncompatibleApplicationsUpdater::HasCachedApplications());
@@ -297,6 +332,28 @@ TEST_F(IncompatibleApplicationsUpdaterTest, StaleEntriesRemoved) {
       IncompatibleApplicationsUpdater::GetCachedApplications();
   ASSERT_EQ(1u, application_names.size());
   EXPECT_EQ(L"Foo", application_names[0].info.name);
+}
+
+TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreNotLoadedModules) {
+  AddIncompatibleApplication(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
+
+  auto incompatible_applications_updater =
+      CreateIncompatibleApplicationsUpdater();
+
+  // Simulate the module loading into the process.
+  ModuleInfoKey module_key(dll1_, 0, 0, 0);
+  ModuleInfoData module_data;
+  module_data.inspection_result = std::make_unique<ModuleInspectionResult>();
+  incompatible_applications_updater->OnNewModuleFound(module_key, module_data);
+  incompatible_applications_updater->OnModuleDatabaseIdle();
+
+  EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());
+  auto application_names =
+      IncompatibleApplicationsUpdater::GetCachedApplications();
+  ASSERT_EQ(0u, application_names.size());
+  EXPECT_EQ(
+      incompatible_applications_updater->GetModuleWarningDecision(module_key),
+      IncompatibleApplicationsUpdater::ModuleWarningDecision::kNotLoaded);
 }
 
 // Tests that modules with a matching certificate subject are whitelisted.
@@ -308,14 +365,19 @@ TEST_F(IncompatibleApplicationsUpdaterTest,
       CreateIncompatibleApplicationsUpdater();
 
   // Simulate the module loading into the process.
+  ModuleInfoKey module_key(dll1_, 0, 0, 0);
   incompatible_applications_updater->OnNewModuleFound(
-      ModuleInfoKey(dll1_, 0, 0, 0), CreateSignedLoadedModuleInfoData());
+      module_key, CreateSignedLoadedModuleInfoData());
   incompatible_applications_updater->OnModuleDatabaseIdle();
 
   EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());
   auto application_names =
       IncompatibleApplicationsUpdater::GetCachedApplications();
   ASSERT_EQ(0u, application_names.size());
+  EXPECT_EQ(
+      incompatible_applications_updater->GetModuleWarningDecision(module_key),
+      IncompatibleApplicationsUpdater::ModuleWarningDecision::
+          kAllowedSameCertificate);
 }
 
 // Registered modules are defined as either a shell extension or an IME.
@@ -329,22 +391,32 @@ TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreRegisteredModules) {
       CreateIncompatibleApplicationsUpdater();
 
   // Set the respective bit for registered modules.
+  ModuleInfoKey module_key1(dll1_, 0, 0, 0);
   auto module_data1 = CreateLoadedModuleInfoData();
   module_data1.module_properties |= ModuleInfoData::kPropertyShellExtension;
+
+  ModuleInfoKey module_key2(dll2_, 0, 0, 1);
   auto module_data2 = CreateLoadedModuleInfoData();
   module_data2.module_properties |= ModuleInfoData::kPropertyIme;
 
   // Simulate the modules loading into the process.
-  incompatible_applications_updater->OnNewModuleFound(
-      ModuleInfoKey(dll1_, 0, 0, 0), module_data1);
-  incompatible_applications_updater->OnNewModuleFound(
-      ModuleInfoKey(dll2_, 0, 0, 0), module_data2);
+  incompatible_applications_updater->OnNewModuleFound(module_key1,
+                                                      module_data1);
+  incompatible_applications_updater->OnNewModuleFound(module_key2,
+                                                      module_data2);
   incompatible_applications_updater->OnModuleDatabaseIdle();
 
   EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());
   auto application_names =
       IncompatibleApplicationsUpdater::GetCachedApplications();
   ASSERT_EQ(0u, application_names.size());
+  EXPECT_EQ(
+      incompatible_applications_updater->GetModuleWarningDecision(module_key1),
+      IncompatibleApplicationsUpdater::ModuleWarningDecision::
+          kAllowedShellExtension);
+  EXPECT_EQ(
+      incompatible_applications_updater->GetModuleWarningDecision(module_key2),
+      IncompatibleApplicationsUpdater::ModuleWarningDecision::kAllowedIME);
 }
 
 TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreModulesAddedToTheBlacklist) {
