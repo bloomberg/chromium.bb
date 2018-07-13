@@ -22,12 +22,12 @@
 #include "chrome/browser/vr/model/ui_mode.h"
 #include "chrome/browser/vr/model/web_vr_model.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 #include "ui/gfx/transform.h"
 
 namespace vr {
 
-struct VR_EXPORT Model {
+struct VR_UI_EXPORT Model {
   Model();
   ~Model();
 

@@ -7,13 +7,13 @@
 
 #include "base/callback.h"
 #include "chrome/browser/vr/elements/ui_element.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 namespace vr {
 
 // Base class for a transient element that automatically hides itself after some
 // point in time. The exacly transience behavior depends on the subclass.
-class VR_EXPORT TransientElement : public UiElement {
+class VR_UI_EXPORT TransientElement : public UiElement {
  public:
   ~TransientElement() override;
 
@@ -40,7 +40,7 @@ class VR_EXPORT TransientElement : public UiElement {
 };
 
 // An element that hides itself after after a set timeout.
-class VR_EXPORT SimpleTransientElement : public TransientElement {
+class VR_UI_EXPORT SimpleTransientElement : public TransientElement {
  public:
   explicit SimpleTransientElement(const base::TimeDelta& timeout);
   ~SimpleTransientElement() override;

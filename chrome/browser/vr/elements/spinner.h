@@ -9,14 +9,14 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/textured_element.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace vr {
 
 class SpinnerTexture;
 
-class VR_EXPORT Spinner : public TexturedElement {
+class VR_UI_EXPORT Spinner : public TexturedElement {
  public:
   explicit Spinner(int texture_width);
   ~Spinner() override;

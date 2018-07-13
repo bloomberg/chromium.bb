@@ -10,7 +10,7 @@
 #include "chrome/browser/vr/elements/textured_element.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
 #include "chrome/browser/vr/model/color_scheme.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/font.h"
@@ -35,7 +35,7 @@ enum TextLayoutMode {
 // This class describes a formatting attribute, applicable to a Text element.
 // Attributes are applied in order, and may override previous attributes.
 // Formatting may be applied only to non-wrapping text.
-class VR_EXPORT TextFormattingAttribute {
+class VR_UI_EXPORT TextFormattingAttribute {
  public:
   enum Type {
     COLOR,
@@ -93,7 +93,7 @@ struct TextRenderParameters {
   float shadow_size = 10.0f;
 };
 
-class VR_EXPORT Text : public TexturedElement {
+class VR_UI_EXPORT Text : public TexturedElement {
  public:
   explicit Text(float font_height_dmms);
   ~Text() override;

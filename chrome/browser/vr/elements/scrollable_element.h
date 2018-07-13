@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VR_ELEMENTS_SCROLLABLE_ELEMENT_H_
 
 #include "chrome/browser/vr/elements/ui_element.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 namespace vr {
 
@@ -15,7 +15,7 @@ namespace vr {
 // It is required that none of its descendants define any rotation. A good use
 // case for this element is the creation of menus, for which you can place a
 // LinearLayout as its only scrolling.
-class VR_EXPORT ScrollableElement : public UiElement {
+class VR_UI_EXPORT ScrollableElement : public UiElement {
  public:
   enum Orientation { kVertical, kHorizontal };
 

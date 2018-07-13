@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/renderers/base_renderer.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 namespace gfx {
 class Transform;
@@ -20,7 +20,7 @@ class BaseQuadRenderer : public BaseRenderer {
   BaseQuadRenderer(const char* vertex_src, const char* fragment_src);
   ~BaseQuadRenderer() override;
 
-  VR_EXPORT static void CreateBuffers();
+  VR_UI_EXPORT static void CreateBuffers();
   static int NumQuadIndices();
 
  protected:

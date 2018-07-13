@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_VR_ELEMENTS_RENDER_TEXT_WRAPPER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 #include "ui/gfx/render_text.h"
 
 namespace vr {
 
 // A minimal, mockable wrapper around gfx::RenderText, to facilitate testing of
 // RenderText users.
-class VR_EXPORT RenderTextWrapper {
+class VR_UI_EXPORT RenderTextWrapper {
  public:
   explicit RenderTextWrapper(gfx::RenderText* render_text);
   virtual ~RenderTextWrapper();

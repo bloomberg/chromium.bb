@@ -275,7 +275,10 @@ component("vr_common") {
     "//ui/gl/init",
   ]
 
-  defines = [ "VR_IMPLEMENTATION" ]
+  defines = [
+    "VR_IMPLEMENTATION",
+    "VR_UI_IMPLEMENTATION",
+  ]
 }
 
 test("vr_common_unittests") {

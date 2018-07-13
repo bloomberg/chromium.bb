@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_element.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 #include "ui/gfx/transform.h"
 
 namespace vr {
@@ -15,7 +15,7 @@ namespace vr {
 // This class is the root of all viewport aware elements. It calcuates the
 // yaw rotation which all elements need to apply to be visible in current
 // viewport.
-class VR_EXPORT ViewportAwareRoot : public UiElement {
+class VR_UI_EXPORT ViewportAwareRoot : public UiElement {
  public:
   static const float kViewportRotationTriggerDegrees;
 

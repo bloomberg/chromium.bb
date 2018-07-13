@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/vector_icon_button.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 #include "ui/gfx/vector_icon_types.h"
 
 namespace vr {
@@ -20,7 +20,7 @@ class VectorIcon;
 // A disc button has a circle as the background and a vector icon as the
 // foreground. When hovered, background and foreground both move forward on Z
 // axis. This matches the Daydream disc-style button.
-class VR_EXPORT DiscButton : public VectorIconButton {
+class VR_UI_EXPORT DiscButton : public VectorIconButton {
  public:
   DiscButton(base::RepeatingCallback<void()> click_handler,
              const gfx::VectorIcon& icon,

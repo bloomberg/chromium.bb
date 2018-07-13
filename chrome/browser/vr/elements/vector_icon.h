@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/textured_element.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {
@@ -20,7 +20,7 @@ namespace vr {
 
 class VectorIconTexture;
 
-class VR_EXPORT VectorIcon : public TexturedElement {
+class VR_UI_EXPORT VectorIcon : public TexturedElement {
  public:
   explicit VectorIcon(int texture_width);
   ~VectorIcon() override;

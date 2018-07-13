@@ -7,13 +7,13 @@
 
 #include "cc/animation/transform_operation.h"
 #include "chrome/browser/vr/elements/rect.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 namespace vr {
 
 // A throbber renders a fading and pulsing rect through animating element's
 // scale and opacity.
-class VR_EXPORT Throbber : public Rect {
+class VR_UI_EXPORT Throbber : public Rect {
  public:
   Throbber();
   ~Throbber() override;
