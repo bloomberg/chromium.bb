@@ -1551,7 +1551,9 @@
       // Assign models to the focused index.
       this._assignModels();
       // Get the new physical index for the focused index.
-      var fpidx = this._focusedPhysicalIndex;
+      // TODO(scottchen): remove this patch after rolling past the fix for
+      // this issue: https://github.com/PolymerElements/iron-list/issues/537.
+      var fpidx = this._focusedPhysicalIndex = this._getPhysicalIndex(this._focusedVirtualIndex);
 
       var onScreenItem = this._physicalItems[fpidx];
       if (!onScreenItem) {
