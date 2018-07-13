@@ -56,47 +56,72 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
       base_is_first_(selection.IsBaseFirst()) {}
 
 template <typename Strategy>
-VisibleSelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::Create(
-    const SelectionTemplate<Strategy>& selection) {
-  return CreateWithGranularity(selection, TextGranularity::kCharacter);
-}
+class VisibleSelectionTemplate<Strategy>::Creator {
+  STATIC_ONLY(Creator);
+
+ public:
+  static VisibleSelectionTemplate<Strategy> CreateWithGranularity(
+      const SelectionTemplate<Strategy>& selection,
+      TextGranularity granularity) {
+    return VisibleSelectionTemplate<Strategy>(
+        ComputeVisibleSelection(selection, granularity));
+  }
+
+ private:
+  static SelectionTemplate<Strategy> ComputeVisibleSelection(
+      const SelectionTemplate<Strategy>& passed_selection,
+      TextGranularity granularity) {
+    DCHECK(!NeedsLayoutTreeUpdate(passed_selection.Base()));
+    DCHECK(!NeedsLayoutTreeUpdate(passed_selection.Extent()));
+
+    const SelectionTemplate<Strategy>& canonicalized_selection =
+        CanonicalizeSelection(passed_selection);
+
+    if (canonicalized_selection.IsNone())
+      return SelectionTemplate<Strategy>();
+
+    const SelectionTemplate<Strategy>& granularity_adjusted_selection =
+        SelectionAdjuster::AdjustSelectionRespectingGranularity(
+            canonicalized_selection, granularity);
+    const SelectionTemplate<Strategy>& shadow_adjusted_selection =
+        SelectionAdjuster::AdjustSelectionToAvoidCrossingShadowBoundaries(
+            granularity_adjusted_selection);
+    const SelectionTemplate<Strategy>& editing_adjusted_selection =
+        SelectionAdjuster::AdjustSelectionToAvoidCrossingEditingBoundaries(
+            shadow_adjusted_selection);
+    const SelectionTemplate<Strategy>& type_adjusted_selection =
+        SelectionAdjuster::AdjustSelectionType(
+            typename SelectionTemplate<Strategy>::Builder(
+                editing_adjusted_selection)
+                .SetAffinity(passed_selection.Affinity())
+                .Build());
+    return type_adjusted_selection;
+  }
+};
 
 VisibleSelection CreateVisibleSelection(const SelectionInDOMTree& selection) {
-  return VisibleSelection::Create(selection);
+  return VisibleSelection::Creator::CreateWithGranularity(
+      selection, TextGranularity::kCharacter);
 }
 
 VisibleSelectionInFlatTree CreateVisibleSelection(
     const SelectionInFlatTree& selection) {
-  return VisibleSelectionInFlatTree::Create(selection);
-}
-
-// TODO(editing-dev): We should move |ComputeVisibleSelection()| to here to
-// avoid forward declaration.
-template <typename Strategy>
-static SelectionTemplate<Strategy> ComputeVisibleSelection(
-    const SelectionTemplate<Strategy>&,
-    TextGranularity);
-
-template <typename Strategy>
-VisibleSelectionTemplate<Strategy>
-VisibleSelectionTemplate<Strategy>::CreateWithGranularity(
-    const SelectionTemplate<Strategy>& selection,
-    TextGranularity granularity) {
-  return VisibleSelectionTemplate(
-      ComputeVisibleSelection(selection, granularity));
+  return VisibleSelectionInFlatTree::Creator::CreateWithGranularity(
+      selection, TextGranularity::kCharacter);
 }
 
 VisibleSelection CreateVisibleSelectionWithGranularity(
     const SelectionInDOMTree& selection,
     TextGranularity granularity) {
-  return VisibleSelection::CreateWithGranularity(selection, granularity);
+  return VisibleSelection::Creator::CreateWithGranularity(selection,
+                                                          granularity);
 }
 
 VisibleSelectionInFlatTree CreateVisibleSelectionWithGranularity(
     const SelectionInFlatTree& selection,
     TextGranularity granularity) {
-  return VisibleSelectionInFlatTree::CreateWithGranularity(selection,
-                                                           granularity);
+  return VisibleSelectionInFlatTree::Creator::CreateWithGranularity(
+      selection, granularity);
 }
 
 template <typename Strategy>
@@ -230,37 +255,6 @@ static SelectionTemplate<Strategy> CanonicalizeSelection(
         .Build();
   }
   return SelectionTemplate<Strategy>();
-}
-
-template <typename Strategy>
-static SelectionTemplate<Strategy> ComputeVisibleSelection(
-    const SelectionTemplate<Strategy>& passed_selection,
-    TextGranularity granularity) {
-  DCHECK(!NeedsLayoutTreeUpdate(passed_selection.Base()));
-  DCHECK(!NeedsLayoutTreeUpdate(passed_selection.Extent()));
-
-  const SelectionTemplate<Strategy>& canonicalized_selection =
-      CanonicalizeSelection(passed_selection);
-
-  if (canonicalized_selection.IsNone())
-    return SelectionTemplate<Strategy>();
-
-  const SelectionTemplate<Strategy>& granularity_adjusted_selection =
-      SelectionAdjuster::AdjustSelectionRespectingGranularity(
-          canonicalized_selection, granularity);
-  const SelectionTemplate<Strategy>& shadow_adjusted_selection =
-      SelectionAdjuster::AdjustSelectionToAvoidCrossingShadowBoundaries(
-          granularity_adjusted_selection);
-  const SelectionTemplate<Strategy>& editing_adjusted_selection =
-      SelectionAdjuster::AdjustSelectionToAvoidCrossingEditingBoundaries(
-          shadow_adjusted_selection);
-  const SelectionTemplate<Strategy>& type_adjusted_selection =
-      SelectionAdjuster::AdjustSelectionType(
-          typename SelectionTemplate<Strategy>::Builder(
-              editing_adjusted_selection)
-              .SetAffinity(passed_selection.Affinity())
-              .Build());
-  return type_adjusted_selection;
 }
 
 template <typename Strategy>

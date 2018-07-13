@@ -38,8 +38,6 @@
 
 namespace blink {
 
-class SelectionAdjuster;
-
 const TextAffinity kSelDefaultAffinity = TextAffinity::kDownstream;
 
 template <typename Strategy>
@@ -47,18 +45,11 @@ class VisibleSelectionTemplate {
   DISALLOW_NEW();
 
  public:
+  class Creator;
+
   VisibleSelectionTemplate();
   VisibleSelectionTemplate(const VisibleSelectionTemplate&);
   VisibleSelectionTemplate& operator=(const VisibleSelectionTemplate&);
-
-  // Note: |create()| should be used only by |createVisibleSelection|.
-  static VisibleSelectionTemplate Create(const SelectionTemplate<Strategy>&);
-
-  // Note: |CreateWithGranularity()| should be used only by
-  // |CreateVisibleSelectionWithGranularity()|.
-  static VisibleSelectionTemplate CreateWithGranularity(
-      const SelectionTemplate<Strategy>&,
-      TextGranularity);
 
   TextAffinity Affinity() const { return affinity_; }
 
@@ -112,8 +103,6 @@ class VisibleSelectionTemplate {
   static void PrintTo(const VisibleSelectionTemplate&, std::ostream*);
 
  private:
-  friend class SelectionAdjuster;
-
   explicit VisibleSelectionTemplate(const SelectionTemplate<Strategy>&);
 
   // We need to store these as Positions because VisibleSelection is
