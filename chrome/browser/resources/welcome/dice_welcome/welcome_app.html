@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/html/action_link.html">
-<link rel="import" href="chrome://resources/html/action_link_css.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -9,7 +8,7 @@
 
 <dom-module id="welcome-app">
   <template>
-    <style include="action-link">
+    <style include="paper-button-style">
       @keyframes slideUpContent {
         from {
           transform: translateY(120px);
@@ -144,40 +143,13 @@
       .signin-buttons {
         align-items: center;
         display: flex;
-        flex-direction: row;
         font-size: .8125em;
-        font-weight: 500;
         justify-content: space-between;
         margin-top: 2.5em;
-        text-transform: uppercase;
       }
 
-      #acceptButton {
-        -webkit-font-smoothing: antialiased;
-        background: var(--google-blue-500);
-        border-radius: 2px;
-        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .1);
-        color: white;
-        line-height: 2.25rem;
-        padding: 0 2em;
-        transition: 300ms cubic-bezier(.4, .2, 0, 1);
-        will-change: box-shadow;
-      }
-
-      #acceptButton:hover {
-        background: var(--paper-blue-a400);
-        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .1), 0 1px 2px rgba(0, 0, 0, .24);
-      }
-
-      #acceptButton.keyboard-focus {
-        background: var(--google-blue-700);
-      }
-
-      #declineButton {
-        color: var(--paper-grey-800);
-        display: inline-block;
-        margin: 1.5em;
-        text-decoration: none;
+      paper-button {
+        min-width: 92px;
       }
     </style>
     <div class="slider">
@@ -191,10 +163,10 @@
       <div class="signin">
         <div class="signin-description">$i18n{descriptionText}</div>
         <div class="signin-buttons">
-          <a is="action-link" id="declineButton" on-tap="onDecline_">
+          <paper-button class="cancel-button" on-tap="onDecline_">
             $i18n{declineText}
-          </a>
-          <paper-button id="acceptButton" on-tap="onAccept_">
+          </paper-button>
+          <paper-button class="action-button" on-tap="onAccept_">
             $i18n{acceptText}
           </paper-button>
         </div>
