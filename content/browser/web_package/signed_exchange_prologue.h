@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/containers/span.h"
+#include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
 
@@ -21,9 +22,6 @@ class SignedExchangeDevToolsProxy;
 // following the prologue bytes.
 class CONTENT_EXPORT SignedExchangePrologue {
  public:
-  // TODO(kouhei): Below should be made private (only friend from unittest)
-  // after the b1 migration.
-  static constexpr size_t kEncodedLengthInBytes = 3;
   // Parse encoded length of the variable-length field in the signed exchange.
   // Note: |input| must be pointing to a valid memory address that has at least
   // |kEncodedLengthInBytes|.
@@ -56,6 +54,10 @@ class CONTENT_EXPORT SignedExchangePrologue {
   size_t ComputeFollowingSectionsLength() const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SignedExchangePrologueTest, ParseEncodedLength);
+
+  static constexpr size_t kEncodedLengthInBytes = 3;
+
   // Corresponds to `sigLength` in the spec text.
   // Encoded length of the Signature header field's value.
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#application-signed-exchange
