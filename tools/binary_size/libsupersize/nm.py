@@ -657,36 +657,41 @@ class _BulkObjectFileAnalyzerSlave(object):
       self._job_queue.join()
       self._allow_analyze_paths = False
 
+  # Handle messages in a function outside the event loop, so local variables are
+  # independent across messages, and can be bound to jobs by lambdas using
+  # closures instead of functools.partial().
+  def _HandleMessage(self, message):
+    if message[0] == _MSG_ANALYZE_PATHS:
+      assert self._allow_analyze_paths, (
+          'Cannot call AnalyzePaths() after AnalyzeStringLiterals()s.')
+      paths = message[1].split('\x01')
+      self._job_queue.put(lambda: self._worker_analyzer.AnalyzePaths(paths))
+    elif message[0] == _MSG_SORT_PATHS:
+      assert self._allow_analyze_paths, (
+          'Cannot call SortPaths() after AnalyzeStringLiterals()s.')
+      self._job_queue.put(self._worker_analyzer.SortPaths)
+    elif message[0] == _MSG_ANALYZE_STRINGS:
+      self._WaitForAnalyzePathJobs()
+      elf_path, string_positions = message[1:]
+      self._job_queue.put(
+          lambda: self._worker_analyzer.AnalyzeStringLiterals(
+              elf_path, string_positions))
+    elif message[0] == _MSG_GET_SYMBOL_NAMES:
+      self._WaitForAnalyzePathJobs()
+      self._pipe.send(None)
+      paths_by_name = self._worker_analyzer.GetSymbolNames()
+      self._pipe.send(concurrent.EncodeDictOfLists(paths_by_name))
+    elif message[0] == _MSG_GET_STRINGS:
+      self._job_queue.join()
+      # Send a None packet so that other side can measure IPC transfer time.
+      self._pipe.send(None)
+      self._pipe.send(self._worker_analyzer.GetEncodedStringPositions())
+
   def Run(self):
     try:
       self._worker_thread.start()
       while True:
-        message = self._pipe.recv()
-        if message[0] == _MSG_ANALYZE_PATHS:
-          assert self._allow_analyze_paths, (
-              'Cannot call AnalyzePaths() after AnalyzeStringLiterals()s.')
-          paths = message[1].split('\x01')
-          self._job_queue.put(lambda: self._worker_analyzer.AnalyzePaths(paths))
-        elif message[0] == _MSG_SORT_PATHS:
-          assert self._allow_analyze_paths, (
-              'Cannot call SortPaths() after AnalyzeStringLiterals()s.')
-          self._job_queue.put(self._worker_analyzer.SortPaths)
-        elif message[0] == _MSG_ANALYZE_STRINGS:
-          self._WaitForAnalyzePathJobs()
-          elf_path, string_positions = message[1:]
-          self._job_queue.put(
-              lambda: self._worker_analyzer.AnalyzeStringLiterals(
-                  elf_path, string_positions))
-        elif message[0] == _MSG_GET_SYMBOL_NAMES:
-          self._WaitForAnalyzePathJobs()
-          self._pipe.send(None)
-          paths_by_name = self._worker_analyzer.GetSymbolNames()
-          self._pipe.send(concurrent.EncodeDictOfLists(paths_by_name))
-        elif message[0] == _MSG_GET_STRINGS:
-          self._job_queue.join()
-          # Send a None packet so that other side can measure IPC transfer time.
-          self._pipe.send(None)
-          self._pipe.send(self._worker_analyzer.GetEncodedStringPositions())
+        self._HandleMessage(self._pipe.recv())
     except EOFError:
       pass
     except EnvironmentError, e:
