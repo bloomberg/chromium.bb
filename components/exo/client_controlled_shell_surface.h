@@ -102,6 +102,10 @@ class ClientControlledShellSurface
     bounds_changed_callback_ = bounds_changed_callback;
   }
 
+  bool has_bounds_changed_callback() const {
+    return static_cast<bool>(bounds_changed_callback_);
+  }
+
   // Set the callback to run when the drag operation started.
   using DragStartedCallback = base::RepeatingCallback<void(int direction)>;
   void set_drag_started_callback(const DragStartedCallback& callback) {

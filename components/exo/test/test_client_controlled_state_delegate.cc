@@ -7,7 +7,10 @@
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/wm/window_state.h"
 #include "components/exo/client_controlled_shell_surface.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace exo {
 namespace test {
@@ -49,17 +52,29 @@ void TestClientControlledStateDelegate::HandleBoundsRequest(
     ash::wm::WindowState* window_state,
     ash::mojom::WindowStateType requested_state,
     const gfx::Rect& bounds) {
-  ash::wm::ClientControlledState* state_impl =
-      static_cast<ash::wm::ClientControlledState*>(
-          ash::wm::WindowState::TestApi::GetStateImpl(window_state));
-  state_impl->set_bounds_locally(true);
-  window_state->window()->SetBounds(bounds);
-  state_impl->set_bounds_locally(false);
-
   views::Widget* widget =
       views::Widget::GetWidgetForNativeWindow(window_state->window());
   ClientControlledShellSurface* shell_surface =
       static_cast<ClientControlledShellSurface*>(widget->widget_delegate());
+  if (!shell_surface->host_window()->GetRootWindow())
+    return;
+
+  gfx::Rect bounds_in_screen(bounds);
+  ::wm::ConvertRectToScreen(window_state->window()->GetRootWindow(),
+                            &bounds_in_screen);
+  if (shell_surface->has_bounds_changed_callback()) {
+    int64_t display_id = display::Screen::GetScreen()
+                             ->GetDisplayNearestWindow(window_state->window())
+                             .id();
+    shell_surface->OnBoundsChangeEvent(
+        window_state->GetStateType(), requested_state, display_id,
+        bounds_in_screen,
+        window_state->drag_details()
+            ? window_state->drag_details()->bounds_change
+            : 0);
+  }
+
+  shell_surface->SetGeometry(bounds_in_screen);
 
   if (requested_state != window_state->GetStateType()) {
     DCHECK(requested_state == ash::mojom::WindowStateType::LEFT_SNAPPED ||
@@ -68,8 +83,9 @@ void TestClientControlledStateDelegate::HandleBoundsRequest(
       shell_surface->SetSnappedToLeft();
     else
       shell_surface->SetSnappedToRight();
-    shell_surface->OnSurfaceCommit();
   }
+
+  shell_surface->OnSurfaceCommit();
 }
 
 // static
