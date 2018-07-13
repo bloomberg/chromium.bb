@@ -142,6 +142,8 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
     'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePageAfterSwitching',
     'TakesScreenshotTest.testShouldCaptureScreenshotAtIFramePageAfterSwitching',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2376
+    'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
 
     # Alerts are not yet supported on Android.
     'AlertsTest.*',
