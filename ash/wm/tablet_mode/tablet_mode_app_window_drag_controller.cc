@@ -4,8 +4,12 @@
 
 #include "ash/wm/tablet_mode/tablet_mode_app_window_drag_controller.h"
 
+#include "ash/shell.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
+#include "ash/wm/window_state.h"
+#include "ui/base/hit_test.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -36,7 +40,7 @@ bool TabletModeAppWindowDragController::DragWindowFromTop(
     return true;
   }
 
-  if (!is_in_window_drag_)
+  if (!drag_delegate_->dragged_window())
     return false;
 
   if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
@@ -58,8 +62,14 @@ void TabletModeAppWindowDragController::StartWindowDrag(
     ui::GestureEvent* event) {
   drag_delegate_->OnWindowDragStarted(
       static_cast<aura::Window*>(event->target()));
-  is_in_window_drag_ = true;
   initial_location_in_screen_ = GetEventLocationInScreen(event);
+
+  wm::GetWindowState(drag_delegate_->dragged_window())
+      ->CreateDragDetails(initial_location_in_screen_, HTCLIENT,
+                          ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+  if (!Shell::Get()->window_selector_controller()->IsSelecting())
+    Shell::Get()->window_selector_controller()->ToggleOverview();
+
   gesture_drag_amount_.SetPoint(0.f, 0.f);
 }
 
@@ -92,8 +102,8 @@ void TabletModeAppWindowDragController::EndWindowDrag(
     wm::WmToplevelWindowEventHandler::DragResult result) {
   const gfx::Point location_in_screen(GetEventLocationInScreen(event));
   drag_delegate_->dragged_window()->SetTransform(gfx::Transform());
+  wm::GetWindowState(drag_delegate_->dragged_window())->DeleteDragDetails();
   drag_delegate_->OnWindowDragEnded(result, location_in_screen);
-  is_in_window_drag_ = false;
   gesture_drag_amount_.SetPoint(0.f, 0.f);
 }
 
