@@ -23,17 +23,8 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class BBGenErr(Exception):
-
-  def __init__(self, message, cause=None):
-    super(BBGenErr, self).__init__(BBGenErr._create_message(message, cause))
-
-  @staticmethod
-  def _create_message(message, cause):
-    msg = message
-    if cause:
-      msg += '\n\nCaused by:\n'
-      msg += '\n'.join('  %s' % l for l in traceback.format_exc().splitlines())
-    return msg
+  def __init__(self, message):
+    super(BBGenErr, self).__init__(message)
 
 
 # This class is only present to accommodate certain machines on
@@ -100,14 +91,11 @@ class GTestGenerator(BaseGenerator):
     # losing the order by avoiding coalescing the dictionaries into one.
     gtests = []
     for test_name, test_config in sorted(input_tests.iteritems()):
-      try:
-        test = self.bb_gen.generate_gtest(
-          waterfall, tester_name, tester_config, test_name, test_config)
-        if test:
-          # generate_gtest may veto the test generation on this tester.
-          gtests.append(test)
-      except Exception as e:
-        raise BBGenErr('Failed to generate %s' % test_name, cause=e)
+      test = self.bb_gen.generate_gtest(
+        waterfall, tester_name, tester_config, test_name, test_config)
+      if test:
+        # generate_gtest may veto the test generation on this tester.
+        gtests.append(test)
     return gtests
 
   def sort(self, tests):
@@ -274,25 +262,11 @@ class BBJSONGenerator(object):
               not in remove_from) # pragma: no cover
     return True
 
-  def get_test_modifications(self, test, test_name, tester_name, waterfall):
+  def get_test_modifications(self, test, test_name, tester_name):
     exception = self.get_exception_for_test(test_name, test)
     if not exception:
       return None
-    mods = exception.get('modifications', {}).get(tester_name)
-    if mods:
-      return mods
-    # TODO(kbr): this code path was added for exactly one test
-    # (cronet_test_instrumentation_apk) on a few bots on
-    # chromium.android.fyi. Once the bots are all uniquely named (a
-    # different ongoing project) this code should be removed.
-    return exception.get('modifications', {}).get(tester_name + ' ' +
-                                                  waterfall['name'])
-
-  def get_test_key_removals(self, test_name, tester_name):
-    exception = self.exceptions.get(test_name)
-    if not exception:
-      return []
-    return exception.get('key_removals', {}).get(tester_name, [])
+    return exception.get('modifications', {}).get(tester_name)
 
   def merge_command_line_args(self, arr, prefix, splitter):
     prefix_len = len(prefix)
@@ -436,15 +410,12 @@ class BBJSONGenerator(object):
         if k != 'can_use_on_swarming_builders': # pragma: no cover
           del swarming_dict[k] # pragma: no cover
 
-  def update_and_cleanup_test(self, test, test_name, tester_name, waterfall):
+  def update_and_cleanup_test(self, test, test_name, tester_name):
     # See if there are any exceptions that need to be merged into this
     # test's specification.
-    modifications = self.get_test_modifications(test, test_name, tester_name,
-                                                waterfall)
+    modifications = self.get_test_modifications(test, test_name, tester_name)
     if modifications:
       test = self.dictionary_merge(test, modifications)
-    for k in self.get_test_key_removals(test_name, tester_name):
-      del test[k]
     if 'swarming' in test:
       self.clean_swarming_dictionary(test['swarming'])
     return test
@@ -513,8 +484,7 @@ class BBJSONGenerator(object):
       if args:
         result['args'] = args
 
-    result = self.update_and_cleanup_test(result, test_name, tester_name,
-                                          waterfall)
+    result = self.update_and_cleanup_test(result, test_name, tester_name)
     self.add_common_test_properties(result, tester_config)
     return result
 
@@ -528,8 +498,7 @@ class BBJSONGenerator(object):
     result['name'] = test_name
     self.initialize_swarming_dictionary_for_test(result, tester_config)
     self.initialize_args_for_test(result, tester_config)
-    result = self.update_and_cleanup_test(result, test_name, tester_name,
-                                          waterfall)
+    result = self.update_and_cleanup_test(result, test_name, tester_name)
     self.add_common_test_properties(result, tester_config)
     return result
 
@@ -543,8 +512,7 @@ class BBJSONGenerator(object):
       'name': test_name,
       'script': test_config['script']
     }
-    result = self.update_and_cleanup_test(result, test_name, tester_name,
-                                          waterfall)
+    result = self.update_and_cleanup_test(result, test_name, tester_name)
     return result
 
   def generate_junit_test(self, waterfall, tester_name, tester_config,
@@ -569,8 +537,7 @@ class BBJSONGenerator(object):
       result['name'] = test_name
     else:
       result['test'] = test_name
-    result = self.update_and_cleanup_test(result, test_name, tester_name,
-                                          waterfall)
+    result = self.update_and_cleanup_test(result, test_name, tester_name)
     return result
 
   def substitute_gpu_args(self, tester_config, args):
@@ -682,12 +649,6 @@ class BBJSONGenerator(object):
     self.resolve_composition_test_suites()
     self.link_waterfalls_to_test_suites()
 
-  def generation_error(self, suite_type, bot_name, waterfall_name, cause):
-    return BBGenErr(
-      'Failed to generate %s from %s:%s' % (
-          suite_type, waterfall_name, bot_name),
-      cause=cause)
-
   def unknown_bot(self, bot_name, waterfall_name):
     return BBGenErr(
       'Unknown bot name "%s" on waterfall "%s"' % (bot_name, waterfall_name))
@@ -718,17 +679,14 @@ class BBJSONGenerator(object):
           raise self.unknown_test_suite_type(
             test_type, name, waterfall['name']) # pragma: no cover
         test_generator = generator_map[test_type]
-        try:
-          # Let multiple kinds of generators generate the same kinds
-          # of tests. For example, gpu_telemetry_tests are a
-          # specialization of isolated_scripts.
-          new_tests = test_generator.generate(
-            waterfall, name, config, input_tests)
-          remapped_test_type = test_type_remapper.get(test_type, test_type)
-          tests[remapped_test_type] = test_generator.sort(
-            tests.get(remapped_test_type, []) + new_tests)
-        except Exception as e:
-          raise self.generation_error(test_type, name, waterfall['name'], e)
+        # Let multiple kinds of generators generate the same kinds
+        # of tests. For example, gpu_telemetry_tests are a
+        # specialization of isolated_scripts.
+        new_tests = test_generator.generate(
+          waterfall, name, config, input_tests)
+        remapped_test_type = test_type_remapper.get(test_type, test_type)
+        tests[remapped_test_type] = test_generator.sort(
+          tests.get(remapped_test_type, []) + new_tests)
       all_tests[name] = tests
     all_tests['AAAAA1 AUTOGENERATED FILE DO NOT EDIT'] = {}
     all_tests['AAAAA2 See generate_buildbot_json.py to make changes'] = {}
