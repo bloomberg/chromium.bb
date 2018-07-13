@@ -32,11 +32,6 @@
   border-bottom: var(--oobe-a11y-dialog-list-item-border);
 }
 
-/************* Network Selection Screen **************/
-#networkSelectionScreen [slot='footer'] {
-  max-height: 313px;
-}
-
 /************* Timezone Screen **************/
 #timezoneScreen .timezone-selection-entry {
   border-top: var(--oobe-dialog-list-item-border);

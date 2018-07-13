@@ -80,15 +80,6 @@ Polymer({
     },
 
     /**
-     * True when connected to a network.
-     * @private
-     */
-    isConnected_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * Controls displaying of "Enable debugging features" link.
      */
     debuggingLinkVisible: Boolean,
@@ -103,20 +94,24 @@ Polymer({
     if (document.documentElement.getAttribute('full-screen-dialog'))
       this.fullScreenDialog = true;
 
-    if (this.fullScreenDialog)
+    if (this.fullScreenDialog) {
       this.$.welcomeScreen.fullScreenDialog = true;
+      this.$.networkSelectionScreen.fullScreenDialog = true;
+    }
 
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
     });
+
+    this.$.networkSelectionScreen.onBeforeShow();
   },
 
   /**
    * This is called when UI strings are changed.
    */
   updateLocalizedContent: function() {
-    this.$.networkSelectLogin.setCrOncStrings();
+    this.$.networkSelectionScreen.i18nUpdateLocale();
     this.$.welcomeScreen.i18nUpdateLocale();
     this.i18nUpdateLocale();
   },
@@ -142,6 +137,7 @@ Polymer({
    */
   hideAllScreens_: function() {
     this.$.welcomeScreen.hidden = true;
+    this.$.networkSelectionScreen.hidden = true;
 
     var screens = Polymer.dom(this.root).querySelectorAll('oobe-dialog');
     for (var i = 0; i < screens.length; ++i) {
@@ -178,17 +174,6 @@ Polymer({
 
   focus: function() {
     this.getActiveScreen_().focus();
-  },
-
-  /** @private */
-  onNetworkSelectionScreenShown_: function() {
-    // After #networkSelect is stamped, trigger a refresh so that the list
-    // will be updated with the currently visible networks and sized
-    // appropriately.
-    this.async(function() {
-      this.$.networkSelectLogin.refresh();
-      this.$.networkSelectLogin.focus();
-    }.bind(this));
   },
 
   /**
@@ -253,7 +238,7 @@ Polymer({
   },
 
   /** @private */
-  onNetworkNextTap_: function() {
+  onNetworkSelectionNextButtonClicked_: function() {
     chrome.send('login.WelcomeScreen.userActed', ['continue']);
   },
 
@@ -262,7 +247,7 @@ Polymer({
    *
    * @private
    */
-  onNetworkSelectionBackButtonPressed_: function() {
+  onNetworkSelectionBackButtonClicked_: function() {
     this.showScreen_('welcomeScreen');
   },
 
