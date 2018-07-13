@@ -4639,3 +4639,6 @@ crbug.com/863067 [ Win10 ] virtual/user-activation-v2/fast/dom/Window/window-foc
 crbug.com/863160 [ Mac ] virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event.https.html [ Pass Timeout ]
 crbug.com/860706 [ Linux Mac ] css3/filters/filter-repaint-composited-fallback-crash.html [ Timeout Pass ]
 crbug.com/860706 [ Linux Mac ] virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Timeout Pass ]
+
+# Sheriff 2018-7-13
+crbug.com/863462 virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Timeout Pass ]
