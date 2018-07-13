@@ -628,10 +628,10 @@ void ScrollManager::SnapAtGestureScrollEnd() {
     return;
   SnapCoordinator* snap_coordinator =
       frame_->GetDocument()->GetSnapCoordinator();
-  LayoutBox* layout_box = LayoutBoxForSnapping();
-  if (!snap_coordinator || !layout_box)
+  if (!snap_coordinator)
     return;
 
+  LayoutBox* layout_box = LayoutBoxForSnapping();
   snap_coordinator->PerformSnapping(*layout_box,
                                     did_scroll_x_for_scroll_gesture_,
                                     did_scroll_y_for_scroll_gesture_);
