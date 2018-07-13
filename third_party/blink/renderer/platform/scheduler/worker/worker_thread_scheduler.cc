@@ -113,7 +113,7 @@ WorkerThreadScheduler::WorkerThreadScheduler(
                     kUnspecifiedWorkerThreadLoadTrackerReportingInterval),
       lifecycle_state_(proxy ? proxy->lifecycle_state()
                              : SchedulingLifecycleState::kNotThrottled),
-      worker_metrics_helper_(thread_type) {
+      worker_metrics_helper_(thread_type, helper()->HasCPUTimingForEachTask()) {
   thread_start_time_ = helper()->NowTicks();
   load_tracker_.Resume(thread_start_time_);
   helper()->AddTaskTimeObserver(this);

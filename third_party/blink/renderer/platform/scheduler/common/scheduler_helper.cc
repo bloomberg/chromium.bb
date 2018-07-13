@@ -147,9 +147,19 @@ base::TimeTicks SchedulerHelper::NowTicks() const {
 }
 
 double SchedulerHelper::GetSamplingRateForRecordingCPUTime() const {
-  if (sequence_manager_)
-    return sequence_manager_->GetSamplingRateForRecordingCPUTime();
+  if (sequence_manager_) {
+    return sequence_manager_->GetMetricRecordingSettings()
+        .task_sampling_rate_for_recording_cpu_time;
+  }
   return 0;
+}
+
+bool SchedulerHelper::HasCPUTimingForEachTask() const {
+  if (sequence_manager_) {
+    return sequence_manager_->GetMetricRecordingSettings()
+        .records_cpu_time_for_each_task;
+  }
+  return false;
 }
 
 }  // namespace scheduler

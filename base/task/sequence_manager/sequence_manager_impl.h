@@ -102,7 +102,7 @@ class BASE_EXPORT SequenceManagerImpl
   void SetWorkBatchSize(int work_batch_size) override;
   void EnableCrashKeys(const char* file_name_crash_key,
                        const char* function_name_crash_key) override;
-  double GetSamplingRateForRecordingCPUTime() const override;
+  const MetricRecordingSettings& GetMetricRecordingSettings() const override;
 
   // Implementation of SequencedTaskSource:
   Optional<PendingTask> TakeTask() override;
@@ -309,6 +309,8 @@ class BASE_EXPORT SequenceManagerImpl
     any_thread_lock_.AssertAcquired();
     return any_thread_;
   }
+
+  const MetricRecordingSettings metric_recording_settings_;
 
   // A check to bail out early during memory corruption.
   // https://crbug.com/757940

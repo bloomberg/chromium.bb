@@ -95,6 +95,7 @@ class PLATFORM_EXPORT SchedulerHelper
   void UnregisterTimeDomain(base::sequence_manager::TimeDomain* time_domain);
   bool GetAndClearSystemIsQuiescentBit();
   double GetSamplingRateForRecordingCPUTime() const;
+  bool HasCPUTimingForEachTask() const;
 
   // Test helpers.
   void SetWorkBatchSizeForTesting(size_t work_batch_size);

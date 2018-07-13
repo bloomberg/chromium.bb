@@ -82,9 +82,10 @@ MainThreadMetricsHelper::PerQueueTypeDurationReporters::
 
 MainThreadMetricsHelper::MainThreadMetricsHelper(
     MainThreadSchedulerImpl* main_thread_scheduler,
+    bool has_cpu_timing_for_each_task,
     base::TimeTicks now,
     bool renderer_backgrounded)
-    : MetricsHelper(WebThreadType::kMainThread),
+    : MetricsHelper(WebThreadType::kMainThread, has_cpu_timing_for_each_task),
       main_thread_scheduler_(main_thread_scheduler),
       renderer_shutting_down_(false),
       is_page_almost_idle_signal_enabled_(
