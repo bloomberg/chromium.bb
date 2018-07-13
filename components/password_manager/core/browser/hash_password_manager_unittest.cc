@@ -110,6 +110,7 @@ TEST_F(HashPasswordManagerTest, SavingPasswordHashDataNotCanonicalized) {
   base::string16 password(base::UTF8ToUTF16("password"));
   std::string canonical_username("user@gmail.com");
   std::string username("US.ER@gmail.com");
+  std::string gmail_prefix("user");
 
   // Verify |SavePasswordHash(const std::string,const base::string16&)|
   // behavior.
@@ -129,7 +130,7 @@ TEST_F(HashPasswordManagerTest, SavingPasswordHashDataNotCanonicalized) {
       hash_password_manager.RetrievePasswordHash(username,
                                                  /*is_gaia_password=*/true);
   hash_password_manager.SavePasswordHash(username, password,
-                                         /*force_update=*/true);
+                                         /*is_gaia_password=*/true);
   base::Optional<PasswordHashData> existing_password_data =
       hash_password_manager.RetrievePasswordHash(username,
                                                  /*is_gaia_password=*/true);
@@ -138,6 +139,28 @@ TEST_F(HashPasswordManagerTest, SavingPasswordHashDataNotCanonicalized) {
   EXPECT_EQ(canonical_username,
             hash_password_manager
                 .RetrievePasswordHash(username, /*is_gaia_password=*/true)
+                ->username);
+  hash_password_manager.SavePasswordHash(gmail_prefix, password,
+                                         /*is_gaia_password=*/true);
+  EXPECT_EQ(current_password_hash_data->hash,
+            hash_password_manager
+                .RetrievePasswordHash(gmail_prefix,
+                                      /*is_gaia_password=*/true)
+                ->hash);
+  EXPECT_EQ(1u, prefs_.GetList(prefs::kPasswordHashDataList)->GetList().size());
+  EXPECT_EQ(canonical_username,
+            hash_password_manager
+                .RetrievePasswordHash(gmail_prefix, /*is_gaia_password=*/true)
+                ->username);
+
+  // Saves the password with gmail prefix only should be canonicalized into
+  // full gmail user name.
+  hash_password_manager.SavePasswordHash("user.name", password,
+                                         /*is_gaia_password=*/true);
+  EXPECT_EQ(2u, prefs_.GetList(prefs::kPasswordHashDataList)->GetList().size());
+  EXPECT_EQ("username@gmail.com",
+            hash_password_manager
+                .RetrievePasswordHash("user.name", /*is_gaia_password=*/true)
                 ->username);
 }
 
