@@ -206,19 +206,8 @@ bool NGInlineNode::InLineHeightQuirksMode() const {
 }
 
 bool NGInlineNode::CanContainFirstFormattedLine() const {
-  // TODO(kojii): In LayoutNG, leading OOF creates an anonymous block box,
-  // and that |LayoutBlockFlow::CanContainFirstFormattedLine()| does not work.
-  // crbug.com/734554
-  LayoutObject* layout_object = GetLayoutBlockFlow();
-  if (!layout_object->IsAnonymousBlock())
-    return true;
-  for (;;) {
-    layout_object = layout_object->PreviousSibling();
-    if (!layout_object)
-      return true;
-    if (!layout_object->IsFloatingOrOutOfFlowPositioned())
-      return false;
-  }
+  DCHECK(GetLayoutBlockFlow());
+  return GetLayoutBlockFlow()->CanContainFirstFormattedLine();
 }
 
 NGInlineNodeData* NGInlineNode::MutableData() {
