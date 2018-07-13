@@ -62,7 +62,6 @@
 <translation id="2050339315714019657">Portret</translation>
 <translation id="2067602449040652523">Svjetlina tipkovnice</translation>
 <translation id="2081529251031312395">Korisnik $1 može se prijaviti i kasnije.</translation>
-<translation id="2122028596993374965">Zaustavi emitiranje kartice <ph name="TAB_NAME" /> na prijamniku <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Punjač male snage</translation>
 <translation id="2135456203358955318">Usidreno povećalo</translation>
 <translation id="2144487987174258011">Ponovno pokrenite da biste ažurirali Adobe Flash Player</translation>
@@ -247,7 +246,6 @@
 <translation id="5911533659001334206">Pregled prečaca</translation>
 <translation id="5916664084637901428">Uključi</translation>
 <translation id="592343074608792716">Ovaj Chromebook i vaš telefon povezat će se automatski</translation>
-<translation id="5927132638760172455">Emitiranje na nepoznati prijamnik</translation>
 <translation id="5947494881799873997">Vrati</translation>
 <translation id="595202126637698455">Omogućeno je praćenje izvedbe</translation>
 <translation id="5957083217255311415">Mobilni su podaci isključeni.</translation>
@@ -312,7 +310,6 @@
 <translation id="698231206551913481">Sve datoteke i lokalni podaci povezani s ovim korisnikom trajno će se izbrisati nakon uklanjanja korisnika.</translation>
 <translation id="7015766095477679451">Vratite se u <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Izlazak iz sesije</translation>
-<translation id="7034339000180558234">Emitiranje kartice <ph name="TAB_NAME" /> na <ph name="RECEIVER_NAME" /></translation>
 <translation id="7037152028959403492">Pritisnuli ste prečac za visoki kontrast. Želite li ga uključiti?</translation>
 <translation id="7066646422045619941">Tu mrežu onemogućio je vaš administrator.</translation>
 <translation id="7067196344162293536">Automatski izmjenjuj</translation>
@@ -368,7 +365,6 @@
 <translation id="813913629614996137">Pokretanje...</translation>
 <translation id="8142699993796781067">Privatna mreža</translation>
 <translation id="8152119955266188852">Pritisnuli ste prečac za povećalo za cijeli zaslon. Želite li ga uključiti?</translation>
-<translation id="8180896103888046100">Zaustavi emitiranje na nepoznatom prijamniku</translation>
 <translation id="8190698733819146287">Prilagodi jezike i unos...</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8297006494302853456">Slab</translation>
@@ -409,7 +405,6 @@
 <translation id="8984179138335769204">Brzo pokretanje</translation>
 <translation id="8995603266996330174">Upravlja <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Dostupno je ažuriranje za Adobe Flash Player</translation>
-<translation id="9033907480196064950">Trenutačno emitirate <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Upotrebljava se mikrofon.</translation>

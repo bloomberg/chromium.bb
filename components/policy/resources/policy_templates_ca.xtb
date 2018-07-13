@@ -128,11 +128,6 @@
 
       Si la política no es defineix, el valor predeterminat MultiProfileUserBehaviorMustBePrimary s'aplica a usuaris gestionats per l'empresa i MultiProfileUserBehaviorUnrestricted s'utilitzarà per a usuaris no gestionats.</translation>
 <translation id="1465619815762735808">Clic per executar</translation>
-<translation id="1466133662354365542">Activa la funció Emplenament automàtic de <ph name="PRODUCT_NAME" /> i permet que els usuaris emplenin la informació de targetes de crèdit i d'adreces automàticament als formularis web amb dades emmagatzemades anteriorment.
-
-      Si desactives aquesta opció de configuració, Emplenament automàtic mai no suggerirà ni emplenarà la informació de targetes de crèdit, i tampoc no desarà la informació addicional de targetes de crèdit que l'usuari enviï mentre navega pel web.
-
-      Si actives aquesta opció de configuració o no hi estableixes cap valor, l'usuari podrà controlar el funcionament general d'Emplenament automàtic (com ara les targetes de crèdit) a la IU.</translation>
 <translation id="1468307069016535757">Estableix l'estat predeterminat de la funció d'accessibilitat d'alt contrast a la pantalla d'inici de sessió.
 
           Si el valor d'aquesta política s'estableix a vertader, el mode d'alt contrast s'activarà quan es mostri la pantalla d'inici de sessió.

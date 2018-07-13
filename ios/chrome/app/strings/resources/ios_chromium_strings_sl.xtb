@@ -25,6 +25,7 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="3805899903892079518">Chromium nima dostopa do fotografij ali videoposnetkov. Omogočite dostop v sistemu iOS: Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="4024541897090868497">Če želite dostopati do zavihkov v vseh napravah, se prijavite v Chromium.</translation>
 <translation id="4241912885070669028">Odjavili se boste iz računa, ki ga upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />. S tem boste iz te naprave izbrisali podatke v Chromiumu, vendar bodo vaši podatki še vedno na voljo v Google Računu.</translation>
+<translation id="4272892696084633551">Pomagajte izboljšati funkcije in delovanje Chromiuma</translation>
 <translation id="4555020257205549924">Kadar je vklopljena ta funkcija, bo Chromium ponudil, da z uporabo Google Prevajalnika prevede strani v drugih jezikih. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Zavihki, ki ste jih odprli v Chromiumu v drugih napravah, bodo prikazani tukaj.</translation>
 <translation id="495292094137889840">Začetek uporabe bralnika kod QR Chromiuma</translation>
@@ -34,6 +35,7 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="5945387852661427312">Prijavljate se z računom, ki ga upravlja <ph name="DOMAIN" />, in nadzor nad podatki v Chromiumu predajate skrbniku. Vaši podatki bodo trajno povezani s tem računom. Če se odjavite iz Chromiuma, boste izbrisali podatke iz te naprave, vendar bodo še naprej shranjeni v Google Računu.</translation>
 <translation id="6068866989048414399">Pogoji storitve za Chromium</translation>
 <translation id="6268381023930128611">Se želite odjaviti iz Chromiuma?</translation>
+<translation id="641451971369018375">Komunicira z Googlom zaradi izboljšanja brskanja in Chromiuma</translation>
 <translation id="6424492062988593837">Chromium je izboljšan! Na voljo je nova različica.</translation>
 <translation id="6604711459180487467">Zagotovite si boljšo izkušnjo uporabe Chromiuma na podlagi lokacije.</translation>
 <translation id="6626296268883197964">Če uporabljate to aplikacijo, se strinjate s <ph name="BEGIN_LINK_TOS" />pogoji storitve<ph name="END_LINK_TOS" /> in <ph name="BEGIN_LINK_PRIVACY" />pravilnikom o zasebnosti<ph name="END_LINK_PRIVACY" /> za Chromium.</translation>

@@ -128,11 +128,6 @@
 
       Se a política não for configurada, o valor padrão "MultiProfileUserBehaviorMustBePrimary" será aplicado aos usuários gerenciados pela empresa, e "MultiProfileUserBehaviorUnrestricted" será usado para usuários não gerenciados.</translation>
 <translation id="1465619815762735808">Clique para reproduzir</translation>
-<translation id="1466133662354365542">Ativa o recurso de preenchimento automático do <ph name="PRODUCT_NAME" /> e permite que os usuários preencham automaticamente informações sobre cartão de crédito e endereço em formulários da Web usando informações previamente armazenadas.
-
-      Se você desativar essa configuração, o preenchimento automático nunca sugerirá ou preencherá informações sobre cartão de crédito, nem salvará informações adicionais de cartão de crédito que o usuário pode enviar ao navegar na Web.
-
-      Se você ativar essa configuração ou não definir um valor, o usuário poderá controlar o recurso de preenchimento automático global (incluindo cartões de crédito) na IU.</translation>
 <translation id="1468307069016535757">Definir o estado padrão do recurso de acessibilidade do modo de alto contraste na tela de login.
 
           Se esta política for definida como "verdadeira", o modo de alto contraste será ativado quando a tela de login for exibida.

@@ -134,11 +134,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Če pravilnik ni nastavljen, se za uporabnike, ki jih upravlja podjetje, uporabi vrednost »MultiProfileUserBehaviorMustBePrimary«, za neupravljane uporabnike pa »MultiProfileUserBehaviorUnrestricted«.</translation>
 <translation id="1465619815762735808">Kliknite za predvajanje</translation>
-<translation id="1466133662354365542">Omogoči funkcijo za samodejno izpolnjevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom omogoča samodejno izpolnjevanje naslova in podatkov o kreditni kartici v spletnih obrazcih s predhodno shranjenimi podatki.
-
-      Če to nastavitev onemogočite, samodejno izpolnjevanje ne bo nikoli predlagalo ali vneslo podatkov o kreditni kartici in prav tako ne bo shranilo dodatnih podatkov o kreditni kartici, ki jih uporabnik lahko pošlje med brskanjem v spletu.
-
-      Če to nastavitev omogočite ali ne nastavite vrednosti zanjo, bo uporabnik lahko nadzoroval celotno funkcijo za samodejno izpolnjevanje (vključno s kreditnimi karticami) v uporabniškem vmesniku.</translation>
 <translation id="1468307069016535757">Nastavitev privzetega stanja visokokontrastnega načina funkcij za ljudi s posebnimi potrebami na prijavnem zaslonu.
 
           Če je ta pravilnik vklopljen, bo visokokontrastni način omogočen, ko je prikazan prijavni zaslon.

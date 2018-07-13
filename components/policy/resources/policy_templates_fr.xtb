@@ -134,11 +134,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si la règle n'est pas définie, la valeur par défaut "MultiProfileUserBehaviorMustBePrimary'' s'applique aux utilisateurs gérés par l'entreprise et la valeur "MultiProfileUserBehaviorUnrestricted" est utilisée pour les utilisateurs non gérés.</translation>
 <translation id="1465619815762735808">Cliquer pour lire</translation>
-<translation id="1466133662354365542">Active la fonction de saisie automatique de <ph name="PRODUCT_NAME" /> et permet aux utilisateurs de remplir automatiquement des formulaires Web à l'aide de données stockées précédemment, telles qu'une adresse ou des informations de carte de crédit.
-
-      Si vous désactivez ce paramètre, la fonction de saisie automatique ne suggérera ni ne remplira jamais les informations de carte de crédit, et n'enregistrera pas d'autres informations de carte de crédit que l'internaute pourrait saisir lors de sa navigation sur le Web.
-
-      Si vous activez ce paramètre ou ne configurez pas de valeur, l'internaute sera en mesure de contrôler la fonction de saisie automatique globale (y compris les cartes de crédit) dans l'interface utilisateur.</translation>
 <translation id="1468307069016535757">Définit l'état par défaut de la fonctionnalité d'accessibilité du mode Contraste élevé sur l'écran de connexion.
 
           Si vous définissez cette règle sur "True", le mode Contraste élevé est activé à l'affichage de l'écran de connexion.

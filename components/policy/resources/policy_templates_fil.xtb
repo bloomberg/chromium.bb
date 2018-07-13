@@ -134,11 +134,6 @@
 
       Kung iniwanang hindi nakatakda ang patakaran, malalapat ang default na value na 'MultiProfileUserBehaviorMustBePrimary' para sa mga user na pinapamahalaan ng enterprise at gagamitin ang 'MultiProfileUserBehaviorUnrestricted' para sa mga user na hindi pinapamahalaan.</translation>
 <translation id="1465619815762735808">I-click upang i-play</translation>
-<translation id="1466133662354365542">Nag-e-enable sa feature na Autofill ng <ph name="PRODUCT_NAME" /> at nagbibigay-daan sa mga user na awtomatikong kumpletuhin ang impormasyon ng credit card at address sa mga web form gamit ang dati nang naka-store na impormasyon.
-
-      Kung idi-disable mo ang setting na ito, hindi kailanman magmumungkahi o maglalagay ang Autofill ng impormasyon ng credit card, o magse-save ng karagdagang impormasyon ng credit card na maaaring isumite ng user habang nagba-browse sa web.
-
-      Kung ie-enable mo ang setting na ito o kung hindi ka magtatakda ng value, makokontrol ng user ang pangkalahatang feature na autofill (kabilang ang mga credit card) sa UI.</translation>
 <translation id="1468307069016535757">Itakda ang default na katayuan ng tampok na pagiging naa-access ng high contrast mode sa screen sa pag-login.
 
           Kung nakatakda sa true ang patakarang ito, i-e-enable ang high contrast mode kapag ipinakita ang screen sa pag-login.

@@ -129,11 +129,6 @@ Il fattore di regolazione minimo deve essere 100%.</translation>
 
       Se la norma non viene impostata, per gli utenti gestiti dall'azienda viene applicato il valore predefinito "MultiProfileUserBehaviorMustBePrimary", mentre per gli utenti non gestiti viene applicato il valore "MultiProfileUserBehaviorUnrestricted".</translation>
 <translation id="1465619815762735808">Click to play</translation>
-<translation id="1466133662354365542">Consente di attivare la funzione Compilazione automatica di <ph name="PRODUCT_NAME" /> e di permettere agli utenti di eseguire il completamento automatico dei moduli web utilizzando informazioni memorizzate in precedenza, come l'indirizzo o i dati della carta di credito.
-
-      Se disattivi questa impostazione, la funzione Compilazione automatica non suggerirà o non inserirà mai i dati della carta di credito e non memorizzerà i dati di altre carte di credito che l'utente potrebbe inviare durante la navigazione sul Web.
-
-      Se attivi questa impostazione o non imposti un valore, l'utente potrà gestire la funzione Compilazione automatica globale (incluse le carte di credito) nell'interfaccia utente.</translation>
 <translation id="1468307069016535757">Consente di impostare lo stato predefinito della funzione di accessibilità della modalità ad alto contrasto nella schermata di accesso.
 
 Se la norma viene impostata su true, la modalità ad alto contrasto verrà attivata quando viene visualizzata la schermata di accesso.

@@ -62,7 +62,6 @@
 <translation id="2050339315714019657">Вертикално</translation>
 <translation id="2067602449040652523">Яркост на клавиатурата</translation>
 <translation id="2081529251031312395">$1 пак може да влезе в профила си по-късно.</translation>
-<translation id="2122028596993374965">Спиране на предаването на „<ph name="TAB_NAME" />“ към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="2127372758936585790">Зарядно устройство с малка мощност</translation>
 <translation id="2135456203358955318">Лупа в прикрепен режим</translation>
 <translation id="2144487987174258011">Рестартирайте, за да актуализирате Adobe Flash Player</translation>
@@ -247,7 +246,6 @@
 <translation id="5911533659001334206">Визуализатор на клавишните комбинации</translation>
 <translation id="5916664084637901428">Включено</translation>
 <translation id="592343074608792716">Този Chromebook и телефонът ви ще се свържат автоматично</translation>
-<translation id="5927132638760172455">Предава се към неизвестен приемник</translation>
 <translation id="5947494881799873997">Възстановяване</translation>
 <translation id="595202126637698455">Проследяването на ефективността е активирано</translation>
 <translation id="5957083217255311415">Мобилните данни са изключени.</translation>
@@ -312,7 +310,6 @@
 <translation id="698231206551913481">След като този потребител бъде премахнат, всички свързани с него файлове и локални данни ще се изтрият за постоянно.</translation>
 <translation id="7015766095477679451">Ще бъда отново на ваше разположение в <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Изход от сесията</translation>
-<translation id="7034339000180558234">„<ph name="TAB_NAME" />“ се предава към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="7037152028959403492">Използвахте клавишната комбинация за режима на висок контраст. Искате ли да го включите?</translation>
 <translation id="7066646422045619941">Тази мрежа е деактивирана от администратора ви.</translation>
 <translation id="7067196344162293536">Автоматично завъртане</translation>
@@ -368,7 +365,6 @@
 <translation id="813913629614996137">Подготвя се за работа...</translation>
 <translation id="8142699993796781067">Частна мрежа</translation>
 <translation id="8152119955266188852">Използвахте клавишната комбинация за лупата за увеличаване на целия екран. Искате ли да включите функцията?</translation>
-<translation id="8180896103888046100">Спиране на предаването към неизвестен приемник</translation>
 <translation id="8190698733819146287">Персонализиране на езиците и въвеждането...</translation>
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8297006494302853456">Слаб</translation>
@@ -409,7 +405,6 @@
 <translation id="8984179138335769204">Бързо стартиране</translation>
 <translation id="8995603266996330174">Управлявано от <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Налице е актуализация на Adobe Flash Player</translation>
-<translation id="9033907480196064950">Понастоящем предавате „<ph name="TAB_NAME" />“</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Микрофонът се използва.</translation>

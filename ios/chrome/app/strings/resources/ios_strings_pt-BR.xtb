@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">Ler código QR</translation>
 <translation id="1580783302095112590">Mensagem enviada.</translation>
 <translation id="1582732959743469162">Isso interromperá todo o progresso do download atual.</translation>
+<translation id="1605658421715042784">Copiar imagem</translation>
 <translation id="1612730193129642006">Mostrar grade das guias</translation>
 <translation id="1644574205037202324">Histórico</translation>
 <translation id="1646446875146297738">A ativação da opção "Não rastrear" significa que uma solicitação será incluída com seu tráfego de navegação. Qualquer efeito depende de o website responder ou não à solicitação e da forma que a solicitação é interpretada.
@@ -59,6 +60,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="1809939268435598390">Excluir pasta</translation>
 <translation id="1813414402673211292">Limpar dados de navegação</translation>
 <translation id="1820259098641718022">Adicionada à lista de leitura</translation>
+<translation id="1821253160463689938">Utiliza cookies para lembrar suas preferências, mesmo se você não acessar essas páginas</translation>
 <translation id="1876721852596493031">Enviar dados de uso</translation>
 <translation id="1886928167269928266">Desde o começo</translation>
 <translation id="1911619930368729126">Enviar para o Google Drive</translation>
@@ -72,6 +74,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="209018056901015185">Site para computador</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens movidos</translation>
+<translation id="2120297377148151361">Atividade e interações</translation>
 <translation id="213900355088104901">Para navegar com privacidade, abra uma guia anônima.</translation>
 <translation id="2149973817440762519">Editar favoritos</translation>
 <translation id="2230173723195178503">Página da Web carregada</translation>
@@ -87,6 +90,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="2386793615875593361">Uma selecionada</translation>
 <translation id="2435457462613246316">Mostrar senha</translation>
 <translation id="2481538920734869610">ADICIONAR CONTA</translation>
+<translation id="2523184218357549926">Envia URLs das páginas que você visita para o Google</translation>
 <translation id="2523363575747517183">Este site está tentando repetidamente abrir outro aplicativo.</translation>
 <translation id="2529021024822217800">Abrir todos</translation>
 <translation id="2572712655377361602">Uma política do dispositivo bloqueou o acesso às suas fotos</translation>
@@ -116,6 +120,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="2898963176829412617">Nova pasta...</translation>
 <translation id="2903493209154104877">Endereços</translation>
 <translation id="2909437209446960244">Guias recentes</translation>
+<translation id="2916171785467530738">Preencher automaticamente pesquisas e URLs</translation>
 <translation id="291754862089661335">Posicione o código QR ou o código de barras neste quadro</translation>
 <translation id="2921219216347069551">Não é possível compartilhar a página</translation>
 <translation id="2923448633003185837">Colar e ir</translation>
@@ -220,10 +225,12 @@ Seus dados são criptografados com sua senha longa de sincronização. Informe-a
 <translation id="4860895144060829044">Ligar</translation>
 <translation id="4875622588773761625">Quer que <ph name="PASSWORD_MANAGER_BRAND" /> atualize sua senha para este site?</translation>
 <translation id="4881695831933465202">Abrir</translation>
+<translation id="4882831918239250449">Controlar como o histórico de navegação é usado para personalizar a Pesquisa, os anúncios e muito mais</translation>
 <translation id="4904877109095351937">Marcar como lidas</translation>
 <translation id="4930268273022498155">Excluir dados já existentes. É possível recuperá-los voltando para a conta <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Ocorreu um problema ao compartilhar seu item.</translation>
 <translation id="4979397965658815378">Faça login com sua Conta do Google para ter seus favoritos, senhas, histórico e outras configurações em todos os seus dispositivos</translation>
+<translation id="5004416275253351869">Controles de atividade do Google</translation>
 <translation id="5005498671520578047">Copiar senha</translation>
 <translation id="5010803260590204777">Abra uma guia anônima para navegar com privacidade.</translation>
 <translation id="5011684439661633295">Olá, <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -250,6 +257,7 @@ Seus dados são criptografados com sua senha longa de sincronização. Informe-a
 <translation id="5548760955356983418">A "Transição" permite que você comece a navegar por um website neste dispositivo e, em seguida, continue facilmente no seu Mac. O website aberto aparecerá no Dock do Mac.
 
 A "Transição" também deve ser ativada na seção "Geral" das configurações. Seus dispositivos devem usar a mesma conta do iCloud.</translation>
+<translation id="5554368826343982379">Sincronização e personalização</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5619279135193775234">E-mail</translation>
 <translation id="5626245204502895507">Não foi possível fazer download do arquivo neste momento.</translation>
@@ -341,6 +349,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Guias recentes</translation>
 <translation id="7006788746334555276">Configurações de conteúdo</translation>
+<translation id="7017968314960951695">Usa o conteúdo dos sites que você visita e as atividades e interações do navegador para personalização.</translation>
 <translation id="7029809446516969842">Senhas</translation>
 <translation id="7031882061095297553">Sincronizar com</translation>
 <translation id="7053983685419859001">Bloquear</translation>
@@ -383,6 +392,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7769602470925380267">Aceitar e sair</translation>
 <translation id="7772032839648071052">Confirmar senha</translation>
 <translation id="780301667611848630">Não</translation>
+<translation id="7830720446622801252">Serviços não personalizados</translation>
 <translation id="7856733331829174190">Falha no download</translation>
 <translation id="7859704718976024901">Histórico de navegação</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -401,6 +411,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8076014560081431679">As configurações salvas em sites não são excluídas e podem refletir seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Fechar todas as guias</translation>
 <translation id="8114753159095730575">O download de arquivo está disponível. Opções disponíveis perto da parte inferior da tela.</translation>
+<translation id="8160722851663543621">Envia pesquisas da barra de endereço e da caixa de pesquisa, além de alguns cookies, para seu mecanismo de pesquisa padrão</translation>
 <translation id="8205564605687841303">Cancelar</translation>
 <translation id="8225985093977202398">Imagens e arquivos armazenados em cache</translation>
 <translation id="8261506727792406068">Excluir</translation>
@@ -411,6 +422,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="842017693807136194">Conectado com</translation>
 <translation id="8428045167754449968">Cidade</translation>
 <translation id="8428213095426709021">Configurações</translation>
+<translation id="8438566539970814960">Melhorar pesquisas e navegação</translation>
 <translation id="8458397775385147834">1 item excluído</translation>
 <translation id="8487700953926739672">Disponível off-line</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>

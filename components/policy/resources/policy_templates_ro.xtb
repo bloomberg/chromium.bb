@@ -132,11 +132,6 @@
 
       Dacă politica nu este configurată, valoarea prestabilită „MultiProfileUserBehaviorMustBePrimary” se aplică în cazul utilizatorilor gestionați de o companie, iar valoarea „MultiProfileUserBehaviorUnrestricted” va fi folosită pentru utilizatorii negestionați.</translation>
 <translation id="1465619815762735808">Dă clic pentru redare</translation>
-<translation id="1466133662354365542">Activează funcția de completare automată din <ph name="PRODUCT_NAME" /> și permite utilizatorilor să completeze automat informațiile despre carduri de credit și adrese în formularele web folosind informațiile stocate anterior.
-
-      Dacă dezactivezi această setare, completarea automată nu va sugera și nu va completa niciodată informațiile despre carduri de credit, nici nu va salva informații suplimentare despre carduri de credit pe care utilizatorul le-ar putea trimite când navighează pe web.
-
-      Dacă activezi această setare sau dacă nu setezi o valoare, utilizatorul va putea controla funcția generală de completare automată (inclusiv pentru carduri de credit) în interfața de utilizare.</translation>
 <translation id="1468307069016535757">Setați funcția de accesibilitate pentru modul de contrast ridicat ca stare prestabilită pe ecranul de conectare.
 
           Dacă această politică este activată, modul de contrast ridicat va fi activat când este afișat ecranul de conectare.

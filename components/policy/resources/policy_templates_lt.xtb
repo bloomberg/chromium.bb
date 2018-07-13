@@ -134,11 +134,6 @@
 
       Jei politika nenustatyta, numatytoji vertė „MultiProfileUserBehaviorMustBePrimary“ taikoma įmonėms tvarkomiems naudotojams, o „MultiProfileUserBehaviorUnrestricted“ – netvarkomiems naudotojams.</translation>
 <translation id="1465619815762735808">Paleisti spustelėjus</translation>
-<translation id="1466133662354365542">Įgalinama „<ph name="PRODUCT_NAME" />“ automatinio pildymo funkcija ir naudotojams leidžiama automatiškai užpildyti žiniatinklio formas, naudojant anksčiau išsaugotą informaciją, pvz., adresą arba kredito kortelės informaciją.
-
-      Jei šį nustatymą išjungsite, Automatinio pildymo funkcija niekada nesiūlys ir automatiškai neįves kredito kortelės informacijos, taip pat neišsaugos papildomos kredito kortelės informacijos, kurią naudotojas gali pateikti naršydamas žiniatinklį.
-
-      Jei įgalinsite šį nustatymą arba nenustatysite vertės, naudotojai galės valdyti Automatinio pildymo funkciją (įskaitant kredito kortelių informaciją) naudotojo sąsajoje.</translation>
 <translation id="1468307069016535757">Nustatyti numatytąją didelio kontrasto pasiekiamumo funkciją prisijungimo ekrane.
 
           Jei ši politika nustatyta, didelio kontrasto režimas bus įgalintas, kai bus rodomas prisijungimo ekranas.
@@ -228,7 +223,7 @@
 <translation id="1808715480127969042">Blokuoti slapukus šiose svetainėse</translation>
 <translation id="1810261428246410396">Leisti momentinį įrenginio kaip modemo naudojimą.</translation>
 <translation id="1827523283178827583">Naudoti fiksuotus tarpinius serverius</translation>
-<translation id="1843117931376765605">Atnaujinti naudotojo politikos reitingą</translation>
+<translation id="1843117931376765605">Atnaujinti naudotojo politikos dažnį</translation>
 <translation id="1844620919405873871">Konfigūruojama su sparčiuoju atrakinimu susijusi politika.</translation>
 <translation id="1847960418907100918">Nurodomi parametrai, naudojami atliekant intuityviąją paiešką naudojant POST. Jie sudaryti iš kableliais atskirtų pavadinimų / verčių porų. Jei vertė yra šablono parametras, pvz., {searchTerms} anksčiau pateiktame pavyzdyje, ji pakeičiama realiais paieškos terminų duomenimis.
 
@@ -1405,7 +1400,7 @@
 
       Atminkite, kad pakeitus šią politiką veikiant „<ph name="PRODUCT_NAME" />“, ji bus taikoma tik naujuose atidarytuose skirtukuose. Todėl kai kuriuose skirtukuose gali išlikti ankstesnė elgsena.
       </translation>
-<translation id="4906194810004762807">Atnaujinti įrenginio politikos reitingą</translation>
+<translation id="4906194810004762807">Atnaujinti įrenginio politikos dažnį</translation>
 <translation id="4917385247580444890">Stiprus</translation>
 <translation id="4923806312383904642">Leisti „WebDriver“ perrašyti nesuderinamas politikos nuostatas</translation>
 <translation id="494613465159630803">Cast Receiver</translation>

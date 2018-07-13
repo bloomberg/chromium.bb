@@ -131,11 +131,6 @@
 
       Si esta política no se establece, se aplicará el valor predeterminado "MultiProfileUserBehaviorMustBePrimary" para los usuarios administrados por políticas empresariales y el valor predeterminado "MultiProfileUserBehaviorUnrestricted" para usuarios no administrados.</translation>
 <translation id="1465619815762735808">Haz clic para reproducir</translation>
-<translation id="1466133662354365542">Habilita la función Autocompletar de <ph name="PRODUCT_NAME" /> y permite que los usuarios completen automáticamente formularios web con información que se almacenó con anterioridad, como la dirección o los datos de tarjetas de crédito.
-
-      Si se inhabilita esta configuración, Autocompletar nunca sugerirá ni completará información de tarjetas de crédito. Tampoco guardará información adicional de tarjetas que el usuario haya enviado cuando navegaba en la Web.
-
-      Si se habilita esta configuración o no se establece ningún valor, el usuario podrá controlar toda la función Autocompletar (incluidas las tarjetas de crédito) en la IU.</translation>
 <translation id="1468307069016535757">Establece el estado predeterminado de la función de accesibilidad del modo de contraste alto en la pantalla de acceso.
 
           Si esta política se establece como verdadera, el modo de contraste alto estará habilitado cuando se muestre la pantalla de acceso.

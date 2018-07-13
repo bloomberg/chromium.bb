@@ -101,6 +101,7 @@
 <translation id="1782483593938241562">Slutdatum <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Ändra standardplats för nedladdningar när som helst</translation>
 <translation id="1807246157184219062">Ljus</translation>
+<translation id="1821253160463689938">Kommer ihåg med hjälp av cookies vad du brukar välja även om du inte besöker sidorna i fråga</translation>
 <translation id="1829244130665387512">Hitta på sida</translation>
 <translation id="1832521218263067499">Incidenter som rör säkerheten</translation>
 <translation id="1853692000353488670">Ny inkognitoflik</translation>
@@ -141,6 +142,7 @@
 <translation id="2096012225669085171">Synkronisera och anpassa på alla enheter</translation>
 <translation id="2100273922101894616">Automatisk inloggning</translation>
 <translation id="2111511281910874386">Öppna sida</translation>
+<translation id="2120297377148151361">Aktivitet och interaktion</translation>
 <translation id="2122601567107267586">Det gick inte att öppna appen</translation>
 <translation id="2126426811489709554">Drivs av Chrome</translation>
 <translation id="2131665479022868825"><ph name="DATA" /> har sparats</translation>
@@ -190,6 +192,8 @@
 <translation id="2498359688066513246">Hjälp och feedback</translation>
 <translation id="2501278716633472235">Föregående</translation>
 <translation id="2512222046227390255">Fyll i formulär automatiskt</translation>
+<translation id="2513403576141822879">Fler inställningar som rör sekretess, säkerhet och datainsamling finns under <ph name="BEGIN_LINK" />Synkronisering och Googles tjänster<ph name="END_LINK" /></translation>
+<translation id="2523184218357549926">Skickar webbadresserna till sidor du besöker till Google</translation>
 <translation id="2526148617758225454">Databesparing är på. Hantera funktionen i Inställningar.</translation>
 <translation id="2532336938189706096">Webbvy</translation>
 <translation id="2536728043171574184">En offlinekopia av sidan visas</translation>
@@ -252,6 +256,7 @@
 <translation id="3089395242580810162">Öppna i inkognitoflik</translation>
 <translation id="311456632243022227">Flera länkar öppnades i Chrome</translation>
 <translation id="3115898365077584848">Visa info</translation>
+<translation id="3129938255108848489">Visar förslag på liknande sidor om en sida inte hittas</translation>
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
 <translation id="3148434565183091099">Logga in i Chrome om du vill få tillgång till samma bokmärken på alla enheter.</translation>
 <translation id="3157842584138209013">Under Fler alternativ kan du se hur mycket data du har sparat</translation>
@@ -381,6 +386,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
 <translation id="4378154925671717803">Mobil</translation>
 <translation id="4384468725000734951">Du söker med Sogou</translation>
+<translation id="4398088515904522762">Aktivera <ph name="BEGIN_LINK" />Aktivitet och interaktion<ph name="END_LINK" /> om du vill använda den här funktionen.</translation>
 <translation id="4404568932422911380">Inga bokmärken</translation>
 <translation id="4409723563706114196">Använd sidförslag</translation>
 <translation id="4412992751769744546">Tillåt cookies från tredje part</translation>
@@ -515,6 +521,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5447765697759493033">Den här webbplatsen översätts inte</translation>
 <translation id="545042621069398927">Nedladdningen görs snabbare.</translation>
 <translation id="5456381639095306749">Ladda ned sida</translation>
+<translation id="5466407412363861127">Den här funktionen använder <ph name="BEGIN_LINK" />synkronisering<ph name="END_LINK" />.</translation>
 <translation id="548278423535722844">Öppna i kartapp</translation>
 <translation id="5487521232677179737">Rensa data</translation>
 <translation id="5487729733663684359">Uppdateringar av Chrome stöds inte längre för den här versionen av Android.</translation>
@@ -585,6 +592,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5937580074298050696"><ph name="AMOUNT" /> har sparats</translation>
 <translation id="5939518447894949180">Återställ</translation>
 <translation id="5942872142862698679">Du söker med Google</translation>
+<translation id="5952764234151283551">Skickar webbadressen till en sida som du försöker nå till Google</translation>
 <translation id="5956665950594638604">Öppna hjälpcentret för Chrome på en ny flik</translation>
 <translation id="5958275228015807058">Du hittar filerna och sidorna i Nedladdningar</translation>
 <translation id="5962718611393537961">Tryck här om du vill komprimera</translation>
@@ -712,10 +720,12 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="699220179437400583">Rapportera uppgifter om möjliga säkerhetsincidenter till Google automatiskt</translation>
 <translation id="6992289844737586249">Fråga innan webbplatser tillåts att använda mikrofonen (rekommenderas)</translation>
 <translation id="7016516562562142042">Tillåt för den nuvarande sökmotorn</translation>
+<translation id="7017968314960951695">Använder innehåll på webbplatser du besöker, samt aktivitet i och interaktion med webbläsaren, i anpassningssyfte</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> har laddats ned</translation>
 <translation id="7022756207310403729">Öppna i webbläsaren</translation>
 <translation id="7029809446516969842">Lösenord</translation>
 <translation id="7031882061095297553">Synkronisera med</translation>
+<translation id="7032663816368481562">Visar snabblänkar till relaterade sidor när du trycker på Fler liknande <ph name="ICON" /> i adressfältet. Webbadresserna till sidor du besöker skickas till Google.</translation>
 <translation id="7034608350006174882">Kort och adresser som används med Google Pay</translation>
 <translation id="7053983685419859001">Blockera</translation>
 <translation id="7055152154916055070">Omdirigeringen blockerades:</translation>
@@ -793,6 +803,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7665369617277396874">Lägg till konto</translation>
 <translation id="7682724950699840886">Testa följande: kontrollera att det finns tillräckligt mycket utrymme på enheten, gör om exporten.</translation>
 <translation id="7698359219371678927">Skapa ett e-postmeddelande i <ph name="APP_NAME" /></translation>
+<translation id="7704317875155739195">Autoslutför sökningar och webbadresser</translation>
 <translation id="773466115871691567">Översätt alltid sidor på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Skyddar dig och enheten från skadliga webbplatser</translation>
@@ -847,6 +858,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8105951947646329362">Föreslå relaterade sidor</translation>
 <translation id="8116925261070264013">Ljudet avstängt</translation>
 <translation id="813082847718468539">Visa information om webbplatsen</translation>
+<translation id="8160722851663543621">Skickar sökningar från adressfältet och sökrutan, och vissa cookies, till standardsökmotorn</translation>
 <translation id="8168435359814927499">Innehåll</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> filer återstår</translation>
 <translation id="8190358571722158785">1 dag kvar</translation>
@@ -871,6 +883,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8413126021676339697">Visa fullständig historik</translation>
 <translation id="8420510748452002155">Tjänster som inte använder anpassning</translation>
 <translation id="8428213095426709021">Inställningar</translation>
+<translation id="8438566539970814960">Förbättra sökningar och surfandet</translation>
 <translation id="8441146129660941386">Sök bakåt</translation>
 <translation id="8445448999790540984">Det gick inte att exportera lösenord</translation>
 <translation id="8447861592752582886">Återkalla enhetsbehörighet</translation>
@@ -880,6 +893,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8497726226069778601">Det finns inget att se här … än</translation>
 <translation id="8503559462189395349">Lösenord i Chrome</translation>
 <translation id="8503813439785031346">Användarnamn</translation>
+<translation id="8504988642345501642">Visar snabblänkar till relaterade sidor när du rullar uppåt. Webbadresserna till sidor du besöker skickas till Google.</translation>
 <translation id="8514477925623180633">Exportera lösenord som har sparats i Chrome</translation>
 <translation id="8514577642972634246">Starta inkognitoläget</translation>
 <translation id="851751545965956758">Förhindra att webbplatser ansluter till enheter</translation>

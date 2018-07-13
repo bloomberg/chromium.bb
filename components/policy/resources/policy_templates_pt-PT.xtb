@@ -133,11 +133,6 @@
 
       Se deixar esta política por definir, o valor predefinido "MultiProfileUserBehaviorMustBePrimary" aplica-se a utilizadores geridos por empresas e "MultiProfileUserBehaviorUnrestricted" será utilizado para utilizadores não geridos.</translation>
 <translation id="1465619815762735808">Clique para reproduzir</translation>
-<translation id="1466133662354365542">Ativa a funcionalidade de Preenchimento automático do <ph name="PRODUCT_NAME" /> e permite que os utilizadores preencham automaticamente informações de endereços e cartões de crédito em formulários Web ao utilizar informações armazenadas anteriormente.
-
-      Se desativar esta definição, o Preenchimento automático não sugere nem preenche os formulários com informações de cartões de crédito e também não guarda informações adicionais de cartões de crédito que o utilizador pode enviar enquanto navega na Web.
-
-      Se ativar esta definição ou não definir qualquer valor, o utilizador pode controlar totalmente a funcionalidade de preenchimento automático (incluindo cartões de crédito) na IU.</translation>
 <translation id="1468307069016535757">Definir o estado predefinido da funcionalidade de acessibilidade do modo de alto contraste no ecrã de início de sessão.
 
           Se esta política estiver definida como verdadeira, o modo de alto contraste será ativado quando o ecrã de início de sessão for mostrado.

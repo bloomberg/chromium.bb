@@ -132,11 +132,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 
       Hvis politikken ikke er indstillet, anvendes standardværdien "MultiProfileUserBehaviorMustBePrimary" for virksomhedsadministrerede brugere, og "MultiProfileUserBehaviorUnrestricted" anvendes for ikke-administrerede brugere.</translation>
 <translation id="1465619815762735808">Klik for at afspille</translation>
-<translation id="1466133662354365542">Aktiverer funktionen AutoFyld for <ph name="PRODUCT_NAME" /> og giver brugerne mulighed for automatisk at udfylde webformularer med betalingskort- og adresseoplysninger, der er blevet gemt tidligere.
-
-      Hvis du deaktiverer denne indstilling, vil AutoFyld aldrig foreslå eller udfylde betalingskortoplysninger, og indstillingen vil heller ikke gemme yderligere betalingskortoplysninger, som brugeren muligvis indsender, når vedkommende er på nettet.
-
-      Hvis du aktiverer denne indstilling eller ikke angiver en værdi, kan brugeren administrere den overordnede autofyldfunktion (herunder betalingskort) i brugerfladen.</translation>
 <translation id="1468307069016535757">Indstil standardtilstanden for hjælpefunktionen Høj kontrast på loginskærmen.
 
           Hvis denne politik angives som sand, aktiveres høj kontrast, når loginskærmen vises.

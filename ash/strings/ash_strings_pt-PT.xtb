@@ -62,7 +62,6 @@
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2067602449040652523">Brilho do teclado</translation>
 <translation id="2081529251031312395">$1 pode iniciar sessão mais tarde.</translation>
-<translation id="2122028596993374965">Parar a transmissão de <ph name="TAB_NAME" /> para <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Carregador de baixo consumo</translation>
 <translation id="2135456203358955318">Lupa ancorada</translation>
 <translation id="2144487987174258011">Reinicie para atualizar o Adobe Flash Player</translation>
@@ -247,7 +246,6 @@
 <translation id="5911533659001334206">Visualizador de atalhos</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="592343074608792716">O Chromebook e o telemóvel serão associados automaticamente.</translation>
-<translation id="5927132638760172455">A transmitir para um recetor desconhecido</translation>
 <translation id="5947494881799873997">Reverter</translation>
 <translation id="595202126637698455">Rastreio do desempenho ativado</translation>
 <translation id="5957083217255311415">Os dados móveis estão desativados.</translation>
@@ -312,7 +310,6 @@
 <translation id="698231206551913481">Todos os ficheiros e dados locais associados a este utilizador são permanentemente eliminados assim que este utilizador é removido.</translation>
 <translation id="7015766095477679451">Volte à(s) <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
-<translation id="7034339000180558234">A transmitir <ph name="TAB_NAME" /> para <ph name="RECEIVER_NAME" /></translation>
 <translation id="7037152028959403492">Premiu o atalho de alto contraste. Pretende ativá-lo?</translation>
 <translation id="7066646422045619941">Esta rede foi desativada pelo gestor.</translation>
 <translation id="7067196344162293536">Rotação automática</translation>
@@ -368,7 +365,6 @@
 <translation id="813913629614996137">A inicializar...</translation>
 <translation id="8142699993796781067">Rede privada</translation>
 <translation id="8152119955266188852">Premiu o atalho da lupa de ecrã inteiro. Pretende ativá-la?</translation>
-<translation id="8180896103888046100">Parar a transmissão para um recetor desconhecido</translation>
 <translation id="8190698733819146287">Personalizar idiomas e introdução...</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8297006494302853456">Fraca</translation>
@@ -409,7 +405,6 @@
 <translation id="8984179138335769204">Início rápido</translation>
 <translation id="8995603266996330174">Gerido por <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Atualização do Adobe Flash Player disponível</translation>
-<translation id="9033907480196064950">Está atualmente a transmitir <ph name="TAB_NAME" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">O microfone está a ser utilizado.</translation>

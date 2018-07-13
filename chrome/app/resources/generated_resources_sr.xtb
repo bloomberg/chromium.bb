@@ -1398,7 +1398,7 @@
 <translation id="3090819949319990166">Није успело копирање спољне crx датотеке у датотеку <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">Упарили сте „<ph name="DEVICE_NAME" />“</translation>
 <translation id="3101709781009526431">Датум и време</translation>
-<translation id="3104900172193317662">Дозволите да се безбедносни кључ користи</translation>
+<translation id="3104900172193317662">Дозволите употребу безбедносног кључа</translation>
 <translation id="310671807099593501">Сајт користи Bluetooth</translation>
 <translation id="3115128645424181617">Не можемо да пронађемо телефон. Проверите да ли је у близини и да ли је Bluetooth укључен.</translation>
 <translation id="3115147772012638511">Чека се кеш меморија...</translation>

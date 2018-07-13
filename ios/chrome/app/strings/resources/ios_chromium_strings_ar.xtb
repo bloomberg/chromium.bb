@@ -24,6 +24,7 @@
 <translation id="3805899903892079518">‏لا تتوفر لدى Chromium إمكانية الدخول إلى الصور أو الفيديوهات. تستطيع تفعيل الدخول في إعدادات نظام التشغيل iOS &gt; الخصوصية &gt; الصور.</translation>
 <translation id="4024541897090868497">‏للحصول على علامات التبويب على جميع أجهزتك، سجِّل الدخول إلى Chromium.</translation>
 <translation id="4241912885070669028">‏أنت بصدد الخروج من حساب تتم إدارته من خلال <ph name="SIGNOUT_MANAGED_DOMAIN" />. سيؤدي ذلك إلى حذف بيانات Chromium من هذا الجهاز، ولكن ستظل البيانات في حسابك في Google.</translation>
+<translation id="4272892696084633551">‏المساعدة في تحسين ميزات Chromium وأدائه</translation>
 <translation id="4555020257205549924">‏عند تشغيل هذه الميزة، سيعرض Chromium ترجمة الصفحات المكتوبة بلغات أخرى باستخدام ترجمة Google. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">‏ستظهر علامات التبويب التي فتحتها في Chromium على أجهزتك الأخرى هنا.</translation>
 <translation id="495292094137889840">‏بدء استخدام الماسح الضوئي للاستجابة السريعة في Chromium</translation>
@@ -33,6 +34,7 @@
 <translation id="5945387852661427312">‏إنك تسجل الدخول باستخدام حساب تتم إدارته من خلال <ph name="DOMAIN" /> وتمنح مشرفه الحق في التحكم في بياناتك على Chromium. سيؤدي ذلك إلى جعل بياناتك مرتبطة دائمًا بهذا الحساب. كما سيؤدي الخروج من Chromium إلى حذف بياناتك من هذا الجهاز، ولكن ستظل هذه البيانات مخزَّنة على حسابك في Google.</translation>
 <translation id="6068866989048414399">‏بنود خدمة Chromium</translation>
 <translation id="6268381023930128611">‏هل تريد الخروج من Chromium؟</translation>
+<translation id="641451971369018375">‏التواصل مع Google لتحسين التصفُّح وخدمات Chromium</translation>
 <translation id="6424492062988593837">‏لقد أصبح Chromium أفضل من ذي قبل! يتوفر إصدار جديد.</translation>
 <translation id="6604711459180487467">‏استمتع بتجربة أفضل في Chromium حسب موقعك.</translation>
 <translation id="6626296268883197964">‏باستخدامك هذا التطبيق، يعني أنك توافق على <ph name="BEGIN_LINK_TOS" />بنود الخدمة<ph name="END_LINK_TOS" /> و<ph name="BEGIN_LINK_PRIVACY" />إشعار الخصوصية<ph name="END_LINK_PRIVACY" /> من Chromium.</translation>

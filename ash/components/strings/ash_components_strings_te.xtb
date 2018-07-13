@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Chrome మెనును చూపు</translation>
 <translation id="2424073332829844142">Caps Lock ఆన్ మరియు ఆఫ్ చేయండి</translation>
 <translation id="2441202986792279177">విండోల మధ్య త్వరగా మారండి</translation>
+<translation id="2454251766545114447">డిస్‌ప్లే దూరంగా జూమ్ చేయి</translation>
 <translation id="2478303094958140141">ChromeVox (ప్రసంగ రూప అభిప్రాయం) ఆన్ లేదా ఆఫ్ చేయండి</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">వెబ్ పేజీని దిగువకు స్క్రోల్ చేయండి</translation>
+<translation id="2574014812750545982">పేజీలో జూమ్ స్థాయిని రీసెట్ చేయి</translation>
 <translation id="2596078834055697711">విండో స్క్రీన్‌షాట్‌ని తీయండి</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ఆపై <ph name="TAB" /> లేదా <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">తర్వాతి భాష యొక్క ఇన్‌పుట్ పద్ధతికి మార్చండి</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> లేదా <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">మీ ప్రస్తుత విండోలో తెరిచి ఉన్న అన్ని పేజీలను బుక్‌మార్క్‌ల వలె కొత్త ఫోల్డర్‌లో సేవ్ చేయండి</translation>
 <translation id="355103131818127604">లింక్‌ను కొత్త ట్యాబ్‌లో నేపథ్యంలో తెరవండి</translation>
+<translation id="3622741593887335780">దగ్గరగా జూమ్ చేయి (డాక్ చేయబడినప్పుడు లేదా పూర్తి స్క్రీన్ మాగ్నిఫైయర్‌లు ప్రారంభించబడినప్పుడు)</translation>
 <translation id="3649256019230929621">విండోను కనిష్టీకరించు</translation>
 <translation id="3655154169297074232">ట్యాబ్‌లు &amp; విండోలు</translation>
 <translation id="3668361878347172356">మీ చివరి చర్యను మళ్లీ చేయండి</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 నుండి 8</translation>
 <translation id="3837047332182291558">కీబోర్డ్‌ని మరింత ప్రకాశవంతం చేయండి (నేపథ్య కాంతి ఉన్న కీబోర్డ్‌లకు మాత్రమే)</translation>
 <translation id="3976863468609830880">మీ అరలోని చివరి చిహ్నాన్ని క్లిక్ చేయండి</translation>
+<translation id="3994783594793697310">డిస్‌ప్లే జూమ్ స్థాయిని రీసెట్ చేయి</translation>
 <translation id="4026843240379844265">యాక్టివ్ విండోని డిస్‌ప్లేల మధ్య తరల్చండి</translation>
 <translation id="4035482366624727273">పేజీలోని ప్రతిదాన్ని ఎంచుకోండి</translation>
 <translation id="4060703249685950734">మీరు మూసివేసిన చివరి ట్యాబ్ లేదా విండోని తిరిగి తెరవండి</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">ప్రకాశాన్ని తగ్గించండి</translation>
 <translation id="6276708887952587684">పేజీ మూలాధారాన్ని వీక్షించండి</translation>
 <translation id="6321940490215594447">చరిత్ర పేజీని తెరవండి</translation>
+<translation id="6340769215862220182">డిస్‌ప్లే దగ్గరగా జూమ్ చేయి</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">పంక్తి ముగింపు వరకు వచనాన్ని ఎంచుకోండి</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> లేదా <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">మీ అరలో 1-8 చిహ్నాలను క్లిక్ చేయండి</translation>
 <translation id="6435207348963613811">మీ అరలోని మునుపటి అంశాన్ని హైలైట్ చేయండి</translation>
 <translation id="6445033640292336367">ట్యాబ్‌ను తిరిగి దాని వాస్తవ స్థానానికి తీసుకువెళ్లండి</translation>
+<translation id="6474744297082284761">దూరంగా జూమ్ చేయి (డాక్ చేయబడినప్పుడు లేదా పూర్తి స్క్రీన్ మాగ్నిఫైయర్‌లు ప్రారంభించబడినప్పుడు)</translation>
 <translation id="649811797655257835">ఫైల్‌ని ఎంచుకుని, ఆపై <ph name="SPACE" />ని నొక్కండి</translation>
 <translation id="6556040137485212400">అత్యంత ఎక్కువ సమయం నుండి ఉపయోగించని విండోని తెరవండి</translation>
 <translation id="666343722268997814">హైలైట్ చేసిన అంశం కోసం కుడి-క్లిక్ మెనూని తెరవండి</translation>

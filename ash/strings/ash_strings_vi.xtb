@@ -62,7 +62,6 @@
 <translation id="2050339315714019657">Khổ dọc</translation>
 <translation id="2067602449040652523">Độ sáng bàn phím</translation>
 <translation id="2081529251031312395">$1 vẫn có thể đăng nhập sau.</translation>
-<translation id="2122028596993374965">Dừng truyền <ph name="TAB_NAME" /> sang <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Bộ sạc công suất thấp</translation>
 <translation id="2135456203358955318">Phóng to ở vị trí cố định</translation>
 <translation id="2144487987174258011">Khởi động lại để cập nhật Adobe Flash Player</translation>
@@ -248,7 +247,6 @@
 <translation id="5911533659001334206">Trình xem phím tắt</translation>
 <translation id="5916664084637901428">Bật</translation>
 <translation id="592343074608792716">Chromebook này và điện thoại của bạn sẽ tự động kết nối</translation>
-<translation id="5927132638760172455">Đang truyền tới bộ thu không xác định</translation>
 <translation id="5947494881799873997">Hoàn nguyên</translation>
 <translation id="595202126637698455">Đã bật theo dõi hoạt động</translation>
 <translation id="5957083217255311415">Dữ liệu di động đã bị tắt.</translation>
@@ -313,7 +311,6 @@
 <translation id="698231206551913481">Tất cả các tệp và dữ liệu cục bộ liên quan tới người dùng này sẽ bị xóa vĩnh viễn sau khi người dùng này bị xóa.</translation>
 <translation id="7015766095477679451">Quay lại lúc <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
-<translation id="7034339000180558234">Đang truyền <ph name="TAB_NAME" /> tới <ph name="RECEIVER_NAME" /></translation>
 <translation id="7037152028959403492">Bạn đã nhấn phím tắt để có độ tương phản cao. Bạn có muốn bật chế độ này không?</translation>
 <translation id="7066646422045619941">Mạng này bị quản trị viên của bạn tắt.</translation>
 <translation id="7067196344162293536">Tự động xoay</translation>
@@ -369,7 +366,6 @@
 <translation id="813913629614996137">Đang khởi chạy...</translation>
 <translation id="8142699993796781067">Mạng riêng</translation>
 <translation id="8152119955266188852">Bạn đã nhấn phím tắt để phóng to toàn màn hình. Bạn có muốn bật chế độ này không?</translation>
-<translation id="8180896103888046100">Dừng truyền tới người nhận không xác định</translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8297006494302853456">Yếu</translation>
@@ -410,7 +406,6 @@
 <translation id="8984179138335769204">Khởi động nhanh</translation>
 <translation id="8995603266996330174">Được quản lý bởi <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Đã có bản cập nhật Adobe Flash Player</translation>
-<translation id="9033907480196064950">Bạn hiện đang truyền <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Micrô đang được sử dụng.</translation>
