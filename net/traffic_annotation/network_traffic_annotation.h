@@ -6,6 +6,7 @@
 #define NET_TRAFFIC_ANNOTATION_NETWORK_TRAFFIC_ANNOTATION_H_
 
 #include "base/logging.h"
+#include "build/build_config.h"
 
 namespace {
 
@@ -291,6 +292,11 @@ struct MutablePartialNetworkTrafficAnnotationTag {
 }  // namespace net
 
 // Placeholder for unannotated usages.
+#if !defined(OS_WIN) && !defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define TRAFFIC_ANNOTATION_WITHOUT_PROTO(ANNOTATION_ID) \
+  net::DefineNetworkTrafficAnnotation(ANNOTATION_ID, "No proto yet.")
+#endif
+
 #define NO_TRAFFIC_ANNOTATION_YET \
   net::DefineNetworkTrafficAnnotation("undefined", "Nothing here yet.")
 

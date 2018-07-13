@@ -87,7 +87,8 @@ void CreateContextMenuDownload(
           web_contents->GetBrowserContext());
   std::unique_ptr<download::DownloadUrlParameters> dl_params(
       content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
-          web_contents, url, NO_TRAFFIC_ANNOTATION_YET));
+          web_contents, url,
+          TRAFFIC_ANNOTATION_WITHOUT_PROTO("Download via context menu")));
   content::Referrer referrer = content::Referrer::SanitizeForRequest(
       url,
       content::Referrer(referring_url.GetAsReferrer(), params.referrer_policy));
