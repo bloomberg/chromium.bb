@@ -47,8 +47,6 @@ component("lib") {
     "user_activity_monitor.cc",
     "user_activity_monitor.h",
     "window_delegate_impl.cc",
-    "window_host_frame_sink_client.cc",
-    "window_host_frame_sink_client.h",
     "window_properties.cc",
     "window_service.cc",
     "window_service_delegate.cc",

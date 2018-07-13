@@ -4,11 +4,11 @@
 
 #include "services/ui/ws2/client_root.h"
 
+#include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ui/ws2/client_change.h"
 #include "services/ui/ws2/client_change_tracker.h"
 #include "services/ui/ws2/server_window.h"
-#include "services/ui/ws2/window_host_frame_sink_client.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_tree.h"
 #include "ui/aura/env.h"
@@ -49,18 +49,13 @@ ClientRoot::~ClientRoot() {
 
 void ClientRoot::RegisterVizEmbeddingSupport() {
   // This function should only be called once.
-  DCHECK(!window_host_frame_sink_client_);
-  window_host_frame_sink_client_ = std::make_unique<WindowHostFrameSinkClient>(
-      client_surface_embedder_.get());
-
   viz::HostFrameSinkManager* host_frame_sink_manager =
       aura::Env::GetInstance()
           ->context_factory_private()
           ->GetHostFrameSinkManager();
   viz::FrameSinkId frame_sink_id =
       ServerWindow::GetMayBeNull(window_)->frame_sink_id();
-  host_frame_sink_manager->RegisterFrameSinkId(
-      frame_sink_id, window_host_frame_sink_client_.get());
+  host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id, this);
   window_->SetEmbedFrameSinkId(frame_sink_id);
 
   UpdatePrimarySurfaceId();
@@ -101,6 +96,10 @@ void ClientRoot::UpdatePrimarySurfaceId() {
   if (server_window->local_surface_id().has_value()) {
     client_surface_embedder_->SetPrimarySurfaceId(viz::SurfaceId(
         window_->GetFrameSinkId(), *server_window->local_surface_id()));
+    if (fallback_surface_info_) {
+      client_surface_embedder_->SetFallbackSurfaceInfo(*fallback_surface_info_);
+      fallback_surface_info_.reset();
+    }
   }
 }
 
@@ -138,6 +137,22 @@ void ClientRoot::OnWindowBoundsChanged(aura::Window* window,
   window_tree_->window_tree_client_->OnWindowBoundsChanged(
       window_tree_->TransportIdForWindow(window), old_bounds, new_bounds,
       ServerWindow::GetMayBeNull(window_)->local_surface_id());
+}
+
+void ClientRoot::OnFirstSurfaceActivation(
+    const viz::SurfaceInfo& surface_info) {
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
+  if (server_window->local_surface_id().has_value()) {
+    DCHECK(!fallback_surface_info_);
+    client_surface_embedder_->SetFallbackSurfaceInfo(surface_info);
+  } else {
+    fallback_surface_info_ = std::make_unique<viz::SurfaceInfo>(surface_info);
+  }
+}
+
+void ClientRoot::OnFrameTokenChanged(uint32_t frame_token) {
+  // TODO: this needs to call through to WindowTreeClient.
+  // https://crbug.com/848022.
 }
 
 }  // namespace ws2
