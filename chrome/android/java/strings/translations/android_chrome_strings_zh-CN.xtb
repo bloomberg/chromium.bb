@@ -101,6 +101,7 @@
 <translation id="1782483593938241562">结束日期：<ph name="DATE" /></translation>
 <translation id="1792959175193046959">随时更改默认的下载内容保存位置</translation>
 <translation id="1807246157184219062">浅色调</translation>
+<translation id="1821253160463689938">使用 Cookie 记住您的偏好设置（即使您不访问这些网页）</translation>
 <translation id="1829244130665387512">在网页中查找</translation>
 <translation id="1832521218263067499">安全事件</translation>
 <translation id="1853692000353488670">打开新的无痕式标签页</translation>
@@ -141,6 +142,7 @@
 <translation id="2096012225669085171">在所有设备上保持同步并进行个性化设置</translation>
 <translation id="2100273922101894616">自动登录</translation>
 <translation id="2111511281910874386">转至相关网页</translation>
+<translation id="2120297377148151361">活动和互动行为</translation>
 <translation id="2122601567107267586">无法打开此应用</translation>
 <translation id="2126426811489709554">由 Chrome 提供支持</translation>
 <translation id="2131665479022868825">节省了 <ph name="DATA" /></translation>
@@ -190,6 +192,8 @@
 <translation id="2498359688066513246">帮助和反馈</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2512222046227390255">自动填充表单</translation>
+<translation id="2513403576141822879">若想了解更多与隐私、安全和数据收集相关的设置，请参阅<ph name="BEGIN_LINK" />同步功能和 Google 服务<ph name="END_LINK" /></translation>
+<translation id="2523184218357549926">将您所访问的网页的网址发送给 Google</translation>
 <translation id="2526148617758225454">流量节省程序已启用。您可以在“设置”中对其进行管理。</translation>
 <translation id="2532336938189706096">网页视图</translation>
 <translation id="2536728043171574184">正在查看此网页的离线副本</translation>
@@ -252,6 +256,7 @@
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="311456632243022227">已在 Chrome 中打开多个链接</translation>
 <translation id="3115898365077584848">显示信息</translation>
+<translation id="3129938255108848489">找不到相应网页时，显示有关类似网页的建议</translation>
 <translation id="3137521801621304719">退出隐身模式</translation>
 <translation id="3148434565183091099">要将您的书签同步到您所有的设备上，请登录 Chrome。</translation>
 <translation id="3157842584138209013">通过“更多选项”按钮查看您已节省多少数据流量</translation>
@@ -381,6 +386,7 @@
 <translation id="4351244548802238354">关闭对话框</translation>
 <translation id="4378154925671717803">电话机</translation>
 <translation id="4384468725000734951">目前使用的搜索引擎是搜狗</translation>
+<translation id="4398088515904522762">要使用此功能，请开启<ph name="BEGIN_LINK" />活动和互动行为<ph name="END_LINK" />。</translation>
 <translation id="4404568932422911380">没有书签</translation>
 <translation id="4409723563706114196">使用网页联想查询功能</translation>
 <translation id="4412992751769744546">允许第三方 Cookie</translation>
@@ -515,6 +521,7 @@
 <translation id="5447765697759493033">系统不会翻译此网站</translation>
 <translation id="545042621069398927">正在加快您的下载速度。</translation>
 <translation id="5456381639095306749">下载网页</translation>
+<translation id="5466407412363861127">此功能会进行<ph name="BEGIN_LINK" />同步<ph name="END_LINK" />处理。</translation>
 <translation id="548278423535722844">在地图应用中打开</translation>
 <translation id="5487521232677179737">清除数据</translation>
 <translation id="5487729733663684359">该版本的 Android 不再支持 Chrome 更新。</translation>
@@ -585,6 +592,7 @@
 <translation id="5937580074298050696">已节省 <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="5942872142862698679">目前使用的搜索引擎是 Google</translation>
+<translation id="5952764234151283551">将您尝试访问的网页的网址发送给 Google</translation>
 <translation id="5956665950594638604">在新标签页中打开 Chrome 帮助中心</translation>
 <translation id="5958275228015807058">在“下载内容”中查找您的文件和网页</translation>
 <translation id="5962718611393537961">点按即可收起</translation>
@@ -712,10 +720,12 @@
 <translation id="699220179437400583">自动向 Google 报告可能出现的安全事件详情</translation>
 <translation id="6992289844737586249">在允许网站使用您的麦克风前先询问（推荐）</translation>
 <translation id="7016516562562142042">已设为可供当前的搜索引擎使用</translation>
+<translation id="7017968314960951695">根据您所访问的网站上的内容以及您的浏览器活动和互动行为，提供个性化的使用体验</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> 已下载完毕</translation>
 <translation id="7022756207310403729">在浏览器中打开</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="7031882061095297553">同步到</translation>
+<translation id="7032663816368481562">当您在地址栏中点按“更多类似内容”图标 <ph name="ICON" /> 时，系统会显示指向相关页面的快速链接。您所访问的网页的网址均会被发送给 Google。</translation>
 <translation id="7034608350006174882">Google Pay 中存储的卡片和地址信息</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7055152154916055070">已阻止重定向：</translation>
@@ -793,6 +803,7 @@
 <translation id="7665369617277396874">添加帐号</translation>
 <translation id="7682724950699840886">请尝试按以下提示操作：确保您的设备上有足够的空间，然后重新尝试导出。</translation>
 <translation id="7698359219371678927">在 <ph name="APP_NAME" /> 中创建电子邮件</translation>
+<translation id="7704317875155739195">自动填充搜索字词和网址</translation>
 <translation id="773466115871691567">一律翻译<ph name="SOURCE_LANGUAGE" />网页</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" />（<ph name="SPACE_OTHER" />）</translation>
 <translation id="773905249182896430">保护您和您的设备不受危险网站的侵害</translation>
@@ -847,6 +858,7 @@
 <translation id="8105951947646329362">提供相关页面建议</translation>
 <translation id="8116925261070264013">已静音的网站</translation>
 <translation id="813082847718468539">查看网站信息</translation>
+<translation id="8160722851663543621">将地址栏和搜索框中的搜索字词以及一些 Cookie 发送给您的默认搜索引擎</translation>
 <translation id="8168435359814927499">内容</translation>
 <translation id="8186512483418048923">还剩 <ph name="FILES" /> 个文件</translation>
 <translation id="8190358571722158785">还剩 1 天</translation>
@@ -871,6 +883,7 @@
 <translation id="8413126021676339697">显示全部历史记录</translation>
 <translation id="8420510748452002155">非个性化服务</translation>
 <translation id="8428213095426709021">设置</translation>
+<translation id="8438566539970814960">改善搜索和浏览体验</translation>
 <translation id="8441146129660941386">后退</translation>
 <translation id="8445448999790540984">无法导出密码</translation>
 <translation id="8447861592752582886">撤消设备权限</translation>
@@ -880,6 +893,7 @@
 <translation id="8497726226069778601">目前还未列出任何网页…</translation>
 <translation id="8503559462189395349">Chrome 密码</translation>
 <translation id="8503813439785031346">用户名</translation>
+<translation id="8504988642345501642">当您向上滚动屏幕时，系统会显示指向相关页面的快速链接。您所访问的网页的网址均会被发送给 Google。</translation>
 <translation id="8514477925623180633">导出存储在 Chrome 中的密码</translation>
 <translation id="8514577642972634246">进入隐身模式</translation>
 <translation id="851751545965956758">禁止网站连接到设备</translation>

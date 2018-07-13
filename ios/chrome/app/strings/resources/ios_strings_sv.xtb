@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">Skanna QR-kod</translation>
 <translation id="1580783302095112590">E-post skickades.</translation>
 <translation id="1582732959743469162">Den pågående nedladdningen avbryts.</translation>
+<translation id="1605658421715042784">Kopiera bild</translation>
 <translation id="1612730193129642006">Visa flikar i rutnät</translation>
 <translation id="1644574205037202324">Historik</translation>
 <translation id="1646446875146297738">Om du aktiverar Do Not Track innebär det att en begäran skickas med webbtrafiken. Vad som händer sedan beror på om webbplatserna svarar på din begäran och hur begäran tolkas.
@@ -58,6 +59,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="1809939268435598390">Ta bort mapp</translation>
 <translation id="1813414402673211292">Rensa webbinformation</translation>
 <translation id="1820259098641718022">Har lagts till i läslistan</translation>
+<translation id="1821253160463689938">Kommer ihåg med hjälp av cookies vad du brukar välja även om du inte besöker sidorna i fråga</translation>
 <translation id="1876721852596493031">Skicka statistik</translation>
 <translation id="1886928167269928266">Tidens början</translation>
 <translation id="1911619930368729126">Ladda upp till Google Drive</translation>
@@ -71,6 +73,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="209018056901015185">Använd skrivbordsversion</translation>
 <translation id="2103075008456228677">Öppna history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> objekt flyttades</translation>
+<translation id="2120297377148151361">Aktivitet och interaktion</translation>
 <translation id="213900355088104901">Öppna en inkognitoflik om du vill surfa privat</translation>
 <translation id="2149973817440762519">Redigera bokmärke</translation>
 <translation id="2230173723195178503">Webbsidan har lästs in</translation>
@@ -86,6 +89,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="2386793615875593361">1 markerat foto</translation>
 <translation id="2435457462613246316">Visa lösenord</translation>
 <translation id="2481538920734869610">LÄGG TILL KONTO</translation>
+<translation id="2523184218357549926">Skickar webbadresserna till sidor du besöker till Google</translation>
 <translation id="2523363575747517183">Webbplatsen försöker öppna ett annat program upprepade gånger.</translation>
 <translation id="2529021024822217800">Öppna alla</translation>
 <translation id="2572712655377361602">Åtkomsten till bilderna har blockerats av en enhetspolicy</translation>
@@ -115,6 +119,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="2898963176829412617">Ny mapp ...</translation>
 <translation id="2903493209154104877">Adresser</translation>
 <translation id="2909437209446960244">Senaste flikarna</translation>
+<translation id="2916171785467530738">Autoslutför sökningar och webbadresser</translation>
 <translation id="291754862089661335">Passa in QR-koden eller streckkoden i den här rutan</translation>
 <translation id="2921219216347069551">Kan inte dela sidan</translation>
 <translation id="2923448633003185837">Klistra in och öppna</translation>
@@ -219,10 +224,12 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="4860895144060829044">Ring</translation>
 <translation id="4875622588773761625">Vill du att lösenordet för den här webbplatsen ska uppdateras med <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="4881695831933465202">Öppna</translation>
+<translation id="4882831918239250449">Styr hur Sök, annonser och annat ska anpassas utifrån webbhistoriken</translation>
 <translation id="4904877109095351937">Markera som läst</translation>
 <translation id="4930268273022498155">Radera befintlig data. Om du byter tillbaka till <ph name="USER_EMAIL1" /> finns den kvar där.</translation>
 <translation id="4941089862236492464">Det gick inte att dela objektet.</translation>
 <translation id="4979397965658815378">Logga in med ditt Google-konto så att du kan använda bokmärken, lösenord, historik med mera på alla dina enheter</translation>
+<translation id="5004416275253351869">Googles aktivitetsinställningar</translation>
 <translation id="5005498671520578047">Kopiera lösenord</translation>
 <translation id="5010803260590204777">Öppna en inkognitoflik om du vill surfa privat på webben.</translation>
 <translation id="5011684439661633295">Hej <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -249,6 +256,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="5548760955356983418">Med Handoff kan du börja visa en webbplats på den här enheten och sedan enkelt fortsätta på din Mac. Den aktuella öppna webbplatsen visas i Dock på din Mac.
 
 Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och samma iCloud-konto måste användas på enheterna.</translation>
+<translation id="5554368826343982379">Synkronisering och anpassning</translation>
 <translation id="5556459405103347317">Hämta igen</translation>
 <translation id="5619279135193775234">E-post</translation>
 <translation id="5626245204502895507">Det gick inte att ladda ned filen just nu.</translation>
@@ -340,6 +348,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Senaste flikarna</translation>
 <translation id="7006788746334555276">Innehållsinställningar</translation>
+<translation id="7017968314960951695">Använder innehåll på webbplatser du besöker, samt aktivitet i och interaktion med webbläsaren, i anpassningssyfte</translation>
 <translation id="7029809446516969842">Lösenord</translation>
 <translation id="7031882061095297553">Synkronisera med</translation>
 <translation id="7053983685419859001">Blockera</translation>
@@ -382,6 +391,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7769602470925380267">Godkänn och logga ut</translation>
 <translation id="7772032839648071052">Bekräfta lösenfras</translation>
 <translation id="780301667611848630">Nej tack</translation>
+<translation id="7830720446622801252">Tjänster som inte använder anpassning</translation>
 <translation id="7856733331829174190">Nedladdning misslyckades</translation>
 <translation id="7859704718976024901">Webbhistorik</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -400,6 +410,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="8076014560081431679">Sparade webbplatsinställningar raderas inte och kan visa dina surfvanor. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Stäng alla flikar</translation>
 <translation id="8114753159095730575">En filnedladdning är tillgänglig. Alternativ visas nära skärmens nederkant.</translation>
+<translation id="8160722851663543621">Skickar sökningar från adressfältet och sökrutan, och vissa cookies, till standardsökmotorn</translation>
 <translation id="8205564605687841303">Avbryt</translation>
 <translation id="8225985093977202398">Cachelagrade bilder och filer</translation>
 <translation id="8261506727792406068">Radera</translation>
@@ -410,6 +421,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="842017693807136194">Inloggad med</translation>
 <translation id="8428045167754449968">Ort</translation>
 <translation id="8428213095426709021">Inställningar</translation>
+<translation id="8438566539970814960">Förbättra sökningar och surfandet</translation>
 <translation id="8458397775385147834">1 objekt har tagits bort</translation>
 <translation id="8487700953926739672">Tillgänglig offline</translation>
 <translation id="8503813439785031346">Användarnamn</translation>

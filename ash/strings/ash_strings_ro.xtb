@@ -62,7 +62,6 @@
 <translation id="2050339315714019657">Portret</translation>
 <translation id="2067602449040652523">Luminozitatea tastaturii</translation>
 <translation id="2081529251031312395">$1 se poate conecta și mai târziu.</translation>
-<translation id="2122028596993374965">Nu mai proiecta <ph name="TAB_NAME" /> pe dispozitivul <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Încărcător de putere joasă</translation>
 <translation id="2135456203358955318">Lupă andocată</translation>
 <translation id="2144487987174258011">Repornește ca să actualizezi Adobe Flash Player</translation>
@@ -247,7 +246,6 @@
 <translation id="5911533659001334206">Vizualizatorul de comenzi rapide</translation>
 <translation id="5916664084637901428">Activat</translation>
 <translation id="592343074608792716">Chromebookul și telefonul se vor conecta automat</translation>
-<translation id="5927132638760172455">Se proiectează pe un receiver necunoscut</translation>
 <translation id="5947494881799873997">Reveniți</translation>
 <translation id="595202126637698455">Urmărirea performanței este activată</translation>
 <translation id="5957083217255311415">Datele mobile sunt dezactivate.</translation>
@@ -312,7 +310,6 @@
 <translation id="698231206551913481">Toate fișierele și datele locale asociate acestui utilizator vor fi șterse definitiv după eliminarea utilizatorului.</translation>
 <translation id="7015766095477679451">Revino la <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Ieșiți din sesiune</translation>
-<translation id="7034339000180558234">Se proiectează <ph name="TAB_NAME" /> pe <ph name="RECEIVER_NAME" /></translation>
 <translation id="7037152028959403492">Ai accesat comanda rapidă pentru contrast ridicat. Vrei să-l activezi?</translation>
 <translation id="7066646422045619941">Această rețea este dezactivată de administrator.</translation>
 <translation id="7067196344162293536">Rotire automată</translation>
@@ -368,7 +365,6 @@
 <translation id="813913629614996137">Se inițializează...</translation>
 <translation id="8142699993796781067">Rețea privată</translation>
 <translation id="8152119955266188852">Ai accesat comanda rapidă pentru lupa de ecran complet. Vrei să o activezi?</translation>
-<translation id="8180896103888046100">Nu mai proiecta pe un receiver necunoscut</translation>
 <translation id="8190698733819146287">Personalizează limbile și modul de introducere...</translation>
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8297006494302853456">Slab</translation>
@@ -409,7 +405,6 @@
 <translation id="8984179138335769204">Lansare rapidă</translation>
 <translation id="8995603266996330174">Gestionat de <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Este disponibilă o actualizare Adobe Flash Player</translation>
-<translation id="9033907480196064950">În prezent proiectezi <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Microfonul este în uz.</translation>

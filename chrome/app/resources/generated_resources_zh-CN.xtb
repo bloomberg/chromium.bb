@@ -127,6 +127,7 @@
 <translation id="1178581264944972037">暂停</translation>
 <translation id="1181037720776840403">删除</translation>
 <translation id="1183237619868651138">无法将 <ph name="EXTERNAL_CRX_FILE" /> 安装在本地缓存中。</translation>
+<translation id="1183378459020939734">准备好为您的安全密钥配对了吗？</translation>
 <translation id="1185924365081634987">您也可以尝试<ph name="GUEST_SIGNIN_LINK_START" />以访客身份浏览<ph name="GUEST_SIGNIN_LINK_END" />，以便修复该网络错误。</translation>
 <translation id="1186771945450942097">移除有害软件</translation>
 <translation id="1187722533808055681">闲置状态唤醒</translation>
@@ -537,6 +538,7 @@
 <translation id="1782530111891678861">更改触摸 HUD 模式</translation>
 <translation id="1784849162047402014">设备磁盘空间不足</translation>
 <translation id="1786636458339910689">团队云端硬盘</translation>
+<translation id="1792161662640298233">正在验证您的安全密钥</translation>
 <translation id="1792619191750875668">扩展显示屏</translation>
 <translation id="1794791083288629568">发送反馈，以协助我们解决此问题。</translation>
 <translation id="1795214765651529549">使用经典主题背景</translation>
@@ -597,6 +599,7 @@
 <translation id="186612162884103683">“<ph name="EXTENSION" />”对于选中位置中的图片、视频及声音文件具有读取和写入权限。</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" />已准备就绪，可以进行安装。</translation>
 <translation id="1871615898038944731">您的 <ph name="DEVICE_TYPE" /> 使用的操作系统已为最新版本</translation>
+<translation id="1875312262568496299">开始</translation>
 <translation id="1875387611427697908">只能通过<ph name="CHROME_WEB_STORE" />添加此项内容</translation>
 <translation id="1877520246462554164">未能获取身份验证令牌。请退出并重新登录，然后重试。</translation>
 <translation id="1878302395768190018">您可以随时在 Chrome 设置中自定义此设置</translation>
@@ -743,6 +746,7 @@
 <translation id="2114896190328250491">照片提供者：<ph name="NAME" /></translation>
 <translation id="2115103655317273167">发送至手机</translation>
 <translation id="2119349053129246860">在“<ph name="APP" />”中打开</translation>
+<translation id="2120297377148151361">活动和互动行为</translation>
 <translation id="2121825465123208577">调整大小</translation>
 <translation id="2124930039827422115">{1,plural, =1{已有一位用户给出了 <ph name="AVERAGE_RATING" /> 的评分。}other{已有 # 位用户给出评分，平均评分为 <ph name="AVERAGE_RATING" />。}}</translation>
 <translation id="2126167708562367080">您的管理员已停用同步。</translation>
@@ -876,6 +880,7 @@
 <translation id="2318143611928805047">纸张尺寸</translation>
 <translation id="2318817390901984578">要使用 Android 应用，请为您的 <ph name="DEVICE_TYPE" /> 充电并对其进行更新。</translation>
 <translation id="2318923050469484167">当前的隐身会话（<ph name="EMBEDDING" />）</translation>
+<translation id="2321482478556590128">对“<ph name="APP_NAME" />”使用您的安全密钥</translation>
 <translation id="2322193970951063277">页眉和页脚</translation>
 <translation id="2325650632570794183">不支持此文件类型。请访问 Chrome 网上应用店，找到能打开此文件类型的应用。</translation>
 <translation id="2326931316514688470">重新加载应用(&amp;R)</translation>
@@ -909,6 +914,7 @@
 <translation id="2367199180085172140">添加文件共享</translation>
 <translation id="2367972762794486313">显示应用</translation>
 <translation id="2369536625682139252">即将删除 <ph name="SITE" /> 存储的所有数据（Cookie 除外）。</translation>
+<translation id="237058345584060620">将您的密钥与此设备配对，即可使用该密钥登录您的帐号</translation>
 <translation id="2371076942591664043">完成时打开(&amp;D)</translation>
 <translation id="2376559921867170420">设置完 Chromebook 后，您只需按 Google 助理按钮或说出“Ok Google”，便可随时获得 Google 助理的帮助。</translation>
 <translation id="2377319039870049694">切换到列表视图</translation>
@@ -974,6 +980,7 @@
 <translation id="248861575772995840">找不到您的手机。请确保已为您的 <ph name="DEVICE_TYPE" /> 开启蓝牙。&lt;a&gt;了解详情&lt;/a&gt;</translation>
 <translation id="2489918096470125693">添加文件夹(&amp;F)...</translation>
 <translation id="249113932447298600">抱歉，系统目前不支持设备“<ph name="DEVICE_LABEL" />”。</translation>
+<translation id="2492040222276243256">按住您的安全密钥上的按钮至少 5 秒钟</translation>
 <translation id="2493021387995458222">选择“一次一个字词”</translation>
 <translation id="249303669840926644">无法完成注册</translation>
 <translation id="2495777824269688114">探索更多功能或获得相关解答。如需帮助，请选择“?”。</translation>
@@ -1001,6 +1008,7 @@
 <translation id="2520644704042891903">正在等待可用的套接字…</translation>
 <translation id="252219247728877310">组件未更新</translation>
 <translation id="2522791476825452208">非常靠近</translation>
+<translation id="2523184218357549926">将您所访问的网页的网址发送给 Google</translation>
 <translation id="2525250408503682495">有漏洞！无法为该自助服务终端应用装载 cryptohome。</translation>
 <translation id="2526277209479171883">安装并继续</translation>
 <translation id="2526590354069164005">桌面</translation>
@@ -1027,6 +1035,7 @@
 <translation id="2562743677925229011">尚未登录 <ph name="SHORT_PRODUCT_NAME" /></translation>
 <translation id="2563856802393254086">恭喜！“<ph name="NAME" />”数据服务已激活，您可以开始使用了。</translation>
 <translation id="2564520396658920462">通过 AppleScript 执行 JavaScript 的功能已关闭。要开启此功能，请在菜单栏中依次转到“查看”&gt;“开发者”&gt;“允许 Apple 事件中的 JavaScript”。如需更多信息，请访问 https://support.google.com/chrome/?p=applescript</translation>
+<translation id="2564653188463346023">增强的“拼写检查”功能</translation>
 <translation id="2566124945717127842">Powerwash会将您的<ph name="IDS_SHORT_PRODUCT_NAME" />设备重置为初始状态。</translation>
 <translation id="2567257616420533738">密码已保存。您可在 <ph name="SAVED_PASSWORDS_LINK" /> 上查看和管理已保存的密码</translation>
 <translation id="2568774940984945469">信息栏容器</translation>
@@ -1075,6 +1084,7 @@
 <translation id="2633199387167390344"><ph name="NAME" />占用了<ph name="USAGE" /> MB的磁盘空间。</translation>
 <translation id="2633212996805280240">要删除“<ph name="EXTENSION_NAME" />”吗？</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" />无法完成安装，但是会通过其磁盘映像继续运行。</translation>
+<translation id="2633326789677284179">请找到您的密钥背面印有的名称</translation>
 <translation id="2635276683026132559">签名</translation>
 <translation id="2636625531157955190">Chrome 无法访问这张图片。</translation>
 <translation id="2638087589890736295">必须输入密码才能开始同步</translation>
@@ -1388,6 +1398,7 @@
 <translation id="3090819949319990166">无法将外部 crx 文件复制到 <ph name="TEMP_CRX_FILE" />。</translation>
 <translation id="3090871774332213558">“<ph name="DEVICE_NAME" />”已配对</translation>
 <translation id="3101709781009526431">日期和时间</translation>
+<translation id="3104900172193317662">允许使用您的安全密钥</translation>
 <translation id="310671807099593501">该网站正在使用蓝牙</translation>
 <translation id="3115128645424181617">找不到您的手机。请确保它就在您身边且已开启蓝牙。</translation>
 <translation id="3115147772012638511">正在等待存入缓存...</translation>
@@ -1869,6 +1880,7 @@
 <translation id="3839516600093027468">始终禁止 <ph name="HOST" /> 查看剪贴板</translation>
 <translation id="3840053866656739575">与您的 Chromebox 的连接已断开。我们正在尝试重新连接，请将您的设备移近一些或对其进行检查。</translation>
 <translation id="3842552989725514455">Serif 字体</translation>
+<translation id="3846116211488856547">获取用于开发网站、Android 应用等内容的工具。安装 Linux 会使系统下载 <ph name="DOWNLOAD_SIZE" /> 的数据。</translation>
 <translation id="385051799172605136">后退</translation>
 <translation id="3851428669031642514">加载不安全的脚本</translation>
 <translation id="3855441664322950881">打包扩展程序</translation>
@@ -1892,6 +1904,7 @@
 <translation id="3872991219937722530">请释放磁盘空间，否则设备将无响应。</translation>
 <translation id="3878840326289104869">正在创建受监管用户</translation>
 <translation id="3879748587602334249">下载管理器</translation>
+<translation id="3880709822663530586">您必须开启设备的蓝牙功能才能使用安全密钥</translation>
 <translation id="3888550877729210209">使用“<ph name="LOCK_SCREEN_APP_NAME" />”创建记事</translation>
 <translation id="3892414795099177503">添加 OpenVPN / L2TP…</translation>
 <translation id="3893536212201235195">读取和更改您的无障碍设置</translation>
@@ -2352,6 +2365,7 @@
 <translation id="4681930562518940301">在新标签页中打开原始图片(&amp;I)</translation>
 <translation id="4682551433947286597">登录屏幕上显示的壁纸。</translation>
 <translation id="4684427112815847243">同步所有数据类型</translation>
+<translation id="4689235506267737042">选择您的演示偏好设置</translation>
 <translation id="4689421377817139245">将此书签同步到您的 iPhone</translation>
 <translation id="4690091457710545971">&lt;Intel Wi-Fi 固件生成了四个文件：csr.lst、fh_regs.lst、radio_reg.lst 和 monitor.lst.sysmon。前三个文件是包含注册表转储的二进制文件，且 Intel 表示其中并未包含任何个人信息或设备标识信息。最后一个文件是 Intel 固件的执行跟踪记录，其中的个人信息和设备标识信息已全部清除，但由于文件过大而无法显示在这里。因为您的设备最近发生过 Wi-Fi 问题，所以系统生成了这些文件，且会将文件提供给 Intel 以协助排查相关问题。&gt;</translation>
 <translation id="4692302215262324251"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 已为您的 <ph name="DEVICE_TYPE" /> 成功注册企业管理服务。
@@ -2480,6 +2494,7 @@
 <translation id="4880827082731008257">搜索历史记录</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="4882473678324857464">将焦点移到书签</translation>
+<translation id="4882831918239250449">控制 Google 如何利用您的浏览记录为您提供个性化的搜索、广告和其他服务</translation>
 <translation id="4883178195103750615">将书签导出到 HTML 文件...</translation>
 <translation id="4883436287898674711">所有<ph name="WEBSITE_1" />网站</translation>
 <translation id="48838266408104654">任务管理器(&amp;T)</translation>
@@ -2749,6 +2764,7 @@
 <translation id="5288678174502918605">重新打开关闭的标签页(&amp;E)</translation>
 <translation id="52912272896845572">私有密钥文件无效。</translation>
 <translation id="529175790091471945">将此设备格式化</translation>
+<translation id="5292195676005197571">只需按下密钥上的按钮即可使用密钥，这适用于大多数密钥</translation>
 <translation id="5293170712604732402">将设置还原为原始默认设置</translation>
 <translation id="5298219193514155779">主题背景创建者：</translation>
 <translation id="5299109548848736476">不跟踪</translation>
@@ -3009,11 +3025,13 @@
 <translation id="5658415415603568799">为了提升安全性，Smart Lock 会在 20 小时后要求您输入您的密码。</translation>
 <translation id="5659593005791499971">电子邮件</translation>
 <translation id="5659833766619490117">无法翻译此网页</translation>
+<translation id="5660204307954428567">与“<ph name="DEVICE_NAME" />”配对</translation>
 <translation id="5662477687021125631">永久</translation>
 <translation id="5667546120811588575">正在设置 Google Play…</translation>
 <translation id="5669267381087807207">正在激活</translation>
 <translation id="5669691691057771421">请输入新的 PIN 码</translation>
 <translation id="5671641761787789573">已拦截图片</translation>
+<translation id="5673076758299428095">关闭 Linux</translation>
 <translation id="5677503058916217575">网页语言：</translation>
 <translation id="5677928146339483299">已屏蔽</translation>
 <translation id="5678550637669481956">已授予对 <ph name="VOLUME_NAME" />的读写权限。</translation>
@@ -3178,6 +3196,9 @@
 <translation id="5920835625712313205">Chrome 操作系统映像写入工具</translation>
 <translation id="5921745308587794300">旋转窗口</translation>
 <translation id="5924047253200400718">获取帮助<ph name="SCANNING_STATUS" /></translation>
+<translation id="5924527146239595929">拍摄新照片，或者选择现有照片或图标。
+    <ph name="LINE_BREAK" />
+    此图片将会显示在 Chromebook 的登录屏幕和锁定屏幕上。</translation>
 <translation id="5925147183566400388">核证作业准则 (Certification Practice Statement) 指针</translation>
 <translation id="592880897588170157">下载 PDF 文件，而不是在 Chrome 中自动打开它们</translation>
 <translation id="5931146425219109062">读取和更改您在访问的网站上的所有数据</translation>
@@ -3274,6 +3295,7 @@
 <translation id="6078752646384677957">请检查您的麦克风和音量。</translation>
 <translation id="6080515710685820702">使用的是共用计算机？请尝试打开一个无痕式窗口。</translation>
 <translation id="6080689532560039067">检查系统时间</translation>
+<translation id="6082111513049964958">用于解锁设备的密码</translation>
 <translation id="6082651258230788217">在工具栏中显示</translation>
 <translation id="6086846494333236931">这是您的管理员安装的</translation>
 <translation id="6087960857463881712">酷炫表情</translation>
@@ -3497,6 +3519,7 @@
 <translation id="642282551015776456">该名称可能无法用作文件名或文件夹名</translation>
 <translation id="642469772702851743">此设备（序列号：<ph name="SERIAL_NUMBER" />）已被所有者锁定。</translation>
 <translation id="6426200009596957090">打开 ChromeVox 设置</translation>
+<translation id="6427415464407526111">选择您的安全密钥</translation>
 <translation id="6429384232893414837">更新错误</translation>
 <translation id="6430814529589430811">Base64 编码 ASCII，单一证书</translation>
 <translation id="6431217872648827691">截止到<ph name="TIME" />，所有数据都已使用您的Google密码加密</translation>
@@ -3922,6 +3945,7 @@
 <translation id="7099337801055912064">无法加载过大的 PPD。大小上限为 250 KB。</translation>
 <translation id="7100897339030255923">已选择 <ph name="COUNT" /> 项</translation>
 <translation id="7102687220333134671">已开启自动更新功能</translation>
+<translation id="7102832101143475489">此请求已超时</translation>
 <translation id="7106346894903675391">购买更多存储空间...</translation>
 <translation id="7108338896283013870">隐藏</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> 想使用您的摄像头</translation>
@@ -4538,6 +4562,7 @@
 <translation id="8028993641010258682">大小</translation>
 <translation id="8030656706657716245">添加打印机</translation>
 <translation id="8032244173881942855">无法投射标签页。</translation>
+<translation id="8033958968890501070">已超时</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{在隐身窗口中打开全部网址(&amp;I)}=1{在隐身窗口中打开 1 个网址(&amp;I)}other{在隐身窗口中打开全部（# 个）网址(&amp;I)}}</translation>
 <translation id="8037117027592400564">读取使用合成语音说出的所有文字</translation>
 <translation id="8037357227543935929">询问（默认）</translation>
@@ -4627,6 +4652,8 @@
 <translation id="8180239481735238521">页</translation>
 <translation id="8180786512391440389">“<ph name="EXTENSION" />”可以读取及删除选中位置的图片、视频及音频文件。</translation>
 <translation id="8181215761849004992">无法加入到该网域中。请检查您的帐号以了解您是否有足够的权限来添加设备。</translation>
+<translation id="8182664696082410784"><ph name="REASON" />
+    我不认为该网站应被屏蔽！</translation>
 <translation id="8184288427634747179">改用“<ph name="AVATAR_NAME" />”</translation>
 <translation id="8184318863960255706">更多信息</translation>
 <translation id="8185331656081929126">在网络中检测到新打印机时显示通知</translation>
@@ -4770,6 +4797,7 @@
 <translation id="8434480141477525001">NaCl调试端口</translation>
 <translation id="843760761634048214">保存信用卡</translation>
 <translation id="8438328416656800239">改用智能浏览器</translation>
+<translation id="8438566539970814960">改善搜索和浏览体验</translation>
 <translation id="8439506636278576865">询问是否翻译此语言的网页</translation>
 <translation id="8446884382197647889">了解详情</translation>
 <translation id="8447409163267621480">必须以 Ctrl 键或 Alt 键开头</translation>
@@ -5125,6 +5153,7 @@
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - 已崩溃</translation>
 <translation id="8983677657449185470">帮助我们改进安全浏览功能</translation>
 <translation id="8984654317541110628">文件共享网址</translation>
+<translation id="8984872292925913496">找到您的密钥背面印有的 6 位数 PIN 码</translation>
 <translation id="8986362086234534611">不保存</translation>
 <translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
 <translation id="8987927404178983737">月</translation>

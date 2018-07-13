@@ -132,11 +132,6 @@
 
       Jos käytäntöä ei määritetä, oletusarvoa MultiProfileUserBehaviorMustBePrimary käytetään yrityksen valvomille käyttäjille ja arvoa MultiProfileUserBehaviorUnrestricted käytetään valvomattomille käyttäjille.</translation>
 <translation id="1465619815762735808">Käynnistä klikkaamalla</translation>
-<translation id="1466133662354365542">Kun tämä on käytössä, <ph name="PRODUCT_NAME" /> voi täyttää kenttiä automaattisesti. Käyttäjät voivat täyttää verkkolomakkeita aiemmin tallennetuilla luottokortti- tai osoitetiedoilla.
-
-      Jos poistat asetuksen käytöstä, automaattinen täyttö ei ehdota luottokorttitietoja, täytä niitä tai tallenna uusia luottokorttitietoja myöhempää käyttöä varten selailun yhteydessä.
-
-      Jos tämä asetus on käytössä tai sille ei ole määritetty arvoa, käyttäjä voi hallita yleistä luottokortti- ja muiden tietojen automaattista täyttöä käyttöliittymässä.</translation>
 <translation id="1468307069016535757">Määritä suuri kontrasti -tilan käytettävyysominaisuuden oletustila kirjautumisnäytössä.
 
           Jos tämän käytännön arvoksi on määritetty tosi, suuri kontrasti -tila on käytössä kirjautumisnäytössä.

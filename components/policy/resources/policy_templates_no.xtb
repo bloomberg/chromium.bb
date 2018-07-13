@@ -135,11 +135,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
       Hvis innstillingen ikke angis, gjelder standardverdien «MultiProfileUserBehaviorUnrestricted» for virksomhetsadministrerte brukere, og «MultiProfileUserBehaviorUnrestricted» for ikke-administrerte brukere.</translation>
 <translation id="1465619815762735808">Klikk for å spille av</translation>
-<translation id="1466133662354365542">Slår på autofyllfunksjonen i <ph name="PRODUCT_NAME" /> og gjør det mulig for brukere å fylle ut informasjon om kredittkort og adresse i nettskjemaer automatisk. Dette er mulig ved at autofyllfunksjonen bruker informasjon som har blitt lagret tidligere.
-
-      Hvis du slår av denne innstillingen, gir ikke autofyllfunksjonen forslag, og den fyller ikke inn informasjon automatisk. Den lagrer heller ikke lenger kredittkortinformasjon som brukeren sender inn på nettet.
-
-      Hvis du slår på denne innstillingen eller ikke angir noen verdi, kan brukeren kontrollere all funksjonalitet for autofyllfunksjonen (inkludert kredittkort) i brukergrensesnittet.</translation>
 <translation id="1468307069016535757">Angi standard tilstand for tilgjengelighetsfunksjonen for høykontrastmodus på påloggingsskjermen.
 
           Hvis denne innstillingen angis til «true», aktiveres høykontrastmodus når påloggingssiden vises.

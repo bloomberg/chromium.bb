@@ -24,6 +24,7 @@
 <translation id="3805899903892079518">Chromium, fotoğraflarınıza veya videolarınıza erişemiyor. iOS Ayarlar &gt; Gizlilik &gt; Fotoğraflar'dan erişimi etkinleştirin.</translation>
 <translation id="4024541897090868497">Sekmelerinize tüm cihazlarınızda ulaşmak için Chromium'da oturum açın.</translation>
 <translation id="4241912885070669028"><ph name="SIGNOUT_MANAGED_DOMAIN" /> tarafından yönetilen bir hesabın oturumunu kapatıyorsunuz. Bu işlemle Chromium verileriniz bu cihazdan silinir, ancak Google hesabınızda kalmaya devam eder.</translation>
+<translation id="4272892696084633551">Chromium'un özelliklerini ve performansını iyileştirmeye yardımcı olun</translation>
 <translation id="4555020257205549924">Bu özellik açık durumdayken Chromium, diğer dillerde yazılmış sayfaları Google Çeviri'yi kullanarak çevirmeyi teklif eder. <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Diğer cihazlarınızda Chromium'da açtığınız sekmeler burada görünür.</translation>
 <translation id="495292094137889840">Chromium QR tarayıcısını kullanmaya başlayın</translation>
@@ -33,6 +34,7 @@
 <translation id="5945387852661427312"><ph name="DOMAIN" /> tarafından yönetilen bir hesapla oturum açıyor ve yöneticiye tüm Chromium verileriniz üzerinde denetim olanağı veriyorsunuz. Verileriniz kalıcı olarak bu hesaba bağlanacaktır. Chromium'da oturumu kapattığınızda verileriniz bu cihazdan silinir ancak Google Hesabınızda kalmaya devam eder.</translation>
 <translation id="6068866989048414399">Chromium Hizmet Şartları</translation>
 <translation id="6268381023930128611">Chromium oturumunu kapatıyor musunuz?</translation>
+<translation id="641451971369018375">Göz atma işlevini ve Chromium'u iyileştirmek için Google ile iletişim kurar</translation>
 <translation id="6424492062988593837">Chromium daha da iyi hale geldi! Yeni bir sürüm var.</translation>
 <translation id="6604711459180487467">Chromium'da, konumunuza dayalı olarak daha iyi bir deneyim yaşayın.</translation>
 <translation id="6626296268883197964">Bu uygulamayı kullanarak Chromium’un <ph name="BEGIN_LINK_TOS" />Hizmet Şartları<ph name="END_LINK_TOS" />'nı ve <ph name="BEGIN_LINK_PRIVACY" />Gizlilik Uyarısı<ph name="END_LINK_PRIVACY" />'nı kabul etmiş olursunuz.</translation>

@@ -62,7 +62,6 @@
 <translation id="2050339315714019657">纵向</translation>
 <translation id="2067602449040652523">键盘亮度</translation>
 <translation id="2081529251031312395">日后“$1”仍能登录。</translation>
-<translation id="2122028596993374965">停止将<ph name="TAB_NAME" />投射到“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
 <translation id="2135456203358955318">停靠的放大镜</translation>
 <translation id="2144487987174258011">请重新启动以更新 Adobe Flash Player</translation>
@@ -248,7 +247,6 @@
 <translation id="5911533659001334206">快捷键查看器</translation>
 <translation id="5916664084637901428">启用</translation>
 <translation id="592343074608792716">此 Chromebook 将会自动连接到您的手机</translation>
-<translation id="5927132638760172455">正在投射至未知接收器</translation>
 <translation id="5947494881799873997">还原</translation>
 <translation id="595202126637698455">已启用性能跟踪</translation>
 <translation id="5957083217255311415">移动数据网络现处于关闭状态。</translation>
@@ -313,7 +311,6 @@
 <translation id="698231206551913481">移除该用户后，与其关联的所有文件和本地数据都会被永久删除。</translation>
 <translation id="7015766095477679451">您需要等到<ph name="COME_BACK_TIME" /> 才能再次使用此设备。</translation>
 <translation id="7029814467594812963">退出会话</translation>
-<translation id="7034339000180558234">正在将“<ph name="TAB_NAME" />”投射到“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="7037152028959403492">您按下了高对比度的快捷键。要开启这项功能吗？</translation>
 <translation id="7066646422045619941">您的管理员已禁用此网络。</translation>
 <translation id="7067196344162293536">自动旋转</translation>
@@ -369,7 +366,6 @@
 <translation id="813913629614996137">正在初始化…</translation>
 <translation id="8142699993796781067">专用网络</translation>
 <translation id="8152119955266188852">您按下了全屏放大镜的快捷键。要开启这项功能吗？</translation>
-<translation id="8180896103888046100">停止投射到未知接收器</translation>
 <translation id="8190698733819146287">自定义语言和输入法...</translation>
 <translation id="8261506727792406068">删除</translation>
 <translation id="8297006494302853456">弱</translation>
@@ -410,7 +406,6 @@
 <translation id="8984179138335769204">快速启动</translation>
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="9029474291399787231">有可用的 Adobe Flash Player 更新</translation>
-<translation id="9033907480196064950">您目前正在投射<ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">蓝牙</translation>
 <translation id="9079731690316798640">Wi-Fi：<ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">麦克风目前处于使用状态。</translation>

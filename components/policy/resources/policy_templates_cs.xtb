@@ -128,11 +128,6 @@ Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vyt
 
       Pokud tato zásada není nastavena, bude pro uživatele spravované organizací použita výchozí hodnota „MultiProfileUserBehaviorMustBePrimary“ a pro uživatele, kteří nejsou spravováni, bude použita hodnota „MultiProfileUserBehaviorUnrestricted“.</translation>
 <translation id="1465619815762735808">Spustit kliknutím</translation>
-<translation id="1466133662354365542">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> funkci automatického vyplňování a umožní uživatelům vyplňovat ve webových formulářích informace o platebních kartách a adresách pomocí dříve uložených informací.
-
-      Pokud toto nastavení zakážete, nebude automatické vyplňování navrhovat ani vyplňovat informace o platebních kartách a nebude ani ukládat další informace o platebních kartách, které uživatel při prohlížení webu odešle.
-
-      Pokud toto nastavení povolíte nebo nenastavíte žádnou hodnotu, bude uživatel funkci automatického vyplňování (včetně platebních karet) moci ovládat v uživatelském rozhraní.</translation>
 <translation id="1468307069016535757">Nastavuje výchozí stav funkce usnadnění přístupu pomocí režimu vysokého kontrastu na přihlašovací obrazovce.
 
 Pokud je tato zásada nastavena na hodnotu true, bude při zobrazení obrazovky přihlášení režim vysokého kontrastu aktivní.

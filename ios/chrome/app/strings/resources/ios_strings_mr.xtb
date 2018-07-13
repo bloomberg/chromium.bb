@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">QR कोड स्कॅन करा</translation>
 <translation id="1580783302095112590">मेल पाठवले.</translation>
 <translation id="1582732959743469162">यामुळे तुमच्या सुरू असलेल्या डाउनलोडची पुढची सर्व प्रगती थांबेल.</translation>
+<translation id="1605658421715042784">इमेज कॉपी करा</translation>
 <translation id="1612730193129642006">टॅब ग्रिड दाखवा</translation>
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1646446875146297738">'Do Not Track' सक्षम करणे अर्थात आपल्या ब्राउझिंग रहदारीसह एक विनंती समाविष्ट‍ केली जाईल. कोणताही प्रभाव यावर अवलंबून असतो कि वेबसाइट विनंतीस प्रतिसाद देते किंवा नाही आणि विनंतीचा निष्कर्ष कसा काढला जातो.
@@ -58,6 +59,7 @@
 <translation id="1809939268435598390">फोल्डर हटवा</translation>
 <translation id="1813414402673211292">ब्राउझिंग डेटा साफ करा</translation>
 <translation id="1820259098641718022">वाचन सूचीमध्ये जोडले</translation>
+<translation id="1821253160463689938">तुम्ही त्या पेजना भेट दिली नसली तरीही, तुमची प्राधान्ये लक्षात ठेवण्यासाठी कुकीचा वापर करते</translation>
 <translation id="1876721852596493031">वापरलेला डेटा पाठवा</translation>
 <translation id="1886928167269928266">सुरूवातीपासून</translation>
 <translation id="1911619930368729126">Google ड्राइव्हवर अपलोड करा</translation>
@@ -71,6 +73,7 @@
 <translation id="209018056901015185">डेस्कटॉप साइटची विनंती करा</translation>
 <translation id="2103075008456228677">history.google.com उघडा</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> आयटम हलविले</translation>
+<translation id="2120297377148151361">अॅक्टिव्हिटी आणि संवाद</translation>
 <translation id="213900355088104901">खाजगीरीत्या ब्राउझ करण्यासाठी, एक गुप्त टॅब उघडा</translation>
 <translation id="2149973817440762519">बुकमार्क संपादित करा</translation>
 <translation id="2230173723195178503">वेबपृष्ठ लोड केले</translation>
@@ -86,6 +89,7 @@
 <translation id="2386793615875593361">1 निवडले</translation>
 <translation id="2435457462613246316">पासवर्ड दर्शवा</translation>
 <translation id="2481538920734869610">खाते जोडा</translation>
+<translation id="2523184218357549926">तुम्ही भेट दिलेल्या पेजच्या URL Google ला पाठवते</translation>
 <translation id="2523363575747517183">ही वेबसाइट वारंवार दुसरे अ‍ॅप्लिकेशन उघडण्याचा प्रयत्न करत आहे.</translation>
 <translation id="2529021024822217800">सर्व उघडा</translation>
 <translation id="2572712655377361602">डिव्हाइस धोरणाने आपल्या फोटोंंमधील प्रवेश अवरोधित केला</translation>
@@ -115,6 +119,7 @@
 <translation id="2898963176829412617">नवीन फोल्डर...</translation>
 <translation id="2903493209154104877">पत्ते</translation>
 <translation id="2909437209446960244">अलीकडील टॅब</translation>
+<translation id="2916171785467530738">ऑटोकंप्लीट शोध आणि URL</translation>
 <translation id="291754862089661335">QR कोड किंवा बारकोडची या फ्रेममध्‍ये स्थिती निर्धारित करा</translation>
 <translation id="2921219216347069551">पृष्ठ सामायिक करू शकत नाही</translation>
 <translation id="2923448633003185837">पेस्ट करा आणि जा</translation>
@@ -220,10 +225,12 @@
 <translation id="4860895144060829044">कॉल करा</translation>
 <translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" /> नी या साइटसाठी आपला पासवर्ड अपडेट करावा असे आपण इच्छिता?</translation>
 <translation id="4881695831933465202">उघडा</translation>
+<translation id="4882831918239250449">तुम्ही ब्राउझ करत असलेला इतिहास पर्सनलाइझ शोध, जाहिराती आणि बरेच काही करण्यासाठी कसा वापरला जातो ते नियंत्रित करा</translation>
 <translation id="4904877109095351937">वाचले चिन्हांकित करा</translation>
 <translation id="4930268273022498155">विद्यमान डेटा हटवा. <ph name="USER_EMAIL1" /> वर परत स्विच करून आपण तो पुनर्प्राप्त करू शकता.</translation>
 <translation id="4941089862236492464">क्षमस्व, आपला आयटम सामायिक करताना समस्या आली.</translation>
 <translation id="4979397965658815378">आपल्या सर्व डिव्हाइसेसवर आपले बुकमार्क, पासवर्ड, इतिहास आणि अन्य सेटिंग्ज प्राप्त करण्यासाठी आपल्या Google खात्यासह साइन इन करा</translation>
+<translation id="5004416275253351869">Google अॅक्टिव्हिटी नियंत्रणे</translation>
 <translation id="5005498671520578047">पासवर्ड कॉपी करा</translation>
 <translation id="5010803260590204777">वेब खाजगीपणे ब्राउझ करण्‍यासाठी गुप्त टॅब उघडा.</translation>
 <translation id="5011684439661633295">हाय, <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -250,6 +257,7 @@
 <translation id="5548760955356983418">Handoff आपल्याला या डिव्हाइसवर ब्राउझिंग प्रारंभ करू आणि त्यानंतर आपल्या Mac वर सहजपणे सुरू ठेऊ देते. वर्तमान उघडलेली वेबसाइट आपल्या Mac च्या डॉकवर दिसून येईल.
 
 सेटिंग्जच्या सामान्य विभागामध्ये Handoff सक्षम केलेले असणे आवश्यक आहे आणि आपल्या डिव्हाइसेसने समान iCloud खाते वापरणे आवश्यक आहे.</translation>
+<translation id="5554368826343982379">सिंक आणि पर्सनलायझेशन</translation>
 <translation id="5556459405103347317">रीलोड करा</translation>
 <translation id="5619279135193775234">मेल</translation>
 <translation id="5626245204502895507">यावेळी फाईल डाऊनलोड केली जाऊ शकली नाही.</translation>
@@ -341,6 +349,7 @@
 <translation id="6979158407327259162">Google ड्राइव्ह</translation>
 <translation id="7004499039102548441">अलीकडील टॅब</translation>
 <translation id="7006788746334555276">सामग्री सेटिंग्ज</translation>
+<translation id="7017968314960951695">तुम्ही भेट देता त्या साइट आणि ब्राउझर अॅक्टिव्हिटी आणि संवाद यांच्यावरील आशयाचा वापर पर्सनलायझेशनसाठी करते.</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
 <translation id="7031882061095297553">यावर संकालित करा</translation>
 <translation id="7053983685419859001">अवरोधित करा</translation>
@@ -383,6 +392,7 @@
 <translation id="7769602470925380267">स्वीकार करा आणि साइन आउट करा</translation>
 <translation id="7772032839648071052">सांकेतिक वाक्यांशाची पुष्टी करा</translation>
 <translation id="780301667611848630">नाही, नको</translation>
+<translation id="7830720446622801252">पर्सनलाइझ न केलेल्या सेवा</translation>
 <translation id="7856733331829174190">डाउनलोड करता आले नाही</translation>
 <translation id="7859704718976024901">ब्राउझिंग इतिहास</translation>
 <translation id="7938254975914653459">फेसटाइम</translation>
@@ -401,6 +411,7 @@
 <translation id="8076014560081431679">सेव्ह केलेल्या साइट सेटिंग्ज हटविल्या जाणार नाहीत आणि कदाचित आपल्या ब्राउझिंग सवयी दर्शवेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">सर्व टॅब बंद करा</translation>
 <translation id="8114753159095730575">फाइल डाउनलोड उपलब्ध आहे. स्क्रीनच्या तळाशी पर्याय उपलब्ध आहेत.</translation>
+<translation id="8160722851663543621">तुमच्या डीफॉल्ट शोध इंजिनवर अॅड्रेस बार आणि सर्च बॉक्स आणि काही कुकींमधून शोध पाठवते</translation>
 <translation id="8205564605687841303">रद्द करा</translation>
 <translation id="8225985093977202398">कॅश   इमेज आणि फायली</translation>
 <translation id="8261506727792406068">हटवा</translation>
@@ -411,6 +422,7 @@
 <translation id="842017693807136194">यासह साइन इन केले</translation>
 <translation id="8428045167754449968">शहर / नगर</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
+<translation id="8438566539970814960">शोध आणि ब्राउझ करणे चांगले करा</translation>
 <translation id="8458397775385147834">1 आयटम हटवला</translation>
 <translation id="8487700953926739672">ऑफलाइन उपलब्ध</translation>
 <translation id="8503813439785031346">वापरकर्तानाव</translation>

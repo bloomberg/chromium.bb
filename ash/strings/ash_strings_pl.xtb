@@ -62,7 +62,6 @@
 <translation id="2050339315714019657">Pionowo</translation>
 <translation id="2067602449040652523">Jasność klawiatury</translation>
 <translation id="2081529251031312395">$1 może się wciąż zalogować później.</translation>
-<translation id="2122028596993374965">Zakończ przesyłanie karty <ph name="TAB_NAME" /> do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Ładowarka o małej mocy</translation>
 <translation id="2135456203358955318">Lupa zadokowana</translation>
 <translation id="2144487987174258011">Uruchom ponownie, by zaktualizować Adobe Flash Playera</translation>
@@ -248,7 +247,6 @@
 <translation id="5911533659001334206">Przeglądarka skrótów</translation>
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="592343074608792716">Ten Chromebook i Twój telefon będą się łączyć automatycznie</translation>
-<translation id="5927132638760172455">Przesyłam do nieznanego odbiornika</translation>
 <translation id="5947494881799873997">Przywróć</translation>
 <translation id="595202126637698455">Śledzenie wydajności jest włączone</translation>
 <translation id="5957083217255311415">Mobilna transmisja danych jest wyłączona.</translation>
@@ -313,7 +311,6 @@
 <translation id="698231206551913481">Usunięcie tego użytkownika spowoduje trwałe usunięcie wszystkich związanych z nim plików i danych lokalnych.</translation>
 <translation id="7015766095477679451">Możesz wrócić o <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Zakończ sesję</translation>
-<translation id="7034339000180558234">Przesyłam kartę <ph name="TAB_NAME" /> do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="7037152028959403492">Naciśnięto skrót wysokiego kontrastu. Czy chcesz go włączyć?</translation>
 <translation id="7066646422045619941">Ta sieć została wyłączona przez administratora.</translation>
 <translation id="7067196344162293536">Obracanie automatyczne</translation>
@@ -369,7 +366,6 @@
 <translation id="813913629614996137">Inicjuję…</translation>
 <translation id="8142699993796781067">Sieć prywatna</translation>
 <translation id="8152119955266188852">Naciśnięto skrót lupy pełnoekranowej. Czy chcesz ją włączyć?</translation>
-<translation id="8180896103888046100">Zakończ przesyłanie ekranu do nieznanego odbiornika</translation>
 <translation id="8190698733819146287">Dostosuj języki i metody wprowadzania...</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8297006494302853456">Słaby</translation>
@@ -410,7 +406,6 @@
 <translation id="8984179138335769204">Szybkie uruchamianie</translation>
 <translation id="8995603266996330174">Zarządzane przez <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Dostępna jest aktualizacja Adobe Flash Playera</translation>
-<translation id="9033907480196064950">Aktualnie przesyłasz kartę <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon jest używany.</translation>

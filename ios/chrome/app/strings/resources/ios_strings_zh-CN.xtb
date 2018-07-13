@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">扫描 QR 码</translation>
 <translation id="1580783302095112590">邮件已发送。</translation>
 <translation id="1582732959743469162">这会全面停止您正在执行的下载任务。</translation>
+<translation id="1605658421715042784">复制图片</translation>
 <translation id="1612730193129642006">显示标签页网格</translation>
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="1646446875146297738">如果您启用了"不跟踪"，您的浏览流量中将会包含一个请求。具体影响取决于网站是否回应该请求以及如何解读该请求。
@@ -58,6 +59,7 @@
 <translation id="1809939268435598390">删除文件夹</translation>
 <translation id="1813414402673211292">清除浏览数据</translation>
 <translation id="1820259098641718022">已添加到阅读清单</translation>
+<translation id="1821253160463689938">使用 Cookie 记住您的偏好设置（即使您不访问这些网页）</translation>
 <translation id="1876721852596493031">发送使用情况数据</translation>
 <translation id="1886928167269928266">全部</translation>
 <translation id="1911619930368729126">上传到Google云端硬盘</translation>
@@ -71,6 +73,7 @@
 <translation id="209018056901015185">请求切换到桌面版网站</translation>
 <translation id="2103075008456228677">打开 history.google.com</translation>
 <translation id="2116625576999540962">移动了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
+<translation id="2120297377148151361">活动和互动行为</translation>
 <translation id="213900355088104901">要想私密地浏览，请打开一个无痕式标签页</translation>
 <translation id="2149973817440762519">修改书签</translation>
 <translation id="2230173723195178503">已加载网页</translation>
@@ -86,6 +89,7 @@
 <translation id="2386793615875593361">已选择 1 张</translation>
 <translation id="2435457462613246316">显示密码</translation>
 <translation id="2481538920734869610">添加帐号</translation>
+<translation id="2523184218357549926">将您所访问的网页的网址发送给 Google</translation>
 <translation id="2523363575747517183">该网站屡次尝试打开其他应用。</translation>
 <translation id="2529021024822217800">全部打开</translation>
 <translation id="2572712655377361602">设备政策已禁用对您的照片的访问权限</translation>
@@ -115,6 +119,7 @@
 <translation id="2898963176829412617">新建文件夹…</translation>
 <translation id="2903493209154104877">地址</translation>
 <translation id="2909437209446960244">最近打开的标签页</translation>
+<translation id="2916171785467530738">自动填充搜索字词和网址</translation>
 <translation id="291754862089661335">将 QR 码或条形码放到此框内</translation>
 <translation id="2921219216347069551">无法分享网页</translation>
 <translation id="2923448633003185837">粘贴并转到</translation>
@@ -219,10 +224,12 @@
 <translation id="4860895144060829044">拨打</translation>
 <translation id="4875622588773761625">要让<ph name="PASSWORD_MANAGER_BRAND" />更新您登录此网站时使用的密码吗？</translation>
 <translation id="4881695831933465202">打开</translation>
+<translation id="4882831918239250449">控制 Google 如何利用您的浏览记录为您提供个性化的搜索、广告和其他服务</translation>
 <translation id="4904877109095351937">标记为已读</translation>
 <translation id="4930268273022498155">删除现有数据。您可通过切换回 <ph name="USER_EMAIL1" /> 来获取现有数据。</translation>
 <translation id="4941089862236492464">很抱歉，分享您的信息时出现问题。</translation>
 <translation id="4979397965658815378">在任意设备上登录 Google 帐号后，您即可获取自己的书签、密码、历史记录及其他设置</translation>
+<translation id="5004416275253351869">Google 活动控件</translation>
 <translation id="5005498671520578047">复制密码</translation>
 <translation id="5010803260590204777">打开一个隐身标签页即可私密地浏览网络。</translation>
 <translation id="5011684439661633295"><ph name="FULL_ACCOUNT_NAME" />，您好！</translation>
@@ -249,6 +256,7 @@
 <translation id="5548760955356983418">借助 Handoff 功能，您在此设备上浏览网站时，可轻松改用 Mac 继续浏览。当前打开的网站将显示在 Mac 的 Dock 中。
 
 另外，您必须在“设置”的“常规”部分启用 Handoff 功能，并且您的设备必须使用同一个 iCloud 帐号。</translation>
+<translation id="5554368826343982379">同步和个性化</translation>
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5619279135193775234">邮件</translation>
 <translation id="5626245204502895507">该文件目前无法下载。</translation>
@@ -340,6 +348,7 @@
 <translation id="6979158407327259162">Google 云端硬盘</translation>
 <translation id="7004499039102548441">最近打开的标签页</translation>
 <translation id="7006788746334555276">内容设置</translation>
+<translation id="7017968314960951695">根据您所访问的网站上的内容以及您的浏览器活动和互动行为，提供个性化的使用体验</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="7031882061095297553">同步到</translation>
 <translation id="7053983685419859001">禁止</translation>
@@ -382,6 +391,7 @@
 <translation id="7769602470925380267">接受并退出</translation>
 <translation id="7772032839648071052">确认密码</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
+<translation id="7830720446622801252">非个性化服务</translation>
 <translation id="7856733331829174190">无法下载</translation>
 <translation id="7859704718976024901">浏览记录</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -400,6 +410,7 @@
 <translation id="8076014560081431679">已保存的网站设置将不会遭到删除，并且可能会反映您的浏览习惯。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">关闭所有标签页</translation>
 <translation id="8114753159095730575">已可下载文件。选项位于屏幕底部附近。</translation>
+<translation id="8160722851663543621">将地址栏和搜索框中的搜索字词以及一些 Cookie 发送给您的默认搜索引擎</translation>
 <translation id="8205564605687841303">取消</translation>
 <translation id="8225985093977202398">缓存的图片和文件</translation>
 <translation id="8261506727792406068">删除</translation>
@@ -410,6 +421,7 @@
 <translation id="842017693807136194">所用登录身份</translation>
 <translation id="8428045167754449968">市/镇</translation>
 <translation id="8428213095426709021">设置</translation>
+<translation id="8438566539970814960">改善搜索和浏览体验</translation>
 <translation id="8458397775385147834">删除了1项</translation>
 <translation id="8487700953926739672">可离线使用</translation>
 <translation id="8503813439785031346">用户名</translation>

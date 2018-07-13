@@ -130,11 +130,6 @@
 
       Jeśli nie ustawisz tej zasady, wartość domyślna „MultiProfileUserBehaviorMustBePrimary” jest stosowana do użytkowników zarządzanych w firmie, a wartość „MultiProfileUserBehaviorUnrestricted” – do niezarządzanych.</translation>
 <translation id="1465619815762735808">Kliknij, by uruchomić</translation>
-<translation id="1466133662354365542">Włącza funkcję autouzupełniania w <ph name="PRODUCT_NAME" />, umożliwiając użytkownikom automatyczne wprowadzanie wcześniej zapisanych danych karty kredytowej i adresu w formularzach na stronach internetowych.
-
-      Jeśli wyłączysz to ustawienie, autouzupełnianie nie będzie podpowiadać ani wypełniać danych karty kredytowej, jak też nie będzie zapisywać dodatkowych danych karty kredytowej, które użytkownik może podawać na stronach internetowych.
-
-      Jeśli ustawienie jest włączone lub nieskonfigurowane, użytkownik może samodzielnie skonfigurować autouzupełnianie (w tym wpisać dane kart kredytowych) w interfejsie.</translation>
 <translation id="1468307069016535757">Ustawia domyślny stan funkcji ułatwień dostępu w postaci trybu wysokiego kontrastu na ekranie logowania.
 
           Jeśli ta zasada ma wartość „prawda”, po wyświetleniu ekranu logowania tryb wysokiego kontrastu jest włączony.
@@ -1741,7 +1736,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6164955668342404660">Wycofana w wersji M69. Zamiast niej użyj OverrideSecurityRestrictionsOnInsecureOrigin.
 
 Ta zasada określa listę źródeł (adresów URL), które będą traktowane jako bezpieczne konteksty. Dzięki temu organizacje mogą skonfigurować wewnętrzny serwer do testowania własnych stron internetowych, a programiści mają możliwość testowania funkcji, które wymagają bezpiecznych kontekstów, bez wdrażania zabezpieczeń TLS na serwerze testowym.
-      Określenie listy adresów URL w tej zasadzie działa tak samo jak podanie tych adresów we fladze wiersza poleceń „--unsafely-treat-insecure-origin-as-secure”. Jeśli ta zasada jest skonfigurowana, zastępuje flagę wiersza poleceń.
+      Określenie listy adresów URL w tej zasadzie działa tak samo jak podanie tych adresów, oddzielonych przecinkami, we fladze wiersza poleceń „--unsafely-treat-insecure-origin-as-secure”. Jeśli ta zasada jest skonfigurowana, zastępuje flagę wiersza poleceń.
       Więcej informacji o bezpiecznych kontekstach znajdziesz na stronie https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="6181608880636987460">Pozwala utworzyć listę wzorców URL-i określających witryny, które nie mogą uruchamiać wtyczki <ph name="FLASH_PLUGIN_NAME" />.
@@ -1912,7 +1907,7 @@ Ta zasada określa listę źródeł (adresów URL), które będą traktowane jak
 <translation id="681446116407619279">Obsługiwane schematy uwierzytelniania</translation>
 <translation id="6832455357698286434">
       Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta (np. „*.example.com”), które będą traktowane jako bezpieczne konteksty. Dzięki temu organizacje mogą skonfigurować wewnętrzny serwer do testowania własnych stron internetowych, a programiści mają możliwość testowania funkcji, które wymagają bezpiecznych kontekstów, bez wdrażania zabezpieczeń TLS na serwerze testowym.
-      Określenie listy adresów URL w tej zasadzie działa tak samo jak podanie tych adresów we fladze wiersza poleceń „--unsafely-treat-insecure-origin-as-secure”. Jeśli ta zasada jest skonfigurowana, zastępuje flagę wiersza poleceń.
+      Określenie listy adresów URL w tej zasadzie działa tak samo jak podanie tych adresów, oddzielonych przecinkami, we fladze wiersza poleceń „--unsafely-treat-insecure-origin-as-secure”. Jeśli ta zasada jest skonfigurowana, zastępuje flagę wiersza poleceń.
       Więcej informacji o bezpiecznych kontekstach znajdziesz na stronie https://www.w3.org/TR/secure-contexts/
       </translation>
 <translation id="6835883744948188639">Wyświetlaj cyklicznie komunikat o tym, że zalecane jest ponowne uruchomienie</translation>

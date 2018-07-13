@@ -62,7 +62,6 @@
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2067602449040652523">Lysstyrke for tastatur</translation>
 <translation id="2081529251031312395">$1 kan stadig logge ind senere.</translation>
-<translation id="2122028596993374965">Stop cast <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
 <translation id="2135456203358955318">Fastgjort lupvindue</translation>
 <translation id="2144487987174258011">Genstart for at opdatere Adobe Flash Player</translation>
@@ -247,7 +246,6 @@
 <translation id="5911533659001334206">Genvejsviser</translation>
 <translation id="5916664084637901428">Til</translation>
 <translation id="592343074608792716">Denne Chromebook og din telefon forbindes automatisk</translation>
-<translation id="5927132638760172455">Caster til en ukendt modtager</translation>
 <translation id="5947494881799873997">Fortryd</translation>
 <translation id="595202126637698455">Sporing af ydelsen er aktiveret</translation>
 <translation id="5957083217255311415">Mobildata er slået fra.</translation>
@@ -313,7 +311,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="698231206551913481">Alle filer og lokale data, der er knyttet til denne bruger, slettes permanent, når brugeren fjernes.</translation>
 <translation id="7015766095477679451">Vend tilbage kl. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Afslut session</translation>
-<translation id="7034339000180558234">Caster <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
 <translation id="7037152028959403492">Du trykkede på genvejen for høj kontrast. Vil du aktivere indstillingen?</translation>
 <translation id="7066646422045619941">Din administrator har deaktiveret dette netværk.</translation>
 <translation id="7067196344162293536">Automatisk rotering</translation>
@@ -369,7 +366,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="813913629614996137">Initialiserer...</translation>
 <translation id="8142699993796781067">Privat netværk</translation>
 <translation id="8152119955266188852">Du trykkede på genvejen for forstørrelse af fuld skærm. Vil du aktivere indstillingen?</translation>
-<translation id="8180896103888046100">Stop cast til en ukendt modtager</translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8297006494302853456">Svag</translation>
@@ -410,7 +406,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8984179138335769204">Hurtig start</translation>
 <translation id="8995603266996330174">Administreres af <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Der er en tilgængelig Adobe Flash Player-opdatering</translation>
-<translation id="9033907480196064950">Du caster i øjeblikket <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofonen er i brug.</translation>

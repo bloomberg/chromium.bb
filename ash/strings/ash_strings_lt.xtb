@@ -62,7 +62,6 @@
 <translation id="2050339315714019657">Stačias</translation>
 <translation id="2067602449040652523">Klaviatūros šviesumas</translation>
 <translation id="2081529251031312395">$1 vis tiek galės vėliau prisijungti.</translation>
-<translation id="2122028596993374965">Sustabdyti „<ph name="TAB_NAME" />“ perdavimą į: <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Mažos galios įkroviklis</translation>
 <translation id="2135456203358955318">Prie doko prijungtas didintuvas</translation>
 <translation id="2144487987174258011">Paleiskite iš naujo, kad atnaujintumėte „Adobe Flash Player“</translation>
@@ -248,7 +247,6 @@
 <translation id="5911533659001334206">Sparčiųjų klavišų peržiūros programa</translation>
 <translation id="5916664084637901428">Įjungta</translation>
 <translation id="592343074608792716">Šis „Chromebook“ ir telefonas bus susieti automatiškai</translation>
-<translation id="5927132638760172455">Perduodama į nežinomą imtuvą</translation>
 <translation id="5947494881799873997">Grąžinti</translation>
 <translation id="595202126637698455">Įgalintas našumo stebėjimas</translation>
 <translation id="5957083217255311415">Mobiliojo ryšio duomenys išjungti.</translation>
@@ -313,7 +311,6 @@
 <translation id="698231206551913481">Visi failai ir su šiuo naudotoju susiję duomenys bus ištrinti visam laikui, kai šis naudotojas bus pašalintas.</translation>
 <translation id="7015766095477679451">Grįžkite <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Išeiti iš sesijos</translation>
-<translation id="7034339000180558234">Perduodama „<ph name="TAB_NAME" />“ į „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="7037152028959403492">Paspaudėte didelio kontrasto spartųjį klavišą. Ar norite jį įjungti?</translation>
 <translation id="7066646422045619941">Šį tinklą išjungė jūsų administratorius.</translation>
 <translation id="7067196344162293536">Automatinis kaitaliojimas</translation>
@@ -369,7 +366,6 @@
 <translation id="813913629614996137">Inicijuojama...</translation>
 <translation id="8142699993796781067">Privatus tinklas</translation>
 <translation id="8152119955266188852">Paspaudėte viso ekrano didintuvo spartųjį klavišą. Ar norite jį įjungti?</translation>
-<translation id="8180896103888046100">Sustabdyti perdavimą į nežinomą imtuvą</translation>
 <translation id="8190698733819146287">Tinkinti kalbas ir įvestį...</translation>
 <translation id="8261506727792406068">Ištrinti</translation>
 <translation id="8297006494302853456">Silpnas</translation>
@@ -410,7 +406,6 @@
 <translation id="8984179138335769204">Greitasis paleidimas</translation>
 <translation id="8995603266996330174">Valdoma „<ph name="DOMAIN" />“</translation>
 <translation id="9029474291399787231">Pasiekiamas „Adobe Flash Player“ naujinys</translation>
-<translation id="9033907480196064950">Šiuo metu perduodate „<ph name="TAB_NAME" />“</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">„Wi-Fi“: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofonas naudojamas.</translation>

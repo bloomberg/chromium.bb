@@ -62,7 +62,6 @@
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Liwanag ng keyboard</translation>
 <translation id="2081529251031312395">Maaari pa ring mag-sign in si $1 sa ibang pagkakataon.</translation>
-<translation id="2122028596993374965">Ihinto ang pag-cast ng <ph name="TAB_NAME" /> sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Low-power charger</translation>
 <translation id="2135456203358955318">Naka-dock na magnifier</translation>
 <translation id="2144487987174258011">I-restart upang i-update ang Adobe Flash Player</translation>
@@ -247,7 +246,6 @@
 <translation id="5911533659001334206">Shortcut viewer</translation>
 <translation id="5916664084637901428">Naka-on</translation>
 <translation id="592343074608792716">Awtomatikong kokonekta ang Chromebook na ito at ang iyong telepono</translation>
-<translation id="5927132638760172455">Ikina-cast sa isang hindi kilalang tatanggap</translation>
 <translation id="5947494881799873997">I-revert</translation>
 <translation id="595202126637698455">Naka-enable ang pagte-trace sa pagganap</translation>
 <translation id="5957083217255311415">Naka-off ang mobile data.</translation>
@@ -312,7 +310,6 @@
 <translation id="698231206551913481">Permanenteng made-delete ang lahat ng file at lokal na data na nauugnay sa user na ito kapag inalis na ang user na ito.</translation>
 <translation id="7015766095477679451">Bumalik nang <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Lumabas sa session</translation>
-<translation id="7034339000180558234">Kina-cast ang <ph name="TAB_NAME" /> sa <ph name="RECEIVER_NAME" /></translation>
 <translation id="7037152028959403492">Napindot mo ang shortcut para sa mataas na contrast. Gusto mo ba itong i-on?</translation>
 <translation id="7066646422045619941">Na-disable ng iyong administrator ang network na ito.</translation>
 <translation id="7067196344162293536">Awtomatikong pag-rotate</translation>
@@ -368,7 +365,6 @@
 <translation id="813913629614996137">Sinisimulan...</translation>
 <translation id="8142699993796781067">Pribadong network</translation>
 <translation id="8152119955266188852">Napindot mo ang shortcut para sa full-screen magnifier. Gusto mo ba itong i-on?</translation>
-<translation id="8180896103888046100">Ihinto ang pag-cast sa isang hindi kilalang receiver</translation>
 <translation id="8190698733819146287">I-customize ang mga wika at input...</translation>
 <translation id="8261506727792406068">I-delete</translation>
 <translation id="8297006494302853456">Mahina</translation>
@@ -409,7 +405,6 @@
 <translation id="8984179138335769204">Mabilisang paglunsad</translation>
 <translation id="8995603266996330174">Pinamamahalaan ni <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Available ang update sa Adobe Flash Player</translation>
-<translation id="9033907480196064950">Kasalukuyan kang nagka-cast ng <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Ginagamit ang mikropono.</translation>

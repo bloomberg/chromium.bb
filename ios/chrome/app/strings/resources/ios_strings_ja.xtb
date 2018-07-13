@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">QR コードをスキャンします</translation>
 <translation id="1580783302095112590">メールを送信しました。</translation>
 <translation id="1582732959743469162">この操作を行うと、現在進行中のダウンロードは停止します。</translation>
+<translation id="1605658421715042784">画像をコピー</translation>
 <translation id="1612730193129642006">タブをグリッド表示</translation>
 <translation id="1644574205037202324">履歴</translation>
 <translation id="1646446875146297738">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに組み込まれます。その効果は、ウェブサイトがそのリクエストに応じるかどうか、およびそのリクエストがどのように解釈されるかによって異なります。
@@ -58,6 +59,7 @@
 <translation id="1809939268435598390">フォルダーを削除</translation>
 <translation id="1813414402673211292">閲覧履歴の消去</translation>
 <translation id="1820259098641718022">リーディング リストに追加しました</translation>
+<translation id="1821253160463689938">Cookie を使って設定を保存します（これらのページにアクセスしない場合も Cookie が保持されます）</translation>
 <translation id="1876721852596493031">使用状況データ送信</translation>
 <translation id="1886928167269928266">始めから</translation>
 <translation id="1911619930368729126">ドライブにアップロード</translation>
@@ -71,6 +73,7 @@
 <translation id="209018056901015185">PC版サイトをリクエスト</translation>
 <translation id="2103075008456228677">history.google.com を開く</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />件の項目を移動しました</translation>
+<translation id="2120297377148151361">アクティビティと操作</translation>
 <translation id="213900355088104901">シークレット モードで閲覧するにはシークレット タブを開きます</translation>
 <translation id="2149973817440762519">ブックマークを編集</translation>
 <translation id="2230173723195178503">ウェブページを読み込みました</translation>
@@ -86,6 +89,7 @@
 <translation id="2386793615875593361">1 枚選択されています</translation>
 <translation id="2435457462613246316">パスワードを表示</translation>
 <translation id="2481538920734869610">アカウントを追加</translation>
+<translation id="2523184218357549926">アクセスしたページの URL を Google に送信します</translation>
 <translation id="2523363575747517183">このウェブサイトは別のアプリケーションを繰り返し開こうとしています。</translation>
 <translation id="2529021024822217800">すべて開く</translation>
 <translation id="2572712655377361602">端末ポリシーにより写真へのアクセスがブロックされました</translation>
@@ -115,6 +119,7 @@
 <translation id="2898963176829412617">新しいフォルダ...</translation>
 <translation id="2903493209154104877">住所</translation>
 <translation id="2909437209446960244">最近使ったタブ</translation>
+<translation id="2916171785467530738">検索語句や URL をオートコンプリートする</translation>
 <translation id="291754862089661335">QR コードまたはバーコードをこの枠に合わせてください</translation>
 <translation id="2921219216347069551">ページを共有できない</translation>
 <translation id="2923448633003185837">貼り付けて移動</translation>
@@ -219,10 +224,12 @@
 <translation id="4860895144060829044">通話</translation>
 <translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" /> でこのサイトのパスワードを更新しますか？</translation>
 <translation id="4881695831933465202">開く</translation>
+<translation id="4882831918239250449">検索、広告などのカスタマイズを目的とした閲覧履歴の使用方法を設定</translation>
 <translation id="4904877109095351937">既読にする</translation>
 <translation id="4930268273022498155">既存のデータを削除します。<ph name="USER_EMAIL1" /> に切り替えると、削除したデータを取得できます。</translation>
 <translation id="4941089862236492464">アイテムの共有中に問題が発生しました。</translation>
 <translation id="4979397965658815378">Google アカウントでログインすると、どの端末からでも同じブックマーク、パスワード、履歴などの設定を利用できるようになります。</translation>
+<translation id="5004416275253351869">Google アクティビティ管理</translation>
 <translation id="5005498671520578047">パスワードのコピー</translation>
 <translation id="5010803260590204777">ウェブをプライベートモードで閲覧するにはシークレットタブを開きます。</translation>
 <translation id="5011684439661633295">こんにちは、<ph name="FULL_ACCOUNT_NAME" />さん</translation>
@@ -249,6 +256,7 @@
 <translation id="5548760955356983418">Handoffを使うと、この端末で見ているウェブサイトの続きをMacで見ることができます。現在開いているウェブサイトはMacのDockに表示されます。
 
 また[設定]の[一般]画面でHandoffを有効にしておく必要があります。お使いの端末では、iCloudと同じアカウントを使用してください。</translation>
+<translation id="5554368826343982379">同期とカスタマイズ</translation>
 <translation id="5556459405103347317">再読み込み</translation>
 <translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">今回は、ファイルをダウンロードできませんでした。</translation>
@@ -340,6 +348,7 @@
 <translation id="6979158407327259162">Google ドライブ</translation>
 <translation id="7004499039102548441">最近使ったタブ</translation>
 <translation id="7006788746334555276">コンテンツの設定</translation>
+<translation id="7017968314960951695">アクセスしたサイトのコンテンツ、ブラウザのアクティビティと操作をカスタマイズに使用します</translation>
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="7031882061095297553">同期先</translation>
 <translation id="7053983685419859001">ブロック</translation>
@@ -382,6 +391,7 @@
 <translation id="7769602470925380267">同意してログアウトする</translation>
 <translation id="7772032839648071052">パスフレーズの確認</translation>
 <translation id="780301667611848630">いいえ</translation>
+<translation id="7830720446622801252">カスタマイズされないサービス</translation>
 <translation id="7856733331829174190">ダウンロードできませんでした</translation>
 <translation id="7859704718976024901">閲覧履歴</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -400,6 +410,7 @@
 <translation id="8076014560081431679">保存済みのサイト設定は削除されず、普段の閲覧行動を反映した設定などが残る場合があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">すべてのタブを閉じる</translation>
 <translation id="8114753159095730575">ファイルのダウンロードが利用可能です。画面の下の方にオプションがあります。</translation>
+<translation id="8160722851663543621">アドレスバーや検索ボックスに入力した検索語句と Cookie を既定の検索エンジンに送信します</translation>
 <translation id="8205564605687841303">キャンセル</translation>
 <translation id="8225985093977202398">キャッシュされた画像とファイル</translation>
 <translation id="8261506727792406068">削除</translation>
@@ -410,6 +421,7 @@
 <translation id="842017693807136194">ログインに使用した ID プロバイダ</translation>
 <translation id="8428045167754449968">市区町村</translation>
 <translation id="8428213095426709021">設定</translation>
+<translation id="8438566539970814960">検索とブラウジングを改善する</translation>
 <translation id="8458397775385147834">1件の項目を削除しました</translation>
 <translation id="8487700953926739672">オフラインでの利用</translation>
 <translation id="8503813439785031346">ユーザー名</translation>

@@ -24,6 +24,7 @@
 <translation id="3805899903892079518">Chromium har inte åtkomst till dina foton eller videor. Aktivera åtkomst i iOS-inställningar &gt; Sekretess &gt; Foton.</translation>
 <translation id="4024541897090868497">Logga in i Chromium om du vill få tillgång till flikarna på alla enheter.</translation>
 <translation id="4241912885070669028">Du håller på att logga ut från ett konto som hanteras av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Åtgärden raderar din data i Chromium från den här enheten, men den finns kvar på Google-kontot.</translation>
+<translation id="4272892696084633551">Bidra till att förbättra Chromiums funktioner och prestanda</translation>
 <translation id="4555020257205549924">När den här funktionen har aktiverats visas alternativet i Chromium att översätta sidor som är skrivna på andra språk med hjälp av Google Översätt. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Här visas flikar som du har öppnat i Chromium på andra enheter.</translation>
 <translation id="495292094137889840">Börja använda Chromium som QR-skanner</translation>
@@ -33,6 +34,7 @@
 <translation id="5945387852661427312">Du håller på att logga in med ett konto som hanteras av <ph name="DOMAIN" /> vilket ger administratören kontroll över data i Chromium. Din data kopplas permanent till det här kontot. Om du loggar ut från Chromium raderas all din data från enheten, men den lagras fortfarande på Google-kontot.</translation>
 <translation id="6068866989048414399">Användarvillkor för Chromium</translation>
 <translation id="6268381023930128611">Vill du logga ut från Chromium?</translation>
+<translation id="641451971369018375">Kontaktar Google i syfte att göra surfandet och Chromium bättre</translation>
 <translation id="6424492062988593837">Chrome har blivit ännu bättre! En ny version finns tillgänglig.</translation>
 <translation id="6604711459180487467">Ange din plats och få en bättre upplevelse när du använder Chromium.</translation>
 <translation id="6626296268883197964">Genom att använda det här programmet godkänner du Chromiums <ph name="BEGIN_LINK_TOS" />användarvillkor<ph name="END_LINK_TOS" /> och <ph name="BEGIN_LINK_PRIVACY" />sekretessmeddelande<ph name="END_LINK_PRIVACY" />.</translation>

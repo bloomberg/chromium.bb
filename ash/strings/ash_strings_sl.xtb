@@ -62,7 +62,6 @@
 <translation id="2050339315714019657">Pokončno</translation>
 <translation id="2067602449040652523">Svetlost tipkovnice</translation>
 <translation id="2081529251031312395">$1 se še vedno lahko prijavi pozneje.</translation>
-<translation id="2122028596993374965">Ustavi predvajanje zavihka <ph name="TAB_NAME" /> v napravi <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Nizkoenergijski polnilnik</translation>
 <translation id="2135456203358955318">Zasidrana lupa</translation>
 <translation id="2144487987174258011">Če želite posodobiti Adobe Flash Player, znova zaženite</translation>
@@ -247,7 +246,6 @@
 <translation id="5911533659001334206">Pregledovalnik bližnjic</translation>
 <translation id="5916664084637901428">Vklopljeno</translation>
 <translation id="592343074608792716">Ta Chromebook in telefon se bosta samodejno povezala</translation>
-<translation id="5927132638760172455">Predvajanje na neznanem sprejemniku</translation>
 <translation id="5947494881799873997">Razveljavi</translation>
 <translation id="595202126637698455">Sledenje učinkovitosti delovanja je omogočeno</translation>
 <translation id="5957083217255311415">Prenos podatkov v mobilnem omrežju je izklopljen.</translation>
@@ -312,7 +310,6 @@
 <translation id="698231206551913481">Vse datoteke in lokalni podatki, povezani s tem uporabnikom, bodo trajno izbrisani, ko odstranite uporabnika.</translation>
 <translation id="7015766095477679451">Vrnite se ob <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Zapusti sejo</translation>
-<translation id="7034339000180558234">Predvajanje zavihka v <ph name="TAB_NAME" /> sprejemniku <ph name="RECEIVER_NAME" /></translation>
 <translation id="7037152028959403492">Pritisnili ste bližnjico za visoki kontrast. Ali ga želite vklopiti?</translation>
 <translation id="7066646422045619941">To omrežje je onemogočil skrbnik.</translation>
 <translation id="7067196344162293536">Samodejno sukanje</translation>
@@ -368,7 +365,6 @@
 <translation id="813913629614996137">Inicializiranje ...</translation>
 <translation id="8142699993796781067">Zasebno omrežje</translation>
 <translation id="8152119955266188852">Pritisnili ste bližnjico za celozaslonsko lupo. Ali jo želite vklopiti?</translation>
-<translation id="8180896103888046100">Ustvari predvajanje v neznanem sprejemniku</translation>
 <translation id="8190698733819146287">Prilagajanje jezikov in vnosa ...</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8297006494302853456">Šibek</translation>
@@ -409,7 +405,6 @@
 <translation id="8984179138335769204">Hitri zagon</translation>
 <translation id="8995603266996330174">Upravljavec: <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Na voljo je posodobitev za Adobe Flash Player</translation>
-<translation id="9033907480196064950">Trenutno predvajate <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofon je v uporabi.</translation>

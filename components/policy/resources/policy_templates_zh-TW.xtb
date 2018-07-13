@@ -131,11 +131,6 @@
 
       如未設定這項政策，系統將會對受企業管理的使用者套用預設值「MultiProfileUserBehaviorMustBePrimary」，並對不屬於管理化環境的使用者使用「MultiProfileUserBehaviorUnrestricted」。</translation>
 <translation id="1465619815762735808">點擊執行</translation>
-<translation id="1466133662354365542">啟用「<ph name="PRODUCT_NAME" />」的自動填入功能，並允許使用者使用先前儲存的信用卡和地址資訊自動填寫網路表單。
-
-      如果你停用這項設定，自動填入功能就無法提出填寫建議或填入信用卡資訊，也無法儲存使用者在瀏覽網路時提交的其他信用卡資訊。
-
-      如果你啟用這項設定或未設定任何值，使用者就能透過 UI 完全掌控自動填入功能 (包含信用卡)。</translation>
 <translation id="1468307069016535757">設定高反差模式協助功能在登入畫面的預設狀態。
 
           如果你將這項政策設為 True，系統將在顯示登入畫面時啟用高反差模式。

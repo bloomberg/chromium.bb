@@ -24,6 +24,7 @@
 <translation id="3805899903892079518">Chromium no tiene acceso a tus fotos o videos. Habilita el acceso en Configuración de iOS &gt; Privacidad &gt; Fotos.</translation>
 <translation id="4024541897090868497">Para obtener tus pestañas en todos los dispositivos, accede a Chromium.</translation>
 <translation id="4241912885070669028">Estás saliendo de una cuenta que administra <ph name="SIGNOUT_MANAGED_DOMAIN" />. Con esta acción, tus datos de Chromium se borrarán en este dispositivo, pero permanecerán en tu cuenta de Google.</translation>
+<translation id="4272892696084633551">Ayudar a mejorar las funciones y el rendimiento de Chromium</translation>
 <translation id="4555020257205549924">Si activas esta función, Chromium te preguntará si deseas usar Google Traductor para traducir páginas en otros idiomas. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">Aquí se mostrarán las pestañas que hayas abierto en Chromium en tus otros dispositivos.</translation>
 <translation id="495292094137889840">Usar el escáner QR de Chromium</translation>
@@ -33,6 +34,7 @@
 <translation id="5945387852661427312">Estás accediendo con una cuenta que administra <ph name="DOMAIN" /> y dándole permiso a su administrador para que controle tus datos de Chromium. Tus datos se vincularán de forma permanente a esta cuenta. Si sales de Chromium, los datos se borrarán de este dispositivo, pero quedarán almacenados en tu cuenta de Google.</translation>
 <translation id="6068866989048414399">Condiciones del servicio de Chromium</translation>
 <translation id="6268381023930128611">¿Salir de Chromium?</translation>
+<translation id="641451971369018375">Se comunican con Google para mejorar Chromium y la navegación</translation>
 <translation id="6424492062988593837">¡Chromium mejoró! Hay una nueva versión disponible.</translation>
 <translation id="6604711459180487467">Disfruta de una mejor experiencia en Chromium según tu ubicación.</translation>
 <translation id="6626296268883197964">Al usar esta app, aceptas las <ph name="BEGIN_LINK_TOS" />Condiciones del servicio<ph name="END_LINK_TOS" /> y el <ph name="BEGIN_LINK_PRIVACY" />Aviso de privacidad<ph name="END_LINK_PRIVACY" /> de Chromium.</translation>

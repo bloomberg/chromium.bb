@@ -128,11 +128,6 @@
 
       如果此政策未设置，则对于受企业管理的用户，将使用默认值“MultiProfileUserBehaviorMustBePrimary”；对于不受企业管理的用户，则使用“MultiProfileUserBehaviorUnrestricted”。</translation>
 <translation id="1465619815762735808">点击运行</translation>
-<translation id="1466133662354365542">启用 <ph name="PRODUCT_NAME" /> 的“自动填充”功能，并允许用户使用以前存储的信息自动填写网络表单中的信用卡信息和地址信息。
-
-      如果您停用了此设置，“自动填充”功能将不会提示或填充信用卡信息，也不会保存用户在浏览网页时可能提交的其他信用卡信息。
-
-      如果您启用了此设置或未设置任何值，那么用户将能够在界面中控制整个“自动填充”功能（包括信用卡信息）。</translation>
 <translation id="1468307069016535757">设置登录屏幕上高反差模式辅助功能的默认状态。
 
           如果此政策的值设为 True，则登录屏幕显示时将会启用高反差模式。

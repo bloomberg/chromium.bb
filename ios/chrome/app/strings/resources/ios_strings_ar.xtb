@@ -41,6 +41,7 @@
 <translation id="1545749641540134597">فحص رمز الاستجابة السريعة</translation>
 <translation id="1580783302095112590">تم إرسال البريد.</translation>
 <translation id="1582732959743469162">سيؤدي ذلك إلى إيقاف تقدّم جميع عمليات التنزيل الحالية.</translation>
+<translation id="1605658421715042784">نسخ الصورة</translation>
 <translation id="1612730193129642006">عرض شبكة علامة التبويب</translation>
 <translation id="1644574205037202324">السجل</translation>
 <translation id="1646446875146297738">إن تفعيل "عدم التتبع" يعني تضمين طلب في حركة بيانات التصفح. ويعتمد أي تأثير يحدث على ما إذا كان موقع الويب سيستجيب للطلب، وكيفية تفسيره للطلب.
@@ -58,6 +59,7 @@
 <translation id="1809939268435598390">حذف مجلد</translation>
 <translation id="1813414402673211292">محو بيانات التصفح</translation>
 <translation id="1820259098641718022">تمت الإضافة إلى قائمة القراءة</translation>
+<translation id="1821253160463689938">يستخدم ملفات تعريف الارتباط لتذكّر الإعدادات المُفضّلة حتى إذا لم تزُر تلك الصفحات.</translation>
 <translation id="1876721852596493031">إرسال بيانات الاستخدام</translation>
 <translation id="1886928167269928266">بدايةَ الوقت</translation>
 <translation id="1911619930368729126">‏التحميل إلى Google Drive</translation>
@@ -71,6 +73,7 @@
 <translation id="209018056901015185">طلب موقع سطح المكتب</translation>
 <translation id="2103075008456228677">‏فتح history.google.com</translation>
 <translation id="2116625576999540962">تم نقل <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
+<translation id="2120297377148151361">النشاط والتفاعلات</translation>
 <translation id="213900355088104901">للتصفّح بخصوصية تامّة، افتح علامة تبويب للتصفُّح المتخفي</translation>
 <translation id="2149973817440762519">تعديل الإشارة</translation>
 <translation id="2230173723195178503">تم تحميل الصفحة المطلوبة</translation>
@@ -86,6 +89,7 @@
 <translation id="2386793615875593361">تم تحديد عنصر واحد</translation>
 <translation id="2435457462613246316">عرض كلمة المرور</translation>
 <translation id="2481538920734869610">إضافة حساب</translation>
+<translation id="2523184218357549926">‏يُرسِل عناوين URL للصفحات التي تزورها إلى Google.</translation>
 <translation id="2523363575747517183">يحاول موقع الويب هذا فتح تطبيق آخر بشكلٍ متكرر.</translation>
 <translation id="2529021024822217800">فتح الكل</translation>
 <translation id="2572712655377361602">حظرت سياسة الجهاز الدخول إلى صورك</translation>
@@ -115,6 +119,7 @@
 <translation id="2898963176829412617">مجلد جديد...</translation>
 <translation id="2903493209154104877">العناوين</translation>
 <translation id="2909437209446960244">علامات التبويب الأخيرة</translation>
+<translation id="2916171785467530738">‏الإكمال التلقائي لعناوين URL وعمليات البحث</translation>
 <translation id="291754862089661335">ضَع رمز الاستجابة السريعة أو الرمز الشريطي في هذا الإطار</translation>
 <translation id="2921219216347069551">تتعذر مشاركة الصفحة</translation>
 <translation id="2923448633003185837">لصق وانتقال</translation>
@@ -219,10 +224,12 @@
 <translation id="4860895144060829044">اتصال</translation>
 <translation id="4875622588773761625">هل تريد تحديث كلمة مرورك لهذا الموقع من خلال <ph name="PASSWORD_MANAGER_BRAND" />؟</translation>
 <translation id="4881695831933465202">فتح</translation>
+<translation id="4882831918239250449">التحكُّم في كيفية استخدام سِجل التصفُّح لتخصيص البحث والإعلانات والمزيد</translation>
 <translation id="4904877109095351937">وضع علامة كمقروءة</translation>
 <translation id="4930268273022498155">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">عذرًا، حدثت مشكلة أثناء مشاركة العنصر.</translation>
 <translation id="4979397965658815378">‏سجّل الدخول إلى حسابك في Google لمزامنة الإشارات المرجعية وكلمات المرور والسجل والإعدادات الأخرى واستخدامها على جميع أجهزتك</translation>
+<translation id="5004416275253351869">‏عناصر التحكم في النشاط من Google</translation>
 <translation id="5005498671520578047">نسخ كلمة المرور</translation>
 <translation id="5010803260590204777">افتح علامة تبويب تصفح متخفي لتصفّح الويب بخصوصية تامّة.</translation>
 <translation id="5011684439661633295">مرحبًا <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -249,6 +256,7 @@
 <translation id="5548760955356983418">‏يتيح لك Handoff بدء تصفح موقع على هذا الجهاز ثم متابعة التصفح بسهولة على جهاز Mac. سيظهر الموقع المفتوح حاليًا على Dock بـ Mac.
 
 لابد من تفعيل Handoff كذلك في القسم العام من الإعدادات، ولابد من استخدام أجهزتك لنفس حساب iCloud.</translation>
+<translation id="5554368826343982379">المزامنة والتخصيص</translation>
 <translation id="5556459405103347317">إعادة تحميل</translation>
 <translation id="5619279135193775234">البريد</translation>
 <translation id="5626245204502895507">تعذر تنزيل الملف في الوقت الحالي.</translation>
@@ -340,6 +348,7 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">علامات التبويب الأخيرة</translation>
 <translation id="7006788746334555276">إعدادات المحتوى</translation>
+<translation id="7017968314960951695">يستخدم المحتوى في المواقع الإلكترونية التي تزورها وفي نشاط المتصفّح وتفاعلات للتخصيص.</translation>
 <translation id="7029809446516969842">كلمات المرور</translation>
 <translation id="7031882061095297553">مزامنة لـ</translation>
 <translation id="7053983685419859001">منع</translation>
@@ -382,6 +391,7 @@
 <translation id="7769602470925380267">قبول وتسجيل الخروج</translation>
 <translation id="7772032839648071052">تأكيد عبارة المرور</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
+<translation id="7830720446622801252">الخدمات غير المُخصّصة</translation>
 <translation id="7856733331829174190">تعذّر التنزيل.</translation>
 <translation id="7859704718976024901">سجل التصفح</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -400,6 +410,7 @@
 <translation id="8076014560081431679">لن يتم حذف إعدادات موقع الويب المحفوظة وقد تعكس عادات التصفح. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">إغلاق جميع علامات التبويب</translation>
 <translation id="8114753159095730575">أصبح بالإمكان تنزيل الملف. يمكنك مراجعة الخيارات في أسفل الشاشة.</translation>
+<translation id="8160722851663543621">يُرسِل عمليات البحث من شريط العناوين ومربّع البحث وبعض ملفات تعريف الارتباط إلى محرك البحث التلقائي.</translation>
 <translation id="8205564605687841303">إلغاء</translation>
 <translation id="8225985093977202398">الصور والملفات المُخزنة مؤقتًا</translation>
 <translation id="8261506727792406068">حذف</translation>
@@ -410,6 +421,7 @@
 <translation id="842017693807136194">تم تسجيل الدخول باستخدام</translation>
 <translation id="8428045167754449968">المدينة/البلدة</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
+<translation id="8438566539970814960">تحسين عمليات البحث والتصفُّح</translation>
 <translation id="8458397775385147834">تم حذف عنصر واحد</translation>
 <translation id="8487700953926739672">التوفر بلا إنترنت</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>

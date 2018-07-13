@@ -134,11 +134,6 @@
 
       If the policy is left not set, the default value 'Multi-ProfileUserBehaviourMustBePrimary' applies for enterprise-managed users and 'Multi-ProfileUserBehaviourUnrestricted' will be used for non-managed users.</translation>
 <translation id="1465619815762735808">Click to play</translation>
-<translation id="1466133662354365542">Enables <ph name="PRODUCT_NAME" />'s AutoFill feature and allows users to auto complete credit card and address information in web forms using previously stored information.
-
-      If you disable this setting, Autofill will never suggest, or fill credit card information, nor will it save additional credit card information that the user might submit while browsing the web.
-
-      If you enable this setting or do not set a value, then user will be able to control the overall AutoFill feature (including credit cards) in the UI.</translation>
 <translation id="1468307069016535757">Set the default state of the high contrast mode accessibility feature on the login screen.
 
           If this policy is set to true, high contrast mode will be enabled when the login screen is shown.

@@ -134,11 +134,6 @@
 
       Jika dasar tidak ditetapkan, nilai lalai 'MultiProfileUserBehaviorMustBePrimary' terpakai untuk pengguna diuruskan perusahaan dan 'MultiProfileUserBehaviorUnrestricted' akan digunakan untuk pengguna tidak diuruskan.</translation>
 <translation id="1465619815762735808">Klik untuk bermain</translation>
-<translation id="1466133662354365542">Mendayakan ciri Autolengkap <ph name="PRODUCT_NAME" /> dan membolehkan pengguna mengisikan maklumat kredit kad dan alamat dalam borang web secara automatik dengan menggunakan maklumat yang disimpan sebelum itu.
-
-      Jika anda melumpuhkan tetapan ini, Autolengkap tidak akan mencadangkan atau mengisikan maklumat kad kredit atau menyimpan maklumat kad kredit tambahan yang mungkin diserahkan oleh pengguna semasa menyemak imbas web.
-
-      Jika anda mendayakan tetapan ini atau tidak menetapkan nilai, maka pengguna akan dapat mengawal keseluruhan ciri autolengkap (termasuk kad kredit) dalam UI.</translation>
 <translation id="1468307069016535757">Tetapkan keadaan lalai ciri kebolehcapaian mod kontras tinggi pada skrin log masuk.
 
           Jika dasar ini ditetapkan kepada benar, mod kontras tinggi akan didayakan apabila skrin log masuk dipaparkan.

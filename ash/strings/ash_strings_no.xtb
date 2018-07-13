@@ -62,7 +62,6 @@
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2067602449040652523">Lysstyrke på tastaturet</translation>
 <translation id="2081529251031312395">$1 kan likevel logge på senere.</translation>
-<translation id="2122028596993374965">Slutt å caste <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Lading med lav effekt</translation>
 <translation id="2135456203358955318">Dokket lupe</translation>
 <translation id="2144487987174258011">Start på nytt for å oppdatere Adobe Flash Player</translation>
@@ -247,7 +246,6 @@
 <translation id="5911533659001334206">Snarveivisning</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="592343074608792716">Denne Chromebooken og telefonen din kobles sammen automatisk</translation>
-<translation id="5927132638760172455">Caster til en ukjent mottaker</translation>
 <translation id="5947494881799873997">Tilbakestill</translation>
 <translation id="595202126637698455">Ytelsessporing er aktivert</translation>
 <translation id="5957083217255311415">Mobildata er slått av.</translation>
@@ -312,7 +310,6 @@
 <translation id="698231206551913481">Alle filer og lokale data som er tilknyttet denne brukeren, slettes permanent når brukeren fjernes.</translation>
 <translation id="7015766095477679451">Kom tilbake <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Avslutt økten</translation>
-<translation id="7034339000180558234">Caster <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
 <translation id="7037152028959403492">Du trykket på snarveien for høy kontrast. Vil du slå det på?</translation>
 <translation id="7066646422045619941">Administratoren din har slått av dette nettverket.</translation>
 <translation id="7067196344162293536">Automatisk retning</translation>
@@ -368,7 +365,6 @@
 <translation id="813913629614996137">Initialiserer …</translation>
 <translation id="8142699993796781067">Privat nettverk</translation>
 <translation id="8152119955266188852">Du trykket på snarveien for lupen for hele skjermen. Vil du slå den på?</translation>
-<translation id="8180896103888046100">Slutt å caste til en ukjent mottaker</translation>
 <translation id="8190698733819146287">Tilpass språk og inndata</translation>
 <translation id="8261506727792406068">Slett</translation>
 <translation id="8297006494302853456">Svak</translation>
@@ -409,7 +405,6 @@
 <translation id="8984179138335769204">Hurtigtaster</translation>
 <translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">En oppdatering av Adobe Flash Player er tilgjengelig</translation>
-<translation id="9033907480196064950">Du caster for øyeblikket <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">Mikrofonen er i bruk.</translation>

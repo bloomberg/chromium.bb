@@ -129,11 +129,6 @@
 
       Ak pravidlo nenastavíte, použije sa predvolená hodnota MultiProfileUserBehaviorMustBePrimary pre používateľov spravovaných podnikom a hodnota MultiProfileUserBehaviorUnrestricted pre nespravovaných používateľov.</translation>
 <translation id="1465619815762735808">Kliknutím prehrať</translation>
-<translation id="1466133662354365542">Aktivuje v prehliadači <ph name="PRODUCT_NAME" /> funkciu Automatické dopĺňanie, ktorá používateľom umožňuje automaticky dopĺňať údaje kreditných kariet a adries do webových formulárov na základe predtým uložených informácií.
-
-      Ak toto nastavenie deaktivujete, Automatické dopĺňanie nebude nikdy navrhovať ani vyplňovať údaje kreditných kariet ani ukladať informácie o ďalších kartách, ktoré môže používateľ odoslať počas prehliadania webu.
-
-      Ak toto nastavenie aktivujete alebo preň nenastavíte žiadnu hodnotu, používateľ bude môcť ovládať celú funkciu Automatické dopĺňanie (vrátane kreditných kariet) v používateľskom rozhraní.</translation>
 <translation id="1468307069016535757">Nastaví predvolený stav režimu vysokého kontrastu (funkcia na uľahčenie prístupu) na prihlasovacej obrazovke.
 
           Ak je toto pravidlo nastavené na hodnotu true, pri zobrazení prihlasovacej obrazovky sa povolí režim vysokého kontrastu.

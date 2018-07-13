@@ -134,11 +134,6 @@
 
       Nếu chính sách không được đặt, giá trị mặc định 'MultiProfileUserBehaviorMustBePrimary' sẽ áp dụng cho người dùng được doanh nghiệp quản lý và 'MultiProfileUserBehaviorUnrestricted' sẽ được sử dụng cho người dùng không bị quản lý.</translation>
 <translation id="1465619815762735808">Nhấp để phát</translation>
-<translation id="1466133662354365542">Bật tính năng Tự động điền của <ph name="PRODUCT_NAME" /> rồi cho phép người dùng tự động hoàn thành thông tin địa chỉ và thẻ tín dụng trong biểu mẫu web bằng cách sử dụng thông tin đã lưu trữ trước đây.
-
-      Nếu bạn tắt cài đặt này, tính năng Tự động điền sẽ không bao giờ đề xuất hoặc điền thông tin thẻ tín dụng cũng như không lưu thông tin thẻ tín dụng bổ sung mà người dùng có thể gửi trong khi duyệt web.
-
-      Nếu bạn bật cài đặt này hoặc không đặt giá trị thì người dùng sẽ có thể kiểm soát toàn bộ tính năng tự động điền (bao gồm cả thẻ tín dụng) trong giao diện người dùng.</translation>
 <translation id="1468307069016535757">Đặt trạng thái mặc định của tính năng trợ năng chế độ tương phản cao trên màn hình đăng nhập.
 
           Nếu chính sách này được đặt thành true, chế độ tương phản cao sẽ được bật khi màn hình đăng nhập hiển thị.
@@ -705,7 +700,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           |time_window_limit| chỉ định thời lượng khóa phiên người dùng hàng ngày. Chúng tôi chỉ hỗ trợ một quy tắc mỗi ngày trong tuần, do đó, kích thước mảng |entries| có thể dao động trong khoảng từ 0 đến 7. |starts_at| và |ends_at| là thời gian bắt đầu và thời gian kết thúc của giới hạn thời gian, khi |ends_at| sớm hơn |starts_at| thì điều đó có nghĩa là |time_limit_window| kết thúc vào ngày tiếp theo. |last_updated_millis| là dấu thời gian UTC cho thời gian cập nhật mục này gần đây nhất, dấu thời gian này được gửi dưới dạng chuỗi vì số nguyên sẽ không phù hợp.
 
-          |time_usage_limit| chỉ định định mức sử dụng màn hình hàng ngày, do vậy, khi người dùng đạt đến giới hạn này, phiên của người dùng sẽ bị khóa. Có một khoảng thời gian cho mỗi ngày trong tuần và chỉ nên đặt khoảng thời gian này nếu có định mức hoạt động cho ngày đó. |usage_quota_mins| là khoảng thời gian có thể sử dụng thiết bị được quản lý trong một ngày và |reset_at| là thời gian khi gia hạn định mức sử dụng. Giá trị mặc định cho |reset_at| là nửa đêm ({'hour': 0, 'minute': 0}). |last_updated_millis| là dấu thời gian UTC cho lần cập nhật mục này gần đây nhất, dấu thời gian này được gửi dưới dạng chuỗi vì số nguyên sẽ không phù hợp.
+          |time_usage_limit| chỉ định định hạn mức sử dụng màn hình hàng ngày, do vậy, khi người dùng đạt đến giới hạn này, phiên của người dùng sẽ bị khóa. Có một khoảng thời gian cho mỗi ngày trong tuần và chỉ nên đặt khoảng thời gian này nếu có hạn mức áp dụng cho ngày đó. |usage_quota_mins| là khoảng thời gian có thể sử dụng thiết bị được quản lý trong một ngày và |reset_at| là thời gian khi gia hạn hạn mức sử dụng. Giá trị mặc định cho |reset_at| là nửa đêm ({'hour': 0, 'minute': 0}). |last_updated_millis| là dấu thời gian UTC cho lần cập nhật mục này gần đây nhất, dấu thời gian này được gửi dưới dạng chuỗi vì số nguyên sẽ không phù hợp.
 
           |overrides| được cung cấp để tạm thời vô hiệu hóa một hoặc nhiều quy tắc trước đó.
           * Nếu time_window_limit hoặc time_usage_limit đều không hoạt động, thì |LOCK| có thể được dùng để khóa thiết bị.
@@ -1997,7 +1992,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6810445994095397827">Chặn JavaScript trên các trang web này</translation>
 <translation id="681446116407619279">Các giao thức xác thực được hỗ trợ</translation>
 <translation id="6832455357698286434">
-      Chính sách này xác định danh sách (các URL) gốc hoặc mẫu tên máy chủ (chẳng hạn như "*.example.com") được coi là ngữ cảnh an toàn. Mục đích là nhằm cho phép các tổ chức thiết lập một máy chủ theo giai đoạn để phát triển web nội bộ sao cho các nhà phát triển có thể thử nghiệm các tính năng yêu cầu ngữ cảnh an toàn mà không phải triển khai TLS trên máy chủ theo giai đoạn.
+      Chính sách này xác định danh sách (các URL) nguồn gốc hoặc mẫu tên máy chủ (chẳng hạn như "*.example.com") được coi là ngữ cảnh an toàn. Mục đích là nhằm cho phép các tổ chức thiết lập một máy chủ theo giai đoạn để phát triển web nội bộ sao cho các nhà phát triển có thể thử nghiệm các tính năng yêu cầu ngữ cảnh an toàn mà không phải triển khai TLS trên máy chủ theo giai đoạn.
       Việc đặt một danh sách URL trong chính sách này có tác dụng tương tự như đặt cờ dòng lệnh '--unsafely-treat-insecure-origin-as-secure' cho một danh sách được phân tách bằng dấu phẩy gồm các URL tương tự. Nếu bạn đặt chính sách này, thì chính sách này sẽ ghi đè cờ dòng lệnh.
       Để biết thêm thông tin về ngữ cảnh an toàn, hãy truy cập vào https://www.w3.org/TR/secure-contexts/
       </translation>

@@ -62,7 +62,6 @@
 <translation id="2050339315714019657">عمودی</translation>
 <translation id="2067602449040652523">روشنایی صفحه‌کلید</translation>
 <translation id="2081529251031312395">$1 همچنان می‌تواند بعداً به سیستم وارد شود.</translation>
-<translation id="2122028596993374965">شروع ارسال محتوای <ph name="TAB_NAME" /> به <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">شارژر برق ضعیف</translation>
 <translation id="2135456203358955318">ذره‌بین متصل</translation>
 <translation id="2144487987174258011">‏برای به‌روزرسانی Adobe Flash Player، راه‌اندازی مجدد کنید</translation>
@@ -248,7 +247,6 @@
 <translation id="5911533659001334206">نمایشگر میان‌بر</translation>
 <translation id="5916664084637901428">روشن</translation>
 <translation id="592343074608792716">‏این Chromebook و تلفنتان به‌طور خودکار مرتبط می‌شوند</translation>
-<translation id="5927132638760172455">در حال فرستادن به گیرنده ناشناس</translation>
 <translation id="5947494881799873997">برگرداندن</translation>
 <translation id="595202126637698455">ردیابی عملکرد فعال شد</translation>
 <translation id="5957083217255311415">داده تلفن همراه خاموش است.</translation>
@@ -313,7 +311,6 @@
 <translation id="698231206551913481">اگر کاربر حذف شود، همه فایل‌ها و داده‌های محلی مربوط به او به‌طور دائم حذف خواهند شد.</translation>
 <translation id="7015766095477679451">ساعت <ph name="COME_BACK_TIME" /> دوباره برگردید.</translation>
 <translation id="7029814467594812963">خروج از جلسه</translation>
-<translation id="7034339000180558234">ارسال محتوای <ph name="TAB_NAME" /> به <ph name="RECEIVER_NAME" /></translation>
 <translation id="7037152028959403492">میان‌بر مربوط به کنتراست بالا را فشار دادید. می‌خواهید آن را روشن کنید؟</translation>
 <translation id="7066646422045619941">این شبکه توسط سرپرست شما غیرفعال شده است.</translation>
 <translation id="7067196344162293536">چرخش خودکار</translation>
@@ -369,7 +366,6 @@
 <translation id="813913629614996137">درحال مقداردهی اولیه…</translation>
 <translation id="8142699993796781067">شبکه‌های خصوصی</translation>
 <translation id="8152119955266188852">میان‌بر مربوط به ذره‌بین تمام‌صفحه را فشار دادید. می‌خواهید آن را روشن کنید؟</translation>
-<translation id="8180896103888046100">توقف ارسال محتوا به گیرنده ناشناس</translation>
 <translation id="8190698733819146287">سفارشی کردن زبان‌ها و ورودی...</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8297006494302853456">ضعیف</translation>
@@ -410,7 +406,6 @@
 <translation id="8984179138335769204">راه‌اندازی سریع</translation>
 <translation id="8995603266996330174">مدیریت شده توسط <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">‏به‌روزرسانی Adobe Flash Player دردسترس است</translation>
-<translation id="9033907480196064950">درحال ارسال محتوای <ph name="TAB_NAME" /> هستید</translation>
 <translation id="9074739597929991885">بلوتوث</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">میکروفون در حال استفاده است.</translation>

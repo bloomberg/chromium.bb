@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Chrome মেনু দেখান</translation>
 <translation id="2424073332829844142">CapsLock চালু এবং বন্ধ করুন</translation>
 <translation id="2441202986792279177">উইন্ডোগুলির মধ্যে দ্রুত পরিবর্তন করুন</translation>
+<translation id="2454251766545114447">ডিসপ্লের জুম কমান</translation>
 <translation id="2478303094958140141">ChromeVox (স্ক্রিনে যা আছে তা পড়ে শোনানোর বৈশিষ্ট্য) চালু অথবা বন্ধ করুন</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">ওয়েব পৃষ্ঠাটিকে স্ক্রল করে নিচে নিয়ে আসুন</translation>
+<translation id="2574014812750545982">পৃষ্ঠায় জুম লেভেল রিসেট করুন</translation>
 <translation id="2596078834055697711">উইন্ডো স্ক্রিনশট নিন</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, তারপর <ph name="TAB" /> অথবা <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">পরবর্তী ভাষার ইনপুট পদ্ধতিতে পাল্টান</translation>
@@ -48,6 +50,7 @@
 <translation id="2789868185375229787">পৃষ্ঠাটিতে ছোট করুন</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> টিপুন এবং একটি লিঙ্কে ক্লিক করুন</translation>
 <translation id="2830827904629746450">ডান দিকে উইন্ডো ডক করুন</translation>
+<translation id="2840766858109427815">পরবর্তী পৃষ্ঠায় যান</translation>
 <translation id="2872353916818027657">প্রাথমিক মনিটর অদলবদল করুন</translation>
 <translation id="2914313326123580426">ডেভেলপার টুল প্যানেল দেখুন অথবা লুকান</translation>
 <translation id="292495055542441795">ফুলস্ক্রিন টগল করুন</translation>
@@ -64,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> অথবা <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">আপনার বর্তমান উইন্ডোতে খোলা সমস্ত পৃষ্ঠা বুকমার্ক হিসেবে একটি নতুন ফোল্ডারে সেভ করুন</translation>
 <translation id="355103131818127604">ব্যাকগ্রাউন্ডে একটি নতুন ট্যাবে লিঙ্কটি খুলুন</translation>
+<translation id="3622741593887335780">জুম বাড়ান (যখন ডক করা থাকে বা ফুলস্ক্রিন ম্যাগনিফায়ার চালু থাকে)</translation>
 <translation id="3649256019230929621">উইন্ডো সংক্ষিপ্তায়ন করুন</translation>
 <translation id="3655154169297074232">ট্যাব এবং উইন্ডো</translation>
 <translation id="3668361878347172356">আপনার শেষ অ্যাকশনটি আবার করুন</translation>
@@ -75,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> ১ থেকে ৮ পর্যন্ত</translation>
 <translation id="3837047332182291558">কীবোর্ডের উজ্জ্বলতা বাড়ান (ব্যাকলিট কীবোর্ডের জন্য)</translation>
 <translation id="3976863468609830880">আপনার শেল্ফে শেষ আইকনটি ক্লিক করুন</translation>
+<translation id="3994783594793697310">ডিসপ্লের জুম লেভেল রিসেট করুন</translation>
 <translation id="4026843240379844265">ডিসপ্লের মধ্যে সক্রিয় উইন্ডোটি সরান</translation>
 <translation id="4035482366624727273">পৃষ্ঠাতে থাকা সবকিছুই বেছে নিন</translation>
 <translation id="4060703249685950734">আপনার বন্ধ করা শেষ ট্যাব অথবা উইন্ডোটি খুলুন</translation>
@@ -85,6 +90,7 @@
 <translation id="4141203561740478845">অ্যাড্রেস বার সহ সারিটি হাইলাইট করুন</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> অথবা <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">এক নজরে দেখার মোড</translation>
+<translation id="4382340674111381977">আগের পৃষ্ঠায় ফিরে যান</translation>
 <translation id="4472417192667361414">সিস্টেম এবং ডিসপ্লে সেটিংস</translation>
 <translation id="4556221320735744018">কীবোর্ড শর্টকাট সহায়তাকারী দেখুন</translation>
 <translation id="4628718545549558538">স্ট্যাটাস এলাকা খুলুন (যেখানে আপনার অ্যাকাউন্টের ছবি দেখানো হয়)</translation>
@@ -123,12 +129,14 @@
 <translation id="6228457605945141550">উজ্জ্বলতা কমান</translation>
 <translation id="6276708887952587684">পৃষ্ঠার সূত্র দেখুন</translation>
 <translation id="6321940490215594447">ইতিহাস পৃষ্ঠাটি খুলুন</translation>
+<translation id="6340769215862220182">ডিসপ্লের জুম বাড়ান</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">লাইনের শেষে টেক্সট বেছে নিন</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> অথবা <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">আপনার শেল্ফে ১-৮টি আইকন ক্লিক করুন</translation>
 <translation id="6435207348963613811">আপনার শেল্ফে আগের আইটেমটি হাইলাইট করুন</translation>
 <translation id="6445033640292336367">ট্যাবটিকে তার আসল অবস্থানে ফেরত নিয়ে যান</translation>
+<translation id="6474744297082284761">জুম কমান (যখন ডক করা থাকে বা ফুলস্ক্রিন ম্যাগনিফায়ার চালু থাকে)</translation>
 <translation id="649811797655257835">ফাইল বেছে নিয়ে <ph name="SPACE" /> টিপুন</translation>
 <translation id="6556040137485212400">যে উইন্ডোটি সবথেকে বেশিক্ষণ ব্যবহার করা হয়নি সেটিতে যান</translation>
 <translation id="666343722268997814">হাইলাইট করা আইটেমের জন্য রাইট ক্লিক মেনু খুলুন</translation>

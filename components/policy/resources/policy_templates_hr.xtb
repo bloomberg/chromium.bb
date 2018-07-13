@@ -134,11 +134,6 @@
 
       Ako se pravilo ne postavi, zadana vrijednost "MultiProfileUserBehaviorMustBePrimary" primjenjuje se za korisnike kojima upravlja organizacija, a "MultiProfileUserBehaviorUnrestricted" primjenjuje se na korisnike kojima se ne upravlja.</translation>
 <translation id="1465619815762735808">Kliknite za reprodukciju</translation>
-<translation id="1466133662354365542">Omogućuje značajku Automatsko popunjavanje na usluzi <ph name="PRODUCT_NAME" /> i omogućuje korisnicima automatsko unošenje podataka o kreditnim karticama i adresi u web-obrasce pomoću ranije pohranjenih podataka.
-
-      Ako onemogućite tu postavku, Automatsko popunjavanje nikad neće predlagati niti unositi podatke o kreditnim kraticama niti će spremati dodatne podatke o kreditnim karticama koje korisnik može unijeti tijekom pregledavanja weba.
-
-      Ako omogućite tu postavku ili ne postavite vrijednost, korisnik će moći kontrolirati cijelu značajku Automatsko popunjavanje (uključujući kreditne kartice) na korisničkom sučelju.</translation>
 <translation id="1468307069016535757">Postavi zadano stanje značajke pristupačnosti načina visokog kontrasta na zaslonu za prijavu.
 
           Ako se to pravilo postavi na točno, način visokog kontrasta bit će omogućen dok se prikazuje zaslon za prijavu.
