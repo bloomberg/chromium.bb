@@ -10,6 +10,8 @@
 namespace ui {
 namespace {
 
+constexpr float kSlopScaleForVr = 3.0f;
+
 class GenericDesktopGestureConfiguration : public GestureConfiguration {
  public:
   // The default GestureConfiguration parameters are already tailored for a
@@ -72,6 +74,10 @@ GestureProvider::Config BuildGestureProviderConfig(
   return config;
 }
 
+void TuneGestureProviderConfigForVr(GestureProvider::Config* config) {
+  config->gesture_detector_config.touch_slop *= kSlopScaleForVr;
+}
+
 }  // namespace
 
 GestureProvider::Config GetGestureProviderConfig(
@@ -80,6 +86,10 @@ GestureProvider::Config GetGestureProviderConfig(
   switch (type) {
     case GestureProviderConfigType::CURRENT_PLATFORM:
       config = BuildGestureProviderConfig(*GestureConfiguration::GetInstance());
+      break;
+    case GestureProviderConfigType::CURRENT_PLATFORM_VR:
+      config = BuildGestureProviderConfig(*GestureConfiguration::GetInstance());
+      TuneGestureProviderConfigForVr(&config);
       break;
     case GestureProviderConfigType::GENERIC_DESKTOP:
       config = BuildGestureProviderConfig(GenericDesktopGestureConfiguration());

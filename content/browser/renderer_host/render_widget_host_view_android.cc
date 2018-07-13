@@ -1887,6 +1887,10 @@ void RenderWidgetHostViewAndroid::SetIsInVR(bool is_in_vr) {
   // TODO(crbug.com/851054): support touch selection handles in VR.
   SetTextHandlesHiddenInternal();
 
+  gesture_provider_.UpdateConfig(ui::GetGestureProviderConfig(
+      is_in_vr_ ? ui::GestureProviderConfigType::CURRENT_PLATFORM_VR
+                : ui::GestureProviderConfigType::CURRENT_PLATFORM));
+
   if (is_in_vr_ && controls_initialized_) {
     // TODO(mthiesse, https://crbug.com/825765): See the TODO in
     // RenderWidgetHostViewAndroid::OnFrameMetadataUpdated. RWHVA isn't
