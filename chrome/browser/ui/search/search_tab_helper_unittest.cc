@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
@@ -36,6 +37,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_sink.h"
 #include "net/base/net_errors.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -103,16 +105,13 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
     return builder.Build().release();
   }
 
-  // Creates a sign-in manager for tests.  If |username| is not empty, the
-  // testing profile of the WebContents will be connected to the given account.
-  void CreateSigninManager(const std::string& username) {
-    SigninManagerBase* signin_manager =
-        SigninManagerFactory::GetForProfile(profile());
-
-    if (!username.empty()) {
-      ASSERT_TRUE(signin_manager);
-      signin_manager->SetAuthenticatedAccountInfo(username, username);
-    }
+  // Associates |email| with profile as the primary account. |email|
+  // should not be empty.
+  void SetUpAccount(const std::string& email) {
+    ASSERT_FALSE(email.empty());
+    identity::SetPrimaryAccount(
+        SigninManagerFactory::GetForProfile(profile()),
+        IdentityManagerFactory::GetForProfile(profile()), email);
   }
 
   // Configure the account to |sync_history| or not.
@@ -142,7 +141,7 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(SearchTabHelperTest, ChromeIdentityCheckMatch) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
-  CreateSigninManager(std::string("foo@bar.com"));
+  SetUpAccount("foo@bar.com");
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(nullptr, search_tab_helper);
@@ -153,7 +152,7 @@ TEST_F(SearchTabHelperTest, ChromeIdentityCheckMatch) {
 
 TEST_F(SearchTabHelperTest, ChromeIdentityCheckMatchSlightlyDifferentGmail) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
-  CreateSigninManager(std::string("foobar123@gmail.com"));
+  SetUpAccount("foobar123@gmail.com");
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(nullptr, search_tab_helper);
@@ -167,8 +166,7 @@ TEST_F(SearchTabHelperTest, ChromeIdentityCheckMatchSlightlyDifferentGmail) {
 
 TEST_F(SearchTabHelperTest, ChromeIdentityCheckMatchSlightlyDifferentGmail2) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
-  //
-  CreateSigninManager(std::string("chrome.user.7FOREVER"));
+  SetUpAccount("chrome.user.7FOREVER");
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(nullptr, search_tab_helper);
@@ -182,7 +180,7 @@ TEST_F(SearchTabHelperTest, ChromeIdentityCheckMatchSlightlyDifferentGmail2) {
 
 TEST_F(SearchTabHelperTest, ChromeIdentityCheckMismatch) {
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
-  CreateSigninManager(std::string("foo@bar.com"));
+  SetUpAccount("foo@bar.com");
   SearchTabHelper* search_tab_helper =
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(nullptr, search_tab_helper);

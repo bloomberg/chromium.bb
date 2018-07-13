@@ -14,7 +14,7 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -32,7 +32,6 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/search/search.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -43,6 +42,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -343,10 +343,11 @@ void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
 }
 
 bool SearchTabHelper::ChromeIdentityCheck(const base::string16& identity) {
-  SigninManagerBase* manager = SigninManagerFactory::GetForProfile(profile());
-  return manager &&
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile());
+  return identity_manager &&
          gaia::AreEmailsSame(base::UTF16ToUTF8(identity),
-                             manager->GetAuthenticatedAccountInfo().email);
+                             identity_manager->GetPrimaryAccountInfo().email);
 }
 
 bool SearchTabHelper::HistorySyncCheck() {
