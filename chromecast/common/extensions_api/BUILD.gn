@@ -60,44 +60,33 @@ json_schema_api("api_registration") {
 
 json_features("cast_api_features") {
   feature_type = "APIFeature"
-  provider_class = "CastAPIFeatureProvider"
+  method_name = "AddCastAPIFeatures"
   sources = [
-    "../../../extensions/common/api/_api_features.json",
     "_api_features.json",
   ]
 }
 
 json_features("cast_permission_features") {
   feature_type = "PermissionFeature"
-  provider_class = "CastPermissionFeatureProvider"
+  method_name = "AddCastPermissionFeatures"
   sources = [
-    "../../../extensions/common/api/_permission_features.json",
     "_permission_features.json",
   ]
 }
 
 json_features("cast_manifest_features") {
   feature_type = "ManifestFeature"
-  provider_class = "CastManifestFeatureProvider"
+  method_name = "AddCastManifestFeatures"
   sources = [
-    "../../../extensions/common/api/_manifest_features.json",
     "_manifest_features.json",
-  ]
-}
-
-json_features("cast_behavior_features") {
-  feature_type = "BehaviorFeature"
-  provider_class = "CastBehaviorFeatureProvider"
-  sources = [
-    "../../../extensions/common/api/_behavior_features.json",
   ]
 }
 
 group("extensions_features") {
   public_deps = [
     ":cast_api_features",
-    ":cast_behavior_features",
     ":cast_manifest_features",
     ":cast_permission_features",
+    "//extensions/common/api:extensions_features",
   ]
 }

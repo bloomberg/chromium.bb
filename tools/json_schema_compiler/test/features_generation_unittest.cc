@@ -5,6 +5,7 @@
 #include "base/optional.h"
 #include "extensions/common/features/complex_feature.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/simple_feature.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/json_schema_compiler/test/features_compiler_test.h"
@@ -89,7 +90,8 @@ void FeatureComparator::CompareFeature(const SimpleFeature* feature) {
 }
 
 TEST(FeaturesGenerationTest, FeaturesTest) {
-  CompilerTestFeatureProvider provider;
+  FeatureProvider provider;
+  CompilerTestAddFeaturesMethod(&provider);
 
   auto GetAsSimpleFeature = [&provider](const std::string& name) {
     const Feature* feature = provider.GetFeature(name);

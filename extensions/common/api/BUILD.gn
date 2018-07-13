@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//extensions/common/api/schema.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//tools/json_schema_compiler/json_features.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
 
 assert(enable_extensions)
@@ -36,5 +37,46 @@ group("api") {
     ":generated_api",
     ":mojom",
     "//extensions/buildflags",
+  ]
+}
+
+json_features("api_features") {
+  feature_type = "APIFeature"
+  method_name = "AddCoreAPIFeatures"
+  sources = [
+    "_api_features.json",
+  ]
+}
+
+json_features("permission_features") {
+  feature_type = "PermissionFeature"
+  method_name = "AddCorePermissionFeatures"
+  sources = [
+    "_permission_features.json",
+  ]
+}
+
+json_features("manifest_features") {
+  feature_type = "ManifestFeature"
+  method_name = "AddCoreManifestFeatures"
+  sources = [
+    "_manifest_features.json",
+  ]
+}
+
+json_features("behavior_features") {
+  feature_type = "BehaviorFeature"
+  method_name = "AddCoreBehaviorFeatures"
+  sources = [
+    "_behavior_features.json",
+  ]
+}
+
+group("extensions_features") {
+  public_deps = [
+    ":api_features",
+    ":behavior_features",
+    ":manifest_features",
+    ":permission_features",
   ]
 }

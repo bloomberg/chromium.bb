@@ -11,7 +11,11 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/stl_util.h"
+#include "extensions/common/api/api_features.h"
+#include "extensions/common/api/behavior_features.h"
 #include "extensions/common/api/generated_schemas.h"
+#include "extensions/common/api/manifest_features.h"
+#include "extensions/common/api/permission_features.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_aliases.h"
@@ -22,10 +26,6 @@
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/grit/extensions_resources.h"
-#include "extensions/test/test_api_features.h"
-#include "extensions/test/test_behavior_features.h"
-#include "extensions/test/test_manifest_features.h"
-#include "extensions/test/test_permission_features.h"
 #include "extensions/test/test_permission_message_provider.h"
 
 namespace extensions {
@@ -83,15 +83,15 @@ const std::string TestExtensionsClient::GetProductName() {
 
 std::unique_ptr<FeatureProvider> TestExtensionsClient::CreateFeatureProvider(
     const std::string& name) const {
-  std::unique_ptr<FeatureProvider> provider;
+  auto provider = std::make_unique<FeatureProvider>();
   if (name == "api") {
-    provider.reset(new TestAPIFeatureProvider());
+    AddCoreAPIFeatures(provider.get());
   } else if (name == "manifest") {
-    provider.reset(new TestManifestFeatureProvider());
+    AddCoreManifestFeatures(provider.get());
   } else if (name == "permission") {
-    provider.reset(new TestPermissionFeatureProvider());
+    AddCorePermissionFeatures(provider.get());
   } else if (name == "behavior") {
-    provider.reset(new TestBehaviorFeatureProvider());
+    AddCoreBehaviorFeatures(provider.get());
   } else {
     NOTREACHED();
   }
