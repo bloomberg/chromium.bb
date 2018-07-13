@@ -185,14 +185,19 @@ void ModuleBlacklistCacheUpdater::OnNewModuleFound(
     const ModuleInfoData& module_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Only consider loaded modules that are not IMEs. Shell extensions are still
-  // blocked.
-  static constexpr uint32_t kModulePropertiesBitmask =
-      ModuleInfoData::kPropertyLoadedModule | ModuleInfoData::kPropertyIme;
-  if ((module_data.module_properties & kModulePropertiesBitmask) !=
-      ModuleInfoData::kPropertyLoadedModule) {
+  // The module id is always positive.
+  if (module_key.module_id + 1 > module_blocking_decisions_.size())
+    module_blocking_decisions_.resize(module_key.module_id + 1);
+
+  // Only consider loaded modules.
+  if ((module_data.module_properties & ModuleInfoData::kPropertyLoadedModule) ==
+      0) {
+    module_blocking_decisions_[module_key.module_id] =
+        ModuleBlockingDecision::kNotLoaded;
     return;
   }
+
+  // First check if this module is a part of Chrome.
 
   // Explicitly whitelist modules whose signing cert's Subject field matches the
   // one in the current executable. No attempt is made to check the validity of
@@ -200,13 +205,8 @@ void ModuleBlacklistCacheUpdater::OnNewModuleFound(
   if (exe_certificate_info_.type != CertificateType::NO_CERTIFICATE &&
       exe_certificate_info_.subject ==
           module_data.inspection_result->certificate_info.subject) {
-    return;
-  }
-
-  // Never block a module seemingly signed by Microsoft. Again, no attempt is
-  // made to check the validity of the certificate.
-  if (IsMicrosoftModule(
-          module_data.inspection_result->certificate_info.subject)) {
+    module_blocking_decisions_[module_key.module_id] =
+        ModuleBlockingDecision::kAllowedSameCertificate;
     return;
   }
 
@@ -216,19 +216,49 @@ void ModuleBlacklistCacheUpdater::OnNewModuleFound(
   base::FilePath exe_path;
   if (base::PathService::Get(base::DIR_EXE, &exe_path) &&
       exe_path.DirName().IsParent(module_key.module_path)) {
+    module_blocking_decisions_[module_key.module_id] =
+        ModuleBlockingDecision::kAllowedSameDirectory;
     return;
   }
 #endif
 
-  // Skip modules whitelisted by the Module List component.
-  if (module_list_filter_->IsWhitelisted(module_key, module_data))
+  // Second, check if the module is seemingly signed by Microsoft. Again, no
+  // attempt is made to check the validity of the certificate.
+  if (IsMicrosoftModule(
+          module_data.inspection_result->certificate_info.subject)) {
+    module_blocking_decisions_[module_key.module_id] =
+        ModuleBlockingDecision::kAllowedMicrosoft;
     return;
+  }
+
+  // Skip modules whitelisted by the Module List component.
+  if (module_list_filter_->IsWhitelisted(module_key, module_data)) {
+    module_blocking_decisions_[module_key.module_id] =
+        ModuleBlockingDecision::kAllowedWhitelisted;
+    return;
+  }
+
+  // It is preferable to mark a whitelisted IME as allowed because it is
+  // whitelisted, not because it's a shell extension. Thus, check for the module
+  // type after. Note that shell extensions are blocked.
+  if (module_data.module_properties & ModuleInfoData::kPropertyIme) {
+    module_blocking_decisions_[module_key.module_id] =
+        ModuleBlockingDecision::kAllowedIME;
+    return;
+  }
 
   // Some blacklisted modules are allowed to load.
   std::unique_ptr<chrome::conflicts::BlacklistAction> blacklist_action =
       module_list_filter_->IsBlacklisted(module_key, module_data);
-  if (blacklist_action && blacklist_action->allow_load())
+  if (blacklist_action && blacklist_action->allow_load()) {
+    module_blocking_decisions_[module_key.module_id] =
+        ModuleBlockingDecision::kTolerated;
     return;
+  }
+
+  // Now it has been determined that the module should be blocked.
+  module_blocking_decisions_[module_key.module_id] =
+      ModuleBlockingDecision::kBlacklisted;
 
   // Insert the blacklisted module.
   newly_blacklisted_modules_.emplace_back();
@@ -261,6 +291,13 @@ void ModuleBlacklistCacheUpdater::OnNewModuleFound(
   }
 }
 
+void ModuleBlacklistCacheUpdater::OnKnownModuleLoaded(
+    const ModuleInfoKey& module_key,
+    const ModuleInfoData& module_data) {
+  // Analyze the module again.
+  OnNewModuleFound(module_key, module_data);
+}
+
 void ModuleBlacklistCacheUpdater::OnModuleDatabaseIdle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -280,6 +317,15 @@ void ModuleBlacklistCacheUpdater::OnNewModulesBlocked(
                kUpdateTimerDuration,
                base::Bind(&ModuleBlacklistCacheUpdater::OnTimerExpired,
                           base::Unretained(this)));
+}
+
+ModuleBlacklistCacheUpdater::ModuleBlockingDecision
+ModuleBlacklistCacheUpdater::GetModuleBlockingDecision(
+    ModuleInfoKey module_key) const {
+  DCHECK(module_blocking_decisions_.size() > module_key.module_id);
+  DCHECK_NE(module_blocking_decisions_[module_key.module_id],
+            ModuleBlockingDecision::kUnknown);
+  return module_blocking_decisions_[module_key.module_id];
 }
 
 void ModuleBlacklistCacheUpdater::OnTimerExpired() {
