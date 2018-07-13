@@ -926,13 +926,13 @@ int UDPSocketPosix::SetMulticastOptions() {
     switch (addr_family_) {
       case AF_INET: {
 #if defined(OS_MACOSX) || defined(OS_FUCHSIA)
-        ip_mreq mreq;
+        ip_mreq mreq = {};
         int error = GetIPv4AddressFromIndex(socket_, multicast_interface_,
                                             &mreq.imr_interface.s_addr);
         if (error != OK)
           return error;
 #else   //  defined(OS_MACOSX) || defined(OS_FUCHSIA)
-        ip_mreqn mreq;
+        ip_mreqn mreq = {};
         mreq.imr_ifindex = multicast_interface_;
         mreq.imr_address.s_addr = htonl(INADDR_ANY);
 #endif  //  !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
@@ -1000,13 +1000,13 @@ int UDPSocketPosix::JoinGroup(const IPAddress& group_address) const {
         return ERR_ADDRESS_INVALID;
 
 #if defined(OS_MACOSX) || defined(OS_FUCHSIA)
-      ip_mreq mreq;
+      ip_mreq mreq = {};
       int error = GetIPv4AddressFromIndex(socket_, multicast_interface_,
                                           &mreq.imr_interface.s_addr);
       if (error != OK)
         return error;
 #else
-      ip_mreqn mreq;
+      ip_mreqn mreq = {};
       mreq.imr_ifindex = multicast_interface_;
       mreq.imr_address.s_addr = htonl(INADDR_ANY);
 #endif
@@ -1047,7 +1047,7 @@ int UDPSocketPosix::LeaveGroup(const IPAddress& group_address) const {
     case IPAddress::kIPv4AddressSize: {
       if (addr_family_ != AF_INET)
         return ERR_ADDRESS_INVALID;
-      ip_mreq mreq;
+      ip_mreq mreq = {};
 #if defined(OS_FUCHSIA)
       // Fuchsia currently doesn't support INADDR_ANY in ip_mreq.imr_interface.
       int error = GetIPv4AddressFromIndex(socket_, multicast_interface_,
