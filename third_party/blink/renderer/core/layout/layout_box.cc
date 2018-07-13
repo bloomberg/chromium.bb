@@ -2780,9 +2780,14 @@ LayoutUnit LayoutBox::ComputeIntrinsicLogicalWidthUsing(
     const Length& logical_width_length,
     LayoutUnit available_logical_width,
     LayoutUnit border_and_padding) const {
-  if (logical_width_length.GetType() == kFillAvailable)
+  if (logical_width_length.GetType() == kFillAvailable) {
+    if (!IsHTMLMarqueeElement(GetNode())) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kCSSFillAvailableLogicalWidth);
+    }
     return std::max(border_and_padding,
                     FillAvailableMeasure(available_logical_width));
+  }
 
   LayoutUnit min_logical_width;
   LayoutUnit max_logical_width;
@@ -3294,10 +3299,15 @@ LayoutUnit LayoutBox::ComputeIntrinsicLogicalContentHeightUsing(
       return IntrinsicSize().Height();
     return intrinsic_content_height;
   }
-  if (logical_height_length.IsFillAvailable())
+  if (logical_height_length.IsFillAvailable()) {
+    if (!IsHTMLMarqueeElement(GetNode())) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kCSSFillAvailableLogicalHeight);
+    }
     return ContainingBlock()->AvailableLogicalHeight(
                kExcludeMarginBorderPadding) -
            border_and_padding;
+  }
   NOTREACHED();
   return LayoutUnit();
 }

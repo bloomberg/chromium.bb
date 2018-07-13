@@ -19340,6 +19340,8 @@ Called by update_net_error_codes.py.-->
   <int value="2505"
       label="DOMNodeRemovedFromDocumentEventHandlerAccessDetachingNode"/>
   <int value="2506" label="DOMNodeRemovedFromDocumentEventListenedAtNonTarget"/>
+  <int value="2507" label="CSSFillAvailableLogicalWidth"/>
+  <int value="2508" label="CSSFillAvailableLogicalHeight"/>
 </enum>
 
 <enum name="FeedbackSource">

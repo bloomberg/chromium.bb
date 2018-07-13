@@ -1966,6 +1966,8 @@ enum WebFeature {
   kDOMNodeRemovedFromDocumentEventDelayed = 2504,
   kDOMNodeRemovedFromDocumentEventHandlerAccessDetachingNode = 2505,
   kDOMNodeRemovedFromDocumentEventListenedAtNonTarget = 2506,
+  kCSSFillAvailableLogicalWidth = 2507,
+  kCSSFillAvailableLogicalHeight = 2508,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
