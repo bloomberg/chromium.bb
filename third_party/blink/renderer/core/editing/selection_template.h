@@ -23,7 +23,7 @@ namespace blink {
 //
 // To construct |SelectionTemplate| object, please use |Builder| class.
 template <typename Strategy>
-class CORE_EXPORT SelectionTemplate final {
+class SelectionTemplate final {
   DISALLOW_NEW();
 
  public:

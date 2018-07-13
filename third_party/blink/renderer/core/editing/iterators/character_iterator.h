@@ -38,7 +38,7 @@ namespace blink {
 // Builds on the text iterator, adding a character position so we can walk one
 // character at a time, or faster, as needed. Useful for searching.
 template <typename Strategy>
-class CORE_EXPORT CharacterIteratorAlgorithm {
+class CharacterIteratorAlgorithm {
   STACK_ALLOCATED();
 
  public:
