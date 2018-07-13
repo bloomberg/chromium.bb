@@ -523,7 +523,7 @@ const char kRateThisAppCommand[] = "ratethisapp";
 
   UIView* cell = [self.suggestionsViewController.collectionView
       cellForItemAtIndexPath:indexPath];
-  return [cell convertPoint:cell.center toView:nil];
+  return [cell.superview convertPoint:cell.center toView:nil];
 }
 
 // Opens the |URL| in a new tab |incognito| or not. |originPoint| is the origin

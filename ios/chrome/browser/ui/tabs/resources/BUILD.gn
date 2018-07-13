@@ -4,6 +4,15 @@
 
 import("//build/config/ios/asset_catalog.gni")
 
+imageset("open_new_tab_background") {
+  sources = [
+    "open_new_tab_background.imageset/Contents.json",
+    "open_new_tab_background.imageset/open_new_tab_background.png",
+    "open_new_tab_background.imageset/open_new_tab_background@2x.png",
+    "open_new_tab_background.imageset/open_new_tab_background@3x.png",
+  ]
+}
+
 imageset("tabstrip_background_tab") {
   sources = [
     "tabstrip_background_tab.imageset/Contents.json",
