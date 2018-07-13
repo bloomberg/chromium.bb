@@ -92,6 +92,9 @@ class CONTENT_EXPORT MediaDevicesManager
   // translated for use by the renderer process and frame identified with
   // |render_process_id| and |render_frame_id|, based on the frame origin's
   // permissions, an internal media-device salts.
+  // If |request_video_input_capabilities| is true, video formats supported
+  // by each device are returned in |callback|. These video formats are in
+  // no particular order and may contain duplicate entries.
   void EnumerateDevices(int render_process_id,
                         int render_frame_id,
                         const BoolDeviceTypes& requested_types,
@@ -120,7 +123,8 @@ class CONTENT_EXPORT MediaDevicesManager
   // changes.
   void OnDevicesChanged(base::SystemMonitor::DeviceType device_type) override;
 
-  // Returns the supported video formats for the given |device_id|.
+  // Returns the supported video formats for the given |device_id|. The returned
+  // formats are in no particular order and may contain duplicate entries.
   // If |try_in_use_first| is true and the device is being used, only the format
   // in use is returned. Otherwise, all formats supported by the device are
   // returned.

@@ -124,6 +124,13 @@ static bool EqualDeviceAndGroupID(const MediaDeviceInfo& lhs,
   return lhs == rhs && lhs.group_id == rhs.group_id;
 }
 
+void ReplaceInvalidFrameRatesWithFallback(media::VideoCaptureFormats* formats) {
+  for (auto& format : *formats) {
+    if (format.frame_rate <= 0)
+      format.frame_rate = kFallbackVideoFrameRates[0];
+  }
+}
+
 }  // namespace
 
 std::string GuessVideoGroupID(const MediaDeviceInfoArray& audio_infos,
@@ -569,11 +576,13 @@ media::VideoCaptureFormats MediaDevicesManager::GetVideoInputFormats(
                                                      device_id);
     if (format.has_value()) {
       formats.push_back(format.value());
+      ReplaceInvalidFrameRatesWithFallback(&formats);
       return formats;
     }
   }
 
   video_capture_manager_->GetDeviceSupportedFormats(device_id, &formats);
+  ReplaceInvalidFrameRatesWithFallback(&formats);
   // Remove formats that have zero resolution.
   formats.erase(std::remove_if(formats.begin(), formats.end(),
                                [](const media::VideoCaptureFormat& format) {
