@@ -101,12 +101,12 @@ PDFiumPage::PDFiumPage(PDFiumEngine* engine,
 PDFiumPage::PDFiumPage(PDFiumPage&& that) = default;
 
 PDFiumPage::~PDFiumPage() {
-  DCHECK_EQ(0, loading_count_);
+  DCHECK_EQ(0, preventing_unload_count_);
 }
 
 void PDFiumPage::Unload() {
   // Do not unload while in the middle of a load.
-  if (loading_count_)
+  if (preventing_unload_count_)
     return;
 
   text_page_.reset();
@@ -125,7 +125,7 @@ FPDF_PAGE PDFiumPage::GetPage() {
   if (!available_)
     return nullptr;
   if (!page_) {
-    ScopedLoadCounter scoped_load(this);
+    ScopedUnloadPreventer scoped_unload_preventer(this);
     page_.reset(FPDF_LoadPage(engine_->doc(), index_));
     if (page_ && engine_->form()) {
       FORM_OnAfterLoadPage(page(), engine_->form());
@@ -140,7 +140,7 @@ FPDF_PAGE PDFiumPage::GetPrintPage() {
   if (!available_)
     return nullptr;
   if (!page_) {
-    ScopedLoadCounter scoped_load(this);
+    ScopedUnloadPreventer scoped_unload_preventer(this);
     page_.reset(FPDF_LoadPage(engine_->doc(), index_));
   }
   return page();
@@ -148,7 +148,7 @@ FPDF_PAGE PDFiumPage::GetPrintPage() {
 
 void PDFiumPage::ClosePrintPage() {
   // Do not close |page_| while in the middle of a load.
-  if (loading_count_)
+  if (preventing_unload_count_)
     return;
 
   page_.reset();
@@ -158,7 +158,7 @@ FPDF_TEXTPAGE PDFiumPage::GetTextPage() {
   if (!available_)
     return nullptr;
   if (!text_page_) {
-    ScopedLoadCounter scoped_load(this);
+    ScopedUnloadPreventer scoped_unload_preventer(this);
     text_page_.reset(FPDFText_LoadPage(GetPage()));
   }
   return text_page();
@@ -607,13 +607,13 @@ const PDFEngine::PageFeatures* PDFiumPage::GetPageFeatures() {
   return &page_features_;
 }
 
-PDFiumPage::ScopedLoadCounter::ScopedLoadCounter(PDFiumPage* page)
+PDFiumPage::ScopedUnloadPreventer::ScopedUnloadPreventer(PDFiumPage* page)
     : page_(page) {
-  page_->loading_count_++;
+  page_->preventing_unload_count_++;
 }
 
-PDFiumPage::ScopedLoadCounter::~ScopedLoadCounter() {
-  page_->loading_count_--;
+PDFiumPage::ScopedUnloadPreventer::~ScopedUnloadPreventer() {
+  page_->preventing_unload_count_--;
 }
 
 PDFiumPage::Link::Link() = default;
