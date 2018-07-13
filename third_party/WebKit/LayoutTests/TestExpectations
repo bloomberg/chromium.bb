@@ -4640,3 +4640,4 @@ crbug.com/860706 [ Linux Mac ] virtual/gpu-rasterization/images/color-profile-ma
 
 # Sheriff 2018-7-13
 crbug.com/863462 virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Timeout Pass ]
+crbug.com/863544 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-color-over-pattern.html [ Timeout Pass ]
