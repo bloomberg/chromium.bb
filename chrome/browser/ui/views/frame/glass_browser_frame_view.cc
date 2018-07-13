@@ -593,13 +593,15 @@ int GlassBrowserFrameView::TabStripCaptionSpacing() const {
   int profile_spacing =
       profile_switcher->width() + kProfileSwitcherButtonOffset;
 
-  // In non-maximized mode, allow the new tab button to slide completely under
-  // the profile switcher button.
-  if (!IsMaximized()) {
-    const bool incognito = browser_view()->tabstrip()->IsIncognito();
-    profile_spacing -= GetLayoutSize(NEW_TAB_BUTTON, incognito).width();
-  }
+  // In maximized mode, simply treat the profile switcher button as another
+  // caption button.
+  if (IsMaximized())
+    return caption_spacing + profile_spacing;
 
+  // When not maximized, allow the new tab button to slide completely under the
+  // the profile switcher button.
+  const bool incognito = browser_view()->tabstrip()->IsIncognito();
+  profile_spacing -= GetLayoutSize(NEW_TAB_BUTTON, incognito).width();
   return std::max(caption_spacing, profile_spacing);
 }
 
