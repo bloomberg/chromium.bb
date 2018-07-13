@@ -181,19 +181,15 @@ public class VrShellDelegate
     private boolean mShowingDoffForGvrUpdate;
     private boolean mExitedDueToUnsupportedMode;
     private boolean mPaused;
-    private boolean mStopped;
     private boolean mVisible;
     private boolean mRestoreSystemUiVisibility = false;
     private Integer mRestoreOrientation = null;
-    private long mNativeVrShellDelegate;
     private boolean mRequestedWebVr;
-    private boolean mRequestedWebVrBeforePause;
     private boolean mListeningForWebVrActivate;
     private boolean mMaybeActivateAfterHeadsetInsertion;
     private Handler mClearMaybeActivateHandler = new Handler();
     private boolean mActivateFromHeadsetInsertion;
-    // If set to true, we attempt to enter VR mode when the activity is resumed.
-    private boolean mEnterVrOnStartup;
+    private boolean mStartedFromVrIntent;
 
     private boolean mInternalIntentUsedToStartVr;
 
@@ -214,6 +210,8 @@ public class VrShellDelegate
     private UiWidgetFactory mUiWidgetFactoryBeforeEnterVr;
 
     protected boolean mTestWorkaroundDontCancelVrEntryOnResume;
+
+    private long mNativeVrShellDelegate;
 
     /**
      * Used to observe changes to whether Chrome is currently being viewed in VR.
@@ -277,9 +275,9 @@ public class VrShellDelegate
             setVrModeEnabled(sInstance.mActivity, true);
             if (DEBUG_LOGS) Log.i(TAG, "VrBroadcastReceiver onReceive");
 
-            if (!sInstance.mRequestedWebVr && !sInstance.mEnterVrOnStartup) {
+            if (!sInstance.mRequestedWebVr && !sInstance.mStartedFromVrIntent) {
                 // If we didn't request WebVR then we're not coming from a request present call.
-                // If we didn't set mEnterVrOnStartup this isn't an intent from another app.
+                // If we didn't set mStartedFromVrIntent this isn't an intent from another app.
                 // Therefore we can assume this was triggered by NFC.
                 sInstance.nativeRecordVrStartAction(
                         sInstance.mNativeVrShellDelegate, VrStartAction.HEADSET_ACTIVATION);
@@ -1038,7 +1036,6 @@ public class VrShellDelegate
         mActivity = activity;
         // If an activity isn't resumed at the point, it must have been paused.
         mPaused = ApplicationStatus.getStateForActivity(activity) != ActivityState.RESUMED;
-        mStopped = ApplicationStatus.getStateForActivity(activity) == ActivityState.STOPPED;
         mVisible = activity.hasWindowFocus();
         updateVrSupportLevel(null);
         mNativeVrShellDelegate = nativeInit();
@@ -1198,14 +1195,13 @@ public class VrShellDelegate
         // later.
         if (mActivateFromHeadsetInsertion) {
             assert !mRequestedWebVr;
-            assert !mEnterVrOnStartup;
+            assert !mStartedFromVrIntent;
         }
         enterVr(mActivateFromHeadsetInsertion);
         if (mActivateFromHeadsetInsertion && mListeningForWebVrActivate) {
             nativeDisplayActivate(mNativeVrShellDelegate);
             mActivateFromHeadsetInsertion = false;
         }
-        mEnterVrOnStartup = false;
 
         // The user has successfully completed a DON flow.
         RecordUserAction.record("VR.DON");
@@ -1277,26 +1273,11 @@ public class VrShellDelegate
 
         if (mInVr) return;
 
-        // TODO(mthiesse): Assuming we've gone through DON flow saves ~2 seconds on VR entry. See
-        // the comments in enterVr(). This may not always be the case in the future, but for now
-        // it's a reasonable assumption.
+        mStartedFromVrIntent = true;
+        // Setting DON succeeded will cause us to enter VR when resuming.
         mDonSucceeded = true;
-        mEnterVrOnStartup = true;
 
         nativeRecordVrStartAction(mNativeVrShellDelegate, VrStartAction.INTENT_LAUNCH);
-    }
-
-    private void onAutopresentIntent() {
-        // Autopresent intents are only expected from trusted first party apps while
-        // we're not in vr.
-        assert !mInVr;
-        if (USE_HIDE_ANIMATION) mNeedsAnimationCancel = true;
-        mEnterVrOnStartup = true;
-
-        // We assume that the user is already in VR mode when launched for auto-presentation.
-        mDonSucceeded = true;
-
-        nativeRecordVrStartAction(mNativeVrShellDelegate, VrStartAction.DEEP_LINKED_APP);
     }
 
     private void onEnterVrUnsupported() {
@@ -1305,7 +1286,7 @@ public class VrShellDelegate
         // overlay will be removed when we get paused by Daydream.
         assert !mInVr;
         mNeedsAnimationCancel = false;
-        mEnterVrOnStartup = false;
+        mStartedFromVrIntent = false;
         // We remove the VR-specific system UI flags here so that the system UI shows up properly
         // when Chrome is resumed in non-VR mode.
         assert mRestoreSystemUiVisibility;
@@ -1575,7 +1556,7 @@ public class VrShellDelegate
     }
 
     private boolean maybeExitVrToUpdateVrServices() {
-        if (!mEnterVrOnStartup || getVrSupportLevel() != VrSupportLevel.VR_NEEDS_UPDATE) {
+        if (!mDonSucceeded || getVrSupportLevel() != VrSupportLevel.VR_NEEDS_UPDATE) {
             return false;
         }
         // This means that we were started in VR mode but the vr services are out of date. We should
@@ -1583,7 +1564,7 @@ public class VrShellDelegate
         if (DEBUG_LOGS) Log.i(TAG, "VR services update needed");
         mShowingDoffForGvrUpdate = true;
         showDoff(false /* optional */);
-        mEnterVrOnStartup = false;
+        mDonSucceeded = false;
         return true;
     }
 
@@ -1627,15 +1608,15 @@ public class VrShellDelegate
 
         maybeUpdateVrSupportLevel();
 
+        // Shouldn't handle VR Intents pre-Daydream.
+        assert(getVrSupportLevel() == VrSupportLevel.VR_DAYDREAM || !mStartedFromVrIntent);
+
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
             if (mNativeVrShellDelegate != 0) nativeOnResume(mNativeVrShellDelegate);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
-
-        // If mEnterVrOnStartup is set, we show DOFF in handleDonFlowSuccess below.
-        if (getVrSupportLevel() != VrSupportLevel.VR_DAYDREAM && !mEnterVrOnStartup) return;
 
         if (isVrBrowsingEnabled()) {
             // Perform slow initialization asynchronously.
@@ -1650,7 +1631,7 @@ public class VrShellDelegate
             });
         }
 
-        if (mDonSucceeded || mEnterVrOnStartup) {
+        if (mDonSucceeded) {
             handleDonFlowSuccess();
         } else {
             if (mProbablyInDon && !mTestWorkaroundDontCancelVrEntryOnResume) {
@@ -1726,7 +1707,6 @@ public class VrShellDelegate
 
     private void onStart() {
         mMaybeActivateAfterHeadsetInsertion = false;
-        mStopped = false;
         if (mDonSucceeded) setWindowModeForVr();
 
         // This handles the case where Chrome was paused in VR (ie the user navigated to DD home or
@@ -1745,7 +1725,6 @@ public class VrShellDelegate
 
     private void onStop() {
         if (DEBUG_LOGS) Log.i(TAG, "onStop");
-        mStopped = true;
         assert !mCancellingEntryAnimation;
     }
 
@@ -2077,14 +2056,6 @@ public class VrShellDelegate
 
     protected boolean isVrEntryComplete() {
         return mInVr && !mProbablyInDon;
-    }
-
-    protected boolean getProbablyInDon() {
-        return mProbablyInDon;
-    }
-
-    protected boolean getDonSucceeded() {
-        return mDonSucceeded;
     }
 
     protected boolean isShowingDoff() {
