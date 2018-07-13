@@ -23,6 +23,11 @@ ValidatingAbstractTextureImpl::ValidatingAbstractTextureImpl(
       destruction_cb_(std::move(destruction_cb)) {}
 
 ValidatingAbstractTextureImpl::~ValidatingAbstractTextureImpl() {
+  if (cleanup_cb_) {
+    DCHECK(texture_ref_);
+    std::move(cleanup_cb_).Run(this);
+  }
+
   if (destruction_cb_)
     std::move(destruction_cb_).Run(this, std::move(texture_ref_));
 
@@ -106,6 +111,15 @@ void ValidatingAbstractTextureImpl::ReleaseImage() {
                                        false);
 }
 
+gl::GLImage* ValidatingAbstractTextureImpl::GetImage() const {
+  if (!texture_ref_)
+    return nullptr;
+
+  const GLuint target = texture_ref_->texture()->target();
+  const GLint level = 0;
+  return texture_ref_->texture()->GetLevelImage(target, level, nullptr);
+}
+
 void ValidatingAbstractTextureImpl::SetCleared() {
   if (!texture_ref_)
     return;
@@ -113,6 +127,10 @@ void ValidatingAbstractTextureImpl::SetCleared() {
   const GLint level = 0;
   GetTextureManager()->SetLevelCleared(
       texture_ref_.get(), texture_ref_->texture()->target(), level, true);
+}
+
+void ValidatingAbstractTextureImpl::SetCleanupCallback(CleanupCallback cb) {
+  cleanup_cb_ = std::move(cb);
 }
 
 TextureManager* ValidatingAbstractTextureImpl::GetTextureManager() const {
@@ -139,6 +157,9 @@ void ValidatingAbstractTextureImpl::OnDecoderWillDestroy(bool have_context) {
   // If we already got rid of the texture ref, then there's nothing to do.
   if (!texture_ref_)
     return;
+
+  if (cleanup_cb_)
+    std::move(cleanup_cb_).Run(this);
 
   // If we have no context, then notify the TextureRef in case it's the last
   // ref to the texture.

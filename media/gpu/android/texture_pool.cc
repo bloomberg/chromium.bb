@@ -38,13 +38,12 @@ void TexturePool::AddTexture(std::unique_ptr<AbstractTexture> texture) {
 }
 
 void TexturePool::ReleaseTexture(AbstractTexture* texture,
-                                 const gpu::SyncToken& sync_token,
-                                 base::OnceClosure release_cb) {
+                                 const gpu::SyncToken& sync_token) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // If we don't have a sync token, or if we have no stub, then just finish.
   if (!sync_token.HasData() || !helper_) {
-    OnSyncTokenReleased(texture, std::move(release_cb));
+    OnSyncTokenReleased(texture);
     return;
   }
 
@@ -55,25 +54,16 @@ void TexturePool::ReleaseTexture(AbstractTexture* texture,
   // still pending.
   helper_->WaitForSyncToken(
       sync_token, base::BindOnce(&TexturePool::OnSyncTokenReleased,
-                                 scoped_refptr<TexturePool>(this), texture,
-                                 std::move(release_cb)));
+                                 scoped_refptr<TexturePool>(this), texture));
 }
 
-void TexturePool::OnSyncTokenReleased(AbstractTexture* texture,
-                                      base::OnceClosure release_cb) {
+void TexturePool::OnSyncTokenReleased(AbstractTexture* texture) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto iter = pool_.find(texture);
   DCHECK(iter != pool_.end());
 
   // Drop the texture.  This is safe without the context being current.  It's
   // also safe if the stub has been destroyed.
-
-  // NOTE: We can't make the texture unrenderable here.  It's possible that the
-  // sync token we waited on is incorrect, if the VideoResourceUpdater was torn
-  // down before it received resources back from viz.  Otherwise, we could
-  // skip |release_cb| in favor of calling |texture->ReleaseImage()| .
-  if (release_cb)
-    std::move(release_cb).Run();
 
   pool_.erase(iter);
 }
