@@ -428,8 +428,11 @@ void ShowBrowserSignin(Browser* browser,
 #if defined(OS_CHROMEOS)
     NOTREACHED();
 #else
-    browser->signin_view_controller()->ShowSignin(
-        profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser, access_point);
+    profiles::BubbleViewMode bubble_view_mode =
+        manager->IsAuthenticated() ? profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH
+                                   : profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
+    browser->signin_view_controller()->ShowSignin(bubble_view_mode, browser,
+                                                  access_point);
 #endif
   }
 }
