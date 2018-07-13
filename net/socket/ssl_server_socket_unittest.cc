@@ -1027,10 +1027,10 @@ TEST_F(SSLServerSocketTest, ClientWriteAfterServerClose) {
   client_ret = write_callback.GetResult(client_ret);
   EXPECT_GT(client_ret, 0);
 
+  base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
-      base::TimeDelta::FromMilliseconds(10));
-  base::RunLoop().Run();
+      FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromMilliseconds(10));
+  run_loop.Run();
 }
 
 // This test executes ExportKeyingMaterial() on the client and server sockets,

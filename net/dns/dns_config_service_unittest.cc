@@ -27,7 +27,7 @@ class DnsConfigServiceTest : public TestWithScopedTaskEnvironment {
   void OnConfigChanged(const DnsConfig& config) {
     last_config_ = config;
     if (quit_on_config_)
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
+      std::move(quit_on_config_).Run();
   }
 
  protected:
@@ -59,14 +59,11 @@ class DnsConfigServiceTest : public TestWithScopedTaskEnvironment {
   };
 
   void WaitForConfig(base::TimeDelta timeout) {
-    base::CancelableClosure closure(
-        base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+    base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, closure.callback(), timeout);
-    quit_on_config_ = true;
-    base::RunLoop().Run();
-    quit_on_config_ = false;
-    closure.Cancel();
+        FROM_HERE, run_loop.QuitClosure(), timeout);
+    quit_on_config_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 
   // Generate a config using the given seed..
@@ -89,8 +86,6 @@ class DnsConfigServiceTest : public TestWithScopedTaskEnvironment {
   }
 
   void SetUp() override {
-    quit_on_config_ = false;
-
     service_.reset(new TestDnsConfigService());
     service_->WatchConfig(base::Bind(&DnsConfigServiceTest::OnConfigChanged,
                                      base::Unretained(this)));
@@ -98,7 +93,7 @@ class DnsConfigServiceTest : public TestWithScopedTaskEnvironment {
   }
 
   DnsConfig last_config_;
-  bool quit_on_config_;
+  base::OnceClosure quit_on_config_;
 
   // Service under test.
   std::unique_ptr<TestDnsConfigService> service_;
