@@ -214,6 +214,8 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 @property(nonatomic, assign) CGPoint panPointScreenOrigin;
 // Pan gesture recognizer used to track horizontal touches.
 @property(nonatomic, strong) UIPanGestureRecognizer* panGestureRecognizer;
+// Whether the scroll view is dragged by the user.
+@property(nonatomic, assign) BOOL scrollViewDragged;
 
 // Registers notifications to lock the overscroll actions on certain UI states.
 - (void)registerNotifications;
@@ -265,6 +267,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 @synthesize browserState = _browserState;
 @synthesize panPointScreenOrigin = _panPointScreenOrigin;
 @synthesize panGestureRecognizer = _panGestureRecognizer;
+@synthesize scrollViewDragged = _scrollViewDragged;
 
 - (instancetype)initWithScrollView:(UIScrollView*)scrollView
                       webViewProxy:(id<CRWWebViewProxy>)webViewProxy {
@@ -343,6 +346,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 }
 
 - (void)clear {
+  self.scrollViewDragged = NO;
   self.overscrollState = OverscrollState::NO_PULL_STARTED;
 }
 
@@ -404,6 +408,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 }
 
 - (void)scrollViewWillBeginDragging {
+  self.scrollViewDragged = YES;
   [self stopBounce];
   _allowPullingActions = NO;
   _didTransitionToActionReady = NO;
@@ -435,6 +440,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 
 - (void)scrollViewDidEndDraggingWillDecelerate:(BOOL)decelerate
                                  contentOffset:(CGPoint)contentOffset {
+  self.scrollViewDragged = NO;
   // Content is now hidden behind toolbar, make sure that contentInset is
   // restored to initial value.
   if (contentOffset.y >= 0 ||
@@ -767,7 +773,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
       }
     } break;
     case OverscrollState::STARTED_PULLING: {
-      if (!self.overscrollActionView.superview) {
+      if (!self.overscrollActionView.superview && self.scrollViewDragged) {
         if (previousOverscrollState == OverscrollState::NO_PULL_STARTED) {
           UIView* view = [self.delegate toolbarSnapshotView];
           [self.overscrollActionView addSnapshotView:view];
