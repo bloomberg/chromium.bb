@@ -37,17 +37,6 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
        child = child.NextSibling()) {
     if (child.IsOutOfFlowPositioned())
       continue;
-    // Assume row flexbox with no orthogonal items, which lets us just use
-    // MinMaxSize for flex base size. An orthogonal item would need full layout.
-    // TODO(layout-ng): Now that ComputeMinMaxSize takes a writing mode, this
-    // should be easy to fix by just passing an appropriate constraint space to
-    // ComputeMinMaxSize.
-    DCHECK(IsParallelWritingMode(Node().Style().GetWritingMode(),
-                                 child.Style().GetWritingMode()))
-        << "Orthogonal items aren't supported yet.";
-    MinMaxSizeInput zero_input;
-    MinMaxSize min_max_sizes =
-        child.ComputeMinMaxSize(ConstraintSpace().GetWritingMode(), zero_input);
 
     NGConstraintSpaceBuilder space_builder(ConstraintSpace());
     // TODO(dgrogan): Set the percentage size also, which is possibly
@@ -57,6 +46,12 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         NGLogicalSize{flex_container_content_inline_size, NGSizeIndefinite});
     scoped_refptr<NGConstraintSpace> child_space =
         space_builder.ToConstraintSpace(child.Style().GetWritingMode());
+
+    // ComputeMinMaxSize will layout the child if it has an orthogonal writing
+    // mode. MinMaxSize will be in the container's inline direction.
+    MinMaxSizeInput zero_input;
+    MinMaxSize min_max_sizes = child.ComputeMinMaxSize(
+        ConstraintSpace().GetWritingMode(), zero_input, child_space.get());
 
     // Spec calls this "flex base size"
     // https://www.w3.org/TR/css-flexbox-1/#algo-main-item

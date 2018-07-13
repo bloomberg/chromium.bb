@@ -1230,7 +1230,7 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-max.html
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-percent-height.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-stretch.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align-vertical-writing-mode.html [ Skip ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align.html [ Skip ]
+crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-align.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-column-relayout-assert.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-factor-less-than-one.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/flex-flow-2.html [ Skip ]
