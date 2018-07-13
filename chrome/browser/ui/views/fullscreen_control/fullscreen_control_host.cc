@@ -55,7 +55,8 @@ constexpr float kExitHeightScaleFactor = 1.5f;
 constexpr float kShowFullscreenExitControlHeight = 3.f;
 
 // Time to wait to hide the popup after it is triggered.
-constexpr base::TimeDelta kPopupTimeout = base::TimeDelta::FromSeconds(3);
+constexpr base::TimeDelta kMousePopupTimeout = base::TimeDelta::FromSeconds(3);
+constexpr base::TimeDelta kTouchPopupTimeout = base::TimeDelta::FromSeconds(10);
 
 // Time to wait before showing the popup when the escape key is held.
 constexpr base::TimeDelta kKeyPressPopupDelay = base::TimeDelta::FromSeconds(1);
@@ -241,7 +242,9 @@ void FullscreenControlHost::OnVisibilityChanged() {
     input_entry_method_ = InputEntryMethod::NOT_ACTIVE;
     key_press_delay_timer_.Stop();
   } else if (input_entry_method_ == InputEntryMethod::MOUSE) {
-    StartPopupTimeout(InputEntryMethod::MOUSE);
+    StartPopupTimeout(InputEntryMethod::MOUSE, kMousePopupTimeout);
+  } else if (input_entry_method_ == InputEntryMethod::TOUCH) {
+    StartPopupTimeout(InputEntryMethod::TOUCH, kTouchPopupTimeout);
   }
 
   if (on_popup_visibility_changed_)
@@ -249,9 +252,10 @@ void FullscreenControlHost::OnVisibilityChanged() {
 }
 
 void FullscreenControlHost::StartPopupTimeout(
-    InputEntryMethod expected_input_method) {
+    InputEntryMethod expected_input_method,
+    base::TimeDelta timeout) {
   popup_timeout_timer_.Start(
-      FROM_HERE, kPopupTimeout,
+      FROM_HERE, timeout,
       base::BindRepeating(&FullscreenControlHost::OnPopupTimeout,
                           base::Unretained(this), expected_input_method));
 }
