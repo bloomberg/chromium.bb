@@ -11,8 +11,9 @@
 @interface ToolbarTabGridButton : ToolbarButton
 
 // Sets the number of tabs displayed by this button to |tabCount|. If |tabCount|
-// is more than 99, it shows a smiley instead.
-- (void)setTabCount:(int)tabCount;
+// is more than 99, it shows a smiley instead. But the value stored in tabCount
+// can be bigger than 100.
+@property(nonatomic, assign) int tabCount;
 
 @end
 

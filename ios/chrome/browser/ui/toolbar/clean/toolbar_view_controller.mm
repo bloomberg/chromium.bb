@@ -491,7 +491,7 @@ const CGFloat kScrollFadeDistance = 30;
   [self.view.progressBar setProgress:progress animated:YES completion:nil];
 }
 
-- (void)setTabCount:(int)tabCount {
+- (void)setTabCount:(int)tabCount addedInBackground:(BOOL)inBackground {
   // Return if tabSwitchStripButton wasn't initialized.
   if (!self.view.tabSwitchStripButton)
     return;

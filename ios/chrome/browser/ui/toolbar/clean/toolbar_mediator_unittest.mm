@@ -321,7 +321,8 @@ TEST_F(ToolbarMediatorTest, TestToolbarSetupWithNoActiveWebstate) {
 TEST_F(ToolbarMediatorTest, TestToolbarSetupWithNoWebstateList) {
   mediator_.consumer = consumer_;
 
-  [[[consumer_ reject] ignoringNonObjectArgs] setTabCount:0];
+  [[[consumer_ reject] ignoringNonObjectArgs] setTabCount:0
+                                        addedInBackground:NO];
 }
 
 // Tests the Toolbar Setup gets called when the mediator's WebState and Consumer
@@ -356,7 +357,7 @@ TEST_F(ToolbarMediatorTest, TestWebstateListRelatedSetup) {
   mediator_.webStateList = web_state_list_.get();
   mediator_.consumer = consumer_;
 
-  [[consumer_ verify] setTabCount:3];
+  [[consumer_ verify] setTabCount:3 addedInBackground:NO];
 }
 
 // Test the WebstateList related setup gets called when the mediator's WebState
@@ -365,7 +366,7 @@ TEST_F(ToolbarMediatorTest, TestWebstateListRelatedSetupReverse) {
   mediator_.consumer = consumer_;
   mediator_.webStateList = web_state_list_.get();
 
-  [[consumer_ verify] setTabCount:3];
+  [[consumer_ verify] setTabCount:3 addedInBackground:NO];
 }
 
 // Tests the Toolbar is updated when the Webstate observer method
@@ -491,7 +492,7 @@ TEST_F(ToolbarMediatorTest, TestIncreaseNumberOfWebstates) {
   mediator_.consumer = consumer_;
 
   InsertNewWebState(0);
-  [[consumer_ verify] setTabCount:kNumberOfWebStates + 1];
+  [[consumer_ verify] setTabCount:kNumberOfWebStates + 1 addedInBackground:YES];
 }
 
 // Test that decreasing the number of Webstates will update the consumer with
@@ -501,7 +502,7 @@ TEST_F(ToolbarMediatorTest, TestDecreaseNumberOfWebstates) {
   mediator_.consumer = consumer_;
 
   web_state_list_->DetachWebStateAt(0);
-  [[consumer_ verify] setTabCount:kNumberOfWebStates - 1];
+  [[consumer_ verify] setTabCount:kNumberOfWebStates - 1 addedInBackground:NO];
 }
 
 // Test that consumer is informed that voice search is enabled.
