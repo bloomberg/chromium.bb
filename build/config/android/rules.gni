@@ -2810,12 +2810,13 @@ if (enable_java_templates) {
       _incremental_test_name = "${invoker.target_name}_incremental"
     }
 
-    if (incremental_apk_by_default) {
+    if (incremental_apk_by_default && _incremental_allowed) {
       _incremental_test_runner_target_name = _test_runner_target_name
       _incremental_test_name = invoker.target_name
     }
 
-    if (!incremental_apk_by_default) {
+    if (!incremental_apk_by_default ||
+        (incremental_apk_by_default && !_incremental_allowed)) {
       test_runner_script(_test_runner_target_name) {
         forward_variables_from(invoker,
                                [
@@ -2901,7 +2902,7 @@ if (enable_java_templates) {
     }
 
     group(target_name) {
-      if (incremental_apk_by_default) {
+      if (incremental_apk_by_default && _incremental_allowed) {
         public_deps = [
           ":${target_name}_incremental",
         ]
