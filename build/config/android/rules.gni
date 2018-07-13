@@ -3526,7 +3526,12 @@ if (enable_java_templates) {
 
     _all_rebased_module_paths = rebase_path(_all_module_paths, root_build_dir)
 
-    _bundle_path = "$target_gen_dir/$target_name.aab"
+    _bundle_name = target_name
+    if (defined(invoker.bundle_name)) {
+      _bundle_name = invoker.bundle_name
+    }
+
+    _bundle_path = "$target_gen_dir/$_bundle_name.aab"
     _rebased_bundle_path = rebase_path(_bundle_path, root_build_dir)
 
     _sign_bundle = defined(invoker.sign_bundle) && invoker.sign_bundle
@@ -3607,7 +3612,7 @@ if (enable_java_templates) {
       _android_aapt2_path = android_sdk_tools_bundle_aapt2
 
       _bundle_apks_target = "${target_name}_apks"
-      _bundle_apks_path = "$target_gen_dir/$target_name.apks"
+      _bundle_apks_path = "$target_gen_dir/$_bundle_name.apks"
 
       # NOTE: Keep this consistent with the imports of app_bundle_to_apks.py
       #       note that resource_utils.py imports build_utils.py
