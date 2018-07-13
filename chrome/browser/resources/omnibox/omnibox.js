@@ -262,6 +262,15 @@ function createCellForPropertyAndRemoveProperty(
 }
 
 /**
+ * Appends a paragraph node containing text to the parent node.
+ */
+function addParagraph(parent, text) {
+  var p = document.createElement('p');
+  p.textContent = text;
+  parent.appendChild(p);
+}
+
+/**
  * Appends some human-readable information about the provided
  * autocomplete result to the HTML node with id omnibox-debug-text.
  * The current human-readable form is a few lines about general
@@ -274,32 +283,28 @@ function addResultToOutput(result) {
   var showIncompleteResults = $('show-incomplete-results').checked;
   var showPerProviderResults = $('show-all-providers').checked;
 
-  // Always output cursor position.
-  var p = document.createElement('p');
-  p.textContent = 'cursor position = ' + cursorPositionUsed;
-  output.appendChild(p);
-
   // Output the result-level features in detailed mode and in
   // show incomplete results mode.  We do the latter because without
   // these result-level features, one can't make sense of each
   // batch of results.
   if (inDetailedMode || showIncompleteResults) {
-    var p1 = document.createElement('p');
-    p1.textContent =
-        'elapsed time = ' + result.timeSinceOmniboxStartedMs + 'ms';
-    output.appendChild(p1);
-    var p2 = document.createElement('p');
-    p2.textContent = 'all providers done = ' + result.done;
-    output.appendChild(p2);
-    var p3 = document.createElement('p');
-    p3.textContent = 'host = ' + result.host;
+    addParagraph(output, `cursor position = ${cursorPositionUsed}`);
+    addParagraph(output, `inferred input type = ${result.type}`);
+    addParagraph(
+        output, `elapsed time = ${result.timeSinceOmniboxStartedMs}ms`);
+    addParagraph(output, `all providers done = ${result.done}`);
+    var p = document.createElement('p');
+    p.textContent = `host = ${result.host}`;
+    // The field isn't actually optional in the mojo object; instead it assumes
+    // failed lookups are not typed hosts.  Fix this to make it optional.
+    // http://crbug.com/863201
     if ('isTypedHost' in result) {
       // Only output the isTypedHost information if available.  (It may
       // be missing if the history database lookup failed.)
-      p3.textContent =
-          p3.textContent + ' has isTypedHost = ' + result.isTypedHost;
+      p.textContent =
+          p.textContent + ` has isTypedHost = ${result.isTypedHost}`;
     }
-    output.appendChild(p3);
+    output.appendChild(p);
   }
 
   // Combined results go after the lines below.

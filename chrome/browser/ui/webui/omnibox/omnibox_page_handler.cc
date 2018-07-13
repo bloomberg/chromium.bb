@@ -130,6 +130,7 @@ void OmniboxPageHandler::OnResultChanged(bool default_match_changed) {
   const base::string16 host =
       input_.text().substr(input_.parts().host.begin, input_.parts().host.len);
   result->host = base::UTF16ToUTF8(host);
+  result->type = AutocompleteInput::TypeToString(input_.type());
   bool is_typed_host;
   if (!LookupIsTypedHost(host, &is_typed_host))
     is_typed_host = false;
