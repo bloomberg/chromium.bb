@@ -22,7 +22,6 @@ import org.chromium.base.AsyncTask;
 import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.content_public.browser.ContentVideoViewEmbedder;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.ResourceRequestBody;
@@ -41,7 +40,6 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     private final Context mContext;
     private View mContainerView;
     private FrameLayout mCustomView;
-    private AwContentVideoViewEmbedder mVideoViewEmbedder;
 
     public AwWebContentsDelegateAdapter(AwContents awContents, AwContentsClient contentsClient,
             AwSettings settings, Context context, View containerView) {
@@ -311,16 +309,9 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     private void exitFullscreen() {
         if (mCustomView != null) {
             mCustomView = null;
-            if (mVideoViewEmbedder != null) mVideoViewEmbedder.setCustomView(null);
             mAwContents.exitFullScreen();
             mContentsClient.onHideCustomView();
         }
-    }
-
-    @Override
-    public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
-        mVideoViewEmbedder = new AwContentVideoViewEmbedder(mContext, mContentsClient, mCustomView);
-        return mVideoViewEmbedder;
     }
 
     @Override

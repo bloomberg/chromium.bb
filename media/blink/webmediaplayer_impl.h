@@ -30,7 +30,6 @@
 #include "media/base/overlay_info.h"
 #include "media/base/pipeline_impl.h"
 #include "media/base/renderer_factory_selector.h"
-#include "media/base/surface_manager.h"
 #include "media/base/text_track.h"
 #include "media/blink/buffered_data_source_host_impl.h"
 #include "media/blink/media_blink_export.h"
@@ -364,9 +363,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Called when the data source is downloading or paused.
   void NotifyDownloading(bool is_downloading);
-
-  // Called by SurfaceManager when a surface is created.
-  void OnSurfaceCreated(int surface_id);
 
   // Called by RenderFrameImpl with the overlay routing token, if we request it.
   void OnOverlayRoutingToken(const base::UnguessableToken& token);
@@ -754,17 +750,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   std::unique_ptr<RendererFactorySelector> renderer_factory_selector_;
 
-  // For requesting surfaces on behalf of the Android H/W decoder in fullscreen.
-  // This will be null everywhere but Android.
-  SurfaceManager* const surface_manager_;
-
   // For canceling ongoing surface creation requests when exiting fullscreen.
   base::CancelableCallback<void(int)> surface_created_cb_;
-
-  // The current overlay surface id. Populated, possibly with kNoSurfaceID if
-  // we're not supposed to use an overlay, unless we have an outstanding surface
-  // request to the SurfaceManager.
-  base::Optional<int> overlay_surface_id_ = SurfaceManager::kNoSurfaceID;
 
   // For canceling AndroidOverlay routing token requests.
   base::CancelableCallback<void(const base::UnguessableToken&)>

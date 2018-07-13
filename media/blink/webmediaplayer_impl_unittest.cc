@@ -375,7 +375,7 @@ class WebMediaPlayerImplTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get(), media_thread_.task_runner(),
         base::BindRepeating(&WebMediaPlayerImplTest::OnAdjustAllocatedMemory,
                             base::Unretained(this)),
-        nullptr, nullptr, RequestRoutingTokenCallback(), nullptr,
+        nullptr, RequestRoutingTokenCallback(), nullptr,
         kMaxKeyframeDistanceToDisableBackgroundVideo,
         kMaxKeyframeDistanceToDisableBackgroundVideoMSE, false, false,
         std::move(provider),

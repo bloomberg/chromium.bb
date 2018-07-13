@@ -490,10 +490,6 @@ class CONTENT_EXPORT WebContentsDelegate {
                                               MediaStreamType type);
 
 #if defined(OS_ANDROID)
-  // Creates a view embedding the video view.
-  virtual base::android::ScopedJavaLocalRef<jobject>
-      GetContentVideoViewEmbedder();
-
   // Returns true if the given media should be blocked to load.
   virtual bool ShouldBlockMediaRequest(const GURL& url);
 

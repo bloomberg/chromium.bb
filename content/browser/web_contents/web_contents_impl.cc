@@ -154,7 +154,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "content/browser/android/content_video_view.h"
 #include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/android/java_interfaces_impl.h"
 #include "content/browser/media/android/media_web_contents_observer_android.h"
@@ -2398,12 +2397,6 @@ void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
     RenderWidgetHostImpl::From(widget_view->GetRenderWidgetHost())
         ->ShutdownAndDestroyWidget(true);
   }
-
-#if defined(OS_ANDROID)
-  ContentVideoView* video_view = ContentVideoView::GetInstance();
-  if (video_view != NULL)
-    video_view->ExitFullscreen();
-#endif
 
   if (delegate_) {
     delegate_->ExitFullscreenModeForTab(this);

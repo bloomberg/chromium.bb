@@ -4,13 +4,6 @@
 
 import("//build/config/android/rules.gni")
 
-android_library("media_java") {
-  deps = [
-    "//content/public/android:content_java",
-  ]
-  java_files = [ "java/src/org/chromium/components/embedder_support/media/ActivityContentVideoViewEmbedder.java" ]
-}
-
 static_library("view") {
   sources = [
     "view/content_view_render_view.cc",

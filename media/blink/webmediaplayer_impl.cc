@@ -235,7 +235,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       cast_impl_(this, client_, params->context_provider()),
 #endif
       renderer_factory_selector_(std::move(renderer_factory_selector)),
-      surface_manager_(params->surface_manager()),
       observer_(params->media_observer()),
       max_keyframe_distance_to_disable_background_video_(
           params->max_keyframe_distance_to_disable_background_video()),
@@ -433,14 +432,8 @@ bool WebMediaPlayerImpl::SupportsOverlayFullscreenVideo() {
 
 void WebMediaPlayerImpl::EnableOverlay() {
   overlay_enabled_ = true;
-  if (surface_manager_ && overlay_mode_ == OverlayMode::kUseContentVideoView) {
-    overlay_surface_id_.reset();
-    surface_created_cb_.Reset(
-        base::Bind(&WebMediaPlayerImpl::OnSurfaceCreated, AsWeakPtr()));
-    surface_manager_->CreateFullscreenSurface(pipeline_metadata_.natural_size,
-                                              surface_created_cb_.callback());
-  } else if (request_routing_token_cb_ &&
-             overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
+  if (request_routing_token_cb_ &&
+      overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
     overlay_routing_token_is_pending_ = true;
     token_available_cb_.Reset(
         base::Bind(&WebMediaPlayerImpl::OnOverlayRoutingToken, AsWeakPtr()));
@@ -459,7 +452,6 @@ void WebMediaPlayerImpl::DisableOverlay() {
   overlay_enabled_ = false;
   if (overlay_mode_ == OverlayMode::kUseContentVideoView) {
     surface_created_cb_.Cancel();
-    overlay_surface_id_ = SurfaceManager::kNoSurfaceID;
   } else if (overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
     token_available_cb_.Cancel();
     overlay_routing_token_is_pending_ = false;
@@ -1626,8 +1618,6 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
       // then we don't need this check.
       if (!always_enable_overlays_ && !DoesOverlaySupportMetadata())
         DisableOverlay();
-      else if (surface_manager_)
-        surface_manager_->NaturalSizeChanged(pipeline_metadata_.natural_size);
     }
 
     if (!surface_layer_for_video_enabled_) {
@@ -1887,11 +1877,6 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
 
   if (video_decode_stats_reporter_)
     video_decode_stats_reporter_->OnNaturalSizeChanged(rotated_size);
-
-  if (overlay_enabled_ && surface_manager_ &&
-      overlay_mode_ == OverlayMode::kUseContentVideoView) {
-    surface_manager_->NaturalSizeChanged(rotated_size);
-  }
 
   client_->SizeChanged();
 
@@ -2271,12 +2256,6 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
     SetReadyState(WebMediaPlayer::kReadyStateHaveEnoughData);
 }
 
-void WebMediaPlayerImpl::OnSurfaceCreated(int surface_id) {
-  DCHECK(overlay_mode_ == OverlayMode::kUseContentVideoView);
-  overlay_surface_id_ = surface_id;
-  MaybeSendOverlayInfoToDecoder();
-}
-
 void WebMediaPlayerImpl::OnOverlayRoutingToken(
     const base::UnguessableToken& token) {
   DCHECK(overlay_mode_ == OverlayMode::kUseAndroidOverlay);
@@ -2290,7 +2269,6 @@ void WebMediaPlayerImpl::OnOverlayInfoRequested(
     bool decoder_requires_restart_for_overlay,
     const ProvideOverlayInfoCB& provide_overlay_info_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  DCHECK(surface_manager_);
 
   // If we get a non-null cb, a decoder is initializing and requires overlay
   // info. If we get a null cb, a previously initialized decoder is
@@ -2343,12 +2321,7 @@ void WebMediaPlayerImpl::MaybeSendOverlayInfoToDecoder() {
   // Initialization requires this; AVDA should start with enough info to make an
   // overlay, so that (pre-M) the initial codec is created with the right output
   // surface; it can't switch later.
-  if (overlay_mode_ == OverlayMode::kUseContentVideoView) {
-    if (!overlay_surface_id_.has_value())
-      return;
-
-    overlay_info_.surface_id = *overlay_surface_id_;
-  } else if (overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
+  if (overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
     if (overlay_routing_token_is_pending_)
       return;
 

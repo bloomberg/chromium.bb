@@ -1076,19 +1076,6 @@ void GpuProcessHost::RequestHDRStatus(RequestHDRStatusCallback request_cb) {
   gpu_service_ptr_->RequestHDRStatus(std::move(request_cb));
 }
 
-#if defined(OS_ANDROID)
-void GpuProcessHost::SendDestroyingVideoSurface(int surface_id,
-                                                const base::Closure& done_cb) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::SendDestroyingVideoSurface");
-  DCHECK(send_destroying_video_surface_done_cb_.is_null());
-  DCHECK(!done_cb.is_null());
-  send_destroying_video_surface_done_cb_ = done_cb;
-  gpu_service_ptr_->DestroyingVideoSurface(
-      surface_id, base::Bind(&GpuProcessHost::OnDestroyingVideoSurfaceAck,
-                             weak_ptr_factory_.GetWeakPtr()));
-}
-#endif
-
 void GpuProcessHost::OnChannelEstablished(
     int client_id,
     const EstablishChannelCallback& callback,

@@ -21,7 +21,6 @@ enum class MediaContentType;
 namespace content {
 
 class BrowserMediaPlayerManager;
-class BrowserSurfaceViewManager;
 
 // This class adds Android specific extensions to the MediaWebContentsObserver.
 class CONTENT_EXPORT MediaWebContentsObserverAndroid
@@ -38,8 +37,6 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
   // Creates a new one if it doesn't exist. The caller doesn't own the
   // returned pointer.
   BrowserMediaPlayerManager* GetMediaPlayerManager(
-      RenderFrameHost* render_frame_host);
-  BrowserSurfaceViewManager* GetSurfaceViewManager(
       RenderFrameHost* render_frame_host);
 
   // Called by the WebContents when a tab has been closed but may still be
@@ -72,19 +69,11 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
   bool OnMediaPlayerMessageReceived(const IPC::Message& message,
                                     RenderFrameHost* render_frame_host);
 
-  bool OnSurfaceViewManagerMessageReceived(const IPC::Message& message,
-                                     RenderFrameHost* render_frame_host);
-
   // Map from RenderFrameHost* to BrowserMediaPlayerManager.
   using MediaPlayerManagerMap =
       std::unordered_map<RenderFrameHost*,
                          std::unique_ptr<BrowserMediaPlayerManager>>;
   MediaPlayerManagerMap media_player_managers_;
-
-  using SurfaceViewManagerMap =
-      std::unordered_map<RenderFrameHost*,
-                         std::unique_ptr<BrowserSurfaceViewManager>>;
-  SurfaceViewManagerMap surface_view_managers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaWebContentsObserverAndroid);
 };

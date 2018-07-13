@@ -61,9 +61,6 @@ class MEDIA_EXPORT MediaPlayerManager {
   // Called when video size has changed. Args: player ID, width, height.
   virtual void OnVideoSizeChanged(int player_id, int width, int height) = 0;
 
-  // Returns the player that's in the fullscreen mode currently.
-  virtual MediaPlayerAndroid* GetFullscreenPlayer() = 0;
-
   // Returns the player with the specified id.
   virtual MediaPlayerAndroid* GetPlayer(int player_id) = 0;
 

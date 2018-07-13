@@ -237,7 +237,6 @@ source_set("base") {
     "stream_parser_buffer.h",
     "subsample_entry.cc",
     "subsample_entry.h",
-    "surface_manager.h",
     "text_cue.cc",
     "text_cue.h",
     "text_ranges.cc",

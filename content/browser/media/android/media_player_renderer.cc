@@ -298,11 +298,6 @@ void MediaPlayerRenderer::OnVideoSizeChanged(int player_id,
   }
 }
 
-media::MediaPlayerAndroid* MediaPlayerRenderer::GetFullscreenPlayer() {
-  NOTREACHED();
-  return nullptr;
-}
-
 media::MediaPlayerAndroid* MediaPlayerRenderer::GetPlayer(int player_id) {
   NOTREACHED();
   return nullptr;

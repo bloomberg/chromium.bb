@@ -28,7 +28,6 @@
 #include "media/base/decoder_factory.h"
 #include "media/base/media_switches.h"
 #include "media/base/renderer_factory_selector.h"
-#include "media/base/surface_manager.h"
 #include "media/blink/remote_playback_client_wrapper_impl.h"
 #include "media/blink/resource_fetch_context.h"
 #include "media/blink/webencryptedmediaclient_impl.h"
@@ -52,7 +51,6 @@
 #if defined(OS_ANDROID)
 #include "content/renderer/media/android/media_player_renderer_client_factory.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
-#include "content/renderer/media/android/renderer_surface_view_manager.h"
 #include "content/renderer/media/android/stream_texture_wrapper_impl.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/media.h"
@@ -239,8 +237,6 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   bool use_media_player_renderer = false;
 #if defined(OS_ANDROID)
   use_media_player_renderer = UseMediaPlayerRenderer(url);
-  if (!use_media_player_renderer && !media_surface_manager_)
-    media_surface_manager_ = new RendererSurfaceViewManager(render_frame_);
   embedded_media_experience_enabled =
       webkit_preferences.embedded_media_experience_enabled;
 #endif  // defined(OS_ANDROID)
@@ -336,8 +332,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           video_frame_compositor_task_runner,
           base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
                      base::Unretained(blink::MainThreadIsolate())),
-          initial_cdm, media_surface_manager_, request_routing_token_cb_,
-          media_observer, max_keyframe_distance_to_disable_background_video,
+          initial_cdm, request_routing_token_cb_, media_observer,
+          max_keyframe_distance_to_disable_background_video,
           max_keyframe_distance_to_disable_background_video_mse,
           enable_instant_source_buffer_gc, embedded_media_experience_enabled,
           std::move(metrics_provider),

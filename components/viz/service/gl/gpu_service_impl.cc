@@ -57,7 +57,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/throw_uncaught_exception.h"
-#include "media/gpu/android/content_video_view_overlay_allocator.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -724,25 +723,6 @@ void GpuServiceImpl::LoadedShader(const std::string& key,
     return;
   }
   gpu_channel_manager_->PopulateShaderCache(key, data);
-}
-
-void GpuServiceImpl::DestroyingVideoSurface(
-    int32_t surface_id,
-    DestroyingVideoSurfaceCallback callback) {
-  DCHECK(io_runner_->BelongsToCurrentThread());
-#if defined(OS_ANDROID)
-  main_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(
-          [](int32_t surface_id) {
-            media::ContentVideoViewOverlayAllocator::GetInstance()
-                ->OnSurfaceDestroyed(surface_id);
-          },
-          surface_id),
-      std::move(callback));
-#else
-  NOTREACHED() << "DestroyingVideoSurface() not supported on this platform.";
-#endif
 }
 
 void GpuServiceImpl::WakeUpGpu() {

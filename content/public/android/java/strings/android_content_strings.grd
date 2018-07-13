@@ -108,18 +108,6 @@
       <message name="IDS_DELETE_SUGGESTION_TEXT" desc="Button that deletes the currently highlighted word(s) from a spellcheck or voice correction menu">
         Delete
       </message>
-      <message name="IDS_MEDIA_PLAYER_ERROR_TITLE" desc="Title of dialog explaining that a video cannot be played due to an error [CHAR-LIMIT=32]">
-        Cannot play video
-      </message>
-      <message name="IDS_MEDIA_PLAYER_ERROR_TEXT_INVALID_PROGRESSIVE_PLAYBACK" desc="Dialog text explaining why a video cannot be played">
-        Sorry, this video is not valid for streaming to this device.
-      </message>
-      <message name="IDS_MEDIA_PLAYER_ERROR_TEXT_UNKNOWN" desc="Dialog text explaining that a video cannot be played">
-        Sorry, this video cannot be played.
-      </message>
-      <message name="IDS_MEDIA_PLAYER_ERROR_BUTTON" desc="OK button to dismiss an error dialog [CHAR-LIMIT=16]">
-        OK
-      </message>
       <message name="IDS_PROFILER_STARTED_TOAST" desc="Toast notifying the user that profiler started">
         Profiler started
       </message>

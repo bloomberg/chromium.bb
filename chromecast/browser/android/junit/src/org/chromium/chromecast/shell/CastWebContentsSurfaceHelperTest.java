@@ -9,7 +9,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -34,11 +33,9 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chromecast.base.Consumer;
 import org.chromium.chromecast.base.Scope;
 import org.chromium.chromecast.base.ScopeFactory;
-import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.ContentVideoViewEmbedderSetter;
 import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.MediaSessionGetter;
 import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.StartParams;
 import org.chromium.content.browser.MediaSessionImpl;
-import org.chromium.content_public.browser.ContentVideoViewEmbedder;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -54,7 +51,6 @@ public class CastWebContentsSurfaceHelperTest {
     private @Mock ScopeFactory<WebContents> mWebContentsView;
     private @Mock Consumer<Uri> mFinishCallback;
     private CastWebContentsSurfaceHelper mSurfaceHelper;
-    private @Mock ContentVideoViewEmbedderSetter mContentVideoViewEmbedderSetter;
     private @Mock MediaSessionGetter mMediaSessionGetter;
     private @Mock MediaSessionImpl mMediaSessionImpl;
 
@@ -120,7 +116,6 @@ public class CastWebContentsSurfaceHelperTest {
         when(mWebContentsView.create(any())).thenReturn(mock(Scope.class));
         mSurfaceHelper =
                 new CastWebContentsSurfaceHelper(mActivity, mWebContentsView, mFinishCallback);
-        mSurfaceHelper.setContentVideoViewEmbedderSetterForTesting(mContentVideoViewEmbedderSetter);
         mSurfaceHelper.setMediaSessionGetterForTesting(mMediaSessionGetter);
     }
 
@@ -157,15 +152,6 @@ public class CastWebContentsSurfaceHelperTest {
         mSurfaceHelper.onNewStartParams(params2);
         verify(scope1).close();
         verify(mWebContentsView).create(webContents2);
-    }
-
-    @Test
-    public void testSetsContentVideoViewEmbedderOnNewStartParams() {
-        WebContents webContents = mock(WebContents.class);
-        StartParams params = new StartParamsBuilder().withWebContents(webContents).build();
-        mSurfaceHelper.onNewStartParams(params);
-        verify(mContentVideoViewEmbedderSetter)
-                .set(eq(webContents), any(ContentVideoViewEmbedder.class));
     }
 
     @Test

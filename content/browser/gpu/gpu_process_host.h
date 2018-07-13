@@ -166,12 +166,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void RequestGPUInfo(RequestGPUInfoCallback request_cb);
   void RequestHDRStatus(RequestHDRStatusCallback request_cb);
 
-#if defined(OS_ANDROID)
-  // Tells the GPU process that the given surface is being destroyed so that it
-  // can stop using it.
-  void SendDestroyingVideoSurface(int surface_id, const base::Closure& done_cb);
-#endif
-
   // What kind of GPU process, e.g. sandboxed or unsandboxed.
   GpuProcessKind kind();
 

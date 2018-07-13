@@ -176,9 +176,6 @@ IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_SetPoster,
                     int /* player_id */,
                     GURL /* poster url */)
 
-// Requests the player to enter fullscreen.
-IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_EnterFullscreen, int /* player_id */)
-
 // Play the media on a remote device, if possible.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestRemotePlayback,
                     int /* player_id */)
