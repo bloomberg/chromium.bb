@@ -351,8 +351,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const std::string& message) override;
   void OnRouteMessagesReceived(
       const std::string& route_id,
-      const std::vector<content::PresentationConnectionMessage>& messages)
-      override;
+      std::vector<mojom::RouteMessagePtr> messages) override;
   void OnMediaRemoterCreated(
       int32_t tab_id,
       media::mojom::MirrorServiceRemoterPtr remoter,

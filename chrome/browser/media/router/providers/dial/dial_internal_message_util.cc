@@ -12,6 +12,7 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/media/router/providers/dial/dial_activity_manager.h"
+#include "chrome/browser/media/router/route_message_util.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "net/base/escape.h"
 #include "url/url_util.h"
@@ -264,8 +265,7 @@ bool DialInternalMessageUtil::IsStopSessionMessage(
 }
 
 // static
-content::PresentationConnectionMessage
-DialInternalMessageUtil::CreateNewSessionMessage(
+mojom::RouteMessagePtr DialInternalMessageUtil::CreateNewSessionMessage(
     const DialLaunchInfo& launch_info,
     const MediaSinkInternal& sink) {
   base::Value message = CreateDialMessageCommon(
@@ -274,12 +274,11 @@ DialInternalMessageUtil::CreateNewSessionMessage(
 
   std::string str;
   CHECK(base::JSONWriter::Write(message, &str));
-  return content::PresentationConnectionMessage(std::move(str));
+  return message_util::RouteMessageFromString(std::move(str));
 }
 
 // static
-content::PresentationConnectionMessage
-DialInternalMessageUtil::CreateReceiverActionCastMessage(
+mojom::RouteMessagePtr DialInternalMessageUtil::CreateReceiverActionCastMessage(
     const DialLaunchInfo& launch_info,
     const MediaSinkInternal& sink) {
   base::Value message = CreateDialMessageCommon(
@@ -289,12 +288,11 @@ DialInternalMessageUtil::CreateReceiverActionCastMessage(
 
   std::string str;
   CHECK(base::JSONWriter::Write(message, &str));
-  return content::PresentationConnectionMessage(std::move(str));
+  return message_util::RouteMessageFromString(std::move(str));
 }
 
 // static
-content::PresentationConnectionMessage
-DialInternalMessageUtil::CreateReceiverActionStopMessage(
+mojom::RouteMessagePtr DialInternalMessageUtil::CreateReceiverActionStopMessage(
     const DialLaunchInfo& launch_info,
     const MediaSinkInternal& sink) {
   base::Value message = CreateDialMessageCommon(
@@ -304,11 +302,11 @@ DialInternalMessageUtil::CreateReceiverActionStopMessage(
 
   std::string str;
   CHECK(base::JSONWriter::Write(message, &str));
-  return content::PresentationConnectionMessage(std::move(str));
+  return message_util::RouteMessageFromString(std::move(str));
 }
 
 // static
-std::pair<content::PresentationConnectionMessage, int>
+std::pair<mojom::RouteMessagePtr, int>
 DialInternalMessageUtil::CreateCustomDialLaunchMessage(
     const DialLaunchInfo& launch_info,
     const MediaSinkInternal& sink,
@@ -321,7 +319,7 @@ DialInternalMessageUtil::CreateCustomDialLaunchMessage(
 
   std::string str;
   CHECK(base::JSONWriter::Write(message, &str));
-  return {content::PresentationConnectionMessage(std::move(str)), seq_number};
+  return {message_util::RouteMessageFromString(std::move(str)), seq_number};
 }
 
 }  // namespace media_router

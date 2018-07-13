@@ -57,6 +57,8 @@ static_library("router") {
     "presentation/render_frame_host_id.h",
     "route_message_observer.cc",
     "route_message_observer.h",
+    "route_message_util.cc",
+    "route_message_util.h",
   ]
 
   if (enable_extensions) {

@@ -55,8 +55,7 @@ class MockMojoMediaRouter : public MockMediaRouter, public mojom::MediaRouter {
            const std::string& message));
   MOCK_METHOD2(OnRouteMessagesReceived,
                void(const std::string& route_id,
-                    const std::vector<content::PresentationConnectionMessage>&
-                        messages));
+                    std::vector<mojom::RouteMessagePtr> messages));
   void OnMediaRemoterCreated(int32_t tab_id,
                              media::mojom::MirrorServiceRemoterPtr remoter,
                              media::mojom::MirrorServiceRemotingSourceRequest

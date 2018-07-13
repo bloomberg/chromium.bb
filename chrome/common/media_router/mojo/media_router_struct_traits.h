@@ -156,50 +156,6 @@ struct StructTraits<media_router::mojom::CastMediaSinkDataView,
 };
 
 template <>
-struct StructTraits<media_router::mojom::RouteMessageDataView,
-                    content::PresentationConnectionMessage> {
-  static media_router::mojom::RouteMessage::Type type(
-      const content::PresentationConnectionMessage& msg) {
-    if (msg.message)
-      return media_router::mojom::RouteMessage::Type::TEXT;
-    else if (msg.data)
-      return media_router::mojom::RouteMessage::Type::BINARY;
-    NOTREACHED();
-    return media_router::mojom::RouteMessage::Type::TEXT;
-  }
-
-  static const base::Optional<std::string>& message(
-      const content::PresentationConnectionMessage& msg) {
-    return msg.message;
-  }
-
-  static const base::Optional<std::vector<uint8_t>>& data(
-      const content::PresentationConnectionMessage& msg) {
-    return msg.data;
-  }
-
-  static bool Read(media_router::mojom::RouteMessageDataView data,
-                   content::PresentationConnectionMessage* out) {
-    media_router::mojom::RouteMessage::Type type;
-    if (!data.ReadType(&type))
-      return false;
-    switch (type) {
-      case media_router::mojom::RouteMessage::Type::TEXT: {
-        if (!data.ReadMessage(&out->message) || !out->message)
-          return false;
-        break;
-      }
-      case media_router::mojom::RouteMessage::Type::BINARY: {
-        if (!data.ReadData(&out->data) || !out->data)
-          return false;
-        break;
-      }
-    }
-    return true;
-  }
-};
-
-template <>
 struct StructTraits<media_router::mojom::IssueDataView,
                     media_router::IssueInfo> {
   static bool Read(media_router::mojom::IssueDataView data,

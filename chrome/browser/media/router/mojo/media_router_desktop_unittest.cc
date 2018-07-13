@@ -43,9 +43,7 @@ class NullMessageObserver : public RouteMessageObserver {
       : RouteMessageObserver(router, route_id) {}
   ~NullMessageObserver() final {}
 
-  void OnMessagesReceived(
-      const std::vector<content::PresentationConnectionMessage>& messages)
-      final {}
+  void OnMessagesReceived(const std::vector<mojom::RouteMessagePtr>) final {}
 };
 
 }  // namespace

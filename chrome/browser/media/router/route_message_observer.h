@@ -12,10 +12,7 @@
 
 #include "base/macros.h"
 #include "chrome/common/media_router/media_route.h"
-
-namespace content {
-struct PresentationConnectionMessage;
-}
+#include "chrome/common/media_router/mojo/media_router.mojom.h"
 
 namespace media_router {
 
@@ -34,7 +31,7 @@ class RouteMessageObserver {
   // Invoked by |router_| whenever messages are received from the route sink.
   // |messages| is guaranteed to be non-empty.
   virtual void OnMessagesReceived(
-      const std::vector<content::PresentationConnectionMessage>& messages) = 0;
+      std::vector<mojom::RouteMessagePtr> messages) = 0;
 
   const MediaRoute::Id& route_id() const { return route_id_; }
 

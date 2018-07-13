@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
-#include "content/public/common/presentation_connection_message.h"
 
 namespace media_router {
 
@@ -28,9 +27,8 @@ class BufferedMessageSender {
   // Sends |messages| for route given by |route_id|. The messages are buffered
   // if there are no listeners for the route. It is invalid to call this method
   // for an already terminated route.
-  void SendMessages(
-      const MediaRoute::Id& route_id,
-      const std::vector<content::PresentationConnectionMessage>& messages);
+  void SendMessages(const MediaRoute::Id& route_id,
+                    std::vector<mojom::RouteMessagePtr> messages);
 
   // Starts listening for messages for |route_id|. All previously buffered
   // messages and subsequent messages will be sent to |media_router_|
@@ -43,8 +41,7 @@ class BufferedMessageSender {
  private:
   // Set of MediaRoutes for which there is an active message listener.
   base::flat_set<MediaRoute::Id> active_routes_;
-  base::flat_map<MediaRoute::Id,
-                 std::vector<content::PresentationConnectionMessage>>
+  base::flat_map<MediaRoute::Id, std::vector<mojom::RouteMessagePtr>>
       buffered_messages_;
 
   // Non-owned pointer provided by DialMediaRouteProvider.
