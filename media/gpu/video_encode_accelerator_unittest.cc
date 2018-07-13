@@ -49,6 +49,7 @@
 #include "media/base/video_frame.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/ivf_parser.h"
+#include "media/filters/vp8_parser.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/h264_decoder.h"
@@ -559,9 +560,10 @@ enum ClientState {
 class StreamValidator {
  public:
   // To be called when a complete frame is found while processing a stream
-  // buffer, passing true if the frame is a keyframe. Returns false if we
-  // are not interested in more frames and further processing should be aborted.
-  typedef base::Callback<bool(bool)> FrameFoundCallback;
+  // buffer, passing true if the frame is a keyframe and the visible size.
+  // Returns false if we are not interested in more frames and further
+  // processing should be aborted.
+  typedef base::Callback<bool(bool, const gfx::Size&)> FrameFoundCallback;
 
   virtual ~StreamValidator() {}
 
@@ -578,6 +580,7 @@ class StreamValidator {
       : frame_cb_(frame_cb) {}
 
   FrameFoundCallback frame_cb_;
+  gfx::Size visible_size_;
 };
 
 class H264Validator : public StreamValidator {
@@ -635,7 +638,7 @@ void H264Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
         ASSERT_EQ(H264Parser::kOk,
                   h264_parser_.ParseSliceHeader(nalu, &slice_hdr));
         if (IsNewPicture(slice_hdr)) {
-          if (!frame_cb_.Run(keyframe))
+          if (!frame_cb_.Run(keyframe, visible_size_))
             return;
           ASSERT_TRUE(UpdateCurrentPicture(slice_hdr));
         }
@@ -645,6 +648,11 @@ void H264Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
       case H264NALU::kSPS: {
         int sps_id;
         ASSERT_EQ(H264Parser::kOk, h264_parser_.ParseSPS(&sps_id));
+        // Check the visible size.
+        gfx::Rect visible_size =
+            h264_parser_.GetSPS(sps_id)->GetVisibleRect().value_or(gfx::Rect());
+        ASSERT_FALSE(visible_size.IsEmpty());
+        visible_size_ = visible_size.size();
         seen_sps_ = true;
         break;
       }
@@ -707,16 +715,20 @@ class VP8Validator : public StreamValidator {
 };
 
 void VP8Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
-  bool keyframe = !(stream[0] & 0x01);
-  if (keyframe)
-    seen_keyframe_ = true;
-
-  EXPECT_TRUE(seen_keyframe_);
-
-  frame_cb_.Run(keyframe);
   // TODO(posciak): We could be getting more frames in the buffer, but there is
   // no simple way to detect this. We'd need to parse the frames and go through
   // partition numbers/sizes. For now assume one frame per buffer.
+  Vp8Parser parser;
+  Vp8FrameHeader header;
+  EXPECT_TRUE(parser.ParseFrame(stream, size, &header));
+  if (header.IsKeyframe()) {
+    seen_keyframe_ = true;
+    visible_size_.SetSize(header.width, header.height);
+  }
+
+  EXPECT_TRUE(seen_keyframe_);
+  ASSERT_FALSE(visible_size_.IsEmpty());
+  frame_cb_.Run(header.IsKeyframe(), visible_size_);
 }
 
 // static
@@ -1209,9 +1221,10 @@ class VEAClient : public VEAClientBase {
   void FeedEncoderWithOutput(base::SharedMemory* shm);
 
   // Called on finding a complete frame (with |keyframe| set to true for
-  // keyframes) in the stream, to perform codec-independent, per-frame checks
-  // and accounting. Returns false once we have collected all frames we needed.
-  bool HandleEncodedFrame(bool keyframe);
+  // keyframes, |visible_size| for the visible size of encoded frame) in the
+  // stream, to perform codec-independent, per-frame checks and accounting.
+  // Returns false once we have collected all frames we needed.
+  bool HandleEncodedFrame(bool keyframe, const gfx::Size& visible_size);
 
   // Ask the encoder to flush the frame.
   void FlushEncoder();
@@ -1668,7 +1681,9 @@ void VEAClient::BitstreamBufferReady(
       stream_validator_->ProcessStreamBuffer(stream_ptr,
                                              metadata.payload_size_bytes);
     } else {
-      HandleEncodedFrame(metadata.key_frame);
+      // We don't know the visible size of without stream validator, just
+      // send the expected value to pass the check.
+      HandleEncodedFrame(metadata.key_frame, test_stream_->visible_size);
     }
 
     if (quality_validator_) {
@@ -1855,7 +1870,8 @@ void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
   encoder_->UseOutputBitstreamBuffer(bitstream_buffer);
 }
 
-bool VEAClient::HandleEncodedFrame(bool keyframe) {
+bool VEAClient::HandleEncodedFrame(bool keyframe,
+                                   const gfx::Size& visible_size) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // This would be a bug in the test, which should not ignore false
   // return value from this method.
@@ -1890,6 +1906,7 @@ bool VEAClient::HandleEncodedFrame(bool keyframe) {
     }
     seen_keyframe_in_this_buffer_ = true;
   }
+  EXPECT_EQ(test_stream_->visible_size, visible_size);
 
   if (num_keyframes_requested_ > 0)
     EXPECT_LE(num_encoded_frames_, next_keyframe_at_ + kMaxKeyframeDelay);
