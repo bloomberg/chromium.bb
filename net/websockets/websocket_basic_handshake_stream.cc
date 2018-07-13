@@ -517,6 +517,8 @@ int WebSocketBasicHandshakeStream::ValidateUpgradeResponse(
 }
 
 void WebSocketBasicHandshakeStream::OnFailure(const std::string& message) {
+  // Avoid connection reuse if auth did not happen.
+  state_.connection()->socket()->Disconnect();
   stream_request_->OnFailure(message);
 }
 

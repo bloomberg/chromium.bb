@@ -158,17 +158,7 @@ class WebSocketHandshakeStreamCreateHelperTest
     request_info.traffic_annotation =
         MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-    HttpRequestHeaders headers;
-    headers.SetHeader("Host", "www.example.org");
-    headers.SetHeader("Connection", "Upgrade");
-    headers.SetHeader("Pragma", "no-cache");
-    headers.SetHeader("Cache-Control", "no-cache");
-    headers.SetHeader("Upgrade", "websocket");
-    headers.SetHeader("Origin", kOrigin);
-    headers.SetHeader("Sec-WebSocket-Version", "13");
-    headers.SetHeader("User-Agent", "");
-    headers.SetHeader("Accept-Encoding", "gzip, deflate");
-    headers.SetHeader("Accept-Language", "en-us,fr");
+    auto headers = WebSocketCommonTestHeaders();
 
     switch (GetParam()) {
       case BASIC_HANDSHAKE_STREAM: {
