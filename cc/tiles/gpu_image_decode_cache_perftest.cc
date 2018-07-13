@@ -154,5 +154,30 @@ TEST_P(GpuImageDecodeCachePerfTestNoSw, DecodeWithMips) {
                          "result", timer_.LapsPerSecond(), "runs/s", true);
 }
 
+TEST_P(GpuImageDecodeCachePerfTest, AcquireExistingImages) {
+  timer_.Reset();
+  DrawImage image(
+      PaintImageBuilder::WithDefault()
+          .set_id(PaintImage::GetNextId())
+          .set_image(CreateImage(1024, 2048), PaintImage::GetNextContentId())
+          .TakePaintImage(),
+      SkIRect::MakeWH(1024, 2048), kMedium_SkFilterQuality,
+      CreateMatrix(SkSize::Make(1.0f, 1.0f)), 0u,
+      gfx::ColorSpace::CreateXYZD50());
+
+  DecodedDrawImage decoded_image = cache_.GetDecodedImageForDraw(image);
+  cache_.DrawWithImageFinished(image, decoded_image);
+
+  do {
+    DecodedDrawImage decoded_image = cache_.GetDecodedImageForDraw(image);
+    cache_.DrawWithImageFinished(image, decoded_image);
+    timer_.NextLap();
+  } while (!timer_.HasTimeLimitExpired());
+
+  perf_test::PrintResult("gpu_image_decode_cache_acquire_existing_images",
+                         ParamName(), "result", timer_.LapsPerSecond(),
+                         "runs/s", true);
+}
+
 }  // namespace
 }  // namespace cc

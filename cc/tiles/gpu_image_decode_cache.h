@@ -372,10 +372,13 @@ class CC_EXPORT GpuImageDecodeCache
                                            const TracingInfo& tracing_info,
                                            DecodeTaskType task_type);
 
-  void RefImageDecode(const DrawImage& draw_image);
-  void UnrefImageDecode(const DrawImage& draw_image);
-  void RefImage(const DrawImage& draw_image);
-  void UnrefImageInternal(const DrawImage& draw_image);
+  void RefImageDecode(const DrawImage& draw_image,
+                      const InUseCacheKey& cache_key);
+  void UnrefImageDecode(const DrawImage& draw_image,
+                        const InUseCacheKey& cache_key);
+  void RefImage(const DrawImage& draw_image, const InUseCacheKey& cache_key);
+  void UnrefImageInternal(const DrawImage& draw_image,
+                          const InUseCacheKey& cache_key);
 
   // Called any time the ownership of an object changed. This includes changes
   // to ref-count or to orphaned status.
@@ -399,7 +402,8 @@ class CC_EXPORT GpuImageDecodeCache
 
   // Finds the ImageData that should be used for the given DrawImage. Looks
   // first in the |in_use_cache_|, and then in the |persistent_cache_|.
-  ImageData* GetImageDataForDrawImage(const DrawImage& image);
+  ImageData* GetImageDataForDrawImage(const DrawImage& image,
+                                      const InUseCacheKey& key);
 
   // Returns true if the given ImageData can be used to draw the specified
   // DrawImage.
