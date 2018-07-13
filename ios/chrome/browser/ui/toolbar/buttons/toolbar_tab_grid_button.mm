@@ -15,7 +15,7 @@
 #endif
 
 namespace {
-const CGFloat kLabelMargin = 7;
+const CGFloat kLabelSize = 14;
 }  // namespace
 
 @interface ToolbarTabGridButton ()
@@ -70,8 +70,12 @@ const CGFloat kLabelMargin = 7;
     _tabCountLabel = [[UILabel alloc] init];
     [self addSubview:_tabCountLabel];
 
-    CGRect imageFrame = self.imageView.frame;
-    _tabCountLabel.frame = CGRectInset(imageFrame, kLabelMargin, kLabelMargin);
+    _tabCountLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [NSLayoutConstraint activateConstraints:@[
+      [_tabCountLabel.widthAnchor constraintEqualToConstant:kLabelSize],
+      [_tabCountLabel.heightAnchor constraintEqualToConstant:kLabelSize],
+    ]];
+    AddSameCenterConstraints(self, _tabCountLabel);
 
     _tabCountLabel.font = [UIFont systemFontOfSize:kTabGridButtonFontSize
                                             weight:UIFontWeightBold];
@@ -82,16 +86,6 @@ const CGFloat kLabelMargin = 7;
     _tabCountLabel.textColor = self.configuration.buttonsTintColor;
   }
   return _tabCountLabel;
-}
-
-- (void)layoutSubviews {
-  [super layoutSubviews];
-
-  if (!_tabCountLabel)
-    return;
-  CGRect imageFrame = self.imageView.frame;
-  self.tabCountLabel.frame =
-      CGRectInset(imageFrame, kLabelMargin, kLabelMargin);
 }
 
 @end
