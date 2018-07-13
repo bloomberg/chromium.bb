@@ -259,11 +259,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "webview_instrumentation_test_apk-marlin-ddview-nougat"
+            "webview_instrumentation_test_apk-ddready-ddview"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "webview_instrumentation_test_apk-marlin-ddview-nougat",
+        "name": "webview_instrumentation_test_apk-ddready-ddview",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
