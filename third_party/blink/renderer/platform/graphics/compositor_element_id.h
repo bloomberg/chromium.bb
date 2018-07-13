@@ -57,7 +57,7 @@ CompositorElementId PLATFORM_EXPORT CompositorElementIdFromDOMNodeId(DOMNodeId);
 // Blink's hash functions with Blink specific data structures.
 struct CompositorElementIdHash {
   static unsigned GetHash(const CompositorElementId& key) {
-    return WTF::HashInt(static_cast<cc::ElementIdType>(key.ToInternalValue()));
+    return WTF::HashInt(static_cast<cc::ElementIdType>(key.GetInternalValue()));
   }
   static bool Equal(const CompositorElementId& a,
                     const CompositorElementId& b) {
