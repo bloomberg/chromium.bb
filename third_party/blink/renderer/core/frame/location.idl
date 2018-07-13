@@ -41,7 +41,7 @@
     // |assign| itself is not cross-origin accessible.
     // TODO(yukishiino): Remove [CrossOrigin] once we support the Incumbent
     // realm correctly.
-    [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException] void assign(USVString url);
+    [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException] void assign(URLString url);
 
     // |replace|, and *writing* |href| do not require a security check, as they
     // *change* the page, and thus these do not change any property of an
@@ -49,7 +49,7 @@
     // However, *reading* |href|, or accessing any component, is a security
     // problem, since that allows tracking navigation.
     // https://html.spec.whatwg.org/multipage/browsers.html#crossoriginproperties-(-o-)
-    [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException] void replace(USVString url);
+    [CallWith=(CurrentWindow,EnteredWindow), CrossOrigin, RaisesException] void replace(URLString url);
     [CallWith=CurrentWindow] void reload();
 
     // TODO(foolip): |ancestorOrigins| should have [Unforgeable, SameObject].
