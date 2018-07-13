@@ -10,6 +10,7 @@
 #include "base/test/mock_callback.h"
 #include "components/offline_pages/core/model/get_thumbnail_task.h"
 #include "components/offline_pages/core/model/model_task_test_base.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 
 namespace offline_pages {
@@ -65,6 +66,17 @@ TEST_F(StoreThumbnailTaskTest, AlreadyExists) {
   thumb.expiration = store_utils::FromDatabaseTime(12345);
   RunTask(std::make_unique<StoreThumbnailTask>(store(), thumb, callback.Get()));
   EXPECT_EQ(thumb, MustReadThumbnail(thumb.offline_id));
+}
+
+TEST_F(StoreThumbnailTaskTest, DbConnectionIsNull) {
+  store()->SetStateForTesting(StoreState::FAILED_LOADING, true);
+  OfflinePageThumbnail thumb;
+  thumb.offline_id = 1;
+  thumb.expiration = store_utils::FromDatabaseTime(1234);
+  thumb.thumbnail = "123abc";
+  base::MockCallback<StoreThumbnailTask::CompleteCallback> callback;
+  EXPECT_CALL(callback, Run(false)).Times(1);
+  RunTask(std::make_unique<StoreThumbnailTask>(store(), thumb, callback.Get()));
 }
 
 }  // namespace

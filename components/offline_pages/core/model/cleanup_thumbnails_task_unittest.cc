@@ -38,6 +38,14 @@ class CleanupThumbnailsTaskTest : public ModelTaskTestBase {
   }
 };
 
+TEST_F(CleanupThumbnailsTaskTest, DbConnectionIsNull) {
+  base::MockCallback<StoreThumbnailTask::CompleteCallback> callback;
+  EXPECT_CALL(callback, Run(false)).Times(1);
+  store()->SetStateForTesting(StoreState::FAILED_LOADING, true);
+  RunTask(std::make_unique<CleanupThumbnailsTask>(
+      store(), store_utils::FromDatabaseTime(1000), callback.Get()));
+}
+
 TEST_F(CleanupThumbnailsTaskTest, CleanupNoThumbnails) {
   base::MockCallback<StoreThumbnailTask::CompleteCallback> callback;
   EXPECT_CALL(callback, Run(true)).Times(1);
