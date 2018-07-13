@@ -209,7 +209,7 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
 }
 
 int GlassBrowserFrameView::GetTabStripLeftInset() const {
-  return incognito_bounds_.right() + GetAvatarIconPadding();
+  return incognito_bounds_.right() + GetTabstripPadding();
 }
 
 bool GlassBrowserFrameView::IsSingleTabModeAvailable() const {
@@ -611,9 +611,8 @@ int GlassBrowserFrameView::MinimizeButtonX() const {
 }
 
 int GlassBrowserFrameView::TabStripCaptionSpacing() const {
-  // For Material Refresh, the end of the tabstrip contains empty space to
-  // ensure the window remains draggable, which is sufficient padding to the
-  // other tabstrip contents.
+  // In Refresh, any necessary padding after the tabstrip is contained within
+  // the tabs and/or new tab button.
   if (MD::IsRefreshUi())
     return 0;
 

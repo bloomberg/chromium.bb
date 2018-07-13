@@ -249,7 +249,7 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
           (maximized ? OpaqueBrowserFrameViewLayout::kCaptionSpacing
                      : -delegate_->GetNewTabButtonPreferredSize().width());
     }
-    int tabstrip_x = OpaqueBrowserFrameView::GetAvatarIconPadding();
+    int tabstrip_x = OpaqueBrowserFrameView::GetTabstripPadding();
     if (show_caption_buttons && caption_buttons_on_left) {
       int right_of_close =
           maximized ? kMaximizedExtraCloseWidth

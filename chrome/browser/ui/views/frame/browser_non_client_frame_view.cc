@@ -69,6 +69,13 @@ int BrowserNonClientFrameView::GetAvatarIconPadding() {
   return MD::IsNewerMaterialUi() ? 8 : 4;
 }
 
+// static
+int BrowserNonClientFrameView::GetTabstripPadding() {
+  // In Refresh, the apparent padding around the tabstrip is contained within
+  // the tabs and/or new tab button.
+  return MD::IsRefreshUi() ? 0 : 4;
+}
+
 void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {
   MaybeObserveTabstrip();
   OnSingleTabModeChanged();
@@ -145,9 +152,10 @@ void BrowserNonClientFrameView::UpdateClientArea() {}
 void BrowserNonClientFrameView::UpdateMinimumSize() {}
 
 int BrowserNonClientFrameView::GetTabStripLeftInset() const {
+  int left_inset = GetTabstripPadding();
   if (profile_indicator_icon())
-    return 2 * GetAvatarIconPadding() + GetIncognitoAvatarIcon().width();
-  return MD::IsRefreshUi() ? 8 : 4;
+    left_inset += GetAvatarIconPadding() + GetIncognitoAvatarIcon().width();
+  return left_inset;
 }
 
 void BrowserNonClientFrameView::ChildPreferredSizeChanged(views::View* child) {

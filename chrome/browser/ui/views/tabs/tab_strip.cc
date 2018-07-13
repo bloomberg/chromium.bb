@@ -1358,8 +1358,7 @@ void TabStrip::OnPaint(gfx::Canvas* canvas) {
     const int width = Tab::kSeparatorThickness;
     const float separator_height = Tab::GetTabSeparatorHeight();
     gfx::RectF separator_bounds(
-        GetMirroredXWithWidthInView(
-            new_tab_button_bounds_.x() - Tab::GetCornerRadius() - width, width),
+        GetMirroredXWithWidthInView(new_tab_button_bounds_.x() - width, width),
         (height() - separator_height) / 2, width, separator_height);
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
@@ -1588,11 +1587,20 @@ bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
 }
 
 int TabStrip::TabToFollowingNewTabButtonSpacing() const {
+  // When there is no following new tab button, there is no relevant spacing.
   if (controller_->GetNewTabButtonPosition() != AFTER_TABS)
     return 0;
 
-  constexpr int kNewTabButtonSpacing[] = {-5, -6, 6, 0, 0};
-  return kNewTabButtonSpacing[MD::GetMode()];
+  // In refresh, the new tab button contains built-in padding, and should be
+  // placed flush against the trailing separator.
+  if (MD::IsRefreshUi())
+    return -Tab::GetCornerRadius();
+
+  // Pre-refresh, there are a variety of hardcoded values.
+  const int mode = MD::GetMode();
+  DCHECK_LE(mode, 2);
+  constexpr int kNewTabButtonSpacing[] = {-5, -6, 6};
+  return kNewTabButtonSpacing[mode];
 }
 
 bool TabStrip::MayHideNewTabButtonWhileDragging() const {
@@ -1609,7 +1617,11 @@ int TabStrip::GetFrameGrabWidth() const {
   int width = kGrabWidth;
 
   const NewTabButtonPosition position = controller_->GetNewTabButtonPosition();
-  if (position != AFTER_TABS) {
+  if (position == AFTER_TABS) {
+    // The grab area is adjacent to the new tab button.  Treat the padding in
+    // the new tab button as part of the grab area.
+    width -= new_tab_button_->GetInsets().right();
+  } else {
     // The grab area is adjacent to the last tab.  This tab has mostly empty
     // space where the outer (lower) corners are, which should be treated as
     // part of the grab area, so decrease the size of the remaining grab area by
@@ -1752,9 +1764,13 @@ std::vector<gfx::Rect> TabStrip::CalculateBoundsForDraggedTabs(
 }
 
 int TabStrip::TabStartX() const {
-  return (controller_->GetNewTabButtonPosition() == LEADING)
-             ? new_tab_button_bounds_.width()
-             : 0;
+  if (controller_->GetNewTabButtonPosition() != LEADING)
+    return 0;
+
+  // In refresh, the new tab button contains built-in padding, and should be
+  // placed flush against the leading separator.
+  const int overlap = MD::IsRefreshUi() ? Tab::GetCornerRadius() : 0;
+  return new_tab_button_bounds_.width() - overlap;
 }
 
 int TabStrip::TabDragAreaEndX() const {

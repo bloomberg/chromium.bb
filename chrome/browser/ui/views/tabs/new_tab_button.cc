@@ -122,7 +122,9 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
   const int top = MD::IsNewerMaterialUi()
                       ? (extra_vertical_space / 2)
                       : (extra_vertical_space - kNewTabButtonBottomOffset);
-  SetBorder(views::CreateEmptyBorder(gfx::Insets(top, 0, 0, 0)));
+  const int horizontal = MD::IsRefreshUi() ? 8 : 0;
+  SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(top, horizontal, 0, horizontal)));
 }
 
 NewTabButton::~NewTabButton() {
