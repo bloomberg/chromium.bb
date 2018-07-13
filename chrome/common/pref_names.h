@@ -646,6 +646,7 @@ extern const char kPowerMetricsLidClosedSuspendCount[];
 extern const char kReportingUsers[];
 extern const char kArcAppInstallEventLoggingEnabled[];
 extern const char kRemoveUsersRemoteCommand[];
+extern const char kCameraMediaConsolidated[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kClearPluginLSODataEnabled[];
