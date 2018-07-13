@@ -370,4 +370,81 @@ TEST_F(TestURLLoaderFactoryTest, SimulateResponseReportRawHeaders) {
   }
 }
 
+TEST_F(TestURLLoaderFactoryTest,
+       SimulateResponseWithoutRemovingFromPendingList) {
+  network::URLLoaderCompletionStatus ok_status(net::OK);
+
+  // #1
+  std::string url_1 = "http://foo/1";
+  TestURLLoaderClient client_1;
+
+  // #2
+  std::string url_2 = "http://foo/2";
+  TestURLLoaderClient client_2;
+
+  // #3
+  std::string url_3 = "http://foo/3";
+  TestURLLoaderClient client_3;
+
+  // By default no request is pending.
+  EXPECT_EQ(0, factory()->NumPending());
+
+  StartRequest(url_1, &client_1);
+  StartRequest(url_2, &client_2);
+  StartRequest(url_3, &client_3);
+  EXPECT_EQ(3, factory()->NumPending());
+
+  // Try out loading the pending requests out of order.
+  // #2
+  auto* request = &(*factory()->pending_requests())[1];
+  factory()->SimulateResponseWithoutRemovingFromPendingList(
+      request, CreateResourceResponseHead(net::HTTP_NOT_FOUND), /*content=*/"",
+      ok_status);
+  // The pending request list remains untounched and successful.
+  EXPECT_EQ(3, factory()->NumPending());
+  EXPECT_TRUE(client_2.has_received_completion());
+  EXPECT_EQ(net::OK, client_2.completion_status().error_code);
+  ASSERT_TRUE(client_2.response_head().headers);
+  EXPECT_EQ(net::HTTP_NOT_FOUND,
+            client_2.response_head().headers->response_code());
+
+  // #1
+  request = &(*factory()->pending_requests())[0];
+  factory()->SimulateResponseWithoutRemovingFromPendingList(
+      request, CreateResourceResponseHead(net::HTTP_OK), /*content=*/"hello",
+      ok_status);
+  // Again, the pending request list remains untounched and successful.
+  EXPECT_EQ(3, factory()->NumPending());
+  EXPECT_TRUE(client_1.has_received_completion());
+  EXPECT_EQ(net::OK, client_1.completion_status().error_code);
+  ASSERT_TRUE(client_1.response_head().headers);
+  EXPECT_EQ(net::HTTP_OK, client_1.response_head().headers->response_code());
+
+  // Ensure that when the client is unbound, it is counted out
+  // of the pending request list.
+  client_1.Unbind();
+  EXPECT_EQ(2, factory()->NumPending());
+  EXPECT_EQ(3u, factory()->pending_requests()->size());
+
+  // Add one more request and load it (remember that request #3
+  // is not handled, where #1 and #2 are.
+  std::string url_4 = "http://foo/4";
+  TestURLLoaderClient client_4;
+
+  StartRequest(url_4, &client_4);
+  EXPECT_EQ(3, factory()->NumPending());
+
+  // # Process 4.
+  request = &(*factory()->pending_requests())[3];
+  factory()->SimulateResponseWithoutRemovingFromPendingList(
+      request, CreateResourceResponseHead(net::HTTP_OK), /*content=*/"hello",
+      ok_status);
+  // Again, the pending request list remains untounched and successful.
+  EXPECT_EQ(3, factory()->NumPending());
+  EXPECT_TRUE(client_4.has_received_completion());
+  EXPECT_EQ(net::OK, client_4.completion_status().error_code);
+  ASSERT_TRUE(client_4.response_head().headers);
+  EXPECT_EQ(net::HTTP_OK, client_4.response_head().headers->response_code());
+}
+
 }  // namespace network
