@@ -122,9 +122,11 @@ static void ScrollToVisible(Range* match) {
       smooth_find_enabled ? kScrollBehaviorSmooth : kScrollBehaviorAuto;
   first_node.GetLayoutObject()->ScrollRectToVisible(
       LayoutRect(match->BoundingBox()),
-      WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
-                              ScrollAlignment::kAlignCenterIfNeeded,
-                              kUserScroll, false, scroll_behavior, true));
+      WebScrollIntoViewParams(
+          ScrollAlignment::kAlignCenterIfNeeded,
+          ScrollAlignment::kAlignCenterIfNeeded, kUserScroll,
+          true /* make_visible_in_visual_viewport */, scroll_behavior,
+          true /* is_for_scroll_sequence */));
   first_node.GetDocument().SetSequentialFocusNavigationStartingPoint(
       const_cast<Node*>(&first_node));
 }
