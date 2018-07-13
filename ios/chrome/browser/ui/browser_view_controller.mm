@@ -1322,10 +1322,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                                           inset:0.0]];
     }
     if ([_findBarController view]) {
+      CGFloat inset = kIPadFindBarOverlap;
+      if (IsUIRefreshPhase1Enabled())
+        inset = 0;
       [results addObject:[HeaderDefinition
                              definitionWithView:[_findBarController view]
                                 headerBehaviour:Overlap
-                                          inset:kIPadFindBarOverlap]];
+                                          inset:inset]];
     }
   }
   return [results copy];
@@ -2793,7 +2796,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if ([self canShowTabStrip]) {
     DCHECK(_model.currentTab);
     referenceFrame = [self visibleFrameForTab:_model.currentTab];
-    referenceFrame.origin.y -= kIPadFindBarOverlap;
+    if (!IsUIRefreshPhase1Enabled())
+      referenceFrame.origin.y -= kIPadFindBarOverlap;
   } else {
     referenceFrame = self.contentArea.frame;
   }
