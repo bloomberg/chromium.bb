@@ -48,6 +48,10 @@ class ShelfSpinnerController : public ash::ShelfModelObserver {
   // and removes entry from the list of tracking items.
   void Close(const std::string& app_id);
 
+  // Closes all Crostini spinner shelf items.
+  // This should be avoided when possible.
+  void CloseCrostiniSpinners();
+
   Profile* OwnerProfile();
 
   // ash::ShelfModelObserver:
