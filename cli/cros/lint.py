@@ -25,6 +25,7 @@ import os
 import re
 import sys
 
+from logilab.common.configuration import Configuration
 from pylint.checkers import BaseChecker
 from pylint.interfaces import IAstroidChecker
 
@@ -105,7 +106,10 @@ class DocStringChecker(BaseChecker):
   class _MessageCP017(object): pass
   # pylint: enable=class-missing-docstring,multiple-statements
 
+  # This is the section name in the pylintrc file.
   name = 'doc_string_checker'
+  # Any pylintrc config options we accept.
+  options = ()
   priority = -1
   MSG_ARGS = 'offset:%(offset)i: {%(line)s}'
   msgs = {
@@ -150,10 +154,28 @@ class DocStringChecker(BaseChecker):
                 '%(line_old)i',
                 ('docstring-duplicate-section'), _MessageCP017),
   }
-  options = ()
 
   # TODO: Should we enforce Examples?
   VALID_SECTIONS = ('Args', 'Returns', 'Yields', 'Raises',)
+
+  def __init__(self, *args, **kwargs):
+    BaseChecker.__init__(self, *args, **kwargs)
+
+    # This is a bit hacky.  The pylint framework doesn't allow us to access
+    # options outside of our own namespace (self.name), and multiple linters
+    # may not have the same name/options values (since they get registered).
+    # So re-read the registered config file and pull out the value we want.
+    # This way we don't force people to set the same value in two places.
+    if self.linter is None:
+      # Unit tests don't set this up.
+      self._indent_string = '  '
+    else:
+      cfg = Configuration(config_file=self.linter.config_file, name='format',
+                          options=(('indent-string', {'default': '    ',
+                                                      'type': 'string'}),))
+      cfg.load_file_configuration()
+      self._indent_string = cfg.option_value('indent-string')
+    self._indent_len = len(self._indent_string)
 
   def visit_function(self, node):
     """Verify function docstrings"""
@@ -185,13 +207,12 @@ class DocStringChecker(BaseChecker):
     else:
       self.add_message('C9002', node=node, line=node.fromlineno)
 
-  @staticmethod
-  def _docstring_indent(node):
+  def _docstring_indent(self, node):
     """How much a |node|'s docstring should be indented"""
     if node.display_type() == 'Module':
       return 0
     else:
-      return node.col_offset + 2
+      return node.col_offset + self._indent_len
 
   def _check_common(self, node, lines=None):
     """Common checks we enforce on all docstrings"""
@@ -357,7 +378,7 @@ class DocStringChecker(BaseChecker):
       # We're going to check the section line itself.
       lineno = section.lineno
       line = section.header
-      want_indent = indent_len + 2
+      want_indent = indent_len + self._indent_len
       line_indent_len = len(line) - len(line.lstrip(' '))
       margs = {
           'offset': lineno,
