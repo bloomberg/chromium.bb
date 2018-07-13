@@ -19,6 +19,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_interfaces.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
@@ -635,7 +636,11 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
   // Fuchsia currently doesn't support automatic interface selection for
   // multicast, so interface index needs to be set explicitly.
   // See https://fuchsia.atlassian.net/browse/NET-195 .
-  EXPECT_THAT(socket.SetMulticastInterface(1), IsOk());
+  NetworkInterfaceList interfaces;
+  ASSERT_TRUE(GetNetworkList(&interfaces, 0));
+  ASSERT_FALSE(interfaces.empty());
+  EXPECT_THAT(socket.SetMulticastInterface(interfaces[0].interface_index),
+              IsOk());
 #endif  // defined(OS_FUCHSIA)
 
   EXPECT_THAT(socket.Bind(bind_address), IsOk());
