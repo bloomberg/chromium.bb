@@ -4,9 +4,11 @@
 
 #include "components/exo/notification_surface.h"
 
+#include "ash/public/cpp/app_types.h"
 #include "components/exo/notification_surface_manager.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -20,6 +22,8 @@ NotificationSurface::NotificationSurface(NotificationSurfaceManager* manager,
       notification_key_(notification_key) {
   surface->AddSurfaceObserver(this);
   SetRootSurface(surface);
+  host_window()->SetProperty(aura::client::kAppType,
+                             static_cast<int>(ash::AppType::ARC_APP));
   host_window()->Show();
 }
 
