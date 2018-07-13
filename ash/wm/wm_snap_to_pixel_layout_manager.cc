@@ -5,9 +5,10 @@
 #include "ash/wm/wm_snap_to_pixel_layout_manager.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/wm/window_properties.h"
-#include "ash/wm/window_util.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/wm/core/window_properties.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace wm {
@@ -22,7 +23,7 @@ void WmSnapToPixelLayoutManager::InstallOnContainers(aura::Window* window) {
     if (child->id() < kShellWindowId_MinContainer ||
         child->id() > kShellWindowId_MaxContainer)  // not a container
       continue;
-    if (child->GetProperty(kSnapChildrenToPixelBoundary)) {
+    if (child->GetProperty(::wm::kSnapChildrenToPixelBoundary)) {
       if (!child->layout_manager())
         child->SetLayoutManager(new WmSnapToPixelLayoutManager());
     } else {
@@ -49,7 +50,7 @@ void WmSnapToPixelLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
   SetChildBoundsDirect(child, requested_bounds);
-  wm::SnapWindowToPixelBoundary(child);
+  ::wm::SnapWindowToPixelBoundary(child);
 }
 
 }  // namespace wm

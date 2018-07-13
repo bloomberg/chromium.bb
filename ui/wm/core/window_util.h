@@ -96,6 +96,8 @@ WM_CORE_EXPORT void RemoveTransientChild(aura::Window* parent,
 WM_CORE_EXPORT bool HasTransientAncestor(const aura::Window* window,
                                          const aura::Window* ancestor);
 
+// Snap the window's layer to physical pixel boundary.
+WM_CORE_EXPORT void SnapWindowToPixelBoundary(aura::Window* window);
 }  // namespace wm
 
 #endif  // UI_WM_CORE_WINDOW_UTIL_H_

@@ -40,6 +40,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
+#include "ui/wm/core/window_properties.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -164,23 +165,10 @@ bool MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {
   return root && MoveWindowToRoot(window, root);
 }
 
-void SnapWindowToPixelBoundary(aura::Window* window) {
-  window->SetProperty(kSnapChildrenToPixelBoundary, true);
-  aura::Window* snapped_ancestor = window->parent();
-  while (snapped_ancestor) {
-    if (snapped_ancestor->GetProperty(kSnapChildrenToPixelBoundary)) {
-      ui::SnapLayerToPhysicalPixelBoundary(snapped_ancestor->layer(),
-                                           window->layer());
-      return;
-    }
-    snapped_ancestor = snapped_ancestor->parent();
-  }
-}
-
 void SetSnapsChildrenToPhysicalPixelBoundary(aura::Window* container) {
-  DCHECK(!container->GetProperty(kSnapChildrenToPixelBoundary))
+  DCHECK(!container->GetProperty(::wm::kSnapChildrenToPixelBoundary))
       << container->GetName();
-  container->SetProperty(kSnapChildrenToPixelBoundary, true);
+  container->SetProperty(::wm::kSnapChildrenToPixelBoundary, true);
 }
 
 int GetNonClientComponent(aura::Window* window, const gfx::Point& location) {

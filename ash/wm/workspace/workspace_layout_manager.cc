@@ -33,6 +33,7 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/window_properties.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -48,7 +49,7 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
   Shell::Get()->activation_client()->AddObserver(this);
   root_window_->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
-  DCHECK(window->GetProperty(kSnapChildrenToPixelBoundary));
+  DCHECK(window->GetProperty(::wm::kSnapChildrenToPixelBoundary));
   backdrop_controller_ = std::make_unique<BackdropController>(window_);
   keyboard::KeyboardController::Get()->AddObserver(this);
 }

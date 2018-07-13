@@ -451,7 +451,7 @@ void ArcNotificationContentView::AttachSurface() {
   // The texture for this window can be placed at subpixel position
   // with fractional scale factor. Force to align it at the pixel
   // boundary here, and when layout is updated in Layout().
-  wm::SnapWindowToPixelBoundary(surface_->GetWindow());
+  ::wm::SnapWindowToPixelBoundary(surface_->GetWindow());
 
   // Creates slide helper after this view is added to its parent.
   slide_helper_.reset(new SlideHelper(this));
@@ -550,7 +550,7 @@ void ArcNotificationContentView::Layout() {
 
   UpdateControlButtonsVisibility();
 
-  wm::SnapWindowToPixelBoundary(surface_->GetWindow());
+  ::wm::SnapWindowToPixelBoundary(surface_->GetWindow());
 }
 
 void ArcNotificationContentView::OnPaint(gfx::Canvas* canvas) {

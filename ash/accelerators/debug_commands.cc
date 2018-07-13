@@ -14,7 +14,6 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/widget_finder.h"
-#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/command_line.h"
@@ -30,6 +29,7 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/views/debug_utils.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_properties.h"
 
 namespace ash {
 namespace debug {
@@ -71,7 +71,7 @@ void PrintWindowHierarchy(ui::ws2::WindowService* window_service,
        << ((window == active_window) ? " [active]" : "")
        << (window->IsVisible() ? " visible" : "") << " "
        << window->bounds().ToString();
-  if (window->GetProperty(kSnapChildrenToPixelBoundary))
+  if (window->GetProperty(::wm::kSnapChildrenToPixelBoundary))
     *out << " [snapped]";
   if (!subpixel_position_offset.IsZero())
     *out << " subpixel offset=" + subpixel_position_offset.ToString();
