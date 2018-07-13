@@ -251,8 +251,7 @@ class BBJSONGenerator(object):
     else:
       return self.exceptions.get(test_name)
 
-  def should_run_on_tester(self, waterfall, tester_name,test_name, test_config,
-                           test_suite_type=None):
+  def should_run_on_tester(self, waterfall, tester_name,test_name, test_config):
     # Currently, the only reason a test should not run on a given tester is that
     # it's in the exceptions. (Once the GPU waterfall generation script is
     # incorporated here, the rules will become more complex.)
@@ -260,13 +259,6 @@ class BBJSONGenerator(object):
     if not exception:
       return True
     remove_from = None
-    if test_suite_type:
-      # First look for a specific removal for the test suite type,
-      # e.g. 'remove_gtest_from'.
-      remove_from = exception.get('remove_' + test_suite_type + '_from')
-      if remove_from and tester_name in remove_from:
-        # TODO(kbr): add coverage.
-        return False # pragma: no cover
     remove_from = exception.get('remove_from')
     if remove_from:
       if tester_name in remove_from:
@@ -473,8 +465,7 @@ class BBJSONGenerator(object):
   def generate_gtest(self, waterfall, tester_name, tester_config, test_name,
                      test_config):
     if not self.should_run_on_tester(
-        waterfall, tester_name, test_name, test_config,
-        TestSuiteTypes.GTEST):
+        waterfall, tester_name, test_name, test_config):
       return None
     result = copy.deepcopy(test_config)
     if 'test' in result:
