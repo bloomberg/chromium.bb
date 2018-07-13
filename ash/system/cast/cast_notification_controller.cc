@@ -44,9 +44,7 @@ base::string16 GetNotificationMessage(const mojom::CastRoutePtr& route) {
     case ash::mojom::ContentSource::UNKNOWN:
       return base::string16();
     case ash::mojom::ContentSource::TAB:
-      return l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_CAST_CAST_TAB_NOTIFICATION_MESSAGE,
-          base::UTF8ToUTF16(route->title));
+      return base::UTF8ToUTF16(route->title);
     case ash::mojom::ContentSource::DESKTOP:
       return l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP_NOTIFICATION_MESSAGE);
