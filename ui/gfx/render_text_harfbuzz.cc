@@ -923,9 +923,10 @@ struct ShapeRunWithFontInput {
         obscured(obscured),
         subpixel_rendering_suppressed(subpixel_rendering_suppressed) {
     // hb_buffer_add_utf16 will read the previous and next 5 unicode characters
-    // (which can have a maximum length of 2 uint16_t). Read the previous and
-    // next 10 uint16_ts to ensure that we capture all of this context.
-    constexpr size_t kContextSize = 10;
+    // (which can have a maximum length of 2 uint16_t) as "context" that is used
+    // only for Arabic (which is RTL). Read the previous and next 10 uint16_ts
+    // to ensure that we capture all of this context if we're using RTL.
+    size_t kContextSize = is_rtl ? 10 : 0;
     size_t context_start = full_range.start() < kContextSize
                                ? 0
                                : full_range.start() - kContextSize;
