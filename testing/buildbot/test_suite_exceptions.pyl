@@ -294,7 +294,7 @@
     },
   },
   'chrome_public_test_vr_apk': {
-    'remove_gtest_from': [
+    'remove_from': [
       # chromium.android
       'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
