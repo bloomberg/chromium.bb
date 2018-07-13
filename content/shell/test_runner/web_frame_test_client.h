@@ -52,6 +52,8 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
                               unsigned source_line,
                               const blink::WebString& stack_trace) override;
   void DownloadURL(const blink::WebURLRequest& request,
+                   blink::WebLocalFrameClient::CrossOriginRedirects
+                       cross_origin_redirect_behavior,
                    mojo::ScopedMessagePipeHandle blob_url_token) override;
   void LoadErrorPage(int reason) override;
   void DidStartProvisionalLoad(blink::WebDocumentLoader* loader,

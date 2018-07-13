@@ -141,6 +141,7 @@ void ResourceDownloader::Start(
           download_url_parameters->GetSaveInfo()),
       is_parallel_request, download_url_parameters->is_transient(),
       download_url_parameters->fetch_error_body(),
+      download_url_parameters->follow_cross_origin_redirects(),
       download_url_parameters->request_headers(),
       download_url_parameters->request_origin(),
       download_url_parameters->download_source(),
@@ -179,6 +180,7 @@ void ResourceDownloader::InterceptResponse(
       false, /* is_parallel_request */
       false, /* is_transient */
       false, /* fetch_error_body */
+      true,  /* follow_cross_origin_redirects */
       download::DownloadUrlParameters::RequestHeadersType(),
       std::string(), /* request_origin */
       download::DownloadSource::NAVIGATION, std::move(url_chain));

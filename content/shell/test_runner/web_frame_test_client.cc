@@ -372,6 +372,8 @@ void WebFrameTestClient::ShowContextMenu(
 
 void WebFrameTestClient::DownloadURL(
     const blink::WebURLRequest& request,
+    blink::WebLocalFrameClient::CrossOriginRedirects
+        cross_origin_redirect_behavior,
     mojo::ScopedMessagePipeHandle blob_url_token) {
   if (test_runner()->shouldWaitUntilExternalURLLoad()) {
     delegate_->PrintMessage(std::string("Download started\n"));

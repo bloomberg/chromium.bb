@@ -608,7 +608,9 @@ void LocalFrameClientImpl::ForwardResourceTimingToParent(
   web_frame_->Client()->ForwardResourceTimingToParent(info);
 }
 
-void LocalFrameClientImpl::DownloadURL(const ResourceRequest& request) {
+void LocalFrameClientImpl::DownloadURL(
+    const ResourceRequest& request,
+    DownloadCrossOriginRedirects cross_origin_redirect_behavior) {
   if (!web_frame_->Client())
     return;
   DCHECK(web_frame_->GetFrame()->GetDocument());
@@ -619,6 +621,8 @@ void LocalFrameClientImpl::DownloadURL(const ResourceRequest& request) {
   }
   web_frame_->Client()->DownloadURL(
       WrappedResourceRequest(request),
+      static_cast<WebLocalFrameClient::CrossOriginRedirects>(
+          cross_origin_redirect_behavior),
       blob_url_token.PassInterface().PassHandle());
 }
 
@@ -1125,5 +1129,10 @@ LocalFrameClientImpl::CreateWorkerContentSettingsClient() {
 void LocalFrameClientImpl::SetMouseCapture(bool capture) {
   web_frame_->Client()->SetMouseCapture(capture);
 }
+
+STATIC_ASSERT_ENUM(DownloadCrossOriginRedirects::kFollow,
+                   WebLocalFrameClient::CrossOriginRedirects::kFollow);
+STATIC_ASSERT_ENUM(DownloadCrossOriginRedirects::kNavigate,
+                   WebLocalFrameClient::CrossOriginRedirects::kNavigate);
 
 }  // namespace blink

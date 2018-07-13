@@ -373,7 +373,8 @@ void HTMLAnchorElement::HandleClick(Event* event) {
           static_cast<String>(FastGetAttribute(downloadAttr)));
       request.SetRequestContext(WebURLRequest::kRequestContextDownload);
       request.SetRequestorOrigin(SecurityOrigin::Create(GetDocument().Url()));
-      frame->Client()->DownloadURL(request);
+      frame->Client()->DownloadURL(request,
+                                   DownloadCrossOriginRedirects::kNavigate);
       return;
     }
   }

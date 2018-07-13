@@ -124,9 +124,12 @@ void DeleteOnUIThread(
 DownloadResourceHandler::DownloadResourceHandler(
     net::URLRequest* request,
     const std::string& request_origin,
-    download::DownloadSource download_source)
+    download::DownloadSource download_source,
+    bool follow_cross_origin_redirects)
     : ResourceHandler(request),
       tab_info_(new DownloadTabInfo()),
+      follow_cross_origin_redirects_(follow_cross_origin_redirects),
+      first_origin_(url::Origin::Create(request->url())),
       core_(request, this, false, request_origin, download_source) {
   // Do UI thread initialization for tab_info_ asap after
   // DownloadResourceHandler creation since the tab could be navigated
@@ -156,7 +159,7 @@ std::unique_ptr<ResourceHandler> DownloadResourceHandler::Create(
     net::URLRequest* request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::unique_ptr<ResourceHandler> handler(new DownloadResourceHandler(
-      request, std::string(), download::DownloadSource::NAVIGATION));
+      request, std::string(), download::DownloadSource::NAVIGATION, true));
   return handler;
 }
 
@@ -164,10 +167,11 @@ std::unique_ptr<ResourceHandler> DownloadResourceHandler::Create(
 std::unique_ptr<ResourceHandler> DownloadResourceHandler::CreateForNewRequest(
     net::URLRequest* request,
     const std::string& request_origin,
-    download::DownloadSource download_source) {
+    download::DownloadSource download_source,
+    bool follow_cross_origin_redirects) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::unique_ptr<ResourceHandler> handler(
-      new DownloadResourceHandler(request, request_origin, download_source));
+  std::unique_ptr<ResourceHandler> handler(new DownloadResourceHandler(
+      request, request_origin, download_source, follow_cross_origin_redirects));
   return handler;
 }
 
@@ -175,6 +179,12 @@ void DownloadResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
+  url::Origin new_origin(url::Origin::Create(redirect_info.new_url));
+  if (!follow_cross_origin_redirects_ &&
+      !first_origin_.IsSameOriginWith(new_origin)) {
+    // TODO(jochen): Abort download and instead navigate.
+    DVLOG(1) << "Download encountered cross origin redirect.";
+  }
   if (core_.OnRequestRedirected()) {
     controller->Resume();
   } else {

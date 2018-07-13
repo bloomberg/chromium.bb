@@ -42,6 +42,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
       bool is_parallel_request,
       bool is_transient,
       bool fetch_error_body,
+      bool follow_cross_origin_redirects,
       const DownloadUrlParameters::RequestHeadersType& request_headers,
       const std::string& request_origin,
       DownloadSource download_source,
@@ -81,6 +82,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
   GURL referrer_;
   bool is_transient_;
   bool fetch_error_body_;
+  bool follow_cross_origin_redirects_;
+  url::Origin first_origin_;
   DownloadUrlParameters::RequestHeadersType request_headers_;
   std::string request_origin_;
   DownloadSource download_source_;

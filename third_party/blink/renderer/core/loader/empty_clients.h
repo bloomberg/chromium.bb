@@ -288,7 +288,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   void ForwardResourceTimingToParent(const WebResourceTimingInfo&) override {}
 
-  void DownloadURL(const ResourceRequest&) override {}
+  void DownloadURL(const ResourceRequest&,
+                   DownloadCrossOriginRedirects) override {}
   void LoadErrorPage(int reason) override {}
 
   DocumentLoader* CreateDocumentLoader(

@@ -79,9 +79,13 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
   }
 
   void DownloadURL(const blink::WebURLRequest& request,
+                   blink::WebLocalFrameClient::CrossOriginRedirects
+                       cross_origin_redirect_behavior,
                    mojo::ScopedMessagePipeHandle blob_url_token) override {
-    test_client()->DownloadURL(request, mojo::ScopedMessagePipeHandle());
-    Base::DownloadURL(request, std::move(blob_url_token));
+    test_client()->DownloadURL(request, cross_origin_redirect_behavior,
+                               mojo::ScopedMessagePipeHandle());
+    Base::DownloadURL(request, cross_origin_redirect_behavior,
+                      std::move(blob_url_token));
   }
 
 
