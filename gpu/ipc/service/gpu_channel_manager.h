@@ -140,7 +140,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
       VideoMemoryUsageStats* video_memory_usage_stats) const;
 
   scoped_refptr<raster::RasterDecoderContextState> GetRasterDecoderContextState(
-      const ContextCreationAttribs& attribs,
       ContextResult* result);
   void ScheduleGrContextCleanup();
 

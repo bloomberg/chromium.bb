@@ -88,8 +88,16 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
 
   if (surface_handle_ != kNullSurfaceHandle) {
     LOG(ERROR) << "ContextResult::kFatalFailure: "
-                  "RenderInterface clients must render offscreen.";
-    return gpu::ContextResult::kFatalFailure;
+                  "RasterInterface clients must render offscreen.";
+    return ContextResult::kFatalFailure;
+  }
+
+  if (init_params.attribs.gpu_preference != gl::PreferIntegratedGpu ||
+      init_params.attribs.context_type != CONTEXT_TYPE_OPENGLES2 ||
+      init_params.attribs.bind_generates_resource) {
+    LOG(ERROR) << "ContextResult::kFatalFailure: Incompatible creation attribs "
+                  "used with RasterDecoder";
+    return ContextResult::kFatalFailure;
   }
 
   scoped_refptr<gles2::FeatureInfo> feature_info = new gles2::FeatureInfo(
@@ -108,7 +116,7 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
 
   ContextResult result;
   auto raster_decoder_context_state =
-      manager->GetRasterDecoderContextState(init_params.attribs, &result);
+      manager->GetRasterDecoderContextState(&result);
   if (!raster_decoder_context_state) {
     LOG(ERROR) << "ContextResult::kFatalFailure: "
                   "Failed to create raster decoder state.";

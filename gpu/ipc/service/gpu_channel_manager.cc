@@ -315,26 +315,11 @@ void GpuChannelManager::HandleMemoryPressure(
 }
 
 scoped_refptr<raster::RasterDecoderContextState>
-GpuChannelManager::GetRasterDecoderContextState(
-    const ContextCreationAttribs& requested_attribs,
-    ContextResult* result) {
+GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
   if (raster_decoder_context_state_ &&
       !raster_decoder_context_state_->context_lost) {
+    *result = ContextResult::kSuccess;
     return raster_decoder_context_state_;
-  }
-
-  ContextCreationAttribs attribs;
-  attribs.gpu_preference = gl::PreferIntegratedGpu;
-  attribs.context_type = CONTEXT_TYPE_OPENGLES2;
-  attribs.bind_generates_resource = false;
-
-  if (attribs.gpu_preference != requested_attribs.gpu_preference ||
-      attribs.context_type != requested_attribs.context_type ||
-      attribs.bind_generates_resource !=
-          requested_attribs.bind_generates_resource) {
-    LOG(ERROR) << "ContextResult::kFatalFailure: Incompatible creation attribs "
-                  "used with RasterDecoder";
-    *result = ContextResult::kFatalFailure;
   }
 
   scoped_refptr<gl::GLSurface> surface = GetDefaultOffscreenSurface();
@@ -349,8 +334,7 @@ GpuChannelManager::GetRasterDecoderContextState(
   // Virtualize PreferIntegratedGpu contexts by default on OS X to prevent
   // performance regressions when enabling FCM.
   // http://crbug.com/180463
-  if (attribs.gpu_preference == gl::PreferIntegratedGpu)
-    use_virtualized_gl_contexts = true;
+  use_virtualized_gl_contexts = true;
 #endif
   use_virtualized_gl_contexts |=
       gpu_driver_bug_workarounds_.use_virtualized_gl_contexts;
@@ -372,9 +356,11 @@ GpuChannelManager::GetRasterDecoderContextState(
       use_virtualized_gl_contexts ? share_group->GetSharedContext(surface.get())
                                   : nullptr;
   if (!context) {
-    context = gl::init::CreateGLContext(
-        share_group.get(), surface.get(),
-        gles2::GenerateGLContextAttribs(attribs, use_passthrough_decoder));
+    gl::GLContextAttribs attribs;
+    if (use_passthrough_decoder)
+      attribs.global_texture_share_group = true;
+    context =
+        gl::init::CreateGLContext(share_group.get(), surface.get(), attribs);
     if (!context) {
       // TODO(piman): This might not be fatal, we could recurse into
       // CreateGLContext to get more info, tho it should be exceedingly
