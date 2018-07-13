@@ -17,6 +17,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
@@ -25,9 +26,6 @@
 namespace chromeos {
 
 namespace {
-
-// Default width of the dialog.
-constexpr int kDefaultWidth = 448;
 
 // Default width of the text field.
 constexpr int kDefaultTextWidth = 200;
@@ -95,14 +93,6 @@ bool RequestPinView::Accept() {
   return false;
 }
 
-base::string16 RequestPinView::GetWindowTitle() const {
-  return window_title_;
-}
-
-views::View* RequestPinView::GetInitiallyFocusedView() {
-  return textfield_;
-}
-
 bool RequestPinView::IsDialogButtonEnabled(ui::DialogButton button) const {
   switch (button) {
     case ui::DialogButton::DIALOG_BUTTON_CANCEL:
@@ -126,10 +116,22 @@ bool RequestPinView::IsDialogButtonEnabled(ui::DialogButton button) const {
   return true;
 }
 
+views::View* RequestPinView::GetInitiallyFocusedView() {
+  return textfield_;
+}
+
+base::string16 RequestPinView::GetWindowTitle() const {
+  return window_title_;
+}
+
+bool RequestPinView::ShouldShowCloseButton() const {
+  return false;
+}
+
 gfx::Size RequestPinView::CalculatePreferredSize() const {
-  return gfx::Size(
-      kDefaultWidth,
-      GetLayoutManager()->GetPreferredHeightForWidth(this, kDefaultWidth));
+  int default_width = views::LayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
+  return gfx::Size(default_width, GetHeightForWidth(default_width));
 }
 
 bool RequestPinView::IsLocked() {
@@ -177,8 +179,9 @@ void RequestPinView::UpdateHeaderText() {
 }
 
 void RequestPinView::Init() {
-  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::TEXT, views::TEXT));
+  const views::LayoutProvider* provider = views::LayoutProvider::Get();
+  SetBorder(views::CreateEmptyBorder(
+      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT)));
 
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
@@ -198,8 +201,7 @@ void RequestPinView::Init() {
   layout->AddView(header_label_);
 
   const int related_vertical_spacing =
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_RELATED_CONTROL_VERTICAL);
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
   layout->AddPaddingRow(0, related_vertical_spacing);
 
   column_view_set_id++;
@@ -282,7 +284,7 @@ void RequestPinView::SetErrorMessage(RequestPinErrorType error_type,
   error_label_->SetVisible(true);
   error_label_->SetText(error_message);
   error_label_->SetTooltipText(error_message);
-  error_label_->SetEnabledColor(SK_ColorRED);
+  error_label_->SetEnabledColor(gfx::kGoogleRed600);
   error_label_->SizeToPreferredSize();
   textfield_->SetInvalid(true);
 }

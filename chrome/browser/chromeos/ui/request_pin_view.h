@@ -75,12 +75,13 @@ class RequestPinView : public views::DialogDelegateView,
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override;
 
-  // views::DialogDelegateView
+  // views::DialogDelegate
   bool Cancel() override;
   bool Accept() override;
-  base::string16 GetWindowTitle() const override;
-  views::View* GetInitiallyFocusedView() override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
+  views::View* GetInitiallyFocusedView() override;
+  base::string16 GetWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
 
   // views::View
   gfx::Size CalculatePreferredSize() const override;
