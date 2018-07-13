@@ -18,10 +18,6 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "{{interface_name}}", "{{method.name}}");
   {%- endset %}
 
-  {% if method.is_ce_reactions %}
-  CEReactionsScope ceReactionsScope;
-  {% endif %}
-
   {% set function_call = func_call_with_prep_of_args(method, world_suffix) %}
 
   {% if 'exceptionState' in function_call or
@@ -30,6 +26,9 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
   {% if method.returns_promise %}
   ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
   {% endif %}
+  {% endif %}
+  {% if method.is_ce_reactions %}
+  CEReactionsScope ce_reactions_scope;
   {% endif %}
 
   {% if not method.is_static %}

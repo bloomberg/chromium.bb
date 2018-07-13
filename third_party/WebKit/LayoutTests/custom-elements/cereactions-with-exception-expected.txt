@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL CEReactions should rethrow an exception by the originally-specified steps assert_throws: function "() => { log.outerHTML = '<my-custom-element></my-custom-element>'; }" did not throw
-Harness: the test ran to completion.
-

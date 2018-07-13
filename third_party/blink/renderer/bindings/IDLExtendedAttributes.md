@@ -148,6 +148,11 @@ are triggered for this method or attribute.
 
 Usage: `[CEReactions]` takes no arguments.
 
+`[CEReacionts]` doesn't work with `[Custom]`. Custom binding code should use
+`blink::CEReactionsScope` if the method or the attribute has `[CEReactions]`.
+
+Note that `blink::CEReactionsScope` must be constructed after `blink::ExceptionState`.
+
 ### [Clamp] _(a, p)_
 
 Standard: [Clamp](https://heycam.github.io/webidl/#Clamp)

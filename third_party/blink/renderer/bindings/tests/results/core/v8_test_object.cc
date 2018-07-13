@@ -8116,9 +8116,8 @@ static void measureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackI
 }
 
 static void ceReactionsNotOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  CEReactionsScope ceReactionsScope;
-
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "ceReactionsNotOverloadedMethod");
+  CEReactionsScope ce_reactions_scope;
 
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
@@ -8142,9 +8141,8 @@ static void ceReactionsOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8
 }
 
 static void ceReactionsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  CEReactionsScope ceReactionsScope;
-
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "ceReactionsOverloadedMethod");
+  CEReactionsScope ce_reactions_scope;
 
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 

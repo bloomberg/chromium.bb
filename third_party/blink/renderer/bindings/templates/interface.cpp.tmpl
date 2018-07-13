@@ -77,6 +77,9 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
   {% if setter.has_exception_state %}
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kIndexedSetterContext, "{{interface_name}}");
   {% endif %}
+  {% if setter.is_ce_reactions %}
+  CEReactionsScope ce_reactions_scope;
+  {% endif %}
 
   {{cpp_class}}* impl = {{v8_class}}::ToImpl(info.Holder());
   {{v8_value_to_local_cpp_value(setter) | trim | indent(2)}}
@@ -117,10 +120,6 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
 {% if indexed_property_getter or named_property_setter %}
 {% set setter = indexed_property_setter or named_property_setter %}
 void {{v8_class_or_partial}}::indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  {% if setter.is_ce_reactions %}
-  CEReactionsScope ceReactionsScope;
-  {% endif %}
-
   {% if indexed_property_setter %}
 
   {% if setter.is_custom %}
@@ -148,6 +147,9 @@ void {{v8_class_or_partial}}::indexedPropertySetterCallback(uint32_t index, v8::
     ExceptionState exceptionState(info.GetIsolate(),
                                   ExceptionState::kIndexedSetterContext,
                                   "{{interface_name}}");
+    {% if setter.is_ce_reactions %}
+    CEReactionsScope ce_reactions_scope;
+    {% endif %}
     exceptionState.ThrowTypeError("Index property setter is not supported.");
   }
 
@@ -267,6 +269,9 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
   {% if deleter.is_raises_exception %}
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kIndexedDeletionContext, "{{interface_name}}");
   {% endif %}
+  {% if deleter.is_ce_reactions %}
+  CEReactionsScope ce_reactions_scope;
+  {% endif %}
 
   {{cpp_class}}* impl = {{v8_class}}::ToImpl(info.Holder());
 
@@ -298,10 +303,6 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
 {% if indexed_property_deleter or named_property_deleter %}
 {% set deleter = indexed_property_deleter or named_property_deleter %}
 void {{v8_class_or_partial}}::indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
-  {% if deleter.is_ce_reactions %}
-  CEReactionsScope ceReactionsScope;
-  {% endif %}
-
   {% if indexed_property_deleter %}
 
   {% if deleter.is_custom %}
@@ -434,6 +435,9 @@ static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kSetterContext, "{{interface_name}}", nameInUtf8.data());
   {% endif %}
+  {% if setter.is_ce_reactions %}
+  CEReactionsScope ce_reactions_scope;
+  {% endif %}
   {% if setter.is_call_with_script_state %}
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
   {% endif %}
@@ -481,10 +485,6 @@ void {{v8_class_or_partial}}::namedPropertySetterCallback(v8::Local<v8::Name> na
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
-  {% if setter.is_ce_reactions %}
-  CEReactionsScope ceReactionsScope;
-  {% endif %}
-
   {% if setter.is_custom %}
   {{v8_class}}::namedPropertySetterCustom(propertyName, v8Value, info);
   {% else %}
@@ -504,6 +504,9 @@ static void namedPropertyDeleter(const AtomicString& name, const v8::PropertyCal
   {% if deleter.is_raises_exception %}
   const CString& nameInUtf8 = name.Utf8();
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kDeletionContext, "{{interface_name}}", nameInUtf8.data());
+  {% endif %}
+  {% if deleter.is_ce_reactions %}
+  CEReactionsScope ce_reactions_scope;
   {% endif %}
   {% if deleter.is_call_with_script_state %}
   ScriptState* scriptState = ScriptState::ForRelevantRealm(info);
@@ -541,10 +544,6 @@ void {{v8_class_or_partial}}::namedPropertyDeleterCallback(v8::Local<v8::Name> n
   if (!name->IsString())
     return;
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
-
-  {% if deleter.is_ce_reactions %}
-  CEReactionsScope ceReactionsScope;
-  {% endif %}
 
   {% if deleter.is_custom %}
   {{v8_class}}::namedPropertyDeleterCustom(propertyName, info);
