@@ -70,6 +70,8 @@ class RTCVideoDecoderTest
     capabilities_.supported_profiles.push_back(supported_profile);
     supported_profile.profile = media::VP8PROFILE_ANY;
     capabilities_.supported_profiles.push_back(supported_profile);
+    supported_profile.profile = media::VP9PROFILE_MIN;
+    capabilities_.supported_profiles.push_back(supported_profile);
 
     EXPECT_CALL(*mock_gpu_factories_.get(), GetTaskRunner())
         .WillRepeatedly(Return(vda_task_runner_));
@@ -229,6 +231,24 @@ TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnMissingFrames) {
   EXPECT_EQ(
       WEBRTC_VIDEO_CODEC_ERROR,
       rtc_decoder_->Decode(input_image, missingFrames, nullptr, 0));
+}
+
+TEST_F(RTCVideoDecoderTest, FallBackToSoftwareOnVp9Svc) {
+  // HW VP9 decoders don't handle more than one spatial layer. See
+  // https://crbug.com/webrtc/9304, https://crbug.com/webrtc/9518 for details.
+  // The RTC video decoder triggers software fallback if it receives stream
+  // with more than one spatial layer.
+  CreateDecoder(webrtc::kVideoCodecVP9);
+  Initialize();
+
+  webrtc::CodecSpecificInfo codec_specific_info;
+  codec_specific_info.codecType = webrtc::kVideoCodecVP9;
+  codec_specific_info.codecSpecific.VP9.ss_data_available = true;
+  codec_specific_info.codecSpecific.VP9.num_spatial_layers = 2;
+
+  webrtc::EncodedImage input_image;
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE,
+            rtc_decoder_->Decode(input_image, false, &codec_specific_info, 0));
 }
 
 TEST_F(RTCVideoDecoderTest, ReleaseReturnsOk) {
