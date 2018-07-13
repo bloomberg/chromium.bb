@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/dom/range.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
 #include "third_party/blink/renderer/core/dom/character_data.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
@@ -53,8 +54,10 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #ifndef NDEBUG
@@ -967,6 +970,31 @@ String Range::GetText() const {
 }
 
 DocumentFragment* Range::createContextualFragment(
+    const StringOrTrustedHTML& string_or_html,
+    ExceptionState& exception_state) {
+  // Algorithm:
+  // http://domparsing.spec.whatwg.org/#extensions-to-the-range-interface
+
+  DCHECK(string_or_html.IsString() ||
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+  DCHECK(!string_or_html.IsNull());
+
+  Document& document = start_.Container().GetDocument();
+
+  if (string_or_html.IsString() && document.RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedHTML` assignment.");
+    return nullptr;
+  }
+
+  String markup = string_or_html.IsString()
+                      ? string_or_html.GetAsString()
+                      : string_or_html.GetAsTrustedHTML()->toString();
+
+  return createContextualFragmentFromString(markup, exception_state);
+}
+
+DocumentFragment* Range::createContextualFragmentFromString(
     const String& markup,
     ExceptionState& exception_state) {
   // Algorithm:
