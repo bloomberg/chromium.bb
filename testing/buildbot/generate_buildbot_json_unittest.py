@@ -302,6 +302,7 @@ ANDROID_WATERFALL = """\
           ],
         },
         'os_type': 'android',
+        'skip_merge_script': True,
         'test_suites': {
           'gtest_tests': 'foo_tests',
         },
@@ -571,18 +572,6 @@ FOO_TEST_MODIFICATIONS = """\
 }
 """
 
-ANDROID_TEST_EXCEPTIONS = """\
-{
-  'foo_test': {
-    'key_removals': {
-      'Fake Android K Tester': [
-        'merge',
-      ],
-    },
-  },
-}
-"""
-
 NONEXISTENT_REMOVAL = """\
 {
   'foo_test': {
@@ -602,18 +591,6 @@ NONEXISTENT_MODIFICATION = """\
       },
     },
   }
-}
-"""
-
-NONEXISTENT_KEY_REMOVAL = """
-{
-  'foo_test': {
-    'key_removals': {
-      'Fake Tester': [
-        'args',
-      ],
-    }
-  },
 }
 """
 
@@ -1309,7 +1286,7 @@ class UnitTest(unittest.TestCase):
   def test_android_output_options(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     FOO_TEST_SUITE,
-                    ANDROID_TEST_EXCEPTIONS,
+                    EMPTY_EXCEPTIONS,
                     LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = ANDROID_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -1331,14 +1308,6 @@ class UnitTest(unittest.TestCase):
     self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                             'The following nonexistent machines.*',
                             fbb.check_input_file_consistency)
-
-  def test_nonexistent_key_removal_raises(self):
-    fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
-                    FOO_TEST_SUITE,
-                    NONEXISTENT_KEY_REMOVAL,
-                    LUCI_MILO_CFG)
-    with self.assertRaises(generate_buildbot_json.BBGenErr):
-      fbb.check_output_file_consistency(verbose=True)
 
   def test_waterfall_args(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WITH_ARGS_WATERFALL,
@@ -1373,7 +1342,7 @@ class UnitTest(unittest.TestCase):
   def test_nonexistent_bot_raises(self):
     fbb = FakeBBGen(UNKNOWN_BOT_GTESTS_WATERFALL,
                     FOO_TEST_SUITE,
-                    NONEXISTENT_KEY_REMOVAL,
+                    EMPTY_EXCEPTIONS,
                     LUCI_MILO_CFG)
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_input_file_consistency()
