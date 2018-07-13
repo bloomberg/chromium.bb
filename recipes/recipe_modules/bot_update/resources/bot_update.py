@@ -354,8 +354,9 @@ def gclient_sync(
   os.close(fd)
 
   args = ['sync', '--verbose', '--reset', '--force',
-         '--ignore_locks', '--output-json', gclient_output_file,
-         '--nohooks', '--noprehooks', '--delete_unversioned_trees']
+          '--ignore_locks', '--output-json', gclient_output_file,
+          '--nohooks', '--noprehooks', '--delete_unversioned_trees',
+          '--reset-fetch-config']
   if with_branch_heads:
     args += ['--with_branch_heads']
   if with_tags:
@@ -653,7 +654,7 @@ def _git_checkout(sln, sln_dir, revisions, refs, git_cache_dir, cleanup_dir):
   name = sln['name']
   url = sln['url']
   populate_cmd = (['cache', 'populate', '--ignore_locks', '-v',
-                   '--cache-dir', git_cache_dir, url])
+                   '--cache-dir', git_cache_dir, url, '--reset-fetch-config'])
   for ref in refs:
     populate_cmd.extend(['--ref', ref])
 

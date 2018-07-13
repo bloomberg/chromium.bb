@@ -449,6 +449,23 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assert_(gclient_scm.os.path.isfile(file_path))
     sys.stdout.close()
 
+  def testUpdateResetUnsetsFetchConfig(self):
+    if not self.enabled:
+      return
+    options = self.Options()
+    options.reset = True
+
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
+                                 self.relpath)
+    scm._Run(['config', 'remote.origin.fetch',
+              '+refs/heads/bad/ref:refs/remotes/origin/bad/ref'], options)
+
+    file_list = []
+    scm.update(options, (), file_list)
+    self.assertEquals(scm.revinfo(options, (), None),
+                      '069c602044c5388d2d15c3f875b057c852003458')
+    sys.stdout.close()
+
   def testUpdateResetDeleteUnversionedTrees(self):
     if not self.enabled:
       return

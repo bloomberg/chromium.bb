@@ -305,7 +305,7 @@ class GitWrapper(SCMWrapper):
 
   def _FetchAndReset(self, revision, file_list, options):
     """Equivalent to git fetch; git reset."""
-    self._UpdateBranchHeads(options, fetch=False)
+    self._SetFetchConfig(options)
 
     self._Fetch(options, prune=True, quiet=options.verbose)
     self._Scrub(revision, options)
@@ -462,7 +462,7 @@ class GitWrapper(SCMWrapper):
       return self._Capture(['rev-parse', '--verify', 'HEAD'])
 
     if not managed:
-      self._UpdateBranchHeads(options, fetch=False)
+      self._SetFetchConfig(options)
       self.Print('________ unmanaged solution; skipping %s' % self.relpath)
       return self._Capture(['rev-parse', '--verify', 'HEAD'])
 
@@ -547,14 +547,15 @@ class GitWrapper(SCMWrapper):
       else:
         raise gclient_utils.Error('Invalid Upstream: %s' % upstream_branch)
 
+    self._SetFetchConfig(options)
+    self._Fetch(options, prune=options.force)
+
     if not scm.GIT.IsValidRevision(self.checkout_path, revision, sha_only=True):
       # Update the remotes first so we have all the refs.
       remote_output = scm.GIT.Capture(['remote'] + verbose + ['update'],
               cwd=self.checkout_path)
       if verbose:
         self.Print(remote_output)
-
-    self._UpdateBranchHeads(options, fetch=True)
 
     revision = self._AutoFetchRef(options, revision)
 
@@ -941,7 +942,8 @@ class GitWrapper(SCMWrapper):
       gclient_utils.rmtree(tmp_dir)
       if template_dir:
         gclient_utils.rmtree(template_dir)
-    self._UpdateBranchHeads(options, fetch=True)
+    self._SetFetchConfig(options)
+    self._Fetch(options, prune=options.force)
     revision = self._AutoFetchRef(options, revision)
     remote_ref = scm.GIT.RefToRemoteRef(revision, self.remote)
     self._Checkout(options, ''.join(remote_ref or revision), quiet=True)
@@ -1204,24 +1206,30 @@ class GitWrapper(SCMWrapper):
     # Return the revision that was fetched; this will be stored in 'FETCH_HEAD'
     return self._Capture(['rev-parse', '--verify', 'FETCH_HEAD'])
 
-  def _UpdateBranchHeads(self, options, fetch=False):
+  def _SetFetchConfig(self, options):
     """Adds, and optionally fetches, "branch-heads" and "tags" refspecs
     if requested."""
-    need_fetch = fetch
+    if options.reset:
+      try:
+        self._Run(['config', '--unset-all', 'remote.%s.fetch' % self.remote],
+                  options)
+        self._Run(['config', 'remote.%s.fetch' % self.remote,
+                   '+refs/heads/*:refs/remotes/%s/*' % self.remote], options)
+      except subprocess2.CalledProcessError as e:
+        # If exit code was 5, it means we attempted to unset a config that
+        # didn't exist. Ignore it.
+        if e.returncode != 5:
+          raise
     if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
       config_cmd = ['config', 'remote.%s.fetch' % self.remote,
                     '+refs/branch-heads/*:refs/remotes/branch-heads/*',
                     '^\\+refs/branch-heads/\\*:.*$']
       self._Run(config_cmd, options)
-      need_fetch = True
     if hasattr(options, 'with_tags') and options.with_tags:
       config_cmd = ['config', 'remote.%s.fetch' % self.remote,
                     '+refs/tags/*:refs/tags/*',
                     '^\\+refs/tags/\\*:.*$']
       self._Run(config_cmd, options)
-      need_fetch = True
-    if fetch and need_fetch:
-      self._Fetch(options, prune=options.force)
 
   def _AutoFetchRef(self, options, revision):
     """Attempts to fetch |revision| if not available in local repo.
