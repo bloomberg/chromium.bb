@@ -703,18 +703,17 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   InterpolationValue start = nullptr;
   InterpolationValue end = nullptr;
   if (retargeted_compositor_transition) {
-    double old_start_time =
-        retargeted_compositor_transition->animation->StartTimeInternal()
-            .value_or(NullValue());
+    base::Optional<double> old_start_time =
+        retargeted_compositor_transition->animation->StartTimeInternal();
     // TODO(flackr): This should be able to just use
     // animation->currentTime() / 1000 rather than trying to calculate current
     // time.
-    double inherited_time = IsNull(old_start_time)
-                                ? 0
-                                : state.animating_element->GetDocument()
+    double inherited_time = old_start_time.has_value()
+                                ? state.animating_element->GetDocument()
                                           .Timeline()
                                           .CurrentTimeInternal() -
-                                      old_start_time;
+                                      old_start_time.value()
+                                : 0;
     std::unique_ptr<TypedInterpolationValue> retargeted_start = SampleAnimation(
         retargeted_compositor_transition->animation, inherited_time);
     if (retargeted_start) {
