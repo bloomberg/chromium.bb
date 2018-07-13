@@ -733,10 +733,6 @@ bool LayoutBlockFlow::CanContainFirstFormattedLine() const {
   // line of an element. For example, the first line of an anonymous block
   // box is only affected if it is the first child of its parent element.
   // https://drafts.csswg.org/css-text-3/#text-indent-property
-
-  // TODO(kojii): In LayoutNG, leading OOF creates a block box.
-  // text-indent-first-line-002.html fails for this reason.
-  // crbug.com/734554
   return !(IsAnonymousBlock() && PreviousSibling());
 }
 
