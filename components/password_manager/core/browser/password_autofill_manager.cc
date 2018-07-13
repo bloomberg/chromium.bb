@@ -45,6 +45,8 @@ namespace password_manager {
 
 namespace {
 
+constexpr base::char16 kPasswordReplacementChar = 0x2022;
+
 // Returns |username| unless it is empty. For an empty |username| returns a
 // localised string saying this username is empty. Use this for displaying the
 // usernames to the user.
@@ -82,13 +84,17 @@ void AppendSuggestionIfMatching(
     const std::string& signon_realm,
     bool show_all,
     bool is_password_field,
+    size_t password_length,
     std::vector<autofill::Suggestion>* suggestions) {
   base::string16 lower_suggestion = base::i18n::ToLower(field_suggestion);
   base::string16 lower_contents = base::i18n::ToLower(field_contents);
   if (show_all || autofill::FieldIsSuggestionSubstringStartingOnTokenBoundary(
                       lower_suggestion, lower_contents, true)) {
     autofill::Suggestion suggestion(ReplaceEmptyUsername(field_suggestion));
-    suggestion.label = GetHumanReadableRealm(signon_realm);
+    suggestion.label =
+        signon_realm.empty()
+            ? base::string16(password_length, kPasswordReplacementChar)
+            : GetHumanReadableRealm(signon_realm);
     suggestion.frontend_id = is_password_field
                                  ? autofill::POPUP_ITEM_ID_PASSWORD_ENTRY
                                  : autofill::POPUP_ITEM_ID_USERNAME_ENTRY;
@@ -111,14 +117,15 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
                     bool show_all,
                     bool is_password_field,
                     std::vector<autofill::Suggestion>* suggestions) {
-  AppendSuggestionIfMatching(fill_data.username_field.value, current_username,
-                             fill_data.preferred_realm, show_all,
-                             is_password_field, suggestions);
+  AppendSuggestionIfMatching(
+      fill_data.username_field.value, current_username,
+      fill_data.preferred_realm, show_all, is_password_field,
+      fill_data.password_field.value.size(), suggestions);
 
   for (const auto& login : fill_data.additional_logins) {
     AppendSuggestionIfMatching(login.first, current_username,
                                login.second.realm, show_all, is_password_field,
-                               suggestions);
+                               login.second.password.size(), suggestions);
   }
 
   // Prefix matches should precede other token matches.
