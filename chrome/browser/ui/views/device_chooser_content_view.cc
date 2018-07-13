@@ -29,7 +29,7 @@
 
 namespace {
 
-constexpr int kAdapterOffHelpLinkPadding = 5;
+constexpr int kMessagePadding = 5;
 
 // The lookup table for signal strength level image.
 constexpr int kSignalStrengthLevelImageIds[5] = {
@@ -133,10 +133,13 @@ DeviceChooserContentView::DeviceChooserContentView(
       !chooser_controller_->AllowMultipleSelection() /* single_selection */);
   table_view_->set_select_on_remove(false);
   table_view_->set_observer(table_view_observer);
-  table_view_->SetEnabled(chooser_controller_->NumOptions() > 0);
 
   table_parent_ = table_view_->CreateParentIfNecessary();
   AddChildView(table_parent_);
+
+  no_options_help_ = new views::Label(chooser_controller_->GetNoOptionsText());
+  no_options_help_->SetMultiLine(true);
+  AddChildView(no_options_help_);
 
   base::string16 link_text = l10n_util::GetStringUTF16(
       IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ON_BLUETOOTH_LINK_TEXT);
@@ -149,6 +152,8 @@ DeviceChooserContentView::DeviceChooserContentView(
       views::StyledLabel::RangeStyleInfo::CreateForLink());
   adapter_off_help_->SetVisible(false);
   AddChildView(adapter_off_help_);
+
+  UpdateTableView();
 }
 
 DeviceChooserContentView::~DeviceChooserContentView() {
@@ -166,13 +171,18 @@ void DeviceChooserContentView::Layout() {
   gfx::Rect rect(GetContentsBounds());
   table_parent_->SetBoundsRect(rect);
 
-  // Set the adapter off message in the center of the chooser. It will only be
-  // shown when the adapter is off.
+  // Place the "no devices found" and "adapter off" messages in the center of
+  // the chooser.
+  no_options_help_->SizeToFit(table_view_->width() - 2 * kMessagePadding);
+  no_options_help_->SetPosition(
+      gfx::Point((width() - no_options_help_->width()) / 2,
+                 (height() - no_options_help_->height()) / 2));
+
+  adapter_off_help_->SizeToFit(table_view_->width() - 2 * kMessagePadding);
   adapter_off_help_->SetPosition(
       gfx::Point((width() - adapter_off_help_->width()) / 2,
                  (height() - adapter_off_help_->height()) / 2));
-  adapter_off_help_->SizeToFit(table_view_->width() -
-                               2 * kAdapterOffHelpLinkPadding);
+
   views::View::Layout();
 }
 
@@ -181,19 +191,11 @@ gfx::Size DeviceChooserContentView::CalculatePreferredSize() const {
 }
 
 int DeviceChooserContentView::RowCount() {
-  // When there are no devices and we're not scanning, the table contains a
-  // message saying there are no devices.
-  return std::max(base::checked_cast<int>(chooser_controller_->NumOptions()),
-                  refreshing_ ? 0 : 1);
+  return base::checked_cast<int>(chooser_controller_->NumOptions());
 }
 
 base::string16 DeviceChooserContentView::GetText(int row, int column_id) {
   int num_options = base::checked_cast<int>(chooser_controller_->NumOptions());
-  if (num_options == 0) {
-    DCHECK_EQ(0, row);
-    return chooser_controller_->GetNoOptionsText();
-  }
-
   DCHECK_GE(row, 0);
   DCHECK_LT(row, num_options);
   base::string16 text =
@@ -209,21 +211,16 @@ void DeviceChooserContentView::SetObserver(ui::TableModelObserver* observer) {}
 gfx::ImageSkia DeviceChooserContentView::GetIcon(int row) {
   DCHECK(chooser_controller_->ShouldShowIconBeforeText());
 
-  size_t num_options = chooser_controller_->NumOptions();
-  if (num_options == 0) {
-    DCHECK_EQ(0, row);
-    return gfx::ImageSkia();
-  }
-
+  int num_options = base::checked_cast<int>(chooser_controller_->NumOptions());
   DCHECK_GE(row, 0);
-  DCHECK_LT(row, base::checked_cast<int>(num_options));
+  DCHECK_LT(row, num_options);
 
-  if (chooser_controller_->IsConnected(row))
+  if (chooser_controller_->IsConnected(row)) {
     return gfx::CreateVectorIcon(vector_icons::kBluetoothConnectedIcon,
                                  TableModel::kIconSize, gfx::kChromeIconGrey);
+  }
 
   int level = chooser_controller_->GetSignalStrengthLevel(row);
-
   if (level == -1)
     return gfx::ImageSkia();
 
@@ -242,7 +239,6 @@ void DeviceChooserContentView::OnOptionsInitialized() {
 void DeviceChooserContentView::OnOptionAdded(size_t index) {
   table_view_->OnItemsAdded(base::checked_cast<int>(index), 1);
   UpdateTableView();
-  table_view_->SetVisible(true);
 }
 
 void DeviceChooserContentView::OnOptionRemoved(size_t index) {
@@ -260,12 +256,11 @@ void DeviceChooserContentView::OnAdapterEnabledChanged(bool enabled) {
   // This will also disable the OK button if it was enabled because
   // of a previously selected row.
   table_view_->Select(-1);
+  adapter_enabled_ = enabled;
   UpdateTableView();
-  table_parent_->SetVisible(enabled);
-  adapter_off_help_->SetVisible(!enabled);
 
   bluetooth_status_container_->ShowReScanButton(enabled);
-  refreshing_ = false;
+
   if (GetWidget() && GetWidget()->GetRootView())
     GetWidget()->GetRootView()->Layout();
 }
@@ -283,7 +278,7 @@ void DeviceChooserContentView::OnRefreshStateChanged(bool refreshing) {
     bluetooth_status_container_->ShowScanningLabelAndThrobber();
   else
     bluetooth_status_container_->ShowReScanButton(true /* enabled */);
-  refreshing_ = refreshing;
+
   if (GetWidget() && GetWidget()->GetRootView())
     GetWidget()->GetRootView()->Layout();
 }
@@ -378,10 +373,9 @@ void DeviceChooserContentView::Close() {
 }
 
 void DeviceChooserContentView::UpdateTableView() {
-  if (chooser_controller_->NumOptions() == 0) {
-    table_view_->OnModelChanged();
-    table_view_->SetEnabled(false);
-  } else {
-    table_view_->SetEnabled(true);
-  }
+  bool has_options = adapter_enabled_ && chooser_controller_->NumOptions() > 0;
+  table_parent_->SetVisible(has_options);
+  table_view_->SetEnabled(has_options);
+  no_options_help_->SetVisible(!has_options && adapter_enabled_);
+  adapter_off_help_->SetVisible(!adapter_enabled_);
 }
