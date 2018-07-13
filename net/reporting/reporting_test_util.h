@@ -53,6 +53,7 @@ class TestReportingUploader : public ReportingUploader {
    public:
     virtual ~PendingUpload();
 
+    virtual const url::Origin& report_origin() const = 0;
     virtual const GURL& url() const = 0;
     virtual const std::string& json() const = 0;
     virtual std::unique_ptr<base::Value> GetValue() const = 0;
@@ -72,7 +73,8 @@ class TestReportingUploader : public ReportingUploader {
 
   // ReportingUploader implementation:
 
-  void StartUpload(const GURL& url,
+  void StartUpload(const url::Origin& report_origin,
+                   const GURL& url,
                    const std::string& json,
                    int max_depth,
                    UploadCallback callback) override;

@@ -35,11 +35,13 @@ namespace {
 
 class PendingUploadImpl : public TestReportingUploader::PendingUpload {
  public:
-  PendingUploadImpl(const GURL& url,
+  PendingUploadImpl(const url::Origin& report_origin,
+                    const GURL& url,
                     const std::string& json,
                     ReportingUploader::UploadCallback callback,
                     base::OnceCallback<void(PendingUpload*)> complete_callback)
-      : url_(url),
+      : report_origin_(report_origin),
+        url_(url),
         json_(json),
         callback_(std::move(callback)),
         complete_callback_(std::move(complete_callback)) {}
@@ -47,6 +49,7 @@ class PendingUploadImpl : public TestReportingUploader::PendingUpload {
   ~PendingUploadImpl() override = default;
 
   // PendingUpload implementation:
+  const url::Origin& report_origin() const override { return report_origin_; }
   const GURL& url() const override { return url_; }
   const std::string& json() const override { return json_; }
   std::unique_ptr<base::Value> GetValue() const override {
@@ -60,6 +63,7 @@ class PendingUploadImpl : public TestReportingUploader::PendingUpload {
   }
 
  private:
+  url::Origin report_origin_;
   GURL url_;
   std::string json_;
   ReportingUploader::UploadCallback callback_;
@@ -98,12 +102,13 @@ TestReportingUploader::PendingUpload::PendingUpload() = default;
 TestReportingUploader::TestReportingUploader() = default;
 TestReportingUploader::~TestReportingUploader() = default;
 
-void TestReportingUploader::StartUpload(const GURL& url,
+void TestReportingUploader::StartUpload(const url::Origin& report_origin,
+                                        const GURL& url,
                                         const std::string& json,
                                         int max_depth,
                                         UploadCallback callback) {
   pending_uploads_.push_back(std::make_unique<PendingUploadImpl>(
-      url, json, std::move(callback),
+      report_origin, url, json, std::move(callback),
       base::BindOnce(&ErasePendingUpload, &pending_uploads_)));
 }
 
