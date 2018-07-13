@@ -182,11 +182,11 @@
   [_autofillAgent checkIfSuggestionsAvailableForForm:formName
                                            fieldName:fieldName
                                      fieldIdentifier:fieldIdentifier
-
                                            fieldType:@""
                                                 type:nil
                                           typedValue:@" "
                                          isMainFrame:YES
+                                      hasUserGesture:YES
                                             webState:_webState
                                    completionHandler:availableHandler];
 }

@@ -407,6 +407,7 @@ void GetFormAndField(autofill::FormData* form,
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
                                isMainFrame:(BOOL)isMainFrame
+                            hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
                          completionHandler:
                              (SuggestionsAvailableCompletion)completion {
@@ -419,6 +420,12 @@ void GetFormAndField(autofill::FormData* form,
   }
 
   if (![self isAutofillEnabled]) {
+    completion(NO);
+    return;
+  }
+
+  // Check for suggestions if the form activity is initiated by the user.
+  if (!hasUserGesture) {
     completion(NO);
     return;
   }
