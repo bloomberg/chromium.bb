@@ -803,20 +803,19 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
 
 void ServiceWorkerContextCore::OnControlleeAdded(
     ServiceWorkerVersion* version,
-    ServiceWorkerProviderHost* provider_host) {
-  observer_list_->Notify(
-      FROM_HERE, &ServiceWorkerContextCoreObserver::OnControlleeAdded,
-      version->version_id(), provider_host->client_uuid(),
-      provider_host->process_id(), provider_host->route_id(),
-      provider_host->web_contents_getter(), provider_host->provider_type());
+    const std::string& client_uuid,
+    const ServiceWorkerClientInfo& client_info) {
+  observer_list_->Notify(FROM_HERE,
+                         &ServiceWorkerContextCoreObserver::OnControlleeAdded,
+                         version->version_id(), client_uuid, client_info);
 }
 
 void ServiceWorkerContextCore::OnControlleeRemoved(
     ServiceWorkerVersion* version,
-    ServiceWorkerProviderHost* provider_host) {
+    const std::string& client_uuid) {
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextCoreObserver::OnControlleeRemoved,
-                         version->version_id(), provider_host->client_uuid());
+                         version->version_id(), client_uuid);
 }
 
 ServiceWorkerProcessManager* ServiceWorkerContextCore::process_manager() {

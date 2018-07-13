@@ -281,6 +281,9 @@ void ServiceWorkerRegistration::OnNoControllees(ServiceWorkerVersion* version) {
     return;
   DCHECK_EQ(active_version(), version);
   if (is_uninstalling_) {
+    // TODO(falken): This can destroy the caller during this observer function
+    // call, which is impolite and dangerous. Try to make this async, or make
+    // OnNoControllees not an observer function.
     Clear();
     return;
   }
@@ -554,6 +557,14 @@ void ServiceWorkerRegistration::Clear() {
   is_uninstalling_ = false;
   is_uninstalled_ = true;
   should_activate_when_ready_ = false;
+
+  // Some callbacks, at least OnRegistrationFinishedUninstalling and
+  // NotifyDoneUninstallingRegistration, may drop their references to
+  // |this|, so protect it first.
+  // TODO(falken): Clean this up, can we call the observers from a task
+  // or make the observers more polite?
+  auto protect = base::WrapRefCounted(this);
+
   if (context_)
     context_->storage()->NotifyDoneUninstallingRegistration(this);
 

@@ -14,28 +14,6 @@
 
 namespace content {
 
-ServiceWorkerVersionInfo::ClientInfo::ClientInfo()
-    : ClientInfo(ChildProcessHost::kInvalidUniqueID,
-                 MSG_ROUTING_NONE,
-                 base::Callback<WebContents*(void)>(),
-                 blink::mojom::ServiceWorkerProviderType::kUnknown) {}
-
-ServiceWorkerVersionInfo::ClientInfo::ClientInfo(
-    int process_id,
-    int route_id,
-    const base::Callback<WebContents*(void)>& web_contents_getter,
-    blink::mojom::ServiceWorkerProviderType type)
-    : process_id(process_id),
-      route_id(route_id),
-      web_contents_getter(web_contents_getter),
-      type(type) {}
-
-ServiceWorkerVersionInfo::ClientInfo::ClientInfo(
-    const ServiceWorkerVersionInfo::ClientInfo& other) = default;
-
-ServiceWorkerVersionInfo::ClientInfo::~ClientInfo() {
-}
-
 ServiceWorkerVersionInfo::ServiceWorkerVersionInfo()
     : running_status(EmbeddedWorkerStatus::STOPPED),
       status(ServiceWorkerVersion::NEW),
