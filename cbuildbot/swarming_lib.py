@@ -29,6 +29,7 @@ RETRIABLE_INTERNAL_FAILURE_STATES = {80}
 
 def RunSwarmingCommand(cmd, swarming_server, swarming_cli_cmd='run',
                        task_name=None, dimensions=None,
+                       priority=None,
                        print_status_updates=False,
                        timeout_secs=None, io_timeout_secs=None,
                        hard_timeout_secs=None, expiration_secs=None,
@@ -44,6 +45,8 @@ def RunSwarmingCommand(cmd, swarming_server, swarming_cli_cmd='run',
     dimensions: A list of tuple with two elements, representing dimension for
                selecting a swarming bots. E.g. ('os', 'Linux') and pools and
                other dimension related stuff.
+    priority: An int number to indicate the priority of this swarming cmd.
+        By default it's None.
     print_status_updates: Boolean, whether to output status updates,
                           can be used to prevent from hitting
                           buildbot silent timeout.
@@ -75,6 +78,9 @@ def RunSwarmingCommand(cmd, swarming_server, swarming_cli_cmd='run',
 
     if task_name:
       swarming_cmd += ['--task-name', task_name]
+
+    if priority is not None:
+      swarming_cmd += ['--priority', str(priority)]
 
     if dimensions:
       for dimension in dimensions:

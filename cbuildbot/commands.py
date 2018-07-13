@@ -1130,7 +1130,7 @@ def RunSkylabHWTestSuite(
   """
   priority_str = priority
   if priority:
-    priority = constants.HWTEST_PRIORITIES_MAP[str(priority)]
+    priority = constants.SKYLAB_HWTEST_PRIORITIES_MAP[str(priority)]
 
   cmd = [SKYLAB_RUN_SUITE_PATH]
   cmd += _GetRunSkylabSuiteArgs(
@@ -1273,7 +1273,7 @@ def _CreateSwarmingArgs(build, suite, board, priority,
     timeout_mins: run_suite timeout mins, will be used to figure out
                   timeouts for swarming task.
     board: Name of the board.
-    priority: Priority of this call.
+    priority: A String, e.g. CQ, representing the priority of this call.
     run_skylab: Indicate whether to create a swarming cmd for Skylab HWTest.
 
   Returns:
@@ -1283,10 +1283,13 @@ def _CreateSwarmingArgs(build, suite, board, priority,
   swarming_timeout = timeout_mins or _DEFAULT_HWTEST_TIMEOUT_MINS
   swarming_timeout = swarming_timeout * 60 + _SWARMING_ADDITIONAL_TIMEOUT
 
+  priority_num = None
   if run_skylab:
     swarming_server = topology.topology.get(
         topology.CHROME_SWARMING_PROXY_HOST_KEY)
     pool = SKYLAB_SUITE_BOT_POOL
+    if priority:
+      priority_num = constants.SKYLAB_HWTEST_PRIORITIES_MAP[str(priority)]
   else:
     swarming_server = topology.topology.get(
         topology.SWARMING_PROXY_HOST_KEY)
@@ -1306,6 +1309,7 @@ def _CreateSwarmingArgs(build, suite, board, priority,
   return {
       'swarming_server': swarming_server,
       'task_name': '-'.join([build, suite]),
+      'priority': priority_num,
       'dimensions': [('os', 'Ubuntu-14.04'),
                      ('pool', pool)],
       'print_status_updates': True,
@@ -1477,7 +1481,8 @@ def AbortHWTests(config_type_or_name, version, debug, suite=''):
     logging.warning('AbortHWTests failed', exc_info=True)
 
 
-def AbortSkylabHWTests(build, board, debug, suite, pool=None, suite_id=''):
+def AbortSkylabHWTests(build, board, debug, suite, priority, pool=None,
+                       suite_id=''):
   """Abort the specified hardware tests for the given bot(s).
 
   Args:
@@ -1485,6 +1490,7 @@ def AbortSkylabHWTests(build, board, debug, suite, pool=None, suite_id=''):
     board: The name of the board.
     debug: Whether we are in debug mode.
     suite: Name of the Autotest suite.
+    priority: A string like 'CQ' to represent the suite's priority.
     pool: The name of the pool.
     suite_id: The ID of this swarming suite task.
   """
@@ -1502,6 +1508,7 @@ def AbortSkylabHWTests(build, board, debug, suite, pool=None, suite_id=''):
         'swarming_server': topology.topology.get(
             topology.CHROME_SWARMING_PROXY_HOST_KEY),
         'task_name': '-'.join(['abort', build, suite]),
+        'priority': constants.SKYLAB_HWTEST_PRIORITIES_MAP[str(priority)],
         'dimensions': [('os', 'Ubuntu-14.04'),
                        ('pool', SKYLAB_SUITE_BOT_POOL)],
         'print_status_updates': True,

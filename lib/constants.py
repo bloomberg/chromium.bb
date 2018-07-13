@@ -706,6 +706,8 @@ HWTEST_CHROME_INFORMATIONAL = 'chrome-informational'
 # indicate that autotest is at capacity.
 HWTEST_TIMEOUT_EXTENSION = 10 * 60
 
+HWTEST_WEEKLY_PRIORITY = 'Weekly'
+HWTEST_DAILY_PRIORITY = 'Daily'
 HWTEST_DEFAULT_PRIORITY = 'DEFAULT'
 HWTEST_CQ_PRIORITY = 'CQ'
 HWTEST_BUILD_PRIORITY = 'Build'
@@ -713,8 +715,8 @@ HWTEST_PFQ_PRIORITY = 'PFQ'
 HWTEST_POST_BUILD_PRIORITY = 'PostBuild'
 
 # Ordered by priority (first item being lowest).
-HWTEST_VALID_PRIORITIES = ['Weekly',
-                           'Daily',
+HWTEST_VALID_PRIORITIES = [HWTEST_WEEKLY_PRIORITY,
+                           HWTEST_DAILY_PRIORITY,
                            HWTEST_POST_BUILD_PRIORITY,
                            HWTEST_DEFAULT_PRIORITY,
                            HWTEST_BUILD_PRIORITY,
@@ -725,6 +727,20 @@ HWTEST_VALID_PRIORITIES = ['Weekly',
 # Use the same priorities mapping as autotest/client/common_lib/priorities.py
 HWTEST_PRIORITIES_MAP = {key: 10 + 10 * index
                          for index, key in enumerate(HWTEST_VALID_PRIORITIES)}
+
+# Creates a mapping of priorities for skylab hwtest tasks. In swarming,
+# lower number means high priorities. Priority lower than 48 will be special
+# tasks.
+# Use the same priorities mapping as autotest/venv/skylab_suite/swarming_lib.py
+SKYLAB_HWTEST_PRIORITIES_MAP = {
+    HWTEST_WEEKLY_PRIORITY: 160,
+    HWTEST_DAILY_PRIORITY: 145,
+    HWTEST_POST_BUILD_PRIORITY: 130,
+    HWTEST_DEFAULT_PRIORITY: 100,
+    HWTEST_BUILD_PRIORITY: 80,
+    HWTEST_PFQ_PRIORITY: 65,
+    HWTEST_CQ_PRIORITY: 50,
+}
 
 
 # HWTest result statuses
