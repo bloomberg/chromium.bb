@@ -11,7 +11,7 @@
  * symbols as the user hovers or focuses on them.
  */
 
-{
+const displayInfocard = (() => {
   const _CANVAS_RADIUS = 40;
 
   class Infocard {
@@ -43,13 +43,9 @@
      *
      * Example: "1,234 bytes (1.23 KiB)"
      * @param {TreeNode} node
-     * @param {GetSize} getSizeLabel
      */
-    _updateSize(node, getSizeLabel) {
-      const {description, element} = getSizeLabel(
-        node,
-        state.get('byteunit', {default: 'MiB', valid: _BYTE_UNITS_SET})
-      );
+    _updateSize(node) {
+      const {description, element, value} = getSizeContents(node);
       const sizeFragment = dom.createFragment([
         document.createTextNode(`${description} (`),
         element,
@@ -57,11 +53,7 @@
       ]);
 
       // Update DOM
-      if (node.size < 0) {
-        this._sizeInfo.classList.add('negative');
-      } else {
-        this._sizeInfo.classList.remove('negative');
-      }
+      setSizeClasses(this._sizeInfo, value);
 
       dom.replace(this._sizeInfo, sizeFragment);
     }
@@ -116,13 +108,12 @@
     /**
      * Updates the DOM for the info card.
      * @param {TreeNode} node
-     * @param {GetSize} getSizeLabel
      */
-    _updateInfocard(node, getSizeLabel) {
+    _updateInfocard(node) {
       const type = node.type[0];
 
       // Update DOM
-      this._updateSize(node, getSizeLabel);
+      this._updateSize(node);
       this._updatePath(node);
       if (type !== this._lastType) {
         // No need to create a new icon if it is identical.
@@ -135,12 +126,11 @@
     /**
      * Updates the card on the next animation frame.
      * @param {TreeNode} node
-     * @param {GetSize} getSizeLabel
      */
-    updateInfocard(node, getSizeLabel) {
+    updateInfocard(node) {
       cancelAnimationFrame(Infocard._pendingFrame);
       Infocard._pendingFrame = requestAnimationFrame(() =>
-        this._updateInfocard(node, getSizeLabel)
+        this._updateInfocard(node)
       );
     }
   }
@@ -205,16 +195,17 @@
      * Draw a slice of a pie chart.
      * @param {number} angleStart Starting angle, in radians.
      * @param {number} percentage Percentage of circle to draw.
-     * @param {string} color Color of the pie slice.
+     * @param {string} fillColor Color of the pie slice.
+     * @param {string} strokeColor Color of the pie slice border.
      * @returns {number} Ending angle, in radians.
      */
-    _drawSlice(angleStart, percentage, color) {
-      const arcLength = percentage * 2 * Math.PI;
+    _drawSlice(angleStart, percentage, fillColor, strokeColor) {
+      const arcLength = Math.abs(percentage) * 2 * Math.PI;
       const angleEnd = angleStart + arcLength;
       if (arcLength === 0) return angleEnd;
 
       // Update DOM
-      this._ctx.fillStyle = color;
+      this._ctx.fillStyle = fillColor;
       // Move cursor to center, where line will start
       this._ctx.beginPath();
       this._ctx.moveTo(40, 40);
@@ -223,6 +214,14 @@
       // Move cursor back to center
       this._ctx.closePath();
       this._ctx.fill();
+
+      if (strokeColor) {
+        this._ctx.strokeStyle = strokeColor;
+        this._ctx.lineWidth = 16;
+        this._ctx.beginPath();
+        this._ctx.arc(40, 40, _CANVAS_RADIUS, angleStart, angleEnd);
+        this._ctx.stroke();
+      }
 
       return angleEnd;
     }
@@ -271,23 +270,31 @@
     /**
      * Update DOM for the container infocard
      * @param {TreeNode} containerNode
-     * @param {GetSize} getSizeLabel
      */
-    _updateInfocard(containerNode, getSizeLabel) {
+    _updateInfocard(containerNode) {
       const extraRows = {...this._infoRows};
       const statsEntries = Object.entries(containerNode.childStats).sort(
         (a, b) => b[1].size - a[1].size
       );
+      const diffMode = state.has('diff_mode');
+      let totalSize = 0;
+      for (const [, stats] of statsEntries) {
+        totalSize += Math.abs(stats.size);
+      }
 
       // Update DOM
-      super._updateInfocard(containerNode, getSizeLabel);
+      super._updateInfocard(containerNode);
       let angleStart = 0;
       for (const [type, stats] of statsEntries) {
         delete extraRows[type];
         const {color} = getIconStyle(type);
-        const percentage = stats.size / containerNode.size;
+        const percentage = stats.size / totalSize;
+        let stroke = '';
+        if (diffMode) {
+          stroke = stats.size > 0 ? '#ea4335' : '#34a853';
+        }
 
-        angleStart = this._drawSlice(angleStart, percentage, color);
+        angleStart = this._drawSlice(angleStart, percentage, color, stroke);
         this._updateBreakdownRow(this._infoRows[type], stats, percentage);
       }
 
@@ -304,19 +311,18 @@
   /**
    * Displays an infocard for the given symbol on the next frame.
    * @param {TreeNode} node
-   * @param {GetSize} getSizeLabel
    */
-  function displayInfocard(node, getSizeLabel) {
+  function displayInfocard(node) {
     if (_CONTAINER_TYPE_SET.has(node.type[0])) {
-      _containerInfo.updateInfocard(node, getSizeLabel);
+      _containerInfo.updateInfocard(node);
       _containerInfo.setHidden(false);
       _symbolInfo.setHidden(true);
     } else {
-      _symbolInfo.updateInfocard(node, getSizeLabel);
+      _symbolInfo.updateInfocard(node);
       _symbolInfo.setHidden(false);
       _containerInfo.setHidden(true);
     }
   }
 
-  self.displayInfocard = displayInfocard;
-}
+  return displayInfocard;
+})();

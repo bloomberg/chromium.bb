@@ -22,11 +22,13 @@
  * @prop {string} n Name of the symbol.
  * @prop {number} b Byte size of the symbol, divided by num_aliases.
  * @prop {string} t Single character string to indicate the symbol type.
+ * @prop {number} [u] Count value indicating how many symbols this entry
+ * represents. Negative value when removed in a diff.
  */
 /**
  * @typedef {object} FileEntry JSON object representing a single file and its
  * symbols.
- * @prop {number} p Path to the file (source_path).
+ * @prop {string} p Path to the file (source_path).
  * @prop {number} c Index of the file's component in meta (component_index).
  * @prop {SymbolEntry[]} s - Symbols belonging to this node. Array of objects.
  */
@@ -70,16 +72,6 @@ function _compareFunc(a, b) {
 }
 
 /**
- * Sorts nodes in place based on their sizes.
- * @param {TreeNode} node Node whose children will be sorted. Will be modified
- * by this function.
- */
-function sortTree(node) {
-  node.children.sort(_compareFunc);
-  node.children.forEach(sortTree);
-}
-
-/**
  * Make a node with some default arguments
  * @param {Partial<TreeNode> & {shortName:string}} options
  * Values to use for the node. If a value is
@@ -96,40 +88,6 @@ function createNode(options) {
     shortNameIndex: idPath.lastIndexOf(shortName),
     size,
     type,
-  };
-}
-
-/**
- * Formats a tree node by removing references to its desendants and ancestors.
- *
- * Only children up to `depth` will be kept, and deeper children will be
- * replaced with `null` to indicate that there were children by they were
- * removed.
- *
- * Leaves will no children will always have an empty children array.
- * If a tree has only 1 child, it is kept as the UI will expand chain of single
- * children in the tree.
- * @param {TreeNode} node Node to format
- * @param {number} depth How many levels of children to keep.
- * @returns {TreeNode}
- */
-function formatNode(node, depth = 1) {
-  const childDepth = depth - 1;
-  // `null` represents that the children have not been loaded yet
-  let children = null;
-  if (depth > 0 || node.children.length <= 1) {
-    // If depth is larger than 0, include the children.
-    // If there are 0 children, include the empty array to indicate the node is
-    // a leaf.
-    // If there is 1 child, include it so the UI doesn't need to make a
-    // roundtrip in order to expand the chain.
-    children = node.children.map(n => formatNode(n, childDepth));
-  }
-
-  return {
-    ...node,
-    children,
-    parent: null,
   };
 }
 
@@ -195,8 +153,10 @@ class TreeBuilder {
         parentStat.count += stat.count;
         node.parent.childStats[type] = parentStat;
 
-        if (parentStat.size > lastBiggestSize) {
+        const absSize = Math.abs(parentStat.size);
+        if (absSize > lastBiggestSize) {
           node.parent.type = `${containerType}${type}`;
+          lastBiggestSize = absSize;
         }
       }
 
@@ -206,12 +166,13 @@ class TreeBuilder {
   }
 
   /**
-   *
+   * Merges dex method symbols such as "Controller#get" and "Controller#set"
+   * into containers, based on the class of the dex methods.
    * @param {TreeNode} node
    */
   static _joinDexMethodClasses(node) {
     const hasDexMethods = node.childStats[_DEX_METHOD_SYMBOL_TYPE] != null;
-    if (!hasDexMethods) return;
+    if (!hasDexMethods || node.children == null) return node;
 
     if (node.type[0] === _CONTAINER_TYPES.FILE) {
       /** @type {Map<string, TreeNode>} */
@@ -260,6 +221,47 @@ class TreeBuilder {
     } else {
       node.children.forEach(TreeBuilder._joinDexMethodClasses);
     }
+    return node;
+  }
+
+  /**
+   * Formats a tree node by removing references to its desendants and ancestors.
+   * This reduces how much data is sent to the UI thread at once. For large
+   * trees, serialization and deserialization of the entire tree can take ~7s.
+   *
+   * Only children up to `depth` will be kept, and deeper children will be
+   * replaced with `null` to indicate that there were children by they were
+   * removed.
+   *
+   * Leaves with no children will always have an empty children array.
+   * If a tree has only 1 child, it is kept as the UI will expand chains of
+   * single children in the tree.
+   *
+   * Additionally sorts the formatted portion of the tree.
+   * @param {TreeNode} node Node to format
+   * @param {number} depth How many levels of children to keep.
+   * @returns {TreeNode}
+   */
+  static formatNode(node, depth = 1) {
+    const childDepth = depth - 1;
+    // `null` represents that the children have not been loaded yet
+    let children = null;
+    if (depth > 0 || node.children.length <= 1) {
+      // If depth is larger than 0, include the children.
+      // If there are 0 children, include the empty array to indicate the node
+      // is a leaf.
+      // If there is 1 child, include it so the UI doesn't need to make a
+      // roundtrip in order to expand the chain.
+      children = node.children
+          .map(n => TreeBuilder.formatNode(n, childDepth))
+          .sort(_compareFunc);
+    }
+
+    return TreeBuilder._joinDexMethodClasses({
+      ...node,
+      children,
+      parent: null,
+    });
   }
 
   /**
@@ -336,13 +338,14 @@ class TreeBuilder {
     for (const symbol of fileEntry[_KEYS.FILE_SYMBOLS]) {
       const size = symbol[_KEYS.SIZE];
       const type = symbol[_KEYS.TYPE];
+      const count = symbol[_KEYS.COUNT] || 1;
       const symbolNode = createNode({
         // Join file path to symbol name with a ":"
         idPath: `${idPath}:${symbol[_KEYS.SYMBOL_NAME]}`,
         shortName: symbol[_KEYS.SYMBOL_NAME],
         size,
         type: symbol[_KEYS.TYPE],
-        childStats: {[type]: {size, count: 1}},
+        childStats: {[type]: {size, count}},
       });
 
       if (this._filterTest(symbolNode)) {
@@ -363,10 +366,6 @@ class TreeBuilder {
    * Finalize the creation of the tree and return the root node.
    */
   build() {
-    TreeBuilder._joinDexMethodClasses(this.rootNode);
-    // Sort the tree so that larger items are higher.
-    sortTree(this.rootNode);
-
     return this.rootNode;
   }
 
@@ -559,6 +558,7 @@ async function buildTree(options, onProgress) {
   /** @type {Meta | null} Object from the first line of the data file */
   let meta = null;
 
+  /** @type {{ [gropyBy: string]: (fileEntry: FileEntry) => string }} */
   const getPathMap = {
     component(fileEntry) {
       const component = meta.components[fileEntry[_KEYS.COMPONENT_INDEX]];
@@ -580,12 +580,12 @@ async function buildTree(options, onProgress) {
   });
 
   /**
-   * Post data to the UI thread. Defaults will be used for the root and percent
-   * values if not specified.
+   * Creates data to post to the UI thread. Defaults will be used for the root
+   * and percent values if not specified.
    * @param {{root?:TreeNode,percent?:number,error?:Error}} data Default data
    * values to post.
    */
-  function postToUi(data = {}) {
+  function createProgressMessage(data = {}) {
     let {percent} = data;
     if (percent == null) {
       if (meta == null) {
@@ -596,15 +596,23 @@ async function buildTree(options, onProgress) {
     }
 
     const message = {
-      id: 0,
-      root: formatNode(data.root || builder.rootNode),
+      root: TreeBuilder.formatNode(data.root || builder.rootNode),
       percent,
       diffMode: meta && meta.diff_mode,
     };
     if (data.error) {
       message.error = data.error.message;
     }
+    return message;
+  }
 
+  /**
+   * Post data to the UI thread. Defaults will be used for the root and percent
+   * values if not specified.
+   */
+  function postToUi() {
+    const message = createProgressMessage();
+    message.id = 0;
     onProgress(message);
   }
 
@@ -615,26 +623,26 @@ async function buildTree(options, onProgress) {
     interval = setInterval(postToUi, 1000);
     for await (const dataObj of fetcher.newlineDelimtedJsonStream()) {
       if (meta == null) {
-        meta = dataObj;
+        // First line of data is used to store meta information.
+        meta = /** @type {Meta} */ (dataObj);
         postToUi();
       } else {
-        builder.addFileEntry(dataObj);
+        builder.addFileEntry(/** @type {FileEntry} */ (dataObj));
       }
     }
     clearInterval(interval);
 
-    return {
+    return createProgressMessage({
       root: builder.build(),
       percent: 1,
-      diffMode: meta && meta.diff_mode,
-    };
+    });
   } catch (error) {
     if (interval != null) clearInterval(interval);
     if (error.name === 'AbortError') {
       console.info(error.message);
     } else {
       console.error(error);
-      throw error;
+      return createProgressMessage({error});
     }
   }
 }
@@ -650,7 +658,7 @@ const actions = {
   async open(path) {
     if (!builder) throw new Error('Called open before load');
     const node = builder.find(path);
-    return formatNode(node);
+    return TreeBuilder.formatNode(node);
   },
 };
 

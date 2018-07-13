@@ -49,14 +49,15 @@
  */
 
 /** Abberivated keys used by FileEntrys in the JSON data file. */
-const _KEYS = {
-  SOURCE_PATH: 'p',
-  COMPONENT_INDEX: 'c',
-  FILE_SYMBOLS: 's',
-  SYMBOL_NAME: 'n',
-  SIZE: 'b',
-  TYPE: 't',
-};
+const _KEYS = Object.freeze({
+  SOURCE_PATH: /** @type {'p'} */ ('p'),
+  COMPONENT_INDEX: /** @type {'c'} */ ('c'),
+  FILE_SYMBOLS: /** @type {'s'} */ ('s'),
+  SYMBOL_NAME: /** @type {'n'} */ ('n'),
+  SIZE: /** @type {'b'} */ ('b'),
+  TYPE: /** @type {'t'} */ ('t'),
+  COUNT: /** @type {'u'} */ ('u'),
+});
 
 /**
  * @enum {number} Various byte units and the corresponding amount of bytes

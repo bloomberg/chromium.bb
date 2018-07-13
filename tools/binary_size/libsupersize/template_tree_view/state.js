@@ -124,6 +124,18 @@ function _initState() {
       if (types.length > 0) copy.set(_TYPE_STATE_KEY, types.join(''));
       return `?${copy.toString()}`;
     },
+    /**
+     * Saves a key and value into a temporary state not displayed in the URL.
+     * @param {string} key
+     * @param {string | null} value
+     */
+    set(key, value) {
+      if (value == null) {
+        _filterParams.delete(key);
+      } else {
+        _filterParams.set(key, value);
+      }
+    },
   });
 
   // Update form inputs to reflect the state from URL.
@@ -171,11 +183,13 @@ function _initState() {
   }
 
   // Update the state when the form changes.
-  form.addEventListener('change', () => {
+  function _updateStateFromForm() {
     const modifiedForm = new FormData(form);
     _filterParams = new URLSearchParams(onlyChangedEntries(modifiedForm));
     history.replaceState(null, null, state.toString());
-  });
+  }
+
+  form.addEventListener('change', _updateStateFromForm);
 
   return state;
 }
@@ -277,7 +291,7 @@ function _makeIconTemplateGetter() {
    * @returns {SVGSVGElement}
    */
   function getIconTemplate(type, readonly = false) {
-    const iconTemplate = symbolIcons[type] || symbolIcons.o;
+    const iconTemplate = symbolIcons[type] || symbolIcons[_OTHER_SYMBOL_TYPE];
     return readonly ? iconTemplate : iconTemplate.cloneNode(true);
   }
 
@@ -302,7 +316,86 @@ function _makeIconTemplateGetter() {
   return {getIconTemplate, getIconStyle};
 }
 
+function _makeSizeTextGetter() {
+  const _SIZE_CHANGE_CUTOFF = 50000;
+
+  /**
+   * Create the contents for the size element of a tree node.
+   * The unit to use is selected from the current state.
+   *
+   * If in method count mode, size instead represents the amount of methods in
+   * the node. Otherwise, the original number of bytes will be displayed.
+   *
+   * @param {TreeNode} node Node whose size is the number of bytes to use for
+   * the size text
+   * @returns {GetSizeResult} Object with hover text title and
+   * size element body. Can be consumed by `_applySizeFunc()`
+   */
+  function getSizeContents(node) {
+    if (state.has('method_count')) {
+      const {count: methodCount = 0} =
+          node.childStats[_DEX_METHOD_SYMBOL_TYPE] || {};
+      const methodStr = methodCount.toLocaleString(_LOCALE, {
+        useGrouping: true,
+      });
+
+      return {
+        element: document.createTextNode(methodStr),
+        description: `${methodStr} method${methodCount === 1 ? '' : 's'}`,
+        value: methodCount,
+      };
+    } else {
+      const bytes = node.size;
+      const unit = state.get('byteunit', {
+        default: 'MiB',
+        valid: _BYTE_UNITS_SET,
+      });
+      // Format the bytes as a number with 2 digits after the decimal point
+      const text = (bytes / _BYTE_UNITS[unit]).toLocaleString(_LOCALE, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      const textNode = document.createTextNode(`${text} `);
+
+      // Display the suffix with a smaller font
+      const suffixElement = dom.textElement('small', unit);
+
+      const bytesGrouped = bytes.toLocaleString(_LOCALE, {useGrouping: true});
+
+      return {
+        element: dom.createFragment([textNode, suffixElement]),
+        description: `${bytesGrouped} bytes`,
+        value: bytes,
+      };
+    }
+  }
+
+  /**
+   * Set classes on an element based on the size it represents.
+   * @param {HTMLElement} sizeElement
+   * @param {number} value
+   */
+  function setSizeClasses(sizeElement, value) {
+    const shouldHaveStyle =
+      state.has('diff_mode') && Math.abs(value) > _SIZE_CHANGE_CUTOFF;
+    if (shouldHaveStyle) {
+      if (value < 0) {
+        sizeElement.classList.add('shrunk');
+        sizeElement.classList.remove('grew');
+      } else {
+        sizeElement.classList.remove('shrunk');
+        sizeElement.classList.add('grew');
+      }
+    } else {
+      sizeElement.classList.remove('shrunk', 'grew');
+    }
+  }
+
+  return {getSizeContents, setSizeClasses};
+}
+
 /** Utilities for working with the state */
 const state = _initState();
 const {getIconTemplate, getIconStyle} = _makeIconTemplateGetter();
+const {getSizeContents, setSizeClasses} = _makeSizeTextGetter();
 _startListeners();
