@@ -152,8 +152,7 @@ void InternetHandler::AddThirdPartyVpn(const base::ListValue* args) {
   // Request to launch Arc VPN provider.
   const auto* arc_app_list_prefs = ArcAppListPrefs::Get(profile_);
   if (arc_app_list_prefs && arc_app_list_prefs->GetApp(app_id)) {
-    arc::LaunchApp(profile_, app_id, ui::EF_NONE,
-                   arc::UserInteractionType::APP_STARTED_FROM_SETTINGS);
+    arc::LaunchApp(profile_, app_id, ui::EF_NONE);
     return;
   }
 

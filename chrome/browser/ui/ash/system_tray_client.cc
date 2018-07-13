@@ -374,8 +374,7 @@ void SystemTrayClient::ShowArcVpnCreate(const std::string& app_id) {
   if (!profile)
     return;
 
-  arc::LaunchApp(profile, app_id, ui::EF_NONE,
-                 arc::UserInteractionType::APP_STARTED_FROM_SETTINGS);
+  arc::LaunchApp(profile, app_id, ui::EF_NONE);
 }
 
 void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {

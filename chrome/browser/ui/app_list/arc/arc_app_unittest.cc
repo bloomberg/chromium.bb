@@ -1189,8 +1189,7 @@ TEST_P(ArcAppModelBuilderTest, LastLaunchTime) {
   EXPECT_EQ(base::Time(), app_info->last_launch_time);
 
   base::Time time_before = base::Time::Now();
-  arc::LaunchApp(profile(), id2, ui::EF_NONE,
-                 arc::UserInteractionType::NOT_USER_INITIATED);
+  arc::LaunchApp(profile(), id2, ui::EF_NONE);
   const base::Time time_after = base::Time::Now();
 
   app_info = prefs->GetApp(id2);
@@ -1272,8 +1271,7 @@ TEST_P(ArcPlayStoreAppTest, PlayStore) {
   ASSERT_TRUE(app_info);
   EXPECT_FALSE(app_info->ready);
 
-  arc::LaunchApp(profile(), arc::kPlayStoreAppId, ui::EF_NONE,
-                 arc::UserInteractionType::NOT_USER_INITIATED);
+  arc::LaunchApp(profile(), arc::kPlayStoreAppId, ui::EF_NONE);
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
 }
 
@@ -1866,14 +1864,12 @@ TEST_P(ArcAppModelBuilderTest, AppLauncher) {
   const std::string id3 = ArcAppTest::GetAppId(app3);
 
   ArcAppLauncher launcher1(profile(), id1, base::Optional<std::string>(), false,
-                           display::kInvalidDisplayId,
-                           arc::UserInteractionType::NOT_USER_INITIATED);
+                           display::kInvalidDisplayId);
   EXPECT_FALSE(launcher1.app_launched());
   EXPECT_TRUE(prefs->HasObserver(&launcher1));
 
   ArcAppLauncher launcher3(profile(), id3, base::Optional<std::string>(), false,
-                           display::kInvalidDisplayId,
-                           arc::UserInteractionType::NOT_USER_INITIATED);
+                           display::kInvalidDisplayId);
   EXPECT_FALSE(launcher1.app_launched());
   EXPECT_TRUE(prefs->HasObserver(&launcher1));
   EXPECT_FALSE(launcher3.app_launched());
@@ -1895,8 +1891,7 @@ TEST_P(ArcAppModelBuilderTest, AppLauncher) {
   const std::string launch_intent2 = arc::GetLaunchIntent(
       app2.package_name, app2.activity, std::vector<std::string>());
   ArcAppLauncher launcher2(profile(), id2, launch_intent2, false,
-                           display::kInvalidDisplayId,
-                           arc::UserInteractionType::NOT_USER_INITIATED);
+                           display::kInvalidDisplayId);
   EXPECT_TRUE(launcher2.app_launched());
   EXPECT_FALSE(prefs->HasObserver(&launcher2));
   EXPECT_EQ(1u, app_instance()->launch_requests().size());
@@ -2087,12 +2082,10 @@ TEST_P(ArcAppLauncherForDefaulAppTest, AppLauncherForDefaultApps) {
 
   // Launch when app is registered and ready.
   ArcAppLauncher launcher1(profile(), id1, base::Optional<std::string>(), false,
-                           display::kInvalidDisplayId,
-                           arc::UserInteractionType::NOT_USER_INITIATED);
+                           display::kInvalidDisplayId);
   // Launch when app is registered.
   ArcAppLauncher launcher2(profile(), id2, base::Optional<std::string>(), true,
-                           display::kInvalidDisplayId,
-                           arc::UserInteractionType::NOT_USER_INITIATED);
+                           display::kInvalidDisplayId);
 
   EXPECT_FALSE(launcher1.app_launched());
 
