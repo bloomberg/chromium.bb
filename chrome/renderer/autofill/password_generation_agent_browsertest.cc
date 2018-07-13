@@ -340,20 +340,8 @@ TEST_F(PasswordGenerationAgentTest, DetectionTest) {
 TEST_F(PasswordGenerationAgentTest, DetectionTestNoForm) {
   LoadHTMLWithUserGesture(kAccountCreationNoForm);
   SetNotBlacklistedMessage(password_generation_, kAccountCreationNoForm);
-  std::vector<blink::WebElement> fieldsets;
-  std::vector<blink::WebFormControlElement> control_elements =
-      form_util::GetUnownedFormFieldElements(
-          GetMainFrame()->GetDocument().All(), &fieldsets);
-  autofill::FormData form_data;
-  UnownedPasswordFormElementsAndFieldSetsToFormData(
-      fieldsets, control_elements, nullptr, GetMainFrame()->GetDocument(),
-      nullptr /* field_value_and_properties_map */, form_util::EXTRACT_NONE,
-      &form_data, nullptr /* FormFieldData */);
-  std::vector<autofill::PasswordFormGenerationData> forms;
-  forms.push_back(autofill::PasswordFormGenerationData{
-      CalculateFormSignature(form_data),
-      CalculateFieldSignatureForField(form_data.fields[1])});
-  password_generation_->FoundFormsEligibleForGeneration(forms);
+  SetAccountCreationFormsDetectedMessageForUnownedInputs(
+      password_generation_, GetMainFrame()->GetDocument());
 
   ExpectAutomaticGenerationAvailable("first_password", true);
   ExpectAutomaticGenerationAvailable("second_password", false);
@@ -969,66 +957,64 @@ TEST_F(PasswordGenerationAgentTest, AutofillToGenerationField) {
 }
 
 TEST_F(PasswordGenerationAgentTestForHtmlAnnotation, AnnotateForm) {
-  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
-  SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
-  SetAccountCreationFormsDetectedMessage(password_generation_,
-                                         GetMainFrame()->GetDocument(), 0, 1);
-  ExpectAutomaticGenerationAvailable("first_password", true);
-  WebDocument document = GetMainFrame()->GetDocument();
+  for (bool has_form_tag : {false, true}) {
+    SCOPED_TRACE(testing::Message() << "has_form_tag = " << has_form_tag);
+    const char* kHtmlForm =
+        has_form_tag ? kAccountCreationFormHTML : kAccountCreationNoForm;
+    LoadHTMLWithUserGesture(kHtmlForm);
+    SetNotBlacklistedMessage(password_generation_, kHtmlForm);
+    if (has_form_tag) {
+      SetAccountCreationFormsDetectedMessage(
+          password_generation_, GetMainFrame()->GetDocument(), 0, 1);
+    } else {
+      SetAccountCreationFormsDetectedMessageForUnownedInputs(
+          password_generation_, GetMainFrame()->GetDocument());
+    }
+    ExpectAutomaticGenerationAvailable("first_password", true);
+    WebDocument document = GetMainFrame()->GetDocument();
 
-  // Check the form signature is set.
-  blink::WebElement form_element =
-      document.GetElementById(blink::WebString::FromUTF8("blah"));
-  ASSERT_FALSE(form_element.IsNull());
-  blink::WebString form_signature =
-      form_element.GetAttribute(blink::WebString::FromUTF8("form_signature"));
-  ASSERT_FALSE(form_signature.IsNull());
-  EXPECT_EQ("3524919054660658462", form_signature.Ascii());
+    const char* kFormSignature =
+        has_form_tag ? "3524919054660658462" : "7671707438749847833";
+    if (has_form_tag) {
+      // Check the form signature is set in the <form> tag.
+      blink::WebElement form_element =
+          document.GetElementById(blink::WebString::FromUTF8("blah"));
+      ASSERT_FALSE(form_element.IsNull());
+      blink::WebString form_signature = form_element.GetAttribute(
+          blink::WebString::FromUTF8("form_signature"));
+      ASSERT_FALSE(form_signature.IsNull());
+      EXPECT_EQ(kFormSignature, form_signature.Ascii());
+    }
 
-  // Check field signatures are set.
-  blink::WebElement username_element =
-      document.GetElementById(blink::WebString::FromUTF8("username"));
-  ASSERT_FALSE(username_element.IsNull());
-  blink::WebString username_signature = username_element.GetAttribute(
-      blink::WebString::FromUTF8("field_signature"));
-  ASSERT_FALSE(username_signature.IsNull());
-  EXPECT_EQ("239111655", username_signature.Ascii());
+    // Check field signatures and form signature are set in the <input>s.
+    blink::WebElement username_element =
+        document.GetElementById(blink::WebString::FromUTF8("username"));
+    ASSERT_FALSE(username_element.IsNull());
+    blink::WebString username_signature = username_element.GetAttribute(
+        blink::WebString::FromUTF8("field_signature"));
+    ASSERT_FALSE(username_signature.IsNull());
+    EXPECT_EQ("239111655", username_signature.Ascii());
+    blink::WebString form_signature_in_username = username_element.GetAttribute(
+        blink::WebString::FromUTF8("form_signature"));
+    EXPECT_EQ(kFormSignature, form_signature_in_username.Ascii());
 
-  blink::WebElement password_element =
-      document.GetElementById(blink::WebString::FromUTF8("first_password"));
-  ASSERT_FALSE(password_element.IsNull());
-  blink::WebString password_signature = password_element.GetAttribute(
-      blink::WebString::FromUTF8("field_signature"));
-  ASSERT_FALSE(password_signature.IsNull());
-  EXPECT_EQ("3933215845", password_signature.Ascii());
+    blink::WebElement password_element =
+        document.GetElementById(blink::WebString::FromUTF8("first_password"));
+    ASSERT_FALSE(password_element.IsNull());
+    blink::WebString password_signature = password_element.GetAttribute(
+        blink::WebString::FromUTF8("field_signature"));
+    ASSERT_FALSE(password_signature.IsNull());
+    EXPECT_EQ("3933215845", password_signature.Ascii());
+    blink::WebString form_signature_in_password = password_element.GetAttribute(
+        blink::WebString::FromUTF8("form_signature"));
+    EXPECT_EQ(kFormSignature, form_signature_in_password.Ascii());
 
-  // Check the generation element is marked.
-  blink::WebString generation_mark = password_element.GetAttribute(
-      blink::WebString::FromUTF8("password_creation_field"));
-  ASSERT_FALSE(generation_mark.IsNull());
-  EXPECT_EQ("1", generation_mark.Utf8());
-}
-
-TEST_F(PasswordGenerationAgentTestForHtmlAnnotation, AnnotateUnownedFields) {
-  LoadHTMLWithUserGesture(kAccountCreationNoForm);
-  WebDocument document = GetMainFrame()->GetDocument();
-
-  // Check field signatures are set.
-  blink::WebElement username_element =
-      document.GetElementById(blink::WebString::FromUTF8("username"));
-  ASSERT_FALSE(username_element.IsNull());
-  blink::WebString username_signature = username_element.GetAttribute(
-      blink::WebString::FromUTF8("field_signature"));
-  ASSERT_FALSE(username_signature.IsNull());
-  EXPECT_EQ("239111655", username_signature.Ascii());
-
-  blink::WebElement password_element =
-      document.GetElementById(blink::WebString::FromUTF8("first_password"));
-  ASSERT_FALSE(password_element.IsNull());
-  blink::WebString password_signature = password_element.GetAttribute(
-      blink::WebString::FromUTF8("field_signature"));
-  ASSERT_FALSE(password_signature.IsNull());
-  EXPECT_EQ("3933215845", password_signature.Ascii());
+    // Check the generation element is marked.
+    blink::WebString generation_mark = password_element.GetAttribute(
+        blink::WebString::FromUTF8("password_creation_field"));
+    ASSERT_FALSE(generation_mark.IsNull());
+    EXPECT_EQ("1", generation_mark.Utf8());
+  }
 }
 
 }  // namespace autofill

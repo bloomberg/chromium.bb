@@ -3215,6 +3215,7 @@ TEST_F(PasswordAutofillAgentTest, SuggestMultiplePasswordFields) {
 }
 
 TEST_F(PasswordAutofillAgentTest, ShowAutofillSignaturesFlag) {
+  // Tests that form signature is set iff the flag is enabled.
   const bool kFalseTrue[] = {false, true};
   for (bool show_signatures : kFalseTrue) {
     if (show_signatures)
@@ -3226,39 +3227,13 @@ TEST_F(PasswordAutofillAgentTest, ShowAutofillSignaturesFlag) {
         document.GetElementById(WebString::FromASCII("LoginTestForm"))
             .To<WebFormElement>();
     ASSERT_FALSE(form_element.IsNull());
-    FormData form_data;
-    ASSERT_TRUE(WebFormElementToFormData(
-        form_element, blink::WebFormControlElement(), nullptr,
-        form_util::EXTRACT_NONE, &form_data, nullptr));
 
-    // Check form signature.
+    // Check only form signature attribute. The full test is in
+    // "PasswordGenerationAgentTestForHtmlAnnotation.*".
     WebString form_signature_attribute =
         WebString::FromASCII(kDebugAttributeForFormSignature);
-    ASSERT_EQ(form_element.HasAttribute(form_signature_attribute),
+    EXPECT_EQ(form_element.HasAttribute(form_signature_attribute),
               show_signatures);
-    if (show_signatures) {
-      EXPECT_EQ(form_element.GetAttribute(form_signature_attribute),
-                blink::WebString::FromUTF8(
-                    base::NumberToString(CalculateFormSignature(form_data))));
-    }
-
-    // Check field signatures.
-    WebString field_signature_attribute =
-        WebString::FromASCII(kDebugAttributeForFieldSignature);
-    blink::WebVector<blink::WebFormControlElement> control_elements;
-    form_element.GetFormControlElements(control_elements);
-    for (size_t i = 0; i < control_elements.size(); ++i) {
-      const blink::WebFormControlElement field_element = control_elements[i];
-      bool expect_signature_for_field =
-          show_signatures && form_util::IsAutofillableElement(field_element);
-      ASSERT_EQ(field_element.HasAttribute(field_signature_attribute),
-                expect_signature_for_field);
-      if (expect_signature_for_field) {
-        EXPECT_EQ(field_element.GetAttribute(field_signature_attribute),
-                  blink::WebString::FromUTF8(base::NumberToString(
-                      CalculateFieldSignatureForField(form_data.fields[i]))));
-      }
-    }
   }
 }
 
