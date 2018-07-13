@@ -2580,8 +2580,8 @@ TEST_F(NetworkContextTest, PreconnectOne) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  net::EmbeddedTestServer test_server;
   ConnectionListener connection_listener;
+  net::EmbeddedTestServer test_server;
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
@@ -2594,8 +2594,8 @@ TEST_F(NetworkContextTest, PreconnectZero) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  net::EmbeddedTestServer test_server;
   ConnectionListener connection_listener;
+  net::EmbeddedTestServer test_server;
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
@@ -2627,8 +2627,8 @@ TEST_F(NetworkContextTest, PreconnectTwo) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  net::EmbeddedTestServer test_server;
   ConnectionListener connection_listener;
+  net::EmbeddedTestServer test_server;
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
@@ -2651,8 +2651,8 @@ TEST_F(NetworkContextTest, PreconnectFour) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  net::EmbeddedTestServer test_server;
   ConnectionListener connection_listener;
+  net::EmbeddedTestServer test_server;
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
@@ -2676,8 +2676,8 @@ TEST_F(NetworkContextTest, PreconnectMax) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  net::EmbeddedTestServer test_server;
   ConnectionListener connection_listener;
+  net::EmbeddedTestServer test_server;
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
