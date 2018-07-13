@@ -381,6 +381,23 @@ TEST_F(MHTMLArchiveTest, EmptyArchive) {
   EXPECT_EQ(nullptr, archive);
 }
 
+TEST_F(MHTMLArchiveTest, NoMainResource) {
+  const char kURL[] = "http://www.example.com";
+  // Only add a resource to a CSS file, so no main resource is valid for
+  // rendering.
+  AddResource("http://www.example.com/link_styles.css", "text/css",
+              "link_styles.css");
+  Serialize(ToKURL(kURL), "Test Serialization", "text/html",
+            MHTMLArchive::kUseDefaultEncoding);
+
+  scoped_refptr<SharedBuffer> data =
+      SharedBuffer::Create(mhtml_data().data(), mhtml_data().size());
+  KURL http_url = ToKURL("http://www.example.com");
+  MHTMLArchive* archive = MHTMLArchive::Create(http_url, data.get());
+
+  EXPECT_EQ(nullptr, archive);
+}
+
 }  // namespace test
 
 }  // namespace blink

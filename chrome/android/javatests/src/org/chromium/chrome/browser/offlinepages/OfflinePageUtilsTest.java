@@ -420,6 +420,29 @@ public class OfflinePageUtilsTest {
         Assert.assertEquals(1321901946000L, offlinePageItem.get().getCreationTimeMs());
     }
 
+    @Test
+    @SmallTest
+    public void testInvalidMhtmlMainResourceMimeType() throws Exception {
+        // This gets a file:// URL for an MHTML file with a bad content type.  The MHTML should not
+        // render in the tab.
+        String testUrl = UrlUtils.getTestFileUrl("offline_pages/invalid_main_resource.mhtml");
+        mActivityTestRule.loadUrl(testUrl);
+
+        final AtomicReference<OfflinePageItem> offlinePageItem = new AtomicReference<>();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            offlinePageItem.set(OfflinePageUtils.getOfflinePage(
+                    mActivityTestRule.getActivity().getActivityTab()));
+        });
+
+        // The Offline Page Item will be empty because no data can be extracted from the renderer.
+        // Also should not crash.
+        //
+        // Default URL equals the navigated-to URL, should not be |example.com|
+        Assert.assertEquals(testUrl, offlinePageItem.get().getUrl());
+        // Default creation time is 0
+        Assert.assertEquals(0, offlinePageItem.get().getCreationTimeMs());
+    }
+
     private void loadPageAndSave(ClientId clientId) throws Exception {
         mTestPage = mTestServer.getURL(TEST_PAGE);
         mActivityTestRule.loadUrl(mTestPage);
