@@ -292,9 +292,10 @@ void DialActivityManager::OnLaunchError(const MediaRoute::Id& route_id,
   if (record_it == records_.end())
     return;
 
-  // Clean up the activity / route.
-  std::move(record_it->second->pending_launch_request->callback).Run(false);
+  // Move the callback out of the record since we are erasing the record.
+  auto cb = std::move(record_it->second->pending_launch_request->callback);
   records_.erase(record_it);
+  std::move(cb).Run(false);
 }
 
 void DialActivityManager::OnStopSuccess(const MediaRoute::Id& route_id,
