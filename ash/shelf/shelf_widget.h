@@ -128,6 +128,10 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
     return login_shelf_view_;
   }
 
+  void set_activated_from_overflow_bubble(bool val) {
+    activated_from_overflow_bubble_ = val;
+  }
+
  private:
   class DelegateView;
   friend class DelegateView;
@@ -156,6 +160,11 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // View containing the shelf items for Login/Lock/OOBE/Add User screens.
   // Owned by the views hierarchy.
   LoginShelfView* const login_shelf_view_;
+
+  // Set to true when the widget is activated from the shelf overflow bubble.
+  // Do not focus the default element in this case. This should be set when
+  // cycling focus from the overflow bubble to the main shelf.
+  bool activated_from_overflow_bubble_ = false;
 
   ShelfBackgroundAnimator background_animator_;
 

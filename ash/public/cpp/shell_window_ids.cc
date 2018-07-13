@@ -24,7 +24,7 @@ const int32_t kActivatableShellWindowIds[] = {
     // containers even though these layers are higher. The user expects their
     // windows to be focused before these elements.
     kShellWindowId_PanelContainer, kShellWindowId_ShelfContainer,
-    kShellWindowId_StatusContainer,
+    kShellWindowId_ShelfBubbleContainer, kShellWindowId_StatusContainer,
 };
 
 const size_t kNumActivatableShellWindowIds =
