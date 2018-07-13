@@ -77,7 +77,7 @@ class CheckedTraversalNextIterator
 //  if |Range| objects doesn't live after DOM mutation.
 //
 template <typename Strategy>
-class CORE_TEMPLATE_CLASS_EXPORT EphemeralRangeTemplate final {
+class EphemeralRangeTemplate final {
   STACK_ALLOCATED();
 
  public:

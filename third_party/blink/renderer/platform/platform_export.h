@@ -70,7 +70,4 @@
 
 #endif  // !defined(COMPONENT_BUILD)
 
-// TODO(thakis): Remove all references to this, https://crbug.com/859989
-#define PLATFORM_TEMPLATE_CLASS_EXPORT
-
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLATFORM_EXPORT_H_

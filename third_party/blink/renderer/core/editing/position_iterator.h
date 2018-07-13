@@ -39,7 +39,7 @@ namespace blink {
 // Conversion to Position is O(1).
 // PositionIteratorAlgorithm must be used without DOM tree change.
 template <typename Strategy>
-class CORE_TEMPLATE_CLASS_EXPORT PositionIteratorAlgorithm {
+class PositionIteratorAlgorithm {
   STACK_ALLOCATED();
 
  public:

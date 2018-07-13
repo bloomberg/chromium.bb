@@ -42,7 +42,7 @@ class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
 };
 
 template <>
-class {{exported|replace('_EXPORT', '_TEMPLATE_CLASS_EXPORT')}}V8PersistentCallbackFunction<{{cpp_class}}> final : public V8PersistentCallbackFunctionBase {
+class V8PersistentCallbackFunction<{{cpp_class}}> final : public V8PersistentCallbackFunctionBase {
   using V8CallbackFunction = {{cpp_class}};
 
  public:

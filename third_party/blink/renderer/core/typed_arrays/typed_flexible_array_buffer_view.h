@@ -12,8 +12,7 @@
 namespace blink {
 
 template <typename WTFTypedArray>
-class CORE_TEMPLATE_CLASS_EXPORT TypedFlexibleArrayBufferView final
-    : public FlexibleArrayBufferView {
+class TypedFlexibleArrayBufferView final : public FlexibleArrayBufferView {
   STACK_ALLOCATED();
 
  public:

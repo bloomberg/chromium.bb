@@ -41,7 +41,7 @@ class LayoutText;
 // boundaries at points where replaced elements break up the text flow. The text
 // comes back in chunks so as to optimize for performance of the iteration.
 template <typename Strategy>
-class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
+class SimplifiedBackwardsTextIteratorAlgorithm {
   STACK_ALLOCATED();
 
  public:

@@ -53,7 +53,7 @@ namespace blink {
 // NOTE: UPSTREAM affinity will be used only if pos is at end of a wrapped line,
 // otherwise it will be converted to DOWNSTREAM.
 template <typename Strategy>
-class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate final {
+class VisiblePositionTemplate final {
   DISALLOW_NEW();
 
  public:

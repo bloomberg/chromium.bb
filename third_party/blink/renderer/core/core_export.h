@@ -65,7 +65,4 @@
 
 #endif  // BLINK_CORE_IMPLEMENTATION
 
-// TODO(thakis): Remove all references to this, https://crbug.com/859989
-#define CORE_TEMPLATE_CLASS_EXPORT
-
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CORE_EXPORT_H_

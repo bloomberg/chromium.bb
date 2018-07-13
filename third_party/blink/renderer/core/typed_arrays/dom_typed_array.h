@@ -25,8 +25,7 @@
 namespace blink {
 
 template <typename WTFTypedArray, typename V8TypedArray>
-class CORE_TEMPLATE_CLASS_EXPORT DOMTypedArray final
-    : public DOMArrayBufferView {
+class DOMTypedArray final : public DOMArrayBufferView {
   typedef DOMTypedArray<WTFTypedArray, V8TypedArray> ThisType;
   DECLARE_WRAPPERTYPEINFO();
 

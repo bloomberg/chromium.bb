@@ -36,7 +36,7 @@ class LayoutText;
 // offsets in |text_|.
 // See https://goo.gl/CJbxky for more details about offset mapping.
 template <typename OffsetMappingBuilder>
-class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
+class NGInlineItemsBuilderTemplate {
   STACK_ALLOCATED();
 
  public:

@@ -25,7 +25,7 @@ struct NGInlineNodeData;
 // LayoutBlockFlow.
 
 template <typename Base>
-class CORE_TEMPLATE_CLASS_EXPORT LayoutNGMixin : public Base {
+class LayoutNGMixin : public Base {
  public:
   explicit LayoutNGMixin(Element* element);
   ~LayoutNGMixin() override;

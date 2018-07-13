@@ -14,7 +14,7 @@ namespace blink {
 enum class TextAffinity;
 
 template <typename Strategy>
-class CORE_TEMPLATE_CLASS_EXPORT PositionWithAffinityTemplate {
+class PositionWithAffinityTemplate {
   DISALLOW_NEW();
 
  public:

@@ -40,7 +40,7 @@ class CORE_EXPORT V8LongCallbackFunction final : public CallbackFunctionBase {
 };
 
 template <>
-class CORE_TEMPLATE_CLASS_EXPORT V8PersistentCallbackFunction<V8LongCallbackFunction> final : public V8PersistentCallbackFunctionBase {
+class V8PersistentCallbackFunction<V8LongCallbackFunction> final : public V8PersistentCallbackFunctionBase {
   using V8CallbackFunction = V8LongCallbackFunction;
 
  public:

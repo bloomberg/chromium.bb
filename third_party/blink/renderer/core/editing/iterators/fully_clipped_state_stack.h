@@ -12,8 +12,7 @@
 namespace blink {
 
 template <typename Strategy>
-class CORE_TEMPLATE_CLASS_EXPORT FullyClippedStateStackAlgorithm final
-    : public BitStack {
+class FullyClippedStateStackAlgorithm final : public BitStack {
   STACK_ALLOCATED();
 
  public:

@@ -14,7 +14,7 @@ namespace blink {
 
 // Editing algorithm defined on node traversal.
 template <typename Traversal>
-class CORE_TEMPLATE_CLASS_EXPORT EditingAlgorithm : public Traversal {
+class EditingAlgorithm : public Traversal {
   STATIC_ONLY(EditingAlgorithm);
 
  public:
