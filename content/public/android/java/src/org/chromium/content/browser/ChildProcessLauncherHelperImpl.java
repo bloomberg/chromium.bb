@@ -196,13 +196,6 @@ public final class ChildProcessLauncherHelperImpl {
     private static ChildProcessLauncherHelperImpl createAndStart(
             long nativePointer, String[] commandLine, FileDescriptorInfo[] filesToBeMapped) {
         assert LauncherThread.runningOnLauncherThread();
-
-        // Experiment that disables binding management if site isolation is enabled.
-        if (getBindingManager() != null && nativeIsSiteIsolationEnabled()) {
-            getBindingManager().removeAllConnections();
-            sBindingManager = null;
-        }
-
         String processType =
                 ContentSwitchUtils.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
 
@@ -664,5 +657,4 @@ public final class ChildProcessLauncherHelperImpl {
     private static native void nativeSetTerminationInfo(long termiantionInfoPtr,
             @ChildBindingState int bindingState, boolean killedByUs, int remainingStrong,
             int remainingModerate, int remainingWaived);
-    private static native boolean nativeIsSiteIsolationEnabled();
 }

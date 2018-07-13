@@ -18,7 +18,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "jni/ChildProcessLauncherHelperImpl_jni.h"
@@ -197,12 +196,6 @@ static void JNI_ChildProcessLauncherHelperImpl_SetTerminationInfo(
       remaining_process_with_moderate_binding;
   info->remaining_process_with_waived_binding =
       remaining_process_with_waived_binding;
-}
-
-static jboolean JNI_ChildProcessLauncherHelperImpl_IsSiteIsolationEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&) {
-  return SiteIsolationPolicy::UseDedicatedProcessesForAllSites();
 }
 
 // static
