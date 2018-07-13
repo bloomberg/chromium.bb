@@ -43,7 +43,7 @@ std::unique_ptr<ViewAccessibility> ViewAccessibility::Create(View* view) {
 ViewAccessibility::ViewAccessibility(View* view)
     : owner_view_(view), is_leaf_(false) {}
 
-ViewAccessibility::~ViewAccessibility() {}
+ViewAccessibility::~ViewAccessibility() = default;
 
 const ui::AXUniqueId& ViewAccessibility::GetUniqueId() const {
   return unique_id_;

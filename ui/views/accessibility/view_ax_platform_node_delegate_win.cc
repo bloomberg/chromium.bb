@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/accessibility/native_view_accessibility_win.h"
+#include "ui/views/accessibility/view_ax_platform_node_delegate_win.h"
 
 #include <oleacc.h>
 
@@ -24,6 +24,7 @@
 #include "ui/base/win/atl_module.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/win/hwnd_util.h"
 #include "ui/wm/core/window_util.h"
@@ -48,15 +49,15 @@ aura::Window* GetWindowParentIncludingTransient(aura::Window* window) {
 
 // static
 std::unique_ptr<ViewAccessibility> ViewAccessibility::Create(View* view) {
-  return std::make_unique<NativeViewAccessibilityWin>(view);
+  return std::make_unique<ViewAXPlatformNodeDelegateWin>(view);
 }
 
-NativeViewAccessibilityWin::NativeViewAccessibilityWin(View* view)
-    : NativeViewAccessibilityBase(view) {}
+ViewAXPlatformNodeDelegateWin::ViewAXPlatformNodeDelegateWin(View* view)
+    : ViewAXPlatformNodeDelegate(view) {}
 
-NativeViewAccessibilityWin::~NativeViewAccessibilityWin() {}
+ViewAXPlatformNodeDelegateWin::~ViewAXPlatformNodeDelegateWin() = default;
 
-gfx::NativeViewAccessible NativeViewAccessibilityWin::GetParent() {
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegateWin::GetParent() {
   // If the View has a parent View, return that View's IAccessible.
   if (view()->parent())
     return view()->parent()->GetNativeViewAccessible();
@@ -96,16 +97,16 @@ gfx::NativeViewAccessible NativeViewAccessibilityWin::GetParent() {
 }
 
 gfx::AcceleratedWidget
-NativeViewAccessibilityWin::GetTargetForNativeAccessibilityEvent() {
+ViewAXPlatformNodeDelegateWin::GetTargetForNativeAccessibilityEvent() {
   return HWNDForView(view());
 }
 
-gfx::Rect NativeViewAccessibilityWin::GetClippedScreenBoundsRect() const {
+gfx::Rect ViewAXPlatformNodeDelegateWin::GetClippedScreenBoundsRect() const {
   // We could optionally add clipping here if ever needed.
   return GetUnclippedScreenBoundsRect();
 }
 
-gfx::Rect NativeViewAccessibilityWin::GetUnclippedScreenBoundsRect() const {
+gfx::Rect ViewAXPlatformNodeDelegateWin::GetUnclippedScreenBoundsRect() const {
   gfx::Rect bounds = view()->GetBoundsInScreen();
   return display::win::ScreenWin::DIPToScreenRect(HWNDForView(view()), bounds);
 }

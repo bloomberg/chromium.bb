@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/accessibility/view_ax_platform_node_delegate_win.h"
+
 #include <oleacc.h>
 #include <wrl/client.h>
 
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
-#include "ui/views/accessibility/native_view_accessibility_base.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -43,25 +44,23 @@ bool IsSameObject(T* left, U* right) {
 
 }  // namespace
 
-class NativeViewAccessibilityWinTest : public ViewsTestBase {
+class ViewAXPlatformNodeDelegateWinTest : public ViewsTestBase {
  public:
-  NativeViewAccessibilityWinTest() {}
-  ~NativeViewAccessibilityWinTest() override {}
+  ViewAXPlatformNodeDelegateWinTest() = default;
+  ~ViewAXPlatformNodeDelegateWinTest() override = default;
 
  protected:
   void GetIAccessible2InterfaceForView(View* view, IAccessible2_2** result) {
     ComPtr<IAccessible> view_accessible(view->GetNativeViewAccessible());
     ComPtr<IServiceProvider> service_provider;
     ASSERT_EQ(S_OK, view_accessible.CopyTo(service_provider.GetAddressOf()));
-    ASSERT_EQ(S_OK,
-        service_provider->QueryService(IID_IAccessible2_2, result));
+    ASSERT_EQ(S_OK, service_provider->QueryService(IID_IAccessible2_2, result));
   }
 };
 
-TEST_F(NativeViewAccessibilityWinTest, TextfieldAccessibility) {
+TEST_F(ViewAXPlatformNodeDelegateWinTest, TextfieldAccessibility) {
   Widget widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(init_params);
 
@@ -88,13 +87,13 @@ TEST_F(NativeViewAccessibilityWinTest, TextfieldAccessibility) {
 
   ScopedBstr name;
   ScopedVariant childid_self(CHILDID_SELF);
-  ASSERT_EQ(S_OK, textfield_accessible->get_accName(
-      childid_self, name.Receive()));
+  ASSERT_EQ(S_OK,
+            textfield_accessible->get_accName(childid_self, name.Receive()));
   ASSERT_STREQ(L"Name", name);
 
   ScopedBstr value;
-  ASSERT_EQ(S_OK, textfield_accessible->get_accValue(
-      childid_self, value.Receive()));
+  ASSERT_EQ(S_OK,
+            textfield_accessible->get_accValue(childid_self, value.Receive()));
   ASSERT_STREQ(L"Value", value);
 
   ScopedBstr new_value(L"New value");
@@ -103,7 +102,7 @@ TEST_F(NativeViewAccessibilityWinTest, TextfieldAccessibility) {
   ASSERT_STREQ(L"New value", textfield->text().c_str());
 }
 
-TEST_F(NativeViewAccessibilityWinTest, TextfieldAssociatedLabel) {
+TEST_F(ViewAXPlatformNodeDelegateWinTest, TextfieldAssociatedLabel) {
   Widget widget;
   Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -153,25 +152,25 @@ TEST_F(NativeViewAccessibilityWinTest, TextfieldAssociatedLabel) {
   EXPECT_EQ(ROLE_SYSTEM_STATICTEXT, V_I4(role.ptr()));
 }
 
-// A subclass of NativeViewAccessibilityWinTest that we run twice,
+// A subclass of ViewAXPlatformNodeDelegateWinTest that we run twice,
 // first where we create an transient child widget (child = false), the second
 // time where we create a child widget (child = true).
-class NativeViewAccessibilityWinTestWithBoolChildFlag
-    : public NativeViewAccessibilityWinTest,
+class ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag
+    : public ViewAXPlatformNodeDelegateWinTest,
       public testing::WithParamInterface<bool> {
  public:
-  NativeViewAccessibilityWinTestWithBoolChildFlag() {}
-  ~NativeViewAccessibilityWinTestWithBoolChildFlag() override {}
+  ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag() {}
+  ~ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag() override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityWinTestWithBoolChildFlag);
+  DISALLOW_COPY_AND_ASSIGN(ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag);
 };
 
 INSTANTIATE_TEST_CASE_P(,
-                        NativeViewAccessibilityWinTestWithBoolChildFlag,
+                        ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag,
                         testing::Bool());
 
-TEST_P(NativeViewAccessibilityWinTestWithBoolChildFlag, AuraChildWidgets) {
+TEST_P(ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag, AuraChildWidgets) {
   // Create the parent widget.
   Widget widget;
   Widget::InitParams init_params =
@@ -251,10 +250,9 @@ TEST_P(NativeViewAccessibilityWinTestWithBoolChildFlag, AuraChildWidgets) {
 }
 
 // Flaky on Windows: https://crbug.com/461837.
-TEST_F(NativeViewAccessibilityWinTest, DISABLED_RetrieveAllAlerts) {
+TEST_F(ViewAXPlatformNodeDelegateWinTest, DISABLED_RetrieveAllAlerts) {
   Widget widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(init_params);
 
@@ -285,7 +283,7 @@ TEST_F(NativeViewAccessibilityWinTest, DISABLED_RetrieveAllAlerts) {
   IUnknown** targets;
   long n_targets;
   ASSERT_EQ(S_FALSE, root_view_accessible->get_relationTargetsOfType(
-      alerts_bstr, 0, &targets, &n_targets));
+                         alerts_bstr, 0, &targets, &n_targets));
   ASSERT_EQ(0, n_targets);
 
   // Fire alert events on the infobars.
@@ -294,7 +292,7 @@ TEST_F(NativeViewAccessibilityWinTest, DISABLED_RetrieveAllAlerts) {
 
   // Now calling get_relationTargetsOfType should retrieve the alerts.
   ASSERT_EQ(S_OK, root_view_accessible->get_relationTargetsOfType(
-      alerts_bstr, 0, &targets, &n_targets));
+                      alerts_bstr, 0, &targets, &n_targets));
   ASSERT_EQ(2, n_targets);
   ASSERT_TRUE(IsSameObject(infobar_accessible.Get(), targets[0]));
   ASSERT_TRUE(IsSameObject(infobar2_accessible.Get(), targets[1]));
@@ -302,7 +300,7 @@ TEST_F(NativeViewAccessibilityWinTest, DISABLED_RetrieveAllAlerts) {
 
   // If we set max_targets to 1, we should only get the first one.
   ASSERT_EQ(S_OK, root_view_accessible->get_relationTargetsOfType(
-      alerts_bstr, 1, &targets, &n_targets));
+                      alerts_bstr, 1, &targets, &n_targets));
   ASSERT_EQ(1, n_targets);
   ASSERT_TRUE(IsSameObject(infobar_accessible.Get(), targets[0]));
   CoTaskMemFree(targets);
@@ -310,14 +308,14 @@ TEST_F(NativeViewAccessibilityWinTest, DISABLED_RetrieveAllAlerts) {
   // If we delete the first view, we should only get the second one now.
   delete infobar;
   ASSERT_EQ(S_OK, root_view_accessible->get_relationTargetsOfType(
-      alerts_bstr, 0, &targets, &n_targets));
+                      alerts_bstr, 0, &targets, &n_targets));
   ASSERT_EQ(1, n_targets);
   ASSERT_TRUE(IsSameObject(infobar2_accessible.Get(), targets[0]));
   CoTaskMemFree(targets);
 }
 
 // Test trying to retrieve child widgets during window close does not crash.
-TEST_F(NativeViewAccessibilityWinTest, GetAllOwnedWidgetsCrash) {
+TEST_F(ViewAXPlatformNodeDelegateWinTest, GetAllOwnedWidgetsCrash) {
   Widget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
@@ -332,7 +330,7 @@ TEST_F(NativeViewAccessibilityWinTest, GetAllOwnedWidgetsCrash) {
   EXPECT_EQ(1L, child_count);
 }
 
-TEST_F(NativeViewAccessibilityWinTest, WindowHasRoleApplication) {
+TEST_F(ViewAXPlatformNodeDelegateWinTest, WindowHasRoleApplication) {
   // We expect that our internal window object does not expose
   // ROLE_SYSTEM_WINDOW, but ROLE_SYSTEM_PANE instead.
   Widget widget;
@@ -350,7 +348,7 @@ TEST_F(NativeViewAccessibilityWinTest, WindowHasRoleApplication) {
   EXPECT_EQ(ROLE_SYSTEM_PANE, V_I4(role.ptr()));
 }
 
-TEST_F(NativeViewAccessibilityWinTest, Overrides) {
+TEST_F(ViewAXPlatformNodeDelegateWinTest, Overrides) {
   // We expect that our internal window object does not expose
   // ROLE_SYSTEM_WINDOW, but ROLE_SYSTEM_PANE instead.
   Widget widget;

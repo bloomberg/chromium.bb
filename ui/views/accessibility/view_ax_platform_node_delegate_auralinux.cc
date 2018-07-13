@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/accessibility/native_view_accessibility_auralinux.h"
+#include "ui/views/accessibility/view_ax_platform_node_delegate_auralinux.h"
 
 #include <algorithm>
 #include <memory>
@@ -17,6 +17,7 @@
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -72,9 +73,7 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
 
   const ui::AXNodeData& GetData() const override { return data_; }
 
-  int GetChildCount() override {
-    return static_cast<int>(widgets_.size());
-  }
+  int GetChildCount() override { return static_cast<int>(widgets_.size()); }
 
   gfx::NativeViewAccessible ChildAtIndex(int index) override {
     if (index < 0 || index >= GetChildCount())
@@ -120,17 +119,18 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
 // static
 std::unique_ptr<ViewAccessibility> ViewAccessibility::Create(View* view) {
   AuraLinuxApplication::GetInstance()->RegisterWidget(view->GetWidget());
-  return std::make_unique<NativeViewAccessibilityAuraLinux>(view);
+  return std::make_unique<ViewAXPlatformNodeDelegateAuraLinux>(view);
 }
 
-NativeViewAccessibilityAuraLinux::NativeViewAccessibilityAuraLinux(View* view)
-    : NativeViewAccessibilityBase(view) {}
+ViewAXPlatformNodeDelegateAuraLinux::ViewAXPlatformNodeDelegateAuraLinux(
+    View* view)
+    : ViewAXPlatformNodeDelegate(view) {}
 
-NativeViewAccessibilityAuraLinux::~NativeViewAccessibilityAuraLinux() {
-}
+ViewAXPlatformNodeDelegateAuraLinux::~ViewAXPlatformNodeDelegateAuraLinux() =
+    default;
 
-gfx::NativeViewAccessible NativeViewAccessibilityAuraLinux::GetParent() {
-  gfx::NativeViewAccessible parent = NativeViewAccessibilityBase::GetParent();
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegateAuraLinux::GetParent() {
+  gfx::NativeViewAccessible parent = ViewAXPlatformNodeDelegate::GetParent();
   if (!parent)
     parent = AuraLinuxApplication::GetInstance()->GetNativeViewAccessible();
   return parent;

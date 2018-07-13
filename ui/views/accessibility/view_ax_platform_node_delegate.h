@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_BASE_H_
-#define UI_VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_BASE_H_
+#ifndef UI_VIEWS_ACCESSIBILITY_VIEW_AX_PLATFORM_NODE_DELEGATE_H_
+#define UI_VIEWS_ACCESSIBILITY_VIEW_AX_PLATFORM_NODE_DELEGATE_H_
 
 #include <memory>
 
@@ -26,13 +26,14 @@ class View;
 class Widget;
 
 // Shared base class for platforms that require an implementation of
-// NativeViewAccessibility to interface with the native accessibility toolkit.
-// This class owns the AXPlatformNode, which implements those native APIs.
-class VIEWS_EXPORT NativeViewAccessibilityBase
+// |ViewAXPlatformNodeDelegate| to interface with the native accessibility
+// toolkit. This class owns the |AXPlatformNode|, which implements those native
+// APIs.
+class VIEWS_EXPORT ViewAXPlatformNodeDelegate
     : public ViewAccessibility,
       public ui::AXPlatformNodeDelegateBase {
  public:
-  ~NativeViewAccessibilityBase() override;
+  ~ViewAXPlatformNodeDelegate() override;
 
   // ViewAccessibility:
   gfx::NativeViewAccessible GetNativeObject() override;
@@ -56,7 +57,7 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
       const override;  // Also in ViewAccessibility
 
  protected:
-  explicit NativeViewAccessibilityBase(View* view);
+  explicit ViewAXPlatformNodeDelegate(View* view);
 
  private:
   void PopulateChildWidgetVector(std::vector<Widget*>* result_child_widgets);
@@ -74,9 +75,9 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   // Levels of menu are currently open, e.g. 0: none, 1: top, 2: submenu ...
   static int32_t menu_depth_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityBase);
+  DISALLOW_COPY_AND_ASSIGN(ViewAXPlatformNodeDelegate);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_BASE_H_
+#endif  // UI_VIEWS_ACCESSIBILITY_VIEW_AX_PLATFORM_NODE_DELEGATE_H_

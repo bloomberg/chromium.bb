@@ -857,17 +857,13 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   content::WebContents* embedder_web_contents_;
 };
 
-class WebViewNewWindowTest : public WebViewTest {};
-
-class WebViewSizeTest : public WebViewTest {};
-
-class WebViewVisibilityTest : public WebViewTest {};
-
-class WebViewSpeechAPITest : public WebViewTest {};
-
 // The following test suites are created to group tests based on specific
 // features of <webview>.
-class WebViewAccessibilityTest : public WebViewTest {};
+using WebViewNewWindowTest = WebViewTest;
+using WebViewSizeTest = WebViewTest;
+using WebViewVisibilityTest = WebViewTest;
+using WebViewSpeechAPITest = WebViewTest;
+using WebViewAccessibilityTest = WebViewTest;
 
 class WebViewDPITest : public WebViewTest {
  protected:

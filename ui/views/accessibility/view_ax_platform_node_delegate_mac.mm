@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/accessibility/native_view_accessibility_mac.h"
+#include "ui/views/accessibility/view_ax_platform_node_delegate_mac.h"
 
 #include <memory>
 
@@ -13,13 +13,15 @@ namespace views {
 
 // static
 std::unique_ptr<ViewAccessibility> ViewAccessibility::Create(View* view) {
-  return std::make_unique<NativeViewAccessibilityMac>(view);
+  return std::make_unique<ViewAXPlatformNodeDelegateMac>(view);
 }
 
-NativeViewAccessibilityMac::NativeViewAccessibilityMac(View* view)
-    : NativeViewAccessibilityBase(view) {}
+ViewAXPlatformNodeDelegateMac::ViewAXPlatformNodeDelegateMac(View* view)
+    : ViewAXPlatformNodeDelegate(view) {}
 
-gfx::NativeViewAccessible NativeViewAccessibilityMac::GetParent() {
+ViewAXPlatformNodeDelegateMac::~ViewAXPlatformNodeDelegateMac() = default;
+
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegateMac::GetParent() {
   if (view()->parent())
     return view()->parent()->GetNativeViewAccessible();
 

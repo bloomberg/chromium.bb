@@ -117,7 +117,7 @@ void Checkbox::SetAssociatedLabel(View* labelling_view) {
   ui::AXNodeData node_data;
   labelling_view->GetAccessibleNodeData(&node_data);
   // TODO(aleventhal) automatically handle setting the name from the related
-  // label in view_accessibility and have it update the name if the text of the
+  // label in ViewAccessibility and have it update the name if the text of the
   // associated label changes.
   SetAccessibleName(
       node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
