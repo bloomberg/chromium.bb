@@ -40,7 +40,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutNGBlockFlow DIV id='container'",
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='container'",
       "reason": "style change"
     },
     {

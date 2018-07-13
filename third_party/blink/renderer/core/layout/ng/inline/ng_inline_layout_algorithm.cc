@@ -719,11 +719,17 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     // Now that we have the block-size of the line, we can re-test the layout
     // opportunity to see if we fit into the (potentially) non-rectangular
     // shape area.
+    //
     // If the AvailableInlineSize changes we need to run the line breaker again
     // with the calculated line_block_size. This is *safe* as the line breaker
     // won't produce a line which has a larger block-size, (as it can only
     // decrease or stay the same size).
-    if (UNLIKELY(opportunity.HasShapeExclusions())) {
+    //
+    // We skip attempting to fit empty lines into the shape area, as they
+    // should only contain floats and/or abs-pos which shouldn't be affected by
+    // this logic.
+    if (UNLIKELY(opportunity.HasShapeExclusions() &&
+                 !line_info.IsEmptyLine())) {
       NGLineLayoutOpportunity line_opportunity_with_height =
           opportunity.ComputeLineLayoutOpportunity(ConstraintSpace(),
                                                    line_height, block_delta);

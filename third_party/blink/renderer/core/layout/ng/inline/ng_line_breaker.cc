@@ -204,7 +204,8 @@ void NGLineBreaker::NextLine(const NGLineLayoutOpportunity& line_opportunity,
 
   // TODO(kojii): There are cases where we need to PlaceItems() without creating
   // line boxes. These cases need to be reviewed.
-  if (ShouldCreateLineBox(line_info->Results()))
+  if (ShouldCreateLineBox(line_info->Results()) ||
+      mode_ != NGLineBreakerMode::kContent)
     ComputeLineLocation(line_info);
   else
     line_info->SetIsEmptyLine();

@@ -266,10 +266,11 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
       ToNGPhysicalBoxFragment(html_fragment->Children()[0].get());
   auto* container_fragment =
       ToNGPhysicalBoxFragment(body_fragment->Children()[0].get());
-  auto* span_box_fragments_wrapper =
-      ToNGPhysicalBoxFragment(container_fragment->Children()[3].get());
   Vector<NGPhysicalLineBoxFragment*> line_boxes;
-  for (const auto& child : span_box_fragments_wrapper->Children()) {
+  for (const auto& child : container_fragment->Children()) {
+    if (!child->IsLineBox())
+      continue;
+
     line_boxes.push_back(ToNGPhysicalLineBoxFragment(child.get()));
   }
 

@@ -17,8 +17,7 @@ layer at (0,0) size 800x240
         LayoutNGBlockFlow {DIV} at (16,0) size 752x76 [color=#0000FF] [bgcolor=#000080]
           LayoutImage (floating) {IMG} at (8,8) size 160x160
           LayoutImage (floating) {IMG} at (584,8) size 160x160
-          LayoutNGBlockFlow (anonymous) at (8,8) size 736x60
-            LayoutText {#text} at (160,0) size 392x59
-              text run at (160,0) width 392: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle."
-              text run at (160,20) width 392: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle."
-              text run at (160,40) width 392: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle."
+          LayoutText {#text} at (168,8) size 392x59
+            text run at (168,8) width 392: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle."
+            text run at (168,28) width 392: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle."
+            text run at (168,48) width 392: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle."

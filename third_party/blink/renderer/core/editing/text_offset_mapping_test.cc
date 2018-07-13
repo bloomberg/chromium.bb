@@ -23,8 +23,6 @@ class ParameterizedTextOffsetMappingTest
  protected:
   ParameterizedTextOffsetMappingTest() : ScopedLayoutNGForTest(GetParam()) {}
 
-  bool LayoutNGEnabled() const { return GetParam(); }
-
   std::string ComputeTextOffset(const std::string& selection_text) {
     const PositionInFlatTree position =
         ToPositionInFlatTree(SetSelectionTextToBody(selection_text).Base());
@@ -248,8 +246,7 @@ TEST_P(ParameterizedTextOffsetMappingTest, RangeWithMulticol) {
 TEST_P(ParameterizedTextOffsetMappingTest, RangeWithNestedFloat) {
   InsertStyleElement("b, i { float: right; }");
   // Note: Legacy: BODY is inline, NG: BODY is block.
-  EXPECT_EQ(LayoutNGEnabled() ? "<b>^abc <i>def</i> ghi|</b>xyz"
-                              : "^<b>abc <i>def</i> ghi</b>xyz|",
+  EXPECT_EQ("^<b>abc <i>def</i> ghi</b>xyz|",
             GetRange("<b>abc <i>d|ef</i> ghi</b>xyz"));
 }
 
