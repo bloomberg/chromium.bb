@@ -47,12 +47,12 @@ class PDFiumPrint {
       const PP_PrintSettings_Dev& print_settings,
       PDFiumPage* page_to_print);
 
-  // Perform N-up PDF generation from |doc| based on |num_pages_per_sheet| and
+  // Perform N-up PDF generation from |doc| based on |pages_per_sheet| and
   // the parameters in |print_settings|.
   // On success, the returned buffer contains the N-up version of |doc|.
   // On failure, the returned buffer is empty.
   pp::Buffer_Dev NupPdfToPdf(FPDF_DOCUMENT doc,
-                             uint32_t num_pages_per_sheet,
+                             uint32_t pages_per_sheet,
                              const PP_PrintSettings_Dev& print_settings);
 
   bool FlattenPrintData(FPDF_DOCUMENT doc);
