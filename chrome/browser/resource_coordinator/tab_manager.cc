@@ -190,12 +190,19 @@ TabManager::TabManager()
       GetStaticProactiveTabFreezeAndDiscardParams();
   TabLoadTracker::Get()->AddObserver(this);
   intervention_policy_database_.reset(new InterventionPolicyDatabase());
+
+  // TabManager works in the absence of DesktopSessionDurationTracker for tests.
+  if (metrics::DesktopSessionDurationTracker::IsInitialized())
+    metrics::DesktopSessionDurationTracker::Get()->AddObserver(this);
 }
 
 TabManager::~TabManager() {
   TabLoadTracker::Get()->RemoveObserver(this);
   resource_coordinator_signal_observer_.reset();
   Stop();
+
+  if (metrics::DesktopSessionDurationTracker::IsInitialized())
+    metrics::DesktopSessionDurationTracker::Get()->RemoveObserver(this);
 }
 
 void TabManager::Start() {
@@ -621,6 +628,12 @@ void TabManager::OnStopTracking(content::WebContents* web_contents,
   GetWebContentsData(web_contents)->SetTabLoadingState(loading_state);
 }
 
+void TabManager::OnSessionStarted(base::TimeTicks session_start) {
+  // LifecycleUnits might become eligible for proactive discarding when Chrome
+  // starts being used.
+  SchedulePerformStateTransitions(base::TimeDelta());
+}
+
 // static
 TabManager::WebContentsData* TabManager::GetWebContentsData(
     content::WebContents* contents) {
@@ -945,7 +958,7 @@ void TabManager::PerformStateTransitions() {
     return;
 
   base::TimeTicks next_state_transition_time = base::TimeTicks::Max();
-  base::TimeTicks now = NowTicks();
+  const base::TimeTicks now = NowTicks();
   LifecycleUnit* oldest_discardable_lifecycle_unit = nullptr;
   DecisionDetails oldest_discardable_lifecycle_unit_decision_details;
 
@@ -954,10 +967,11 @@ void TabManager::PerformStateTransitions() {
     // |kBackgroundTabFreezeTimeout|.
     DecisionDetails freeze_details;
     if (lifecycle_unit->CanFreeze(&freeze_details)) {
-      const base::TimeDelta time_not_visible =
+      const base::TimeDelta wall_time_not_visible =
           now - lifecycle_unit->GetWallTimeWhenHidden();
       const base::TimeDelta time_until_freeze =
-          proactive_freeze_discard_params_.freeze_timeout - time_not_visible;
+          proactive_freeze_discard_params_.freeze_timeout -
+          wall_time_not_visible;
 
       if (time_until_freeze <= base::TimeDelta()) {
         auto old_state = lifecycle_unit->GetState();
@@ -978,8 +992,9 @@ void TabManager::PerformStateTransitions() {
     if (lifecycle_unit->CanDiscard(DiscardReason::kProactive,
                                    &discard_details)) {
       if (!oldest_discardable_lifecycle_unit ||
-          lifecycle_unit->GetWallTimeWhenHidden() <
-              oldest_discardable_lifecycle_unit->GetWallTimeWhenHidden()) {
+          lifecycle_unit->GetChromeUsageTimeWhenHidden() <
+              oldest_discardable_lifecycle_unit
+                  ->GetChromeUsageTimeWhenHidden()) {
         oldest_discardable_lifecycle_unit = lifecycle_unit;
         oldest_discardable_lifecycle_unit_decision_details =
             std::move(discard_details);
@@ -997,10 +1012,11 @@ void TabManager::PerformStateTransitions() {
   // discarding all LifecycleUnits that have been non-visible for at least
   // GetTimeInBackgroundBeforeProactiveDiscard().
   if (ShouldProactivelyDiscardTabs() && oldest_discardable_lifecycle_unit) {
-    const base::TimeDelta time_not_visible =
-        now - oldest_discardable_lifecycle_unit->GetWallTimeWhenHidden();
+    const base::TimeDelta usage_time_not_visible =
+        usage_clock_.GetTotalUsageTime() -
+        oldest_discardable_lifecycle_unit->GetChromeUsageTimeWhenHidden();
     const base::TimeDelta time_until_discard =
-        GetTimeInBackgroundBeforeProactiveDiscard() - time_not_visible;
+        GetTimeInBackgroundBeforeProactiveDiscard() - usage_time_not_visible;
 
     if (time_until_discard <= base::TimeDelta()) {
       auto old_state = oldest_discardable_lifecycle_unit->GetState();
@@ -1015,16 +1031,15 @@ void TabManager::PerformStateTransitions() {
       // As mentioned above, call PeformStateTransitions() again after a
       // discard.
       next_state_transition_time = base::TimeTicks();
-    } else {
+    } else if (usage_clock_.IsInUse()) {
       next_state_transition_time =
           std::min(now + time_until_discard, next_state_transition_time);
     }
   }
 
   // Schedule the next call to PerformStateTransitions().
-  if (next_state_transition_time.is_max() && state_transitions_timer_)
-    state_transitions_timer_->Stop();
-  else
+  DCHECK(!state_transitions_timer_->IsRunning());
+  if (!next_state_transition_time.is_max())
     SchedulePerformStateTransitions(next_state_transition_time - now);
 }
 
