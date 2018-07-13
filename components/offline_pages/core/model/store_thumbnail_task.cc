@@ -16,6 +16,8 @@ namespace {
 
 bool StoreThumbnailSync(const OfflinePageThumbnail& thumbnail,
                         sql::Connection* db) {
+  if (!db)
+    return false;
   static const char kSql[] =
       "INSERT OR REPLACE INTO page_thumbnails (offline_id, expiration, "
       "thumbnail) VALUES (?, ?, ?)";

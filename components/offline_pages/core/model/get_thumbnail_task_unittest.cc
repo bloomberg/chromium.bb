@@ -23,6 +23,14 @@ using testing::_;
 namespace offline_pages {
 namespace {
 
+OfflinePageThumbnail TestThumbnail() {
+  OfflinePageThumbnail thumb;
+  thumb.offline_id = 1;
+  thumb.expiration = store_utils::FromDatabaseTime(1234);
+  thumb.thumbnail = "123abc";
+  return thumb;
+}
+
 class GetThumbnailTaskTest : public ModelTaskTestBase {
  public:
   ~GetThumbnailTaskTest() override = default;
@@ -45,11 +53,6 @@ class GetThumbnailTaskTest : public ModelTaskTestBase {
 };
 
 TEST_F(GetThumbnailTaskTest, NotFound) {
-  OfflinePageThumbnail thumb;
-  thumb.offline_id = 1;
-  thumb.expiration = store_utils::FromDatabaseTime(1234);
-  thumb.thumbnail = "123abc";
-
   bool called = false;
   auto callback = base::BindLambdaForTesting(
       [&](std::unique_ptr<OfflinePageThumbnail> result) {
@@ -62,10 +65,7 @@ TEST_F(GetThumbnailTaskTest, NotFound) {
 }
 
 TEST_F(GetThumbnailTaskTest, Found) {
-  OfflinePageThumbnail thumb;
-  thumb.offline_id = 1;
-  thumb.expiration = store_utils::FromDatabaseTime(1234);
-  thumb.thumbnail = "123abc";
+  const OfflinePageThumbnail thumb = TestThumbnail();
   RunTask(
       std::make_unique<StoreThumbnailTask>(store(), thumb, base::DoNothing()));
 
@@ -79,6 +79,22 @@ TEST_F(GetThumbnailTaskTest, Found) {
 
   RunTask(
       std::make_unique<GetThumbnailTask>(store(), thumb.offline_id, callback));
+  EXPECT_TRUE(called);
+}
+
+TEST_F(GetThumbnailTaskTest, DbConnectionIsNull) {
+  RunTask(std::make_unique<StoreThumbnailTask>(store(), TestThumbnail(),
+                                               base::DoNothing()));
+  bool called = false;
+  auto callback = base::BindLambdaForTesting(
+      [&](std::unique_ptr<OfflinePageThumbnail> result) {
+        called = true;
+        EXPECT_FALSE(result);
+      });
+  store()->SetStateForTesting(StoreState::FAILED_LOADING, true);
+
+  RunTask(std::make_unique<GetThumbnailTask>(store(), 1, std::move(callback)));
+
   EXPECT_TRUE(called);
 }
 

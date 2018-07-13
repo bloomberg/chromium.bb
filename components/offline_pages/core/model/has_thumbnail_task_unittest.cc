@@ -42,5 +42,20 @@ TEST_F(HasThumbnailTaskTest, CorrectlyFindsById) {
                                              doesnt_exist_callback.Get()));
 }
 
+TEST_F(HasThumbnailTaskTest, DbConnectionIsNull) {
+  OfflinePageThumbnail thumb;
+  thumb.offline_id = 1;
+  thumb.expiration = store_utils::FromDatabaseTime(1234);
+  thumb.thumbnail = "123abc";
+  RunTask(
+      std::make_unique<StoreThumbnailTask>(store(), thumb, base::DoNothing()));
+
+  store()->SetStateForTesting(StoreState::FAILED_LOADING, true);
+  base::MockCallback<ThumbnailExistsCallback> exists_callback;
+  EXPECT_CALL(exists_callback, Run(false));
+  RunTask(std::make_unique<HasThumbnailTask>(store(), thumb.offline_id,
+                                             exists_callback.Get()));
+}
+
 }  // namespace
 }  // namespace offline_pages

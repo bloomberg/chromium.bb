@@ -18,6 +18,8 @@ typedef base::OnceCallback<void(CleanupThumbnailsTask::Result)> ResultCallback;
 
 CleanupThumbnailsTask::Result CleanupThumbnailsSync(base::Time now,
                                                     sql::Connection* db) {
+  if (!db)
+    return CleanupThumbnailsTask::Result();
   static const char kSql[] =
       "DELETE FROM page_thumbnails "
       "WHERE offline_id IN ("
