@@ -359,17 +359,11 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
 }
 
 scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
-  base::Optional<MinMaxSize> min_max_size;
-  if (NeedMinMaxSize(ConstraintSpace(), Style())) {
-    MinMaxSizeInput zero_input;
-    min_max_size = ComputeMinMaxSize(zero_input);
-  }
-
   border_scrollbar_padding_ =
       CalculateBorderScrollbarPadding(ConstraintSpace(), Node());
 
   NGLogicalSize border_box_size = CalculateBorderBoxSize(
-      ConstraintSpace(), Style(), min_max_size, CalculateDefaultBlockSize());
+      ConstraintSpace(), Node(), CalculateDefaultBlockSize());
 
   // Our calculated block-axis size may be indefinite at this point.
   // If so, just leave the size as NGSizeIndefinite instead of subtracting
@@ -1784,16 +1778,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
   // to resolve auto margins before layout, to be able to position child floats
   // correctly.
   if (!child.CreatesNewFormattingContext()) {
-    base::Optional<MinMaxSize> sizes;
-    if (NeedMinMaxSize(*space, child_style)) {
-      // We only want to guess the child's size here, so preceding floats are of
-      // no interest.
-      MinMaxSizeInput zero_input;
-      sizes = child.ComputeMinMaxSize(child_style.GetWritingMode(), zero_input);
-    }
-
-    LayoutUnit child_inline_size =
-        ComputeInlineSizeForFragment(*space, child_style, sizes);
+    LayoutUnit child_inline_size = ComputeInlineSizeForFragment(*space, child);
 
     ResolveInlineMargins(child_style, Style(),
                          space->AvailableSize().inline_size, child_inline_size,

@@ -215,13 +215,7 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
   // because NG cannot figure out the size of such objects on its own,
   // especially not for tables.
   if (is_same_writing_mode && unpositioned_float->node.CanUseNewLayout()) {
-    base::Optional<MinMaxSize> min_max_size;
-    if (NeedMinMaxSize(*space.get(), style)) {
-      MinMaxSizeInput zero_input;  // Floats do not intrude into floats.
-      min_max_size = unpositioned_float->node.ComputeMinMaxSize(
-          style.GetWritingMode(), zero_input);
-    }
-    return ComputeInlineSizeForFragment(*space.get(), style, min_max_size);
+    return ComputeInlineSizeForFragment(*space.get(), unpositioned_float->node);
   }
 
   // Here we need to lay out the float. However, it is possible that we are

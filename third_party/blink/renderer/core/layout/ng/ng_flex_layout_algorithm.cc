@@ -27,8 +27,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       << "Don't support that yet";
 
   LayoutUnit flex_container_border_box_inline_size =
-      ComputeInlineSizeForFragment(ConstraintSpace(), Style(),
-                                   /* MinMaxSize */ base::nullopt);
+      ComputeInlineSizeForFragment(ConstraintSpace(), Node());
   LayoutUnit flex_container_content_inline_size =
       flex_container_border_box_inline_size -
       CalculateBorderScrollbarPadding(ConstraintSpace(), Node()).InlineSum();

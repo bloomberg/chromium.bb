@@ -1410,6 +1410,21 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                : LayoutRect(LayoutPoint(), PreviousSize());
   }
 
+  // This function calculates the preferred widths for an object.
+  //
+  // This function is only expected to be called if
+  // the boolean preferredLogicalWidthsDirty is true. It also MUST clear the
+  // boolean before returning.
+  //
+  // See INTRINSIC SIZES / PREFERRED LOGICAL WIDTHS in layout_object.h for more
+  // details about those widths.
+  //
+  // This function is public only for use by LayoutNG. Other callers should go
+  // through MinPreferredLogicalWidth/MaxPreferredLogicalWidth.
+  virtual void ComputePreferredLogicalWidths() {
+    ClearPreferredLogicalWidthsDirty();
+  }
+
   // LayoutNG can use this function to update our cache of preferred logical
   // widths when the layout object is managed by NG. Should not be called by
   // regular code.
@@ -1604,18 +1619,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual void ComputeIntrinsicLogicalWidths(
       LayoutUnit& min_logical_width,
       LayoutUnit& max_logical_width) const;
-
-  // This function calculates the preferred widths for an object.
-  //
-  // This function is only expected to be called if
-  // the boolean preferredLogicalWidthsDirty is true. It also MUST clear the
-  // boolean before returning.
-  //
-  // See INTRINSIC SIZES / PREFERRED LOGICAL WIDTHS in LayoutObject.h for more
-  // details about those widths.
-  virtual void ComputePreferredLogicalWidths() {
-    ClearPreferredLogicalWidthsDirty();
-  }
 
   LayoutBoxRareData& EnsureRareData() {
     if (!rare_data_)

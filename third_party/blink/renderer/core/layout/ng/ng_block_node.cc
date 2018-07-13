@@ -180,6 +180,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
   if (!CanUseNewLayout()) {
     return RunOldLayout(constraint_space);
   }
+
   LayoutBlockFlow* block_flow =
       box_->IsLayoutNGMixin() ? ToLayoutBlockFlow(box_) : nullptr;
   NGLayoutInputNode first_child = FirstChild();
@@ -214,6 +215,24 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       }
       return layout_result;
     }
+  }
+
+  // This follows the code from LayoutBox::UpdateLogicalWidth
+  if (box_->NeedsPreferredWidthsRecalculation() &&
+      !box_->PreferredLogicalWidthsDirty()) {
+    // Laying out this object means that its containing block is also being
+    // laid out. This object is special, in that its min/max widths depend on
+    // the ancestry (min/max width calculation should ideally be strictly
+    // bottom-up, but that's not always the case), so since the containing
+    // block size may have changed, we need to recalculate the min/max widths
+    // of this object, and every child that has the same issue, recursively.
+    box_->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
+    // Since all this takes place during actual layout, instead of being part
+    // of min/max the width calculation machinery, we need to enter said
+    // machinery here, to make sure that what was dirtied is actualy
+    // recalculated. Leaving things dirty would mean that any subsequent
+    // dirtying of descendants would fail.
+    box_->ComputePreferredLogicalWidths();
   }
 
   layout_result =
