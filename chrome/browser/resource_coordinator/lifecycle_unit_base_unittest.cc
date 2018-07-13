@@ -72,6 +72,28 @@ TEST_F(LifecycleUnitBaseTest, GetID) {
   EXPECT_EQ(c.GetID(), c.GetID());
 }
 
+// Verify that the state change time is updated when the state changes.
+TEST_F(LifecycleUnitBaseTest, SetStateUpdatesTime) {
+  TestLifecycleUnit lifecycle_unit;
+  EXPECT_EQ(NowTicks(), lifecycle_unit.GetStateChangeTime());
+
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
+  base::TimeTicks first_state_change_time = NowTicks();
+  lifecycle_unit.SetState(LifecycleUnitState::DISCARDED,
+                          LifecycleUnitStateChangeReason::BROWSER_INITIATED);
+  EXPECT_EQ(first_state_change_time, lifecycle_unit.GetStateChangeTime());
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(first_state_change_time, lifecycle_unit.GetStateChangeTime());
+
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
+  base::TimeTicks second_state_change_time = NowTicks();
+  lifecycle_unit.SetState(LifecycleUnitState::FROZEN,
+                          LifecycleUnitStateChangeReason::BROWSER_INITIATED);
+  EXPECT_EQ(second_state_change_time, lifecycle_unit.GetStateChangeTime());
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(second_state_change_time, lifecycle_unit.GetStateChangeTime());
+}
+
 // Verify that observers are notified when the state changes and when the
 // LifecycleUnit is destroyed.
 TEST_F(LifecycleUnitBaseTest, SetStateNotifiesObservers) {

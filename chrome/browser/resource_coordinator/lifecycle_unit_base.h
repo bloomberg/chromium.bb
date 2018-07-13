@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
+#include "chrome/browser/resource_coordinator/time.h"
 #include "content/public/browser/visibility.h"
 
 namespace resource_coordinator {
@@ -29,6 +30,7 @@ class LifecycleUnitBase : public LifecycleUnit {
   base::TimeTicks GetWallTimeWhenHidden() const override;
   base::TimeDelta GetChromeUsageTimeWhenHidden() const override;
   LifecycleUnitState GetState() const override;
+  base::TimeTicks GetStateChangeTime() const override;
   void AddObserver(LifecycleUnitObserver* observer) override;
   void RemoveObserver(LifecycleUnitObserver* observer) override;
   ukm::SourceId GetUkmSourceId() const override;
@@ -63,6 +65,9 @@ class LifecycleUnitBase : public LifecycleUnit {
 
   // Current state of this LifecycleUnit.
   LifecycleUnitState state_ = LifecycleUnitState::ACTIVE;
+
+  // Time at which the state changed.
+  base::TimeTicks state_change_time_ = NowTicks();
 
   // The wall time when this LifecycleUnit was last hidden, or TimeDelta::Max()
   // if this LifecycleUnit is currently visible.
