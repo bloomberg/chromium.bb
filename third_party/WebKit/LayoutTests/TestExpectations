@@ -2667,6 +2667,10 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac ] external/wpt/svg/shapes/reftests/pathlength-002.svg [ Failure ]
+crbug.com/626703 external/wpt/svg/shapes/reftests/pathlength-003.svg [ Failure ]
+crbug.com/626703 external/wpt/svg/text/reftests/textpath-side-001.svg [ Failure ]
+crbug.com/626703 external/wpt/svg/text/reftests/textpath-shape-001.svg [ Failure ]
 crbug.com/626703 external/wpt/streams/piping/then-interception.dedicatedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/piping/then-interception.serviceworker.https.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/piping/then-interception.sharedworker.html [ Timeout ]
