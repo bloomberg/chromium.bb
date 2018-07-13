@@ -249,6 +249,10 @@ DesktopAutomationHandler.prototype = {
     if (ChromeVoxState.instance.currentRange &&
         target == ChromeVoxState.instance.currentRange.start.node)
       return;
+
+    if (!this.createTextEditHandlerIfNeeded_(target))
+      this.textEditHandler_ = null;
+
     Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
     this.onEventDefault(
         new CustomAutomationEvent(evt.type, target, evt.eventFrom));
