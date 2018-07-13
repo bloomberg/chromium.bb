@@ -2238,6 +2238,7 @@
                     "name": "NewTabPageAllBirthday_Enabled",
                     "enable_features": [
                         "NewTabPageBackgrounds",
+                        "NewTabPageCustomLinks",
                         "NewTabPageIcons",
                         "NewTabPageUIMd"
                     ]

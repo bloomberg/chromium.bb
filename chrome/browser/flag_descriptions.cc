@@ -1147,12 +1147,18 @@ const char kNtlmV2EnabledDescription[] =
 
 const char kNtpBackgroundsName[] = "New Tab Page Background Selection";
 const char kNtpBackgroundsDescription[] =
-    "Allow selection of a custom background image on the New Tab Page.";
+    "Allow selection of a custom background image on the New Tab Page. "
+    "Implicitly enables 'ntp-ui-md'.";
 
-const char kNtpIconsName[] = "New Tab Page Custom Link Icons";
+const char kNtpCustomLinksName[] = "New Tab Page Custom Links";
+const char kNtpCustomLinksDescription[] =
+    "Enable customization of shortcuts on the New Tab Page and replaces Most "
+    "Visited. Implicitly enables 'ntp-ui-md' and 'ntp-icons'.";
+
+const char kNtpIconsName[] = "New Tab Page Material Design Icons";
 const char kNtpIconsDescription[] =
-    "Show custom link icons on the New Tab Page, instead of Most Visited "
-    "tiles.";
+    "Show Material Design icons on the New Tab Page, instead of Most Visited "
+    "tiles. Implicitly enables 'ntp-ui-md'.";
 
 const char kNtpUIMdName[] = "New Tab Page Material Design UI";
 const char kNtpUIMdDescription[] =
