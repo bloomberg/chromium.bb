@@ -346,6 +346,16 @@ deps = {
       'condition': 'checkout_nacl',
   },
 
+  'src/tools/luci-go': {
+      'packages': [
+        {
+          'package': 'infra/tools/luci/isolate/${{platform}}',
+          'version': 'git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e8',
+        },
+      ],
+      'dep_type': 'cipd',
+  },
+
   'src/third_party/SPIRV-Tools/src':
     Var('chromium_git') + '/external/github.com/KhronosGroup/SPIRV-Tools.git' + '@' + '9166854ac93ef81b026e943ccd230fed6c8b8d3c',
 
@@ -1706,6 +1716,7 @@ hooks = [
     ],
   },
   # Pull luci-go binaries (isolate, swarming) using checked-in hashes.
+  # TODO(maruel): Remove, https://crbug.com/851596
   {
     'name': 'luci-go_win',
     'pattern': '.',
