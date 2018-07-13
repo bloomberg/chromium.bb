@@ -35,6 +35,9 @@ class MockAssistant : public mojom::Assistant {
       AddAssistantNotificationSubscriber,
       void(chromeos::assistant::mojom::AssistantNotificationSubscriberPtr));
 
+  MOCK_METHOD1(DismissNotification,
+               void(chromeos::assistant::mojom::AssistantNotificationPtr));
+
   MOCK_METHOD2(RequestScreenContext, void(const gfx::Rect&, base::OnceClosure));
 
  private:

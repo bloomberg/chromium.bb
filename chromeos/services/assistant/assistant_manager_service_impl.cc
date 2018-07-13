@@ -218,6 +218,24 @@ void AssistantManagerServiceImpl::AddAssistantNotificationSubscriber(
   notification_subscribers_.AddPtr(std::move(subscriber));
 }
 
+void AssistantManagerServiceImpl::DismissNotification(
+    mojom::AssistantNotificationPtr notification) {
+  const std::string& notification_id = notification->notification_id;
+  const std::string& consistency_token = notification->consistency_token;
+  const std::string& opaque_token = notification->opaque_token;
+  const std::string& grouping_key = notification->grouping_key;
+
+  const std::string dismissed_interaction =
+      SerializeNotificationDismissedInteraction(
+          notification_id, consistency_token, opaque_token, {grouping_key});
+
+  assistant_client::VoicelessOptions options;
+  options.obfuscated_gaia_id = notification->obfuscated_gaia_id;
+
+  assistant_manager_internal_->SendVoicelessInteraction(
+      dismissed_interaction, "DismissNotification", options, [](auto) {});
+}
+
 void AssistantManagerServiceImpl::OnConversationTurnStarted() {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -590,7 +608,7 @@ void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(
 void AssistantManagerServiceImpl::OnShowNotificationOnMainThread(
     const mojom::AssistantNotificationPtr& notification) {
   notification_subscribers_.ForAllPtrs([&notification](auto* ptr) {
-    ptr->OnShowNotification(mojo::Clone(notification));
+    ptr->OnShowNotification(notification.Clone());
   });
 }
 

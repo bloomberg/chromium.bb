@@ -58,5 +58,8 @@ void FakeAssistantManagerServiceImpl::AddAssistantInteractionSubscriber(
 void FakeAssistantManagerServiceImpl::AddAssistantNotificationSubscriber(
     mojom::AssistantNotificationSubscriberPtr subscriber) {}
 
+void FakeAssistantManagerServiceImpl::DismissNotification(
+    mojom::AssistantNotificationPtr notification) {}
+
 }  // namespace assistant
 }  // namespace chromeos
