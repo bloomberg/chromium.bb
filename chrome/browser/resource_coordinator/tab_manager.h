@@ -437,6 +437,14 @@ class TabManager : public LifecycleUnitObserver,
   base::TimeTicks MaybeFreezeLifecycleUnit(LifecycleUnit* lifecycle_unit,
                                            base::TimeTicks now);
 
+  // If |lifecycle_unit| has been frozen long enough and a sufficient amount of
+  // time elapsed since the last unfreeze, unfreezes it and returns the time at
+  // which it should be frozen again. If |lifecycle_unit| can't be unfrozen now,
+  // returns the time at which this should be called again. |lifecycle_unit|
+  // must be FROZEN. |now| is the current time.
+  base::TimeTicks MaybeUnfreezeLifecycleUnit(LifecycleUnit* lifecycle_unit,
+                                             base::TimeTicks now);
+
   // If enough Chrome usage time has elapsed since |lifecycle_unit| was hidden,
   // proactively discards it. |lifecycle_unit| must be discardable.
   // |decision_details| is the result of calling CanDiscard() on it. Returns the
@@ -536,6 +544,9 @@ class TabManager : public LifecycleUnitObserver,
   // The intervention policy database, should be initialized by
   // InterventionPolicyDatabaseComponentInstallerPolicy.
   std::unique_ptr<InterventionPolicyDatabase> intervention_policy_database_;
+
+  // Last time at which a LifecycleUnit was temporarily unfrozen.
+  base::TimeTicks last_unfreeze_time_;
 
   // A clock that advances when Chrome is in use.
   UsageClock usage_clock_;

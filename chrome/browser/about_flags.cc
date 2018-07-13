@@ -1143,12 +1143,12 @@ const FeatureEntry::FeatureVariation
 #if !defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kProactiveTabFreezeAndDiscard_FreezeOnly[] = {
     {resource_coordinator::
-         kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscard,
+         kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam,
      "false"}};
 const FeatureEntry::FeatureParam
     kProactiveTabFreezeAndDiscard_FreezeAndDiscard[] = {
         {resource_coordinator::
-             kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscard,
+             kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam,
          "true"}};
 const FeatureEntry::FeatureVariation kProactiveTabFreezeAndDiscardVariations[] =
     {{"Freeze only", kProactiveTabFreezeAndDiscard_FreezeOnly,

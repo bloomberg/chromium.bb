@@ -29,7 +29,9 @@ extern const char kProactiveTabFreezeAndDiscardFeatureName[];
 
 // Variations parameter names related to proactive discarding.
 // See ProactiveTabFreezeAndDiscardsParams for details.
-extern const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscard[];
+extern const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam[];
+extern const char
+    kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam[];
 extern const char kProactiveTabFreezeAndDiscard_LowLoadedTabCountParam[];
 extern const char
     kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamParam[];
@@ -37,7 +39,9 @@ extern const char kProactiveTabFreezeAndDiscard_HighLoadedTabCountParam[];
 extern const char kProactiveTabFreezeAndDiscard_LowOccludedTimeoutParam[];
 extern const char kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutParam[];
 extern const char kProactiveTabFreezeAndDiscard_HighOccludedTimeoutParam[];
-extern const char kProactiveTabFreezeAndDiscard_FreezeTimeout[];
+extern const char kProactiveTabFreezeAndDiscard_FreezeTimeoutParam[];
+extern const char kProactiveTabFreezeAndDiscard_UnfreezeTimeoutParam[];
+extern const char kProactiveTabFreezeAndDiscard_RefreezeTimeoutParam[];
 
 // Variations parameter names related to the site characteristics database.
 // See ProactiveTabFreezeAndDiscardsParams for details.
@@ -60,6 +64,8 @@ extern const char kInfiniteSessionRestore_MinSiteEngagementToRestore[];
 // Default values of parameters related to the site characteristics database.
 // See ProactiveTabFreezeAndDiscardsParams for details.
 extern const bool kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardDefault;
+extern const bool
+    kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeDefault;
 extern const uint32_t kProactiveTabFreezeAndDiscard_LowLoadedTabCountDefault;
 extern const uint32_t
     kProactiveTabFreezeAndDiscard_ModerateLoadedTabsPerGbRamDefault;
@@ -70,8 +76,11 @@ extern const base::TimeDelta
     kProactiveTabFreezeAndDiscard_ModerateOccludedTimeoutDefault;
 extern const base::TimeDelta
     kProactiveTabFreezeAndDiscard_HighOccludedTimeoutDefault;
+extern const base::TimeDelta kProactiveTabFreezeAndDiscard_FreezeTimeoutDefault;
 extern const base::TimeDelta
-    kProactiveTabFreezeAndDiscard_FreezeTimeout_Default;
+    kProactiveTabFreezeAndDiscard_UnfreezeTimeoutDefault;
+extern const base::TimeDelta
+    kProactiveTabFreezeAndDiscard_RefreezeTimeoutDefault;
 
 // Default values of parameters related to the site characteristics database.
 // See SiteCharacteristicsDatabaseParams for details.
@@ -141,6 +150,8 @@ struct ProactiveTabFreezeAndDiscardParams {
   // |kProactiveTabFreezeAndDiscard| feature is enabled and this is false, only
   // proactive tab freezing happens.
   bool should_proactively_discard;
+  // Whether frozen tabs should periodically be unfrozen to update their state.
+  bool should_periodically_unfreeze;
   // Tab count (inclusive) beyond which the state transitions to MODERATE.
   // Intended to cover the majority of simple workflows and be small enough that
   // it is very unlikely that memory pressure will be encountered with this many
@@ -165,6 +176,10 @@ struct ProactiveTabFreezeAndDiscardParams {
   base::TimeDelta high_occluded_timeout;
   // Amount of time a tab must be occluded before it is frozen.
   base::TimeDelta freeze_timeout;
+  // Amount of time a tab must be unfrozen before it is temporarily unfrozen.
+  base::TimeDelta unfreeze_timeout;
+  // Amount of time that a tab stays unfrozen before being frozen again.
+  base::TimeDelta refreeze_timeout;
 };
 
 // Parameters used by the site characteristics database.
