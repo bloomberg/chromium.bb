@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
@@ -110,7 +109,7 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
 
   RTCRtpSender(
       scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
-      scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
+      scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_map,
       RtpSenderState state);
   RTCRtpSender(const RTCRtpSender& other);
   ~RTCRtpSender() override;

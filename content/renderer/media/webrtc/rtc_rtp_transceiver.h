@@ -10,6 +10,8 @@
 #include "base/single_thread_task_runner.h"
 #include "content/renderer/media/webrtc/rtc_rtp_receiver.h"
 #include "content/renderer/media/webrtc/rtc_rtp_sender.h"
+#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/webrtc/api/rtptransceiverinterface.h"
 
 namespace content {
@@ -98,6 +100,51 @@ class CONTENT_EXPORT RtpTransceiverState {
   bool stopped_;
   webrtc::RtpTransceiverDirection direction_;
   base::Optional<webrtc::RtpTransceiverDirection> current_direction_;
+};
+
+// Used to surface |webrtc::RtpTransceiverInterface| to blink. Multiple
+// |RTCRtpTransceiver|s could reference the same webrtc transceiver; |id| is
+// unique per webrtc transceiver.
+// Its methods are accessed on the main thread, internally also performs
+// operations on the signaling thread.
+// TODO(hbos): [Onion Soup] Remove the content layer versions of this class and
+// rely on webrtc directly from blink. Requires coordination with senders and
+// receivers. https://crbug.com/787254
+class CONTENT_EXPORT RTCRtpTransceiver : public blink::WebRTCRtpTransceiver {
+ public:
+  static uintptr_t GetId(
+      const webrtc::RtpTransceiverInterface* webrtc_transceiver);
+
+  RTCRtpTransceiver(
+      scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
+      scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_map,
+      RtpTransceiverState state);
+  RTCRtpTransceiver(const RTCRtpTransceiver& other);
+  ~RTCRtpTransceiver() override;
+
+  RTCRtpTransceiver& operator=(const RTCRtpTransceiver& other);
+  std::unique_ptr<RTCRtpTransceiver> ShallowCopy() const;
+
+  const RtpTransceiverState& state() const;
+  void set_state(RtpTransceiverState state);
+  RTCRtpSender* content_sender();
+  RTCRtpReceiver* content_receiver();
+
+  uintptr_t Id() const override;
+  blink::WebString Mid() const override;
+  std::unique_ptr<blink::WebRTCRtpSender> Sender() const override;
+  std::unique_ptr<blink::WebRTCRtpReceiver> Receiver() const override;
+  bool Stopped() const override;
+  webrtc::RtpTransceiverDirection Direction() const override;
+  base::Optional<webrtc::RtpTransceiverDirection> CurrentDirection()
+      const override;
+  void Stop() override;
+
+ private:
+  class RTCRtpTransceiverInternal;
+  struct RTCRtpTransceiverInternalTraits;
+
+  scoped_refptr<RTCRtpTransceiverInternal> internal_;
 };
 
 }  // namespace content

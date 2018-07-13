@@ -22,7 +22,6 @@
 #include "content/renderer/media/webrtc/media_stream_track_metrics.h"
 #include "content/renderer/media/webrtc/rtc_rtp_receiver.h"
 #include "content/renderer/media/webrtc/rtc_rtp_sender.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -273,14 +272,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // needs to reference it, and automatically disposed when there are no longer
   // any components referencing it.
   scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
-  // Map and owners of stream adapters. Every stream that is in use by the peer
-  // connection has an associated blink and webrtc layer representation of it.
-  // The map keeps track of the relationship between |blink::WebMediaStream|s
-  // and |webrtc::MediaStreamInterface|s. Stream adapters are created on the fly
-  // when a component (such as a sender or receiver) needs to reference it, and
-  // automatically disposed when there are no longer any components referencing
-  // it.
-  scoped_refptr<WebRtcMediaStreamAdapterMap> stream_adapter_map_;
   // Content layer correspondents of |webrtc::RtpSenderInterface|.
   std::vector<std::unique_ptr<RTCRtpSender>> rtp_senders_;
   // Maps |RTCRtpReceiver::getId|s of |webrtc::RtpReceiverInterface|s to the

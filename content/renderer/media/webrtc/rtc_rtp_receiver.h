@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
@@ -112,7 +111,7 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
   std::unique_ptr<RTCRtpReceiver> ShallowCopy() const;
 
   const RtpReceiverState& state() const;
-  void SetState(RtpReceiverState state);
+  void set_state(RtpReceiverState state);
 
   uintptr_t Id() const override;
   const blink::WebMediaStreamTrack& Track() const override;

@@ -1245,9 +1245,6 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
       track_adapter_map_(
           new WebRtcMediaStreamTrackAdapterMap(dependency_factory_,
                                                task_runner)),
-      stream_adapter_map_(new WebRtcMediaStreamAdapterMap(dependency_factory_,
-                                                          task_runner,
-                                                          track_adapter_map_)),
       task_runner_(std::move(task_runner)),
       weak_factory_(this) {
   CHECK(client_);
@@ -1773,7 +1770,7 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
                               std::move(stream_ids));
   sender_state.Initialize();
   rtp_senders_.push_back(std::make_unique<RTCRtpSender>(
-      native_peer_connection_, stream_adapter_map_, std::move(sender_state)));
+      native_peer_connection_, track_adapter_map_, std::move(sender_state)));
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackAddTransceiver(
         this, PeerConnectionTracker::TransceiverUpdatedReason::kAddTrack,

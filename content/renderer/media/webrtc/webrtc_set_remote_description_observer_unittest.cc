@@ -16,7 +16,6 @@
 #include "content/child/child_process.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -66,15 +65,13 @@ class WebRtcSetRemoteDescriptionObserverHandlerTest : public ::testing::Test {
             new cricket::FakeMediaEngine())));
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
-    scoped_refptr<WebRtcMediaStreamAdapterMap> map =
-        new WebRtcMediaStreamAdapterMap(
-            dependency_factory_.get(), main_thread_,
-            new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get(),
-                                                 main_thread_));
+    scoped_refptr<WebRtcMediaStreamTrackAdapterMap> map =
+        new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get(),
+                                             main_thread_);
     observer_ = new WebRtcSetRemoteDescriptionObserverForTest();
     observer_handler_ = WebRtcSetRemoteDescriptionObserverHandler::Create(
-        main_thread_, dependency_factory_->GetWebRtcSignalingThread(), pc_,
-        map->track_adapter_map(), observer_);
+        main_thread_, dependency_factory_->GetWebRtcSignalingThread(), pc_, map,
+        observer_);
   }
 
   void TearDown() override { blink::WebHeap::CollectAllGarbageForTesting(); }
