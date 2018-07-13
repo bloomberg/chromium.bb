@@ -23,8 +23,8 @@ import diff
 import file_format
 import match_util
 import models
-import nm
 import path_util
+import string_extract
 
 
 # Number of lines before using less for Print().
@@ -122,7 +122,8 @@ class _Session(object):
     elf_path = self._ElfPathForSymbol(
         size_info, tool_prefix, elf_path)
 
-    address, offset, _ = nm.LookupElfRodataInfo(elf_path, tool_prefix)
+    address, offset, _ = string_extract.LookupElfRodataInfo(
+        elf_path, tool_prefix)
     adjust = offset - address
     ret = []
     with open(elf_path, 'rb') as f:

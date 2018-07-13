@@ -30,6 +30,7 @@ import linker_map_parser
 import models
 import ninja_parser
 import nm
+import obj_analyzer
 import path_util
 
 sys.path.insert(1, os.path.join(path_util.SRC_ROOT, 'tools', 'grit'))
@@ -766,7 +767,7 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
     # Rather than record all paths for each symbol, set the paths to be the
     # common ancestor of all paths.
     if outdir_context:
-      bulk_analyzer = nm.BulkObjectFileAnalyzer(
+      bulk_analyzer = obj_analyzer.BulkObjectFileAnalyzer(
           tool_prefix, outdir_context.output_directory)
       bulk_analyzer.AnalyzePaths(outdir_context.elf_object_paths)
 
