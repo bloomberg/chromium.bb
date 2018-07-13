@@ -11,6 +11,7 @@
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -205,8 +206,9 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 
 #pragma mark - CRWWebStateObserver
 
-- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+- (void)webStateDidChangeTitle:(web::WebState*)webState {
   // Assumption: the ID of the webState didn't change as a result of this load.
+  SnapshotTabHelper::FromWebState(webState)->RemoveSnapshot();
   TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
   NSString* itemID = tabHelper->tab_id();
   [self.consumer replaceItemID:itemID withItem:CreateItem(webState)];
@@ -314,14 +316,22 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 - (void)faviconForIdentifier:(NSString*)identifier
                   completion:(void (^)(UIImage*))completion {
   web::WebState* webState = GetWebStateWithId(self.webStateList, identifier);
-  if (webState) {
-    favicon::FaviconDriver* faviconDriver =
-        favicon::WebFaviconDriver::FromWebState(webState);
-    if (faviconDriver) {
-      gfx::Image favicon = faviconDriver->GetFavicon();
-      if (!favicon.IsEmpty())
-        completion(favicon.ToUIImage());
-    }
+  if (!webState) {
+    return;
+  }
+  UIImage* defaultFavicon;
+  if (experimental_flags::IsCollectionsUIRebootEnabled()) {
+    defaultFavicon = [UIImage imageNamed:@"default_world_favicon"];
+  }
+  defaultFavicon = [UIImage imageNamed:@"default_favicon"];
+  completion(defaultFavicon);
+
+  favicon::FaviconDriver* faviconDriver =
+      favicon::WebFaviconDriver::FromWebState(webState);
+  if (faviconDriver) {
+    gfx::Image favicon = faviconDriver->GetFavicon();
+    if (!favicon.IsEmpty())
+      completion(favicon.ToUIImage());
   }
 }
 
