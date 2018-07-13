@@ -32,6 +32,13 @@ class CastGestureDispatcher : public CastGestureHandler {
   void HandleTapGesture(const gfx::Point& touch_location) override;
 
  private:
+  friend class CastGestureDispatcherTest;
+  CastGestureDispatcher(CastContentWindow::Delegate* delegate,
+                        bool enable_top_drag_gesture);
+  GestureType GestureForSwipeOrigin(CastSideSwipeOrigin swipe_origin);
+
+  const bool enable_top_drag_gesture_;
+
   // Number of pixels past swipe origin to consider as a back gesture.
   const int back_horizontal_threshold_;
   CastContentWindow::Delegate* const delegate_;

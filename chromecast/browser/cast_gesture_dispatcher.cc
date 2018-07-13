@@ -11,30 +11,40 @@ namespace shell {
 
 namespace {
 constexpr int kDefaultBackGestureHorizontalThreshold = 80;
-
-GestureType GestureForSwipeOrigin(CastSideSwipeOrigin swipe_origin) {
-  switch (swipe_origin) {
-    case CastSideSwipeOrigin::LEFT:
-      return GestureType::GO_BACK;
-    case CastSideSwipeOrigin::TOP:
-      return GestureType::TOP_DRAG;
-    default:
-      return GestureType::NO_GESTURE;
-  }
-}
-
 }  // namespace
 
 CastGestureDispatcher::CastGestureDispatcher(
-    CastContentWindow::Delegate* delegate)
-    : back_horizontal_threshold_(
+    CastContentWindow::Delegate* delegate,
+    bool enable_top_drag_gesture)
+    : enable_top_drag_gesture_(enable_top_drag_gesture),
+      back_horizontal_threshold_(
           GetSwitchValueInt(switches::kBackGestureHorizontalThreshold,
                             kDefaultBackGestureHorizontalThreshold)),
       delegate_(delegate) {
   DCHECK(delegate_);
 }
+
+CastGestureDispatcher::CastGestureDispatcher(
+    CastContentWindow::Delegate* delegate)
+    : CastGestureDispatcher(
+          delegate,
+          GetSwitchValueBoolean(switches::kEnableTopDragGesture, false)) {}
+
 bool CastGestureDispatcher::CanHandleSwipe(CastSideSwipeOrigin swipe_origin) {
   return delegate_->CanHandleGesture(GestureForSwipeOrigin(swipe_origin));
+}
+
+GestureType CastGestureDispatcher::GestureForSwipeOrigin(
+    CastSideSwipeOrigin swipe_origin) {
+  switch (swipe_origin) {
+    case CastSideSwipeOrigin::LEFT:
+      return GestureType::GO_BACK;
+    case CastSideSwipeOrigin::TOP:
+      return enable_top_drag_gesture_ ? GestureType::TOP_DRAG
+                                      : GestureType::NO_GESTURE;
+    default:
+      return GestureType::NO_GESTURE;
+  }
 }
 
 void CastGestureDispatcher::HandleSideSwipeBegin(
