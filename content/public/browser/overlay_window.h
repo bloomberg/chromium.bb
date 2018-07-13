@@ -53,7 +53,7 @@ class OverlayWindow {
   virtual void UpdateVideoSize(const gfx::Size& natural_size) = 0;
   virtual void SetPlaybackState(PlaybackState playback_state) = 0;
 
-  // Retrieve the ui::Layers corresponding to the window and video.
+  // Retrieves the ui::Layers corresponding to the window and video.
   virtual ui::Layer* GetWindowBackgroundLayer() = 0;
   virtual ui::Layer* GetVideoLayer() = 0;
 
