@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -30,6 +31,8 @@ class ASH_EXPORT AssistantNotificationController
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
 
+  void DismissNotification(AssistantNotificationPtr notification);
+
   // chromeos::assistant::mojom::AssistantNotificationSubscriber:
   void OnShowNotification(AssistantNotificationPtr notification) override;
   void OnRemoveNotification(const std::string& grouping_id) override;
@@ -45,6 +48,8 @@ class ASH_EXPORT AssistantNotificationController
 
   // Save the latest notification for future retrieval or dismiss operations.
   AssistantNotificationPtr notification_;
+
+  base::WeakPtrFactory<AssistantNotificationController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantNotificationController);
 };

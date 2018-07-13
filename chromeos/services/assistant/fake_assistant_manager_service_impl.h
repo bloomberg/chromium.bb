@@ -45,6 +45,8 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
       mojom::AssistantInteractionSubscriberPtr subscriber) override;
   void AddAssistantNotificationSubscriber(
       mojom::AssistantNotificationSubscriberPtr subscriber) override;
+  void DismissNotification(
+      mojom::AssistantNotificationPtr notification) override;
   void RequestScreenContext(const gfx::Rect& region,
                             RequestScreenContextCallback callback) override;
 

@@ -32,6 +32,9 @@ interface Assistant {
   AddAssistantNotificationSubscriber(
       AssistantNotificationSubscriber subscriber);
 
+  // Dismisses a notification.
+  DismissNotification(AssistantNotification notification);
+
   // Asks assistant to grab screen context. |region| controls the part of the
   // screen to snapshot. If |region| is empty, it takes fullscreen screenshot.
   // After grabbing completion, the callback will be invoked.
