@@ -9,7 +9,6 @@
 #include "base/win/windows_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome_elf/chrome_elf_main.h"
-#include "chrome_elf/sha1/sha1.h"
 #include "chrome_elf/third_party_dlls/logging_api.h"
 
 // This function is a temporary workaround for https://crbug.com/655788. We
@@ -48,8 +47,8 @@ void SetMetricsClientId(const char* client_id) {}
 
 struct TestLogEntry {
   third_party_dlls::LogType log_type;
-  uint8_t basename_hash[elf_sha1::kSHA1Length];
-  uint8_t code_id_hash[elf_sha1::kSHA1Length];
+  uint32_t module_size;
+  uint32_t time_date_stamp;
 };
 
 // This test stub always writes 2 hardcoded entries into the buffer, if the
@@ -59,20 +58,8 @@ uint32_t DrainLog(uint8_t* buffer,
                   uint32_t* log_remaining) {
   // Alternate between log types.
   TestLogEntry kTestLogEntries[] = {
-      {
-          third_party_dlls::LogType::kAllowed,
-          {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-           0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19},
-          {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
-           0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49},
-      },
-      {
-          third_party_dlls::LogType::kBlocked,
-          {0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
-           0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB},
-          {0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
-           0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD},
-      },
+      {third_party_dlls::LogType::kAllowed, 0x9901, 0x12345678},
+      {third_party_dlls::LogType::kBlocked, 0x9902, 0x12345678},
   };
 
   // Each entry shares the module path for convenience.
@@ -94,10 +81,8 @@ uint32_t DrainLog(uint8_t* buffer,
         reinterpret_cast<third_party_dlls::LogEntry*>(tracker);
 
     log_entry->type = test_entry.log_type;
-    ::memcpy(log_entry->basename_hash, test_entry.basename_hash,
-             sizeof(test_entry.basename_hash));
-    ::memcpy(log_entry->code_id_hash, test_entry.code_id_hash,
-             sizeof(test_entry.code_id_hash));
+    log_entry->module_size = test_entry.module_size;
+    log_entry->time_date_stamp = test_entry.time_date_stamp;
     log_entry->path_len = kModulePathLength;
     ::memcpy(log_entry->path, kModulePath, log_entry->path_len + 1);
 

@@ -98,7 +98,7 @@ PackedListModule GeneratePackedListModule(const std::string& image_name,
   assert(!image_name.empty());
 
   // SHA1 hash the two strings, and copy them into the new struct.
-  std::string code_id = GetFingerprintString(imagesize, timedatestamp);
+  std::string code_id = GetFingerprintString(timedatestamp, imagesize);
   code_id = elf_sha1::SHA1HashString(code_id);
   std::string name_hash = elf_sha1::SHA1HashString(image_name);
 
@@ -485,6 +485,42 @@ TEST_F(ThirdPartyTest, SHA1SanityCheck) {
   EXPECT_EQ(::memcmp(elf_sha1_generated.code_id_hash,
                      module_code_id_hash.data(), elf_sha1::kSHA1Length),
             0);
+}
+
+// Test that full section path is left alone, in terms of case.
+TEST_F(ThirdPartyTest, PathCaseSensitive) {
+  // Rename module to have mixed case.
+  ASSERT_TRUE(MakeFileCopy(GetExeDir(), kTestDllName2, GetScopedTempDirValue(),
+                           kTestDllName1MixedCase));
+
+  // 1) Sanity check that the hook GetDataFromImage() mining leaves the
+  // section path alone.
+  TestModuleData module_data = {};
+  ASSERT_TRUE(GetTestModuleData(kTestDllName1MixedCase, GetScopedTempDirValue(),
+                                &module_data));
+  // Reminder: this string is actually UTF-8, but this test ensures it is ascii.
+  // Also, |section_path| will be a device path, so convert to drive letter
+  // before comparing.
+  base::FilePath drive;
+  ASSERT_TRUE(base::DevicePathToDriveLetterPath(
+      base::FilePath(base::ASCIIToUTF16(module_data.section_path)), &drive));
+
+  EXPECT_EQ(drive.value().compare(
+                MakePath(GetScopedTempDirValue(), kTestDllName1MixedCase)),
+            0);
+
+  // 2) Now check an actual log.  Successful DLL load with no blacklist is fine
+  //    for this test.
+  base::CommandLine cmd_line1 = base::CommandLine::FromString(kTestExeFilename);
+  cmd_line1.AppendArgNative(GetBlTestFilePath());
+  cmd_line1.AppendArgNative(
+      base::IntToString16(main_unittest_exe::kTestSingleDllLoad));
+  cmd_line1.AppendArgNative(
+      MakePath(GetScopedTempDirValue(), kTestDllName1MixedCase));
+
+  int exit_code = 0;
+  LaunchChildAndWait(cmd_line1, &exit_code);
+  ASSERT_EQ(main_unittest_exe::kDllLoadSuccess, exit_code);
 }
 
 // Test the status-code passing in registry.

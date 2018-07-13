@@ -68,7 +68,7 @@ struct PackedListModule {
 //   and OptionalHeader.SizeOfImage with the formatting string %08X%x.
 // - To be used for PackedListModule.code_id_hash, IsModuleListed() and logging
 //   APIs.
-std::string GetFingerprintString(uint32_t image_size, uint32_t time_data_stamp);
+std::string GetFingerprintString(uint32_t time_data_stamp, uint32_t image_size);
 
 // These structs are directly written to a storage type. Therefore the padding
 // should be consistent across compilations.

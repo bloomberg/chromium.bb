@@ -10,11 +10,15 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/sha1.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_util_win.h"
 #include "chrome_elf/third_party_dlls/logging_api.h"
+#include "chrome_elf/third_party_dlls/packed_list_format.h"
 
 namespace {
 
@@ -45,14 +49,31 @@ std::vector<third_party_dlls::PackedListModule> DrainLogOnBackgroundTask() {
     // get better visibility into all modules that loads into the browser
     // process.
     if (entry->type == third_party_dlls::LogType::kBlocked) {
+      // No log path should be empty.
+      DCHECK(entry->path_len);
       blocked_modules.emplace_back();
       third_party_dlls::PackedListModule& module = blocked_modules.back();
-      std::copy(std::begin(entry->basename_hash),
-                std::end(entry->basename_hash),
-                std::begin(module.basename_hash));
-      std::copy(std::begin(entry->code_id_hash), std::end(entry->code_id_hash),
+      // Fill in a PackedListModule from the log entry.
+      std::string hash_string =
+          base::SHA1HashString(third_party_dlls::GetFingerprintString(
+              entry->time_date_stamp, entry->module_size));
+      std::copy(std::begin(hash_string), std::end(hash_string),
                 std::begin(module.code_id_hash));
+      // |entry->path| is a UTF-8 device path.  A hash of the
+      // lowercase, UTF-8 basename is needed for |module.basename_hash|.
+      base::FilePath file_path(base::UTF8ToUTF16(entry->path));
+      std::wstring basename = base::i18n::ToLower(file_path.BaseName().value());
+      hash_string = base::UTF16ToUTF8(basename);
+      hash_string = base::SHA1HashString(hash_string);
+      std::copy(std::begin(hash_string), std::end(hash_string),
+                std::begin(module.basename_hash));
       module.time_date_stamp = now_time_date_stamp;
+
+      // TODO(pmonette): |file_path| is ready for
+      //                 base::DevicePathToDriveLetterPath() here if needed.
+      //                 Consider making these path conversions more efficient
+      //                 by caching the local mounted devices and corresponding
+      //                 drive paths once.
     }
 
     tracker += third_party_dlls::GetLogEntrySize(entry->path_len);

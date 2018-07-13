@@ -204,14 +204,14 @@ TEST_F(ThirdPartyFileTest, Success) {
   // Test matching.
   for (const auto& test_module : GetTestArray()) {
     fingerprint_hash =
-        GetFingerprintString(test_module.imagesize, test_module.timedatestamp);
+        GetFingerprintString(test_module.timedatestamp, test_module.imagesize);
     fingerprint_hash = elf_sha1::SHA1HashString(fingerprint_hash);
     name_hash = elf_sha1::SHA1HashString(test_module.basename);
     EXPECT_TRUE(IsModuleListed(name_hash, fingerprint_hash));
   }
 
   // Test a failure to match.
-  fingerprint_hash = GetFingerprintString(1337, 0x12345678);
+  fingerprint_hash = GetFingerprintString(0x12345678, 1337);
   fingerprint_hash = elf_sha1::SHA1HashString(fingerprint_hash);
   name_hash = elf_sha1::SHA1HashString("booya.dll");
   EXPECT_FALSE(IsModuleListed(name_hash, fingerprint_hash));
@@ -222,7 +222,7 @@ TEST_F(ThirdPartyFileTest, NoFiles) {
   // kFileNotFound is a non-fatal status code.
   ASSERT_EQ(InitFromFile(), ThirdPartyStatus::kFileNotFound);
 
-  std::string fingerprint_hash = GetFingerprintString(1337, 0x12345678);
+  std::string fingerprint_hash = GetFingerprintString(0x12345678, 1337);
   fingerprint_hash = elf_sha1::SHA1HashString(fingerprint_hash);
   std::string name_hash = elf_sha1::SHA1HashString("booya.dll");
   EXPECT_FALSE(IsModuleListed(name_hash, fingerprint_hash));

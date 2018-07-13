@@ -148,7 +148,9 @@ bool UTF16ToUTF8(const std::wstring& utf16, std::string* utf8) {
 }
 
 // Helper function to contain the data mining for the values needed.
-// - All strings returned are lowercase UTF-8.
+// - |image_name| and |section_basename| will be lowercased.  |section_path|
+//   will be left untouched, preserved for case-sensitive operations with it.
+// - All strings returned are UTF-8.  Treat accordingly.
 // - This function succeeds if image_name || section_* is found.
 // Note: |section_path| contains |section_basename|, if the section name is
 //       successfully mined.
@@ -197,12 +199,11 @@ bool GetDataFromImage(PVOID buffer,
     *image_name = std::string(name, ::strnlen(name, MAX_PATH));
   }
 
+  // Lowercase |image_name|.
   for (size_t i = 0; i < image_name->size(); i++)
     (*image_name)[i] = tolower((*image_name)[i]);
 
   std::wstring temp_section_path = GetSectionName(buffer);
-  for (size_t i = 0; i < temp_section_path.size(); i++)
-    temp_section_path[i] = towlower(temp_section_path[i]);
 
   // For now, consider it a success if at least one source results in a name.
   // Allow for the rare case of one or the other not being there.
@@ -223,7 +224,11 @@ bool GetDataFromImage(PVOID buffer,
     temp_section_basename = temp_section_path.substr(sep + 1);
   }
 
-  // Convert strings from UTF-16 to UTF-8.
+  // Lowercase |section_basename|.
+  for (size_t i = 0; i < temp_section_basename.size(); i++)
+    temp_section_basename[i] = towlower(temp_section_basename[i]);
+
+  // Convert section strings from UTF-16 to UTF-8.
   return UTF16ToUTF8(temp_section_path, section_path) &&
          UTF16ToUTF8(temp_section_basename, section_basename);
 }
@@ -288,54 +293,45 @@ NTSTATUS NewNtMapViewOfSectionImpl(
   if (!section_basename.empty())
     section_basename_hash = elf_sha1::SHA1HashString(section_basename);
   std::string fingerprint_hash =
-      GetFingerprintString(image_size, time_date_stamp);
+      GetFingerprintString(time_date_stamp, image_size);
   fingerprint_hash = elf_sha1::SHA1HashString(fingerprint_hash);
 
   // Check sources for blacklist decision.
   bool block = false;
-  std::string* name_matched = nullptr;
 
   if (!image_name_hash.empty() &&
       IsModuleListed(image_name_hash, fingerprint_hash)) {
     // 1) Third-party DLL blacklist, check for image name from PE header.
     block = true;
-    name_matched = &image_name_hash;
   } else if (!section_basename_hash.empty() &&
              section_basename_hash.compare(image_name_hash) != 0 &&
              IsModuleListed(section_basename_hash, fingerprint_hash)) {
     // 2) Third-party DLL blacklist, check for image name from the section.
     block = true;
-    name_matched = &section_basename_hash;
   } else if (!image_name.empty() && blacklist::DllMatch(image_name)) {
     // 3) Hard-coded blacklist with name from PE header (deprecated).
     block = true;
-    name_matched = &image_name_hash;
   } else if (!section_basename.empty() &&
              section_basename.compare(image_name) != 0 &&
              blacklist::DllMatch(section_basename)) {
     // 4) Hard-coded blacklist with name from the section (deprecated).
     block = true;
-    name_matched = &section_basename_hash;
-  } else {
-    // No block.
-    // Ensure a non-null image name for the log.  Prefer the section basename
-    // (to match the path).
-    name_matched =
-        section_basename.empty() ? &image_name_hash : &section_basename_hash;
   }
+  // Else, no block.
 
   // UNMAP the view.  This image is being blocked.
   if (block) {
-    assert(name_matched);
     assert(g_nt_unmap_view_of_section_func);
     g_nt_unmap_view_of_section_func(process, *base);
     ret = STATUS_UNSUCCESSFUL;
   }
 
   // LOG!
+  // - If there was a failure getting |section_path|, at least pass image_name.
   LogLoadAttempt((block ? third_party_dlls::LogType::kBlocked
                         : third_party_dlls::LogType::kAllowed),
-                 *name_matched, fingerprint_hash, section_path);
+                 image_size, time_date_stamp,
+                 section_path.empty() ? image_name : section_path);
 
   return ret;
 }
