@@ -98,6 +98,22 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
       const std::string& content,
       SimulateResponseFlags flags = kDefault);
 
+  // Sends a response for the given request |request|.
+  //
+  // Differently from its variant above, this method does not remove |request|
+  // from |pending_requests_|.
+  //
+  // This method is useful to process requests at a given pre-defined order.
+  void SimulateResponseWithoutRemovingFromPendingList(
+      PendingRequest* request,
+      const ResourceResponseHead& head,
+      std::string content,
+      const URLLoaderCompletionStatus& status);
+
+  // Simpler version of the method above.
+  void SimulateResponseWithoutRemovingFromPendingList(PendingRequest* request,
+                                                      std::string content);
+
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,
                             int32_t routing_id,

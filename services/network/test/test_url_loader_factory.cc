@@ -171,6 +171,27 @@ bool TestURLLoaderFactory::SimulateResponseForPendingRequest(
   return true;
 }
 
+void TestURLLoaderFactory::SimulateResponseWithoutRemovingFromPendingList(
+    PendingRequest* request,
+    const ResourceResponseHead& head,
+    std::string content,
+    const URLLoaderCompletionStatus& completion_status) {
+  URLLoaderCompletionStatus status(completion_status);
+  status.decoded_body_length = content.size();
+  SimulateResponse(request->client.get(), TestURLLoaderFactory::Redirects(),
+                   head, content, status);
+  base::RunLoop().RunUntilIdle();
+}
+
+void TestURLLoaderFactory::SimulateResponseWithoutRemovingFromPendingList(
+    PendingRequest* request,
+    std::string content) {
+  URLLoaderCompletionStatus completion_status(net::OK);
+  ResourceResponseHead head = CreateResourceResponseHead(net::HTTP_OK);
+  SimulateResponseWithoutRemovingFromPendingList(request, head, content,
+                                                 completion_status);
+}
+
 // static
 void TestURLLoaderFactory::SimulateResponse(
     mojom::URLLoaderClient* client,
