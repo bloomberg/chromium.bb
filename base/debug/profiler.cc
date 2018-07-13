@@ -19,7 +19,7 @@
 
 // TODO(peria): Enable profiling on Windows.
 #if BUILDFLAG(ENABLE_PROFILING) && !defined(NO_TCMALLOC) && !defined(OS_WIN)
-#include "third_party/tcmalloc/chromium/src/gperftools/profiler.h"
+#include "third_party/tcmalloc/gperftools-2.0/chromium/src/gperftools/profiler.h"
 #endif
 
 namespace base {
