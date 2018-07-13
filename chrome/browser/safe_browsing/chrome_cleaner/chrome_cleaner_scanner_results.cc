@@ -23,8 +23,7 @@ ChromeCleanerScannerResults::ChromeCleanerScannerResults(
     const ChromeCleanerScannerResults& other)
     : files_to_delete_(other.files_to_delete_),
       registry_keys_(other.registry_keys_),
-      extension_ids_(other.extension_ids_),
-      extension_names_(other.extension_names_) {}
+      extension_ids_(other.extension_ids_) {}
 
 ChromeCleanerScannerResults::~ChromeCleanerScannerResults() = default;
 
@@ -33,12 +32,13 @@ ChromeCleanerScannerResults& ChromeCleanerScannerResults::operator=(
   files_to_delete_ = other.files_to_delete_;
   registry_keys_ = other.registry_keys_;
   extension_ids_ = other.extension_ids_;
-  extension_names_ = other.extension_names_;
   return *this;
 }
 
-void ChromeCleanerScannerResults::FetchExtensionNames(Profile* profile) {
-  GetExtensionNamesFromIds(profile, extension_ids_, &extension_names_);
+void ChromeCleanerScannerResults::FetchExtensionNames(
+    Profile* profile,
+    ChromeCleanerScannerResults::ExtensionCollection* extension_names) const {
+  GetExtensionNamesFromIds(profile, extension_ids_, extension_names);
 }
 
 }  // namespace safe_browsing

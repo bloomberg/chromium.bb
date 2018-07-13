@@ -31,19 +31,20 @@ class ChromeCleanerScannerResults {
   ChromeCleanerScannerResults& operator=(
       const ChromeCleanerScannerResults& other);
 
-  void FetchExtensionNames(Profile* profile);
+  // Retrieves the extension names of |extension_ids_| using the extension
+  // registry from |profile|. If a name cannot be found for an extension ID, a
+  // translated string is added stating that it is an unknown ID.
+  void FetchExtensionNames(Profile* profile,
+                           ExtensionCollection* extension_names) const;
 
   const FileCollection& files_to_delete() const { return files_to_delete_; }
   const RegistryKeyCollection& registry_keys() const { return registry_keys_; }
-  const ExtensionCollection& extension_names() const {
-    return extension_names_;
-  }
+  const ExtensionCollection& extension_ids() const { return extension_ids_; }
 
  private:
   FileCollection files_to_delete_;
   RegistryKeyCollection registry_keys_;
   ExtensionCollection extension_ids_;
-  ExtensionCollection extension_names_;
 };
 
 }  // namespace safe_browsing

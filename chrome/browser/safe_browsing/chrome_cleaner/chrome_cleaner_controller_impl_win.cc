@@ -664,7 +664,7 @@ void ChromeCleanerControllerImpl::OnPromptUser(
   DCHECK_EQ(State::kScanning, state());
   DCHECK(scanner_results_.files_to_delete().empty());
   DCHECK(scanner_results_.registry_keys().empty());
-  DCHECK(scanner_results_.extension_names().empty());
+  DCHECK(scanner_results_.extension_ids().empty());
   DCHECK(!prompt_user_callback_);
   DCHECK(!time_scanning_started_.is_null());
 

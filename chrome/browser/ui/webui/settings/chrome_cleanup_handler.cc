@@ -55,14 +55,16 @@ std::unique_ptr<base::ListValue> GetStringSetAsListStorage(
 }
 
 base::DictionaryValue GetScannerResultsAsDictionary(
-    const safe_browsing::ChromeCleanerScannerResults& scanner_results) {
+    const safe_browsing::ChromeCleanerScannerResults& scanner_results,
+    Profile* profile) {
   base::DictionaryValue value;
   value.SetList("files",
                 GetFilesAsListStorage(scanner_results.files_to_delete()));
   value.SetList("registryKeys",
                 GetStringSetAsListStorage(scanner_results.registry_keys()));
-  value.SetList("extensions",
-                GetStringSetAsListStorage(scanner_results.extension_names()));
+  std::set<base::string16> extensions;
+  scanner_results.FetchExtensionNames(profile, &extensions);
+  value.SetList("extensions", GetStringSetAsListStorage(extensions));
   return value;
 }
 
@@ -179,7 +181,7 @@ void ChromeCleanupHandler::OnInfected(
     const safe_browsing::ChromeCleanerScannerResults& scanner_results) {
   FireWebUIListener("chrome-cleanup-on-infected",
                     base::Value(is_powered_by_partner),
-                    GetScannerResultsAsDictionary(scanner_results));
+                    GetScannerResultsAsDictionary(scanner_results, profile_));
 }
 
 void ChromeCleanupHandler::OnCleaning(
@@ -187,7 +189,7 @@ void ChromeCleanupHandler::OnCleaning(
     const safe_browsing::ChromeCleanerScannerResults& scanner_results) {
   FireWebUIListener("chrome-cleanup-on-cleaning",
                     base::Value(is_powered_by_partner),
-                    GetScannerResultsAsDictionary(scanner_results));
+                    GetScannerResultsAsDictionary(scanner_results, profile_));
 }
 
 void ChromeCleanupHandler::OnRebootRequired() {
