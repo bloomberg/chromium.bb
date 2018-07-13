@@ -3445,6 +3445,9 @@ if (enable_java_templates) {
   #
   #      NOTE: This creates a new target with the name "${target_name}_apks"
   #
+  #    enable_language_splits: Optional. If true, enable APK splits based
+  #      on languages.
+  #
   #    sign_bundle: Optional. If true, sign the bundle. Default is false
   #      because signing is very slow, and there is no reason to do it
   #      unless one wants to upload the bundle to the Play Store (e.g.
@@ -3529,6 +3532,12 @@ if (enable_java_templates) {
     _sign_bundle = defined(invoker.sign_bundle) && invoker.sign_bundle
     _generate_apks = defined(invoker.generate_apks) && invoker.generate_apks
 
+    _split_dimensions = []
+    if (defined(invoker.enable_language_splits) &&
+        invoker.enable_language_splits) {
+      _split_dimensions += [ "language" ]
+    }
+
     if (_sign_bundle || _generate_apks) {
       _keystore_path = android_keystore_path
       _keystore_password = android_keystore_password
@@ -3579,6 +3588,9 @@ if (enable_java_templates) {
           "--key-name",
           _bundle_keystore_name,
         ]
+      }
+      if (_split_dimensions != []) {
+        args += [ "--split-dimensions=$_split_dimensions" ]
       }
       foreach(build_config, _all_module_build_configs) {
         _rebased_build_config = rebase_path(build_config, root_build_dir)
