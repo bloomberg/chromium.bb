@@ -18,8 +18,8 @@
 #include "base/i18n/icu_util.h"
 #include "base/i18n/message_formatter.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
@@ -245,7 +245,7 @@ int main(int argc, char* const argv[]) {
       short_name_id_str = "IDS_SHORT_HELPER_NAME";
     }
 
-    // Fetch the strings
+    // Fetch the strings.
     NSString* name =
           LoadStringFromDataPack(branded_data_pack.get(), cur_lang,
                                  name_id, name_id_str);
@@ -261,22 +261,34 @@ int main(int argc, char* const argv[]) {
         base::i18n::MessageFormatter::FormatWithNumberedArgs(
             base::SysNSStringToUTF16(copyright_format), base::Time::Now()));
 
+    NSString* permission_reason =
+        LoadStringFromDataPack(branded_data_pack.get(), cur_lang,
+                               IDS_RUNTIME_PERMISSION_OS_REASON_TEXT,
+                               "IDS_RUNTIME_PERMISSION_OS_REASON_TEXT");
+
     // For now, assume this is ok for all languages. If we need to, this could
     // be moved into generated_resources.grd and fetched.
-    NSString *get_info = [NSString stringWithFormat:@"%@ %@, %@",
-                          name, version_string, copyright];
+    NSString* get_info = [NSString
+        stringWithFormat:@"%@ %@, %@", name, version_string, copyright];
 
-    // Generate the InfoPlist.strings file contents
-    NSString* strings_file_contents_string =
-        [NSString stringWithFormat:
-          @"CFBundleDisplayName = \"%@\";\n"
-          @"CFBundleGetInfoString = \"%@\";\n"
-          @"CFBundleName = \"%@\";\n"
-          @"NSHumanReadableCopyright = \"%@\";\n",
-          EscapeForStringsFileValue(name),
-          EscapeForStringsFileValue(get_info),
-          EscapeForStringsFileValue(short_name),
-          EscapeForStringsFileValue(copyright)];
+    // Generate the InfoPlist.strings file contents.
+    NSDictionary<NSString*, NSString*>* infoplist_strings = @{
+      @"CFBundleDisplayName" : name,
+      @"CFBundleGetInfoString" : get_info,
+      @"CFBundleName" : short_name,
+      @"NSHumanReadableCopyright" : copyright,
+      @"NSLocationUsageDescription" : permission_reason,
+      @"NSMicrophoneUsageDescription" : permission_reason,
+      @"NSCameraUsageDescription" : permission_reason,
+      @"NSBluetoothPeripheralUsageDescription" : permission_reason,
+    };
+    base::scoped_nsobject<NSMutableString> strings_file_contents_string(
+        [[NSMutableString alloc] init]);
+    for (NSString* key in infoplist_strings) {
+      [strings_file_contents_string
+          appendFormat:@"%@ = \"%@\";\n", key,
+                       EscapeForStringsFileValue(infoplist_strings[key])];
+    }
 
     // We set up Xcode projects expecting strings files to be UTF8, so make
     // sure we write the data in that form.  When Xcode copies them it will
