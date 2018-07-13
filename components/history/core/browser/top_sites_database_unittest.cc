@@ -241,10 +241,10 @@ TEST_F(TopSitesDatabaseTest, Recovery3) {
 
   // Corrupt the thumnails.url auto-index by deleting an element from the table
   // but leaving it in the index.
-  const char kIndexName[] = "sqlite_autoindex_thumbnails_1";
+  static const char kIndexName[] = "sqlite_autoindex_thumbnails_1";
   // TODO(shess): Refactor CorruptTableOrIndex() to make parameterized
   // statements easy.
-  const char kDeleteSql[] =
+  static const char kDeleteSql[] =
       "DELETE FROM thumbnails WHERE url = "
       "'http://www.google.com/chrome/intl/en/welcome.html'";
   EXPECT_TRUE(

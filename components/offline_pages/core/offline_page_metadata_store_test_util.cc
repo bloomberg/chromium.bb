@@ -19,7 +19,7 @@ namespace offline_pages {
 namespace {
 
 int64_t GetPageCountSync(sql::Connection* db) {
-  const char kSql[] = "SELECT count(*) FROM offlinepages_v1";
+  static const char kSql[] = "SELECT count(*) FROM offlinepages_v1";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   if (statement.Step()) {
     return statement.ColumnInt64(0);

@@ -283,7 +283,7 @@ bool QuotaDatabase::GetOriginLastEvictionTime(const GURL& origin,
   if (!LazyOpen(false))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT last_eviction_time"
       " FROM EvictionInfoTable"
       " WHERE origin = ? AND type = ?";
@@ -305,7 +305,7 @@ bool QuotaDatabase::SetOriginLastEvictionTime(const GURL& origin,
   if (!LazyOpen(true))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT OR REPLACE INTO EvictionInfoTable"
       " (last_eviction_time, origin, type)"
       " VALUES (?, ?, ?)";
@@ -326,7 +326,7 @@ bool QuotaDatabase::DeleteOriginLastEvictionTime(const GURL& origin,
   if (!LazyOpen(false))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "DELETE FROM EvictionInfoTable"
       " WHERE origin = ? AND type = ?";
 

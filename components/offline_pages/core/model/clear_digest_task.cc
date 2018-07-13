@@ -17,7 +17,7 @@ bool ClearDigestSync(int64_t offline_id, sql::Connection* db) {
   if (!db)
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "UPDATE OR IGNORE offlinepages_v1"
       " SET digest = '' "
       " WHERE offline_id = ?";

@@ -33,7 +33,7 @@ CompleteUpgradeStatus CompleteOfflinePageUpgradeSync(
 
   // We need to remember the old file path, so that we can remove that file
   // later on.
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT file_path FROM offlinepages_v1 WHERE offline_id = ?";
   sql::Statement select_statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   select_statement.BindInt64(0, offline_id);
@@ -62,7 +62,7 @@ CompleteUpgradeStatus CompleteOfflinePageUpgradeSync(
 
   // Conditions for upgrade are met here.
   // Update remaining attempts in DB and complete task.
-  const char kUpdateSql[] =
+  static const char kUpdateSql[] =
       "UPDATE offlinepages_v1"
       " SET upgrade_attempt = 0, file_path = ?, file_size = ?, digest = ?"
       " WHERE offline_id = ?";

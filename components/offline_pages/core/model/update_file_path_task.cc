@@ -28,7 +28,7 @@ bool UpdateFilePathSync(const base::FilePath& new_file_path,
     return false;
 
   // Update the file_path to point to the new path.
-  const char kSqlUpdate[] =
+  static const char kSqlUpdate[] =
       "UPDATE OR IGNORE offlinepages_v1"
       " SET file_path = ?"
       " WHERE offline_id = ?";

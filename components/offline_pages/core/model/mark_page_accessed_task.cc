@@ -29,7 +29,7 @@ void ReportAccessHistogram(int64_t offline_id,
   // page will be longer than one year in extreme cases so it's good enough.
   const int kMinutesPerYear = base::TimeDelta::FromDays(365).InMinutes();
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT client_namespace, last_access_time FROM " OFFLINE_PAGES_TABLE_NAME
       " WHERE offline_id = ?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -61,7 +61,7 @@ bool MarkPageAccessedSync(const base::Time& access_time,
 
   ReportAccessHistogram(offline_id, access_time, db);
 
-  const char kSql[] =
+  static const char kSql[] =
       "UPDATE OR IGNORE " OFFLINE_PAGES_TABLE_NAME
       " SET last_access_time = ?, access_count = access_count + 1"
       " WHERE offline_id = ?";

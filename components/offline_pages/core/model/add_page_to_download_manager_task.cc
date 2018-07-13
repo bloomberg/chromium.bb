@@ -22,9 +22,9 @@ bool SetDownloadIdSync(int64_t offline_id,
   if (!db)
     return false;
 
-  const char kSql[] = "UPDATE OR IGNORE " OFFLINE_PAGES_TABLE_NAME
-                      " SET system_download_id = ?"
-                      " WHERE offline_id = ?";
+  static const char kSql[] = "UPDATE OR IGNORE " OFFLINE_PAGES_TABLE_NAME
+                             " SET system_download_id = ?"
+                             " WHERE offline_id = ?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, download_id);
   statement.BindInt64(1, offline_id);

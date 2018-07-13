@@ -28,7 +28,7 @@ StartUpgradeResult StartOfflinePageUpgradeSync(
   if (!transaction.Begin())
     return StartUpgradeResult(StartUpgradeStatus::DB_ERROR);
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT file_path, file_size, digest"
       " FROM offlinepages_v1 WHERE offline_id = ?";
   sql::Statement select_statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -56,7 +56,7 @@ StartUpgradeResult StartOfflinePageUpgradeSync(
 
   // Conditions for upgrade are met here.
   // Update remaining attempts in DB and complete task.
-  const char kUpdateSql[] =
+  static const char kUpdateSql[] =
       "UPDATE offlinepages_v1 SET upgrade_attempt = upgrade_attempt - 1 "
       " WHERE offline_id = ?";
   sql::Statement update_statement(

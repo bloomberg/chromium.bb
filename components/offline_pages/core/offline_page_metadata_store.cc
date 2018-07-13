@@ -40,24 +40,25 @@ void ReportStoreEvent(OfflinePagesStoreEvent event) {
 }
 
 bool CreateOfflinePagesTable(sql::Connection* db) {
-  const char kSql[] = "CREATE TABLE IF NOT EXISTS " OFFLINE_PAGES_TABLE_NAME
-                      "(offline_id INTEGER PRIMARY KEY NOT NULL,"
-                      " creation_time INTEGER NOT NULL,"
-                      " file_size INTEGER NOT NULL,"
-                      " last_access_time INTEGER NOT NULL,"
-                      " access_count INTEGER NOT NULL,"
-                      " system_download_id INTEGER NOT NULL DEFAULT 0,"
-                      " file_missing_time INTEGER NOT NULL DEFAULT 0,"
-                      " upgrade_attempt INTEGER NOT NULL DEFAULT 0,"
-                      " client_namespace VARCHAR NOT NULL,"
-                      " client_id VARCHAR NOT NULL,"
-                      " online_url VARCHAR NOT NULL,"
-                      " file_path VARCHAR NOT NULL,"
-                      " title VARCHAR NOT NULL DEFAULT '',"
-                      " original_url VARCHAR NOT NULL DEFAULT '',"
-                      " request_origin VARCHAR NOT NULL DEFAULT '',"
-                      " digest VARCHAR NOT NULL DEFAULT ''"
-                      ")";
+  static const char kSql[] =
+      "CREATE TABLE IF NOT EXISTS " OFFLINE_PAGES_TABLE_NAME
+      "(offline_id INTEGER PRIMARY KEY NOT NULL,"
+      " creation_time INTEGER NOT NULL,"
+      " file_size INTEGER NOT NULL,"
+      " last_access_time INTEGER NOT NULL,"
+      " access_count INTEGER NOT NULL,"
+      " system_download_id INTEGER NOT NULL DEFAULT 0,"
+      " file_missing_time INTEGER NOT NULL DEFAULT 0,"
+      " upgrade_attempt INTEGER NOT NULL DEFAULT 0,"
+      " client_namespace VARCHAR NOT NULL,"
+      " client_id VARCHAR NOT NULL,"
+      " online_url VARCHAR NOT NULL,"
+      " file_path VARCHAR NOT NULL,"
+      " title VARCHAR NOT NULL DEFAULT '',"
+      " original_url VARCHAR NOT NULL DEFAULT '',"
+      " request_origin VARCHAR NOT NULL DEFAULT '',"
+      " digest VARCHAR NOT NULL DEFAULT ''"
+      ")";
   return db->Execute(kSql);
 }
 
@@ -76,7 +77,7 @@ bool UpgradeWithQuery(sql::Connection* db, const char* upgrade_sql) {
 }
 
 bool UpgradeFrom52(sql::Connection* db) {
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
       "access_count, client_namespace, client_id, "
@@ -90,7 +91,7 @@ bool UpgradeFrom52(sql::Connection* db) {
 }
 
 bool UpgradeFrom53(sql::Connection* db) {
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
       "access_count, client_namespace, client_id, online_url, "
@@ -104,7 +105,7 @@ bool UpgradeFrom53(sql::Connection* db) {
 }
 
 bool UpgradeFrom54(sql::Connection* db) {
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
       "access_count, client_namespace, client_id, online_url, "
@@ -118,7 +119,7 @@ bool UpgradeFrom54(sql::Connection* db) {
 }
 
 bool UpgradeFrom55(sql::Connection* db) {
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
       "access_count, client_namespace, client_id, online_url, "
@@ -132,7 +133,7 @@ bool UpgradeFrom55(sql::Connection* db) {
 }
 
 bool UpgradeFrom56(sql::Connection* db) {
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
       "access_count, client_namespace, client_id, online_url, "
@@ -146,7 +147,7 @@ bool UpgradeFrom56(sql::Connection* db) {
 }
 
 bool UpgradeFrom57(sql::Connection* db) {
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
       "access_count, client_namespace, client_id, online_url, "
@@ -160,7 +161,7 @@ bool UpgradeFrom57(sql::Connection* db) {
 }
 
 bool UpgradeFrom61(sql::Connection* db) {
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
       "access_count, client_namespace, client_id, online_url, "
@@ -174,7 +175,7 @@ bool UpgradeFrom61(sql::Connection* db) {
 }
 
 bool CreatePageThumbnailsTable(sql::Connection* db) {
-  const char kSql[] =
+  static const char kSql[] =
       "CREATE TABLE IF NOT EXISTS page_thumbnails"
       " (offline_id INTEGER PRIMARY KEY NOT NULL,"
       " expiration INTEGER NOT NULL,"
