@@ -915,6 +915,9 @@ util.isDescendantEntry = function(ancestorEntry, childEntry) {
   if (ancestorEntry instanceof EntryList) {
     const entryList = /** @type {EntryList} */ (ancestorEntry);
     return entryList.children.some(ancestorChild => {
+      if (util.isSameEntry(ancestorChild, childEntry))
+        return true;
+
       // rootEntry might not be resolved yet.
       const volumeEntry = ancestorChild.rootEntry;
       return volumeEntry &&

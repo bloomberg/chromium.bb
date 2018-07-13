@@ -327,13 +327,19 @@ class EntryList {
   }
 
   /**
-   * @param {Entry|FakeEntry|FilesAppEntry} entry that should be checked as
-   * child of this EntryList.
+   * Removes the first entry that matches the rootType.
+   * @param {!VolumeManagerCommon.RootType} rootType to be removed.
    * This method is specific to EntryList instance.
    * @return {boolean} if entry was removed.
    */
-  containEntry(entry) {
-    return !!this.children.find(childEntry => childEntry === entry);
+  removeByRootType(rootType) {
+    const childIndex =
+        this.children.findIndex(childEntry => childEntry.rootType === rootType);
+    if (childIndex !== -1) {
+      this.children.splice(childIndex, 1);
+      return true;
+    }
+    return false;
   }
 }
 
