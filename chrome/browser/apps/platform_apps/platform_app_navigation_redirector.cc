@@ -53,7 +53,7 @@ bool LaunchAppWithUrl(const scoped_refptr<const Extension> app,
   }
 
   // These are guaranteed by MaybeCreateThrottleFor below.
-  DCHECK(UrlHandlers::CanExtensionHandleUrl(app.get(), params.url()));
+  DCHECK(UrlHandlers::CanPlatformAppHandleUrl(app.get(), params.url()));
   DCHECK(!params.is_post());
 
   Profile* profile = Profile::FromBrowserContext(source->GetBrowserContext());
@@ -103,12 +103,13 @@ PlatformAppNavigationRedirector::MaybeCreateThrottleFor(
        extensions::ExtensionRegistry::Get(browser_context)
            ->enabled_extensions()) {
     // BookmarkAppNavigationThrottle handles intercepting links to Hosted Apps
-    // that are Bookmark Apps. Regular Hosted Apps don't intercept links.
-    if (extension_ref->is_hosted_app())
+    // that are Bookmark Apps. Other types of apps don't intercept links.
+    if (!extension_ref->is_platform_app())
       continue;
 
-    const UrlHandlerInfo* handler = UrlHandlers::FindMatchingUrlHandler(
-        extension_ref.get(), handle->GetURL());
+    const UrlHandlerInfo* handler =
+        UrlHandlers::GetMatchingPlatformAppUrlHandler(extension_ref.get(),
+                                                      handle->GetURL());
     if (handler) {
       DVLOG(1) << "Found matching app handler for redirection: "
                << extension_ref->name() << "(" << extension_ref->id()

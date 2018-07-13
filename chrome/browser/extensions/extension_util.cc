@@ -346,7 +346,7 @@ const Extension* GetInstalledPwaForUrl(
         GetLaunchContainer(prefs, app.get()) != *launch_container_filter) {
       continue;
     }
-    if (UrlHandlers::FindMatchingUrlHandler(app.get(), url))
+    if (UrlHandlers::CanBookmarkAppHandleUrl(app.get(), url))
       return app.get();
   }
   return nullptr;
