@@ -345,7 +345,9 @@ bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
   if (v == this)
     return true;
 
-  constexpr int kInactiveTabHitTestOverlap = 7;
+  // Set the hit test overlap to 1 dip above the top edge of the tab separator.
+  const int inactive_tab_hit_test_overlap =
+      (height() - Tab::GetTabSeparatorHeight()) / 2 - 1;
   // If there is a tab at this location, this hit is not likely in the title
   // bar, except under the conditions below.
   const int tab_index = tabs_.GetIndexOfView(v);
@@ -357,7 +359,7 @@ bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
     if (MD::IsRefreshUi() && !SizeTabButtonToTopOfTabStrip() &&
         !tab->IsActive()) {
       return gfx::Rect(tab->bounds().origin(),
-                       gfx::Size(tab->width(), kInactiveTabHitTestOverlap))
+                       gfx::Size(tab->width(), inactive_tab_hit_test_overlap))
           .Intersects(rect);
     }
     return false;
@@ -367,8 +369,9 @@ bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
   // top of the new tab button. This also makes the window drag region above the
   // new tab button a little larger for ease of window dragging.
   if (MD::IsRefreshUi() && !SizeTabButtonToTopOfTabStrip() &&
-      gfx::Rect(new_tab_button_->bounds().origin(),
-                gfx::Size(new_tab_button_->width(), kInactiveTabHitTestOverlap))
+      gfx::Rect(
+          new_tab_button_->bounds().origin(),
+          gfx::Size(new_tab_button_->width(), inactive_tab_hit_test_overlap))
           .Intersects(rect))
     return true;
 

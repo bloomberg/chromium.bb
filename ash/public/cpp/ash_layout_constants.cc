@@ -17,13 +17,13 @@ gfx::Size GetAshLayoutSize(AshLayoutSize size) {
       // These constants should be kept in sync with those for TAB_HEIGHT in
       // chrome/browser/ui/layout_constants.cc.
       // TODO: Ideally these values should be obtained from a common location.
-      constexpr int kBrowserMaximizedCaptionButtonHeight[] = {29, 33, 41, 36,
+      constexpr int kBrowserMaximizedCaptionButtonHeight[] = {29, 33, 41, 34,
                                                               41};
       return gfx::Size(kButtonWidth,
                        kBrowserMaximizedCaptionButtonHeight[mode]);
     }
     case AshLayoutSize::kBrowserCaptionRestored: {
-      constexpr int kBrowserRestoredCaptionButtonHeight[] = {36, 40, 48, 43,
+      constexpr int kBrowserRestoredCaptionButtonHeight[] = {36, 40, 48, 41,
                                                              48};
       return gfx::Size(kButtonWidth, kBrowserRestoredCaptionButtonHeight[mode]);
     }
