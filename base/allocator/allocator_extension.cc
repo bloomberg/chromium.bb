@@ -7,9 +7,9 @@
 #include "base/logging.h"
 
 #if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
-#include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
-#include "third_party/tcmalloc/chromium/src/gperftools/malloc_hook.h"
+#include "third_party/tcmalloc/gperftools-2.0/chromium/src/gperftools/heap-profiler.h"
+#include "third_party/tcmalloc/gperftools-2.0/chromium/src/gperftools/malloc_extension.h"
+#include "third_party/tcmalloc/gperftools-2.0/chromium/src/gperftools/malloc_hook.h"
 #endif
 
 namespace base {

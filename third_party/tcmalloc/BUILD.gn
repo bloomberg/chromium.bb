@@ -6,7 +6,7 @@ import("//build/config/compiler/compiler.gni")
 
 executable("addr2line-pdb") {
   sources = [
-    "chromium/src/windows/addr2line-pdb.c",
+    "gperftools-2.0/chromium/src/windows/addr2line-pdb.c",
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]

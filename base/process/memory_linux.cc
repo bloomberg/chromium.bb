@@ -18,8 +18,8 @@
 #include "build/build_config.h"
 
 #if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/chromium/src/config.h"
-#include "third_party/tcmalloc/chromium/src/gperftools/tcmalloc.h"
+#include "third_party/tcmalloc/gperftools-2.0/chromium/src/config.h"
+#include "third_party/tcmalloc/gperftools-2.0/chromium/src/gperftools/tcmalloc.h"
 #endif
 
 namespace base {
