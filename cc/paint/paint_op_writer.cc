@@ -248,10 +248,12 @@ void PaintOpWriter::Write(const DrawImage& draw_image,
   base::Optional<uint32_t> id = decoded_draw_image.transfer_cache_entry_id();
   *scale_adjustment = decoded_draw_image.scale_adjustment();
   // In the case of a decode failure, id may not be set. Send an invalid ID.
-  WriteImage(id ? *id : kInvalidImageTransferCacheEntryId);
+  WriteImage(id.value_or(kInvalidImageTransferCacheEntryId),
+             decoded_draw_image.transfer_cache_entry_needs_mips());
 }
 
-void PaintOpWriter::WriteImage(uint32_t transfer_cache_entry_id) {
+void PaintOpWriter::WriteImage(uint32_t transfer_cache_entry_id,
+                               bool needs_mips) {
   if (transfer_cache_entry_id == kInvalidImageTransferCacheEntryId) {
     Write(static_cast<uint8_t>(PaintOp::SerializedImageType::kNoImage));
     return;
@@ -260,6 +262,7 @@ void PaintOpWriter::WriteImage(uint32_t transfer_cache_entry_id) {
   Write(
       static_cast<uint8_t>(PaintOp::SerializedImageType::kTransferCacheEntry));
   Write(transfer_cache_entry_id);
+  Write(needs_mips);
 }
 
 void PaintOpWriter::Write(const sk_sp<SkData>& data) {
@@ -331,7 +334,8 @@ sk_sp<PaintShader> PaintOpWriter::TransformShaderIfNecessary(
     const PaintShader* original,
     SkFilterQuality quality,
     uint32_t* paint_image_transfer_cache_entry_id,
-    gfx::SizeF* paint_record_post_scale) {
+    gfx::SizeF* paint_record_post_scale,
+    bool* paint_image_needs_mips) {
   DCHECK(!enable_security_constraints_);
 
   const auto type = original->shader_type();
@@ -340,7 +344,7 @@ sk_sp<PaintShader> PaintOpWriter::TransformShaderIfNecessary(
   if (type == PaintShader::Type::kImage) {
     return original->CreateDecodedImage(ctm, quality, options_.image_provider,
                                         paint_image_transfer_cache_entry_id,
-                                        &quality);
+                                        &quality, paint_image_needs_mips);
   }
 
   if (type == PaintShader::Type::kPaintRecord) {
@@ -354,11 +358,12 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
   sk_sp<PaintShader> transformed_shader;
   uint32_t paint_image_transfer_cache_id = kInvalidImageTransferCacheEntryId;
   gfx::SizeF paint_record_post_scale(1.f, 1.f);
+  bool paint_image_needs_mips = false;
 
   if (!enable_security_constraints_ && shader) {
     transformed_shader = TransformShaderIfNecessary(
         shader, quality, &paint_image_transfer_cache_id,
-        &paint_record_post_scale);
+        &paint_record_post_scale, &paint_image_needs_mips);
     shader = transformed_shader.get();
   }
 
@@ -400,7 +405,7 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
     DCHECK_EQ(scale_adjustment.width(), 1.f);
     DCHECK_EQ(scale_adjustment.height(), 1.f);
   } else {
-    WriteImage(paint_image_transfer_cache_id);
+    WriteImage(paint_image_transfer_cache_id, paint_image_needs_mips);
   }
 
   if (shader->record_) {

@@ -28,6 +28,7 @@ class CC_PAINT_EXPORT DecodedDrawImage {
                    const SkSize& src_rect_offset,
                    const SkSize& scale_adjustment,
                    SkFilterQuality filter_quality,
+                   bool needs_mips,
                    bool is_budgeted);
   DecodedDrawImage(const DecodedDrawImage& other);
   DecodedDrawImage();
@@ -44,6 +45,9 @@ class CC_PAINT_EXPORT DecodedDrawImage {
     return std::abs(scale_adjustment_.width() - 1.f) < FLT_EPSILON &&
            std::abs(scale_adjustment_.height() - 1.f) < FLT_EPSILON;
   }
+  bool transfer_cache_entry_needs_mips() const {
+    return transfer_cache_entry_needs_mips_;
+  }
   bool is_budgeted() const { return is_budgeted_; }
 
  private:
@@ -52,6 +56,7 @@ class CC_PAINT_EXPORT DecodedDrawImage {
   SkSize src_rect_offset_;
   SkSize scale_adjustment_;
   SkFilterQuality filter_quality_;
+  bool transfer_cache_entry_needs_mips_ = false;
   bool is_budgeted_;
 };
 

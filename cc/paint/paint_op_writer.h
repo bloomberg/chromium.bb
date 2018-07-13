@@ -136,14 +136,15 @@ class CC_PAINT_EXPORT PaintOpWriter {
              const gfx::SizeF& post_scale,
              const SkMatrix& post_matrix_for_analysis);
   void Write(const SkRegion& region);
-  void WriteImage(uint32_t transfer_cache_entry_id);
+  void WriteImage(uint32_t transfer_cache_entry_id, bool needs_mips);
 
   void EnsureBytes(size_t required_bytes);
   sk_sp<PaintShader> TransformShaderIfNecessary(
       const PaintShader* original,
       SkFilterQuality quality,
       uint32_t* paint_image_transfer_cache_entry_id,
-      gfx::SizeF* paint_record_post_scale);
+      gfx::SizeF* paint_record_post_scale,
+      bool* paint_image_needs_mips);
 
   char* memory_ = nullptr;
   size_t size_ = 0u;

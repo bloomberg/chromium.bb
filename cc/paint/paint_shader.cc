@@ -310,7 +310,8 @@ sk_sp<PaintShader> PaintShader::CreateDecodedImage(
     SkFilterQuality quality,
     ImageProvider* image_provider,
     uint32_t* transfer_cache_entry_id,
-    SkFilterQuality* raster_quality) const {
+    SkFilterQuality* raster_quality,
+    bool* needs_mips) const {
   DCHECK_EQ(shader_type_, Type::kImage);
   if (!image_)
     return nullptr;
@@ -353,6 +354,7 @@ sk_sp<PaintShader> PaintShader::CreateDecodedImage(
   // want to do is cap the filter quality used, but Gpu and Sw cache have
   // different behaviour. D:
   *raster_quality = decoded_image.filter_quality();
+  *needs_mips = decoded_image.transfer_cache_entry_needs_mips();
   return PaintShader::MakeImage(decoded_paint_image, tx_, ty_, &final_matrix);
 }
 

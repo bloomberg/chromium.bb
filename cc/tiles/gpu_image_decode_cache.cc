@@ -111,17 +111,46 @@ int CalculateUploadScaleMipLevel(const DrawImage& draw_image) {
 // Calculates the scale factor which can be used to scale an image to a given
 // mip level.
 SkSize CalculateScaleFactorForMipLevel(const DrawImage& draw_image,
-                                       int mip_level) {
+                                       int upload_scale_mip_level) {
   gfx::Size base_size(draw_image.paint_image().width(),
                       draw_image.paint_image().height());
-  return MipMapUtil::GetScaleAdjustmentForLevel(base_size, mip_level);
+  return MipMapUtil::GetScaleAdjustmentForLevel(base_size,
+                                                upload_scale_mip_level);
 }
 
 // Calculates the size of a given mip level.
-gfx::Size CalculateSizeForMipLevel(const DrawImage& draw_image, int mip_level) {
+gfx::Size CalculateSizeForMipLevel(const DrawImage& draw_image,
+                                   int upload_scale_mip_level) {
   gfx::Size base_size(draw_image.paint_image().width(),
                       draw_image.paint_image().height());
-  return MipMapUtil::GetSizeForLevel(base_size, mip_level);
+  return MipMapUtil::GetSizeForLevel(base_size, upload_scale_mip_level);
+}
+
+// Determines whether a draw image requires mips.
+bool ShouldGenerateMips(const DrawImage& draw_image,
+                        int upload_scale_mip_level) {
+  // If filter quality is less than medium, don't generate mips.
+  if (draw_image.filter_quality() < kMedium_SkFilterQuality)
+    return false;
+
+  gfx::Size base_size(draw_image.paint_image().width(),
+                      draw_image.paint_image().height());
+  // Take the abs of the scale, as mipmap functions don't handle (and aren't
+  // impacted by) negative image dimensions.
+  gfx::SizeF scaled_size = gfx::ScaleSize(
+      gfx::SizeF(base_size), std::abs(draw_image.scale().width()),
+      std::abs(draw_image.scale().height()));
+
+  // If our target size is smaller than our scaled size in both dimension, we
+  // need to generate mips.
+  gfx::SizeF target_size =
+      gfx::SizeF(CalculateSizeForMipLevel(draw_image, upload_scale_mip_level));
+  if (scaled_size.width() < target_size.width() &&
+      scaled_size.height() < target_size.height()) {
+    return true;
+  }
+
+  return false;
 }
 
 // Draws and scales the provided |draw_image| into the |target_pixmap|. If the
@@ -256,6 +285,44 @@ void DeleteSkImageAndPreventCaching(viz::RasterContextProvider* context,
   }
 }
 
+// TODO(ericrk): Replace calls to this with calls to SkImage::makeTextureImage,
+// once that function handles colorspaces. https://crbug.com/834837
+sk_sp<SkImage> MakeTextureImage(viz::RasterContextProvider* context,
+                                sk_sp<SkImage> source_image,
+                                sk_sp<SkColorSpace> target_color_space,
+                                GrMipMapped mip_mapped) {
+  // Step 1: Upload image and generate mips if necessary. If we will be applying
+  // a color-space conversion, don't generate mips yet, instead do it after
+  // conversion, in step 3.
+  bool add_mips_after_color_conversion =
+      (target_color_space && mip_mapped == GrMipMapped::kYes);
+  sk_sp<SkImage> uploaded_image = source_image->makeTextureImage(
+      context->GrContext(), nullptr,
+      add_mips_after_color_conversion ? GrMipMapped::kNo : mip_mapped);
+
+  // Step 2: Apply a color-space conversion if necessary.
+  if (uploaded_image && target_color_space) {
+    sk_sp<SkImage> pre_converted_image = uploaded_image;
+    uploaded_image = uploaded_image->makeColorSpace(
+        target_color_space, SkTransferFunctionBehavior::kIgnore);
+
+    if (uploaded_image != pre_converted_image)
+      DeleteSkImageAndPreventCaching(context, std::move(pre_converted_image));
+  }
+
+  // Step 3: If we had a colorspace conversion, we couldn't mipmap in step 1, so
+  // add mips here.
+  if (uploaded_image && add_mips_after_color_conversion) {
+    sk_sp<SkImage> pre_mipped_image = uploaded_image;
+    uploaded_image = uploaded_image->makeTextureImage(
+        context->GrContext(), nullptr, GrMipMapped::kYes);
+    DCHECK_NE(pre_mipped_image, uploaded_image);
+    DeleteSkImageAndPreventCaching(context, std::move(pre_mipped_image));
+  }
+
+  return uploaded_image;
+}
+
 }  // namespace
 
 // static
@@ -268,13 +335,14 @@ GpuImageDecodeCache::InUseCacheKey::FromDrawImage(const DrawImage& draw_image) {
 // the |in_use_cache_|.
 GpuImageDecodeCache::InUseCacheKey::InUseCacheKey(const DrawImage& draw_image)
     : frame_key(draw_image.frame_key()),
-      mip_level(CalculateUploadScaleMipLevel(draw_image)),
+      upload_scale_mip_level(CalculateUploadScaleMipLevel(draw_image)),
       filter_quality(CalculateDesiredFilterQuality(draw_image)),
       target_color_space(draw_image.target_color_space()) {}
 
 bool GpuImageDecodeCache::InUseCacheKey::operator==(
     const InUseCacheKey& other) const {
-  return frame_key == other.frame_key && mip_level == other.mip_level &&
+  return frame_key == other.frame_key &&
+         upload_scale_mip_level == other.upload_scale_mip_level &&
          filter_quality == other.filter_quality &&
          target_color_space == other.target_color_space;
 }
@@ -283,9 +351,9 @@ size_t GpuImageDecodeCache::InUseCacheKeyHash::operator()(
     const InUseCacheKey& cache_key) const {
   return base::HashInts(
       cache_key.target_color_space.GetHash(),
-      base::HashInts(
-          cache_key.frame_key.hash(),
-          base::HashInts(cache_key.mip_level, cache_key.filter_quality)));
+      base::HashInts(cache_key.frame_key.hash(),
+                     base::HashInts(cache_key.upload_scale_mip_level,
+                                    cache_key.filter_quality)));
 }
 
 GpuImageDecodeCache::InUseCacheEntry::InUseCacheEntry(
@@ -547,13 +615,15 @@ GpuImageDecodeCache::ImageData::ImageData(
     size_t size,
     const gfx::ColorSpace& target_color_space,
     SkFilterQuality quality,
-    int mip_level,
+    int upload_scale_mip_level,
+    bool needs_mips,
     bool is_bitmap_backed)
     : mode(mode),
       size(size),
       target_color_space(target_color_space),
       quality(quality),
-      mip_level(mip_level),
+      upload_scale_mip_level(upload_scale_mip_level),
+      needs_mips(needs_mips),
       is_bitmap_backed(is_bitmap_backed),
       decode(is_bitmap_backed) {}
 
@@ -783,11 +853,11 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
       image_data->upload.mark_used();
     DCHECK(id || image_data->decode.decode_failure);
 
-    SkSize scale_factor =
-        CalculateScaleFactorForMipLevel(draw_image, image_data->mip_level);
+    SkSize scale_factor = CalculateScaleFactorForMipLevel(
+        draw_image, image_data->upload_scale_mip_level);
     DecodedDrawImage decoded_draw_image(
         id, SkSize(), scale_factor, CalculateDesiredFilterQuality(draw_image),
-        image_data->is_budgeted);
+        image_data->needs_mips, image_data->is_budgeted);
     return decoded_draw_image;
   } else {
     DCHECK(!use_transfer_cache_);
@@ -796,8 +866,8 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
       image_data->upload.mark_used();
     DCHECK(image || image_data->decode.decode_failure);
 
-    SkSize scale_factor =
-        CalculateScaleFactorForMipLevel(draw_image, image_data->mip_level);
+    SkSize scale_factor = CalculateScaleFactorForMipLevel(
+        draw_image, image_data->upload_scale_mip_level);
     DecodedDrawImage decoded_draw_image(
         std::move(image), SkSize(), scale_factor,
         CalculateDesiredFilterQuality(draw_image), image_data->is_budgeted);
@@ -1347,7 +1417,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
   }
 
   TRACE_EVENT0("cc", "GpuImageDecodeCache::DecodeImage");
-  RecordImageMipLevelUMA(image_data->mip_level);
+  RecordImageMipLevelUMA(image_data->upload_scale_mip_level);
 
   image_data->decode.ResetData();
   std::unique_ptr<base::DiscardableMemory> backing_memory;
@@ -1356,8 +1426,8 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
     base::AutoUnlock unlock(lock_);
     backing_memory = base::DiscardableMemoryAllocator::GetInstance()
                          ->AllocateLockedDiscardableMemory(image_data->size);
-    SkImageInfo image_info =
-        CreateImageInfoForDrawImage(draw_image, image_data->mip_level);
+    SkImageInfo image_info = CreateImageInfoForDrawImage(
+        draw_image, image_data->upload_scale_mip_level);
     SkPixmap pixmap(image_info, backing_memory->data(),
                     image_info.minRowBytes());
 
@@ -1406,16 +1476,35 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     return;
   }
 
-  if (image_data->HasUploadedData() &&
-      TryLockImage(HaveContextLock::kYes, draw_image, image_data)) {
-    // Someone has uploaded this image before us (at raster).
+  // If an upload already exists, try to lock it. If this fails, it will clear
+  // any uploaded data.
+  if (image_data->HasUploadedData())
+    TryLockImage(HaveContextLock::kYes, draw_image, image_data);
+
+  // Ensure the mip status is correct before returning the locked upload or
+  // preparing to upload a new image.
+  UpdateMipsIfNeeded(draw_image, image_data);
+
+  // If we have uploaded data at this point, it is locked with correct mips,
+  // just return.
+  if (image_data->HasUploadedData())
     return;
-  }
 
   TRACE_EVENT0("cc", "GpuImageDecodeCache::UploadImage");
   DCHECK(image_data->decode.is_locked());
   DCHECK_GT(image_data->decode.ref_count, 0u);
   DCHECK_GT(image_data->upload.ref_count, 0u);
+
+  sk_sp<SkColorSpace> target_color_space =
+      SupportsColorSpaceConversion() &&
+              draw_image.target_color_space().IsValid()
+          ? draw_image.target_color_space().ToSkColorSpace()
+          : nullptr;
+  if (target_color_space &&
+      SkColorSpace::Equals(target_color_space.get(),
+                           image_data->decode.image()->colorSpace())) {
+    target_color_space = nullptr;
+  }
 
   if (image_data->mode == DecodedDataMode::kTransferCache) {
     DCHECK(use_transfer_cache_);
@@ -1423,11 +1512,8 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     if (!image_data->decode.image()->peekPixels(&pixmap))
       return;
 
-    sk_sp<SkColorSpace> color_space =
-        SupportsColorSpaceConversion()
-            ? draw_image.target_color_space().ToSkColorSpace()
-            : nullptr;
-    ClientImageTransferCacheEntry image_entry(&pixmap, color_space.get());
+    ClientImageTransferCacheEntry image_entry(&pixmap, target_color_space.get(),
+                                              image_data->needs_mips);
     size_t size = image_entry.SerializedSize();
     void* data = context_->ContextSupport()->MapTransferCacheEntry(size);
     // TODO(piman): handle error (failed to allocate/map shm)
@@ -1454,50 +1540,40 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
   if (image_data->mode == DecodedDataMode::kGpu) {
     DCHECK(!use_transfer_cache_);
     base::AutoUnlock unlock(lock_);
-    uploaded_image =
-        uploaded_image->makeTextureImage(context_->GrContext(), nullptr);
-
-    if (uploaded_image && SupportsColorSpaceConversion() &&
-        draw_image.target_color_space().IsValid()) {
-      TRACE_EVENT0("cc", "GpuImageDecodeCache::UploadImage - color conversion");
-      sk_sp<SkImage> pre_converted_image = uploaded_image;
-      uploaded_image = uploaded_image->makeColorSpace(
-          draw_image.target_color_space().ToSkColorSpace(),
-          SkTransferFunctionBehavior::kIgnore);
-
-      // If we created a new image while converting colorspace, we should
-      // destroy the previous image without caching it.
-      if (uploaded_image != pre_converted_image)
-        DeleteSkImageAndPreventCaching(context_,
-                                       std::move(pre_converted_image));
-    }
+    uploaded_image = MakeTextureImage(
+        context_, std::move(uploaded_image), target_color_space,
+        image_data->needs_mips ? GrMipMapped::kYes : GrMipMapped::kNo);
   }
 
   // At-raster may have decoded this while we were unlocked. If so, ignore our
   // result.
-  if (!image_data->upload.image()) {
-    // Take ownership of any GL texture backing for the SkImage. This allows
-    // us to use the image with the discardable system.
-    if (uploaded_image) {
-      uploaded_image = TakeOwnershipOfSkImageBacking(context_->GrContext(),
-                                                     std::move(uploaded_image));
-    }
+  if (image_data->upload.image()) {
+    if (uploaded_image)
+      DeleteSkImageAndPreventCaching(context_, std::move(uploaded_image));
+    return;
+  }
 
-    // TODO(crbug.com/740737): uploaded_image is sometimes null in certain
-    // context-lost situations.
-    if (!uploaded_image)
-      return;
+  // Take ownership of any GL texture backing for the SkImage. This allows
+  // us to use the image with the discardable system.
+  if (uploaded_image) {
+    uploaded_image = TakeOwnershipOfSkImageBacking(context_->GrContext(),
+                                                   std::move(uploaded_image));
+  }
 
-    image_data->upload.SetImage(std::move(uploaded_image));
+  // TODO(crbug.com/740737): uploaded_image is sometimes null in certain
+  // context-lost situations.
+  if (!uploaded_image)
+    return;
 
-    // If we have a new GPU-backed image, initialize it for use in the GPU
-    // discardable system.
-    if (image_data->mode == DecodedDataMode::kGpu) {
-      // Notify the discardable system of this image so it will count against
-      // budgets.
-      context_->ContextGL()->InitializeDiscardableTextureCHROMIUM(
-          image_data->upload.gl_id());
-    }
+  image_data->upload.SetImage(std::move(uploaded_image));
+
+  // If we have a new GPU-backed image, initialize it for use in the GPU
+  // discardable system.
+  if (image_data->mode == DecodedDataMode::kGpu) {
+    // Notify the discardable system of this image so it will count against
+    // budgets.
+    context_->ContextGL()->InitializeDiscardableTextureCHROMIUM(
+        image_data->upload.gl_id());
   }
 }
 
@@ -1508,8 +1584,10 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
   lock_.AssertAcquired();
 
   WillAddCacheEntry(draw_image);
-  int mip_level = CalculateUploadScaleMipLevel(draw_image);
-  SkImageInfo image_info = CreateImageInfoForDrawImage(draw_image, mip_level);
+  int upload_scale_mip_level = CalculateUploadScaleMipLevel(draw_image);
+  bool needs_mips = ShouldGenerateMips(draw_image, upload_scale_mip_level);
+  SkImageInfo image_info =
+      CreateImageInfoForDrawImage(draw_image, upload_scale_mip_level);
 
   DecodedDataMode mode;
   if (use_transfer_cache_) {
@@ -1539,11 +1617,12 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
   // However, if the image will be scaled or color converts on the cpu, we
   // consider it a lazy image and cache the scaled result in discardable memory.
   const bool is_bitmap_backed = !draw_image.paint_image().IsLazyGenerated() &&
-                                mip_level == 0 &&
+                                upload_scale_mip_level == 0 &&
                                 !cache_color_conversion_on_cpu;
-  return base::WrapRefCounted(new ImageData(
-      mode, data_size, draw_image.target_color_space(),
-      CalculateDesiredFilterQuality(draw_image), mip_level, is_bitmap_backed));
+  return base::WrapRefCounted(
+      new ImageData(mode, data_size, draw_image.target_color_space(),
+                    CalculateDesiredFilterQuality(draw_image),
+                    upload_scale_mip_level, needs_mips, is_bitmap_backed));
 }
 
 void GpuImageDecodeCache::WillAddCacheEntry(const DrawImage& draw_image) {
@@ -1755,9 +1834,9 @@ GpuImageDecodeCache::ImageData* GpuImageDecodeCache::GetImageDataForDrawImage(
 // the provided |draw_image|.
 bool GpuImageDecodeCache::IsCompatible(const ImageData* image_data,
                                        const DrawImage& draw_image) const {
-  bool is_scaled = image_data->mip_level != 0;
-  bool scale_is_compatible =
-      CalculateUploadScaleMipLevel(draw_image) >= image_data->mip_level;
+  bool is_scaled = image_data->upload_scale_mip_level != 0;
+  bool scale_is_compatible = CalculateUploadScaleMipLevel(draw_image) >=
+                             image_data->upload_scale_mip_level;
   bool quality_is_compatible =
       CalculateDesiredFilterQuality(draw_image) <= image_data->quality;
   bool color_is_compatible =
@@ -1867,6 +1946,58 @@ void GpuImageDecodeCache::CheckContextLockAcquiredIfNecessary() {
   if (!context_->GetLock())
     return;
   context_->GetLock()->AssertAcquired();
+}
+
+void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
+                                             ImageData* image_data) {
+  CheckContextLockAcquiredIfNecessary();
+
+  // If we already have mips, nothing to do.
+  if (image_data->needs_mips)
+    return;
+
+  bool needs_mips =
+      ShouldGenerateMips(draw_image, image_data->upload_scale_mip_level);
+  if (!needs_mips)
+    return;
+
+  image_data->needs_mips = true;
+
+  // If we have no uploaded image, nothing to do other than update needs_mips.
+  // Mips will be generated during later upload.
+  if (!image_data->HasUploadedData() ||
+      image_data->mode != DecodedDataMode::kGpu)
+    return;
+
+  // Need to generate mips. Take a reference on the image we're about to delete,
+  // delaying deletion.
+  sk_sp<SkImage> previous_image = image_data->upload.image();
+
+  // Generate a new image from the previous, adding mips.
+  sk_sp<SkImage> image_with_mips = previous_image->makeTextureImage(
+      context_->GrContext(), nullptr, GrMipMapped::kYes);
+
+  // Handle lost context.
+  if (!image_with_mips)
+    return;
+
+  // We *must* get a new SkImage, or we will have lifetime issues.
+  DCHECK_NE(image_with_mips.get(), previous_image.get());
+
+  // Skia owns our new image, take ownership.
+  sk_sp<SkImage> image_with_mips_owned = TakeOwnershipOfSkImageBacking(
+      context_->GrContext(), std::move(image_with_mips));
+
+  // Handle lost context
+  if (!image_with_mips_owned)
+    return;
+
+  // Delete the previous image and set the new one to the cache.
+  images_pending_deletion_.push_back(image_data->upload.image());
+  image_data->upload.Reset();
+  image_data->upload.SetImage(std::move(image_with_mips_owned));
+  context_->ContextGL()->InitializeDiscardableTextureCHROMIUM(
+      image_data->upload.gl_id());
 }
 
 }  // namespace cc

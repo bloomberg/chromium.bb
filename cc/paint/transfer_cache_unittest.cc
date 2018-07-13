@@ -184,7 +184,7 @@ TEST_F(TransferCacheTest, ImageMemoryTransfer) {
   SkPixmap pixmap(info, data.data(), info.minRowBytes());
 
   // Add the entry to the transfer cache
-  ClientImageTransferCacheEntry client_entry(&pixmap, nullptr);
+  ClientImageTransferCacheEntry client_entry(&pixmap, nullptr, false);
   CreateEntry(client_entry);
   ri()->Finish();
 
