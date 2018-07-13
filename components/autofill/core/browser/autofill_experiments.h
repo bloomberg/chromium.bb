@@ -39,6 +39,7 @@ extern const base::Feature kAutofillSuppressDisusedCreditCards;
 extern const base::Feature kAutofillUpstream;
 extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;
 extern const base::Feature kAutofillUpstreamAlwaysRequestCardholderName;
+extern const base::Feature kAutofillUpstreamBlankCardholderNameField;
 extern const base::Feature kAutofillUpstreamEditableCardholderName;
 extern const base::Feature kAutofillUpstreamSendPanFirstSix;
 extern const base::Feature kAutofillUpstreamUpdatePromptExplanation;
@@ -82,6 +83,12 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
 // Google Payments customer.  Note that this will override the detected
 // cardholder name, if one was found.
 bool IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled();
+
+// For experimental purposes; not to be made available in chrome://flags. When
+// enabled and Chrome Upstream requests the cardholder name in the offer-to-save
+// dialog, the field will be blank instead of being prefilled with the name from
+// the user's Google Account.
+bool IsAutofillUpstreamBlankCardholderNameFieldExperimentEnabled();
 
 // Returns whether the experiment is enabled where Chrome Upstream can request
 // the user to enter/confirm cardholder name in the offer-to-save bubble if it
