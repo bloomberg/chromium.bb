@@ -35,8 +35,8 @@ void SetGamepadButton(Gamepad* pad,
 }  // namespace
 
 OpenVRGamepadDataFetcher::Factory::Factory(unsigned int display_id,
-                                           vr::IVRSystem* vr)
-    : display_id_(display_id), vr_system_(vr) {
+                                           OpenVRGamepadDataProvider* provider)
+    : display_id_(display_id), provider_(provider) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
 }
 
@@ -46,17 +46,21 @@ OpenVRGamepadDataFetcher::Factory::~Factory() {
 
 std::unique_ptr<GamepadDataFetcher>
 OpenVRGamepadDataFetcher::Factory::CreateDataFetcher() {
-  return std::make_unique<OpenVRGamepadDataFetcher>(display_id_, vr_system_);
+  return std::make_unique<OpenVRGamepadDataFetcher>(display_id_, provider_);
 }
 
 GamepadSource OpenVRGamepadDataFetcher::Factory::source() {
   return GAMEPAD_SOURCE_OPENVR;
 }
 
-OpenVRGamepadDataFetcher::OpenVRGamepadDataFetcher(unsigned int display_id,
-                                                   vr::IVRSystem* vr)
-    : display_id_(display_id), vr_system_(vr) {
+OpenVRGamepadDataFetcher::OpenVRGamepadDataFetcher(
+    unsigned int display_id,
+    OpenVRGamepadDataProvider* provider)
+    : display_id_(display_id) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
+
+  // Register for updates.
+  provider->RegisterDataFetcher(this);
 }
 
 OpenVRGamepadDataFetcher::~OpenVRGamepadDataFetcher() {
@@ -70,17 +74,11 @@ GamepadSource OpenVRGamepadDataFetcher::source() {
 void OpenVRGamepadDataFetcher::OnAddedToProvider() {}
 
 void OpenVRGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
-  if (!vr_system_)
-    return;
+  base::AutoLock lock(lock_);
 
-  vr::TrackedDevicePose_t tracked_devices_poses[vr::k_unMaxTrackedDeviceCount];
-  vr_system_->GetDeviceToAbsoluteTrackingPose(vr::TrackingUniverseSeated, 0.0f,
-                                              tracked_devices_poses,
-                                              vr::k_unMaxTrackedDeviceCount);
-
+  vr::TrackedDevicePose_t* tracked_devices_poses = data_.tracked_devices_poses;
   for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i) {
-    if (vr_system_->GetTrackedDeviceClass(i) !=
-        vr::TrackedDeviceClass_Controller)
+    if (data_.device_class[i] != vr::TrackedDeviceClass_Controller)
       continue;
 
     PadState* state = GetPadState(i);
@@ -89,9 +87,8 @@ void OpenVRGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
 
     Gamepad& pad = state->data;
 
-    vr::VRControllerState_t controller_state;
-    if (vr_system_->GetControllerState(i, &controller_state,
-                                       sizeof(controller_state))) {
+    vr::VRControllerState_t& controller_state = data_.controller_state[i];
+    if (data_.have_controller_state[i]) {
       pad.timestamp = CurrentTimeInMicroseconds();
       pad.connected = true;
       pad.is_xr = true;
@@ -108,8 +105,7 @@ void OpenVRGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
 
       pad.display_id = display_id_;
 
-      vr::ETrackedControllerRole hand =
-          vr_system_->GetControllerRoleForTrackedDeviceIndex(i);
+      vr::ETrackedControllerRole hand = data_.hand[i];
 
       switch (hand) {
         case vr::TrackedControllerRole_Invalid:
@@ -123,16 +119,13 @@ void OpenVRGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
           break;
       }
 
-      uint64_t supported_buttons = vr_system_->GetUint64TrackedDeviceProperty(
-          i, vr::Prop_SupportedButtons_Uint64);
+      uint64_t supported_buttons = data_.supported_buttons[i];
 
       pad.buttons_length = 0;
       pad.axes_length = 0;
 
       for (unsigned int j = 0; j < vr::k_unControllerStateAxisCount; ++j) {
-        int32_t axis_type = vr_system_->GetInt32TrackedDeviceProperty(
-            i, static_cast<vr::TrackedDeviceProperty>(vr::Prop_Axis0Type_Int32 +
-                                                      j));
+        int32_t axis_type = data_.axis_type[i][j];
         switch (axis_type) {
           case vr::k_eControllerAxis_Joystick:
           case vr::k_eControllerAxis_TrackPad:
@@ -213,6 +206,11 @@ void OpenVRGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
       pad.pose.linear_velocity.not_null = false;
     }
   }
+}
+
+void OpenVRGamepadDataFetcher::UpdateGamepadData(OpenVRGamepadState data) {
+  base::AutoLock lock(lock_);
+  data_ = data;
 }
 
 void OpenVRGamepadDataFetcher::PauseHint(bool paused) {}

@@ -9,21 +9,22 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "device/vr/openvr/openvr_api_wrapper.h"
+#include "device/vr/openvr/openvr_gamepad_data_fetcher.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace vr {
-class IVRSystem;
-}  // namespace vr
-
 namespace device {
 
 class OpenVRRenderLoop;
+struct OpenVRGamepadState;
 
-class OpenVRDevice : public VRDeviceBase, public mojom::XRSessionController {
+class OpenVRDevice : public VRDeviceBase,
+                     public mojom::XRSessionController,
+                     public OpenVRGamepadDataProvider {
  public:
-  OpenVRDevice(vr::IVRSystem* vr);
+  OpenVRDevice();
   ~OpenVRDevice() override;
 
   void Shutdown();
@@ -42,6 +43,8 @@ class OpenVRDevice : public VRDeviceBase, public mojom::XRSessionController {
       mojom::VRPresentationProviderPtrInfo provider_info,
       mojom::VRDisplayFrameTransportOptionsPtr transport_options);
 
+  bool IsInitialized() { return !!openvr_; }
+
  private:
   // VRDeviceBase
   void OnMagicWindowFrameDataRequest(
@@ -51,16 +54,18 @@ class OpenVRDevice : public VRDeviceBase, public mojom::XRSessionController {
   void SetFrameDataRestricted(bool restricted) override;
 
   void OnPresentingControllerMojoConnectionError();
+  void OnPresentationEnded();
 
-  // TODO (BillOrr): This should not be a unique_ptr because the render_loop_
-  // binds to VRVSyncProvider requests, so its lifetime should be tied to the
-  // lifetime of that binding.
+  void RegisterDataFetcher(OpenVRGamepadDataFetcher*) override;
+  void OnGamepadUpdated(OpenVRGamepadState state);
+
   std::unique_ptr<OpenVRRenderLoop> render_loop_;
   mojom::VRDisplayInfoPtr display_info_;
-  vr::IVRSystem* vr_system_;
+  std::unique_ptr<OpenVRWrapper> openvr_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   mojo::Binding<mojom::XRSessionController> exclusive_controller_binding_;
+  OpenVRGamepadDataFetcher* gamepad_data_fetcher_ = nullptr;
 
   base::WeakPtrFactory<OpenVRDevice> weak_ptr_factory_;
 
