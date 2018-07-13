@@ -78,6 +78,7 @@ class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
       gles2::CopyTextureCHROMIUMResourceManager*
           copy_texture_resource_manager) = 0;
 
+  virtual int DecoderIdForTest() = 0;
   virtual ServiceTransferCache* GetTransferCacheForTest() = 0;
 
   virtual void SetUpForRasterCHROMIUMForTest() = 0;

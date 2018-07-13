@@ -9,7 +9,6 @@
 
 #include "base/containers/mru_cache.h"
 #include "base/containers/span.h"
-#include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "cc/paint/transfer_cache_entry.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
@@ -27,27 +26,32 @@ namespace gpu {
 // cache limits. If the cache exceeds its specified limits, unlocked transfer
 // cache entries may be deleted.
 class GPU_GLES2_EXPORT ServiceTransferCache
-    : public base::MemoryCoordinatorClient,
-      public base::trace_event::MemoryDumpProvider {
+    : public base::trace_event::MemoryDumpProvider {
  public:
+  struct GPU_GLES2_EXPORT EntryKey {
+    EntryKey(int decoder_id,
+             cc::TransferCacheEntryType entry_type,
+             uint32_t entry_id);
+    int decoder_id;
+    cc::TransferCacheEntryType entry_type;
+    uint32_t entry_id;
+  };
+
   ServiceTransferCache();
   ~ServiceTransferCache() override;
 
-  bool CreateLockedEntry(cc::TransferCacheEntryType entry_type,
-                         uint32_t entry_id,
+  bool CreateLockedEntry(const EntryKey& key,
                          ServiceDiscardableHandle handle,
                          GrContext* context,
                          base::span<uint8_t> data);
-  void CreateLocalEntry(uint32_t entry_id,
+  void CreateLocalEntry(const EntryKey& key,
                         std::unique_ptr<cc::ServiceTransferCacheEntry> entry);
-  bool UnlockEntry(cc::TransferCacheEntryType entry_type, uint32_t entry_id);
-  bool DeleteEntry(cc::TransferCacheEntryType entry_type, uint32_t entry_id);
-  cc::ServiceTransferCacheEntry* GetEntry(cc::TransferCacheEntryType entry_type,
-                                          uint32_t entry_id);
+  bool UnlockEntry(const EntryKey& key);
+  bool DeleteEntry(const EntryKey& key);
+  cc::ServiceTransferCacheEntry* GetEntry(const EntryKey& key);
 
-  // base::MemoryCoordinatorClient implementation.
-  void OnMemoryStateChange(base::MemoryState state) override;
-  void OnPurgeMemory() override;
+  void PurgeMemory(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -62,8 +66,6 @@ class GPU_GLES2_EXPORT ServiceTransferCache
 
  private:
   void EnforceLimits();
-  void OnMemoryPressure(
-      base::MemoryPressureListener::MemoryPressureLevel level);
 
   struct CacheEntryInternal {
     CacheEntryInternal(base::Optional<ServiceDiscardableHandle> handle,
@@ -74,12 +76,19 @@ class GPU_GLES2_EXPORT ServiceTransferCache
     base::Optional<ServiceDiscardableHandle> handle;
     std::unique_ptr<cc::ServiceTransferCacheEntry> entry;
   };
-  using EntryCache =
-      base::MRUCache<std::pair<cc::TransferCacheEntryType, uint32_t>,
-                     CacheEntryInternal>;
-  EntryCache entries_;
 
-  base::MemoryState memory_state_ = base::MemoryState::NORMAL;
+  struct EntryKeyComp {
+    bool operator()(const EntryKey& lhs, const EntryKey& rhs) const {
+      if (lhs.decoder_id != rhs.decoder_id)
+        return lhs.decoder_id < rhs.decoder_id;
+      if (lhs.entry_type != rhs.entry_type)
+        return lhs.entry_type < rhs.entry_type;
+      return lhs.entry_id < rhs.entry_id;
+    }
+  };
+
+  using EntryCache = base::MRUCache<EntryKey, CacheEntryInternal, EntryKeyComp>;
+  EntryCache entries_;
 
   // Total size of all |entries_|. The same as summing
   // GpuDiscardableEntry::size for each entry.
@@ -87,8 +96,6 @@ class GPU_GLES2_EXPORT ServiceTransferCache
 
   // The limit above which the cache will start evicting resources.
   size_t cache_size_limit_ = 0;
-
-  base::MemoryPressureListener memory_pressure_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceTransferCache);
 };

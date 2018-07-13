@@ -15,22 +15,12 @@
 
 namespace gpu {
 namespace {
-size_t CacheSizeLimit(base::MemoryState state) {
-  size_t normal_state_memory_usage = 128 * 1024 * 1024;
-  if (base::SysInfo::IsLowEndDevice())
-    normal_state_memory_usage = 4 * 1024 * 1024;
 
-  switch (state) {
-    case base::MemoryState::NORMAL:
-      return normal_state_memory_usage;
-    case base::MemoryState::THROTTLED:
-      return normal_state_memory_usage / 2;
-    case base::MemoryState::SUSPENDED:
-      return 0u;
-    case base::MemoryState::UNKNOWN:
-      NOTREACHED();
-  }
-  return normal_state_memory_usage;
+size_t CacheSizeLimit() {
+  size_t memory_usage = 128 * 1024 * 1024;
+  if (base::SysInfo::IsLowEndDevice())
+    memory_usage = 4 * 1024 * 1024;
+  return memory_usage;
 }
 
 }  // namespace
@@ -50,13 +40,7 @@ ServiceTransferCache::CacheEntryInternal::operator=(
     CacheEntryInternal&& other) = default;
 
 ServiceTransferCache::ServiceTransferCache()
-    : entries_(EntryCache::NO_AUTO_EVICT),
-      cache_size_limit_(CacheSizeLimit(memory_state_)),
-      memory_pressure_listener_(
-          base::BindRepeating(&ServiceTransferCache::OnMemoryPressure,
-                              base::Unretained(this))) {
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
-
+    : entries_(EntryCache::NO_AUTO_EVICT), cache_size_limit_(CacheSizeLimit()) {
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
   if (base::ThreadTaskRunnerHandle::IsSet()) {
@@ -66,24 +50,20 @@ ServiceTransferCache::ServiceTransferCache()
 }
 
 ServiceTransferCache::~ServiceTransferCache() {
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 }
 
-bool ServiceTransferCache::CreateLockedEntry(
-    cc::TransferCacheEntryType entry_type,
-    uint32_t entry_id,
-    ServiceDiscardableHandle handle,
-    GrContext* context,
-    base::span<uint8_t> data) {
-  auto key = std::make_pair(entry_type, entry_id);
+bool ServiceTransferCache::CreateLockedEntry(const EntryKey& key,
+                                             ServiceDiscardableHandle handle,
+                                             GrContext* context,
+                                             base::span<uint8_t> data) {
   auto found = entries_.Peek(key);
   if (found != entries_.end())
     return false;
 
   std::unique_ptr<cc::ServiceTransferCacheEntry> entry =
-      cc::ServiceTransferCacheEntry::Create(entry_type);
+      cc::ServiceTransferCacheEntry::Create(key.entry_type);
   if (!entry)
     return false;
 
@@ -97,23 +77,21 @@ bool ServiceTransferCache::CreateLockedEntry(
 }
 
 void ServiceTransferCache::CreateLocalEntry(
-    uint32_t entry_id,
+    const EntryKey& key,
     std::unique_ptr<cc::ServiceTransferCacheEntry> entry) {
   if (!entry)
     return;
 
-  DeleteEntry(entry->Type(), entry_id);
+  DCHECK_EQ(entry->Type(), key.entry_type);
+  DeleteEntry(key);
 
   total_size_ += entry->CachedSize();
 
-  auto key = std::make_pair(entry->Type(), entry_id);
   entries_.Put(key, CacheEntryInternal(base::nullopt, std::move(entry)));
   EnforceLimits();
 }
 
-bool ServiceTransferCache::UnlockEntry(cc::TransferCacheEntryType entry_type,
-                                       uint32_t entry_id) {
-  auto key = std::make_pair(entry_type, entry_id);
+bool ServiceTransferCache::UnlockEntry(const EntryKey& key) {
   auto found = entries_.Peek(key);
   if (found == entries_.end())
     return false;
@@ -124,9 +102,7 @@ bool ServiceTransferCache::UnlockEntry(cc::TransferCacheEntryType entry_type,
   return true;
 }
 
-bool ServiceTransferCache::DeleteEntry(cc::TransferCacheEntryType entry_type,
-                                       uint32_t entry_id) {
-  auto key = std::make_pair(entry_type, entry_id);
+bool ServiceTransferCache::DeleteEntry(const EntryKey& key) {
   auto found = entries_.Peek(key);
   if (found == entries_.end())
     return false;
@@ -139,9 +115,7 @@ bool ServiceTransferCache::DeleteEntry(cc::TransferCacheEntryType entry_type,
 }
 
 cc::ServiceTransferCacheEntry* ServiceTransferCache::GetEntry(
-    cc::TransferCacheEntryType entry_type,
-    uint32_t entry_id) {
-  auto key = std::make_pair(entry_type, entry_id);
+    const EntryKey& key) {
   auto found = entries_.Get(key);
   if (found == entries_.end())
     return nullptr;
@@ -163,21 +137,23 @@ void ServiceTransferCache::EnforceLimits() {
   }
 }
 
-void ServiceTransferCache::OnMemoryPressure(
-    base::MemoryPressureListener::MemoryPressureLevel level) {
-  if (level == base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL)
-    OnPurgeMemory();
-}
+void ServiceTransferCache::PurgeMemory(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  switch (memory_pressure_level) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+      // This function is only called with moderate or critical pressure.
+      NOTREACHED();
+      return;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      cache_size_limit_ = cache_size_limit_ / 4;
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      cache_size_limit_ = 0u;
+      break;
+  }
 
-void ServiceTransferCache::OnMemoryStateChange(base::MemoryState state) {
-  memory_state_ = state;
-  cache_size_limit_ = CacheSizeLimit(memory_state_);
-}
-
-void ServiceTransferCache::OnPurgeMemory() {
-  cache_size_limit_ = 0u;
   EnforceLimits();
-  cache_size_limit_ = CacheSizeLimit(memory_state_);
+  cache_size_limit_ = CacheSizeLimit();
 }
 
 bool ServiceTransferCache::OnMemoryDump(
@@ -200,8 +176,8 @@ bool ServiceTransferCache::OnMemoryDump(
   }
 
   for (auto it = entries_.begin(); it != entries_.end(); it++) {
-    uint32_t entry_id = it->first.second;
-    auto entry_type = it->first.first;
+    uint32_t entry_id = it->first.entry_id;
+    auto entry_type = it->first.entry_type;
     const auto* entry = it->second.entry.get();
 
     std::string dump_name;
@@ -224,5 +200,10 @@ bool ServiceTransferCache::OnMemoryDump(
 
   return true;
 }
+
+ServiceTransferCache::EntryKey::EntryKey(int decoder_id,
+                                         cc::TransferCacheEntryType entry_type,
+                                         uint32_t entry_id)
+    : decoder_id(decoder_id), entry_type(entry_type), entry_id(entry_id) {}
 
 }  // namespace gpu

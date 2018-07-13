@@ -6,6 +6,7 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
@@ -69,6 +70,8 @@ void RasterDecoderContextState::InitializeGrContext(
     gr_context->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
                                        max_resource_cache_bytes);
   }
+
+  transfer_cache = std::make_unique<ServiceTransferCache>();
 }
 
 bool RasterDecoderContextState::OnMemoryDump(
@@ -79,12 +82,32 @@ bool RasterDecoderContextState::OnMemoryDump(
   return true;
 }
 
-void RasterDecoderContextState::PurgeGrCache() {
-  if (!gr_context)
+void RasterDecoderContextState::PurgeMemory(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  if (!gr_context) {
+    DCHECK(!transfer_cache);
     return;
+  }
 
+  // Ensure the context is current before doing any GPU cleanup.
   context->MakeCurrent(surface.get());
-  gr_context->freeGpuResources();
+
+  switch (memory_pressure_level) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+      // This function is only called with moderate or critical pressure.
+      NOTREACHED();
+      return;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      // With moderate pressure, clear any unlocked resources.
+      gr_context->purgeUnlockedResources(true /* scratchResourcesOnly */);
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      // With critical pressure, purge as much as possible.
+      gr_context->freeGpuResources();
+      break;
+  }
+
+  transfer_cache->PurgeMemory(memory_pressure_level);
 }
 
 }  // namespace raster

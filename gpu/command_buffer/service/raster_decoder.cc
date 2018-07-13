@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/atomic_sequence_num.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -96,6 +97,8 @@ namespace gpu {
 namespace raster {
 
 namespace {
+
+base::AtomicSequenceNumber g_raster_decoder_id;
 
 class TextureMetadata {
  public:
@@ -449,6 +452,7 @@ class RasterDecoderImpl final : public RasterDecoder,
     NOTIMPLEMENTED();
     return false;
   }
+  int DecoderIdForTest() override;
   ServiceTransferCache* GetTransferCacheForTest() override;
   void SetUpForRasterCHROMIUMForTest() override;
 
@@ -479,6 +483,9 @@ class RasterDecoderImpl final : public RasterDecoder,
   gl::GLApi* api() const { return state_.api(); }
   GrContext* gr_context() const {
     return raster_decoder_context_state_->gr_context.get();
+  }
+  ServiceTransferCache* transfer_cache() {
+    return raster_decoder_context_state_->transfer_cache.get();
   }
 
   const FeatureInfo::FeatureFlags& features() const {
@@ -727,6 +734,8 @@ class RasterDecoderImpl final : public RasterDecoder,
   // A table of CommandInfo for all the commands.
   static const CommandInfo command_info[kNumCommands - kFirstRasterCommand];
 
+  const int raster_decoder_id_;
+
   // Most recent generation of the TextureManager.  If this no longer matches
   // the current generation when our context becomes current, then we'll rebind
   // all the textures to stay up to date with Texture::service_id() changes.
@@ -763,14 +772,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   std::unique_ptr<QueryManager> query_manager_;
 
   std::unique_ptr<VertexArrayManager> vertex_array_manager_;
-
-  // ServiceTransferCache uses Ids based on transfer buffer shm_id+offset, which
-  // are guaranteed to be unique within the scope of the TransferBufferManager
-  // which generates them. Because of this, |transfer_cache_| must have a
-  // narrower scope than |transfer_buffer_manager_|.
-  // In the future, we could add necessary scoping Id(s) to allow a single
-  // ServiceTransferCache to be shared among multiple contexts / channels.
-  std::unique_ptr<ServiceTransferCache> transfer_cache_;
 
   // All the state for this context.
   gles2::ContextState state_;
@@ -880,6 +881,7 @@ RasterDecoderImpl::RasterDecoderImpl(
     ContextGroup* group,
     scoped_refptr<RasterDecoderContextState> raster_decoder_context_state)
     : RasterDecoder(command_buffer_service, outputter),
+      raster_decoder_id_(g_raster_decoder_id.GetNext() + 1),
       client_(client),
       logger_(&debug_marker_manager_, client),
       group_(group),
@@ -1013,10 +1015,7 @@ ContextResult RasterDecoderImpl::Initialize(
     }
 
     supports_oop_raster_ = !!raster_decoder_context_state_->gr_context;
-    if (supports_oop_raster_) {
-        transfer_cache_ = std::make_unique<ServiceTransferCache>();
-      }
-    }
+  }
 
   return ContextResult::kSuccess;
 }
@@ -1803,8 +1802,12 @@ bool RasterDecoderImpl::ClearCompressedTextureLevel(gles2::Texture* texture,
   return true;
 }
 
+int RasterDecoderImpl::DecoderIdForTest() {
+  return raster_decoder_id_;
+}
+
 ServiceTransferCache* RasterDecoderImpl::GetTransferCacheForTest() {
-  return transfer_cache_.get();
+  return raster_decoder_context_state_->transfer_cache.get();
 }
 
 void RasterDecoderImpl::SetUpForRasterCHROMIUMForTest() {
@@ -2887,8 +2890,9 @@ class TransferCacheDeserializeHelperImpl final
     : public cc::TransferCacheDeserializeHelper {
  public:
   explicit TransferCacheDeserializeHelperImpl(
+      int raster_decoder_id,
       ServiceTransferCache* transfer_cache)
-      : transfer_cache_(transfer_cache) {
+      : raster_decoder_id_(raster_decoder_id), transfer_cache_(transfer_cache) {
     DCHECK(transfer_cache_);
   }
   ~TransferCacheDeserializeHelperImpl() override = default;
@@ -2896,15 +2900,21 @@ class TransferCacheDeserializeHelperImpl final
   void CreateLocalEntry(
       uint32_t id,
       std::unique_ptr<cc::ServiceTransferCacheEntry> entry) override {
-    transfer_cache_->CreateLocalEntry(id, std::move(entry));
+    auto type = entry->Type();
+    transfer_cache_->CreateLocalEntry(
+        ServiceTransferCache::EntryKey(raster_decoder_id_, type, id),
+        std::move(entry));
   }
 
  private:
   cc::ServiceTransferCacheEntry* GetEntryInternal(
       cc::TransferCacheEntryType entry_type,
       uint32_t entry_id) override {
-    return transfer_cache_->GetEntry(entry_type, entry_id);
+    return transfer_cache_->GetEntry(ServiceTransferCache::EntryKey(
+        raster_decoder_id_, entry_type, entry_id));
   }
+
+  const int raster_decoder_id_;
   ServiceTransferCache* const transfer_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(TransferCacheDeserializeHelperImpl);
@@ -3037,7 +3047,7 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
   }
 
   TransferCacheDeserializeHelperImpl transfer_cache_deserializer(
-      transfer_cache_.get());
+      raster_decoder_id_, transfer_cache());
   auto* color_space_entry =
       transfer_cache_deserializer
           .GetEntryAs<cc::ServiceColorSpaceTransferCacheEntry>(
@@ -3045,6 +3055,7 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
   if (!color_space_entry || !color_space_entry->color_space().IsValid()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                        "failed to find valid color space");
+    sk_surface_.reset();
     return;
   }
   raster_canvas_ = SkCreateColorSpaceXformCanvas(
@@ -3082,7 +3093,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
                        "RasterCHROMIUM without BeginRasterCHROMIUM");
     return;
   }
-  DCHECK(transfer_cache_);
+  DCHECK(transfer_cache());
   raster_decoder_context_state_->need_context_state_reset = true;
 
   if (font_shm_size > 0) {
@@ -3120,7 +3131,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   SkCanvas* canvas = raster_canvas_.get();
   SkMatrix original_ctm;
   cc::PlaybackParams playback_params(nullptr, original_ctm);
-  TransferCacheDeserializeHelperImpl impl(transfer_cache_.get());
+  TransferCacheDeserializeHelperImpl impl(raster_decoder_id_, transfer_cache());
   cc::PaintOp::DeserializeOptions options(&impl, font_manager_.strike_client());
 
   int op_idx = 0;
@@ -3191,7 +3202,7 @@ void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(
     return;
   }
   DCHECK(gr_context());
-  DCHECK(transfer_cache_);
+  DCHECK(transfer_cache());
 
   // Validate the type we are about to create.
   cc::TransferCacheEntryType entry_type;
@@ -3221,9 +3232,10 @@ void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(
   ServiceDiscardableHandle handle(std::move(handle_buffer), handle_shm_offset,
                                   handle_shm_id);
 
-  if (!transfer_cache_->CreateLockedEntry(
-          entry_type, entry_id, handle, gr_context(),
-          base::make_span(data_memory, data_size))) {
+  if (!transfer_cache()->CreateLockedEntry(
+          ServiceTransferCache::EntryKey(raster_decoder_id_, entry_type,
+                                         entry_id),
+          handle, gr_context(), base::make_span(data_memory, data_size))) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
                        "Failure to deserialize transfer cache entry.");
     return;
@@ -3239,7 +3251,7 @@ void RasterDecoderImpl::DoUnlockTransferCacheEntryINTERNAL(
         "Attempt to use OOP transfer cache on a context without OOP raster.");
     return;
   }
-  DCHECK(transfer_cache_);
+  DCHECK(transfer_cache());
   cc::TransferCacheEntryType entry_type;
   if (!cc::ServiceTransferCacheEntry::SafeConvertToType(raw_entry_type,
                                                         &entry_type)) {
@@ -3249,7 +3261,8 @@ void RasterDecoderImpl::DoUnlockTransferCacheEntryINTERNAL(
     return;
   }
 
-  if (!transfer_cache_->UnlockEntry(entry_type, entry_id)) {
+  if (!transfer_cache()->UnlockEntry(ServiceTransferCache::EntryKey(
+          raster_decoder_id_, entry_type, entry_id))) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glUnlockTransferCacheEntryINTERNAL",
                        "Attempt to unlock an invalid ID");
   }
@@ -3264,7 +3277,7 @@ void RasterDecoderImpl::DoDeleteTransferCacheEntryINTERNAL(
         "Attempt to use OOP transfer cache on a context without OOP raster.");
     return;
   }
-  DCHECK(transfer_cache_);
+  DCHECK(transfer_cache());
   cc::TransferCacheEntryType entry_type;
   if (!cc::ServiceTransferCacheEntry::SafeConvertToType(raw_entry_type,
                                                         &entry_type)) {
@@ -3274,7 +3287,8 @@ void RasterDecoderImpl::DoDeleteTransferCacheEntryINTERNAL(
     return;
   }
 
-  if (!transfer_cache_->DeleteEntry(entry_type, entry_id)) {
+  if (!transfer_cache()->DeleteEntry(ServiceTransferCache::EntryKey(
+          raster_decoder_id_, entry_type, entry_id))) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDeleteTransferCacheEntryINTERNAL",
                        "Attempt to delete an invalid ID");
   }
