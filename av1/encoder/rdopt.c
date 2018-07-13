@@ -7697,6 +7697,77 @@ static INLINE int64_t interpolation_filter_rd(
   return 0;
 }
 
+// Find the best rd filter in horizontal direction
+static INLINE int find_best_horiz_interp_filter_rd(
+    MACROBLOCK *const x, const AV1_COMP *const cpi, BLOCK_SIZE bsize,
+    int mi_row, int mi_col, BUFFER_SET *const orig_dst, int64_t *const rd,
+    int *const switchable_rate, int *const skip_txfm_sb,
+    int64_t *const skip_sse_sb, const BUFFER_SET *dst_bufs[2],
+    const int switchable_ctx[2], const int skip_hor, int *rate, int64_t *dist,
+    int best_dual_mode) {
+  int i;
+  const int bw = block_size_wide[bsize];
+  assert(best_dual_mode == 0);
+  if ((bw <= 4) && (!skip_hor)) {
+    int skip_pred = 1;
+    // Process the filters in reverse order to enable reusing rate and
+    // distortion (calcuated during EIGHTTAP_REGULAR) for MULTITAP_SHARP
+    for (i = (SWITCHABLE_FILTERS - 1); i >= 1; --i) {
+      if (interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
+                                  switchable_rate, skip_txfm_sb, skip_sse_sb,
+                                  dst_bufs, i, switchable_ctx, skip_pred, rate,
+                                  dist)) {
+        best_dual_mode = i;
+      }
+      skip_pred = 0;
+    }
+  } else {
+    for (i = 1; i < SWITCHABLE_FILTERS; ++i) {
+      if (interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
+                                  switchable_rate, skip_txfm_sb, skip_sse_sb,
+                                  dst_bufs, i, switchable_ctx, skip_hor, rate,
+                                  dist)) {
+        best_dual_mode = i;
+      }
+    }
+  }
+  return best_dual_mode;
+}
+
+// Find the best rd filter in vertical direction
+static INLINE void find_best_vert_interp_filter_rd(
+    MACROBLOCK *const x, const AV1_COMP *const cpi, BLOCK_SIZE bsize,
+    int mi_row, int mi_col, BUFFER_SET *const orig_dst, int64_t *const rd,
+    int *const switchable_rate, int *const skip_txfm_sb,
+    int64_t *const skip_sse_sb, const BUFFER_SET *dst_bufs[2],
+    const int switchable_ctx[2], const int skip_ver, int *rate, int64_t *dist,
+    int best_dual_mode, int filter_set_size) {
+  int i;
+  const int bh = block_size_high[bsize];
+  if ((bh <= 4) && (!skip_ver)) {
+    int skip_pred = 1;
+    // Process the filters in reverse order to enable reusing rate and
+    // distortion (calcuated during EIGHTTAP_REGULAR) for MULTITAP_SHARP
+    assert(filter_set_size == DUAL_FILTER_SET_SIZE);
+    for (i = (filter_set_size - SWITCHABLE_FILTERS + best_dual_mode);
+         i >= (best_dual_mode + SWITCHABLE_FILTERS); i -= SWITCHABLE_FILTERS) {
+      interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
+                              switchable_rate, skip_txfm_sb, skip_sse_sb,
+                              dst_bufs, i, switchable_ctx, skip_pred, rate,
+                              dist);
+      skip_pred = 0;
+    }
+  } else {
+    for (i = best_dual_mode + SWITCHABLE_FILTERS; i < filter_set_size;
+         i += SWITCHABLE_FILTERS) {
+      interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
+                              switchable_rate, skip_txfm_sb, skip_sse_sb,
+                              dst_bufs, i, switchable_ctx, skip_ver, rate,
+                              dist);
+    }
+  }
+}
+
 // check if there is saved result match with this search
 static INLINE int is_interp_filter_match(const INTERPOLATION_FILTER_STATS *st,
                                          MB_MODE_INFO *const mi) {
@@ -7815,22 +7886,16 @@ static int64_t interpolation_filter_search(
     int best_dual_mode = 0;
     // Find best of {R}x{R,Sm,Sh}
     // EIGHTTAP_REGULAR mode is calculated beforehand
-    for (i = 1; i < SWITCHABLE_FILTERS; ++i) {
-      if (interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
-                                  switchable_rate, skip_txfm_sb, skip_sse_sb,
-                                  dst_bufs, i, switchable_ctx, skip_hor,
-                                  &tmp_rate, &tmp_dist)) {
-        best_dual_mode = i;
-      }
-    }
+    best_dual_mode = find_best_horiz_interp_filter_rd(
+        x, cpi, bsize, mi_row, mi_col, orig_dst, rd, switchable_rate,
+        skip_txfm_sb, skip_sse_sb, dst_bufs, switchable_ctx, skip_hor,
+        &tmp_rate, &tmp_dist, best_dual_mode);
+
     // From best of horizontal EIGHTTAP_REGULAR modes, check vertical modes
-    for (i = best_dual_mode + SWITCHABLE_FILTERS; i < filter_set_size;
-         i += SWITCHABLE_FILTERS) {
-      interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
-                              switchable_rate, skip_txfm_sb, skip_sse_sb,
-                              dst_bufs, i, switchable_ctx, skip_ver, &tmp_rate,
-                              &tmp_dist);
-    }
+    find_best_vert_interp_filter_rd(
+        x, cpi, bsize, mi_row, mi_col, orig_dst, rd, switchable_rate,
+        skip_txfm_sb, skip_sse_sb, dst_bufs, switchable_ctx, skip_ver,
+        &tmp_rate, &tmp_dist, best_dual_mode, filter_set_size);
   } else {
     // EIGHTTAP_REGULAR mode is calculated beforehand
     for (i = 1; i < filter_set_size; ++i) {
