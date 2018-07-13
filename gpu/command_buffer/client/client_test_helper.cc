@@ -56,10 +56,12 @@ FakeCommandBufferServiceBase::CreateTransferBufferHelper(size_t size,
   *id = GetNextFreeTransferBufferId();
   if (*id >= 0) {
     int32_t ndx = *id - kTransferBufferBaseId;
-    std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
-    shared_memory->CreateAndMapAnonymous(size);
-    transfer_buffer_buffers_[ndx] =
-        MakeBufferFromSharedMemory(std::move(shared_memory), size);
+    base::UnsafeSharedMemoryRegion shared_memory_region =
+        base::UnsafeSharedMemoryRegion::Create(size);
+    base::WritableSharedMemoryMapping shared_memory_mapping =
+        shared_memory_region.Map();
+    transfer_buffer_buffers_[ndx] = MakeBufferFromSharedMemory(
+        std::move(shared_memory_region), std::move(shared_memory_mapping));
   }
   return GetTransferBuffer(*id);
 }

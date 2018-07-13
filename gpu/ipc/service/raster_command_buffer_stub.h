@@ -26,7 +26,7 @@ class GPU_IPC_SERVICE_EXPORT RasterCommandBufferStub
   gpu::ContextResult Initialize(
       CommandBufferStub* share_group,
       const GPUCreateCommandBufferConfig& init_params,
-      std::unique_ptr<base::SharedMemory> shared_state_shm) override;
+      base::UnsafeSharedMemoryRegion shared_state_shm) override;
 
  private:
   void OnTakeFrontBuffer(const Mailbox& mailbox) override;

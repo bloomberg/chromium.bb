@@ -36,9 +36,11 @@ class FakeCommandBuffer : public CommandBuffer {
     EXPECT_GE(size, 2048u);
     *id = next_id_++;
     active_ids_.insert(*id);
-    std::unique_ptr<base::SharedMemory> shared_mem(new base::SharedMemory);
-    shared_mem->CreateAndMapAnonymous(size);
-    return MakeBufferFromSharedMemory(std::move(shared_mem), size);
+    base::UnsafeSharedMemoryRegion shmem_region =
+        base::UnsafeSharedMemoryRegion::Create(size);
+    base::WritableSharedMemoryMapping shmem_mapping = shmem_region.Map();
+    return MakeBufferFromSharedMemory(std::move(shmem_region),
+                                      std::move(shmem_mapping));
   }
   void DestroyTransferBuffer(int32_t id) override {
     auto found = active_ids_.find(id);

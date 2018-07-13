@@ -774,8 +774,7 @@ bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
     auto* mapped_range = buffer->GetMappedRange();
     if (!mapped_range)
       continue;
-    auto shared_memory_guid =
-        mapped_range->shm->backing()->shared_memory_handle().GetGUID();
+    auto shared_memory_guid = mapped_range->shm->backing()->GetGUID();
     if (!shared_memory_guid.is_empty()) {
       pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
                                            0 /* importance */);

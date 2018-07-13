@@ -36,8 +36,8 @@ MockTransferBuffer::MockTransferBuffer(CommandBuffer* command_buffer,
 
 MockTransferBuffer::~MockTransferBuffer() = default;
 
-base::SharedMemoryHandle MockTransferBuffer::shared_memory_handle() const {
-  return base::SharedMemoryHandle();
+base::UnguessableToken MockTransferBuffer::shared_memory_guid() const {
+  return base::UnguessableToken();
 }
 
 bool MockTransferBuffer::Initialize(unsigned int starting_buffer_size,

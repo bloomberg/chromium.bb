@@ -33,7 +33,7 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
   gpu::ContextResult Initialize(
       CommandBufferStub* share_group,
       const GPUCreateCommandBufferConfig& init_params,
-      std::unique_ptr<base::SharedMemory> shared_state_shm) override;
+      base::UnsafeSharedMemoryRegion shared_state_shm) override;
 
 // ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)

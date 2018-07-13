@@ -37,11 +37,12 @@ class FontSupport : public gpu::ServiceFontManager::Client {
 
  private:
   scoped_refptr<gpu::Buffer> CreateBuffer(uint32_t shm_id) {
-    std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
     static const size_t kBufferSize = 2048u;
-    shared_memory->CreateAndMapAnonymous(kBufferSize);
-    auto buffer =
-        gpu::MakeBufferFromSharedMemory(std::move(shared_memory), kBufferSize);
+    base::UnsafeSharedMemoryRegion shared_memory =
+        base::UnsafeSharedMemoryRegion::Create(kBufferSize);
+    base::WritableSharedMemoryMapping mapping = shared_memory.Map();
+    auto buffer = gpu::MakeBufferFromSharedMemory(std::move(shared_memory),
+                                                  std::move(mapping));
     buffers_[shm_id] = buffer;
     return buffer;
   }

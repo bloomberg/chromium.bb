@@ -13,15 +13,10 @@
 #include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "gpu/command_buffer/client/ring_buffer.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "gpu/gpu_export.h"
-
-namespace base {
-
-class SharedMemoryHandle;
-
-}  // namespace base
 
 namespace gpu {
 
@@ -33,9 +28,9 @@ class GPU_EXPORT TransferBufferInterface {
   TransferBufferInterface() = default;
   virtual ~TransferBufferInterface() = default;
 
-  // Returns the shared memory's handle when the back end is base::SharedMemory.
-  // Otherwise, this returns an invalid handle.
-  virtual base::SharedMemoryHandle shared_memory_handle() const = 0;
+  // Returns 128-bit GUID of the shared memory's region when the back end is
+  // base::UnsafeSharedMemoryRegion. Otherwise, this returns an empty GUID.
+  virtual base::UnguessableToken shared_memory_guid() const = 0;
 
   virtual bool Initialize(unsigned int buffer_size,
                           unsigned int result_size,
@@ -80,7 +75,7 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
   ~TransferBuffer() override;
 
   // Overridden from TransferBufferInterface.
-  base::SharedMemoryHandle shared_memory_handle() const override;
+  base::UnguessableToken shared_memory_guid() const override;
   bool Initialize(unsigned int default_buffer_size,
                   unsigned int result_size,
                   unsigned int min_buffer_size,

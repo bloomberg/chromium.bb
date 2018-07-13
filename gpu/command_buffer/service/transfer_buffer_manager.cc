@@ -129,8 +129,7 @@ bool TransferBufferManager::OnMemoryDump(
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
                     MemoryAllocatorDump::kUnitsBytes, buffer->size());
 
-    auto shared_memory_guid =
-        buffer->backing()->shared_memory_handle().GetGUID();
+    auto shared_memory_guid = buffer->backing()->GetGUID();
     if (!shared_memory_guid.is_empty()) {
       pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
                                            0 /* importance */);

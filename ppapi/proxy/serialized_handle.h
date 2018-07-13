@@ -149,6 +149,9 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
     descriptor_ = IPC::InvalidPlatformFileForTransit();
   }
   void set_null_shmem() { set_shmem(base::SharedMemoryHandle(), 0); }
+  void set_null_shmem_region() {
+    set_shmem_region(base::subtle::PlatformSharedMemoryRegion());
+  }
   void set_null_socket() {
     set_socket(IPC::InvalidPlatformFileForTransit());
   }

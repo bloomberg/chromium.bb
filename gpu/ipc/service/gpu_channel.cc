@@ -567,14 +567,11 @@ const CommandBufferStub* GpuChannel::GetOneStub() const {
 void GpuChannel::OnCreateCommandBuffer(
     const GPUCreateCommandBufferConfig& init_params,
     int32_t route_id,
-    base::SharedMemoryHandle shared_state_handle,
+    base::UnsafeSharedMemoryRegion shared_state_shm,
     ContextResult* result,
     gpu::Capabilities* capabilities) {
   TRACE_EVENT2("gpu", "GpuChannel::OnCreateCommandBuffer", "route_id", route_id,
                "offscreen", (init_params.surface_handle == kNullSurfaceHandle));
-  std::unique_ptr<base::SharedMemory> shared_state_shm(
-      new base::SharedMemory(shared_state_handle, false));
-
   // Default result on failure. Override with a more accurate failure if needed,
   // or with success.
   *result = ContextResult::kFatalFailure;

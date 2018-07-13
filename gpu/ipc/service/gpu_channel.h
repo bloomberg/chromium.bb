@@ -187,7 +187,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannel : public IPC::Listener,
   // Message handlers for control messages.
   void OnCreateCommandBuffer(const GPUCreateCommandBufferConfig& init_params,
                              int32_t route_id,
-                             base::SharedMemoryHandle shared_state_shm,
+                             base::UnsafeSharedMemoryRegion shared_state_shm,
                              gpu::ContextResult* result,
                              gpu::Capabilities* capabilities);
   void OnDestroyCommandBuffer(int32_t route_id);

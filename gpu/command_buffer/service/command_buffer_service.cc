@@ -16,8 +16,6 @@
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 
-using ::base::SharedMemory;
-
 namespace gpu {
 
 namespace {

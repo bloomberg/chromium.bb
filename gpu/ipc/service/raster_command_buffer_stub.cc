@@ -68,7 +68,7 @@ RasterCommandBufferStub::~RasterCommandBufferStub() {}
 gpu::ContextResult RasterCommandBufferStub::Initialize(
     CommandBufferStub* share_command_buffer_stub,
     const GPUCreateCommandBufferConfig& init_params,
-    std::unique_ptr<base::SharedMemory> shared_state_shm) {
+    base::UnsafeSharedMemoryRegion shared_state_shm) {
 #if defined(OS_FUCHSIA)
   // TODO(crbug.com/707031): Implement this.
   NOTIMPLEMENTED();
@@ -190,13 +190,15 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   set_decoder_context(std::move(decoder));
 
   const size_t kSharedStateSize = sizeof(CommandBufferSharedState);
-  if (!shared_state_shm->Map(kSharedStateSize)) {
+  base::WritableSharedMemoryMapping shared_state_mapping =
+      shared_state_shm.MapAt(0, kSharedStateSize);
+  if (!shared_state_mapping.IsValid()) {
     LOG(ERROR) << "ContextResult::kFatalFailure: "
                   "Failed to map shared state buffer.";
     return gpu::ContextResult::kFatalFailure;
   }
   command_buffer_->SetSharedStateBuffer(MakeBackingFromSharedMemory(
-      std::move(shared_state_shm), kSharedStateSize));
+      std::move(shared_state_shm), std::move(shared_state_mapping)));
 
   if (!active_url_.is_empty())
     manager->delegate()->DidCreateOffscreenContext(active_url_);

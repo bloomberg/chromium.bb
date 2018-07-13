@@ -185,6 +185,14 @@ base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
   return base::SharedMemory::DuplicateHandle(source_handle);
 }
 
+base::UnsafeSharedMemoryRegion GpuChannelHost::ShareToGpuProcess(
+    const base::UnsafeSharedMemoryRegion& source_region) {
+  if (IsLost())
+    return base::UnsafeSharedMemoryRegion();
+
+  return source_region.Duplicate();
+}
+
 int32_t GpuChannelHost::ReserveTransferBufferId() {
   // 0 is a reserved value.
   int32_t id = g_next_transfer_buffer_id.GetNext();

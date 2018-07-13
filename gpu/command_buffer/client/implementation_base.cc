@@ -127,8 +127,7 @@ bool ImplementationBase::OnMemoryDump(
   if (args.level_of_detail != MemoryDumpLevelOfDetail::BACKGROUND) {
     dump->AddScalar("free_size", MemoryAllocatorDump::kUnitsBytes,
                     transfer_buffer_->GetFragmentedFreeSize());
-    auto shared_memory_guid =
-        transfer_buffer_->shared_memory_handle().GetGUID();
+    auto shared_memory_guid = transfer_buffer_->shared_memory_guid();
     const int kImportance = 2;
     if (!shared_memory_guid.is_empty()) {
       pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,

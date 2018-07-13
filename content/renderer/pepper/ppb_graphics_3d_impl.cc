@@ -68,7 +68,7 @@ PP_Resource PPB_Graphics3D_Impl::CreateRaw(
     PP_Resource share_context,
     const gpu::ContextCreationAttribs& attrib_helper,
     gpu::Capabilities* capabilities,
-    base::SharedMemoryHandle* shared_state_handle,
+    const base::UnsafeSharedMemoryRegion** shared_state_region,
     gpu::CommandBufferId* command_buffer_id) {
   PPB_Graphics3D_API* share_api = nullptr;
   if (share_context) {
@@ -80,7 +80,7 @@ PP_Resource PPB_Graphics3D_Impl::CreateRaw(
   scoped_refptr<PPB_Graphics3D_Impl> graphics_3d(
       new PPB_Graphics3D_Impl(instance));
   if (!graphics_3d->InitRaw(share_api, attrib_helper, capabilities,
-                            shared_state_handle, command_buffer_id))
+                            shared_state_region, command_buffer_id))
     return 0;
   return graphics_3d->GetReference();
 }
@@ -214,7 +214,7 @@ bool PPB_Graphics3D_Impl::InitRaw(
     PPB_Graphics3D_API* share_context,
     const gpu::ContextCreationAttribs& requested_attribs,
     gpu::Capabilities* capabilities,
-    base::SharedMemoryHandle* shared_state_handle,
+    const base::UnsafeSharedMemoryRegion** shared_state_region,
     gpu::CommandBufferId* command_buffer_id) {
   PepperPluginInstanceImpl* plugin_instance =
       HostGlobals::Get()->GetInstance(pp_instance());
@@ -279,8 +279,8 @@ bool PPB_Graphics3D_Impl::InitRaw(
 
   command_buffer_->SetGpuControlClient(this);
 
-  if (shared_state_handle)
-    *shared_state_handle = command_buffer_->GetSharedStateHandle();
+  if (shared_state_region)
+    *shared_state_region = &command_buffer_->GetSharedStateRegion();
   if (capabilities)
     *capabilities = command_buffer_->GetCapabilities();
   if (command_buffer_id)
