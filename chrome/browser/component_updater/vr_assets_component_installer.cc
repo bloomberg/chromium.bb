@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/metrics/metrics_helper.h"
 #include "chrome/browser/vr/vr_features.h"
@@ -25,6 +26,11 @@
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/crx_file/id_util.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "jni/VrAssetsComponentInstaller_jni.h"
+#endif  // defined(OS_ANDROID)
 
 using component_updater::ComponentUpdateService;
 
@@ -45,13 +51,28 @@ const base::FilePath::CharType kRelativeInstallDir[] =
 
 namespace component_updater {
 
+bool VrAssetsComponentInstallerPolicy::registered_component_ = false;
 bool VrAssetsComponentInstallerPolicy::registration_pending_ = false;
 bool VrAssetsComponentInstallerPolicy::ondemand_update_pending_ = false;
+
+// static
+bool VrAssetsComponentInstallerPolicy::
+    ShouldRegisterVrAssetsComponentOnStartup() {
+#if defined(OS_ANDROID)
+  return Java_VrAssetsComponentInstaller_shouldRegisterOnStartup(
+      base::android::AttachCurrentThread());
+#else   // defined(OS_ANDROID)
+  return false;
+#endif  // defined(OS_ANDROID)
+}
 
 // static
 void VrAssetsComponentInstallerPolicy::RegisterComponent(
     ComponentUpdateService* cus) {
 #if BUILDFLAG(USE_VR_ASSETS_COMPONENT)
+  if (registration_pending_ || registered_component_) {
+    return;
+  }
   const std::string crx_id = crx_file::id_util::GenerateIdFromHash(
       kVrAssetsPublicKeySHA256, sizeof(kVrAssetsPublicKeySHA256));
   std::unique_ptr<VrAssetsComponentInstallerPolicy> policy(
@@ -90,6 +111,7 @@ void VrAssetsComponentInstallerPolicy::OnRegisteredComponent(
   vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnRegisteredComponent();
   VLOG(1) << "Registered VR assets component";
   registration_pending_ = false;
+  registered_component_ = true;
   if (ondemand_update_pending_) {
     UpdateComponent(cus);
   }
@@ -182,6 +204,11 @@ VrAssetsComponentInstallerPolicy::GetInstallerAttributes() const {
 std::vector<std::string> VrAssetsComponentInstallerPolicy::GetMimeTypes()
     const {
   return std::vector<std::string>();
+}
+
+bool ShouldRegisterVrAssetsComponentOnStartup() {
+  return VrAssetsComponentInstallerPolicy::
+      ShouldRegisterVrAssetsComponentOnStartup();
 }
 
 void RegisterVrAssetsComponent(ComponentUpdateService* cus) {

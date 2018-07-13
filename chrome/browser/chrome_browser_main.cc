@@ -299,6 +299,7 @@
 #endif  // BUILDFLAG(ENABLE_RLZ)
 
 #if BUILDFLAG(ENABLE_VR)
+#include "chrome/browser/component_updater/vr_assets_component_installer.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #endif
 
@@ -607,6 +608,12 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
 #if !defined(OS_ANDROID)
   RegisterInterventionPolicyDatabaseComponent(
       cus, g_browser_process->GetTabManager()->intervention_policy_database());
+#endif
+
+#if BUILDFLAG(ENABLE_VR)
+  if (component_updater::ShouldRegisterVrAssetsComponentOnStartup()) {
+    component_updater::RegisterVrAssetsComponent(cus);
+  }
 #endif
 }
 

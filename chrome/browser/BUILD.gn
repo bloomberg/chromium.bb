@@ -4391,6 +4391,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/childaccounts/ChildAccountFeedbackReporter.java",
       "../android/java/src/org/chromium/chrome/browser/childaccounts/ChildAccountService.java",
       "../android/java/src/org/chromium/chrome/browser/component_updater/UpdateScheduler.java",
+      "../android/java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java",
       "../android/java/src/org/chromium/chrome/browser/compositor/CompositorView.java",
       "../android/java/src/org/chromium/chrome/browser/compositor/LayerTitleCache.java",
       "../android/java/src/org/chromium/chrome/browser/compositor/bottombar/OverlayPanelContent.java",
