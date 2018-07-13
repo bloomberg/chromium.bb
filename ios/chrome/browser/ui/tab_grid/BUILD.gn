@@ -80,6 +80,7 @@ source_set("tab_grid_ui") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/recent_tabs:recent_tabs_ui",
     "//ios/chrome/browser/ui/tab_grid/transitions",
     "//ios/chrome/browser/ui/table_view:styler",

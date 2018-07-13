@@ -7,6 +7,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_commands.h"
@@ -61,6 +62,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 @interface TabGridViewController ()<GridViewControllerDelegate,
                                     UIScrollViewAccessibilityDelegate>
+// It is programmer error to broadcast incognito content visibility when the
+// view is not visible. Bookkeeping is based on |-viewWillAppear:| and
+// |-viewWillDisappear methods. Note that the |Did| methods are not reliably
+// called (e.g., edge case in multitasking).
+@property(nonatomic, assign) BOOL broadcasting;
 // Child view controllers.
 @property(nonatomic, strong) GridViewController* regularTabsViewController;
 @property(nonatomic, strong) GridViewController* incognitoTabsViewController;
@@ -85,6 +91,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 @implementation TabGridViewController
 // Public properties.
+@synthesize dispatcher = _dispatcher;
 @synthesize tabPresentationDelegate = _tabPresentationDelegate;
 @synthesize regularTabsDelegate = _regularTabsDelegate;
 @synthesize incognitoTabsDelegate = _incognitoTabsDelegate;
@@ -93,6 +100,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // TabGridPaging property.
 @synthesize activePage = _activePage;
 // Private properties.
+@synthesize broadcasting = _broadcasting;
 @synthesize regularTabsViewController = _regularTabsViewController;
 @synthesize incognitoTabsViewController = _incognitoTabsViewController;
 @synthesize remoteTabsViewController = _remoteTabsViewController;
@@ -132,6 +140,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+  self.broadcasting = YES;
   [self.topToolbar.pageControl setSelectedPage:self.currentPage animated:YES];
   [self configureViewControllerForCurrentSizeClassesAndPage];
   // The toolbars should be hidden (alpha 0.0) before the tab appears, so that
@@ -142,6 +151,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   } else {
     [self showToolbars];
   }
+  [self broadcastIncognitoContentVisibility];
   [super viewWillAppear:animated];
 }
 
@@ -155,6 +165,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   } else {
     [self hideToolbars];
   }
+  self.broadcasting = NO;
   [super viewWillDisappear:animated];
 }
 
@@ -218,6 +229,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     TabGridPage page = GetPageFromScrollView(scrollView);
     if (page != _currentPage) {
       _currentPage = page;
+      [self broadcastIncognitoContentVisibility];
       [self configureButtonsForActiveAndCurrentPage];
       // Records when the user drags the scrollView to switch pages.
       [self recordActionSwitchingToPage:_currentPage];
@@ -240,6 +252,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView*)scrollView {
   _currentPage = GetPageFromScrollView(scrollView);
+  [self broadcastIncognitoContentVisibility];
   [self configureButtonsForActiveAndCurrentPage];
 }
 
@@ -341,6 +354,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)setCurrentPage:(TabGridPage)currentPage {
+  // Setting the current page will adjust the scroll view to the correct
+  // position.
   [self setCurrentPage:currentPage animated:NO];
 }
 
@@ -850,6 +865,16 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self openNewTabInPage:self.currentPage];
 }
 
+// Broadcasts whether incognito tabs are showing.
+- (void)broadcastIncognitoContentVisibility {
+  if (!self.broadcasting)
+    return;
+  BOOL incognitoContentVisible =
+      (self.currentPage == TabGridPageIncognitoTabs &&
+       !self.incognitoTabsViewController.gridEmpty);
+  [self.dispatcher setIncognitoContentVisible:incognitoContentVisible];
+}
+
 #pragma mark - GridViewControllerDelegate
 
 - (void)gridViewController:(GridViewController*)gridViewController
@@ -909,6 +934,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (gridViewController == self.regularTabsViewController) {
     self.topToolbar.pageControl.regularTabCount = count;
   }
+  [self broadcastIncognitoContentVisibility];
 }
 
 #pragma mark - Control actions

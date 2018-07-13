@@ -46,8 +46,9 @@
 // to the user preferences.
 @property(nonatomic, weak) MetricsMediator* metricsMediator;
 
-// Returns whether the tab switcher is active.
-- (BOOL)isTabSwitcherActive;
+// Returns whether the app is showing or partially showing the
+// incognito panel.
+@property(nonatomic, assign, readonly) BOOL incognitoContentVisible;
 
 @end
 

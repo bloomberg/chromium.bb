@@ -311,6 +311,12 @@ enum class SnapshotViewOption {
   [self.view addSubview:_tabSwitcherView];
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  [self.dispatcher
+      setIncognitoContentVisible:([[_tabSwitcherModel otrTabModel] count] > 0)];
+}
+
 #pragma mark - UIResponder
 
 - (NSArray*)keyCommands {
@@ -1273,6 +1279,8 @@ enum class SnapshotViewOption {
           : [_tabSwitcherModel mainTabModel];
   DCHECK_NE(NSNotFound, static_cast<NSInteger>([tabModel indexOfTab:tab]));
   [tabModel closeTab:tab];
+  [self.dispatcher
+      setIncognitoContentVisible:([[_tabSwitcherModel otrTabModel] count] > 0)];
 
   if (panelSessionType == TabSwitcherSessionType::OFF_THE_RECORD_SESSION) {
     base::RecordAction(

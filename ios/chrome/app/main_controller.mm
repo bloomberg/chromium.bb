@@ -570,6 +570,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @synthesize launchOptions = _launchOptions;
 @synthesize startupParameters = _startupParameters;
 @synthesize metricsMediator = _metricsMediator;
+@synthesize incognitoContentVisible = _incognitoContentVisible;
 @synthesize settingsNavigationController = _settingsNavigationController;
 @synthesize signinInteractionCoordinator = _signinInteractionCoordinator;
 
@@ -1624,6 +1625,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                      completion:nil];
 }
 
+- (void)setIncognitoContentVisible:(BOOL)incognitoContentVisible {
+  _incognitoContentVisible = incognitoContentVisible;
+}
+
 #pragma mark - ApplicationSettingsCommands
 
 // TODO(crbug.com/779791) : Remove show settings from MainController.
@@ -1892,6 +1897,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)displayCurrentBVC {
   [self.viewControllerSwapper showTabViewController:self.currentBVC
                                          completion:nil];
+  [self.currentBVC.dispatcher
+      setIncognitoContentVisible:(self.currentBVC == self.otrBVC)];
 }
 
 - (TabModel*)currentTabModel {

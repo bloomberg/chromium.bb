@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_state_providing.h"
 
+@protocol ApplicationCommands;
 @protocol GridConsumer;
 @protocol GridCommands;
 @protocol GridImageDataSource;
@@ -27,6 +28,8 @@
 // incognito tab grid, regular tab grid, and remote tabs.
 @interface TabGridViewController
     : UIViewController<TabGridPaging, GridTransitionStateProviding>
+
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
 // Delegate for this view controller to handle presenting tab UI.
 @property(nonatomic, weak) id<TabPresentationDelegate> tabPresentationDelegate;

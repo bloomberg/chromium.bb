@@ -158,7 +158,7 @@ class AppStateTest : public BlockCleanupTest {
 
     [app_state_ applicationDidEnterBackground:application
                                  memoryHelper:memoryHelper
-                          tabSwitcherIsActive:YES];
+                      incognitoContentVisible:YES];
 
     metrics_mediator_called_ = NO;
   }
@@ -909,7 +909,7 @@ TEST_F(AppStateTest, applicationDidEnterBackgroundIncognito) {
   // Action.
   [appState applicationDidEnterBackground:application
                              memoryHelper:memoryHelper
-                      tabSwitcherIsActive:YES];
+                  incognitoContentVisible:YES];
 
   // Tests.
   EXPECT_OCMOCK_VERIFY(startupInformation);
@@ -934,7 +934,7 @@ TEST_F(AppStateTest, applicationDidEnterBackgroundStageBackground) {
   // Action.
   [getAppStateWithRealWindow(window) applicationDidEnterBackground:application
                                                       memoryHelper:memoryHelper
-                                               tabSwitcherIsActive:YES];
+                                           incognitoContentVisible:YES];
 
   // Tests.
   EXPECT_EQ(NSUInteger(0), [window subviews].count);
@@ -972,7 +972,7 @@ TEST_F(AppStateTest, applicationDidEnterBackgroundNoIncognitoBlocker) {
   // Action.
   [appState applicationDidEnterBackground:application
                              memoryHelper:memoryHelper
-                      tabSwitcherIsActive:YES];
+                  incognitoContentVisible:NO];
 
   // Tests.
   EXPECT_OCMOCK_VERIFY(startupInformation);

@@ -881,6 +881,7 @@ NSString* const kTransitionToolbarAnimationKey =
   // the last time the stack view was shown.
   _gestureStateTracker = [[GestureStateTracker alloc] init];
 
+  [self.dispatcher setIncognitoContentVisible:(_otrCardSet.cards.count > 0)];
   [super viewWillAppear:animated];
 }
 
@@ -3115,6 +3116,7 @@ NSString* const kTransitionToolbarAnimationKey =
     }
   }
   [CATransaction commit];
+  [self.dispatcher setIncognitoContentVisible:(_otrCardSet.cards.count > 0)];
 }
 
 - (void)cardSet:(CardSet*)cardSet displayedCard:(StackCard*)card {

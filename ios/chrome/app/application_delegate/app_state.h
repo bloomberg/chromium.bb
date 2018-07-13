@@ -71,7 +71,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // stakeholders can register for it directly.
 - (void)applicationDidEnterBackground:(UIApplication*)application
                          memoryHelper:(MemoryWarningHelper*)memoryHelper
-                  tabSwitcherIsActive:(BOOL)tabSwitcherIsActive;
+              incognitoContentVisible:(BOOL)incognitoContentVisible;
 
 // Called when returning to the foreground. Resets and uploads the metrics.
 // Starts the browser to foreground if needed.
