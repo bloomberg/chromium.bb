@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/accessibility/view_ax_platform_node_delegate.h"
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/accessibility/ax_widget_obj_wrapper.h"
-#include "ui/views/accessibility/native_view_accessibility_base.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/test/views_test_base.h"
@@ -17,21 +18,23 @@
 namespace views {
 namespace test {
 
-class NativeViewAccessibilityTest;
-
 namespace {
 
 class TestButton : public Button {
  public:
   TestButton() : Button(NULL) {}
+  ~TestButton() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestButton);
 };
 
 }  // namespace
 
-class NativeViewAccessibilityTest : public ViewsTestBase {
+class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
  public:
-  NativeViewAccessibilityTest() {}
-  ~NativeViewAccessibilityTest() override {}
+  ViewAXPlatformNodeDelegateTest() = default;
+  ~ViewAXPlatformNodeDelegateTest() override = default;
 
   void SetUp() override {
     ViewsTestBase::SetUp();
@@ -57,33 +60,33 @@ class NativeViewAccessibilityTest : public ViewsTestBase {
     ViewsTestBase::TearDown();
   }
 
-  NativeViewAccessibilityBase* button_accessibility() {
-    return static_cast<NativeViewAccessibilityBase*>(
+  ViewAXPlatformNodeDelegate* button_accessibility() {
+    return static_cast<ViewAXPlatformNodeDelegate*>(
         &button_->GetViewAccessibility());
   }
 
-  NativeViewAccessibilityBase* label_accessibility() {
-    return static_cast<NativeViewAccessibilityBase*>(
+  ViewAXPlatformNodeDelegate* label_accessibility() {
+    return static_cast<ViewAXPlatformNodeDelegate*>(
         &label_->GetViewAccessibility());
   }
 
-  bool SetFocused(NativeViewAccessibilityBase* view_accessibility,
-                  bool focused) {
+  bool SetFocused(ViewAXPlatformNodeDelegate* ax_delegate, bool focused) {
     ui::AXActionData data;
     data.action =
         focused ? ax::mojom::Action::kFocus : ax::mojom::Action::kBlur;
-    return view_accessibility->AccessibilityPerformAction(data);
+    return ax_delegate->AccessibilityPerformAction(data);
   }
 
  protected:
-  Widget* widget_;
-  TestButton* button_;
-  Label* label_;
+  Widget* widget_ = nullptr;
+  Button* button_ = nullptr;
+  Label* label_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityTest);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ViewAXPlatformNodeDelegateTest);
 };
 
-TEST_F(NativeViewAccessibilityTest, RoleShouldMatch) {
+TEST_F(ViewAXPlatformNodeDelegateTest, RoleShouldMatch) {
   EXPECT_EQ(ax::mojom::Role::kButton, button_accessibility()->GetData().role);
   // Since the label is a subview of |button_|, and the button is keyboard
   // focusable, the label is assumed to form part of the button and not have a
@@ -97,7 +100,7 @@ TEST_F(NativeViewAccessibilityTest, RoleShouldMatch) {
             label_accessibility()->GetData().role);
 }
 
-TEST_F(NativeViewAccessibilityTest, BoundsShouldMatch) {
+TEST_F(ViewAXPlatformNodeDelegateTest, BoundsShouldMatch) {
   gfx::Rect bounds =
       gfx::ToEnclosingRect(button_accessibility()->GetData().location);
   gfx::Rect screen_bounds =
@@ -107,7 +110,7 @@ TEST_F(NativeViewAccessibilityTest, BoundsShouldMatch) {
   EXPECT_EQ(screen_bounds, bounds);
 }
 
-TEST_F(NativeViewAccessibilityTest, LabelIsChildOfButton) {
+TEST_F(ViewAXPlatformNodeDelegateTest, LabelIsChildOfButton) {
   // |button_| is focusable, so |label_| (as its child) should be ignored.
   EXPECT_EQ(View::FocusBehavior::ACCESSIBLE_ONLY, button_->focus_behavior());
   EXPECT_EQ(1, button_accessibility()->GetChildCount());
@@ -126,7 +129,7 @@ TEST_F(NativeViewAccessibilityTest, LabelIsChildOfButton) {
 }
 
 // Verify Views with invisible ancestors have ax::mojom::State::kInvisible.
-TEST_F(NativeViewAccessibilityTest, InvisibleViews) {
+TEST_F(ViewAXPlatformNodeDelegateTest, InvisibleViews) {
   EXPECT_TRUE(widget_->IsVisible());
   EXPECT_FALSE(
       button_accessibility()->GetData().HasState(ax::mojom::State::kInvisible));
@@ -139,8 +142,9 @@ TEST_F(NativeViewAccessibilityTest, InvisibleViews) {
       label_accessibility()->GetData().HasState(ax::mojom::State::kInvisible));
 }
 
-TEST_F(NativeViewAccessibilityTest, WritableFocus) {
-  // Make |button_| focusable, and focus/unfocus it via NativeViewAccessibility.
+TEST_F(ViewAXPlatformNodeDelegateTest, WritableFocus) {
+  // Make |button_| focusable, and focus/unfocus it via
+  // ViewAXPlatformNodeDelegate.
   button_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   EXPECT_EQ(nullptr, button_->GetFocusManager()->GetFocusedView());
   EXPECT_EQ(nullptr, button_accessibility()->GetFocus());
@@ -157,28 +161,19 @@ TEST_F(NativeViewAccessibilityTest, WritableFocus) {
   EXPECT_FALSE(SetFocused(button_accessibility(), true));
 }
 
-// Subclass of NativeViewAccessibility that destroys itself when its
-// parent widget is destroyed, for the purposes of making sure this
-// doesn't lead to a crash.
-class TestNativeViewAccessibility : public NativeViewAccessibilityBase {
- public:
-  explicit TestNativeViewAccessibility(View* view)
-      : NativeViewAccessibilityBase(view) {}
-};
-
 #if defined(USE_AURA)
 class DerivedTestView : public View {
  public:
   DerivedTestView() : View() {}
-  ~DerivedTestView() override {}
+  ~DerivedTestView() override = default;
 
   void OnBlur() override { SetVisible(false); }
 };
 
 class AxTestViewsDelegate : public TestViewsDelegate {
  public:
-  AxTestViewsDelegate() {}
-  ~AxTestViewsDelegate() override {}
+  AxTestViewsDelegate() = default;
+  ~AxTestViewsDelegate() override = default;
 
   void NotifyAccessibilityEvent(View* view,
                                 ax::mojom::Event event_type) override {
@@ -192,10 +187,10 @@ class AxTestViewsDelegate : public TestViewsDelegate {
   DISALLOW_COPY_AND_ASSIGN(AxTestViewsDelegate);
 };
 
-class AXViewTest : public ViewsTestBase {
+class ViewAccessibilityTest : public ViewsTestBase {
  public:
-  AXViewTest() {}
-  ~AXViewTest() override {}
+  ViewAccessibilityTest() = default;
+  ~ViewAccessibilityTest() override = default;
   void SetUp() override {
     std::unique_ptr<TestViewsDelegate> views_delegate(
         new AxTestViewsDelegate());
@@ -206,7 +201,7 @@ class AXViewTest : public ViewsTestBase {
 
 // Check if the destruction of the widget ends successfully if |view|'s
 // visibility changed during destruction.
-TEST_F(AXViewTest, LayoutCalledInvalidateRootView) {
+TEST_F(ViewAccessibilityTest, LayoutCalledInvalidateRootView) {
   std::unique_ptr<Widget> widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

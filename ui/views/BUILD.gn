@@ -678,8 +678,8 @@ jumbo_component("views") {
         ]
         if (use_atk) {
           sources += [
-            "accessibility/native_view_accessibility_auralinux.cc",
-            "accessibility/native_view_accessibility_auralinux.h",
+            "accessibility/view_ax_platform_node_delegate_auralinux.cc",
+            "accessibility/view_ax_platform_node_delegate_auralinux.h",
           ]
           configs += [ "//build/config/linux/atk" ]
         }
@@ -730,12 +730,12 @@ jumbo_component("views") {
 
   if (has_native_accessibility) {
     sources += [
-      "accessibility/native_view_accessibility_base.cc",
-      "accessibility/native_view_accessibility_base.h",
-      "accessibility/native_view_accessibility_mac.h",
-      "accessibility/native_view_accessibility_mac.mm",
-      "accessibility/native_view_accessibility_win.cc",
-      "accessibility/native_view_accessibility_win.h",
+      "accessibility/view_ax_platform_node_delegate.cc",
+      "accessibility/view_ax_platform_node_delegate.h",
+      "accessibility/view_ax_platform_node_delegate_mac.h",
+      "accessibility/view_ax_platform_node_delegate_mac.mm",
+      "accessibility/view_ax_platform_node_delegate_win.cc",
+      "accessibility/view_ax_platform_node_delegate_win.h",
     ]
   }
 
@@ -922,11 +922,10 @@ source_set("views_unittests_sources") {
     "controls/button/label_button_label.h",
   ]
   if (has_native_accessibility) {
-    public += [ "accessibility/native_view_accessibility_base.h" ]
+    public += [ "accessibility/view_ax_platform_node_delegate.h" ]
   }
 
   sources = [
-    "accessibility/native_view_accessibility_win_unittest.cc",
     "accessible_pane_view_unittest.cc",
     "animation/bounds_animator_unittest.cc",
     "animation/flood_fill_ink_drop_ripple_unittest.cc",
@@ -995,7 +994,7 @@ source_set("views_unittests_sources") {
     "view_tracker_unittest.cc",
     "view_unittest.cc",
     "view_unittest_mac.mm",
-    "widget/native_widget_mac_accessibility_unittest.mm",
+    "widget/ax_native_widget_mac_unittest.mm",
     "widget/native_widget_mac_unittest.mm",
     "widget/native_widget_unittest.cc",
     "widget/root_view_unittest.cc",
@@ -1047,21 +1046,28 @@ source_set("views_unittests_sources") {
   ]
 
   if (is_win) {
+    public += [ "accessibility/view_ax_platform_node_delegate_win.h" ]
+
     public_deps += [
       "//build/win:default_exe_manifest",
       "//third_party/iaccessible2",
       "//third_party/wtl",
     ]
+
     libs = [
       "imm32.lib",
       "oleacc.lib",
       "comctl32.lib",
     ]
-    sources += [ "win/pen_event_processor_unittest.cc" ]
+
+    sources += [
+      "accessibility/view_ax_platform_node_delegate_win_unittest.cc",
+      "win/pen_event_processor_unittest.cc",
+    ]
   }
 
   if (has_native_accessibility) {
-    sources += [ "accessibility/native_view_accessibility_unittest.cc" ]
+    sources += [ "accessibility/view_ax_platform_node_delegate_unittest.cc" ]
   }
 
   if (use_x11) {

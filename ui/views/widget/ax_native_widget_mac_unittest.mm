@@ -96,9 +96,9 @@ class TestWidgetDelegate : public test::TestDesktopWidgetDelegate {
 
 constexpr char TestWidgetDelegate::kAccessibleWindowTitle[];
 
-class NativeWidgetMacAccessibilityTest : public test::WidgetTest {
+class AXNativeWidgetMacTest : public test::WidgetTest {
  public:
-  NativeWidgetMacAccessibilityTest() {}
+  AXNativeWidgetMacTest() {}
 
   void SetUp() override {
     test::WidgetTest::SetUp();
@@ -198,14 +198,14 @@ class NativeWidgetMacAccessibilityTest : public test::WidgetTest {
  private:
   TestWidgetDelegate widget_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeWidgetMacAccessibilityTest);
+  DISALLOW_COPY_AND_ASSIGN(AXNativeWidgetMacTest);
 };
 
 }  // namespace
 
 // Test that all methods in the NSAccessibility informal protocol can be called
 // on a retained accessibility object after the source view is deleted.
-TEST_F(NativeWidgetMacAccessibilityTest, Lifetime) {
+TEST_F(AXNativeWidgetMacTest, Lifetime) {
   Textfield* view = AddChildTextfield(widget()->GetContentsView()->size());
   base::scoped_nsobject<NSObject> ax_node(view->GetNativeViewAccessible(),
                                           base::scoped_policy::RETAIN);
@@ -286,7 +286,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, Lifetime) {
 }
 
 // Check that potentially keyboard-focusable elements are always leaf nodes.
-TEST_F(NativeWidgetMacAccessibilityTest, FocusableElementsAreLeafNodes) {
+TEST_F(AXNativeWidgetMacTest, FocusableElementsAreLeafNodes) {
   // LabelButtons will have a label inside the button. The label should be
   // ignored because the button is potentially keyboard focusable.
   TestLabelButton* button = new TestLabelButton();
@@ -323,7 +323,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, FocusableElementsAreLeafNodes) {
 
 // Test for NSAccessibilityChildrenAttribute, and ensure it excludes ignored
 // children from the accessibility tree.
-TEST_F(NativeWidgetMacAccessibilityTest, ChildrenAttribute) {
+TEST_F(AXNativeWidgetMacTest, ChildrenAttribute) {
   // Check childless views don't have accessibility children.
   EXPECT_EQ(0u,
             [AttributeValueAtMidpoint(NSAccessibilityChildrenAttribute) count]);
@@ -346,7 +346,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, ChildrenAttribute) {
 
 // Test for NSAccessibilityParentAttribute, including for a Widget with no
 // parent.
-TEST_F(NativeWidgetMacAccessibilityTest, ParentAttribute) {
+TEST_F(AXNativeWidgetMacTest, ParentAttribute) {
   Textfield* child = AddChildTextfield(widget()->GetContentsView()->size());
 
   // Views with Widget parents will have a NSWindow parent.
@@ -373,7 +373,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, ParentAttribute) {
 
 // Test for NSAccessibilityPositionAttribute, including on Widget movement
 // updates.
-TEST_F(NativeWidgetMacAccessibilityTest, PositionAttribute) {
+TEST_F(AXNativeWidgetMacTest, PositionAttribute) {
   NSValue* widget_origin =
       [NSValue valueWithPoint:gfx::ScreenPointToNSPoint(
                                   GetWidgetBounds().bottom_left())];
@@ -390,7 +390,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, PositionAttribute) {
 }
 
 // Test for NSAccessibilityHelpAttribute.
-TEST_F(NativeWidgetMacAccessibilityTest, HelpAttribute) {
+TEST_F(AXNativeWidgetMacTest, HelpAttribute) {
   Label* label = new Label(base::SysNSStringToUTF16(kTestStringValue));
   label->SetSize(GetWidgetBounds().size());
   EXPECT_NSEQ(@"", AttributeValueAtMidpoint(NSAccessibilityHelpAttribute));
@@ -402,7 +402,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, HelpAttribute) {
 
 // Test view properties that should report the native NSWindow, and test
 // specific properties on that NSWindow.
-TEST_F(NativeWidgetMacAccessibilityTest, NativeWindowProperties) {
+TEST_F(AXNativeWidgetMacTest, NativeWindowProperties) {
   FlexibleRoleTestView* view =
       new FlexibleRoleTestView(ax::mojom::Role::kGroup);
   view->SetSize(GetWidgetBounds().size());
@@ -422,7 +422,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, NativeWindowProperties) {
 // Tests for accessibility attributes on a views::Textfield.
 // TODO(patricialor): Test against Cocoa-provided attributes as well to ensure
 // consistency between Cocoa and toolkit-views.
-TEST_F(NativeWidgetMacAccessibilityTest, TextfieldGenericAttributes) {
+TEST_F(AXNativeWidgetMacTest, TextfieldGenericAttributes) {
   Textfield* textfield = AddChildTextfield(GetWidgetBounds().size());
 
   // NSAccessibilityEnabledAttribute.
@@ -480,7 +480,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextfieldGenericAttributes) {
                           NSAccessibilitySizeAttribute) sizeValue]));
 }
 
-TEST_F(NativeWidgetMacAccessibilityTest, TextfieldEditableAttributes) {
+TEST_F(AXNativeWidgetMacTest, TextfieldEditableAttributes) {
   Textfield* textfield = AddChildTextfield(GetWidgetBounds().size());
   textfield->set_placeholder_text(
       base::SysNSStringToUTF16(kTestPlaceholderText));
@@ -539,7 +539,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextfieldEditableAttributes) {
 
 // Test writing accessibility attributes via an accessibility client for normal
 // Views.
-TEST_F(NativeWidgetMacAccessibilityTest, ViewWritableAttributes) {
+TEST_F(AXNativeWidgetMacTest, ViewWritableAttributes) {
   FlexibleRoleTestView* view =
       new FlexibleRoleTestView(ax::mojom::Role::kGroup);
   view->SetSize(GetWidgetBounds().size());
@@ -566,7 +566,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, ViewWritableAttributes) {
 
 // Test writing accessibility attributes via an accessibility client for
 // editable controls (in this case, views::Textfields).
-TEST_F(NativeWidgetMacAccessibilityTest, TextfieldWritableAttributes) {
+TEST_F(AXNativeWidgetMacTest, TextfieldWritableAttributes) {
   Textfield* textfield = AddChildTextfield(GetWidgetBounds().size());
 
   // Get the Textfield accessibility object.
@@ -668,7 +668,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextfieldWritableAttributes) {
 }
 
 // Test parameterized text attributes.
-TEST_F(NativeWidgetMacAccessibilityTest, TextParameterizedAttributes) {
+TEST_F(AXNativeWidgetMacTest, TextParameterizedAttributes) {
   AddChildTextfield(GetWidgetBounds().size());
   id ax_node = A11yElementAtMidpoint();
   EXPECT_TRUE(ax_node);
@@ -723,7 +723,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextParameterizedAttributes) {
 }
 
 // Test performing a 'click' on Views with clickable roles work.
-TEST_F(NativeWidgetMacAccessibilityTest, PressAction) {
+TEST_F(AXNativeWidgetMacTest, PressAction) {
   FlexibleRoleTestView* view =
       new FlexibleRoleTestView(ax::mojom::Role::kButton);
   widget()->GetContentsView()->AddChildView(view);
@@ -740,7 +740,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, PressAction) {
 
 // Test text-specific attributes that should not be supported for protected
 // textfields.
-TEST_F(NativeWidgetMacAccessibilityTest, ProtectedTextfields) {
+TEST_F(AXNativeWidgetMacTest, ProtectedTextfields) {
   Textfield* textfield = AddChildTextfield(GetWidgetBounds().size());
   textfield->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
 
@@ -776,9 +776,8 @@ TEST_F(NativeWidgetMacAccessibilityTest, ProtectedTextfields) {
   if (base::mac::IsAtLeastOS10_10()) {
     // Check Cocoa's attribute values for PlaceHolder and Value here separately
     // - these are using the new NSAccessibility protocol.
-    EXPECT_TRUE([cocoa_secure_textfield
-        isAccessibilitySelectorAllowed:@selector(
-                                           accessibilityPlaceholderValue)]);
+    EXPECT_TRUE([cocoa_secure_textfield isAccessibilitySelectorAllowed:@selector
+                                        (accessibilityPlaceholderValue)]);
     EXPECT_TRUE([cocoa_secure_textfield
         isAccessibilitySelectorAllowed:@selector(accessibilityValue)]);
   }
@@ -795,8 +794,9 @@ TEST_F(NativeWidgetMacAccessibilityTest, ProtectedTextfields) {
       [ax_node accessibilityIsAttributeSettable:NSAccessibilityValueAttribute]);
   EXPECT_NSEQ(NSAccessibilityTextFieldRole, AXRoleString());
 
-  NSString* kShownValue = @"•"
-                          @"••••••••••••••••";
+  NSString* kShownValue =
+      @"•"
+      @"••••••••••••••••";
   // Sanity check.
   EXPECT_EQ(kTestStringLength, static_cast<int>([kShownValue length]));
   EXPECT_NSEQ(kShownValue, AXValue());
@@ -825,7 +825,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, ProtectedTextfields) {
 }
 
 // Test text-specific attributes of Labels.
-TEST_F(NativeWidgetMacAccessibilityTest, Label) {
+TEST_F(AXNativeWidgetMacTest, Label) {
   Label* label = new Label;
   label->SetText(base::SysNSStringToUTF16(kTestStringValue));
   label->SetSize(GetWidgetBounds().size());
@@ -872,7 +872,7 @@ TEST_F(NativeWidgetMacAccessibilityTest, Label) {
 }
 
 // Labels used as title bars should be exposed as normal static text on Mac.
-TEST_F(NativeWidgetMacAccessibilityTest, LabelUsedAsTitleBar) {
+TEST_F(AXNativeWidgetMacTest, LabelUsedAsTitleBar) {
   Label* label = new Label(base::SysNSStringToUTF16(kTestStringValue),
                            style::CONTEXT_DIALOG_TITLE, style::STYLE_PRIMARY);
   label->SetSize(GetWidgetBounds().size());
@@ -902,7 +902,7 @@ class TestComboboxModel : public ui::ComboboxModel {
 };
 
 // Test a11y attributes of Comboboxes.
-TEST_F(NativeWidgetMacAccessibilityTest, Combobox) {
+TEST_F(AXNativeWidgetMacTest, Combobox) {
   Combobox* combobox = new Combobox(std::make_unique<TestComboboxModel>());
   combobox->SetSize(GetWidgetBounds().size());
   widget()->GetContentsView()->AddChildView(combobox);

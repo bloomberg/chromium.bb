@@ -63,11 +63,11 @@ bool DoesViewHaveAccessibleNameOrLabelError(ui::AXNodeData* data) {
 
 bool DoesViewHaveAccessibilityErrors(views::View* view,
                                      std::string* error_message) {
-  views::ViewAccessibility& view_ax = view->GetViewAccessibility();
+  views::ViewAccessibility& view_accessibility = view->GetViewAccessibility();
   ui::AXNodeData node_data;
-  // Get accessible node data from view_ax instead of view, because some
-  // additional fields are processed and set there.
-  view_ax.GetAccessibleNodeData(&node_data);
+  // Get accessible node data from view_accessibility instead of view, because
+  // some additional fields are processed and set there.
+  view_accessibility.GetAccessibleNodeData(&node_data);
 
   std::string violations;
 

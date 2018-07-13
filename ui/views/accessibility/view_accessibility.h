@@ -20,14 +20,13 @@ class View;
 
 // An object that manages the accessibility interface for a View.
 //
-// The default accessibility properties of a View is determined by
-// calling View::GetAccessibleNodeData(), which is overridden by many
-// View subclasses. ViewAccessibility lets you override these for a
-// particular view.
+// The default accessibility properties of a View is determined by calling
+// |View::GetAccessibleNodeData()|, which is overridden by many |View|
+// subclasses. |ViewAccessibility| lets you override these for a particular
+// view.
 //
-// On some platforms, subclasses of ViewAccessibility own the
-// AXPlatformNode that implements the native accessibility APIs on that
-// platform.
+// In most cases, subclasses of |ViewAccessibility| own the |AXPlatformNode|
+// that implements the native accessibility APIs on a specific platform.
 class VIEWS_EXPORT ViewAccessibility {
  public:
   static std::unique_ptr<ViewAccessibility> Create(View* view);

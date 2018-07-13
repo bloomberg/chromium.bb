@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/accessibility/view_ax_platform_node_delegate.h"
+
 #include <map>
 #include <memory>
-
-#include "ui/views/accessibility/native_view_accessibility_base.h"
 
 #include "base/lazy_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -99,9 +99,9 @@ void FlushQueue() {
 }  // namespace
 
 // static
-int NativeViewAccessibilityBase::menu_depth_ = 0;
+int ViewAXPlatformNodeDelegate::menu_depth_ = 0;
 
-NativeViewAccessibilityBase::NativeViewAccessibilityBase(View* view)
+ViewAXPlatformNodeDelegate::ViewAXPlatformNodeDelegate(View* view)
     : ViewAccessibility(view) {
   ax_node_ = ui::AXPlatformNode::Create(this);
   DCHECK(ax_node_);
@@ -116,7 +116,7 @@ NativeViewAccessibilityBase::NativeViewAccessibilityBase(View* view)
   g_unique_id_to_ax_platform_node.Get()[GetUniqueId().Get()] = ax_node_;
 }
 
-NativeViewAccessibilityBase::~NativeViewAccessibilityBase() {
+ViewAXPlatformNodeDelegate::~ViewAXPlatformNodeDelegate() {
   if (ui::AXPlatformNode::GetPopupFocusOverride() == GetNativeObject())
     ui::AXPlatformNode::SetPopupFocusOverride(nullptr);
 
@@ -124,11 +124,11 @@ NativeViewAccessibilityBase::~NativeViewAccessibilityBase() {
   ax_node_->Destroy();
 }
 
-gfx::NativeViewAccessible NativeViewAccessibilityBase::GetNativeObject() {
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetNativeObject() {
   return ax_node_->GetNativeViewAccessible();
 }
 
-void NativeViewAccessibilityBase::NotifyAccessibilityEvent(
+void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
   if (g_is_queueing_events) {
     g_event_queue.Get().push_back({event_type, GetUniqueId().Get()});
@@ -164,7 +164,7 @@ void NativeViewAccessibilityBase::NotifyAccessibilityEvent(
   }
 }
 
-void NativeViewAccessibilityBase::OnMenuItemActive() {
+void ViewAXPlatformNodeDelegate::OnMenuItemActive() {
   // When a native menu is shown and has an item selected, treat it and the
   // currently selected item as focused, even though the actual focus is in the
   // browser's currently focused textfield.
@@ -172,11 +172,11 @@ void NativeViewAccessibilityBase::OnMenuItemActive() {
       ax_node_->GetNativeViewAccessible());
 }
 
-void NativeViewAccessibilityBase::OnMenuStart() {
+void ViewAXPlatformNodeDelegate::OnMenuStart() {
   ++menu_depth_;
 }
 
-void NativeViewAccessibilityBase::OnMenuEnd() {
+void ViewAXPlatformNodeDelegate::OnMenuEnd() {
   // When a native menu is hidden, restore accessibility focus to the current
   // focus in the document.
   DCHECK_GE(menu_depth_, 1);
@@ -187,7 +187,7 @@ void NativeViewAccessibilityBase::OnMenuEnd() {
 
 // ui::AXPlatformNodeDelegate
 
-const ui::AXNodeData& NativeViewAccessibilityBase::GetData() const {
+const ui::AXNodeData& ViewAXPlatformNodeDelegate::GetData() const {
   // Clear it, then populate it.
   data_ = ui::AXNodeData();
   GetAccessibleNodeData(&data_);
@@ -215,7 +215,7 @@ const ui::AXNodeData& NativeViewAccessibilityBase::GetData() const {
   return data_;
 }
 
-int NativeViewAccessibilityBase::GetChildCount() {
+int ViewAXPlatformNodeDelegate::GetChildCount() {
   if (IsLeaf())
     return 0;
   int child_count = view()->child_count();
@@ -227,7 +227,7 @@ int NativeViewAccessibilityBase::GetChildCount() {
   return child_count;
 }
 
-gfx::NativeViewAccessible NativeViewAccessibilityBase::ChildAtIndex(int index) {
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
   if (IsLeaf())
     return nullptr;
 
@@ -246,13 +246,13 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::ChildAtIndex(int index) {
   return nullptr;
 }
 
-gfx::NativeWindow NativeViewAccessibilityBase::GetTopLevelWidget() {
+gfx::NativeWindow ViewAXPlatformNodeDelegate::GetTopLevelWidget() {
   if (view()->GetWidget())
     return view()->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
   return nullptr;
 }
 
-gfx::NativeViewAccessible NativeViewAccessibilityBase::GetParent() {
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetParent() {
   if (view()->parent())
     return view()->parent()->GetNativeViewAccessible();
 
@@ -265,17 +265,17 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::GetParent() {
   return nullptr;
 }
 
-gfx::Rect NativeViewAccessibilityBase::GetClippedScreenBoundsRect() const {
+gfx::Rect ViewAXPlatformNodeDelegate::GetClippedScreenBoundsRect() const {
   // We could optionally add clipping here if ever needed.
   return view()->GetBoundsInScreen();
 }
 
-gfx::Rect NativeViewAccessibilityBase::GetUnclippedScreenBoundsRect() const {
+gfx::Rect ViewAXPlatformNodeDelegate::GetUnclippedScreenBoundsRect() const {
   return view()->GetBoundsInScreen();
 }
 
-gfx::NativeViewAccessible NativeViewAccessibilityBase::HitTestSync(int x,
-                                                                   int y) {
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,
+                                                                  int y) {
   if (!view() || !view()->GetWidget())
     return nullptr;
 
@@ -316,7 +316,7 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::HitTestSync(int x,
   return GetNativeObject();
 }
 
-gfx::NativeViewAccessible NativeViewAccessibilityBase::GetFocus() {
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetFocus() {
   gfx::NativeViewAccessible focus_override =
       ui::AXPlatformNode::GetPopupFocusOverride();
   if (focus_override)
@@ -329,29 +329,29 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::GetFocus() {
   return focused_view ? focused_view->GetNativeViewAccessible() : nullptr;
 }
 
-ui::AXPlatformNode* NativeViewAccessibilityBase::GetFromNodeID(int32_t id) {
+ui::AXPlatformNode* ViewAXPlatformNodeDelegate::GetFromNodeID(int32_t id) {
   return PlatformNodeFromNodeID(id);
 }
 
-bool NativeViewAccessibilityBase::AccessibilityPerformAction(
+bool ViewAXPlatformNodeDelegate::AccessibilityPerformAction(
     const ui::AXActionData& data) {
   return view()->HandleAccessibleAction(data);
 }
 
-bool NativeViewAccessibilityBase::ShouldIgnoreHoveredStateForTesting() {
+bool ViewAXPlatformNodeDelegate::ShouldIgnoreHoveredStateForTesting() {
   return false;
 }
 
-bool NativeViewAccessibilityBase::IsOffscreen() const {
+bool ViewAXPlatformNodeDelegate::IsOffscreen() const {
   // TODO: need to implement.
   return false;
 }
 
-const ui::AXUniqueId& NativeViewAccessibilityBase::GetUniqueId() const {
+const ui::AXUniqueId& ViewAXPlatformNodeDelegate::GetUniqueId() const {
   return ViewAccessibility::GetUniqueId();
 }
 
-void NativeViewAccessibilityBase::PopulateChildWidgetVector(
+void ViewAXPlatformNodeDelegate::PopulateChildWidgetVector(
     std::vector<Widget*>* result_child_widgets) {
   // Only attach child widgets to the root view.
   Widget* widget = view()->GetWidget();

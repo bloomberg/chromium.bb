@@ -8,7 +8,6 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
-#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
