@@ -41,24 +41,6 @@ struct ShortcutInfo {
   ShortcutInfo();
   ~ShortcutInfo();
 
-  // Run an IO task on a worker thread. Ownership of |shortcut_info| transfers
-  // to a closure that deletes it on the UI thread when the task is complete.
-  // Tasks posted here run with BACKGROUND priority and block shutdown.
-  // TODO(tapted): |reply| should be a OnceClosure, but first
-  // extensions::ImageLoaderImageCallback must be converted.
-  static void PostIOTask(base::OnceCallback<void(const ShortcutInfo&)> task,
-                         std::unique_ptr<ShortcutInfo> shortcut_info);
-  static void PostIOTaskAndReply(
-      base::OnceCallback<void(const ShortcutInfo&)> task,
-      std::unique_ptr<ShortcutInfo> shortcut_info,
-      const base::Closure& reply);
-
-  // The task runner for running shortcut tasks. On Windows this will be a task
-  // runner that permits access to COM libraries. Shortcut tasks typically deal
-  // with ensuring Profile changes are reflected on disk, so shutdown is always
-  // blocked so that an inconsistent shortcut state is not left on disk.
-  static scoped_refptr<base::TaskRunner> GetTaskRunner();
-
   GURL url;
   // If |extension_id| is non-empty, this is short cut is to an extension-app
   // and the launch url will be detected at start-up. In this case, |url|
@@ -123,7 +105,7 @@ enum ShortcutCreationReason {
 };
 
 // Called by GetShortcutInfoForApp after fetching the ShortcutInfo.
-typedef base::Callback<void(std::unique_ptr<ShortcutInfo>)>
+typedef base::OnceCallback<void(std::unique_ptr<ShortcutInfo>)>
     ShortcutInfoCallback;
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -136,7 +118,7 @@ std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
 // it to |callback| after asynchronously loading all icon representations.
 void GetShortcutInfoForApp(const extensions::Extension* extension,
                            Profile* profile,
-                           const ShortcutInfoCallback& callback);
+                           ShortcutInfoCallback callback);
 
 // Whether to create a shortcut for this type of extension.
 bool ShouldCreateShortcutFor(web_app::ShortcutCreationReason reason,
@@ -196,12 +178,11 @@ void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app);
 void UpdateAllShortcuts(const base::string16& old_app_title,
                         Profile* profile,
                         const extensions::Extension* app,
-                        const base::Closure& callback);
+                        base::OnceClosure callback);
 
 // Updates shortcuts for all apps in this profile. This is expected to be called
 // on the UI thread.
-void UpdateShortcutsForAllApps(Profile* profile,
-                               const base::Closure& callback);
+void UpdateShortcutsForAllApps(Profile* profile, base::OnceClosure callback);
 
 // Returns true if given url is a valid web app url.
 bool IsValidUrl(const GURL& url);
@@ -214,6 +195,22 @@ std::string GetWMClassFromAppName(std::string app_name);
 #endif
 
 namespace internals {
+
+// Run an IO task on a worker thread. Ownership of |shortcut_info| transfers
+// to a closure that deletes it on the UI thread when the task is complete.
+// Tasks posted here run with BACKGROUND priority and block shutdown.
+void PostShortcutIOTask(base::OnceCallback<void(const ShortcutInfo&)> task,
+                        std::unique_ptr<ShortcutInfo> shortcut_info);
+void PostShortcutIOTaskAndReply(
+    base::OnceCallback<void(const ShortcutInfo&)> task,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
+    base::OnceClosure reply);
+
+// The task runner for running shortcut tasks. On Windows this will be a task
+// runner that permits access to COM libraries. Shortcut tasks typically deal
+// with ensuring Profile changes are reflected on disk, so shutdown is always
+// blocked so that an inconsistent shortcut state is not left on disk.
+scoped_refptr<base::TaskRunner> GetShortcutIOTaskRunner();
 
 #if defined(OS_WIN)
 // Returns the Windows user-level shortcut paths that are specified in

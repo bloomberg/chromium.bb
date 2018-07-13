@@ -74,12 +74,12 @@ class Latch : public base::RefCountedThreadSafe<
                   Latch,
                   content::BrowserThread::DeleteOnUIThread> {
  public:
-  explicit Latch(const base::Closure& callback) : callback_(callback) {}
+  explicit Latch(base::OnceClosure callback) : callback_(std::move(callback)) {}
 
   // Wraps a reference to |this| in a Closure and returns it. Running the
   // Closure does nothing. The Closure just serves to keep a reference alive
   // until |this| is ready to be destroyed; invoking the |callback|.
-  base::Closure NoOpClosure() {
+  base::RepeatingClosure NoOpClosure() {
     return base::Bind(base::DoNothing::Repeatedly<Latch*>(),
                       base::RetainedRef(this));
   }
@@ -90,9 +90,9 @@ class Latch : public base::RefCountedThreadSafe<
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
 
-  ~Latch() { callback_.Run(); }
+  ~Latch() { std::move(callback_).Run(); }
 
-  base::Closure callback_;
+  base::OnceClosure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Latch);
 };
@@ -278,7 +278,7 @@ void UpdateAndLaunchShimOnFileThread(
 }
 
 void UpdateAndLaunchShim(std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
-  web_app::ShortcutInfo::PostIOTask(
+  web_app::internals::PostShortcutIOTask(
       base::BindOnce(&UpdateAndLaunchShimOnFileThread),
       std::move(shortcut_info));
 }
@@ -1020,7 +1020,7 @@ void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info) {
     return;
   }
 
-  web_app::ShortcutInfo::PostIOTask(
+  web_app::internals::PostShortcutIOTask(
       base::BindOnce(&LaunchShimOnFileThread, false), std::move(shortcut_info));
 }
 
@@ -1036,8 +1036,7 @@ bool MaybeRebuildShortcut(const base::CommandLine& command_line) {
   return true;
 }
 
-void UpdateShortcutsForAllApps(Profile* profile,
-                               const base::Closure& callback) {
+void UpdateShortcutsForAllApps(Profile* profile, base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   extensions::ExtensionRegistry* registry =
@@ -1045,7 +1044,7 @@ void UpdateShortcutsForAllApps(Profile* profile,
   if (!registry)
     return;
 
-  scoped_refptr<Latch> latch = new Latch(callback);
+  scoped_refptr<Latch> latch = new Latch(std::move(callback));
 
   // Update all apps.
   std::unique_ptr<extensions::ExtensionSet> candidates =
@@ -1061,7 +1060,7 @@ void UpdateShortcutsForAllApps(Profile* profile,
 
 void RevealAppShimInFinderForApp(Profile* profile,
                                  const extensions::Extension* app) {
-  web_app::ShortcutInfo::PostIOTask(
+  web_app::internals::PostShortcutIOTask(
       base::BindOnce(&RevealAppShimInFinderForAppOnFileThread, app->path()),
       ShortcutInfoForExtensionAndProfile(app, profile));
 }

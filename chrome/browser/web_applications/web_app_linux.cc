@@ -14,9 +14,8 @@
 
 namespace web_app {
 
-void UpdateShortcutsForAllApps(Profile* profile,
-                               const base::Closure& callback) {
-  callback.Run();
+void UpdateShortcutsForAllApps(Profile* profile, base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
 namespace internals {

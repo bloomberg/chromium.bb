@@ -373,7 +373,7 @@ void OnShortcutInfoLoadedForSetRelaunchDetails(
   base::FilePath icon_file =
       web_app::internals::GetIconFilePath(web_app_path, shortcut_info->title);
 
-  web_app::ShortcutInfo::PostIOTask(
+  web_app::internals::PostShortcutIOTask(
       base::BindOnce(&CreateIconAndSetRelaunchDetails, web_app_path, icon_file,
                      hwnd),
       std::move(shortcut_info));
@@ -411,12 +411,11 @@ void UpdateRelaunchDetailsForApp(Profile* profile,
   web_app::GetShortcutInfoForApp(
       extension,
       profile,
-      base::Bind(&OnShortcutInfoLoadedForSetRelaunchDetails, hwnd));
+      base::BindOnce(&OnShortcutInfoLoadedForSetRelaunchDetails, hwnd));
 }
 
-void UpdateShortcutsForAllApps(Profile* profile,
-                               const base::Closure& callback) {
-  callback.Run();
+void UpdateShortcutsForAllApps(Profile* profile, base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
 namespace internals {

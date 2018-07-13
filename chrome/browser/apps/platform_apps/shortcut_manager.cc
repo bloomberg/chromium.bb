@@ -137,7 +137,7 @@ void AppShortcutManager::OnProfileWillBeRemoved(
   if (profile_path != profile_->GetPath())
     return;
 
-  web_app::ShortcutInfo::GetTaskRunner()->PostTask(
+  web_app::internals::GetShortcutIOTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&web_app::internals::DeleteAllShortcutsForProfile,
                      profile_path));
