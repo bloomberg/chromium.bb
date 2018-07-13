@@ -88,6 +88,7 @@ check_targets = [
   "//chrome/browser/extensions/*",
   "//chrome/browser/resource_coordinator/*",
   "//chrome/browser/ui/*",
+  "//chrome/chrome_cleaner/*",
   "//chrome/common/*",
   "//chrome/installer/*",
   "//chrome/profiling",
