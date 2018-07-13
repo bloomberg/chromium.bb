@@ -196,6 +196,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'extra_args': [
               '--run-ref-build',
               '--test-shard-map-filename=android_nexus5x_16_shard_map.json',
+              '--assert-gpu-compositing',
           ],
         },
         {
@@ -244,6 +245,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'extra_args': [
               '--run-ref-build',
               '--test-shard-map-filename=android_nexus5_16_shard_map.json',
+              '--assert-gpu-compositing',
           ],
         },
         {
@@ -287,6 +289,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'extra_args': [
               '--run-ref-build',
               '--test-shard-map-filename=android_one_16_shard_map.json',
+              '--assert-gpu-compositing',
           ],
         },
         {
@@ -312,6 +315,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'extra_args': [
               '--run-ref-build',
               '--test-shard-map-filename=android_nexus5x_webview_16_shard_map.json',
+              '--assert-gpu-compositing',
           ],
         }
       ],
@@ -332,6 +336,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'extra_args': [
               '--run-ref-build',
               '--test-shard-map-filename=android_nexus6_webview_16_shard_map.json',
+              '--assert-gpu-compositing',
           ],
         }
       ],

@@ -145,7 +145,8 @@
           "--browser=android-chromium",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=android_nexus5_16_shard_map.json"
+          "--test-shard-map-filename=android_nexus5_16_shard_map.json",
+          "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -238,7 +239,8 @@
           "--browser=android-chromium",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=android_nexus5x_webview_16_shard_map.json"
+          "--test-shard-map-filename=android_nexus5x_webview_16_shard_map.json",
+          "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {
@@ -288,7 +290,8 @@
           "--browser=android-chromium",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=android_nexus6_webview_16_shard_map.json"
+          "--test-shard-map-filename=android_nexus6_webview_16_shard_map.json",
+          "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {
@@ -338,7 +341,8 @@
           "--browser=android-chromium",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=android_one_16_shard_map.json"
+          "--test-shard-map-filename=android_one_16_shard_map.json",
+          "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -1108,7 +1112,8 @@
           "--browser=android-chromium",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=android_nexus5x_16_shard_map.json"
+          "--test-shard-map-filename=android_nexus5x_16_shard_map.json",
+          "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
