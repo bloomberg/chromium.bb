@@ -56,13 +56,16 @@ struct SyncPasswordData {
 uint64_t CalculatePasswordHash(const base::StringPiece16& text,
                                const std::string& salt);
 
-// If username is an email address, canonicalizes this email. Otherwise, returns
-// |username|.
-std::string CanonicalizeUsername(const std::string& username);
+// If username is an email address, canonicalizes this email. Otherwise,
+// append "@gmail.com" if it is gaia or returns |username| for non-Gaia account.
+std::string CanonicalizeUsername(const std::string& username,
+                                 bool is_gaia_account);
 
 // Returns true if the two usernames the same after canonicalization.
 bool AreUsernamesSame(const std::string& username1,
-                      const std::string& username2);
+                      bool is_username1_gaia_account,
+                      const std::string& username2,
+                      bool is_username2_gaia_account);
 
 }  // namespace password_manager
 

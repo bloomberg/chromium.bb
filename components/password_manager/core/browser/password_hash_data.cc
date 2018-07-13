@@ -48,8 +48,8 @@ bool PasswordHashData::MatchesPassword(const std::string& username,
                                        const base::string16& password,
                                        bool is_gaia_password) const {
   if (password.size() != this->length ||
-      !AreUsernamesSame(username, this->username) ||
-      is_gaia_password != this->is_gaia_password) {
+      !AreUsernamesSame(username, is_gaia_password, this->username,
+                        this->is_gaia_password)) {
     return false;
   }
 
@@ -103,15 +103,26 @@ uint64_t CalculatePasswordHash(const base::StringPiece16& text,
   return hash37;
 }
 
-std::string CanonicalizeUsername(const std::string& username) {
+std::string CanonicalizeUsername(const std::string& username,
+                                 bool is_gaia_account) {
   std::vector<std::string> parts = base::SplitString(
       username, "@", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  return parts.size() != 2U ? username : gaia::CanonicalizeEmail(username);
+  if (parts.size() != 2U) {
+    if (is_gaia_account && parts.size() == 1U)
+      return gaia::CanonicalizeEmail(username + "@gmail.com");
+    return username;
+  }
+  return gaia::CanonicalizeEmail(username);
 }
 
 bool AreUsernamesSame(const std::string& username1,
-                      const std::string& username2) {
-  return CanonicalizeUsername(username1) == CanonicalizeUsername(username2);
+                      bool is_username1_gaia_account,
+                      const std::string& username2,
+                      bool is_username2_gaia_account) {
+  if (is_username1_gaia_account != is_username2_gaia_account)
+    return false;
+  return CanonicalizeUsername(username1, is_username1_gaia_account) ==
+         CanonicalizeUsername(username2, is_username2_gaia_account);
 }
 
 }  // namespace password_manager

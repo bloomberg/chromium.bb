@@ -86,6 +86,10 @@ std::string GetAndDecryptField(const base::Value& dict,
              : std::string();
 }
 
+bool IsGaiaPassword(const base::Value& dict) {
+  return GetAndDecryptField(dict, kIsGaiaFieldKey) == "true";
+}
+
 // Packs |salt| and |password_length| to a string.
 std::string LengthAndSaltToString(const std::string& salt,
                                   size_t password_length) {
@@ -168,7 +172,7 @@ bool HashPasswordManager::SavePasswordHash(const std::string username,
   for (base::Value& password_hash_data : update.Get()->GetList()) {
     if (AreUsernamesSame(
             GetAndDecryptField(password_hash_data, kUsernameFieldKey),
-            username)) {
+            IsGaiaPassword(password_hash_data), username, is_gaia_password)) {
       base::Optional<PasswordHashData> existing_password_hash =
           ConvertToPasswordHashData(password_hash_data);
       if (existing_password_hash && existing_password_hash->MatchesPassword(
@@ -217,9 +221,7 @@ void HashPasswordManager::ClearSavedPasswordHash(const std::string& username,
     ListPrefUpdate update(prefs_, prefs::kPasswordHashDataList);
     for (auto it = update->GetList().begin(); it != update->GetList().end();) {
       if (AreUsernamesSame(GetAndDecryptField(*it, kUsernameFieldKey),
-                           username) &&
-          GetAndDecryptField(*it, kIsGaiaFieldKey) ==
-              BooleanToString(is_gaia_password)) {
+                           IsGaiaPassword(*it), username, is_gaia_password)) {
         it = update->GetList().erase(it);
       } else {
         it++;
@@ -287,9 +289,7 @@ base::Optional<PasswordHashData> HashPasswordManager::RetrievePasswordHash(
   for (const base::Value& entry :
        prefs_->GetList(prefs::kPasswordHashDataList)->GetList()) {
     if (AreUsernamesSame(GetAndDecryptField(entry, kUsernameFieldKey),
-                         username) &&
-        GetAndDecryptField(entry, kIsGaiaFieldKey) ==
-            BooleanToString(is_gaia_password)) {
+                         IsGaiaPassword(entry), username, is_gaia_password)) {
       return ConvertToPasswordHashData(entry);
     }
   }
@@ -311,9 +311,7 @@ bool HashPasswordManager::HasPasswordHash(const std::string& username,
   for (const base::Value& entry :
        prefs_->GetList(prefs::kPasswordHashDataList)->GetList()) {
     if (AreUsernamesSame(GetAndDecryptField(entry, kUsernameFieldKey),
-                         username) &&
-        BooleanToString(is_gaia_password) ==
-            GetAndDecryptField(entry, kIsGaiaFieldKey)) {
+                         IsGaiaPassword(entry), username, is_gaia_password)) {
       return true;
     }
   }
@@ -397,8 +395,8 @@ bool HashPasswordManager::EncryptAndSave(
     return false;
   }
 
-  std::string encrypted_username =
-      EncryptString(CanonicalizeUsername(password_hash_data.username));
+  std::string encrypted_username = EncryptString(CanonicalizeUsername(
+      password_hash_data.username, password_hash_data.is_gaia_password));
   if (encrypted_username.empty())
     return false;
 
@@ -432,9 +430,8 @@ bool HashPasswordManager::EncryptAndSave(
   bool replace_old_entry = false;
   for (auto it = update->GetList().begin(); it != update->GetList().end();) {
     if (AreUsernamesSame(GetAndDecryptField(*it, kUsernameFieldKey),
-                         password_hash_data.username) &&
-        GetAndDecryptField(*it, kIsGaiaFieldKey) ==
-            BooleanToString(password_hash_data.is_gaia_password)) {
+                         IsGaiaPassword(*it), password_hash_data.username,
+                         password_hash_data.is_gaia_password)) {
       it = update->GetList().erase(it);
       replace_old_entry = true;
     } else {
