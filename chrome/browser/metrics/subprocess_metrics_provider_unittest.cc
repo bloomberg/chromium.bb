@@ -113,7 +113,8 @@ class SubprocessMetricsProviderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SubprocessMetricsProviderTest);
 };
 
-TEST_F(SubprocessMetricsProviderTest, SnapshotMetrics) {
+// Temporarily disabled until someone can troubleshoot http://crbug.com/863262
+TEST_F(SubprocessMetricsProviderTest, DISABLED_SnapshotMetrics) {
   base::HistogramBase* foo = base::Histogram::FactoryGet("foo", 1, 100, 10, 0);
   base::HistogramBase* bar = base::Histogram::FactoryGet("bar", 1, 100, 10, 0);
   base::HistogramBase* baz = base::Histogram::FactoryGet("baz", 1, 100, 10, 0);
