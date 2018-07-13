@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/json/json_writer.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -192,8 +191,7 @@ bool ShouldShowInLauncher(const std::string& app_id) {
 bool LaunchAndroidSettingsApp(content::BrowserContext* context,
                               int event_flags,
                               int64_t display_id) {
-  return LaunchApp(context, kSettingsAppId, event_flags,
-                   UserInteractionType::APP_STARTED_FROM_SETTINGS, display_id);
+  return LaunchApp(context, kSettingsAppId, event_flags, display_id);
 }
 
 bool LaunchPlayStoreWithUrl(const std::string& url) {
@@ -210,31 +208,24 @@ bool LaunchPlayStoreWithUrl(const std::string& url) {
 
 bool LaunchApp(content::BrowserContext* context,
                const std::string& app_id,
-               int event_flags,
-               arc::UserInteractionType user_action) {
-  return LaunchApp(context, app_id, event_flags, user_action,
-                   display::kInvalidDisplayId);
+               int event_flags) {
+  return LaunchApp(context, app_id, event_flags, display::kInvalidDisplayId);
 }
 
 bool LaunchApp(content::BrowserContext* context,
                const std::string& app_id,
                int event_flags,
-               arc::UserInteractionType user_action,
                int64_t display_id) {
   return LaunchAppWithIntent(context, app_id, base::nullopt /* launch_intent */,
-                             event_flags, user_action, display_id);
+                             event_flags, display_id);
 }
 
 bool LaunchAppWithIntent(content::BrowserContext* context,
                          const std::string& app_id,
                          const base::Optional<std::string>& launch_intent,
                          int event_flags,
-                         arc::UserInteractionType user_action,
                          int64_t display_id) {
   DCHECK(!launch_intent.has_value() || !launch_intent->empty());
-  if (user_action != UserInteractionType::NOT_USER_INITIATED)
-    UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction", user_action,
-                              UserInteractionType::SIZE);
 
   Profile* const profile = Profile::FromBrowserContext(context);
 
@@ -358,9 +349,8 @@ bool LaunchSettingsAppActivity(content::BrowserContext* context,
                                int64_t display_id) {
   const std::string launch_intent = GetLaunchIntent(
       kSettingsAppPackage, activity, std::vector<std::string>());
-  return LaunchAppWithIntent(
-      context, kSettingsAppId, launch_intent, event_flags,
-      UserInteractionType::APP_STARTED_FROM_SETTINGS, display_id);
+  return LaunchAppWithIntent(context, kSettingsAppId, launch_intent,
+                             event_flags, display_id);
 }
 
 void SetTaskActive(int task_id) {

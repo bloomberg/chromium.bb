@@ -362,10 +362,8 @@ TEST_F(LauncherContextMenuTest, ArcDeferredLauncherContextMenuItemCheck) {
   EXPECT_TRUE(controller()->GetItem(shelf_id1));
   EXPECT_FALSE(controller()->GetItem(shelf_id2));
 
-  arc::LaunchApp(profile(), app_id1, ui::EF_LEFT_MOUSE_BUTTON,
-                 arc::UserInteractionType::NOT_USER_INITIATED);
-  arc::LaunchApp(profile(), app_id2, ui::EF_LEFT_MOUSE_BUTTON,
-                 arc::UserInteractionType::NOT_USER_INITIATED);
+  arc::LaunchApp(profile(), app_id1, ui::EF_LEFT_MOUSE_BUTTON);
+  arc::LaunchApp(profile(), app_id2, ui::EF_LEFT_MOUSE_BUTTON);
 
   EXPECT_TRUE(controller()->GetItem(shelf_id1));
   EXPECT_TRUE(controller()->GetItem(shelf_id2));

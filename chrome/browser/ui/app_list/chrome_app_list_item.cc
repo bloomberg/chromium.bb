@@ -93,7 +93,11 @@ ash::mojom::AppListItemMetadataPtr ChromeAppListItem::CloneMetadata() const {
 
 void ChromeAppListItem::PerformActivate(int event_flags) {
   Activate(event_flags);
-  MaybeDismissAppList();
+
+  // Launching apps can take some time. It looks nicer to dismiss the app list.
+  // Do not close app list for home launcher.
+  if (!GetController()->IsHomeLauncherEnabledInTabletMode())
+    GetController()->DismissView();
 }
 
 void ChromeAppListItem::Activate(int event_flags) {}
@@ -112,13 +116,6 @@ bool ChromeAppListItem::IsBadged() const {
 
 app_list::AppContextMenu* ChromeAppListItem::GetAppContextMenu() {
   return nullptr;
-}
-
-void ChromeAppListItem::MaybeDismissAppList() {
-  // Launching apps can take some time. It looks nicer to dismiss the app list.
-  // Do not close app list for home launcher.
-  if (!GetController()->IsHomeLauncherEnabledInTabletMode())
-    GetController()->DismissView();
 }
 
 void ChromeAppListItem::ContextMenuItemSelected(int command_id,

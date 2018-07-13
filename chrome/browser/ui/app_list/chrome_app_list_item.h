@@ -137,8 +137,6 @@ class ChromeAppListItem {
   // different kinds of items.
   virtual app_list::AppContextMenu* GetAppContextMenu();
 
-  void MaybeDismissAppList();
-
  private:
   ash::mojom::AppListItemMetadataPtr metadata_;
   Profile* profile_;

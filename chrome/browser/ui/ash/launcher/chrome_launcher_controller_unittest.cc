@@ -1903,16 +1903,11 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
   EXPECT_FALSE(launcher_controller_->GetItem(shelf_id_app_3));
   EXPECT_FALSE(launcher_controller_->GetItem(shelf_id_shortcut));
 
-  arc::LaunchApp(profile(), arc_app_id1, ui::EF_LEFT_MOUSE_BUTTON,
-                 arc::UserInteractionType::NOT_USER_INITIATED);
-  arc::LaunchApp(profile(), arc_app_id1, ui::EF_LEFT_MOUSE_BUTTON,
-                 arc::UserInteractionType::NOT_USER_INITIATED);
-  arc::LaunchApp(profile(), arc_app_id2, ui::EF_LEFT_MOUSE_BUTTON,
-                 arc::UserInteractionType::NOT_USER_INITIATED);
-  arc::LaunchApp(profile(), arc_app_id3, ui::EF_LEFT_MOUSE_BUTTON,
-                 arc::UserInteractionType::NOT_USER_INITIATED);
-  arc::LaunchApp(profile(), arc_shortcut_id, ui::EF_LEFT_MOUSE_BUTTON,
-                 arc::UserInteractionType::NOT_USER_INITIATED);
+  arc::LaunchApp(profile(), arc_app_id1, ui::EF_LEFT_MOUSE_BUTTON);
+  arc::LaunchApp(profile(), arc_app_id1, ui::EF_LEFT_MOUSE_BUTTON);
+  arc::LaunchApp(profile(), arc_app_id2, ui::EF_LEFT_MOUSE_BUTTON);
+  arc::LaunchApp(profile(), arc_app_id3, ui::EF_LEFT_MOUSE_BUTTON);
+  arc::LaunchApp(profile(), arc_shortcut_id, ui::EF_LEFT_MOUSE_BUTTON);
 
   EXPECT_TRUE(launcher_controller_->GetItem(shelf_id_app_1));
   EXPECT_TRUE(launcher_controller_->GetItem(shelf_id_app_2));
@@ -1984,8 +1979,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
   launcher_controller_->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
 
   // This launch request should be ignored in case of active app.
-  arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON,
-                 arc::UserInteractionType::NOT_USER_INITIATED);
+  arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
   EXPECT_FALSE(
       launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
 
@@ -1997,8 +1991,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
   EXPECT_EQ(ash::TYPE_PINNED_APP, item->type);
 
   // Now launch request should not be ignored.
-  arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON,
-                 arc::UserInteractionType::NOT_USER_INITIATED);
+  arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
   EXPECT_TRUE(
       launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
 }
@@ -3971,8 +3964,7 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   const std::string app_id =
       ArcAppTest::GetAppId(arc_test_.fake_default_apps()[0]);
   EXPECT_FALSE(launcher_controller_->GetItem(ash::ShelfID(app_id)));
-  EXPECT_TRUE(arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON,
-                             arc::UserInteractionType::NOT_USER_INITIATED));
+  EXPECT_TRUE(arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
   EXPECT_TRUE(launcher_controller_->GetItem(ash::ShelfID(app_id)));
 
@@ -3980,8 +3972,7 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   EnablePlayStore(false);
   EXPECT_FALSE(launcher_controller_->GetItem(ash::ShelfID(app_id)));
 
-  EXPECT_TRUE(arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON,
-                             arc::UserInteractionType::NOT_USER_INITIATED));
+  EXPECT_TRUE(arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
   EXPECT_TRUE(launcher_controller_->GetItem(ash::ShelfID(app_id)));
 
