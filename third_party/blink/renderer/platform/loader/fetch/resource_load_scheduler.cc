@@ -469,7 +469,24 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
   pending_requests_[option].insert(request_info);
   pending_request_map_.insert(
       *id, new ClientInfo(client, option, priority, intra_priority));
+
+  // Remember the ClientId since MaybeRun() below may destruct the caller
+  // instance and |id| may be inaccessible after the call.
+  ResourceLoadScheduler::ClientId client_id = *id;
   MaybeRun();
+
+  if (IsThrottledState() &&
+      pending_request_map_.find(client_id) != pending_request_map_.end()) {
+    // Note that this doesn't show the message when a frame is stopped (vs.
+    // this DOES when throttled).
+    context_->AddInfoConsoleMessage(
+        "Active resource loading counts reached to a per-frame limit while the "
+        "tab is in background. Network requests will be delayed until a "
+        "previous loading finishes, or the tab is foregrounded. See "
+        "https://www.chromestatus.com/feature/5527160148197376 for more "
+        "details",
+        FetchContext::kOtherSource);
+  }
 }
 
 void ResourceLoadScheduler::SetPriority(ClientId client_id,
@@ -738,6 +755,18 @@ size_t ResourceLoadScheduler::GetOutstandingLimit() const {
       break;
   }
   return limit;
+}
+
+bool ResourceLoadScheduler::IsThrottledState() const {
+  switch (frame_scheduler_lifecycle_state_) {
+    case scheduler::SchedulingLifecycleState::kHidden:
+    case scheduler::SchedulingLifecycleState::kThrottled:
+      return true;
+    case scheduler::SchedulingLifecycleState::kStopped:
+    case scheduler::SchedulingLifecycleState::kNotThrottled:
+      break;
+  }
+  return false;
 }
 
 }  // namespace blink

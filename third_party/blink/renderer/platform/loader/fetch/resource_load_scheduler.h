@@ -265,6 +265,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
 
   size_t GetOutstandingLimit() const;
 
+  bool IsThrottledState() const;
+
   // A flag to indicate an internal running state.
   // TODO(toyoshim): We may want to use enum once we start to have more states.
   bool is_shutdown_ = false;

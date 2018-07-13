@@ -58,6 +58,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual std::unique_ptr<WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle() = 0;
 
+  void AddInfoConsoleMessage(const String&, LogSource) const override;
   void AddErrorConsoleMessage(const String&, LogSource) const override;
   bool IsAdResource(const KURL&,
                     Resource::Type,

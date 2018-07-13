@@ -86,6 +86,21 @@ const char* GetDestinationFromContext(WebURLRequest::RequestContext context) {
   return "";
 }
 
+MessageSource ConvertLogSourceToMessageSource(FetchContext::LogSource source) {
+  // When LogSource is extended, this switch statement should be modified to
+  // convert LogSource to blink::MessageSource.
+  switch (source) {
+    case FetchContext::kJSSource:
+      return kJSMessageSource;
+    case FetchContext::kSecuritySource:
+      return kSecurityMessageSource;
+    case FetchContext::kOtherSource:
+      return kOtherMessageSource;
+  }
+  NOTREACHED();
+  return kOtherMessageSource;
+}
+
 }  // namespace
 
 void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
@@ -159,19 +174,16 @@ base::Optional<ResourceRequestBlockedReason> BaseFetchContext::CanRequest(
   return blocked_reason;
 }
 
+void BaseFetchContext::AddInfoConsoleMessage(const String& message,
+                                             LogSource source) const {
+  AddConsoleMessage(ConsoleMessage::Create(
+      ConvertLogSourceToMessageSource(source), kInfoMessageLevel, message));
+}
+
 void BaseFetchContext::AddErrorConsoleMessage(const String& message,
                                               LogSource source) const {
-  switch (source) {
-    case kJSSource:
-      AddConsoleMessage(ConsoleMessage::Create(kJSMessageSource,
-                                               kErrorMessageLevel, message));
-      return;
-    case kSecuritySource:
-      AddConsoleMessage(ConsoleMessage::Create(kSecurityMessageSource,
-                                               kErrorMessageLevel, message));
-      return;
-  }
-  NOTREACHED();
+  AddConsoleMessage(ConsoleMessage::Create(
+      ConvertLogSourceToMessageSource(source), kErrorMessageLevel, message));
 }
 
 bool BaseFetchContext::IsAdResource(
