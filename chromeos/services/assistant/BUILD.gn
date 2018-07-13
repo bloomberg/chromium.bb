@@ -64,6 +64,7 @@ source_set("lib") {
     ]
 
     deps += [
+      "//chromeos/assistant/internal:build_libassistant",
       "//chromeos/assistant/internal/action",
       "//chromeos/assistant/internal/proto/google3",
       "//libassistant/contrib/core",
@@ -74,11 +75,7 @@ source_set("lib") {
       "//ui/base",
     ]
 
-    if (enable_cros_libassistant_so) {
-      deps += [ "//libassistant/internal/assistant/controller:libassistant" ]
-    } else {
-      libs = [ "assistant" ]
-    }
+    libs = [ "$root_out_dir/libassistant.so" ]
 
     include_dirs = [
       "//libassistant/contrib",
