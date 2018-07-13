@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/payments/payment_items_display_coordinator.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/payments/payment_request_unittest_base.h"

@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #import "base/test/ios/wait_util.h"
 #include "base/values.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -69,8 +68,8 @@ bool AddVerifierToElementWithPrefix(web::WebState* web_state,
       kAddInteractionVerifierScriptTemplate,
       selector.GetSelectorScript().c_str(), kCallbackInvocation.c_str());
 
-  bool success =
-      testing::WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
+  bool success = base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^{
         bool verifier_added = false;
         std::unique_ptr<base::Value> value =
             web::test::ExecuteJavaScript(web_state, kAddVerifierScript);
@@ -212,7 +211,7 @@ id<GREYAction> WebViewVerifiedActionOnElement(
                       @"The action (%@) on element %s wasn't "
                       @"verified before timing out.",
                       action.name, selector.GetSelectorDescription().c_str()];
-    GREYAssert(testing::WaitUntilConditionOrTimeout(
+    GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
                    kWaitForVerificationTimeout,
                    ^{
                      return verified;
@@ -302,8 +301,8 @@ id<GREYAction> WebViewScrollElementToVisible(
           web::test::ExecuteJavaScript(state, kScrollToVisibleScript);
 
           // Wait until the element is visible.
-          bool check = testing::WaitUntilConditionOrTimeout(
-              testing::kWaitForUIElementTimeout, ^{
+          bool check = base::test::ios::WaitUntilConditionOrTimeout(
+              base::test::ios::kWaitForUIElementTimeout, ^{
                 CGRect rect =
                     web::test::GetBoundingRectOfElement(state, selector);
                 return IsRectVisibleInView(rect, web_view);

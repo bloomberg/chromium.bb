@@ -7,8 +7,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/public/features.h"
 #import "ios/web/public/navigation_item.h"
@@ -136,8 +136,8 @@ class HistoryStateOperationsTest
 
   // Waits for the NoOp text to be visible.
   void WaitForNoOpText() {
-    BOOL completed = testing::WaitUntilConditionOrTimeout(
-        testing::kWaitForJSCompletionTimeout, ^{
+    BOOL completed = base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForJSCompletionTimeout, ^{
           return IsNoOpTextVisible();
         });
     EXPECT_TRUE(completed) << "NoOp text failed to be visible.";
@@ -276,8 +276,8 @@ TEST_P(HistoryStateOperationsTest, DISABLED_TitleReplacement) {
   SetStateParams(empty_state, new_title, empty_url);
   ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kReplaceStateId));
   // Wait for the title to be reflected in the NavigationItem.
-  BOOL completed =
-      testing::WaitUntilConditionOrTimeout(kWaitForStateUpdateTimeout, ^{
+  BOOL completed = base::test::ios::WaitUntilConditionOrTimeout(
+      kWaitForStateUpdateTimeout, ^{
         return GetLastCommittedItem()->GetTitle() == ASCIIToUTF16(new_title);
       });
   EXPECT_TRUE(completed) << "Failed to validate NavigationItem title.";
@@ -307,8 +307,8 @@ TEST_P(HistoryStateOperationsTest, StateReplacement) {
   ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kReplaceStateId));
   // Verify that the state is reflected in the JavaScript context.
   BOOL verify_java_script_context_completed =
-      testing::WaitUntilConditionOrTimeout(
-          testing::kWaitForJSCompletionTimeout, ^{
+      base::test::ios::WaitUntilConditionOrTimeout(
+          base::test::ios::kWaitForJSCompletionTimeout, ^{
             return GetJavaScriptState() == new_state;
           });
   EXPECT_TRUE(verify_java_script_context_completed)
@@ -316,13 +316,14 @@ TEST_P(HistoryStateOperationsTest, StateReplacement) {
   // Verify that the state is reflected in the latest NavigationItem.
   std::string serialized_state("\"STATE OBJECT\"");
   BOOL verify_navigation_item_completed =
-      testing::WaitUntilConditionOrTimeout(kWaitForStateUpdateTimeout, ^{
-        web::NavigationItemImpl* item =
-            static_cast<web::NavigationItemImpl*>(GetLastCommittedItem());
-        std::string item_state =
-            base::SysNSStringToUTF8(item->GetSerializedStateObject());
-        return item_state == serialized_state;
-      });
+      base::test::ios::WaitUntilConditionOrTimeout(
+          kWaitForStateUpdateTimeout, ^{
+            web::NavigationItemImpl* item =
+                static_cast<web::NavigationItemImpl*>(GetLastCommittedItem());
+            std::string item_state =
+                base::SysNSStringToUTF8(item->GetSerializedStateObject());
+            return item_state == serialized_state;
+          });
   EXPECT_TRUE(verify_navigation_item_completed)
       << "Failed to validate NavigationItem state.";
   // Verify that the forward navigation was not pruned.
@@ -348,8 +349,8 @@ TEST_P(HistoryStateOperationsTest, MAYBE_StateReplacementReload) {
   // Reload the page and check that the state object is present.
   EXPECT_TRUE(Reload());
   ASSERT_TRUE(IsOnLoadTextVisible());
-  BOOL completed = testing::WaitUntilConditionOrTimeout(
-      testing::kWaitForJSCompletionTimeout, ^{
+  BOOL completed = base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForJSCompletionTimeout, ^{
         return GetJavaScriptState() == new_state;
       });
   EXPECT_TRUE(completed) << "Failed to validate JavaScript state.";
@@ -389,8 +390,8 @@ TEST_P(HistoryStateOperationsTest, StateReplacementBackForward) {
     WaitForNoOpText();
   }
 
-  BOOL completed = testing::WaitUntilConditionOrTimeout(
-      testing::kWaitForJSCompletionTimeout, ^{
+  BOOL completed = base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForJSCompletionTimeout, ^{
         return GetJavaScriptState() == new_state;
       });
   EXPECT_TRUE(completed) << "Failed to validate JavaScript state.";
@@ -417,8 +418,8 @@ TEST_P(HistoryStateOperationsTest, PushState) {
   SetStateParams(empty_state, empty_title, new_url);
   ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kPushStateId));
   // Verify that the url with the path is pushed.
-  BOOL completed =
-      testing::WaitUntilConditionOrTimeout(kWaitForStateUpdateTimeout, ^{
+  BOOL completed = base::test::ios::WaitUntilConditionOrTimeout(
+      kWaitForStateUpdateTimeout, ^{
         return GetLastCommittedItem()->GetURL() == new_url;
       });
   EXPECT_TRUE(completed) << "Failed to validate current url.";
@@ -444,8 +445,8 @@ TEST_P(HistoryStateOperationsTest, ReplaceStatePostRequest) {
   SetStateParams(new_state, empty_title, new_url);
   ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kReplaceStateId));
   // Verify that url has been replaced.
-  BOOL completed =
-      testing::WaitUntilConditionOrTimeout(kWaitForStateUpdateTimeout, ^{
+  BOOL completed = base::test::ios::WaitUntilConditionOrTimeout(
+      kWaitForStateUpdateTimeout, ^{
         return GetLastCommittedItem()->GetURL() == new_url;
       });
   EXPECT_TRUE(completed) << "Failed to validate current url.";
@@ -463,8 +464,8 @@ TEST_P(HistoryStateOperationsTest, ReplaceStateNoHashChangeEvent) {
   SetStateParams(empty_state, empty_title, new_url);
   ASSERT_TRUE(web::test::TapWebViewElementWithId(web_state(), kReplaceStateId));
   // Verify that url has been replaced.
-  BOOL completed =
-      testing::WaitUntilConditionOrTimeout(kWaitForStateUpdateTimeout, ^{
+  BOOL completed = base::test::ios::WaitUntilConditionOrTimeout(
+      kWaitForStateUpdateTimeout, ^{
         return GetLastCommittedItem()->GetURL() == new_url;
       });
   EXPECT_TRUE(completed) << "Failed to validate current url.";
@@ -481,8 +482,8 @@ TEST_P(HistoryStateOperationsTest, ReplaceStateThenReload) {
   ASSERT_TRUE(LoadUrl(url));
   GURL new_url = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/pony.html");
-  BOOL completed =
-      testing::WaitUntilConditionOrTimeout(kWaitForStateUpdateTimeout, ^{
+  BOOL completed = base::test::ios::WaitUntilConditionOrTimeout(
+      kWaitForStateUpdateTimeout, ^{
         return GetLastCommittedItem()->GetURL() == new_url;
       });
   EXPECT_TRUE(completed);

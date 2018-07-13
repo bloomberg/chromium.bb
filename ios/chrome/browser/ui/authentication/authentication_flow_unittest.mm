@@ -8,7 +8,7 @@
 
 #import "base/mac/scoped_block.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"

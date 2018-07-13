@@ -4,12 +4,12 @@
 
 #import "ios/chrome/test/app/history_test_util.h"
 
+#import "base/test/ios/wait_util.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/testing/wait_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,10 +26,10 @@ bool ClearBrowsingHistory() {
                         completionBlock:^{
                           did_complete = true;
                         }];
-  return testing::WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout,
-                                              ^{
-                                                return did_complete;
-                                              });
+  return base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^{
+        return did_complete;
+      });
 }
 
 }  // namespace chrome_test_util

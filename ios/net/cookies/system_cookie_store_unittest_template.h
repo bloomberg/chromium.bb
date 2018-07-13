@@ -15,8 +15,8 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#import "base/test/ios/wait_util.h"
 #include "ios/net/cookies/cookie_store_ios_test_util.h"
-#import "ios/testing/wait_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -26,8 +26,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::WaitUntilConditionOrTimeout;
-using testing::kWaitForCookiesTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForCookiesTimeout;
 
 namespace net {
 

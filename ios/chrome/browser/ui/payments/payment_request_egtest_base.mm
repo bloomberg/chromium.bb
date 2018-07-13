@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -21,7 +22,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 
@@ -96,7 +96,7 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
   _profiles.push_back(profile);
   size_t profile_count = [self personalDataManager]->GetProfiles().size();
   [self personalDataManager]->AddProfile(profile);
-  GREYAssert(testing::WaitUntilConditionOrTimeout(
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
                  kPDMMaxDelaySeconds,
                  ^bool() {
                    return profile_count <
@@ -109,7 +109,7 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
   _cards.push_back(card);
   size_t card_count = [self personalDataManager]->GetCreditCards().size();
   [self personalDataManager]->AddCreditCard(card);
-  GREYAssert(testing::WaitUntilConditionOrTimeout(
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
                  kPDMMaxDelaySeconds,
                  ^bool() {
                    return card_count <

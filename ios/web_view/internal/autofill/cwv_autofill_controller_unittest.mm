@@ -9,12 +9,12 @@
 #include <memory>
 
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #import "components/autofill/ios/browser/fake_autofill_agent.h"
 #import "components/autofill/ios/browser/fake_js_autofill_manager.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -33,8 +33,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::kWaitForActionTimeout;
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForActionTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace ios_web_view {
 

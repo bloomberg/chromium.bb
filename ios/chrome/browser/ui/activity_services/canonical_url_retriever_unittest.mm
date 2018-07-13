@@ -7,9 +7,9 @@
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/ui_metrics/canonical_url_share_metrics_types.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -35,8 +35,8 @@ class CanonicalURLRetrieverTest : public web::WebTestWithWebState {
       canonical_url_received = true;
     });
 
-    bool success = testing::WaitUntilConditionOrTimeout(
-        testing::kWaitForJSCompletionTimeout, ^{
+    bool success = base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForJSCompletionTimeout, ^{
           return canonical_url_received;
         });
 

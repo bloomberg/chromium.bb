@@ -5,8 +5,8 @@
 #include <memory>
 
 #include "base/run_loop.h"
+#import "base/test/ios/wait_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#import "ios/testing/wait_util.h"
 #include "ios/web/grit/ios_web_resources.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/navigation_test_util.h"
@@ -189,19 +189,20 @@ TEST_F(WebUIMojoTest, MessageExchange) {
     web_state()->GetNavigationManager()->LoadIfNecessary();
 
     // Wait until |TestUIHandler| receives "fin" message from WebUI page.
-    bool fin_received = testing::WaitUntilConditionOrTimeout(kMessageTimeout, ^{
-      // Flush any pending tasks. Don't RunUntilIdle() because
-      // RunUntilIdle() is incompatible with mojo::SimpleWatcher's
-      // automatic arming behavior, which Mojo JS still depends upon.
-      //
-      // TODO(crbug.com/701875): Introduce the full watcher API to JS and get
-      // rid of this hack.
-      base::RunLoop loop;
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                    loop.QuitClosure());
-      loop.Run();
-      return test_ui_handler()->IsFinReceived();
-    });
+    bool fin_received =
+        base::test::ios::WaitUntilConditionOrTimeout(kMessageTimeout, ^{
+          // Flush any pending tasks. Don't RunUntilIdle() because
+          // RunUntilIdle() is incompatible with mojo::SimpleWatcher's
+          // automatic arming behavior, which Mojo JS still depends upon.
+          //
+          // TODO(crbug.com/701875): Introduce the full watcher API to JS and
+          // get rid of this hack.
+          base::RunLoop loop;
+          base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                        loop.QuitClosure());
+          loop.Run();
+          return test_ui_handler()->IsFinReceived();
+        });
 
     ASSERT_TRUE(fin_received);
     EXPECT_FALSE(web_state()->IsLoading());

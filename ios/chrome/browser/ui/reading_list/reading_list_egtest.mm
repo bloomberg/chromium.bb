@@ -11,7 +11,7 @@
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
@@ -33,7 +33,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/testing/wait_util.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/reload_type.h"
@@ -103,11 +102,12 @@ ReadingListModel* GetReadingListModel() {
   ReadingListModel* model =
       ReadingListModelFactory::GetInstance()->GetForBrowserState(
           chrome_test_util::GetOriginalBrowserState());
-  GREYAssert(testing::WaitUntilConditionOrTimeout(2,
-                                                  ^{
-                                                    return model->loaded();
-                                                  }),
-             @"Reading List model did not load");
+  GREYAssert(
+      base::test::ios::WaitUntilConditionOrTimeout(2,
+                                                   ^{
+                                                     return model->loaded();
+                                                   }),
+      @"Reading List model did not load");
   return model;
 }
 
@@ -312,8 +312,8 @@ void AddCurrentPageToReadingList() {
                     error:&error];
     return error == nil;
   };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(kSnackbarAppearanceTimeout,
-                                                  wait_for_appearance),
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kSnackbarAppearanceTimeout, wait_for_appearance),
              @"Snackbar did not appear.");
 
   // Wait for the snackbar to disappear.
@@ -324,8 +324,8 @@ void AddCurrentPageToReadingList() {
                     error:&error];
     return error == nil;
   };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(kSnackbarDisappearanceTimeout,
-                                                  wait_for_disappearance),
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kSnackbarDisappearanceTimeout, wait_for_disappearance),
              @"Snackbar did not disappear.");
   if (net::NetworkChangeNotifier::IsOffline()) {
     net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
@@ -344,8 +344,8 @@ void WaitForDistillation() {
                     error:&error];
     return error == nil;
   };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(kDistillationTimeout,
-                                                  wait_for_distillation_date),
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kDistillationTimeout, wait_for_distillation_date),
              @"Item was not distilled.");
 }
 
@@ -396,7 +396,7 @@ void AssertIsShowingDistillablePage(bool online) {
     // Due to the reloads, a timeout longer than what is provided in
     // [ChromeEarlGrey waitForWebViewContainingText] is required, so call
     // WebViewContainingText directly.
-    GREYAssert(testing::WaitUntilConditionOrTimeout(
+    GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
                    kLoadOfflineTimeout,
                    ^bool {
                      return web::test::IsWebViewContainingText(

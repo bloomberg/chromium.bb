@@ -6,6 +6,7 @@
 #import <XCTest/XCTest.h>
 
 #include "base/macros.h"
+#import "base/test/ios/wait_util.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/strings/grit/components_strings.h"
@@ -28,7 +29,6 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#import "ios/testing/wait_util.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -104,8 +104,8 @@ void AssertSyncInitialized(bool is_initialized) {
   ConditionBlock condition = ^{
     return IsSyncInitialized() == is_initialized;
   };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(kSyncUKMOperationsTimeout,
-                                                  condition),
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kSyncUKMOperationsTimeout, condition),
              @"Failed to assert whether Sync was initialized or not.");
 }
 
@@ -113,8 +113,8 @@ void AssertUKMEnabled(bool is_enabled) {
   ConditionBlock condition = ^{
     return metrics::UkmEGTestHelper::ukm_enabled() == is_enabled;
   };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(kSyncUKMOperationsTimeout,
-                                                  condition),
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kSyncUKMOperationsTimeout, condition),
              @"Failed to assert whether UKM was enabled or not.");
 }
 

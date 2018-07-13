@@ -159,11 +159,11 @@ source_set("eg_tests") {
   deps = [
     ":fullscreen",
     "//base",
+    "//base/test:test_support",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/side_swipe",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing:ios_test_support",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public",
     "//ios/web/public/test",

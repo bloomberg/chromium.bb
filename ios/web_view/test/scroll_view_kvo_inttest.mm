@@ -5,7 +5,7 @@
 #import <ChromeWebView/ChromeWebView.h>
 #import <Foundation/Foundation.h>
 
-#import "ios/testing/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/web_view/test/observer.h"
 #import "ios/web_view/test/web_view_int_test.h"
 #import "ios/web_view/test/web_view_test_util.h"
@@ -37,8 +37,8 @@ TEST_F(ScrollViewKvoTest, contentOffset) {
               observer.lastValue);
 
   [web_view_.scrollView setContentOffset:CGPointMake(30, 40) animated:YES];
-  EXPECT_TRUE(
-      testing::WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^{
         return static_cast<bool>([observer.lastValue
             isEqual:[NSValue valueWithCGPoint:CGPointMake(30, 40)]]);
       }));

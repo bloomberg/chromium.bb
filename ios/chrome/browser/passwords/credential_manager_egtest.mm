@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -23,7 +24,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/disabled_test_macros.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 
@@ -153,8 +153,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     return error == nil;
   };
   // Gives some time for the notification to appear.
-  GREYAssert(testing::WaitUntilConditionOrTimeout(
-                 testing::kWaitForUIElementTimeout, waitForAppearance),
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForUIElementTimeout, waitForAppearance),
              @"Notification did not appear");
   // Wait for the notification to disappear.
   ConditionBlock waitForDisappearance = ^{
@@ -165,8 +165,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     return error == nil;
   };
   // Ensures that notification disappears after time limit.
-  GREYAssert(testing::WaitUntilConditionOrTimeout(kDisappearanceTimeout,
-                                                  waitForDisappearance),
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(kDisappearanceTimeout,
+                                                          waitForDisappearance),
              @"Notification did not disappear");
 }
 
@@ -203,16 +203,17 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   };
 
   // Check that notification doesn't appear in current tab.
-  GREYAssertFalse(testing::WaitUntilConditionOrTimeout(
-                      testing::kWaitForUIElementTimeout, waitForAppearance),
-                  @"Notification appeared in wrong tab");
+  GREYAssertFalse(
+      base::test::ios::WaitUntilConditionOrTimeout(
+          base::test::ios::kWaitForUIElementTimeout, waitForAppearance),
+      @"Notification appeared in wrong tab");
 
   // Switch to previous tab.
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   // Check that the notification has appeared.
-  GREYAssert(testing::WaitUntilConditionOrTimeout(
-                 testing::kWaitForUIElementTimeout, waitForAppearance),
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForUIElementTimeout, waitForAppearance),
              @"Notification did not appear");
 }
 

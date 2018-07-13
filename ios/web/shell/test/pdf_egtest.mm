@@ -5,7 +5,6 @@
 #import <EarlGrey/EarlGrey.h>
 
 #import "base/test/ios/wait_util.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
@@ -26,8 +25,8 @@ const char kTestPDFURL[] =
 id<GREYMatcher> WebViewWithPdf() {
   web::WebState* web_state = web::shell_test_util::GetCurrentWebState();
   MatchesBlock matches = ^BOOL(UIView* view) {
-    return testing::WaitUntilConditionOrTimeout(
-        testing::kWaitForUIElementTimeout, ^{
+    return base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForUIElementTimeout, ^{
           return web_state->GetContentsMimeType() == "application/pdf";
         });
   };

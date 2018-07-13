@@ -256,7 +256,6 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/browser/ui/tools_menu/public",
     "//ios/chrome/test/app:test_support",
-    "//ios/testing:ios_test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/material_components_ios",
     "//ios/web",

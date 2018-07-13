@@ -12,12 +12,12 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#import "base/test/ios/wait_util.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/open_from_clipboard/fake_clipboard_recent_content.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_observer.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
-#import "ios/testing/wait_util.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -114,8 +114,8 @@ TEST_F(BrowsingDataRemoverImplTest, InvokesObservers) {
                                 kRemoveMask, base::DoNothing());
 
   TestBrowsingDataRemoverObserver* observer_ptr = &observer;
-  EXPECT_TRUE(
-      testing::WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForActionTimeout, ^{
         // Spin the RunLoop as WaitUntilConditionOrTimeout doesn't.
         base::RunLoop().RunUntilIdle();
         return observer_ptr->last_remove_mask() == kRemoveMask;
@@ -134,8 +134,8 @@ TEST_F(BrowsingDataRemoverImplTest, SerializeRemovals) {
                                   --remaining_calls;
                                 }));
 
-  EXPECT_TRUE(
-      testing::WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForActionTimeout, ^{
         // Spin the RunLoop as WaitUntilConditionOrTimeout doesn't.
         base::RunLoop().RunUntilIdle();
         return remaining_calls == 0;
@@ -154,8 +154,8 @@ TEST_F(BrowsingDataRemoverImplTest, PerformAfterBrowserStateDestruction) {
   // Simulate destruction of BrowserState.
   browsing_data_remover_.Shutdown();
 
-  EXPECT_TRUE(
-      testing::WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForActionTimeout, ^{
         // Spin the RunLoop as WaitUntilConditionOrTimeout doesn't.
         base::RunLoop().RunUntilIdle();
         return remaining_calls == 0;

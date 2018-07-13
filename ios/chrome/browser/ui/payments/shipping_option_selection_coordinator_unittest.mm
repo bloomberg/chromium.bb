@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/payments/shipping_option_selection_coordinator.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/payment_shipping_option.h"

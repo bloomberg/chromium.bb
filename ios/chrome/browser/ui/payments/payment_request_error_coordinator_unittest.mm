@@ -6,7 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/payments/payment_request_error_view_controller.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #include "testing/gtest/include/gtest/gtest.h"

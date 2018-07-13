@@ -5,9 +5,9 @@
 #import "ios/chrome/browser/reading_list/favicon_web_state_dispatcher_impl.h"
 
 #include "base/memory/ptr_util.h"
+#import "base/test/ios/wait_util.h"
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/testing/wait_util.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,6 +66,6 @@ TEST_F(FaviconWebStateDispatcherTest, ReturnWebState) {
 
   dispatcher.ReturnWebState(std::move(web_state));
 
-  ASSERT_TRUE(testing::WaitUntilConditionOrTimeout(0.5, condition));
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(0.5, condition));
 }
 }  // namespace reading_list

@@ -9,8 +9,8 @@
 
 #include <memory>
 
+#import "base/test/ios/wait_util.h"
 #include "ios/net/cookies/system_cookie_store_unittest_template.h"
-#import "ios/testing/wait_util.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,8 +57,8 @@ class API_AVAILABLE(ios(11.0)) WKHTTPSystemCookieStoreTestDelegate {
       is_set = [result_cookie.value isEqualToString:system_cookie.value];
       verification_done = true;
     }];
-    bool callback_success = testing::WaitUntilConditionOrTimeout(
-        testing::kWaitForCookiesTimeout, ^bool {
+    bool callback_success = base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForCookiesTimeout, ^bool {
           return verification_done;
         });
     EXPECT_TRUE(callback_success);
@@ -77,8 +77,8 @@ class API_AVAILABLE(ios(11.0)) WKHTTPSystemCookieStoreTestDelegate {
                   }];
       }
     }];
-    bool callback_success = testing::WaitUntilConditionOrTimeout(
-        testing::kWaitForCookiesTimeout, ^bool {
+    bool callback_success = base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForCookiesTimeout, ^bool {
           return cookies_found == cookies_deleted;
         });
     EXPECT_TRUE(callback_success);
@@ -89,8 +89,8 @@ class API_AVAILABLE(ios(11.0)) WKHTTPSystemCookieStoreTestDelegate {
     [shared_store_ getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {
       cookies_count = cookies.count;
     }];
-    bool callback_success = testing::WaitUntilConditionOrTimeout(
-        testing::kWaitForCookiesTimeout, ^bool {
+    bool callback_success = base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForCookiesTimeout, ^bool {
           return cookies_count > -1;
         });
     EXPECT_TRUE(callback_success);

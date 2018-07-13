@@ -17,7 +17,6 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -68,8 +67,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::WaitUntilConditionOrTimeout;
-using testing::kWaitForPageLoadTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
 
 @interface CRWWebController (PrivateAPI)
 @property(nonatomic, readwrite) web::PageDisplayState pageDisplayState;

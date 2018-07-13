@@ -26,7 +26,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#import "ios/testing/wait_util.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -305,7 +304,7 @@ class ChromeSigninViewControllerTest
   // Scrolls to the bottom if needed and returns once the primary button is
   // found with the confirmation title (based on ConfirmationStringId()).
   // The scroll is done without animation. Otherwise, the scroll view doesn't
-  // scroll correctly inside testing::WaitUntilConditionOrTimeout().
+  // scroll correctly inside base::test::ios::WaitUntilConditionOrTimeout().
   void ScrollConsentViewToBottom() {
     ConditionBlock condition = ^bool() {
       if (IsPrimaryButtonVisibleWithTitle(
@@ -319,7 +318,8 @@ class ChromeSigninViewControllerTest
       }
       return IsPrimaryButtonVisibleWithTitle(ConfirmationStringId());
     };
-    bool condition_met = testing::WaitUntilConditionOrTimeout(10, condition);
+    bool condition_met =
+        base::test::ios::WaitUntilConditionOrTimeout(10, condition);
     EXPECT_TRUE(condition_met);
   }
 
@@ -343,7 +343,8 @@ class ChromeSigninViewControllerTest
           }];
       return [found_strings isEqual:expected_strings];
     };
-    bool condition_met = testing::WaitUntilConditionOrTimeout(10, condition);
+    bool condition_met =
+        base::test::ios::WaitUntilConditionOrTimeout(10, condition);
     NSString* failureExplaination = [NSString
         stringWithFormat:@"Strings not found: %@, Strings not expected: %@",
                          not_found_strings, not_expected_strings];
@@ -383,7 +384,7 @@ TEST_P(ChromeSigninViewControllerTest, TestConsentWithOKGOTIT) {
   ConditionBlock condition = ^bool() {
     return this->vc_delegate_.didSigninCalled;
   };
-  EXPECT_TRUE(testing::WaitUntilConditionOrTimeout(10, condition));
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(10, condition));
   const std::vector<int>& recorded_ids =
       fake_consent_auditor_->recorded_id_vectors().at(0);
   EXPECT_EQ(ExpectedConsentStringIds(), recorded_ids);

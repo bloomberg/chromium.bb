@@ -5,12 +5,46 @@
 #ifndef BASE_TEST_IOS_WAIT_UTIL_H_
 #define BASE_TEST_IOS_WAIT_UTIL_H_
 
+#import <Foundation/Foundation.h>
+
 #include "base/ios/block_types.h"
 #include "base/time/time.h"
 
 namespace base {
 namespace test {
 namespace ios {
+
+// Constant for UI wait loop in seconds.
+extern const NSTimeInterval kSpinDelaySeconds;
+
+// Constant for timeout in seconds while waiting for UI element.
+extern const NSTimeInterval kWaitForUIElementTimeout;
+
+// Constant for timeout in seconds while waiting for JavaScript completion.
+extern const NSTimeInterval kWaitForJSCompletionTimeout;
+
+// Constant for timeout in seconds while waiting for a download to complete.
+extern const NSTimeInterval kWaitForDownloadTimeout;
+
+// Constant for timeout in seconds while waiting for a pageload to complete.
+extern const NSTimeInterval kWaitForPageLoadTimeout;
+
+// Constant for timeout in seconds while waiting for a generic action to
+// complete.
+extern const NSTimeInterval kWaitForActionTimeout;
+
+// Constant for timeout in seconds while waiting for cookies operations to
+// complete.
+extern const NSTimeInterval kWaitForCookiesTimeout;
+
+// Constant for timeout in seconds while waiting for a file operation to
+// complete.
+extern const NSTimeInterval kWaitForFileOperationTimeout;
+
+// Returns true when condition() becomes true, otherwise returns false after
+// |timeout|.
+bool WaitUntilConditionOrTimeout(NSTimeInterval timeout,
+                                 ConditionBlock condition) WARN_UNUSED_RESULT;
 
 // Runs |action| if non-nil. Then, until either |condition| is true or |timeout|
 // expires, repetitively runs the current NSRunLoop and the current MessageLoop

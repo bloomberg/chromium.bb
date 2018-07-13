@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/payments/payment_method_selection_coordinator.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"

@@ -68,10 +68,10 @@ source_set("unit_tests") {
   deps = [
     ":feature_flags",
     ":ssl",
+    "//base/test:test_support",
     "//components/security_state/core",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/web:test_support",
-    "//ios/testing:ios_test_support",
     "//ios/web",
     "//ios/web/public/test",
     "//net",

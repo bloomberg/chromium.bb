@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #import "base/ios/block_types.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/main/browser_view_information.h"
@@ -22,7 +23,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
-#import "ios/testing/wait_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -102,9 +102,9 @@ void OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
   ConditionBlock condition = ^bool {
     return chrome_test_util::IsIncognitoMode();
   };
-  GREYAssert(
-      testing::WaitUntilConditionOrTimeout(kWaitElementTimeout, condition),
-      @"Waiting switch to incognito mode.");
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(kWaitElementTimeout,
+                                                          condition),
+             @"Waiting switch to incognito mode.");
   chrome_test_util::EvictOtherTabModelTabs();
 }
 
@@ -150,9 +150,9 @@ void SwitchToNormalMode() {
   ConditionBlock condition = ^bool {
     return !chrome_test_util::IsIncognitoMode();
   };
-  GREYAssert(
-      testing::WaitUntilConditionOrTimeout(kWaitElementTimeout, condition),
-      @"Waiting switch to normal mode.");
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(kWaitElementTimeout,
+                                                          condition),
+             @"Waiting switch to normal mode.");
 
   [[GREYConfiguration sharedInstance]
           setValue:@(YES)

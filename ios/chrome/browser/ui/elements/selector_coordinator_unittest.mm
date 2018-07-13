@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/elements/selector_coordinator.h"
 
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/elements/selector_picker_view_controller.h"
 #import "ios/chrome/browser/ui/elements/selector_view_controller_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"

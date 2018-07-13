@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "base/time/time.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -34,7 +35,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/testing/wait_util.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ios/web/public/test/earl_grey/web_view_actions.h"
 #include "ios/web/public/test/earl_grey/web_view_matchers.h"
@@ -277,13 +277,13 @@ class TestStoreConsumer : public password_manager::PasswordStoreConsumer {
     results_.clear();
     ResetObtained();
     GetPasswordStore()->GetAutofillableLogins(this);
-    bool responded = testing::WaitUntilConditionOrTimeout(1.0, ^bool {
+    bool responded = base::test::ios::WaitUntilConditionOrTimeout(1.0, ^bool {
       return !AreObtainedReset();
     });
     GREYAssert(responded, @"Obtaining fillable items took too long.");
     AppendObtainedToResults();
     GetPasswordStore()->GetBlacklistLogins(this);
-    responded = testing::WaitUntilConditionOrTimeout(1.0, ^bool {
+    responded = base::test::ios::WaitUntilConditionOrTimeout(1.0, ^bool {
       return !AreObtainedReset();
     });
     GREYAssert(responded, @"Obtaining blacklisted items took too long.");
@@ -1575,8 +1575,9 @@ PasswordForm CreateSampleFormWithIndex(int index) {
                                                    error:&error];
                                    return (error == nil);
                                  }];
-  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
-             @"No keyboard with 'Show All' button showed up.");
+  GREYAssert(
+      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
+      @"No keyboard with 'Show All' button showed up.");
   [[EarlGrey selectElementWithMatcher:showAll] performAction:grey_tap()];
 
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(

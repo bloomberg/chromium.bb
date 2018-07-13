@@ -41,7 +41,6 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1245,7 +1244,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                     error:&error];
     return error == nil;
   };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(10, condition),
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(10, condition),
              @"Waiting for bookmark to go away");
 }
 
@@ -1259,7 +1258,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                     error:&error];
     return error == nil;
   };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(10, condition),
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(10, condition),
              @"Waiting for undo toast to go away");
 }
 
@@ -1268,8 +1267,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   bookmarks::BookmarkModel* bookmarkModel =
       ios::BookmarkModelFactory::GetForBrowserState(
           chrome_test_util::GetOriginalBrowserState());
-  GREYAssert(testing::WaitUntilConditionOrTimeout(
-                 testing::kWaitForUIElementTimeout,
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForUIElementTimeout,
                  ^{
                    return bookmarkModel->loaded() == loaded;
                  }),
@@ -2085,7 +2084,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
     return !![[UIPasteboard generalPasteboard].string
         containsString:@"www.a.fr"];
   };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(10, condition),
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(10, condition),
              @"Waiting for URL to be copied to pasteboard.");
 
   // Verify edit mode is closed (context bar back to default state).
@@ -2654,7 +2653,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                     error:&error];
     return error == nil;
   };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(10, condition),
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(10, condition),
              @"Waiting for bookmark to go away");
 
   // Press undo

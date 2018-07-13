@@ -280,6 +280,7 @@ source_set("eg_tests") {
   ]
   deps = [
     ":ntp_controller",
+    "//base/test:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
@@ -288,7 +289,6 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing:ios_test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ui/base",

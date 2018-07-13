@@ -5,8 +5,8 @@
 #import "ios/chrome/browser/ssl/ios_captive_portal_blocking_page.h"
 
 #include "base/bind.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
-#import "ios/testing/wait_util.h"
 #include "ios/web/public/interstitials/web_interstitial.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "url/gurl.h"
@@ -38,8 +38,8 @@ TEST_F(IOSCaptivePortalBlockingPageTest, PresentAndDismiss) {
 
   // Make sure callback is called on dismissal.
   interstitial->DontProceed();
-  EXPECT_TRUE(
-      testing::WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^{
         return do_not_proceed_callback_called;
       }));
 }

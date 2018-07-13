@@ -153,7 +153,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/signin_interaction/public",
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",
-    "//ios/testing:ios_test_support",
     "//ios/third_party/material_components_ios",
     "//ios/web/public/test",
     "//testing/gtest",

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/testing/embedded_test_server_handlers.h"
-#import "ios/testing/wait_util.h"
 #include "ios/web/public/features.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/reload_type.h"
@@ -22,7 +22,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 using web::test::ElementSelector;
 
 namespace web {
@@ -197,7 +198,7 @@ TEST_F(ErrorPageTest, RedirectToFailingURL) {
 // error page if the main frame has sucessfully loaded.
 TEST_F(ErrorPageTest, ErrorPageInIFrame) {
   test::LoadUrl(web_state(), server_.GetURL("/iframe?echo-query"));
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return test::IsWebViewContainingElement(
         web_state(),
         ElementSelector::ElementSelectorCss("iframe[src*='echo-query']"));

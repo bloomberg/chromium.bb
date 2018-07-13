@@ -5,7 +5,7 @@
 #import <ChromeWebView/ChromeWebView.h>
 #import <Foundation/Foundation.h>
 
-#import "ios/testing/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/web_view/test/web_view_int_test.h"
 #import "ios/web_view/test/web_view_test_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -65,8 +65,8 @@ TEST_F(WebViewScriptCommandTest, TestScriptCommand) {
   test::EvaluateJavaScript(web_view_, script, &script_error);
   ASSERT_NSEQ(nil, script_error);
 
-  EXPECT_TRUE(testing::WaitUntilConditionOrTimeout(
-      testing::kWaitForJSCompletionTimeout, ^{
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForJSCompletionTimeout, ^{
         return handler.lastReceivedCommand != nil;
       }));
 
@@ -104,8 +104,8 @@ TEST_F(WebViewScriptCommandTest, TestScriptCommandAfterStateRestoration) {
   test::EvaluateJavaScript(web_view_, script, &script_error);
   ASSERT_NSEQ(nil, script_error);
 
-  EXPECT_TRUE(testing::WaitUntilConditionOrTimeout(
-      testing::kWaitForJSCompletionTimeout, ^{
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForJSCompletionTimeout, ^{
         return handler.lastReceivedCommand != nil;
       }));
 

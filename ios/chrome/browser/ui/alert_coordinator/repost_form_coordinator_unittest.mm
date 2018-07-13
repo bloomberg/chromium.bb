@@ -7,7 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/mac/foundation_util.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/test/scoped_key_window.h"

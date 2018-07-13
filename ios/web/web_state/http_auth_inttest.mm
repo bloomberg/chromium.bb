@@ -4,7 +4,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#import "ios/testing/wait_util.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #import "ios/web/public/test/js_test_util.h"
 #import "ios/web/public/test/navigation_test_util.h"
@@ -18,7 +18,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace web {
 
@@ -34,7 +35,7 @@ class HttpAuthTest : public WebTestWithWebState {
   // Waits until WebStateDelegate::OnAuthRequired callback is called.
   bool WaitForOnAuthRequiredCallback() WARN_UNUSED_RESULT {
     delegate_.ClearLastAuthenticationRequest();
-    return WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^bool {
+    return WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
       return delegate_.last_authentication_request();
     });
   }
@@ -71,7 +72,7 @@ TEST_F(HttpAuthTest, SuccessfullBasicAuth) {
   auth_request = delegate_.last_authentication_request();
   ASSERT_TRUE(auth_request);
   auth_request->auth_callback.Run(@"me", @"goodpass");
-  ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return web_state()->GetTitle() == base::ASCIIToUTF16("me/goodpass");
   }));
 }
@@ -107,7 +108,7 @@ TEST_F(HttpAuthTest, UnsucessfulBasicAuth) {
 
   // Cancel authentication and make sure that authentication is denied.
   auth_request->auth_callback.Run(/*username=*/nil, /*password=*/nil);
-  ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return web_state()->GetTitle() ==
            base::ASCIIToUTF16("Denied: Missing Authorization Header");
   }));

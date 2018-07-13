@@ -8,9 +8,9 @@
 #include "base/ios/ios_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/testing/embedded_test_server_handlers.h"
-#import "ios/testing/wait_util.h"
 #include "ios/web/public/features.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -520,7 +520,8 @@ class PolicyDeciderMock : public WebStatePolicyDecider {
 using testing::Return;
 using testing::StrictMock;
 using testing::_;
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 using test::WaitForWebViewContainingText;
 
 // Test fixture to test navigation and load callbacks from WebStateObserver and
@@ -1493,7 +1494,7 @@ TEST_P(NavigationAndLoadCallbacksTest, FLAKY_FailedLoad) {
   test::LoadUrl(web_state(), url);
 
   // Server will never stop responding. Wait until the navigation is committed.
-  EXPECT_FALSE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+  EXPECT_FALSE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return context && context->HasCommitted();
   }));
 
@@ -1592,7 +1593,7 @@ TEST_P(NavigationAndLoadCallbacksTest, StopFinishedNavigation) {
   test::LoadUrl(web_state(), url);
 
   // Server will never stop responding. Wait until the navigation is committed.
-  EXPECT_FALSE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+  EXPECT_FALSE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return context && context->HasCommitted();
   }));
 
@@ -1650,7 +1651,7 @@ TEST_P(NavigationAndLoadCallbacksTest, IframeNavigation) {
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
   test::TapWebViewElementWithIdInIframe(web_state(), "normal-link");
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return web_state()->GetNavigationManager()->CanGoBack();
   }));
   id history_length = ExecuteJavaScript(@"history.length;");
@@ -1666,7 +1667,7 @@ TEST_P(NavigationAndLoadCallbacksTest, IframeNavigation) {
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/false))
       .WillOnce(Return(true));
   web_state()->GetNavigationManager()->GoBack();
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return web_state()->GetNavigationManager()->CanGoForward();
   }));
   EXPECT_FALSE(web_state()->GetNavigationManager()->CanGoBack());
@@ -1679,7 +1680,7 @@ TEST_P(NavigationAndLoadCallbacksTest, IframeNavigation) {
   EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()))
       .Times(2);  // called once each for canGoBack and canGoForward
   test::TapWebViewElementWithIdInIframe(web_state(), "same-page-link");
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return web_state()->GetNavigationManager()->CanGoBack();
   }));
   EXPECT_FALSE(web_state()->GetNavigationManager()->CanGoForward());

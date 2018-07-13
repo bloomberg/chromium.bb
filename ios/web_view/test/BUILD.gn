@@ -22,7 +22,7 @@ source_set("inttests") {
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",
-    "//ios/testing:ios_test_support",
+    "//base/test:test_support",
     "//ios/web_view:web_view+link",
     "//net",
     "//net:test_support",
@@ -49,7 +49,7 @@ source_set("test_support") {
 
   deps = [
     "//base:base",
-    "//ios/testing:ios_test_support",
+    "//base/test:test_support",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

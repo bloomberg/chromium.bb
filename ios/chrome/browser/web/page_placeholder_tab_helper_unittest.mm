@@ -8,9 +8,9 @@
 
 #include <memory>
 
+#import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,8 +20,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::kWaitForUIElementTimeout;
-using testing::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForUIElementTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 // Test fixture for PagePlaceholderTabHelper class.
 class PagePlaceholderTabHelperTest : public PlatformTest {

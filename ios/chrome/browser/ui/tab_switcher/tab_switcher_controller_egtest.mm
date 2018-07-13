@@ -6,6 +6,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
@@ -22,7 +23,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/http_server/blank_page_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
@@ -354,8 +354,8 @@ using web::test::HttpServer;
                     error:&error];
     return !error;
   };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(
-                 testing::kWaitForUIElementTimeout, condition),
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForUIElementTimeout, condition),
              @"Alert with message was not found: %@", kMessageText);
 }
 

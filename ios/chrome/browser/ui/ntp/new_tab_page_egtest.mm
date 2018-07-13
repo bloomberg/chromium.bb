@@ -5,6 +5,7 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/strings/grit/components_strings.h"
@@ -19,7 +20,6 @@
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/testing/wait_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -42,7 +42,7 @@ void WaitForHistoryToDisappear() {
                         assertWithMatcher:grey_notVisible()
                                     error:&error];
                     return error == nil;
-                  }] waitWithTimeout:testing::kWaitForUIElementTimeout];
+                  }] waitWithTimeout:base::test::ios::kWaitForUIElementTimeout];
 }
 
 }  // namespace

@@ -4,10 +4,10 @@
 
 #include "ios/chrome/browser/metrics/ukm_url_recorder.h"
 
+#import "base/test/ios/wait_util.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -68,8 +68,8 @@ class UkmUrlRecorderTest : public ChromeWebTest {
   bool LoadUrlAndWait(const GURL& url) {
     web::NavigationManager::WebLoadParams params(url);
     web_state()->GetNavigationManager()->LoadURLWithParams(params);
-    return testing::WaitUntilConditionOrTimeout(
-        testing::kWaitForPageLoadTimeout, ^{
+    return base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForPageLoadTimeout, ^{
           return !web_state()->IsLoading();
         });
   }

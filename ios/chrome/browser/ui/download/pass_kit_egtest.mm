@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/download/pass_kit_mime_type.h"
 #include "ios/chrome/browser/download/pass_kit_test_util.h"
@@ -16,7 +17,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/testing/wait_util.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -25,8 +25,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::WaitUntilConditionOrTimeout;
-using testing::kWaitForDownloadTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForDownloadTimeout;
 using chrome_test_util::GetMainController;
 
 namespace {
