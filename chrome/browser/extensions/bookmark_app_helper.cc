@@ -82,10 +82,6 @@
 #include "chrome/common/chrome_switches.h"
 #endif
 
-#if defined(OS_WIN)
-#include "base/win/shortcut.h"
-#endif  // defined(OS_WIN)
-
 #if defined(OS_CHROMEOS)
 // gn check complains on Linux Ozone.
 #include "ash/public/cpp/shelf_model.h"  // nogncheck
