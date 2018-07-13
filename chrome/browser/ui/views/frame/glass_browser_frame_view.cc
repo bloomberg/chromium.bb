@@ -266,7 +266,8 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
-  if (!MD::IsRefreshUi() && frame_component != HTCLIENT) {
+  if ((!MD::IsRefreshUi() || browser_view()->ShouldShowWindowIcon()) &&
+      frame_component != HTCLIENT) {
     gfx::Rect sys_menu_region(
         client_border_thickness,
         display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSIZEFRAME),

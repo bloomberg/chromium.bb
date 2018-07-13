@@ -214,7 +214,8 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
   using MD = ui::MaterialDesignController;
-  if (!MD::IsRefreshUi() && (frame_component != HTCLIENT)) {
+  if ((!MD::IsRefreshUi() || ShouldShowWindowIcon()) &&
+      frame_component != HTCLIENT) {
     gfx::Rect sysmenu_rect(IconBounds());
     // In maximized mode we extend the rect to the screen corner to take
     // advantage of Fitts' Law.
