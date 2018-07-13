@@ -29,6 +29,9 @@
 #include "components/feature_engagement/buildflags.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_observer.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -58,6 +61,49 @@ bool ShouldForgetOpenersForTransition(ui::PageTransition transition) {
          ui::PageTransitionCoreTypeIs(transition,
                                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
 }
+
+// This tracks (and reports via UMA and tracing) how long it takes before a
+// RenderWidgetHost is requested to become visible.
+class RenderWidgetHostVisibilityTracker
+    : public content::RenderWidgetHostObserver {
+ public:
+  explicit RenderWidgetHostVisibilityTracker(content::RenderWidgetHost* host)
+      : host_(host) {
+    if (!host_ || host_->GetView()->IsShowing())
+      return;
+    host_->AddObserver(this);
+    TRACE_EVENT_ASYNC_BEGIN0("ui,latency", "TabSwitchVisibilityRequest", this);
+  }
+
+  ~RenderWidgetHostVisibilityTracker() override {
+    if (host_)
+      host_->RemoveObserver(this);
+  }
+
+ private:
+  // content::RenderWidgetHostObserver:
+  void RenderWidgetHostVisibilityChanged(content::RenderWidgetHost* host,
+                                         bool became_visible) override {
+    DCHECK_EQ(host_, host);
+    DCHECK(became_visible);
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Browser.Tabs.SelectionToVisibilityRequestTime", timer_.Elapsed(),
+        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(3),
+        50);
+    TRACE_EVENT_ASYNC_END0("ui,latency", "TabSwitchVisibilityRequest", this);
+  }
+
+  void RenderWidgetHostDestroyed(content::RenderWidgetHost* host) override {
+    DCHECK_EQ(host_, host);
+    host_->RemoveObserver(this);
+    host_ = nullptr;
+  }
+
+  content::RenderWidgetHost* host_ = nullptr;
+  base::ElapsedTimer timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostVisibilityTracker);
+};
 
 }  // namespace
 
@@ -1396,6 +1442,13 @@ void TabStripModel::NotifyIfActiveTabChanged(WebContents* old_contents,
   WebContents* new_contents = GetWebContentsAtImpl(active_index());
   if (old_contents == new_contents)
     return;
+
+  content::RenderWidgetHost* track_host = nullptr;
+  if (notify_types == Notify::kUserGesture &&
+      new_contents->GetRenderWidgetHostView()) {
+    track_host = new_contents->GetRenderWidgetHostView()->GetRenderWidgetHost();
+  }
+  RenderWidgetHostVisibilityTracker tracker(track_host);
 
   int reason = notify_types == Notify::kUserGesture
                    ? TabStripModelObserver::CHANGE_REASON_USER_GESTURE
