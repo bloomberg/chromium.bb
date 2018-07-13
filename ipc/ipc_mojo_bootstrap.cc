@@ -131,6 +131,7 @@ class ChannelAssociatedGroupController
     connector_->set_connection_error_handler(
         base::Bind(&ChannelAssociatedGroupController::OnPipeError,
                    base::Unretained(this)));
+    connector_->set_enforce_errors_from_incoming_receiver(false);
     connector_->SetWatcherHeapProfilerTag("IPC Channel");
   }
 
@@ -318,13 +319,29 @@ class ChannelAssociatedGroupController
   }
 
   void RaiseError() override {
-    if (task_runner_->BelongsToCurrentThread()) {
-      connector_->RaiseError();
-    } else {
-      task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&ChannelAssociatedGroupController::RaiseError, this));
-    }
+    // We ignore errors on channel endpoints, leaving the pipe open. There are
+    // good reasons for this:
+    //
+    //   * We should never close a channel endpoint in either process as long as
+    //     the child process is still alive. The child's endpoint should only be
+    //     closed implicitly by process death, and the browser's endpoint should
+    //     only be closed after the child process is confirmed to be dead. Crash
+    //     reporting logic in Chrome relies on this behavior in order to do the
+    //     right thing.
+    //
+    //   * There are two interesting conditions under which RaiseError() can be
+    //     implicitly reached: an incoming message fails validation, or the
+    //     local endpoint drops a response callback without calling it.
+    //
+    //   * In the validation case, we also report the message as bad, and this
+    //     will imminently trigger the common bad-IPC path in the browser,
+    //     causing the browser to kill the offending renderer.
+    //
+    //   * In the dropped response callback case, the net result of ignoring the
+    //     issue is generally innocuous. While indicative of programmer error,
+    //     it's not a severe failure and is already covered by separate DCHECKs.
+    //
+    // See https://crbug.com/861607 for additional discussion.
   }
 
   bool PrefersSerializedMessages() override { return true; }

@@ -22,12 +22,14 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_io_thread.h"
 #include "base/test/test_shared_memory_util.h"
 #include "base/test/test_timeouts.h"
@@ -44,6 +46,8 @@
 #include "ipc/ipc_test.mojom.h"
 #include "ipc/ipc_test_base.h"
 #include "ipc/ipc_test_channel_listener.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -107,7 +111,10 @@ class TestListenerBase : public IPC::Listener {
 
   void set_sender(IPC::Sender* sender) { sender_ = sender; }
   IPC::Sender* sender() const { return sender_; }
-  void RunQuitClosure() { std::move(quit_closure_).Run(); }
+  void RunQuitClosure() {
+    if (quit_closure_)
+      std::move(quit_closure_).Run();
+  }
 
  private:
   IPC::Sender* sender_ = nullptr;
@@ -238,6 +245,120 @@ TEST_F(IPCChannelMojoTest, SendFailWithPendingMessages) {
   EXPECT_TRUE(WaitForClientShutdown());
   EXPECT_TRUE(listener.has_error());
 
+  DestroyChannel();
+}
+
+class ListenerThatBindsATestStructPasser : public IPC::Listener,
+                                           public IPC::mojom::TestStructPasser {
+ public:
+  ListenerThatBindsATestStructPasser() : binding_(this) {}
+
+  bool OnMessageReceived(const IPC::Message& message) override { return true; }
+
+  void OnChannelConnected(int32_t peer_pid) override {}
+
+  void OnChannelError() override { NOTREACHED(); }
+
+  void OnAssociatedInterfaceRequest(
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle) override {
+    CHECK_EQ(interface_name, IPC::mojom::TestStructPasser::Name_);
+    binding_.Bind(
+        IPC::mojom::TestStructPasserAssociatedRequest(std::move(handle)));
+  }
+
+ private:
+  // IPC::mojom::TestStructPasser:
+  void Pass(IPC::mojom::TestStructPtr) override { NOTREACHED(); }
+
+  mojo::AssociatedBinding<IPC::mojom::TestStructPasser> binding_;
+};
+
+class ListenerThatExpectsNoError : public IPC::Listener {
+ public:
+  ListenerThatExpectsNoError(base::OnceClosure connect_closure,
+                             base::OnceClosure quit_closure)
+      : connect_closure_(std::move(connect_closure)),
+        quit_closure_(std::move(quit_closure)) {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    base::PickleIterator iter(message);
+    std::string should_be_ok;
+    EXPECT_TRUE(iter.ReadString(&should_be_ok));
+    EXPECT_EQ(should_be_ok, "OK");
+    std::move(quit_closure_).Run();
+    return true;
+  }
+
+  void OnChannelConnected(int32_t peer_pid) override {
+    std::move(connect_closure_).Run();
+  }
+
+  void OnChannelError() override { NOTREACHED(); }
+
+ private:
+  base::OnceClosure connect_closure_;
+  base::OnceClosure quit_closure_;
+};
+
+DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
+    IPCChannelMojoNoImplicitChanelClosureClient) {
+  base::RunLoop wait_to_connect_loop;
+  base::RunLoop wait_to_quit_loop;
+  ListenerThatExpectsNoError listener(wait_to_connect_loop.QuitClosure(),
+                                      wait_to_quit_loop.QuitClosure());
+  Connect(&listener);
+  wait_to_connect_loop.Run();
+
+  IPC::mojom::TestStructPasserAssociatedPtr passer;
+  channel()->GetAssociatedInterfaceSupport()->GetRemoteAssociatedInterface(
+      &passer);
+
+  // This avoids hitting DCHECKs in the serialization code meant to stop us from
+  // making such "mistakes" as the one we're about to make below.
+  mojo::internal::SerializationWarningObserverForTesting suppress_those_dchecks;
+
+  // Send an invalid message. The TestStruct argument is not allowed to be null.
+  // This will elicit a validation error in the parent process, but should not
+  // actually disconnect the channel.
+  passer->Pass(nullptr);
+
+  // Wait until the parent says it's OK to quit, so it has time to verify its
+  // expected behavior.
+  wait_to_quit_loop.Run();
+
+  Close();
+}
+
+TEST_F(IPCChannelMojoTest, NoImplicitChannelClosure) {
+  // Verifies that OnChannelError is not invoked due to conditions other than
+  // peer closure (e.g. a malformed inbound message). Instead we should always
+  // be able to handle validation errors via Mojo bad message reporting.
+
+  // NOTE: We can't create a RunLoop before Init() is called, but we have to set
+  // the default ProcessErrorCallback (which we want to reference the RunLoop)
+  // before Init() launches a child process. Hence the base::Optional here.
+  base::Optional<base::RunLoop> wait_for_error_loop;
+  bool process_error_received = false;
+  mojo::core::SetDefaultProcessErrorCallback(
+      base::BindLambdaForTesting([&](const std::string&) {
+        process_error_received = true;
+        wait_for_error_loop->Quit();
+      }));
+
+  Init("IPCChannelMojoNoImplicitChanelClosureClient");
+
+  wait_for_error_loop.emplace();
+  ListenerThatBindsATestStructPasser listener;
+  CreateChannel(&listener);
+  ASSERT_TRUE(ConnectChannel());
+
+  wait_for_error_loop->Run();
+  EXPECT_TRUE(process_error_received);
+
+  // Tell the child it can quit and wait for it to shut down.
+  ListenerThatExpectsOK::SendOK(channel());
+  EXPECT_TRUE(WaitForClientShutdown());
   DestroyChannel();
 }
 
