@@ -67,6 +67,12 @@ class ExtensionSyncService : public syncer::SyncableService,
   void SetSyncStartFlareForTesting(
       const syncer::SyncableService::StartSyncFlare& flare);
 
+  // Special hack: There was a bug where themes incorrectly ended up in the
+  // syncer::EXTENSIONS type. This is for cleaning up the data. crbug.com/558299
+  // DO NOT USE FOR ANYTHING ELSE!
+  // TODO(treib,devlin): Remove this after M52 or so.
+  void DeleteThemeDoNotUse(const extensions::Extension& theme);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(TwoClientAppsSyncTest, UnexpectedLaunchType);
   FRIEND_TEST_ALL_PREFIXES(ExtensionDisabledGlobalErrorTest,
