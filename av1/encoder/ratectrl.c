@@ -1009,14 +1009,35 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
         active_best_quality = cq_level;
       } else {
         active_best_quality = get_gf_active_quality(rc, q, cm->bit_depth);
-
-        // Modify best quality for second level arfs. For mode AOM_Q this
-        // becomes the baseline frame q.
-        if (gf_group->rf_level[gf_group->index] == GF_ARF_LOW)
-          active_best_quality = (active_best_quality + cq_level + 1) / 2;
+#if USE_SYMM_MULTI_LAYER
+        if (cpi->new_bwdref_update_rule && is_intrl_arf_boost) {
+          int this_height = gf_group->pyramid_level[gf_group->index];
+          while (this_height < gf_group->pyramid_height) {
+            active_best_quality = (active_best_quality + cq_level + 1) / 2;
+            ++this_height;
+          }
+        } else {
+#endif
+          // Modify best quality for second level arfs. For mode AOM_Q this
+          // becomes the baseline frame q.
+          if (gf_group->rf_level[gf_group->index] == GF_ARF_LOW)
+            active_best_quality = (active_best_quality + cq_level + 1) / 2;
+#if USE_SYMM_MULTI_LAYER
+        }
+#endif
       }
     } else {
       active_best_quality = get_gf_active_quality(rc, q, cm->bit_depth);
+#if USE_SYMM_MULTI_LAYER
+      if (cpi->new_bwdref_update_rule && is_intrl_arf_boost) {
+        int this_height = gf_group->pyramid_level[gf_group->index];
+        while (this_height < gf_group->pyramid_height) {
+          active_best_quality =
+              (active_best_quality + active_worst_quality + 1) / 2;
+          ++this_height;
+        }
+      }
+#endif
     }
   } else {
     if (oxcf->rc_mode == AOM_Q) {

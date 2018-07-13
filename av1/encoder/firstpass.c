@@ -2143,9 +2143,10 @@ void check_frame_params(GF_GROUP *const gf_group, int gf_interval,
 
   fprintf(fid, "\n{%d}\n", gf_interval);
   for (int i = 0; i <= frame_nums; ++i) {
-    fprintf(fid, "%s %d %d %d\n", update_type_strings[gf_group->update_type[i]],
+    fprintf(fid, "%s %d %d %d %d\n",
+            update_type_strings[gf_group->update_type[i]],
             gf_group->arf_src_offset[i], gf_group->arf_pos_in_gf[i],
-            gf_group->arf_update_idx[i]);
+            gf_group->arf_update_idx[i], gf_group->pyramid_level[i]);
   }
   fclose(fid);
 }
@@ -2166,13 +2167,14 @@ static int update_type_2_rf_level(FRAME_UPDATE_TYPE update_type) {
 }
 
 static void set_multi_layer_params(GF_GROUP *const gf_group, int l, int r,
-                                   int *frame_ind, int arf_ind) {
+                                   int *frame_ind, int arf_ind, int level) {
   if (r - l == 2) {
     // leaf node, not a look-ahead frame
     gf_group->update_type[*frame_ind] = LF_UPDATE;
     gf_group->arf_src_offset[*frame_ind] = 0;
     gf_group->arf_pos_in_gf[*frame_ind] = 0;
     gf_group->arf_update_idx[*frame_ind] = arf_ind;
+    gf_group->pyramid_level[*frame_ind] = level;
     ++(*frame_ind);
   } else {
     int m = (l + r) / 2;
@@ -2182,10 +2184,11 @@ static void set_multi_layer_params(GF_GROUP *const gf_group, int l, int r,
     gf_group->arf_src_offset[*frame_ind] = m - l - 1;
     gf_group->arf_pos_in_gf[*frame_ind] = 0;
     gf_group->arf_update_idx[*frame_ind] = 1;  // mark all internal ARF 1
+    gf_group->pyramid_level[*frame_ind] = level;
     ++(*frame_ind);
 
     // set parameters for frames displayed before this frame
-    set_multi_layer_params(gf_group, l, m, frame_ind, 1);
+    set_multi_layer_params(gf_group, l, m, frame_ind, 1, level - 1);
 
     // for overlay frames, we need to record the position of its corresponding
     // arf frames for bit allocation
@@ -2193,22 +2196,32 @@ static void set_multi_layer_params(GF_GROUP *const gf_group, int l, int r,
     gf_group->arf_src_offset[*frame_ind] = 0;
     gf_group->arf_pos_in_gf[*frame_ind] = arf_pos_in_gf;
     gf_group->arf_update_idx[*frame_ind] = 1;
+    gf_group->pyramid_level[*frame_ind] = 0;
     ++(*frame_ind);
 
     // set parameters for frames displayed after this frame
-    set_multi_layer_params(gf_group, m, r, frame_ind, arf_ind);
+    set_multi_layer_params(gf_group, m, r, frame_ind, arf_ind, level - 1);
   }
+}
+
+static INLINE unsigned char get_pyramid_height(int pyramid_width) {
+  assert(pyramid_width <= 16 && pyramid_width >= 4 &&
+         "invalid gf interval for pyramid structure");
+
+  return pyramid_width == 16 ? 4 : (pyramid_width >= 8 ? 3 : 2);
 }
 
 static int construct_multi_layer_gf_structure(GF_GROUP *const gf_group,
                                               const int gf_interval) {
   int frame_index = 0;
+  gf_group->pyramid_height = get_pyramid_height(gf_interval);
 
   // At the beginning of each GF group it will be a key or overlay frame,
   gf_group->update_type[frame_index] = OVERLAY_UPDATE;
   gf_group->arf_src_offset[frame_index] = 0;
   gf_group->arf_pos_in_gf[frame_index] = 0;
   gf_group->arf_update_idx[frame_index] = 0;
+  gf_group->pyramid_level[frame_index] = 0;
   ++frame_index;
 
   // ALT0
@@ -2216,10 +2229,12 @@ static int construct_multi_layer_gf_structure(GF_GROUP *const gf_group,
   gf_group->arf_src_offset[frame_index] = gf_interval - 1;
   gf_group->arf_pos_in_gf[frame_index] = 0;
   gf_group->arf_update_idx[frame_index] = 0;
+  gf_group->pyramid_level[frame_index] = gf_group->pyramid_height;
   ++frame_index;
 
   // set parameters for the rest of the frames
-  set_multi_layer_params(gf_group, 0, gf_interval, &frame_index, 0);
+  set_multi_layer_params(gf_group, 0, gf_interval, &frame_index, 0,
+                         gf_group->pyramid_height - 1);
 
   // check_frame_params(gf_group, gf_interval, frame_index);
 
@@ -2290,7 +2305,7 @@ void define_customized_gf_group_structure(AV1_COMP *cpi) {
   // This parameter is useless?
   gf_group->arf_ref_idx[frame_index] = 0;
 
-  // check_frame_params(gf_group, rc->baseline_gf_interval, gf_update_frames);
+  check_frame_params(gf_group, rc->baseline_gf_interval, gf_update_frames);
 }
 
 // It is an example of how to define a GF stucture manually. The function will
