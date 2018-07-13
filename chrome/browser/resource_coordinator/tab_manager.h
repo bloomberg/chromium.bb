@@ -19,6 +19,7 @@
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
 #include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
@@ -82,7 +83,8 @@ class TabManagerStatsCollector;
 class TabManager : public LifecycleUnitObserver,
                    public LifecycleUnitSourceObserver,
                    public TabLoadTracker::Observer,
-                   public TabStripModelObserver {
+                   public TabStripModelObserver,
+                   public metrics::DesktopSessionDurationTracker::Observer {
  public:
   // Forward declaration of resource coordinator signal observer.
   class ResourceCoordinatorSignalObserver;
@@ -309,7 +311,7 @@ class TabManager : public LifecycleUnitObserver,
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
-  // TabStripModelObserver overrides.
+  // TabStripModelObserver:
   void ActiveTabChanged(content::WebContents* old_contents,
                         content::WebContents* new_contents,
                         int index,
@@ -323,7 +325,7 @@ class TabManager : public LifecycleUnitObserver,
                      content::WebContents* new_contents,
                      int index) override;
 
-  // TabLoadTracker::Observer implementation:
+  // TabLoadTracker::Observer:
   void OnStartTracking(content::WebContents* web_contents,
                        LoadingState loading_state) override;
   void OnLoadingStateChange(content::WebContents* web_contents,
@@ -331,6 +333,9 @@ class TabManager : public LifecycleUnitObserver,
                             LoadingState new_loading_state) override;
   void OnStopTracking(content::WebContents* web_contents,
                       LoadingState loading_state) override;
+
+  // DesktopSessionDurationTracker::Observer:
+  void OnSessionStarted(base::TimeTicks session_start) override;
 
   // Returns the WebContentsData associated with |contents|. Also takes care of
   // creating one if needed.
