@@ -13,6 +13,7 @@ import shutil
 
 import archive
 import diff
+import models
 import path_util
 
 
@@ -39,6 +40,7 @@ _COMPACT_FILE_SYMBOLS_KEY = 's'
 _COMPACT_SYMBOL_NAME_KEY = 'n'
 _COMPACT_SYMBOL_BYTE_SIZE_KEY = 'b'
 _COMPACT_SYMBOL_TYPE_KEY = 't'
+_COMPACT_SYMBOL_COUNT_KEY = 'u'
 
 _SMALL_SYMBOL_DESCRIPTIONS = {
   'b': 'Other small uninitialized data',
@@ -261,6 +263,9 @@ def _MakeTreeViewList(symbols, min_symbol_size):
     symbol_size = round(symbol.pss, 2)
     if symbol_size.is_integer():
       symbol_size = int(symbol_size)
+    symbol_count = 1
+    if symbol.IsDelta() and symbol.diff_status == models.DIFF_STATUS_REMOVED:
+      symbol_count = -1
 
     path = symbol.source_path or symbol.object_path
     file_node = file_nodes.get(path)
@@ -277,11 +282,19 @@ def _MakeTreeViewList(symbols, min_symbol_size):
     # UI. It's important to see details on all the methods, and most fall below
     # the default byte size.
     if symbol_type == 'm' or abs(symbol_size) >= min_symbol_size:
-      file_node[_COMPACT_FILE_SYMBOLS_KEY].append({
+      symbol_entry = {
         _COMPACT_SYMBOL_NAME_KEY: symbol.template_name,
         _COMPACT_SYMBOL_TYPE_KEY: symbol_type,
         _COMPACT_SYMBOL_BYTE_SIZE_KEY: symbol_size,
-      })
+      }
+      # We use symbol count for the method count mode in the diff mode report.
+      # Negative values are used to indicate a symbol was removed, so it should
+      # count as -1 rather than the default, 1.
+      # We don't care about accurate counts for other symbol types currently,
+      # so this data is only included for methods.
+      if symbol_type == 'm' and symbol_count != 1:
+        symbol_entry[_COMPACT_SYMBOL_COUNT_KEY] = symbol_count
+      file_node[_COMPACT_FILE_SYMBOLS_KEY].append(symbol_entry)
     else:
       small_type_symbol = small_symbols[path].get(symbol_type)
       if small_type_symbol is None:

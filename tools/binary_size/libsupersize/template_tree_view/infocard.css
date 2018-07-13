@@ -64,14 +64,15 @@
 }
 .header-info {
   grid-area: header;
+  color: #202124;
 }
 .size-info {
   margin: 0 0 2px;
-  color: #202124;
 }
 .path-info {
   margin: 0 0 8px;
   word-break: break-word;
+  color: #3c4043;
 }
 .symbol-name-info {
   font-weight: 500;
@@ -84,7 +85,6 @@
 .type-pie-info {
   height: 80px;
   width: 80px;
-  background: #5f6368;
   border-radius: 50%;
 }
 .type-breakdown-info {

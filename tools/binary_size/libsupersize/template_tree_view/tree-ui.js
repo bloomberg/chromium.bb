@@ -45,81 +45,6 @@
   const _uiNodeData = new WeakMap();
 
   /**
-   * Create the contents for the size element of a tree node.
-   * If in method count mode, size instead represents the amount of methods in
-   * the node. In this case, don't append a unit at the end.
-   * @param {TreeNode} node Node whose childStats will be polled to find the
-   * number of methods to use for the count text
-   * @returns {GetSizeResult} Object with hover text title and
-   * size element body. Can be consumed by `_applySizeFunc()`
-   */
-  function _getMethodCountContents(node) {
-    const {count: methodCount = 0} =
-      node.childStats[_DEX_METHOD_SYMBOL_TYPE] || {};
-    const methodStr = methodCount.toLocaleString(_LOCALE, {
-      useGrouping: true,
-    });
-
-    return {
-      element: document.createTextNode(methodStr),
-      description: `${methodStr} method${methodCount === 1 ? '' : 's'}`,
-      value: methodCount,
-    };
-  }
-
-  /**
-   * Create the contents for the size element of a tree node.
-   * The unit to use is selected from the current state, and the original number
-   * of bytes will be displayed as hover text over the element.
-   * @param {TreeNode} node Node whose size is the number of bytes to use for
-   * the size text
-   * @param {string} unit Byte unit to use, such as 'MiB'.
-   * @returns {GetSizeResult} Object with hover text title and
-   * size element body. Can be consumed by `_applySizeFunc()`
-   */
-  function _getSizeContents(node, unit) {
-    const bytes = node.size;
-    // Format the bytes as a number with 2 digits after the decimal point
-    const text = (bytes / _BYTE_UNITS[unit]).toLocaleString(_LOCALE, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-    const textNode = document.createTextNode(`${text} `);
-
-    // Display the suffix with a smaller font
-    const suffixElement = dom.textElement('small', unit);
-
-    const bytesGrouped = bytes.toLocaleString(_LOCALE, {useGrouping: true});
-
-    return {
-      element: dom.createFragment([textNode, suffixElement]),
-      description: `${bytesGrouped} bytes`,
-      value: bytes,
-    };
-  }
-
-  /**
-   * Replace the contexts of the size element for a tree node, using a
-   * predefined function which returns a title string and DOM element.
-   * @param {GetSize} sizeFunc
-   * @param {HTMLElement} sizeElement Element that should display the size
-   * @param {TreeNode} node
-   */
-  function _applySizeFunc(sizeFunc, sizeElement, node, unit) {
-    const {description, element, value} = sizeFunc(node, unit);
-
-    // Replace the contents of '.size' and change its title
-    dom.replace(sizeElement, element);
-    sizeElement.title = description;
-
-    if (value < 0) {
-      sizeElement.classList.add('negative');
-    } else {
-      sizeElement.classList.remove('negative');
-    }
-  }
-
-  /**
    * Sets focus to a new tree element while updating the element that last had
    * focus. The tabindex property is used to avoid needing to tab through every
    * single tree item in the page to reach other areas.
@@ -303,6 +228,20 @@
   }
 
   /**
+   * Replace the contents of the size element for a tree node.
+   * @param {HTMLElement} sizeElement Element that should display the size
+   * @param {TreeNode} node
+   */
+  function _setSize(sizeElement, node) {
+    const {description, element, value} = getSizeContents(node);
+
+    // Replace the contents of '.size' and change its title
+    dom.replace(sizeElement, element);
+    sizeElement.title = description;
+    setSizeClasses(sizeElement, value);
+  }
+
+  /**
    * Inflate a template to create an element that represents one tree node.
    * The element will represent a tree or a leaf, depending on if the tree
    * node object has any children. Trees use a slightly different template
@@ -323,7 +262,7 @@
     // Icons are predefined in the HTML through hidden SVG elements
     const type = data.type[0];
     const icon = getIconTemplate(type);
-    if (_CONTAINER_TYPE_SET.has(type)) {
+    if (!isLeaf) {
       const symbolStyle = getIconStyle(data.type[1]);
       icon.setAttribute('fill', symbolStyle.color);
     }
@@ -339,19 +278,18 @@
     );
     symbolName.title = data.idPath;
 
+    if (state.has('method_count') && type === _DEX_METHOD_SYMBOL_TYPE) {
+      const {count = 0} = data.childStats[type] || {};
+      if (count < 0) {
+        symbolName.classList.add('removed');
+      }
+    }
+
     // Set the byte size and hover text
-    const _getSizeLabels = state.has('method_count')
-      ? _getMethodCountContents
-      : _getSizeContents;
-    _applySizeFunc(
-      _getSizeLabels,
-      element.querySelector('.size'),
-      data,
-      state.get('byteunit', {default: 'MiB', valid: _BYTE_UNITS_SET})
-    );
+    _setSize(element.querySelector('.size'), data);
 
     link.addEventListener('mouseover', event =>
-      displayInfocard(_uiNodeData.get(event.currentTarget), _getSizeLabels)
+      displayInfocard(_uiNodeData.get(event.currentTarget))
     );
     if (!isLeaf) {
       link.addEventListener('click', _toggleTreeElement);
@@ -362,20 +300,18 @@
 
   // When the `byteunit` state changes, update all .size elements in the page
   form.elements.namedItem('byteunit').addEventListener('change', event => {
-    const unit = event.currentTarget.value;
+    // Update state early for _setSize
+    state.set(event.currentTarget.name, event.currentTarget.value);
     // Update existing size elements with the new unit
     for (const sizeElement of _liveSizeSpanList) {
       const data = _uiNodeData.get(sizeElement.parentElement);
-      _applySizeFunc(_getSizeContents, sizeElement, data, unit);
+      if (data) _setSize(sizeElement, data);
     }
   });
 
   _symbolTree.addEventListener('keydown', _handleKeyNavigation);
   _symbolTree.addEventListener('focusin', event => {
-    displayInfocard(
-      _uiNodeData.get(event.target),
-      state.has('method_count') ? _getMethodCountContents : _getSizeContents
-    );
+    displayInfocard(_uiNodeData.get(event.target));
     event.currentTarget.parentElement.classList.add('focused');
   });
   _symbolTree.addEventListener('focusout', event =>
@@ -406,6 +342,7 @@
       link.click();
       link.tabIndex = 0;
     }
+    state.set('diff_mode', diffMode ? 'on' : null);
 
     requestAnimationFrame(() => {
       _progress.value = percent;
