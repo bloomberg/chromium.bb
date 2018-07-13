@@ -245,6 +245,12 @@ bool NetworkAllowUpdate(const chromeos::NetworkState* network) {
   return true;
 }
 
+// Return true if the switch for recommend app screen is on.
+bool ShouldShowRecommendAppsScreen() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableOobeRecommendAppsScreen);
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -634,7 +640,6 @@ void WizardController::ShowArcTermsOfServiceScreen() {
 }
 
 void WizardController::ShowRecommendAppsScreen() {
-  // TODO(rsgingerrs): should maybe check if ToS has been accepted
   VLOG(1) << "Showing Recommend Apps screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_RECOMMEND_APPS);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_RECOMMEND_APPS));
@@ -957,9 +962,15 @@ void WizardController::OnArcTermsOfServiceAccepted() {
     ShowWaitForContainerReadyScreen();
     return;
   }
-  // If the user finished with the PlayStore Terms of Service, advance to the
+
+  // If the switch for recommend app screen is on, show it after the user
+  // finished with the PlayStore Terms of Service. Otherwise, advance to the
   // user image screen.
-  ShowUserImageScreen();
+  if (ShouldShowRecommendAppsScreen()) {
+    ShowRecommendAppsScreen();
+  } else {
+    ShowUserImageScreen();
+  }
 }
 
 void WizardController::OnRecommendAppsSkipped() {
