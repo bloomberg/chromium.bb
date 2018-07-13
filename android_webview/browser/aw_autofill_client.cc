@@ -265,6 +265,10 @@ void AwAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {
   NOTIMPLEMENTED();
 }
 
+void AwAutofillClient::ShowLocalCardMigrationPrompt(base::OnceClosure closure) {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillClient::ConfirmSaveAutofillProfile(
     const autofill::AutofillProfile& profile,
     base::OnceClosure callback) {

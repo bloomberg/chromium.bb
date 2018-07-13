@@ -73,6 +73,11 @@ void TestAutofillClient::ShowUnmaskPrompt(
 void TestAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {
 }
 
+void TestAutofillClient::ShowLocalCardMigrationPrompt(
+    base::OnceClosure closure) {
+  std::move(closure).Run();
+}
+
 void TestAutofillClient::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,
     base::OnceClosure callback) {
