@@ -892,30 +892,6 @@
       'Linux Tests (dbg)(1)(32)',  # https://crbug.com/852895
     ],
   },
-  'sandbox_linux_unittests': {
-    'modifications': {
-      'linux-chromeos-dbg': {
-        'args': [
-          '--test-launcher-print-test-stdio=always',
-        ],
-      },
-      'linux-chromeos-rel': {
-        'args': [
-          '--test-launcher-print-test-stdio=always',
-        ],
-      },
-      'Linux Tests (dbg)(1)': {
-        'args': [
-          '--test-launcher-print-test-stdio=always',
-        ],
-      },
-      'Linux Tests (dbg)(1)(32)': {
-        'args': [
-          '--test-launcher-print-test-stdio=always',
-        ],
-      },
-    },
-  },
   'services_unittests': {
     'remove_from': [
       # chromium.clang
