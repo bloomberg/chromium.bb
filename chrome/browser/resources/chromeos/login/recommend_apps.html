@@ -20,8 +20,7 @@
       </h1>
       <div id="subtitle" slot="subtitle"></div>
       <div id="app-list-view-container" slot="footer">
-        <webview id="app-list-view"
-                 src="../arc_support/recommend_app_list_view.html"></webview>
+        <webview id="app-list-view"></webview>
       </div>
       <div class="app-list-loading" slot="footer">
         <p>[[i18nDynamic(locale, 'recommendAppsLoading')]]</p>
@@ -33,10 +32,10 @@
         <oobe-text-button id="recommend-apps-skip-button" border on-tap="onSkip_">
           <div>[[i18nDynamic(locale, 'recommendAppsSkip')]]</div>
         </oobe-text-button>
-        <oobe-text-button id="recommend-apps-install-button"
+        <oobe-next-button id="recommend-apps-install-button"
           on-tap="onInstall_" class="focus-on-show" inverse>
           <div>[[i18nDynamic(locale, 'recommendAppsInstall')]]</div>
-        </oobe-text-button>
+        </oobe-next-button>
         <oobe-text-button id="recommend-apps-retry-button" border
                           on-tap="onRetry_">
           <div>[[i18nDynamic(locale, 'recommendAppsRetry')]]</div>

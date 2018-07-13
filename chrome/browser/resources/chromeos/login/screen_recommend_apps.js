@@ -8,7 +8,7 @@
 
 login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
   return {
-    EXTERNAL_API: ['loadAppList', 'showError'],
+    EXTERNAL_API: ['loadAppList', 'setWebview', 'showError'],
 
     /**
      * Returns the control which should receive initial focus.
@@ -73,11 +73,15 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
       this.getElement_('recommend-apps-retry-button').focus();
     },
 
+    setWebview: function(contents) {
+      var appListView = this.getElement_('app-list-view');
+      appListView.src = 'data:text/html;charset=utf-8,' + contents;
+    },
+
     /**
      * Generate the contents in the webview.
      */
     loadAppList: function() {
-      var self = this;
       this.ensureInitialized_();
 
       var appListView = this.getElement_('app-list-view');
@@ -85,16 +89,18 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
       subtitle.innerText = loadTimeData.getStringF(
           'recommendAppsScreenDescription',
           $('recommend-apps-screen').apps.length);
-      appListView.executeScript(
-          {file: 'recommend_app_list_view.js'}, function() {
-            $('recommend-apps-screen').apps.forEach(function(app, index) {
-              var generateItemScript = 'generateContents("' + app.icon +
-                  '", "' + app.name + '", "' + app.package_name + '");';
-              var generateContents = {code: generateItemScript};
-              appListView.executeScript(
-                  generateContents, self.onGenerateContents.bind(self));
-            });
+      appListView.addEventListener('contentload', () => {
+        appListView.executeScript({file: 'recommend_app_list_view.js'}, () => {
+          $('recommend-apps-screen').apps.forEach(function(app, index) {
+            var generateItemScript = 'generateContents("' + app.icon + '", "' +
+                app.name + '", "' + app.package_name + '");';
+            var generateContents = {code: generateItemScript};
+            appListView.executeScript(generateContents);
           });
+
+          this.onGenerateContents.call(this);
+        });
+      });
     },
 
     /**

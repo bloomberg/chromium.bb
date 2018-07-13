@@ -35,6 +35,7 @@
 // <include src="screen_update_required.js">
 // <include src="screen_sync_consent.js">
 // <include src="screen_recommend_apps.js">
+// <include src="screen_app_downloading.js">
 
 // <include src="../../gaia_auth_host/authenticator.js">
 

@@ -1904,7 +1904,7 @@
     Install apps from your other devices
   </message>
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_DESCRIPTION" desc="The description of the 'Recommend Apps' section">
-    There are <ph name="NUMBER_OF_APPS">$1<ex>10</ex></ph> apps connected to your account that are optimized for Chromebook.
+    We found <ph name="NUMBER_OF_APPS">$1<ex>10</ex></ph> apps connected to your account that are optimized for this device.
   </message>
   <message name="IDS_LOGIN_RECOMMEND_APPS_SKIP" desc="The label on the button that skips installing any recommended apps">
     Skip
@@ -1916,10 +1916,19 @@
     Retry
   </message>
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_LOADING" desc="Message shown while the recommended app list is being downloaded.">
-    Loading...
+    Please wait...
   </message>
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_ERROR" desc="Load error message of the Recommend Apps OOBE dialog.">
     The list of apps cannot be loaded. Please retry.
+  </message>
+  <message name="IDS_LOGIN_APP_DOWNLOADING_SCREEN_TITLE" desc="The title of the dialog that tells the user the selected Android Apps are downloading.">
+    Apps downloading
+  </message>
+  <message name="IDS_LOGIN_APP_DOWNLOADING_SCREEN_DESCRIPTION" desc="The description of the 'App Downloading' section">
+    We’ll install those apps for you. You can find more apps for your device in the Play Store.
+  </message>
+  <message name="IDS_LOGIN_APP_DOWNLOADING_CONTINUE_SETUP" desc="The label on the button that continues the setup flow.">
+    Continue setup
   </message>
   <message name="IDS_DISABLED_ADD_USER_TOOLTIP" desc="Tooltip over disabled Add user button">
     The owner of this device has disabled new users from being added

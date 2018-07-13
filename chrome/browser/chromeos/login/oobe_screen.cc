@@ -59,6 +59,7 @@ const char* kScreenNames[] = {
     "demo-setup",                    // SCREEN_OOBE_DEMO_SETUP
     "demo-preferences",              // SCREEN_OOBE_DEMO_PREFERENCES
     "recommend-apps",                // SCREEN_RECOMMEND_APPS
+    "app-downloading",               // SCREEN_APP_DOWNLOADING
     "unknown",                       // SCREEN_UNKNOWN
 };
 
