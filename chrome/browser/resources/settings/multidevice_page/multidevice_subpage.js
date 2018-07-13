@@ -51,7 +51,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getEnabledOrDiabledText_: function() {
+  getStatusText_: function() {
     return this.hostEnabled ? this.i18n('multideviceEnabled') :
                               this.i18n('multideviceDisabled');
   },

@@ -18,11 +18,26 @@ Polymer({
   behaviors: [I18nBehavior],
 
   properties: {
-    /** @type {string} */
+    /**
+     * This is the ID of the localized string representing the name of the
+     * feature.
+     * @type {string}
+     */
     featureNameId: String,
 
-    /** @type {string} */
+    /**
+     * This is the ID of the localized string providing a description or useful
+     * status information concertning the feature.
+     * @type {string}
+     */
     featureSummaryId: String,
+
+    /**
+     * The full icon name used provided by the containing iron-iconset-svg
+     * (i.e. [iron-iconset-svg name]:[SVG <g> tag id]
+     * @type {string}
+     */
+    iconName: String,
 
     /**
      * If it is non-null, the item should be actionable and clicking on it
