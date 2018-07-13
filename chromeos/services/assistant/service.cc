@@ -250,8 +250,7 @@ void Service::CreateAssistantManagerService(bool enable_hotword) {
   context()->connector()->BindInterface(device::mojom::kServiceName,
                                         mojo::MakeRequest(&battery_monitor));
   assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
-      context()->connector(), std::move(battery_monitor), this,
-      CreateLibAssistantConfig(!enable_hotword));
+      context()->connector(), std::move(battery_monitor), this, enable_hotword);
 #endif
 }
 
