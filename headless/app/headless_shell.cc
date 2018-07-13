@@ -180,19 +180,23 @@ void HeadlessShell::OnStart(HeadlessBrowser* browser) {
   base::CommandLine::StringVector args =
       base::CommandLine::ForCurrentProcess()->GetArgs();
 
-  // TODO(alexclarke): Should we navigate to about:blank first if using
-  // virtual time?
-  if (args.empty())
+  // If no explicit URL is present, navigate to about:blank, unless we're being
+  // driven by debugger.
+  if (args.empty() && !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                          switches::kRemoteDebuggingPipe)) {
 #if defined(OS_WIN)
     args.push_back(L"about:blank");
 #else
     args.push_back("about:blank");
 #endif
+  }
 
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&ConvertArgumentsToURLs, args),
-      base::BindOnce(&HeadlessShell::OnGotURLs, weak_factory_.GetWeakPtr()));
+  if (!args.empty()) {
+    base::PostTaskAndReplyWithResult(
+        file_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&ConvertArgumentsToURLs, args),
+        base::BindOnce(&HeadlessShell::OnGotURLs, weak_factory_.GetWeakPtr()));
+  }
 }
 
 void HeadlessShell::OnGotURLs(const std::vector<GURL>& urls) {
