@@ -2214,7 +2214,6 @@ void Browser::ScheduleUIUpdate(WebContents* source,
       // Only update the URL for the current tab. Note that we do not update
       // the navigation commands since those would have already been updated
       // synchronously by NavigationStateChanged.
-      window_->RevertToolbarUrl();
       UpdateToolbar(false);
     } else {
       // Clear the saved tab state for the tab that navigated, so that we don't

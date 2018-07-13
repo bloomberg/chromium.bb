@@ -1043,11 +1043,6 @@ void BrowserView::UpdateToolbar(content::WebContents* contents) {
     toolbar_->Update(contents);
 }
 
-void BrowserView::RevertToolbarUrl() {
-  if (toolbar_)
-    toolbar_->RevertUrl();
-}
-
 void BrowserView::ResetToolbarTabState(content::WebContents* contents) {
   // We may end up here during destruction.
   if (toolbar_)

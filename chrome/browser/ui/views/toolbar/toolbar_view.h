@@ -75,10 +75,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // as well.
   void Update(content::WebContents* tab);
 
-  // Reverts user modifications to the omnibox text. Delegates to
-  // LocationBarView.
-  void RevertUrl();
-
   // Clears the current state for |tab|.
   void ResetTabState(content::WebContents* tab);
 
