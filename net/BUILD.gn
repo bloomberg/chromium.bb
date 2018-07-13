@@ -5386,6 +5386,7 @@ test("net_unittests") {
 
   if (enable_websockets) {
     sources += [
+      "websockets/websocket_basic_handshake_stream_test.cc",
       "websockets/websocket_basic_stream_adapters_test.cc",
       "websockets/websocket_basic_stream_test.cc",
       "websockets/websocket_channel_test.cc",

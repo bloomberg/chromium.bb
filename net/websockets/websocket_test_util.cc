@@ -113,6 +113,21 @@ std::string WebSocketStandardResponse(const std::string& extra_headers) {
       extra_headers.c_str());
 }
 
+HttpRequestHeaders WebSocketCommonTestHeaders() {
+  HttpRequestHeaders request_headers;
+  request_headers.SetHeader("Host", "www.example.org");
+  request_headers.SetHeader("Connection", "Upgrade");
+  request_headers.SetHeader("Pragma", "no-cache");
+  request_headers.SetHeader("Cache-Control", "no-cache");
+  request_headers.SetHeader("Upgrade", "websocket");
+  request_headers.SetHeader("Origin", "http://origin.example.org");
+  request_headers.SetHeader("Sec-WebSocket-Version", "13");
+  request_headers.SetHeader("User-Agent", "");
+  request_headers.SetHeader("Accept-Encoding", "gzip, deflate");
+  request_headers.SetHeader("Accept-Language", "en-us,fr");
+  return request_headers;
+}
+
 spdy::SpdyHeaderBlock WebSocketHttp2Request(
     const std::string& path,
     const std::string& authority,

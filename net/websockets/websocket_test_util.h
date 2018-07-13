@@ -74,9 +74,15 @@ std::string WebSocketStandardRequestWithCookies(
     const std::string& send_additional_request_headers,
     const std::string& extra_headers);
 
-// A response with the appropriate accept header to match the above challenge
-// key. Each header in |extra_headers| must be terminated with "\r\n".
+// A response with the appropriate accept header to match the above
+// challenge key. Each header in |extra_headers| must be terminated with
+// "\r\n".
 std::string WebSocketStandardResponse(const std::string& extra_headers);
+
+// WebSocketCommonTestHeaders() generates a common set of request headers
+// corresponding to WebSocketStandardRequest("/", "www.example.org",
+// url::Origin::Create(GURL("http://origin.example.org")), "", "")
+HttpRequestHeaders WebSocketCommonTestHeaders();
 
 // Generates a handshake request header block when using WebSockets over HTTP/2.
 spdy::SpdyHeaderBlock WebSocketHttp2Request(
