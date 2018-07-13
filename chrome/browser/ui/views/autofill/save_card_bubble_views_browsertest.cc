@@ -633,6 +633,49 @@ IN_PROC_BROWSER_TEST_F(
       "Autofill.SaveCardCardholderNameWasEdited", true, 1);
 }
 
+// Tests the upload save bubble. Ensures that if cardholder name is explicitly
+// requested but the AutofillUpstreamBlankCardholderNameField experiment is
+// active, the textfield is NOT prefilled even though the user's Google Account
+// name is available.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Upload_CardholderNameNotPrefilledIfBlankNameExperimentEnabled) {
+  // Enable the EditableCardholderName and BlankCardholderNameField experiments.
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {kAutofillUpstreamEditableCardholderName,
+       kAutofillUpstreamBlankCardholderNameField},
+      // Disabled
+      {});
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Sign the user in.
+  SignInWithFullName("John Smith");
+
+  // Submitting the form should show the upload save bubble, along with a
+  // textfield specifically requesting the cardholder name.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  base::HistogramTester histogram_tester;
+  FillAndSubmitFormWithoutName();
+  WaitForObservedEvent();
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
+
+  // The textfield should be blank, and UMA should have logged its value's
+  // absence. Because the textfield is blank, the tooltip explaining that the
+  // name came from the user's Google Account should NOT be visible.
+  views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
+      FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
+  EXPECT_TRUE(cardholder_name_textfield->text().empty());
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCardCardholderNamePrefilled", false, 1);
+  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TOOLTIP));
+}
+
 // TODO(jsaul): Only *part* of the legal message StyledLabel is clickable, and
 //              the NOTREACHED() in SaveCardBubbleViews::StyledLabelLinkClicked
 //              prevents us from being able to click it unless we know the exact

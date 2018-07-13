@@ -63,6 +63,9 @@ const base::Feature kAutofillUpstreamAllowAllEmailDomains{
 const base::Feature kAutofillUpstreamAlwaysRequestCardholderName{
     "AutofillUpstreamAlwaysRequestCardholderName",
     base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillUpstreamBlankCardholderNameField{
+    "AutofillUpstreamBlankCardholderNameField",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamEditableCardholderName{
     "AutofillUpstreamEditableCardholderName",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -172,6 +175,11 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
 bool IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled() {
   return base::FeatureList::IsEnabled(
       kAutofillUpstreamAlwaysRequestCardholderName);
+}
+
+bool IsAutofillUpstreamBlankCardholderNameFieldExperimentEnabled() {
+  return base::FeatureList::IsEnabled(
+      kAutofillUpstreamBlankCardholderNameField);
 }
 
 bool IsAutofillUpstreamEditableCardholderNameExperimentEnabled() {

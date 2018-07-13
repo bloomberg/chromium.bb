@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
@@ -360,9 +361,16 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
     cardholder_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     cardholder_name_label_row->AddChildView(cardholder_name_label.release());
 
+    // Prepare the prefilled cardholder name.
+    base::string16 prefilled_name;
+    if (!IsAutofillUpstreamBlankCardholderNameFieldExperimentEnabled()) {
+      prefilled_name =
+          base::UTF8ToUTF16(controller_->GetAccountInfo().full_name);
+    }
+
     // Set up cardholder name label tooltip ONLY if the cardholder name
     // textfield will be prefilled.
-    if (!controller_->GetAccountInfo().full_name.empty()) {
+    if (!prefilled_name.empty()) {
       std::unique_ptr<views::TooltipIcon> cardholder_name_tooltip =
           std::make_unique<views::TooltipIcon>(l10n_util::GetStringUTF16(
               IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME_TOOLTIP));
@@ -380,10 +388,9 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
         IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME));
     cardholder_name_textfield_->SetTextInputType(
         ui::TextInputType::TEXT_INPUT_TYPE_TEXT);
-    cardholder_name_textfield_->SetText(
-        base::ASCIIToUTF16(controller_->GetAccountInfo().full_name));
+    cardholder_name_textfield_->SetText(prefilled_name);
     AutofillMetrics::LogSaveCardCardholderNamePrefilled(
-        !cardholder_name_textfield_->text().empty());
+        !prefilled_name.empty());
 
     // Add cardholder name elements to a single view, then to the final dialog.
     std::unique_ptr<views::View> cardholder_name_view =
