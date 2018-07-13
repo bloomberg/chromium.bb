@@ -90,7 +90,9 @@ function testEntryListRemoveEntry() {
   assertEquals(0, entryList.children.length);
 }
 
-/** Tests methods findIndexByVolumeInfo, removeByVolumeType and containEntry. */
+/**
+ * Tests methods findIndexByVolumeInfo, removeByVolumeType, removeByRootType.
+ */
 function testEntryFindIndex() {
   const entryList = new EntryList('My Files');
 
@@ -110,12 +112,17 @@ function testEntryFindIndex() {
   };
   const crostini = new VolumeEntry(crostiniVolumeInfo);
 
+  const fakeEntry = {
+    isDirectory: true,
+    rootType: VolumeManagerCommon.RootType.CROSTINI,
+    name: 'Linux Files',
+    toURL: function() {
+      return 'fake-entry://linux-files';
+    }
+  };
+
   entryList.addEntry(downloads);
-  // Test containEntry.
-  assertTrue(entryList.containEntry(downloads));
-  assertFalse(entryList.containEntry(crostini));
   entryList.addEntry(crostini);
-  assertTrue(entryList.containEntry(crostini));
 
   // Test findIndexByVolumeInfo.
   assertEquals(0, entryList.findIndexByVolumeInfo(downloadsVolumeInfo));
@@ -128,6 +135,11 @@ function testEntryFindIndex() {
   // Now crostini volume doesn't exist anymore, so should return False.
   assertFalse(
       entryList.removeByVolumeType(VolumeManagerCommon.VolumeType.CROSTINI));
+
+  // Test removeByRootType.
+  entryList.addEntry(fakeEntry);
+  assertTrue(entryList.removeByRootType(VolumeManagerCommon.RootType.CROSTINI));
+  assertEquals(1, entryList.children.length);
 }
 
 /** Tests method EntryList.getMetadata. */

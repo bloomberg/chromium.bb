@@ -579,23 +579,21 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
   // Add Linux to My Files.
   const crostiniVolume =
       getSingleVolume(VolumeManagerCommon.VolumeType.CROSTINI);
+
+  // Remove Crostini FakeEntry, it's re-added below if needed.
+  myFilesEntry.removeByRootType(VolumeManagerCommon.RootType.CROSTINI);
   if (crostiniVolume) {
     // Crostini is mounted so add it if MyFiles doesn't have it yet.
     if (myFilesEntry.findIndexByVolumeInfo(crostiniVolume.volumeInfo) === -1) {
       myFilesEntry.addEntry(new VolumeEntry(crostiniVolume.volumeInfo));
     }
-    // Remove linuxFilesItem_ if exists on EntryList.
-    if (this.linuxFilesItem_)
-      myFilesEntry.removeEntry(this.linuxFilesItem_.entry);
   } else {
     myFilesEntry.removeByVolumeType(VolumeManagerCommon.VolumeType.CROSTINI);
     if (this.linuxFilesItem_) {
-      const fakeEntry = this.linuxFilesItem_.entry;
-      // Here it's just a fake item, only add if MyFiles doesn't have it yet.
-      if (!myFilesEntry.containEntry(fakeEntry)) {
-        fakeEntry.navigationModel = this.linuxFilesItem_;
-        myFilesEntry.addEntry(fakeEntry);
-      }
+      // Here it's just a fake item, we link the navigation model so
+      // DirectoryTree can choose the correct DirectoryItem for it.
+      this.linuxFilesItem_.entry.navigationModel = this.linuxFilesItem_;
+      myFilesEntry.addEntry(this.linuxFilesItem_.entry);
     }
   }
 
