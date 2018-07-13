@@ -62,9 +62,15 @@ namespace blink {
 namespace {
 
 bool IsThrottlableRequestContext(WebURLRequest::RequestContext context) {
+  // Requests that could run long should not be throttled as they
+  // may stay there forever and avoid other requests from making
+  // progress.
+  // See https://crbug.com/837771 for the sample breakages.
   return context != WebURLRequest::kRequestContextEventSource &&
          context != WebURLRequest::kRequestContextFetch &&
-         context != WebURLRequest::kRequestContextXMLHttpRequest;
+         context != WebURLRequest::kRequestContextXMLHttpRequest &&
+         context != WebURLRequest::kRequestContextVideo &&
+         context != WebURLRequest::kRequestContextAudio;
 }
 
 }  // namespace
