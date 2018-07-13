@@ -298,18 +298,10 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddDrawInterval(base::TimeDelta interval) override {}
 
   void AddDrawIntervalWithCompositedAnimations(
-      base::TimeDelta interval) override {
-    // Still report, but the data is not meaningful.
-    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
-        "Scheduling.Browser.DrawIntervalWithCompositedAnimations", interval);
-  }
+      base::TimeDelta interval) override {}
 
   void AddDrawIntervalWithMainThreadAnimations(
-      base::TimeDelta interval) override {
-    // Still report, but the data is not meaningful.
-    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
-        "Scheduling.Browser.DrawIntervalWithMainThreadAnimations", interval);
-  }
+      base::TimeDelta interval) override {}
 
   void AddBeginImplFrameLatency(base::TimeDelta delta) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
