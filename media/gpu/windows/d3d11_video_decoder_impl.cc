@@ -127,9 +127,8 @@ void D3D11VideoDecoderImpl::Initialize(
 
   D3D11_VIDEO_DECODER_DESC desc = {};
   desc.Guid = decoder_guid;
-  // TODO(liberato): where do these numbers come from?
-  desc.SampleWidth = 1920;
-  desc.SampleHeight = 1088;
+  desc.SampleWidth = config.coded_size().width();
+  desc.SampleHeight = config.coded_size().height();
   desc.OutputFormat = DXGI_FORMAT_NV12;
   UINT config_count = 0;
   hr = video_device_->GetVideoDecoderConfigCount(&desc, &config_count);
