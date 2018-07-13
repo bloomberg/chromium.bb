@@ -34,6 +34,7 @@ extern const char kRemoveScanOnlyUwS[];
 extern const char kReportExtensionsSwitch[];
 extern const char kSandboxMojoPipeTokenSwitch[];
 extern const char kSandboxedProcessIdSwitch[];
+extern const char kScanLocationsSwitch[];
 extern const char kScanningTimeoutMinutesSwitch[];
 extern const char kTestLoggingURLSwitch[];
 extern const char kTestingSwitch[];

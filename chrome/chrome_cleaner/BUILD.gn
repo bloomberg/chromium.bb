@@ -6,13 +6,17 @@ import("//testing/test.gni")
 
 test("chrome_cleaner_unittests") {
   sources = [
+    "//chrome/chrome_cleaner/engines/dummy_engine_resources.cc",
     "test/test_main.cc",
   ]
 
   deps = [
+    "//chrome/chrome_cleaner/engines:resources",
+
     # Tests from sub-directories.
     "//chrome/chrome_cleaner/http:unittest_sources",
     "//chrome/chrome_cleaner/os:unittest_sources",
+    "//chrome/chrome_cleaner/settings:unittest_sources",
     "//chrome/chrome_cleaner/strings:unittest_sources",
 
     # Dependencies of the test harness.
