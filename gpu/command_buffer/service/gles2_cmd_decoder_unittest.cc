@@ -319,13 +319,15 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
   // Attach an image and see if it works.
   scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
   abstract_texture->BindImage(image.get(), true);
+  EXPECT_EQ(abstract_texture->GetImage(), image.get());
   // Binding an image should make the texture renderable.
   EXPECT_EQ(texture->SafeToRenderFrom(), true);
   EXPECT_EQ(texture->GetLevelImage(target, 0), image.get());
 
-  // Unbinding should make it not renderable
+  // Unbinding should make it not renderable.
   abstract_texture->ReleaseImage();
   EXPECT_EQ(texture->SafeToRenderFrom(), false);
+  EXPECT_EQ(abstract_texture->GetImage(), nullptr);
 
   // Attach a stream image, and verify that the image changes and the service_id
   // matches the one we provide.
@@ -339,9 +341,14 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
   EXPECT_EQ(abstract_texture->service_id(), surface_texture_service_id);
 
   // Deleting |abstract_texture| should delete the platform texture as well,
-  // since we haven't make a copy of the TextureRef.
+  // since we haven't make a copy of the TextureRef.  Also make sure that the
+  // cleanup CB is called.
   EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1).RetiresOnSaturation();
+  bool cleanup_flag = false;
+  abstract_texture->SetCleanupCallback(base::BindOnce(
+      [](bool* flag, AbstractTexture*) { *flag = true; }, &cleanup_flag));
   abstract_texture.reset();
+  EXPECT_TRUE(cleanup_flag);
 }
 
 TEST_P(GLES2DecoderTest, AbstractTextureIsDestroyedWithDecoder) {
@@ -358,12 +365,17 @@ TEST_P(GLES2DecoderTest, AbstractTextureIsDestroyedWithDecoder) {
                                           1,                    /* depth */
                                           0,                    /* border */
                                           GL_RGBA, GL_UNSIGNED_BYTE);
+  bool cleanup_flag = false;
+  abstract_texture->SetCleanupCallback(base::BindOnce(
+      [](bool* flag, AbstractTexture*) { *flag = true; }, &cleanup_flag));
 
-  // There is only one TextureRef, so it should delete the platform texture.
+  // There is only one TextureRef, so it should delete the platform texture.  It
+  // should also call the cleanup cb.
   EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1).RetiresOnSaturation();
   ResetDecoder();
   // The texture should no longer have a TextureRef.
   EXPECT_EQ(abstract_texture->GetTextureBase(), nullptr);
+  EXPECT_TRUE(cleanup_flag);
 }
 
 TEST_P(GLES2DecoderTest, AbstractTextureIsDestroyedWhenMadeCurrent) {

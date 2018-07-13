@@ -41,7 +41,9 @@ class MockAbstractTexture : public NiceMock<AbstractTexture>,
                     GLuint service_id));
   MOCK_METHOD2(BindImage, void(gl::GLImage* image, bool client_managed));
   MOCK_METHOD0(ReleaseImage, void());
+  MOCK_CONST_METHOD0(GetImage, gl::GLImage*());
   MOCK_METHOD0(SetCleared, void());
+  MOCK_METHOD1(SetCleanupCallback, void(CleanupCallback));
 };
 
 class TexturePoolTest : public testing::Test {
@@ -86,21 +88,16 @@ class TexturePoolTest : public testing::Test {
 TEST_F(TexturePoolTest, AddAndReleaseTexturesWithContext) {
   // Test that adding then deleting a texture destroys it.
   WeakTexture texture = CreateAndAddTexture();
-  bool release_flag = false;
-  texture_pool_->ReleaseTexture(
-      texture.get(), sync_token_,
-      base::BindOnce([](bool* flag) { *flag = true; }, &release_flag));
+  texture_pool_->ReleaseTexture(texture.get(), sync_token_);
 
   // The texture should still exist until the sync token is cleared.
-  EXPECT_TRUE(texture);
+  ASSERT_TRUE(texture);
 
   // Once the sync token is released, then the context should be made current
   // and the texture should be destroyed.
   helper_->ReleaseSyncToken(sync_token_);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(texture);
-  // The release cb should have been called.
-  EXPECT_TRUE(release_flag);
+  ASSERT_FALSE(texture);
 }
 
 TEST_F(TexturePoolTest, AddAndReleaseTexturesWithoutContext) {

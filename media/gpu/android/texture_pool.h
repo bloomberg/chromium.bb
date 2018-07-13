@@ -47,18 +47,14 @@ class MEDIA_GPU_EXPORT TexturePool : public base::RefCounted<TexturePool> {
   // Note: since we don't actually pool things, this just forgets |texture|.
   // It's okay if this is called after we've lost |stub_|.  If |sync_token| is
   // not null, then we'll wait for that token before taking any action.
-  // |release_cb| will be called immediately before we release the texture,
-  // after |sync_token| is cleared.
   void ReleaseTexture(gpu::gles2::AbstractTexture* texture,
-                      const gpu::SyncToken& sync_token,
-                      base::OnceClosure release_cb = base::OnceClosure());
+                      const gpu::SyncToken& sync_token);
 
  protected:
   virtual ~TexturePool();
 
   // Called after a sync token has been released, to free |texture|.
-  void OnSyncTokenReleased(gpu::gles2::AbstractTexture* texture,
-                           base::OnceClosure release_cb);
+  void OnSyncTokenReleased(gpu::gles2::AbstractTexture* texture);
 
   // Called when |stub_| notifies us that the underlying stub will be destroyed.
   void OnWillDestroyStub(bool have_context);

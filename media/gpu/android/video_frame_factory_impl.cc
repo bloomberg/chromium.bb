@@ -165,32 +165,29 @@ void GpuVideoFrameFactory::CreateVideoFrame(
   // Try to render this frame if possible.
   internal::MaybeRenderEarly(&images_);
 
-  // Callback that will notify the CodecImage that the sync token has cleared.
-  // We don't want it to retain any codec buffers after that, since it's unclear
-  // how long it will be until the texture is actually destroyed.  Note that if
-  // the sync token were always correct, then |texture_pool| could just release
-  // the image.  It would save a lot of hoops, but would also make the texture
-  // unrenderable.  That's bad when the sync token isn't up to date.
-  auto sync_token_cb = base::BindOnce(
-      [](AbstractTexture* texture, CodecImage* codec_image) {
-        // If |texture| no longer holds the TextureBase, then |codec_image|
-        // might not be valid anymore if the underlying TextureBase has been
-        // destroyed. Note that we can't tell if it has been destroyed or not.
-        // However, this happens only when our stub is destroyed, causing our
-        // AbstractTexture to forget the texture.
-        if (texture->GetTextureBase())
-          codec_image->ReleaseCodecBuffer();
-      },
-      base::Unretained(texture.get()), base::Unretained(codec_image));
+  // Callback to notify us when |texture| is going to drop its ref to the
+  // underlying texture.  This happens when we (a) are notified that |frame|
+  // has been released by the renderer and the sync token has cleared, or (b)
+  // when the stub is destroyed.  In the former case, we want to release any
+  // codec resources as quickly as possible so that we can re-use them.  In
+  // the latter case, decoding has stopped and we want to release any buffers
+  // so that the MediaCodec instance can clean up.  Note that the texture will
+  // remain renderable, but it won't necessarily refer to the frame it was
+  // supposed to; it'll be the most recently rendered frame.
+  auto cleanup_cb = base::BindOnce([](AbstractTexture* texture) {
+    gl::GLImage* image = texture->GetImage();
+    if (image)
+      static_cast<CodecImage*>(image)->ReleaseCodecBuffer();
+  });
+  texture->SetCleanupCallback(std::move(cleanup_cb));
 
   // Note that this keeps the pool around while any texture is.
   auto drop_texture_ref = base::BindOnce(
       [](scoped_refptr<TexturePool> texture_pool, AbstractTexture* texture,
-         base::OnceClosure sync_token_cb, const gpu::SyncToken& sync_token) {
-        texture_pool->ReleaseTexture(texture, sync_token,
-                                     std::move(sync_token_cb));
+         const gpu::SyncToken& sync_token) {
+        texture_pool->ReleaseTexture(texture, sync_token);
       },
-      texture_pool_, base::Unretained(texture.get()), std::move(sync_token_cb));
+      texture_pool_, base::Unretained(texture.get()));
   texture_pool_->AddTexture(std::move(texture));
 
   // Guarantee that the AbstractTexture is released even if the VideoFrame is

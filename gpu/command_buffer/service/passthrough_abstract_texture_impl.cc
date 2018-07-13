@@ -24,6 +24,11 @@ PassthroughAbstractTextureImpl::PassthroughAbstractTextureImpl(
       decoder_(decoder) {}
 
 PassthroughAbstractTextureImpl::~PassthroughAbstractTextureImpl() {
+  if (cleanup_cb_) {
+    DCHECK(texture_passthrough_);
+    std::move(cleanup_cb_).Run(this);
+  }
+
   if (decoder_)
     decoder_->OnAbstractTextureDestroyed(this, std::move(texture_passthrough_));
   DCHECK(!texture_passthrough_);
@@ -63,15 +68,27 @@ void PassthroughAbstractTextureImpl::ReleaseImage() {
   texture_passthrough_->set_is_bind_pending(false);
   const GLuint target = texture_passthrough_->target();
   const GLuint level = 0;
-  gl::GLImage* image = texture_passthrough_->GetLevelImage(target, level);
-  if (image) {
+  if (gl::GLImage* image = GetImage()) {
     image->ReleaseTexImage(target);
     texture_passthrough_->SetLevelImage(target, level, nullptr);
   }
 }
 
+gl::GLImage* PassthroughAbstractTextureImpl::GetImage() const {
+  if (!texture_passthrough_)
+    return nullptr;
+
+  const GLint level = 0;
+  return texture_passthrough_->GetLevelImage(texture_passthrough_->target(),
+                                             level);
+}
+
 void PassthroughAbstractTextureImpl::SetCleared() {
   // The passthrough decoder has no notion of 'cleared', so do nothing.
+}
+
+void PassthroughAbstractTextureImpl::SetCleanupCallback(CleanupCallback cb) {
+  cleanup_cb_ = std::move(cb);
 }
 
 scoped_refptr<TexturePassthrough>
@@ -79,6 +96,10 @@ PassthroughAbstractTextureImpl::OnDecoderWillDestroy() {
   // Make sure that destruction_cb_ does nothing when destroyed, since
   // the DecoderContext is invalid. Also null out invalid pointer.
   DCHECK(texture_passthrough_);
+
+  if (cleanup_cb_)
+    std::move(cleanup_cb_).Run(this);
+
   decoder_ = nullptr;
   gl_api_ = nullptr;
   return std::move(texture_passthrough_);

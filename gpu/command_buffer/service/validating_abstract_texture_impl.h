@@ -39,7 +39,9 @@ class GPU_GLES2_EXPORT ValidatingAbstractTextureImpl : public AbstractTexture {
                               GLuint service_id) override;
   void BindImage(gl::GLImage* image, bool client_managed) override;
   void ReleaseImage() override;
+  gl::GLImage* GetImage() const override;
   void SetCleared() override;
+  void SetCleanupCallback(CleanupCallback cb) override;
 
   // Called when our decoder is going away, so that we can try to clean up.
   void OnDecoderWillDestroy(bool have_context);
@@ -59,6 +61,7 @@ class GPU_GLES2_EXPORT ValidatingAbstractTextureImpl : public AbstractTexture {
 
   DecoderContext* decoder_context_ = nullptr;
   DestructionCB destruction_cb_;
+  CleanupCallback cleanup_cb_;
 };
 
 }  // namespace gles2
