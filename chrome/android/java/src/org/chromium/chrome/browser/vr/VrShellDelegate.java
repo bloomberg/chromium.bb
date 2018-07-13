@@ -1279,8 +1279,6 @@ public class VrShellDelegate
         mStartedFromVrIntent = true;
         // Setting DON succeeded will cause us to enter VR when resuming.
         mDonSucceeded = true;
-
-        nativeRecordVrStartAction(mNativeVrShellDelegate, VrStartAction.INTENT_LAUNCH);
     }
 
     private void onEnterVrUnsupported() {
