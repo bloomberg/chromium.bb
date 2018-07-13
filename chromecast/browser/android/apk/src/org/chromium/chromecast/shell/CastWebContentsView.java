@@ -5,6 +5,7 @@
 package org.chromium.chromecast.shell;
 
 import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
 import android.widget.FrameLayout;
 
 import org.chromium.chromecast.base.ScopeFactory;
@@ -46,6 +47,7 @@ class CastWebContentsView {
             contentView.requestFocus();
             contentViewRenderView.setCurrentWebContents(webContents);
             return () -> {
+                layout.setForeground(new ColorDrawable(backgroundColor));
                 layout.removeView(contentView);
                 layout.removeView(contentViewRenderView);
                 contentViewRenderView.destroy();

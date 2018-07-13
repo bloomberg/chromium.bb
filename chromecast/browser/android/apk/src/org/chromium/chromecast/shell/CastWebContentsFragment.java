@@ -66,6 +66,7 @@ public class CastWebContentsFragment extends Fragment {
             mFragmentRootView = inflater.cloneInContext(getContext())
                                         .inflate(R.layout.cast_web_contents_activity, null);
         }
+        mFragmentRootView.setVisibility(View.VISIBLE);
         return mFragmentRootView;
     }
 
@@ -117,10 +118,6 @@ public class CastWebContentsFragment extends Fragment {
     public void onResume() {
         Log.d(TAG, "onResume");
         super.onResume();
-        // Delayed set mFragmentRootView to visible to avoid activity UI -> one frame of fragment
-        // background -> cast app rendered UI
-        mFragmentRootView.setVisibility(View.INVISIBLE);
-        mFragmentRootView.postDelayed(this ::setToVisible, 150);
         mResumedState.set(Unit.unit());
     }
 
