@@ -1790,9 +1790,9 @@ crbug.com/779170 virtual/mouseevent_fractional/fast/events/zoom-dblclick.html [ 
 
 # These tests will pass once the --enable-features=TouchpadAndWheelScrollLatching flag is enabled by default.
 crbug.com/526463 fast/events/wheel/mouse-wheel-scroll-latching.html [ Pass Failure ]
-crbug.com/526463 fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Timeout ]
+crbug.com/526463 fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Pass Failure ]
 crbug.com/526463 virtual/mouseevent_fractional/fast/events/wheel/mouse-wheel-scroll-latching.html [ Pass Failure ]
-crbug.com/526463 virtual/mouseevent_fractional/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Timeout ]
+crbug.com/526463 virtual/mouseevent_fractional/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Pass Failure ]
 
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
