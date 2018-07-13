@@ -7,12 +7,12 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/renderers/base_quad_renderer.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 namespace vr {
 
 // Renders a page-generated stereo VR view.
-class VR_EXPORT WebVrRenderer : public BaseQuadRenderer {
+class VR_UI_EXPORT WebVrRenderer : public BaseQuadRenderer {
  public:
   WebVrRenderer();
   ~WebVrRenderer() override;

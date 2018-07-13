@@ -12,7 +12,7 @@
 #include "chrome/browser/vr/model/color_scheme.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/text_input_delegate.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace vr {
@@ -20,7 +20,7 @@ namespace vr {
 class Rect;
 class Text;
 
-class VR_EXPORT TextInput : public UiElement {
+class VR_UI_EXPORT TextInput : public UiElement {
  public:
   // Called when this element receives focus.
   typedef base::RepeatingCallback<void(bool)> OnFocusChangedCallback;

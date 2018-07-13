@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/renderers/base_quad_renderer.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace vr {
@@ -17,7 +17,7 @@ namespace vr {
 // applied. The shadow is applied across its padding.
 // By default the direct child is used as the shadow caster. This behavior can
 // be changed by manually setting a shadow caster.
-class VR_EXPORT Shadow : public UiElement {
+class VR_UI_EXPORT Shadow : public UiElement {
  public:
   Shadow();
   ~Shadow() override;

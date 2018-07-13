@@ -12,7 +12,7 @@
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/model/color_scheme.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 namespace gfx {
 class PointF;
@@ -27,7 +27,7 @@ class Rect;
 // axis.  This matches the Daydream disk-style button. Subclasses may add
 // arbitrary non-hit-testable elements as children of the background, if
 // desired.
-class VR_EXPORT Button : public UiElement {
+class VR_UI_EXPORT Button : public UiElement {
  public:
   explicit Button(base::RepeatingCallback<void()> click_handler,
                   AudioDelegate* audio_delegate);

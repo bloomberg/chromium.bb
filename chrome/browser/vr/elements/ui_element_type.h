@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 namespace vr {
 
@@ -54,7 +54,7 @@ enum UiElementType {
   kNumUiElementTypes,
 };
 
-VR_EXPORT std::string UiElementTypeToString(UiElementType type);
+VR_UI_EXPORT std::string UiElementTypeToString(UiElementType type);
 
 }  // namespace vr
 

@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_VR_ELEMENTS_OVAL_H_
 
 #include "chrome/browser/vr/elements/rect.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 namespace vr {
 
 // An oval behaves like a rect save for the fact that it manages its own corner
 // radii to ensure circular right and left end caps.
-class VR_EXPORT Oval : public Rect {
+class VR_UI_EXPORT Oval : public Rect {
  public:
   Oval();
   ~Oval() override;

@@ -9,12 +9,12 @@
 
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 #include "ui/gfx/vector_icon_types.h"
 
 namespace vr {
 
-struct VR_EXPORT IndicatorSpec {
+struct VR_UI_EXPORT IndicatorSpec {
   IndicatorSpec(UiElementName name,
                 UiElementName webvr_name,
                 const gfx::VectorIcon& icon,
@@ -40,7 +40,7 @@ struct VR_EXPORT IndicatorSpec {
   bool is_url;
 };
 
-VR_EXPORT std::vector<IndicatorSpec> GetIndicatorSpecs();
+VR_UI_EXPORT std::vector<IndicatorSpec> GetIndicatorSpecs();
 
 }  // namespace vr
 

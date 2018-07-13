@@ -9,7 +9,7 @@
 
 #include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/model/color_scheme.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 
 namespace gfx {
@@ -19,12 +19,12 @@ class RenderText;
 namespace vr {
 
 // Convert Autocomplete's suggestion formatting to generic VR text formatting.
-VR_EXPORT TextFormatting
+VR_UI_EXPORT TextFormatting
 ConvertClassification(const ACMatchClassifications& classifications,
                       size_t text_length,
                       const ColorScheme& color_scheme);
 
-VR_EXPORT url_formatter::FormatUrlTypes GetVrFormatUrlTypes();
+VR_UI_EXPORT url_formatter::FormatUrlTypes GetVrFormatUrlTypes();
 
 struct ElisionParameters {
   // The horizontal pixel offset to be applied to URL text, such that the right
@@ -42,15 +42,16 @@ struct ElisionParameters {
 // elision parameters.  This means computing an offset such that the rightmost
 // portion of the TLD is visible (along with a small part of the path), and
 // fading either edge if they overflow available space.
-VR_EXPORT ElisionParameters GetElisionParameters(const GURL& gurl,
-                                                 const url::Parsed& parsed,
-                                                 gfx::RenderText* render_text,
-                                                 int min_path_pixels);
+VR_UI_EXPORT ElisionParameters
+GetElisionParameters(const GURL& gurl,
+                     const url::Parsed& parsed,
+                     gfx::RenderText* render_text,
+                     int min_path_pixels);
 
 // Given a formatted URL and associated Parsed data, generates a VR-specific
 // text formatting description that can be applied to a RenderText.  This mainly
 // handles emphasis of hosts, etc., but could also include color.
-VR_EXPORT TextFormatting
+VR_UI_EXPORT TextFormatting
 CreateUrlFormatting(const base::string16& formatted_url,
                     const url::Parsed& parsed,
                     SkColor emphasized_color,

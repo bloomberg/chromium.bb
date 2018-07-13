@@ -9,13 +9,13 @@
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
 #include "chrome/browser/vr/renderers/base_renderer.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 namespace vr {
 
 // Represents the virtual keyboard. This element is a proxy to the
 // platform-specific keyboard implementation.
-class VR_EXPORT Keyboard : public UiElement {
+class VR_UI_EXPORT Keyboard : public UiElement {
  public:
   Keyboard();
   ~Keyboard() override;

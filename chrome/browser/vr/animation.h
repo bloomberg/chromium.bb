@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "cc/animation/keyframe_model.h"
 #include "chrome/browser/vr/transition.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
@@ -32,7 +32,7 @@ namespace vr {
 // TODO(vollick): if cc::KeyframeModel and friends move into gfx/, then this
 // class should follow suit. As such, it should not absorb any vr-specific
 // functionality.
-class VR_EXPORT Animation final {
+class VR_UI_EXPORT Animation final {
  public:
   static int GetNextKeyframeModelId();
   static int GetNextGroupId();

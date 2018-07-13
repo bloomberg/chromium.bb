@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_VR_MODEL_COLOR_SCHEME_H_
 
 #include "base/version.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace vr {
 
-struct ButtonColors {
+struct VR_UI_EXPORT ButtonColors {
   bool operator==(const ButtonColors& other) const;
   bool operator!=(const ButtonColors& other) const;
 
@@ -25,7 +25,7 @@ struct ButtonColors {
   SkColor foreground_disabled = SK_ColorBLACK;
 };
 
-struct TextSelectionColors {
+struct VR_UI_EXPORT TextSelectionColors {
   bool operator==(const TextSelectionColors& other) const;
   bool operator!=(const TextSelectionColors& other) const;
   SkColor cursor = SK_ColorBLACK;
@@ -33,7 +33,7 @@ struct TextSelectionColors {
   SkColor foreground = SK_ColorBLACK;
 };
 
-struct VR_EXPORT ColorScheme {
+struct VR_UI_EXPORT ColorScheme {
   enum Mode : int {
     kModeNormal = 0,
     kModeFullscreen,

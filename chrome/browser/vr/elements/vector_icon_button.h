@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/button.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 #include "ui/gfx/vector_icon_types.h"
 
 namespace vr {
@@ -20,7 +20,7 @@ class VectorIcon;
 // A vector button has rect as a background and a vector icon as the
 // foreground. When hovered, background and foreground both move forward on Z
 // axis.
-class VR_EXPORT VectorIconButton : public Button {
+class VR_UI_EXPORT VectorIconButton : public Button {
  public:
   VectorIconButton(base::RepeatingCallback<void()> click_handler,
                    const gfx::VectorIcon& icon,

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/platform_ui_element.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_ui_export.h"
 
 namespace vr {
 
@@ -22,7 +22,7 @@ class TextInputDelegate;
 // If quad layer is set, it stops surface frames of web page but instead draws
 // transparent in UI. So the web page in quad layer can be later composited to
 // the UI.
-class VR_EXPORT ContentElement : public PlatformUiElement {
+class VR_UI_EXPORT ContentElement : public PlatformUiElement {
  public:
   typedef typename base::RepeatingCallback<void(const gfx::SizeF&)>
       ScreenBoundsChangedCallback;
