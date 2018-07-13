@@ -36,6 +36,11 @@
   },
   {
     "prefix": "threaded",
+    "base": "external/wpt/css/css-scroll-snap",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "threaded",
     "base": "compositing/webgl",
     "args": ["--enable-threaded-compositing"]
   },
