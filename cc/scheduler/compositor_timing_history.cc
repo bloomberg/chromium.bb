@@ -341,15 +341,9 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddReadyToActivateToWillActivateDuration(
       base::TimeDelta duration,
       bool pending_tree_is_impl_side) override {
-    if (pending_tree_is_impl_side) {
-      UMA_HISTOGRAM_CUSTOM_TIMES_DURATION_SUFFIX(
-          "Scheduling.Browser.ReadyToActivateToActivationDuration", ".Impl",
-          duration);
-    } else {
-      UMA_HISTOGRAM_CUSTOM_TIMES_DURATION_SUFFIX(
-          "Scheduling.Browser.ReadyToActivateToActivationDuration", ".Main",
-          duration);
-    }
+    UMA_HISTOGRAM_CUSTOM_TIMES_DURATION_SUFFIX(
+        "Scheduling.Browser.ReadyToActivateToActivationDuration", ".Main",
+        duration);
   }
 
   void AddPrepareTilesDuration(base::TimeDelta duration) override {
