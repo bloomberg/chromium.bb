@@ -33,6 +33,23 @@ class SequenceManager {
     virtual void OnExitNestedRunLoop() = 0;
   };
 
+  struct MetricRecordingSettings {
+    MetricRecordingSettings();
+    // Note: These parameters are desired and MetricRecordingSetting's will
+    // update them for consistency (e.g. setting values to false when
+    // ThreadTicks are not supported).
+    MetricRecordingSettings(bool records_cpu_time_for_each_task,
+                            double task_sampling_rate_for_recording_cpu_time);
+
+    // True if cpu time is measured for each task, so the integral
+    // metrics (as opposed to per-task metrics) can be recorded.
+    bool records_cpu_time_for_each_task = false;
+    // The proportion of the tasks for which the cpu time will be
+    // sampled or 0 if this is not enabled.
+    // This value is always 1 if the |records_cpu_time_for_each_task| is true.
+    double task_sampling_rate_for_recording_cpu_time = 0;
+  };
+
   virtual ~SequenceManager() = default;
 
   // TODO(kraynov): Bring back CreateOnCurrentThread static method here
@@ -84,9 +101,8 @@ class SequenceManager {
   virtual void EnableCrashKeys(const char* file_name_crash_key,
                                const char* function_name_crash_key) = 0;
 
-  // Returns the portion of tasks for which CPU time is recorded or 0 if not
-  // sampled.
-  virtual double GetSamplingRateForRecordingCPUTime() const = 0;
+  // Returns the metric recording configuration for the current SequenceManager.
+  virtual const MetricRecordingSettings& GetMetricRecordingSettings() const = 0;
 
   // Creates a task queue with the given type, |spec| and args.
   // Must be called on the main thread.

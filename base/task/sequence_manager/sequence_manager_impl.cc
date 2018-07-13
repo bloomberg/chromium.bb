@@ -37,7 +37,11 @@ namespace {
 
 constexpr base::TimeDelta kLongTaskTraceEventThreshold =
     base::TimeDelta::FromMilliseconds(50);
-const double kSamplingRateForRecordingCPUTime = 0.01;
+// Proportion of tasks which will record thread time for metrics.
+const double kTaskSamplingRateForRecordingCPUTime = 0.01;
+// Proprortion of SequenceManagers which will record thread time for each task,
+// enabling advanced metrics.
+const double kThreadSamplingRateForRecordingCPUTime = 0.0001;
 
 // Magic value to protect against memory corruption and bail out
 // early when detected.
@@ -52,12 +56,20 @@ void SweepCanceledDelayedTasksInQueue(
   queue->SweepCanceledDelayedTasks(time_domain_now->at(time_domain));
 }
 
+SequenceManager::MetricRecordingSettings InitializeMetricRecordingSettings() {
+  bool cpu_time_recording_always_on =
+      base::RandDouble() < kThreadSamplingRateForRecordingCPUTime;
+  return SequenceManager::MetricRecordingSettings(
+      cpu_time_recording_always_on, kTaskSamplingRateForRecordingCPUTime);
+}
+
 }  // namespace
 
 SequenceManagerImpl::SequenceManagerImpl(
     std::unique_ptr<internal::ThreadController> controller)
     : graceful_shutdown_helper_(new internal::GracefulQueueShutdownHelper()),
       controller_(std::move(controller)),
+      metric_recording_settings_(InitializeMetricRecordingSettings()),
       memory_corruption_sentinel_(kMemoryCorruptionSentinelValue),
       weak_factory_(this) {
   // TODO(altimin): Create a sequence checker here.
@@ -672,13 +684,13 @@ bool SequenceManagerImpl::ShouldRecordCPUTimeForTask() {
   return ThreadTicks::IsSupported() &&
          main_thread_only().uniform_distribution(
              main_thread_only().random_generator) <
-             GetSamplingRateForRecordingCPUTime();
+             metric_recording_settings_
+                 .task_sampling_rate_for_recording_cpu_time;
 }
 
-double SequenceManagerImpl::GetSamplingRateForRecordingCPUTime() const {
-  if (!ThreadTicks::IsSupported())
-    return 0;
-  return kSamplingRateForRecordingCPUTime;
+const SequenceManager::MetricRecordingSettings&
+SequenceManagerImpl::GetMetricRecordingSettings() const {
+  return metric_recording_settings_;
 }
 
 MSVC_DISABLE_OPTIMIZE()

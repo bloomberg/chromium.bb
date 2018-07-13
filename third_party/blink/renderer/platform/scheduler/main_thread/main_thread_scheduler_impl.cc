@@ -555,7 +555,11 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
       background_status_changed_at(now),
       rail_mode_observer(nullptr),
       wake_up_budget_pool(nullptr),
-      metrics_helper(main_thread_scheduler_impl, now, renderer_backgrounded),
+      metrics_helper(
+          main_thread_scheduler_impl,
+          main_thread_scheduler_impl->helper_.HasCPUTimingForEachTask(),
+          now,
+          renderer_backgrounded),
       process_type(RendererProcessType::kRenderer,
                    "RendererProcessType",
                    main_thread_scheduler_impl,

@@ -32,7 +32,7 @@ namespace scheduler {
 // own instantiation of this class.
 class PLATFORM_EXPORT MetricsHelper {
  public:
-  MetricsHelper(WebThreadType thread_type);
+  MetricsHelper(WebThreadType thread_type, bool has_cpu_timing_for_each_task);
   ~MetricsHelper();
 
  protected:
@@ -49,8 +49,11 @@ class PLATFORM_EXPORT MetricsHelper {
 
  protected:
   const WebThreadType thread_type_;
+  const bool has_cpu_timing_for_each_task_;
 
  private:
+  base::ThreadTicks last_known_time_;
+
   TaskDurationMetricReporter<WebThreadType> thread_task_duration_reporter_;
   TaskDurationMetricReporter<WebThreadType> thread_task_cpu_duration_reporter_;
   TaskDurationMetricReporter<WebThreadType>
@@ -61,6 +64,8 @@ class PLATFORM_EXPORT MetricsHelper {
       background_thread_task_duration_reporter_;
   TaskDurationMetricReporter<WebThreadType>
       background_thread_task_cpu_duration_reporter_;
+  TaskDurationMetricReporter<WebThreadType> tracked_cpu_duration_reporter_;
+  TaskDurationMetricReporter<WebThreadType> non_tracked_cpu_duration_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsHelper);
 };

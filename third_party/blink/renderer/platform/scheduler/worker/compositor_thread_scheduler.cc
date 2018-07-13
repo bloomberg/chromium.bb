@@ -47,7 +47,8 @@ CompositorThreadScheduler::CompositorThreadScheduler(
                              ? TaskQueueWithTaskType::Create(
                                    input_task_queue_,
                                    TaskType::kCompositorThreadTaskQueueInput)
-                             : nullptr) {
+                             : nullptr),
+      compositor_metrics_helper_(helper()->HasCPUTimingForEachTask()) {
   if (input_task_queue_) {
     input_task_queue_->SetQueuePriority(
         base::sequence_manager::TaskQueue::QueuePriority::kHighestPriority);

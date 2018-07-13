@@ -7,8 +7,10 @@
 namespace blink {
 namespace scheduler {
 
-CompositorMetricsHelper::CompositorMetricsHelper()
-    : MetricsHelper(WebThreadType::kCompositorThread) {}
+CompositorMetricsHelper::CompositorMetricsHelper(
+    bool has_cpu_timing_for_each_task)
+    : MetricsHelper(WebThreadType::kCompositorThread,
+                    has_cpu_timing_for_each_task) {}
 
 CompositorMetricsHelper::~CompositorMetricsHelper() {}
 
