@@ -285,12 +285,11 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     shouldDisableThreadChecking(ContextUtils.getApplicationContext());
 
             setSingleton(this);
-        } finally {
-            TimesHistogramSample histogram = new TimesHistogramSample(
-                    "Android.WebView.Startup.CreationTime.Stage1.FactoryInit",
-                    TimeUnit.MILLISECONDS);
-            histogram.record(SystemClock.elapsedRealtime() - startTime);
         }
+
+        TimesHistogramSample histogram = new TimesHistogramSample(
+                "Android.WebView.Startup.CreationTime.Stage1.FactoryInit", TimeUnit.MILLISECONDS);
+        histogram.record(SystemClock.elapsedRealtime() - startTime);
     }
 
     /* package */ static void checkStorageIsNotDeviceProtected(Context context) {
