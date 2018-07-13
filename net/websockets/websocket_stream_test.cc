@@ -1484,39 +1484,11 @@ TEST_P(WebSocketStreamCreateBasicAuthTest, SuccessfulConnectionReuse) {
       WebSocketBasicHandshakeStream ::kWebSocketHandshakeReuseConnection);
 
   std::string request1 =
-      "GET / HTTP/1.1\r\n"
-      "Host: www.example.org\r\n"
-      "Connection: Keep-Alive, Upgrade\r\n"
-      "Pragma: no-cache\r\n"
-      "Cache-Control: no-cache\r\n"
-      "Upgrade: websocket\r\n"
-      "Origin: http://www.example.org\r\n"
-      "Sec-WebSocket-Version: 13\r\n"
-      "User-Agent:\r\n"
-      "Accept-Encoding: gzip, deflate\r\n"
-      "Accept-Language: en-us,fr\r\n"
-      "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
-      "Sec-WebSocket-Extensions: permessage-deflate; "
-      "client_max_window_bits\r\n"
-      "\r\n";
+      WebSocketStandardRequest("/", "www.example.org", Origin(), "", "");
   std::string response1 = kUnauthorizedResponse;
   std::string request2 =
-      "GET / HTTP/1.1\r\n"
-      "Host: www.example.org\r\n"
-      "Connection: Keep-Alive, Upgrade\r\n"
-      "Pragma: no-cache\r\n"
-      "Cache-Control: no-cache\r\n"
-      "Authorization: Basic Zm9vOmJhcg==\r\n"
-      "Upgrade: websocket\r\n"
-      "Origin: http://www.example.org\r\n"
-      "Sec-WebSocket-Version: 13\r\n"
-      "User-Agent:\r\n"
-      "Accept-Encoding: gzip, deflate\r\n"
-      "Accept-Language: en-us,fr\r\n"
-      "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
-      "Sec-WebSocket-Extensions: permessage-deflate; "
-      "client_max_window_bits\r\n"
-      "\r\n";
+      WebSocketStandardRequest("/", "www.example.org", Origin(),
+                               "Authorization: Basic Zm9vOmJhcg==\r\n", "");
   std::string response2 = WebSocketStandardResponse(std::string());
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS, 0, request1.c_str()),
