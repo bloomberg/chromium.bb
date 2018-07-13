@@ -44930,6 +44930,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SubresourceFilterActions">
+  <obsolete>
+    Deprecated July 2018 in favor of SubresourceFilterActions2
+  </obsolete>
   <int value="0" label="New Navigation"/>
   <int value="1" label="UI Shown"/>
   <int value="2" label="Details shown"/>
@@ -44947,6 +44950,15 @@ Called by update_net_trust_anchors.py.-->
       label="UI suppressed and resources blocked (Forced Activation)
              (Deprecated)"/>
   <int value="14" label="Blocked popup (Strong Popup Blocker) (Deprecated)"/>
+</enum>
+
+<enum name="SubresourceFilterActions2">
+  <int value="0" label="UI Shown"/>
+  <int value="1" label="UI suppressed (Smart Logic)"/>
+  <int value="2" label="Details shown"/>
+  <int value="3" label="Learn more clicked"/>
+  <int value="4" label="Whitelisted site via UI"/>
+  <int value="5" label="Forced filtering toggled on via devtools"/>
 </enum>
 
 <enum name="SubresourceFilterActivationDecision">

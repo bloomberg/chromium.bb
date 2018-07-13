@@ -88,7 +88,7 @@ class ScopedLoggingObserver {
 
 }  // namespace
 
-const char kSubresourceFilterActionsHistogram[] = "SubresourceFilter.Actions";
+const char kSubresourceFilterActionsHistogram[] = "SubresourceFilter.Actions2";
 
 // Tests that subresource_filter interacts well with the abusive enforcement in
 // chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.
@@ -185,8 +185,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
                                                    &opened_window));
   EXPECT_FALSE(opened_window);
-  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
-                           0);
+  tester.ExpectTotalCount(kSubresourceFilterActionsHistogram, 0);
   // Make sure the popup UI was shown.
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
@@ -341,8 +340,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest, BlockOpenURLFromTab) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::ExecuteScript(web_contents, "openWindow()"));
-  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
-                           0);
+  tester.ExpectTotalCount(kSubresourceFilterActionsHistogram, 0);
 
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));

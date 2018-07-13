@@ -29,71 +29,30 @@ class ContentSubresourceFilterThrottleManager;
 
 // This enum backs a histogram. Make sure new elements are only added to the
 // end. Keep histograms.xml up to date with any changes.
-enum SubresourceFilterAction {
-  // Main frame navigation to a different document.
-  kActionNavigationStarted = 0,
-
+enum class SubresourceFilterAction {
   // Standard UI shown. On Desktop this is in the omnibox,
   // On Android, it is an infobar.
-  kActionUIShown,
-
-  // On Desktop, this is a bubble. On Android it is an
-  // expanded infobar.
-  kActionDetailsShown,
-
-  kActionClickedLearnMore,
-
-  // Content settings:
-  //
-  // Blocked => The subresource filter will block resources.
-  // Allowed => The subresource filter will not block resources.
-  //
-  // Content setting updated automatically via the standard UI.
-  kActionContentSettingsAllowedFromUI,
-
-  // Content settings which target specific origins (e.g. no wildcards). These
-  // updates do not include updates from the main UI.
-  kActionContentSettingsBlocked,
-  kActionContentSettingsAllowed,
-
-  // Global settings.
-  kActionContentSettingsBlockedGlobal,
-  kActionContentSettingsAllowedGlobal,
-
-  // A wildcard update. The current content settings API makes this a bit
-  // difficult to see whether it is Block or Allow. This should not be a huge
-  // problem because this can only be changed from the settings UI, which is
-  // relatively rare. See crbug.com/706061.
-  //
-  // DEPRECATED: The site settings page uses read-only-lists for exceptions, so
-  // users can't add arbitrary patterns.
-  kActionContentSettingsWildcardUpdate,
+  kUIShown = 0,
 
   // The UI was suppressed due to "smart" logic which tries not to spam the UI
   // on navigations on the same origin within a certain time.
-  kActionUISuppressed,
+  kUISuppressed = 1,
 
-  // Subresources were explicitly allowed via manual content setting changes
-  // while smart UI was suppressing the UI. Potentially indicates that the smart
-  // UI is too aggressive if this happens frequently. This is reported
-  // alongside kActionContentSettingsAllowed if the UI is currently in
-  // suppressed mode.
-  kActionContentSettingsAllowedWhileUISuppressed,
+  // On Desktop, this is a bubble. On Android it is an
+  // expanded infobar.
+  kDetailsShown = 2,
+
+  kClickedLearnMore = 3,
+
+  // Logged when the user presses "Always allow ads" scoped to a particular
+  // site. Does not count manual changes to content settings.
+  kWhitelistedSite = 4,
 
   // Logged when a devtools message arrives notifying us to force activation in
   // this web contents.
-  kActionForcedActivationEnabled,
+  kForcedActivationEnabled = 5,
 
-  // Logged when we are forcing activation (e.g. via devtools) and resources
-  // have been blocked. Note that in these cases the UI is suppressed.
-  // DEPRECATED: See SubresourceFilter.PageLoad.ForcedActivation.DisallowedLoad.
-  kActionForcedActivationNoUIResourceBlocked,
-
-  // Logged when a popup is blocked due to subresource filter logic.
-  // DEPRECATED: this component no longer blocks popups.
-  kActionPopupBlocked,
-
-  kActionLastEntry
+  kMaxValue = kForcedActivationEnabled
 };
 
 // Chrome implementation of SubresourceFilterClient.
