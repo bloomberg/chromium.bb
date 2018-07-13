@@ -10,7 +10,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "net/base/address_family.h"
 #include "net/base/completion_once_callback.h"
@@ -46,9 +45,6 @@ class NET_EXPORT HostResolver {
  public:
   // HostResolver::Request class is used to cancel the request and change it's
   // priority. It must be owned by consumer. Deletion cancels the request.
-  //
-  // TODO(crbug.com/821021): Delete this class once all usage has been
-  // converted to the new CreateRequest() API.
   class Request {
    public:
     virtual ~Request() {}
@@ -57,41 +53,6 @@ class NET_EXPORT HostResolver {
     // Resolve() is called. Can't be called once the request is cancelled or
     // completed.
     virtual void ChangeRequestPriority(RequestPriority priority) = 0;
-  };
-
-  // Handler for an individual host resolution request. Created by
-  // HostResolver::CreateRequest().
-  class ResolveHostRequest {
-   public:
-    // Destruction cancels the request if running asynchronously, causing the
-    // callback to never be invoked.
-    virtual ~ResolveHostRequest() {}
-
-    // Starts the request and returns a network error code.
-    //
-    // If the request could not be handled synchronously, returns
-    // |ERR_IO_PENDING|, and completion will be signaled later via |callback|.
-    // On any other returned value, the request was handled synchronously and
-    // |callback| will not be invoked.
-    //
-    // Results in ERR_NAME_NOT_RESOLVED if the hostname is invalid, or if it is
-    // an incompatible IP literal (e.g. IPv6 is disabled and it is an IPv6
-    // literal).
-    //
-    // The parent HostResolver must still be alive when Start() is called,  but
-    // if it is destroyed before an asynchronous result completes, the request
-    // will be automatically cancelled.
-    //
-    // If cancelled before |callback| is invoked, it will never be invoked.
-    virtual int Start(CompletionOnceCallback callback) = 0;
-
-    // Result of the request. Should only be called after Start() signals
-    // completion, either by invoking the callback or by returning a result
-    // other than |ERR_IO_PENDING|.
-    //
-    // TODO(crbug.com/821021): Implement other GetResults() methods for requests
-    // that return other data (eg DNS TXT requests).
-    virtual const base::Optional<AddressList>& GetAddressResults() const = 0;
   };
 
   // |max_concurrent_resolves| is how many resolve requests will be allowed to
@@ -183,21 +144,6 @@ class NET_EXPORT HostResolver {
   // be called.
   virtual ~HostResolver();
 
-  // Creates a request to resolve the given hostname (or IP address literal).
-  // Profiling information for the request is saved to |net_log| if non-NULL.
-  //
-  // This method is intended as a direct replacement for the old Resolve()
-  // method, but it may not yet cover all the capabilities of the old method.
-  //
-  // TODO(crbug.com/821021): Implement more complex functionality to meet
-  // capabilities of Resolve() and M/DnsClient functionality.
-  virtual std::unique_ptr<ResolveHostRequest> CreateRequest(
-      const HostPortPair& host,
-      const NetLogWithSource& net_log) = 0;
-
-  // DEPRECATION NOTE: This method is being replaced by CreateRequest(). New
-  // callers should prefer CreateRequest() if it works for their needs.
-  //
   // Resolves the given hostname (or IP address literal), filling out the
   // |addresses| object upon success.  The |info.port| parameter will be set as
   // the sin(6)_port field of the sockaddr_in{6} struct.  Returns OK if
@@ -219,9 +165,6 @@ class NET_EXPORT HostResolver {
   // |out_req| will cancel the request, and cause |callback| not to be invoked.
   //
   // Profiling information for the request is saved to |net_log| if non-NULL.
-  //
-  // TODO(crbug.com/821021): Delete this method once all usage has been
-  // converted to ResolveHost().
   virtual int Resolve(const RequestInfo& info,
                       RequestPriority priority,
                       AddressList* addresses,
