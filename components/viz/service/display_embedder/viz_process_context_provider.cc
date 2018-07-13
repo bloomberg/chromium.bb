@@ -10,8 +10,11 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/viz/common/gpu/context_lost_observer.h"
+#include "components/viz/common/gpu/context_lost_reason.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -48,6 +51,10 @@ gpu::ContextCreationAttribs CreateAttributes() {
   return attributes;
 }
 
+void UmaRecordContextLost(ContextLostReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.DisplayCompositor", reason);
+}
+
 }  // namespace
 
 VizProcessContextProvider::VizProcessContextProvider(
@@ -69,10 +76,21 @@ VizProcessContextProvider::VizProcessContextProvider(
                                gpu_memory_buffer_manager,
                                image_factory,
                                gpu_channel_manager_delegate,
-                               base::ThreadTaskRunnerHandle::Get())),
-      cache_controller_(std::make_unique<ContextCacheController>(
-          context_->GetImplementation(),
-          base::ThreadTaskRunnerHandle::Get())) {}
+                               base::ThreadTaskRunnerHandle::Get())) {
+  if (context_result_ == gpu::ContextResult::kSuccess) {
+    auto* gles2_implementation = context_->GetImplementation();
+    cache_controller_ = std::make_unique<ContextCacheController>(
+        gles2_implementation, base::ThreadTaskRunnerHandle::Get());
+    // |context_| is owned here so bind an unretained pointer or there will be a
+    // circular reference preventing destruction.
+    gles2_implementation->SetLostContextCallback(base::BindOnce(
+        &VizProcessContextProvider::OnContextLost, base::Unretained(this)));
+  } else {
+    // Context initialization failed. Record UMA and cleanup.
+    UmaRecordContextLost(CONTEXT_INIT_FAILED);
+    context_.reset();
+  }
+}
 
 VizProcessContextProvider::~VizProcessContextProvider() = default;
 
@@ -105,9 +123,9 @@ class GrContext* VizProcessContextProvider::GrContext() {
   gpu::raster::DetermineGrCacheLimitsFromAvailableMemory(
       &max_resource_cache_bytes, &max_glyph_cache_texture_bytes);
 
-  gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(
+  gr_context_ = std::make_unique<skia_bindings::GrContextForGLES2Interface>(
       ContextGL(), ContextSupport(), ContextCapabilities(),
-      max_resource_cache_bytes, max_glyph_cache_texture_bytes));
+      max_resource_cache_bytes, max_glyph_cache_texture_bytes);
   return gr_context_->get();
 }
 
@@ -129,14 +147,30 @@ const gpu::GpuFeatureInfo& VizProcessContextProvider::GetGpuFeatureInfo()
   return context_->GetGpuFeatureInfo();
 }
 
-void VizProcessContextProvider::AddObserver(ContextLostObserver* obs) {}
+void VizProcessContextProvider::AddObserver(ContextLostObserver* obs) {
+  observers_.AddObserver(obs);
+}
 
-void VizProcessContextProvider::RemoveObserver(ContextLostObserver* obs) {}
+void VizProcessContextProvider::RemoveObserver(ContextLostObserver* obs) {
+  observers_.RemoveObserver(obs);
+}
 
 void VizProcessContextProvider::SetUpdateVSyncParametersCallback(
     const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
         callback) {
   context_->SetUpdateVSyncParametersCallback(callback);
+}
+
+void VizProcessContextProvider::OnContextLost() {
+  for (auto& observer : observers_)
+    observer.OnContextLost();
+  if (gr_context_)
+    gr_context_->OnLostContext();
+
+  gpu::CommandBuffer::State state =
+      context_->GetCommandBuffer()->GetLastState();
+  UmaRecordContextLost(
+      GetContextLostReason(state.error, state.context_lost_reason));
 }
 
 }  // namespace viz

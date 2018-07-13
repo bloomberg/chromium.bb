@@ -60,6 +60,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   // can be used without making it current.
   gles2::GLES2Implementation* GetImplementation();
 
+  CommandBuffer* GetCommandBuffer();
+
   void SetUpdateVSyncParametersCallback(
       const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback);
 

@@ -63,6 +63,10 @@ gles2::GLES2Implementation* GLInProcessContext::GetImplementation() {
   return gles2_implementation_.get();
 }
 
+CommandBuffer* GLInProcessContext::GetCommandBuffer() {
+  return command_buffer_.get();
+}
+
 void GLInProcessContext::SetUpdateVSyncParametersCallback(
     const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback) {
   command_buffer_->SetUpdateVSyncParametersCallback(callback);

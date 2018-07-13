@@ -231,8 +231,11 @@ void RootCompositorFrameSinkImpl::Initialize(std::unique_ptr<Display> display) {
 }
 
 void RootCompositorFrameSinkImpl::DisplayOutputSurfaceLost() {
-  // TODO(staraz): Implement this. Client should hear about context/output
-  // surface lost.
+  // |display_| has encountered an error and needs to be recreated. Close
+  // message pipes from the client, the client will see the connection error and
+  // recreate the CompositorFrameSink+Display.
+  compositor_frame_sink_binding_.Close();
+  display_private_binding_.Close();
 }
 
 void RootCompositorFrameSinkImpl::DisplayWillDrawAndSwap(
