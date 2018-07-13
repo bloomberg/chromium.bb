@@ -185,6 +185,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       const GpuFeatureInfo& gpu_feature_info);
 
   gpu::ServiceTransferCache* GetTransferCacheForTest() const;
+  int GetRasterDecoderIdForTest() const;
 
   static const int kGpuClientId;
 

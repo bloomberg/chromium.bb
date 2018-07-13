@@ -10,6 +10,9 @@
 namespace gpu {
 namespace {
 
+constexpr int kDecoderId = 2;
+constexpr auto kEntryType = cc::TransferCacheEntryType::kRawMemory;
+
 std::unique_ptr<cc::ServiceTransferCacheEntry> CreateEntry(size_t size) {
   auto entry = std::make_unique<cc::ServiceRawMemoryTransferCacheEntry>();
   std::vector<uint8_t> data(size, 0u);
@@ -22,34 +25,40 @@ TEST(ServiceTransferCacheTest, EnforcesOnPurgeMemory) {
   uint32_t entry_id = 0u;
   size_t entry_size = 1024u;
 
-  cache.CreateLocalEntry(++entry_id, CreateEntry(entry_size));
+  cache.CreateLocalEntry(
+      ServiceTransferCache::EntryKey(kDecoderId, kEntryType, ++entry_id),
+      CreateEntry(entry_size));
   EXPECT_EQ(cache.cache_size_for_testing(), entry_size);
-  cache.OnPurgeMemory();
+  cache.PurgeMemory(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   EXPECT_EQ(cache.cache_size_for_testing(), 0u);
 }
 
-TEST(ServiceTransferCacheTest, EnforcesMemoryStateSUSPENDED) {
+TEST(ServiceTransferCache, MultipleDecoderUse) {
   ServiceTransferCache cache;
-  uint32_t entry_id = 0u;
-  size_t entry_size = 1024u;
+  const uint32_t entry_id = 0u;
+  const size_t entry_size = 1024u;
 
-  // Nothing should be cached in suspended state.
-  cache.OnMemoryStateChange(base::MemoryState::SUSPENDED);
-  cache.CreateLocalEntry(++entry_id, CreateEntry(entry_size));
-  EXPECT_EQ(cache.cache_size_for_testing(), 0u);
-}
+  // Decoder 1 entry.
+  int decoder1 = 1;
+  auto decoder_1_entry = CreateEntry(entry_size);
+  auto* decoder_1_entry_ptr = decoder_1_entry.get();
+  cache.CreateLocalEntry(
+      ServiceTransferCache::EntryKey(decoder1, kEntryType, entry_id),
+      std::move(decoder_1_entry));
 
-TEST(ServiceTransferCacheTest, EnforcesMemoryStateNORMAL) {
-  ServiceTransferCache cache;
-  uint32_t entry_id = 0u;
-  size_t entry_size = 1024u;
+  // Decoder 2 entry.
+  int decoder2 = 2;
+  auto decoder_2_entry = CreateEntry(entry_size);
+  auto* decoder_2_entry_ptr = decoder_2_entry.get();
+  cache.CreateLocalEntry(
+      ServiceTransferCache::EntryKey(decoder2, kEntryType, entry_id),
+      std::move(decoder_2_entry));
 
-  // Normal state, keep what's in the cache.
-  cache.CreateLocalEntry(++entry_id, CreateEntry(entry_size));
-  EXPECT_EQ(cache.cache_size_for_testing(), entry_size);
-  cache.OnMemoryStateChange(base::MemoryState::NORMAL);
-  cache.CreateLocalEntry(++entry_id, CreateEntry(entry_size));
-  EXPECT_EQ(cache.cache_size_for_testing(), entry_size * 2);
+  EXPECT_EQ(decoder_1_entry_ptr, cache.GetEntry(ServiceTransferCache::EntryKey(
+                                     decoder1, kEntryType, entry_id)));
+  EXPECT_EQ(decoder_2_entry_ptr, cache.GetEntry(ServiceTransferCache::EntryKey(
+                                     decoder2, kEntryType, entry_id)));
 }
 
 }  // namespace

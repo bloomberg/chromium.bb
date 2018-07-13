@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_RASTER_DECODER_CONTEXT_STATE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_RASTER_DECODER_CONTEXT_STATE_H_
 
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/common/skia_utils.h"
@@ -19,6 +20,7 @@ class GLSurface;
 
 namespace gpu {
 class GpuDriverBugWorkarounds;
+class ServiceTransferCache;
 
 namespace raster {
 
@@ -31,12 +33,14 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
                             scoped_refptr<gl::GLContext> context,
                             bool use_virtualized_gl_contexts);
   void InitializeGrContext(const GpuDriverBugWorkarounds& workarounds);
-  void PurgeGrCache();
+  void PurgeMemory(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
   scoped_refptr<gl::GLShareGroup> share_group;
   scoped_refptr<gl::GLSurface> surface;
   scoped_refptr<gl::GLContext> context;
   sk_sp<GrContext> gr_context;
+  std::unique_ptr<ServiceTransferCache> transfer_cache;
   bool use_virtualized_gl_contexts = false;
   bool context_lost = false;
   size_t glyph_cache_max_texture_bytes = 0u;

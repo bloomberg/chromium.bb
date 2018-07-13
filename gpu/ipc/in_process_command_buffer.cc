@@ -200,6 +200,11 @@ gpu::ServiceTransferCache* InProcessCommandBuffer::GetTransferCacheForTest()
       ->GetTransferCacheForTest();
 }
 
+int InProcessCommandBuffer::GetRasterDecoderIdForTest() const {
+  return static_cast<raster::RasterDecoder*>(decoder_.get())
+      ->DecoderIdForTest();
+}
+
 bool InProcessCommandBuffer::MakeCurrent() {
   CheckSequencedThread();
   command_buffer_lock_.AssertAcquired();

@@ -122,4 +122,8 @@ InProcessCommandBuffer* RasterInProcessContext::GetCommandBufferForTest()
   return command_buffer_.get();
 }
 
+int RasterInProcessContext::GetRasterDecoderIdForTest() const {
+  return command_buffer_->GetRasterDecoderIdForTest();
+}
+
 }  // namespace gpu

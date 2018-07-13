@@ -60,6 +60,7 @@ class RasterInProcessContext {
   // Test only functions.
   ServiceTransferCache* GetTransferCacheForTest() const;
   InProcessCommandBuffer* GetCommandBufferForTest() const;
+  int GetRasterDecoderIdForTest() const;
 
  private:
   std::unique_ptr<CommandBufferHelper> helper_;

@@ -303,7 +303,9 @@ void GpuChannelManager::OnBackgroundCleanup() {
 
 void GpuChannelManager::OnApplicationBackgrounded() {
   if (raster_decoder_context_state_) {
-    raster_decoder_context_state_->PurgeGrCache();
+    raster_decoder_context_state_->PurgeMemory(
+        base::MemoryPressureListener::MemoryPressureLevel::
+            MEMORY_PRESSURE_LEVEL_CRITICAL);
   }
 }
 
@@ -312,6 +314,8 @@ void GpuChannelManager::HandleMemoryPressure(
   if (program_cache_)
     program_cache_->HandleMemoryPressure(memory_pressure_level);
   discardable_manager_.HandleMemoryPressure(memory_pressure_level);
+  if (raster_decoder_context_state_)
+    raster_decoder_context_state_->PurgeMemory(memory_pressure_level);
 }
 
 scoped_refptr<raster::RasterDecoderContextState>
