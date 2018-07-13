@@ -232,10 +232,10 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
                     }
                 }
             });
-        } finally {
-            // The real initialization may be deferred, in which case we don't record this.
-            if (!mFactory.hasStarted()) return;
+        }
 
+        // If initialization hasn't been deferred, record a startup time histogram entry.
+        if (mFactory.hasStarted()) {
             TimesHistogramSample histogram = new TimesHistogramSample(
                     "Android.WebView.Startup.CreationTime.Stage2.ProviderInit."
                             + (isFirstWebViewInit ? "Cold" : "Warm"),
