@@ -16,19 +16,32 @@
 namespace service_manager {
 
 bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
-  return
+  switch (sandbox_type) {
+    case SANDBOX_TYPE_NO_SANDBOX:
+      return true;
 #if defined(OS_WIN)
-      sandbox_type == SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES ||
-      // Windows sandbox for network service requires feature flag.
-      (sandbox_type == SANDBOX_TYPE_NETWORK &&
-       !base::FeatureList::IsEnabled(
-           service_manager::features::kNetworkServiceWindowsSandbox)) ||
+    case SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES:
+      return true;
 #endif
-#if !defined(OS_LINUX) and !defined(OS_WIN)
-      // TODO(tsepez): Sandbox network process beyond linux and Windows.
-      sandbox_type == SANDBOX_TYPE_NETWORK ||
-#endif  // !defined(OS_LINUX) and !defined(OS_WIN)
-      sandbox_type == SANDBOX_TYPE_NO_SANDBOX;
+    case SANDBOX_TYPE_AUDIO:
+#if defined(OS_WIN)
+      return !base::FeatureList::IsEnabled(
+          service_manager::features::kAudioServiceWindowsSandbox);
+#else
+      return true;
+#endif
+    case SANDBOX_TYPE_NETWORK:
+#if defined(OS_LINUX)
+      return false;
+#elif defined(OS_WIN)
+      return !base::FeatureList::IsEnabled(
+          service_manager::features::kNetworkServiceWindowsSandbox);
+#else
+      return true;
+#endif
+    default:
+      return false;
+  }
 }
 
 void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
@@ -65,6 +78,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case SANDBOX_TYPE_CDM:
     case SANDBOX_TYPE_PDF_COMPOSITOR:
     case SANDBOX_TYPE_PROFILING:
+    case SANDBOX_TYPE_AUDIO:
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kUtilityProcess);
       DCHECK(!command_line->HasSwitch(switches::kServiceSandboxType));
@@ -129,6 +143,8 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
       return switches::kProfilingSandbox;
     case SANDBOX_TYPE_UTILITY:
       return switches::kUtilitySandbox;
+    case SANDBOX_TYPE_AUDIO:
+      return switches::kAudioSandbox;
     default:
       NOTREACHED();
       return std::string();
@@ -155,6 +171,8 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
     return SANDBOX_TYPE_PDF_COMPOSITOR;
   if (sandbox_string == switches::kProfilingSandbox)
     return SANDBOX_TYPE_PROFILING;
+  if (sandbox_string == switches::kAudioSandbox)
+    return SANDBOX_TYPE_AUDIO;
   return SANDBOX_TYPE_UTILITY;
 }
 

@@ -42,6 +42,7 @@
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_types.h"
+#include "services/audio/audio_sandbox_win.h"
 #include "services/network/network_sandbox_win.h"
 #endif
 
@@ -75,7 +76,8 @@ class UtilitySandboxedProcessLauncherDelegate
         sandbox_type_ == service_manager::SANDBOX_TYPE_CDM ||
         sandbox_type_ == service_manager::SANDBOX_TYPE_PDF_COMPOSITOR ||
         sandbox_type_ == service_manager::SANDBOX_TYPE_PROFILING ||
-        sandbox_type_ == service_manager::SANDBOX_TYPE_PPAPI;
+        sandbox_type_ == service_manager::SANDBOX_TYPE_PPAPI ||
+        sandbox_type_ == service_manager::SANDBOX_TYPE_AUDIO;
     DCHECK(supported_sandbox_type);
 #endif  // DCHECK_IS_ON()
   }
@@ -91,6 +93,9 @@ class UtilitySandboxedProcessLauncherDelegate
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
     if (sandbox_type_ == service_manager::SANDBOX_TYPE_NETWORK)
       return network::NetworkPreSpawnTarget(policy);
+
+    if (sandbox_type_ == service_manager::SANDBOX_TYPE_AUDIO)
+      return audio::AudioPreSpawnTarget(policy);
 
     return true;
   }

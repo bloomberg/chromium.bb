@@ -28,6 +28,7 @@ const char kUtilitySandbox[] = "utility";
 const char kCdmSandbox[] = "cdm";
 const char kPdfCompositorSandbox[] = "pdf_compositor";
 const char kProfilingSandbox[] = "profiling";
+const char kAudioSandbox[] = "audio";
 
 // Flags owned by the service manager sandbox.
 

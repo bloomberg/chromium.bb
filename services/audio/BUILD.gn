@@ -30,6 +30,8 @@ service_manifest("manifest") {
 
 source_set("lib") {
   sources = [
+    "audio_sandbox_win.cc",
+    "audio_sandbox_win.h",
     "debug_recording.cc",
     "debug_recording.h",
     "delay_buffer.cc",
@@ -82,7 +84,12 @@ source_set("lib") {
     "//media",
     "//services/audio/public/mojom",
     "//services/service_manager/public/cpp",
+    "//services/service_manager/sandbox:sandbox",
   ]
+
+  if (is_win) {
+    public_deps += [ "//sandbox/win:sandbox" ]
+  }
 }
 
 source_set("tests") {

@@ -790,7 +790,7 @@ bool SandboxWin::InitBrokerServices(sandbox::BrokerServices* broker_services) {
       result = g_iat_patch_duplicate_handle.Patch(
           module_name, "kernel32.dll", "DuplicateHandle",
           reinterpret_cast<void*>(DuplicateHandlePatch));
-      CHECK(result == 0);
+      CHECK_EQ(0, result);
       g_iat_orig_duplicate_handle =
           reinterpret_cast<DuplicateHandleFunctionPtr>(
               g_iat_patch_duplicate_handle.original_function());
@@ -887,8 +887,10 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
                 sandbox::MITIGATION_DLL_SEARCH_ORDER;
   if (!cmd_line->HasSwitch(switches::kAllowThirdPartyModules))
     mitigations |= sandbox::MITIGATION_FORCE_MS_SIGNED_BINS;
-  if (sandbox_type == SANDBOX_TYPE_NETWORK)
+  if (sandbox_type == SANDBOX_TYPE_NETWORK ||
+      sandbox_type == SANDBOX_TYPE_AUDIO) {
     mitigations |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
+  }
 
   result = policy->SetDelayedProcessMitigations(mitigations);
   if (result != sandbox::SBOX_ALL_OK)

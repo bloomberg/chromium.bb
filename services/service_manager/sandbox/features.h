@@ -17,6 +17,9 @@ namespace features {
 
 #if defined(OS_WIN)
 SERVICE_MANAGER_SANDBOX_EXPORT extern const base::Feature
+    kAudioServiceWindowsSandbox;
+
+SERVICE_MANAGER_SANDBOX_EXPORT extern const base::Feature
     kNetworkServiceWindowsSandbox;
 
 SERVICE_MANAGER_SANDBOX_EXPORT extern const base::Feature

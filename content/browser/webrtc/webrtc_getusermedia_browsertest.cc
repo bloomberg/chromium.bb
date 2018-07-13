@@ -34,6 +34,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "services/service_manager/sandbox/features.h"
 #endif
 
 namespace {
@@ -56,6 +57,18 @@ static const char kRenderDuplicatedMediastreamAndStop[] =
 
 // Results returned by JS.
 static const char kOK[] = "OK";
+
+// Temporary enum, used for running the tests with different combination of
+// flags while audio service is under experiment.
+// TODO(https://crbug.com/850878) Remove after enabling sandboxing on all
+// platforms.
+enum class AudioServiceFeatures {
+  kDisabled,
+  kOutOfProcess,
+#if defined(OS_WIN)
+  kSandboxed,
+#endif
+};
 
 std::string GenerateGetUserMediaWithMandatorySourceID(
     const std::string& function_name,
@@ -102,8 +115,9 @@ bool VerifyDisableLocalEcho(bool expect_value,
 
 namespace content {
 
-class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase,
-                                      public testing::WithParamInterface<bool> {
+class WebRtcGetUserMediaBrowserTest
+    : public WebRtcContentBrowserTestBase,
+      public testing::WithParamInterface<AudioServiceFeatures> {
  public:
   WebRtcGetUserMediaBrowserTest() {
     // Automatically grant device permission.
@@ -111,12 +125,33 @@ class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase,
     std::vector<base::Feature> audio_service_oop_features = {
         features::kAudioServiceAudioStreams,
         features::kAudioServiceOutOfProcess};
-    if (GetParam()) {
-      // Force audio service out of process to enabled.
-      audio_service_features_.InitWithFeatures(audio_service_oop_features, {});
-    } else {
-      // Force audio service out of process to disabled.
-      audio_service_features_.InitWithFeatures({}, audio_service_oop_features);
+    switch (GetParam()) {
+      case AudioServiceFeatures::kDisabled:
+        // Force audio service out of process to disabled.
+        audio_service_features_.InitWithFeatures({},
+                                                 audio_service_oop_features);
+        break;
+      case AudioServiceFeatures::kOutOfProcess:
+        // Force audio service out of process to enabled.
+        audio_service_features_.InitWithFeatures(
+            audio_service_oop_features,
+#if defined(OS_WIN)
+            // Force audio service sandboxing (available only on Windows) to
+            // disabled.
+            {service_manager::features::kAudioServiceWindowsSandbox});
+#else
+            {});
+#endif
+        break;
+#if defined(OS_WIN)
+      case AudioServiceFeatures::kSandboxed:
+        // Force audio service out of process and sandboxing to enabled.
+        audio_service_oop_features.push_back(
+            service_manager::features::kAudioServiceWindowsSandbox);
+        audio_service_features_.InitWithFeatures(audio_service_oop_features,
+                                                 {});
+        break;
+#endif
     }
   }
   ~WebRtcGetUserMediaBrowserTest() override {}
@@ -791,7 +826,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
                        GetAudioStreamAndCheckMutingInitiallyUnmuted) {
   // Muting tests do not work with the out-of-process audio service.
   // https://crbug.com/843490.
-  if (GetParam())
+  if (GetParam() != AudioServiceFeatures::kDisabled)
     return;
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -820,7 +855,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
                        GetAudioStreamAndCheckMutingInitiallyMuted) {
   // Muting tests do not work with the out-of-process audio service.
   // https://crbug.com/843490.
-  if (GetParam())
+  if (GetParam() != AudioServiceFeatures::kDisabled)
     return;
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -848,8 +883,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
                        RecoverFromCrashInAudioService) {
-  // This test only makes sense with the audio service running out of process.
-  if (!GetParam())
+  // This test only makes sense with the audio service running out of process,
+  // with or without sandbox.
+  if (GetParam() == AudioServiceFeatures::kDisabled)
     return;
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -872,15 +908,24 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 // We run these tests with the audio service both in and out of the the browser
 // process to have waterfall coverage while the feature rolls out. It should be
 // removed after launch.
-#if (defined(OS_LINUX) && !defined(CHROME_OS)) || defined(OS_MACOSX) || \
-    defined(OS_WIN)
+#if (defined(OS_LINUX) && !defined(CHROME_OS)) || defined(OS_MACOSX)
 // Supported platforms.
-INSTANTIATE_TEST_CASE_P(, WebRtcGetUserMediaBrowserTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(,
+                        WebRtcGetUserMediaBrowserTest,
+                        ::testing::Values(AudioServiceFeatures::kDisabled,
+                                          AudioServiceFeatures::kOutOfProcess));
+#elif defined(OS_WIN)
+// On Windows, also run in sandboxed mode.
+INSTANTIATE_TEST_CASE_P(,
+                        WebRtcGetUserMediaBrowserTest,
+                        ::testing::Values(AudioServiceFeatures::kDisabled,
+                                          AudioServiceFeatures::kOutOfProcess,
+                                          AudioServiceFeatures::kSandboxed));
 #else
 // Platforms where the out of process audio service is not supported
 INSTANTIATE_TEST_CASE_P(,
                         WebRtcGetUserMediaBrowserTest,
-                        ::testing::Values(false));
+                        ::testing::Values(AudioServiceFeatures::kDisabled));
 #endif
 
 }  // namespace content
