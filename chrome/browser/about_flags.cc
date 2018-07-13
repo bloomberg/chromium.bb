@@ -3876,6 +3876,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpBackgroundsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNtpBackgrounds)},
 
+    {"ntp-custom-links", flag_descriptions::kNtpCustomLinksName,
+     flag_descriptions::kNtpCustomLinksDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_tiles::kNtpCustomLinks)},
+
     {"ntp-icons", flag_descriptions::kNtpIconsName,
      flag_descriptions::kNtpIconsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_tiles::kNtpIcons)},

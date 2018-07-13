@@ -723,6 +723,9 @@ extern const char kNtlmV2EnabledDescription[];
 extern const char kNtpBackgroundsName[];
 extern const char kNtpBackgroundsDescription[];
 
+extern const char kNtpCustomLinksName[];
+extern const char kNtpCustomLinksDescription[];
+
 extern const char kNtpIconsName[];
 extern const char kNtpIconsDescription[];
 

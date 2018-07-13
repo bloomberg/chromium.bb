@@ -26,8 +26,17 @@ const base::Feature kUsePopularSitesSuggestions{
 const base::Feature kNtpIcons{"NewTabPageIcons",
                               base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kNtpCustomLinks{"NewTabPageCustomLinks",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsMDIconsEnabled() {
   return base::FeatureList::IsEnabled(kNtpIcons) ||
+         base::FeatureList::IsEnabled(kNtpCustomLinks) ||
+         base::FeatureList::IsEnabled(features::kExperimentalUi);
+}
+
+bool IsMDCustomLinksEnabled() {
+  return base::FeatureList::IsEnabled(kNtpCustomLinks) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
 }
 

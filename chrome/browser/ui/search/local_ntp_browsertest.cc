@@ -690,9 +690,9 @@ class LocalNTPNonMDTest : public LocalNTPTest {
   LocalNTPNonMDTest()
       : LocalNTPTest(
             /*enabled_features=*/{features::kUseGoogleLocalNtp},
-            /*disabled_features=*/{features::kNtpUIMd,
-                                   features::kNtpBackgrounds,
-                                   ntp_tiles::kNtpIcons}) {}
+            /*disabled_features=*/{
+                features::kNtpUIMd, features::kNtpBackgrounds,
+                ntp_tiles::kNtpIcons, ntp_tiles::kNtpCustomLinks}) {}
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPNonMDTest, LoadsNonMDIframe) {
