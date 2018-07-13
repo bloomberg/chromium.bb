@@ -74,6 +74,10 @@ Polymer({
    */
   onSiteGroupChanged_: function(siteGroup) {
     this.displayName_ = this.siteRepresentation_(siteGroup, -1);
+
+    // Ensure ungrouped |siteGroup|s do not get stuck in an opened state.
+    if (!this.grouped_(SiteGroup) && this.$.collapseChild.opened)
+      this.toggleCollapsible_();
   },
 
   /**
@@ -134,18 +138,28 @@ Polymer({
   },
 
   /**
-   * Toggles open and closed the list of origins if there is more than one, and
-   * directly navigates to Site Details if there is only one site.
-   * @param {!Object} e
+   * A handler for clicking on a site-entry heading. This will either show a
+   * list of origins or directly navigates to Site Details if there is only one.
    * @private
    */
-  toggleCollapsible_: function(e) {
+  onSiteEntryTap_: function() {
     // Individual origins don't expand - just go straight to Site Details.
     if (!this.grouped_(this.siteGroup)) {
       this.navigateToSiteDetails_(this.siteGroup.origins[0]);
       return;
     }
+    this.toggleCollapsible_();
 
+    // Make sure the expanded origins can be viewed without further scrolling
+    // (in case |this| is already at the bottom of the viewport).
+    this.scrollIntoViewIfNeeded();
+  },
+
+  /**
+   * Toggles open and closed the list of origins if there is more than one.
+   * @private
+   */
+  toggleCollapsible_: function() {
     let collapseChild =
         /** @type {IronCollapseElement} */ (this.$.collapseChild);
     collapseChild.toggle();
@@ -153,10 +167,6 @@ Polymer({
     this.$.expandIcon.toggleClass('icon-expand-more');
     this.$.expandIcon.toggleClass('icon-expand-less');
     this.fire('iron-resize');
-
-    // Make sure the expanded origins can be viewed without further scrolling
-    // (in case |this| is already at the bottom of the viewport).
-    this.scrollIntoViewIfNeeded();
   },
 
   /**
