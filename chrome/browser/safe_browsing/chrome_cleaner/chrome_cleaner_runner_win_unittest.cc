@@ -414,13 +414,15 @@ TEST_P(ChromeCleanerRunnerTest, WithMockCleanerProcess) {
       EXPECT_TRUE(received_scanner_results_.registry_keys().empty());
     }
 
+    std::set<base::string16> extension_names;
+    received_scanner_results_.FetchExtensionNames(testing_profile_,
+                                                  &extension_names);
     if (cleaner_process_options_.extension_ids()) {
-      received_scanner_results_.FetchExtensionNames(testing_profile_);
-      EXPECT_THAT(received_scanner_results_.extension_names(),
+      EXPECT_THAT(extension_names,
                   UnorderedElementsAreArray(
                       *cleaner_process_options_.expected_extension_names()));
     } else {
-      EXPECT_TRUE(received_scanner_results_.extension_names().empty());
+      EXPECT_TRUE(extension_names.empty());
     }
   }
 
