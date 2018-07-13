@@ -107,6 +107,13 @@ class HangingHostResolverWithCancel : public HostResolver {
  public:
   HangingHostResolverWithCancel() : outstanding_request_(NULL) {}
 
+  std::unique_ptr<ResolveHostRequest> CreateRequest(
+      const HostPortPair& host,
+      const NetLogWithSource& net_log) override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
               AddressList* addresses,
