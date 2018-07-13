@@ -14,6 +14,7 @@ java_binary("java_bytecode_rewriter") {
     "java/org/chromium/bytecode/CustomClassLoaderClassWriter.java",
     "java/org/chromium/bytecode/CustomResourcesClassAdapter.java",
     "java/org/chromium/bytecode/TypeUtils.java",
+    "java/org/chromium/bytecode/ThreadAssertionClassAdapter.java",
   ]
   main_class = "org.chromium.bytecode.ByteCodeProcessor"
   deps = [

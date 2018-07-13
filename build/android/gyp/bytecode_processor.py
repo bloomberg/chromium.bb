@@ -29,13 +29,15 @@ def main(argv):
                       help='Extra inputs, passed last to the binary script.')
   _AddSwitch(parser, '--enable-custom-resources')
   _AddSwitch(parser, '--enable-assert')
+  _AddSwitch(parser, '--enable-thread-annotations')
   args = parser.parse_args(argv)
   extra_classpath_jars = []
   for a in args.extra_jars:
     extra_classpath_jars.extend(build_utils.ParseGnList(a))
 
   cmd = [args.script, args.input_jar, args.output_jar, args.enable_assert,
-         args.enable_custom_resources] + extra_classpath_jars
+         args.enable_custom_resources,
+         args.enable_thread_annotations] + extra_classpath_jars
   build_utils.CheckOutput(cmd)
 
 

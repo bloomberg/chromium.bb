@@ -60,7 +60,8 @@ class ByteCodeProcessor {
     }
 
     private static void process(String inputJarPath, String outputJarPath, boolean shouldAssert,
-            boolean shouldUseCustomResources, ClassLoader classPathJarsClassLoader) {
+            boolean shouldUseCustomResources, boolean shouldUseThreadAnnotations,
+            ClassLoader classPathJarsClassLoader) {
         String tempJarPath = outputJarPath + TEMPORARY_FILE_SUFFIX;
         try (ZipInputStream inputStream = new ZipInputStream(
                      new BufferedInputStream(new FileInputStream(inputJarPath)));
@@ -100,6 +101,9 @@ class ByteCodeProcessor {
                        "asm-util-5.0.1.jar:out/Debug/lib.java/jar_containing_yourclass.jar" \
                        org.objectweb.asm.util.ASMifier org.package.YourClassName
                 */
+                if (shouldUseThreadAnnotations) {
+                    chain = new ThreadAssertionClassAdapter(chain);
+                }
                 if (shouldAssert) {
                     chain = new AssertionEnablerClassAdapter(chain);
                 }
@@ -155,6 +159,7 @@ class ByteCodeProcessor {
         String outputJarPath = args[1];
         boolean shouldAssert = args[2].equals("--enable-assert");
         boolean shouldUseCustomResources = args[3].equals("--enable-custom-resources");
+        boolean shouldUseThreadAnnotations = args[4].equals("--enable-thread-annotations");
 
         // Load all jars that are on the classpath for the input jar for analyzing class hierarchy.
         ClassLoader classPathJarsClassLoader = null;
@@ -165,6 +170,6 @@ class ByteCodeProcessor {
             classPathJarsClassLoader = loadJars(classPathJarsPaths);
         }
         process(inputJarPath, outputJarPath, shouldAssert, shouldUseCustomResources,
-                classPathJarsClassLoader);
+                shouldUseThreadAnnotations, classPathJarsClassLoader);
     }
 }
