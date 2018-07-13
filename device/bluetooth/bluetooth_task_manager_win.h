@@ -29,6 +29,11 @@ class SequencedTaskRunner;
 
 namespace device {
 
+namespace win {
+class BluetoothClassicWrapper;
+class BluetoothLowEnergyWrapper;
+}  // namespace win
+
 // Manages the blocking Bluetooth tasks using |SequencedWorkerPool|. It runs
 // bluetooth tasks using |SequencedWorkerPool| and informs its observers of
 // bluetooth adapter state changes and any other bluetooth device inquiry
@@ -109,6 +114,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   };
 
   explicit BluetoothTaskManagerWin(
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
+
+  static scoped_refptr<BluetoothTaskManagerWin> CreateForTesting(
+      std::unique_ptr<win::BluetoothClassicWrapper> classic_wrapper,
+      std::unique_ptr<win::BluetoothLowEnergyWrapper> le_wrapper,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
 
   static BluetoothUUID BluetoothLowEnergyUuidToBluetoothUuid(
@@ -199,6 +209,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
 
   static const int kPollIntervalMs;
 
+  BluetoothTaskManagerWin(
+      std::unique_ptr<win::BluetoothClassicWrapper> classic_wrapper,
+      std::unique_ptr<win::BluetoothLowEnergyWrapper> le_wrapper,
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
   virtual ~BluetoothTaskManagerWin();
 
   // Logs Win32 errors occurring during polling on the worker thread. The method
@@ -321,16 +335,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   // List of observers interested in event notifications.
   base::ObserverList<Observer> observers_;
 
-  // Weak reference of the adapter handle, let BluetoothClassicWrapper handle
-  // the close of |adapter_handle_|.
-  HANDLE adapter_handle_;
-
   // indicates whether the adapter is in discovery mode or not.
-  bool discovering_;
+  bool discovering_ = false;
 
   // Use for discarding too many log messages.
   base::TimeTicks current_logging_batch_ticks_;
-  int current_logging_batch_count_;
+  int current_logging_batch_count_ = 0;
+
+  // Wrapper around the Windows Bluetooth APIs. Owns the radio handle.
+  std::unique_ptr<win::BluetoothClassicWrapper> classic_wrapper_;
+  std::unique_ptr<win::BluetoothLowEnergyWrapper> le_wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothTaskManagerWin);
 };

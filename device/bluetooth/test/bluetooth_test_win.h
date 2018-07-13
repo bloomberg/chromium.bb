@@ -86,7 +86,6 @@ class BluetoothTestWin : public BluetoothTestBase,
   scoped_refptr<base::TestSimpleTaskRunner> ui_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> bluetooth_task_runner_;
 
-  win::BluetoothClassicWrapperFake* fake_bt_classic_wrapper_;
   win::BluetoothLowEnergyWrapperFake* fake_bt_le_wrapper_;
 
   // This is used for retaining access to a single deleted device.

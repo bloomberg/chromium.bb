@@ -19,6 +19,7 @@
 #include "base/win/windows_version.h"
 #include "device/base/features.h"
 #include "device/bluetooth/bluetooth_adapter_winrt.h"
+#include "device/bluetooth/bluetooth_classic_win.h"
 #include "device/bluetooth/bluetooth_device_win.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
@@ -354,19 +355,21 @@ void BluetoothAdapterWin::Init() {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   socket_thread_ = BluetoothSocketThread::Get();
   task_manager_ =
-      new BluetoothTaskManagerWin(ui_task_runner_);
+      base::MakeRefCounted<BluetoothTaskManagerWin>(ui_task_runner_);
   task_manager_->AddObserver(this);
   task_manager_->Initialize();
 }
 
 void BluetoothAdapterWin::InitForTest(
+    std::unique_ptr<win::BluetoothClassicWrapper> classic_wrapper,
+    std::unique_ptr<win::BluetoothLowEnergyWrapper> le_wrapper,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SequencedTaskRunner> bluetooth_task_runner) {
   ui_task_runner_ = ui_task_runner;
   if (!ui_task_runner_)
     ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  task_manager_ =
-      new BluetoothTaskManagerWin(ui_task_runner_);
+  task_manager_ = BluetoothTaskManagerWin::CreateForTesting(
+      std::move(classic_wrapper), std::move(le_wrapper), ui_task_runner_);
   task_manager_->AddObserver(this);
   task_manager_->InitializeWithBluetoothTaskRunner(bluetooth_task_runner);
 }

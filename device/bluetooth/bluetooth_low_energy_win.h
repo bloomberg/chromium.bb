@@ -121,9 +121,8 @@ ExtractBluetoothAddressFromDeviceInstanceIdForTesting(
 // interface that can be replaced with fakes in tests.
 class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyWrapper {
  public:
-  static BluetoothLowEnergyWrapper* GetInstance();
-  static void DeleteInstance();
-  static void SetInstanceForTest(BluetoothLowEnergyWrapper* instance);
+  BluetoothLowEnergyWrapper();
+  virtual ~BluetoothLowEnergyWrapper();
 
   // Returns true only on Windows platforms supporting Bluetooth Low Energy.
   virtual bool IsBluetoothLowEnergySupported();
@@ -210,10 +209,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyWrapper {
   virtual HRESULT WriteDescriptorValue(base::FilePath& service_path,
                                        const PBTH_LE_GATT_DESCRIPTOR descriptor,
                                        PBTH_LE_GATT_DESCRIPTOR_VALUE new_value);
-
- protected:
-  BluetoothLowEnergyWrapper();
-  virtual ~BluetoothLowEnergyWrapper();
 };
 
 }  // namespace win
