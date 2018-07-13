@@ -174,6 +174,11 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
           /*local_save_card_callback=*/callback, GetPrefs())));
 }
 
+void ChromeAutofillClientIOS::ShowLocalCardMigrationPrompt(
+    base::OnceClosure closure) {
+  NOTREACHED();
+}
+
 void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,

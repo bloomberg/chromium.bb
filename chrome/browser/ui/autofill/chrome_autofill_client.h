@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 #if !defined(OS_ANDROID)
+#include "components/autofill/core/browser/ui/local_card_migration_bubble_controller.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
 #include "components/zoom/zoom_observer.h"
 #endif  // !defined(OS_ANDROID)
@@ -61,6 +62,7 @@ class ChromeAutofillClient
                         UnmaskCardReason reason,
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
+  void ShowLocalCardMigrationPrompt(base::OnceClosure closure) override;
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(const CreditCard& card,

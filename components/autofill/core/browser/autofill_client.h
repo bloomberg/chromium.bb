@@ -137,6 +137,9 @@ class AutofillClient : public RiskDataLoader {
                                 base::WeakPtr<CardUnmaskDelegate> delegate) = 0;
   virtual void OnUnmaskVerificationResult(PaymentsRpcResult result) = 0;
 
+  // Runs |closure| if the user accepts the migration process.
+  virtual void ShowLocalCardMigrationPrompt(base::OnceClosure closure) = 0;
+
   // Runs |callback| if the |card| should be imported as personal data.
   // |metric_logger| can be used to log user actions.
   virtual void ConfirmSaveCreditCardLocally(const CreditCard& card,

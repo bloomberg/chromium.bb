@@ -216,7 +216,10 @@ static_library("browser") {
   }
 
   if (!is_android) {
-    sources += [ "ui/save_card_bubble_controller.h" ]
+    sources += [
+      "ui/local_card_migration_bubble_controller.h",
+      "ui/save_card_bubble_controller.h",
+    ]
   }
 
   if (!is_ios) {

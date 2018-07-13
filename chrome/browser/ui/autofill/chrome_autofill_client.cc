@@ -66,6 +66,7 @@
 #include "components/infobars/core/infobar.h"
 #include "ui/android/window_android.h"
 #else  // !OS_ANDROID
+#include "chrome/browser/ui/autofill/local_card_migration_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -188,6 +189,18 @@ void ChromeAutofillClient::ShowUnmaskPrompt(
 void ChromeAutofillClient::OnUnmaskVerificationResult(
     PaymentsRpcResult result) {
   unmask_controller_.OnVerificationResult(result);
+}
+
+void ChromeAutofillClient::ShowLocalCardMigrationPrompt(
+    base::OnceClosure closure) {
+#if !defined(OS_ANDROID)
+  autofill::LocalCardMigrationBubbleControllerImpl::CreateForWebContents(
+      web_contents());
+  autofill::LocalCardMigrationBubbleControllerImpl* controller =
+      autofill::LocalCardMigrationBubbleControllerImpl::FromWebContents(
+          web_contents());
+  controller->ShowBubble(std::move(closure));
+#endif
 }
 
 void ChromeAutofillClient::ConfirmSaveAutofillProfile(
