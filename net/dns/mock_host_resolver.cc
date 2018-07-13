@@ -103,14 +103,6 @@ MockHostResolverBase::~MockHostResolverBase() {
   DCHECK(requests_.empty());
 }
 
-std::unique_ptr<HostResolver::ResolveHostRequest>
-MockHostResolverBase::CreateRequest(const HostPortPair& host,
-                                    const NetLogWithSource& source_net_log) {
-  // TODO(crbug.com/821021): Implement.
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 int MockHostResolverBase::Resolve(const RequestInfo& info,
                                   RequestPriority priority,
                                   AddressList* addresses,
@@ -521,14 +513,6 @@ RuleBasedHostResolverProc* CreateCatchAllHostResolverProc() {
 }
 
 //-----------------------------------------------------------------------------
-
-std::unique_ptr<HostResolver::ResolveHostRequest>
-HangingHostResolver::CreateRequest(const HostPortPair& host,
-                                   const NetLogWithSource& source_net_log) {
-  // TODO(crbug.com/821021): Implement.
-  NOTIMPLEMENTED();
-  return nullptr;
-}
 
 int HangingHostResolver::Resolve(const RequestInfo& info,
                                  RequestPriority priority,

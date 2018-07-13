@@ -5,8 +5,6 @@
 #ifndef NET_DNS_HOST_RESOLVER_MOJO_H_
 #define NET_DNS_HOST_RESOLVER_MOJO_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -36,9 +34,6 @@ class HostResolverMojo : public HostResolver {
   ~HostResolverMojo() override;
 
   // HostResolver overrides.
-  std::unique_ptr<ResolveHostRequest> CreateRequest(
-      const HostPortPair& host,
-      const NetLogWithSource& net_log) override;
   // Note: |Resolve()| currently ignores |priority|.
   int Resolve(const RequestInfo& info,
               RequestPriority priority,

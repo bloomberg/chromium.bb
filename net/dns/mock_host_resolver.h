@@ -9,7 +9,6 @@
 
 #include <list>
 #include <map>
-#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -84,9 +83,6 @@ class MockHostResolverBase
   }
 
   // HostResolver methods:
-  std::unique_ptr<ResolveHostRequest> CreateRequest(
-      const HostPortPair& host,
-      const NetLogWithSource& net_log) override;
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
               AddressList* addresses,
@@ -291,9 +287,6 @@ RuleBasedHostResolverProc* CreateCatchAllHostResolverProc();
 // HangingHostResolver never completes its |Resolve| request.
 class HangingHostResolver : public HostResolver {
  public:
-  std::unique_ptr<ResolveHostRequest> CreateRequest(
-      const HostPortPair& host,
-      const NetLogWithSource& net_log) override;
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
               AddressList* addresses,
