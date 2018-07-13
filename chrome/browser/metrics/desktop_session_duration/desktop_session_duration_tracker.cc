@@ -129,6 +129,7 @@ void DesktopSessionDurationTracker::OnTimerFired() {
 }
 
 void DesktopSessionDurationTracker::StartSession() {
+  DCHECK(!in_session_);
   in_session_ = true;
   is_first_session_ = false;
   session_start_ = base::TimeTicks::Now();
@@ -140,7 +141,12 @@ void DesktopSessionDurationTracker::StartSession() {
 
 void DesktopSessionDurationTracker::EndSession(
     base::TimeDelta time_to_discount) {
+  DCHECK(in_session_);
   in_session_ = false;
+
+  // Cancel the inactivity timer, to prevent the session from ending a second
+  // time when it expires.
+  timer_.Stop();
 
   base::TimeDelta delta = base::TimeTicks::Now() - session_start_;
 

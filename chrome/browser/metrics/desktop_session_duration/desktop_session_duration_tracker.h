@@ -50,8 +50,8 @@ class DesktopSessionDurationTracker : public AudibleContentsTracker::Observer {
   bool in_session() const { return in_session_; }
   bool is_audio_playing() const { return is_audio_playing_; }
 
-  void SetInactivityTimeoutForTesting(int seconds) {
-    inactivity_timeout_ = base::TimeDelta::FromSeconds(seconds);
+  void SetInactivityTimeoutForTesting(base::TimeDelta inactivity_timeout) {
+    inactivity_timeout_ = inactivity_timeout;
   }
 
   // For observing the status of the session tracker.

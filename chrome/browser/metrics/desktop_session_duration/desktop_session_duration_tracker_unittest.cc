@@ -5,28 +5,26 @@
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace metrics {
 namespace {
 
 const base::TimeDelta kZeroTime = base::TimeDelta::FromSeconds(0);
-
-}  // namespace
+const base::TimeDelta kInactivityTimeoutForTesting =
+    base::TimeDelta::FromSeconds(1);
 
 // Mock class for |DesktopSessionDurationTracker| for testing.
-class MockDesktopSessionDurationTracker
-    : public metrics::DesktopSessionDurationTracker {
+class MockDesktopSessionDurationTracker : public DesktopSessionDurationTracker {
  public:
   MockDesktopSessionDurationTracker() {}
 
   bool is_timeout() const { return time_out_; }
 
-  using metrics::DesktopSessionDurationTracker::OnAudioStart;
-  using metrics::DesktopSessionDurationTracker::OnAudioEnd;
+  using DesktopSessionDurationTracker::OnAudioStart;
+  using DesktopSessionDurationTracker::OnAudioEnd;
 
  protected:
   void OnTimerFired() override {
@@ -46,21 +44,21 @@ class MockDesktopSessionObserver
  public:
   MockDesktopSessionObserver() {}
 
-  bool session_started_seen() const { return session_started_seen_; }
-  bool session_ended_seen() const { return session_ended_seen_; }
+  int session_started_count() const { return session_started_count_; }
+  int session_ended_count() const { return session_ended_count_; }
 
  protected:
   // metrics::DesktopSessionDurationTracker::Observer:
   void OnSessionStarted(base::TimeTicks session_start) override {
-    session_started_seen_ = true;
+    session_started_count_ = true;
   }
   void OnSessionEnded(base::TimeDelta session_length) override {
-    session_ended_seen_ = true;
+    session_ended_count_ = true;
   }
 
  private:
-  bool session_started_seen_ = false;
-  bool session_ended_seen_ = false;
+  int session_started_count_ = false;
+  int session_ended_count_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockDesktopSessionObserver);
 };
@@ -72,6 +70,7 @@ class DesktopSessionDurationTrackerTest : public testing::Test {
 
   void SetUp() override {
     metrics::DesktopSessionDurationTracker::Initialize();
+    instance_.SetInactivityTimeoutForTesting(kInactivityTimeoutForTesting);
   }
 
   void TearDown() override {
@@ -95,6 +94,8 @@ class DesktopSessionDurationTrackerTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionDurationTrackerTest);
 };
+
+}  // namespace
 
 TEST_F(DesktopSessionDurationTrackerTest, TestVisibility) {
   // The browser becomes visible but it shouldn't start the session.
@@ -134,8 +135,6 @@ TEST_F(DesktopSessionDurationTrackerTest, TestVisibility) {
 }
 
 TEST_F(DesktopSessionDurationTrackerTest, TestUserEvent) {
-  instance_.SetInactivityTimeoutForTesting(1);
-
   EXPECT_FALSE(instance_.in_session());
   EXPECT_FALSE(instance_.is_visible());
   EXPECT_FALSE(instance_.is_audio_playing());
@@ -167,8 +166,6 @@ TEST_F(DesktopSessionDurationTrackerTest, TestUserEvent) {
 }
 
 TEST_F(DesktopSessionDurationTrackerTest, TestAudioEvent) {
-  instance_.SetInactivityTimeoutForTesting(1);
-
   instance_.OnVisibilityChanged(true, kZeroTime);
   instance_.OnAudioStart();
   EXPECT_TRUE(instance_.in_session());
@@ -200,9 +197,6 @@ TEST_F(DesktopSessionDurationTrackerTest, TestAudioEvent) {
 }
 
 TEST_F(DesktopSessionDurationTrackerTest, TestInputTimeoutDiscount) {
-  int inactivity_interval_seconds = 2;
-  instance_.SetInactivityTimeoutForTesting(inactivity_interval_seconds);
-
   instance_.OnVisibilityChanged(true, kZeroTime);
   base::TimeTicks before_session_start = base::TimeTicks::Now();
   instance_.OnUserEvent();  // This should start the session
@@ -214,9 +208,8 @@ TEST_F(DesktopSessionDurationTrackerTest, TestInputTimeoutDiscount) {
   }
   base::TimeTicks after_session_end = base::TimeTicks::Now();
 
-  ExpectTotalDuration(
-      after_session_end - before_session_start -
-      base::TimeDelta::FromSeconds(inactivity_interval_seconds));
+  ExpectTotalDuration(after_session_end - before_session_start -
+                      kInactivityTimeoutForTesting);
 }
 
 TEST_F(DesktopSessionDurationTrackerTest, TestVisibilityTimeoutDiscount) {
@@ -242,22 +235,20 @@ TEST_F(DesktopSessionDurationTrackerTest, TestVisibilityTimeoutDiscount) {
 }
 
 TEST_F(DesktopSessionDurationTrackerTest, TestObserver) {
-  instance_.SetInactivityTimeoutForTesting(1);
-
   instance_.AddObserver(&observer_);
 
   EXPECT_FALSE(instance_.in_session());
   EXPECT_FALSE(instance_.is_visible());
-  EXPECT_FALSE(observer_.session_started_seen());
-  EXPECT_FALSE(observer_.session_ended_seen());
+  EXPECT_EQ(observer_.session_started_count(), 0);
+  EXPECT_EQ(observer_.session_ended_count(), 0);
   histogram_tester_.ExpectTotalCount("Session.TotalDuration", 0);
 
   instance_.OnVisibilityChanged(true, kZeroTime);
   instance_.OnUserEvent();
   EXPECT_TRUE(instance_.in_session());
   EXPECT_TRUE(instance_.is_visible());
-  EXPECT_FALSE(observer_.session_ended_seen());
-  EXPECT_TRUE(observer_.session_started_seen());
+  EXPECT_EQ(observer_.session_ended_count(), 0);
+  EXPECT_EQ(observer_.session_started_count(), 1);
   histogram_tester_.ExpectTotalCount("Session.TotalDuration", 0);
 
   // Wait until the session expires.
@@ -267,7 +258,42 @@ TEST_F(DesktopSessionDurationTrackerTest, TestObserver) {
 
   EXPECT_FALSE(instance_.in_session());
   EXPECT_TRUE(instance_.is_visible());
-  EXPECT_TRUE(observer_.session_started_seen());
-  EXPECT_TRUE(observer_.session_ended_seen());
+  EXPECT_EQ(observer_.session_started_count(), 1);
+  EXPECT_EQ(observer_.session_ended_count(), 1);
   histogram_tester_.ExpectTotalCount("Session.TotalDuration", 1);
 }
+
+TEST_F(DesktopSessionDurationTrackerTest, TestNoDoubleEndSession) {
+  instance_.AddObserver(&observer_);
+
+  EXPECT_FALSE(instance_.in_session());
+  EXPECT_FALSE(instance_.is_visible());
+  EXPECT_EQ(observer_.session_started_count(), 0);
+  EXPECT_EQ(observer_.session_ended_count(), 0);
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 0);
+
+  instance_.OnVisibilityChanged(true, kZeroTime);
+  instance_.OnUserEvent();
+  EXPECT_TRUE(instance_.in_session());
+  EXPECT_TRUE(instance_.is_visible());
+  EXPECT_EQ(observer_.session_ended_count(), 0);
+  EXPECT_EQ(observer_.session_started_count(), 1);
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 0);
+
+  // Simulate Chrome being hidden. This should end the session.
+  instance_.OnVisibilityChanged(false, kZeroTime);
+  EXPECT_FALSE(instance_.in_session());
+  EXPECT_FALSE(instance_.is_visible());
+  EXPECT_EQ(observer_.session_ended_count(), 1);
+  EXPECT_EQ(observer_.session_started_count(), 1);
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 1);
+
+  // When the timeout expires, observers shouldn't be notified again and the
+  // histogram shouldn't be recorded again.
+  base::PlatformThread::Sleep(kInactivityTimeoutForTesting * 2);
+  EXPECT_EQ(observer_.session_ended_count(), 1);
+  EXPECT_EQ(observer_.session_started_count(), 1);
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 1);
+}
+
+}  // namespace metrics
