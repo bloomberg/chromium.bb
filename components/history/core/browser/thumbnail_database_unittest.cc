@@ -1035,8 +1035,8 @@ TEST_F(ThumbnailDatabaseTest, Recovery) {
     EXPECT_TRUE(raw_db.Open(file_name_));
     ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
   }
-  const char kIndexName[] = "icon_mapping_page_url_idx";
-  const char kDeleteSql[] =
+  static const char kIndexName[] = "icon_mapping_page_url_idx";
+  static const char kDeleteSql[] =
       "DELETE FROM icon_mapping WHERE page_url = 'http://yahoo.com/'";
   EXPECT_TRUE(
       sql::test::CorruptTableOrIndex(file_name_, kIndexName, kDeleteSql));
@@ -1129,8 +1129,8 @@ TEST_F(ThumbnailDatabaseTest, Recovery7) {
     EXPECT_TRUE(raw_db.Open(file_name_));
     ASSERT_EQ("ok", sql::test::IntegrityCheck(&raw_db));
   }
-  const char kIndexName[] = "icon_mapping_page_url_idx";
-  const char kDeleteSql[] =
+  static const char kIndexName[] = "icon_mapping_page_url_idx";
+  static const char kDeleteSql[] =
       "DELETE FROM icon_mapping WHERE page_url = 'http://yahoo.com/'";
   EXPECT_TRUE(
       sql::test::CorruptTableOrIndex(file_name_, kIndexName, kDeleteSql));

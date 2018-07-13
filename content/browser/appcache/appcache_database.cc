@@ -250,8 +250,7 @@ bool AppCacheDatabase::FindOriginsWithGroups(std::set<url::Origin>* origins) {
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
-      "SELECT DISTINCT(origin) FROM Groups";
+  static const char kSql[] = "SELECT DISTINCT(origin) FROM Groups";
 
   sql::Statement statement(db_->GetUniqueStatement(kSql));
 
@@ -277,13 +276,13 @@ bool AppCacheDatabase::FindLastStorageIds(
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kMaxGroupIdSql[] = "SELECT MAX(group_id) FROM Groups";
-  const char kMaxCacheIdSql[] = "SELECT MAX(cache_id) FROM Caches";
-  const char kMaxResponseIdFromEntriesSql[] =
+  static const char kMaxGroupIdSql[] = "SELECT MAX(group_id) FROM Groups";
+  static const char kMaxCacheIdSql[] = "SELECT MAX(cache_id) FROM Caches";
+  static const char kMaxResponseIdFromEntriesSql[] =
       "SELECT MAX(response_id) FROM Entries";
-  const char kMaxResponseIdFromDeletablesSql[] =
+  static const char kMaxResponseIdFromDeletablesSql[] =
       "SELECT MAX(response_id) FROM DeletableResponseIds";
-  const char kMaxDeletableResponseRowIdSql[] =
+  static const char kMaxDeletableResponseRowIdSql[] =
       "SELECT MAX(rowid) FROM DeletableResponseIds";
   int64_t max_group_id;
   int64_t max_cache_id;
@@ -314,7 +313,7 @@ bool AppCacheDatabase::FindGroup(int64_t group_id, GroupRecord* record) {
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT group_id, origin, manifest_url,"
       "       creation_time, last_access_time,"
       "       last_full_update_check_time,"
@@ -338,7 +337,7 @@ bool AppCacheDatabase::FindGroupForManifestUrl(
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT group_id, origin, manifest_url,"
       "       creation_time, last_access_time,"
       "       last_full_update_check_time,"
@@ -362,7 +361,7 @@ bool AppCacheDatabase::FindGroupsForOrigin(const url::Origin& origin,
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT group_id, origin, manifest_url,"
       "       creation_time, last_access_time,"
       "       last_full_update_check_time,"
@@ -387,7 +386,7 @@ bool AppCacheDatabase::FindGroupForCache(int64_t cache_id,
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT g.group_id, g.origin, g.manifest_url,"
       "       g.creation_time, g.last_access_time,"
       "       g.last_full_update_check_time,"
@@ -409,7 +408,7 @@ bool AppCacheDatabase::InsertGroup(const GroupRecord* record) {
   if (!LazyOpen(kCreateIfNeeded))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO Groups"
       "  (group_id, origin, manifest_url, creation_time, last_access_time,"
       "   last_full_update_check_time, first_evictable_error_time)"
@@ -429,8 +428,7 @@ bool AppCacheDatabase::DeleteGroup(int64_t group_id) {
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
-      "DELETE FROM Groups WHERE group_id = ?";
+  static const char kSql[] = "DELETE FROM Groups WHERE group_id = ?";
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, group_id);
   return statement.Run();
@@ -460,7 +458,7 @@ bool AppCacheDatabase::CommitLazyLastAccessTimes() {
   if (!transaction.Begin())
     return false;
   for (const auto& pair : lazy_last_access_times_) {
-    const char kSql[] =
+    static const char kSql[] =
         "UPDATE Groups SET last_access_time = ? WHERE group_id = ?";
     sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
     statement.BindInt64(0, pair.second.ToInternalValue());  // time
@@ -478,7 +476,7 @@ bool AppCacheDatabase::UpdateEvictionTimes(
   if (!LazyOpen(kCreateIfNeeded))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "UPDATE Groups"
       " SET last_full_update_check_time = ?, first_evictable_error_time = ?"
       " WHERE group_id = ?";
@@ -494,7 +492,7 @@ bool AppCacheDatabase::FindCache(int64_t cache_id, CacheRecord* record) {
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT cache_id, group_id, online_wildcard, update_time, cache_size"
       " FROM Caches WHERE cache_id = ?";
 
@@ -514,7 +512,7 @@ bool AppCacheDatabase::FindCacheForGroup(int64_t group_id,
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT cache_id, group_id, online_wildcard, update_time, cache_size"
       "  FROM Caches WHERE group_id = ?";
 
@@ -547,7 +545,7 @@ bool AppCacheDatabase::InsertCache(const CacheRecord* record) {
   if (!LazyOpen(kCreateIfNeeded))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO Caches (cache_id, group_id, online_wildcard,"
       "                    update_time, cache_size)"
       "  VALUES(?, ?, ?, ?, ?)";
@@ -566,8 +564,7 @@ bool AppCacheDatabase::DeleteCache(int64_t cache_id) {
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
-      "DELETE FROM Caches WHERE cache_id = ?";
+  static const char kSql[] = "DELETE FROM Caches WHERE cache_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, cache_id);
@@ -581,7 +578,7 @@ bool AppCacheDatabase::FindEntriesForCache(int64_t cache_id,
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT cache_id, url, flags, response_id, response_size FROM Entries"
       "  WHERE cache_id = ?";
 
@@ -603,7 +600,7 @@ bool AppCacheDatabase::FindEntriesForUrl(
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT cache_id, url, flags, response_id, response_size FROM Entries"
       "  WHERE url = ?";
 
@@ -626,7 +623,7 @@ bool AppCacheDatabase::FindEntry(int64_t cache_id,
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT cache_id, url, flags, response_id, response_size FROM Entries"
       "  WHERE cache_id = ? AND url = ?";
 
@@ -647,7 +644,7 @@ bool AppCacheDatabase::InsertEntry(const EntryRecord* record) {
   if (!LazyOpen(kCreateIfNeeded))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO Entries (cache_id, url, flags, response_id, response_size)"
       "  VALUES(?, ?, ?, ?, ?)";
 
@@ -679,8 +676,7 @@ bool AppCacheDatabase::DeleteEntriesForCache(int64_t cache_id) {
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
-      "DELETE FROM Entries WHERE cache_id = ?";
+  static const char kSql[] = "DELETE FROM Entries WHERE cache_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, cache_id);
@@ -694,7 +690,7 @@ bool AppCacheDatabase::AddEntryFlags(const GURL& entry_url,
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "UPDATE Entries SET flags = flags | ? WHERE cache_id = ? AND url = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -714,7 +710,7 @@ bool AppCacheDatabase::FindNamespacesForOrigin(
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT cache_id, origin, type, namespace_url, target_url, is_pattern"
       "  FROM Namespaces WHERE origin = ?";
 
@@ -735,7 +731,7 @@ bool AppCacheDatabase::FindNamespacesForCache(
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT cache_id, origin, type, namespace_url, target_url, is_pattern"
       "  FROM Namespaces WHERE cache_id = ?";
 
@@ -752,7 +748,7 @@ bool AppCacheDatabase::InsertNamespace(
   if (!LazyOpen(kCreateIfNeeded))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO Namespaces"
       "  (cache_id, origin, type, namespace_url, target_url, is_pattern)"
       "  VALUES (?, ?, ?, ?, ?, ?)";
@@ -785,8 +781,7 @@ bool AppCacheDatabase::DeleteNamespacesForCache(int64_t cache_id) {
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
-      "DELETE FROM Namespaces WHERE cache_id = ?";
+  static const char kSql[] = "DELETE FROM Namespaces WHERE cache_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, cache_id);
@@ -801,7 +796,7 @@ bool AppCacheDatabase::FindOnlineWhiteListForCache(
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT cache_id, namespace_url, is_pattern FROM OnlineWhiteLists"
       "  WHERE cache_id = ?";
 
@@ -821,7 +816,7 @@ bool AppCacheDatabase::InsertOnlineWhiteList(
   if (!LazyOpen(kCreateIfNeeded))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO OnlineWhiteLists (cache_id, namespace_url, is_pattern)"
       "  VALUES (?, ?, ?)";
 
@@ -851,8 +846,7 @@ bool AppCacheDatabase::DeleteOnlineWhiteListForCache(int64_t cache_id) {
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
-      "DELETE FROM OnlineWhiteLists WHERE cache_id = ?";
+  static const char kSql[] = "DELETE FROM OnlineWhiteLists WHERE cache_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, cache_id);
@@ -867,7 +861,7 @@ bool AppCacheDatabase::GetDeletableResponseIds(
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT response_id FROM DeletableResponseIds "
       "  WHERE rowid <= ?"
       "  LIMIT ?";
@@ -883,14 +877,14 @@ bool AppCacheDatabase::GetDeletableResponseIds(
 
 bool AppCacheDatabase::InsertDeletableResponseIds(
     const std::vector<int64_t>& response_ids) {
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO DeletableResponseIds (response_id) VALUES (?)";
   return RunCachedStatementWithIds(SQL_FROM_HERE, kSql, response_ids);
 }
 
 bool AppCacheDatabase::DeleteDeletableResponseIds(
     const std::vector<int64_t>& response_ids) {
-  const char kSql[] =
+  static const char kSql[] =
       "DELETE FROM DeletableResponseIds WHERE response_id = ?";
   return RunCachedStatementWithIds(SQL_FROM_HERE, kSql, response_ids);
 }
@@ -939,7 +933,7 @@ bool AppCacheDatabase::FindResponseIdsForCacheHelper(
   if (!LazyOpen(kDontCreate))
     return false;
 
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT response_id FROM Entries WHERE cache_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));

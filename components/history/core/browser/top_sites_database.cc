@@ -66,7 +66,7 @@ static const int kVersionNumber = 3;
 static const int kDeprecatedVersionNumber = 2;  // and earlier.
 
 bool InitTables(sql::Connection* db) {
-  const char kThumbnailsSql[] =
+  static const char kThumbnailsSql[] =
       "CREATE TABLE IF NOT EXISTS thumbnails ("
       "url LONGVARCHAR PRIMARY KEY,"
       "url_rank INTEGER,"
@@ -153,7 +153,7 @@ void RecordRecoveryEvent(RecoveryEventType recovery_event) {
 // together and yield a row with errors.
 void FixThumbnailsTable(sql::Connection* db) {
   // Enforce invariant separating forced and non-forced thumbnails.
-  const char kFixRankSql[] =
+  static const char kFixRankSql[] =
       "DELETE FROM thumbnails "
       "WHERE (url_rank = -1 AND last_forced = 0) "
       "OR (url_rank <> -1 AND last_forced <> 0)";
@@ -162,7 +162,7 @@ void FixThumbnailsTable(sql::Connection* db) {
     RecordRecoveryEvent(RECOVERY_EVENT_INVARIANT_RANK);
 
   // Enforce invariant that url is in its own redirects.
-  const char kFixRedirectsSql[] =
+  static const char kFixRedirectsSql[] =
       "DELETE FROM thumbnails "
       "WHERE url <> substr(redirects, -length(url), length(url))";
   ignore_result(db->Execute(kFixRedirectsSql));
@@ -174,12 +174,12 @@ void FixThumbnailsTable(sql::Connection* db) {
   // It can be done with a temporary table and a subselect, but doing it
   // manually is easier to follow.  Another option would be to somehow integrate
   // the renumbering into the table recovery code.
-  const char kByRankSql[] =
+  static const char kByRankSql[] =
       "SELECT url_rank, rowid FROM thumbnails WHERE url_rank <> -1 "
       "ORDER BY url_rank";
   sql::Statement select_statement(db->GetUniqueStatement(kByRankSql));
 
-  const char kAdjustRankSql[] =
+  static const char kAdjustRankSql[] =
       "UPDATE thumbnails SET url_rank = ? WHERE rowid = ?";
   sql::Statement update_statement(db->GetUniqueStatement(kAdjustRankSql));
 

@@ -152,7 +152,7 @@ TEST_F(PrefetchStoreSchemaTest, TestMissingTablesAreRecreated) {
 
 void CreateVersion1TablesWithSampleRows(sql::Connection* db) {
   // Create version 1 tables.
-  const char kV0ItemsTableCreationSql[] =
+  static const char kV0ItemsTableCreationSql[] =
       "CREATE TABLE prefetch_items"
       "(offline_id INTEGER PRIMARY KEY NOT NULL,"
       " state INTEGER NOT NULL DEFAULT 0,"
@@ -175,7 +175,7 @@ void CreateVersion1TablesWithSampleRows(sql::Connection* db) {
       " file_path VARCHAR NOT NULL DEFAULT ''"
       ")";
   EXPECT_TRUE(db->Execute(kV0ItemsTableCreationSql));
-  const char kV0QuotaTableCreationSql[] =
+  static const char kV0QuotaTableCreationSql[] =
       "CREATE TABLE prefetch_downloader_quota"
       "(quota_id INTEGER PRIMARY KEY NOT NULL DEFAULT 1,"
       " update_time INTEGER NOT NULL,"
@@ -183,7 +183,7 @@ void CreateVersion1TablesWithSampleRows(sql::Connection* db) {
   EXPECT_TRUE(db->Execute(kV0QuotaTableCreationSql));
 
   // Insert one row with artificial values into the items table.
-  const char kV0ItemInsertSql[] =
+  static const char kV0ItemInsertSql[] =
       "INSERT INTO prefetch_items"
       " (offline_id, state, generate_bundle_attempts, get_operation_attempts,"
       "  download_initiation_attempts, archive_body_length, creation_time,"
@@ -201,7 +201,7 @@ void CreateVersion1TablesWithSampleRows(sql::Connection* db) {
   EXPECT_TRUE(insertStatement1.Run());
 
   // Insert one row with artificial values into the quota table.
-  const char kV0QuotaInsertSql[] =
+  static const char kV0QuotaInsertSql[] =
       "INSERT INTO prefetch_downloader_quota"
       " (quota_id, update_time, available_quota)"
       " VALUES (?, ?, ?)";
@@ -215,7 +215,7 @@ void CreateVersion1TablesWithSampleRows(sql::Connection* db) {
 
 void CheckSampleRowsAtCurrentVersion(sql::Connection* db) {
   // Checks the previously inserted item row was migrated correctly.
-  const char kV0ItemSelectSql[] =
+  static const char kV0ItemSelectSql[] =
       "SELECT "
       " offline_id, state, generate_bundle_attempts, get_operation_attempts,"
       "  download_initiation_attempts, archive_body_length, creation_time,"
@@ -237,7 +237,7 @@ void CheckSampleRowsAtCurrentVersion(sql::Connection* db) {
   EXPECT_FALSE(selectStatement1.Step());
 
   // Checks the previously inserted quota row was migrated correctly.
-  const char kV0QuotaSelectSql[] =
+  static const char kV0QuotaSelectSql[] =
       "SELECT quota_id, update_time, available_quota"
       " FROM prefetch_downloader_quota";
   sql::Statement selectStatement2(db->GetUniqueStatement(kV0QuotaSelectSql));

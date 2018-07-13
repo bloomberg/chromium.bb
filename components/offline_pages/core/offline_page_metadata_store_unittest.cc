@@ -471,7 +471,7 @@ void BuildTestStoreWithSchemaVersion2(const base::FilePath& file) {
   sql::MetaTable meta_table;
   ASSERT_TRUE(meta_table.Init(&db, OfflinePageMetadataStore::kCurrentVersion,
                               OfflinePageMetadataStore::kCompatibleVersion));
-  const char kSql[] =
+  static const char kSql[] =
       "CREATE TABLE page_thumbnails"
       " (offline_id INTEGER PRIMARY KEY NOT NULL,"
       " expiration INTEGER NOT NULL,"
@@ -522,7 +522,7 @@ std::vector<OfflinePageItem> GetOfflinePagesSync(sql::Connection* db) {
   if (!db)
     return result;
 
-  const char kSql[] = "SELECT * FROM " OFFLINE_PAGES_TABLE_V1;
+  static const char kSql[] = "SELECT * FROM " OFFLINE_PAGES_TABLE_V1;
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
 
   while (statement.Step())
@@ -694,7 +694,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
 
       // Using 'INSERT OR FAIL' or 'INSERT OR ABORT' in the query below
       // causes debug builds to DLOG.
-      const char kSql[] =
+      static const char kSql[] =
           "INSERT OR IGNORE INTO " OFFLINE_PAGES_TABLE_V1
           " (offline_id, online_url, client_namespace, client_id, "
           "file_path, "
@@ -737,7 +737,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
       OfflinePageMetadataStore* store) {
     std::vector<OfflinePageThumbnail> thumbnails;
     auto run_callback = base::BindLambdaForTesting([&](sql::Connection* db) {
-      const char kSql[] = "SELECT * FROM page_thumbnails";
+      static const char kSql[] = "SELECT * FROM page_thumbnails";
       sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
 
       while (statement.Step()) {
@@ -759,7 +759,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
                     const OfflinePageThumbnail& thumbnail) {
     std::vector<OfflinePageThumbnail> thumbnails;
     auto run_callback = base::BindLambdaForTesting([&](sql::Connection* db) {
-      const char kSql[] =
+      static const char kSql[] =
           "INSERT INTO page_thumbnails"
           " (offline_id, expiration, thumbnail) VALUES (?, ?, ?)";
       sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));

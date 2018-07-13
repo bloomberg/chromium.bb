@@ -35,21 +35,22 @@ using SuccessCallback = base::OnceCallback<void(bool)>;
 const bool kUserRequested = true;
 
 bool CreateRequestQueueTable(sql::Connection* db) {
-  const char kSql[] = "CREATE TABLE IF NOT EXISTS " REQUEST_QUEUE_TABLE_NAME
-                      " (request_id INTEGER PRIMARY KEY NOT NULL,"
-                      " creation_time INTEGER NOT NULL,"
-                      " activation_time INTEGER NOT NULL DEFAULT 0,"
-                      " last_attempt_time INTEGER NOT NULL DEFAULT 0,"
-                      " started_attempt_count INTEGER NOT NULL,"
-                      " completed_attempt_count INTEGER NOT NULL,"
-                      " state INTEGER NOT NULL DEFAULT 0,"
-                      " url VARCHAR NOT NULL,"
-                      " client_namespace VARCHAR NOT NULL,"
-                      " client_id VARCHAR NOT NULL,"
-                      " original_url VARCHAR NOT NULL DEFAULT '',"
-                      " request_origin VARCHAR NOT NULL DEFAULT '',"
-                      " fail_state INTEGER NOT NULL DEFAULT 0"
-                      ")";
+  static const char kSql[] =
+      "CREATE TABLE IF NOT EXISTS " REQUEST_QUEUE_TABLE_NAME
+      " (request_id INTEGER PRIMARY KEY NOT NULL,"
+      " creation_time INTEGER NOT NULL,"
+      " activation_time INTEGER NOT NULL DEFAULT 0,"
+      " last_attempt_time INTEGER NOT NULL DEFAULT 0,"
+      " started_attempt_count INTEGER NOT NULL,"
+      " completed_attempt_count INTEGER NOT NULL,"
+      " state INTEGER NOT NULL DEFAULT 0,"
+      " url VARCHAR NOT NULL,"
+      " client_namespace VARCHAR NOT NULL,"
+      " client_id VARCHAR NOT NULL,"
+      " original_url VARCHAR NOT NULL DEFAULT '',"
+      " request_origin VARCHAR NOT NULL DEFAULT '',"
+      " fail_state INTEGER NOT NULL DEFAULT 0"
+      ")";
   return db->Execute(kSql);
 }
 
@@ -66,7 +67,7 @@ bool UpgradeWithQuery(sql::Connection* db, const char* upgrade_sql) {
 }
 
 bool UpgradeFrom57(sql::Connection* db) {
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO " REQUEST_QUEUE_TABLE_NAME
       " (request_id, creation_time, activation_time, last_attempt_time, "
       "started_attempt_count, completed_attempt_count, state, url, "
@@ -80,7 +81,7 @@ bool UpgradeFrom57(sql::Connection* db) {
 }
 
 bool UpgradeFrom58(sql::Connection* db) {
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO " REQUEST_QUEUE_TABLE_NAME
       " (request_id, creation_time, activation_time, last_attempt_time, "
       "started_attempt_count, completed_attempt_count, state, url, "
@@ -94,7 +95,7 @@ bool UpgradeFrom58(sql::Connection* db) {
 }
 
 bool UpgradeFrom61(sql::Connection* db) {
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT INTO " REQUEST_QUEUE_TABLE_NAME
       " (request_id, creation_time, activation_time, last_attempt_time, "
       "started_attempt_count, completed_attempt_count, state, url, "
@@ -183,7 +184,7 @@ std::unique_ptr<SavePageRequest> MakeSavePageRequest(
 // Get a request for a specific id.
 std::unique_ptr<SavePageRequest> GetOneRequest(sql::Connection* db,
                                                const int64_t request_id) {
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT request_id, creation_time, activation_time,"
       " last_attempt_time, started_attempt_count, completed_attempt_count,"
       " state, url, client_namespace, client_id, original_url, request_origin,"
@@ -199,7 +200,7 @@ std::unique_ptr<SavePageRequest> GetOneRequest(sql::Connection* db,
 }
 
 ItemActionStatus DeleteRequestById(sql::Connection* db, int64_t request_id) {
-  const char kSql[] =
+  static const char kSql[] =
       "DELETE FROM " REQUEST_QUEUE_TABLE_NAME " WHERE request_id=?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, request_id);
@@ -211,7 +212,7 @@ ItemActionStatus DeleteRequestById(sql::Connection* db, int64_t request_id) {
 }
 
 ItemActionStatus Insert(sql::Connection* db, const SavePageRequest& request) {
-  const char kSql[] =
+  static const char kSql[] =
       "INSERT OR IGNORE INTO " REQUEST_QUEUE_TABLE_NAME
       " (request_id, creation_time, activation_time,"
       " last_attempt_time, started_attempt_count, completed_attempt_count,"
@@ -244,7 +245,7 @@ ItemActionStatus Insert(sql::Connection* db, const SavePageRequest& request) {
 }
 
 ItemActionStatus Update(sql::Connection* db, const SavePageRequest& request) {
-  const char kSql[] =
+  static const char kSql[] =
       "UPDATE OR IGNORE " REQUEST_QUEUE_TABLE_NAME
       " SET creation_time = ?, activation_time = ?, last_attempt_time = ?,"
       " started_attempt_count = ?, completed_attempt_count = ?, state = ?,"
@@ -328,7 +329,7 @@ bool InitDatabase(sql::Connection* db, const base::FilePath& path) {
 void GetRequestsSync(sql::Connection* db,
                      scoped_refptr<base::SingleThreadTaskRunner> runner,
                      RequestQueueStore::GetRequestsCallback callback) {
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT request_id, creation_time, activation_time,"
       " last_attempt_time, started_attempt_count, completed_attempt_count,"
       " state, url, client_namespace, client_id, original_url, request_origin,"

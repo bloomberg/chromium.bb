@@ -71,7 +71,7 @@ int MaxRowsInOptOutDB() {
 #define ENABLED_TYPES_TABLE_NAME "enabled_previews_v1"
 
 void CreateSchema(sql::Connection* db) {
-  const char kSqlCreateTable[] =
+  static const char kSqlCreateTable[] =
       "CREATE TABLE IF NOT EXISTS " OPT_OUT_TABLE_NAME
       " (host_name VARCHAR NOT NULL,"
       " time INTEGER NOT NULL,"
@@ -81,7 +81,7 @@ void CreateSchema(sql::Connection* db) {
   if (!db->Execute(kSqlCreateTable))
     return;
 
-  const char kSqlCreateEnabledTypeVersionTable[] =
+  static const char kSqlCreateEnabledTypeVersionTable[] =
       "CREATE TABLE IF NOT EXISTS " ENABLED_TYPES_TABLE_NAME
       " (type INTEGER NOT NULL,"
       " version INTEGER NOT NULL,"
@@ -149,10 +149,10 @@ void AddEntryToDataBase(sql::Connection* db,
                         int type,
                         base::Time now) {
   // Adds the new entry.
-  const char kSqlInsert[] = "INSERT INTO " OPT_OUT_TABLE_NAME
-                            " (host_name, time, opt_out, type)"
-                            " VALUES "
-                            " (?, ?, ?, ?)";
+  static const char kSqlInsert[] = "INSERT INTO " OPT_OUT_TABLE_NAME
+                                   " (host_name, time, opt_out, type)"
+                                   " VALUES "
+                                   " (?, ?, ?, ?)";
 
   sql::Statement statement_insert(
       db->GetCachedStatement(SQL_FROM_HERE, kSqlInsert));
@@ -170,12 +170,13 @@ void MaybeEvictHostEntryFromDataBase(sql::Connection* db,
   // Delete the oldest entries if there are more than |MaxRowsPerHostInOptOutDB|
   // for |host_name|.
   // DELETE ... LIMIT -1 OFFSET x means delete all but the first x entries.
-  const char kSqlDeleteByHost[] = "DELETE FROM " OPT_OUT_TABLE_NAME
-                                  " WHERE ROWID IN"
-                                  " (SELECT ROWID from " OPT_OUT_TABLE_NAME
-                                  " WHERE host_name == ?"
-                                  " ORDER BY time DESC"
-                                  " LIMIT -1 OFFSET ?)";
+  static const char kSqlDeleteByHost[] =
+      "DELETE FROM " OPT_OUT_TABLE_NAME
+      " WHERE ROWID IN"
+      " (SELECT ROWID from " OPT_OUT_TABLE_NAME
+      " WHERE host_name == ?"
+      " ORDER BY time DESC"
+      " LIMIT -1 OFFSET ?)";
 
   sql::Statement statement_delete_by_host(
       db->GetCachedStatement(SQL_FROM_HERE, kSqlDeleteByHost));
@@ -186,7 +187,8 @@ void MaybeEvictHostEntryFromDataBase(sql::Connection* db,
 
 // Deletes every entry for |type|.
 void ClearBlacklistForTypeInDataBase(sql::Connection* db, int type) {
-  const char kSql[] = "DELETE FROM " OPT_OUT_TABLE_NAME " WHERE type == ?";
+  static const char kSql[] =
+      "DELETE FROM " OPT_OUT_TABLE_NAME " WHERE type == ?";
   sql::Statement statement(db->GetUniqueStatement(kSql));
   statement.BindInt(0, type);
   statement.Run();
@@ -195,7 +197,7 @@ void ClearBlacklistForTypeInDataBase(sql::Connection* db, int type) {
 // Retrieves the list of previously enabled types with their version from the
 // Enabled table.
 BlacklistData::AllowedTypesAndVersions GetStoredEntries(sql::Connection* db) {
-  const char kSqlLoadEnabledTypesVersions[] =
+  static const char kSqlLoadEnabledTypesVersions[] =
       "SELECT type, version FROM " ENABLED_TYPES_TABLE_NAME;
 
   sql::Statement statement(
@@ -212,10 +214,10 @@ BlacklistData::AllowedTypesAndVersions GetStoredEntries(sql::Connection* db) {
 
 // Adds a newly enabled |type| with its |version| to the Enabled types table.
 void InsertEnabledTypesInDataBase(sql::Connection* db, int type, int version) {
-  const char kSqlInsert[] = "INSERT INTO " ENABLED_TYPES_TABLE_NAME
-                            " (type, version)"
-                            " VALUES "
-                            " (?, ?)";
+  static const char kSqlInsert[] = "INSERT INTO " ENABLED_TYPES_TABLE_NAME
+                                   " (type, version)"
+                                   " VALUES "
+                                   " (?, ?)";
 
   sql::Statement statement_insert(db->GetUniqueStatement(kSqlInsert));
   statement_insert.BindInt(0, type);
@@ -225,9 +227,9 @@ void InsertEnabledTypesInDataBase(sql::Connection* db, int type, int version) {
 
 // Updates the |version| of an enabled |type| in the Enabled table.
 void UpdateEnabledTypesInDataBase(sql::Connection* db, int type, int version) {
-  const char kSqlUpdate[] = "UPDATE " ENABLED_TYPES_TABLE_NAME
-                            " SET version = ?"
-                            " WHERE type = ?";
+  static const char kSqlUpdate[] = "UPDATE " ENABLED_TYPES_TABLE_NAME
+                                   " SET version = ?"
+                                   " WHERE type = ?";
 
   sql::Statement statement_update(
       db->GetCachedStatement(SQL_FROM_HERE, kSqlUpdate));
@@ -238,7 +240,7 @@ void UpdateEnabledTypesInDataBase(sql::Connection* db, int type, int version) {
 
 // Deletes a previously enabled |type| from the Enabled table.
 void DeleteEnabledTypesInDataBase(sql::Connection* db, int type) {
-  const char kSqlDelete[] =
+  static const char kSqlDelete[] =
       "DELETE FROM " ENABLED_TYPES_TABLE_NAME " WHERE type == ?";
 
   sql::Statement statement_delete(db->GetUniqueStatement(kSqlDelete));
@@ -291,7 +293,7 @@ void LoadBlackListFromDataBase(
   // Gets the table sorted by host and time. Limits the number of hosts using
   // most recent opt_out time as the limiting function. Sorting is free due to
   // the table structure, and it improves performance in the loop below.
-  const char kSql[] =
+  static const char kSql[] =
       "SELECT host_name, time, opt_out, type"
       " FROM " OPT_OUT_TABLE_NAME " ORDER BY host_name, time DESC";
 
@@ -310,11 +312,12 @@ void LoadBlackListFromDataBase(
   if (count > MaxRowsInOptOutDB()) {
     // Delete the oldest entries if there are more than |kMaxEntriesInDB|.
     // DELETE ... LIMIT -1 OFFSET x means delete all but the first x entries.
-    const char kSqlDeleteByDBSize[] = "DELETE FROM " OPT_OUT_TABLE_NAME
-                                      " WHERE ROWID IN"
-                                      " (SELECT ROWID from " OPT_OUT_TABLE_NAME
-                                      " ORDER BY time DESC"
-                                      " LIMIT -1 OFFSET ?)";
+    static const char kSqlDeleteByDBSize[] =
+        "DELETE FROM " OPT_OUT_TABLE_NAME
+        " WHERE ROWID IN"
+        " (SELECT ROWID from " OPT_OUT_TABLE_NAME
+        " ORDER BY time DESC"
+        " LIMIT -1 OFFSET ?)";
 
     sql::Statement statement_delete(
         db->GetCachedStatement(SQL_FROM_HERE, kSqlDeleteByDBSize));
@@ -345,7 +348,7 @@ void LoadBlackListSync(sql::Connection* db,
 void ClearBlackListSync(sql::Connection* db,
                         base::Time begin_time,
                         base::Time end_time) {
-  const char kSql[] =
+  static const char kSql[] =
       "DELETE FROM " OPT_OUT_TABLE_NAME " WHERE time >= ? and time <= ?";
 
   sql::Statement statement(db->GetUniqueStatement(kSql));

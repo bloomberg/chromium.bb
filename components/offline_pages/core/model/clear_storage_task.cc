@@ -77,9 +77,9 @@ std::unique_ptr<std::vector<PageInfo>> GetAllTemporaryPageInfos(
     sql::Connection* db) {
   auto result = std::make_unique<std::vector<PageInfo>>();
 
-  const char kSql[] = "SELECT " PAGE_INFO_PROJECTION
-                      " FROM offlinepages_v1"
-                      " WHERE client_namespace = ?";
+  static const char kSql[] = "SELECT " PAGE_INFO_PROJECTION
+                             " FROM offlinepages_v1"
+                             " WHERE client_namespace = ?";
 
   for (const auto& temp_namespace_policy : temp_namespace_policy_map) {
     std::string name_space = temp_namespace_policy.first;
