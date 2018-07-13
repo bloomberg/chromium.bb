@@ -3,7 +3,7 @@ PASS getStats() with no argument should succeed
 PASS getStats(null) should succeed
 PASS getStats() with track not added to connection should reject with InvalidAccessError
 PASS getStats() with track added via addTrack should succeed
-FAIL getStats() with track added via addTransceiver should succeed assert_idl_attribute: Expect pc to have addTransceiver() method property "addTransceiver" not found in prototype chain
+FAIL getStats() with track added via addTransceiver should succeed promise_test: Unhandled rejection with value: object "TypeError: pc.addTransceiver is not a function"
 FAIL getStats() with track associated with more than one sender should reject with InvalidAccessError promise_test: Unhandled rejection with value: object "TypeError: pc.addTransceiver is not a function"
 FAIL getStats() with track associated with both sender and receiver should reject with InvalidAccessError pc.addTransceiver is not a function
 PASS getStats() with no argument should return stats report containing peer-connection stats on an empty PC
