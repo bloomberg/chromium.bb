@@ -4198,6 +4198,7 @@ test("unit_tests") {
         "../browser/ui/cocoa/toolbar/toolbar_view_unittest.mm",
         "../browser/ui/cocoa/touchbar/browser_window_default_touch_bar_unittest.mm",
         "../browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller_unittest.mm",
+        "../browser/ui/cocoa/touchbar/suggested_text_touch_bar_controller_unittest.mm",
         "../browser/ui/cocoa/translate/translate_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/url_drop_target_unittest.mm",
         "../browser/ui/cocoa/vertical_gradient_view_unittest.mm",
