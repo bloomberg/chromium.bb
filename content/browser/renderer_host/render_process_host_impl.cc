@@ -1462,7 +1462,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
     const int id = GetID();
     const uint64_t tracing_id =
         ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(id);
-    gpu_client_.reset(new GpuClientImpl(id, tracing_id));
+    gpu_client_.reset(new GpuClientImpl(
+        id, tracing_id,
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
   }
 
   GetMemoryDumpProvider().AddHost(this);
