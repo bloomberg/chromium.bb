@@ -8,6 +8,7 @@
 #include <tuple>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -231,7 +232,6 @@ class Request {
         index_(index),
         resolver_(resolver),
         handler_(handler),
-        quit_on_complete_(false),
         result_(ERR_UNEXPECTED) {}
 
   int Resolve() {
@@ -298,16 +298,13 @@ class Request {
   int WaitForResult() {
     if (completed())
       return result_;
-    base::CancelableClosure closure(
-        base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+    base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, closure.callback(), TestTimeouts::action_max_timeout());
-    quit_on_complete_ = true;
-    base::RunLoop().Run();
-    bool did_quit = !quit_on_complete_;
-    quit_on_complete_ = false;
-    closure.Cancel();
-    if (did_quit)
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_max_timeout());
+    base::AutoReset<base::OnceClosure> reset(&quit_closure_,
+                                             run_loop.QuitClosure());
+    run_loop.Run();
+    if (!quit_closure_)
       return result_;
     else
       return ERR_UNEXPECTED;
@@ -326,10 +323,8 @@ class Request {
     }
     if (handler_)
       handler_->Handle(this);
-    if (quit_on_complete_) {
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
-      quit_on_complete_ = false;
-    }
+    if (quit_closure_)
+      std::move(quit_closure_).Run();
   }
 
   HostResolver::RequestInfo info_;
@@ -337,7 +332,7 @@ class Request {
   size_t index_;
   HostResolverImpl* resolver_;
   Handler* handler_;
-  bool quit_on_complete_;
+  base::OnceClosure quit_closure_;
 
   AddressList list_;
   int result_;

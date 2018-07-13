@@ -664,8 +664,7 @@ void MockClientSocketFactory::SetJobLoadState(size_t job,
 
 class TestConnectJobDelegate : public ConnectJob::Delegate {
  public:
-  TestConnectJobDelegate()
-      : have_result_(false), waiting_for_result_(false), result_(OK) {}
+  TestConnectJobDelegate() : have_result_(false), result_(OK) {}
   ~TestConnectJobDelegate() override = default;
 
   void OnConnectJobComplete(int result, ConnectJob* job) override {
@@ -675,16 +674,16 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
     // socket.get() should be NULL iff result != OK
     EXPECT_EQ(socket == NULL, result != OK);
     have_result_ = true;
-    if (waiting_for_result_)
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    if (quit_wait_on_result_)
+      std::move(quit_wait_on_result_).Run();
   }
 
   int WaitForResult() {
-    DCHECK(!waiting_for_result_);
+    DCHECK(!quit_wait_on_result_);
     while (!have_result_) {
-      waiting_for_result_ = true;
-      base::RunLoop().Run();
-      waiting_for_result_ = false;
+      base::RunLoop run_loop;
+      quit_wait_on_result_ = run_loop.QuitClosure();
+      run_loop.Run();
     }
     have_result_ = false;  // auto-reset for next callback
     return result_;
@@ -692,7 +691,7 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
 
  private:
   bool have_result_;
-  bool waiting_for_result_;
+  base::OnceClosure quit_wait_on_result_;
   int result_;
 };
 
