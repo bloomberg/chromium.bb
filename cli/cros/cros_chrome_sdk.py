@@ -671,6 +671,11 @@ class ChromeSDKCommand(command.CliCommand):
     ps1_prefix = ChromeSDKCommand._PS1Prefix(board, version, chroot)
     return '%s %s' % (ps1_prefix, current_ps1)
 
+  def _BuildDir(self):
+    """Returns a full path build directory."""
+    return os.path.join(self.options.chrome_src, 'out_%s' % self.board,
+                        'Release')
+
   def _FixGoldPath(self, var_contents, toolchain_path):
     """Point to the gold linker in the toolchain tarball.
 
@@ -798,6 +803,15 @@ class ChromeSDKCommand(command.CliCommand):
     binutils_path = os.path.join(options.chrome_src, self._HOST_BINUTILS_DIR)
     env['AR_host'] = os.path.join(binutils_path, 'ar')
 
+  def _RelativizeToolchainPath(self, compiler):
+    """Relativize toolchain path for GN."""
+    args = []
+    for i in compiler.split():
+      if i.startswith('-B'):
+        i = '-B' + os.path.relpath(i[len('-B'):], self._BuildDir())
+      args.append(i)
+    return ' '.join(args)
+
   def _SetupEnvironment(self, board, sdk_ctx, options, goma_dir=None,
                         goma_port=None):
     """Sets environment variables to export to the SDK shell."""
@@ -896,8 +910,8 @@ class ChromeSDKCommand(command.CliCommand):
     # See crosbug/618346.
     gn_args['cros_v8_snapshot_is_clang'] = True
     #
-    gn_args['cros_target_cc'] = env['CC']
-    gn_args['cros_target_cxx'] = env['CXX']
+    gn_args['cros_target_cc'] = self._RelativizeToolchainPath(env['CC'])
+    gn_args['cros_target_cxx'] = self._RelativizeToolchainPath(env['CXX'])
     gn_args['cros_target_ld'] = env['LD']
     gn_args['cros_target_extra_cflags'] = env.get('CFLAGS', '')
     gn_args['cros_target_extra_cxxflags'] = env.get('CXXFLAGS', '')
