@@ -1546,12 +1546,12 @@ void GLES2Implementation::DeleteSyncStub(GLsizei n, const GLuint* syncs) {
 GLint GLES2Implementation::GetAttribLocationHelper(
     GLuint program, const char* name) {
   typedef cmds::GetAttribLocation::Result Result;
+  SetBucketAsCString(kResultBucketId, name);
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return -1;
   }
   *result = -1;
-  SetBucketAsCString(kResultBucketId, name);
   helper_->GetAttribLocation(
       program, kResultBucketId, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
@@ -1575,12 +1575,12 @@ GLint GLES2Implementation::GetAttribLocation(
 GLint GLES2Implementation::GetUniformLocationHelper(
     GLuint program, const char* name) {
   typedef cmds::GetUniformLocation::Result Result;
+  SetBucketAsCString(kResultBucketId, name);
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return -1;
   }
   *result = -1;
-  SetBucketAsCString(kResultBucketId, name);
   helper_->GetUniformLocation(program, kResultBucketId,
                                     GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
@@ -1662,12 +1662,12 @@ bool GLES2Implementation::GetProgramivHelper(
 GLint GLES2Implementation::GetFragDataIndexEXTHelper(GLuint program,
                                                      const char* name) {
   typedef cmds::GetFragDataIndexEXT::Result Result;
+  SetBucketAsCString(kResultBucketId, name);
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return -1;
   }
   *result = -1;
-  SetBucketAsCString(kResultBucketId, name);
   helper_->GetFragDataIndexEXT(program, kResultBucketId, GetResultShmId(),
                                GetResultShmOffset());
   WaitForCmd();
@@ -1691,12 +1691,12 @@ GLint GLES2Implementation::GetFragDataIndexEXT(GLuint program,
 GLint GLES2Implementation::GetFragDataLocationHelper(
     GLuint program, const char* name) {
   typedef cmds::GetFragDataLocation::Result Result;
+  SetBucketAsCString(kResultBucketId, name);
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return -1;
   }
   *result = -1;
-  SetBucketAsCString(kResultBucketId, name);
   helper_->GetFragDataLocation(
       program, kResultBucketId, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
@@ -1720,12 +1720,12 @@ GLint GLES2Implementation::GetFragDataLocation(
 GLuint GLES2Implementation::GetUniformBlockIndexHelper(
     GLuint program, const char* name) {
   typedef cmds::GetUniformBlockIndex::Result Result;
+  SetBucketAsCString(kResultBucketId, name);
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return GL_INVALID_INDEX;
   }
   *result = GL_INVALID_INDEX;
-  SetBucketAsCString(kResultBucketId, name);
   helper_->GetUniformBlockIndex(
       program, kResultBucketId, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
@@ -4956,12 +4956,12 @@ GLboolean GLES2Implementation::EnableFeatureCHROMIUM(
                  << feature << ")");
   TRACE_EVENT0("gpu", "GLES2::EnableFeatureCHROMIUM");
   typedef cmds::EnableFeatureCHROMIUM::Result Result;
+  SetBucketAsCString(kResultBucketId, feature);
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return false;
   }
   *result = 0;
-  SetBucketAsCString(kResultBucketId, feature);
   helper_->EnableFeatureCHROMIUM(
       kResultBucketId, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
