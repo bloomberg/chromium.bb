@@ -81,7 +81,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   virtual gpu::ContextResult Initialize(
       CommandBufferStub* share_group,
       const GPUCreateCommandBufferConfig& init_params,
-      std::unique_ptr<base::SharedMemory> shared_state_shm) = 0;
+      base::UnsafeSharedMemoryRegion shared_state_shm) = 0;
 
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -191,8 +191,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
                                  IPC::Message* reply_message);
   void OnAsyncFlush(int32_t put_offset, uint32_t flush_id);
   void OnRegisterTransferBuffer(int32_t id,
-                                base::SharedMemoryHandle transfer_buffer,
-                                uint32_t size);
+                                base::UnsafeSharedMemoryRegion transfer_buffer);
   void OnDestroyTransferBuffer(int32_t id);
   void OnGetTransferBuffer(int32_t id, IPC::Message* reply_message);
 

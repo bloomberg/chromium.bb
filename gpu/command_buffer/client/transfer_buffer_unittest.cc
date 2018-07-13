@@ -103,16 +103,14 @@ TEST_F(TransferBufferTest, Basic) {
   EXPECT_EQ(
       kTransferBufferSize - kStartingOffset,
       transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
-  EXPECT_NE(base::UnguessableToken(),
-            transfer_buffer_->shared_memory_handle().GetGUID());
+  EXPECT_NE(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 }
 
 TEST_F(TransferBufferTest, Free) {
   Initialize();
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
   EXPECT_EQ(transfer_buffer_id_, transfer_buffer_->GetShmId());
-  EXPECT_NE(base::UnguessableToken(),
-            transfer_buffer_->shared_memory_handle().GetGUID());
+  EXPECT_NE(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
   // Free buffer.
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
@@ -124,13 +122,11 @@ TEST_F(TransferBufferTest, Free) {
   transfer_buffer_->Free();
   // See it's freed.
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
-  EXPECT_EQ(base::UnguessableToken(),
-            transfer_buffer_->shared_memory_handle().GetGUID());
+  EXPECT_EQ(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
   // See that it gets reallocated.
   EXPECT_EQ(transfer_buffer_id_, transfer_buffer_->GetShmId());
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
-  EXPECT_NE(base::UnguessableToken(),
-            transfer_buffer_->shared_memory_handle().GetGUID());
+  EXPECT_NE(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
   // Free buffer.
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
@@ -142,14 +138,12 @@ TEST_F(TransferBufferTest, Free) {
   transfer_buffer_->Free();
   // See it's freed.
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
-  EXPECT_EQ(base::UnguessableToken(),
-            transfer_buffer_->shared_memory_handle().GetGUID());
+  EXPECT_EQ(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
   // See that it gets reallocated.
   EXPECT_TRUE(transfer_buffer_->GetResultBuffer() != NULL);
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
-  EXPECT_NE(base::UnguessableToken(),
-            transfer_buffer_->shared_memory_handle().GetGUID());
+  EXPECT_NE(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
   // Free buffer.
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
@@ -161,16 +155,14 @@ TEST_F(TransferBufferTest, Free) {
   transfer_buffer_->Free();
   // See it's freed.
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
-  EXPECT_EQ(base::UnguessableToken(),
-            transfer_buffer_->shared_memory_handle().GetGUID());
+  EXPECT_EQ(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
   // See that it gets reallocated.
   unsigned int size = 0;
   void* data = transfer_buffer_->AllocUpTo(1, &size);
   EXPECT_TRUE(data != NULL);
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
-  EXPECT_NE(base::UnguessableToken(),
-            transfer_buffer_->shared_memory_handle().GetGUID());
+  EXPECT_NE(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
   int32_t token = helper_->InsertToken();
   int32_t put_offset = helper_->GetPutOffsetForTest();
   transfer_buffer_->FreePendingToken(data, token);
@@ -183,16 +175,14 @@ TEST_F(TransferBufferTest, Free) {
   transfer_buffer_->Free();
   // See it's freed.
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
-  EXPECT_EQ(base::UnguessableToken(),
-            transfer_buffer_->shared_memory_handle().GetGUID());
+  EXPECT_EQ(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
   // Free should not have caused a finish.
   EXPECT_LT(command_buffer_->GetState().get_offset, put_offset);
 
   // See that it gets reallocated.
   transfer_buffer_->GetResultOffset();
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
-  EXPECT_NE(base::UnguessableToken(),
-            transfer_buffer_->shared_memory_handle().GetGUID());
+  EXPECT_NE(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
   EXPECT_EQ(
       kTransferBufferSize - kStartingOffset,

@@ -14,27 +14,42 @@
 
 namespace gpu {
 
-base::SharedMemoryHandle BufferBacking::shared_memory_handle() const {
-  return base::SharedMemoryHandle();
+const base::UnsafeSharedMemoryRegion& BufferBacking::shared_memory_region()
+    const {
+  static const base::UnsafeSharedMemoryRegion kInvalidRegion;
+  return kInvalidRegion;
+}
+
+base::UnguessableToken BufferBacking::GetGUID() const {
+  return base::UnguessableToken();
 }
 
 SharedMemoryBufferBacking::SharedMemoryBufferBacking(
-    std::unique_ptr<base::SharedMemory> shared_memory,
-    size_t size)
-    : shared_memory_(std::move(shared_memory)), size_(size) {}
+    base::UnsafeSharedMemoryRegion shared_memory_region,
+    base::WritableSharedMemoryMapping shared_memory_mapping)
+    : shared_memory_region_(std::move(shared_memory_region)),
+      shared_memory_mapping_(std::move(shared_memory_mapping)) {
+  DCHECK_EQ(shared_memory_region_.GetGUID(), shared_memory_mapping_.guid());
+}
 
 SharedMemoryBufferBacking::~SharedMemoryBufferBacking() = default;
 
-base::SharedMemoryHandle SharedMemoryBufferBacking::shared_memory_handle()
-    const {
-  return shared_memory_->handle();
+const base::UnsafeSharedMemoryRegion&
+SharedMemoryBufferBacking::shared_memory_region() const {
+  return shared_memory_region_;
+}
+
+base::UnguessableToken SharedMemoryBufferBacking::GetGUID() const {
+  return shared_memory_region_.GetGUID();
 }
 
 void* SharedMemoryBufferBacking::GetMemory() const {
-  return shared_memory_->memory();
+  return shared_memory_mapping_.memory();
 }
 
-size_t SharedMemoryBufferBacking::GetSize() const { return size_; }
+size_t SharedMemoryBufferBacking::GetSize() const {
+  return shared_memory_mapping_.size();
+}
 
 Buffer::Buffer(std::unique_ptr<BufferBacking> backing)
     : backing_(std::move(backing)),

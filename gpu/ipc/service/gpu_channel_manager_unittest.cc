@@ -40,7 +40,7 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
     gpu::ContextResult result = gpu::ContextResult::kFatalFailure;
     gpu::Capabilities capabilities;
     HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
-                               init_params, kRouteId, GetSharedHandle(),
+                               init_params, kRouteId, GetSharedMemoryRegion(),
                                &result, &capabilities));
     EXPECT_EQ(result, gpu::ContextResult::kSuccess);
 

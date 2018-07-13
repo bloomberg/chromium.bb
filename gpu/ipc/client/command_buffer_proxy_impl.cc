@@ -12,11 +12,11 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/shared_memory.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
@@ -95,8 +95,9 @@ ContextResult CommandBufferProxyImpl::Initialize(
   init_params.active_url = active_url;
 
   TRACE_EVENT0("gpu", "CommandBufferProxyImpl::Initialize");
-  shared_state_shm_ = AllocateAndMapSharedMemory(sizeof(*shared_state()));
-  if (!shared_state_shm_) {
+  std::tie(shared_state_shm_, shared_state_mapping_) =
+      AllocateAndMapSharedMemory(sizeof(*shared_state()));
+  if (!shared_state_shm_.IsValid()) {
     LOG(ERROR) << "ContextResult::kFatalFailure: "
                   "AllocateAndMapSharedMemory failed";
     return ContextResult::kFatalFailure;
@@ -104,14 +105,11 @@ ContextResult CommandBufferProxyImpl::Initialize(
 
   shared_state()->Initialize();
 
-  // This handle is owned by the GPU process and must be passed to it or it
-  // will leak. In otherwords, do not early out on error between here and the
-  // sending of the CreateCommandBuffer IPC below.
-  base::SharedMemoryHandle handle =
-      channel->ShareToGpuProcess(shared_state_shm_->handle());
-  if (!base::SharedMemory::IsHandleValid(handle)) {
+  base::UnsafeSharedMemoryRegion region =
+      channel->ShareToGpuProcess(shared_state_shm_);
+  if (!region.IsValid()) {
     LOG(ERROR) << "ContextResult::kFatalFailure: "
-                  "Shared memory handle is not valid";
+                  "Shared memory region is not valid";
     return ContextResult::kFatalFailure;
   }
 
@@ -126,7 +124,7 @@ ContextResult CommandBufferProxyImpl::Initialize(
   // TODO(piman): Make this asynchronous (http://crbug.com/125248).
   ContextResult result = ContextResult::kSuccess;
   bool sent = channel->Send(new GpuChannelMsg_CreateCommandBuffer(
-      init_params, route_id_, handle, &result, &capabilities_));
+      init_params, route_id_, std::move(region), &result, &capabilities_));
   if (!sent) {
     channel->RemoveRoute(route_id_);
     LOG(ERROR) << "ContextResult::kTransientFailure: "
@@ -177,7 +175,7 @@ void CommandBufferProxyImpl::OnChannelError() {
 
   gpu::error::ContextLostReason context_lost_reason =
       gpu::error::kGpuChannelLost;
-  if (shared_state_shm_ && shared_state_shm_->memory()) {
+  if (shared_state_mapping_.IsValid()) {
     // The GPU process might have intentionally been crashed
     // (exit_on_context_lost), so try to find out the original reason.
     TryUpdateStateDontReportError();
@@ -376,32 +374,31 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
 
   int32_t new_id = channel_->ReserveTransferBufferId();
 
-  std::unique_ptr<base::SharedMemory> shared_memory =
+  base::UnsafeSharedMemoryRegion shared_memory_region;
+  base::WritableSharedMemoryMapping shared_memory_mapping;
+  std::tie(shared_memory_region, shared_memory_mapping) =
       AllocateAndMapSharedMemory(size);
-  if (!shared_memory) {
+  if (!shared_memory_mapping.IsValid()) {
     if (last_state_.error == gpu::error::kNoError)
       OnClientError(gpu::error::kOutOfBounds);
     return nullptr;
   }
 
   if (last_state_.error == gpu::error::kNoError) {
-    // This handle is owned by the GPU process and must be passed to it or it
-    // will leak. In otherwords, do not early out on error between here and the
-    // sending of the RegisterTransferBuffer IPC below.
-    base::SharedMemoryHandle handle =
-        channel_->ShareToGpuProcess(shared_memory->handle());
-    if (!base::SharedMemory::IsHandleValid(handle)) {
+    base::UnsafeSharedMemoryRegion region =
+        channel_->ShareToGpuProcess(shared_memory_region);
+    if (!region.IsValid()) {
       if (last_state_.error == gpu::error::kNoError)
         OnClientError(gpu::error::kLostContext);
       return nullptr;
     }
     Send(new GpuCommandBufferMsg_RegisterTransferBuffer(route_id_, new_id,
-                                                        handle, size));
+                                                        std::move(region)));
   }
 
   *id = new_id;
-  scoped_refptr<gpu::Buffer> buffer(
-      gpu::MakeBufferFromSharedMemory(std::move(shared_memory), size));
+  scoped_refptr<gpu::Buffer> buffer(gpu::MakeBufferFromSharedMemory(
+      std::move(shared_memory_region), std::move(shared_memory_mapping)));
   return buffer;
 }
 
@@ -709,35 +706,32 @@ bool CommandBufferProxyImpl::Send(IPC::Message* msg) {
   return true;
 }
 
-std::unique_ptr<base::SharedMemory>
+std::pair<base::UnsafeSharedMemoryRegion, base::WritableSharedMemoryMapping>
 CommandBufferProxyImpl::AllocateAndMapSharedMemory(size_t size) {
   mojo::ScopedSharedBufferHandle handle =
       mojo::SharedBufferHandle::Create(size);
   if (!handle.is_valid()) {
     DLOG(ERROR) << "AllocateAndMapSharedMemory: Create failed";
-    return nullptr;
+    return {};
   }
 
-  base::SharedMemoryHandle platform_handle;
-  size_t shared_memory_size;
-  mojo::UnwrappedSharedMemoryHandleProtection protection;
-  MojoResult result = mojo::UnwrapSharedMemoryHandle(
-      std::move(handle), &platform_handle, &shared_memory_size, &protection);
-  if (result != MOJO_RESULT_OK) {
+  // Mojo creates a handle with Writable mode, it needs to be converted to
+  // Unsafe.
+  base::UnsafeSharedMemoryRegion region =
+      base::WritableSharedMemoryRegion::ConvertToUnsafe(
+          mojo::UnwrapWritableSharedMemoryRegion(std::move(handle)));
+  if (!region.IsValid()) {
     DLOG(ERROR) << "AllocateAndMapSharedMemory: Unwrap failed";
-    return nullptr;
+    return {};
   }
-  DCHECK_EQ(shared_memory_size, size);
 
-  bool read_only =
-      protection == mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly;
-  auto shm = std::make_unique<base::SharedMemory>(platform_handle, read_only);
-  if (!shm->Map(size)) {
+  base::WritableSharedMemoryMapping mapping = region.Map();
+  if (!mapping.IsValid()) {
     DLOG(ERROR) << "AllocateAndMapSharedMemory: Map failed";
-    return nullptr;
+    return {};
   }
 
-  return shm;
+  return {std::move(region), std::move(mapping)};
 }
 
 void CommandBufferProxyImpl::SetStateFromMessageReply(
@@ -785,7 +779,7 @@ void CommandBufferProxyImpl::TryUpdateStateDontReportError() {
 
 gpu::CommandBufferSharedState* CommandBufferProxyImpl::shared_state() const {
   return reinterpret_cast<gpu::CommandBufferSharedState*>(
-      shared_state_shm_->memory());
+      shared_state_mapping_.memory());
 }
 
 void CommandBufferProxyImpl::OnSwapBuffersCompleted(

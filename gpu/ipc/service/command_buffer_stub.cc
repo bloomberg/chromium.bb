@@ -624,22 +624,20 @@ void CommandBufferStub::OnAsyncFlush(int32_t put_offset, uint32_t flush_id) {
 
 void CommandBufferStub::OnRegisterTransferBuffer(
     int32_t id,
-    base::SharedMemoryHandle transfer_buffer,
-    uint32_t size) {
+    base::UnsafeSharedMemoryRegion transfer_buffer) {
   TRACE_EVENT0("gpu", "CommandBufferStub::OnRegisterTransferBuffer");
 
-  // Take ownership of the memory and map it into this process.
-  // This validates the size.
-  std::unique_ptr<base::SharedMemory> shared_memory(
-      new base::SharedMemory(transfer_buffer, false));
-  if (!shared_memory->Map(size)) {
+  // Map the shared memory into this process.
+  base::WritableSharedMemoryMapping mapping = transfer_buffer.Map();
+  if (!mapping.IsValid()) {
     DVLOG(0) << "Failed to map shared memory.";
     return;
   }
 
   if (command_buffer_) {
     command_buffer_->RegisterTransferBuffer(
-        id, MakeBackingFromSharedMemory(std::move(shared_memory), size));
+        id, MakeBackingFromSharedMemory(std::move(transfer_buffer),
+                                        std::move(mapping)));
   }
 }
 

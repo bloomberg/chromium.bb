@@ -155,10 +155,9 @@ void GpuChannelTestCommon::HandleMessage(GpuChannel* channel,
   delete msg;
 }
 
-base::SharedMemoryHandle GpuChannelTestCommon::GetSharedHandle() {
-  base::SharedMemory shared_memory;
-  shared_memory.CreateAnonymous(10);
-  return shared_memory.handle().Duplicate();
+base::UnsafeSharedMemoryRegion GpuChannelTestCommon::GetSharedMemoryRegion() {
+  return base::UnsafeSharedMemoryRegion::Create(
+      sizeof(CommandBufferSharedState));
 }
 
 }  // namespace gpu

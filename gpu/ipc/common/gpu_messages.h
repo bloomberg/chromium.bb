@@ -84,7 +84,7 @@ IPC_STRUCT_END()
 IPC_SYNC_MESSAGE_CONTROL3_2(GpuChannelMsg_CreateCommandBuffer,
                             GPUCreateCommandBufferConfig /* init_params */,
                             int32_t /* route_id */,
-                            base::SharedMemoryHandle /* shared_state */,
+                            base::UnsafeSharedMemoryRegion /* shared_state */,
                             gpu::ContextResult,
                             gpu::Capabilities /* capabilities */)
 
@@ -168,10 +168,9 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ConsoleMsg,
 
 // Register an existing shared memory transfer buffer. The id that can be
 // used to identify the transfer buffer from a command buffer.
-IPC_MESSAGE_ROUTED3(GpuCommandBufferMsg_RegisterTransferBuffer,
+IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_RegisterTransferBuffer,
                     int32_t /* id */,
-                    base::SharedMemoryHandle /* transfer_buffer */,
-                    uint32_t /* size */)
+                    base::UnsafeSharedMemoryRegion /* transfer_buffer */)
 
 // Destroy a previously created transfer buffer.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_DestroyTransferBuffer, int32_t /* id */)

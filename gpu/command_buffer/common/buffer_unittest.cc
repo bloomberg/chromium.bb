@@ -9,13 +9,14 @@ namespace gpu {
 
 TEST(Buffer, SharedMemoryHandle) {
   const size_t kSize = 1024;
-  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
-  shared_memory->CreateAndMapAnonymous(kSize);
-  auto shared_memory_guid = shared_memory->handle().GetGUID();
-  scoped_refptr<Buffer> buffer =
-      MakeBufferFromSharedMemory(std::move(shared_memory), kSize);
-  EXPECT_EQ(buffer->backing()->shared_memory_handle().GetGUID(),
-            shared_memory_guid);
+  base::UnsafeSharedMemoryRegion shared_memory_region =
+      base::UnsafeSharedMemoryRegion::Create(kSize);
+  base::WritableSharedMemoryMapping shared_memory_mapping =
+      shared_memory_region.Map();
+  auto shared_memory_guid = shared_memory_region.GetGUID();
+  scoped_refptr<Buffer> buffer = MakeBufferFromSharedMemory(
+      std::move(shared_memory_region), std::move(shared_memory_mapping));
+  EXPECT_EQ(buffer->backing()->GetGUID(), shared_memory_guid);
 }
 
 }  // namespace gpu

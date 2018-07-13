@@ -372,7 +372,7 @@ bool CommandBufferHelper::OnMemoryDump(
         "free_size", MemoryAllocatorDump::kUnitsBytes,
         GetTotalFreeEntriesNoWaiting() * sizeof(CommandBufferEntry));
     base::UnguessableToken shared_memory_guid =
-        ring_buffer_->backing()->shared_memory_handle().GetGUID();
+        ring_buffer_->backing()->GetGUID();
     const int kImportance = 2;
     if (!shared_memory_guid.is_empty()) {
       pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,

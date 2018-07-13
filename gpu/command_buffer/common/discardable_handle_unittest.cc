@@ -11,9 +11,11 @@ namespace {
 
 scoped_refptr<Buffer> MakeBufferForTesting(size_t num_handles) {
   size_t size = sizeof(base::subtle::Atomic32) * num_handles;
-  std::unique_ptr<base::SharedMemory> shared_mem(new base::SharedMemory);
-  shared_mem->CreateAndMapAnonymous(size);
-  return MakeBufferFromSharedMemory(std::move(shared_mem), size);
+  base::UnsafeSharedMemoryRegion shmem_region =
+      base::UnsafeSharedMemoryRegion::Create(size);
+  base::WritableSharedMemoryMapping shmem_mapping = shmem_region.Map();
+  return MakeBufferFromSharedMemory(std::move(shmem_region),
+                                    std::move(shmem_mapping));
 }
 
 }  // namespace

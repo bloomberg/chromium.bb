@@ -38,8 +38,8 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
   gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
-                             init_params, kRouteId, GetSharedHandle(), &result,
-                             &capabilities));
+                             init_params, kRouteId, GetSharedMemoryRegion(),
+                             &result, &capabilities));
   EXPECT_EQ(result, gpu::ContextResult::kSuccess);
 
   CommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
@@ -66,8 +66,8 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferDisallowed) {
   gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
-                             init_params, kRouteId, GetSharedHandle(), &result,
-                             &capabilities));
+                             init_params, kRouteId, GetSharedMemoryRegion(),
+                             &result, &capabilities));
   EXPECT_EQ(result, gpu::ContextResult::kFatalFailure);
 
   CommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
@@ -90,8 +90,8 @@ TEST_F(GpuChannelTest, CreateOffscreenCommandBuffer) {
   gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
-                             init_params, kRouteId, GetSharedHandle(), &result,
-                             &capabilities));
+                             init_params, kRouteId, GetSharedMemoryRegion(),
+                             &result, &capabilities));
   EXPECT_EQ(result, gpu::ContextResult::kSuccess);
 
   CommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
@@ -116,8 +116,8 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
-                             init_params, kRouteId1, GetSharedHandle(), &result,
-                             &capabilities));
+                             init_params, kRouteId1, GetSharedMemoryRegion(),
+                             &result, &capabilities));
   EXPECT_EQ(result, gpu::ContextResult::kSuccess);
 
   CommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId1);
@@ -133,8 +133,8 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   init_params.attribs = ContextCreationAttribs();
   init_params.active_url = GURL();
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
-                             init_params, kRouteId2, GetSharedHandle(), &result,
-                             &capabilities));
+                             init_params, kRouteId2, GetSharedMemoryRegion(),
+                             &result, &capabilities));
   EXPECT_EQ(result, gpu::ContextResult::kFatalFailure);
 
   stub = channel->LookupCommandBuffer(kRouteId2);
@@ -159,9 +159,10 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.active_url = GURL();
     gpu::ContextResult result = gpu::ContextResult::kSuccess;
     gpu::Capabilities capabilities;
-    HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
-                               init_params, kSharedRouteId, GetSharedHandle(),
-                               &result, &capabilities));
+    HandleMessage(channel,
+                  new GpuChannelMsg_CreateCommandBuffer(
+                      init_params, kSharedRouteId, GetSharedMemoryRegion(),
+                      &result, &capabilities));
     EXPECT_EQ(result, gpu::ContextResult::kSuccess);
   }
   EXPECT_TRUE(channel->LookupCommandBuffer(kSharedRouteId));
@@ -179,9 +180,10 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.active_url = GURL();
     gpu::ContextResult result = gpu::ContextResult::kSuccess;
     gpu::Capabilities capabilities;
-    HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
-                               init_params, kFriendlyRouteId, GetSharedHandle(),
-                               &result, &capabilities));
+    HandleMessage(channel,
+                  new GpuChannelMsg_CreateCommandBuffer(
+                      init_params, kFriendlyRouteId, GetSharedMemoryRegion(),
+                      &result, &capabilities));
     EXPECT_EQ(result, gpu::ContextResult::kSuccess);
   }
   EXPECT_TRUE(channel->LookupCommandBuffer(kFriendlyRouteId));
@@ -203,9 +205,10 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.active_url = GURL();
     gpu::ContextResult result = gpu::ContextResult::kSuccess;
     gpu::Capabilities capabilities;
-    HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
-                               init_params, kAnotherRouteId, GetSharedHandle(),
-                               &result, &capabilities));
+    HandleMessage(channel,
+                  new GpuChannelMsg_CreateCommandBuffer(
+                      init_params, kAnotherRouteId, GetSharedMemoryRegion(),
+                      &result, &capabilities));
     EXPECT_EQ(result, gpu::ContextResult::kTransientFailure);
   }
   EXPECT_FALSE(channel->LookupCommandBuffer(kAnotherRouteId));

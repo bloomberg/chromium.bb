@@ -17,7 +17,8 @@ class PpapiCommandBufferProxyTest : public testing::Test,
                &flush_info_,
                this,
                gpu::Capabilities(),
-               proxy::SerializedHandle(proxy::SerializedHandle::SHARED_MEMORY),
+               proxy::SerializedHandle(
+                   proxy::SerializedHandle::SHARED_MEMORY_REGION),
                gpu::CommandBufferId()) {}
 
   ~PpapiCommandBufferProxyTest() override {}

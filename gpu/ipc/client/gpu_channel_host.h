@@ -16,6 +16,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
@@ -117,6 +118,9 @@ class GPU_EXPORT GpuChannelHost
   // an invalid handle on failure.
   base::SharedMemoryHandle ShareToGpuProcess(
       const base::SharedMemoryHandle& source_handle);
+
+  base::UnsafeSharedMemoryRegion ShareToGpuProcess(
+      const base::UnsafeSharedMemoryRegion& source_region);
 
   // Reserve one unused transfer buffer ID.
   int32_t ReserveTransferBufferId();

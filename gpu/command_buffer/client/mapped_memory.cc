@@ -192,8 +192,7 @@ bool MappedMemoryManager::OnMemoryDump(
     dump->AddScalar("free_size", MemoryAllocatorDump::kUnitsBytes,
                     chunk->GetFreeSize());
 
-    auto shared_memory_guid =
-        chunk->shared_memory()->backing()->shared_memory_handle().GetGUID();
+    auto shared_memory_guid = chunk->shared_memory()->backing()->GetGUID();
     const int kImportance = 2;
     if (!shared_memory_guid.is_empty()) {
       pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,

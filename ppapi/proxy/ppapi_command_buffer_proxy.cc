@@ -20,7 +20,7 @@ PpapiCommandBufferProxy::PpapiCommandBufferProxy(
     InstanceData::FlushInfo* flush_info,
     LockedSender* sender,
     const gpu::Capabilities& capabilities,
-    const SerializedHandle& shared_state,
+    SerializedHandle shared_state,
     gpu::CommandBufferId command_buffer_id)
     : command_buffer_id_(command_buffer_id),
       capabilities_(capabilities),
@@ -31,8 +31,10 @@ PpapiCommandBufferProxy::PpapiCommandBufferProxy(
       pending_fence_sync_release_(0),
       flushed_fence_sync_release_(0),
       validated_fence_sync_release_(0) {
-  shared_state_shm_.reset(new base::SharedMemory(shared_state.shmem(), false));
-  shared_state_shm_->Map(shared_state.size());
+  base::UnsafeSharedMemoryRegion shmem_region =
+      base::UnsafeSharedMemoryRegion::Deserialize(
+          shared_state.TakeSharedMemoryRegion());
+  shared_state_mapping_ = shmem_region.Map();
 }
 
 PpapiCommandBufferProxy::~PpapiCommandBufferProxy() {
@@ -125,7 +127,7 @@ scoped_refptr<gpu::Buffer> PpapiCommandBufferProxy::CreateTransferBuffer(
   // Assuming we are in the renderer process, the service is responsible for
   // duplicating the handle. This might not be true for NaCl.
   ppapi::proxy::SerializedHandle handle(
-      ppapi::proxy::SerializedHandle::SHARED_MEMORY);
+      ppapi::proxy::SerializedHandle::SHARED_MEMORY_REGION);
   if (!Send(new PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer(
           ppapi::API_ID_PPB_GRAPHICS_3D, resource_,
           base::checked_cast<uint32_t>(size), id, &handle))) {
@@ -134,27 +136,27 @@ scoped_refptr<gpu::Buffer> PpapiCommandBufferProxy::CreateTransferBuffer(
     return NULL;
   }
 
-  if (*id <= 0 || !handle.is_shmem()) {
+  if (*id <= 0 || !handle.is_shmem_region()) {
     if (last_state_.error == gpu::error::kNoError)
       last_state_.error = gpu::error::kOutOfBounds;
     return NULL;
   }
 
-  std::unique_ptr<base::SharedMemory> shared_memory(
-      new base::SharedMemory(handle.shmem(), false));
+  base::UnsafeSharedMemoryRegion shared_memory_region =
+      base::UnsafeSharedMemoryRegion::Deserialize(
+          handle.TakeSharedMemoryRegion());
 
-  // Map the shared memory on demand.
-  if (!shared_memory->memory()) {
-    if (!shared_memory->Map(handle.size())) {
-      if (last_state_.error == gpu::error::kNoError)
-        last_state_.error = gpu::error::kOutOfBounds;
-      *id = -1;
-      return NULL;
-    }
+  base::WritableSharedMemoryMapping shared_memory_mapping =
+      shared_memory_region.Map();
+  if (!shared_memory_mapping.IsValid()) {
+    if (last_state_.error == gpu::error::kNoError)
+      last_state_.error = gpu::error::kOutOfBounds;
+    *id = -1;
+    return NULL;
   }
 
-  return gpu::MakeBufferFromSharedMemory(std::move(shared_memory),
-                                         handle.size());
+  return gpu::MakeBufferFromSharedMemory(std::move(shared_memory_region),
+                                         std::move(shared_memory_mapping));
 }
 
 void PpapiCommandBufferProxy::DestroyTransferBuffer(int32_t id) {
@@ -293,7 +295,7 @@ void PpapiCommandBufferProxy::TryUpdateState() {
 
 gpu::CommandBufferSharedState* PpapiCommandBufferProxy::shared_state() const {
   return reinterpret_cast<gpu::CommandBufferSharedState*>(
-      shared_state_shm_->memory());
+      shared_state_mapping_.memory());
 }
 
 void PpapiCommandBufferProxy::FlushInternal() {

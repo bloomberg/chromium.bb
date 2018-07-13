@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "ppapi/c/dev/pp_video_dev.h"
@@ -148,7 +148,7 @@ class ResourceCreationAPI {
       PP_Resource share_context,
       const gpu::ContextCreationAttribs& attrib_helper,
       gpu::Capabilities* capabilities,
-      base::SharedMemoryHandle* shared_state,
+      const base::UnsafeSharedMemoryRegion** shared_state,
       gpu::CommandBufferId* command_buffer_id) = 0;
   virtual PP_Resource CreateHostResolver(PP_Instance instance) = 0;
   virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) = 0;

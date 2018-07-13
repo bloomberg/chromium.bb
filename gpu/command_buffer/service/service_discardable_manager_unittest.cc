@@ -32,10 +32,12 @@ namespace {
 void CreateLockedHandlesForTesting(
     std::unique_ptr<ServiceDiscardableHandle>* service_handle,
     std::unique_ptr<ClientDiscardableHandle>* client_handle) {
-  std::unique_ptr<base::SharedMemory> shared_mem(new base::SharedMemory);
-  shared_mem->CreateAndMapAnonymous(sizeof(uint32_t));
-  scoped_refptr<gpu::Buffer> buffer =
-      MakeBufferFromSharedMemory(std::move(shared_mem), sizeof(uint32_t));
+  const size_t kShmemSize = sizeof(uint32_t);
+  base::UnsafeSharedMemoryRegion shared_mem =
+      base::UnsafeSharedMemoryRegion::Create(kShmemSize);
+  base::WritableSharedMemoryMapping shared_mem_mapping = shared_mem.Map();
+  scoped_refptr<gpu::Buffer> buffer = MakeBufferFromSharedMemory(
+      std::move(shared_mem), std::move(shared_mem_mapping));
 
   client_handle->reset(new ClientDiscardableHandle(buffer, 0, 0));
   service_handle->reset(new ServiceDiscardableHandle(buffer, 0, 0));

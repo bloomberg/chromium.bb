@@ -128,7 +128,7 @@ PP_Resource ResourceCreationImpl::CreateGraphics3DRaw(
     PP_Resource share_context,
     const gpu::ContextCreationAttribs& attrib_helper,
     gpu::Capabilities* capabilities,
-    base::SharedMemoryHandle* shared_state,
+    const base::UnsafeSharedMemoryRegion** shared_state,
     gpu::CommandBufferId* command_buffer_id) {
   return PPB_Graphics3D_Impl::CreateRaw(instance, share_context, attrib_helper,
                                         capabilities, shared_state,

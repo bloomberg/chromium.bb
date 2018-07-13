@@ -11,7 +11,6 @@
 
 #include "base/bits.h"
 #include "base/logging.h"
-#include "base/memory/shared_memory_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
@@ -33,12 +32,12 @@ TransferBuffer::~TransferBuffer() {
   Free();
 }
 
-base::SharedMemoryHandle TransferBuffer::shared_memory_handle() const {
+base::UnguessableToken TransferBuffer::shared_memory_guid() const {
   if (!HaveBuffer())
-    return base::SharedMemoryHandle();
+    return base::UnguessableToken();
   if (!buffer_->backing())
-    return base::SharedMemoryHandle();
-  return buffer_->backing()->shared_memory_handle();
+    return base::UnguessableToken();
+  return buffer_->backing()->GetGUID();
 }
 
 bool TransferBuffer::Initialize(unsigned int default_buffer_size,

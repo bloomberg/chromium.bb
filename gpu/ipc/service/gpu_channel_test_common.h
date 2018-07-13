@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory_handle.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -39,7 +39,7 @@ class GpuChannelTestCommon : public testing::Test {
 
   void HandleMessage(GpuChannel* channel, IPC::Message* msg);
 
-  base::SharedMemoryHandle GetSharedHandle();
+  base::UnsafeSharedMemoryRegion GetSharedMemoryRegion();
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;

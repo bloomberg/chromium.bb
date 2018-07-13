@@ -37,7 +37,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
                           InstanceData::FlushInfo* flush_info,
                           LockedSender* sender,
                           const gpu::Capabilities& capabilities,
-                          const SerializedHandle& shared_state,
+                          SerializedHandle shared_state,
                           gpu::CommandBufferId command_buffer_id);
   ~PpapiCommandBufferProxy() override;
 
@@ -95,7 +95,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
 
   gpu::Capabilities capabilities_;
   State last_state_;
-  std::unique_ptr<base::SharedMemory> shared_state_shm_;
+  base::WritableSharedMemoryMapping shared_state_mapping_;
 
   HostResource resource_;
   InstanceData::FlushInfo* flush_info_;

@@ -11,8 +11,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::SharedMemory;
-
 namespace gpu {
 
 const static size_t kBufferSize = 1024;
@@ -39,11 +37,12 @@ TEST_F(TransferBufferManagerTest, OutOfRangeHandleMapsToNull) {
 }
 
 TEST_F(TransferBufferManagerTest, CanRegisterTransferBuffer) {
-  std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());
-  shm->CreateAndMapAnonymous(kBufferSize);
-  base::SharedMemory* shm_raw_pointer = shm.get();
-  std::unique_ptr<SharedMemoryBufferBacking> backing(
-      new SharedMemoryBufferBacking(std::move(shm), kBufferSize));
+  base::UnsafeSharedMemoryRegion shm_region =
+      base::UnsafeSharedMemoryRegion::Create(kBufferSize);
+  base::WritableSharedMemoryMapping shm_mapping = shm_region.Map();
+  auto shm_guid = shm_region.GetGUID();
+  auto backing = std::make_unique<SharedMemoryBufferBacking>(
+      std::move(shm_region), std::move(shm_mapping));
   SharedMemoryBufferBacking* backing_raw_ptr = backing.get();
 
   EXPECT_TRUE(
@@ -53,7 +52,7 @@ TEST_F(TransferBufferManagerTest, CanRegisterTransferBuffer) {
 
   // Shared-memory ownership is transfered. It should be the same memory.
   EXPECT_EQ(backing_raw_ptr, registered->backing());
-  EXPECT_EQ(shm_raw_pointer, backing_raw_ptr->shared_memory());
+  EXPECT_EQ(shm_guid, backing_raw_ptr->GetGUID());
 }
 
 class FakeBufferBacking : public BufferBacking {
@@ -105,8 +104,6 @@ TEST_F(TransferBufferManagerTest, CannotRegisterNullTransferBuffer) {
 }
 
 TEST_F(TransferBufferManagerTest, CannotRegisterNegativeTransferBufferId) {
-  std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());
-  shm->CreateAndMapAnonymous(kBufferSize);
   EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(
       -1, FakeBufferBacking::Make()));
 }
