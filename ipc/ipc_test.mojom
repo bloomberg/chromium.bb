@@ -25,6 +25,12 @@ interface PingReceiver {
   Ping() => ();
 };
 
+struct TestStruct {};
+
+interface TestStructPasser {
+  Pass(TestStruct s);
+};
+
 interface IndirectTestDriver {
   GetPingReceiver(associated PingReceiver& request);
 };
