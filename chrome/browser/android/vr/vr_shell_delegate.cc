@@ -278,11 +278,10 @@ void VrShellDelegate::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 }
 
 bool VrShellDelegate::ShouldDisableGvrDevice() {
-  JNIEnv* env = AttachCurrentThread();
   int vr_support_level =
-      Java_VrShellDelegate_getVrSupportLevel(env, j_vr_shell_delegate_);
-  return static_cast<VrSupportLevel>(vr_support_level) ==
-         VrSupportLevel::kVrNotAvailable;
+      Java_VrShellDelegate_getVrSupportLevel(AttachCurrentThread());
+  return static_cast<VrSupportLevel>(vr_support_level) <=
+         VrSupportLevel::kVrNeedsUpdate;
 }
 
 void VrShellDelegate::SetDeviceId(unsigned int device_id) {

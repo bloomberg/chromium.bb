@@ -93,13 +93,14 @@ public class VrShellDelegate
 
     // Pseudo-random number to avoid request id collisions. Result codes must fit in lower 16 bits
     // when used with startActivityForResult...
-    public static final int EXIT_VR_RESULT = 7212;
-    public static final int VR_SERVICES_UPDATE_RESULT = 7213;
-    public static final int GVR_KEYBOARD_UPDATE_RESULT = 7214;
+    /* package */ static final int EXIT_VR_RESULT = 7212;
+    private static final int VR_SERVICES_UPDATE_RESULT = 7213;
+    private static final int GVR_KEYBOARD_UPDATE_RESULT = 7214;
 
     // Android N doesn't allow us to dynamically control the preview window based on headset mode,
     // so we used an animation to hide the preview window instead.
-    public static final boolean USE_HIDE_ANIMATION = Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
+    /* package */ static final boolean USE_HIDE_ANIMATION =
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
 
     private static final int ENTER_VR_NOT_NECESSARY = 0;
     private static final int ENTER_VR_CANCELLED = 1;
@@ -110,9 +111,8 @@ public class VrShellDelegate
     @IntDef({ENTER_VR_NOT_NECESSARY, ENTER_VR_CANCELLED, ENTER_VR_REQUESTED, ENTER_VR_SUCCEEDED})
     private @interface EnterVRResult {}
 
-    // Linter and formatter disagree on how the line below should be formatted.
-    /* package */
-    static final String VR_ENTRY_RESULT_ACTION = "org.chromium.chrome.browser.vr.VrEntryResult";
+    private static final String VR_ENTRY_RESULT_ACTION =
+            "org.chromium.chrome.browser.vr.VrEntryResult";
 
     private static final long REENTER_VR_TIMEOUT_MS = 1000;
     private static final int EXPECT_DON_TIMEOUT_MS = 2000;
@@ -150,10 +150,10 @@ public class VrShellDelegate
     private static Set<Activity> sVrModeEnabledActivitys = new HashSet<>();
     private static boolean sRegisteredDaydreamHook;
     private static boolean sRegisteredVrAssetsComponent;
+    private static @VrSupportLevel Integer sVrSupportLevel;
 
     private ChromeActivity mActivity;
 
-    private @VrSupportLevel int mVrSupportLevel;
     private int mCachedVrCorePackageVersion;
     private int mCachedGvrKeyboardPackageVersion;
 
@@ -402,11 +402,6 @@ public class VrShellDelegate
         nativeOnLibraryAvailable();
     }
 
-    protected static boolean isDisplayingUrl() {
-        if (sInstance == null) return false;
-        return sInstance.mVrShell.isDisplayingUrlForTesting();
-    }
-
     /**
      * Whether or not we are currently in VR.
      */
@@ -450,17 +445,20 @@ public class VrShellDelegate
     /**
      * Returns the current {@VrSupportLevel}.
      */
-    public static int getVrSupportLevel(Tab tabToShowInfobarIn) {
-        // TODO(mthiesse, crbug.com/791090): Re-enable VR mode for devices that boot to VR once we
-        // support those devices.
+    @CalledByNative
+    public static int getVrSupportLevel() {
+        if (sVrSupportLevel != null) return sVrSupportLevel;
         VrClassesWrapper wrapper = getVrClassesWrapper();
-        if (wrapper == null || !isVrCoreCompatible(tabToShowInfobarIn)) {
-            return VrSupportLevel.VR_NOT_AVAILABLE;
+        if (wrapper == null) {
+            sVrSupportLevel = VrSupportLevel.VR_DISABLED;
+        } else if (!isVrCoreCompatible()) {
+            sVrSupportLevel = VrSupportLevel.VR_NEEDS_UPDATE;
+        } else if (wrapper.isDaydreamReadyDevice()) {
+            sVrSupportLevel = VrSupportLevel.VR_DAYDREAM;
+        } else {
+            sVrSupportLevel = VrSupportLevel.VR_CARDBOARD;
         }
-
-        if (wrapper.isDaydreamReadyDevice()) return VrSupportLevel.VR_DAYDREAM;
-
-        return VrSupportLevel.VR_CARDBOARD;
+        return sVrSupportLevel;
     }
 
     /**
@@ -478,10 +476,7 @@ public class VrShellDelegate
             new AsyncTask<Void, Void, Integer>() {
                 @Override
                 protected Integer doInBackground(Void... params) {
-                    VrClassesWrapper wrapper = getVrClassesWrapper();
-                    if (wrapper == null) return VrSupportLevel.VR_NOT_AVAILABLE;
-                    int vrSupportLevel = getVrSupportLevel(null);
-                    return vrSupportLevel;
+                    return getVrSupportLevel();
                 }
 
                 @Override
@@ -891,10 +886,8 @@ public class VrShellDelegate
 
         // If the screen density changed while in VR, we have to disable the VR browser as java UI
         // used or created by VR browsing will be broken.
-        if (sInstance != null) {
-            if (sInstance.mExpectedDensityChange != 0) return true;
-            if (sInstance.mVrSupportLevel != VrSupportLevel.VR_DAYDREAM) return false;
-        }
+        if (sInstance != null && sInstance.mExpectedDensityChange != 0) return true;
+        if (getVrSupportLevel() != VrSupportLevel.VR_DAYDREAM) return false;
 
         Display display = DisplayAndroidManager.getDefaultDisplayForContext(
                 ContextUtils.getApplicationContext());
@@ -993,54 +986,10 @@ public class VrShellDelegate
         }
     }
 
-    private static boolean isVrCoreCompatible(final Tab tabToShowInfobarIn) {
-        final int vrCoreCompatibility = getVrCoreVersionChecker().getVrCoreCompatibility();
-        boolean needsUpdate = vrCoreCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE
-                || vrCoreCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE;
-        if (tabToShowInfobarIn != null && needsUpdate) {
-            ThreadUtils.assertOnUiThread();
-            new Handler().post(new Runnable() {
-                @Override
-                public void run() {
-                    promptToUpdateVrServices(vrCoreCompatibility, tabToShowInfobarIn);
-                }
-            });
-        }
-
-        return vrCoreCompatibility == VrCoreCompatibility.VR_READY;
-    }
-
-    private static void promptToUpdateVrServices(int vrCoreCompatibility, Tab tab) {
-        final Activity activity = tab.getActivity();
-        String infobarText;
-        String buttonText;
-        if (vrCoreCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE) {
-            // Supported, but not installed. Ask user to install instead of upgrade.
-            infobarText = activity.getString(R.string.vr_services_check_infobar_install_text);
-            buttonText = activity.getString(R.string.vr_services_check_infobar_install_button);
-        } else if (vrCoreCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE) {
-            infobarText = activity.getString(R.string.vr_services_check_infobar_update_text);
-            buttonText = activity.getString(R.string.vr_services_check_infobar_update_button);
-        } else {
-            Log.e(TAG, "Unknown VrCore compatibility: " + vrCoreCompatibility);
-            return;
-        }
-
-        SimpleConfirmInfoBarBuilder.Listener listener = new SimpleConfirmInfoBarBuilder.Listener() {
-            @Override
-            public void onInfoBarDismissed() {}
-
-            @Override
-            public boolean onInfoBarButtonClicked(boolean isPrimary) {
-                activity.startActivityForResult(
-                        new Intent(Intent.ACTION_VIEW, Uri.parse(VR_CORE_MARKET_URI)),
-                        VR_SERVICES_UPDATE_RESULT);
-                return false;
-            }
-        };
-        SimpleConfirmInfoBarBuilder.create(tab, listener,
-                InfoBarIdentifier.VR_SERVICES_UPGRADE_ANDROID, R.drawable.vr_services, infobarText,
-                buttonText, null, true);
+    private static boolean isVrCoreCompatible() {
+        VrCoreVersionChecker checker = getVrCoreVersionChecker();
+        if (checker == null) return false;
+        return checker.getVrCoreCompatibility() == VrCoreCompatibility.VR_READY;
     }
 
     private static void startFeedback(Tab tab) {
@@ -1081,6 +1030,11 @@ public class VrShellDelegate
         if (sVrLifecycleObserver != null) return;
         sVrLifecycleObserver = new VrLifecycleObserver();
         ApplicationStatus.registerStateListenerForAllActivities(sVrLifecycleObserver);
+    }
+
+    protected static boolean isDisplayingUrl() {
+        if (sInstance == null) return false;
+        return sInstance.mVrShell.isDisplayingUrlForTesting();
     }
 
     protected VrShellDelegate(ChromeActivity activity) {
@@ -1137,7 +1091,7 @@ public class VrShellDelegate
     private void maybeUpdateVrSupportLevel() {
         // If we're on Daydream support level, Chrome will get restarted by Android in response to
         // VrCore being updated/downgraded, so we don't need to check.
-        if (mVrSupportLevel == VrSupportLevel.VR_DAYDREAM) return;
+        if (getVrSupportLevel() == VrSupportLevel.VR_DAYDREAM) return;
         if (getVrClassesWrapper() == null) return;
         int version = getVrCorePackageVersion();
         // If VrCore package hasn't changed, no need to update.
@@ -1159,31 +1113,56 @@ public class VrShellDelegate
     }
 
     /**
-     * Updates mVrSupportLevel to the correct value. isVrCoreCompatible might return different value
-     * at runtime.
+     * Updates sVrSupportLevel to the correct value as VR support can change over time.
      */
-    // TODO(bshe): Find a place to call this function again, i.e. page refresh or onResume.
     private void updateVrSupportLevel(Integer vrCorePackageVersion) {
-        if (getVrClassesWrapper() == null) {
-            mVrSupportLevel = VrSupportLevel.VR_NOT_AVAILABLE;
-            return;
-        }
+        sVrSupportLevel = null;
+        if (getVrSupportLevel() != VrSupportLevel.VR_NEEDS_UPDATE) return;
         if (vrCorePackageVersion == null) vrCorePackageVersion = getVrCorePackageVersion();
         mCachedVrCorePackageVersion = vrCorePackageVersion;
-
-        int supportLevel = getVrSupportLevel(mActivity.getActivityTab());
-        if (supportLevel == mVrSupportLevel) return;
-        mVrSupportLevel = supportLevel;
+        promptToUpdateVrServices();
     }
 
-    @CalledByNative
-    @VrSupportLevel
-    /* package */ int getVrSupportLevel() {
-        return mVrSupportLevel;
+    private void promptToUpdateVrServices() {
+        assert getVrSupportLevel() == VrSupportLevel.VR_NEEDS_UPDATE;
+        Tab tab = mActivity.getActivityTab();
+        if (tab == null) return;
+
+        int vrCoreCompatibility = getVrCoreVersionChecker().getVrCoreCompatibility();
+
+        String infobarText;
+        String buttonText;
+        if (vrCoreCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE) {
+            // Supported, but not installed. Ask user to install instead of upgrade.
+            infobarText = mActivity.getString(R.string.vr_services_check_infobar_install_text);
+            buttonText = mActivity.getString(R.string.vr_services_check_infobar_install_button);
+        } else if (vrCoreCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE) {
+            infobarText = mActivity.getString(R.string.vr_services_check_infobar_update_text);
+            buttonText = mActivity.getString(R.string.vr_services_check_infobar_update_button);
+        } else {
+            Log.e(TAG, "Unknown VrCore compatibility: " + vrCoreCompatibility);
+            return;
+        }
+
+        SimpleConfirmInfoBarBuilder.Listener listener = new SimpleConfirmInfoBarBuilder.Listener() {
+            @Override
+            public void onInfoBarDismissed() {}
+
+            @Override
+            public boolean onInfoBarButtonClicked(boolean isPrimary) {
+                mActivity.startActivityForResult(
+                        new Intent(Intent.ACTION_VIEW, Uri.parse(VR_CORE_MARKET_URI)),
+                        VR_SERVICES_UPDATE_RESULT);
+                return false;
+            }
+        };
+        SimpleConfirmInfoBarBuilder.create(tab, listener,
+                InfoBarIdentifier.VR_SERVICES_UPGRADE_ANDROID, R.drawable.vr_services, infobarText,
+                buttonText, null, true);
     }
 
     protected boolean isVrBrowsingEnabled() {
-        return isVrBrowsingEnabled(mActivity, mVrSupportLevel);
+        return isVrBrowsingEnabled(mActivity, getVrSupportLevel());
     }
 
     private void onVrServicesMaybeUpdated() {
@@ -1200,7 +1179,7 @@ public class VrShellDelegate
      * Returns whether the device has support for Daydream.
      */
     /* package */ boolean hasDaydreamSupport() {
-        return mVrSupportLevel == VrSupportLevel.VR_DAYDREAM;
+        return getVrSupportLevel() == VrSupportLevel.VR_DAYDREAM;
     }
 
     private void maybeSetPresentResult(boolean result, boolean donCompleted) {
@@ -1501,13 +1480,10 @@ public class VrShellDelegate
     }
 
     /* package */ boolean canEnterVr() {
-        if (!LibraryLoader.getInstance().isInitialized()) return false;
-        if (mVrSupportLevel == VrSupportLevel.VR_NOT_AVAILABLE || mNativeVrShellDelegate == 0)
-            return false;
+        if (getVrSupportLevel() <= VrSupportLevel.VR_NEEDS_UPDATE) return false;
 
-        // If vr shell is not enabled and this is not a web vr request, then return false.
-        boolean presenting =
-                mRequestedWebVr || mListeningForWebVrActivate || mActivateFromHeadsetInsertion;
+        // If VR browsing is not enabled and this is not a WebXR request, then return false.
+        boolean presenting = mRequestedWebVr || mActivateFromHeadsetInsertion;
         if (!isVrBrowsingEnabled() && !presenting) return false;
         return true;
     }
@@ -1548,9 +1524,9 @@ public class VrShellDelegate
 
         // Update VR support level as it can change at runtime
         maybeUpdateVrSupportLevel();
-        if (mVrSupportLevel == VrSupportLevel.VR_NOT_AVAILABLE) return ENTER_VR_CANCELLED;
         if (!canEnterVr()) return ENTER_VR_CANCELLED;
-        if (mVrSupportLevel == VrSupportLevel.VR_DAYDREAM && isDaydreamCurrentViewerInternal()) {
+        if (getVrSupportLevel() == VrSupportLevel.VR_DAYDREAM
+                && isDaydreamCurrentViewerInternal()) {
             // TODO(mthiesse): This is a workaround for b/66486878 (see also crbug.com/767594).
             // We have to trigger the DON flow before setting VR mode enabled to prevent the DON
             // flow from failing on the S8/S8+.
@@ -1624,9 +1600,11 @@ public class VrShellDelegate
     }
 
     private boolean maybeExitVrToUpdateVrServices() {
-        if (!mEnterVrOnStartup || mVrSupportLevel != VrSupportLevel.VR_NOT_AVAILABLE) return false;
-        // This means that we were started in VR mode but the vr services may be out of date. We
-        // should exit VR and prompt the user to update.
+        if (!mEnterVrOnStartup || getVrSupportLevel() != VrSupportLevel.VR_NEEDS_UPDATE) {
+            return false;
+        }
+        // This means that we were started in VR mode but the vr services are out of date. We should
+        // exit VR and prompt the user to update.
         if (DEBUG_LOGS) Log.i(TAG, "VR services update needed");
         mShowingDoffForGvrUpdate = true;
         showDoff(false /* optional */);
@@ -1682,7 +1660,7 @@ public class VrShellDelegate
         }
 
         // If mEnterVrOnStartup is set, we show DOFF in handleDonFlowSuccess below.
-        if (mVrSupportLevel != VrSupportLevel.VR_DAYDREAM && !mEnterVrOnStartup) return;
+        if (getVrSupportLevel() != VrSupportLevel.VR_DAYDREAM && !mEnterVrOnStartup) return;
 
         if (isVrBrowsingEnabled()) {
             // Perform slow initialization asynchronously.
@@ -1761,7 +1739,7 @@ public class VrShellDelegate
         if (mCancellingEntryAnimation) return;
         mExpectPauseOrDonSucceeded.removeCallbacksAndMessages(null);
         unregisterDaydreamIntent();
-        if (mVrSupportLevel == VrSupportLevel.VR_NOT_AVAILABLE) return;
+        if (getVrSupportLevel() <= VrSupportLevel.VR_NEEDS_UPDATE) return;
 
         if (mMaybeActivateAfterHeadsetInsertion) {
             mClearMaybeActivateHandler.removeCallbacksAndMessages(null);
@@ -1799,7 +1777,7 @@ public class VrShellDelegate
     }
 
     private boolean onBackPressedInternal() {
-        if (mVrSupportLevel == VrSupportLevel.VR_NOT_AVAILABLE) return false;
+        if (getVrSupportLevel() <= VrSupportLevel.VR_NEEDS_UPDATE) return false;
         cancelPendingVrEntry();
         if (!mInVr) return false;
         // Back button should be handled the same way as the close button.
@@ -1874,7 +1852,7 @@ public class VrShellDelegate
         if (DEBUG_LOGS) Log.i(TAG, "WebVR page listening for vrdisplayactivate: " + listening);
         // Non-Daydream devices may not have the concept of display activate. So disable
         // mListeningForWebVrActivate for them.
-        if (mVrSupportLevel != VrSupportLevel.VR_DAYDREAM) return;
+        if (getVrSupportLevel() != VrSupportLevel.VR_DAYDREAM) return;
         if (mListeningForWebVrActivate == listening) return;
         mListeningForWebVrActivate = listening;
         if (mListeningForWebVrActivate) {

@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Display;
@@ -108,40 +107,6 @@ public class VrIntentUtils {
      */
     public static void launchInVr(Intent intent, Activity activity) {
         VrShellDelegate.getVrDaydreamApi().launchInVr(intent);
-    }
-
-    /**
-     * @param intent The intent to possibly forward to the VR launcher.
-     * @param activity The activity launching the intent.
-     * @return whether the intent was forwarded to the VR launcher.
-     */
-    public static boolean maybeForwardToVrLauncher(Intent intent, Activity activity) {
-        // Standalone VR devices use 2D-in-VR rendering on O+.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false;
-        if (activity instanceof VrMainActivity) return false;
-        if (wouldUse2DInVrRenderingMode(activity) && VrShellDelegate.deviceSupportsVrLaunches()) {
-            Intent vrIntent = new Intent(intent);
-            vrIntent.setComponent(null);
-            vrIntent.setPackage(activity.getPackageName());
-            vrIntent.addCategory(VrIntentUtils.DAYDREAM_CATEGORY);
-            if (vrIntent.resolveActivity(activity.getPackageManager()) != null) {
-                VrIntentUtils.launchInVr(vrIntent, activity);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param activity A context for reading the current device configuration.
-     * @return Whether launching a non-VR Activity would trigger the 2D-in-VR rendering path.
-     */
-    public static boolean wouldUse2DInVrRenderingMode(Activity activity) {
-        Configuration config = activity.getResources().getConfiguration();
-        int uiMode = config.uiMode & Configuration.UI_MODE_TYPE_MASK;
-        if (uiMode != Configuration.UI_MODE_TYPE_VR_HEADSET) return false;
-        VrClassesWrapper wrapper = VrShellDelegate.getVrClassesWrapper();
-        return wrapper != null && (wrapper.bootsToVr() || wrapper.supports2dInVr());
     }
 
     /**
