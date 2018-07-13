@@ -4,9 +4,12 @@
 
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 
+#import <WebKit/WebKit.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/strings/stringprintf.h"
 #import "base/test/ios/wait_util.h"
 #include "base/values.h"
@@ -126,6 +129,32 @@ id<GREYAction> WebViewElementNotFound(web::test::ElementSelector selector) {
                             performBlock:throw_error];
 }
 
+// Checks that a rectangle in a view (expressed in this view's coordinate
+// system) is actually visible and potentially tappable.
+bool IsRectVisibleInView(CGRect rect, UIView* view) {
+  // Take a point at the center of the element.
+  CGPoint point_in_view = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
+
+  // Converts its coordinates to window coordinates.
+  CGPoint point_in_window =
+      [view convertPoint:point_in_view toView:view.window];
+
+  // Check if this point is actually on screen.
+  if (!CGRectContainsPoint(view.window.frame, point_in_window)) {
+    return false;
+  }
+
+  // Check that the view is not covered by another view).
+  UIView* hit = [view.window hitTest:point_in_window withEvent:nil];
+  while (hit) {
+    if (hit == view) {
+      return true;
+    }
+    hit = hit.superview;
+  }
+  return false;
+}
+
 }  // namespace
 
 namespace web {
@@ -227,6 +256,67 @@ id<GREYAction> WebViewTapElement(WebState* state,
              ? WebViewElementNotFound(std::move(selector))
              : WebViewVerifiedActionOnElement(state, grey_tapAtPoint(point),
                                               std::move(selector));
+}
+
+id<GREYAction> WebViewScrollElementToVisible(
+    WebState* state,
+    web::test::ElementSelector selector) {
+  const char kScrollToVisibleTemplate[] = "%1$s.scrollIntoView();";
+
+  const std::string kScrollToVisibleScript = base::StringPrintf(
+      kScrollToVisibleTemplate, selector.GetSelectorScript().c_str());
+
+  NSString* action_name =
+      [NSString stringWithFormat:@"Scroll element %s to visible",
+                                 selector.GetSelectorDescription().c_str()];
+
+  NSError* (^error_block)(NSString* error) = ^NSError*(NSString* error) {
+    return [NSError errorWithDomain:kGREYInteractionErrorDomain
+                               code:kGREYInteractionActionFailedErrorCode
+                           userInfo:@{NSLocalizedDescriptionKey : error}];
+  };
+
+  GREYActionBlock* scroll_to_visible = [GREYActionBlock
+      actionWithName:action_name
+         constraints:WebViewInWebState(state)
+        performBlock:^BOOL(id element, __strong NSError** error_or_nil) {
+          // Checks that the element is indeed a WKWebView.
+          WKWebView* web_view = base::mac::ObjCCast<WKWebView>(element);
+          if (!web_view) {
+            *error_or_nil = error_block(@"WebView not found.");
+            return NO;
+          }
+
+          // First checks if there is really a need to scroll, if the element is
+          // already visible just returns early.
+          CGRect rect = web::test::GetBoundingRectOfElement(state, selector);
+          if (CGRectIsEmpty(rect)) {
+            *error_or_nil = error_block(@"Element not found.");
+            return false;
+          }
+          if (IsRectVisibleInView(rect, web_view)) {
+            return YES;
+          }
+
+          // Ask the element to scroll itself into view.
+          web::test::ExecuteJavaScript(state, kScrollToVisibleScript);
+
+          // Wait until the element is visible.
+          bool check = testing::WaitUntilConditionOrTimeout(
+              testing::kWaitForUIElementTimeout, ^{
+                CGRect rect =
+                    web::test::GetBoundingRectOfElement(state, selector);
+                return IsRectVisibleInView(rect, web_view);
+              });
+
+          if (!check) {
+            *error_or_nil = error_block(@"Element still not visible.");
+            return NO;
+          }
+          return YES;
+        }];
+
+  return scroll_to_visible;
 }
 
 }  // namespace web
