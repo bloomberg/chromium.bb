@@ -353,6 +353,7 @@ enum EffectiveConnectionType {
     boolean isUseCounted(Document document, unsigned long feature);
     boolean isCSSPropertyUseCounted(Document document, DOMString propertyName);
     boolean isAnimatedCSSPropertyUseCounted(Document document, DOMString propertyName);
+    void clearUseCounter(Document document, unsigned long feature);
 
     sequence<DOMString> getCSSPropertyLonghands();
     sequence<DOMString> getCSSPropertyShorthands();

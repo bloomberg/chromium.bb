@@ -124,6 +124,8 @@ class CORE_EXPORT UseCounter {
   static bool IsCounted(Document&, const String&);
   bool IsCounted(CSSPropertyID unresolved_property);
 
+  static void ClearCountForTesting(Document& document, WebFeature feature);
+
   // Return whether the CSSPropertyID was previously counted for this document.
   // NOTE: only for use in testing.
   static bool IsCountedAnimatedCSS(Document&, const String&);
@@ -151,6 +153,8 @@ class CORE_EXPORT UseCounter {
   // (except when muted).  Does include features seen in documents which have
   // reporting disabled.
   bool HasRecordedMeasurement(WebFeature) const;
+
+  void ClearMeasurementForTesting(WebFeature);
 
   // Triggers a use counter if a feature, which is currently available in all
   // frames, would be blocked by the introduction of feature policy. This takes

@@ -19330,6 +19330,13 @@ Called by update_net_error_codes.py.-->
   <int value="2498" label="ServiceWorkerImportScriptNotInstalled"/>
   <int value="2499" label="NestedDedicatedWorker"/>
   <int value="2500" label="ClientHintsMetaAcceptCHLifetime"/>
+  <int value="2501" label="DOMNodeRemovedEventDelayed"/>
+  <int value="2502" label="DOMNodeRemovedEventHandlerAccessDetachingNode"/>
+  <int value="2503" label="DOMNodeRemovedEventListenedAtNonTarget"/>
+  <int value="2504" label="DOMNodeRemovedFromDocumentEventDelayed"/>
+  <int value="2505"
+      label="DOMNodeRemovedFromDocumentEventHandlerAccessDetachingNode"/>
+  <int value="2506" label="DOMNodeRemovedFromDocumentEventListenedAtNonTarget"/>
 </enum>
 
 <enum name="FeedbackSource">

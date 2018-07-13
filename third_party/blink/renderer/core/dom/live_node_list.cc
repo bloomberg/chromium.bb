@@ -22,6 +22,8 @@
 
 #include "third_party/blink/renderer/core/dom/live_node_list.h"
 
+#include "third_party/blink/renderer/core/dom/node_child_removal_tracker.h"
+
 namespace blink {
 
 namespace {
@@ -55,7 +57,12 @@ unsigned LiveNodeList::length() const {
 }
 
 Element* LiveNodeList::item(unsigned offset) const {
-  return collection_items_cache_.NodeAt(*this, offset);
+  Element* element = collection_items_cache_.NodeAt(*this, offset);
+  if (element && element->GetDocument().InDOMNodeRemovedHandler()) {
+    if (NodeChildRemovalTracker::IsBeingRemoved(element))
+      GetDocument().CountDetachingNodeAccessInDOMNodeRemovedHandler();
+  }
+  return element;
 }
 
 Element* LiveNodeList::TraverseToFirst() const {

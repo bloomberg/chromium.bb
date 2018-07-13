@@ -3275,6 +3275,12 @@ bool Internals::isAnimatedCSSPropertyUseCounted(Document* document,
   return UseCounter::IsCountedAnimatedCSS(*document, property_name);
 }
 
+void Internals::clearUseCounter(Document* document, uint32_t feature) {
+  if (feature >= static_cast<int32_t>(WebFeature::kNumberOfFeatures))
+    return;
+  UseCounter::ClearCountForTesting(*document, static_cast<WebFeature>(feature));
+}
+
 Vector<String> Internals::getCSSPropertyLonghands() const {
   Vector<String> result;
   for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
