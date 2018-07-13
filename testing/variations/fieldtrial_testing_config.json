@@ -720,17 +720,12 @@
             ],
             "experiments": [
                 {
-                    "name": "PageAlmostIdleSignalEnabled",
+                    "name": "PageAlmostIdleSignalEnabled2",
                     "params": {
                         "mainThreadTaskLoadLowThreshold": "25"
                     },
                     "enable_features": [
-                        "PageAlmostIdle",
-                        "StaggeredBackgroundTabOpening",
-                        "StaggeredBackgroundTabOpeningExperiment"
-                    ],
-                    "disable_features": [
-                        "CustomizedTabLoadTimeout"
+                        "PageAlmostIdle"
                     ]
                 }
             ]
