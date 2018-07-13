@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_platform_specific.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
+#include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -357,10 +358,6 @@ gfx::ImageSkia OpaqueBrowserFrameView::GetFaviconForTabIconView() {
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, OpaqueBrowserFrameViewLayoutDelegate implementation:
 
-bool OpaqueBrowserFrameView::IsIncognito() const {
-  return browser_view()->tabstrip()->IsIncognito();
-}
-
 bool OpaqueBrowserFrameView::ShouldShowWindowIcon() const {
   views::WidgetDelegate* delegate = frame()->widget_delegate();
   return ShouldShowWindowTitleBar() && delegate &&
@@ -434,8 +431,11 @@ int OpaqueBrowserFrameView::GetTabStripHeight() const {
 }
 
 gfx::Size OpaqueBrowserFrameView::GetTabstripPreferredSize() const {
-  gfx::Size s = browser_view()->tabstrip()->GetPreferredSize();
-  return s;
+  return browser_view()->tabstrip()->GetPreferredSize();
+}
+
+gfx::Size OpaqueBrowserFrameView::GetNewTabButtonPreferredSize() const {
+  return browser_view()->tabstrip()->new_tab_button()->GetPreferredSize();
 }
 
 int OpaqueBrowserFrameView::GetTopAreaHeight() const {

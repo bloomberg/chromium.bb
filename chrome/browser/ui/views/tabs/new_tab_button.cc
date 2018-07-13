@@ -48,6 +48,13 @@ namespace {
 constexpr int kDistanceBetweenIcons = 6;
 constexpr int kStrokeThickness = 1;
 
+// Returns the size of the button without any spacing/padding.
+gfx::Size GetButtonSize(bool is_incognito) {
+  const gfx::Size sizes[] = {
+      {36, 18}, {39, 21}, {(is_incognito ? 42 : 24), 24}, {28, 28}, {28, 28}};
+  return sizes[MD::GetMode()];
+}
+
 sk_sp<SkDrawLooper> CreateShadowDrawLooper(SkColor color) {
   SkLayerDrawLooper::Builder looper_builder;
   looper_builder.addLayer();
@@ -108,10 +115,9 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
   // In newer material UI, the button is placed vertically exactly in the
   // center of the tabstrip.  In older UI, the new tab button is placed at a
   // fixed distance from the bottom of the tabstrip.
-  const int extra_vertical_space =
-      GetLayoutConstant(TAB_HEIGHT) -
-      GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) -
-      GetLayoutSize(NEW_TAB_BUTTON, is_incognito_).height();
+  const int extra_vertical_space = GetLayoutConstant(TAB_HEIGHT) -
+                                   GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) -
+                                   GetButtonSize(is_incognito_).height();
   constexpr int kNewTabButtonBottomOffset = 4;
   const int top = MD::IsNewerMaterialUi()
                       ? (extra_vertical_space / 2)
@@ -353,7 +359,7 @@ void NewTabButton::OnThemeChanged() {
 }
 
 gfx::Size NewTabButton::CalculatePreferredSize() const {
-  gfx::Size size = GetLayoutSize(NEW_TAB_BUTTON, is_incognito_);
+  gfx::Size size = GetButtonSize(is_incognito_);
   const auto insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
   return size;

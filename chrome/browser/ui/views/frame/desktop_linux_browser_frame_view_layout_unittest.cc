@@ -41,7 +41,6 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   ~TestLayoutDelegate() override {}
 
   // OpaqueBrowserFrameViewLayoutDelegate:
-  bool IsIncognito() const override { return false; }
   bool ShouldShowWindowIcon() const override { return false; }
   bool ShouldShowWindowTitle() const override { return false; }
   base::string16 GetWindowTitle() const override { return base::string16(); }
@@ -64,6 +63,9 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   bool IsToolbarVisible() const override { return true; }
   gfx::Size GetTabstripPreferredSize() const override {
     return gfx::Size(78, 29);
+  }
+  gfx::Size GetNewTabButtonPreferredSize() const override {
+    return gfx::Size(28, 28);
   }
   int GetTopAreaHeight() const override { return 0; }
   bool UseCustomFrame() const override { return true; }

@@ -14,11 +14,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
-#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
+#include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -644,8 +644,9 @@ int GlassBrowserFrameView::TabStripCaptionSpacing() const {
 
   // When not maximized, allow the new tab button to slide completely under the
   // the profile switcher button.
-  const bool incognito = browser_view()->tabstrip()->IsIncognito();
-  profile_spacing -= GetLayoutSize(NEW_TAB_BUTTON, incognito).width();
+  const auto* new_tab_button = browser_view()->tabstrip()->new_tab_button();
+  profile_spacing -= new_tab_button->GetPreferredSize().width();
+
   return std::max(caption_spacing, profile_spacing);
 }
 

@@ -125,19 +125,3 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
   NOTREACHED();
   return gfx::Insets();
 }
-
-gfx::Size GetLayoutSize(LayoutSize size, bool is_incognito) {
-  const int mode = ui::MaterialDesignController::GetMode();
-  switch (size) {
-    case NEW_TAB_BUTTON: {
-      const gfx::Size sizes[] = {{36, 18},
-                                 {39, 21},
-                                 {(is_incognito ? 42 : 24), 24},
-                                 {28, 28},
-                                 {28, 28}};
-      return sizes[mode];
-    }
-  }
-  NOTREACHED();
-  return gfx::Size();
-}

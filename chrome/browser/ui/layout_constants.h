@@ -116,14 +116,6 @@ enum LayoutInset {
   TOOLBAR_ACTION_VIEW,
 };
 
-enum LayoutSize {
-  // The visible size of the new tab button; does not include any Fitts' Law
-  // extensions. Note that in touch-optimized UI mode, the new tab button's
-  // width is larger when the browser is in incognito mode. The height remains
-  // the same whether incognito or not.
-  NEW_TAB_BUTTON,
-};
-
 int GetLayoutConstant(LayoutConstant constant);
 #if defined(OS_MACOSX)
 // Use this function instead of GetLayoutConstant() for Cocoa browser.
@@ -133,6 +125,5 @@ int GetCocoaLayoutConstant(LayoutConstant constant);
 #endif
 
 gfx::Insets GetLayoutInsets(LayoutInset inset);
-gfx::Size GetLayoutSize(LayoutSize size, bool is_incognito);
 
 #endif  // CHROME_BROWSER_UI_LAYOUT_CONSTANTS_H_

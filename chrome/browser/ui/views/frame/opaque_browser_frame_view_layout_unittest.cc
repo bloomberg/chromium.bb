@@ -49,7 +49,6 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   void set_maximized(bool maximized) { maximized_ = maximized; }
 
   // OpaqueBrowserFrameViewLayoutDelegate:
-  bool IsIncognito() const override { return false; }
   bool ShouldShowWindowIcon() const override { return !window_title_.empty(); }
   bool ShouldShowWindowTitle() const override { return !window_title_.empty(); }
   base::string16 GetWindowTitle() const override { return window_title_; }
@@ -74,6 +73,9 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   bool IsToolbarVisible() const override { return true; }
   gfx::Size GetTabstripPreferredSize() const override {
     return IsTabStripVisible() ? gfx::Size(78, 29) : gfx::Size();
+  }
+  gfx::Size GetNewTabButtonPreferredSize() const override {
+    return gfx::Size(28, 28);
   }
   int GetTopAreaHeight() const override { return 0; }
   bool UseCustomFrame() const override { return true; }
@@ -245,8 +247,7 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
       caption_buttons_width +=
           avatar_button_->GetPreferredSize().width() +
           (maximized ? OpaqueBrowserFrameViewLayout::kCaptionSpacing
-                     : -GetLayoutSize(NEW_TAB_BUTTON, delegate_->IsIncognito())
-                            .width());
+                     : -delegate_->GetNewTabButtonPreferredSize().width());
     }
     int tabstrip_x = OpaqueBrowserFrameView::GetAvatarIconPadding();
     if (show_caption_buttons && caption_buttons_on_left) {
