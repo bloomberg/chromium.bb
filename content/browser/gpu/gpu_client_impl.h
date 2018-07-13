@@ -17,9 +17,15 @@ class GpuClientImpl : public ui::mojom::GpuMemoryBufferFactory,
                       public ui::mojom::Gpu,
                       public GpuClient {
  public:
-  GpuClientImpl(int client_id, uint64_t client_tracing_id);
+  // GpuClientImpl must be destroyed on the thread associated with
+  // |task_runner|.
+  GpuClientImpl(int client_id,
+                uint64_t client_tracing_id,
+                scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+
   ~GpuClientImpl() override;
 
+  // This needs to be run on the thread associated with |task_runner_|.
   void Add(ui::mojom::GpuRequest request);
 
   void PreEstablishGpuChannel();
@@ -75,6 +81,10 @@ class GpuClientImpl : public ui::mojom::GpuMemoryBufferFactory,
   gpu::GPUInfo gpu_info_;
   gpu::GpuFeatureInfo gpu_feature_info_;
   ConnectionErrorHandlerClosure connection_error_handler_;
+  // |task_runner_| is associated with the thread |gpu_bindings_| is bound on.
+  // GpuClientImpl instance is bound to this thread, and must be destroyed on
+  // this thread.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<GpuClientImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuClientImpl);

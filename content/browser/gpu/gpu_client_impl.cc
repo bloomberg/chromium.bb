@@ -7,7 +7,6 @@
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/public/browser/browser_thread.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
@@ -15,22 +14,28 @@
 namespace content {
 
 // static
-std::unique_ptr<GpuClient, BrowserThread::DeleteOnIOThread> GpuClient::Create(
+std::unique_ptr<GpuClient, base::OnTaskRunnerDeleter> GpuClient::Create(
     ui::mojom::GpuRequest request,
-    ConnectionErrorHandlerClosure connection_error_handler) {
+    ConnectionErrorHandlerClosure connection_error_handler,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   const int client_id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
   const uint64_t client_tracing_id =
       ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(client_id);
-  std::unique_ptr<GpuClientImpl, BrowserThread::DeleteOnIOThread> gpu_client(
-      new GpuClientImpl(client_id, client_tracing_id));
+  std::unique_ptr<GpuClientImpl, base::OnTaskRunnerDeleter> gpu_client(
+      new GpuClientImpl(client_id, client_tracing_id, task_runner),
+      base::OnTaskRunnerDeleter(task_runner));
   gpu_client->SetConnectionErrorHandler(std::move(connection_error_handler));
   gpu_client->Add(std::move(request));
   return gpu_client;
 }
 
-GpuClientImpl::GpuClientImpl(int client_id, uint64_t client_tracing_id)
+GpuClientImpl::GpuClientImpl(
+    int client_id,
+    uint64_t client_tracing_id,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : client_id_(client_id),
       client_tracing_id_(client_tracing_id),
+      task_runner_(std::move(task_runner)),
       weak_factory_(this) {
   gpu_bindings_.set_connection_error_handler(
       base::BindRepeating(&GpuClientImpl::OnError, base::Unretained(this),
@@ -38,16 +43,18 @@ GpuClientImpl::GpuClientImpl(int client_id, uint64_t client_tracing_id)
 }
 
 GpuClientImpl::~GpuClientImpl() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   gpu_bindings_.CloseAllBindings();
   OnError(ErrorReason::kInDestructor);
 }
 
 void GpuClientImpl::Add(ui::mojom::GpuRequest request) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   gpu_bindings_.AddBinding(this, std::move(request));
 }
 
 void GpuClientImpl::OnError(ErrorReason reason) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   ClearCallback();
   if (gpu_bindings_.empty()) {
     BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager =
@@ -60,9 +67,9 @@ void GpuClientImpl::OnError(ErrorReason reason) {
 }
 
 void GpuClientImpl::PreEstablishGpuChannel() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  DCHECK(!task_runner_->RunsTasksInCurrentSequence());
+  task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(&GpuClientImpl::EstablishGpuChannel,
                      base::Unretained(this), EstablishGpuChannelCallback()));
 }
@@ -119,7 +126,7 @@ void GpuClientImpl::ClearCallback() {
 }
 
 void GpuClientImpl::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   // At most one channel should be requested. So clear previous request first.
   ClearCallback();
   if (channel_handle_.is_valid()) {
