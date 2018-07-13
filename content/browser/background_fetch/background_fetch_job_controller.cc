@@ -35,7 +35,8 @@ BackgroundFetchJobController::BackgroundFetchJobController(
 void BackgroundFetchJobController::InitializeRequestStatus(
     int completed_downloads,
     int total_downloads,
-    const std::vector<std::string>& outstanding_guids) {
+    const std::vector<std::string>& outstanding_guids,
+    const std::string& ui_title) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Don't allow double initialization.
@@ -49,7 +50,7 @@ void BackgroundFetchJobController::InitializeRequestStatus(
   int total_downloads_size = options_.download_total;
 
   auto fetch_description = std::make_unique<BackgroundFetchDescription>(
-      registration_id().unique_id(), options_.title, registration_id().origin(),
+      registration_id().unique_id(), ui_title, registration_id().origin(),
       icon_, completed_downloads, total_downloads,
       complete_requests_downloaded_bytes_cache_, total_downloads_size,
       outstanding_guids);

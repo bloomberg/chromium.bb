@@ -58,11 +58,13 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   ~BackgroundFetchJobController() override;
 
   // Initializes the job controller with the status of the active and completed
-  // downloads. Only called when this has been loaded from the database.
+  // downloads, as well as the title to use.
+  // Only called when this has been loaded from the database.
   void InitializeRequestStatus(
       int completed_downloads,
       int total_downloads,
-      const std::vector<std::string>& outstanding_guids);
+      const std::vector<std::string>& outstanding_guids,
+      const std::string& ui_title);
 
   // Gets the number of bytes downloaded for jobs that are currently running.
   uint64_t GetInProgressDownloadedBytes();

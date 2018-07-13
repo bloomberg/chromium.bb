@@ -162,8 +162,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
             base::Unretained(this)),
         base::BindOnce(&BackgroundFetchJobControllerTest::OnJobFinished));
 
-    controller->InitializeRequestStatus(0, total_downloads,
-                                        std::vector<std::string>());
+    controller->InitializeRequestStatus(
+        0, total_downloads, {} /* outstanding_guids */, "" /* ui_title */);
     return controller;
   }
 

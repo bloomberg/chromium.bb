@@ -73,8 +73,8 @@ void BackgroundFetchContext::DidGetInitializationData(
 
   for (auto& data : initialization_data) {
     CreateController(data.registration_id, data.options, data.icon,
-                     data.num_completed_requests, data.num_requests,
-                     data.active_fetch_guids,
+                     data.ui_title, data.num_completed_requests,
+                     data.num_requests, data.active_fetch_guids,
                      std::make_unique<BackgroundFetchRegistration>(
                          std::move(data.registration)));
   }
@@ -179,7 +179,7 @@ void BackgroundFetchContext::DidCreateRegistration(
   DCHECK(registration);
 
   // Create the BackgroundFetchJobController to do the actual fetching.
-  CreateController(registration_id, options, icon,
+  CreateController(registration_id, options, icon, options.title,
                    0u /* num_completed_requests */, num_requests,
                    {} /* outstanding_guids */, std::move(registration));
 }
@@ -275,6 +275,7 @@ void BackgroundFetchContext::CreateController(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
+    const std::string& ui_title,
     size_t num_completed_requests,
     size_t num_requests,
     const std::vector<std::string>& outstanding_guids,
@@ -292,7 +293,7 @@ void BackgroundFetchContext::CreateController(
           base::Bind(&background_fetch::RecordSchedulerFinishedError)));
 
   controller->InitializeRequestStatus(num_completed_requests, num_requests,
-                                      outstanding_guids);
+                                      outstanding_guids, ui_title);
   scheduler_->AddJobController(controller.get());
   job_controllers_.emplace(registration_id.unique_id(), std::move(controller));
 
