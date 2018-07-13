@@ -113,8 +113,10 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
 
 void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
   syncer::SyncPrefs sync_prefs(pref_service_);
-  if (IsUnifiedConsentGiven() && !sync_prefs.HasKeepEverythingSynced())
-    EnableAllSyncDataTypesIfPossible();
+  if (IsUnifiedConsentGiven() != sync_prefs.HasKeepEverythingSynced()) {
+    // Make sync-everything consistent with the |kUnifiedConsentGiven| pref.
+    SetSyncEverythingIfPossible(IsUnifiedConsentGiven());
+  }
 }
 
 void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
@@ -122,9 +124,9 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
 
   if (!enabled) {
     if (identity_manager_->HasPrimaryAccount()) {
-      // KeepEverythingSynced is set to false, so the user can select individual
+      // Sync-everything is set to false, so the user can select individual
       // sync data types.
-      sync_service_->OnUserChoseDatatypes(false, syncer::UserSelectableTypes());
+      SetSyncEverythingIfPossible(false);
     }
     return;
   }
@@ -140,7 +142,7 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
 
   // Enable all sync data types if possible, otherwise they will be enabled with
   // |OnStateChanged| once sync is active;
-  EnableAllSyncDataTypesIfPossible();
+  SetSyncEverythingIfPossible(true);
 
   // Enable all non-personalized services.
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
@@ -156,12 +158,16 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
   service_client_->SetNetworkPredictionEnabled(true);
 }
 
-void UnifiedConsentService::EnableAllSyncDataTypesIfPossible() {
+void UnifiedConsentService::SetSyncEverythingIfPossible(bool sync_everything) {
   if (!sync_service_->IsEngineInitialized())
     return;
-  pref_service_->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled,
-                            true);
-  sync_service_->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+
+  if (sync_everything) {
+    pref_service_->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled,
+                              true);
+  }
+  sync_service_->OnUserChoseDatatypes(sync_everything,
+                                      syncer::UserSelectableTypes());
 }
 
 void UnifiedConsentService::MigrateProfileToUnifiedConsent() {
@@ -171,13 +177,17 @@ void UnifiedConsentService::MigrateProfileToUnifiedConsent() {
   syncer::SyncPrefs sync_prefs(pref_service_);
   if (identity_manager_->HasPrimaryAccount() &&
       sync_prefs.HasKeepEverythingSynced()) {
-    // Set keep-everything-synced pref to false to match |kUnifiedConsentGiven|.
-    sync_prefs.SetKeepEverythingSynced(false);
     // When the user was syncing everything, the consent bump should be shown
     // when this is possible.
     pref_service_->SetInteger(
         prefs::kUnifiedConsentMigrationState,
         static_cast<int>(MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP));
+    // Set sync-everything to false to match the |kUnifiedConsentGiven| pref.
+    // Note: If the sync engine isn't initialized at this point, sync-everything
+    // is set to false once the sync engine state changes. Sync-everything can
+    // then be set to true again after going through the consent bump and opting
+    // into unified consent.
+    SetSyncEverythingIfPossible(false);
     return;
   }
 

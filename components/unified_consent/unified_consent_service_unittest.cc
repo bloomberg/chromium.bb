@@ -188,15 +188,17 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverything) {
   identity_test_environment_.SetPrimaryAccount("testaccount");
   syncer::SyncPrefs sync_prefs(&pref_service_);
   sync_prefs.SetKeepEverythingSynced(true);
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  sync_service_.OnUserChoseDatatypes(true, {});
+  EXPECT_TRUE(sync_service_.IsSyncingEverything());
+  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
 
   CreateConsentService();
   // After the creation of the consent service, inconsistencies are resolved and
   // the migration state should be in-progress (i.e. the consent bump should be
   // shown).
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_FALSE(sync_service_.IsSyncingEverything());
   EXPECT_EQ(
       consent_service_->GetMigrationState(),
       unified_consent::MigrationState::IN_PROGRESS_SHOULD_SHOW_CONSENT_BUMP);

@@ -83,8 +83,8 @@ class UnifiedConsentService : public KeyedService,
   // non-personalized services. Otherwise it does nothing.
   void OnUnifiedConsentGivenPrefChanged();
 
-  // Enables all sync data types if the sync engine is initialized.
-  void EnableAllSyncDataTypesIfPossible();
+  // Enables/disables syncing everything if the sync engine is initialized.
+  void SetSyncEverythingIfPossible(bool sync_everything);
 
   // Called when the unified consent service is created to resolve
   // inconsistencies with sync-related prefs.
