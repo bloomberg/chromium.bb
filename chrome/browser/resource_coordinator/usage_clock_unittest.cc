@@ -23,7 +23,6 @@ TEST(ResourceCoordinatorUsageClock, UsageClock) {
 
     metrics::DesktopSessionDurationTracker::Initialize();
     auto* tracker = metrics::DesktopSessionDurationTracker::Get();
-    tracker->SetInactivityTimeoutForTesting(0);
     tracker->OnVisibilityChanged(true, base::TimeDelta());
     tracker->OnUserEvent();
     EXPECT_TRUE(tracker->in_session());
