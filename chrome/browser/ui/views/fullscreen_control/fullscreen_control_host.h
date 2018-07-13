@@ -62,7 +62,8 @@ class FullscreenControlHost : public ui::EventHandler {
   bool IsAnimating() const;
   void ShowForInputEntryMethod(InputEntryMethod input_entry_method);
   void OnVisibilityChanged();
-  void StartPopupTimeout(InputEntryMethod expected_input_method);
+  void StartPopupTimeout(InputEntryMethod expected_input_method,
+                         base::TimeDelta timeout);
   void OnPopupTimeout(InputEntryMethod expected_input_method);
   bool IsExitUiNeeded();
   float CalculateCursorBufferHeight() const;
