@@ -65,7 +65,6 @@ void ChromeSubresourceFilterClient::DidStartNavigation(
     // TODO(csharrison): This should probably be reset at commit time, not at
     // navigation start.
     did_show_ui_for_navigation_ = false;
-    LogAction(kActionNavigationStarted);
   }
 }
 
@@ -89,7 +88,7 @@ void ChromeSubresourceFilterClient::MaybeAppendNavigationThrottles(
 }
 
 void ChromeSubresourceFilterClient::OnReloadRequested() {
-  UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.Prompt.NumReloads", true);
+  LogAction(SubresourceFilterAction::kWhitelistedSite);
   WhitelistByContentSettings(web_contents()->GetLastCommittedURL());
   web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
 }
@@ -102,7 +101,7 @@ void ChromeSubresourceFilterClient::ShowNotification() {
   if (settings_manager_->ShouldShowUIForSite(top_level_url)) {
     ShowUI(top_level_url);
   } else {
-    LogAction(kActionUISuppressed);
+    LogAction(SubresourceFilterAction::kUISuppressed);
   }
 }
 
@@ -145,14 +144,13 @@ void ChromeSubresourceFilterClient::WhitelistByContentSettings(
 void ChromeSubresourceFilterClient::ToggleForceActivationInCurrentWebContents(
     bool force_activation) {
   if (!activated_via_devtools_ && force_activation)
-    LogAction(kActionForcedActivationEnabled);
+    LogAction(SubresourceFilterAction::kForcedActivationEnabled);
   activated_via_devtools_ = force_activation;
 }
 
 // static
 void ChromeSubresourceFilterClient::LogAction(SubresourceFilterAction action) {
-  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.Actions", action,
-                            kActionLastEntry);
+  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.Actions2", action);
 }
 
 void ChromeSubresourceFilterClient::ShowUI(const GURL& url) {
@@ -165,7 +163,7 @@ void ChromeSubresourceFilterClient::ShowUI(const GURL& url) {
       TabSpecificContentSettings::FromWebContents(web_contents());
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_ADS);
 
-  LogAction(kActionUIShown);
+  LogAction(SubresourceFilterAction::kUIShown);
   did_show_ui_for_navigation_ = true;
   settings_manager_->OnDidShowUI(url);
 }

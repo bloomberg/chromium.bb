@@ -128,7 +128,7 @@ const char kActivationListHistogram[] =
     "SubresourceFilter.PageLoad.ActivationList";
 
 // Other histograms.
-const char kSubresourceFilterActionsHistogram[] = "SubresourceFilter.Actions";
+const char kSubresourceFilterActionsHistogram[] = "SubresourceFilter.Actions2";
 
 GURL GetURLWithFragment(const GURL& url, base::StringPiece fragment) {
   GURL::Replacements replacements;
@@ -338,8 +338,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
   ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
       kSubframeNames, kExpectScriptInFrameToLoad));
 
-  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
-                           1);
+  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram,
+                           SubresourceFilterAction::kUIShown, 1);
 
   // Console message for subframe blocking should be displayed.
   std::ostringstream result;
@@ -422,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
       kSubframeNames, kExpectOnlySecondSubframe));
   ExpectFramesIncludedInLayout(kSubframeNames, kExpectOnlySecondSubframe);
   histogram_tester.ExpectBucketCount(kSubresourceFilterActionsHistogram,
-                                     kActionUIShown, 1);
+                                     SubresourceFilterAction::kUIShown, 1);
 
   // Now navigate the first subframe to an allowed URL and ensure that the load
   // successfully commits and the frame gets restored (no longer collapsed).
@@ -735,18 +735,18 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ConfigureAsPhishingURL(url);
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
-  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
-                           1);
+  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram,
+                           SubresourceFilterAction::kUIShown, 1);
   // Check that the bubble is not shown again for this navigation.
   EXPECT_FALSE(IsDynamicScriptElementLoaded(FindFrameByName("five")));
-  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
-                           1);
+  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram,
+                           SubresourceFilterAction::kUIShown, 1);
   // Check that bubble is shown for new navigation. Must be cross site to avoid
   // triggering smart UI on Android.
   ConfigureAsPhishingURL(a_url);
   ui_test_utils::NavigateToURL(browser(), a_url);
-  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
-                           2);
+  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram,
+                           SubresourceFilterAction::kUIShown, 2);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,

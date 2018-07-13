@@ -80,9 +80,11 @@ bool AdsBlockedInfobarDelegate::LinkClicked(WindowOpenDisposition disposition) {
     DCHECK_EQ(disposition, WindowOpenDisposition::NEW_FOREGROUND_TAB);
     infobar()->owner()->OpenURL(GetLinkURL(),
                                 WindowOpenDisposition::NEW_FOREGROUND_TAB);
-    ChromeSubresourceFilterClient::LogAction(kActionClickedLearnMore);
+    ChromeSubresourceFilterClient::LogAction(
+        SubresourceFilterAction::kClickedLearnMore);
   } else {
-    ChromeSubresourceFilterClient::LogAction(kActionDetailsShown);
+    ChromeSubresourceFilterClient::LogAction(
+        SubresourceFilterAction::kDetailsShown);
     infobar_expanded_ = true;
   }
   // Returning false keeps the infobar up, which is the behavior we want in all

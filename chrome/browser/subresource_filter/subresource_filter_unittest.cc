@@ -163,7 +163,7 @@ TEST_F(SubresourceFilterTest, RefreshMetadataOnActivation) {
 
 TEST_F(SubresourceFilterTest, ToggleForceActivation) {
   base::HistogramTester histogram_tester;
-  const char actions_histogram[] = "SubresourceFilter.Actions";
+  const char actions_histogram[] = "SubresourceFilter.Actions2";
   const GURL url("https://example.test/");
 
   // Navigate initially, should be no activation.
@@ -172,11 +172,9 @@ TEST_F(SubresourceFilterTest, ToggleForceActivation) {
   EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
 
   // Simulate opening devtools and forcing activation.
-  histogram_tester.ExpectBucketCount(actions_histogram,
-                                     kActionForcedActivationEnabled, 0);
   GetClient()->ToggleForceActivationInCurrentWebContents(true);
-  histogram_tester.ExpectBucketCount(actions_histogram,
-                                     kActionForcedActivationEnabled, 1);
+  histogram_tester.ExpectBucketCount(
+      actions_histogram, SubresourceFilterAction::kForcedActivationEnabled, 1);
 
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
@@ -191,8 +189,8 @@ TEST_F(SubresourceFilterTest, ToggleForceActivation) {
 
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
-  histogram_tester.ExpectBucketCount(actions_histogram,
-                                     kActionForcedActivationEnabled, 1);
+  histogram_tester.ExpectBucketCount(
+      actions_histogram, SubresourceFilterAction::kForcedActivationEnabled, 1);
 }
 
 TEST_F(SubresourceFilterTest, ToggleOffForceActivation_AfterCommit) {
@@ -205,8 +203,8 @@ TEST_F(SubresourceFilterTest, ToggleOffForceActivation_AfterCommit) {
   // Resource should be disallowed, since navigation commit had activation.
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
 
-  histogram_tester.ExpectBucketCount("SubresourceFilter.Actions",
-                                     kActionUIShown, 1);
+  histogram_tester.ExpectBucketCount("SubresourceFilter.Actions2",
+                                     SubresourceFilterAction::kUIShown, 1);
 }
 
 TEST_F(SubresourceFilterTest, NotifySafeBrowsing) {

@@ -6,20 +6,15 @@
 #define CHROME_BROWSER_SUBRESOURCE_FILTER_SUBRESOURCE_FILTER_CONTENT_SETTINGS_MANAGER_H_
 
 #include <memory>
-#include <set>
-#include <string>
 #include <utility>
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/history/core/browser/history_service_observer.h"
 
-class ContentSettingsPattern;
 class GURL;
 class HostContentSettingsMap;
 class Profile;
@@ -33,11 +28,14 @@ class HistoryService;
 }  // namespace history
 
 // This class contains helpers to get/set content and website settings related
-// to subresource filtering. It also observes content setting changes for
-// metrics collection.
+// to subresource filtering.
+// TODO(crbug.com/706061): Once observing changes to content settings is robust
+// enough for metrics collection, should collect metrics here too, using a
+// content_settings::Observer. Generally speaking, we want a system where we can
+// easily log metrics if the content setting has changed meaningfully from it's
+// previous value.
 class SubresourceFilterContentSettingsManager
-    : public content_settings::Observer,
-      public history::HistoryServiceObserver {
+    : public history::HistoryServiceObserver {
  public:
   explicit SubresourceFilterContentSettingsManager(Profile* profile);
   ~SubresourceFilterContentSettingsManager() override;
@@ -77,12 +75,6 @@ class SubresourceFilterContentSettingsManager
       base::TimeDelta::FromHours(24);
 
  private:
-  // content_settings::Observer:
-  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
-                               const ContentSettingsPattern& secondary_pattern,
-                               ContentSettingsType content_type,
-                               const std::string& resource_identifier) override;
-
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;
@@ -95,17 +87,9 @@ class SubresourceFilterContentSettingsManager
 
   HostContentSettingsMap* settings_map_;
 
-  // Used only for metrics so we don't report global changes which just keep
-  // the same value.
-  ContentSetting cached_global_setting_for_metrics_;
-
   // A clock is injected into this class so tests can set arbitrary timestamps
   // in website settings.
   std::unique_ptr<base::Clock> clock_;
-
-  // Used internally so the class ignores changes to the settings that are not
-  // user initiated through the settings UI.
-  bool ignore_settings_changes_ = false;
 
   bool should_use_smart_ui_ = false;
 
