@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
@@ -16,6 +17,10 @@
 #include "ui/display/display_switches.h"
 #include "ui/gfx/switches.h"
 
+#if defined(OS_MACOSX)
+#include "ui/accelerated_widget_mac/ca_transaction_observer.h"
+#endif
+
 namespace ui {
 
 FakeContextFactory::FakeContextFactory() {
@@ -23,6 +28,8 @@ FakeContextFactory::FakeContextFactory() {
   renderer_settings_.finish_rendering_on_resize = true;
 #elif defined(OS_MACOSX)
   renderer_settings_.release_overlay_resources_after_gpu_query = true;
+  // Ensure that tests don't wait for frames that will never come.
+  ui::CATransactionCoordinator::Get().DisableForTesting();
 #endif
 }
 

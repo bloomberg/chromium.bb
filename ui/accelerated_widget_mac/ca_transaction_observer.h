@@ -61,6 +61,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CATransactionCoordinator {
   static CATransactionCoordinator& Get();
 
   void Synchronize();
+  void DisableForTesting() { disabled_for_testing_ = true; }
 
   void AddPreCommitObserver(PreCommitObserver*);
   void RemovePreCommitObserver(PreCommitObserver*);
@@ -79,6 +80,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CATransactionCoordinator {
   void PostCommitHandler();
 
   bool active_ = false;
+  bool disabled_for_testing_ = false;
   base::ObserverList<PreCommitObserver> pre_commit_observers_;
   base::ObserverList<PostCommitObserver> post_commit_observers_;
 
