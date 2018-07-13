@@ -146,7 +146,7 @@
         'can_use_on_swarming_builders': False,
       },
     },
-    'webview_instrumentation_test_apk-marlin-ddview-nougat': {
+    'webview_instrumentation_test_apk-ddready-ddview': {
       'args': [
         '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json',
         '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
@@ -201,22 +201,22 @@
     },
   },
 
-  'android_nougat_vr_gtests': {
-    'chrome_public_test_vr_apk-pixelxl-cardboard-nougat': {
+  'android_ddready_vr_gtests': {
+    'chrome_public_test_vr_apk-ddready-cardboard': {
       'args': [
         '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
         '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
       ],
       'test': 'chrome_public_test_vr_apk',
     },
-    'chrome_public_test_vr_apk-pixelxl-ddview-nougat': {
+    'chrome_public_test_vr_apk-ddready-ddview': {
       'args': [
         '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json',
         '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk'
       ],
       'test': 'chrome_public_test_vr_apk',
     },
-    'chrome_public_test_vr_apk-pixelxl-ddview-nougat-donenabled': {
+    'chrome_public_test_vr_apk-ddready-ddview-donenabled': {
       'args': [
         '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json',
         '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
@@ -227,7 +227,7 @@
     },
   },
 
-  'android_oreo_gtests': {
+  'android_oreo_standard_gtests': {
     'chrome_public_test_apk': {
       'swarming': {
         'shards': 5,
@@ -2332,6 +2332,11 @@
   },
 
   # Composition test suites.
+  'android_oreo_gtests': [
+    'android_ddready_vr_gtests',
+    'android_oreo_standard_gtests',
+  ],
+
   'chromium_android_gtests': [
     'android_specific_chromium_gtests',  # Already includes gl_gtests.
     'chromium_gtests',

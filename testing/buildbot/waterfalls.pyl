@@ -309,7 +309,7 @@
       },
       'Nougat Phone Tester': {
         'test_suites': {
-          'gtest_tests': 'android_nougat_vr_gtests',
+          'gtest_tests': 'android_ddready_vr_gtests',
         },
         'swarming': {
           'dimension_sets': [
