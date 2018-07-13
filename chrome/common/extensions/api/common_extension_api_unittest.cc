@@ -192,7 +192,8 @@ TEST(ExtensionAPITest, APIFeatures) {
         GURL() }
   };
 
-  UnittestFeatureProvider api_feature_provider;
+  FeatureProvider api_feature_provider;
+  AddUnittestAPIFeatures(&api_feature_provider);
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     TestExtensionAPI api;
@@ -215,7 +216,8 @@ TEST(ExtensionAPITest, APIFeatures) {
 }
 
 TEST(ExtensionAPITest, APIFeaturesAlias) {
-  UnittestFeatureProvider api_feature_provider;
+  FeatureProvider api_feature_provider;
+  AddUnittestAPIFeatures(&api_feature_provider);
 
   TestExtensionAPI api;
   api.RegisterDependencyProvider("api", &api_feature_provider);
@@ -315,7 +317,8 @@ TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
       {"test7", false, Feature::WEB_PAGE_CONTEXT, nullptr,
        GURL("http://bar.com")}};
 
-  UnittestFeatureProvider api_feature_provider;
+  FeatureProvider api_feature_provider;
+  AddUnittestAPIFeatures(&api_feature_provider);
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     TestExtensionAPI api;
@@ -375,7 +378,8 @@ TEST(ExtensionAPITest, SessionTypeFeature) {
        {"test6.foo", true, FeatureSessionType::REGULAR},
        {"test6.foo", true, FeatureSessionType::UNKNOWN}});
 
-  UnittestFeatureProvider api_feature_provider;
+  FeatureProvider api_feature_provider;
+  AddUnittestAPIFeatures(&api_feature_provider);
 
   for (const auto& test : kTestData) {
     TestExtensionAPI api;

@@ -16,7 +16,6 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/api_features.h"
-#include "chrome/common/extensions/api/behavior_features.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/api/manifest_features.h"
@@ -29,7 +28,11 @@
 #include "chrome/grit/common_resources.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/api/api_features.h"
+#include "extensions/common/api/behavior_features.h"
 #include "extensions/common/api/generated_schemas.h"
+#include "extensions/common/api/manifest_features.h"
+#include "extensions/common/api/permission_features.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -153,15 +156,19 @@ const std::string ChromeExtensionsClient::GetProductName() {
 
 std::unique_ptr<FeatureProvider> ChromeExtensionsClient::CreateFeatureProvider(
     const std::string& name) const {
-  std::unique_ptr<FeatureProvider> provider;
+  auto provider = std::make_unique<FeatureProvider>();
   if (name == "api") {
-    provider.reset(new APIFeatureProvider());
+    AddCoreAPIFeatures(provider.get());
+    AddChromeAPIFeatures(provider.get());
   } else if (name == "manifest") {
-    provider.reset(new ManifestFeatureProvider());
+    AddCoreManifestFeatures(provider.get());
+    AddChromeManifestFeatures(provider.get());
   } else if (name == "permission") {
-    provider.reset(new PermissionFeatureProvider());
+    AddCorePermissionFeatures(provider.get());
+    AddChromePermissionFeatures(provider.get());
   } else if (name == "behavior") {
-    provider.reset(new BehaviorFeatureProvider());
+    // Note: There are no chrome-specific behavior features.
+    AddCoreBehaviorFeatures(provider.get());
   } else {
     NOTREACHED();
   }

@@ -11,7 +11,7 @@ assert(enable_extensions)
 
 json_features("extension_features_unittest") {
   feature_type = "APIFeature"
-  provider_class = "UnittestFeatureProvider"
+  method_name = "AddUnittestAPIFeatures"
   sources = [
     "//chrome/test/data/extensions/extension_api_unittest/api_features.json",
   ]

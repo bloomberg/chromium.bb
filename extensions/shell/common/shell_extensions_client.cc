@@ -12,10 +12,15 @@
 #include "base/macros.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/user_agent.h"
+#include "extensions/common/api/api_features.h"
+#include "extensions/common/api/behavior_features.h"
 #include "extensions/common/api/generated_schemas.h"
+#include "extensions/common/api/manifest_features.h"
+#include "extensions/common/api/permission_features.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_aliases.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/json_feature_provider_source.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_handler.h"
@@ -26,9 +31,6 @@
 #include "extensions/grit/extensions_resources.h"
 #include "extensions/shell/common/api/generated_schemas.h"
 #include "extensions/shell/common/api/shell_api_features.h"
-#include "extensions/shell/common/api/shell_behavior_features.h"
-#include "extensions/shell/common/api/shell_manifest_features.h"
-#include "extensions/shell/common/api/shell_permission_features.h"
 #include "extensions/shell/grit/app_shell_resources.h"
 
 namespace extensions {
@@ -103,15 +105,16 @@ const std::string ShellExtensionsClient::GetProductName() {
 
 std::unique_ptr<FeatureProvider> ShellExtensionsClient::CreateFeatureProvider(
     const std::string& name) const {
-  std::unique_ptr<FeatureProvider> provider;
+  auto provider = std::make_unique<FeatureProvider>();
   if (name == "api") {
-    provider.reset(new ShellAPIFeatureProvider());
+    AddCoreAPIFeatures(provider.get());
+    AddShellAPIFeatures(provider.get());
   } else if (name == "manifest") {
-    provider.reset(new ShellManifestFeatureProvider());
+    AddCoreManifestFeatures(provider.get());
   } else if (name == "permission") {
-    provider.reset(new ShellPermissionFeatureProvider());
+    AddCorePermissionFeatures(provider.get());
   } else if (name == "behavior") {
-    provider.reset(new ShellBehaviorFeatureProvider());
+    AddCoreBehaviorFeatures(provider.get());
   } else {
     NOTREACHED();
   }

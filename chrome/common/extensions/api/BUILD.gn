@@ -225,44 +225,37 @@ json_schema_api("api_registration") {
 
 json_features("api_features") {
   feature_type = "APIFeature"
-  provider_class = "APIFeatureProvider"
+  method_name = "AddChromeAPIFeatures"
   sources = [
-    "../../../../extensions/common/api/_api_features.json",
     "_api_features.json",
   ]
 }
 
 json_features("permission_features") {
   feature_type = "PermissionFeature"
-  provider_class = "PermissionFeatureProvider"
+  method_name = "AddChromePermissionFeatures"
   sources = [
-    "../../../../extensions/common/api/_permission_features.json",
     "_permission_features.json",
   ]
 }
 
 json_features("manifest_features") {
   feature_type = "ManifestFeature"
-  provider_class = "ManifestFeatureProvider"
+  method_name = "AddChromeManifestFeatures"
   sources = [
-    "../../../../extensions/common/api/_manifest_features.json",
     "_manifest_features.json",
-  ]
-}
-
-json_features("behavior_features") {
-  feature_type = "BehaviorFeature"
-  provider_class = "BehaviorFeatureProvider"
-  sources = [
-    "../../../../extensions/common/api/_behavior_features.json",
   ]
 }
 
 group("extensions_features") {
   public_deps = [
     ":api_features",
-    ":behavior_features",
     ":manifest_features",
     ":permission_features",
+
+    # TODO(devlin): It would be nicer to have this dependency hoisted up to
+    # //extensions/common (since that's where it's consumed), but there's some
+    # cycles to be resolved first.
+    "//extensions/common/api:extensions_features",
   ]
 }
