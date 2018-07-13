@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
-
+#import "ios/chrome/browser/autofill/automation/automation_action.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -24,7 +24,9 @@ static const char kAutofillAutomationSwitch[] = "autofillautomation";
 
 // The autofill automation test case is intended to run a script against a
 // captured web site. It gets the script from the command line.
-@interface AutofillAutomationTestCase : ChromeTestCase
+@interface AutofillAutomationTestCase : ChromeTestCase {
+  NSMutableArray<AutomationAction*>* actions_;
+}
 @end
 
 @implementation AutofillAutomationTestCase
@@ -86,11 +88,32 @@ static const char kAutofillAutomationSwitch[] = "autofillautomation";
 
   const GURL startUrl(startUrlString);
 
+  // Extract the actions.
+  base::Value* actionValue =
+      recipeRoot->FindKeyOfType("actions", base::Value::Type::LIST);
+  GREYAssert(actionValue, @"Test file is missing actions.");
+
+  const base::Value::ListStorage& actionsValues(actionValue->GetList());
+  GREYAssert(actionsValues.size(), @"Test file has empty actions.");
+
+  actions_ = [[NSMutableArray alloc] initWithCapacity:actionsValues.size()];
+  for (auto const& actionValue : actionsValues) {
+    GREYAssert(actionValue.is_dict(),
+               @"Expecting each action to be a dictionary in the JSON file.");
+    [actions_ addObject:[AutomationAction
+                            actionWithValueDictionary:
+                                static_cast<const base::DictionaryValue&>(
+                                    actionValue)]];
+  }
+
   // Load the initial page of the recipe.
   [ChromeEarlGrey loadURL:startUrl];
 }
 
-- (void)testSomething {
+- (void)testActions {
+  for (AutomationAction* action in actions_) {
+    [action execute];
+  }
 }
 
 @end

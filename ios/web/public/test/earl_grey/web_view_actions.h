@@ -38,6 +38,11 @@ id<GREYAction> WebViewLongPressElementForContextMenu(
 id<GREYAction> WebViewTapElement(WebState* state,
                                  web::test::ElementSelector selector);
 
+// Scrolls the WebView so the element selected by |selector| is visible.
+id<GREYAction> WebViewScrollElementToVisible(
+    WebState* state,
+    web::test::ElementSelector selector);
+
 }  // namespace web
 
 #endif  // IOS_WEB_PUBLIC_TEST_EARL_GREY_WEB_VIEW_ACTIONS_H_

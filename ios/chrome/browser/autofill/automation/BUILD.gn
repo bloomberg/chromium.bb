@@ -6,6 +6,8 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "automation_action.h",
+    "automation_action.mm",
     "automation_egtest.mm",
   ]
 
