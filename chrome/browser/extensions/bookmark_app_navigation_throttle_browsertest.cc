@@ -10,13 +10,16 @@
 #include "chrome/browser/extensions/bookmark_app_navigation_browsertest.h"
 #include "chrome/browser/extensions/bookmark_app_navigation_throttle_utils.h"
 #include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -29,6 +32,7 @@
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/constants.h"
 #include "net/base/escape.h"
@@ -1386,6 +1390,37 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonBrowserTest,
       scoped_histogram,
       {{BookmarkAppNavigationThrottleResult::kProceedInAppSameScope, 1}});
 }
+
+// Apps are only restored during startup on Chrome OS.
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonBrowserTest,
+                       PRE_RestoreApp) {
+  InstallTestBookmarkApp();
+  OpenTestBookmarkApp();
+  SessionStartupPref::SetStartupPref(
+      profile(), SessionStartupPref(SessionStartupPref::LAST));
+}
+
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonBrowserTest,
+                       RestoreApp) {
+  // There should be two windows. The app window and a regular browser window
+  // the test opens.
+  EXPECT_EQ(2u, chrome::GetBrowserCount(profile()));
+  Browser* app_browser = nullptr;
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->is_app()) {
+      EXPECT_FALSE(app_browser) << "Found multiple app browsers.";
+      app_browser = browser;
+    }
+  }
+  ASSERT_TRUE(app_browser);
+
+  const Extension* app =
+      ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
+          web_app::GetExtensionIdFromApplicationName(app_browser->app_name()));
+  EXPECT_EQ(GetAppName(), app->name());
+}
+#endif  // OS_CHROMEOS
 
 INSTANTIATE_TEST_CASE_P(
     /* no prefix */,

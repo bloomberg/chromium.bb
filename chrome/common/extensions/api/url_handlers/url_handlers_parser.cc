@@ -32,6 +32,25 @@ using net::NetworkChangeNotifier;
 
 namespace extensions {
 
+namespace {
+
+const UrlHandlerInfo* GetMatchingUrlHandler(const Extension* extension,
+                                            const GURL& url) {
+  const std::vector<UrlHandlerInfo>* handlers =
+      UrlHandlers::GetUrlHandlers(extension);
+  if (!handlers)
+    return nullptr;
+
+  for (const auto& handler : *handlers) {
+    if (handler.patterns.MatchesURL(url))
+      return &handler;
+  }
+
+  return nullptr;
+}
+
+}  // namespace
+
 namespace mkeys = manifest_keys;
 namespace merrors = manifest_errors;
 
@@ -56,31 +75,29 @@ const std::vector<UrlHandlerInfo>* UrlHandlers::GetUrlHandlers(
 }
 
 // static
-bool UrlHandlers::CanExtensionHandleUrl(
-    const Extension* extension,
-    const GURL& url) {
-  return FindMatchingUrlHandler(extension, url) != NULL;
+bool UrlHandlers::CanPlatformAppHandleUrl(const Extension* app,
+                                          const GURL& url) {
+  DCHECK(app->is_platform_app());
+  return !!GetMatchingPlatformAppUrlHandler(app, url);
 }
 
 // static
-const UrlHandlerInfo* UrlHandlers::FindMatchingUrlHandler(
-    const Extension* extension,
+bool UrlHandlers::CanBookmarkAppHandleUrl(const Extension* app,
+                                          const GURL& url) {
+  DCHECK(app->from_bookmark());
+  return !!GetMatchingUrlHandler(app, url);
+}
+
+// static
+const UrlHandlerInfo* UrlHandlers::GetMatchingPlatformAppUrlHandler(
+    const Extension* app,
     const GURL& url) {
-  const std::vector<UrlHandlerInfo>* handlers = GetUrlHandlers(extension);
-  if (!handlers)
-    return NULL;
+  DCHECK(app->is_platform_app());
 
   if (NetworkChangeNotifier::IsOffline() &&
-      !OfflineEnabledInfo::IsOfflineEnabled(extension))
-    return NULL;
-
-  for (std::vector<extensions::UrlHandlerInfo>::const_iterator it =
-       handlers->begin(); it != handlers->end(); it++) {
-    if (it->patterns.MatchesURL(url))
-      return &(*it);
-  }
-
-  return NULL;
+      !OfflineEnabledInfo::IsOfflineEnabled(app))
+    return nullptr;
+  return GetMatchingUrlHandler(app, url);
 }
 
 UrlHandlersParser::UrlHandlersParser() {
