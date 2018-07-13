@@ -305,7 +305,13 @@ void ThirdPartyConflictsManager::InitializeIfReady() {
             module_list_filter_, *installed_applications_);
   }
 
-  SetTerminalState(State::kInitialized);
+  if (!incompatible_applications_updater_) {
+    SetTerminalState(State::kBlockingInitialized);
+  } else if (!module_blacklist_cache_updater_) {
+    SetTerminalState(State::kWarningInitialized);
+  } else {
+    SetTerminalState(State::kWarningAndBlockingInitialized);
+  }
 }
 
 void ThirdPartyConflictsManager::OnModuleBlacklistCacheUpdated(
