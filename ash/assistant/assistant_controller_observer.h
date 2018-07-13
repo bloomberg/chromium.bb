@@ -5,11 +5,20 @@
 #ifndef ASH_ASSISTANT_ASSISTANT_CONTROLLER_OBSERVER_H_
 #define ASH_ASSISTANT_ASSISTANT_CONTROLLER_OBSERVER_H_
 
+#include <map>
+#include <string>
+
 #include "base/macros.h"
 
 class GURL;
 
 namespace ash {
+
+namespace assistant {
+namespace util {
+enum class DeepLinkType;
+}  // namespace util
+}  // namespace assistant
 
 class AssistantControllerObserver {
  public:
@@ -19,8 +28,11 @@ class AssistantControllerObserver {
   // Invoked when the AssistantController is starting to be destroyed.
   virtual void OnAssistantControllerDestroying() {}
 
-  // Invoked when Assistant has received the specified |deep_link|.
-  virtual void OnDeepLinkReceived(const GURL& deep_link) {}
+  // Invoked when Assistant has received a deep link of the specified |type|
+  // with the given |params|.
+  virtual void OnDeepLinkReceived(
+      assistant::util::DeepLinkType type,
+      const std::map<std::string, std::string>& params) {}
 
   // Invoked when the specified |url| is opened by Assistant in a new tab.
   virtual void OnUrlOpened(const GURL& url) {}

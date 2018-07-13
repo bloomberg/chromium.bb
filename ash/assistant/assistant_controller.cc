@@ -145,20 +145,28 @@ void AssistantController::DownloadImage(
   assistant_image_downloader_->Download(account_id, url, std::move(callback));
 }
 
-void AssistantController::OnDeepLinkReceived(const GURL& deep_link) {
-  using assistant::util::DeepLinkType;
-
-  // TODO(dmblack): Possibly use a new FeedbackSource (this method defaults to
-  // kFeedbackSourceAsh). This may be useful for differentiating feedback UI and
-  // behavior for Assistant.
-  if (assistant::util::IsDeepLinkType(deep_link, DeepLinkType::kFeedback))
-    return Shell::Get()->new_window_controller()->OpenFeedbackPage();
-
-  // TODO(updowndota): Pass any parameters necessary to |assistant_setup_| that
-  // it requires to relaunch Assistant UI on completion of opt in flow.
-  if (assistant::util::IsDeepLinkType(deep_link, DeepLinkType::kOnboarding)) {
-    assistant_setup_->StartAssistantOptInFlow();
-    assistant_ui_controller_->HideUi(AssistantSource::kDeepLink);
+void AssistantController::OnDeepLinkReceived(
+    assistant::util::DeepLinkType type,
+    const std::map<std::string, std::string>& params) {
+  switch (type) {
+    case assistant::util::DeepLinkType::kFeedback:
+      // TODO(dmblack): Possibly use a new FeedbackSource (this method defaults
+      // to kFeedbackSourceAsh). This may be useful for differentiating feedback
+      // UI and behavior for Assistant.
+      Shell::Get()->new_window_controller()->OpenFeedbackPage();
+      break;
+    case assistant::util::DeepLinkType::kOnboarding:
+      // TODO(updowndota): Pass any |params| necessary to |assistant_setup_|
+      // that it requires to relaunch Assistant UI on completion of opt in flow.
+      assistant_setup_->StartAssistantOptInFlow();
+      assistant_ui_controller_->HideUi(AssistantSource::kDeepLink);
+      break;
+    case assistant::util::DeepLinkType::kUnsupported:
+    case assistant::util::DeepLinkType::kExplore:
+    case assistant::util::DeepLinkType::kReminders:
+    case assistant::util::DeepLinkType::kSettings:
+      // No action needed.
+      break;
   }
 }
 
@@ -187,8 +195,15 @@ void AssistantController::NotifyDestroying() {
 }
 
 void AssistantController::NotifyDeepLinkReceived(const GURL& deep_link) {
+  using namespace assistant::util;
+
+  // Retrieve deep link type and parsed parameters.
+  DeepLinkType type = GetDeepLinkType(deep_link);
+  const std::map<std::string, std::string> params =
+      GetDeepLinkParams(deep_link);
+
   for (AssistantControllerObserver& observer : observers_)
-    observer.OnDeepLinkReceived(deep_link);
+    observer.OnDeepLinkReceived(type, params);
 }
 
 void AssistantController::NotifyUrlOpened(const GURL& url) {
