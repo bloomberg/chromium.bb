@@ -42,15 +42,6 @@ media_router::MediaRouter* GetMediaRouter() {
   return router;
 }
 
-// The media router will sometimes append " (Tab)" to the tab title. This
-// function will remove that data from the inout param |string|.
-std::string StripEndingTab(const std::string& str) {
-  static const char ending[] = " (Tab)";
-  if (base::EndsWith(str, ending, base::CompareCase::SENSITIVE))
-    return str.substr(0, str.size() - strlen(ending));
-  return str;
-}
-
 }  // namespace
 
 // This class caches the values that the observers give us so we can query them
@@ -210,7 +201,7 @@ void CastConfigClientMediaRouter::RequestDeviceRefresh() {
     for (ash::mojom::SinkAndRoutePtr& item : items) {
       if (item->sink->id == route.media_sink_id()) {
         item->route->id = route.media_route_id();
-        item->route->title = StripEndingTab(route.description());
+        item->route->title = route.description();
         item->route->is_local_source = route.is_local();
 
         // Default to a tab/app capture. This will display the media router
