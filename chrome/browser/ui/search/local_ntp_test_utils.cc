@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
@@ -36,7 +37,7 @@ content::WebContents* OpenNewTab(Browser* browser, const GURL& url) {
   return browser->tab_strip_model()->GetActiveWebContents();
 }
 
-void NavigateToNTPAndWaitUntilLoaded(Browser* browser) {
+void NavigateToNTPAndWaitUntilLoaded(Browser* browser, int delay) {
   content::WebContents* active_tab =
       browser->tab_strip_model()->GetActiveWebContents();
 
@@ -58,21 +59,22 @@ void NavigateToNTPAndWaitUntilLoaded(Browser* browser) {
   // important that these two things happen in the same JS invocation, since
   // otherwise we might miss the message.
   bool mv_tiles_loaded = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(active_tab,
-                                                R"js(
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, base::StringPrintf(R"js(
       (function() {
         if (tilesAreLoaded) {
           return true;
         }
         window.addEventListener('message', function(event) {
           if (event.data.cmd == 'loaded') {
-            domAutomationController.send('NavigateToNTPAndWaitUntilLoaded');
+            setTimeout(() => {
+             domAutomationController.send('NavigateToNTPAndWaitUntilLoaded');
+            }, %d);
           }
         });
         return false;
       })()
-                                                )js",
-                                                &mv_tiles_loaded));
+      )js", delay), &mv_tiles_loaded));
 
   std::string message;
   // Get rid of the message that the GetBoolFromJS call produces.
