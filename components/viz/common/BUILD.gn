@@ -199,6 +199,7 @@ viz_source_set("unit_tests") {
   testonly = true
   sources = [
     "frame_sinks/begin_frame_args_unittest.cc",
+    "frame_sinks/begin_frame_source_unittest.cc",
     "frame_sinks/copy_output_util_unittest.cc",
     "frame_sinks/delay_based_time_source_unittest.cc",
     "gl_helper_unittest.cc",
