@@ -20,10 +20,16 @@ class WebFramesManagerImpl
   explicit WebFramesManagerImpl(web::WebState* web_state);
 
   // Adds |frame| to the list of web frames associated with WebState.
-  void AddFrame(WebFrame& frame);
+  void AddFrame(std::unique_ptr<WebFrame> frame);
   // Removes the web frame with |frame_id|, if one exists, from the list of
   // associated web frames.
-  void RemoveFrame(const std::string& frame_id);
+  void RemoveFrameWithId(const std::string& frame_id);
+  // Removes all web frames from the list of associated web frames.
+  void RemoveAllWebFrames();
+
+  // Returns the web frame with |frame_id|, if one exisits, from the list of
+  // associated web frames.
+  WebFrame* GetFrameWithId(const std::string& frame_id);
 
   // WebFramesManager overrides
   const std::vector<WebFrame*>& GetAllWebFrames() override;
@@ -33,7 +39,10 @@ class WebFramesManagerImpl
   friend class web::WebStateUserData<WebFramesManagerImpl>;
 
   // List of all web frames associated with WebState.
-  std::vector<WebFrame*> web_frames_;
+  std::vector<std::unique_ptr<WebFrame>> web_frames_;
+  // List of pointers to all web frames associated with WebState.
+  std::vector<WebFrame*> web_frame_ptrs_;
+
   // Reference to the current main web frame.
   WebFrame* main_web_frame_ = nullptr;
 };
