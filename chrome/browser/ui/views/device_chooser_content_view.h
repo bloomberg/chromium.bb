@@ -108,12 +108,11 @@ class DeviceChooserContentView : public views::View,
 
   std::unique_ptr<ChooserController> chooser_controller_;
 
-  // True when the devices are refreshing (i.e. when OnRefreshStateChanged(true)
-  // is called).
-  bool refreshing_ = false;
+  bool adapter_enabled_ = true;
 
   views::TableView* table_view_ = nullptr;
   views::View* table_parent_ = nullptr;
+  views::Label* no_options_help_ = nullptr;
   views::StyledLabel* adapter_off_help_ = nullptr;
   BluetoothStatusContainer* bluetooth_status_container_ = nullptr;
 

@@ -64,6 +64,7 @@ class DeviceChooserContentViewTest : public ChromeViewsTestBase {
   views::TableView* table_view() { return content_view().table_view_; }
   views::View* table_parent() { return content_view().table_parent_; }
   ui::TableModel* table_model() { return table_view()->model(); }
+  views::Label* no_options_label() { return content_view().no_options_help_; }
   views::StyledLabel* adapter_off_help_link() {
     return content_view().adapter_off_help_;
   }
@@ -104,12 +105,10 @@ class DeviceChooserContentViewTest : public ChromeViewsTestBase {
   bool IsDeviceSelected() { return table_view()->selection_model().size() > 0; }
 
   void ExpectNoDevices() {
-    // "No devices found." is displayed in the table, so there's exactly 1 row.
-    EXPECT_EQ(1, table_view()->RowCount());
-    EXPECT_EQ(l10n_util::GetStringUTF16(
-                  IDS_BLUETOOTH_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
-              table_model()->GetText(0, 0));
+    EXPECT_TRUE(no_options_label()->visible());
+    EXPECT_EQ(0, table_view()->RowCount());
     // The table should be disabled since there are no (real) options.
+    EXPECT_FALSE(table_parent()->visible());
     EXPECT_FALSE(table_view()->enabled());
     EXPECT_FALSE(IsDeviceSelected());
   }
@@ -128,7 +127,6 @@ class DeviceChooserContentViewTest : public ChromeViewsTestBase {
 TEST_F(DeviceChooserContentViewTest, InitialState) {
   EXPECT_CALL(table_observer(), OnSelectionChanged()).Times(0);
 
-  EXPECT_TRUE(table_view()->visible());
   ExpectNoDevices();
   EXPECT_FALSE(adapter_off_help_link()->visible());
   EXPECT_FALSE(throbber()->visible());
@@ -212,6 +210,7 @@ TEST_F(DeviceChooserContentViewTest, TurnBluetoothOffAndOn) {
       FakeBluetoothChooserController::BluetoothStatus::UNAVAILABLE);
 
   EXPECT_FALSE(table_parent()->visible());
+  EXPECT_FALSE(no_options_label()->visible());
   EXPECT_TRUE(adapter_off_help_link()->visible());
   EXPECT_FALSE(throbber()->visible());
   EXPECT_FALSE(scanning_label()->visible());
