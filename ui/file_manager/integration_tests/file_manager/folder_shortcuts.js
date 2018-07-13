@@ -294,39 +294,38 @@ testcase.traverseFolderShortcuts = function() {
       expectSelection(
           windowId, DIRECTORY.Drive, DIRECTORY.Drive).then(this.next);
     },
-
-    // Press Ctrl+6 to select 5th shortcut.
-    // Current directory should be D.
-    // Shortcut to C should be selected.
+    // Press Ctrl+3 to select 3d shortcut.
     function() {
       remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', windowId,
-          ['#file-list', '6', 'U+0034', true, false, false], this.next);
+          'fakeKeyDown', windowId, ['#file-list', '3', '3', true, false, false],
+          this.next);
     },
+    // Current directory should be D.
     function(result) {
       chrome.test.assertTrue(result);
       expectSelection(windowId, DIRECTORY.D, DIRECTORY.D).then(this.next);
     },
-
-    // Press UP to select 4th shortcut.
+    // Press UP to select shortcut (above D).
     // Current directory should remain D.
-    // Shortcut to C should be selected.
+    // But Shortcut to C should be selected.
     function() {
       remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
           ['#directory-tree', 'ArrowUp', 'Up', false, false, false], this.next);
     },
+    // Current directory should remain D.
     function(result) {
       chrome.test.assertTrue(result);
       expectSelection(windowId, DIRECTORY.D, DIRECTORY.C).then(this.next);
     },
-
     // Press Enter to change the directory to C.
-    // Current directory should be C.
+    // Then current directory should change to C.
     function() {
       remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
           ['#directory-tree', 'Enter', 'Enter', false, false, false],
            this.next);
     },
+
+    // Current directory should be C.
     function(result) {
       chrome.test.assertTrue(result);
       expectSelection(windowId, DIRECTORY.C, DIRECTORY.C).then(this.next);

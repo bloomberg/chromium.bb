@@ -42,17 +42,11 @@ struct TestCase {
     return *this;
   }
 
-  TestCase& EnableMyFiles() {
-    enable_new_navigation = true;
-    return *this;
-  }
-
   const char* test_case_name = nullptr;
   GuestMode guest_mode = NOT_IN_GUEST_MODE;
   bool trusted_events = false;
   bool tablet_mode = false;
   bool enable_drivefs = false;
-  bool enable_new_navigation = false;
 };
 
 // EventCase: FilesAppBrowserTest with trusted JS Events.
@@ -82,11 +76,6 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
     // Default mode is clamshell: force Ash into tablet mode if requested.
     if (GetParam().tablet_mode) {
       command_line->AppendSwitchASCII("force-tablet-mode", "touch_view");
-    }
-
-    // If requested, enable the new-files-app-navigation flag.
-    if (GetParam().enable_new_navigation) {
-      command_line->AppendSwitchASCII("new-files-app-navigation", "");
     }
   }
 
@@ -132,9 +121,6 @@ std::string PostTestCaseName(const ::testing::TestParamInfo<TestCase>& test) {
 
   if (test.param.enable_drivefs)
     name.append("_DriveFs");
-
-  if (test.param.enable_new_navigation)
-    name.append("_MyFiles");
 
   return name;
 }
@@ -494,10 +480,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     MyFiles, /* my_files.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("showMyFiles").EnableMyFiles(),
-        TestCase("hideSearchButton").EnableMyFiles(),
-        TestCase("myFilesDisplaysAndOpensEntries").EnableMyFiles(),
-        TestCase("directoryTreeRefresh").EnableMyFiles()));
+        TestCase("showMyFiles"),
+        TestCase("hideSearchButton"),
+        TestCase("myFilesDisplaysAndOpensEntries"),
+        TestCase("directoryTreeRefresh")));
 
 // Structure to describe an account info.
 struct TestAccountInfo {

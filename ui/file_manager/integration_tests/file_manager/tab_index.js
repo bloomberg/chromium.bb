@@ -116,12 +116,13 @@ testcase.tabindexFocusDownloads = function() {
     function(results) {
       appId = results.windowId;
       remoteCall.waitForElement(appId, ['#file-list:focus']).then(this.next);
-    },
-    // Press the Tab key.
-    function(element) {
+    }, function(element) {
       remoteCall.callRemoteTestUtil('getActiveElement', appId, [], this.next);
     }, function(element) {
       chrome.test.assertEq('list', element.attributes['class']);
+      remoteCall.checkNextTabFocus(appId, 'breadcrumb-path-0').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'search-button').then(this.next);
     }, function(result) {
       chrome.test.assertTrue(result);
@@ -309,8 +310,9 @@ testcase.tabindexOpenDialogDownloads = function() {
             'selectFile', appId, ['hello.txt']);
       },
       ['#ok-button:not([disabled])'],
-      ['ok-button', 'cancel-button', 'search-button', 'view-button',
-       'sort-button', 'gear-button', 'directory-tree', 'file-list']));
+      ['ok-button', 'cancel-button', 'breadcrumb-path-0', 'search-button',
+      'view-button', 'sort-button', 'gear-button', 'directory-tree',
+      'file-list']));
 };
 
 /**
@@ -339,9 +341,9 @@ testcase.tabindexSaveFileDialogDownloads = function() {
       },
       'downloads', BASIC_LOCAL_ENTRY_SET, null,
       ['#ok-button:not([disabled])'],
-      ['ok-button', 'cancel-button', 'search-button', 'view-button',
-       'sort-button', 'gear-button', 'directory-tree', 'file-list',
-       'new-folder-button', 'filename-input-textbox']));
+      ['ok-button', 'cancel-button', 'breadcrumb-path-0', 'search-button',
+      'view-button', 'sort-button', 'gear-button', 'directory-tree',
+      'file-list', 'new-folder-button', 'filename-input-textbox']));
 };
 
 /**

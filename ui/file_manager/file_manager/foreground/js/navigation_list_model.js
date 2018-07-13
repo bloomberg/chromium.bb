@@ -278,7 +278,9 @@ function NavigationListModel(
   }
 
   // True if the flag new-files-app-navigation is enabled.
-  this.useNewNavigation_ = !!opt_useNewNavigation;
+  // Yes the member name is the opposite meaning.
+  // TODO(https://crbug.com/850348): Remove this flag.
+  this.disableNewNavigation_ = !!opt_useNewNavigation;
 
   // Reorder volumes, shortcuts, and optional items for initial display.
   this.reorderNavigationItems_();
@@ -418,7 +420,7 @@ NavigationListModel.prototype = {
  * it's disabled it has a flat structure with Linux Files after Recent menu.
  */
 NavigationListModel.prototype.reorderNavigationItems_ = function() {
-  if (this.useNewNavigation_) {
+  if (!this.disableNewNavigation_) {
     return this.orderAndNestItems_();
   } else {
     return this.flatNavigationItems_();
