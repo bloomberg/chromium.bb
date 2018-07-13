@@ -392,7 +392,17 @@ def Run(args, parser):
     _CopyTreeViewTemplateFiles(template_src, args.report_dir)
     logging.info('Creating JSON objects')
     meta, tree_nodes = _MakeTreeViewList(symbols, args.min_symbol_size)
-    meta['diff_mode'] = args.diff_with
+    meta.update({
+      'diff_mode': bool(args.diff_with),
+      'section_sizes': size_info.section_sizes,
+    })
+    if args.diff_with:
+      meta.update({
+        'before_metadata': size_info.before.metadata,
+        'after_metadata': size_info.after.metadata,
+      })
+    else:
+      meta['metadata'] = size_info.metadata
 
     logging.info('Serializing JSON')
     # Write newline-delimited JSON file
