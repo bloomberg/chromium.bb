@@ -134,6 +134,7 @@ class CORSURLLoaderTest : public testing::Test {
                             mojom::FetchRequestMode fetch_request_mode) {
     ResourceRequest request;
     request.fetch_request_mode = fetch_request_mode;
+    request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
     request.method = net::HttpRequestHeaders::kGetMethod;
     request.url = url;
     request.request_initiator = url::Origin::Create(origin);
@@ -629,6 +630,7 @@ TEST_F(CORSURLLoaderTest,
 
   ResourceRequest original_request;
   original_request.fetch_request_mode = mojom::FetchRequestMode::kCORS;
+  original_request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
   original_request.method = "PATCH";
   original_request.url = url;
   original_request.request_initiator = url::Origin::Create(origin);
@@ -698,6 +700,7 @@ TEST_F(CORSURLLoaderTest, RedirectInfoShouldBeUsed) {
 
   ResourceRequest request;
   request.fetch_request_mode = mojom::FetchRequestMode::kCORS;
+  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
   request.method = "POST";
   request.url = url;
   request.request_initiator = url::Origin::Create(origin);
@@ -779,6 +782,7 @@ TEST_F(CORSURLLoaderTest, FollowErrorRedirect) {
 
   ResourceRequest original_request;
   original_request.fetch_request_mode = mojom::FetchRequestMode::kCORS;
+  original_request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
   original_request.fetch_redirect_mode = mojom::FetchRedirectMode::kError;
   original_request.method = "GET";
   original_request.url = url;
@@ -808,6 +812,7 @@ TEST_F(CORSURLLoaderTest, FollowManualRedirect) {
 
   ResourceRequest original_request;
   original_request.fetch_request_mode = mojom::FetchRequestMode::kCORS;
+  original_request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
   original_request.fetch_redirect_mode = mojom::FetchRedirectMode::kManual;
   original_request.method = "GET";
   original_request.url = url;
