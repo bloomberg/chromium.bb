@@ -37,6 +37,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
+#include "chrome/browser/chromeos/login/screens/app_downloading_screen.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
@@ -132,7 +133,8 @@ const chromeos::OobeScreen kResumableScreens[] = {
     chromeos::OobeScreen::SCREEN_SYNC_CONSENT,
     chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
     chromeos::OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
-    chromeos::OobeScreen::SCREEN_RECOMMEND_APPS};
+    chromeos::OobeScreen::SCREEN_RECOMMEND_APPS,
+    chromeos::OobeScreen::SCREEN_APP_DOWNLOADING};
 
 // Checks if device is in tablet mode, and that HID-detection screen is not
 // disabled by flag.
@@ -418,6 +420,9 @@ BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_RECOMMEND_APPS) {
     return new RecommendAppsScreen(this,
                                    oobe_ui_->GetRecommendAppsScreenView());
+  } else if (screen == OobeScreen::SCREEN_APP_DOWNLOADING) {
+    return new AppDownloadingScreen(this,
+                                    oobe_ui_->GetAppDownloadingScreenView());
   } else if (screen == OobeScreen::SCREEN_WRONG_HWID) {
     return new WrongHWIDScreen(this, oobe_ui_->GetWrongHWIDScreenView());
   } else if (screen == OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW) {
@@ -633,6 +638,12 @@ void WizardController::ShowRecommendAppsScreen() {
   VLOG(1) << "Showing Recommend Apps screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_RECOMMEND_APPS);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_RECOMMEND_APPS));
+}
+
+void WizardController::ShowAppDownloadingScreen() {
+  VLOG(1) << "Showing App Downloading screen.";
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_APP_DOWNLOADING);
+  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_APP_DOWNLOADING));
 }
 
 void WizardController::ShowWrongHWIDScreen() {
@@ -952,11 +963,15 @@ void WizardController::OnArcTermsOfServiceAccepted() {
 }
 
 void WizardController::OnRecommendAppsSkipped() {
-  OnOobeFlowFinished();
+  ShowUserImageScreen();
 }
 
 void WizardController::OnRecommendAppsSelected() {
-  OnOobeFlowFinished();
+  ShowAppDownloadingScreen();
+}
+
+void WizardController::OnAppDownloadingFinished() {
+  ShowUserImageScreen();
 }
 
 void WizardController::OnVoiceInteractionValuePropSkipped() {
@@ -1261,6 +1276,8 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowArcTermsOfServiceScreen();
   } else if (screen == OobeScreen::SCREEN_RECOMMEND_APPS) {
     ShowRecommendAppsScreen();
+  } else if (screen == OobeScreen::SCREEN_APP_DOWNLOADING) {
+    ShowAppDownloadingScreen();
   } else if (screen == OobeScreen::SCREEN_WRONG_HWID) {
     ShowWrongHWIDScreen();
   } else if (screen == OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK) {
@@ -1423,6 +1440,9 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       break;
     case ScreenExitCode::RECOMMEND_APPS_SELECTED:
       OnRecommendAppsSelected();
+      break;
+    case ScreenExitCode::APP_DOWNLOADING_FINISHED:
+      OnAppDownloadingFinished();
       break;
     case ScreenExitCode::DEMO_MODE_SETUP_FINISHED:
       OnDemoSetupFinished();

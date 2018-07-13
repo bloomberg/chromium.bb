@@ -9,17 +9,17 @@ function generateContents(appIcon, appTitle, appPackageName) {
   var recommendAppsContainer = doc.getElementById('recommend-apps-container');
   var item = doc.createElement('div');
   item.classList.add('item');
+  item.classList.add('checked');
+  item.setAttribute('data-packagename', appPackageName);
+  item.onclick = toggleCheckStatus;
 
-  var checkbox = doc.createElement('input');
-  checkbox.type = 'checkbox';
-  checkbox.name = 'selectedApps';
-  checkbox.setAttribute('data-title', appTitle);
-  checkbox.setAttribute('data-packagename', appPackageName);
-  checkbox.id = 'id_' + encodeURIComponent(appPackageName);
-  checkbox.addEventListener('click', updateSelectedApps);
+  var imagePicker = doc.createElement('div');
+  imagePicker.classList.add('image-picker');
+  item.appendChild(imagePicker);
 
-  var label = doc.createElement('label');
-  label.htmlFor = 'id_' + encodeURIComponent(appPackageName);
+  var chip = doc.createElement('div');
+  chip.classList.add('chip');
+  item.appendChild(chip);
 
   var img = doc.createElement('img');
   img.classList.add('app-icon');
@@ -29,37 +29,24 @@ function generateContents(appIcon, appTitle, appPackageName) {
   title.classList.add('app-title');
   title.innerHTML = appTitle;
 
-  label.appendChild(img);
-  label.appendChild(title);
-
-  item.appendChild(checkbox);
-  item.appendChild(label);
+  chip.appendChild(img);
+  chip.appendChild(title);
 
   recommendAppsContainer.appendChild(item);
 }
 
-function updateSelectedApps(e) {
-  var checkbox = e.target;
-  if (checkbox.checked) {
-    if (!(selectedApps.hasOwnProperty(
-            checkbox.dataset.packagename))) {  // App is not selected before
-      selectedApps[checkbox.dataset.packagename] = checkbox.dataset.title;
-    }
-  } else {
-    if (checkbox.dataset.packagename in selectedApps) {  // App is selected
-      delete selectedApps[checkbox.dataset.packagename];
-    }
-  }
+// Toggle the check status of an app. If an app is selected, add the "checked"
+// class so that the checkmark is visible. Otherwise, remove the checked class.
+function toggleCheckStatus(e) {
+  var item = e.currentTarget;
+  item.classList.toggle('checked');
 }
 
 function getSelectedPackages() {
   var selectedPackages = [];
-  for (var packageName in selectedApps) {
-    if (!selectedApps.hasOwnProperty(packageName)) {
-      continue;
-    }
-
-    selectedPackages.push(packageName);
+  var checkedItems = document.getElementsByClassName('checked');
+  for (var checkedItem of checkedItems) {
+    selectedPackages.push(checkedItem.dataset.packagename);
   }
   return selectedPackages;
 }

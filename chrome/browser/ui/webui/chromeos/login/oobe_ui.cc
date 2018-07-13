@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_kiosk_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
@@ -308,6 +309,8 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   AddScreenHandler(std::make_unique<RecommendAppsScreenHandler>());
 
+  AddScreenHandler(std::make_unique<AppDownloadingScreenHandler>());
+
   AddScreenHandler(std::make_unique<UserImageScreenHandler>());
 
   AddScreenHandler(std::make_unique<UserBoardScreenHandler>());
@@ -459,6 +462,10 @@ ArcTermsOfServiceScreenView* OobeUI::GetArcTermsOfServiceScreenView() {
 
 RecommendAppsScreenView* OobeUI::GetRecommendAppsScreenView() {
   return GetView<RecommendAppsScreenHandler>();
+}
+
+AppDownloadingScreenView* OobeUI::GetAppDownloadingScreenView() {
+  return GetView<AppDownloadingScreenHandler>();
 }
 
 WrongHWIDScreenView* OobeUI::GetWrongHWIDScreenView() {

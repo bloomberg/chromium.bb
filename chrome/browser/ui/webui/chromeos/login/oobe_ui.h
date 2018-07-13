@@ -25,6 +25,7 @@ class DictionaryValue;
 }  // namespace base
 
 namespace chromeos {
+class AppDownloadingScreenView;
 class AppLaunchSplashScreenView;
 class ArcKioskSplashScreenView;
 class ArcTermsOfServiceScreenView;
@@ -114,6 +115,7 @@ class OobeUI : public content::WebUIController,
   SyncConsentScreenView* GetSyncConsentScreenView();
   ArcTermsOfServiceScreenView* GetArcTermsOfServiceScreenView();
   RecommendAppsScreenView* GetRecommendAppsScreenView();
+  AppDownloadingScreenView* GetAppDownloadingScreenView();
   UserImageView* GetUserImageView();
   ErrorScreen* GetErrorScreen();
   WrongHWIDScreenView* GetWrongHWIDScreenView();

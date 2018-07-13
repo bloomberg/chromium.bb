@@ -52,3 +52,4 @@
 // <include src="demo_setup.js">
 // <include src="demo_preferences.js">
 // <include src="recommend_apps.js">
+// <include src="app_downloading.js">

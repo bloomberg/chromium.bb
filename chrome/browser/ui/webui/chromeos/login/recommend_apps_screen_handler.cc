@@ -9,9 +9,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_fast_app_reinstall_starter.h"
+#include "chrome/grit/component_extension_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_prefs.h"
 #include "components/login/localized_values_builder.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -86,6 +88,11 @@ void RecommendAppsScreenHandler::LoadAppListInUI() {
   if (!page_is_ready())
     return;
 
+  const ui::ResourceBundle& resource_bundle =
+      ui::ResourceBundle::GetSharedInstance();
+  base::StringPiece app_list_webview = resource_bundle.GetRawDataResource(
+      IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML);
+  CallJS("setWebview", app_list_webview.as_string());
   CallJS("loadAppList");
 }
 

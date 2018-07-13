@@ -63,6 +63,7 @@ enum class ScreenExitCode {
   RECOMMEND_APPS_SELECTED = 36,
   DEMO_MODE_PREFERENCES_CONTINUED = 37,
   DEMO_MODE_PREFERENCES_CANCELED = 38,
+  APP_DOWNLOADING_FINISHED = 39,
   EXIT_CODES_COUNT  // not a real code, must be the last
 };
 

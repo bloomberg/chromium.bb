@@ -1,0 +1,73 @@
+/* Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:root {
+  color: #333;
+  font: 13px Roboto, sans-serif;
+  font-weight: 400; /* roboto-regular */
+}
+
+body {
+  margin: 12px 0 0 2px;
+  padding: 0;
+}
+
+#recommend-apps-container .item {
+  cursor: pointer;
+  float: left;
+  position: relative;
+}
+
+#recommend-apps-container .item:not(:nth-child(3n)) {
+  margin-right: 32px;
+}
+
+#recommend-apps-container .item:nth-child(3n+1) {
+  clear: left;
+}
+
+#recommend-apps-container .item:not(:nth-last-child(-n+3)) {
+  margin-bottom: 22px;
+}
+
+#recommend-apps-container .item .image-picker {
+  background: url(images/ic_checkmark.svg) no-repeat;
+  display: none;
+  height: 24px;
+  left: 180px; /* TODO(rsgingerrs): left is not rtl-language friendly. */
+  position: absolute;
+  top: -12px;
+  width: 24px;
+  z-index: 2;
+}
+
+#recommend-apps-container .item.checked .image-picker {
+  display: block;
+}
+
+#recommend-apps-container .item .chip {
+  border-radius: 4px;
+  box-shadow: 1px 1px 4px rgba(60, 64, 67, 0.3), 1px 2px 4px 1px rgba(60, 64, 67, 0.15);
+  height: 60px;
+  width: 192px;
+}
+
+img.app-icon {
+  height: 40px;
+  margin: 10px 8px 10px 10px;
+  vertical-align: middle;
+  width: 40px;
+}
+
+span.app-title {
+  color: rgb(32, 33, 36);
+  display: inline-block;
+  font-size: 13px;
+  line-height: 20px;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}

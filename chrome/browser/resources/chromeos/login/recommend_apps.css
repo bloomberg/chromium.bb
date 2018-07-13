@@ -19,11 +19,6 @@
   color: rgba(0, 0, 0, 0.54);
 }
 
-#recommend-apps-install-button,
-#recommend-apps-retry-button {
-  -webkit-padding-end: 18px;
-}
-
 .recommend-apps-loaded .app-list-loading,
 .recommend-apps-loaded .app-list-error,
 .recommend-apps-loading .subtitle,
@@ -40,5 +35,6 @@
 }
 
 #app-list-view-container {
-  height: 200px;
+  height: 100%;
+  padding: 0 52px 0 62px;
 }
