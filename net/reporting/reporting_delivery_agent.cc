@@ -196,6 +196,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
     // Start an upload for each delivery.
     for (auto& it : deliveries) {
       const OriginEndpoint& report_origin_endpoint = it.first;
+      const url::Origin& report_origin = report_origin_endpoint.first;
       const GURL& endpoint = report_origin_endpoint.second;
       std::unique_ptr<Delivery>& delivery = it.second;
 
@@ -211,7 +212,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
       // TODO: Calculate actual max depth.
       uploader()->StartUpload(
-          endpoint, json, max_depth,
+          report_origin, endpoint, json, max_depth,
           base::BindOnce(&ReportingDeliveryAgentImpl::OnUploadComplete,
                          weak_factory_.GetWeakPtr(), std::move(delivery)));
     }

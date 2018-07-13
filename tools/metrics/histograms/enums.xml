@@ -32554,6 +32554,7 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="Failed: network error"/>
   <int value="6" label="Succeeded: success"/>
   <int value="7" label="Succeeded: remove endpoint"/>
+  <int value="8" label="Failed: CORS preflight check failed"/>
 </enum>
 
 <enum name="NetTrustAnchors">
