@@ -25,6 +25,10 @@ void SetAccountCreationFormsDetectedMessage(TestPasswordGenerationAgent* agent,
                                             int form_index,
                                             int field_index);
 
+void SetAccountCreationFormsDetectedMessageForUnownedInputs(
+    TestPasswordGenerationAgent* generation_agent,
+    blink::WebDocument document);
+
 std::string CreateScriptToRegisterListeners(
     const char* const element_name,
     std::vector<base::string16>* variables_to_check);

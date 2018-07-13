@@ -55,6 +55,26 @@ void SetAccountCreationFormsDetectedMessage(
   generation_agent->FoundFormsEligibleForGeneration(forms);
 }
 
+// Sends a message that the form of unowned <inputs>s on the page is valid for
+// account creation.
+void SetAccountCreationFormsDetectedMessageForUnownedInputs(
+    TestPasswordGenerationAgent* generation_agent,
+    blink::WebDocument document) {
+  std::vector<blink::WebElement> fieldsets;
+  std::vector<blink::WebFormControlElement> control_elements =
+      form_util::GetUnownedFormFieldElements(document.All(), &fieldsets);
+  autofill::FormData form_data;
+  UnownedPasswordFormElementsAndFieldSetsToFormData(
+      fieldsets, control_elements, nullptr, document,
+      nullptr /* field_value_and_properties_map */, form_util::EXTRACT_NONE,
+      &form_data, nullptr /* FormFieldData */);
+  std::vector<autofill::PasswordFormGenerationData> forms;
+  forms.push_back(autofill::PasswordFormGenerationData{
+      CalculateFormSignature(form_data),
+      CalculateFieldSignatureForField(form_data.fields[1])});
+  generation_agent->FoundFormsEligibleForGeneration(forms);
+}
+
 // Creates script that registers event listeners for |element_name| field. To
 // check whether the listeners are called, check that the variables from
 // |variables_to_check| are set to 1.
