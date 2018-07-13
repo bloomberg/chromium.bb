@@ -142,6 +142,7 @@ class CONTENT_EXPORT BackgroundFetchContext
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchOptions& options,
       const SkBitmap& icon,
+      const std::string& ui_title,
       size_t num_completed_requests,
       size_t num_requests,
       const std::vector<std::string>& outstanding_guids,
