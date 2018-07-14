@@ -42,6 +42,8 @@ the Crisper tool (https://github.com/PolymerLabs/crisper).
   css_strip_prefixes.py script.
 - For paper-slider, added mixin for the pin text and removed custom focus change
   handler code which was hiding ripples for pointer interactions.
+- Bundled and minified Polymer 2 with minify_polymer.py, since Polymer 2 repo
+  does not distribute minified files (unlike Polymer 1).
 
 To restore a content of the 'components-chromium' directory from scratch, run
 ./v1_0/reproduce.sh on a Linux machine.

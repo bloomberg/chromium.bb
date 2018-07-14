@@ -26,6 +26,9 @@ class UnusedElementsDetector(object):
   __WHITELIST = (
     # Necessary for closure.
     'polymer-externs',
+    # Not used yet. Will be used as part of Polymer 2 migration.
+    'polymer2',
+    'shadycss',
   )
 
   def __init__(self):

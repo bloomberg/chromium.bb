@@ -19,7 +19,7 @@ import node
 import node_modules
 
 
-def main(original_html):
+def ExtractFrom(original_html):
   name = os_path.splitext(os_path.basename(original_html))[0]
   dst_dir = os_path.dirname(original_html)
   extracted_html = os_path.join(dst_dir, name + '-extracted.html')
@@ -36,4 +36,4 @@ def main(original_html):
 
 
 if __name__ == '__main__':
-  main(sys.argv[1])
+  ExtractFrom(sys.argv[1])
