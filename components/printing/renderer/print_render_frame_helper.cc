@@ -1261,45 +1261,6 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
       ConvertUnit(print_params.printable_area.width(), dpi, kPointsPerInch),
       ConvertUnit(print_params.printable_area.height(), dpi, kPointsPerInch));
 
-  double fit_to_page_scale_factor = 1.0f;
-  if (!print_preview_context_.IsModifiable()) {
-    blink::WebLocalFrame* source_frame = print_preview_context_.source_frame();
-    const blink::WebNode& source_node = print_preview_context_.source_node();
-    blink::WebPrintPresetOptions preset_options;
-    if (source_frame->GetPrintPresetOptionsForPlugin(source_node,
-                                                     &preset_options)) {
-      if (preset_options.is_page_size_uniform) {
-        // Figure out if the sizes have the same orientation
-        bool is_printable_area_landscape = printable_area_in_points.width() >
-                                           printable_area_in_points.height();
-        bool is_preset_landscape = preset_options.uniform_page_size.width >
-                                   preset_options.uniform_page_size.height;
-        bool rotate = is_printable_area_landscape != is_preset_landscape;
-        // Match orientation for computing scaling
-        double printable_width = rotate ? printable_area_in_points.height()
-                                        : printable_area_in_points.width();
-        double printable_height = rotate ? printable_area_in_points.width()
-                                         : printable_area_in_points.height();
-
-        // Ensure we do not divide by 0.
-        if (preset_options.uniform_page_size.width == 0 ||
-            preset_options.uniform_page_size.height == 0) {
-          fit_to_page_scale_factor = 0.0f;
-        } else {
-          double scale_width =
-              printable_width /
-              static_cast<double>(preset_options.uniform_page_size.width);
-          double scale_height =
-              printable_height /
-              static_cast<double>(preset_options.uniform_page_size.height);
-          fit_to_page_scale_factor = std::min(scale_width, scale_height);
-        }
-      } else {
-        fit_to_page_scale_factor = 0.0f;
-      }
-    }
-  }
-  int fit_to_page_scaling = static_cast<int>(100.0f * fit_to_page_scale_factor);
   PrintHostMsg_PreviewIds ids(print_params.preview_request_id,
                               print_params.preview_ui_id);
 
@@ -1310,7 +1271,8 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
 
   PrintHostMsg_DidGetPreviewPageCount_Params params;
   params.page_count = print_preview_context_.total_page_count();
-  params.fit_to_page_scaling = fit_to_page_scaling;
+  params.fit_to_page_scaling =
+      GetFitToPageScaleFactor(printable_area_in_points);
   Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(), params, ids));
   if (CheckForCancel())
     return false;
@@ -1402,6 +1364,43 @@ bool PrintRenderFrameHelper::FinalizePrintReadyDocument() {
   Send(new PrintHostMsg_MetafileReadyForPrinting(routing_id(), preview_params,
                                                  ids));
   return true;
+}
+
+int PrintRenderFrameHelper::GetFitToPageScaleFactor(
+    const gfx::Rect& printable_area_in_points) {
+  if (print_preview_context_.IsModifiable())
+    return 100;
+
+  blink::WebLocalFrame* frame = print_preview_context_.source_frame();
+  const blink::WebNode& node = print_preview_context_.source_node();
+  blink::WebPrintPresetOptions preset_options;
+  if (!frame->GetPrintPresetOptionsForPlugin(node, &preset_options))
+    return 100;
+
+  if (!preset_options.is_page_size_uniform)
+    return 0;
+
+  // Ensure we do not divide by 0 later.
+  const auto& uniform_page_size = preset_options.uniform_page_size;
+  if (uniform_page_size.width == 0 || uniform_page_size.height == 0)
+    return 0;
+
+  // Figure out if the sizes have the same orientation
+  bool is_printable_area_landscape =
+      printable_area_in_points.width() > printable_area_in_points.height();
+  bool is_preset_landscape = uniform_page_size.width > uniform_page_size.height;
+  bool rotate = is_printable_area_landscape != is_preset_landscape;
+  // Match orientation for computing scaling
+  double printable_width = rotate ? printable_area_in_points.height()
+                                  : printable_area_in_points.width();
+  double printable_height = rotate ? printable_area_in_points.width()
+                                   : printable_area_in_points.height();
+
+  double scale_width =
+      printable_width / static_cast<double>(uniform_page_size.width);
+  double scale_height =
+      printable_height / static_cast<double>(uniform_page_size.height);
+  return static_cast<int>(100.0f * std::min(scale_width, scale_height));
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 

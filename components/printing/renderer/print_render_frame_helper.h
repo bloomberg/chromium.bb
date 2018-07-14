@@ -223,6 +223,9 @@ class PrintRenderFrameHelper
 
   // Finalize the print ready preview document.
   bool FinalizePrintReadyDocument();
+
+  // Helper method to calculate the scale factor for fit-to-page.
+  int GetFitToPageScaleFactor(const gfx::Rect& printable_area_in_points);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   // Enable/Disable printing.
