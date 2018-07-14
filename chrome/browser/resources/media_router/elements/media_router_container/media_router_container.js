@@ -466,7 +466,7 @@ Polymer({
       this.async(function() {
         this.justOpened_ = false;
         this.fire('report-sink-count', {
-          sinkCount: this.allSinks.length,
+          sinkCount: this.allSinks.length - this.pseudoSinks_.length,
         });
       }, 3000 /* 3 seconds */);
 
