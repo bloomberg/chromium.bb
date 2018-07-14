@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/background/offliner.h"
@@ -381,8 +382,7 @@ bool RequestCoordinator::CancelActiveRequestIfItMatches(
   // If we have a request in progress and need to cancel it, call the
   // offliner to cancel.
   if (active_request_id_ != 0) {
-    if (request_ids.end() !=
-        std::find(request_ids.begin(), request_ids.end(), active_request_id_)) {
+    if (base::ContainsValue(request_ids, active_request_id_)) {
       StopOfflining(
           base::BindOnce(&RequestCoordinator::ResetActiveRequestCallback,
                          weak_ptr_factory_.GetWeakPtr()),

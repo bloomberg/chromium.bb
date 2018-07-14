@@ -8,6 +8,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -577,8 +578,7 @@ TEST_F(TranslateManagerTest, LanguageAddedToAcceptLanguagesAfterTranslation) {
   // Accept languages shouldn't contain "hi" before translating to that language
   std::vector<std::string> languages;
   mock_translate_client_.GetTranslatePrefs()->GetLanguageList(&languages);
-  EXPECT_EQ(languages.end(),
-            std::find(languages.begin(), languages.end(), "hi"));
+  EXPECT_FALSE(base::ContainsValue(languages, "hi"));
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
@@ -595,8 +595,7 @@ TEST_F(TranslateManagerTest, LanguageAddedToAcceptLanguagesAfterTranslation) {
   // Accept languages should now contain "hi" because the user chose to
   // translate to it once.
   mock_translate_client_.GetTranslatePrefs()->GetLanguageList(&languages);
-  EXPECT_NE(languages.end(),
-            std::find(languages.begin(), languages.end(), "hi"));
+  EXPECT_TRUE(base::ContainsValue(languages, "hi"));
 }
 
 TEST_F(TranslateManagerTest, DontTranslateOffline) {

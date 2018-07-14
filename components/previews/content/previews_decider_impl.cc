@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_clock.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
@@ -316,9 +317,8 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
 
   // Check provided blacklist, if any. This type of blacklist was added for
   // Finch provided blacklist for Client LoFi.
-  if (std::find(host_blacklist_from_server.begin(),
-                host_blacklist_from_server.end(), request.url().host_piece()) !=
-      host_blacklist_from_server.end()) {
+  if (base::ContainsValue(host_blacklist_from_server,
+                          request.url().host_piece())) {
     LogPreviewDecisionMade(
         PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER, request.url(),
         base::Time::Now(), type, std::move(passed_reasons), page_id);

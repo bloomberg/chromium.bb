@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/heap_profiler_event_filter.h"
@@ -77,8 +78,7 @@ bool RenderersAreBeingProfiled(
         base::kNullProcessHandle)
       continue;
     base::ProcessId pid = iter.GetCurrentValue()->GetProcess().Pid();
-    if (std::find(profiled_pids.begin(), profiled_pids.end(), pid) !=
-        profiled_pids.end()) {
+    if (base::ContainsValue(profiled_pids, pid)) {
       return true;
     }
   }
