@@ -951,6 +951,53 @@ TEST_F(ShelfViewTest, RemoveLastOverflowed) {
   EXPECT_FALSE(test_api_->IsOverflowButtonVisible());
 }
 
+// Tests the visiblity of certain shelf items when the overflow bubble is open
+// and entering or exiting tablet mode.
+TEST_F(ShelfViewTest, OverflowVisibleItemsInTabletMode) {
+  // Helper to check whether the item with index |index| is visible on the shelf
+  // associated with |shelf_test_api|.
+  auto is_visible_on_shelf = [](int index, ShelfViewTestAPI* shelf_test_api) {
+    return shelf_test_api->shelf_view()
+        ->view_model_for_test()
+        ->view_at(index)
+        ->visible();
+  };
+
+  // Setup the shelf so the overflow bubble is visible.
+  AddButtonsUntilOverflow();
+  test_api_->ShowOverflowBubble();
+  ShelfViewTestAPI overflow_test_api(
+      test_api_->overflow_bubble()->bubble_view()->shelf_view());
+
+  // The main shelf is currently showing the item at |last_visible_index|.
+  const int last_visible_index = test_api_->GetLastVisibleIndex();
+  EXPECT_TRUE(is_visible_on_shelf(last_visible_index, test_api_.get()));
+  EXPECT_FALSE(is_visible_on_shelf(last_visible_index, &overflow_test_api));
+
+  // Verify that after entering tablet mode, the last item on the main shelf
+  // is no longer visible on the main shelf but is now visible on the overflow
+  // shelf, due to the back button taking up space on the main shelf. The shelf
+  // model and corresponding view should be updated to reflect this.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  overflow_test_api.RunMessageLoopUntilAnimationsDone();
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+  EXPECT_EQ(test_api_->GetLastVisibleIndex(), last_visible_index - 1);
+  EXPECT_EQ(last_visible_index, overflow_test_api.GetFirstVisibleIndex());
+  EXPECT_FALSE(is_visible_on_shelf(last_visible_index, test_api_.get()));
+  EXPECT_TRUE(is_visible_on_shelf(last_visible_index, &overflow_test_api));
+
+  // Verify that the item at |last_visible_index| is once again shown on the
+  // main shelf after exiting tablet mode.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  overflow_test_api.RunMessageLoopUntilAnimationsDone();
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
+  EXPECT_EQ(test_api_->GetLastVisibleIndex(), last_visible_index);
+  EXPECT_TRUE(is_visible_on_shelf(last_visible_index, test_api_.get()));
+  EXPECT_FALSE(is_visible_on_shelf(last_visible_index, &overflow_test_api));
+}
+
 // Adds platform app button without waiting for animation to finish and verifies
 // that all added buttons are visible.
 TEST_F(ShelfViewTest, AddButtonQuickly) {
