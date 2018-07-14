@@ -810,6 +810,14 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::IsMediaTabImpl(
       decision_details->AddReason(DecisionFailureReason::LIVE_STATE_MIRRORING);
   }
 
+  if (media_indicator->IsCapturingDesktop(GetWebContents())) {
+    is_media_tab = true;
+    if (decision_details) {
+      decision_details->AddReason(
+          DecisionFailureReason::LIVE_STATE_DESKTOP_CAPTURE);
+    }
+  }
+
   return is_media_tab;
 }
 
