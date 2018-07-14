@@ -316,7 +316,13 @@ class Mirror(object):
       cwd = self.mirror_path
 
     if reset_fetch_config:
-      self.RunGit(['config', '--unset-all', 'remote.origin.fetch'], cwd=cwd)
+      try:
+        self.RunGit(['config', '--unset-all', 'remote.origin.fetch'], cwd=cwd)
+      except subprocess.CalledProcessError as e:
+        # If exit code was 5, it means we attempted to unset a config that
+        # didn't exist. Ignore it.
+        if e.returncode != 5:
+          raise
 
     # Don't run git-gc in a daemon.  Bad things can happen if it gets killed.
     try:

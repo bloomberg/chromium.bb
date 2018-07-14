@@ -1209,7 +1209,7 @@ class GitWrapper(SCMWrapper):
   def _SetFetchConfig(self, options):
     """Adds, and optionally fetches, "branch-heads" and "tags" refspecs
     if requested."""
-    if options.reset:
+    if options.force or options.reset:
       try:
         self._Run(['config', '--unset-all', 'remote.%s.fetch' % self.remote],
                   options)
