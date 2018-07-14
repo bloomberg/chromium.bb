@@ -26,6 +26,7 @@
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wallpaper/wallpaper_window_state_manager.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
@@ -1436,9 +1437,11 @@ void WallpaperController::FlushForTesting() {
 void WallpaperController::InstallDesktopController(aura::Window* root_window) {
   DCHECK_EQ(WALLPAPER_IMAGE, wallpaper_mode_);
 
-  auto* session_controller = Shell::Get()->session_controller();
+  bool session_blocked =
+      Shell::Get()->session_controller()->IsUserSessionBlocked();
+  bool in_overview = Shell::Get()->window_selector_controller()->IsSelecting();
   bool is_wallpaper_blurred =
-      session_controller->IsUserSessionBlocked() && IsBlurEnabled();
+      (session_blocked || in_overview) && IsBlurEnabled();
 
   if (is_wallpaper_blurred_ != is_wallpaper_blurred) {
     is_wallpaper_blurred_ = is_wallpaper_blurred;
@@ -1450,12 +1453,15 @@ void WallpaperController::InstallDesktopController(aura::Window* root_window) {
   }
 
   const int container_id = GetWallpaperContainerId(locked_);
+  float blur = login_constants::kClearBlurSigma;
+  if (is_wallpaper_blurred) {
+    blur = session_blocked ? login_constants::kBlurSigma
+                           : WindowSelectorController::kWallpaperBlurSigma;
+  }
   RootWindowController::ForWindow(root_window)
       ->wallpaper_widget_controller()
       ->SetWallpaperWidget(CreateWallpaperWidget(root_window, container_id),
-                           is_wallpaper_blurred
-                               ? login_constants::kBlurSigma
-                               : login_constants::kClearBlurSigma);
+                           blur);
 }
 
 void WallpaperController::InstallDesktopControllerForAllWindows() {
