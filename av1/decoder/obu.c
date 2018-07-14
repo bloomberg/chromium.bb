@@ -161,6 +161,17 @@ static int is_obu_in_current_operating_point(AV1Decoder *pbi,
   return 0;
 }
 
+static int byte_alignment(AV1_COMMON *const cm,
+                          struct aom_read_bit_buffer *const rb) {
+  while (rb->bit_offset & 7) {
+    if (aom_rb_read_bit(rb)) {
+      cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return -1;
+    }
+  }
+  return 0;
+}
+
 static uint32_t read_temporal_delimiter_obu() { return 0; }
 
 // Returns a boolean that indicates success.
@@ -399,9 +410,12 @@ static uint32_t read_one_tile_group_obu(
   int start_tile, end_tile;
   int32_t header_size, tg_payload_size;
 
+  assert((rb->bit_offset & 7) == 0);
+  assert(rb->bit_buffer + aom_rb_bytes_read(rb) == data);
+
   header_size = read_tile_group_header(pbi, rb, &start_tile, &end_tile,
                                        tile_start_implicit);
-  if (header_size == -1) return 0;
+  if (header_size == -1 || byte_alignment(cm, rb)) return 0;
   if (start_tile > end_tile) return header_size;
   data += header_size;
   av1_decode_tg_tiles_and_wrapup(pbi, data, data_end, p_data_end, start_tile,
@@ -886,6 +900,8 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
 
         if (obu_header.type != OBU_FRAME) break;
         obu_payload_offset = frame_header_size;
+        // Byte align the reader before reading the tile group.
+        if (byte_alignment(cm, &rb)) return -1;
         AOM_FALLTHROUGH_INTENDED;  // fall through to read tile group.
       case OBU_TILE_GROUP:
         if (!pbi->seen_frame_header) {
