@@ -36,6 +36,14 @@ bool ShouldSkipInvisibleTextAt(const Text& text,
   return layout_object->Style()->Visibility() != EVisibility::kVisible;
 }
 
+EVisibility FirstLetterVisibilityOf(const LayoutObject* layout_object) {
+  const LayoutTextFragment* text_fragment = ToLayoutTextFragment(layout_object);
+  DCHECK(text_fragment->IsRemainingTextLayoutObject());
+  return text_fragment->GetFirstLetterPseudoElement()
+      ->ComputedStyleRef()
+      .Visibility();
+}
+
 struct StringAndOffsetRange {
   String string;
   unsigned start;
@@ -90,12 +98,6 @@ void TextIteratorTextNodeHandler::HandleTextNodeWithLayoutNG() {
   DCHECK_LE(offset_, end_offset_);
   DCHECK_LE(end_offset_, text_node_->data().length());
 
-  if (ShouldSkipInvisibleTextAt(*text_node_, offset_,
-                                IgnoresStyleVisibility())) {
-    offset_ = end_offset_;
-    return;
-  }
-
   while (offset_ < end_offset_ && !text_state_.PositionNode()) {
     const EphemeralRange range_to_emit(Position(text_node_, offset_),
                                        Position(text_node_, end_offset_));
@@ -115,7 +117,9 @@ void TextIteratorTextNodeHandler::HandleTextNodeWithLayoutNG() {
       const unsigned run_end = std::min(end_offset_, unit.DOMEnd());
       if (run_start >= run_end ||
           unit.ConvertDOMOffsetToTextContent(run_start) ==
-              unit.ConvertDOMOffsetToTextContent(run_end)) {
+              unit.ConvertDOMOffsetToTextContent(run_end) ||
+          ShouldSkipInvisibleTextAt(*text_node_, run_start,
+                                    IgnoresStyleVisibility())) {
         offset_ = run_end;
         continue;
       }
@@ -187,11 +191,14 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
     }
   }
   if (ShouldHandleFirstLetter(*layout_object)) {
-    HandleTextNodeFirstLetter(ToLayoutTextFragment(layout_object));
+    LayoutTextFragment* remaining_text = ToLayoutTextFragment(layout_object);
+    const bool stops_in_first_letter =
+        end_offset_ <= remaining_text->TextStartOffset();
+
+    HandleTextNodeFirstLetter(remaining_text);
     if (first_letter_text_) {
       const String first_letter = first_letter_text_->GetText();
       const unsigned run_start = offset_;
-      const bool stops_in_first_letter = end_offset_ <= first_letter.length();
       const unsigned run_end =
           stops_in_first_letter ? end_offset_ : first_letter.length();
       EmitText(first_letter_text_, run_start, run_end);
@@ -202,10 +209,13 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
         needs_handle_pre_formatted_text_node_ = true;
       return;
     }
-    // We are here only if the DOM and/or layout trees are broken.
-    // For robustness, we should stop processing this node.
-    NOTREACHED();
-    return;
+    DCHECK_NE(EVisibility::kVisible, FirstLetterVisibilityOf(remaining_text));
+    if (stops_in_first_letter) {
+      offset_ = end_offset_;
+      return;
+    }
+    // Fall through to handle remaining text.
+    offset_ = remaining_text->TextStartOffset();
   }
   if (layout_object->Style()->Visibility() != EVisibility::kVisible &&
       !IgnoresStyleVisibility())
@@ -277,8 +287,20 @@ void TextIteratorTextNodeHandler::HandleTextNodeInRange(const Text* node,
     return;
   }
 
-  if (first_letter_text_)
-    layout_object = first_letter_text_;
+  if (should_handle_first_letter) {
+    if (first_letter_text_) {
+      layout_object = first_letter_text_;
+    } else {
+      DCHECK_NE(EVisibility::kVisible, FirstLetterVisibilityOf(layout_object));
+      if (end_offset_ <= layout_object->TextStartOffset()) {
+        offset_ = end_offset_;
+        text_box_ = nullptr;
+        return;
+      }
+      // Fall through to handle remaining text.
+      offset_ = layout_object->TextStartOffset();
+    }
+  }
 
   // Used when text boxes are out of order (Hebrew/Arabic w/ embeded LTR text)
   if (layout_object->ContainsReversedText()) {
@@ -344,16 +366,20 @@ size_t TextIteratorTextNodeHandler::RestoreCollapsedTrailingSpace(
 void TextIteratorTextNodeHandler::HandleTextBox() {
   LayoutText* layout_object =
       first_letter_text_ ? first_letter_text_ : text_node_->GetLayoutObject();
-  const unsigned text_start_offset = layout_object->TextStartOffset();
 
   if (layout_object->Style()->Visibility() != EVisibility::kVisible &&
       !IgnoresStyleVisibility()) {
     text_box_ = nullptr;
   } else {
     String str = layout_object->GetText();
+    const unsigned text_start_offset = layout_object->TextStartOffset();
     // Start and end offsets in |str|, i.e., str[start..end - 1] should be
     // emitted (after handling whitespace collapsing).
-    const unsigned start = offset_ - layout_object->TextStartOffset();
+    DCHECK_GE(offset_, text_start_offset);
+    // TODO(editing-dev): Add the DCHECK below after fixing
+    // accessibility/inline-text-word-boundary-causes-crash.html
+    // DCHECK_GE(end_offset_, text_start_offset);
+    const unsigned start = offset_ - text_start_offset;
     const unsigned end = end_offset_ - text_start_offset;
     while (text_box_) {
       const unsigned text_box_start = text_box_->Start();

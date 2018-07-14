@@ -1118,5 +1118,18 @@ TEST_P(ParameterizedTextIteratorTest, PositionInShadowTree) {
   ASSERT_TRUE(it.AtEnd());
 }
 
+TEST_P(ParameterizedTextIteratorTest, HiddenFirstLetter) {
+  InsertStyleElement("body::first-letter{visibility:hidden}");
+  SetBodyContent("foo");
+  EXPECT_EQ("[oo]", Iterate<DOMTree>());
+}
+
+TEST_P(ParameterizedTextIteratorTest, HiddenFirstLetterInPre) {
+  InsertStyleElement(
+      "body::first-letter{visibility:hidden} body{white-space:pre}");
+  SetBodyContent("foo");
+  EXPECT_EQ("[oo]", Iterate<DOMTree>());
+}
+
 }  // namespace text_iterator_test
 }  // namespace blink
