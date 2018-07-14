@@ -336,7 +336,7 @@ def SummarizeHistory(build, db):
 
   # Look for transition from most recent passing build.
   if build['status'] != constants.BUILDER_STATUS_PASSED:
-    failure = None
+    failure = {}
     for h in history:
       if h['status'] == constants.BUILDER_STATUS_PASSED:
         # Generate diff link from h .. failure

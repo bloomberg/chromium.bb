@@ -145,6 +145,7 @@ def ParseELF(root, rel_path, ldpaths=None, parse_symbols=False):
 
   for path in ('interp', 'realpath'):
     if not result[path] is None and result[path].startswith(root):
+      # pylint: disable=unsubscriptable-object
       result[path] = result[path][len(root):]
 
   result['type'] = elf.header.e_type
