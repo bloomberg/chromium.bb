@@ -70,6 +70,9 @@ enum class DecisionFailureReason : int32_t {
   LIVE_STATE_VISIBLE,
   // The tab is opted out of the intervention as it's currently using DevTools.
   LIVE_STATE_DEVTOOLS_OPEN,
+  // The tab is opted out of the intervention as it's currently capturing a
+  // window or screen.
+  LIVE_STATE_DESKTOP_CAPTURE,
   // This must remain last.
   MAX,
 };

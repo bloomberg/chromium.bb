@@ -299,23 +299,37 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardVideoCapture) {
   TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
                                       web_contents_, tab_strip_model_.get());
 
-  content::MediaStreamDevices video_devices(1);
-  video_devices[0] =
+  content::MediaStreamDevices video_devices{
       content::MediaStreamDevice(content::MEDIA_DEVICE_VIDEO_CAPTURE,
-                                 "fake_media_device", "fake_media_device");
-  MediaCaptureDevicesDispatcher* dispatcher =
-      MediaCaptureDevicesDispatcher::GetInstance();
-  dispatcher->SetTestVideoCaptureDevices(video_devices);
-  std::unique_ptr<content::MediaStreamUI> video_stream_ui =
-      dispatcher->GetMediaStreamCaptureIndicator()->RegisterMediaStream(
-          web_contents_, video_devices);
-  video_stream_ui->OnStarted(base::RepeatingClosure());
-
+                                 "fake_media_device", "fake_media_device")};
+  std::unique_ptr<content::MediaStreamUI> ui =
+      MediaCaptureDevicesDispatcher::GetInstance()
+          ->GetMediaStreamCaptureIndicator()
+          ->RegisterMediaStream(web_contents_, video_devices);
+  ui->OnStarted(base::RepeatingClosure());
   ExpectCanDiscardFalseAllReasons(&tab_lifecycle_unit,
                                   DecisionFailureReason::LIVE_STATE_CAPTURING);
 
-  video_stream_ui.reset();
+  ui.reset();
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+}
 
+TEST_F(TabLifecycleUnitTest, CannotDiscardDesktopCapture) {
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, usage_clock_.get(),
+                                      web_contents_, tab_strip_model_.get());
+
+  content::MediaStreamDevices desktop_capture_devices{
+      content::MediaStreamDevice(content::MEDIA_DESKTOP_VIDEO_CAPTURE,
+                                 "fake_media_device", "fake_media_device")};
+  std::unique_ptr<content::MediaStreamUI> ui =
+      MediaCaptureDevicesDispatcher::GetInstance()
+          ->GetMediaStreamCaptureIndicator()
+          ->RegisterMediaStream(web_contents_, desktop_capture_devices);
+  ui->OnStarted(base::RepeatingClosure());
+  ExpectCanDiscardFalseAllReasons(
+      &tab_lifecycle_unit, DecisionFailureReason::LIVE_STATE_DESKTOP_CAPTURE);
+
+  ui.reset();
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 }
 
