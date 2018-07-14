@@ -41,20 +41,21 @@ class AvSync {
   // at. AvSync will typically start upkeeping AV sync after this is called.
   virtual void NotifyStart(int64_t timestamp, int64_t pts) = 0;
 
-  // Notify that the audio playback has been stopped. AvSync will typically stop
-  // upkeeping AV sync after this call. The AV sync code is *not* responsible
-  // for stopping the video.
+  // Notify that the playback has been stopped. AvSync will typically stop
+  // upkeeping AV sync after this call.
   virtual void NotifyStop() = 0;
 
-  // Notify that the audio playback has been paused. AvSync will typically stop
-  // upkeeping AV sync until the audio playback is resumed again. The AV sync
-  // code is *not* responsible for pausing the video.
+  // Notify that the playback has been paused. AvSync will typically stop
+  // upkeeping AV sync until the playback is resumed again.
   virtual void NotifyPause() = 0;
 
-  // Notify that the audio playback has been resumed. AvSync will typically
-  // start upkeeping AV sync again after this is called. The AV sync code is
-  // *not* responsible for resuming the video.
+  // Notify that the playback has been resumed. AvSync will typically
+  // start upkeeping AV sync again after this is called.
   virtual void NotifyResume() = 0;
+
+  // Notify that the video playback rate has been changed to |rate|. AvSync will
+  // typically match the audio playback rate to that.
+  virtual void NotifyPlaybackRateChange(float rate) = 0;
 };
 
 }  // namespace media
