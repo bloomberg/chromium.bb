@@ -86,6 +86,8 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "DEMO_MODE_PREFERENCES_CANCELED";
     case ScreenExitCode::APP_DOWNLOADING_FINISHED:
       return "APP_DOWNLOADING_FINISHED";
+    case ScreenExitCode::ARC_TERMS_OF_SERVICE_BACK:
+      return "ARC_TERMS_OF_SERVICE_BACK";
     case ScreenExitCode::EXIT_CODES_COUNT:
     default:
       NOTREACHED();

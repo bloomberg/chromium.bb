@@ -10,7 +10,8 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
   return {
     EXTERNAL_API: [
       'setMetricsMode', 'setBackupAndRestoreMode', 'setLocationServicesMode',
-      'loadPlayStoreToS', 'setArcManaged', 'hideSkipButton'
+      'loadPlayStoreToS', 'setArcManaged', 'hideSkipButton', 'setupForDemoMode',
+      'setTosForTesting'
     ],
 
     /** @override */
@@ -207,6 +208,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       if (this.language_ && this.language_ == language && this.countryCode_ &&
           this.countryCode_ == countryCode &&
           !this.classList.contains('error')) {
+        this.enableButtons_(true);
         return;
       }
 
@@ -242,6 +244,14 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       } else {
         this.reloadPlayStoreToS();
       }
+    },
+
+    /**
+     * Sets Play Store terms of service for testing.
+     * @param {string} terms Fake Play Store terms of service.
+     */
+    setTosForTesting: function(terms) {
+      this.tosContent_ = terms;
     },
 
     /**
@@ -410,6 +420,13 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     },
 
     /**
+     * Sets up the variant of the screen dedicated for demo mode.
+     */
+    setupForDemoMode: function() {
+      this.addClass_('arc-tos-for-demo-mode');
+    },
+
+    /**
      * Adds new class to the list of classes of root OOBE style.
      * @param {string} className class to remove.
      *
@@ -533,10 +550,51 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
 
       this.hideOverlay();
       // ToS content may be loaded before the page is shown. In that case,
-      // height of ToS webview is not correctly caculated. Recaculate the
+      // height of ToS webview is not correctly calculated. Recalculate the
       // height here.
       this.updateTermViewHight_();
       this.focusButton_();
+
+      $('arc-tos-root').onBeforeShow();
+
+      isDemoModeSetup = this.hasClass_('arc-tos-for-demo-mode');
+      if (isDemoModeSetup) {
+        this.hideSkipButton();
+        this.setMetricsMode(
+            loadTimeData.getString('arcTextMetricsManagedEnabled'), true);
+      }
+      this.getElement_('arc-tos-accept-button').textContent =
+          loadTimeData.getString(
+              isDemoModeSetup ? 'arcTermsOfServiceAcceptAndContinueButton' :
+                                'arcTermsOfServiceAcceptButton');
+      this.getElement_('google-service-confirmation-text').innerHTML =
+          loadTimeData.getString(
+              isDemoModeSetup ?
+                  'arcAcceptAndContinueGoogleServiceConfirmation' :
+                  'arcTextGoogleServiceConfirmation');
+    },
+
+    /** @override */
+    onBeforeHide: function() {
+      this.removeClass_('arc-tos-for-demo-mode');
+      this.reset_();
+    },
+
+    /**
+     * Resets UI elements to their initial state.
+     * @private
+     */
+    reset_: function() {
+      this.getElement_('arc-location-service').hidden = true;
+      this.getElement_('arc-pai-service').hidden = true;
+      this.getElement_('arc-google-service-confirmation').hidden = true;
+      this.getElement_('arc-tos-container').style.overflowY = 'auto';
+      this.getElement_('arc-tos-container').scrollTop =
+          this.getElement_('arc-tos-container').scrollHeight;
+      this.getElement_('arc-tos-next-button').hidden = false;
+      this.getElement_('arc-tos-accept-button').hidden = true;
+      this.getElement_('arc-tos-next-button').focus();
+      this.removeClass_('arc-tos-disable-skip');
     },
 
     /**

@@ -9,7 +9,10 @@
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view_observer.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -54,6 +57,8 @@ ArcTermsOfServiceScreenHandler::~ArcTermsOfServiceScreenHandler() {
 }
 
 void ArcTermsOfServiceScreenHandler::RegisterMessages() {
+  BaseScreenHandler::RegisterMessages();
+
   AddCallback("arcTermsOfServiceSkip",
               &ArcTermsOfServiceScreenHandler::HandleSkip);
   AddCallback("arcTermsOfServiceAccept",
@@ -103,6 +108,8 @@ void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
   builder->Add("arcTermsOfServiceRetryButton", IDS_ARC_OOBE_TERMS_BUTTON_RETRY);
   builder->Add("arcTermsOfServiceAcceptButton",
                IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT);
+  builder->Add("arcTermsOfServiceAcceptAndContinueButton",
+               IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT_AND_CONTINUE);
   builder->Add("arcTermsOfServiceNextButton",
                IDS_ARC_OPT_IN_DIALOG_BUTTON_NEXT);
   builder->Add("arcPolicyLink", IDS_ARC_OPT_IN_PRIVACY_POLICY_LINK);
@@ -111,6 +118,10 @@ void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
   builder->Add("arcTextPaiService", IDS_ARC_OPT_IN_PAI);
   builder->Add("arcTextGoogleServiceConfirmation",
                IDS_ARC_OPT_IN_GOOGLE_SERVICE_CONFIRMATION);
+  builder->Add("arcTextMetricsManagedEnabled",
+               IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_ENABLED);
+  builder->Add("arcAcceptAndContinueGoogleServiceConfirmation",
+               IDS_ARC_OPT_IN_ACCEPT_AND_CONTINUE_GOOGLE_SERVICE_CONFIRMATION);
   builder->Add("arcLearnMoreStatistics", IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS);
   builder->Add("arcLearnMoreLocationService",
       IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES);
@@ -180,12 +191,23 @@ void ArcTermsOfServiceScreenHandler::Show() {
     return;
   }
 
-  DoShow();
+  // Demo mode setup flow requires different variant of Play Store terms. It
+  // does not allow to skip, but instead has back button. Some options are not
+  // displayed, because they are not relevant for demo mode usage.
+  if (arc::IsArcDemoModeSetupFlow()) {
+    DoShowForDemoModeSetup();
+  } else {
+    DoShow();
+  }
 }
 
 void ArcTermsOfServiceScreenHandler::Hide() {
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
   pref_handler_.reset();
+}
+
+void ArcTermsOfServiceScreenHandler::Bind(ArcTermsOfServiceScreen* screen) {
+  BaseScreenHandler::SetBaseScreen(screen);
 }
 
 void ArcTermsOfServiceScreenHandler::StartNetworkAndTimeZoneObserving() {
@@ -239,6 +261,16 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   pref_handler_.reset(new arc::ArcOptInPreferenceHandler(
       this, profile->GetPrefs()));
   pref_handler_->Start();
+}
+
+void ArcTermsOfServiceScreenHandler::DoShowForDemoModeSetup() {
+  DCHECK(arc::IsArcDemoModeSetupFlow());
+
+  CallJS("setupForDemoMode");
+  action_taken_ = false;
+  ShowScreen(kScreenId);
+  MaybeLoadPlayStoreToS(true);
+  StartNetworkAndTimeZoneObserving();
 }
 
 bool ArcTermsOfServiceScreenHandler::NeedDispatchEventOnAction() {
@@ -295,6 +327,8 @@ void ArcTermsOfServiceScreenHandler::RecordConsents(
 
 void ArcTermsOfServiceScreenHandler::HandleSkip(
     const std::string& tos_content) {
+  DCHECK(!arc::IsArcDemoModeSetupFlow());
+
   if (!NeedDispatchEventOnAction())
     return;
 
@@ -312,8 +346,16 @@ void ArcTermsOfServiceScreenHandler::HandleAccept(
     bool enable_backup_restore,
     bool enable_location_services,
     const std::string& tos_content) {
+  if (arc::IsArcDemoModeSetupFlow()) {
+    for (auto& observer : observer_list_)
+      observer.OnAccept();
+    // TODO(agawronska): Record consent.
+    return;
+  }
+
   if (!NeedDispatchEventOnAction())
     return;
+
   pref_handler_->EnableBackupRestore(enable_backup_restore);
   pref_handler_->EnableLocationService(enable_location_services);
 

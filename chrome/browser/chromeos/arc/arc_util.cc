@@ -495,6 +495,17 @@ bool IsArcTermsOfServiceNegotiationNeeded(const Profile* profile) {
 }
 
 bool IsArcTermsOfServiceOobeNegotiationNeeded() {
+  if (!IsPlayStoreAvailable()) {
+    VLOG(1) << "Skip ARC Terms of Service screen because Play Store is not "
+               "available on the device.";
+    return false;
+  }
+
+  // Demo mode setup flow runs before user is created, therefore this condition
+  // needs to be checked before any user related ones.
+  if (IsArcDemoModeSetupFlow())
+    return true;
+
   if (!user_manager::UserManager::Get()->IsUserLoggedIn()) {
     VLOG(1) << "Skip ARC Terms of Service screen because user is not "
             << "logged in.";
@@ -510,12 +521,6 @@ bool IsArcTermsOfServiceOobeNegotiationNeeded() {
   if (profile->GetPrefs()->IsManagedPreference(prefs::kArcEnabled) &&
       !profile->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
     VLOG(1) << "Skip ARC Terms of Service screen because ARC is disabled.";
-    return false;
-  }
-
-  if (!IsPlayStoreAvailable()) {
-    VLOG(1) << "Skip ARC Terms of Service screen because Play Store is not "
-               "available on the device.";
     return false;
   }
 
@@ -545,6 +550,17 @@ bool IsArcStatsReportingEnabled() {
   chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
                                             &pref);
   return pref;
+}
+
+bool IsArcDemoModeSetupFlow() {
+  chromeos::LoginDisplayHost* const host =
+      chromeos::LoginDisplayHost::default_host();
+  if (!host)
+    return false;
+
+  const chromeos::WizardController* const wizard_controller =
+      host->GetWizardController();
+  return wizard_controller && wizard_controller->is_in_demo_mode_setup_flow();
 }
 
 void UpdateArcFileSystemCompatibilityPrefIfNeeded(
