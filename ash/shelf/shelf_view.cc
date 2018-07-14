@@ -1712,6 +1712,9 @@ void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // when the bounds change is caused by entering or exiting tablet mode.
   if (shelf_->is_tablet_mode_animation_running()) {
     AnimateToIdealBounds();
+    if (IsShowingOverflowBubble()) {
+      overflow_bubble_->bubble_view()->shelf_view()->OnBoundsChanged(previous_bounds);
+    }
     return;
   }
 
