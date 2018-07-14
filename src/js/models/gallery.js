@@ -99,10 +99,10 @@ camera.models.Gallery.Picture.prototype = {
 
 /**
  * Creates and returns an URL for a picture.
- * @param {function(string)} onSuccess Success callback with the url as a string.
+ * @return {!Promise<string>} Promise for the result.
  */
-camera.models.Gallery.Picture.prototype.pictureURL = function(onSuccess) {
-  camera.models.FileSystem.pictureURL(this.pictureEntry_, onSuccess);
+camera.models.Gallery.Picture.prototype.pictureURL = function() {
+  return camera.models.FileSystem.pictureURL(this.pictureEntry_);
 };
 
 /**

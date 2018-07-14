@@ -328,7 +328,7 @@ camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
     var wrapper = domPicture.element;
     var picture = domPicture.picture;
     if (domPicture == selectedPicture) {
-      picture.pictureURL(function(url) {
+      picture.pictureURL().then(url => {
         if (picture.isMotionPicture) {
           updateVideo(wrapper, url);
         } else {
