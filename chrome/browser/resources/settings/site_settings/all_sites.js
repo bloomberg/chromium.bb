@@ -47,7 +47,24 @@ Polymer({
     searchQuery_: {
       type: String,
       value: '',
-    }
+    },
+
+    /**
+     * All possible sort methods.
+     * @type {Object}
+     * @private
+     */
+    sortMethods_: {
+      type: Object,
+      value: function() {
+        return {
+          name: 'name',
+          mostVisited: 'most-visited',
+          storage: 'data-stored',
+        };
+      },
+      readOnly: true,
+    },
   },
 
   /** @override */
@@ -83,7 +100,7 @@ Polymer({
       contentTypes.push(settings.ContentSettingsTypes.COOKIES);
 
     this.browserProxy_.getAllSites(contentTypes).then((response) => {
-      this.siteGroupList = response;
+      this.siteGroupList = this.sortSiteGroupList_(response);
     });
   },
 
@@ -106,14 +123,40 @@ Polymer({
   },
 
   /**
-   * Called when the input text in the search textbox is updated.
-   * @param {Event} e
+   * Sorts the given SiteGroup list with the currently selected sort method.
+   * @param {!Array<!SiteGroup>} siteGroupList The list of sites to sort.
+   * @return {!Array<!SiteGroup>}
    * @private
    */
-  onSearchChanged_: function(e) {
+  sortSiteGroupList_: function(siteGroupList) {
+    const sortMethod = this.$.sortMethod.value;
+    if (sortMethod == this.sortMethods_.name)
+      siteGroupList.sort(this.nameComparator_);
+    return siteGroupList;
+  },
+
+  nameComparator_: function(siteGroup1, siteGroup2) {
+    return siteGroup1.etldPlus1.localeCompare(siteGroup2.etldPlus1);
+  },
+
+  /**
+   * Called when the input text in the search textbox is updated.
+   * @private
+   */
+  onSearchChanged_: function() {
     const searchElement = /** @type {SettingsSubpageSearchElement} */ (
         this.$$('settings-subpage-search'));
     this.searchQuery_ = searchElement.getSearchInput().value.toLowerCase();
+  },
+
+  /**
+   * Called when the user chooses a different sort method to the default.
+   * @private
+   */
+  onSortMethodChanged_: function() {
+    this.siteGroupList = this.sortSiteGroupList_(this.siteGroupList);
+    // Force the iron-list to rerender its items, as the order has changed.
+    this.$.allSitesList.fire('iron-resize');
   },
 
   /**
