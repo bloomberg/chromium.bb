@@ -206,7 +206,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       // Functionality to extract the eTLD+1 from an origin exists only on the
       // C++ side, so just use a placeholder string in testing client-side code.
       let entry = {};
-      entry['etld1'] = 'eTLD Name ' + index;
+      entry['etldPlus1'] = 'eTLD Name ' + index;
       entry['origins'] = [origin];
       result.push(entry);
     });

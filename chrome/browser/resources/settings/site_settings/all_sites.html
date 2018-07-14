@@ -3,26 +3,40 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="../global_scroll_target_behavior.html">
 <link rel="import" href="../route.html">
+<link rel="import" href="../settings_page/settings_subpage_search.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="site_entry.html">
 
 <dom-module id="all-sites">
   <template>
     <style include="settings-shared">
+      /* Align the search box search icon with the site-entry icons. */
+      #searchAndSort {
+        -webkit-margin-start: var(--cr-icon-button-margin-start);
+        -webkit-padding-start: var(--settings-box-row-padding);
+        margin-bottom: 50px;
+      }
+
       /* There is only one top-level heading for All Sites, so remove the
        * additional leading padding used for lists. */
       .list-frame.without-heading {
         -webkit-padding-start: var(--settings-box-row-padding);
       }
     </style>
+    <div id="searchAndSort">
+      <settings-subpage-search label="$i18n{siteSettingsAllSitesSearch}"
+          on-search-changed="onSearchChanged_">
+      </settings-subpage-search>
+    </div>
     <div class="list-frame" hidden$="[[siteGroupList.length]]">
       <div class="list-item secondary">$i18n{noSitesAdded}</div>
     </div>
     <div class="list-frame without-heading" id="listContainer">
-      <iron-list id="allSitesList" items="[[siteGroupList]]"
+      <iron-list id="allSitesList"
+          items="[[filterPopulatedList_(siteGroupList, searchQuery_)]]"
           scroll-target="[[subpageScrollTarget]]">
         <template>
-          <site-entry site-group="[[item]]"></site-entry>
+          <site-entry site-group="[[item]]" list-index="[[index]]"></site-entry>
         </template>
       </iron-list>
     </div>
