@@ -287,7 +287,7 @@ def _VerifyDepsGraphOnePkg(deps_graph, pkg):
   validated = True
 
   golden_deps_set = _GetGoldenDepsSet(pkg)
-  if golden_deps_set == None:
+  if golden_deps_set is None:
     print('Error: golden dependency list not configured for %s package' % pkg)
     validated = False
 

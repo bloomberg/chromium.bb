@@ -126,7 +126,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
     to_raise = None
 
-    if cmd_fail_mode == None:
+    if cmd_fail_mode is None:
       to_raise = None
     elif cmd_fail_mode == 'timeout':
       to_raise = timeout_util.TimeoutError('Timed out')

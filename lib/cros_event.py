@@ -115,7 +115,7 @@ class Event(dict):
     self[EVENT_FINISH_TIME] = time()
 
     if EVENT_STATUS not in self or self[EVENT_STATUS] == EVENT_STATUS_RUNNING:
-      if exc_value == None:
+      if exc_value is None:
         self[EVENT_STATUS] = EVENT_STATUS_PASS
       else:
         self[EVENT_STATUS] = EVENT_STATUS_FAIL
@@ -128,7 +128,7 @@ class Event(dict):
     if self.emit_func is not None:
       self.emit_func(self)
 
-    return True if exc_value == None else False
+    return exc_value is None
 
 
 class EventLogger(object):

@@ -447,7 +447,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
           push_overlays in [None, 'public', 'private', 'both'],
           'Config %s: has unexpected push_overlays value.' % build_name)
 
-      if overlays == None:
+      if overlays is None:
         subset = [None]
       elif overlays == 'public':
         subset = [None, 'public']

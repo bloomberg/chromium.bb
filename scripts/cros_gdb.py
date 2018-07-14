@@ -158,13 +158,13 @@ To install the debug symbols for all available packages, run:
     for root, _, files in os.walk(output_dir):
       for f in files:
         if f == binary_name:
-          if target_binary == None:
+          if target_binary is None:
             target_binary = os.path.join(root, f)
           else:
             raise GdbSimpleChromeBinaryError(
                 'There are multiple %s under %s. Please specify the path to '
                 'the binary via --binary'% binary_name, output_dir)
-    if target_binary == None:
+    if target_binary is None:
       raise GdbSimpleChromeBinaryError('There is no %s under %s.'
                                        % binary_name, output_dir)
     return target_binary
