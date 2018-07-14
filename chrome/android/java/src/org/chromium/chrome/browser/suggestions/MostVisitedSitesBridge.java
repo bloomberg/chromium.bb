@@ -5,7 +5,11 @@
 package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNIAdditionalImport;
+import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,7 +18,9 @@ import java.util.List;
 /**
  * Methods to bridge into native history to provide most recent urls, titles and thumbnails.
  */
-public class MostVisitedSitesBridge implements MostVisitedSites {
+@JNIAdditionalImport(MostVisitedSites.class) // Needed for the Observer usage in the native calls.
+public class MostVisitedSitesBridge
+        implements MostVisitedSites, HomepageManager.HomepageStateListener {
     /**
      * Maximum number of tiles that is explicitly supported. UMA relies on this value, so even if
      * the UI supports it, getting more can raise unexpected issues.
@@ -32,6 +38,27 @@ public class MostVisitedSitesBridge implements MostVisitedSites {
      */
     public MostVisitedSitesBridge(Profile profile) {
         mNativeMostVisitedSitesBridge = nativeInit(profile);
+        // The first tile replaces is replaced with homepage tile if NTPButton is enabled. Setting
+        // a homepage client to provide Java side information.
+        if (FeatureUtilities.isNewTabPageButtonEnabled()) {
+            nativeSetHomepageClient(mNativeMostVisitedSitesBridge, new HomepageClient() {
+                @Override
+                public boolean isHomepageEnabled() {
+                    return HomepageManager.isHomepageEnabled();
+                }
+
+                @Override
+                public boolean isNewTabPageUsedAsHomepage() {
+                    return NewTabPage.isNTPUrl(getHomepageUrl());
+                }
+
+                @Override
+                public String getHomepageUrl() {
+                    return HomepageManager.getHomepageUri();
+                }
+            });
+            HomepageManager.getInstance().addListener(this);
+        }
     }
 
     /**
@@ -39,6 +66,8 @@ public class MostVisitedSitesBridge implements MostVisitedSites {
      */
     @Override
     public void destroy() {
+        // Stop listening even if it was not started in the first place. (Handled without errors.)
+        HomepageManager.getInstance().removeListener(this);
         assert mNativeMostVisitedSitesBridge != 0;
         nativeDestroy(mNativeMostVisitedSitesBridge);
         mNativeMostVisitedSitesBridge = 0;
@@ -79,6 +108,16 @@ public class MostVisitedSitesBridge implements MostVisitedSites {
         nativeRecordOpenedMostVisitedItem(mNativeMostVisitedSitesBridge, tile.getIndex(),
                 tile.getType(), tile.getTitleSource(), tile.getSource(),
                 tile.getData().dataGenerationTime.getTime());
+    }
+
+    @Override
+    public void onHomepageStateUpdated() {
+        assert mNativeMostVisitedSitesBridge != 0;
+        // Ensure even a blacklisted homepage can be set as tile when (re-)enabling it.
+        if (HomepageManager.isHomepageEnabled()) {
+            removeBlacklistedUrl(HomepageManager.getHomepageUri());
+        }
+        nativeOnHomepageStateChanged(mNativeMostVisitedSitesBridge);
     }
 
     /**
@@ -139,6 +178,9 @@ public class MostVisitedSitesBridge implements MostVisitedSites {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeMostVisitedSitesBridge);
+    private native void nativeOnHomepageStateChanged(long nativeMostVisitedSitesBridge);
+    private native void nativeSetHomepageClient(
+            long nativeMostVisitedSitesBridge, MostVisitedSites.HomepageClient homePageClient);
     private native void nativeSetObserver(
             long nativeMostVisitedSitesBridge, MostVisitedSitesBridge observer, int numSites);
     private native void nativeAddOrRemoveBlacklistedUrl(

@@ -70,6 +70,7 @@ bool IOSNTPTilesInternalsMessageHandlerBridge::DoesSourceExist(
     case ntp_tiles::TileSource::SUGGESTIONS_SERVICE:
     case ntp_tiles::TileSource::POPULAR:
     case ntp_tiles::TileSource::POPULAR_BAKED_IN:
+    case ntp_tiles::TileSource::HOMEPAGE:
       return true;
     case ntp_tiles::TileSource::WHITELIST:
       return false;
