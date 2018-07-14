@@ -1,4 +1,4 @@
-Contributing to Wayland
+Contributing to Weston
 =======================
 
 Sending patches
@@ -11,11 +11,11 @@ The first line of a commit message should contain a prefix indicating
 what part is affected by the patch followed by one sentence that
 describes the change. For examples:
 
-    protocol: Support scaled outputs and surfaces
+    compositor-drm: Support modifiers for drm_fb
 
 and
 
-    doc: generate server documentation from XML too
+    input: do not forward unmatched touch-ups
 
 If in doubt what prefix to use, look at other commits that change the
 same file(s) as the patch being sent.
@@ -193,9 +193,9 @@ or bullying behaviour is not tolerated by the project.
 Licensing
 =========
 
-Wayland is licensed with the intention to be usable anywhere X.org is.
+Weston is licensed with the intention to be usable anywhere X.org is.
 Originally, X.org was covered under the MIT X11 license, but changed to
-the MIT Expat license.  Similarly, Wayland was covered initially as MIT
+the MIT Expat license.  Similarly, Weston was covered initially as MIT
 X11 licensed, but changed to the MIT Expat license, following in X.org's
 footsteps.  Other than wording, the two licenses are substantially the
 same, with the exception of a no-advertising clause in X11 not included
