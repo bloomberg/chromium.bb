@@ -23,9 +23,9 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.vr.rules.VrActivityRestriction;
+import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
-import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
+import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 
@@ -40,10 +40,10 @@ import java.util.concurrent.Callable;
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT) // WebVR is only supported on K+
-public class WebVrDeviceTest {
+public class WebXrVrDeviceTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
-            VrTestRuleUtils.generateDefaultVrTestRuleParameters();
+            XrTestRuleUtils.generateDefaultXrTestRuleParameters();
     @Rule
     public RuleChain mRuleChain;
 
@@ -51,9 +51,9 @@ public class WebVrDeviceTest {
     private VrTestFramework mVrTestFramework;
     private XrTestFramework mXrTestFramework;
 
-    public WebVrDeviceTest(Callable<ChromeActivityTestRule> callable) throws Exception {
+    public WebXrVrDeviceTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
-        mRuleChain = VrTestRuleUtils.wrapRuleInVrActivityRestrictionRule(mTestRule);
+        mRuleChain = XrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
     }
 
     @Before
@@ -68,7 +68,7 @@ public class WebVrDeviceTest {
      */
     @Test
     @MediumTest
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testDeviceCapabilitiesMatchExpectations() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getFileUrlForHtmlTestFile(
@@ -86,7 +86,7 @@ public class WebVrDeviceTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add("enable-features=WebXROrientationSensorDevice")
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testGvrlessMagicWindowCapabilities() throws InterruptedException {
         // Make Chrome think that VrCore is not installed
         VrShellDelegateUtils.setVrCoreCompatibility(VrCoreCompatibility.VR_NOT_AVAILABLE);
@@ -111,7 +111,7 @@ public class WebVrDeviceTest {
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
-            @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testWebXrCapabilities() throws InterruptedException {
         mXrTestFramework.loadUrlAndAwaitInitialization(
                 XrTestFramework.getFileUrlForHtmlTestFile("test_webxr_capabilities"),

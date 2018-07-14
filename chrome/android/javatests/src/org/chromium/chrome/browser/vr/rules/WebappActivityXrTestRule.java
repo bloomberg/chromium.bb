@@ -8,16 +8,16 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
-import org.chromium.chrome.browser.vr.rules.VrActivityRestriction.SupportedActivity;
+import org.chromium.chrome.browser.vr.rules.XrActivityRestriction.SupportedActivity;
 import org.chromium.chrome.browser.vr.util.HeadTrackingUtils;
-import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
+import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
 import org.chromium.chrome.browser.webapps.WebappActivityTestRule;
 
 /**
  * VR extension of WebappActivityTestRule. Applies WebappActivityTestRule then opens
  * up a WebappActivity to a blank page.
  */
-public class WebappActivityVrTestRule extends WebappActivityTestRule implements VrTestRule {
+public class WebappActivityXrTestRule extends WebappActivityTestRule implements XrTestRule {
     private boolean mTrackerDirty;
 
     @Override
@@ -25,9 +25,9 @@ public class WebappActivityVrTestRule extends WebappActivityTestRule implements 
         return super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                VrTestRuleUtils.ensureNoVrActivitiesDisplayed();
+                XrTestRuleUtils.ensureNoVrActivitiesDisplayed();
                 HeadTrackingUtils.checkForAndApplyHeadTrackingModeAnnotation(
-                        WebappActivityVrTestRule.this, desc);
+                        WebappActivityXrTestRule.this, desc);
                 startWebappActivity();
                 TestVrShellDelegate.createTestVrShellDelegate(getActivity());
                 try {

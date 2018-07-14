@@ -28,7 +28,7 @@ import org.chromium.chrome.browser.history.HistoryItemView;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
+import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityXrTestRule;
 import org.chromium.chrome.browser.vr.util.TransitionUtils;
 import org.chromium.chrome.browser.vr.util.VrInfoBarUtils;
 import org.chromium.chrome.browser.vr.util.VrTransitionUtils;
@@ -49,11 +49,11 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-public class VrShellNavigationTest {
+public class VrBrowserNavigationTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
     @Rule
-    public ChromeTabbedActivityVrTestRule mTestRule = new ChromeTabbedActivityVrTestRule();
+    public ChromeTabbedActivityXrTestRule mTestRule = new ChromeTabbedActivityXrTestRule();
 
     private VrTestFramework mVrTestFramework;
     private XrTestFramework mXrTestFramework;

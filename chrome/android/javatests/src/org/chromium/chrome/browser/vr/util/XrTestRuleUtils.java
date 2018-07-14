@@ -13,53 +13,53 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
 import org.chromium.base.test.params.ParameterSet;
-import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
-import org.chromium.chrome.browser.vr.rules.CustomTabActivityVrTestRule;
-import org.chromium.chrome.browser.vr.rules.VrActivityRestriction.SupportedActivity;
-import org.chromium.chrome.browser.vr.rules.VrActivityRestrictionRule;
-import org.chromium.chrome.browser.vr.rules.VrTestRule;
-import org.chromium.chrome.browser.vr.rules.WebappActivityVrTestRule;
+import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityXrTestRule;
+import org.chromium.chrome.browser.vr.rules.CustomTabActivityXrTestRule;
+import org.chromium.chrome.browser.vr.rules.WebappActivityXrTestRule;
+import org.chromium.chrome.browser.vr.rules.XrActivityRestriction.SupportedActivity;
+import org.chromium.chrome.browser.vr.rules.XrActivityRestrictionRule;
+import org.chromium.chrome.browser.vr.rules.XrTestRule;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 /**
- * Utility class for interacting with VR-specific Rules, particularly VrActivityRestrictionRule.
+ * Utility class for interacting with VR-specific Rules, particularly XrActivityRestrictionRule.
  */
-public class VrTestRuleUtils {
+public class XrTestRuleUtils {
     // VrCore waits this amount of time after exiting VR before actually unregistering a registered
     // Daydream intent, meaning that it still thinks VR is active until this amount of time has
     // passed.
     private static final int VRCORE_UNREGISTER_DELAY_MS = 500;
     /**
-     * Creates the list of VrTestRules that are currently supported for use in test
+     * Creates the list of XrTestRules that are currently supported for use in test
      * parameterization.
      */
-    public static ArrayList<ParameterSet> generateDefaultVrTestRuleParameters() {
+    public static ArrayList<ParameterSet> generateDefaultXrTestRuleParameters() {
         ArrayList<ParameterSet> parameters = new ArrayList<ParameterSet>();
         parameters.add(new ParameterSet()
-                               .value(new Callable<ChromeTabbedActivityVrTestRule>() {
+                               .value(new Callable<ChromeTabbedActivityXrTestRule>() {
                                    @Override
-                                   public ChromeTabbedActivityVrTestRule call() {
-                                       return new ChromeTabbedActivityVrTestRule();
+                                   public ChromeTabbedActivityXrTestRule call() {
+                                       return new ChromeTabbedActivityXrTestRule();
                                    }
                                })
                                .name("ChromeTabbedActivity"));
 
         parameters.add(new ParameterSet()
-                               .value(new Callable<CustomTabActivityVrTestRule>() {
+                               .value(new Callable<CustomTabActivityXrTestRule>() {
                                    @Override
-                                   public CustomTabActivityVrTestRule call() {
-                                       return new CustomTabActivityVrTestRule();
+                                   public CustomTabActivityXrTestRule call() {
+                                       return new CustomTabActivityXrTestRule();
                                    }
                                })
                                .name("CustomTabActivity"));
 
         parameters.add(new ParameterSet()
-                               .value(new Callable<WebappActivityVrTestRule>() {
+                               .value(new Callable<WebappActivityXrTestRule>() {
                                    @Override
-                                   public WebappActivityVrTestRule call() {
-                                       return new WebappActivityVrTestRule();
+                                   public WebappActivityXrTestRule call() {
+                                       return new WebappActivityXrTestRule();
                                    }
                                })
                                .name("WebappActivity"));
@@ -68,17 +68,17 @@ public class VrTestRuleUtils {
     }
 
     /**
-     * Creates a RuleChain that applies the VrActivityRestrictionRule before the given VrTestRule.
+     * Creates a RuleChain that applies the XrActivityRestrictionRule before the given XrTestRule.
      */
-    public static RuleChain wrapRuleInVrActivityRestrictionRule(TestRule rule) {
-        Assert.assertTrue("Given rule is a VrTestRule", rule instanceof VrTestRule);
+    public static RuleChain wrapRuleInXrActivityRestrictionRule(TestRule rule) {
+        Assert.assertTrue("Given rule is a XrTestRule", rule instanceof XrTestRule);
         return RuleChain
-                .outerRule(new VrActivityRestrictionRule(((VrTestRule) rule).getRestriction()))
+                .outerRule(new XrActivityRestrictionRule(((XrTestRule) rule).getRestriction()))
                 .around(rule);
     }
 
     /**
-     * Converts VrActivityRestriction.SupportedActivity enum to strings
+     * Converts XrActivityRestriction.SupportedActivity enum to strings
      */
     public static String supportedActivityToString(SupportedActivity activity) {
         switch (activity) {

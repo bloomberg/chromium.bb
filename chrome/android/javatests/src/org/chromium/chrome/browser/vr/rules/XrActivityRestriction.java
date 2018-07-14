@@ -11,20 +11,20 @@ import java.lang.annotation.Target;
 
 /**
  * An annotation for listing what types of ChromeActivity the test should be restricted to.
- * This is meant to only be used with test classes that have a VrActivityRestrictionRule,
+ * This is meant to only be used with test classes that have a XrActivityRestrictionRule,
  * otherwise the annotation will have no effect.
  *
  * For example, the following would restrict a test to only run in ChromeTabbedActivity and
  * CustomTabActivity:
  *     <code>
- *     @VrActivityRestriction({VrActivityRestriction.CTA, VrActivityRestriction.CCT})
+ *     @XrActivityRestriction({XrActivityRestriction.CTA, XrActivityRestriction.CCT})
  *     </code>
- * If a test is not annotated with this and VrActivityRestrictionRule is present, the test
+ * If a test is not annotated with this and XrActivityRestrictionRule is present, the test
  * will default to only running in ChromeTabbedActivity (regular Chrome).
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface VrActivityRestriction {
+public @interface XrActivityRestriction {
     public enum SupportedActivity {
         CTA, // ChromeTabbedActivity/Normal Chrome
         CCT, // CustomTabActivity/Chrome Custom Tab

@@ -24,10 +24,10 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.vr.rules.VrActivityRestriction;
+import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.VrInfoBarUtils;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
-import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
+import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 
@@ -46,7 +46,7 @@ import java.util.concurrent.Callable;
 public class VrInstallUpdateInfoBarTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
-            VrTestRuleUtils.generateDefaultVrTestRuleParameters();
+            XrTestRuleUtils.generateDefaultXrTestRuleParameters();
     @Rule
     public RuleChain mRuleChain;
 
@@ -55,7 +55,7 @@ public class VrInstallUpdateInfoBarTest {
 
     public VrInstallUpdateInfoBarTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mVrTestRule = callable.call();
-        mRuleChain = VrTestRuleUtils.wrapRuleInVrActivityRestrictionRule(mVrTestRule);
+        mRuleChain = XrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mVrTestRule);
     }
 
     @Before
@@ -109,7 +109,7 @@ public class VrInstallUpdateInfoBarTest {
      */
     @Test
     @MediumTest
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testInfoBarNotPresentWhenVrServicesCurrent() throws InterruptedException {
         infoBarTestHelper(VrCoreCompatibility.VR_READY);
     }
@@ -119,7 +119,7 @@ public class VrInstallUpdateInfoBarTest {
      */
     @Test
     @MediumTest
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testInfoBarPresentWhenVrServicesOutdated() throws InterruptedException {
         infoBarTestHelper(VrCoreCompatibility.VR_OUT_OF_DATE);
     }
@@ -129,7 +129,7 @@ public class VrInstallUpdateInfoBarTest {
      */
     @Test
     @MediumTest
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testInfoBarPresentWhenVrServicesMissing() throws InterruptedException {
         infoBarTestHelper(VrCoreCompatibility.VR_NOT_AVAILABLE);
     }
@@ -140,7 +140,7 @@ public class VrInstallUpdateInfoBarTest {
      */
     @Test
     @MediumTest
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testInfoBarNotPresentWhenVrServicesNotSupported() throws InterruptedException {
         infoBarTestHelper(VrCoreCompatibility.VR_NOT_SUPPORTED);
     }

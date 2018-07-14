@@ -9,24 +9,24 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.chrome.browser.vr.rules.VrActivityRestriction.SupportedActivity;
-import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
+import org.chromium.chrome.browser.vr.rules.XrActivityRestriction.SupportedActivity;
+import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
 
 /**
  * Rule that conditionally skips a test if the current VrTestRule's Activity is not
  * one of the supported Activity types for the test.
  */
-public class VrActivityRestrictionRule implements TestRule {
+public class XrActivityRestrictionRule implements TestRule {
     private SupportedActivity mCurrentRestriction;
 
-    public VrActivityRestrictionRule(SupportedActivity currentRestriction) {
+    public XrActivityRestrictionRule(SupportedActivity currentRestriction) {
         mCurrentRestriction = currentRestriction;
     }
 
     @Override
     public Statement apply(final Statement base, final Description desc) {
-        // Check if the test has a VrActivityRestriction annotation
-        VrActivityRestriction annotation = desc.getAnnotation(VrActivityRestriction.class);
+        // Check if the test has a XrActivityRestriction annotation
+        XrActivityRestriction annotation = desc.getAnnotation(XrActivityRestriction.class);
         if (annotation == null) {
             if (mCurrentRestriction == SupportedActivity.CTA) {
                 // Default to running in ChromeTabbedActivity if no restriction annotation
@@ -49,7 +49,7 @@ public class VrActivityRestrictionRule implements TestRule {
             @Override
             public void evaluate() {
                 Assume.assumeTrue("Test ignored because "
-                                + VrTestRuleUtils.supportedActivityToString(mCurrentRestriction)
+                                + XrTestRuleUtils.supportedActivityToString(mCurrentRestriction)
                                 + " was not one of the specified activities to run the test in.",
                         false);
             }
