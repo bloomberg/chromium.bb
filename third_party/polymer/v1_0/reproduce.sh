@@ -62,14 +62,19 @@ find components -type f \( -name \*.html -o -name \*.css -o -name \*.js\
   -o -name \*.bat -o -name \*.svg \) -print0 | xargs -0 sed -i -e $'s/\r$//g'
 
 # Resolve a unicode encoding issue in dom-innerHTML.html.
+# TODO(dpapad): Examine if this is necessary for polymer2/ as well.
 NBSP=$(python -c 'print u"\u00A0".encode("utf-8")')
 sed -i 's/['"$NBSP"']/\\u00A0/g' components/polymer/polymer-mini.html
 
 rsync -c --delete -r -v --exclude-from="rsync_exclude.txt" \
     --prune-empty-dirs "components/" "components-chromium/"
 
-find "components-chromium/" -name "*.html" | \
-xargs grep -l "<script>" | \
+echo 'Minifying Polymer 2, since it comes non-minified from bower.'
+python minify_polymer.py
+
+find "components-chromium/" -name "*.html" \
+  ! -path "components-chromium/polymer2*" | \
+  xargs grep -l "<script>" | \
 while read original_html_name
 do
   echo "Crisping $original_html_name"
