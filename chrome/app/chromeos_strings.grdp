@@ -4590,6 +4590,9 @@
   <message name="IDS_ARC_OPT_IN_GOOGLE_SERVICE_CONFIRMATION" desc="Message in the opt-in dialog for Accepting Google services.">
     By clicking the "I Agree" button, you agree to the processing described above for these Google services.
   </message>
+  <message name="IDS_ARC_OPT_IN_ACCEPT_AND_CONTINUE_GOOGLE_SERVICE_CONFIRMATION" desc="Message in the opt-in dialog for accepting Google services and continuing the setup.">
+    By clicking the "Accept and continue" button, you agree to the processing described above for these Google services.
+  </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_CLOSE" desc="Text for close button in learn more dialog">
     Close
   </message>
@@ -4675,7 +4678,10 @@
   <message name="IDS_ARC_OOBE_TERMS_LOAD_ERROR" desc="Load error message of the Arc Terms OOBE dialog.">
     Google Play Terms of Service cannot be loaded. Please retry.
   </message>
-  <message name="IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT" desc="Accept button of the Arc Terms OOBE dialog.">
+  <message name="IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT_AND_CONTINUE" desc="Accept and continue button of the Arc Terms OOBE dialog.">
+    Accept and continue
+  </message>
+    <message name="IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT" desc="Accept button of the Arc Terms OOBE dialog.">
     I Agree
   </message>
   <message name="IDS_ARC_OOBE_TERMS_BUTTON_SKIP" desc="Skip button of the Arc Terms OOBE dialog.">

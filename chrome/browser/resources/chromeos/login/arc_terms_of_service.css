@@ -41,6 +41,15 @@ p {
   pointer-events: none;
 }
 
+.arc-tos-for-demo-mode #arc-location-service,
+.arc-tos-for-demo-mode #arc-backup-service {
+  display: none;
+}
+
+#arc-tos-dialog:not(.arc-tos-for-demo-mode) #arc-tos-back-button {
+  display: none;
+}
+
 .arc-tos-loading p,
 .error p {
   color: rgba(0, 0, 0, 0.87);
@@ -98,12 +107,7 @@ p {
   width: 100%;
 }
 
+#arc-tos-back-button,
 #arc-tos-skip-button {
   -webkit-padding-end: 6px;
-}
-
-#arc-tos-accept-button,
-#arc-tos-next-button,
-#arc-tos-retry-button {
-  -webkit-padding-end: 18px;
 }

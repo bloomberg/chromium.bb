@@ -13,6 +13,7 @@
 namespace chromeos {
 
 class ArcTermsOfServiceScreenViewObserver;
+class ArcTermsOfServiceScreen;
 
 // Interface for dependency injection between TermsOfServiceScreen and its
 // WebUI representation.
@@ -33,6 +34,9 @@ class ArcTermsOfServiceScreenView {
 
   // Hides the contents of the screen.
   virtual void Hide() = 0;
+
+  // Sets view and screen.
+  virtual void Bind(ArcTermsOfServiceScreen* screen) = 0;
 
  protected:
   ArcTermsOfServiceScreenView() = default;

@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
+#include "chrome/browser/chromeos/login/screens/mock_arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_demo_preferences_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_demo_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_device_disabled_screen_view.h"
@@ -589,6 +590,9 @@ class WizardControllerFlowTest : public WizardControllerTest {
     MOCK(mock_demo_preferences_screen_,
          OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES, MockDemoPreferencesScreen,
          MockDemoPreferencesScreenView);
+    MOCK(mock_arc_terms_of_service_screen_,
+         OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE, MockArcTermsOfServiceScreen,
+         MockArcTermsOfServiceScreenView);
     device_disabled_screen_view_.reset(new MockDeviceDisabledScreenView);
     wizard_controller->screen_manager()
         ->screens_[OobeScreen::SCREEN_DEVICE_DISABLED] =
@@ -733,6 +737,9 @@ class WizardControllerFlowTest : public WizardControllerTest {
       mock_demo_setup_screen_;
   MockOutShowHide<MockDemoPreferencesScreen, MockDemoPreferencesScreenView>*
       mock_demo_preferences_screen_;
+
+  MockOutShowHide<MockArcTermsOfServiceScreen, MockArcTermsOfServiceScreenView>*
+      mock_arc_terms_of_service_screen_;
 
   std::unique_ptr<MockDeviceDisabledScreenView> device_disabled_screen_view_;
 
@@ -2098,9 +2105,18 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupFlowFinished) {
   EXPECT_TRUE(IsInDemoSetupFlow());
 
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_arc_terms_of_service_screen_, Show()).Times(1);
 
   OnExit(*mock_eula_screen_, ScreenExitCode::EULA_ACCEPTED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+
+  EXPECT_CALL(*mock_arc_terms_of_service_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
+
+  OnExit(*mock_arc_terms_of_service_screen_,
+         ScreenExitCode::ARC_TERMS_OF_SERVICE_ACCEPTED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
   EXPECT_TRUE(IsInDemoSetupFlow());
@@ -2136,9 +2152,18 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupCanceled) {
   EXPECT_TRUE(IsInDemoSetupFlow());
 
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_arc_terms_of_service_screen_, Show()).Times(1);
 
   OnExit(*mock_eula_screen_, ScreenExitCode::EULA_ACCEPTED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+
+  EXPECT_CALL(*mock_arc_terms_of_service_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
+
+  OnExit(*mock_arc_terms_of_service_screen_,
+         ScreenExitCode::ARC_TERMS_OF_SERVICE_ACCEPTED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
   EXPECT_TRUE(IsInDemoSetupFlow());
@@ -2204,6 +2229,46 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, EulaBackPressed) {
   OnExit(*mock_eula_screen_, ScreenExitCode::EULA_BACK);
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, ArcTosBackPressed) {
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
+  EXPECT_FALSE(IsInDemoSetupFlow());
+  WaitUntilJSIsReady();
+
+  EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_demo_preferences_screen_, Show()).Times(1);
+
+  WizardController::default_controller()->StartDemoModeSetup();
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+
+  EXPECT_CALL(*mock_demo_preferences_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+
+  OnExit(*mock_demo_preferences_screen_,
+         ScreenExitCode::DEMO_MODE_PREFERENCES_CONTINUED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+
+  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_arc_terms_of_service_screen_, Show()).Times(1);
+
+  OnExit(*mock_eula_screen_, ScreenExitCode::EULA_ACCEPTED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
+  EXPECT_TRUE(IsInDemoSetupFlow());
+
+  EXPECT_CALL(*mock_arc_terms_of_service_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+
+  OnExit(*mock_arc_terms_of_service_screen_,
+         ScreenExitCode::ARC_TERMS_OF_SERVICE_BACK);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
   EXPECT_TRUE(IsInDemoSetupFlow());
 }
 
@@ -2367,7 +2432,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
 // TODO(alemate): Add tests for Sync Consent UI.
 
 // TODO(rsgingerrs): Add tests for Recommend Apps UI.
-static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 40,
+static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 41,
               "tests for new control flow are missing");
 
 }  // namespace chromeos

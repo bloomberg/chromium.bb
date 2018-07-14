@@ -10,6 +10,8 @@
 Polymer({
   is: 'arc-tos-root',
 
+  behaviors: [OobeDialogHostBehavior],
+
   properties: {
     /**
      * Accept, Skip and Retry buttons are disabled until content is loaded.
@@ -76,5 +78,14 @@ Polymer({
    */
   onSkip_: function() {
     this.screen.onSkip();
+  },
+
+  /**
+   * On-tap event handler for Back button.
+   *
+   * @private
+   */
+  onBack_: function() {
+    chrome.send('login.ArcTermsOfServiceScreen.userActed', ['go-back']);
   }
 });

@@ -80,6 +80,8 @@ std::string ScreenToContentQuery(OobeScreen screen) {
       return "$('demo-preferences-content')";
     case OobeScreen::SCREEN_OOBE_EULA:
       return "$('oobe-eula-md')";
+    case OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE:
+      return "$('arc-tos-root')";
     case OobeScreen::SCREEN_OOBE_DEMO_SETUP:
       return "$('demo-setup-content')";
     default: {
@@ -176,6 +178,12 @@ class DemoSetupTest : public LoginManagerTest {
     return js_checker().GetBool(query);
   }
 
+  void SetPlayStoreTermsForTesting() {
+    EXPECT_TRUE(
+        JSExecute("login.ArcTermsOfServiceScreen.setTosForTesting('Test "
+                  "Play Store Terms of Service');"));
+  }
+
   void InvokeDemoMode() {
     EXPECT_TRUE(JSExecute("cr.ui.Oobe.handleAccelerator('demo_mode');"));
   }
@@ -194,9 +202,17 @@ class DemoSetupTest : public LoginManagerTest {
   void ClickOobeButton(OobeScreen screen,
                        OobeButton button,
                        JSExecution execution) {
+    ClickOobeButtonWithId(screen, ButtonToStringId(button), execution);
+  }
+
+  // Simulates click on a button with |button_id| on specified OOBE |screen|.
+  // Can be used for screens that consists of one oobe-dialog element.
+  void ClickOobeButtonWithId(OobeScreen screen,
+                             const std::string& button_id,
+                             JSExecution execution) {
     const std::string query = base::StrCat(
         {ScreenToContentQuery(screen), ".$$('oobe-dialog').querySelector('",
-         ButtonToStringId(button), "').click();"});
+         button_id, "').click();"});
     switch (execution) {
       case JSExecution::kAsync:
         JSExecuteAsync(query);
@@ -313,6 +329,15 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ProceedThroughSetupFlowSetupSuccess) {
   ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
                           OobeButton::kText, JSExecution::kAsync);
 
+  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
+
+  SetPlayStoreTermsForTesting();
+  ClickOobeButtonWithId(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+                        "#arc-tos-next-button", JSExecution::kSync);
+  ClickOobeButtonWithId(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+                        "#arc-tos-accept-button", JSExecution::kAsync);
+
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP));
   EXPECT_TRUE(IsDialogShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
@@ -347,6 +372,15 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ProceedThroughSetupFlowSetupError) {
 
   ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
                           OobeButton::kText, JSExecution::kAsync);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
+
+  SetPlayStoreTermsForTesting();
+  ClickOobeButtonWithId(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+                        "#arc-tos-next-button", JSExecution::kSync);
+  ClickOobeButtonWithId(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+                        "#arc-tos-accept-button", JSExecution::kAsync);
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_SETUP));

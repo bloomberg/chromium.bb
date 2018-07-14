@@ -819,8 +819,8 @@ void WizardController::OnEulaAccepted() {
                  weak_factory_.GetWeakPtr()));
   PerformPostEulaActions();
 
-  if (is_in_demo_setup_flow_) {
-    ShowDemoModeSetupScreen();
+  if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
+    ShowArcTermsOfServiceScreen();
     return;
   }
 
@@ -833,7 +833,7 @@ void WizardController::OnEulaAccepted() {
 
 void WizardController::OnEulaBack() {
   if (is_in_demo_setup_flow_) {
-    ShowPreviousScreen();
+    ShowDemoModePreferencesScreen();
   } else {
     ShowWelcomeScreen();
   }
@@ -948,6 +948,8 @@ void WizardController::OnTermsOfServiceAccepted() {
 }
 
 void WizardController::OnArcTermsOfServiceSkipped() {
+  DCHECK(!arc::IsArcTermsOfServiceOobeNegotiationNeeded());
+
   if (is_in_session_oobe_) {
     OnOobeFlowFinished();
     return;
@@ -958,6 +960,11 @@ void WizardController::OnArcTermsOfServiceSkipped() {
 }
 
 void WizardController::OnArcTermsOfServiceAccepted() {
+  if (is_in_demo_setup_flow_) {
+    ShowDemoModeSetupScreen();
+    return;
+  }
+
   if (is_in_session_oobe_) {
     ShowWaitForContainerReadyScreen();
     return;
@@ -971,6 +978,11 @@ void WizardController::OnArcTermsOfServiceAccepted() {
   } else {
     ShowUserImageScreen();
   }
+}
+
+void WizardController::OnArcTermsOfServiceBack() {
+  DCHECK(is_in_demo_setup_flow_);
+  ShowPreviousScreen();
 }
 
 void WizardController::OnRecommendAppsSkipped() {
@@ -1340,6 +1352,10 @@ void WizardController::StartDemoModeSetup() {
   ShowDemoModePreferencesScreen();
 }
 
+void WizardController::SimulateDemoModeSetupForTesting() {
+  is_in_demo_setup_flow_ = true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, BaseScreenDelegate overrides:
 void WizardController::OnExit(BaseScreen& /* screen */,
@@ -1424,6 +1440,9 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       break;
     case ScreenExitCode::ARC_TERMS_OF_SERVICE_ACCEPTED:
       OnArcTermsOfServiceAccepted();
+      break;
+    case ScreenExitCode::ARC_TERMS_OF_SERVICE_BACK:
+      OnArcTermsOfServiceBack();
       break;
     case ScreenExitCode::WRONG_HWID_WARNING_SKIPPED:
       OnWrongHWIDWarningSkipped();

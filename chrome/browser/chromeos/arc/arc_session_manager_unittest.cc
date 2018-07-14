@@ -1107,6 +1107,8 @@ class ArcSessionOobeOptInNegotiatorTest
 
   void Hide() override {}
 
+  void Bind(chromeos::ArcTermsOfServiceScreen* screen) override {}
+
   base::ObserverList<chromeos::ArcTermsOfServiceScreenViewObserver>
       observer_list_;
   std::unique_ptr<chromeos::FakeLoginDisplayHost> fake_login_display_host_;

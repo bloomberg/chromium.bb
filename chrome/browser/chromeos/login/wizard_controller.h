@@ -106,6 +106,8 @@ class WizardController : public BaseScreenDelegate,
   //    chromeos::OobeScreen::SCREEN_OOBE_DEMO_SETUP
   void StartDemoModeSetup();
 
+  void SimulateDemoModeSetupForTesting();
+
   // Advances to login/update screen. Should be used in for testing only.
   void SkipToLoginForTesting(const LoginScreenContext& context);
   void SkipToUpdateForTesting();
@@ -127,6 +129,9 @@ class WizardController : public BaseScreenDelegate,
 
   // Returns true if the current wizard instance has reached the login screen.
   bool login_screen_started() const { return login_screen_started_; }
+
+  // Whether demo mode setup OOBE flow is currently in progress.
+  bool is_in_demo_mode_setup_flow() const { return is_in_demo_setup_flow_; }
 
   // Returns a given screen. Creates it lazily.
   BaseScreen* GetScreen(OobeScreen screen);
@@ -201,6 +206,7 @@ class WizardController : public BaseScreenDelegate,
   void OnTermsOfServiceAccepted();
   void OnArcTermsOfServiceSkipped();
   void OnArcTermsOfServiceAccepted();
+  void OnArcTermsOfServiceBack();
   void OnRecommendAppsSkipped();
   void OnRecommendAppsSelected();
   void OnAppDownloadingFinished();

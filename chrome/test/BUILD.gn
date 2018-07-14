@@ -1632,6 +1632,8 @@ test("browser_tests") {
         "../browser/chromeos/login/resource_loader_browsertest.cc",
         "../browser/chromeos/login/saml/saml_browsertest.cc",
         "../browser/chromeos/login/screens/hid_detection_screen_browsertest.cc",
+        "../browser/chromeos/login/screens/mock_arc_terms_of_service_screen.cc",
+        "../browser/chromeos/login/screens/mock_arc_terms_of_service_screen.h",
         "../browser/chromeos/login/screens/mock_demo_preferences_screen.cc",
         "../browser/chromeos/login/screens/mock_demo_preferences_screen.h",
         "../browser/chromeos/login/screens/mock_demo_setup_screen.cc",
