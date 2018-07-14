@@ -271,6 +271,10 @@ void HostedAppButtonContainer::ChildVisibilityChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
+const char* HostedAppButtonContainer::GetClassName() const {
+  return "HostedAppButtonContainer";
+}
+
 views::MenuButton* HostedAppButtonContainer::GetOverflowReferenceView() {
   return app_menu_button_;
 }

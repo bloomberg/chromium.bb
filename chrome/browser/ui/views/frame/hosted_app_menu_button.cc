@@ -78,3 +78,7 @@ void HostedAppMenuButton::FadeHighlightOff() {
     GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
   }
 }
+
+const char* HostedAppMenuButton::GetClassName() const {
+  return "HostedAppMenuButton";
+}
