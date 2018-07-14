@@ -459,9 +459,7 @@ camera.models.FileSystem.getThumbnailName = function(entry) {
  * @param {function(*=)} onFailure Failure callback.
  */
 camera.models.FileSystem.saveThumbnail = function(entry, onSuccess, onFailure) {
-  new Promise(resolve => {
-    camera.models.FileSystem.pictureURL(entry, resolve);
-  }).then(url => {
+  camera.models.FileSystem.pictureURL(entry).then(url => {
     return new Promise((resolve, reject) => {
       camera.models.FileSystem.createThumbnail_(
           camera.models.FileSystem.hasVideoPrefix(entry), url, resolve, reject);
@@ -569,20 +567,18 @@ camera.models.FileSystem.getEntries = function(onSuccess, onFailure) {
 /**
  * Returns an URL for a picture.
  * @param {FileEntry} entry File entry.
- * @param {function(string)} onSuccess Success callback with the url as a string.
+ * @return {!Promise<string>} Promise for the result.
  */
-camera.models.FileSystem.pictureURL = function(entry, onSuccess) {
-  if (camera.models.FileSystem.externalFs) {
-    entry.file(function(file) {
-      let reader = new FileReader();
-      reader.onload = function() {
-        onSuccess(reader.result);
-      };
-      reader.readAsDataURL(file);
-    });
-  } else {
-    onSuccess(entry.toURL());
-  }
+camera.models.FileSystem.pictureURL = function(entry) {
+  return new Promise(resolve => {
+    if (camera.models.FileSystem.externalFs) {
+      entry.file(file => {
+        resolve(URL.createObjectURL(file));
+      });
+    } else {
+      resolve(entry.toURL());
+    }
+  });
 };
 
 /**
