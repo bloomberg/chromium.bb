@@ -428,12 +428,13 @@ def _handle_perf_results(
       benchmark_upload_result_map[r[0]] = bool(r[1])
 
     logdog_dict = {}
-    upload_failure = False
+    upload_failures_counter = 0
     logdog_stream = None
     logdog_label = 'Results Dashboard'
     for benchmark_name, output_file in results_dict.iteritems():
       failure = benchmark_upload_result_map[benchmark_name]
-      upload_failure = upload_failure or failure
+      if failure:
+        upload_failures_counter += 1
       is_reference = '.reference' in benchmark_name
       _write_perf_data_to_logfile(
         benchmark_name, output_file,
@@ -445,12 +446,13 @@ def _handle_perf_results(
         json.dumps(dict(logdog_dict), sort_keys=True,
                    indent=4, separators=(',', ': ')),
         content_type=JSON_CONTENT_TYPE)
-    if upload_failure:
-      logdog_label += ' Upload Failure'
+    if upload_failures_counter > 0:
+      logdog_label += ('Upload Failure (%s benchmark upload failures)' %
+                       upload_failures_counter)
     extra_links[logdog_label] = logdog_stream
     end_time = time.time()
     print_duration('Uploading results to perf dashboard', begin_time, end_time)
-    if upload_failure:
+    if upload_failures_counter > 0:
       return 1
     return 0
   finally:
