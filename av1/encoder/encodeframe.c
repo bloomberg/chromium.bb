@@ -2099,7 +2099,7 @@ static void rd_auto_partition_range(AV1_COMP *cpi, const TileInfo *const tile,
   // When use_square_partition_only is true, make sure at least one square
   // partition is allowed by selecting the next smaller square size as
   // *min_block_size.
-  if (cpi->sf.use_square_partition_only) {
+  if (min_size >= cpi->sf.use_square_partition_only_threshold) {
     min_size = AOMMIN(min_size, next_square_size[max_size]);
   }
 
@@ -3003,7 +3003,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     partition_vert_allowed &= partition_allowed || !has_cols;
     do_square_split &= bsize > min_size;
   }
-  if (cpi->sf.use_square_partition_only) {
+
+  if (bsize > cpi->sf.use_square_partition_only_threshold) {
     partition_horz_allowed &= !has_rows;
     partition_vert_allowed &= !has_cols;
   }
@@ -3943,7 +3944,8 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       x->use_cb_search_range = 0;
       init_first_partition_pass_stats_tables(x->first_partition_pass_stats);
       if (cpi->sf.two_pass_partition_search &&
-          !cpi->sf.use_square_partition_only &&
+          cpi->sf.use_square_partition_only_threshold <
+              cm->seq_params.sb_size &&
           mi_row + mi_size_high[cm->seq_params.sb_size] < cm->mi_rows &&
           mi_col + mi_size_wide[cm->seq_params.sb_size] < cm->mi_cols &&
           cm->frame_type != KEY_FRAME) {
