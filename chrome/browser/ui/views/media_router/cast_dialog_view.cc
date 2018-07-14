@@ -125,14 +125,15 @@ bool CastDialogView::Accept() {
   const UIMediaSink& sink = GetSelectedSink();
   if (!sink.route_id.empty()) {
     controller_->StopCasting(sink.route_id);
+    metrics_.OnStopCasting();
   } else {
     // Go through cast modes in the order of preference to find one that is
     // supported and selected.
     for (MediaCastMode cast_mode : {PRESENTATION, TAB_MIRROR, DESKTOP_MIRROR}) {
       if ((cast_mode & selected_source_) &&
           base::ContainsKey(sink.cast_modes, cast_mode)) {
-        MediaRouterMetrics::RecordStartRouteDeviceIndex(selected_sink_index_);
         controller_->StartCasting(sink.id, cast_mode);
+        metrics_.OnStartCasting(base::Time::Now(), selected_sink_index_);
         break;
       }
     }
@@ -156,6 +157,7 @@ void CastDialogView::OnModelUpdated(const CastDialogModel& model) {
     ShowScrollView();
     PopulateScrollView(model.media_sinks());
     RestoreSinkListState();
+    metrics_.OnSinksLoaded(base::Time::Now());
   }
   dialog_title_ = model.dialog_header();
   MaybeSizeToContents();
@@ -184,11 +186,7 @@ gfx::Size CastDialogView::CalculatePreferredSize() const {
 
 void CastDialogView::OnPaint(gfx::Canvas* canvas) {
   views::BubbleDialogDelegateView::OnPaint(canvas);
-  if (!start_time_.is_null()) {
-    MediaRouterMetrics::RecordMediaRouterDialogPaint(base::Time::Now() -
-                                                     start_time_);
-    start_time_ = base::Time();
-  }
+  metrics_.OnPaint(base::Time::Now());
 }
 
 bool CastDialogView::IsCommandIdChecked(int command_id) const {
@@ -201,6 +199,7 @@ bool CastDialogView::IsCommandIdEnabled(int command_id) const {
 
 void CastDialogView::ExecuteCommand(int command_id, int event_flags) {
   selected_source_ = command_id;
+  metrics_.OnCastModeSelected();
 }
 
 CastDialogView::CastDialogView(views::View* anchor_view,
@@ -211,7 +210,7 @@ CastDialogView::CastDialogView(views::View* anchor_view,
       selected_source_(kTabSource),
       controller_(controller),
       browser_(browser),
-      start_time_(start_time),
+      metrics_(start_time),
       weak_factory_(this) {
   ShowNoSinksView();
 }
@@ -238,6 +237,7 @@ void CastDialogView::Init() {
 void CastDialogView::WindowClosing() {
   if (instance_ == this)
     instance_ = nullptr;
+  metrics_.OnCloseDialog(base::Time::Now());
 }
 
 void CastDialogView::ShowNoSinksView() {
@@ -368,7 +368,7 @@ void CastDialogView::RecordSinkCountWithDelay() {
 }
 
 void CastDialogView::RecordSinkCount() {
-  media_router::MediaRouterMetrics::RecordDeviceCount(sink_buttons_.size());
+  metrics_.OnRecordSinkCount(sink_buttons_.size());
 }
 
 // static

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/media_router_metrics.h"
 
+#include <algorithm>
+
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -43,6 +45,8 @@ MediaRouterMetrics::MediaRouterMetrics() {}
 MediaRouterMetrics::~MediaRouterMetrics() = default;
 
 // static
+const char MediaRouterMetrics::kHistogramCloseLatency[] =
+    "MediaRouter.Ui.Action.CloseLatency";
 const char MediaRouterMetrics::kHistogramDialParsingError[] =
     "MediaRouter.Dial.ParsingError";
 const char MediaRouterMetrics::kHistogramIconClickLocation[] =
@@ -59,6 +63,12 @@ const char MediaRouterMetrics::kHistogramPresentationUrlType[] =
     "MediaRouter.PresentationRequest.AvailabilityUrlType";
 const char MediaRouterMetrics::kHistogramRouteCreationOutcome[] =
     "MediaRouter.Route.CreationOutcome";
+const char MediaRouterMetrics::kHistogramStartLocalLatency[] =
+    "MediaRouter.Ui.Action.StartLocal.Latency";
+const char MediaRouterMetrics::kHistogramStartLocalPosition[] =
+    "MediaRouter.Ui.Action.StartLocalPosition";
+const char MediaRouterMetrics::kHistogramStartLocalSessionSuccessful[] =
+    "MediaRouter.Ui.Action.StartLocalSessionSuccessful";
 const char MediaRouterMetrics::kHistogramUiDeviceCount[] =
     "MediaRouter.Ui.Device.Count";
 const char MediaRouterMetrics::kHistogramUiDialogPaint[] =
@@ -67,10 +77,6 @@ const char MediaRouterMetrics::kHistogramUiDialogLoadedWithData[] =
     "MediaRouter.Ui.Dialog.LoadedWithData";
 const char MediaRouterMetrics::kHistogramUiFirstAction[] =
     "MediaRouter.Ui.FirstAction";
-const char MediaRouterMetrics::kHistogramStartLocalPosition[] =
-    "MediaRouter.Ui.Action.StartLocalPosition";
-const char MediaRouterMetrics::kHistogramStartLocalSessionSuccessful[] =
-    "MediaRouter.Ui.Action.StartLocalSessionSuccessful";
 
 // static
 void MediaRouterMetrics::RecordMediaRouterDialogOrigin(
@@ -84,14 +90,20 @@ void MediaRouterMetrics::RecordMediaRouterDialogOrigin(
 
 // static
 void MediaRouterMetrics::RecordMediaRouterDialogPaint(
-    const base::TimeDelta delta) {
+    const base::TimeDelta& delta) {
   UMA_HISTOGRAM_TIMES(kHistogramUiDialogPaint, delta);
 }
 
 // static
 void MediaRouterMetrics::RecordMediaRouterDialogLoaded(
-    const base::TimeDelta delta) {
+    const base::TimeDelta& delta) {
   UMA_HISTOGRAM_TIMES(kHistogramUiDialogLoadedWithData, delta);
+}
+
+// static
+void MediaRouterMetrics::RecordCloseDialogLatency(
+    const base::TimeDelta& delta) {
+  UMA_HISTOGRAM_TIMES(kHistogramCloseLatency, delta);
 }
 
 // static
@@ -162,6 +174,12 @@ void MediaRouterMetrics::RecordDeviceCount(int device_count) {
 // static
 void MediaRouterMetrics::RecordStartRouteDeviceIndex(int index) {
   base::UmaHistogramSparse(kHistogramStartLocalPosition, std::min(index, 100));
+}
+
+// static
+void MediaRouterMetrics::RecordStartLocalSessionLatency(
+    const base::TimeDelta& delta) {
+  UMA_HISTOGRAM_TIMES(kHistogramStartLocalLatency, delta);
 }
 
 // static

@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
+#include "chrome/browser/ui/views/media_router/cast_dialog_metrics.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -128,10 +129,11 @@ class CastDialogView : public views::BubbleDialogDelegateView,
 
   void MaybeSizeToContents();
 
-  // Posts a delayed task to record an UMA metric for the number of sinks shown.
+  // Posts a delayed task to record the number of sinks shown with the metrics
+  // recorder.
   void RecordSinkCountWithDelay();
 
-  // Records an UMA metric for the number of sinks shown.
+  // Records the number of sinks shown with the metrics recorder.
   void RecordSinkCount();
 
   // The singleton dialog instance. This is a nullptr when a dialog is not
@@ -173,8 +175,8 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   std::unique_ptr<ui::SimpleMenuModel> sources_menu_model_;
   std::unique_ptr<views::MenuRunner> sources_menu_runner_;
 
-  // The time when the dialog UI started initializing.
-  base::Time start_time_;
+  // Records UMA metrics for the dialog's behavior.
+  CastDialogMetrics metrics_;
 
   base::WeakPtrFactory<CastDialogView> weak_factory_;
 
