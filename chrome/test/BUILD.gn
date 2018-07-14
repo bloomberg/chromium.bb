@@ -563,6 +563,7 @@ test("browser_tests") {
       "../browser/loadtimes_extension_bindings_browsertest.cc",
       "../browser/locale_tests_browsertest.cc",
       "../browser/media/autoplay_metrics_browsertest.cc",
+      "../browser/media/cast_mirroring_service_host_browsertest.cc",
       "../browser/media/defer_background_media_browsertest.cc",
       "../browser/media/encrypted_media_browsertest.cc",
       "../browser/media/encrypted_media_supported_types_browsertest.cc",
