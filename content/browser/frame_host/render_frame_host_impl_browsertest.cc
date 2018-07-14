@@ -30,6 +30,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_provisional_load_interceptor.h"
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_content_browser_client.h"
@@ -204,6 +205,8 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
 
   DialogClosedCallback& callback() { return callback_; }
 
+  int num_beforeunload_dialogs_seen() { return num_beforeunload_dialogs_seen_; }
+
   // WebContentsDelegate
 
   JavaScriptDialogManager* GetJavaScriptDialogManager(
@@ -225,6 +228,7 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
                              RenderFrameHost* render_frame_host,
                              bool is_reload,
                              DialogClosedCallback callback) override {
+    ++num_beforeunload_dialogs_seen_;
     callback_ = std::move(callback);
     message_loop_runner_->Quit();
   }
@@ -256,6 +260,9 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
 
   // The number of times NavigationStateChanged has been called.
   int url_invalidate_count_;
+
+  // The total number of beforeunload dialogs seen by this dialog manager.
+  int num_beforeunload_dialogs_seen_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestJavaScriptDialogManager);
 };
@@ -414,6 +421,418 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   wc->SetDelegate(nullptr);
   wc->SetJavaScriptDialogManagerForTesting(nullptr);
+}
+
+// Helper class for beforunload tests.  Sets up a custom dialog manager for the
+// main WebContents and provides helpers to register and test beforeunload
+// handlers.
+//
+// TODO(alexmos): Refactor other beforeunload tests in this file to use this
+// class.
+class RenderFrameHostImplBeforeUnloadBrowserTest
+    : public RenderFrameHostImplBrowserTest {
+ public:
+  RenderFrameHostImplBeforeUnloadBrowserTest() {}
+
+  WebContentsImpl* web_contents() {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
+
+  TestJavaScriptDialogManager* dialog_manager() {
+    return dialog_manager_.get();
+  }
+
+  void CloseDialogAndProceed() {
+    std::move(dialog_manager()->callback())
+        .Run(true /* navigation should proceed */, base::string16());
+  }
+
+  void CloseDialogAndCancel() {
+    std::move(dialog_manager()->callback())
+        .Run(false /* navigation should proceed */, base::string16());
+  }
+
+  // Installs a beforeunload handler in the given frame.
+  // |before_unload_options| specify whether the handler should send a "ping"
+  // message through domAutomationController, and/or whether it should trigger
+  // the modal beforeunload confirmation dialog.
+  enum BeforeUnloadOptions {
+    SHOW_DIALOG = 1,
+    SEND_PING = 2,
+  };
+  void InstallBeforeUnloadHandler(FrameTreeNode* ftn,
+                                  int before_unload_options) {
+    std::string script = "window.onbeforeunload = () => { ";
+    if (before_unload_options & SEND_PING)
+      script += "domAutomationController.send('ping'); ";
+    if (before_unload_options & SHOW_DIALOG)
+      script += "return 'x'; ";
+    script += " }";
+    EXPECT_TRUE(ExecuteScript(ftn, script));
+  }
+
+  int RetrievePingsFromMessageQueue(DOMMessageQueue* msg_queue) {
+    int num_pings = 0;
+    std::string message;
+    while (msg_queue->PopMessage(&message)) {
+      base::TrimString(message, "\"", &message);
+      // Only count messages from beforeunload.  For example, an ExecuteScript
+      // sends its own message to DOMMessageQueue, which we need to ignore.
+      if (message == "ping")
+        ++num_pings;
+    }
+    return num_pings;
+  }
+
+ protected:
+  void SetUpOnMainThread() override {
+    RenderFrameHostImplBrowserTest::SetUpOnMainThread();
+    dialog_manager_.reset(new TestJavaScriptDialogManager);
+    web_contents()->SetDelegate(dialog_manager_.get());
+  }
+
+  void TearDownOnMainThread() override {
+    web_contents()->SetDelegate(nullptr);
+    web_contents()->SetJavaScriptDialogManagerForTesting(nullptr);
+    RenderFrameHostImplBrowserTest::TearDownOnMainThread();
+  }
+
+ private:
+  std::unique_ptr<TestJavaScriptDialogManager> dialog_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostImplBeforeUnloadBrowserTest);
+};
+
+// Check that when a frame performs a browser-initiated navigation, its
+// cross-site subframe is able to execute a beforeunload handler and put up a
+// dialog to cancel or allow the navigation. This matters especially in
+// --site-per-process mode; see https://crbug.com/853021.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
+                       SubframeShowsDialogWhenMainFrameNavigates) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Install a beforeunload handler in the first iframe.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  InstallBeforeUnloadHandler(root->child_at(0), SHOW_DIALOG);
+
+  // Disable beforeunload timer to prevent flakiness.
+  PrepContentsForBeforeUnloadTest(web_contents());
+
+  // Navigate cross-site and wait for the beforeunload dialog to be shown from
+  // the subframe.
+  GURL cross_site_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  shell()->LoadURL(cross_site_url);
+  dialog_manager()->Wait();
+
+  // Only the main frame should be marked as waiting for beforeunload ACK as
+  // the frame being navigated.
+  RenderFrameHostImpl* main_frame = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* child = root->child_at(0)->current_frame_host();
+  EXPECT_TRUE(main_frame->is_waiting_for_beforeunload_ack());
+  EXPECT_FALSE(child->is_waiting_for_beforeunload_ack());
+
+  // Sanity check that the main frame is waiting for subframe's beforeunload
+  // ACK.
+  EXPECT_EQ(main_frame, child->GetBeforeUnloadInitiator());
+  EXPECT_EQ(main_frame, main_frame->GetBeforeUnloadInitiator());
+  EXPECT_EQ(1u, main_frame->beforeunload_pending_replies_.size());
+
+  // In --site-per-process mode, the beforeunload ACK should come back from the
+  // child RFH.  Without --site-per-process, it will come from the main frame
+  // RFH, which processes beforeunload for both main frame and child frame,
+  // since they are in the same process.
+  RenderFrameHostImpl* frame_that_sent_beforeunload_ipc =
+      AreAllSitesIsolatedForTesting() ? child : main_frame;
+  EXPECT_TRUE(main_frame->beforeunload_pending_replies_.count(
+      frame_that_sent_beforeunload_ipc));
+
+  // Answer the dialog with "cancel" to stay on current page.
+  CloseDialogAndCancel();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_EQ(main_url, web_contents()->GetLastCommittedURL());
+
+  // Verify beforeunload state has been cleared.
+  EXPECT_FALSE(main_frame->is_waiting_for_beforeunload_ack());
+  EXPECT_FALSE(child->is_waiting_for_beforeunload_ack());
+  EXPECT_EQ(nullptr, main_frame->GetBeforeUnloadInitiator());
+  EXPECT_EQ(nullptr, child->GetBeforeUnloadInitiator());
+  EXPECT_EQ(0u, main_frame->beforeunload_pending_replies_.size());
+
+  // Try navigating again.  The dialog should come up again.
+  shell()->LoadURL(cross_site_url);
+  dialog_manager()->Wait();
+  EXPECT_TRUE(main_frame->is_waiting_for_beforeunload_ack());
+
+  // Now answer the dialog and allow the navigation to proceed.  Disable
+  // SwapOut ACK on the old frame so that it sticks around in pending delete
+  // state, since the test later verifies that it has received the beforeunload
+  // ACK.
+  TestFrameNavigationObserver commit_observer(root);
+  main_frame->DisableSwapOutTimerForTesting();
+  CloseDialogAndProceed();
+  commit_observer.WaitForCommit();
+  EXPECT_EQ(cross_site_url, web_contents()->GetLastCommittedURL());
+  EXPECT_FALSE(
+      web_contents()->GetMainFrame()->is_waiting_for_beforeunload_ack());
+
+  // The navigation that succeeded was a browser-initiated, main frame
+  // navigation, so it swapped RenderFrameHosts. |main_frame| should now be
+  // pending deletion and waiting for swapout ACK, but it should not be waiting
+  // for the beforeunload ACK.
+  EXPECT_FALSE(main_frame->is_active());
+  EXPECT_FALSE(main_frame->is_waiting_for_beforeunload_ack());
+  EXPECT_EQ(0u, main_frame->beforeunload_pending_replies_.size());
+  EXPECT_EQ(nullptr, main_frame->GetBeforeUnloadInitiator());
+}
+
+// Check that when a frame with multiple cross-site subframes navigates, all
+// the subframes execute their beforeunload handlers, but at most one
+// beforeunload dialog is allowed per navigation.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
+                       MultipleSubframes) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c),b,c(d),c,d)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Install a beforeunload handler in five of eight frames to send a ping via
+  // domAutomationController and request a beforeunload dialog.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  InstallBeforeUnloadHandler(root, SEND_PING | SHOW_DIALOG);
+  InstallBeforeUnloadHandler(root->child_at(0)->child_at(0),
+                             SEND_PING | SHOW_DIALOG);
+  InstallBeforeUnloadHandler(root->child_at(1), SEND_PING | SHOW_DIALOG);
+  InstallBeforeUnloadHandler(root->child_at(2), SEND_PING | SHOW_DIALOG);
+  InstallBeforeUnloadHandler(root->child_at(2)->child_at(0),
+                             SEND_PING | SHOW_DIALOG);
+
+  // Disable beforeunload timer to prevent flakiness.
+  PrepContentsForBeforeUnloadTest(web_contents());
+
+  // Navigate main frame cross-site and wait for the beforeunload dialog to be
+  // shown from one of the frames.
+  DOMMessageQueue msg_queue;
+  GURL cross_site_url(embedded_test_server()->GetURL("e.com", "/title1.html"));
+  shell()->LoadURL(cross_site_url);
+  dialog_manager()->Wait();
+
+  // Answer the dialog and allow the navigation to proceed.
+  CloseDialogAndProceed();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_EQ(cross_site_url, web_contents()->GetLastCommittedURL());
+
+  // We should've received five beforeunload pings.
+  EXPECT_EQ(5, RetrievePingsFromMessageQueue(&msg_queue));
+
+  // No more beforeunload dialogs shouldn't been shown, due to a policy of at
+  // most one dialog per navigation.
+  EXPECT_EQ(1, dialog_manager()->num_beforeunload_dialogs_seen());
+}
+
+// Similar to the test above, but test scenarios where the subframes with
+// beforeunload handlers aren't local roots.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
+                       NonLocalRootSubframes) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a(b),c(c))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Install a beforeunload handler in two of five frames to send a ping via
+  // domAutomationController and request a beforeunload dialog.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  InstallBeforeUnloadHandler(root->child_at(0), SEND_PING | SHOW_DIALOG);
+  InstallBeforeUnloadHandler(root->child_at(0)->child_at(0),
+                             SEND_PING | SHOW_DIALOG);
+
+  // Disable beforeunload timer to prevent flakiness.
+  PrepContentsForBeforeUnloadTest(web_contents());
+
+  // Navigate and wait for the beforeunload dialog to be shown from one of the
+  // frames.
+  DOMMessageQueue msg_queue;
+  GURL cross_site_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  shell()->LoadURL(cross_site_url);
+  dialog_manager()->Wait();
+
+  // Answer the dialog and allow the navigation to proceed.
+  CloseDialogAndProceed();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_EQ(cross_site_url, web_contents()->GetLastCommittedURL());
+
+  // We should've received two beforeunload pings.
+  EXPECT_EQ(2, RetrievePingsFromMessageQueue(&msg_queue));
+
+  // No more beforeunload dialogs shouldn't been shown, due to a policy of at
+  // most one dialog per navigation.
+  EXPECT_EQ(1, dialog_manager()->num_beforeunload_dialogs_seen());
+}
+
+// Test that cross-site subframes run the beforeunload handler when the main
+// frame performs a renderer-initiated navigation.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
+                       RendererInitiatedNavigation) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a,b,c)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Install a beforeunload handler in both a.com frames to send a ping via
+  // domAutomationController.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  InstallBeforeUnloadHandler(root, SEND_PING);
+  InstallBeforeUnloadHandler(root->child_at(0), SEND_PING);
+
+  // Install a beforeunload handler in the b.com frame to put up a dialog.
+  InstallBeforeUnloadHandler(root->child_at(1), SHOW_DIALOG);
+
+  // Disable beforeunload timer to prevent flakiness.
+  PrepContentsForBeforeUnloadTest(web_contents());
+
+  // Start a same-site renderer-initiated navigation.  The beforeunload dialog
+  // from the b.com frame should be shown.  The other two a.com frames should
+  // send pings from their beforeunload handlers.
+  DOMMessageQueue msg_queue;
+  GURL new_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  TestNavigationManager navigation_manager(web_contents(), new_url);
+  EXPECT_TRUE(ExecuteScript(root, "location.href = '" + new_url.spec() + "';"));
+  dialog_manager()->Wait();
+
+  // Answer the dialog and allow the navigation to proceed.  Note that at this
+  // point, without site isolation, the navigation hasn't started yet, as the
+  // navigating frame is still processing beforeunload for all its descendant
+  // local frames.  With site isolation, the a.com frames have finished
+  // beforeunload, and the browser process has received OnBeginNavigation, but
+  // the navigation is paused until the b.com subframe process finishes running
+  // beforeunload.
+  CloseDialogAndProceed();
+
+  // Wait for navigation to end.
+  navigation_manager.WaitForNavigationFinished();
+  EXPECT_EQ(new_url, web_contents()->GetLastCommittedURL());
+
+  // We should have received two pings from two a.com frames.  If we receive
+  // more, that probably means we ran beforeunload an extra time in the a.com
+  // frames.
+  EXPECT_EQ(2, RetrievePingsFromMessageQueue(&msg_queue));
+  EXPECT_EQ(1, dialog_manager()->num_beforeunload_dialogs_seen());
+}
+
+// Similar to the test above, but check a navigation in a subframe rather than
+// the main frame.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
+                       RendererInitiatedNavigationInSubframe) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c),c)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Install a beforeunload handler to send a ping in all frames.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  InstallBeforeUnloadHandler(root, SEND_PING);
+  InstallBeforeUnloadHandler(root->child_at(0), SEND_PING);
+  InstallBeforeUnloadHandler(root->child_at(0)->child_at(0), SEND_PING);
+  InstallBeforeUnloadHandler(root->child_at(1), SEND_PING);
+
+  // Disable beforeunload timer to prevent flakiness.
+  PrepContentsForBeforeUnloadTest(web_contents());
+
+  // Start a renderer-initiated navigation in the middle frame.
+  DOMMessageQueue msg_queue;
+  GURL new_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  TestNavigationManager navigation_manager(web_contents(), new_url);
+  EXPECT_TRUE(ExecuteScript(root->child_at(0),
+                            "location.href = '" + new_url.spec() + "';"));
+  navigation_manager.WaitForNavigationFinished();
+  EXPECT_EQ(new_url,
+            root->child_at(0)->current_frame_host()->GetLastCommittedURL());
+
+  // We should have received two pings from the b.com frame and its child.
+  // Other frames' beforeunload handlers shouldn't have run.
+  EXPECT_EQ(2, RetrievePingsFromMessageQueue(&msg_queue));
+
+  // We shouldn't have seen any beforeunload dialogs.
+  EXPECT_EQ(0, dialog_manager()->num_beforeunload_dialogs_seen());
+}
+
+// Ensure that when a beforeunload handler deletes a subframe which is also
+// running beforeunload, the navigation can still proceed.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
+                       DetachSubframe) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Install a beforeunload handler in root frame to delete the subframe.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  std::string script =
+      "window.onbeforeunload = () => { "
+      "  document.body.removeChild(document.querySelector('iframe'));"
+      "}";
+  EXPECT_TRUE(ExecuteScript(root, script));
+
+  // Install a beforeunload handler which never finishes in subframe.
+  EXPECT_TRUE(ExecuteScript(root->child_at(0),
+                            "window.onbeforeunload = () => { while (1) ; }"));
+
+  // Disable beforeunload timer to prevent flakiness.
+  PrepContentsForBeforeUnloadTest(web_contents());
+
+  // Navigate main frame and ensure that it doesn't time out.  When the main
+  // frame detaches the subframe, the RFHI destruction should unblock the
+  // navigation from waiting on the subframe's beforeunload ACK.
+  GURL new_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), new_url));
+}
+
+// Ensure that A(B(A)) cases work sanely with beforeunload handlers.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
+                       RendererInitiatedNavigationInABAB) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(a(b)))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Install a beforeunload handler to send a ping in all frames.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  InstallBeforeUnloadHandler(root, SEND_PING);
+  InstallBeforeUnloadHandler(root->child_at(0), SEND_PING);
+  InstallBeforeUnloadHandler(root->child_at(0)->child_at(0), SEND_PING);
+  InstallBeforeUnloadHandler(root->child_at(0)->child_at(0)->child_at(0),
+                             SEND_PING);
+
+  // Disable beforeunload timer to prevent flakiness.
+  PrepContentsForBeforeUnloadTest(web_contents());
+
+  // Navigate the main frame.
+  DOMMessageQueue msg_queue;
+  GURL new_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), new_url));
+
+  // We should have received four pings.
+  EXPECT_EQ(4, RetrievePingsFromMessageQueue(&msg_queue));
+
+  // We shouldn't have seen any beforeunload dialogs.
+  EXPECT_EQ(0, dialog_manager()->num_beforeunload_dialogs_seen());
+}
+
+// Ensure that the beforeunload timeout works properly when
+// beforeunload handlers from subframes time out.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
+                       TimeoutInSubframe) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Install a beforeunload handler to send a ping in main frame.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  InstallBeforeUnloadHandler(root, SEND_PING);
+
+  // Install a beforeunload handler which never finishes in subframe.
+  EXPECT_TRUE(ExecuteScript(root->child_at(0),
+                            "window.onbeforeunload = () => { while (1) ; }"));
+
+  // Navigate the main frame.  We should eventually time out on the subframe
+  // beforeunload handler and complete the navigation.
+  GURL new_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), new_url));
 }
 
 namespace {

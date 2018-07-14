@@ -373,7 +373,8 @@ void NavigatorImpl::Navigate(std::unique_ptr<NavigationRequest> request,
       !FrameMsg_Navigate_Type::IsSameDocument(
           request->common_params().navigation_type) &&
       !request->request_params().is_history_navigation_in_new_child &&
-      frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload();
+      frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload(
+          false /* check_subframes_only */);
 
   int nav_entry_id = request->nav_entry_id();
   bool is_pending_entry =
@@ -388,7 +389,8 @@ void NavigatorImpl::Navigate(std::unique_ptr<NavigationRequest> request,
   if (should_dispatch_beforeunload) {
     frame_tree_node->navigation_request()->SetWaitingForRendererResponse();
     frame_tree_node->current_frame_host()->DispatchBeforeUnload(
-        true, reload_type != ReloadType::NONE);
+        RenderFrameHostImpl::BeforeUnloadType::BROWSER_INITIATED_NAVIGATION,
+        reload_type != ReloadType::NONE);
   } else {
     frame_tree_node->navigation_request()->BeginNavigation();
     // WARNING: The NavigationRequest might have been destroyed in
@@ -687,6 +689,22 @@ void NavigatorImpl::OnBeginNavigation(
           controller_->GetEntryCount(), override_user_agent,
           std::move(blob_url_loader_factory), std::move(navigation_client)));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
+
+  // This frame has already run beforeunload before it sent this IPC.  See if
+  // any of its cross-process subframes also need to run beforeunload.  If so,
+  // delay the navigation until receiving beforeunload ACKs from those frames.
+  DCHECK(!FrameMsg_Navigate_Type::IsSameDocument(
+      navigation_request->common_params().navigation_type));
+  bool should_dispatch_beforeunload =
+      frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload(
+          true /* check_subframes_only */);
+  if (should_dispatch_beforeunload) {
+    frame_tree_node->navigation_request()->SetWaitingForRendererResponse();
+    frame_tree_node->current_frame_host()->DispatchBeforeUnload(
+        RenderFrameHostImpl::BeforeUnloadType::RENDERER_INITIATED_NAVIGATION,
+        FrameMsg_Navigate_Type::IsReload(common_params.navigation_type));
+    return;
+  }
 
   // For main frames, NavigationHandle will be created after the call to
   // |DidStartMainFrameNavigation|, so it receives the most up to date pending

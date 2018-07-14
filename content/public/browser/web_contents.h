@@ -513,11 +513,8 @@ class WebContents : public PageNavigator,
   // returns false.
   virtual bool NeedToFireBeforeUnload() = 0;
 
-  // Runs the beforeunload handler for the main frame. See also ClosePage and
-  // SwapOut in RenderViewHost, which run the unload handler.
-  //
-  // TODO(creis): We should run the beforeunload handler for every frame that
-  // has one.
+  // Runs the beforeunload handler for the main frame and all its subframes.
+  // See also ClosePage in RenderViewHostImpl, which runs the unload handler.
   virtual void DispatchBeforeUnload() = 0;
 
   // Attaches this inner WebContents to its container frame
