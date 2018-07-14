@@ -2001,10 +2001,10 @@ void RenderFrameImpl::OnBeforeUnload(bool is_reload) {
 
   base::TimeTicks before_unload_start_time = base::TimeTicks::Now();
 
-  // TODO(clamy): Ensure BeforeUnload is dispatched to all subframes, even when
-  // --site-per-process is enabled. |dispatchBeforeUnloadEvent| will only
-  // execute the BeforeUnload event in this frame and local child frames. It
-  // should also be dispatched to out-of-process child frames.
+  // This will execute the BeforeUnload event in this frame and all of its
+  // local descendant frames, including children of remote frames.  The browser
+  // process will send separate IPCs to dispatch beforeunload in any
+  // out-of-process child frames.
   bool proceed = frame_->DispatchBeforeUnloadEvent(is_reload);
 
   base::TimeTicks before_unload_end_time = base::TimeTicks::Now();

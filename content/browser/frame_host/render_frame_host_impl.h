@@ -426,8 +426,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // active RenderFrames, but not until WasSwappedOut is called.
   void SwapOut(RenderFrameProxyHost* proxy, bool is_loading);
 
-  // Whether an ongoing navigation is waiting for a BeforeUnload ACK from the
-  // RenderFrame.
+  // Whether an ongoing navigation in this frame is waiting for a BeforeUnload
+  // ACK either from this RenderFrame or from one of its subframes.
   bool is_waiting_for_beforeunload_ack() const {
     return is_waiting_for_beforeunload_ack_;
   }
@@ -449,20 +449,28 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Stop the load in progress.
   void Stop();
 
-  // Runs the beforeunload handler for this frame. |for_navigation| indicates
-  // whether this call is for the current frame during a navigation. False means
-  // we're closing the entire tab. |is_reload| indicates whether the navigation
-  // is a reload of the page or not. If |for_navigation| is false, |is_reload|
-  // should be false as well.
-  void DispatchBeforeUnload(bool for_navigation, bool is_reload);
+  enum class BeforeUnloadType {
+    BROWSER_INITIATED_NAVIGATION,
+    RENDERER_INITIATED_NAVIGATION,
+    TAB_CLOSE
+  };
+
+  // Runs the beforeunload handler for this frame and its subframes. |type|
+  // indicates whether this call is for a navigation or tab close. |is_reload|
+  // indicates whether the navigation is a reload of the page.  If |type|
+  // corresponds to tab close and not a navigation, |is_reload| should be
+  // false.
+  void DispatchBeforeUnload(BeforeUnloadType type, bool is_reload);
 
   // Simulate beforeunload ack on behalf of renderer if it's unrenresponsive.
   void SimulateBeforeUnloadAck();
 
   // Returns true if a call to DispatchBeforeUnload will actually send the
-  // BeforeUnload IPC. This is the case if the current renderer is live and this
-  // frame is the main frame.
-  bool ShouldDispatchBeforeUnload();
+  // BeforeUnload IPC.  This can be called on a main frame or subframe.  If
+  // |check_subframes_only| is false, it covers handlers for the frame
+  // itself and all its descendants.  If |check_subframes_only| is true, it
+  // only checks the frame's descendants but not the frame itself.
+  bool ShouldDispatchBeforeUnload(bool check_subframes_only);
 
   // Update the frame's opener in the renderer process in response to the
   // opener being modified (e.g., with window.open or being set to null) in
@@ -787,6 +795,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   FRIEND_TEST_ALL_PREFIXES(NavigatorTestWithBrowserSideNavigation,
                            TwoNavigationsRacingCommit);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBeforeUnloadBrowserTest,
+                           SubframeShowsDialogWhenMainFrameNavigates);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            CreateRenderViewAfterProcessKillAndClosedProxy);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, DontSelectInvalidFiles);
@@ -1118,6 +1128,47 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<NavigationHandleImpl> TakeNavigationHandleForCommit(
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
 
+  // Helper to process the beforeunload ACK. |proceed| indicates whether the
+  // navigation or tab close should be allowed to proceed.  If
+  // |treat_as_final_ack| is true, the frame should stop waiting for any
+  // further ACKs from subframes. ACKs received from the renderer set
+  // |treat_as_final_ack| to false, whereas a beforeunload timeout sets it to
+  // true.
+  void ProcessBeforeUnloadACK(
+      bool proceed,
+      bool treat_as_final_ack,
+      const base::TimeTicks& renderer_before_unload_start_time,
+      const base::TimeTicks& renderer_before_unload_end_time);
+
+  // Find the frame that triggered the beforeunload handler to run in this
+  // frame, which might be the frame itself or its ancestor.  This will
+  // return the frame that is navigating, or the main frame if beforeunload was
+  // triggered by closing the current tab.  It will return null if no
+  // beforeunload is currently in progress.
+  RenderFrameHostImpl* GetBeforeUnloadInitiator();
+
+  // Called when a particular frame finishes running a beforeunload handler,
+  // possibly as part of processing beforeunload for an ancestor frame.  In
+  // that case, this is called on the ancestor frame that is navigating or
+  // closing, and |frame| indicates which beforeunload ACK is received.  If a
+  // beforeunload timeout occurred, |treat_as_final_ack| is set to true.
+  void ProcessBeforeUnloadACKFromFrame(
+      bool proceed,
+      bool treat_as_final_ack,
+      RenderFrameHostImpl* frame,
+      const base::TimeTicks& renderer_before_unload_start_time,
+      const base::TimeTicks& renderer_before_unload_end_time);
+
+  // Helper function to check whether the current frame and its subframes need
+  // to run beforeunload and, if |send_ipc| is true, send all the necessary
+  // IPCs for this frame's subtree. If |send_ipc| is false, this only checks
+  // whether beforeunload is needed and returns the answer.  |subframes_only|
+  // indicates whether to only check subframes of the current frame, and skip
+  // the current frame itself.
+  bool CheckOrDispatchBeforeUnloadForSubtree(bool subframes_only,
+                                             bool send_ipc,
+                                             bool is_reload);
+
   // Called by |beforeunload_timeout_| when the beforeunload timeout fires.
   void BeforeUnloadTimeout();
 
@@ -1294,6 +1345,22 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // DispatchBeforeUnload() until either the render process ACKs it with an IPC
   // to OnBeforeUnloadACK(), or until the timeout triggers.
   std::unique_ptr<TimeoutMonitor> beforeunload_timeout_;
+
+  // When this frame is asked to execute beforeunload, this maintains a list of
+  // frames that need to receive beforeunload ACKs.  This may include this
+  // frame and/or its descendant frames.  This excludes frames that don't have
+  // beforeunload handlers defined.
+  //
+  // TODO(alexmos): For now, this always includes the navigating frame.  Make
+  // this include the navigating frame only if it has a beforeunload handler
+  // defined.
+  std::set<RenderFrameHostImpl*> beforeunload_pending_replies_;
+
+  // During beforeunload, keeps track whether a dialog has already been shown.
+  // Used to enforce at most one dialog per navigation.  This is tracked on the
+  // frame that is being navigated, and not on any of its subframes that might
+  // have triggered a dialog.
+  bool has_shown_beforeunload_dialog_ = false;
 
   // Returns whether the tab was previously discarded.
   // This is passed to RequestNavigationParams in NavigationRequest.

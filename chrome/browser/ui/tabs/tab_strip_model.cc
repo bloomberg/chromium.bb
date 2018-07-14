@@ -1248,7 +1248,8 @@ bool TabStripModel::RunUnloadListenerBeforeClosing(
 
 bool TabStripModel::ShouldRunUnloadListenerBeforeClosing(
     content::WebContents* contents) {
-  return delegate_->ShouldRunUnloadListenerBeforeClosing(contents);
+  return contents->NeedToFireBeforeUnload() ||
+         delegate_->ShouldRunUnloadListenerBeforeClosing(contents);
 }
 
 int TabStripModel::ConstrainInsertionIndex(int index, bool pinned_tab) {

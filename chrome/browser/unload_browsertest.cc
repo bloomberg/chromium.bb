@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_test_util.h"
@@ -144,6 +145,7 @@ class UnloadTestBase : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
@@ -708,6 +710,38 @@ IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserListForceCloseAfterNormalClose) {
   window_observer.Wait();
   EXPECT_EQ(1, unload_results.get_successes());
   EXPECT_EQ(0, unload_results.get_aborts());
+}
+
+// Tests that a cross-site iframe runs its beforeunload handler when closing
+// the browser.  See https://crbug.com/853021.
+IN_PROC_BROWSER_TEST_P(UnloadTest, BrowserCloseWithCrossSiteIframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a page with an iframe.
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Navigate iframe cross-site.
+  GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(NavigateIframeToURL(web_contents, "test", frame_url));
+
+  // Install a dialog-showing beforeunload handler in the iframe.
+  content::RenderFrameHost* child =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  EXPECT_TRUE(
+      ExecuteScript(child, "window.onbeforeunload = () => { return 'x' };"));
+
+  // Close the browser and make sure the beforeunload dialog is shown and can
+  // be clicked.
+  PrepareForDialog(browser());
+  content::WindowedNotificationObserver window_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+  chrome::CloseWindow(browser());
+  ClickModalDialogButton(true);
+  window_observer.Wait();
 }
 
 class FastUnloadTest : public UnloadTestBase {
