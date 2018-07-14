@@ -72,7 +72,9 @@ CSSStyleValue* StylePropertyMapReadOnly::get(const String& property_name,
   if (!value)
     return nullptr;
 
-  if (property.IsRepeated()) {
+  // Custom properties count as repeated whenever we have a CSSValueList.
+  if (property.IsRepeated() ||
+      (property_id == CSSPropertyVariable && value->IsValueList())) {
     CSSStyleValueVector values =
         StyleValueFactory::CssValueToStyleValueVector(property_id, *value);
     return values.IsEmpty() ? nullptr : values[0];

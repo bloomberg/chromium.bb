@@ -290,7 +290,10 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
     return style_value_vector;
   }
 
-  if (!css_value.IsValueList() || !CSSProperty::Get(property_id).IsRepeated()) {
+  // Custom properties count as repeated whenever we have a CSSValueList.
+  if (!css_value.IsValueList() ||
+      (!CSSProperty::Get(property_id).IsRepeated() &&
+       property_id != CSSPropertyVariable)) {
     return UnsupportedCSSValue(property_id, css_value);
   }
 
