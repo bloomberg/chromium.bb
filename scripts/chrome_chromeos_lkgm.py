@@ -75,7 +75,7 @@ class ChromeLKGMCommitter(object):
     self._old_lkgm = osutils.ReadFile(lkgm_file)
 
     lv = distutils.version.LooseVersion
-    if self._old_lkgm is not None and not lv(self._lkgm) > lv(self._old_lkgm):
+    if self._old_lkgm is not None and lv(self._lkgm) <= lv(self._old_lkgm):
       raise LKGMNotValid(
           'LKGM version (%s) is not newer than current version (%s).' %
           (self._lkgm, self._old_lkgm))

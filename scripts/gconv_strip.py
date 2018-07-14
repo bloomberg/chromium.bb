@@ -140,7 +140,7 @@ class GconvModules(object):
     for module in all_modules:
       deps = lddtree.ParseELF(os.path.join(modules_dir, '%s.so' % module),
                               modules_dir, [])
-      if not 'needed' in deps:
+      if 'needed' not in deps:
         continue
       for lib in deps['needed']:
         # Ignore the libs without a path defined (outside the modules_dir).

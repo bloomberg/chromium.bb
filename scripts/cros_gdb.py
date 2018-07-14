@@ -223,7 +223,7 @@ To install the debug symbols for all available packages, run:
     if sysroot_inf_cmd:
       stripped_info = cros_build_lib.RunCommand(['file', sysroot_inf_cmd],
                                                 capture_output=True).output
-      if not ' not stripped' in stripped_info:
+      if ' not stripped' not in stripped_info:
         debug_file = os.path.join(self.sysroot, 'usr/lib/debug',
                                   self.inf_cmd.lstrip('/'))
         debug_file += '.debug'
