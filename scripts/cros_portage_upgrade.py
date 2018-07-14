@@ -538,7 +538,7 @@ class Upgrader(object):
     for line in output.split('\n'):
       mask = line.split('|')[0]
       if len(mask) == 2:
-        pinfo.upgraded_unmasked = 'M' != mask[0]
+        pinfo.upgraded_unmasked = mask[0] != 'M'
         return
 
     raise RuntimeError('Unable to determine whether %s is stable from equery:\n'
@@ -670,10 +670,7 @@ class Upgrader(object):
     """Return True if package upgrade is already staged."""
     ebuild_path = Upgrader._GetEbuildPathFromCpv(upstream_cpv)
     status = self._stable_repo_status.get(ebuild_path, None)
-    if status and 'A' == status:
-      return True
-
-    return False
+    return status == 'A'
 
   def _AnyChangesStaged(self):
     """Return True if any local changes are staged in stable repo."""

@@ -652,7 +652,7 @@ def _FinishParsing(options):
     exclusive_opts = {'--version': options.force_version,
                       '--delete-branch': options.delete_branch,
                       '--rename-to': options.rename_to}
-    if 1 != sum(1 for x in exclusive_opts.values() if x):
+    if sum(1 for x in exclusive_opts.values() if x) != 1:
       cros_build_lib.Die('When using the %s config, you must'
                          ' specifiy one and only one of the following'
                          ' options: %s.', constants.BRANCH_UTIL_CONFIG,

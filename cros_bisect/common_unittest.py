@@ -85,9 +85,9 @@ class TestScore(cros_test_lib.TestCase):
       True if score is empty (default / un-assigned).
     """
     return (
-        'Score(values=[])' == repr(score) and
-        'Score(values=[], mean=0.000, var=0.000, std=0.000)' == str(score) and
-        0 == len(score))
+        repr(score) == 'Score(values=[])' and
+        str(score) == 'Score(values=[], mean=0.000, var=0.000, std=0.000)' and
+        len(score) == 0)
 
   def testEmpty(self):
     """Tests that default Score object is empty."""

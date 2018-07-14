@@ -74,17 +74,17 @@ class MobMonCli(object):
 
     args, kwargs = InputsToArgs(inputs)
 
-    if 'GetServiceList' == request:
+    if request == 'GetServiceList':
       return rpcexec.GetServiceList()
 
-    if 'GetStatus' == request:
+    if request == 'GetStatus':
       return rpcexec.GetStatus(service=service)
 
-    if 'ActionInfo' == request:
+    if request == 'ActionInfo':
       return rpcexec.ActionInfo(service=service, healthcheck=healthcheck,
                                 action=action)
 
-    if 'RepairService' == request:
+    if request == 'RepairService':
       return rpcexec.RepairService(service=service, healthcheck=healthcheck,
                                    action=action, args=args, kwargs=kwargs)
 

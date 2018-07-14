@@ -377,9 +377,9 @@ class Disk(SystemInfoStorage):
         labels.setdefault(devicename, [])
         sizes.setdefault(devicename, 0)
 
-        if 'ids' == prop:
+        if prop == 'ids':
           ids[devicename].append(result)
-        elif 'labels' == prop:
+        elif prop == 'labels':
           labels[devicename].append(result)
 
     # Collect lsblk information.

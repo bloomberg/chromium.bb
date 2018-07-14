@@ -36,7 +36,7 @@ def DisplayHexData(data, indent=0):
           ' '.join('%.2x' % ord(c) for c in chunk) +
           '   ' * (16 - len(chunk)) +
           ' | ' +
-          ''.join(c if 32 <= ord(c) and ord(c) < 127 else '.' for c in chunk))
+          ''.join(c if 32 <= ord(c) < 127 else '.' for c in chunk))
 
 
 @command.CommandDecorator('payload')

@@ -3115,7 +3115,7 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
       text = str(exception)
       phrase = 'is unstable'
       msg = 'No mention of "%s" in error message: %s' % (phrase, text)
-      return (0 <= text.find(phrase), msg)
+      return (text.find(phrase) >= 0, msg)
 
     self._TestResolveAndVerifyArgsNonWorld(pinfolist, cmdargs,
                                            error=RuntimeError,
