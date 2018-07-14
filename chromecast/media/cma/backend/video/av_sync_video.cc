@@ -37,15 +37,19 @@ const int kLinearRegressionDataLifetimeUs = 5000000;
 constexpr base::TimeDelta kAvSyncUpkeepInterval =
     base::TimeDelta::FromMilliseconds(10);
 
-#if DCHECK_IS_ON()
 // Time interval between checking playbacks statistics.
 constexpr base::TimeDelta kPlaybackStatisticsCheckInterval =
     base::TimeDelta::FromSeconds(5);
-#endif
 
 // The amount of time we wait after a correction before we start upkeeping the
 // AV sync.
 const int kMinimumWaitAfterCorrectionUs = 200000;
+
+// This is the threshold for which we consider the rate of playback variation
+// to be valid. If we measure a rate of playback variation worse than this, we
+// consider the linear regression measurement invalid, we flush the linear
+// regression and let AvSync collect samples all over again.
+const double kExpectedSlopeVariance = 0.1;
 }  // namespace
 
 std::unique_ptr<AvSync> AvSync::Create(
@@ -135,14 +139,30 @@ void AvSyncVideo::UpkeepAvSync() {
     return;
   }
 
-  int64_t current_vpts;
-  double vpts_slope;
-  double apts_slope;
+  int64_t current_vpts = 0;
+  double vpts_slope = 0.0;
+  double apts_slope = 0.0;
   if (!video_pts_->EstimateY(now, &current_vpts, &error) ||
       !audio_pts_->EstimateY(now, &current_apts, &error) ||
       !video_pts_->EstimateSlope(&vpts_slope, &error) ||
       !audio_pts_->EstimateSlope(&apts_slope, &error)) {
     VLOG(3) << "Failed to get linear regression estimate.";
+    return;
+  }
+
+  if (abs(vpts_slope - current_video_playback_rate_) > kExpectedSlopeVariance) {
+    LOG(ERROR) << "Calculated bad vpts_slope=" << vpts_slope
+               << ". Expected value close to=" << current_video_playback_rate_
+               << ". Flushing...";
+    FlushVideoPts();
+    return;
+  }
+
+  if (abs(apts_slope - current_audio_playback_rate_) > kExpectedSlopeVariance) {
+    LOG(ERROR) << "Calculated bad apts_slope=" << apts_slope
+               << ". Expected value close to=" << current_audio_playback_rate_
+               << ". Flushing...";
+    FlushAudioPts();
     return;
   }
 
@@ -183,6 +203,20 @@ void AvSyncVideo::UpkeepAvSync() {
     InSyncCorrection(now, current_vpts, current_apts, apts_slope, vpts_slope,
                      difference);
   }
+}
+
+void AvSyncVideo::FlushAudioPts() {
+  audio_pts_.reset(
+      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
+  error_.reset(
+      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
+}
+
+void AvSyncVideo::FlushVideoPts() {
+  video_pts_.reset(
+      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
+  error_.reset(
+      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
 }
 
 void AvSyncVideo::SoftCorrection(int64_t now,
@@ -364,26 +398,12 @@ void AvSyncVideo::GatherPlaybackStatistics() {
   number_of_hard_corrections_ = 0;
 }
 
-void AvSyncVideo::StopAvSync() {
-  audio_pts_.reset(
-      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
-  video_pts_.reset(
-      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
-  error_.reset(
-      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
-  upkeep_av_sync_timer_.Stop();
-  playback_statistics_timer_.Stop();
-}
-
 void AvSyncVideo::NotifyStart(int64_t timestamp, int64_t pts) {
-  number_of_soft_corrections_ = 0;
-  number_of_hard_corrections_ = 0;
-  in_soft_correction_ = false;
-  difference_at_start_of_correction_ = 0;
   playback_start_timestamp_us_ = timestamp;
   playback_start_pts_us_ = pts;
-  first_audio_pts_received_ = false;
-  first_video_pts_received_ = false;
+  LOG(INFO) << __func__
+            << " playback_start_timestamp_us_=" << playback_start_timestamp_us_
+            << " playback_start_pts_us_=" << playback_start_pts_us_;
 
   StartAvSync();
 }
@@ -399,19 +419,52 @@ void AvSyncVideo::NotifyPause() {
 }
 
 void AvSyncVideo::NotifyResume() {
+  playback_start_timestamp_us_ = backend_->MonotonicClockNow();
+  LOG(INFO) << __func__
+            << " playback_start_timestamp_us_=" << playback_start_timestamp_us_;
   StartAvSync();
 }
 
+void AvSyncVideo::NotifyPlaybackRateChange(float rate) {
+  current_audio_playback_rate_ =
+      backend_->audio_decoder()->SetPlaybackRate(rate);
+
+  current_video_playback_rate_ = rate;
+
+  in_soft_correction_ = false;
+  difference_at_start_of_correction_ = 0;
+
+  FlushAudioPts();
+  FlushVideoPts();
+}
+
 void AvSyncVideo::StartAvSync() {
+  audio_pts_.reset(
+      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
+  video_pts_.reset(
+      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
+  error_.reset(
+      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
+
+  number_of_soft_corrections_ = 0;
+  number_of_hard_corrections_ = 0;
+  in_soft_correction_ = false;
+  difference_at_start_of_correction_ = 0;
+  first_audio_pts_received_ = false;
+  first_video_pts_received_ = false;
+
   upkeep_av_sync_timer_.Start(FROM_HERE, kAvSyncUpkeepInterval, this,
                               &AvSyncVideo::UpkeepAvSync);
-#if DCHECK_IS_ON()
   // TODO(almasrymina): if this logic turns out to be useful for metrics
   // recording, keep it and remove this TODO. Otherwise remove it.
   playback_statistics_timer_.Start(FROM_HERE, kPlaybackStatisticsCheckInterval,
                                    this,
                                    &AvSyncVideo::GatherPlaybackStatistics);
-#endif
+}
+
+void AvSyncVideo::StopAvSync() {
+  upkeep_av_sync_timer_.Stop();
+  playback_statistics_timer_.Stop();
 }
 
 AvSyncVideo::~AvSyncVideo() = default;

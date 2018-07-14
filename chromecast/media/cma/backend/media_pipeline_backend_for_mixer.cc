@@ -141,16 +141,14 @@ bool MediaPipelineBackendForMixer::Resume() {
 bool MediaPipelineBackendForMixer::SetPlaybackRate(float rate) {
   LOG(INFO) << __func__ << " rate=" << rate;
 
-  // TODO(almasrymina); instead of depending on the AV sync code to figure out
-  // that the playback rate has changed, we should notify it that we changed
-  // the playback rate and have it take that into account immediately.
-  // b/110230181.
-  //
   // If av_sync_ is available, only set the playback rate of the video master,
   // and let av_sync_ handle syncing the audio to the video.
   if (av_sync_) {
     DCHECK(video_decoder_);
-    return video_decoder_->SetPlaybackRate(rate);
+    if (!video_decoder_->SetPlaybackRate(rate))
+      return false;
+    av_sync_->NotifyPlaybackRateChange(rate);
+    return true;
   }
 
   // If there is no av_sync_, then we must manually set the playback rate of

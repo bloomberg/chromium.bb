@@ -18,6 +18,7 @@ class AvSyncDummy : public AvSync {
   void NotifyStop() override;
   void NotifyPause() override;
   void NotifyResume() override;
+  void NotifyPlaybackRateChange(float rate) override;
 };
 
 std::unique_ptr<AvSync> AvSync::Create(
@@ -35,6 +36,8 @@ void AvSyncDummy::NotifyStop() {}
 void AvSyncDummy::NotifyPause() {}
 
 void AvSyncDummy::NotifyResume() {}
+
+void AvSyncDummy::NotifyPlaybackRateChange(float rate) {}
 
 }  // namespace media
 }  // namespace chromecast

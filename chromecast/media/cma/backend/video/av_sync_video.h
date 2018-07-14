@@ -33,6 +33,7 @@ class AvSyncVideo : public AvSync {
   void NotifyStop() override;
   void NotifyPause() override;
   void NotifyResume() override;
+  void NotifyPlaybackRateChange(float rate) override;
 
   class Delegate {
    public:
@@ -58,6 +59,8 @@ class AvSyncVideo : public AvSync {
   void StartAvSync();
   void StopAvSync();
   void GatherPlaybackStatistics();
+  void FlushAudioPts();
+  void FlushVideoPts();
 
   void SoftCorrection(int64_t now,
                       int64_t current_vpts,
@@ -91,6 +94,7 @@ class AvSyncVideo : public AvSync {
   std::unique_ptr<WeightedMovingLinearRegression> video_pts_;
   std::unique_ptr<WeightedMovingLinearRegression> error_;
   double current_audio_playback_rate_ = 1.0;
+  double current_video_playback_rate_ = 1.0;
 
   int64_t last_gather_timestamp_us_ = 0;
   int64_t last_repeated_frames_ = 0;

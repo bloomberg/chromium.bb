@@ -33,13 +33,13 @@ void WeightedMovingLinearRegression::AddSample(int64_t x,
 
   UpdateSet(x, y, weight);
   Sample sample = {x, y, weight};
-  samples_.push(sample);
+  samples_.push_back(sample);
 
   // Remove old samples.
   while (x - samples_.front().x > max_x_range_) {
     const Sample& old_sample = samples_.front();
     UpdateSet(old_sample.x, old_sample.y, -old_sample.weight);
-    samples_.pop();
+    samples_.pop_front();
   }
   DCHECK(!samples_.empty());
 
@@ -94,6 +94,13 @@ void WeightedMovingLinearRegression::UpdateSet(int64_t x,
   x_mean_.AddSample(x, weight);
   y_mean_.AddSample(y, weight);
   covariance_ += weight * (x - x_mean_.weighted_mean()) * (y - old_y_mean);
+}
+
+void WeightedMovingLinearRegression::DumpSamples() const {
+  for (auto sample : samples_) {
+    LOG(INFO) << "x,y,weight: " << sample.x << ", " << sample.y
+              << sample.weight;
+  }
 }
 
 }  // namespace chromecast
