@@ -1,33 +1,81 @@
-			Weston
-			======
+Weston
+======
 
-Weston is the reference implementation of a Wayland compositor, and a
-useful compositor in its own right.  Weston has various backends that
-lets it run on Linux kernel modesetting and evdev input as well as
-under X11.  Weston ships with a few example clients, from simple
-clients that demonstrate certain aspects of the protocol to more
-complete clients and a simplistic toolkit.  There is also a quite
-capable terminal emulator (weston-terminal) and an toy/example desktop
-shell.  Finally, weston also provides integration with the Xorg server
-and can pull X clients into the Wayland desktop and act as an X window
-manager.
+![screenshot of skeletal Weston desktop](doc/wayland-screenshot.jpg)
 
-Refer to https://wayland.freedesktop.org/building.html for building
-weston and its dependencies.
+Weston is the reference implementation of a Wayland compositor, as well as a
+useful environment in and of itself.
 
-The test suite can be invoked via `make check`; see
-https://wayland.freedesktop.org/testing.html for additional details.
+Out of the box, Weston provides a very basic desktop, or a full-featured
+environment for non-desktop uses such as automotive, embedded, in-flight,
+industrial, kiosks, set-top boxes and TVs. It also provides a library allowing
+other projects to build their own full-featured environments on top of Weston's
+core.
 
-Developer documentation can be built via `make doc`. Output will be in
-the build root under
+The core focus of Weston is correctness and reliability. Weston aims to be lean
+and fast, but more importantly, to be predictable. Whilst Weston does have known
+bugs and shortcomings, we avoid unknown or variable behaviour as much as
+possible, including variable performance such as occasional spikes in frame
+display time.
 
-docs/developer/html/index.html
-docs/tools/html/index.html
+A small suite of example or demo clients are also provided: though they can be
+useful in themselves, their main purpose is to be an example or test case for
+others building compositors or clients.
+
+If you are after a more mainline desktop experience, the
+[GNOME](https://www.gnome.org) and [KDE](https://www.kde.org) projects provide
+full-featured desktop environments built on the Wayland protocol. Many other
+projects also exist providing Wayland clients and desktop environments: you are
+not limited to just what you can find in Weston.
+
+Reporting issues and contributing
+=================================
+
+Weston's development is
+[hosted on freedesktop.org GitLab](https://gitlab.freedesktop.org/wayland/weston/).
+Please also see [the contributing document](CONTRIBUTING.md), which details how
+to make code or non-technical contributions to Weston.
+
+Building Weston
+===============
+
+Weston is built using autotools, with `autogen.sh` and `make`. It often depends
+on the current release versions of
+[Wayland](https://gitlab.freedesktop.org/wayland/wayland) and
+[wayland-protocols](https://cgit.freedesktop.org/wayland/wayland-protocols).
+
+Every push to the Weston master repository and its forks is built using GitLab
+CI. [Reading the configuration](.gitlab-ci.yml) may provide a useful example of
+how to build and install Weston.
+
+More [detailed documentation on building Weston](https://wayland.freedesktop.org/building.html)
+is available on the Wayland site. There are also more details on
+[how to run and write tests](https://wayland.freedesktop.org/testing.html).
+
+Running Weston
+==============
+
+Once Weston is installed, most users can simply run it by typing `weston`. This
+will launch Weston inside whatever environment you launch it from: when launched
+from a text console, it will take over that console. When launched from inside
+an existing Wayland or X11 session, it will start a 'nested' instance of Weston
+inside a window in that session.
+
+Help is available by running `weston --help`, or `man weston`, which will list
+the available configuration options and display backends. It can also be
+configured through a file on disk; more information on this can be found through
+`man weston.ini`.
+
+In some special cases, such as when running remotely or without logind's session
+control, Weston may not be able to run directly from a text console. In these
+situations, you can instead execute the `weston-launch` helper, which will gain
+privileged access to input and output devices by running as root, then granting
+access to the main Weston binary running as your user. Running Weston this way
+is not recommended unless necessary.
 
 
-
-			Libweston
-			=========
+Libweston
+=========
 
 Libweston is an effort to separate the re-usable parts of Weston into
 a library. Libweston provides most of the boring and tedious bits of
