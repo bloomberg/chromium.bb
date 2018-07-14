@@ -12,7 +12,6 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
@@ -125,15 +124,8 @@ class POLICY_EXPORT URLBlacklist {
 // Tracks the blacklist policies for a given profile, and updates it on changes.
 class POLICY_EXPORT URLBlacklistManager {
  public:
-  // Returns true if the blacklist should be overridden for |url| and sets
-  // |block| to true if it should be blocked and false otherwise.
-  // |reason| is set to the exact reason for blocking |url| iff |block| is true.
-  typedef base::Callback<bool(const GURL& url, bool* block, int* reason)>
-      OverrideBlacklistCallback;
-
   // Must be constructed on the UI thread.
-  URLBlacklistManager(PrefService* pref_service,
-                      OverrideBlacklistCallback override_blacklist);
+  explicit URLBlacklistManager(PrefService* pref_service);
   virtual ~URLBlacklistManager();
 
   // Returns true if |url| is blocked by the current blacklist.
@@ -175,9 +167,6 @@ class POLICY_EXPORT URLBlacklistManager {
 
   // Used to post tasks to a background thread.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
-
-  // Used to optionally skip blacklisting for some URLs.
-  OverrideBlacklistCallback override_blacklist_;
 
   // Used to schedule tasks on the main loop to avoid rebuilding the blocklist
   // multiple times during a message loop process. This can happen if two
