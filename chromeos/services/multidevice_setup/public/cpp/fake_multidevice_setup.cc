@@ -44,10 +44,6 @@ FakeMultiDeviceSetup::~FakeMultiDeviceSetup() {
   }
 }
 
-void FakeMultiDeviceSetup::BindRequest(mojom::MultiDeviceSetupRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
 void FakeMultiDeviceSetup::BindHandle(mojo::ScopedMessagePipeHandle handle) {
   BindRequest(chromeos::multidevice_setup::mojom::MultiDeviceSetupRequest(
       std::move(handle)));

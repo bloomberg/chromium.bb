@@ -29,7 +29,7 @@ class MultiDeviceSetupClient {
     // HostStatus::kEligibleHostExistsButNoHostSet, |host_device| is null.
     virtual void OnHostStatusChanged(
         mojom::HostStatus host_status,
-        const base::Optional<cryptauth::RemoteDeviceRef>& host_device);
+        const base::Optional<cryptauth::RemoteDeviceRef>& host_device) = 0;
 
    protected:
     virtual ~Observer() = default;

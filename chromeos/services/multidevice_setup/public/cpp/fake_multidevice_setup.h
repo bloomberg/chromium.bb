@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
@@ -16,12 +17,11 @@ namespace chromeos {
 namespace multidevice_setup {
 
 // Test MultiDeviceSetup implementation.
-class FakeMultiDeviceSetup : public mojom::MultiDeviceSetup {
+class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
  public:
   FakeMultiDeviceSetup();
   ~FakeMultiDeviceSetup() override;
 
-  void BindRequest(mojom::MultiDeviceSetupRequest request);
   void BindHandle(mojo::ScopedMessagePipeHandle handle);
 
   mojom::AccountStatusChangeDelegatePtr& delegate() { return delegate_; }
