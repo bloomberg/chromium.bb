@@ -4,8 +4,48 @@ Contributing to Weston
 Sending patches
 ---------------
 
-Patches should be sent to **wayland-devel@lists.freedesktop.org**, using
-`git send-email`. See [git documentation] for help.
+Patches should be sent via
+[GitLab merge requests](https://docs.gitlab.com/ce/gitlab-basics/add-merge-request.html).
+Weston is
+[hosted on freedesktop.org's GitLab](https://gitlab.freedesktop.org/wayland/weston/):
+in order to submit code, you should create an account on this GitLab instance,
+fork the core Weston repository, push your changes to a branch in your new
+repository, and then submit these patches for review through a merge request.
+
+Weston formerly accepted patches via `git-send-email`, sent to
+**wayland-devel@lists.freedesktop.org**; these were
+[tracked using Patchwork](https://patchwork.freedesktop.org/projects/wayland/).
+Some old patches continue to be sent this way, and we may accept small new
+patches sent to the list, but please send all new patches through GitLab merge
+requests.
+
+Formatting and separating commits
+---------------------------------
+
+Unlike many projects using GitHub and GitLab, Weston has a
+[linear, 'recipe' style history](http://www.bitsnbites.eu/git-history-work-log-vs-recipe/).
+This means that every commit should be small, digestible, stand-alone, and
+functional. Rather than a purely chronological commit history like this:
+
+    doc: final docs for view transforms
+    fix tests when disabled, redo broken doc formatting
+    better transformed-view iteration (thanks Hannah!)
+    try to catch more cases in tests
+    tests: add new spline test
+    fix compilation on splines
+    doc: notes on reticulating splines
+    compositor: add spline reticulation for view transforms
+
+we aim to have a clean history which only reflects the final state, broken up
+into functional groupings:
+
+    compositor: add spline reticulation for view transforms
+    compositor: new iterator for view transforms
+    tests: add view-transform correctness tests
+    doc: fix Doxygen formatting for view transforms
+
+This ensures that the final patch series only contains the final state,
+without the changes and missteps taken along the development process.
 
 The first line of a commit message should contain a prefix indicating
 what part is affected by the patch followed by one sentence that
@@ -54,74 +94,37 @@ deserve, and the patches may cause redundant review effort.
 Tracking patches and following up
 ---------------------------------
 
-[Wayland Patchwork](http://patchwork.freedesktop.org/project/wayland/list/) is
-used for tracking patches to Wayland and Weston. Xwayland patches are tracked
-with the [Xorg project](https://patchwork.freedesktop.org/project/Xorg/list/)
-instead. Libinput patches, even though they use the same mailing list as
-Wayland, are not tracked in the Wayland Patchwork.
+Once submitted to GitLab, your patches will be reviewed by the Weston
+development team on GitLab. Review may be entirely positive and result in your
+code landing instantly, in which case, great! You're done. However, we may ask
+you to make some revisions: fixing some bugs we've noticed, working to a
+slightly different design, or adding documentation and tests.
 
-The following applies only to Wayland and Weston.
+If you do get asked to revise the patches, please bear in mind the notes above.
+You should use `git rebase -i` to make revisions, so that your patches follow
+the clear linear split documented above. Following that split makes it easier
+for reviewers to understand your work, and to verify that the code you're
+submitting is correct.
 
-If a patch is not found in Patchwork, there is a high possibility for it to be
-forgotten. Patches attached to bug reports or not arriving to the mailing list
-because of e.g. subscription issues will not be in Patchwork because Patchwork
-only collects patches sent to the list.
+A common request is to split single large patch into multiple patches. This can
+happen, for example, if when adding a new feature you notice a bug in Weston's
+core which you need to fix to progress. Separating these changes into separate
+commits will allow us to verify and land the bugfix quickly, pushing part of
+your work for the good of everyone, whilst revision and discussion continues on
+the larger feature part. It also allows us to direct you towards reviewers who
+best understand the different areas you are working on.
 
-When you send a revised version of a patch, it would be very nice to mark your
-old patch as superseded (or rejected, if that is applicable). You can change
-the status of your own patches by registering to Patchwork - ownership is
-identified by email address you use to register. Updating your patch status
-appropriately will help maintainer work.
+When you have made any requested changes, please rebase the commits, verify
+that they still individually look good, then force-push your new branch to
+GitLab. This will update the merge request and notify everyone subscribed to
+your merge request, so they can review it again.
 
-The following patch states are found in Patchwork:
-
-- **New**:
-    Patches under discussion or not yet processed.
-
-- **Under review**:
-    Mostly unused state.
-
-- **Accepted**:
-    The patch is merged in the master branch upstream, as is or slightly
-    modified.
-
-- **Rejected**:
-    The idea or approach is rejected and cannot be fixed by revising
-    the patch.
-
-- **RFC**:
-    Request for comments, not meant to be merged as is.
-
-- **Not applicable**:
-    The email was not actually a patch, or the patch is not for Wayland or
-    Weston. Libinput patches are usually automatically ignored by Wayland
-    Patchwork, but if they get through, they will be marked as Not
-    applicable.
-
-- **Changes requested**:
-    Reviewers determined that changes to the patch are needed. The
-    submitter is expected to send a revised version. (You should
-    not wait for your patch to be set to this state before revising,
-    though.)
-
-- **Awaiting upstream**:
-    Mostly unused as the patch is waiting for upstream actions but
-    is not shown in the default list, which means it is easy to
-    overlook.
-
-- **Superseded**:
-    A revised version of the patch has been submitted.
-
-- **Deferred**:
-    Used mostly during freeze periods before releases, to temporarily
-    hide patches that cannot be merged during a freeze.
-
-Note, that in the default listing, only patches in *New* or *Under review* are
-shown.
-
-There is also a command line interface to Patchwork called `pwclient`, see
-http://patchwork.freedesktop.org/project/wayland/
-for links where to get it and the sample `.pwclientrc` for Wayland/Weston.
+There are also
+[many GitLab CLI clients](https://about.gitlab.com/applications/#cli-clients),
+if you prefer to avoid the web interface. It may be difficult to follow review
+comments without using the web interface though, so we do recommend using this
+to go through the review process, even if you use other clients to track the
+list of available patches.
 
 
 Coding style
