@@ -15,6 +15,12 @@
 #include "chromecast/media/cma/backend/media_pipeline_backend_for_mixer.h"
 #include "chromecast/media/cma/backend/video_decoder_for_mixer.h"
 
+#define LIMITED_CAST_MEDIA_LOG(level, count, max)                             \
+  LOG_IF(level, (count) < (max) && ((count)++ || true))                       \
+      << (((count) == (max)) ? "(Log limit reached. Further similar entries " \
+                               "may be suppressed): "                         \
+                             : "")
+
 namespace chromecast {
 namespace media {
 
@@ -50,6 +56,10 @@ const int kMinimumWaitAfterCorrectionUs = 200000;
 // consider the linear regression measurement invalid, we flush the linear
 // regression and let AvSync collect samples all over again.
 const double kExpectedSlopeVariance = 0.1;
+
+// The threshold after which LIMITED_CAST_MEDIA_LOG will no longer write the
+// logs.
+const int kCastMediaLogThreshold = 3;
 }  // namespace
 
 std::unique_ptr<AvSync> AvSync::Create(
@@ -98,7 +108,8 @@ void AvSyncVideo::UpkeepAvSync() {
   int64_t new_vpts_timestamp = 0;
   if (!backend_->video_decoder()->GetCurrentPts(&new_vpts_timestamp,
                                                 &new_current_vpts)) {
-    LOG(ERROR) << "Failed to get VPTS.";
+    LIMITED_CAST_MEDIA_LOG(ERROR, spammy_log_count_, kCastMediaLogThreshold)
+        << "Failed to get VPTS.";
     return;
   }
 
@@ -119,7 +130,8 @@ void AvSyncVideo::UpkeepAvSync() {
 
   if (!backend_->audio_decoder()->GetTimestampedPts(&new_apts_timestamp,
                                                     &new_current_apts)) {
-    LOG(ERROR) << "Failed to get APTS.";
+    LIMITED_CAST_MEDIA_LOG(ERROR, spammy_log_count_, kCastMediaLogThreshold)
+        << "Failed to get APTS.";
     return;
   }
 
@@ -452,6 +464,8 @@ void AvSyncVideo::StartAvSync() {
   difference_at_start_of_correction_ = 0;
   first_audio_pts_received_ = false;
   first_video_pts_received_ = false;
+
+  spammy_log_count_ = 0;
 
   upkeep_av_sync_timer_.Start(FROM_HERE, kAvSyncUpkeepInterval, this,
                               &AvSyncVideo::UpkeepAvSync);

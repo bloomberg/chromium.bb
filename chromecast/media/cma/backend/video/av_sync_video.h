@@ -109,6 +109,8 @@ class AvSyncVideo : public AvSync {
   bool first_audio_pts_received_ = false;
   bool first_video_pts_received_ = false;
 
+  int spammy_log_count_ = 0;
+
   MediaPipelineBackendForMixer* const backend_;
 };
 
