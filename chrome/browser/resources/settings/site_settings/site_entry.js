@@ -270,4 +270,16 @@ Polymer({
   getIndexBoundToOriginList_: function(siteGroup, index) {
     return Math.max(0, Math.min(index, siteGroup.origins.length - 1));
   },
+
+  /**
+   * Returns the correct class to apply depending on this site-entry's position
+   * in a list.
+   * @param {number} index
+   * @private
+   */
+  getClassForIndex_: function(index) {
+    if (index == 0)
+      return 'first';
+    return '';
+  },
 });

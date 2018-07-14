@@ -41,6 +41,7 @@ js_library("all_sites") {
   deps = [
     ":constants",
     ":site_settings_behavior",
+    "../settings_page:settings_subpage_search",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",

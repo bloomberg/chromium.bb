@@ -38,6 +38,16 @@ Polymer({
       value: settings.routes.SITE_SETTINGS_ALL,
       readOnly: true,
     },
+
+    /**
+     * The search query entered into the All Sites search textbox. Used to
+     * filter the All Sites list.
+     * @private
+     */
+    searchQuery_: {
+      type: String,
+      value: '',
+    }
   },
 
   /** @override */
@@ -75,6 +85,35 @@ Polymer({
     this.browserProxy_.getAllSites(contentTypes).then((response) => {
       this.siteGroupList = response;
     });
+  },
+
+  /**
+   * Filters |this.siteGroupList| with the given search query text.
+   * @param {!Array<!SiteGroup>} siteGroupList The list of sites to filter.
+   * @param {string} searchQuery The filter text.
+   * @return {!Array<!SiteGroup>}
+   * @private
+   */
+  filterPopulatedList_: function(siteGroupList, searchQuery) {
+    if (searchQuery.length == 0)
+      return siteGroupList;
+
+    return siteGroupList.filter((siteGroup) => {
+      return siteGroup.origins.find(origin => {
+        return origin.includes(searchQuery);
+      });
+    });
+  },
+
+  /**
+   * Called when the input text in the search textbox is updated.
+   * @param {Event} e
+   * @private
+   */
+  onSearchChanged_: function(e) {
+    const searchElement = /** @type {SettingsSubpageSearchElement} */ (
+        this.$$('settings-subpage-search'));
+    this.searchQuery_ = searchElement.getSearchInput().value.toLowerCase();
   },
 
   /**
