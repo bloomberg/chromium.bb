@@ -43,6 +43,9 @@ class CHROMEOS_EXPORT SmbProviderClient
   using SetupKerberosCallback = base::OnceCallback<void(bool success)>;
   using ParseNetBiosPacketCallback =
       base::OnceCallback<void(const std::vector<std::string>&)>;
+  using StartCopyCallback =
+      base::OnceCallback<void(smbprovider::ErrorType error,
+                              int32_t copy_token)>;
 
   ~SmbProviderClient() override;
 
@@ -191,6 +194,23 @@ class CHROMEOS_EXPORT SmbProviderClient
   virtual void ParseNetBiosPacket(const std::vector<uint8_t>& packet,
                                   uint16_t transaction_id,
                                   ParseNetBiosPacketCallback callback) = 0;
+
+  // Calls StartCopy. This starts the copy from |source_path| to |target_path|.
+  // In order to avoid blocking the SmbProvider daemon, this operation performs
+  // one unit of work and returns smbprovider::ERROR_COPY_PENDING along with a
+  // continuation token to |callback| if there is more work to do.
+  virtual void StartCopy(int32_t mount_id,
+                         const base::FilePath& source_path,
+                         const base::FilePath& target_path,
+                         StartCopyCallback callback) = 0;
+
+  // Calls ContinueCopy. This continues the copy corresponding to |copy_token|.
+  // In order to avoid blocking the SmbProvider daemon, this operation performs
+  // one unit of work and returns smbprovider::ERROR_COPY_PENDING if there is
+  // more work to do.
+  virtual void ContinueCopy(int32_t mount_id,
+                            int32_t copy_token,
+                            StatusCallback callback) = 0;
 
  protected:
   // Create() should be used instead.

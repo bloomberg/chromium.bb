@@ -211,6 +211,22 @@ void FakeSmbProviderClient::ParseNetBiosPacket(
   std::move(callback).Run(result);
 }
 
+void FakeSmbProviderClient::StartCopy(int32_t mount_id,
+                                      const base::FilePath& source_path,
+                                      const base::FilePath& target_path,
+                                      StartCopyCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), smbprovider::ERROR_OK,
+                                -1 /* copy_token */));
+}
+
+void FakeSmbProviderClient::ContinueCopy(int32_t mount_id,
+                                         int32_t copy_token,
+                                         StatusCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), smbprovider::ERROR_OK));
+}
+
 void FakeSmbProviderClient::ClearShares() {
   shares_.clear();
 }
