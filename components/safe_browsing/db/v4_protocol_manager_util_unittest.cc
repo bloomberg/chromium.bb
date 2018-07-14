@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "components/safe_browsing/db/v4_test_util.h"
@@ -16,15 +17,6 @@
 
 using base::Time;
 using base::TimeDelta;
-
-namespace {
-
-bool VectorContains(const std::vector<std::string>& data,
-                    const std::string& str) {
-  return std::find(data.begin(), data.end(), str) != data.end();
-}
-
-}  // namespace
 
 namespace safe_browsing {
 
@@ -133,10 +125,10 @@ TEST_F(V4ProtocolManagerUtilTest, UrlParsing) {
   EXPECT_EQ(hosts[0], "b.c");
   EXPECT_EQ(hosts[1], "a.b.c");
 
-  EXPECT_TRUE(VectorContains(paths, "/1/2.html?param=1"));
-  EXPECT_TRUE(VectorContains(paths, "/1/2.html"));
-  EXPECT_TRUE(VectorContains(paths, "/1/"));
-  EXPECT_TRUE(VectorContains(paths, "/"));
+  EXPECT_TRUE(base::ContainsValue(paths, "/1/2.html?param=1"));
+  EXPECT_TRUE(base::ContainsValue(paths, "/1/2.html"));
+  EXPECT_TRUE(base::ContainsValue(paths, "/1/"));
+  EXPECT_TRUE(base::ContainsValue(paths, "/"));
 
   url = GURL("http://a.b.c.d.e.f.g/1.html");
   V4ProtocolManagerUtil::GenerateHostsToCheck(url, &hosts);
@@ -148,15 +140,15 @@ TEST_F(V4ProtocolManagerUtilTest, UrlParsing) {
   EXPECT_EQ(hosts[2], "d.e.f.g");
   EXPECT_EQ(hosts[3], "c.d.e.f.g");
   EXPECT_EQ(hosts[4], "a.b.c.d.e.f.g");
-  EXPECT_TRUE(VectorContains(paths, "/1.html"));
-  EXPECT_TRUE(VectorContains(paths, "/"));
+  EXPECT_TRUE(base::ContainsValue(paths, "/1.html"));
+  EXPECT_TRUE(base::ContainsValue(paths, "/"));
 
   url = GURL("http://a.b/saw-cgi/eBayISAPI.dll/");
   V4ProtocolManagerUtil::GeneratePathsToCheck(url, &paths);
   EXPECT_EQ(paths.size(), static_cast<size_t>(3));
-  EXPECT_TRUE(VectorContains(paths, "/saw-cgi/eBayISAPI.dll/"));
-  EXPECT_TRUE(VectorContains(paths, "/saw-cgi/"));
-  EXPECT_TRUE(VectorContains(paths, "/"));
+  EXPECT_TRUE(base::ContainsValue(paths, "/saw-cgi/eBayISAPI.dll/"));
+  EXPECT_TRUE(base::ContainsValue(paths, "/saw-cgi/"));
+  EXPECT_TRUE(base::ContainsValue(paths, "/"));
 }
 
 // Tests the url canonicalization according to the Safe Browsing spec.

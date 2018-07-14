@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -623,8 +624,7 @@ void TranslateManager::AddTargetLanguageToAcceptLanguages(
   auto prefs = translate_client_->GetTranslatePrefs();
   std::vector<std::string> languages;
   prefs->GetLanguageList(&languages);
-  if (std::find(languages.begin(), languages.end(), target_language_code) ==
-      languages.end()) {
+  if (!base::ContainsValue(languages, target_language_code)) {
     prefs->AddToLanguageList(target_language_code, /*force_blocked=*/false);
   }
 }
