@@ -850,8 +850,8 @@ void MediaRouterWebUIMessageHandler::OnReportTimeToClickSink(
     DVLOG(1) << "Unable to extract args.";
     return;
   }
-  UMA_HISTOGRAM_TIMES("MediaRouter.Ui.Action.StartLocal.Latency",
-                      base::TimeDelta::FromMillisecondsD(time_to_click));
+  MediaRouterMetrics::RecordStartLocalSessionLatency(
+      base::TimeDelta::FromMillisecondsD(time_to_click));
 }
 
 void MediaRouterWebUIMessageHandler::OnReportWebUIRouteControllerLoaded(
@@ -874,8 +874,8 @@ void MediaRouterWebUIMessageHandler::OnReportTimeToInitialActionClose(
     DVLOG(1) << "Unable to extract args.";
     return;
   }
-  UMA_HISTOGRAM_TIMES("MediaRouter.Ui.Action.CloseLatency",
-                      base::TimeDelta::FromMillisecondsD(time_to_close));
+  MediaRouterMetrics::RecordCloseDialogLatency(
+      base::TimeDelta::FromMillisecondsD(time_to_close));
 }
 
 void MediaRouterWebUIMessageHandler::OnSearchSinksAndCreateRoute(

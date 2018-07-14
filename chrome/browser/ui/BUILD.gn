@@ -3215,6 +3215,8 @@ split_static_library("ui") {
         "views/location_bar/selected_keyword_view.h",
         "views/location_bar/star_view.cc",
         "views/location_bar/star_view.h",
+        "views/media_router/cast_dialog_metrics.cc",
+        "views/media_router/cast_dialog_metrics.h",
         "views/media_router/cast_dialog_no_sinks_view.cc",
         "views/media_router/cast_dialog_no_sinks_view.h",
         "views/media_router/cast_dialog_sink_button.cc",
