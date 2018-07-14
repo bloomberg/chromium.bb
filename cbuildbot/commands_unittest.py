@@ -15,8 +15,6 @@ import mock
 import os
 import struct
 from StringIO import StringIO
-from os.path import join as pathjoin
-from os.path import abspath as abspath
 
 from chromite.cbuildbot import commands
 from chromite.lib import config_lib
@@ -1342,19 +1340,19 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
             [portage_util.SplitCPV('sys-kernel/kernel-1-r0'),
              portage_util.SplitCPV('sys-kernel/kernel-2-r0')]])
     # Drop "stripped packages".
-    pkg_dir = pathjoin(self._buildroot, 'chroot', 'build', 'test-board',
-                       'stripped-packages')
-    osutils.Touch(pathjoin(pkg_dir, 'chromeos-base', 'chrome-1-r0.tbz2'),
+    pkg_dir = os.path.join(self._buildroot, 'chroot', 'build', 'test-board',
+                           'stripped-packages')
+    osutils.Touch(os.path.join(pkg_dir, 'chromeos-base', 'chrome-1-r0.tbz2'),
                   makedirs=True)
-    sys_kernel = pathjoin(pkg_dir, 'sys-kernel')
-    osutils.Touch(pathjoin(sys_kernel, 'kernel-1-r0.tbz2'), makedirs=True)
-    osutils.Touch(pathjoin(sys_kernel, 'kernel-1-r01.tbz2'), makedirs=True)
-    osutils.Touch(pathjoin(sys_kernel, 'kernel-2-r0.tbz1'), makedirs=True)
-    osutils.Touch(pathjoin(sys_kernel, 'kernel-2-r0.tbz2'), makedirs=True)
-    stripped_files_list = [
-        abspath(pathjoin(pkg_dir, 'chromeos-base', 'chrome-1-r0.tbz2')),
-        abspath(pathjoin(pkg_dir, 'sys-kernel', 'kernel-1-r0.tbz2')),
-        abspath(pathjoin(pkg_dir, 'sys-kernel', 'kernel-2-r0.tbz2'))]
+    sys_kernel = os.path.join(pkg_dir, 'sys-kernel')
+    osutils.Touch(os.path.join(sys_kernel, 'kernel-1-r0.tbz2'), makedirs=True)
+    osutils.Touch(os.path.join(sys_kernel, 'kernel-1-r01.tbz2'), makedirs=True)
+    osutils.Touch(os.path.join(sys_kernel, 'kernel-2-r0.tbz1'), makedirs=True)
+    osutils.Touch(os.path.join(sys_kernel, 'kernel-2-r0.tbz2'), makedirs=True)
+    stripped_files_list = [os.path.abspath(x) for x in [
+        os.path.join(pkg_dir, 'chromeos-base', 'chrome-1-r0.tbz2'),
+        os.path.join(pkg_dir, 'sys-kernel', 'kernel-1-r0.tbz2'),
+        os.path.join(pkg_dir, 'sys-kernel', 'kernel-2-r0.tbz2')]]
 
     tar_mock = self.PatchObject(commands, 'BuildTarball')
     self.PatchObject(cros_build_lib, 'RunCommand')
@@ -1364,7 +1362,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
                                           self.tempdir)
     tar_mock.assert_called_once_with(
         self._buildroot, stripped_files_list,
-        pathjoin(self.tempdir, 'stripped-packages.tar'),
+        os.path.join(self.tempdir, 'stripped-packages.tar'),
         compressed=False)
 
 
