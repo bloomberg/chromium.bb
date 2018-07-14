@@ -13,6 +13,7 @@ import ctypes
 import errno
 import functools
 import multiprocessing
+from multiprocessing.managers import SyncManager
 import os
 try:
   import Queue
@@ -26,8 +27,6 @@ import sys
 import tempfile
 import time
 import traceback
-
-from multiprocessing.managers import SyncManager
 
 from chromite.lib import failures_lib
 from chromite.lib import results_lib

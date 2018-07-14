@@ -14,8 +14,6 @@ from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
 from chromite.lib import ts_mon_config
-from infra_libs.ts_mon.common import interface
-
 from chromite.scripts.sysmon import git_metrics
 from chromite.scripts.sysmon import loop
 from chromite.scripts.sysmon import net_metrics
@@ -24,6 +22,8 @@ from chromite.scripts.sysmon import proc_metrics
 from chromite.scripts.sysmon import prod_metrics
 from chromite.scripts.sysmon import puppet_metrics
 from chromite.scripts.sysmon import system_metrics
+from infra_libs.ts_mon.common import interface
+
 
 logger = logging.getLogger(__name__)
 
