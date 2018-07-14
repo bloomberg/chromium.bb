@@ -135,4 +135,24 @@ suite('AllSites', function() {
           }
         });
   });
+
+  test('can be sorted by name', function() {
+    setUpCategory(prefsVarious);
+    testElement.populateList_();
+    return browserProxy.whenCalled('getAllSites').then(() => {
+      Polymer.dom.flush();
+      const siteEntries =
+          testElement.$.listContainer.querySelectorAll('site-entry');
+
+      // TODO(https://crbug.com/835712): When there is more than one sort
+      // method, check that the all sites list can be sorted by name from an
+      // existing all sites list that is out of order. Currently this is not
+      // possible as the all sites list will always initially be sorted by the
+      // default sort method, and the default sort method is by name.
+      assertEquals(3, siteEntries.length);
+      assertEquals('bar.com', siteEntries[0].$.displayName.innerText.trim());
+      assertEquals('foo.com', siteEntries[1].$.displayName.innerText.trim());
+      assertEquals('google.com', siteEntries[2].$.displayName.innerText.trim());
+    });
+  });
 });
