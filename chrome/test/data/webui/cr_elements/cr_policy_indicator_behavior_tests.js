@@ -29,7 +29,10 @@ suite('CrPolicyIndicatorBehavior', function() {
 
     assertTrue(indicator.indicatorVisible);
     assertEquals('cr20:domain', indicator.indicatorIcon);
-    assertEquals('policy', indicator.indicatorTooltip);
+    assertEquals(
+        'policy',
+        indicator.getIndicatorTooltip(
+            indicator.indicatorType, indicator.indicatorSourceName));
   });
 
   test('recommended indicator', function() {
@@ -53,7 +56,10 @@ suite('CrPolicyIndicatorBehavior', function() {
 
     assertTrue(indicator.indicatorVisible);
     assertEquals('cr:extension', indicator.indicatorIcon);
-    assertEquals('extension: Extension name', indicator.indicatorTooltip);
+    assertEquals(
+        'extension: Extension name',
+        indicator.getIndicatorTooltip(
+            indicator.indicatorType, indicator.indicatorSourceName));
   });
 
   test('extension indicator without extension name', function() {
@@ -62,7 +68,10 @@ suite('CrPolicyIndicatorBehavior', function() {
 
     assertTrue(indicator.indicatorVisible);
     assertEquals('cr:extension', indicator.indicatorIcon);
-    assertEquals('extension', indicator.indicatorTooltip);
+    assertEquals(
+        'extension',
+        indicator.getIndicatorTooltip(
+            indicator.indicatorType, indicator.indicatorSourceName));
   });
 
   if (cr.isChromeOS) {
@@ -72,7 +81,10 @@ suite('CrPolicyIndicatorBehavior', function() {
 
       assertTrue(indicator.indicatorVisible);
       assertEquals('cr:group', indicator.indicatorIcon);
-      assertEquals('shared: user@example.com', indicator.indicatorTooltip);
+      assertEquals(
+          'shared: user@example.com',
+          indicator.getIndicatorTooltip(
+              indicator.indicatorType, indicator.indicatorSourceName));
     });
   }
 });
