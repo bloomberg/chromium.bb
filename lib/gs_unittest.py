@@ -960,7 +960,7 @@ class GSRetryFilterTest(cros_test_lib.TestCase):
     cmd = ['gsutil', 'ls', self.REMOTE_PATH]
     e = self._getException(cmd, self.ctx.RESUMABLE_DOWNLOAD_ERROR)
 
-    with mock.MagicMock() as self.ctx.GetTrackerFilenames:
+    with mock.patch.object(gs.GSContext, 'GetTrackerFilenames'):
       self.ctx._RetryFilter(e)
       self.assertFalse(self.ctx.GetTrackerFilenames.called)
 
@@ -969,7 +969,7 @@ class GSRetryFilterTest(cros_test_lib.TestCase):
     cmd = ['gsutil', 'cp', self.REMOTE_PATH, self.LOCAL_PATH]
     e = self._getException(cmd, 'One or more URLs matched no objects')
 
-    with mock.MagicMock() as self.ctx.GetTrackerFilenames:
+    with mock.patch.object(gs.GSContext, 'GetTrackerFilenames'):
       self.assertRaises(gs.GSNoSuchKey, self.ctx._RetryFilter, e)
       self.assertFalse(self.ctx.GetTrackerFilenames.called)
 
