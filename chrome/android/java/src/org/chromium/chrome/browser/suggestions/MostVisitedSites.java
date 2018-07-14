@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.suggestions;
 
+import android.support.annotation.Nullable;
+
+import org.chromium.base.annotations.CalledByNative;
+
 import java.util.List;
 
 /**
@@ -24,6 +28,30 @@ public interface MostVisitedSites {
          * @param siteUrl URL of site with newly-cached icon.
          */
         void onIconMadeAvailable(String siteUrl);
+    }
+
+    /**
+     * An interface to provide {@link MostVisitedSites} with platform-specific home page data.
+     */
+    interface HomepageClient {
+        /**
+         * @return True if a home page is active and set.
+         */
+        @CalledByNative("HomepageClient")
+        boolean isHomepageEnabled();
+
+        /**
+         * @return True if the new tab page was set as home page.
+         */
+        @CalledByNative("HomepageClient")
+        boolean isNewTabPageUsedAsHomepage();
+
+        /**
+         * @return The raw URL of the currently set home page.
+         */
+        @CalledByNative("HomepageClient")
+        @Nullable
+        String getHomepageUrl();
     }
 
     /**

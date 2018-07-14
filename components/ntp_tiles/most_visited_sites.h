@@ -97,11 +97,26 @@ class MostVisitedSites : public history::TopSitesObserver,
     virtual ~Observer() {}
   };
 
+  // This interface delegates the retrieval of the homepage to the
+  // platform-specific implementation.
+  class HomepageClient {
+   public:
+    using TitleCallback =
+        base::OnceCallback<void(const base::Optional<base::string16>& title)>;
+
+    virtual ~HomepageClient() = default;
+    virtual bool IsHomepageEnabled() const = 0;
+    virtual bool IsNewTabPageUsedAsHomepage() const = 0;
+    virtual GURL GetHomepageUrl() const = 0;
+    // TODO(https://crbug.com/862753): Extract this to another interface.
+    virtual void QueryHomepageTitle(TitleCallback title_callback) = 0;
+  };
+
   // Construct a MostVisitedSites instance.
   //
   // |prefs| and |suggestions| are required and may not be null. |top_sites|,
-  // |popular_sites|, and |supervisor| are optional and if null, the associated
-  // features will be disabled.
+  // |popular_sites|, |supervisor| and |homepage_client| are optional and if
+  // null, the associated features will be disabled.
   MostVisitedSites(PrefService* prefs,
                    scoped_refptr<history::TopSites> top_sites,
                    suggestions::SuggestionsService* suggestions,
@@ -129,9 +144,18 @@ class MostVisitedSites : public history::TopSitesObserver,
   // must not be null.
   void SetMostVisitedURLsObserver(Observer* observer, size_t num_sites);
 
+  // Sets the client that provides platform-specific homepage preferences.
+  // When used to replace an existing client, the new client will first be
+  // used during the construction of a new tile set.
+  // |client| must not be null and outlive this object.
+  void SetHomepageClient(std::unique_ptr<HomepageClient> client);
+
   // Requests an asynchronous refresh of the suggestions. Notifies the observer
   // if the request resulted in the set of tiles changing.
   void Refresh();
+
+  // Forces a rebuild of the current tiles to update the pinned homepage.
+  void RefreshHomepageTile();
 
   void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
   void ClearBlacklistedUrls();
@@ -205,6 +229,10 @@ class MostVisitedSites : public history::TopSitesObserver,
       const std::set<std::string>& hosts_to_skip,
       size_t num_max_tiles);
 
+  // Initiates a query for the homepage tile if needed and calls
+  // |SaveTilesAndNotify| in the end.
+  void InitiateNotificationForNewTiles(NTPTilesVector new_tiles);
+
   // Takes the personal tiles, creates and merges in whitelist and popular tiles
   // if appropriate, and saves the new tiles. Notifies the observer if the tiles
   // were actually changed.
@@ -220,6 +248,18 @@ class MostVisitedSites : public history::TopSitesObserver,
                                std::set<std::string>* hosts,
                                size_t* total_tile_count) const;
 
+  // Adds the homepage as first tile to |tiles| and returns them as new vector.
+  // Drops existing tiles with the same host as the home page and tiles that
+  // would exceed the maximum.
+  NTPTilesVector InsertHomeTile(NTPTilesVector tiles,
+                                const base::string16& title) const;
+
+  void OnHomepageTitleDetermined(NTPTilesVector tiles,
+                                 const base::Optional<base::string16>& title);
+
+  // Returns true if there is a valid homepage that can be pinned as tile.
+  bool ShouldAddHomeTile() const;
+
   // history::TopSitesObserver implementation.
   void TopSitesLoaded(history::TopSites* top_sites) override;
   void TopSitesChanged(history::TopSites* top_sites,
@@ -231,6 +271,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   std::unique_ptr<PopularSites> const popular_sites_;
   std::unique_ptr<IconCacher> const icon_cacher_;
   std::unique_ptr<MostVisitedSitesSupervisor> supervisor_;
+  std::unique_ptr<HomepageClient> homepage_client_;
 
   Observer* observer_;
 
