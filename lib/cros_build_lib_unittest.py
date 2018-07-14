@@ -1250,11 +1250,12 @@ class Test_iflatten_instance(cros_test_lib.TestCase):
   """Test iflatten_instance function."""
 
   def test_it(self):
-    f = lambda *a: list(cros_build_lib.iflatten_instance(*a))
+    f = lambda x, **kwargs: list(cros_build_lib.iflatten_instance(x, **kwargs))
     self.assertEqual([1, 2], f([1, 2]))
     self.assertEqual([1, '2a'], f([1, '2a']))
     self.assertEqual([1, 2, 'b'], f([1, [2, 'b']]))
-    self.assertEqual([1, 2, 'f', 'd', 'a', 's'], f([1, 2, ('fdas',)], int))
+    self.assertEqual([1, 2, 'f', 'd', 'a', 's'],
+                     f([1, 2, ('fdas',)], terminate_on_kls=int))
     self.assertEqual([''], f(''))
 
 

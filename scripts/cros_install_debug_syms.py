@@ -275,7 +275,7 @@ def main(argv):
   options = ParseArgs(argv)
 
   if not cros_build_lib.IsInsideChroot():
-    raise commandline.ChrootRequiredError()
+    raise commandline.ChrootRequiredError(argv)
 
   if os.geteuid() != 0:
     cros_build_lib.SudoRunCommand(sys.argv)
