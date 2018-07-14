@@ -68,11 +68,6 @@ var CrPolicyIndicatorBehavior = {
       type: String,
       computed: 'getIndicatorIcon_(indicatorType)',
     },
-
-    indicatorTooltip: {
-      type: String,
-      computed: 'getIndicatorTooltip(indicatorType, indicatorSourceName)',
-    },
   },
 
   /**

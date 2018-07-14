@@ -25,8 +25,8 @@ Polymer({
       computed: 'getIndicatorTypeForPref_(pref.controlledBy, pref.enforcement)',
     },
 
-    /** @override */
-    indicatorTooltip: {
+    /** @private */
+    indicatorTooltip_: {
       type: String,
       computed: 'getIndicatorTooltipForPref_(indicatorType, pref.*)',
     },
@@ -71,6 +71,9 @@ Polymer({
    * @private
    */
   getIndicatorTooltipForPref_: function(indicatorType) {
+    if (this.pref === undefined)
+      return '';
+
     var matches = this.pref && this.pref.value == this.pref.recommendedValue;
     return this.getIndicatorTooltip(
         indicatorType, this.pref.controlledByName || '', matches);

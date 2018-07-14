@@ -25,8 +25,8 @@ Polymer({
      */
     recommended_: Object,
 
-    /** @override */
-    indicatorTooltip: {
+    /** @private */
+    indicatorTooltip_: {
       type: String,
       computed: 'getNetworkIndicatorTooltip_(indicatorType, property.*)',
     },
@@ -75,6 +75,9 @@ Polymer({
    * @private
    */
   getNetworkIndicatorTooltip_: function() {
+    if (this.property === undefined)
+      return '';
+
     var matches;
     if (this.indicatorType == CrPolicyIndicatorType.RECOMMENDED &&
         this.property) {
