@@ -46,6 +46,8 @@ enable=cros-logging-import
 # --disable=W".
 # We leave many of the style warnings to judgement/peer review.
 # TODO: We need to re-enable broad-except, but requires cleaning up our code.
+# TODO: Re-enable wrong-import-order/wrong-import-position.
+# TODO: Re-enable redefined-variable-type.
 disable=
     broad-except,
     fixme,
@@ -56,16 +58,21 @@ disable=
     missing-docstring,
     no-member,
     no-self-use,
+    redefined-variable-type,
     relative-import,
     too-few-public-methods,
     too-many-arguments,
+    too-many-boolean-expressions,
     too-many-branches,
     too-many-instance-attributes,
     too-many-lines,
     too-many-locals,
+    too-many-nested-blocks,
     too-many-public-methods,
     too-many-return-statements,
     too-many-statements,
+    wrong-import-order,
+    wrong-import-position,
 
 
 [REPORTS]
