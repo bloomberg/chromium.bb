@@ -428,11 +428,8 @@ bool URLBlacklist::FilterTakesPrecedence(const FilterComponents& lhs,
   return false;
 }
 
-URLBlacklistManager::URLBlacklistManager(
-    PrefService* pref_service,
-    OverrideBlacklistCallback override_blacklist)
+URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
     : pref_service_(pref_service),
-      override_blacklist_(override_blacklist),
       blacklist_(new URLBlacklist),
       ui_weak_ptr_factory_(this) {
   // This class assumes that it is created on the same thread that
@@ -510,18 +507,6 @@ URLBlacklist::URLBlacklistState URLBlacklistManager::GetURLBlacklistState(
     const GURL& url) const {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   return blacklist_->GetURLBlacklistState(url);
-}
-
-bool URLBlacklistManager::ShouldBlockRequestForFrame(const GURL& url,
-                                                     int* reason) const {
-  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
-
-  bool block = false;
-  if (override_blacklist_.Run(url, &block, reason))
-    return block;
-
-  *reason = net::ERR_BLOCKED_BY_ADMINISTRATOR;
-  return IsURLBlocked(url);
 }
 
 // static

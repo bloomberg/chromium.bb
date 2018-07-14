@@ -38,11 +38,6 @@ class PolicyBlacklistFactory : public BrowserContextKeyedServiceFactory {
   static PolicyBlacklistService* GetForProfile(
       content::BrowserContext* context);
 
-  // Sets the OverrideBlacklistCallback for the underlying URLBlacklistManager.
-  // Must be called before BuildServiceInstanceFor().
-  void SetBlacklistOverride(
-      policy::URLBlacklistManager::OverrideBlacklistCallback);
-
  private:
   PolicyBlacklistFactory();
   ~PolicyBlacklistFactory() override;
@@ -55,8 +50,6 @@ class PolicyBlacklistFactory : public BrowserContextKeyedServiceFactory {
   // Finds which browser context (if any) to use.
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-
-  policy::URLBlacklistManager::OverrideBlacklistCallback override_blacklist_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyBlacklistFactory);
 };
