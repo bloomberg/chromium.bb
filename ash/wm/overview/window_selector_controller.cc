@@ -36,8 +36,6 @@ namespace {
 // when this is true.
 bool g_disable_wallpaper_blur_for_tests = false;
 
-// Amount of blur to apply on the wallpaper when we enter or exit overview mode.
-constexpr double kWallpaperBlurSigma = 10.f;
 constexpr double kWallpaperClearBlurSigma = 0.f;
 constexpr int kBlurSlideDurationMs = 250;
 

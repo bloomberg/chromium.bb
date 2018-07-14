@@ -26,6 +26,10 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   WindowSelectorController();
   ~WindowSelectorController() override;
 
+  // Amount of blur to apply on the wallpaper when we enter or exit overview
+  // mode.
+  static constexpr double kWallpaperBlurSigma = 10.f;
+
   // Returns true if selecting windows in an overview is enabled. This is false
   // at certain times, such as when the lock screen is visible.
   static bool CanSelect();
