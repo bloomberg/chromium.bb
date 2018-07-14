@@ -52,17 +52,18 @@ BrowserDevToolsAgentHost::~BrowserDevToolsAgentHost() {
 
 bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session,
                                              TargetRegistry* parent_registry) {
-  DCHECK(!parent_registry);
-
   if (session->restricted())
     return false;
 
-  auto registry = std::make_unique<TargetRegistry>(session);
-  TargetRegistry* registry_ptr = registry.get();
-  target_registries_[session->client()] = std::move(registry);
+  TargetRegistry* registry = parent_registry;
+  if (!registry) {
+    auto new_registry = std::make_unique<TargetRegistry>(session);
+    registry = new_registry.get();
+    target_registries_[session->client()] = std::move(new_registry);
+  }
   session->SetBrowserOnly(true);
   session->AddHandler(std::make_unique<protocol::TargetHandler>(
-      true /* browser_only */, GetId(), registry_ptr));
+      true /* browser_only */, GetId(), registry));
   if (only_discovery_)
     return true;
 
@@ -111,9 +112,11 @@ bool BrowserDevToolsAgentHost::DispatchProtocolMessage(
     DevToolsAgentHostClient* client,
     const std::string& message,
     base::DictionaryValue* parsed_message) {
-  auto* target_registry = target_registries_[client].get();
-  if (target_registry->DispatchMessageOnAgentHost(message, parsed_message))
+  auto it = target_registries_.find(client);
+  if (it != target_registries_.end() &&
+      it->second->DispatchMessageOnAgentHost(message, parsed_message)) {
     return true;
+  }
   return DevToolsAgentHostImpl::DispatchProtocolMessage(client, message,
                                                         parsed_message);
 }

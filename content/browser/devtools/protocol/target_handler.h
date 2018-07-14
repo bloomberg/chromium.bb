@@ -55,6 +55,7 @@ class TargetHandler : public DevToolsDomainHandler,
   Response AttachToTarget(const std::string& target_id,
                           Maybe<bool> flatten,
                           std::string* out_session_id) override;
+  Response AttachToBrowserTarget(std::string* out_session_id) override;
   Response DetachFromTarget(Maybe<std::string> session_id,
                             Maybe<std::string> target_id) override;
   Response SendMessageToTarget(const std::string& message,
