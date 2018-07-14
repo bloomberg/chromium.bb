@@ -547,6 +547,14 @@ Response TargetHandler::AttachToTarget(const std::string& target_id,
   return Response::OK();
 }
 
+Response TargetHandler::AttachToBrowserTarget(std::string* out_session_id) {
+  scoped_refptr<DevToolsAgentHost> agent_host =
+      DevToolsAgentHost::CreateForBrowser(
+          nullptr, DevToolsAgentHost::CreateServerSocketCallback());
+  *out_session_id = Session::Attach(this, agent_host.get(), false, true);
+  return Response::OK();
+}
+
 Response TargetHandler::DetachFromTarget(Maybe<std::string> session_id,
                                          Maybe<std::string> target_id) {
   Session* session = nullptr;
