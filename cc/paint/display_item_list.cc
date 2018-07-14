@@ -56,7 +56,8 @@ void DisplayItemList::Raster(SkCanvas* canvas,
 }
 
 void DisplayItemList::Finalize() {
-  TRACE_EVENT0("cc", "DisplayItemList::Finalize");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "DisplayItemList::Finalize");
 #if DCHECK_IS_ON()
   // If this fails a call to StartPaint() was not ended.
   DCHECK(!IsPainting());
