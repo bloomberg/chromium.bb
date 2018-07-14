@@ -37,6 +37,9 @@ class HostedAppMenuButton : public AppMenuButton,
  private:
   void FadeHighlightOff();
 
+  // views::View:
+  const char* GetClassName() const override;
+
   // The containing browser view.
   BrowserView* browser_view_;
 
