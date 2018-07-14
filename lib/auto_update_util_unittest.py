@@ -33,9 +33,9 @@ class VersionMatchUnittest(unittest.TestCase):
               trybot_pre_cq_build, trybot_toolchain_build]
     releases = [canary_release, cq_release, trybot_paladin_release,
                 trybot_pre_cq_release, trybot_toolchain_release]
-    for i in range(len(builds)):
-      for j in range(len(releases)):
+    for i, build in enumerate(builds):
+      for j, release in enumerate(releases):
         self.assertEqual(
-            auto_update_util.VersionMatch(builds[i], releases[j]), i == j,
+            auto_update_util.VersionMatch(build, release), i == j,
             'Build version %s should%s match release version %s.' %
-            (builds[i], '' if i == j else ' not', releases[j]))
+            (build, '' if i == j else ' not', release))

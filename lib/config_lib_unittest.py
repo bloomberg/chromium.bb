@@ -238,6 +238,7 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
 
     if isinstance(obj1, (tuple, list)):
       # Copy tuples and lists item by item.
+      # pylint: disable=consider-using-enumerate
       for i in range(len(obj1)):
         self.AssertDeepCopy(obj1[i], obj2[i], obj3[i])
     elif isinstance(obj1, set):
