@@ -26,8 +26,8 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.vr.rules.VrActivityRestriction;
-import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
+import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
+import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
 import org.chromium.chrome.browser.vr.util.XrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -47,7 +47,7 @@ Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=WebXR,WebXRHi
 public class WebXrArSessionTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
-            VrTestRuleUtils.generateDefaultVrTestRuleParameters();
+            XrTestRuleUtils.generateDefaultXrTestRuleParameters();
     @Rule
     public RuleChain mRuleChain;
 
@@ -59,7 +59,7 @@ public class WebXrArSessionTest {
 
     public WebXrArSessionTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
-        mRuleChain = VrTestRuleUtils.wrapRuleInVrActivityRestrictionRule(mTestRule);
+        mRuleChain = XrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
     }
 
     @Before
@@ -87,7 +87,7 @@ public class WebXrArSessionTest {
      */
     @Test
     @MediumTest
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testArRequestSessionSucceeds() throws InterruptedException {
         mXrTestFramework.loadUrlAndAwaitInitialization(
                 mServer.getURL(XrTestFramework.getEmbeddedServerPathForHtmlTestFile(
@@ -103,7 +103,7 @@ public class WebXrArSessionTest {
      */
     @Test
     @MediumTest
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testRepeatedArSessionsSucceed() throws InterruptedException {
         mXrTestFramework.loadUrlAndAwaitInitialization(
                 mServer.getURL(XrTestFramework.getEmbeddedServerPathForHtmlTestFile(
@@ -122,7 +122,7 @@ public class WebXrArSessionTest {
      */
     @Test
     @MediumTest
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testRepeatedArSessionsOnlyPromptPermissionsOnce() throws InterruptedException {
         mXrTestFramework.loadUrlAndAwaitInitialization(
                 mServer.getURL(XrTestFramework.getEmbeddedServerPathForHtmlTestFile(

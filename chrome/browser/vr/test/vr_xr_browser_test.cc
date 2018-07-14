@@ -72,7 +72,7 @@ void VrXrBrowserTestBase::SetUp() {
 
 GURL VrXrBrowserTestBase::GetHtmlTestFile(const std::string& test_name) {
   return ui_test_utils::GetTestUrl(
-      base::FilePath(FILE_PATH_LITERAL("vr/e2e_test_files/html")),
+      base::FilePath(FILE_PATH_LITERAL("xr/e2e_test_files/html")),
 #ifdef OS_WIN
       base::FilePath(base::UTF8ToWide(test_name + ".html")
 #else

@@ -39,11 +39,11 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.vr.rules.VrActivityRestriction;
+import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.NfcSimUtils;
 import org.chromium.chrome.browser.vr.util.TransitionUtils;
-import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.vr.util.VrTransitionUtils;
+import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.content.browser.test.util.Criteria;
@@ -64,10 +64,10 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT) // WebVR and WebXR are only supported on K+
 @TargetApi(Build.VERSION_CODES.KITKAT) // Necessary to allow taking screenshots with UiAutomation
-public class WebVrTransitionTest {
+public class WebXrVrTransitionTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
-            VrTestRuleUtils.generateDefaultVrTestRuleParameters();
+            XrTestRuleUtils.generateDefaultXrTestRuleParameters();
     @Rule
     public RuleChain mRuleChain;
 
@@ -75,9 +75,9 @@ public class WebVrTransitionTest {
     private VrTestFramework mVrTestFramework;
     private XrTestFramework mXrTestFramework;
 
-    public WebVrTransitionTest(Callable<ChromeActivityTestRule> callable) throws Exception {
+    public WebXrVrTransitionTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
-        mRuleChain = VrTestRuleUtils.wrapRuleInVrActivityRestrictionRule(mTestRule);
+        mRuleChain = XrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
     }
 
     @Before
@@ -91,7 +91,7 @@ public class WebVrTransitionTest {
      */
     @Test
     @MediumTest
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testRequestPresentEntersVr() throws InterruptedException {
         testPresentationEntryImpl(
                 VrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"), mVrTestFramework);
@@ -105,7 +105,7 @@ public class WebVrTransitionTest {
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
-            @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testRequestSessionEntersVr() throws InterruptedException {
         testPresentationEntryImpl(
                 XrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"), mXrTestFramework);
@@ -153,7 +153,7 @@ public class WebVrTransitionTest {
     @Test
     @MediumTest
     @CommandLineFlags.Remove({"enable-webvr"})
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testWebVrDisabledWithoutFlagSet() throws InterruptedException {
         // TODO(bsheedy): Remove this test once WebVR is on by default without
         // requiring an origin trial.
@@ -169,7 +169,7 @@ public class WebVrTransitionTest {
     @Test
     @MediumTest
     @CommandLineFlags.Remove({"enable-webvr"})
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testWebXrDisabledWithoutFlagSet() throws InterruptedException {
         // TODO(bsheedy): Remove this test once WebXR is on by default without
         // requiring an origin trial.
@@ -192,7 +192,7 @@ public class WebVrTransitionTest {
     @Test
     @LargeTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testNfcFiresVrdisplayactivate() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getFileUrlForHtmlTestFile("test_nfc_fires_vrdisplayactivate"),
@@ -216,7 +216,7 @@ public class WebVrTransitionTest {
     @Test
     @MediumTest
     @Restriction({RESTRICTION_TYPE_VIEWER_DAYDREAM, RESTRICTION_TYPE_DON_ENABLED})
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testPresentationPromiseUnresolvedDuringDon() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getFileUrlForHtmlTestFile(
@@ -236,7 +236,7 @@ public class WebVrTransitionTest {
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
-            @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testPresentationPromiseUnresolvedDuringDon_WebXr()
             throws InterruptedException {
         presentationPromiseUnresolvedDuringDonImpl(
@@ -258,7 +258,7 @@ public class WebVrTransitionTest {
     @Test
     @MediumTest
     @Restriction({RESTRICTION_TYPE_VIEWER_DAYDREAM, RESTRICTION_TYPE_DON_ENABLED})
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testPresentationPromiseRejectedIfDonCanceled() throws InterruptedException {
         presentationPromiseRejectedIfDonCanceledImpl(
                 VrTestFramework.getFileUrlForHtmlTestFile(
@@ -275,7 +275,7 @@ public class WebVrTransitionTest {
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
-            @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testPresentationPromiseRejectedIfDonCanceled_WebXr()
             throws InterruptedException {
         presentationPromiseRejectedIfDonCanceledImpl(
@@ -351,7 +351,7 @@ public class WebVrTransitionTest {
      */
     @Test
     @MediumTest
-    @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     @RetryOnFailure
     public void testWindowRafStopsFiringWhilePresenting() throws InterruptedException {
         windowRafStopsFiringWhilePresentingImpl(
@@ -369,7 +369,7 @@ public class WebVrTransitionTest {
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
-            @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testWindowRafStopsFiringWhilePresenting_WebXr()
             throws InterruptedException {
         windowRafStopsFiringWhilePresentingImpl(
@@ -440,7 +440,7 @@ public class WebVrTransitionTest {
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
-            @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testWindowRafFiresDuringNonExclusiveSession() throws InterruptedException {
         mXrTestFramework.loadUrlAndAwaitInitialization(
                 XrTestFramework.getFileUrlForHtmlTestFile(
@@ -459,7 +459,7 @@ public class WebVrTransitionTest {
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
-            @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testNonExclusiveStopsDuringExclusive() throws InterruptedException {
         mXrTestFramework.loadUrlAndAwaitInitialization(
                 XrTestFramework.getFileUrlForHtmlTestFile(

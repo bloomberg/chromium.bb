@@ -4,15 +4,15 @@
 
 package org.chromium.chrome.browser.vr.rules;
 
-import org.chromium.chrome.browser.vr.rules.VrActivityRestriction.SupportedActivity;
+import org.chromium.chrome.browser.vr.rules.XrActivityRestriction.SupportedActivity;
 
 /**
  * Interface to be implemented by *VrTestRule rules, which allows them to be
- * conditionally skipped when used in conjunction with VrActivityRestrictionRule.
+ * conditionally skipped when used in conjunction with XrActivityRestrictionRule.
  */
-public interface VrTestRule {
+public interface XrTestRule {
     /**
-     * Get the VrActivityRestriction.SupportedActivity that this rule is restricted to running in.
+     * Get the XrActivityRestriction.SupportedActivity that this rule is restricted to running in.
      */
     public SupportedActivity getRestriction();
 

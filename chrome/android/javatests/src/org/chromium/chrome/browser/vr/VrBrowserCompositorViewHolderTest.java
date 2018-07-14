@@ -18,7 +18,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
+import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityXrTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -33,11 +33,11 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class VrShellCompositorViewHolderTest {
+public class VrBrowserCompositorViewHolderTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
     @Rule
-    public ChromeTabbedActivityVrTestRule mVrTestRule = new ChromeTabbedActivityVrTestRule();
+    public ChromeTabbedActivityXrTestRule mVrTestRule = new ChromeTabbedActivityXrTestRule();
 
     /**
      * Verify that resizing the CompositorViewHolder does not cause the current tab to resize while

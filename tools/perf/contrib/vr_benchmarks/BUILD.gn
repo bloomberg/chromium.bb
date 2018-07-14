@@ -22,8 +22,8 @@ group("vr_perf_tests") {
     "//chrome/android/shared_preference_files/test/",
     "//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
     "//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
-    "//chrome/test/data/vr/webvr_info/samples/",
-    "//chrome/test/data/vr/webxr_samples/",
+    "//chrome/test/data/xr/webvr_info/samples/",
+    "//chrome/test/data/xr/webxr_samples/",
 
     # Necessary for running on bots
     "//testing/scripts/common.py",

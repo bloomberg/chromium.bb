@@ -8,17 +8,17 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
-import org.chromium.chrome.browser.vr.rules.VrActivityRestriction.SupportedActivity;
+import org.chromium.chrome.browser.vr.rules.XrActivityRestriction.SupportedActivity;
 import org.chromium.chrome.browser.vr.util.HeadTrackingUtils;
-import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
+import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
 /**
  * VR extension of ChromeTabbedActivityTestRule. Applies ChromeTabbedActivityTestRule
  * then opens up a ChromeTabbedActivity to a blank page.
  */
-public class ChromeTabbedActivityVrTestRule
-        extends ChromeTabbedActivityTestRule implements VrTestRule {
+public class ChromeTabbedActivityXrTestRule
+        extends ChromeTabbedActivityTestRule implements XrTestRule {
     private boolean mTrackerDirty;
 
     @Override
@@ -26,9 +26,9 @@ public class ChromeTabbedActivityVrTestRule
         return super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                VrTestRuleUtils.ensureNoVrActivitiesDisplayed();
+                XrTestRuleUtils.ensureNoVrActivitiesDisplayed();
                 HeadTrackingUtils.checkForAndApplyHeadTrackingModeAnnotation(
-                        ChromeTabbedActivityVrTestRule.this, desc);
+                        ChromeTabbedActivityXrTestRule.this, desc);
                 startMainActivityOnBlankPage();
                 TestVrShellDelegate.createTestVrShellDelegate(getActivity());
                 try {

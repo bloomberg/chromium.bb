@@ -26,7 +26,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
+import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityXrTestRule;
 import org.chromium.chrome.browser.vr.rules.HeadTrackingMode;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.TransitionUtils;
@@ -44,7 +44,7 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=VrBrowsingNativeAndroidUi"})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-public class VrShellDialogTest {
+public class VrBrowserDialogTest {
     // A long enough sleep after entering VR to ensure that the VR entry animations are complete.
     private static final int VR_ENTRY_SLEEP_MS = 1000;
     // A long enough sleep after triggering/interacting with a dialog to ensure that the interaction
@@ -59,7 +59,7 @@ public class VrShellDialogTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
     @Rule
-    public ChromeTabbedActivityVrTestRule mVrTestRule = new ChromeTabbedActivityVrTestRule();
+    public ChromeTabbedActivityXrTestRule mVrTestRule = new ChromeTabbedActivityXrTestRule();
 
     private VrTestFramework mVrTestFramework;
     private EmbeddedTestServer mServer;

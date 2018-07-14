@@ -12,15 +12,15 @@ import org.junit.runners.model.Statement;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
-import org.chromium.chrome.browser.vr.rules.VrActivityRestriction.SupportedActivity;
+import org.chromium.chrome.browser.vr.rules.XrActivityRestriction.SupportedActivity;
 import org.chromium.chrome.browser.vr.util.HeadTrackingUtils;
-import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
+import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
 
 /**
  * VR extension of CustomTabActivityTestRule. Applies CustomTabActivityTestRule then
  * opens up a CustomTabActivity to a blank page.
  */
-public class CustomTabActivityVrTestRule extends CustomTabActivityTestRule implements VrTestRule {
+public class CustomTabActivityXrTestRule extends CustomTabActivityTestRule implements XrTestRule {
     private boolean mTrackerDirty;
 
     @Override
@@ -28,9 +28,9 @@ public class CustomTabActivityVrTestRule extends CustomTabActivityTestRule imple
         return super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                VrTestRuleUtils.ensureNoVrActivitiesDisplayed();
+                XrTestRuleUtils.ensureNoVrActivitiesDisplayed();
                 HeadTrackingUtils.checkForAndApplyHeadTrackingModeAnnotation(
-                        CustomTabActivityVrTestRule.this, desc);
+                        CustomTabActivityXrTestRule.this, desc);
                 startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
                         InstrumentationRegistry.getTargetContext(), "about:blank"));
                 TestVrShellDelegate.createTestVrShellDelegate(getActivity());

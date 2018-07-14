@@ -175,10 +175,10 @@ a new test:
 
 * Do nothing special. This will default to only running the test in
   ChromeTabbedActivity, which is the normal Chrome browser.
-* Add the `@VrActivityRestriction` annotation with
-  `VrActivityRestriction.SupportedActivity.ALL` as its value, which will run the
+* Add the `@XrActivityRestriction` annotation with
+  `XrActivityRestriction.SupportedActivity.ALL` as its value, which will run the
   test in all activities that support VR
-* Add the `@VrActivityRestriction` annotation, manually specifying the
+* Add the `@XrActivityRestriction` annotation, manually specifying the
   activities you want the test to run in
 
 ### Adding A New Test Class
@@ -206,7 +206,7 @@ See `VrShellNavigationTest.java` for an example of how to set up non-parameteriz
 test classes. In general, you will need to:
 
 * Set `@RunWith` to `ChromeJUnit4ClassRunner.class`
-* Define `mVrTestRule` as a `ChromeTabbedActivityVrTestRule`, annotate it with
+* Define `mVrTestRule` as a `ChromeTabbedActivityXrTestRule`, annotate it with
   `@Rule`, and initialize it where it's defined
 * Define `mVrTestFramework` as a VrTestFramework and initialize it using
   `mVrTestRule` in a setup function annotated with `@Before`
@@ -223,7 +223,7 @@ test classes. In general, you will need to:
 * Set `@RunWith` to `ParameterizedRunner.class`
 * Add `@UseRunnerDelegate` and set it to `ChromeJUnit4RunnerDelegate.class`
 * Define `sClassParams`, annotate it with `@ClassParameter`, and set it to the
-  value returned by `VrTestRuleUtils.generateDefaultVrTestRuleParameters()`
+  value returned by `XrTestRuleUtils.generateDefaultXrTestRuleParameters()`
 * Define `mRuleChain` as a `RuleChain` and annotate it with `@Rule`
 * Define `mVrTestRule` as a `ChromeActivityTestRule`
 * Define `mVrTestFramework` as a `VrTestFramework` and initialize it using
@@ -231,7 +231,7 @@ test classes. In general, you will need to:
 * Define a constructor for your test class that takes a
   `Callable<ChromeActivityTestRule>`. This constructor must set `mVrTestRule` to
   the callable's `call()` return value and set `mRuleChain` to the return value
-  of `VrTestruleUtils.wrapRuleInVrActivityRestrictionRule(mVrTestRule)`
+  of `XrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mVrTestRule)`
 
 #### Include New Class In Build
 

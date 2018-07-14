@@ -37,7 +37,7 @@ import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.vr.mock.MockVrDaydreamApi;
-import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
+import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityXrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.NfcSimUtils;
 import org.chromium.chrome.browser.vr.util.TransitionUtils;
@@ -58,11 +58,11 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class VrShellTransitionTest {
+public class VrBrowserTransitionTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
     @Rule
-    public ChromeTabbedActivityVrTestRule mTestRule = new ChromeTabbedActivityVrTestRule();
+    public ChromeTabbedActivityXrTestRule mTestRule = new ChromeTabbedActivityXrTestRule();
 
     private VrTestFramework mVrTestFramework;
     private XrTestFramework mXrTestFramework;

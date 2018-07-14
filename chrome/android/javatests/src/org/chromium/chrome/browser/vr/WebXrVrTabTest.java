@@ -22,7 +22,7 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
+import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 
@@ -36,10 +36,10 @@ import java.util.concurrent.Callable;
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT) // WebVR is only supported on K+
-public class WebVrTabTest {
+public class WebXrVrTabTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
-            VrTestRuleUtils.generateDefaultVrTestRuleParameters();
+            XrTestRuleUtils.generateDefaultXrTestRuleParameters();
     @Rule
     public RuleChain mRuleChain;
 
@@ -47,9 +47,9 @@ public class WebVrTabTest {
     private VrTestFramework mVrTestFramework;
     private XrTestFramework mXrTestFramework;
 
-    public WebVrTabTest(Callable<ChromeActivityTestRule> callable) throws Exception {
+    public WebXrVrTabTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
-        mRuleChain = VrTestRuleUtils.wrapRuleInVrActivityRestrictionRule(mTestRule);
+        mRuleChain = XrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
     }
 
     @Before

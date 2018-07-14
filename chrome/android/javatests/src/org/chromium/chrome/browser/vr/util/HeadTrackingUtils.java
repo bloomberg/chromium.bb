@@ -14,7 +14,7 @@ import org.junit.runner.Description;
 
 import org.chromium.chrome.browser.vr.rules.HeadTrackingMode;
 import org.chromium.chrome.browser.vr.rules.HeadTrackingMode.SupportedMode;
-import org.chromium.chrome.browser.vr.rules.VrTestRule;
+import org.chromium.chrome.browser.vr.rules.XrTestRule;
 
 import java.util.Arrays;
 
@@ -95,11 +95,11 @@ public class HeadTrackingUtils {
      * mode to the specified value. If no annotation is found, the tracking mode is left at whatever
      * the existing value is.
      *
-     * @param rule The VrTestRule used by the current test case.
+     * @param rule The XrTestRule used by the current test case.
      * @param desc The JUnit4 Description for the current test case.
      */
     public static void checkForAndApplyHeadTrackingModeAnnotation(
-            VrTestRule rule, Description desc) {
+            XrTestRule rule, Description desc) {
         // Check if the test has a HeadTrackingMode annotation
         HeadTrackingMode annotation = desc.getAnnotation(HeadTrackingMode.class);
         if (annotation == null) return;
@@ -110,10 +110,10 @@ public class HeadTrackingUtils {
      * Sets the tracker type to the given mode and waits long enough to safely assume that the
      * service has started.
      *
-     * @param rule The VrTestRule used by the current test case.
+     * @param rule The XrTestRule used by the current test case.
      * @param mode The HeadTrackingMode.SupportedMode value to set the fake head tracker mode to.
      */
-    public static void applyHeadTrackingMode(VrTestRule rule, SupportedMode mode) {
+    public static void applyHeadTrackingMode(XrTestRule rule, SupportedMode mode) {
         applyHeadTrackingModeInternal(rule, mode);
         // TODO(bsheedy): Remove this sleep if the head tracking service ever exposes a way to be
         // notified when a setting has been applied.
@@ -124,11 +124,11 @@ public class HeadTrackingUtils {
      * Sets the head pose to the pose described by the given FakePose and waits long enough to
      * safely assume that the pose has taken effect.
      *
-     * @param rule The VrTestRule used by the current test case.
+     * @param rule The XrTestRule used by the current test case.
      * @param pose The FakePose instance containing the pose data that will be sent to the head
      *     tracking service.
      */
-    public static void setHeadPose(VrTestRule rule, FakePose pose) {
+    public static void setHeadPose(XrTestRule rule, FakePose pose) {
         restartHeadTrackingServiceIfNecessary(rule);
         // Set the head pose to the given value
         Intent poseIntent = new Intent(ACTION_SET_FAKE_TRACKER_POSE);
@@ -175,7 +175,7 @@ public class HeadTrackingUtils {
         }
     }
 
-    private static void applyHeadTrackingModeInternal(VrTestRule rule, SupportedMode mode) {
+    private static void applyHeadTrackingModeInternal(XrTestRule rule, SupportedMode mode) {
         restartHeadTrackingServiceIfNecessary(rule);
         // Set the fake tracker mode to the given value.
         Intent modeIntent = new Intent(ACTION_SET_FAKE_TRACKER_MODE);
@@ -185,7 +185,7 @@ public class HeadTrackingUtils {
         rule.setTrackerDirty();
     }
 
-    private static void restartHeadTrackingServiceIfNecessary(VrTestRule rule) {
+    private static void restartHeadTrackingServiceIfNecessary(XrTestRule rule) {
         // If the tracker has already been dirtied, then we can assume that the tracker type
         // has already been set to "fake".
         if (rule.isTrackerDirty()) return;

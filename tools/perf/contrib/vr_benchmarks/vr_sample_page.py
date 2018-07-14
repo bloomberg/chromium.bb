@@ -9,12 +9,12 @@ from contrib.vr_benchmarks import (shared_android_vr_page_state as
 
 WEBVR_SAMPLE_DIR = os.path.join(
     os.path.dirname(__file__), '..', '..', '..', '..', 'chrome', 'test',
-    'data', 'vr', 'webvr_info', 'samples')
+    'data', 'xr', 'webvr_info', 'samples')
 
 
 WEBXR_SAMPLE_DIR = os.path.join(
     os.path.dirname(__file__), '..', '..', '..', '..', 'chrome', 'test',
-    'data', 'vr', 'webxr_samples')
+    'data', 'xr', 'webxr_samples')
 
 
 class _VrXrSamplePage(page.Page):

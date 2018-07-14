@@ -32,14 +32,14 @@ run in all three activity types, which isn't desirable since some test cases
 test scenarios that are only valid in some activities (e.g. tests that involve
 the VR browser are currently only supported in ChromeTabbedActivity). To avoid
 this, the `Rule` annotated with `@Rule` is actually a `RuleChain` that wraps the
-generated VR test rule in a `VrActivityRestrictionRule`.
+generated VR test rule in a `XrActivityRestrictionRule`.
 
-`VrActivityRestrictionRule` interacts with the `@VrActivityRestriction`
+`XrActivityRestrictionRule` interacts with the `@XrActivityRestriction`
 annotation and the VR test rule for the current test case run. If the activity
 type of the current rule is contained in the list provided by
-`@VrActivityRestriction` (or there is no restriction annotation and the activity
-type is `ChromeTabbedActivity`), then the `VrActivityRestrictionRule` becomes a
-no-op and the test case runs normally. Otherwise, `VrActivityRestrictionRule`
+`@XrActivityRestriction` (or there is no restriction annotation and the activity
+type is `ChromeTabbedActivity`), then the `XrActivityRestrictionRule` becomes a
+no-op and the test case runs normally. Otherwise, `XrActivityRestrictionRule`
 causes an assumption failure, which is interpreted by the test runner as a
 signal to skip that particular test case/parameter combination.
 

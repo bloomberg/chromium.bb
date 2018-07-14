@@ -22,7 +22,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
+import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityXrTestRule;
 import org.chromium.chrome.browser.vr.util.TransitionUtils;
 import org.chromium.chrome.browser.vr.util.VrInfoBarUtils;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
@@ -43,7 +43,7 @@ public class VrFeedbackInfoBarTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
     @Rule
-    public ChromeTabbedActivityVrTestRule mTestRule = new ChromeTabbedActivityVrTestRule();
+    public ChromeTabbedActivityXrTestRule mTestRule = new ChromeTabbedActivityXrTestRule();
 
     private VrTestFramework mVrTestFramework;
     private XrTestFramework mXrTestFramework;

@@ -60,7 +60,7 @@ public class TestFramework {
             UrlConstants.RECENT_TABS_URL};
 
     private static final String TAG = "TestFramework";
-    static final String TEST_DIR = "chrome/test/data/vr/e2e_test_files";
+    static final String TEST_DIR = "chrome/test/data/xr/e2e_test_files";
 
     // Test status enum
     private static final int STATUS_RUNNING = 0;
