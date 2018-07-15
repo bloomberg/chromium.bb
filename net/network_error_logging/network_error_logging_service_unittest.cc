@@ -268,6 +268,8 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessReportQueued) {
                                NetworkErrorLoggingService::kStatusCodeKey);
   base::ExpectDictIntegerValue(1000, *body,
                                NetworkErrorLoggingService::kElapsedTimeKey);
+  base::ExpectDictStringValue("application", *body,
+                              NetworkErrorLoggingService::kPhaseKey);
   base::ExpectDictStringValue("ok", *body,
                               NetworkErrorLoggingService::kTypeKey);
 }
@@ -302,6 +304,8 @@ TEST_F(NetworkErrorLoggingServiceTest, FailureReportQueued) {
                                NetworkErrorLoggingService::kStatusCodeKey);
   base::ExpectDictIntegerValue(1000, *body,
                                NetworkErrorLoggingService::kElapsedTimeKey);
+  base::ExpectDictStringValue("connection", *body,
+                              NetworkErrorLoggingService::kPhaseKey);
   base::ExpectDictStringValue("tcp.refused", *body,
                               NetworkErrorLoggingService::kTypeKey);
 }
@@ -336,6 +340,8 @@ TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportQueued) {
                                NetworkErrorLoggingService::kStatusCodeKey);
   base::ExpectDictIntegerValue(1000, *body,
                                NetworkErrorLoggingService::kElapsedTimeKey);
+  base::ExpectDictStringValue("application", *body,
+                              NetworkErrorLoggingService::kPhaseKey);
   base::ExpectDictStringValue("http.error", *body,
                               NetworkErrorLoggingService::kTypeKey);
 }
@@ -467,7 +473,7 @@ TEST_F(NetworkErrorLoggingServiceTest, IncludeSubdomainsMatchesDifferentPort) {
   service()->OnHeader(kOrigin_, kHeaderIncludeSubdomains_);
 
   service()->OnRequest(
-      MakeRequestDetails(kUrlDifferentPort_, ERR_CONNECTION_REFUSED));
+      MakeRequestDetails(kUrlDifferentPort_, ERR_NAME_NOT_RESOLVED));
 
   ASSERT_EQ(1u, reports().size());
   EXPECT_EQ(kUrlDifferentPort_, reports()[0].url);
@@ -477,7 +483,7 @@ TEST_F(NetworkErrorLoggingServiceTest, IncludeSubdomainsMatchesSubdomain) {
   service()->OnHeader(kOrigin_, kHeaderIncludeSubdomains_);
 
   service()->OnRequest(
-      MakeRequestDetails(kUrlSubdomain_, ERR_CONNECTION_REFUSED));
+      MakeRequestDetails(kUrlSubdomain_, ERR_NAME_NOT_RESOLVED));
 
   ASSERT_EQ(1u, reports().size());
 }
@@ -486,7 +492,35 @@ TEST_F(NetworkErrorLoggingServiceTest,
        IncludeSubdomainsDoesntMatchSuperdomain) {
   service()->OnHeader(kOriginSubdomain_, kHeaderIncludeSubdomains_);
 
-  service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
+  service()->OnRequest(MakeRequestDetails(kUrl_, ERR_NAME_NOT_RESOLVED));
+
+  EXPECT_TRUE(reports().empty());
+}
+
+TEST_F(NetworkErrorLoggingServiceTest,
+       IncludeSubdomainsDoesntReportConnectionError) {
+  service()->OnHeader(kOrigin_, kHeaderIncludeSubdomains_);
+
+  service()->OnRequest(
+      MakeRequestDetails(kUrlSubdomain_, ERR_CONNECTION_REFUSED));
+
+  EXPECT_TRUE(reports().empty());
+}
+
+TEST_F(NetworkErrorLoggingServiceTest,
+       IncludeSubdomainsDoesntReportApplicationError) {
+  service()->OnHeader(kOrigin_, kHeaderIncludeSubdomains_);
+
+  service()->OnRequest(
+      MakeRequestDetails(kUrlSubdomain_, ERR_INVALID_HTTP_RESPONSE));
+
+  EXPECT_TRUE(reports().empty());
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, IncludeSubdomainsDoesntReportSuccess) {
+  service()->OnHeader(kOrigin_, kHeaderIncludeSubdomains_);
+
+  service()->OnRequest(MakeRequestDetails(kUrlSubdomain_, OK));
 
   EXPECT_TRUE(reports().empty());
 }

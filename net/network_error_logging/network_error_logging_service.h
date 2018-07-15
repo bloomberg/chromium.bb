@@ -84,6 +84,7 @@ class NET_EXPORT NetworkErrorLoggingService {
   static const char kProtocolKey[];
   static const char kStatusCodeKey[];
   static const char kElapsedTimeKey[];
+  static const char kPhaseKey[];
   static const char kTypeKey[];
 
   static void RecordHeaderDiscardedForNoNetworkErrorLoggingService();

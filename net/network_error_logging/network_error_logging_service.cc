@@ -58,55 +58,65 @@ std::string GetSuperdomain(const std::string& domain) {
   return domain.substr(dot_pos + 1);
 }
 
+const char kApplicationPhase[] = "application";
+const char kConnectionPhase[] = "connection";
+const char kDnsPhase[] = "dns";
 const char kHttpErrorType[] = "http.error";
 
 const struct {
   Error error;
+  const char* phase;
   const char* type;
 } kErrorTypes[] = {
-    {OK, "ok"},
+    {OK, kApplicationPhase, "ok"},
 
     // dns.unreachable?
-    {ERR_NAME_NOT_RESOLVED, "dns.name_not_resolved"},
-    {ERR_NAME_RESOLUTION_FAILED, "dns.failed"},
-    {ERR_DNS_TIMED_OUT, "dns.timed_out"},
+    {ERR_NAME_NOT_RESOLVED, kDnsPhase, "dns.name_not_resolved"},
+    {ERR_NAME_RESOLUTION_FAILED, kDnsPhase, "dns.failed"},
+    {ERR_DNS_TIMED_OUT, kDnsPhase, "dns.timed_out"},
 
-    {ERR_CONNECTION_TIMED_OUT, "tcp.timed_out"},
-    {ERR_CONNECTION_CLOSED, "tcp.closed"},
-    {ERR_CONNECTION_RESET, "tcp.reset"},
-    {ERR_CONNECTION_REFUSED, "tcp.refused"},
-    {ERR_CONNECTION_ABORTED, "tcp.aborted"},
-    {ERR_ADDRESS_INVALID, "tcp.address_invalid"},
-    {ERR_ADDRESS_UNREACHABLE, "tcp.address_unreachable"},
-    {ERR_CONNECTION_FAILED, "tcp.failed"},
+    {ERR_CONNECTION_TIMED_OUT, kConnectionPhase, "tcp.timed_out"},
+    {ERR_CONNECTION_CLOSED, kConnectionPhase, "tcp.closed"},
+    {ERR_CONNECTION_RESET, kConnectionPhase, "tcp.reset"},
+    {ERR_CONNECTION_REFUSED, kConnectionPhase, "tcp.refused"},
+    {ERR_CONNECTION_ABORTED, kConnectionPhase, "tcp.aborted"},
+    {ERR_ADDRESS_INVALID, kConnectionPhase, "tcp.address_invalid"},
+    {ERR_ADDRESS_UNREACHABLE, kConnectionPhase, "tcp.address_unreachable"},
+    {ERR_CONNECTION_FAILED, kConnectionPhase, "tcp.failed"},
 
-    {ERR_SSL_VERSION_OR_CIPHER_MISMATCH, "tls.version_or_cipher_mismatch"},
-    {ERR_BAD_SSL_CLIENT_AUTH_CERT, "tls.bad_client_auth_cert"},
-    {ERR_CERT_COMMON_NAME_INVALID, "tls.cert.name_invalid"},
-    {ERR_CERT_DATE_INVALID, "tls.cert.date_invalid"},
-    {ERR_CERT_AUTHORITY_INVALID, "tls.cert.authority_invalid"},
-    {ERR_CERT_INVALID, "tls.cert.invalid"},
-    {ERR_CERT_REVOKED, "tls.cert.revoked"},
-    {ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN,
+    {ERR_SSL_VERSION_OR_CIPHER_MISMATCH, kConnectionPhase,
+     "tls.version_or_cipher_mismatch"},
+    {ERR_BAD_SSL_CLIENT_AUTH_CERT, kConnectionPhase,
+     "tls.bad_client_auth_cert"},
+    {ERR_CERT_COMMON_NAME_INVALID, kConnectionPhase, "tls.cert.name_invalid"},
+    {ERR_CERT_DATE_INVALID, kConnectionPhase, "tls.cert.date_invalid"},
+    {ERR_CERT_AUTHORITY_INVALID, kConnectionPhase,
+     "tls.cert.authority_invalid"},
+    {ERR_CERT_INVALID, kConnectionPhase, "tls.cert.invalid"},
+    {ERR_CERT_REVOKED, kConnectionPhase, "tls.cert.revoked"},
+    {ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN, kConnectionPhase,
      "tls.cert.pinned_key_not_in_cert_chain"},
-    {ERR_SSL_PROTOCOL_ERROR, "tls.protocol.error"},
+    {ERR_SSL_PROTOCOL_ERROR, kConnectionPhase, "tls.protocol.error"},
     // tls.failed?
 
     // http.protocol.error?
-    {ERR_INVALID_HTTP_RESPONSE, "http.response.invalid"},
-    {ERR_TOO_MANY_REDIRECTS, "http.response.redirect_loop"},
-    {ERR_EMPTY_RESPONSE, "http.response.empty"},
+    {ERR_INVALID_HTTP_RESPONSE, kApplicationPhase, "http.response.invalid"},
+    {ERR_TOO_MANY_REDIRECTS, kApplicationPhase, "http.response.redirect_loop"},
+    {ERR_EMPTY_RESPONSE, kApplicationPhase, "http.response.empty"},
     // http.failed?
 
-    {ERR_ABORTED, "abandoned"},
+    {ERR_ABORTED, kApplicationPhase, "abandoned"},
     // unknown?
 
     // TODO(juliatuttle): Surely there are more errors we want here.
 };
 
-bool GetTypeFromNetError(Error error, std::string* type_out) {
+bool GetPhaseAndTypeFromNetError(Error error,
+                                 std::string* phase_out,
+                                 std::string* type_out) {
   for (size_t i = 0; i < arraysize(kErrorTypes); ++i) {
     if (kErrorTypes[i].error == error) {
+      *phase_out = kErrorTypes[i].phase;
       *type_out = kErrorTypes[i].type;
       return true;
     }
@@ -155,8 +165,8 @@ enum class RequestOutcome {
   DISCARDED_REPORTING_UPLOAD = 5,
   DISCARDED_UNSAMPLED_SUCCESS = 6,
   DISCARDED_UNSAMPLED_FAILURE = 7,
-
   QUEUED = 8,
+  DISCARDED_NON_DNS_SUBDOMAIN_REPORT = 9,
 
   MAX
 };
@@ -240,20 +250,30 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       type = OK;
     }
 
+    std::string phase_string;
     std::string type_string;
-    if (!GetTypeFromNetError(type, &type_string)) {
+    if (!GetPhaseAndTypeFromNetError(type, &phase_string, &type_string)) {
       RecordRequestOutcome(RequestOutcome::DISCARDED_UNMAPPED_ERROR);
       return;
     }
 
-    if (IsHttpError(details))
+    if (IsHttpError(details)) {
+      phase_string = kApplicationPhase;
       type_string = kHttpErrorType;
+    }
 
     // This check would go earlier, but the histogram bucket will be more
     // meaningful if it only includes reports that otherwise could have been
     // uploaded.
     if (details.reporting_upload_depth > kMaxNestedReportDepth) {
       RecordRequestOutcome(RequestOutcome::DISCARDED_REPORTING_UPLOAD);
+      return;
+    }
+
+    // include_subdomains policies are only allowed to report on DNS resolution
+    // errors.
+    if (phase_string != kDnsPhase && policy->include_subdomains) {
+      RecordRequestOutcome(RequestOutcome::DISCARDED_NON_DNS_SUBDOMAIN_REPORT);
       return;
     }
 
@@ -269,7 +289,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
     reporting_service_->QueueReport(
         details.uri, policy->report_to, kReportType,
-        CreateReportBody(type_string, sampling_fraction, details),
+        CreateReportBody(phase_string, type_string, sampling_fraction, details),
         details.reporting_upload_depth);
     RecordRequestOutcome(RequestOutcome::QUEUED);
   }
@@ -499,6 +519,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   }
 
   std::unique_ptr<const base::Value> CreateReportBody(
+      const std::string& phase,
       const std::string& type,
       double sampling_fraction,
       const RequestDetails& details) const {
@@ -511,6 +532,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     body->SetString(kProtocolKey, details.protocol);
     body->SetInteger(kStatusCodeKey, details.status_code);
     body->SetInteger(kElapsedTimeKey, details.elapsed_time.InMilliseconds());
+    body->SetString(kPhaseKey, phase);
     body->SetString(kTypeKey, type);
 
     return std::move(body);
@@ -550,6 +572,7 @@ const char NetworkErrorLoggingService::kServerIpKey[] = "server_ip";
 const char NetworkErrorLoggingService::kProtocolKey[] = "protocol";
 const char NetworkErrorLoggingService::kStatusCodeKey[] = "status_code";
 const char NetworkErrorLoggingService::kElapsedTimeKey[] = "elapsed_time";
+const char NetworkErrorLoggingService::kPhaseKey[] = "phase";
 const char NetworkErrorLoggingService::kTypeKey[] = "type";
 
 // static

@@ -32496,6 +32496,7 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Discarded: unsampled success"/>
   <int value="7" label="Discarded: unsampled failure"/>
   <int value="8" label="Queued"/>
+  <int value="9" label="Discarded: include_subdomains without DNS error"/>
 </enum>
 
 <enum name="NetPreconnectUtilization">
