@@ -437,16 +437,24 @@ base::string16 OmniboxViewViews::GetSelectedText() const {
 
 void OmniboxViewViews::OnPaste() {
   const base::string16 text(GetClipboardText());
-  if (!text.empty()) {
-    OnBeforePossibleChange();
-    // Record this paste, so we can do different behavior.
-    model()->OnPaste();
-    // Force a Paste operation to trigger the text_changed code in
-    // OnAfterPossibleChange(), even if identical contents are pasted.
-    state_before_change_.text.clear();
-    InsertOrReplaceText(text);
-    OnAfterPossibleChange(true);
+
+  if (text.empty() ||
+      // When the fakebox is focused, ignore pasted whitespace because if the
+      // fakebox is hidden and there's only whitespace in the omnibox, it's
+      // difficult for the user to see that the focus moved to the omnibox.
+      (model()->focus_state() == OMNIBOX_FOCUS_INVISIBLE &&
+       std::all_of(text.begin(), text.end(), base::IsUnicodeWhitespace))) {
+    return;
   }
+
+  OnBeforePossibleChange();
+  // Record this paste, so we can do different behavior.
+  model()->OnPaste();
+  // Force a Paste operation to trigger the text_changed code in
+  // OnAfterPossibleChange(), even if identical contents are pasted.
+  state_before_change_.text.clear();
+  InsertOrReplaceText(text);
+  OnAfterPossibleChange(true);
 }
 
 bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
@@ -1095,6 +1103,14 @@ base::string16 OmniboxViewViews::GetSelectionClipboardText() const {
 }
 
 void OmniboxViewViews::DoInsertChar(base::char16 ch) {
+  // When the fakebox is focused, ignore whitespace input because if the
+  // fakebox is hidden and there's only whitespace in the omnibox, it's
+  // difficult for the user to see that the focus moved to the omnibox.
+  if ((model()->focus_state() == OMNIBOX_FOCUS_INVISIBLE) &&
+      base::IsUnicodeWhitespace(ch)) {
+    return;
+  }
+
   // If |insert_char_time_| is not null, there's a pending insert char operation
   // that hasn't been painted yet. Keep the earlier time.
   if (insert_char_time_.is_null()) {

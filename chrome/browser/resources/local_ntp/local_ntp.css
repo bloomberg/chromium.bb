@@ -110,7 +110,7 @@ button {
 }
 
 body.hide-fakebox #fakebox {
-  opacity: 0;
+  visibility: hidden;
 }
 
 #logo {
