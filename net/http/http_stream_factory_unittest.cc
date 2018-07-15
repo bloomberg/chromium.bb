@@ -790,8 +790,7 @@ TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
     session_params.enable_quic = true;
 
     HttpNetworkSession::Context session_context;
-    scoped_refptr<SSLConfigServiceDefaults> ssl_config_service(
-        new SSLConfigServiceDefaults);
+    SSLConfigServiceDefaults ssl_config_service;
     HttpServerPropertiesImpl http_server_properties;
     MockClientSocketFactory socket_factory;
     session_context.client_socket_factory = &socket_factory;
@@ -806,7 +805,7 @@ TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
     DefaultCTPolicyEnforcer ct_policy_enforcer;
     session_context.ct_policy_enforcer = &ct_policy_enforcer;
     session_context.proxy_resolution_service = proxy_resolution_service.get();
-    session_context.ssl_config_service = ssl_config_service.get();
+    session_context.ssl_config_service = &ssl_config_service;
     session_context.http_server_properties = &http_server_properties;
 
     auto session =
@@ -974,15 +973,14 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyMarkedAsBad) {
       MockCertVerifier cert_verifier;
       DefaultCTPolicyEnforcer ct_policy_enforcer;
       MultiLogCTVerifier ct_verifier;
-      scoped_refptr<SSLConfigServiceDefaults> ssl_config_service(
-          new SSLConfigServiceDefaults);
+      SSLConfigServiceDefaults ssl_config_service;
       MockHostResolver host_resolver;
       TransportSecurityState transport_security_state;
       SetupForQuicAlternativeProxyTest(
           &session_params, &session_context, &socket_factory,
           proxy_resolution_service.get(), &test_proxy_delegate,
           &http_server_properties, &cert_verifier, &ct_policy_enforcer,
-          &ct_verifier, ssl_config_service.get(), &host_resolver,
+          &ct_verifier, &ssl_config_service, &host_resolver,
           &transport_security_state, set_alternative_proxy_server);
 
       auto session =
@@ -1090,8 +1088,7 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyNotMarkedAsBad) {
     DefaultCTPolicyEnforcer ct_policy_enforcer;
     MultiLogCTVerifier ct_verifier;
 
-    scoped_refptr<SSLConfigServiceDefaults> ssl_config_service(
-        new SSLConfigServiceDefaults);
+    SSLConfigServiceDefaults ssl_config_service;
     MockHostResolver host_resolver;
     TransportSecurityState transport_security_state;
 
@@ -1099,7 +1096,7 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyNotMarkedAsBad) {
         &session_params, &session_context, &socket_factory,
         proxy_resolution_service.get(), &test_proxy_delegate,
         &http_server_properties, &cert_verifier, &ct_policy_enforcer,
-        &ct_verifier, ssl_config_service.get(), &host_resolver,
+        &ct_verifier, &ssl_config_service, &host_resolver,
         &transport_security_state, true);
 
     HostPortPair host_port_pair("badproxy", 99);
@@ -2443,7 +2440,7 @@ class HttpStreamFactoryBidirectionalQuicTest
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
   MockHostResolver host_resolver_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
-  scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
+  std::unique_ptr<SSLConfigServiceDefaults> ssl_config_service_;
   HttpNetworkSession::Params params_;
 };
 

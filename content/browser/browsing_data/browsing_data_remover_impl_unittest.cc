@@ -342,7 +342,7 @@ class RemoveChannelIDTester : public net::SSLConfigService::Observer {
   }
 
   net::ChannelIDService* channel_id_service_;
-  scoped_refptr<net::SSLConfigService> ssl_config_service_;
+  net::SSLConfigService* ssl_config_service_;
   int ssl_config_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveChannelIDTester);

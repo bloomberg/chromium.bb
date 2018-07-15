@@ -139,9 +139,7 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
                                 NULL,
                                 NULL,
                                 NULL) {
-    scoped_refptr<SSLConfigService> ssl_config_service(
-        new SSLConfigServiceDefaults);
-    ssl_config_service->GetSSLConfig(&ssl_config_);
+    ssl_config_service_->GetSSLConfig(&ssl_config_);
   }
 
   void CreatePool(bool transport_pool, bool http_proxy_pool, bool socks_pool) {
@@ -201,7 +199,7 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
   MultiLogCTVerifier ct_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
   const std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
-  const scoped_refptr<SSLConfigService> ssl_config_service_;
+  const std::unique_ptr<SSLConfigService> ssl_config_service_;
   const std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   const std::unique_ptr<HttpServerPropertiesImpl> http_server_properties_;
   const std::unique_ptr<HttpNetworkSession> session_;

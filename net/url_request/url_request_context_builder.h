@@ -178,7 +178,7 @@ class NET_EXPORT URLRequestContextBuilder {
   }
 
   void set_ssl_config_service(
-      scoped_refptr<SSLConfigService> ssl_config_service) {
+      std::unique_ptr<SSLConfigService> ssl_config_service) {
     ssl_config_service_ = std::move(ssl_config_service);
   }
 
@@ -399,7 +399,7 @@ class NET_EXPORT URLRequestContextBuilder {
   bool pac_quick_check_enabled_;
   ProxyResolutionService::SanitizeUrlPolicy pac_sanitize_url_policy_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
-  scoped_refptr<SSLConfigService> ssl_config_service_;
+  std::unique_ptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<NetworkDelegate> network_delegate_;
   CreateLayeredNetworkDelegate create_layered_network_delegate_callback_;
   std::unique_ptr<ProxyDelegate> proxy_delegate_;

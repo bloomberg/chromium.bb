@@ -59,6 +59,11 @@ class ProxyResolvingSocketTest : public testing::Test,
   ~ProxyResolvingSocketTest() override {}
 
   void Init(const std::string& pac_result) {
+    // |factory_| depends on |context_with_proxy_|, which will be
+    // re-initialized. Reset it first, since |context_with_proxy_| must
+    // outlive |factory_|.
+    factory_.reset();
+
     mock_client_socket_factory_ =
         std::make_unique<net::MockClientSocketFactory>();
     mock_client_socket_factory_->set_enable_read_if_ready(true);

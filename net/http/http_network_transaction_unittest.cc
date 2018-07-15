@@ -274,12 +274,11 @@ class FailingProxyResolverFactory : public ProxyResolverFactory {
 class TestSSLConfigService : public SSLConfigService {
  public:
   explicit TestSSLConfigService(const SSLConfig& config) : config_(config) {}
+  ~TestSSLConfigService() override = default;
 
   void GetSSLConfig(SSLConfig* config) override { *config = config_; }
 
  private:
-  ~TestSSLConfigService() override = default;
-
   SSLConfig config_;
 };
 
@@ -6820,7 +6819,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
   SSLConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
   session_deps_.ssl_config_service =
-      base::MakeRefCounted<TestSSLConfigService>(config);
+      std::make_unique<TestSSLConfigService>(config);
 
   HttpRequestInfo request;
   request.method = "GET";

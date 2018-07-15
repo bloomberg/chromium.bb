@@ -242,7 +242,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
       params_(params),
       context_(context) {
   DCHECK(proxy_resolution_service_);
-  DCHECK(ssl_config_service_.get());
+  DCHECK(ssl_config_service_);
   CHECK(http_server_properties_);
 
   const std::string ssl_session_cache_shard =

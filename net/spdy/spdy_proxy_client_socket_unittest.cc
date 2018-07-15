@@ -138,9 +138,9 @@ class SpdyProxyClientSocketTest : public PlatformTest,
   BoundTestNetLog net_log_;
 
  private:
-  std::unique_ptr<HttpNetworkSession> session_;
   scoped_refptr<IOBuffer> read_buf_;
   SpdySessionDependencies session_deps_;
+  std::unique_ptr<HttpNetworkSession> session_;
   MockConnect connect_data_;
   base::WeakPtr<SpdySession> spdy_session_;
   std::string user_agent_;
@@ -174,7 +174,7 @@ SpdyProxyClientSocketTest::~SpdyProxyClientSocketTest() {
 }
 
 void SpdyProxyClientSocketTest::TearDown() {
-  if (session_.get() != NULL)
+  if (session_)
     session_->spdy_session_pool()->CloseAllSessions();
 
   // Empty the current queue.

@@ -200,7 +200,7 @@ struct SpdySessionDependencies {
   std::unique_ptr<CTVerifier> cert_transparency_verifier;
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service;
-  scoped_refptr<SSLConfigService> ssl_config_service;
+  std::unique_ptr<SSLConfigService> ssl_config_service;
   std::unique_ptr<MockClientSocketFactory> socket_factory;
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
   std::unique_ptr<HttpServerPropertiesImpl> http_server_properties;
