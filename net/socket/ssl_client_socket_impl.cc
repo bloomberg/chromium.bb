@@ -460,6 +460,7 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       ssl_config_(ssl_config),
       ssl_session_cache_shard_(context.ssl_session_cache_shard),
       next_handshake_state_(STATE_NONE),
+      in_confirm_handshake_(false),
       disconnected_(false),
       negotiated_protocol_(kProtoUnknown),
       channel_id_sent_(false),
@@ -559,6 +560,30 @@ void SSLClientSocketImpl::Disconnect() {
   user_write_buf_len_ = 0;
 
   transport_->socket()->Disconnect();
+}
+
+// ConfirmHandshake may only be called on a connected socket and, like other
+// socket methods, there may only be one ConfirmHandshake operation in progress
+// at once.
+int SSLClientSocketImpl::ConfirmHandshake(CompletionOnceCallback callback) {
+  CHECK(completed_connect_);
+  CHECK(!in_confirm_handshake_);
+  if (!SSL_in_early_data(ssl_.get())) {
+    return OK;
+  }
+
+  net_log_.BeginEvent(NetLogEventType::SSL_CONFIRM_HANDSHAKE);
+  next_handshake_state_ = STATE_HANDSHAKE;
+  in_confirm_handshake_ = true;
+  int rv = DoHandshakeLoop(OK);
+  if (rv == ERR_IO_PENDING) {
+    user_connect_callback_ = std::move(callback);
+  } else {
+    net_log_.EndEvent(NetLogEventType::SSL_CONFIRM_HANDSHAKE);
+    in_confirm_handshake_ = false;
+  }
+
+  return rv > OK ? OK : rv;
 }
 
 bool SSLClientSocketImpl::IsConnected() const {
@@ -877,6 +902,8 @@ int SSLClientSocketImpl::Init() {
     return ERR_UNEXPECTED;
   }
 
+  SSL_set_early_data_enabled(ssl_.get(), ssl_config_.early_data_enabled);
+
   switch (ssl_config_.tls13_variant) {
     case kTLS13VariantDraft23:
       SSL_set_tls13_variant(ssl_.get(), tls13_draft23);
@@ -1034,6 +1061,11 @@ int SSLClientSocketImpl::DoHandshake() {
 int SSLClientSocketImpl::DoHandshakeComplete(int result) {
   if (result < 0)
     return result;
+
+  if (in_confirm_handshake_) {
+    next_handshake_state_ = STATE_NONE;
+    return OK;
+  }
 
   if (ssl_config_.version_interference_probe) {
     DCHECK_LT(ssl_config_.version_max, TLS1_3_VERSION);
@@ -1258,7 +1290,12 @@ void SSLClientSocketImpl::DoConnectCallback(int rv) {
 void SSLClientSocketImpl::OnHandshakeIOComplete(int result) {
   int rv = DoHandshakeLoop(result);
   if (rv != ERR_IO_PENDING) {
-    LogConnectEndEvent(rv);
+    if (in_confirm_handshake_) {
+      in_confirm_handshake_ = false;
+      net_log_.EndEvent(NetLogEventType::SSL_CONFIRM_HANDSHAKE);
+    } else {
+      LogConnectEndEvent(rv);
+    }
     DoConnectCallback(rv);
   }
 }
@@ -1345,14 +1382,6 @@ int SSLClientSocketImpl::DoPayloadRead(IOBuffer* buf, int buf_len) {
   // processed immediately, while the information still available in OpenSSL's
   // error queue.
   if (ssl_ret <= 0) {
-    // A zero return from SSL_read may mean any of:
-    // - The underlying BIO_read returned 0.
-    // - The peer sent a close_notify.
-    // - Any arbitrary error. https://crbug.com/466303
-    //
-    // TransportReadComplete converts the first to an ERR_CONNECTION_CLOSED
-    // error, so it does not occur. The second and third are distinguished by
-    // SSL_ERROR_ZERO_RETURN.
     pending_read_ssl_error_ = SSL_get_error(ssl_.get(), ssl_ret);
     if (pending_read_ssl_error_ == SSL_ERROR_ZERO_RETURN) {
       pending_read_error_ = 0;
@@ -1437,11 +1466,17 @@ void SSLClientSocketImpl::RetryAllOperations() {
   // so retry all operations for simplicity. (Otherwise, SSL_get_error for each
   // operation may be remembered to retry only the blocked ones.)
 
+  // Performing these callbacks may cause |this| to be deleted. If this
+  // happens, the other callbacks should not be invoked. Guard against this by
+  // holding a WeakPtr to |this| and ensuring it's still valid.
+  base::WeakPtr<SSLClientSocketImpl> guard(weak_factory_.GetWeakPtr());
   if (next_handshake_state_ == STATE_HANDSHAKE) {
     // In handshake phase. The parameter to OnHandshakeIOComplete is unused.
     OnHandshakeIOComplete(OK);
-    return;
   }
+
+  if (!guard.get())
+    return;
 
   int rv_read = ERR_IO_PENDING;
   int rv_write = ERR_IO_PENDING;
@@ -1456,10 +1491,6 @@ void SSLClientSocketImpl::RetryAllOperations() {
   if (user_write_buf_)
     rv_write = DoPayloadWrite();
 
-  // Performing the Read callback may cause |this| to be deleted. If this
-  // happens, the Write callback should not be invoked. Guard against this by
-  // holding a WeakPtr to |this| and ensuring it's still valid.
-  base::WeakPtr<SSLClientSocketImpl> guard(weak_factory_.GetWeakPtr());
   if (rv_read != ERR_IO_PENDING)
     DoReadCallback(rv_read);
 

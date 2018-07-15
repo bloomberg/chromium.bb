@@ -113,6 +113,10 @@ class NET_EXPORT SSLInfo {
   // TODO(agl): remove by 2018-05-31.
   bool dummy_pq_padding_received = false;
 
+  // True if data was received over early data on the server. This field is only
+  // set for server sockets.
+  bool early_data_received = false;
+
   HandshakeType handshake_type = HANDSHAKE_UNKNOWN;
 
   // The hashes, in several algorithms, of the SubjectPublicKeyInfos from
