@@ -3863,7 +3863,7 @@ crbug.com/737959 http/tests/misc/object-image-load-outlives-gc-without-crashing.
 
 crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
 
-crbug.com/734762 inspector-protocol/timeline/page-frames.js [ Failure ]
+crbug.com/734762 inspector-protocol/timeline/page-frames.js [ Failure Pass ]
 
 crbug.com/736255 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Skip ]
 
