@@ -102,6 +102,20 @@ struct NET_EXPORT SSLConfig {
   // also enabled via version_min and version_max.
   TLS13Variant tls13_variant;
 
+  // Whether early data is enabled on this connection. Note that early data has
+  // weaker security properties than normal data and changes the
+  // SSLClientSocket's behavior. The caller must only send replayable data prior
+  // to handshake confirmation. See StreamSocket::ConfirmHandshake for details.
+  //
+  // Additionally, early data may be rejected by the server, resulting in some
+  // socket operation failing with ERR_EARLY_DATA_REJECTED or
+  // ERR_WRONG_VERSION_ON_EARLY_DATA before any data is returned from the
+  // server. The caller must handle these cases, typically by retrying the
+  // high-level operation.
+  //
+  // If unsure, do not enable this option.
+  bool early_data_enabled;
+
   // Presorted list of cipher suites which should be explicitly prevented from
   // being used in addition to those disabled by the net built-in policy.
   //
