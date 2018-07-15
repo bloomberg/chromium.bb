@@ -84,6 +84,8 @@ DesktopEnvironment GetDesktopEnvironment(Environment* env) {
     }
     if (xdg_current_desktop == "Pantheon")
       return DESKTOP_ENVIRONMENT_PANTHEON;
+    if (xdg_current_desktop == "XFCE")
+      return DESKTOP_ENVIRONMENT_XFCE;
   }
 
   // DESKTOP_SESSION was what everyone used in 2010.
