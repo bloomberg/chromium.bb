@@ -149,6 +149,7 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, TestReportingHeadersProcessed) {
               "sampling_fraction": 1.0,
               "server_ip": "127.0.0.1",
               "status_code": 204,
+              "phase": "application",
               "type": "ok",
               "uri": "https://example.com:%d/original",
             },
