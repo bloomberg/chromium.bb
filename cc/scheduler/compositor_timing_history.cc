@@ -45,7 +45,6 @@ class CompositorTimingHistory::UMAReporter {
   virtual void AddActivateDuration(base::TimeDelta duration) = 0;
   virtual void AddDrawDuration(base::TimeDelta duration) = 0;
   virtual void AddSubmitToAckLatency(base::TimeDelta duration) = 0;
-  virtual void AddSubmitAckWasFast(bool was_fast) = 0;
 
   // crbug.com/758439: the following 3 functions are used to report timing in
   // certain conditions targeting blink / compositor animations.
@@ -268,10 +267,6 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
                                         duration);
   }
 
-  void AddSubmitAckWasFast(bool was_fast) override {
-    UMA_HISTOGRAM_BOOLEAN("Scheduling.Renderer.SwapAckWasFast", was_fast);
-  }
-
   void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
         "Scheduling.Renderer.MainAndImplFrameTimeDelta", delta);
@@ -366,10 +361,6 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
                                         duration);
   }
 
-  void AddSubmitAckWasFast(bool was_fast) override {
-    UMA_HISTOGRAM_BOOLEAN("Scheduling.Browser.SwapAckWasFast", was_fast);
-  }
-
   void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
         "Scheduling.Browser.MainAndImplFrameTimeDelta", delta);
@@ -407,7 +398,6 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddActivateDuration(base::TimeDelta duration) override {}
   void AddDrawDuration(base::TimeDelta duration) override {}
   void AddSubmitToAckLatency(base::TimeDelta duration) override {}
-  void AddSubmitAckWasFast(bool was_fast) override {}
   void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) override {}
 };
 
@@ -592,7 +582,6 @@ void CompositorTimingHistory::WillBeginImplFrame(
   if (submit_ack_watchdog_enabled_) {
     base::TimeDelta submit_not_acked_time_ = now - submit_start_time_;
     if (submit_not_acked_time_ >= kSubmitAckWatchdogTimeout) {
-      uma_reporter_->AddSubmitAckWasFast(false);
       // Only record this UMA once per submitted CompositorFrame.
       submit_ack_watchdog_enabled_ = false;
     }
@@ -931,11 +920,8 @@ void CompositorTimingHistory::DidReceiveCompositorFrameAck() {
   DCHECK_NE(base::TimeTicks(), submit_start_time_);
   base::TimeDelta submit_to_ack_duration = Now() - submit_start_time_;
   uma_reporter_->AddSubmitToAckLatency(submit_to_ack_duration);
-  if (submit_ack_watchdog_enabled_) {
-    bool was_fast = submit_to_ack_duration < kSubmitAckWatchdogTimeout;
-    uma_reporter_->AddSubmitAckWasFast(was_fast);
+  if (submit_ack_watchdog_enabled_)
     submit_ack_watchdog_enabled_ = false;
-  }
   submit_start_time_ = base::TimeTicks();
 }
 
