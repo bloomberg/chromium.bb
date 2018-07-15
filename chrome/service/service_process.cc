@@ -42,6 +42,7 @@
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/net/service_url_request_context_getter.h"
 #include "chrome/service/service_process_prefs.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/json_pref_store.h"
@@ -206,13 +207,13 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
   // Check if a locale override has been specified on the command-line.
   std::string locale = command_line.GetSwitchValueASCII(switches::kLang);
   if (!locale.empty()) {
-    service_prefs_->SetString(prefs::kApplicationLocale, locale);
+    service_prefs_->SetString(language::prefs::kApplicationLocale, locale);
     service_prefs_->WritePrefs();
   } else {
     // If no command-line value was specified, read the last used locale from
     // the prefs.
-    locale =
-        service_prefs_->GetString(prefs::kApplicationLocale, std::string());
+    locale = service_prefs_->GetString(language::prefs::kApplicationLocale,
+                                       std::string());
     language::ConvertToActualUILocale(&locale);
     // If no locale was specified anywhere, use the default one.
     if (locale.empty())

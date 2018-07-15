@@ -24,6 +24,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -418,8 +419,8 @@ void OobeLocalizationTest::RunLocalizationTest() {
   base::RunLoop().RunUntilIdle();
 
   // Clear the locale pref so the statistics provider is pinged next time.
-  g_browser_process->local_state()->SetString(prefs::kApplicationLocale,
-                                              std::string());
+  g_browser_process->local_state()->SetString(
+      language::prefs::kApplicationLocale, std::string());
 }
 
 IN_PROC_BROWSER_TEST_P(OobeLocalizationTest, DISABLED_LocalizationTest) {

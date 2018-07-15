@@ -27,6 +27,7 @@
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/proto/csd.pb.h"
@@ -209,8 +210,8 @@ void PopulateDetailsFromRow(const history::DownloadRow& download,
       download.target_path.BaseName().AsUTF8Unsafe());
   download_request->set_download_type(
       download_protection_util::GetDownloadType(download.target_path));
-  std::string pref_locale =
-      g_browser_process->local_state()->GetString(prefs::kApplicationLocale);
+  std::string pref_locale = g_browser_process->local_state()->GetString(
+      language::prefs::kApplicationLocale);
   language::ConvertToActualUILocale(&pref_locale);
   download_request->set_locale(pref_locale);
 

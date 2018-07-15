@@ -132,6 +132,7 @@
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/language/content/browser/geo_language_provider.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/metrics/call_stack_profile_builder.h"
@@ -362,7 +363,7 @@ void InitializeLocalState(base::SequencedTaskRunner* local_state_task_runner) {
     // Other platforms obey the system locale.
     base::string16 install_lang;
     if (GoogleUpdateSettings::GetLanguage(&install_lang)) {
-      local_state->SetString(prefs::kApplicationLocale,
+      local_state->SetString(language::prefs::kApplicationLocale,
                              base::UTF16ToASCII(install_lang));
     }
     bool stats_default;
@@ -400,7 +401,8 @@ void InitializeLocalState(base::SequencedTaskRunner* local_state_task_runner) {
           command_line->GetSwitchValuePath(switches::kParentProfile);
       scoped_refptr<PrefRegistrySimple> registry =
           base::MakeRefCounted<PrefRegistrySimple>();
-      registry->RegisterStringPref(prefs::kApplicationLocale, std::string());
+      registry->RegisterStringPref(language::prefs::kApplicationLocale,
+                                   std::string());
       const std::unique_ptr<PrefService> parent_local_state =
           chrome_prefs::CreateLocalState(parent_profile,
                                          local_state_task_runner,
@@ -408,8 +410,8 @@ void InitializeLocalState(base::SequencedTaskRunner* local_state_task_runner) {
                                          std::move(registry), false, nullptr);
       // Right now, we only inherit the locale setting from the parent profile.
       local_state->SetString(
-          prefs::kApplicationLocale,
-          parent_local_state->GetString(prefs::kApplicationLocale));
+          language::prefs::kApplicationLocale,
+          parent_local_state->GetString(language::prefs::kApplicationLocale));
     }
   }
 
@@ -418,9 +420,11 @@ void InitializeLocalState(base::SequencedTaskRunner* local_state_task_runner) {
     std::string owner_locale = local_state->GetString(prefs::kOwnerLocale);
     // Ensure that we start with owner's locale.
     if (!owner_locale.empty() &&
-        local_state->GetString(prefs::kApplicationLocale) != owner_locale &&
-        !local_state->IsManagedPreference(prefs::kApplicationLocale)) {
-      local_state->SetString(prefs::kApplicationLocale, owner_locale);
+        local_state->GetString(language::prefs::kApplicationLocale) !=
+            owner_locale &&
+        !local_state->IsManagedPreference(
+            language::prefs::kApplicationLocale)) {
+      local_state->SetString(language::prefs::kApplicationLocale, owner_locale);
     }
   }
 #endif  // defined(OS_CHROMEOS)
@@ -710,8 +714,8 @@ std::string InitResourceBundleAndDetermineLocale(
   // Tests always get en-US.
   std::string locale = params.ui_task ? "en-US" : std::string();
 #else
-  std::string locale =
-      g_browser_process->local_state()->GetString(prefs::kApplicationLocale);
+  std::string locale = g_browser_process->local_state()->GetString(
+      language::prefs::kApplicationLocale);
 #endif
 
   TRACE_EVENT0("startup",

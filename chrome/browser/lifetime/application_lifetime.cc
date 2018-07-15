@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
@@ -101,17 +102,19 @@ bool SetLocaleForNextStart(PrefService* local_state) {
                              &login_screen_locales) &&
       !login_screen_locales->empty() &&
       login_screen_locales->GetString(0, &login_screen_locale)) {
-    local_state->SetString(prefs::kApplicationLocale, login_screen_locale);
+    local_state->SetString(language::prefs::kApplicationLocale,
+                           login_screen_locale);
     return true;
   }
 
   // Login screen should show up in owner's locale.
   std::string owner_locale = local_state->GetString(prefs::kOwnerLocale);
-  std::string pref_locale = local_state->GetString(prefs::kApplicationLocale);
+  std::string pref_locale =
+      local_state->GetString(language::prefs::kApplicationLocale);
   language::ConvertToActualUILocale(&pref_locale);
   if (!owner_locale.empty() && pref_locale != owner_locale &&
-      !local_state->IsManagedPreference(prefs::kApplicationLocale)) {
-    local_state->SetString(prefs::kApplicationLocale, owner_locale);
+      !local_state->IsManagedPreference(language::prefs::kApplicationLocale)) {
+    local_state->SetString(language::prefs::kApplicationLocale, owner_locale);
     return true;
   }
 

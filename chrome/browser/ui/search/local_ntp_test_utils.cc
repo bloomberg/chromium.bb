@@ -17,6 +17,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_data.h"
@@ -102,7 +103,7 @@ bool SwitchBrowserLanguageToFrench() {
   // Switch browser language to French.
   g_browser_process->SetApplicationLocale("fr");
   PrefService* prefs = g_browser_process->local_state();
-  prefs->SetString(prefs::kApplicationLocale, "fr");
+  prefs->SetString(language::prefs::kApplicationLocale, "fr");
 
   std::string loaded_locale =
       ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("fr");

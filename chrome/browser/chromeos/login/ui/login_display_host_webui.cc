@@ -72,6 +72,7 @@
 #include "chromeos/settings/timezone_settings.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/account_id/account_id.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -1263,7 +1264,8 @@ void ShowLoginWizard(OobeScreen first_screen) {
   }
 
   PrefService* prefs = g_browser_process->local_state();
-  std::string current_locale = prefs->GetString(prefs::kApplicationLocale);
+  std::string current_locale =
+      prefs->GetString(language::prefs::kApplicationLocale);
   language::ConvertToActualUILocale(&current_locale);
   VLOG(1) << "Current locale: " << current_locale;
 
@@ -1310,7 +1312,7 @@ void ShowLoginWizard(OobeScreen first_screen) {
   // Chrome locale. Otherwise it will be lost if Chrome restarts.
   // Don't need to schedule pref save because setting initial local
   // will enforce preference saving.
-  prefs->SetString(prefs::kApplicationLocale, locale);
+  prefs->SetString(language::prefs::kApplicationLocale, locale);
   StartupUtils::SetInitialLocale(locale);
 
   TriggerShowLoginWizardFinish(locale, std::move(data));

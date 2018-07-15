@@ -109,6 +109,7 @@
 #include "components/account_id/account_id.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -163,7 +164,7 @@ void InitLocaleAndInputMethodsForNewUser(
     // If this is a public session and the user chose a |public_session_locale|,
     // write it to |prefs| so that the UI switches to it.
     locale = public_session_locale;
-    prefs->SetString(prefs::kApplicationLocale, locale);
+    prefs->SetString(language::prefs::kApplicationLocale, locale);
 
     // Suppress the locale change dialog.
     prefs->SetString(prefs::kApplicationLocaleAccepted, locale);
@@ -777,7 +778,7 @@ bool UserSessionManager::RespectLocalePreference(
 
   std::string pref_locale;
   const std::string pref_app_locale =
-      prefs->GetString(prefs::kApplicationLocale);
+      prefs->GetString(language::prefs::kApplicationLocale);
   const std::string pref_bkup_locale =
       prefs->GetString(prefs::kApplicationLocaleBackup);
 

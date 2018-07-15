@@ -10,6 +10,7 @@
 #include "chrome/browser/speech/speech_recognizer.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "media/audio/sounds/sounds_manager.h"
@@ -24,7 +25,7 @@ const char kDefaultProfileLocale[] = "en-US";
 
 std::string GetUserLocale(Profile* profile) {
   const std::string user_locale =
-      profile->GetPrefs()->GetString(prefs::kApplicationLocale);
+      profile->GetPrefs()->GetString(language::prefs::kApplicationLocale);
 
   return user_locale.empty() ? kDefaultProfileLocale : user_locale;
 }

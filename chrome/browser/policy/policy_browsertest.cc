@@ -126,6 +126,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/download/public/common/download_item.h"
 #include "components/infobars/core/infobar.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -1146,7 +1147,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedUILocales) {
   PrefService* prefs = profile->GetPrefs();
 
   // Set locale and preferred languages to "en-US".
-  prefs->SetString(prefs::kApplicationLocale, "en-US");
+  prefs->SetString(language::prefs::kApplicationLocale, "en-US");
   prefs->SetString(prefs::kLanguagePreferredLanguages, "en-US");
 
   // Set policy to only allow "fr" as locale.
@@ -1170,7 +1171,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedUILocales) {
   // Verifies that the default locale has been overridden by policy
   // (see |GetMandatoryPoliciesValue|)
   Browser* browser = CreateBrowser(profile);
-  EXPECT_EQ("fr", prefs->GetString(prefs::kApplicationLocale));
+  EXPECT_EQ("fr", prefs->GetString(language::prefs::kApplicationLocale));
   ui_test_utils::NavigateToURL(browser, GURL(chrome::kChromeUINewTabURL));
   base::string16 french_title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
   base::string16 title;
