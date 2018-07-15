@@ -3496,7 +3496,6 @@ crbug.com/861564 external/wpt/workers/baseurl/alpha/xhr-in-moduleworker.html [ F
 crbug.com/861564 external/wpt/workers/interfaces/WorkerGlobalScope/location/redirect-module.html [ Failure ]
 
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
-crbug.com/666703 external/wpt/html/browsers/sandboxing/sandbox-disallow-same-origin.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure Pass ]
 
 crbug.com/785940 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Failure Pass ]
