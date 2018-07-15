@@ -872,6 +872,48 @@ class GclientTest(trial_dir.TestCase):
         ],
         self._get_processed())
 
+  def testIgnoresGitDependenciesWhenFlagIsSet(self):
+    """Verifies that git deps are ignored if --ignore-dep-type git is set."""
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "https://example.com/foo",\n'
+        '    "deps_file" : ".DEPS.git",\n'
+        '  },\n'
+          ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'vars = {\n'
+        '  "lemur_version": "version:1234",\n'
+        '}\n'
+        'deps = {\n'
+        '  "bar": "/bar",\n'
+        '  "baz": {\n'
+        '    "packages": [{\n'
+        '      "package": "lemur",\n'
+        '      "version": Var("lemur_version"),\n'
+        '    }],\n'
+        '    "dep_type": "cipd",\n'
+        '  }\n'
+        '}')
+    options, _ = gclient.OptionParser().parse_args([])
+    options.ignore_dep_type = 'git'
+    options.validate_syntax = True
+    obj = gclient.GClient.LoadCurrentConfig(options)
+
+    self.assertEquals(1, len(obj.dependencies))
+    sol = obj.dependencies[0]
+    sol._condition = 'some_condition'
+
+    sol.ParseDepsFile()
+    self.assertEquals(1, len(sol.dependencies))
+    dep = sol.dependencies[0]
+
+    self.assertIsInstance(dep, gclient.CipdDependency)
+    self.assertEquals(
+        'https://chrome-infra-packages.appspot.com/lemur@version:1234',
+        dep.url)
+
   def testDepsFromNotAllowedHostsUnspecified(self):
     """Verifies gclient works fine with DEPS without allowed_hosts."""
     write(
@@ -991,7 +1033,7 @@ class GclientTest(trial_dir.TestCase):
       self._get_processed()
 
   def testCreatesCipdDependencies(self):
-    """Verifies something."""
+    """Verifies that CIPD deps are created correctly."""
     write(
         '.gclient',
         'solutions = [\n'
@@ -1029,6 +1071,46 @@ class GclientTest(trial_dir.TestCase):
     self.assertEquals(
         'https://chrome-infra-packages.appspot.com/lemur@version:1234',
         dep.url)
+
+  def testIgnoresCipdDependenciesWhenFlagIsSet(self):
+    """Verifies that CIPD deps are ignored if --ignore-dep-type cipd is set."""
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "https://example.com/foo",\n'
+        '    "deps_file" : ".DEPS.git",\n'
+        '  },\n'
+          ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'vars = {\n'
+        '  "lemur_version": "version:1234",\n'
+        '}\n'
+        'deps = {\n'
+        '  "bar": "/bar",\n'
+        '  "baz": {\n'
+        '    "packages": [{\n'
+        '      "package": "lemur",\n'
+        '      "version": Var("lemur_version"),\n'
+        '    }],\n'
+        '    "dep_type": "cipd",\n'
+        '  }\n'
+        '}')
+    options, _ = gclient.OptionParser().parse_args([])
+    options.ignore_dep_type = 'cipd'
+    options.validate_syntax = True
+    obj = gclient.GClient.LoadCurrentConfig(options)
+
+    self.assertEquals(1, len(obj.dependencies))
+    sol = obj.dependencies[0]
+    sol._condition = 'some_condition'
+
+    sol.ParseDepsFile()
+    self.assertEquals(1, len(sol.dependencies))
+    dep = sol.dependencies[0]
+
+    self.assertIsInstance(dep, gclient.GitDependency)
+    self.assertEquals('https://example.com/bar', dep.url)
 
   def testSameDirAllowMultipleCipdDeps(self):
     """Verifies gclient allow multiple cipd deps under same directory."""

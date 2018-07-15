@@ -604,6 +604,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         should_process = should_process and gclient_eval.EvaluateCondition(
             condition, self.get_vars())
 
+      # The following option is only set by the 'revinfo' command.
+      if self._get_option('ignore_dep_type', None) == dep_type:
+        continue
+
       if dep_type == 'cipd':
         cipd_root = self.GetCipdRoot()
         for package in dep_value.get('packages', []):
@@ -2711,6 +2715,8 @@ def CMDrevinfo(parser, args):
   parser.add_option('--output-json',
                     help='Output a json document to this path containing '
                          'information about the revisions.')
+  parser.add_option('--ignore-dep-type', choices=['git', 'cipd'],
+                    help='Specify to skip processing of a certain type of dep.')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
