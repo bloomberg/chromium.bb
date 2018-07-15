@@ -260,7 +260,7 @@ class HttpResponseBodyDrainerTest : public TestWithScopedTaskEnvironment {
   }
 
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
-  scoped_refptr<SSLConfigService> ssl_config_service_;
+  std::unique_ptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpServerPropertiesImpl> http_server_properties_;
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;

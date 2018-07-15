@@ -86,9 +86,9 @@ void URLRequestContextStorage::set_proxy_resolution_service(
 }
 
 void URLRequestContextStorage::set_ssl_config_service(
-    scoped_refptr<SSLConfigService> ssl_config_service) {
-  context_->set_ssl_config_service(ssl_config_service);
-  ssl_config_service_ = ssl_config_service;
+    std::unique_ptr<SSLConfigService> ssl_config_service) {
+  context_->set_ssl_config_service(ssl_config_service.get());
+  ssl_config_service_ = std::move(ssl_config_service);
 }
 
 void URLRequestContextStorage::set_http_server_properties(

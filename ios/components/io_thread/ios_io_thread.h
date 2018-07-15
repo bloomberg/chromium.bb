@@ -108,7 +108,7 @@ class IOSIOThread : public web::WebThreadDelegate {
     // pins.
     std::unique_ptr<net::TransportSecurityState> transport_security_state;
     std::unique_ptr<net::CTVerifier> cert_transparency_verifier;
-    scoped_refptr<net::SSLConfigService> ssl_config_service;
+    std::unique_ptr<net::SSLConfigService> ssl_config_service;
     std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences;
     std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
     std::unique_ptr<net::HttpServerProperties> http_server_properties;

@@ -305,7 +305,7 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
   SOCKSClientSocketPool* const socks_pool_;
   HttpProxyClientSocketPool* const http_proxy_pool_;
   PoolBase base_;
-  const scoped_refptr<SSLConfigService> ssl_config_service_;
+  SSLConfigService* const ssl_config_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientSocketPool);
 };

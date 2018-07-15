@@ -77,7 +77,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
   net::NetLog* const net_log_;
   const net::SSLClientSocketContext ssl_client_socket_context_;
   net::ClientSocketFactory* client_socket_factory_;
-  scoped_refptr<net::SSLConfigService> ssl_config_service_;
+  net::SSLConfigService* const ssl_config_service_;
   mojo::StrongBindingSet<mojom::UDPSocket> udp_socket_bindings_;
   mojo::StrongBindingSet<mojom::TCPServerSocket> tcp_server_socket_bindings_;
   mojo::StrongBindingSet<mojom::TCPConnectedSocket>

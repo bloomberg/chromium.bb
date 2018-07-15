@@ -400,7 +400,7 @@ void ChromeBrowserStateIOData::Init(
   host_content_settings_map_ = profile_params_->host_content_settings_map;
 
   main_request_context_->set_ssl_config_service(
-      io_thread_globals->ssl_config_service);
+      io_thread_globals->ssl_config_service.get());
   main_request_context_->set_cert_verifier(
       io_thread_globals->cert_verifier.get());
   main_request_context_->set_ct_policy_enforcer(

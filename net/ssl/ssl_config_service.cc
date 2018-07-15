@@ -38,6 +38,8 @@ bool SSLConfigsAreEqual(const net::SSLConfig& config1,
 SSLConfigService::SSLConfigService()
     : observer_list_(base::ObserverListPolicy::EXISTING_ONLY) {}
 
+SSLConfigService::~SSLConfigService() = default;
+
 // GlobalSSLObject holds a reference to a global SSL object, such as the
 // CRLSet. It simply wraps a lock  around a scoped_refptr so that getting a
 // reference doesn't race with updating the global object.
@@ -100,8 +102,6 @@ bool SSLConfigService::SSLConfigsAreEqualForTesting(
     const net::SSLConfig& config2) {
   return SSLConfigsAreEqual(config1, config2);
 }
-
-SSLConfigService::~SSLConfigService() = default;
 
 void SSLConfigService::ProcessConfigUpdate(const SSLConfig& old_config,
                                            const SSLConfig& new_config) {

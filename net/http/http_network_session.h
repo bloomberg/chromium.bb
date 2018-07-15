@@ -285,7 +285,7 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
   ProxyResolutionService* proxy_resolution_service() {
       return proxy_resolution_service_;
   }
-  SSLConfigService* ssl_config_service() { return ssl_config_service_.get(); }
+  SSLConfigService* ssl_config_service() { return ssl_config_service_; }
   WebSocketEndpointLockManager* websocket_endpoint_lock_manager() {
     return websocket_endpoint_lock_manager_.get();
   }
@@ -364,7 +364,7 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
   HttpAuthHandlerFactory* const http_auth_handler_factory_;
 
   ProxyResolutionService* const proxy_resolution_service_;
-  const scoped_refptr<SSLConfigService> ssl_config_service_;
+  SSLConfigService* const ssl_config_service_;
 
   HttpAuthCache http_auth_cache_;
   SSLClientAuthCache ssl_client_auth_cache_;

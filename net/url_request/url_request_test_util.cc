@@ -88,8 +88,10 @@ void TestURLRequestContext::Init() {
     context_storage_.set_ct_policy_enforcer(
         std::make_unique<DefaultCTPolicyEnforcer>());
   }
-  if (!ssl_config_service())
-    context_storage_.set_ssl_config_service(new SSLConfigServiceDefaults());
+  if (!ssl_config_service()) {
+    context_storage_.set_ssl_config_service(
+        std::make_unique<SSLConfigServiceDefaults>());
+  }
   if (!http_auth_handler_factory()) {
     context_storage_.set_http_auth_handler_factory(
         HttpAuthHandlerFactory::CreateDefault(host_resolver()));

@@ -49,7 +49,6 @@ class HttpTransactionFactory;
 class ProxyConfigService;
 class ProxyResolutionService;
 class ReportSender;
-class SSLConfigService;
 class SystemCookieStore;
 class TransportSecurityPersister;
 class TransportSecurityState;
@@ -161,7 +160,6 @@ class ChromeBrowserStateIOData {
     IOSChromeIOThread* io_thread;
     scoped_refptr<content_settings::CookieSettings> cookie_settings;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
-    scoped_refptr<net::SSLConfigService> ssl_config_service;
 
     // We need to initialize the ProxyConfigService from the UI thread
     // because on linux it relies on initializing things through gsettings,
