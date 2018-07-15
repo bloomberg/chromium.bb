@@ -3519,7 +3519,7 @@ crbug.com/655458 external/wpt/workers/semantics/run-a-worker/003.html [ Failure 
 crbug.com/655458 external/wpt/workers/constructors/Worker/AbstractWorker.onerror.html [ Failure ]
 crbug.com/655458 external/wpt/workers/interfaces/WorkerGlobalScope/onerror/exception-in-onerror.html [ Failure ]
 crbug.com/655458 external/wpt/workers/interfaces/WorkerGlobalScope/onerror/not-handled.html [ Failure ]
-crbug.com/655458 external/wpt/workers/Worker_terminate_event_queue.htm [ Timeout ]
+crbug.com/655458 external/wpt/workers/Worker_terminate_event_queue.htm [ Pass Timeout ]
 crbug.com/655458 external/wpt/workers/interfaces/WorkerUtils/navigator/language.html [ Failure ]
 crbug.com/655458 external/wpt/workers/interfaces/WorkerGlobalScope/onerror/handled.html [ Failure ]
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/interface-objects.html [ Failure ]
