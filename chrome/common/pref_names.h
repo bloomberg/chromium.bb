@@ -62,11 +62,6 @@ extern const char kURLsToRestoreOnStartup[];
 extern const char kRlzPingDelaySeconds[];
 #endif  // BUILDFLAG(ENABLE_RLZ)
 
-// The application locale.
-// DO NOT USE this locale directly: use language::ConverToActualLocale() after
-// reading it to get the system locale.
-// This pref stores the locale that the user selected, if applicable.
-extern const char kApplicationLocale[];
 // For OS_CHROMEOS we maintain the kApplicationLocale property in both local
 // state and the user's profile.  The global property determines the locale of
 // the login screen, while the user's profile determines their personal locale

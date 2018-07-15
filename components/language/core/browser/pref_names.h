@@ -11,6 +11,12 @@ namespace prefs {
 // TODO(martis): Add accept language preference here.
 extern const char kUserLanguageProfile[];
 
+// The application locale.
+// DO NOT USE this locale directly: use language::ConvertToActualUILocale()
+// after reading it to get the system locale. This pref stores the locale that
+// the user selected, if applicable.
+extern const char kApplicationLocale[];
+
 }  // namespace prefs
 }  // namespace language
 

@@ -29,6 +29,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -397,8 +398,8 @@ void WelcomeScreen::OnLanguageChangedCallback(
     // We still do not have device owner, so owner settings are not applied.
     // But Guest session can be started before owner is created, so we need to
     // save locale settings directly here.
-    g_browser_process->local_state()->SetString(prefs::kApplicationLocale,
-                                                selected_language_code_);
+    g_browser_process->local_state()->SetString(
+        language::prefs::kApplicationLocale, selected_language_code_);
   }
   ScheduleResolveLanguageList(
       std::make_unique<locale_util::LanguageSwitchResult>(result));
@@ -424,8 +425,8 @@ void WelcomeScreen::OnLanguageListResolved(
   language_list_locale_ = new_language_list_locale;
   selected_language_code_ = new_selected_language;
 
-  g_browser_process->local_state()->SetString(prefs::kApplicationLocale,
-                                              selected_language_code_);
+  g_browser_process->local_state()->SetString(
+      language::prefs::kApplicationLocale, selected_language_code_);
   if (view_)
     view_->ReloadLocalizedContent();
   for (auto& observer : observers_)

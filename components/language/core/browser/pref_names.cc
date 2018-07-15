@@ -12,5 +12,8 @@ namespace prefs {
 // understands).
 const char kUserLanguageProfile[] = "language_profile";
 
+// Important: Refer to header file for how to use this.
+const char kApplicationLocale[] = "intl.app_locale";
+
 }  // namespace prefs
 }  // namespace language

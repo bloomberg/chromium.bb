@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/common/content_switches.h"
@@ -74,7 +75,7 @@ TEST(ChromeCommandLinePrefStoreTest, SimpleStringPref) {
       new ChromeCommandLinePrefStore(&cl);
 
   const base::Value* actual = NULL;
-  EXPECT_TRUE(store->GetValue(prefs::kApplicationLocale, &actual));
+  EXPECT_TRUE(store->GetValue(language::prefs::kApplicationLocale, &actual));
   std::string result;
   EXPECT_TRUE(actual->GetAsString(&result));
   EXPECT_EQ("hi-MOM", result);

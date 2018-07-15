@@ -36,6 +36,7 @@
 #include "components/arc/common/backup_settings.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/font_size_util.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -248,7 +249,7 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
     SyncSwitchAccessEnabled();
   } else if (pref_name == ash::prefs::kAccessibilityVirtualKeyboardEnabled) {
     SyncAccessibilityVirtualKeyboardEnabled();
-  } else if (pref_name == ::prefs::kApplicationLocale ||
+  } else if (pref_name == ::language::prefs::kApplicationLocale ||
              pref_name == ::prefs::kLanguagePreferredLanguages) {
     SyncLocale();
   } else if (pref_name == ::prefs::kUse24HourClock) {
@@ -374,7 +375,7 @@ void ArcSettingsServiceImpl::SyncAppTimeSettings() {
   // to supress reduntant calls so having this little overhead simplifies common
   // implementation.
   SyncLocale();
-  AddPrefToObserve(::prefs::kApplicationLocale);
+  AddPrefToObserve(::language::prefs::kApplicationLocale);
   AddPrefToObserve(::prefs::kLanguagePreferredLanguages);
 }
 
@@ -435,7 +436,7 @@ void ArcSettingsServiceImpl::SyncPageZoom() const {
 
 void ArcSettingsServiceImpl::SyncLocale() const {
   const PrefService::Preference* pref =
-      registrar_.prefs()->FindPreference(::prefs::kApplicationLocale);
+      registrar_.prefs()->FindPreference(::language::prefs::kApplicationLocale);
   DCHECK(pref);
   std::string locale;
   bool value_exists = pref->GetValue()->GetAsString(&locale);

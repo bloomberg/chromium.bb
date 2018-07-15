@@ -33,6 +33,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -577,7 +578,8 @@ void GetLocaleAndPreferredLanguages(const Profile* profile,
                                     std::string* out_locale,
                                     std::string* out_preferred_languages) {
   const PrefService::Preference* locale_pref =
-      profile->GetPrefs()->FindPreference(::prefs::kApplicationLocale);
+      profile->GetPrefs()->FindPreference(
+          ::language::prefs::kApplicationLocale);
   DCHECK(locale_pref);
   const bool value_exists = locale_pref->GetValue()->GetAsString(out_locale);
   DCHECK(value_exists);

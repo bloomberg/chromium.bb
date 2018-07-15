@@ -108,6 +108,7 @@
 #include "components/domain_reliability/service.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/metrics/metrics_service.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
@@ -1209,9 +1210,10 @@ void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
   }
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
-  if (local_state->IsManagedPreference(prefs::kApplicationLocale))
+  if (local_state->IsManagedPreference(language::prefs::kApplicationLocale))
     return;
-  std::string pref_locale = GetPrefs()->GetString(prefs::kApplicationLocale);
+  std::string pref_locale =
+      GetPrefs()->GetString(language::prefs::kApplicationLocale);
   language::ConvertToActualUILocale(&pref_locale);
   bool do_update_pref = true;
   switch (via) {
@@ -1259,9 +1261,11 @@ void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
         //     and we may finalize initialization.
         GetPrefs()->SetString(prefs::kApplicationLocaleBackup, cur_locale);
         if (!new_locale.empty())
-          GetPrefs()->SetString(prefs::kApplicationLocale, new_locale);
+          GetPrefs()->SetString(language::prefs::kApplicationLocale,
+                                new_locale);
         else if (!backup_locale.empty())
-          GetPrefs()->SetString(prefs::kApplicationLocale, backup_locale);
+          GetPrefs()->SetString(language::prefs::kApplicationLocale,
+                                backup_locale);
         do_update_pref = false;
       }
       break;
@@ -1279,9 +1283,9 @@ void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
     }
   }
   if (do_update_pref)
-    GetPrefs()->SetString(prefs::kApplicationLocale, new_locale);
+    GetPrefs()->SetString(language::prefs::kApplicationLocale, new_locale);
   if (via != APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN)
-    local_state->SetString(prefs::kApplicationLocale, new_locale);
+    local_state->SetString(language::prefs::kApplicationLocale, new_locale);
 
   if (user_manager::UserManager::Get()->GetOwnerAccountId() ==
       chromeos::ProfileHelper::Get()->GetUserByProfile(this)->GetAccountId())

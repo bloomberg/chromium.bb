@@ -950,6 +950,7 @@ split_static_library("ui") {
     "//components/invalidation/impl",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
+    "//components/language/core/browser",
     "//components/language/core/common",
     "//components/navigation_metrics",
     "//components/net_log",
