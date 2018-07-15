@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "url/gurl.h"
@@ -25,7 +26,7 @@ constexpr char kAssistantSettingsPrefix[] = "googleassistant://settings";
 
 // TODO(dmblack): Maybe don't hard code this URL. Use a finch flag?
 constexpr char kAssistantExploreWebUrl[] =
-    "https://assistant.google.com/explore";
+    "https://assistant.google.com/explore?hl=";
 
 // TODO(dmblack): Wire up actual Assistant Reminders URL.
 constexpr char kAssistantRemindersWebUrl[] = R"(data:text/html,
@@ -116,7 +117,7 @@ base::Optional<GURL> GetWebUrl(DeepLinkType type) {
 
   switch (type) {
     case DeepLinkType::kExplore:
-      return GURL(kAssistantExploreWebUrl);
+      return GURL(kAssistantExploreWebUrl + base::i18n::GetConfiguredLocale());
     case DeepLinkType::kReminders:
       return GURL(kAssistantRemindersWebUrl);
     case DeepLinkType::kSettings:
