@@ -493,8 +493,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
       blink::WebNavigationPolicy policy);
 
   void ApplyWebPreferencesInternal(const WebPreferences& prefs,
-                                   blink::WebView* web_view,
-                                   CompositorDependencies* compositor_deps);
+                                   blink::WebView* web_view);
 
   // IPC message handlers ------------------------------------------------------
   //
