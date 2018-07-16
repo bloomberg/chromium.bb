@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_SMB_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_SMB_HANDLER_H_
 
+#include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -41,6 +42,8 @@ class SmbHandler : public ::settings::SettingsPageUIHandler {
   void HandleGatherSharesResponse(
       const std::vector<smb_client::SmbUrl>& shares_gathered);
 
+  bool host_discovery_done_ = false;
+  base::OnceClosure stored_mount_call_;
   Profile* const profile_;
   base::WeakPtrFactory<SmbHandler> weak_ptr_factory_;
 
