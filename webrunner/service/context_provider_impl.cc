@@ -17,8 +17,8 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
+#include "services/service_manager/embedder/switches.h"
 #include "webrunner/service/common.h"
-#include "webrunner/service/switches.h"
 
 namespace webrunner {
 namespace {
@@ -26,8 +26,9 @@ namespace {
 // Relaunches the current executable as a Context process.
 base::Process LaunchContextProcess(const base::LaunchOptions& launch_options) {
   base::CommandLine launch_command = *base::CommandLine::ForCurrentProcess();
-  DCHECK(!launch_command.HasSwitch(kContextProcess));
-  launch_command.AppendSwitch(kContextProcess);
+  DCHECK(!launch_command.HasSwitch(service_manager::switches::kProcessType));
+  launch_command.AppendSwitchASCII(service_manager::switches::kProcessType,
+                                   kProcessTypeWebContext);
   return base::LaunchProcess(launch_command, launch_options);
 }
 
