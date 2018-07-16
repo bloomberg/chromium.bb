@@ -2561,9 +2561,7 @@ crbug.com/704259 external/wpt/content-security-policy/reporting/reporting-api-re
 crbug.com/704259 external/wpt/content-security-policy/reporting/reporting-api-report-to-overrides-report-uri-2.https.sub.html [ Skip ]
 crbug.com/704259 external/wpt/content-security-policy/reporting/reporting-api-sends-reports-on-violation.https.sub.html [ Skip ]
 
-# These HTTP tests that started failing after a web-platform-tests import.
-crbug.com/711529 http/tests/permissions/test-api-surface.html [ Timeout ]
-crbug.com/711529 http/tests/permissions/test-query.html [ Timeout ]
+crbug.com/863896 http/tests/permissions/test-query.html [ Timeout ]
 
 # This test requires enabling the flag CustomUserTiming in a virtual test.
 crbug.com/758385 http/tests/performance-timing/custom-user-timing/po-customusertiming-mark.html [ Skip ]
