@@ -985,7 +985,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         Tab tab = getActivityTab();
         if (tab != null) getTabContentManager().cacheTabThumbnail(tab);
 
-        VrShellDelegate.maybeUnregisterVrEntryHook(this);
+        VrShellDelegate.maybeUnregisterVrEntryHook();
         markSessionEnd();
         super.onPauseWithNative();
     }
