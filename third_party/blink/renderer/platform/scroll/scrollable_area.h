@@ -113,11 +113,11 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   void MouseEnteredScrollbar(Scrollbar&);
   void MouseExitedScrollbar(Scrollbar&);
   void MouseCapturedScrollbar();
-  void MouseReleasedScrollbar(ScrollbarOrientation);
+  void MouseReleasedScrollbar();
   void ContentAreaDidShow() const;
   void ContentAreaDidHide() const;
 
-  virtual void SnapAfterScrollbarDragging(ScrollbarOrientation) {}
+  virtual void SnapAfterScrollbarScrolling(ScrollbarOrientation) {}
 
   void FinishCurrentScrollAnimations() const;
 

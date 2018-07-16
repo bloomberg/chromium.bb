@@ -484,7 +484,8 @@ void Scrollbar::MouseUp(const WebMouseEvent& mouse_event) {
 
   if (scrollable_area_) {
     if (is_captured)
-      scrollable_area_->MouseReleasedScrollbar(orientation_);
+      scrollable_area_->MouseReleasedScrollbar();
+    scrollable_area_->SnapAfterScrollbarScrolling(orientation_);
 
     ScrollbarPart part = GetTheme().HitTest(
         *this, FlooredIntPoint(mouse_event.PositionInRootFrame()));
