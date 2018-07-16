@@ -202,6 +202,7 @@ public class NewTabPageTest {
     }
 
     @Test
+    @DisabledTest(message = "https://crbug.com/813589")
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
     @DisableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
