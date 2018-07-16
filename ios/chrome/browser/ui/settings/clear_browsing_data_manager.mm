@@ -238,6 +238,8 @@ actionSheetCoordinatorWithDataTypesToRemove:
                          message:nil
                             rect:sourceRect
                             view:sourceView];
+  actionCoordinator.popoverArrowDirection =
+      UIPopoverArrowDirectionDown | UIPopoverArrowDirectionUp;
   [actionCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON)
                 action:^{
