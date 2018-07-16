@@ -723,7 +723,11 @@ void av1_inv_txfm_add_c(const tran_low_t* dqcoeff,
                         uint8_t* dst,
                         int stride,
                         const TxfmParam* txfm_param);
-#define av1_inv_txfm_add av1_inv_txfm_add_c
+void av1_inv_txfm_add_neon(const tran_low_t* dqcoeff,
+                           uint8_t* dst,
+                           int stride,
+                           const TxfmParam* txfm_param);
+#define av1_inv_txfm_add av1_inv_txfm_add_neon
 
 void av1_jnt_convolve_2d_c(const uint8_t* src,
                            int src_stride,
