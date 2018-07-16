@@ -154,29 +154,37 @@ void DrawHighlight(gfx::Canvas* canvas,
       flags);
 }
 
-// Scales |bounds| by scale and aligns so that the layout portion is snapped to
-// the pixel grid.  This ensures adjacent tabs meet up exactly during painting.
+// Scales |bounds| by scale and aligns so that adjacent tabs meet up exactly
+// during painting.
 const gfx::RectF ScaleAndAlignBounds(const gfx::Rect& bounds, float scale) {
-  // Convert full bounds to layout bounds and scale from DIP to px.
+  // Convert to layout bounds.  We must inset the width such that the right edge
+  // of one tab's layout bounds is the same as the left edge of the next tab's;
+  // this way the two tabs' separators will be drawn at the same coordinate.
   gfx::RectF aligned_bounds(bounds);
+  const int stroke_height = Tab::GetStrokeHeight();
   const int corner_radius = Tab::GetCornerRadius();
-  aligned_bounds.Inset(corner_radius, 0);
+  // Note: This intentionally doesn't subtract TABSTRIP_TOOLBAR_OVERLAP from the
+  // bottom inset, because we want to pixel-align the bottom of the stroke, not
+  // the bottom of the overlap.
+  gfx::InsetsF layout_insets(stroke_height, corner_radius, stroke_height,
+                             corner_radius + Tab::kSeparatorThickness);
+  aligned_bounds.Inset(layout_insets);
+
+  // Scale layout bounds from DIP to px.
   aligned_bounds.Scale(scale);
 
-  // Snap layout bounds to nearest pixels.
+  // Snap layout bounds to nearest pixels so we get clean lines.
   const float x = std::round(aligned_bounds.x());
   const float y = std::round(aligned_bounds.y());
   // It's important to round the right edge and not the width, since rounding
   // both x and width would mean the right edge would accumulate error.
   const float right = std::round(aligned_bounds.right());
-  // The bottom is ceiled rather than rounded to ensure it overlaps the toolbar
-  // rather than leaving a gap.
-  const float bottom = std::ceil(aligned_bounds.bottom());
+  const float bottom = std::round(aligned_bounds.bottom());
   aligned_bounds = gfx::RectF(x, y, right - x, bottom - y);
 
-  // Convert back to full bounds.  The endcap widths are not rounded, since it's
-  // OK if the corners do not snap to the pixel grid.
-  aligned_bounds.Inset(-corner_radius * scale, 0);
+  // Convert back to full bounds.  It's OK that the outer corners of the curves
+  // around the separator may not be snapped to the pixel grid as a result.
+  aligned_bounds.Inset(-layout_insets.Scale(scale));
   return aligned_bounds;
 }
 
