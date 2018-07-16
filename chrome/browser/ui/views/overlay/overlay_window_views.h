@@ -19,12 +19,6 @@ class ToggleImageButton;
 // implemented in views, which will support all desktop platforms.
 class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
  public:
-  // The list of control buttons that appear on the window.
-  enum ControlButton {
-    CONTROL_PLAY_PAUSE,
-    CONTROL_CLOSE,
-  };
-
   explicit OverlayWindowViews(
       content::PictureInPictureWindowController* controller);
   ~OverlayWindowViews() override;
@@ -48,7 +42,6 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void OnNativeWidgetWorkspaceChanged() override;
-  void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
@@ -132,10 +125,6 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   // The natural size of the video to show. This is used to compute sizing and
   // ensuring factors such as aspect ratio is maintained.
   gfx::Size natural_size_;
-
-  // The currently focused button on the window. This is used for keeping
-  // track of focus on the window while tabbing.
-  ControlButton focused_control_button_;
 
   // Views to be shown.
   std::unique_ptr<views::View> window_background_view_;
