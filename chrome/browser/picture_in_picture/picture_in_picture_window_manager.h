@@ -36,7 +36,7 @@ class PictureInPictureWindowManager {
 
  private:
   friend struct base::DefaultSingletonTraits<PictureInPictureWindowManager>;
-  class WebContentsDestroyedObserver;
+  class ContentsObserver;
 
   // Create a Picture-in-Picture window and register it in order to be closed
   // when needed.
@@ -52,7 +52,7 @@ class PictureInPictureWindowManager {
   PictureInPictureWindowManager();
   ~PictureInPictureWindowManager();
 
-  std::unique_ptr<WebContentsDestroyedObserver> destroyed_observer_;
+  std::unique_ptr<ContentsObserver> contents_observer_;
   content::PictureInPictureWindowController* pip_window_controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureWindowManager);
