@@ -53,6 +53,9 @@ class MODULES_EXPORT AXPosition final {
       const TextAffinity = TextAffinity::kDownstream);
   static const AXPosition FromPosition(const PositionWithAffinity&);
 
+  // Creates an empty position. |IsValid| will return false.
+  AXPosition();
+
   AXPosition(const AXPosition&) = default;
   AXPosition& operator=(const AXPosition&) = default;
   ~AXPosition() = default;
@@ -115,7 +118,6 @@ class MODULES_EXPORT AXPosition final {
           AXPositionAdjustmentBehavior::kMoveLeft) const;
 
  private:
-  AXPosition();
   // Only used by static Create... methods.
   explicit AXPosition(const AXObject& container);
 
@@ -141,12 +143,6 @@ class MODULES_EXPORT AXPosition final {
   uint64_t dom_tree_version_;
   uint64_t style_version_;
 #endif
-
-  // For access to our constructor for use when creating empty AX selections.
-  // There is no sense in creating empty positions in other circomstances so we
-  // disallow it.
-  friend class AXRange;
-  friend class AXSelection;
 };
 
 MODULES_EXPORT bool operator==(const AXPosition&, const AXPosition&);

@@ -24,9 +24,23 @@ class AccessibilitySelectionTest : public AccessibilityTest {
   AccessibilitySelectionTest(LocalFrameClient* local_frame_client = nullptr);
 
  protected:
+  // Gets the inner HTML of the accessibility tree and annotates it with markers
+  // indicating the anchor and focus of |selection|.
   std::string GetSelectionText(const AXSelection& selection) const;
+
+  // Gets the inner HTML of the accessibility subtree rooted at |subtree| and
+  // annotates it with markers indicating the anchor and focus of |selection|.
   std::string GetSelectionText(const AXSelection& selection,
                                const AXObject& subtree) const;
+
+  // Sets |selection_text| as inner HTML of the document body and returns the
+  // root of the accessibility tree at body.
+  AXObject* SetSelectionText(const std::string& selection_text) const;
+
+  // Sets |selection_text| as inner HTML of |element| and returns the root of
+  // the accessibility subtree at |element|.
+  AXObject* SetSelectionText(const std::string& selection_text,
+                             HTMLElement& element) const;
 };
 
 }  // namespace blink

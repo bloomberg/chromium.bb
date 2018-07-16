@@ -176,7 +176,6 @@ const AXPosition AXPosition::FromPosition(
                       position_with_affinity.Affinity());
 }
 
-// Only for use by |AXSelection| to represent empty selection ranges.
 AXPosition::AXPosition()
     : container_object_(nullptr),
       text_offset_or_child_index_(0),
