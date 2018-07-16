@@ -197,6 +197,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
       const gfx::Rect& bounds_in_pixels,
       const viz::LocalSurfaceId& local_surface_id = viz::LocalSurfaceId()) = 0;
   virtual gfx::Rect GetBoundsInPixels() const = 0;
+  virtual gfx::Size GetCompositorSizeInPixels() const;
 
   // Sets the OS capture to the root window.
   virtual void SetCapture() = 0;

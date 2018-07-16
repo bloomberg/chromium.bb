@@ -277,6 +277,10 @@ void WindowTreeHost::Hide() {
     compositor()->SetVisible(false);
 }
 
+gfx::Size WindowTreeHost::GetCompositorSizeInPixels() const {
+  return GetBoundsInPixels().size();
+}
+
 std::unique_ptr<ScopedKeyboardHook> WindowTreeHost::CaptureSystemKeyEvents(
     base::Optional<base::flat_set<ui::DomCode>> dom_codes) {
   // TODO(joedow): Remove the simple hook class/logic once this flag is removed.
@@ -359,7 +363,8 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
 
 void WindowTreeHost::InitCompositor() {
   DCHECK(!compositor_->root_layer());
-  compositor_->SetScaleAndSize(device_scale_factor_, GetBoundsInPixels().size(),
+  compositor_->SetScaleAndSize(device_scale_factor_,
+                               GetCompositorSizeInPixels(),
                                window()->GetLocalSurfaceId());
   compositor_->SetRootLayer(window()->layer());
 
