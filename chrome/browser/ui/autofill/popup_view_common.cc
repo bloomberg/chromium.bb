@@ -24,6 +24,37 @@ namespace autofill {
 
 namespace {
 
+// CalculateWidthValues below ultimately determines the maximum popup width
+// given the constraints of the window and the element's position within it.
+// Returning a struct allows callers to reuse intermediary values produced
+// during this calculation which are also relevant to positioning and sizing.
+struct WidthCalculationResults {
+  int right_growth_start;  // Popup start coordinate when growing to the right.
+  int left_growth_end;     // Popup end coordinate when growing to the left.
+  int right_available;     // Amount of space available if drawing to the right.
+  int left_available;      // Amount of space available if drawing to the left.
+  int max_popup_width;     // The max of |right_available| and |left_available|.
+};
+
+WidthCalculationResults CalculateWidthValues(int leftmost_available_x,
+                                             int rightmost_available_x,
+                                             const gfx::Rect& element_bounds) {
+  WidthCalculationResults result;
+  result.right_growth_start =
+      std::max(leftmost_available_x,
+               std::min(rightmost_available_x, element_bounds.x()));
+  result.left_growth_end =
+      std::max(leftmost_available_x,
+               std::min(rightmost_available_x, element_bounds.right()));
+
+  result.right_available = rightmost_available_x - result.right_growth_start;
+  result.left_available = result.left_growth_end - leftmost_available_x;
+
+  result.max_popup_width =
+      std::max(result.right_available, result.left_available);
+  return result;
+}
+
 // Sets the |x| and |width| components of |popup_bounds| as the x-coordinate of
 // the starting point and the width of the popup, taking into account the
 // direction it's supposed to grow (either to the left or to the right).
@@ -34,36 +65,26 @@ void CalculatePopupXAndWidth(int leftmost_available_x,
                              const gfx::Rect& element_bounds,
                              bool is_rtl,
                              gfx::Rect* popup_bounds) {
-  // Calculate the start coordinates for the popup if it is growing right or
-  // the end position if it is growing to the left, capped to screen space.
-  int right_growth_start =
-      std::max(leftmost_available_x,
-               std::min(rightmost_available_x, element_bounds.x()));
-  int left_growth_end =
-      std::max(leftmost_available_x,
-               std::min(rightmost_available_x, element_bounds.right()));
+  WidthCalculationResults result = CalculateWidthValues(
+      leftmost_available_x, rightmost_available_x, element_bounds);
 
-  int right_available = rightmost_available_x - right_growth_start;
-  int left_available = left_growth_end - leftmost_available_x;
-
-  int popup_width =
-      std::min(popup_required_width, std::max(right_available, left_available));
+  int popup_width = std::min(popup_required_width, result.max_popup_width);
 
   // Prefer to grow towards the end (right for LTR, left for RTL). But if there
   // is not enough space available in the desired direction and more space in
   // the other direction, reverse it.
   bool grow_left = false;
   if (is_rtl) {
-    grow_left =
-        left_available >= popup_width || left_available >= right_available;
+    grow_left = result.left_available >= popup_width ||
+                result.left_available >= result.right_available;
   } else {
-    grow_left =
-        right_available < popup_width && right_available < left_available;
+    grow_left = result.right_available < popup_width &&
+                result.right_available < result.left_available;
   }
 
   popup_bounds->set_width(popup_width);
-  popup_bounds->set_x(grow_left ? left_growth_end - popup_width
-                                : right_growth_start);
+  popup_bounds->set_x(grow_left ? result.left_growth_end - popup_width
+                                : result.right_growth_start);
 }
 
 // Sets the |y| and |height| components of |popup_bounds| as the y-coordinate of
@@ -169,6 +190,16 @@ gfx::Rect PopupViewCommon::GetWindowBounds(gfx::NativeView container_view) {
   // shutdown) in particular.
   return gfx::Rect();
 #endif
+}
+
+int PopupViewCommon::CalculateMaxWidth(const gfx::Rect& element_bounds,
+                                       gfx::NativeView container_view) {
+  const gfx::Rect window_bounds = GetWindowBounds(container_view);
+  int leftmost_available_x = window_bounds.x();
+  int rightmost_available_x = window_bounds.x() + window_bounds.width();
+  return CalculateWidthValues(leftmost_available_x, rightmost_available_x,
+                              element_bounds)
+      .max_popup_width;
 }
 
 }  // namespace autofill
