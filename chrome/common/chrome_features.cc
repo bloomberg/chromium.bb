@@ -539,6 +539,10 @@ const base::Feature kSiteSettings{"SiteSettings",
 const base::Feature kNativeSmb{"NativeSmb", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
+// Enables a special visual treatment for windows with a single tab.
+const base::Feature kSingleTabMode{"SingleTabMode",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the ability to use the sound content setting to mute a
 // website.
 const base::Feature kSoundContentSetting{"SoundContentSetting",

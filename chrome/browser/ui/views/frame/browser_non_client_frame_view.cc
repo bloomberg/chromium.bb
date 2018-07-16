@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -189,7 +190,8 @@ bool BrowserNonClientFrameView::IsSingleTabModeAvailable() const {
   // The special color we use won't be visible if there's a frame image, but
   // since it's used to determine constrast of other UI elements, the theme
   // color should be used instead.
-  return MD::IsRefreshUi() && ShouldPaintAsActive() && GetFrameImage().isNull();
+  return base::FeatureList::IsEnabled(features::kSingleTabMode) &&
+         MD::IsRefreshUi() && ShouldPaintAsActive() && GetFrameImage().isNull();
 }
 
 bool BrowserNonClientFrameView::ShouldPaintAsSingleTabMode() const {
