@@ -283,15 +283,16 @@
         </template>
 
         <template is="dom-if" if="[[autofillHomeEnabled]]">
-          <cr-link-row id="passwordManagerButton" start-icon="settings:vpn-key"
+          <cr-link-row id="passwordManagerButton"
+               start-icon="settings20:vpn-key"
                label="$i18n{passwords}" icon-class="subpage-arrow"
                on-click="onPasswordsTap_"></cr-link-row>
           <cr-link-row id="paymentManagerButton"
-               start-icon="settings:credit-card"
+               start-icon="settings20:credit-card"
                label="$i18n{creditCards}" icon-class="subpage-arrow"
                on-click="onAutofillTap_"></cr-link-row>
           <cr-link-row id="addressesManagerButton"
-               start-icon="settings:location-on"
+               start-icon="settings20:location-on"
                label="$i18n{addresses}" icon-class="subpage-arrow"
                on-click="onAutofillTap_"></cr-link-row>
         </template>
