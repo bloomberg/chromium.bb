@@ -282,10 +282,6 @@ bool OmniboxEditModel::CurrentTextIsURL() const {
   return !AutocompleteMatch::IsSearchType(CurrentMatch(nullptr).type);
 }
 
-AutocompleteMatch::Type OmniboxEditModel::CurrentTextType() const {
-  return CurrentMatch(nullptr).type;
-}
-
 void OmniboxEditModel::AdjustTextForCopy(int sel_min,
                                          base::string16* text,
                                          GURL* url_from_text,

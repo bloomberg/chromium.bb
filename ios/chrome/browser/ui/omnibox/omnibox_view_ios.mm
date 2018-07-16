@@ -934,9 +934,8 @@ int OmniboxViewIOS::GetIcon(bool offlinePage) const {
     return GetIconForSecurityState(
         controller()->GetToolbarModel()->GetSecurityLevel(false));
   }
-
   return GetIconForAutocompleteMatchType(
-      model() ? model()->CurrentTextType()
+      model() ? model()->CurrentMatch(nullptr).type
               : AutocompleteMatchType::URL_WHAT_YOU_TYPED,
       /* is_starred */ false, /* is_incognito */ false);
 }

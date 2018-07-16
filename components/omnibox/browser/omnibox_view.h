@@ -289,6 +289,7 @@ class OmniboxView {
 
  private:
   friend class OmniboxViewMacTest;
+  friend class TestOmniboxView;
 
   // |model_| can be NULL in tests.
   std::unique_ptr<OmniboxEditModel> model_;

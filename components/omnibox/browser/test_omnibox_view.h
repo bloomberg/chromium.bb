@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 
 struct AutocompleteMatch;
@@ -65,6 +66,7 @@ class TestOmniboxView : public OmniboxView {
   void EmphasizeURLComponents() override {}
   void SetEmphasis(bool emphasize, const gfx::Range& range) override {}
   void UpdateSchemeStyle(const gfx::Range& range) override {}
+  void SetModel(OmniboxEditModel* model);
 
  private:
   base::string16 text_;
