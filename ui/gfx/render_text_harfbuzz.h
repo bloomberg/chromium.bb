@@ -69,29 +69,55 @@ struct GFX_EXPORT TextRunHarfBuzz {
   // text-space (0 corresponds to |GetDisplayText()[0]|).
   SkScalar GetGlyphWidthForCharRange(const Range& char_range) const;
 
-  float width;
-  float preceding_run_widths;
+  // Parameters that may be common to multiple text runs within a text run
+  // list.
+  struct GFX_EXPORT CommonParams {
+    CommonParams();
+    explicit CommonParams(const Font& template_font);
+    ~CommonParams();
+    CommonParams(const CommonParams& other);
+    CommonParams& operator=(const CommonParams& other);
+
+    Font font;
+    sk_sp<SkTypeface> skia_face;
+    FontRenderParams render_params;
+    Font::Weight weight = Font::Weight::NORMAL;
+    int font_size = 0;
+    int baseline_offset = 0;
+    int baseline_type = 0;
+    bool italic = false;
+    bool strike = false;
+    bool underline = false;
+    bool heavy_underline = false;
+    bool is_rtl = false;
+    UBiDiLevel level = 0;
+    UScriptCode script = USCRIPT_INVALID_CODE;
+  };
+
+  // Parameters that are set by ShapeRunWithFont.
+  struct GFX_EXPORT ShapeOutput {
+    ShapeOutput();
+    ~ShapeOutput();
+    ShapeOutput(const ShapeOutput& other);
+    ShapeOutput& operator=(const ShapeOutput& other);
+    ShapeOutput(ShapeOutput&& other);
+    ShapeOutput& operator=(ShapeOutput&& other);
+
+    float width = 0.0;
+    float preceding_run_widths = 0.0;
+    std::vector<uint16_t> glyphs;
+    std::vector<SkPoint> positions;
+    // Note that in the context of TextRunHarfBuzz, |glyph_to_char| is indexed
+    // based off of the full string (so it is in the same domain as
+    // TextRunHarfBuzz::range).
+    std::vector<uint32_t> glyph_to_char;
+    size_t glyph_count = 0;
+  };
+
   Range range;
-  bool is_rtl;
-  UBiDiLevel level;
-  UScriptCode script;
-
-  std::vector<uint16_t> glyphs;
-  std::vector<SkPoint> positions;
-  std::vector<uint32_t> glyph_to_char;
-  size_t glyph_count;
-
-  Font font;
-  sk_sp<SkTypeface> skia_face;
-  FontRenderParams render_params;
-  int font_size;
-  int baseline_offset;
-  int baseline_type;
-  bool italic;
-  Font::Weight weight;
-  bool strike;
-  bool underline;
-  bool heavy_underline;
+  CommonParams common;
+  ShapeOutput shape;
+  float preceding_run_widths = 0.0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TextRunHarfBuzz);
