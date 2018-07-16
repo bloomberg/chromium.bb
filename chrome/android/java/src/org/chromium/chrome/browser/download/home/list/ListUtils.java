@@ -18,16 +18,18 @@ import java.lang.annotation.RetentionPolicy;
 /** Utility methods for representing {@link ListItem}s in a {@link RecyclerView} list. */
 class ListUtils {
     /** The potential types of list items that could be displayed. */
+    @IntDef({ViewType.DATE, ViewType.IN_PROGRESS, ViewType.GENERIC, ViewType.VIDEO, ViewType.IMAGE,
+            ViewType.CUSTOM_VIEW, ViewType.PREFETCH})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({DATE, IN_PROGRESS, GENERIC, VIDEO, IMAGE, CUSTOM_VIEW, PREFETCH})
-    public @interface ViewType {}
-    public static final int DATE = 0;
-    public static final int IN_PROGRESS = 1;
-    public static final int GENERIC = 2;
-    public static final int VIDEO = 3;
-    public static final int IMAGE = 4;
-    public static final int CUSTOM_VIEW = 5;
-    public static final int PREFETCH = 6;
+    public @interface ViewType {
+        int DATE = 0;
+        int IN_PROGRESS = 1;
+        int GENERIC = 2;
+        int VIDEO = 3;
+        int IMAGE = 4;
+        int CUSTOM_VIEW = 5;
+        int PREFETCH = 6;
+    }
 
     private ListUtils() {}
 
@@ -39,35 +41,35 @@ class ListUtils {
      * @see        ViewType
      */
     public static @ViewType int getViewTypeForItem(ListItem item) {
-        if (item instanceof ViewListItem) return ListUtils.CUSTOM_VIEW;
+        if (item instanceof ViewListItem) return ViewType.CUSTOM_VIEW;
         if (item instanceof DateListItem) {
             if (item instanceof OfflineItemListItem) {
                 OfflineItemListItem offlineItem = (OfflineItemListItem) item;
 
-                if (offlineItem.item.isSuggested) return ListUtils.PREFETCH;
+                if (offlineItem.item.isSuggested) return ViewType.PREFETCH;
                 if (offlineItem.item.state == OfflineItemState.IN_PROGRESS) {
-                    return ListUtils.IN_PROGRESS;
+                    return ViewType.IN_PROGRESS;
                 }
 
                 switch (offlineItem.item.filter) {
                     case OfflineItemFilter.FILTER_VIDEO:
-                        return ListUtils.VIDEO;
+                        return ViewType.VIDEO;
                     case OfflineItemFilter.FILTER_IMAGE:
-                        return ListUtils.IMAGE;
-                    case OfflineItemFilter.FILTER_PAGE:
-                    case OfflineItemFilter.FILTER_AUDIO:
-                    case OfflineItemFilter.FILTER_OTHER:
-                    case OfflineItemFilter.FILTER_DOCUMENT:
+                        return ViewType.IMAGE;
+                    // case OfflineItemFilter.FILTER_PAGE:
+                    // case OfflineItemFilter.FILTER_AUDIO:
+                    // case OfflineItemFilter.FILTER_OTHER:
+                    // case OfflineItemFilter.FILTER_DOCUMENT:
                     default:
-                        return ListUtils.GENERIC;
+                        return ViewType.GENERIC;
                 }
             } else {
-                return ListUtils.DATE;
+                return ViewType.DATE;
             }
         }
 
         assert false;
-        return ListUtils.GENERIC;
+        return ViewType.GENERIC;
     }
 
     /**
@@ -80,6 +82,6 @@ class ListUtils {
      * @see             GridLayoutManager.SpanSizeLookup
      */
     public static int getSpanSize(ListItem item, int spanCount) {
-        return getViewTypeForItem(item) == IMAGE ? 1 : spanCount;
+        return getViewTypeForItem(item) == ViewType.IMAGE ? 1 : spanCount;
     }
 }

@@ -204,7 +204,7 @@ public class DownloadHistoryAdapter
     private final List<DownloadItemView> mViews = new ArrayList<>();
 
     private BackendProvider mBackendProvider;
-    private @DownloadFilter.Type int mFilter = DownloadFilter.FILTER_ALL;
+    private @DownloadFilter.Type int mFilter = DownloadFilter.Type.ALL;
     private String mSearchQuery = EMPTY_QUERY;
     // TODO(xingliu): Remove deprecated storage info. See https://crbug/853260.
     private SpaceDisplay mSpaceDisplay;
@@ -276,22 +276,22 @@ public class DownloadHistoryAdapter
         if (list.isInitialized()) return;
         assert list.size() == 0;
 
-        int[] itemCounts = new int[DownloadFilter.FILTER_BOUNDARY];
-        int[] viewedItemCounts = new int[DownloadFilter.FILTER_BOUNDARY];
+        int[] itemCounts = new int[DownloadFilter.Type.NUM_ENTRIES];
+        int[] viewedItemCounts = new int[DownloadFilter.Type.NUM_ENTRIES];
 
         for (DownloadItem item : result) {
             DownloadItemWrapper wrapper = createDownloadItemWrapper(item);
             if (addDownloadHistoryItemWrapper(wrapper)
-                    && wrapper.isVisibleToUser(DownloadFilter.FILTER_ALL)) {
+                    && wrapper.isVisibleToUser(DownloadFilter.Type.ALL)) {
                 itemCounts[wrapper.getFilterType()]++;
 
                 if (DownloadUtils.isDownloadViewed(wrapper.getItem()))
                     viewedItemCounts[wrapper.getFilterType()]++;
-                if (!isOffTheRecord && wrapper.getFilterType() == DownloadFilter.FILTER_OTHER) {
+                if (!isOffTheRecord && wrapper.getFilterType() == DownloadFilter.Type.OTHER) {
                     RecordHistogram.recordEnumeratedHistogram(
                             "Android.DownloadManager.OtherExtensions.InitialCount",
                             wrapper.getFileExtensionType(),
-                            DownloadHistoryItemWrapper.FILE_EXTENSION_BOUNDARY);
+                            DownloadHistoryItemWrapper.FileExtension.NUM_ENTRIES);
                 }
             }
         }
@@ -760,26 +760,26 @@ public class DownloadHistoryAdapter
 
     private void recordDownloadCountHistograms(int[] itemCounts, int[] viewedItemCounts) {
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Audio",
-                itemCounts[DownloadFilter.FILTER_AUDIO]);
+                itemCounts[DownloadFilter.Type.AUDIO]);
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Document",
-                itemCounts[DownloadFilter.FILTER_DOCUMENT]);
+                itemCounts[DownloadFilter.Type.DOCUMENT]);
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Image",
-                itemCounts[DownloadFilter.FILTER_IMAGE]);
+                itemCounts[DownloadFilter.Type.IMAGE]);
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Other",
-                itemCounts[DownloadFilter.FILTER_OTHER]);
+                itemCounts[DownloadFilter.Type.OTHER]);
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Video",
-                itemCounts[DownloadFilter.FILTER_VIDEO]);
+                itemCounts[DownloadFilter.Type.VIDEO]);
 
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Viewed.Audio",
-                viewedItemCounts[DownloadFilter.FILTER_AUDIO]);
+                viewedItemCounts[DownloadFilter.Type.AUDIO]);
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Viewed.Document",
-                viewedItemCounts[DownloadFilter.FILTER_DOCUMENT]);
+                viewedItemCounts[DownloadFilter.Type.DOCUMENT]);
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Viewed.Image",
-                viewedItemCounts[DownloadFilter.FILTER_IMAGE]);
+                viewedItemCounts[DownloadFilter.Type.IMAGE]);
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Viewed.Other",
-                viewedItemCounts[DownloadFilter.FILTER_OTHER]);
+                viewedItemCounts[DownloadFilter.Type.OTHER]);
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Viewed.Video",
-                viewedItemCounts[DownloadFilter.FILTER_VIDEO]);
+                viewedItemCounts[DownloadFilter.Type.VIDEO]);
     }
 
     private void recordTotalDownloadCountHistogram() {

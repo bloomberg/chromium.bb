@@ -368,13 +368,13 @@ public class DownloadUtils {
             }
 
             if (selectedItemsFilterType != wrappedItem.getFilterType()) {
-                selectedItemsFilterType = DownloadFilter.FILTER_ALL;
+                selectedItemsFilterType = DownloadFilter.Type.ALL;
             }
-            if (wrappedItem.getFilterType() == DownloadFilter.FILTER_OTHER) {
+            if (wrappedItem.getFilterType() == DownloadFilter.Type.OTHER) {
                 RecordHistogram.recordEnumeratedHistogram(
                         "Android.DownloadManager.OtherExtensions.Share",
                         wrappedItem.getFileExtensionType(),
-                        DownloadHistoryItemWrapper.FILE_EXTENSION_BOUNDARY);
+                        DownloadHistoryItemWrapper.FileExtension.NUM_ENTRIES);
             }
 
             // If a mime type was not retrieved from the backend or could not be normalized,
@@ -639,7 +639,7 @@ public class DownloadUtils {
             return true;
         } catch (ActivityNotFoundException e) {
             // Can't launch the Intent.
-            if (source != DownloadMetrics.DOWNLOAD_PROGRESS_INFO_BAR) {
+            if (source != DownloadMetrics.DownloadOpenSource.DOWNLOAD_PROGRESS_INFO_BAR) {
                 Toast.makeText(context, context.getString(R.string.download_cant_open_file),
                              Toast.LENGTH_SHORT)
                         .show();
@@ -650,7 +650,7 @@ public class DownloadUtils {
 
     private static void recordShareHistograms(int count, int filterType) {
         RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Share.FileTypes",
-                filterType, DownloadFilter.FILTER_BOUNDARY);
+                filterType, DownloadFilter.Type.NUM_ENTRIES);
 
         RecordHistogram.recordLinearCountHistogram("Android.DownloadManager.Share.Count",
                 count, 1, 20, 20);
@@ -695,11 +695,9 @@ public class DownloadUtils {
 
         switch (progress.unit) {
             case OfflineItemProgressUnit.PERCENTAGE:
-                if (progress.isIndeterminate()) {
-                    return context.getResources().getString(R.string.download_started);
-                } else {
-                    return getPercentageString(progress.getPercentage());
-                }
+                return progress.isIndeterminate()
+                        ? context.getResources().getString(R.string.download_started)
+                        : getPercentageString(progress.getPercentage());
             case OfflineItemProgressUnit.BYTES:
                 String bytes = getStringForBytes(context, progress.value);
                 if (progress.isIndeterminate()) {
@@ -744,11 +742,9 @@ public class DownloadUtils {
      */
     public static String getTimeOrFilesLeftString(
             Context context, Progress progress, long timeRemainingInMillis) {
-        if (progress.unit == OfflineItemProgressUnit.FILES) {
-            return formatRemainingFiles(context, progress);
-        } else {
-            return formatRemainingTime(context, timeRemainingInMillis);
-        }
+        return progress.unit == OfflineItemProgressUnit.FILES
+                ? formatRemainingFiles(context, progress)
+                : formatRemainingTime(context, timeRemainingInMillis);
     }
 
     /**
@@ -758,11 +754,8 @@ public class DownloadUtils {
      */
     public static String formatRemainingFiles(Context context, Progress progress) {
         int filesLeft = (int) (progress.max - progress.value);
-        if (filesLeft == 1) {
-            return context.getResources().getString(R.string.one_file_left);
-        } else {
-            return context.getResources().getString(R.string.files_left, filesLeft);
-        }
+        return filesLeft == 1 ? context.getResources().getString(R.string.one_file_left)
+                              : context.getResources().getString(R.string.files_left, filesLeft);
     }
 
     /**
@@ -836,7 +829,7 @@ public class DownloadUtils {
             case OfflineItemState.INTERRUPTED: // intentional fall through
             case OfflineItemState.FAILED:
                 break;
-            case OfflineItemState.MAX_DOWNLOAD_STATE:
+            // case OfflineItemState.MAX_DOWNLOAD_STATE:
             default:
                 assert false : "Unexpected OfflineItemState: " + item.state;
         }
@@ -895,20 +888,21 @@ public class DownloadUtils {
      */
     public static String getFailStatusString(@FailState int failState) {
         Context context = ContextUtils.getApplicationContext();
-        if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()
-                && ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.OFFLINE_PAGES_DESCRIPTIVE_FAIL_STATUS)) {
-            switch (failState) {
-                // TODO(cmsy): Return correct status for failure reasons once strings are finalized.
-                case FailState.CANNOT_DOWNLOAD:
-                case FailState.NETWORK_INSTABILITY:
-                default:
-                    return context.getString(R.string.download_notification_failed);
-            }
-        } else {
-            return context.getString(R.string.download_notification_failed);
-        }
+
+        // TODO(cmsy): Return correct status for failure reasons once strings are finalized.
+        // if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+        //                .isStartupSuccessfullyCompleted()
+        //        && ChromeFeatureList.isEnabled(
+        //                   ChromeFeatureList.OFFLINE_PAGES_DESCRIPTIVE_FAIL_STATUS)) {
+        //    switch (failState) {
+        //        case FailState.CANNOT_DOWNLOAD:
+        //        case FailState.NETWORK_INSTABILITY:
+        //        default:
+        //          return context.getString(R.string.download_notification_failed);
+        //    }
+        // }
+
+        return context.getString(R.string.download_notification_failed);
     }
 
     /**
@@ -1048,9 +1042,7 @@ public class DownloadUtils {
     public static String getAbbreviatedFileName(String fileName, int limit) {
         assert limit >= 1;  // Abbreviated file name should at least be 1 characters (a...)
 
-        if (TextUtils.isEmpty(fileName)) return fileName;
-
-        if (fileName.length() <= limit) return fileName;
+        if (TextUtils.isEmpty(fileName) || fileName.length() <= limit) return fileName;
 
         // Find the file name extension
         int index = fileName.lastIndexOf(".");
@@ -1073,19 +1065,19 @@ public class DownloadUtils {
     public static int getIconResId(int fileType, @IconSize int iconSize) {
         // TODO(huayinz): Make image view size same as icon size so that 36dp icons can be removed.
         switch (fileType) {
-            case DownloadFilter.FILTER_PAGE:
+            case DownloadFilter.Type.PAGE:
                 return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_globe_24dp
                                                    : R.drawable.ic_globe_36dp;
-            case DownloadFilter.FILTER_VIDEO:
+            case DownloadFilter.Type.VIDEO:
                 return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_videocam_24dp
                                                    : R.drawable.ic_videocam_36dp;
-            case DownloadFilter.FILTER_AUDIO:
+            case DownloadFilter.Type.AUDIO:
                 return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_music_note_24dp
                                                    : R.drawable.ic_music_note_36dp;
-            case DownloadFilter.FILTER_IMAGE:
+            case DownloadFilter.Type.IMAGE:
                 return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_image_24dp
                                                    : R.drawable.ic_drive_image_36dp;
-            case DownloadFilter.FILTER_DOCUMENT:
+            case DownloadFilter.Type.DOCUMENT:
                 return iconSize == ICON_SIZE_24_DP ? R.drawable.ic_drive_document_24dp
                                                    : R.drawable.ic_drive_document_36dp;
             default:
@@ -1156,7 +1148,6 @@ public class DownloadUtils {
         }
         if (primaryDir == null || path == null) return false;
         String primaryPath = primaryDir.getAbsolutePath();
-        if (primaryPath == null) return false;
-        return path.contains(primaryPath);
+        return primaryPath == null ? false : path.contains(primaryPath);
     }
 }

@@ -265,12 +265,13 @@ public class SuggestionsBinder {
     private void setDownloadThumbnail() {
         assert mSuggestion.isDownload();
         if (!mSuggestion.isAssetDownload()) {
-            setThumbnailFromFileType(DownloadFilter.FILTER_PAGE);
+            setThumbnailFromFileType(DownloadFilter.Type.PAGE);
             return;
         }
 
+        @DownloadFilter.Type
         int fileType = DownloadFilter.fromMimeType(mSuggestion.getAssetDownloadMimeType());
-        if (fileType == DownloadFilter.FILTER_IMAGE) {
+        if (fileType == DownloadFilter.Type.IMAGE) {
             // For image downloads, attempt to fetch a thumbnail.
             ImageFetcher.DownloadThumbnailRequest thumbnailRequest =
                     mImageFetcher.makeDownloadThumbnailRequest(mSuggestion, mThumbnailSize);

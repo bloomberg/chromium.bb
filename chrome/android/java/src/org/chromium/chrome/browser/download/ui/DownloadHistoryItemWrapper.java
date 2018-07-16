@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.content.ComponentName;
+import android.support.annotation.IntDef;
 import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
@@ -27,6 +28,8 @@ import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.url_formatter.UrlFormatter;
 
 import java.io.File;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
@@ -34,40 +37,47 @@ import java.util.Map;
 
 /** Wraps different classes that contain information about downloads. */
 public abstract class DownloadHistoryItemWrapper extends TimedItem {
-    public static final Integer FILE_EXTENSION_OTHER = 0;
-    public static final Integer FILE_EXTENSION_APK = 1;
-    public static final Integer FILE_EXTENSION_CSV = 2;
-    public static final Integer FILE_EXTENSION_DOC = 3;
-    public static final Integer FILE_EXTENSION_DOCX = 4;
-    public static final Integer FILE_EXTENSION_EXE = 5;
-    public static final Integer FILE_EXTENSION_PDF = 6;
-    public static final Integer FILE_EXTENSION_PPT = 7;
-    public static final Integer FILE_EXTENSION_PPTX = 8;
-    public static final Integer FILE_EXTENSION_PSD = 9;
-    public static final Integer FILE_EXTENSION_RTF = 10;
-    public static final Integer FILE_EXTENSION_TXT = 11;
-    public static final Integer FILE_EXTENSION_XLS = 12;
-    public static final Integer FILE_EXTENSION_XLSX = 13;
-    public static final Integer FILE_EXTENSION_ZIP = 14;
-    public static final Integer FILE_EXTENSION_BOUNDARY = 15;
+    @IntDef({FileExtension.OTHER, FileExtension.APK, FileExtension.CSV, FileExtension.DOC,
+            FileExtension.DOCX, FileExtension.EXE, FileExtension.PDF, FileExtension.PPT,
+            FileExtension.PPTX, FileExtension.PSD, FileExtension.RTF, FileExtension.TXT,
+            FileExtension.XLS, FileExtension.XLSX, FileExtension.ZIP})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FileExtension {
+        int OTHER = 0;
+        int APK = 1;
+        int CSV = 2;
+        int DOC = 3;
+        int DOCX = 4;
+        int EXE = 5;
+        int PDF = 6;
+        int PPT = 7;
+        int PPTX = 8;
+        int PSD = 9;
+        int RTF = 10;
+        int TXT = 11;
+        int XLS = 12;
+        int XLSX = 13;
+        int ZIP = 14;
+        int NUM_ENTRIES = 15;
+    }
 
     private static final Map<String, Integer> EXTENSIONS_MAP;
     static {
         Map<String, Integer> extensions = new HashMap<>();
-        extensions.put("apk", FILE_EXTENSION_APK);
-        extensions.put("csv", FILE_EXTENSION_CSV);
-        extensions.put("doc", FILE_EXTENSION_DOC);
-        extensions.put("docx", FILE_EXTENSION_DOCX);
-        extensions.put("exe", FILE_EXTENSION_EXE);
-        extensions.put("pdf", FILE_EXTENSION_PDF);
-        extensions.put("ppt", FILE_EXTENSION_PPT);
-        extensions.put("pptx", FILE_EXTENSION_PPTX);
-        extensions.put("psd", FILE_EXTENSION_PSD);
-        extensions.put("rtf", FILE_EXTENSION_RTF);
-        extensions.put("txt", FILE_EXTENSION_TXT);
-        extensions.put("xls", FILE_EXTENSION_XLS);
-        extensions.put("xlsx", FILE_EXTENSION_XLSX);
-        extensions.put("zip", FILE_EXTENSION_ZIP);
+        extensions.put("apk", FileExtension.APK);
+        extensions.put("csv", FileExtension.CSV);
+        extensions.put("doc", FileExtension.DOC);
+        extensions.put("docx", FileExtension.DOCX);
+        extensions.put("exe", FileExtension.EXE);
+        extensions.put("pdf", FileExtension.PDF);
+        extensions.put("ppt", FileExtension.PPT);
+        extensions.put("pptx", FileExtension.PPTX);
+        extensions.put("psd", FileExtension.PSD);
+        extensions.put("rtf", FileExtension.RTF);
+        extensions.put("txt", FileExtension.TXT);
+        extensions.put("xls", FileExtension.XLS);
+        extensions.put("xlsx", FileExtension.XLSX);
+        extensions.put("zip", FileExtension.ZIP);
 
         EXTENSIONS_MAP = Collections.unmodifiableMap(extensions);
     }
@@ -107,7 +117,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     /** @return Whether this download should be shown to the user. */
     boolean isVisibleToUser(@DownloadFilter.Type int filter) {
         if (isDeletionPending()) return false;
-        return filter == getFilterType() || filter == DownloadFilter.FILTER_ALL;
+        return filter == getFilterType() || filter == DownloadFilter.Type.ALL;
     }
 
     /** Called when this download should be shared. */
@@ -234,23 +244,23 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     protected void recordOpenSuccess() {
         RecordUserAction.record("Android.DownloadManager.Item.OpenSucceeded");
         RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Item.OpenSucceeded",
-                getFilterType(), DownloadFilter.FILTER_BOUNDARY);
+                getFilterType(), DownloadFilter.Type.NUM_ENTRIES);
 
-        if (getFilterType() == DownloadFilter.FILTER_OTHER) {
+        if (getFilterType() == DownloadFilter.Type.OTHER) {
             RecordHistogram.recordEnumeratedHistogram(
-                    "Android.DownloadManager.OtherExtensions.OpenSucceeded",
-                    getFileExtensionType(), FILE_EXTENSION_BOUNDARY);
+                    "Android.DownloadManager.OtherExtensions.OpenSucceeded", getFileExtensionType(),
+                    FileExtension.NUM_ENTRIES);
         }
     }
 
     protected void recordOpenFailure() {
         RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Item.OpenFailed",
-                getFilterType(), DownloadFilter.FILTER_BOUNDARY);
+                getFilterType(), DownloadFilter.Type.NUM_ENTRIES);
 
-        if (getFilterType() == DownloadFilter.FILTER_OTHER) {
+        if (getFilterType() == DownloadFilter.Type.OTHER) {
             RecordHistogram.recordEnumeratedHistogram(
-                    "Android.DownloadManager.OtherExtensions.OpenFailed",
-                    getFileExtensionType(), FILE_EXTENSION_BOUNDARY);
+                    "Android.DownloadManager.OtherExtensions.OpenFailed", getFileExtensionType(),
+                    FileExtension.NUM_ENTRIES);
         }
     }
 
@@ -329,7 +339,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
             if (mFileExtensionType == null) {
                 int extensionIndex = getFilePath().lastIndexOf(".");
                 if (extensionIndex == -1 || extensionIndex == getFilePath().length() - 1) {
-                    mFileExtensionType = FILE_EXTENSION_OTHER;
+                    mFileExtensionType = FileExtension.OTHER;
                     return mFileExtensionType;
                 }
 
@@ -339,7 +349,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
                     mFileExtensionType = EXTENSIONS_MAP.get(
                             extension.toLowerCase(Locale.getDefault()));
                 } else {
-                    mFileExtensionType = FILE_EXTENSION_OTHER;
+                    mFileExtensionType = FileExtension.OTHER;
                 }
             }
 
@@ -361,7 +371,8 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
             if (DownloadUtils.openFile(getFile(), getMimeType(),
                         mItem.getDownloadInfo().getDownloadGuid(), isOffTheRecord(),
                         mItem.getDownloadInfo().getOriginalUrl(),
-                        mItem.getDownloadInfo().getReferrer(), DownloadMetrics.DOWNLOAD_HOME)) {
+                        mItem.getDownloadInfo().getReferrer(),
+                        DownloadMetrics.DownloadOpenSource.DOWNLOAD_HOME)) {
                 recordOpenSuccess();
                 DownloadMetrics.recordDownloadViewRetentionTime(
                         getMimeType(), getItem().getStartTime());
@@ -527,9 +538,9 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         }
 
         @Override
-        public int getFilterType() {
+        public @DownloadFilter.Type int getFilterType() {
             // TODO(shaktisahu): Make DownloadFilter unnecessary.
-            return isOfflinePage() ? DownloadFilter.FILTER_PAGE
+            return isOfflinePage() ? DownloadFilter.Type.PAGE
                                    : DownloadFilter.fromMimeType(mItem.mimeType);
         }
 
@@ -546,7 +557,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         public int getFileExtensionType() {
             // TODO(shaktisahu): Fix this.
-            return FILE_EXTENSION_OTHER;
+            return FileExtension.OTHER;
         }
 
         @Override

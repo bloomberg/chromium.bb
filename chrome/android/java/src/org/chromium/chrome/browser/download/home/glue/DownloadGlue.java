@@ -99,7 +99,7 @@ public class DownloadGlue implements DownloadObserver {
     public void openItem(OfflineItem item) {
         // TODO(shaktisahu): May be pass metrics as a param.
         DownloadManagerService.getDownloadManagerService().openDownload(
-                item.id, item.isOffTheRecord, DownloadMetrics.DOWNLOAD_HOME);
+                item.id, item.isOffTheRecord, DownloadMetrics.DownloadOpenSource.DOWNLOAD_HOME);
     }
 
     /** @see OfflineContentProvider#removeItem(ContentId) */

@@ -19,8 +19,6 @@ class FilterModel extends PropertyObservable<FilterModel.PropertyKey> {
         static final PropertyKey CONTENT_VIEW = new PropertyKey();
         static final PropertyKey SELECTED_TAB = new PropertyKey();
         static final PropertyKey CHANGE_LISTENER = new PropertyKey();
-
-        private PropertyKey() {}
     }
 
     private View mContentView;

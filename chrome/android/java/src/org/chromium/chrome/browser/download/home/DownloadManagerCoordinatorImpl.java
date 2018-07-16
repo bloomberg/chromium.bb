@@ -65,7 +65,7 @@ class DownloadManagerCoordinatorImpl implements DownloadManagerCoordinator {
 
     @Override
     public void showPrefetchSection() {
-        updateForUrl(Filters.toUrl(Filters.PREFETCHED));
+        updateForUrl(Filters.toUrl(Filters.FilterType.PREFETCHED));
     }
 
     @Override

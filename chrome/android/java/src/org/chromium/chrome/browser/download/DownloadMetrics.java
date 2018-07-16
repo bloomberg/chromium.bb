@@ -22,21 +22,24 @@ public class DownloadMetrics {
     // Tracks where the users interact with download files on Android. Used in histogram.
     // See AndroidDownloadOpenSource in enums.xml. The values used by this enum will be persisted
     // to server logs and should not be deleted, changed or reused.
+    @IntDef({DownloadOpenSource.UNKNOWN, DownloadOpenSource.ANDROID_DOWNLOAD_MANAGER,
+            DownloadOpenSource.DOWNLOAD_HOME, DownloadOpenSource.NOTIFICATION,
+            DownloadOpenSource.NEW_TAP_PAGE, DownloadOpenSource.INFO_BAR,
+            DownloadOpenSource.SNACK_BAR, DownloadOpenSource.AUTO_OPEN,
+            DownloadOpenSource.DOWNLOAD_PROGRESS_INFO_BAR})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({UNKNOWN, ANDROID_DOWNLOAD_MANAGER, DOWNLOAD_HOME, NOTIFICATION, NEW_TAP_PAGE, INFO_BAR,
-            SNACK_BAR, AUTO_OPEN, DOWNLOAD_PROGRESS_INFO_BAR, DOWNLOAD_SOURCE_BOUNDARY})
-    public @interface DownloadOpenSource {}
-
-    public static final int UNKNOWN = 0;
-    public static final int ANDROID_DOWNLOAD_MANAGER = 1;
-    public static final int DOWNLOAD_HOME = 2;
-    public static final int NOTIFICATION = 3;
-    public static final int NEW_TAP_PAGE = 4;
-    public static final int INFO_BAR = 5;
-    public static final int SNACK_BAR = 6;
-    public static final int AUTO_OPEN = 7;
-    public static final int DOWNLOAD_PROGRESS_INFO_BAR = 8;
-    private static final int DOWNLOAD_SOURCE_BOUNDARY = 9;
+    public @interface DownloadOpenSource {
+        int UNKNOWN = 0;
+        int ANDROID_DOWNLOAD_MANAGER = 1;
+        int DOWNLOAD_HOME = 2;
+        int NOTIFICATION = 3;
+        int NEW_TAP_PAGE = 4;
+        int INFO_BAR = 5;
+        int SNACK_BAR = 6;
+        int AUTO_OPEN = 7;
+        int DOWNLOAD_PROGRESS_INFO_BAR = 8;
+        int NUM_ENTRIES = 9;
+    }
 
     private static final String TAG = "DownloadMetrics";
     private static final int MAX_VIEW_RETENTION_MINUTES = 30 * 24 * 60;
@@ -52,13 +55,14 @@ public class DownloadMetrics {
             return;
         }
 
+        @DownloadFilter.Type
         int type = DownloadFilter.fromMimeType(mimeType);
-        if (type == DownloadFilter.FILTER_VIDEO) {
-            RecordHistogram.recordEnumeratedHistogram(
-                    "Android.DownloadManager.OpenSource.Video", source, DOWNLOAD_SOURCE_BOUNDARY);
-        } else if (type == DownloadFilter.FILTER_AUDIO) {
-            RecordHistogram.recordEnumeratedHistogram(
-                    "Android.DownloadManager.OpenSource.Audio", source, DOWNLOAD_SOURCE_BOUNDARY);
+        if (type == DownloadFilter.Type.VIDEO) {
+            RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.OpenSource.Video",
+                    source, DownloadOpenSource.NUM_ENTRIES);
+        } else if (type == DownloadFilter.Type.AUDIO) {
+            RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.OpenSource.Audio",
+                    source, DownloadOpenSource.NUM_ENTRIES);
         }
     }
 
@@ -74,14 +78,15 @@ public class DownloadMetrics {
             return;
         }
 
+        @DownloadFilter.Type
         int type = DownloadFilter.fromMimeType(mimeType);
         int viewRetentionTimeMinutes = (int) ((System.currentTimeMillis() - startTime) / 60000);
 
-        if (type == DownloadFilter.FILTER_VIDEO) {
+        if (type == DownloadFilter.Type.VIDEO) {
             RecordHistogram.recordCustomCountHistogram(
                     "Android.DownloadManager.ViewRetentionTime.Video", viewRetentionTimeMinutes, 1,
                     MAX_VIEW_RETENTION_MINUTES, 50);
-        } else if (type == DownloadFilter.FILTER_AUDIO) {
+        } else if (type == DownloadFilter.Type.AUDIO) {
             RecordHistogram.recordCustomCountHistogram(
                     "Android.DownloadManager.ViewRetentionTime.Audio", viewRetentionTimeMinutes, 1,
                     MAX_VIEW_RETENTION_MINUTES, 50);

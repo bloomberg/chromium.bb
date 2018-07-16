@@ -215,18 +215,19 @@ public class DownloadManagerDelegate {
                     new DownloadManager.Query().setFilterById(mDownloadItem.getSystemDownloadId()));
             if (c == null) {
                 return new DownloadQueryResult(mDownloadItem,
-                        DownloadManagerService.DOWNLOAD_STATUS_CANCELLED, 0, 0, false, 0);
+                        DownloadManagerService.DownloadStatus.CANCELLED, 0, 0, false, 0);
             }
             long bytesDownloaded = 0;
             boolean canResolve = false;
-            int downloadStatus = DownloadManagerService.DOWNLOAD_STATUS_IN_PROGRESS;
+            @DownloadManagerService.DownloadStatus
+            int downloadStatus = DownloadManagerService.DownloadStatus.IN_PROGRESS;
             int failureReason = 0;
             long lastModifiedTime = 0;
             if (c.moveToNext()) {
                 int statusIndex = c.getColumnIndex(DownloadManager.COLUMN_STATUS);
                 int status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
                 if (status == DownloadManager.STATUS_SUCCESSFUL) {
-                    downloadStatus = DownloadManagerService.DOWNLOAD_STATUS_COMPLETE;
+                    downloadStatus = DownloadManagerService.DownloadStatus.COMPLETE;
                     DownloadInfo.Builder builder = mDownloadItem.getDownloadInfo() == null
                             ? new DownloadInfo.Builder()
                             : DownloadInfo.Builder.fromDownloadInfo(
@@ -241,7 +242,7 @@ public class DownloadManagerDelegate {
                                         mContext, mDownloadItem, false);
                     }
                 } else if (status == DownloadManager.STATUS_FAILED) {
-                    downloadStatus = DownloadManagerService.DOWNLOAD_STATUS_FAILED;
+                    downloadStatus = DownloadManagerService.DownloadStatus.FAILED;
                     failureReason = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_REASON));
                 }
                 lastModifiedTime =
@@ -249,7 +250,7 @@ public class DownloadManagerDelegate {
                 bytesDownloaded =
                         c.getLong(c.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
             } else {
-                downloadStatus = DownloadManagerService.DOWNLOAD_STATUS_CANCELLED;
+                downloadStatus = DownloadManagerService.DownloadStatus.CANCELLED;
             }
             c.close();
             long totalTime = Math.max(0, lastModifiedTime - mDownloadItem.getStartTime());

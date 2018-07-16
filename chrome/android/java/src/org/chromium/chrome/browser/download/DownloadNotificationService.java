@@ -1279,7 +1279,7 @@ public class DownloadNotificationService extends Service {
         ContentId contentId = DownloadNotificationService.getContentIdFromIntent(intent);
         DownloadManagerService.openDownloadedContent(context, downloadFilename, isSupportedMimeType,
                 isOffTheRecord, contentId.id, id, originalUrl, referrer,
-                DownloadMetrics.NOTIFICATION);
+                DownloadMetrics.DownloadOpenSource.NOTIFICATION);
     }
 
     /**
@@ -1321,10 +1321,9 @@ public class DownloadNotificationService extends Service {
      * @return delegate for interactions with the entry
      */
     DownloadServiceDelegate getServiceDelegate(ContentId id) {
-        if (LegacyHelpers.isLegacyDownload(id)) {
-            return DownloadManagerService.getDownloadManagerService();
-        }
-        return OfflineContentAggregatorNotificationBridgeUiFactory.instance();
+        return LegacyHelpers.isLegacyDownload(id)
+                ? DownloadManagerService.getDownloadManagerService()
+                : OfflineContentAggregatorNotificationBridgeUiFactory.instance();
     }
 
     @VisibleForTesting

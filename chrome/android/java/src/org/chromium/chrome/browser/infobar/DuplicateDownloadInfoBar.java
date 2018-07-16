@@ -89,7 +89,7 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
                     protected void onPostExecute(Boolean fileExists) {
                         if (fileExists) {
                             DownloadUtils.openFile(file, mimeType, null, mIsIncognito, null, null,
-                                    DownloadMetrics.INFO_BAR);
+                                    DownloadMetrics.DownloadOpenSource.INFO_BAR);
                         } else {
                             DownloadManagerService.openDownloadsPage(
                                     ContextUtils.getApplicationContext());

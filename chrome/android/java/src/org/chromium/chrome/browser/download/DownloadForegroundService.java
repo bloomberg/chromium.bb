@@ -24,6 +24,9 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.AppHooks;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Keep-alive foreground service for downloads.
  */
@@ -34,15 +37,13 @@ public class DownloadForegroundService extends Service {
 
     private NotificationManager mNotificationManager;
 
-    @IntDef({
-            StopForegroundNotification.KILL, // Kill notification regardless of ability to detach.
-            StopForegroundNotification.DETACH_OR_PERSIST, // Try to detach, otherwise persist info.
-            StopForegroundNotification.DETACH_OR_ADJUST // Try detach, otherwise kill and relaunch.
-    })
+    @IntDef({StopForegroundNotification.KILL, StopForegroundNotification.DETACH_OR_PERSIST,
+            StopForegroundNotification.DETACH_OR_ADJUST})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface StopForegroundNotification {
-        int KILL = 0;
-        int DETACH_OR_PERSIST = 1;
-        int DETACH_OR_ADJUST = 2;
+        int KILL = 0; // Kill notification regardless of ability to detach.
+        int DETACH_OR_PERSIST = 1; // Try to detach, otherwise persist info.
+        int DETACH_OR_ADJUST = 2; // Try detach, otherwise kill and relaunch.
     }
 
     @Override

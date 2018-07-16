@@ -129,13 +129,13 @@ class DateOrderedListView {
             if (position < 0 || position >= mModel.size()) return;
 
             switch (ListUtils.getViewTypeForItem(mModel.get(position))) {
-                case ListUtils.IMAGE:
+                case ListUtils.ViewType.IMAGE:
                     outRect.left = mImagePaddingPx;
                     outRect.right = mImagePaddingPx;
                     outRect.top = mImagePaddingPx;
                     outRect.bottom = mImagePaddingPx;
                     break;
-                case ListUtils.PREFETCH:
+                case ListUtils.ViewType.PREFETCH:
                     outRect.left = mPrefetchHorizontalPaddingPx;
                     outRect.right = mPrefetchHorizontalPaddingPx;
                     outRect.top = mPrefetchVerticalPaddingPx / 2;
