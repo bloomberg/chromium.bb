@@ -346,11 +346,28 @@ void AddUnpositionedFloat(
     Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats,
     NGContainerFragmentBuilder* fragment_builder,
     scoped_refptr<NGUnpositionedFloat> unpositioned_float) {
+  // The same float node should not be added more than once.
+  DCHECK(
+      !RemoveUnpositionedFloat(unpositioned_floats, unpositioned_float->node));
+
   if (fragment_builder && !fragment_builder->BfcOffset()) {
     fragment_builder->AddAdjoiningFloatTypes(
         unpositioned_float->IsLeft() ? kFloatTypeLeft : kFloatTypeRight);
   }
   unpositioned_floats->push_back(std::move(unpositioned_float));
+}
+
+bool RemoveUnpositionedFloat(
+    Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats,
+    NGBlockNode float_node) {
+  for (scoped_refptr<NGUnpositionedFloat>& unpositioned_float :
+       *unpositioned_floats) {
+    if (unpositioned_float->node == float_node) {
+      unpositioned_floats->erase(&unpositioned_float);
+      return true;
+    }
+  }
+  return false;
 }
 
 NGFloatTypes ToFloatTypes(EClear clear) {

@@ -172,6 +172,7 @@ crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Fail
 
 # ====== Layout team owned tests from here ======
 
+crbug.com/591099 external/wpt/css/CSS2/floats/floats-line-wrap-shifted-001.html [ Failure ]
 crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Failure ]
 crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule3-outside-right-002.xht [ Failure ]
 crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule7-outside-left-001.xht [ Failure ]
