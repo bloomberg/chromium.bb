@@ -356,15 +356,29 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   self.delayTimer = nil;
 
   if (animate) {
-    [UIView animateWithDuration:kAnimationDuration
-        animations:^{
-          CGRect frame = self.view.frame;
-          frame.size.height = 0;
-          self.view.frame = frame;
-        }
-        completion:^(BOOL finished) {
-          [self teardownView];
-        }];
+    if (IsUIRefreshPhase1Enabled()) {
+      CGRect oldFrame = self.view.frame;
+      self.view.layer.anchorPoint = CGPointMake(0.5, 0);
+      self.view.frame = oldFrame;
+      [UIView animateWithDuration:kAnimationDuration
+          animations:^{
+            self.view.transform = CGAffineTransformMakeScale(1, 0.05);
+            self.view.alpha = 0;
+          }
+          completion:^(BOOL finished) {
+            [self teardownView];
+          }];
+    } else {
+      [UIView animateWithDuration:kAnimationDuration
+          animations:^{
+            CGRect frame = self.view.frame;
+            frame.size.height = 0;
+            self.view.frame = frame;
+          }
+          completion:^(BOOL finished) {
+            [self teardownView];
+          }];
+    }
   } else {
     [self teardownView];
   }
@@ -398,21 +412,43 @@ const NSTimeInterval kSearchShortDelay = 0.100;
                  selectText:(BOOL)selectText {
   DCHECK(IsIPadIdiom());
   [self setupViewInView:parentView];
-  UIView* view = self.view;
-  CGRect frame = view.frame;
 
   if (IsUIRefreshPhase1Enabled()) {
-    self.view.layer.cornerRadius = kFindBarCornerRadiusRegularRegular;
-
     CGFloat parentWidth = CGRectGetWidth(parentView.bounds);
     CGFloat width = MIN(parentWidth - 2 * kRegularRegularHorizontalMargin,
                         kFindBarWidthRegularRegular);
 
-    LayoutRect layoutRect =
-        LayoutRectMake(parentWidth - width - kRegularRegularHorizontalMargin,
-                       parentWidth, targetFrame.origin.y, width, 0);
-    frame = LayoutRectGetRect(layoutRect);
+    LayoutRect layoutRect = LayoutRectMake(
+        parentWidth - width - kRegularRegularHorizontalMargin, parentWidth,
+        targetFrame.origin.y, width, [self findBarHeight]);
+
+    self.view.frame = LayoutRectGetRect(layoutRect);
+    [parentView addSubview:self.view];
+
+    if (animate) {
+      self.view.layer.anchorPoint = CGPointMake(0.5, 0);
+      self.view.frame = LayoutRectGetRect(layoutRect);
+      self.view.transform = CGAffineTransformMakeScale(1, 0.05);
+      self.view.alpha = 0;
+
+      [UIView animateWithDuration:kAnimationDuration
+          animations:^{
+            self.view.transform = CGAffineTransformIdentity;
+            self.view.alpha = 1;
+          }
+          completion:^(BOOL finished) {
+            if (selectText)
+              [self selectAllText];
+            CGRect oldFrame = self.view.frame;
+            self.view.layer.anchorPoint = CGPointMake(0.5, 0.5);
+            self.view.frame = oldFrame;
+          }];
+    } else if (selectText) {
+      [self selectAllText];
+    }
   } else {
+    UIView* view = self.view;
+    CGRect frame = view.frame;
     frame.origin.y = targetFrame.origin.y;
     frame.size.height = 0;
     frame.size.width =
@@ -448,22 +484,22 @@ const NSTimeInterval kSearchShortDelay = 0.100;
         frame.size.width = containerWidth;
       }
     }
+
+    view.frame = frame;
+    [parentView addSubview:view];
+
+    CGFloat duration = (animate) ? kAnimationDuration : 0;
+    [UIView animateWithDuration:duration
+        animations:^{
+          CGRect frame = view.frame;
+          frame.size.height = [self findBarHeight];
+          view.frame = frame;
+        }
+        completion:^(BOOL finished) {
+          if (selectText)
+            [self selectAllText];
+        }];
   }
-
-  view.frame = frame;
-  [parentView addSubview:view];
-
-  CGFloat duration = (animate) ? kAnimationDuration : 0;
-  [UIView animateWithDuration:duration
-      animations:^{
-        CGRect frame = view.frame;
-        frame.size.height = [self findBarHeight];
-        view.frame = frame;
-      }
-      completion:^(BOOL finished) {
-        if (selectText)
-          [self selectAllText];
-      }];
 }
 
 // Animate find bar over iPhone toolbar.
