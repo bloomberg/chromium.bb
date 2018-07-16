@@ -113,10 +113,12 @@ void SyncedBookmarkTracker::Add(const std::string& sync_id,
   sync_id_to_entities_map_[sync_id] = std::move(entity);
 }
 
-void SyncedBookmarkTracker::Update(const std::string& sync_id,
-                                   int64_t server_version,
-                                   base::Time modification_time,
-                                   const sync_pb::EntitySpecifics& specifics) {
+void SyncedBookmarkTracker::Update(
+    const std::string& sync_id,
+    int64_t server_version,
+    base::Time modification_time,
+    const sync_pb::UniquePosition& unique_position,
+    const sync_pb::EntitySpecifics& specifics) {
   DCHECK_GT(specifics.ByteSize(), 0);
   auto it = sync_id_to_entities_map_.find(sync_id);
   Entity* entity = it->second.get();
@@ -125,6 +127,7 @@ void SyncedBookmarkTracker::Update(const std::string& sync_id,
   entity->metadata()->set_server_version(server_version);
   entity->metadata()->set_modification_time(
       syncer::TimeToProtoTime(modification_time));
+  *entity->metadata()->mutable_unique_position() = unique_position;
   HashSpecifics(specifics, entity->metadata()->mutable_specifics_hash());
 }
 

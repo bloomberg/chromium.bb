@@ -262,6 +262,7 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteUpdate(
   if (tracked_entity->MatchesData(update_entity)) {
     bookmark_tracker_->Update(update_entity.id, update.response_version,
                               update_entity.modification_time,
+                              update_entity.unique_position,
                               update_entity.specifics);
     return;
   }
@@ -284,6 +285,7 @@ void BookmarkRemoteUpdatesHandler::ProcessRemoteUpdate(
   bookmark_model_->SetNodeMetaInfoMap(node, GetBookmarkMetaInfo(update_entity));
   bookmark_tracker_->Update(update_entity.id, update.response_version,
                             update_entity.modification_time,
+                            update_entity.unique_position,
                             update_entity.specifics);
   // TODO(crbug.com/516866): Handle reparenting.
   // TODO(crbug.com/516866): Handle the case of moving the bookmark to a new

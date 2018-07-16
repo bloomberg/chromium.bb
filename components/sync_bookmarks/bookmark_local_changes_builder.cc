@@ -29,12 +29,13 @@ sync_pb::EntitySpecifics SpecificsFromBookmarkNode(
 
   bm_specifics->set_icon_url(node->icon_url() ? node->icon_url()->spec()
                                               : std::string());
-
-  for (const std::pair<std::string, std::string>& pair :
-       *node->GetMetaInfoMap()) {
-    sync_pb::MetaInfo* meta_info = bm_specifics->add_meta_info();
-    meta_info->set_key(pair.first);
-    meta_info->set_value(pair.second);
+  if (node->GetMetaInfoMap()) {
+    for (const std::pair<std::string, std::string>& pair :
+         *node->GetMetaInfoMap()) {
+      sync_pb::MetaInfo* meta_info = bm_specifics->add_meta_info();
+      meta_info->set_key(pair.first);
+      meta_info->set_value(pair.second);
+    }
   }
   return specifics;
 }
@@ -86,9 +87,9 @@ BookmarkLocalChangesBuilder::BuildCommitRequests(size_t max_entries) const {
       // implementation.
       // https://cs.chromium.org/chromium/src/components/sync/syncable/write_node.cc?l=41&rcl=1675007db1e0eb03417e81442688bb11cd181f58
       data.non_unique_name = base::UTF16ToUTF8(node->GetTitle());
-      data.unique_position = parent_entity->metadata()->unique_position();
-      // In case of deletion, make an EntityData with empty specifics to
-      // indicate deletion.
+      data.unique_position = metadata->unique_position();
+      // Assign specifics only for the non-deletion case. In case of deletion,
+      // EntityData should contain empty specifics to indicate deletion.
       data.specifics = SpecificsFromBookmarkNode(node);
     }
     request.entity = data.PassToPtr();

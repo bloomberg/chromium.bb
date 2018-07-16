@@ -79,7 +79,29 @@ void BookmarkModelObserverImpl::BookmarkNodeMoved(
     int old_index,
     const bookmarks::BookmarkNode* new_parent,
     int new_index) {
-  NOTIMPLEMENTED();
+  const bookmarks::BookmarkNode* node = new_parent->GetChild(new_index);
+
+  // We shouldn't see changes to the top-level nodes.
+  DCHECK(!model->is_permanent_node(node));
+  // TODO(crbug.com/516866): continue only if
+  // model->client()->CanSyncNode(node).
+  const SyncedBookmarkTracker::Entity* entity =
+      bookmark_tracker_->GetEntityForBookmarkNode(node);
+  DCHECK(entity);
+
+  const std::string& sync_id = entity->metadata()->server_id();
+  const base::Time modification_time = base::Time::Now();
+
+  const sync_pb::UniquePosition unique_position =
+      ComputePosition(*new_parent, new_index, sync_id).ToProto();
+
+  sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(node);
+
+  bookmark_tracker_->Update(sync_id, entity->metadata()->server_version(),
+                            modification_time, unique_position, specifics);
+  // Mark the entity that it needs to be committed.
+  bookmark_tracker_->IncrementSequenceNumber(sync_id);
+  nudge_for_commit_closure_.Run();
 }
 
 void BookmarkModelObserverImpl::BookmarkNodeAdded(
@@ -147,7 +169,8 @@ void BookmarkModelObserverImpl::BookmarkNodeChanged(
   sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(node);
 
   bookmark_tracker_->Update(sync_id, entity->metadata()->server_version(),
-                            modification_time, specifics);
+                            modification_time,
+                            entity->metadata()->unique_position(), specifics);
   // Mark the entity that it needs to be committed.
   bookmark_tracker_->IncrementSequenceNumber(sync_id);
   nudge_for_commit_closure_.Run();
@@ -168,7 +191,51 @@ void BookmarkModelObserverImpl::BookmarkNodeFaviconChanged(
 void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* node) {
-  NOTIMPLEMENTED();
+  // TODO(crbug.com/516866): continue only if
+  // model->client()->CanSyncNode(node).
+
+  // The given node's children got reordered. We need to reorder all the
+  // corresponding sync node.
+
+  // TODO(crbug/com/516866): Make sure that single-move case doesn't produce
+  // unnecessary updates. One approach would be something like:
+  // 1. Find a subsequence of elements in the beginning of the vector that is
+  //    already sorted.
+  // 2. The same for the end.
+  // 3. If the two overlap, adjust so they don't.
+  // 4. Sort the middle, using Between (e.g. recursive implementation).
+
+  syncer::UniquePosition position;
+  syncer::UniquePosition previous_position;
+  for (int i = 0; i < node->child_count(); ++i) {
+    const bookmarks::BookmarkNode* child = node->GetChild(i);
+
+    const SyncedBookmarkTracker::Entity* entity =
+        bookmark_tracker_->GetEntityForBookmarkNode(child);
+    DCHECK(entity);
+
+    const std::string& sync_id = entity->metadata()->server_id();
+    const std::string suffix = syncer::GenerateSyncableBookmarkHash(
+        bookmark_tracker_->model_type_state().cache_guid(), sync_id);
+    const base::Time modification_time = base::Time::Now();
+
+    if (i == 0) {
+      position = syncer::UniquePosition::InitialPosition(suffix);
+    } else {
+      position = syncer::UniquePosition::After(previous_position, suffix);
+    }
+
+    previous_position = position;
+
+    const sync_pb::EntitySpecifics specifics =
+        CreateSpecificsFromBookmarkNode(node);
+
+    bookmark_tracker_->Update(sync_id, entity->metadata()->server_version(),
+                              modification_time, position.ToProto(), specifics);
+    // Mark the entity that it needs to be committed.
+    bookmark_tracker_->IncrementSequenceNumber(sync_id);
+  }
+  nudge_for_commit_closure_.Run();
 }
 
 syncer::UniquePosition BookmarkModelObserverImpl::ComputePosition(
