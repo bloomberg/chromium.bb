@@ -29,6 +29,10 @@
                                      title:(NSString*)title
                                    message:(NSString*)message NS_UNAVAILABLE;
 
+// Configures the underlying UIAlertController's popover arrow direction.
+// Default is UIPopoverArrowDirectionAny.
+@property(nonatomic, assign) UIPopoverArrowDirection popoverArrowDirection;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_ALERT_COORDINATOR_ACTION_SHEET_COORDINATOR_H_
