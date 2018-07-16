@@ -734,8 +734,8 @@ class CORE_EXPORT LocalFrameView final
   template <typename Function>
   void ForAllNonThrottledLocalFrameViews(const Function&);
 
-  void UpdateViewportIntersectionsForSubtree() override;
-  void UpdateThrottlingStatusForSubtree();
+  void UpdateViewportIntersectionsForSubtree(
+      DocumentLifecycle::LifecycleState) override;
 
   void NotifyResizeObservers();
 

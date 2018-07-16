@@ -56,7 +56,8 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   void Show() override;
   void SetParentVisible(bool) override;
 
-  void UpdateViewportIntersectionsForSubtree() override;
+  void UpdateViewportIntersectionsForSubtree(
+      DocumentLifecycle::LifecycleState) override;
 
   bool GetIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
 
