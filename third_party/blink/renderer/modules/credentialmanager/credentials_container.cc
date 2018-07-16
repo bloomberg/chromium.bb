@@ -42,10 +42,10 @@ namespace blink {
 
 namespace {
 
-using ::password_manager::mojom::blink::CredentialManagerError;
-using ::password_manager::mojom::blink::CredentialInfo;
-using ::password_manager::mojom::blink::CredentialInfoPtr;
-using ::password_manager::mojom::blink::CredentialMediationRequirement;
+using ::blink::mojom::blink::CredentialManagerError;
+using ::blink::mojom::blink::CredentialInfo;
+using ::blink::mojom::blink::CredentialInfoPtr;
+using ::blink::mojom::blink::CredentialMediationRequirement;
 using ::webauth::mojom::blink::AuthenticatorStatus;
 using MojoPublicKeyCredentialCreationOptions =
     ::webauth::mojom::blink::PublicKeyCredentialCreationOptions;
