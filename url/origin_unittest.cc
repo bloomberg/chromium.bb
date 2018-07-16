@@ -45,6 +45,7 @@ TEST(OriginTest, UniqueOriginComparison) {
 
   const char* const urls[] = {"data:text/html,Hello!",
                               "javascript:alert(1)",
+                              "about:blank",
                               "file://example.com:443/etc/passwd",
                               "yay",
                               "http::///invalid.example.com/"};
