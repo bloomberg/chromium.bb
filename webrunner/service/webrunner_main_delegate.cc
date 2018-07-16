@@ -12,6 +12,8 @@
 #include "webrunner/browser/webrunner_browser_main.h"
 #include "webrunner/browser/webrunner_content_browser_client.h"
 #include "webrunner/common/webrunner_content_client.h"
+#include "webrunner/service/common.h"
+#include "webrunner/service/context_provider_main.h"
 
 namespace webrunner {
 
@@ -64,10 +66,13 @@ void WebRunnerMainDelegate::PreSandboxStartup() {
 int WebRunnerMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
+  if (process_type == kProcessTypeWebContext)
+    return WebRunnerBrowserMain(main_function_params);
+
   if (!process_type.empty())
     return -1;
 
-  return WebRunnerBrowserMain(main_function_params);
+  return ContextProviderMain();
 }
 
 content::ContentBrowserClient*

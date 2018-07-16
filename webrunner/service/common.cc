@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webrunner/service/switches.h"
+#include "webrunner/service/common.h"
 
 namespace webrunner {
 
-const char kContextProcess[] = "context-process";
+constexpr const char kProcessTypeWebContext[] = "web-context";
 
 }  // namespace webrunner

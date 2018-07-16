@@ -9,7 +9,11 @@
 
 namespace webrunner {
 
-const uint32_t kContextRequestHandleId = PA_HND(PA_USER0, 0);
+constexpr uint32_t kContextRequestHandleId = PA_HND(PA_USER0, 0);
+
+// Process type value used for the web::Context process. It is equivalent to
+// the main browser process in chrome.
+extern const char kProcessTypeWebContext[];
 
 }  // namespace webrunner
 

@@ -81,6 +81,7 @@ component("service_lib") {
     "//content/public/common",
     "//content/public/renderer",
     "//services/network/public/cpp",
+    "//services/service_manager/embedder:embedder_switches",
     "//ui/display",
   ]
 
@@ -113,14 +114,16 @@ component("service_lib") {
     "common/webrunner_content_client.cc",
     "common/webrunner_content_client.h",
     "common/webrunner_export.h",
+    "service/common.cc",
+    "service/common.h",
     "service/context_impl.cc",
     "service/context_impl.h",
     "service/context_provider_impl.cc",
     "service/context_provider_impl.h",
+    "service/context_provider_main.cc",
+    "service/context_provider_main.h",
     "service/frame_impl.cc",
     "service/frame_impl.h",
-    "service/switches.cc",
-    "service/switches.h",
     "service/webrunner_main_delegate.cc",
     "service/webrunner_main_delegate.h",
   ]
