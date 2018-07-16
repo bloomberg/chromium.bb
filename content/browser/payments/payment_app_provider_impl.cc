@@ -575,13 +575,15 @@ bool PaymentAppProviderImpl::IsValidInstallablePaymentApp(
   DCHECK(manifest_url.is_valid() && sw_js_url.is_valid() &&
          sw_scope.is_valid());
 
-  // TODO(crbug.com/853924): Unify duplicated code between here and
-  // ServiceWorkerProviderHost::IsValidRegisterMessage.
-  if (ServiceWorkerUtils::ContainsDisallowedCharacter(sw_js_url, sw_scope,
-                                                      error_message)) {
+  // Scope will be checked against service worker js url when registering, but
+  // we check it here earlier to avoid presenting unusable payment handlers.
+  if (!ServiceWorkerUtils::IsPathRestrictionSatisfiedWithoutHeader(
+          sw_scope, sw_js_url, error_message)) {
     return false;
   }
 
+  // TODO(crbug.com/855312): Unify duplicated code between here and
+  // ServiceWorkerProviderHost::IsValidRegisterMessage.
   std::vector<GURL> urls = {manifest_url, sw_js_url, sw_scope};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
     *error_message =

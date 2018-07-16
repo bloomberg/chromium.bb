@@ -39,6 +39,13 @@ class ServiceWorkerUtils {
       const std::string* service_worker_allowed_header_value,
       std::string* error_message);
 
+  // Same as above IsPathRestrictionSatisfied, but without considering
+  // 'Service-Worker-Allowed' header.
+  CONTENT_EXPORT static bool IsPathRestrictionSatisfiedWithoutHeader(
+      const GURL& scope,
+      const GURL& script_url,
+      std::string* error_message);
+
   static bool ContainsDisallowedCharacter(const GURL& scope,
                                           const GURL& script_url,
                                           std::string* error_message);
@@ -74,6 +81,14 @@ class ServiceWorkerUtils {
   static bool ShouldBypassCacheDueToUpdateViaCache(
       bool is_main_script,
       blink::mojom::ServiceWorkerUpdateViaCache cache_mode);
+
+ private:
+  static bool IsPathRestrictionSatisfiedInternal(
+      const GURL& scope,
+      const GURL& script_url,
+      bool service_worker_allowed_header_supported,
+      const std::string* service_worker_allowed_header_value,
+      std::string* error_message);
 };
 
 class CONTENT_EXPORT LongestScopeMatcher {

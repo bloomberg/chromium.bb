@@ -53,6 +53,27 @@ bool ServiceWorkerUtils::IsPathRestrictionSatisfied(
     const GURL& script_url,
     const std::string* service_worker_allowed_header_value,
     std::string* error_message) {
+  return IsPathRestrictionSatisfiedInternal(scope, script_url, true,
+                                            service_worker_allowed_header_value,
+                                            error_message);
+}
+
+// static
+bool ServiceWorkerUtils::IsPathRestrictionSatisfiedWithoutHeader(
+    const GURL& scope,
+    const GURL& script_url,
+    std::string* error_message) {
+  return IsPathRestrictionSatisfiedInternal(scope, script_url, false, nullptr,
+                                            error_message);
+}
+
+// static
+bool ServiceWorkerUtils::IsPathRestrictionSatisfiedInternal(
+    const GURL& scope,
+    const GURL& script_url,
+    bool service_worker_allowed_header_supported,
+    const std::string* service_worker_allowed_header_value,
+    std::string* error_message) {
   DCHECK(scope.is_valid());
   DCHECK(!scope.has_ref());
   DCHECK(script_url.is_valid());
@@ -63,7 +84,8 @@ bool ServiceWorkerUtils::IsPathRestrictionSatisfied(
     return false;
 
   std::string max_scope_string;
-  if (service_worker_allowed_header_value) {
+  if (service_worker_allowed_header_value &&
+      service_worker_allowed_header_supported) {
     GURL max_scope = script_url.Resolve(*service_worker_allowed_header_value);
     if (!max_scope.is_valid()) {
       *error_message = "An invalid Service-Worker-Allowed header value ('";
@@ -82,13 +104,19 @@ bool ServiceWorkerUtils::IsPathRestrictionSatisfied(
     *error_message = "The path of the provided scope ('";
     error_message->append(scope_string);
     error_message->append("') is not under the max scope allowed (");
-    if (service_worker_allowed_header_value)
+    if (service_worker_allowed_header_value &&
+        service_worker_allowed_header_supported)
       error_message->append("set by Service-Worker-Allowed: ");
     error_message->append("'");
     error_message->append(max_scope_string);
-    error_message->append(
-        "'). Adjust the scope, move the Service Worker script, or use the "
-        "Service-Worker-Allowed HTTP header to allow the scope.");
+    if (service_worker_allowed_header_supported) {
+      error_message->append(
+          "'). Adjust the scope, move the Service Worker script, or use the "
+          "Service-Worker-Allowed HTTP header to allow the scope.");
+    } else {
+      error_message->append(
+          "'). Adjust the scope or move the Service Worker script.");
+    }
     return false;
   }
   return true;
