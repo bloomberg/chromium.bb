@@ -68,10 +68,6 @@ jumbo_source_set("utility") {
       "//media/mojo/services",
     ]
   }
-
-  if (is_linux) {
-    deps += [ "//components/services/font:lib" ]
-  }
 }
 
 # See comment at the top of //content/BUILD.gn for how this works.

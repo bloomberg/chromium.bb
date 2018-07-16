@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/services/font",
   "+content/child",
   "+content/public/utility",
   "+services/audio",
