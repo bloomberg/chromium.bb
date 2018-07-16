@@ -1202,21 +1202,6 @@
       'Win10 Tests x64 (dbg)',
     ],
   },
-  'traffic_annotation_auditor_unittests': {
-    'modifications': {
-      'Linux Tests': {
-        # Unclear why this isn't swarmed.
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
-    },
-    'remove_from': [
-      # On chromium.linux, unclear why these only run on "Linux Tests".
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-    ],
-  },
   'unit_tests': {
     'remove_from': [
       # On chromium.linux, unclear why these aren't run on Cast.
