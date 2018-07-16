@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/content/view_impl.h"
+#include "services/content/navigable_contents_impl.h"
 
 #include "base/bind.h"
+#include "services/content/navigable_contents_delegate.h"
 #include "services/content/public/cpp/buildflags.h"
 #include "services/content/service.h"
 #include "services/content/service_delegate.h"
-#include "services/content/view_delegate.h"
 
 #if BUILDFLAG(ENABLE_AURA_CONTENT_VIEW_EMBEDDING)
 #include "ui/aura/window.h"                                 // nogncheck
@@ -17,17 +17,19 @@
 
 namespace content {
 
-ViewImpl::ViewImpl(Service* service,
-                   mojom::ViewParamsPtr params,
-                   mojom::ViewRequest request,
-                   mojom::ViewClientPtr client)
+NavigableContentsImpl::NavigableContentsImpl(
+    Service* service,
+    mojom::NavigableContentsParamsPtr params,
+    mojom::NavigableContentsRequest request,
+    mojom::NavigableContentsClientPtr client)
     : service_(service),
       binding_(this, std::move(request)),
       client_(std::move(client)),
-      delegate_(service_->delegate()->CreateViewDelegate(client_.get())),
+      delegate_(
+          service_->delegate()->CreateNavigableContentsDelegate(client_.get())),
       native_content_view_(delegate_->GetNativeView()) {
   binding_.set_connection_error_handler(base::BindRepeating(
-      &Service::RemoveView, base::Unretained(service_), this));
+      &Service::RemoveNavigableContents, base::Unretained(service_), this));
 
 #if BUILDFLAG(ENABLE_AURA_CONTENT_VIEW_EMBEDDING)
   if (native_content_view_) {
@@ -38,14 +40,22 @@ ViewImpl::ViewImpl(Service* service,
 #endif
 }
 
-ViewImpl::~ViewImpl() = default;
+NavigableContentsImpl::~NavigableContentsImpl() = default;
 
-void ViewImpl::PrepareToEmbed(PrepareToEmbedCallback callback) {
+void NavigableContentsImpl::Navigate(const GURL& url) {
+  // Ignore non-HTTP/HTTPS requests for now.
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return;
+
+  delegate_->Navigate(url);
+}
+
+void NavigableContentsImpl::CreateView(CreateViewCallback callback) {
 #if BUILDFLAG(ENABLE_AURA_CONTENT_VIEW_EMBEDDING)
   if (remote_view_provider_) {
     remote_view_provider_->GetEmbedToken(
-        base::BindOnce(&ViewImpl::OnEmbedTokenReceived, base::Unretained(this),
-                       std::move(callback)));
+        base::BindOnce(&NavigableContentsImpl::OnEmbedTokenReceived,
+                       base::Unretained(this), std::move(callback)));
     return;
   }
 #endif
@@ -54,16 +64,9 @@ void ViewImpl::PrepareToEmbed(PrepareToEmbedCallback callback) {
   std::move(callback).Run(base::UnguessableToken::Create());
 }
 
-void ViewImpl::Navigate(const GURL& url) {
-  // Ignore non-HTTP/HTTPS requests for now.
-  if (!url.SchemeIsHTTPOrHTTPS())
-    return;
-
-  delegate_->Navigate(url);
-}
-
-void ViewImpl::OnEmbedTokenReceived(PrepareToEmbedCallback callback,
-                                    const base::UnguessableToken& token) {
+void NavigableContentsImpl::OnEmbedTokenReceived(
+    CreateViewCallback callback,
+    const base::UnguessableToken& token) {
 #if BUILDFLAG(ENABLE_AURA_CONTENT_VIEW_EMBEDDING)
   if (native_content_view_)
     native_content_view_->Show();

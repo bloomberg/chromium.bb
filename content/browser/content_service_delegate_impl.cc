@@ -7,29 +7,32 @@
 #include "base/macros.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "services/content/navigable_contents_delegate.h"
 #include "services/content/service.h"
-#include "services/content/view_delegate.h"
 
 namespace content {
 
 namespace {
 
-// Bridge between Content Service view delegation API and a WebContentsImpl.
-class ViewDelegateImpl : public content::ViewDelegate,
-                         public WebContentsObserver {
+// Bridge between Content Service navigable contents delegation API and a
+// WebContentsImpl.
+class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
+                                      public WebContentsObserver {
  public:
-  explicit ViewDelegateImpl(BrowserContext* browser_context,
-                            mojom::ViewClient* client)
+  explicit NavigableContentsDelegateImpl(BrowserContext* browser_context,
+                                         mojom::NavigableContentsClient* client)
       : client_(client) {
     WebContents::CreateParams params(browser_context);
     web_contents_ = WebContents::Create(params);
     WebContentsObserver::Observe(web_contents_.get());
   }
 
-  ~ViewDelegateImpl() override { WebContentsObserver::Observe(nullptr); }
+  ~NavigableContentsDelegateImpl() override {
+    WebContentsObserver::Observe(nullptr);
+  }
 
  private:
-  // content::ViewDelegate:
+  // content::NavigableContentsDelegate:
   gfx::NativeView GetNativeView() override {
     return web_contents_->GetNativeView();
   }
@@ -44,9 +47,9 @@ class ViewDelegateImpl : public content::ViewDelegate,
   void DidStopLoading() override { client_->DidStopLoading(); }
 
   std::unique_ptr<WebContents> web_contents_;
-  mojom::ViewClient* const client_;
+  mojom::NavigableContentsClient* const client_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(NavigableContentsDelegateImpl);
 };
 
 }  // namespace
@@ -77,9 +80,11 @@ void ContentServiceDelegateImpl::WillDestroyServiceInstance(
   service_instances_.erase(service);
 }
 
-std::unique_ptr<content::ViewDelegate>
-ContentServiceDelegateImpl::CreateViewDelegate(mojom::ViewClient* client) {
-  return std::make_unique<ViewDelegateImpl>(browser_context_, client);
+std::unique_ptr<content::NavigableContentsDelegate>
+ContentServiceDelegateImpl::CreateNavigableContentsDelegate(
+    mojom::NavigableContentsClient* client) {
+  return std::make_unique<NavigableContentsDelegateImpl>(browser_context_,
+                                                         client);
 }
 
 }  // namespace content

@@ -13,8 +13,8 @@ mojom_component("mojom") {
 
   sources = [
     "constants.mojom",
-    "view.mojom",
-    "view_factory.mojom",
+    "navigable_contents.mojom",
+    "navigable_contents_factory.mojom",
   ]
 
   public_deps = [

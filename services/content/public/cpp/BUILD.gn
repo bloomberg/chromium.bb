@@ -15,11 +15,11 @@ component("cpp") {
   output_name = "content_service_cpp"
 
   public = [
-    "view.h",
+    "navigable_contents.h",
   ]
 
   sources = [
-    "view.cc",
+    "navigable_contents.cc",
   ]
 
   defines = [ "IS_CONTENT_SERVICE_CPP_IMPL" ]

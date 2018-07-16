@@ -85,7 +85,7 @@
           "testing_api"
         ],
         "cdm": [ "media:cdm" ],
-        "content": [ "view" ],
+        "content": [ "navigation" ],
         "content_gpu": [ "browser" ],
         "content_plugin": [ "browser" ],
         "content_renderer": [ "browser" ],

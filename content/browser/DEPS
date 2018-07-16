@@ -65,9 +65,9 @@ include_rules = [
   # Limit visibility into Content Service internals.
   "-services/content",
   "+services/content/public",
+  "+services/content/navigable_contents_delegate.h",
   "+services/content/service.h",
   "+services/content/service_delegate.h",
-  "+services/content/view_delegate.h",
 
   # No inclusion of WebKit from the browser, other than the ones in
   # WebKit/public/{mojom,common}, or the ones that are strictly enum/POD,
