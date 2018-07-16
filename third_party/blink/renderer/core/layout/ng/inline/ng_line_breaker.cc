@@ -202,9 +202,16 @@ void NGLineBreaker::NextLine(const NGLineLayoutOpportunity& line_opportunity,
     result.CheckConsistency();
 #endif
 
+  // We should create a line-box when:
+  //  - We have an item which needs a line box (text, etc).
+  //  - A list-marker is present, and it would be the last line or last line
+  //    before a forced new-line.
+  //  - During min/max content sizing (to correctly determine the line width).
+  //
   // TODO(kojii): There are cases where we need to PlaceItems() without creating
   // line boxes. These cases need to be reviewed.
   if (ShouldCreateLineBox(line_info->Results()) ||
+      (has_list_marker_ && line_info->IsLastLine()) ||
       mode_ != NGLineBreakerMode::kContent)
     ComputeLineLocation(line_info);
   else
@@ -284,7 +291,7 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
       MoveToNextOf(item);
     } else if (item.Type() == NGInlineItem::kListMarker) {
       NGInlineItemResult* item_result = AddItem(item, item_results);
-      item_result->should_create_line_box = true;
+      has_list_marker_ = true;
       DCHECK(!item_result->can_break_after);
       MoveToNextOf(item);
     } else {
