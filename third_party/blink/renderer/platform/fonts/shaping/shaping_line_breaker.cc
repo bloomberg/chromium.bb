@@ -16,7 +16,7 @@ namespace blink {
 ShapingLineBreaker::ShapingLineBreaker(
     const HarfBuzzShaper* shaper,
     const Font* font,
-    const ShapeResult* result,
+    scoped_refptr<const ShapeResult> result,
     const LazyLineBreakIterator* break_iterator,
     const RunSegmenter::RunSegmenterRange* pre_segmented,
     ShapeResultSpacing<String>* spacing,
@@ -215,7 +215,7 @@ inline scoped_refptr<ShapeResult> ShapingLineBreaker::Shape(TextDirection direct
 //   If we further assume that the font kerns with space then even though it's a
 //   valid break opportunity reshaping is required as the combined width of the
 //   two segments "Line " and "breaking" may be different from "Line breaking".
-scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
+scoped_refptr<const ShapeResult> ShapingLineBreaker::ShapeLine(
     unsigned start,
     LayoutUnit available_space,
     unsigned options,
@@ -252,7 +252,7 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
     // and thus unable to compute. Return the result up to range_end.
     DCHECK_EQ(candidate_break, range_end);
     result_out->break_offset = range_end;
-    return ShapeToEnd(start, first_safe, range_end);
+    return ShapeToEnd(start, first_safe, range_start, range_end);
   }
 
   // candidate_break should be >= start, but rounding errors can chime in when
@@ -273,7 +273,7 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
     // measure beyond it.
     if (break_opportunity.offset >= range_end) {
       result_out->break_offset = range_end;
-      return ShapeToEnd(start, first_safe, range_end);
+      return ShapeToEnd(start, first_safe, range_start, range_end);
     }
   }
   DCHECK_GT(break_opportunity.offset, start);
@@ -281,7 +281,7 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
   // If the start offset is not at a safe-to-break boundary the content between
   // the start and the next safe-to-break boundary needs to be reshaped and the
   // available space adjusted to take the reshaping into account.
-  scoped_refptr<ShapeResult> line_start_result;
+  scoped_refptr<const ShapeResult> line_start_result;
   if (first_safe != start) {
     if (first_safe >= break_opportunity.offset) {
       // There is no safe-to-break, reshape the whole range.
@@ -299,7 +299,7 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
   DCHECK_GE(first_safe, start);
   DCHECK_LE(first_safe, break_opportunity.offset);
 
-  scoped_refptr<ShapeResult> line_end_result;
+  scoped_refptr<const ShapeResult> line_end_result;
   unsigned last_safe = break_opportunity.offset;
   if (break_opportunity.offset > start) {
     // If the previous valid break opportunity is not at a safe-to-break
@@ -375,24 +375,31 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
 
 // Shape from the specified offset to the end of the ShapeResult.
 // If |start| is safe-to-break, this copies the subset of the result.
-scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeToEnd(unsigned start,
-                                                          unsigned first_safe,
-                                                          unsigned range_end) {
-  DCHECK_GE(start, result_->StartIndexForResult());
+scoped_refptr<const ShapeResult> ShapingLineBreaker::ShapeToEnd(
+    unsigned start,
+    unsigned first_safe,
+    unsigned range_start,
+    unsigned range_end) {
+  DCHECK(result_);
+  DCHECK_EQ(range_start, result_->StartIndexForResult());
+  DCHECK_EQ(range_end, result_->EndIndexForResult());
+  DCHECK_GE(start, range_start);
   DCHECK_LT(start, range_end);
   DCHECK_GE(first_safe, start);
-  DCHECK_EQ(range_end, result_->EndIndexForResult());
+
+  // If |start| is at the start of the range the entire result object may be
+  // reused, which avoids creating an extra copy an the sub-range logic.
+  if (start == range_start)
+    return result_;
 
   // If |start| is safe-to-break, no reshape is needed.
-  if (first_safe == start) {
+  if (start == first_safe)
     return result_->SubRange(start, range_end);
-  }
 
   // If no safe-to-break offset is found in range, reshape the entire range.
   TextDirection direction = result_->Direction();
-  if (first_safe >= range_end) {
+  if (first_safe >= range_end)
     return Shape(direction, start, range_end);
-  }
 
   // Otherwise reshape to |first_safe|, then copy the rest.
   scoped_refptr<ShapeResult> line_result = Shape(direction, start, first_safe);

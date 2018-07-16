@@ -31,7 +31,7 @@ LayoutUnit ShapeText(ShapingLineBreaker* breaker,
   unsigned break_offset = 0;
   LayoutUnit total_width;
   ShapingLineBreaker::Result result;
-  scoped_refptr<ShapeResult> shape_result;
+  scoped_refptr<const ShapeResult> shape_result;
   while (break_offset < string_length) {
     shape_result = breaker->ShapeLine(break_offset, available_space, &result);
     break_offset = result.break_offset;
@@ -125,18 +125,19 @@ TEST_F(ShapingLineBreakerPerfTest, ShapeLatinText) {
   TextDirection direction = TextDirection::kLtr;
 
   HarfBuzzShaper shaper(string);
-  scoped_refptr<ShapeResult> reference_result = shaper.Shape(&font, direction);
+  scoped_refptr<const ShapeResult> reference_result =
+      shaper.Shape(&font, direction);
   ShapingLineBreaker reference_breaker(&shaper, &font, reference_result.get(),
                                        &break_iterator);
 
-  scoped_refptr<ShapeResult> line;
+  scoped_refptr<const ShapeResult> line;
   LayoutUnit available_width_px(500);
   LayoutUnit expected_width =
       ShapeText(&reference_breaker, available_width_px, len);
 
   timer_.Reset();
   do {
-    scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
+    scoped_refptr<const ShapeResult> result = shaper.Shape(&font, direction);
     ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
 
     LayoutUnit width = ShapeText(&breaker, available_width_px, len);

@@ -433,7 +433,7 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   if (break_anywhere_if_overflow_ && !override_break_anywhere_)
     options |= ShapingLineBreaker::kNoResultIfOverflow;
   ShapingLineBreaker::Result result;
-  scoped_refptr<ShapeResult> shape_result = breaker.ShapeLine(
+  scoped_refptr<const ShapeResult> shape_result = breaker.ShapeLine(
       item_result->start_offset, available_width, options, &result);
 
   // If this item overflows and 'break-word' is set, this line will be
