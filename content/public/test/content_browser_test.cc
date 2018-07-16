@@ -25,6 +25,10 @@
 #include "content/shell/app/shell_main_delegate.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
+#endif
+
 #if !defined(OS_CHROMEOS) && defined(OS_LINUX)
 #include "ui/base/ime/input_method_initializer.h"
 #endif
@@ -37,6 +41,8 @@ namespace content {
 
 ContentBrowserTest::ContentBrowserTest() {
 #if defined(OS_MACOSX)
+  base::mac::SetOverrideAmIBundled(true);
+
   // See comment in InProcessBrowserTest::InProcessBrowserTest().
   base::FilePath content_shell_path;
   CHECK(base::PathService::Get(base::FILE_EXE, &content_shell_path));

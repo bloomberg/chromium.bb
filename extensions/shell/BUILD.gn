@@ -13,10 +13,6 @@ import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
 if (is_linux) {
   import("//build/linux/extract_symbols.gni")
-} else if (is_mac) {
-  import("//build/config/mac/rules.gni")
-  import("//third_party/icu/config.gni")
-  import("//v8/gni/v8.gni")
 }
 
 assert(enable_extensions)
@@ -89,8 +85,6 @@ source_set("app_shell_lib") {
   }
 
   sources = [
-    "app/paths_mac.h",
-    "app/paths_mac.mm",
     "app/shell_main_delegate.cc",
     "app/shell_main_delegate.h",
     "browser/api/feedback_private/shell_feedback_private_delegate.cc",
@@ -260,44 +254,24 @@ source_set("app_shell_lib") {
   }
 }
 
-if (is_mac) {
-  mac_app_bundle("app_shell") {
-    testonly = true
-    output_name = "App Shell"
-    sources = [
-      "app/shell_main.cc",
-    ]
-    deps = [
-      ":app_shell_framework_bundle_data",
-      "//content/public/app:both",
-      "//extensions:shell_and_test_pak",
-    ]
-    ldflags = [
-      "-rpath",
-      "@executable_path/../",
-    ]
-    info_plist = "app/app-Info.plist"
-  }
-} else {
-  executable("app_shell") {
-    # testonly because :app_shell_lib is testonly. See :app_shell_lib comment.
-    testonly = true
-    sources = [
-      "app/shell_main.cc",
-    ]
+executable("app_shell") {
+  # testonly because :app_shell_lib is testonly. See :app_shell_lib comment.
+  testonly = true
+  sources = [
+    "app/shell_main.cc",
+  ]
 
-    deps = [
-      ":app_shell_lib",
-      "//build/win:default_exe_manifest",
-      "//content/public/app:both",
-      "//extensions:shell_and_test_pak",
-    ]
+  deps = [
+    ":app_shell_lib",
+    "//build/win:default_exe_manifest",
+    "//content/public/app:both",
+    "//extensions:shell_and_test_pak",
+  ]
 
-    if (is_win) {
-      configs += [ "//build/config/win:windowed" ]
-      configs -= [ "//build/config/win:console" ]
-      deps += [ "//sandbox/win:sandbox" ]
-    }
+  if (is_win) {
+    configs += [ "//build/config/win:windowed" ]
+    configs -= [ "//build/config/win:console" ]
+    deps += [ "//sandbox/win:sandbox" ]
   }
 }
 
@@ -390,103 +364,6 @@ process_version("version_header") {
     "//chrome/VERSION",
   ]
   output = "$target_gen_dir/common/version.h"
-}
-
-if (is_mac) {
-  bundle_data("app_shell_framework_resources") {
-    sources = [
-      "$root_gen_dir/extensions/shell/app_shell_resources.pak",
-      "$root_out_dir/extensions_shell_and_test.pak",
-    ]
-    public_deps = [
-      ":resources_grit",
-      "//extensions:shell_and_test_pak",
-    ]
-    if (icu_use_data_file) {
-      sources += [ "$root_out_dir/icudtl.dat" ]
-      public_deps += [ "//third_party/icu:icudata" ]
-    }
-    if (v8_use_external_startup_data) {
-      sources += [ "$root_out_dir/natives_blob.bin" ]
-      public_deps += [ "//v8" ]
-      if (use_v8_context_snapshot) {
-        sources += [ "$root_out_dir/v8_context_snapshot.bin" ]
-        public_deps += [ "//tools/v8_context_snapshot" ]
-      } else {
-        sources += [ "$root_out_dir/snapshot_blob.bin" ]
-      }
-    }
-    outputs = [
-      "{{bundle_resources_dir}}/{{source_file_part}}",
-    ]
-  }
-
-  mac_framework_bundle("app_shell_framework") {
-    testonly = true
-    output_name = "App Shell Framework"
-    framework_version = "A"
-    framework_contents = [ "Resources" ]
-    sources = [
-      "app/shell_main_mac.cc",
-      "app/shell_main_mac.h",
-    ]
-    public_deps = [
-      ":app_shell_lib",
-    ]
-    deps = [
-      ":app_shell_framework_resources",
-      "//content/public/app:both",
-    ]
-    ldflags = [
-      "-Wl,-install_name,@rpath/Frameworks/$output_name.framework/$output_name",
-    ]
-    if (is_component_build) {
-      ldflags += [
-        "-rpath",
-        "@loader_path/../../../../../..",
-      ]
-    }
-    info_plist = "app/framework-Info.plist"
-  }
-
-  mac_app_bundle("app_shell_helper_app") {
-    testonly = true
-    output_name = "App Shell Helper"
-    sources = [
-      "app/shell_main.cc",
-    ]
-    deps = [
-      ":app_shell_framework+link",
-    ]
-
-    # deps must not include //content/public/app:both. shell_main.cc does
-    # include a #if !defined(OS_MACOSX) block. Rather than use nogncheck there,
-    # disable checking here so that checking still happens on non-mac targets.
-    check_includes = false
-
-    # The helper is in App Shell.app/Contents/Frameworks/App Shell Helper.app/Contents/MacOS/
-    # so set rpath up to Contents/ so that the loader can find Frameworks/.
-    ldflags = [
-      "-rpath",
-      "@executable_path/../../../..",
-    ]
-    info_plist = "app/helper-Info.plist"
-  }
-
-  bundle_data("app_shell_framework_bundle_data") {
-    testonly = true
-    sources = [
-      "$root_out_dir/App Shell Framework.framework",
-      "$root_out_dir/App Shell Helper.app",
-    ]
-    outputs = [
-      "{{bundle_contents_dir}}/Frameworks/{{source_file_part}}",
-    ]
-    public_deps = [
-      ":app_shell_framework+link",
-      ":app_shell_helper_app",
-    ]
-  }
 }
 
 source_set("browser_tests") {

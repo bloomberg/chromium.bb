@@ -67,6 +67,7 @@
 #include "ui/display/display_switches.h"
 
 #if defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/test/base/scoped_bundle_swizzler_mac.h"
 #endif
@@ -123,6 +124,8 @@ InProcessBrowserTest::InProcessBrowserTest()
 #endif  // OS_MACOSX
 {
 #if defined(OS_MACOSX)
+  base::mac::SetOverrideAmIBundled(true);
+
   // TODO(phajdan.jr): Make browser_tests self-contained on Mac, remove this.
   // Before we run the browser, we have to hack the path to the exe to match
   // what it would be if Chrome was running, because it is used to fork renderer

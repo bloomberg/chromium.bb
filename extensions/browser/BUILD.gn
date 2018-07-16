@@ -474,10 +474,6 @@ source_set("browser_tests") {
     "//ui/display:test_support",
   ]
 
-  if (is_mac) {
-    # Needed for App Shell.app's Helper.
-    deps += [ "//extensions/shell:app_shell" ]
-  }
   if (is_chromeos) {
     sources += [
       "api/cec_private/cec_private_apitest.cc",
