@@ -392,6 +392,23 @@ function NavigationListModel(
 }
 
 /**
+ * ZipArchiver mounts zip files as PROVIDED volume type.
+ * This is a special case for zip volumes to be able to split them apart from
+ * PROVIDED.
+ * @const
+ */
+NavigationListModel.ZIP_VOLUME_TYPE = '_ZIP_VOLUME_';
+
+/**
+ * Extension id that can mount zip files.
+ * @const
+ */
+NavigationListModel.ZIP_EXTENSION_IDS = [
+  'dmboannefpncccogfdikhmhpmdnddgoe',  // ZipArchiver
+  'oedeeodfidgoollimchfdnbmhcpnklnd',  // ZipUnpacker
+];
+
+/**
  * NavigationList inherits cr.EventTarget.
  */
 NavigationListModel.prototype = {
@@ -473,7 +490,7 @@ NavigationListModel.prototype.flatNavigationItems_ = function() {
  *    4.1. Downloads
  *    4.2. Play files (android volume) (if enabled).
  *    4.3. Linux files (crostini volume or fake item) (if enabled).
- *  5. Other volumes (MTP, ARCHIVE, REMOVABLE).
+ *  5. Other volumes (MTP, ARCHIVE, REMOVABLE, Zip volumes).
  *  6. Drive volumes.
  *  7. Other FSP (File System Provider) (when mounted).
  *  8. Add new services if (it exists).
@@ -489,17 +506,33 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
   for (let i = 0; i < volumeList.length; i++) {
     const volumeType = volumeList[i].volumeInfo.volumeType;
     volumeList[i].originalOrder = i;
+    let providedType;
+    let volumeId;
     switch (volumeType) {
       case VolumeManagerCommon.VolumeType.CROSTINI:
       case VolumeManagerCommon.VolumeType.DOWNLOADS:
       case VolumeManagerCommon.VolumeType.ANDROID_FILES:
         volumeIndexes[volumeType] = i;
         break;
+      case VolumeManagerCommon.VolumeType.PROVIDED:
+        // ZipArchiver mounts zip files as PROVIDED volume type, however we
+        // want to display mounted zip files the same way as archive, so
+        // splitting them apart from PROVIDED.
+        volumeId = volumeList[i].volumeInfo.volumeId;
+        providedType = VolumeManagerCommon.VolumeType.PROVIDED;
+        if (NavigationListModel.ZIP_EXTENSION_IDS.some(
+                extension_id => volumeId.includes(extension_id)))
+          providedType = NavigationListModel.ZIP_VOLUME_TYPE;
+        if (!volumeIndexes[providedType]) {
+          volumeIndexes[providedType] = [i];
+        } else {
+          volumeIndexes[providedType].push(i);
+        }
+        break;
       case VolumeManagerCommon.VolumeType.REMOVABLE:
       case VolumeManagerCommon.VolumeType.ARCHIVE:
       case VolumeManagerCommon.VolumeType.MTP:
       case VolumeManagerCommon.VolumeType.DRIVE:
-      case VolumeManagerCommon.VolumeType.PROVIDED:
       case VolumeManagerCommon.VolumeType.MEDIA_VIEW:
         if (!volumeIndexes[volumeType]) {
           volumeIndexes[volumeType] = [i];
@@ -610,11 +643,13 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
 
   // Join MEDIA_VIEW, MTP, ARCHIVE and REMOVABLE. These types belong to same
   // section.
+  const zipIndexes = volumeIndexes[NavigationListModel.ZIP_VOLUME_TYPE] || [];
   const otherVolumes =
       [].concat(
             getVolumes(VolumeManagerCommon.VolumeType.REMOVABLE),
             getVolumes(VolumeManagerCommon.VolumeType.ARCHIVE),
-            getVolumes(VolumeManagerCommon.VolumeType.MTP))
+            getVolumes(VolumeManagerCommon.VolumeType.MTP),
+            zipIndexes.map(idx => volumeList[idx]))
           .sort((volume1, volume2) => {
             return volume1.originalOrder - volume2.originalOrder;
           });
