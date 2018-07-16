@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_TEST_MOCK_PERMISSION_MANAGER_H_
 #define CONTENT_PUBLIC_TEST_MOCK_PERMISSION_MANAGER_H_
 
-#include "content/public/browser/permission_manager.h"
+#include "content/public/browser/permission_controller_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
@@ -16,7 +16,7 @@ namespace content {
 enum class PermissionType;
 
 // Mock of the permission manager for unit tests.
-class MockPermissionManager : public PermissionManager {
+class MockPermissionManager : public PermissionControllerDelegate {
  public:
   MockPermissionManager();
 

@@ -226,7 +226,8 @@ SSLHostStateDelegate* ShellBrowserContext::GetSSLHostStateDelegate() {
   return nullptr;
 }
 
-PermissionManager* ShellBrowserContext::GetPermissionManager() {
+PermissionControllerDelegate*
+ShellBrowserContext::GetPermissionControllerDelegate() {
   if (!permission_manager_.get())
     permission_manager_.reset(new ShellPermissionManager());
   return permission_manager_.get();

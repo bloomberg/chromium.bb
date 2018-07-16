@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_PERMISSION_MANAGER_H_
-#define CONTENT_PUBLIC_BROWSER_PERMISSION_MANAGER_H_
+#ifndef CONTENT_PUBLIC_BROWSER_PERMISSION_CONTROLLER_DELEGATE_H_
+#define CONTENT_PUBLIC_BROWSER_PERMISSION_CONTROLLER_DELEGATE_H_
 
 #include "content/common/content_export.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
@@ -14,9 +14,9 @@ namespace content {
 enum class PermissionType;
 class RenderFrameHost;
 
-class CONTENT_EXPORT PermissionManager {
+class CONTENT_EXPORT PermissionControllerDelegate {
  public:
-  virtual ~PermissionManager() = default;
+  virtual ~PermissionControllerDelegate() = default;
 
   // Requests a permission on behalf of a frame identified by
   // render_frame_host.
@@ -96,4 +96,4 @@ class CONTENT_EXPORT PermissionManager {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_PERMISSION_MANAGER_H_
+#endif  // CONTENT_PUBLIC_BROWSER_PERMISSION_CONTROLLER_DELEGATE_H_

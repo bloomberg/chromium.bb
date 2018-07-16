@@ -445,7 +445,8 @@ OffTheRecordProfileImpl::GetSSLHostStateDelegate() {
 
 // TODO(mlamouri): we should all these BrowserContext implementation to Profile
 // instead of repeating them inside all Profile implementations.
-content::PermissionManager* OffTheRecordProfileImpl::GetPermissionManager() {
+content::PermissionControllerDelegate*
+OffTheRecordProfileImpl::GetPermissionControllerDelegate() {
   return PermissionManagerFactory::GetForProfile(this);
 }
 

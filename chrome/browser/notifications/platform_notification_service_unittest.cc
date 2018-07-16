@@ -68,7 +68,8 @@ class TestingProfileWithPermissionManager : public TestingProfile {
   }
 
   // TestingProfile overrides:
-  content::PermissionManager* GetPermissionManager() override {
+  content::PermissionControllerDelegate* GetPermissionControllerDelegate()
+      override {
     return permission_manager_.get();
   }
 

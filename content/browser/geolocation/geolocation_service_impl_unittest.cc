@@ -84,7 +84,7 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
     RenderViewHostImplTestHarness::SetUp();
     NavigateAndCommit(kMainUrl);
     browser_context_.reset(new content::TestBrowserContext());
-    browser_context_->SetPermissionManager(
+    browser_context_->SetPermissionControllerDelegate(
         std::make_unique<TestPermissionManager>());
     permission_controller_.reset(
         new PermissionControllerImpl(browser_context_.get()));
@@ -133,7 +133,7 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
 
   TestPermissionManager* permission_manager() {
     return static_cast<TestPermissionManager*>(
-        browser_context_->GetPermissionManager());
+        browser_context_->GetPermissionControllerDelegate());
   }
 
  private:

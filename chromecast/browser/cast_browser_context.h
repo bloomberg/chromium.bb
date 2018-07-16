@@ -37,7 +37,8 @@ class CastBrowserContext final : public content::BrowserContext {
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
   content::PushMessagingService* GetPushMessagingService() override;
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
-  content::PermissionManager* GetPermissionManager() override;
+  content::PermissionControllerDelegate* GetPermissionControllerDelegate()
+      override;
   content::BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
   content::BackgroundSyncController* GetBackgroundSyncController() override;
   content::BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate()
@@ -67,7 +68,7 @@ class CastBrowserContext final : public content::BrowserContext {
   URLRequestContextFactory* const url_request_context_factory_;
   base::FilePath path_;
   std::unique_ptr<CastResourceContext> resource_context_;
-  std::unique_ptr<content::PermissionManager> permission_manager_;
+  std::unique_ptr<content::PermissionControllerDelegate> permission_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CastBrowserContext);
 };

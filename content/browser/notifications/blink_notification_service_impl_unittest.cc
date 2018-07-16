@@ -118,7 +118,7 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
         mojo::MakeRequest(&notification_service_ptr));
 
     // Provide a mock permission manager to the |browser_context_|.
-    browser_context_.SetPermissionManager(
+    browser_context_.SetPermissionControllerDelegate(
         std::make_unique<testing::NiceMock<MockPermissionManager>>());
   }
 
@@ -300,7 +300,7 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
   void SetPermissionStatus(blink::mojom::PermissionStatus permission_status) {
     MockPermissionManager* mock_permission_manager =
         static_cast<MockPermissionManager*>(
-            browser_context_.GetPermissionManager());
+            browser_context_.GetPermissionControllerDelegate());
 
     ON_CALL(*mock_permission_manager,
             GetPermissionStatus(PermissionType::NOTIFICATIONS, _, _))

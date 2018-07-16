@@ -57,7 +57,7 @@ size_t LayoutTestPermissionManager::PermissionDescription::Hash::operator()(
 }
 
 LayoutTestPermissionManager::LayoutTestPermissionManager()
-    : PermissionManager() {}
+    : PermissionControllerDelegate() {}
 
 LayoutTestPermissionManager::~LayoutTestPermissionManager() {
 }

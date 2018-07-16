@@ -8,7 +8,7 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/permission_manager.h"
+#include "content/public/browser/permission_controller_delegate.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 
 class GURL;
@@ -34,7 +34,8 @@ int PermissionControllerImpl::RequestPermission(
     const GURL& requesting_origin,
     bool user_gesture,
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
-  PermissionManager* delegate = browser_context_->GetPermissionManager();
+  PermissionControllerDelegate* delegate =
+      browser_context_->GetPermissionControllerDelegate();
   if (!delegate) {
     callback.Run(blink::mojom::PermissionStatus::DENIED);
     return kNoPendingOperation;
@@ -50,7 +51,8 @@ int PermissionControllerImpl::RequestPermissions(
     bool user_gesture,
     const base::Callback<
         void(const std::vector<blink::mojom::PermissionStatus>&)>& callback) {
-  PermissionManager* delegate = browser_context_->GetPermissionManager();
+  PermissionControllerDelegate* delegate =
+      browser_context_->GetPermissionControllerDelegate();
   if (!delegate) {
     std::vector<blink::mojom::PermissionStatus> result(
         permissions.size(), blink::mojom::PermissionStatus::DENIED);
@@ -66,7 +68,8 @@ blink::mojom::PermissionStatus PermissionControllerImpl::GetPermissionStatus(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
-  PermissionManager* delegate = browser_context_->GetPermissionManager();
+  PermissionControllerDelegate* delegate =
+      browser_context_->GetPermissionControllerDelegate();
   if (!delegate)
     return blink::mojom::PermissionStatus::DENIED;
   return delegate->GetPermissionStatus(permission, requesting_origin,
@@ -78,7 +81,8 @@ PermissionControllerImpl::GetPermissionStatusForFrame(
     PermissionType permission,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin) {
-  PermissionManager* delegate = browser_context_->GetPermissionManager();
+  PermissionControllerDelegate* delegate =
+      browser_context_->GetPermissionControllerDelegate();
   if (!delegate)
     return blink::mojom::PermissionStatus::DENIED;
   return delegate->GetPermissionStatusForFrame(permission, render_frame_host,
@@ -88,7 +92,8 @@ PermissionControllerImpl::GetPermissionStatusForFrame(
 void PermissionControllerImpl::ResetPermission(PermissionType permission,
                                                const GURL& requesting_origin,
                                                const GURL& embedding_origin) {
-  PermissionManager* delegate = browser_context_->GetPermissionManager();
+  PermissionControllerDelegate* delegate =
+      browser_context_->GetPermissionControllerDelegate();
   if (!delegate)
     return;
   delegate->ResetPermission(permission, requesting_origin, embedding_origin);
@@ -99,7 +104,8 @@ int PermissionControllerImpl::SubscribePermissionStatusChange(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
-  PermissionManager* delegate = browser_context_->GetPermissionManager();
+  PermissionControllerDelegate* delegate =
+      browser_context_->GetPermissionControllerDelegate();
   if (!delegate)
     return kNoPendingOperation;
   return delegate->SubscribePermissionStatusChange(
@@ -108,7 +114,8 @@ int PermissionControllerImpl::SubscribePermissionStatusChange(
 
 void PermissionControllerImpl::UnsubscribePermissionStatusChange(
     int subscription_id) {
-  PermissionManager* delegate = browser_context_->GetPermissionManager();
+  PermissionControllerDelegate* delegate =
+      browser_context_->GetPermissionControllerDelegate();
   if (!delegate)
     return;
   delegate->UnsubscribePermissionStatusChange(subscription_id);

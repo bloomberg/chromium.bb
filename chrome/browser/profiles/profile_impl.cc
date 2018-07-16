@@ -1076,7 +1076,8 @@ ProfileImpl::GetBrowsingDataRemoverDelegate() {
 
 // TODO(mlamouri): we should all these BrowserContext implementation to Profile
 // instead of repeating them inside all Profile implementations.
-content::PermissionManager* ProfileImpl::GetPermissionManager() {
+content::PermissionControllerDelegate*
+ProfileImpl::GetPermissionControllerDelegate() {
   return PermissionManagerFactory::GetForProfile(this);
 }
 
