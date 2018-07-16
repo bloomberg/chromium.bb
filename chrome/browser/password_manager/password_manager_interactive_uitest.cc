@@ -316,57 +316,6 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
                                  "username_field", "password_field", submit);
 }
 
-IN_PROC_BROWSER_TEST_P(
-    PasswordManagerBrowserTestWithConditionalPopupViews,
-    SavedAfterTargetIframeSubmitFollowingNonPasswordFormSubmit) {
-  std::string submit =
-      "document.getElementById('input_submit_button').click();";
-  VerifyPasswordIsSavedAndFilled("/password/iframe_target.html",
-                                 "username_field", "password_field", submit);
-}
-
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
-                       SaveNotTriggeredOnOtherFormSubmit) {
-  NavigateToFile("/password/password_form_with_simple_form.html");
-
-  // Fill password form.
-  FillElementWithValue("username_field", "user");
-  FillElementWithValue("password_field", "1234");
-
-  NavigationObserver observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  // Submit OTHER form.
-  std::string submit =
-      "document.getElementById('submit_search_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(WebContents(), submit));
-  observer.Wait();
-
-  WaitForPasswordStore();
-  EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
-}
-
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
-                       SaveNotTriggeredOnOtherFormSubmitWithUnownedForm) {
-  NavigateToFile("/password/no_form_elements_with_additional_form.html");
-
-  // Fill in unowned password form inputs.
-  FillElementWithValue("username", "user");
-  FillElementWithValue("password", "1234");
-
-  NavigationObserver observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  // Submit OTHER form.
-  std::string submit =
-      "document.getElementById('submit_search_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(WebContents(), submit));
-  observer.Wait();
-
-  WaitForPasswordStore();
-  EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
-}
-
 INSTANTIATE_TEST_CASE_P(All,
                         PasswordManagerBrowserTestWithConditionalPopupViews,
                         /*popup_views_enabled=*/::testing::Bool());

@@ -20,8 +20,6 @@ class TestPasswordAutofillAgent : public PasswordAutofillAgent {
   // work with the password manager.
   // PasswordAutofillAgent:
   bool FrameCanAccessPasswordManager() override;
-
-  bool FrameCanAccessPasswordManagerWithoutAboutBlankCheck() override;
 };
 
 }  // namespace autofill

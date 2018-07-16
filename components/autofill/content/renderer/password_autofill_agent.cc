@@ -1077,12 +1077,6 @@ bool PasswordAutofillAgent::FrameCanAccessPasswordManager() {
   return frame->GetSecurityOrigin().CanAccessPasswordManager();
 }
 
-bool PasswordAutofillAgent::
-    FrameCanAccessPasswordManagerWithoutAboutBlankCheck() {
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-  return frame->GetSecurityOrigin().CanAccessPasswordManager();
-}
-
 void PasswordAutofillAgent::OnDynamicFormsSeen() {
   SendPasswordForms(false /* only_visible */);
 }
@@ -1328,8 +1322,7 @@ void PasswordAutofillAgent::OnWillSubmitForm(
           PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
     }
 
-    if (FrameCanAccessPasswordManagerWithoutAboutBlankCheck() &&
-        !submitted_form->origin.IsAboutBlank()) {
+    if (FrameCanAccessPasswordManager()) {
       // Some observers depend on sending this information now instead of when
       // the frame starts loading. If there are redirects that cause a new
       // RenderView to be instantiated (such as redirects to the WebStore)
