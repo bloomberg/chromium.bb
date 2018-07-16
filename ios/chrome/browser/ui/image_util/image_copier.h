@@ -9,7 +9,7 @@
 
 #include "components/image_fetcher/core/request_metadata.h"
 
-typedef int64_t ImageCopierSessionId;
+typedef int64_t ImageCopierSessionID;
 
 // Object copying images to the system's pasteboard.
 // TODO(crbug.com/163201): Current implementation won't terminate the
@@ -23,13 +23,19 @@ typedef int64_t ImageCopierSessionId;
 - (instancetype)initWithBaseViewController:
     (UIViewController*)baseViewController;
 
-// Begins a session of downloading image, and returns an identifier for this
-// session.
-- (ImageCopierSessionId)beginSession;
+// When user taps "Copy Image", downloader should call |beginSession| and get
+// an ID for the session. That ID will also be recorded by ImageCopier, and may
+// get erased if user cancels the copy, or overridden if user starts another
+// copy. When download is finished, downloader should call
+// |endSession:withImageData:| with that ID, and ImageCopier will compare this
+// ID with its internal ID to decide whether to paste or discard the image data.
 
-// Ends the downloading session. The image data won't be copied if the user has
+// Begin the download session, and return an ID for this session.
+- (ImageCopierSessionID)beginSession;
+
+// End the download session. The image data won't be copied if the user has
 // canceled copying.
-- (void)endSession:(ImageCopierSessionId)image_id withImageData:(NSData*)data;
+- (void)endSession:(ImageCopierSessionID)sessionID withImageData:(NSData*)data;
 
 @end
 

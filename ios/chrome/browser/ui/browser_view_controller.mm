@@ -3795,11 +3795,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
               referrer:(const web::Referrer&)referrer {
   DCHECK(url.is_valid());
 
-  ImageCopierSessionId context_id = [self.imageCopier beginSession];
+  ImageCopierSessionID sessionID = [self.imageCopier beginSession];
 
   image_fetcher::ImageDataFetcherBlock callback =
       ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
-        [self.imageCopier endSession:context_id withImageData:data];
+        [self.imageCopier endSession:sessionID withImageData:data];
       };
   _imageFetcher->FetchImageDataWebpDecoded(
       url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),

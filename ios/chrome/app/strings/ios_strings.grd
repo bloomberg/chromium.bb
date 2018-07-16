@@ -534,7 +534,7 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_CONTENT_CONTEXT_COPYIMAGE" desc="The name of the Copy Image command in the content area context menu.">
         Copy Image
       </message>
-      <message name="IDS_IOS_CONTENT_CONTEXT_COPYING" desc="The title of the alert while the image to be copied is being downloaded.">
+      <message name="IDS_IOS_CONTENT_COPYIMAGE_ALERT_COPYING" desc="The title of the alert while the image to be copied is being downloaded.">
         Copying...
       </message>
       <message name="IDS_IOS_CONTENT_CONTEXT_OPEN" desc="The iOS menu item for opening a link. Shorter than the desktop version [Length: 25em] [iOS only]">

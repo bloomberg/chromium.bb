@@ -18,7 +18,7 @@ source_set("image_util") {
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/alert_coordinator",
-    "//ios/chrome/browser/ui/alert_coordinator:alert_coordinator_internal",
+    "//ios/web",
     "//net",
     "//ui/base",
   ]
