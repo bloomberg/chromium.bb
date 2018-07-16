@@ -622,6 +622,10 @@ const base::Feature kTPMFirmwareUpdate{"TPMFirmwareUpdate",
 // userInfo Gaia message.
 const base::Feature kCrOSEnableUSMUserService{"CrOSEnableUSMUserService",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables or disables initialization & use of the Chrome OS ML Service.
+const base::Feature kMachineLearningService{"MachineLearningService",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)

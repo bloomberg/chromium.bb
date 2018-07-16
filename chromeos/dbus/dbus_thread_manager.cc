@@ -33,6 +33,7 @@
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
+#include "chromeos/dbus/machine_learning_client.h"
 #include "chromeos/dbus/media_analytics_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
@@ -180,11 +181,6 @@ EasyUnlockClient* DBusThreadManager::GetEasyUnlockClient() {
                           : nullptr;
 }
 
-LorgnetteManagerClient* DBusThreadManager::GetLorgnetteManagerClient() {
-  return clients_browser_ ? clients_browser_->lorgnette_manager_client_.get()
-                          : nullptr;
-}
-
 ShillDeviceClient* DBusThreadManager::GetShillDeviceClient() {
   return clients_common_->shill_device_client_.get();
 }
@@ -226,6 +222,15 @@ ImageBurnerClient* DBusThreadManager::GetImageBurnerClient() {
 ImageLoaderClient* DBusThreadManager::GetImageLoaderClient() {
   return clients_browser_ ? clients_browser_->image_loader_client_.get()
                           : nullptr;
+}
+
+LorgnetteManagerClient* DBusThreadManager::GetLorgnetteManagerClient() {
+  return clients_browser_ ? clients_browser_->lorgnette_manager_client_.get()
+                          : nullptr;
+}
+
+MachineLearningClient* DBusThreadManager::GetMachineLearningClient() {
+  return clients_common_->machine_learning_client_.get();
 }
 
 MediaAnalyticsClient* DBusThreadManager::GetMediaAnalyticsClient() {
