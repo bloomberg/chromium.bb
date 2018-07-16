@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -25,33 +26,22 @@ class BrowserDMTokenStorageWin : public BrowserDMTokenStorage {
   BrowserDMTokenStorageWin();
   ~BrowserDMTokenStorageWin() override;
 
-  // override BrowserDMTokenStorage
-  std::string RetrieveClientId() override;
-  std::string RetrieveEnrollmentToken() override;
-  void StoreDMToken(const std::string& dm_token,
-                    StoreCallback callback) override;
-  std::string RetrieveDMToken() override;
-
  private:
-  // Initialize the DMTokenStorage, reads the |enrollment_token_| and
-  // |dm_token_| from Registry synchronously.
-  void InitIfNeeded();
-
-  void OnDMTokenStored(bool success);
+  // override BrowserDMTokenStorage
+  std::string InitClientId() override;
+  std::string InitEnrollmentToken() override;
+  std::string InitDMToken() override;
+  void SaveDMToken(const std::string& token) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> com_sta_task_runner_;
-  StoreCallback store_callback_;
-
-  bool is_initialized_;
-
-  std::string client_id_;
-  std::string enrollment_token_;
-  std::string dm_token_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
 
   // This should always be the last member of the class.
   base::WeakPtrFactory<BrowserDMTokenStorageWin> weak_factory_;
+
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, InitClientId);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, InitEnrollmentToken);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, InitDMToken);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, SaveDMToken);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserDMTokenStorageWin);
 };

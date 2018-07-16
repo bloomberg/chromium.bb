@@ -103,7 +103,7 @@ void MachineLevelUserCloudPolicyController::Init(
   if (!policy_manager)
     return;
   // If there exists an enrollment token, then there are two states:
-  //   1/ There also exists a DM token.  This machine is already registeted, so
+  //   1/ There also exists a DM token.  This machine is already registered, so
   //      the next step is to fetch policies.
   //   2/ There is no DM token.  In this case the machine is not already
   //      registered and needs to request a DM token.
@@ -144,9 +144,9 @@ void MachineLevelUserCloudPolicyController::Init(
                    base::Unretained(this)));
 #if defined(OS_WIN)
     // This metric is only published on Windows to indicate how many user level
-    // install Chrome try to enroll the policy which can't store the DM token
-    // in the Registry in the end of enrollment. Mac and Linux does not need
-    // this metric for now as they might use different token storage mechanism
+    // installs try to enroll, as these can't store the DM token
+    // in the registry at the end of enrollment. Mac and Linux do not need
+    // this metric for now as they might use a different token storage mechanism
     // in the future.
     UMA_HISTOGRAM_BOOLEAN(
         "Enterprise.MachineLevelUserCloudPolicyEnrollment.InstallLevel_Win",
