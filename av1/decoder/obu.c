@@ -173,6 +173,13 @@ static int read_bitstream_level(BitstreamLevel *bl,
   return 1;
 }
 
+// Returns whether two sequence headers are consistent with each other.
+// TODO(huisu,wtc@google.com): make sure the code matches the spec exactly.
+static int are_seq_headers_consistent(const SequenceHeader *seq_params_old,
+                                      const SequenceHeader *seq_params_new) {
+  return !memcmp(seq_params_old, seq_params_new, sizeof(SequenceHeader));
+}
+
 // On success, sets pbi->sequence_header_ready to 1 and returns the number of
 // bytes read from 'rb'.
 // On failure, sets pbi->common.error.error_code and returns 0.
@@ -325,6 +332,15 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   if (av1_check_trailing_bits(pbi, rb) != 0) {
     // cm->error.error_code is already set.
     return 0;
+  }
+
+  // If a sequence header has been decoded before, we check if the new
+  // one is consistent with the old one.
+  if (pbi->sequence_header_ready) {
+    if (!are_seq_headers_consistent(&cm->seq_params, seq_params)) {
+      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                         "Inconsistent sequence headers received.");
+    }
   }
 
   cm->seq_params = *seq_params;
