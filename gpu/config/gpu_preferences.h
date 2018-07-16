@@ -204,6 +204,9 @@ struct GPU_EXPORT GpuPreferences {
   // send a background/suspend signal.
   bool watchdog_starts_backgrounded = false;
 
+  // Use Vulkan for rasterization and display compositing.
+  bool enable_vulkan = false;
+
   // Please update gpu_preferences_unittest.cc when making additions or
   // changes to this struct.
 };

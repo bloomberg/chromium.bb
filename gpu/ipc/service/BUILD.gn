@@ -4,6 +4,7 @@
 
 import("//testing/test.gni")
 import("//build/config/ui.gni")
+import("//gpu/vulkan/features.gni")
 if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
@@ -64,6 +65,7 @@ component("service") {
     "//gpu/command_buffer/service:gles2",
     "//gpu/config",
     "//gpu/ipc/common",
+    "//gpu/vulkan:buildflags",
   ]
   libs = []
   ldflags = []
@@ -128,6 +130,9 @@ component("service") {
   }
   if (is_fuchsia) {
     sources += [ "image_transport_surface_fuchsia.cc" ]
+  }
+  if (enable_vulkan) {
+    deps += [ "//gpu/vulkan/init" ]
   }
 }
 

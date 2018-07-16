@@ -245,7 +245,8 @@ void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
   gpu_service_ = std::make_unique<viz::GpuServiceImpl>(
       gpu::GPUInfo(), nullptr /* watchdog_thread */, io_thread_->task_runner(),
       gpu::GpuFeatureInfo(), gpu::GpuPreferences(), gpu::GPUInfo(),
-      gpu::GpuFeatureInfo(), base::DoNothing() /* exit_callback */);
+      gpu::GpuFeatureInfo(), nullptr /* vulkan_implementation */,
+      base::DoNothing() /* exit_callback */);
 
   // Uses a null gpu_host here, because we don't want to receive any message.
   std::unique_ptr<viz::mojom::GpuHost> gpu_host;

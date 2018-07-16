@@ -56,6 +56,7 @@ TestGpuService::TestGpuService(
                      gpu::GpuPreferences(),
                      base::nullopt,
                      base::nullopt,
+                     nullptr /* vulkan_implementation */,
                      /*exit_callback=*/base::DoNothing()) {}
 
 }  // namespace

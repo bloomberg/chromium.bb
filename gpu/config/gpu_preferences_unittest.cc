@@ -74,6 +74,7 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
             right.use_gpu_fences_for_overlay_planes);
   EXPECT_EQ(left.watchdog_starts_backgrounded,
             right.watchdog_starts_backgrounded);
+  EXPECT_EQ(left.enable_vulkan, right.enable_vulkan);
 }
 
 }  // namespace
@@ -150,6 +151,7 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(disable_oop_rasterization, true)
     GPU_PREFERENCES_FIELD(use_gpu_fences_for_overlay_planes, true)
     GPU_PREFERENCES_FIELD(watchdog_starts_backgrounded, true)
+    GPU_PREFERENCES_FIELD(enable_vulkan, true)
 
     input_prefs.texture_target_exception_list.emplace_back(
         gfx::BufferUsage::SCANOUT, gfx::BufferFormat::RGBA_8888);
