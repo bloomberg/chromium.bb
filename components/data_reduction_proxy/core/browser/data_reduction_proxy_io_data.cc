@@ -32,6 +32,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/previews/core/previews_decider.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_request_headers.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
@@ -145,6 +146,13 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   request_options_.reset(
       new DataReductionProxyRequestOptions(client_, config_.get()));
   request_options_->Init();
+  // It is safe to use base::Unretained here, since it gets executed
+  // synchronously on the IO thread, and |this| outlives the caller (since the
+  // caller is owned by |this|.
+  request_options_->SetUpdateHeaderCallback(
+      base::BindRepeating(&DataReductionProxyIOData::UpdateProxyRequestHeaders,
+                          base::Unretained(this)));
+
   if (use_config_client) {
     // It is safe to use base::Unretained here, since it gets executed
     // synchronously on the IO thread, and |this| outlives the caller (since the
@@ -442,6 +450,14 @@ void DataReductionProxyIOData::SetPreviewsDecider(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(previews_decider);
   previews_decider_ = previews_decider;
+}
+
+void DataReductionProxyIOData::UpdateProxyRequestHeaders(
+    net::HttpRequestHeaders headers) {
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DataReductionProxyService::SetProxyRequestHeaders,
+                     service_, std::move(headers)));
 }
 
 }  // namespace data_reduction_proxy

@@ -297,6 +297,12 @@ void DataReductionProxyRequestOptions::RegenerateRequestHeaderValue() {
     headers.push_back(FormatOption(kExperimentsOption, experiment));
 
   header_value_ = base::JoinString(headers, ", ");
+
+  if (update_header_callback_) {
+    net::HttpRequestHeaders headers;
+    headers.SetHeader(chrome_proxy_header(), header_value_);
+    update_header_callback_.Run(std::move(headers));
+  }
 }
 
 std::string DataReductionProxyRequestOptions::GetSessionKeyFromRequestHeaders(
