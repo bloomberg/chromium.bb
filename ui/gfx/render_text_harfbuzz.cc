@@ -676,6 +676,49 @@ TextRunHarfBuzz::CommonParams::CommonParams(
 TextRunHarfBuzz::CommonParams& TextRunHarfBuzz::CommonParams::operator=(
     const TextRunHarfBuzz::CommonParams& other) = default;
 
+void TextRunHarfBuzz::CommonParams::ComputeFontSizeAndBaselineOffset(
+    const Font& primary_font) {
+  if (font_size == 0)
+    font_size = primary_font.GetFontSize();
+  baseline_offset = 0;
+  if (baseline_type != NORMAL_BASELINE) {
+    // Calculate a slightly smaller font. The ratio here is somewhat arbitrary.
+    // Proportions from 5/9 to 5/7 all look pretty good.
+    const float ratio = 5.0f / 9.0f;
+    font_size = ToRoundedInt(primary_font.GetFontSize() * ratio);
+    switch (baseline_type) {
+      case SUPERSCRIPT:
+        baseline_offset =
+            primary_font.GetCapHeight() - primary_font.GetHeight();
+        break;
+      case SUPERIOR:
+        baseline_offset = ToRoundedInt(primary_font.GetCapHeight() * ratio) -
+                          primary_font.GetCapHeight();
+        break;
+      case SUBSCRIPT:
+        baseline_offset = primary_font.GetHeight() - primary_font.GetBaseline();
+        break;
+      case INFERIOR:  // Fall through.
+      default:
+        break;
+    }
+  }
+}
+
+bool TextRunHarfBuzz::CommonParams::SetFontAndRenderParams(
+    const Font& new_font,
+    const FontRenderParams& new_render_params) {
+  sk_sp<SkTypeface> new_skia_face(
+      internal::CreateSkiaTypeface(new_font, italic, weight));
+  if (!new_skia_face)
+    return false;
+
+  skia_face = new_skia_face;
+  font = new_font;
+  render_params = new_render_params;
+  return true;
+}
+
 TextRunHarfBuzz::ShapeOutput::ShapeOutput() = default;
 TextRunHarfBuzz::ShapeOutput::~ShapeOutput() = default;
 TextRunHarfBuzz::ShapeOutput::ShapeOutput(
@@ -708,11 +751,7 @@ Range TextRunHarfBuzz::CharRangeToGlyphRange(const Range& char_range) const {
 }
 
 size_t TextRunHarfBuzz::CountMissingGlyphs() const {
-  static const int kMissingGlyphId = 0;
-  size_t missing = 0;
-  for (size_t i = 0; i < shape.glyph_count; ++i)
-    missing += (shape.glyphs[i] == kMissingGlyphId) ? 1 : 0;
-  return missing;
+  return shape.missing_glyph_count;
 }
 
 void TextRunHarfBuzz::GetClusterAt(size_t pos,
@@ -920,23 +959,19 @@ namespace {
 // Input for the stateless implementation of ShapeRunWithFont.
 struct ShapeRunWithFontInput {
   ShapeRunWithFontInput(const base::string16& full_text,
-                        sk_sp<SkTypeface> skia_face,
-                        FontRenderParams render_params,
-                        int font_size,
+                        const TextRunHarfBuzz::CommonParams& common_params,
                         Range full_range,
-                        UScriptCode script,
-                        bool is_rtl,
                         bool obscured,
                         float glyph_width_for_test,
                         int glyph_spacing,
                         bool subpixel_rendering_suppressed)
-      : skia_face(skia_face),
-        render_params(render_params),
-        script(script),
-        font_size(font_size),
+      : skia_face(common_params.skia_face),
+        render_params(common_params.render_params),
+        script(common_params.script),
+        font_size(common_params.font_size),
         glyph_spacing(glyph_spacing),
         glyph_width_for_test(glyph_width_for_test),
-        is_rtl(is_rtl),
+        is_rtl(common_params.is_rtl),
         obscured(obscured),
         subpixel_rendering_suppressed(subpixel_rendering_suppressed) {
     // hb_buffer_add_utf16 will read the previous and next 5 unicode characters
@@ -1052,11 +1087,16 @@ void ShapeRunWithFont(const ShapeRunWithFontInput& in,
 #else
   constexpr bool force_zero_offset = false;
 #endif
+  constexpr uint16_t kMissingGlyphId = 0;
 
   DCHECK(in.obscured || in.glyph_spacing == 0);
+  out->missing_glyph_count = 0;
   for (size_t i = 0; i < out->glyph_count; ++i) {
     DCHECK_LE(infos[i].codepoint, std::numeric_limits<uint16_t>::max());
-    out->glyphs[i] = static_cast<uint16_t>(infos[i].codepoint);
+    uint16_t glyph = static_cast<uint16_t>(infos[i].codepoint);
+    out->glyphs[i] = glyph;
+    if (glyph == kMissingGlyphId)
+      out->missing_glyph_count += 1;
     DCHECK_GE(infos[i].cluster, in.range.start());
     out->glyph_to_char[i] = infos[i].cluster - in.range.start();
     const SkScalar x_offset =
@@ -1670,72 +1710,31 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   run_list_out->InitIndexMap();
 }
 
-bool RenderTextHarfBuzz::CompareFamily(
-    const base::string16& text,
-    const Font& font,
-    const FontRenderParams& render_params,
-    internal::TextRunHarfBuzz* run,
-    Font* best_font,
-    FontRenderParams* best_render_params,
-    size_t* best_missing_glyphs) {
-  if (!ShapeRunWithFont(text, font, render_params, run))
-    return false;
-
-  const size_t missing_glyphs = run->CountMissingGlyphs();
-  if (missing_glyphs < *best_missing_glyphs) {
-    *best_font = font;
-    *best_render_params = render_params;
-    *best_missing_glyphs = missing_glyphs;
-  }
-  return missing_glyphs == 0;
-}
-
 void RenderTextHarfBuzz::ShapeRunList(const base::string16& text,
                                       internal::TextRunList* run_list) {
-  for (const auto& run : run_list->runs())
-    ShapeRun(text, run.get());
+  for (const auto& run : run_list->runs()) {
+    const Font& primary_font = font_list().GetPrimaryFont();
+    internal::TextRunHarfBuzz::CommonParams common_params = run->common;
+    common_params.ComputeFontSizeAndBaselineOffset(primary_font);
+    ShapeRun(text, common_params, run.get());
+  }
   run_list->ComputePrecedingRunWidths();
 }
 
-void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
-                                  internal::TextRunHarfBuzz* run) {
+void RenderTextHarfBuzz::ShapeRun(
+    const base::string16& text,
+    const internal::TextRunHarfBuzz::CommonParams& common_params,
+    internal::TextRunHarfBuzz* run) {
   const Font& primary_font = font_list().GetPrimaryFont();
-  const std::string primary_family = primary_font.GetFontName();
-  if (run->common.font_size == 0)
-    run->common.font_size = primary_font.GetFontSize();
-  run->common.baseline_offset = 0;
-  if (run->common.baseline_type != NORMAL_BASELINE) {
-    // Calculate a slightly smaller font. The ratio here is somewhat arbitrary.
-    // Proportions from 5/9 to 5/7 all look pretty good.
-    const float ratio = 5.0f / 9.0f;
-    run->common.font_size = ToRoundedInt(primary_font.GetFontSize() * ratio);
-    switch (run->common.baseline_type) {
-      case SUPERSCRIPT:
-        run->common.baseline_offset =
-            primary_font.GetCapHeight() - primary_font.GetHeight();
-        break;
-      case SUPERIOR:
-        run->common.baseline_offset =
-            ToRoundedInt(primary_font.GetCapHeight() * ratio) -
-            primary_font.GetCapHeight();
-        break;
-      case SUBSCRIPT:
-        run->common.baseline_offset =
-            primary_font.GetHeight() - primary_font.GetBaseline();
-        break;
-      case INFERIOR:  // Fall through.
-      default:
-        break;
-    }
-  }
-
   Font best_font(primary_font);
-  FontRenderParams best_render_params;
-  size_t best_missing_glyphs = std::numeric_limits<size_t>::max();
 
   for (const Font& font : font_list().GetFonts()) {
-    if (CompareFamily(text, font, font.GetFontRenderParams(), run, &best_font,
-                      &best_render_params, &best_missing_glyphs))
+    internal::TextRunHarfBuzz::CommonParams test_common_params = common_params;
+    if (test_common_params.SetFontAndRenderParams(font,
+                                                  font.GetFontRenderParams())) {
+      ShapeRunWithFont(text, test_common_params, run);
+    }
+    if (run->shape.missing_glyph_count == 0)
       return;
   }
 
@@ -1747,9 +1746,12 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
   if (GetFallbackFont(primary_font, run_text, run->range.length(),
                       &fallback_font)) {
     preferred_fallback_family = fallback_font.GetFontName();
-    if (CompareFamily(text, fallback_font, fallback_font.GetFontRenderParams(),
-                      run, &best_font, &best_render_params,
-                      &best_missing_glyphs))
+    internal::TextRunHarfBuzz::CommonParams test_common_params = common_params;
+    if (test_common_params.SetFontAndRenderParams(
+            fallback_font, fallback_font.GetFontRenderParams())) {
+      ShapeRunWithFont(text, test_common_params, run);
+    }
+    if (run->shape.missing_glyph_count == 0)
       return;
   }
 #endif
@@ -1796,40 +1798,31 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
 
     FontRenderParamsQuery query;
     query.families.push_back(font_name);
-    query.pixel_size = run->common.font_size;
-    query.style = run->common.italic ? Font::ITALIC : 0;
+    query.pixel_size = common_params.font_size;
+    query.style = common_params.italic ? Font::ITALIC : 0;
     FontRenderParams fallback_render_params = GetFontRenderParams(query, NULL);
-    if (CompareFamily(text, font, fallback_render_params, run, &best_font,
-                      &best_render_params, &best_missing_glyphs))
+    internal::TextRunHarfBuzz::CommonParams test_common_params = common_params;
+    if (test_common_params.SetFontAndRenderParams(font,
+                                                  fallback_render_params)) {
+      ShapeRunWithFont(text, test_common_params, run);
+    }
+    if (run->shape.missing_glyph_count == 0)
       return;
   }
 
-  if (best_missing_glyphs != std::numeric_limits<size_t>::max() &&
-      (best_font.GetFontName() == run->common.font.GetFontName() ||
-       ShapeRunWithFont(text, best_font, best_render_params, run)))
-    return;
-
-  run->shape.glyph_count = 0;
-  run->shape.width = 0.0f;
+  if (run->shape.missing_glyph_count == std::numeric_limits<size_t>::max()) {
+    run->shape.glyph_count = 0;
+    run->shape.width = 0.0f;
+  }
 }
 
-bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
-                                          const Font& font,
-                                          const FontRenderParams& params,
-                                          internal::TextRunHarfBuzz* run) {
-  sk_sp<SkTypeface> skia_face(internal::CreateSkiaTypeface(
-      font, run->common.italic, run->common.weight));
-  if (!skia_face)
-    return false;
-
-  run->common.skia_face = skia_face;
-  run->common.font = font;
-  run->common.render_params = params;
+void RenderTextHarfBuzz::ShapeRunWithFont(
+    const base::string16& text,
+    const internal::TextRunHarfBuzz::CommonParams& common_params,
+    internal::TextRunHarfBuzz* run) {
   const internal::ShapeRunWithFontInput in(
-      text, run->common.skia_face, run->common.render_params,
-      run->common.font_size, run->range, run->common.script, run->common.is_rtl,
-      obscured(), glyph_width_for_test_, glyph_spacing(),
-      subpixel_rendering_suppressed());
+      text, common_params, run->range, obscured(), glyph_width_for_test_,
+      glyph_spacing(), subpixel_rendering_suppressed());
   internal::TextRunHarfBuzz::ShapeOutput out;
 
   // ShapeRunWithFont can be extremely slow, so use cached results if possible.
@@ -1851,13 +1844,15 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
     internal::ShapeRunWithFont(in, &out);
   }
 
-  run->shape = out;
-  // Note that |out.glyph_to_char| is indexed from the beginning of
-  // |run->range|, while |run->shape.glyph_to_char| is indexed from
-  // the beginning of |text|.
-  for (size_t i = 0; i < run->shape.glyph_to_char.size(); ++i)
-    run->shape.glyph_to_char[i] += run->range.start();
-  return true;
+  if (out.missing_glyph_count < run->shape.missing_glyph_count) {
+    run->common = common_params;
+    run->shape = out;
+    // Note that |out.glyph_to_char| is indexed from the beginning of
+    // |run->range|, while |run->shape.glyph_to_char| is indexed from
+    // the beginning of |text|.
+    for (size_t i = 0; i < run->shape.glyph_to_char.size(); ++i)
+      run->shape.glyph_to_char[i] += run->range.start();
+  }
 }
 
 void RenderTextHarfBuzz::EnsureLayoutRunList() {

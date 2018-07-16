@@ -551,9 +551,16 @@ class RenderTextHarfBuzzTest : public RenderTextTest {
 
   bool ShapeRunWithFont(const base::string16& text,
                         const Font& font,
-                        const FontRenderParams& params,
+                        const FontRenderParams& render_params,
                         internal::TextRunHarfBuzz* run) {
-    return GetRenderTextHarfBuzz()->ShapeRunWithFont(text, font, params, run);
+    const Font& primary_font =
+        GetRenderTextHarfBuzz()->font_list().GetPrimaryFont();
+    run->common.ComputeFontSizeAndBaselineOffset(primary_font);
+    if (!run->common.SetFontAndRenderParams(font, render_params))
+      return false;
+    run->shape.missing_glyph_count = static_cast<size_t>(-1);
+    GetRenderTextHarfBuzz()->ShapeRunWithFont(text, run->common, run);
+    return true;
   }
 
   int GetCursorYForTesting(int line_num = 0) {
