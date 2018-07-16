@@ -31,6 +31,8 @@ class ASH_EXPORT AssistantNotificationController
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
 
+  void RetrieveNotification(AssistantNotificationPtr notification,
+                            int action_index);
   void DismissNotification(AssistantNotificationPtr notification);
 
   // chromeos::assistant::mojom::AssistantNotificationSubscriber:

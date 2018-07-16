@@ -58,6 +58,10 @@ void FakeAssistantManagerServiceImpl::AddAssistantInteractionSubscriber(
 void FakeAssistantManagerServiceImpl::AddAssistantNotificationSubscriber(
     mojom::AssistantNotificationSubscriberPtr subscriber) {}
 
+void FakeAssistantManagerServiceImpl::RetrieveNotification(
+    mojom::AssistantNotificationPtr notification,
+    int action_index) {}
+
 void FakeAssistantManagerServiceImpl::DismissNotification(
     mojom::AssistantNotificationPtr notification) {}
 

@@ -56,7 +56,11 @@ class AssistantNotificationDelegate
     if (notification_->action_url.is_valid() && assistant_controller_)
       assistant_controller_->OpenUrl(notification_->action_url);
 
-    // TODO(wutao): retrieve the notification.
+    if (notification_controller_) {
+      // TODO(wutao): support buttons with different |action_index|.
+      notification_controller_->RetrieveNotification(notification_.Clone(),
+                                                     /*action_index=*/0);
+    }
   }
 
  private:
@@ -90,6 +94,12 @@ void AssistantNotificationController::SetAssistant(
   chromeos::assistant::mojom::AssistantNotificationSubscriberPtr ptr;
   assistant_notification_subscriber_binding_.Bind(mojo::MakeRequest(&ptr));
   assistant_->AddAssistantNotificationSubscriber(std::move(ptr));
+}
+
+void AssistantNotificationController::RetrieveNotification(
+    AssistantNotificationPtr notification,
+    int action_index) {
+  assistant_->RetrieveNotification(std::move(notification), action_index);
 }
 
 void AssistantNotificationController::DismissNotification(
