@@ -3168,7 +3168,6 @@ static int get_next_job_info(AV1Decoder *const pbi,
   tile_info = tile_data->tile_info;
   dec_row_mt_sync = &tile_data->dec_row_mt_sync;
 
-  next_job_info->job_available = 1;
   next_job_info->tile_row = tile_row;
   next_job_info->tile_col = tile_col;
   next_job_info->mi_row =

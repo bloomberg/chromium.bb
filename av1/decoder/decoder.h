@@ -68,7 +68,6 @@ typedef struct AV1DecRowMTJobInfo {
   int tile_row;
   int tile_col;
   int mi_row;
-  int job_available;
 } AV1DecRowMTJobInfo;
 
 typedef struct AV1DecRowMTSyncData {
