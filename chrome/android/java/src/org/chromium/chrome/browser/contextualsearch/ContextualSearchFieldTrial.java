@@ -128,16 +128,12 @@ public class ContextualSearchFieldTrial {
      * @return Whether Contextual Search is enabled or not.
      */
     public static boolean isEnabled() {
-        if (sEnabled == null) {
-            sEnabled = detectEnabled();
-        }
+        if (sEnabled == null) sEnabled = detectEnabled();
         return sEnabled.booleanValue();
     }
 
     private static boolean detectEnabled() {
-        if (SysUtils.isLowEndDevice()) {
-            return false;
-        }
+        if (SysUtils.isLowEndDevice()) return false;
 
         // Allow this user-flippable flag to disable the feature.
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_CONTEXTUAL_SEARCH)) {
@@ -150,9 +146,7 @@ public class ContextualSearchFieldTrial {
         }
 
         // Allow disabling the feature remotely.
-        if (getBooleanParam(DISABLED_PARAM)) {
-            return false;
-        }
+        if (getBooleanParam(DISABLED_PARAM)) return false;
 
         return true;
     }
