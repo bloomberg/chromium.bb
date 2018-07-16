@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/html/canvas/text_metrics.h"
+#include "third_party/blink/renderer/platform/fonts/character_range.h"
 
 namespace blink {
 
@@ -63,6 +64,12 @@ void TextMetrics::Update(const Font& font,
   text_run.SetNormalizeSpace(true);
   FloatRect bbox = font.BoundingBox(text_run);
   const FontMetrics& font_metrics = font_data->GetFontMetrics();
+
+  Vector<CharacterRange> ranges = font.IndividualCharacterRanges(text_run);
+  advances_.resize(ranges.size());
+  for (unsigned i = 0; i < ranges.size(); i++) {
+    advances_[i] = ranges[i].start;
+  }
 
   // x direction
   width_ = bbox.Width();
