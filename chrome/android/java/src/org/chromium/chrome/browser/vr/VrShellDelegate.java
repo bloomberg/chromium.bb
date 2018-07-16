@@ -489,7 +489,7 @@ public class VrShellDelegate
      * When the app is pausing we need to unregister with the Daydream platform to prevent this app
      * from being launched from the background when the device enters VR.
      */
-    public static void maybeUnregisterVrEntryHook(ChromeActivity activity) {
+    public static void maybeUnregisterVrEntryHook() {
         // Daydream is not supported on pre-N devices.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
         if (sInstance != null) return; // Will be handled in onPause.
@@ -622,7 +622,7 @@ public class VrShellDelegate
 
         VrShellDelegate instance = getInstance(activity);
         if (instance == null) return;
-        instance.onNewIntentWithNativeInternal(activity, intent);
+        instance.onNewVrIntent();
     }
 
     /**
@@ -1265,42 +1265,24 @@ public class VrShellDelegate
         for (VrModeObserver observer : sVrModeObservers) observer.onEnterVr();
     }
 
-    private void onVrIntent() {
-        if (USE_HIDE_ANIMATION) mNeedsAnimationCancel = true;
-
-        assert !mInternalIntentUsedToStartVr;
-        nativeRecordVrStartAction(mNativeVrShellDelegate, VrStartAction.INTENT_LAUNCH);
-
-        if (mInVr) return;
-
-        mStartedFromVrIntent = true;
-        // Setting DON succeeded will cause us to enter VR when resuming.
-        mDonSucceeded = true;
-    }
-
-    private void onEnterVrUnsupported() {
-        // Auto-presentation is unsupported, but we still need to remove the black overlay before we
-        // exit to Daydream so that the user doesn't see black when they come back to Chrome. The
-        // overlay will be removed when we get paused by Daydream.
+    private void onVrIntentUnsupported() {
+        // If entering VR is unsupported for some reason, clean up what we did in
+        // maybeHandleVrIntentPreNative.
         assert !mInVr;
-        mNeedsAnimationCancel = false;
         mStartedFromVrIntent = false;
-        // We remove the VR-specific system UI flags here so that the system UI shows up properly
-        // when Chrome is resumed in non-VR mode.
-        assert mRestoreSystemUiVisibility;
-        restoreWindowMode();
-
-        boolean launched = getVrDaydreamApi().launchVrHomescreen();
-        assert launched;
+        cancelPendingVrEntry();
 
         // Some Samsung devices change the screen density after exiting VR mode which causes
         // us to restart Chrome with the VR intent that originally started it. We don't want to
         // enable VR mode when the user opens Chrome again in 2D mode, so we remove VR specific
         // extras.
         VrIntentUtils.removeVrExtras(mActivity.getIntent());
+
+        // We may still be showing the STAY_HIDDEN animation, so cancel it if necessary.
+        cancelStartupAnimationIfNeeded();
     }
 
-    private void onNewIntentWithNativeInternal(ChromeActivity activity, Intent intent) {
+    private void onNewVrIntent() {
         // We set the the system UI in maybeHandleVrIntentPreNative, so make sure we restore it when
         // we exit VR, or cancel VR entry.
         mRestoreSystemUiVisibility = true;
@@ -1311,21 +1293,23 @@ public class VrShellDelegate
             return;
         }
 
-        setVrModeEnabled(mActivity, true);
+        if (USE_HIDE_ANIMATION) mNeedsAnimationCancel = true;
 
-        if (isVrBrowsingSupported(mActivity)) {
-            if (DEBUG_LOGS) Log.i(TAG, "onNewIntentWithNative: vr");
-            onVrIntent();
-        } else {
-            if (DEBUG_LOGS) Log.i(TAG, "onNewIntentWithNative: unsupported");
-            // TODO(ymalik): Currently we always return to Daydream home, this makes less sense if
-            // a non-VR app sends an intent, perhaps just ignoring the intent is better.
-            onEnterVrUnsupported();
+        if (!isVrBrowsingSupported(mActivity)) {
+            onVrIntentUnsupported();
             return;
         }
 
+        if (mInVr) return;
+
+        mStartedFromVrIntent = true;
+        // Setting DON succeeded will cause us to enter VR when resuming.
+        mDonSucceeded = true;
+
+        nativeRecordVrStartAction(mNativeVrShellDelegate, VrStartAction.INTENT_LAUNCH);
+
         if (!mPaused) {
-            // Note that cancelling the animation below is what causes us to enter VR mode. We start
+            // Note that canceling the animation below is what causes us to enter VR mode. We start
             // an intermediate activity to cancel the animation which causes onPause and onResume to
             // be called and we enter VR mode in onResume (because we set the mEnterVrOnStartup bit
             // above). If Chrome is already running, onResume which will be called after
