@@ -99,6 +99,26 @@ void PreviewsUIService::OnIgnoreBlacklistDecisionStatusChanged(bool ignored) {
   logger_->OnIgnoreBlacklistDecisionStatusChanged(ignored);
 }
 
+void PreviewsUIService::SetResourceLoadingHintsResourcePatternsToBlock(
+    const GURL& document_gurl,
+    const std::vector<std::string>& patterns) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  resource_loading_hints_document_gurl_ = document_gurl;
+  resource_loading_hints_patterns_to_block_ = patterns;
+}
+
+std::vector<std::string>
+PreviewsUIService::GetResourceLoadingHintsResourcePatternsToBlock(
+    const GURL& document_gurl) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // TODO(tbansal): https://crbug.com/856243. Read patterns from the proto
+  // optimizations file from the disk, and populate the return value.
+  if (document_gurl != resource_loading_hints_document_gurl_)
+    return std::vector<std::string>();
+  return resource_loading_hints_patterns_to_block_;
+}
+
 PreviewsLogger* PreviewsUIService::previews_logger() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return logger_.get();

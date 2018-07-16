@@ -7,8 +7,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/previews/content/previews_content_util.h"
+#include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_user_data.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,6 +31,8 @@ ResourceLoadingHintsWebContentsObserver::
     ResourceLoadingHintsWebContentsObserver(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
 }
 
 void ResourceLoadingHintsWebContentsObserver::DidFinishNavigation(
@@ -70,8 +75,28 @@ void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
   blink::mojom::PreviewsResourceLoadingHintsPtr hints_ptr =
       blink::mojom::PreviewsResourceLoadingHints::New();
 
-  // TOOD(tbansal): https://crbug.com/856243. Send an actual list of resource
-  // URLs to block.
-  hints_ptr->subresources_to_block.push_back(std::string());
+  const std::vector<std::string>& hints =
+      GetResourceLoadingHintsResourcePatternsToBlock(
+          navigation_handle->GetURL());
+
+  if (hints.empty())
+    return;
+  for (const std::string& hint : hints)
+    hints_ptr->subresources_to_block.push_back(hint);
+
   hints_receiver_ptr->SetResourceLoadingHints(std::move(hints_ptr));
+}
+
+const std::vector<std::string> ResourceLoadingHintsWebContentsObserver::
+    GetResourceLoadingHintsResourcePatternsToBlock(
+        const GURL& document_gurl) const {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(profile_);
+
+  PreviewsService* previews_service =
+      PreviewsServiceFactory::GetForProfile(profile_);
+  previews::PreviewsUIService* previews_ui_service =
+      previews_service->previews_ui_service();
+  return previews_ui_service->GetResourceLoadingHintsResourcePatternsToBlock(
+      document_gurl);
 }
