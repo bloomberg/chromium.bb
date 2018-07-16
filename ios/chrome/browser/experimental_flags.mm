@@ -112,14 +112,6 @@ bool IsNewClearBrowsingDataUIEnabled() {
   return base::FeatureList::IsEnabled(kNewClearBrowsingDataUI);
 }
 
-bool IsNewFeedbackKitEnabled() {
-  return true;
-}
-
-bool IsNewFeedbackKitEnabledWithSSOService() {
-  return true;
-}
-
 bool IsThirdPartyKeyboardWorkaroundEnabled() {
   // Check if the experimental flag is forced on or off.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
