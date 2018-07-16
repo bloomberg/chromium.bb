@@ -741,7 +741,7 @@ Polymer({
       }
     }
     if (this.settings.copies.available)
-      cjt.print.copies = {copies: this.settings.copies.value};
+      cjt.print.copies = {copies: parseInt(this.getSettingValue('copies'), 10)};
     if (this.settings.duplex.available) {
       cjt.print.duplex = {
         type: this.settings.duplex.value ? 'LONG_EDGE' : 'NO_DUPLEX'
@@ -769,7 +769,7 @@ Polymer({
       }
     } else {
       cjt.print.page_orientation = {
-        type: this.settings.layout ? 'LANDSCAPE' : 'PORTRAIT'
+        type: this.settings.layout.value ? 'LANDSCAPE' : 'PORTRAIT'
       };
     }
     if (this.settings.dpi.available) {

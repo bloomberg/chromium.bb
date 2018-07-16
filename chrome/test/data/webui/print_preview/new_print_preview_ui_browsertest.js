@@ -252,6 +252,7 @@ PrintPreviewModelTest = class extends NewPrintPreviewTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       '../settings/test_util.js',
+      'print_preview_test_utils.js',
       'model_test.js',
     ]);
   }
@@ -264,6 +265,14 @@ PrintPreviewModelTest = class extends NewPrintPreviewTest {
 
 TEST_F('PrintPreviewModelTest', 'SetStickySettings', function() {
   this.runMochaTest(model_test.TestNames.SetStickySettings);
+});
+
+TEST_F('PrintPreviewModelTest', 'GetPrintTicket', function() {
+  this.runMochaTest(model_test.TestNames.GetPrintTicket);
+});
+
+TEST_F('PrintPreviewModelTest', 'GetCloudPrintTicket', function() {
+  this.runMochaTest(model_test.TestNames.GetCloudPrintTicket);
 });
 
 PrintPreviewPreviewGenerationTest = class extends NewPrintPreviewTest {
