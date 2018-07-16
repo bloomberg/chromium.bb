@@ -288,11 +288,12 @@ void XRWebGLDrawingBuffer::UseSharedBuffer(
     framebuffer_complete_checked_for_sharedbuffer_ = true;
   }
 
-  if (discard_framebuffer_supported_) {
-    const GLenum kAttachments[3] = {GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT,
-                                    GL_STENCIL_ATTACHMENT};
-    gl->DiscardFramebufferEXT(GL_FRAMEBUFFER, 3, kAttachments);
+  if (WantExplicitResolve()) {
+    // Bind the drawing framebuffer if it wasn't bound previously.
+    gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
   }
+
+  ClearBoundFramebuffer();
 
   DrawingBuffer::Client* client = drawing_buffer_->client();
   if (!client)
@@ -306,19 +307,14 @@ void XRWebGLDrawingBuffer::DoneWithSharedBuffer() {
   BindAndResolveDestinationFramebuffer();
 
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+
+  // Discard the depth and stencil attachments since we're done with them.
+  // Don't discard the color buffer, we do need this rendered into the
+  // shared buffer.
   if (discard_framebuffer_supported_) {
-    // Discard the depth and stencil attachments since we're done with them.
-    // Don't discard the color buffer, we do need this rendered into the
-    // shared buffer.
-    if (WantExplicitResolve()) {
-      gl->BindFramebuffer(GL_FRAMEBUFFER, resolved_framebuffer_);
-    } else {
-      gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-    }
-    const GLenum kAttachments[] = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
-    gl->DiscardFramebufferEXT(GL_FRAMEBUFFER,
-                              sizeof(kAttachments) / sizeof(kAttachments[0]),
-                              kAttachments);
+    const GLenum kAttachments[3] = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
+    gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+    gl->DiscardFramebufferEXT(GL_FRAMEBUFFER, 2, kAttachments);
   }
 
   // Always bind to the default framebuffer as a hint to the GPU to start
@@ -334,6 +330,37 @@ void XRWebGLDrawingBuffer::DoneWithSharedBuffer() {
   if (!client)
     return;
   client->DrawingBufferClientRestoreFramebufferBinding();
+}
+
+void XRWebGLDrawingBuffer::ClearBoundFramebuffer() {
+  gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+
+  GLbitfield clear_bits = GL_COLOR_BUFFER_BIT;
+  gl->ColorMask(true, true, true, true);
+  gl->ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+  if (depth_) {
+    clear_bits |= GL_DEPTH_BUFFER_BIT;
+    gl->DepthMask(true);
+    gl->ClearDepthf(1.0f);
+  }
+
+  if (stencil_) {
+    clear_bits |= GL_STENCIL_BUFFER_BIT;
+    gl->StencilMaskSeparate(GL_FRONT, true);
+    gl->ClearStencil(0);
+  }
+
+  gl->Disable(GL_SCISSOR_TEST);
+
+  gl->Clear(clear_bits);
+
+  DrawingBuffer::Client* client = drawing_buffer_->client();
+  if (!client)
+    return;
+
+  client->DrawingBufferClientRestoreScissorTest();
+  client->DrawingBufferClientRestoreMaskAndClearValues();
 }
 
 void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
@@ -545,11 +572,12 @@ void XRWebGLDrawingBuffer::SwapColorBuffers() {
     framebuffer_complete_checked_for_swap_ = true;
   }
 
-  if (discard_framebuffer_supported_) {
-    const GLenum kAttachments[3] = {GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT,
-                                    GL_STENCIL_ATTACHMENT};
-    gl->DiscardFramebufferEXT(GL_FRAMEBUFFER, 3, kAttachments);
+  if (WantExplicitResolve()) {
+    // Bind the drawing framebuffer if it wasn't bound previously.
+    gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
   }
+
+  ClearBoundFramebuffer();
 
   client->DrawingBufferClientRestoreFramebufferBinding();
 }

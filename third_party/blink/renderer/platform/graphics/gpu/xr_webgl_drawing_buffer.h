@@ -113,6 +113,8 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   void BindAndResolveDestinationFramebuffer();
   void SwapColorBuffers();
 
+  void ClearBoundFramebuffer();
+
   void MailboxReleased(scoped_refptr<ColorBuffer>,
                        const gpu::SyncToken&,
                        bool lost_resource);
