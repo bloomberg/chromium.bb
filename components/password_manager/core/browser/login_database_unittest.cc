@@ -1484,6 +1484,26 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
   password_form.username_value = ASCIIToUTF16("JaneDoe");
   EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
 
+  password_form.origin = GURL("http://rsolomakhin.github.io/autofill/");
+  password_form.signon_realm = "http://rsolomakhin.github.io/";
+  password_form.blacklisted_by_user = true;
+  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  password_form.origin = GURL("https://rsolomakhin.github.io/autofill/");
+  password_form.signon_realm = "https://rsolomakhin.github.io/";
+  password_form.blacklisted_by_user = true;
+  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  password_form.origin = GURL("http://rsolomakhin.github.io/autofill/123");
+  password_form.signon_realm = "http://rsolomakhin.github.io/";
+  password_form.blacklisted_by_user = true;
+  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
+  password_form.origin = GURL("https://rsolomakhin.github.io/autofill/1234");
+  password_form.signon_realm = "https://rsolomakhin.github.io/";
+  password_form.blacklisted_by_user = true;
+  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
+
   base::HistogramTester histogram_tester;
   db().ReportMetrics("", false);
 
@@ -1544,6 +1564,8 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
       1);
   histogram_tester.ExpectUniqueSample("PasswordManager.InaccessiblePasswords",
                                       0, 1);
+  histogram_tester.ExpectUniqueSample("PasswordManager.BlacklistedDuplicates",
+                                      2, 1);
 }
 
 TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {
