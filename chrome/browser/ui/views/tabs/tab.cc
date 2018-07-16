@@ -1143,7 +1143,9 @@ int Tab::GetMinimumActiveWidth() {
 
 // static
 int Tab::GetStandardWidth() {
-  constexpr int kLayoutWidth[] = {193, 193, 245, 240, 240};
+  constexpr int kRefreshTabWidth = 240 - kSeparatorThickness;
+  constexpr int kLayoutWidth[] = {193, 193, 245, kRefreshTabWidth,
+                                  kRefreshTabWidth};
   return GetOverlap() + kLayoutWidth[MD::GetMode()];
 }
 
