@@ -21,7 +21,6 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class ManualFillingCoordinator {
     private final ManualFillingMediator mMediator = new ManualFillingMediator();
-    // Ideally, it just manages |Provider|s and attaches them to the accessory when tabs change.
 
     /**
      * Creates a the manual filling controller.
@@ -45,6 +44,14 @@ public class ManualFillingCoordinator {
      */
     public void destroy() {
         mMediator.destroy();
+    }
+
+    /**
+     * Handles tapping on the Android back button.
+     * @return Whether tapping the back button dismissed the accessory sheet or not.
+     */
+    public boolean handleBackPress() {
+        return mMediator.handleBackPress();
     }
 
     void registerActionProvider(Provider<KeyboardAccessoryData.Action> actionProvider) {

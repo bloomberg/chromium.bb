@@ -161,7 +161,6 @@ public class KeyboardAccessoryCoordinator {
     }
 
     /**
-     * TODO(fhorschig): Remove this function. The accessory probably shouldn't know this concept.
      * Dismisses the accessory by hiding it's view, clearing potentially left over suggestions and
      * hiding the keyboard.
      */

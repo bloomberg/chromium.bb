@@ -13,6 +13,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 
+import android.support.test.espresso.Espresso;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -160,6 +161,28 @@ public class ManualFillingIntegrationTest {
         });
 
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
+    }
+
+    @Test
+    @SmallTest
+    public void testPressingBackButtonHidesAccessorySheet()
+            throws InterruptedException, TimeoutException {
+        mHelper.loadTestPage(false);
+        mHelper.createTestTab();
+
+        // Focus the field to bring up the accessory.
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+
+        // Click the tab to show the sheet and hide the keyboard.
+        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        mHelper.waitForKeyboardToDisappear();
+        whenDisplayed(withId(R.id.keyboard_accessory_sheet));
+
+        Espresso.pressBack();
+
+        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
+        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory));
     }
 
     // TODO(fhorschig): Check that it overlays info bars.
