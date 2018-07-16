@@ -21,6 +21,7 @@
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/prefs/pref_service.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -49,8 +50,7 @@ PaymentRequest::PaymentRequest(
           render_frame_host->GetLastCommittedURL())),
       observer_for_testing_(observer_for_testing),
       journey_logger_(delegate_->IsIncognito(),
-                      web_contents_->GetLastCommittedURL(),
-                      delegate_->GetUkmRecorder()),
+                      ukm::GetSourceIdForWebContentsDocument(web_contents)),
       weak_ptr_factory_(this) {
   // OnConnectionTerminated will be called when the Mojo pipe is closed. This
   // will happen as a result of many renderer-side events (both successful and

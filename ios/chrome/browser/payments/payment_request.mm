@@ -31,6 +31,7 @@
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #import "ios/chrome/browser/payments/ios_payment_instrument.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
@@ -96,7 +97,8 @@ PaymentRequest::PaymentRequest(
       selected_payment_method_(nullptr),
       selected_shipping_option_(nullptr),
       profile_comparator_(GetApplicationLocale(), *this),
-      journey_logger_(IsIncognito(), GetLastCommittedURL(), GetUkmRecorder()),
+      journey_logger_(IsIncognito(),
+                      ukm::GetSourceIdForWebStateDocument(web_state)),
       payment_instruments_ready_(false),
       ios_instrument_finder_(
           GetApplicationContext()->GetSharedURLLoaderFactory(),

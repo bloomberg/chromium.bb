@@ -16,6 +16,7 @@
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/test_content_payment_request_delegate.h"
 #include "components/payments/core/journey_logger.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/payments/payment_request.mojom.h"
 
@@ -29,8 +30,7 @@ class PaymentRequestStateTest : public testing::Test,
       : num_on_selected_information_changed_called_(0),
         test_payment_request_delegate_(&test_personal_data_manager_),
         journey_logger_(test_payment_request_delegate_.IsIncognito(),
-                        GURL("http://www.test.com"),
-                        test_payment_request_delegate_.GetUkmRecorder()),
+                        ukm::UkmRecorder::GetNewSourceID()),
         address_(autofill::test::GetFullProfile()),
         credit_card_visa_(autofill::test::GetCreditCard()) {
     test_personal_data_manager_.SetAutofillCreditCardEnabled(true);
