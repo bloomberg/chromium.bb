@@ -860,7 +860,6 @@ Bug(none) fast/forms/suggestion-picker/week-suggestion-picker-mouse-operations.h
 
 Bug(none) fast/scrolling/absolute-position-behind-scrollbar.html [ Failure ]
 Bug(none) fast/scrolling/fixed-position-behind-scrollbar.html [ Failure Timeout ]
-Bug(none) fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Failure ]
 Bug(none) fast/events/remove-child-onscroll.html [ Timeout ]
 Bug(none) fast/events/mouse-wheel-main-frame-scroll.html [ Timeout ]
 Bug(none) fast/scrolling/hover-during-scroll.html [ Timeout ]

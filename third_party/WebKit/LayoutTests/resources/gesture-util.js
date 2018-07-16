@@ -195,26 +195,6 @@ function mouseClickOn(x, y) {
   });
 }
 
-// Simulate a mouse press on point for a certain time.
-function mousePressOn(x, y, t) {
-  return new Promise((resolve, reject) => {
-    if (chrome && chrome.gpuBenchmarking) {
-      let pointerActions = [{
-        source: 'mouse',
-        actions: [
-          { 'name': 'pointerMove', 'x': x, 'y': y },
-          { 'name': 'pointerDown', 'x': x, 'y': y },
-          { 'name': 'pause', duration: t},
-          { 'name': 'pointerUp' },
-        ]
-      }];
-      chrome.gpuBenchmarking.pointerActionSequence(pointerActions, resolve);
-    } else {
-      reject('This test requires chrome.gpuBenchmarking');
-    }
-  });
-}
-
 // Simulate a mouse drag and drop. mouse down at {start_x, start_y}, move to
 // {end_x, end_y} and release.
 function mouseDragAndDrop(start_x, start_y, end_x, end_y, button = 'left') {
