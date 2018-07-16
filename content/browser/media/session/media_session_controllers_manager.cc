@@ -38,7 +38,7 @@ void MediaSessionControllersManager::RenderFrameDeleted(
     return;
 
   for (auto it = controllers_map_.begin(); it != controllers_map_.end();) {
-    if (it->first.first == render_frame_host)
+    if (it->first.render_frame_host == render_frame_host)
       it = controllers_map_.erase(it);
     else
       ++it;

@@ -3478,7 +3478,7 @@ TEST_F(WebContentsImplTest, EnterPictureInPicture) {
           gfx::Size(42, 42) /* natural_size */, 1 /* request_id */));
   EXPECT_TRUE(observer->GetPictureInPictureVideoMediaPlayerId().has_value());
   EXPECT_EQ(kPlayerVideoOnlyId,
-            observer->GetPictureInPictureVideoMediaPlayerId()->second);
+            observer->GetPictureInPictureVideoMediaPlayerId()->delegate_id);
 
   // Picture-in-Picture media player id should not be reset when the media is
   // destroyed (e.g. video stops playing). This allows the Picture-in-Picture
