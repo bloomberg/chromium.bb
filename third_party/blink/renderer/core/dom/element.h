@@ -206,9 +206,14 @@ class CORE_EXPORT Element : public ContainerNode {
                     ExceptionState&);
   void setAttribute(const AtomicString& name, const AtomicString& value);
 
-  // Trusted Type variant of the above.
+  // Trusted Type ScriptURL variant of the above.
   void setAttribute(const QualifiedName&,
                     const StringOrTrustedScriptURL&,
+                    ExceptionState&);
+
+  // Trusted Type HTML variant
+  void setAttribute(const QualifiedName&,
+                    const StringOrTrustedHTML&,
                     ExceptionState&);
 
   static bool ParseAttributeName(QualifiedName&,
@@ -578,6 +583,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   KURL GetURLAttribute(const QualifiedName&) const;
   void GetURLAttribute(const QualifiedName&, StringOrTrustedScriptURL&) const;
+  void FastGetAttribute(const QualifiedName&, StringOrTrustedHTML&) const;
 
   KURL GetNonEmptyURLAttribute(const QualifiedName&) const;
 
