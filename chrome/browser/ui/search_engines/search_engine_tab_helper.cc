@@ -24,7 +24,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/url_fetcher.h"
+#include "content/public/common/resource_type.h"
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -69,14 +69,6 @@ base::string16 GenerateKeywordFromNavigationEntry(
   }
 
   return TemplateURL::GenerateKeyword(url);
-}
-
-void AssociateURLFetcherWithWebContents(content::WebContents* web_contents,
-                                        net::URLFetcher* url_fetcher) {
-  content::AssociateURLFetcherWithRenderFrame(
-      url_fetcher, url::Origin::Create(web_contents->GetURL()),
-      web_contents->GetMainFrame()->GetProcess()->GetID(),
-      web_contents->GetMainFrame()->GetRoutingID());
 }
 
 }  // namespace
@@ -146,11 +138,17 @@ void SearchEngineTabHelper::PageHasOpenSearchDescriptionDocument(
   if (keyword.empty())
     return;
 
+  auto* frame = web_contents()->GetMainFrame();
+  network::mojom::URLLoaderFactoryPtr url_loader_factory;
+  frame->CreateNetworkServiceDefaultFactory(
+      mojo::MakeRequest(&url_loader_factory));
+
   // Download the OpenSearch description document. If this is successful, a
   // new keyword will be created when done.
   TemplateURLFetcherFactory::GetForProfile(profile)->ScheduleDownload(
       keyword, osdd_url, entry->GetFavicon().url,
-      base::Bind(&AssociateURLFetcherWithWebContents, web_contents()));
+      url::Origin::Create(web_contents()->GetURL()), url_loader_factory.get(),
+      frame->GetRoutingID(), content::RESOURCE_TYPE_SUB_RESOURCE);
 }
 
 void SearchEngineTabHelper::OnFaviconUpdated(

@@ -18,9 +18,14 @@ class GURL;
 class TemplateURL;
 class TemplateURLService;
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
+namespace network {
+namespace mojom {
+class URLLoaderFactory;
+}
+}  // namespace network
+
+namespace url {
+class Origin;
 }
 
 // TemplateURLFetcher is responsible for downloading OpenSearch description
@@ -29,12 +34,8 @@ class URLRequestContextGetter;
 //
 class TemplateURLFetcher : public KeyedService {
  public:
-  typedef base::Callback<void(
-      net::URLFetcher* url_fetcher)> URLFetcherCustomizeCallback;
-
   // Creates a TemplateURLFetcher.
-  TemplateURLFetcher(TemplateURLService* template_url_service,
-                     net::URLRequestContextGetter* request_context);
+  explicit TemplateURLFetcher(TemplateURLService* template_url_service);
   ~TemplateURLFetcher() override;
 
   // If TemplateURLFetcher is not already downloading the OSDD for osdd_url,
@@ -45,14 +46,13 @@ class TemplateURLFetcher : public KeyedService {
   // TemplateURL in the model for |keyword|, or we're already downloading an
   // OSDD for this keyword, no download is started.
   //
-  // If |url_fetcher_customize_callback| is not null, it's run after a
-  // URLFetcher is created. This callback can be used to set additional
-  // parameters on the URLFetcher.
-  void ScheduleDownload(
-      const base::string16& keyword,
-      const GURL& osdd_url,
-      const GURL& favicon_url,
-      const URLFetcherCustomizeCallback& url_fetcher_customize_callback);
+  void ScheduleDownload(const base::string16& keyword,
+                        const GURL& osdd_url,
+                        const GURL& favicon_url,
+                        const url::Origin& initiator,
+                        network::mojom::URLLoaderFactory* url_loader_factory,
+                        int render_frame_id,
+                        int resource_type);
 
   // The current number of outstanding requests.
   int requests_count() const { return requests_.size(); }
@@ -69,7 +69,6 @@ class TemplateURLFetcher : public KeyedService {
   friend class RequestDelegate;
 
   TemplateURLService* template_url_service_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // In progress requests.
   std::vector<std::unique_ptr<RequestDelegate>> requests_;
