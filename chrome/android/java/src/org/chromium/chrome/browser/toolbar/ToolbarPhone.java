@@ -1865,7 +1865,9 @@ public class ToolbarPhone extends ToolbarLayout
         assert mTextureCaptureMode != textureMode;
         mTextureCaptureMode = textureMode;
         if (mTextureCaptureMode) {
-            if (!hideShadowForIncognitoNtp()) mToolbarShadow.setVisibility(VISIBLE);
+            if (!hideShadowForIncognitoNtp() && !hideShadowForInterstitial()) {
+                mToolbarShadow.setVisibility(VISIBLE);
+            }
             mPreTextureCaptureAlpha = getAlpha();
             setAlpha(1);
         } else {
@@ -2525,12 +2527,19 @@ public class ToolbarPhone extends ToolbarLayout
     protected boolean shouldDrawShadow() {
         // TODO(twellington): Move this shadow state information to ToolbarDataProvider and show
         // shadow when incognito NTP is scrolled.
-        return mTabSwitcherState == STATIC_TAB && !hideShadowForIncognitoNtp();
+        return mTabSwitcherState == STATIC_TAB && !hideShadowForIncognitoNtp()
+                && !hideShadowForInterstitial();
     }
 
     private boolean hideShadowForIncognitoNtp() {
         return mLocationBar.useModernDesign() && isIncognito()
                 && NewTabPage.isNTPUrl(getToolbarDataProvider().getCurrentUrl());
+    }
+
+    private boolean hideShadowForInterstitial() {
+        return mLocationBar.useModernDesign() && getToolbarDataProvider() != null
+                && getToolbarDataProvider().getTab() != null
+                && getToolbarDataProvider().getTab().isShowingInterstitialPage();
     }
 
     private @VisualState int computeVisualState(boolean isInTabSwitcherMode) {
