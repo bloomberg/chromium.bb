@@ -93,7 +93,7 @@ class STORAGE_EXPORT DatabaseTracker
         const base::string16& database_name) = 0;
 
    protected:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
   };
 
   DatabaseTracker(const base::FilePath& profile_path,
@@ -121,7 +121,9 @@ class STORAGE_EXPORT DatabaseTracker
 
   void CloseTrackerDatabaseAndClearCaches();
 
-  const base::FilePath& DatabaseDirectory() const { return db_dir_; }
+  // Thread-safe getter.
+  const base::FilePath& database_directory() const { return db_dir_; }
+
   base::FilePath GetFullDBFilePath(const std::string& origin_identifier,
                                    const base::string16& database_name);
 
@@ -130,7 +132,7 @@ class STORAGE_EXPORT DatabaseTracker
   virtual bool GetAllOriginIdentifiers(std::vector<std::string>* origin_ids);
   virtual bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info);
 
-  // Safe to call on any thread.
+  // Thread-safe getter.
   storage::QuotaManagerProxy* quota_manager_proxy() const {
     return quota_manager_proxy_.get();
   }
@@ -281,7 +283,12 @@ class STORAGE_EXPORT DatabaseTracker
   bool force_keep_session_state_ = false;
   bool shutting_down_ = false;
   const base::FilePath profile_path_;
+
+  // Can be accessed from any thread via database_directory().
+  //
+  // Thread-safety argument: The member is immutable.
   const base::FilePath db_dir_;
+
   std::unique_ptr<sql::Connection> db_;
   std::unique_ptr<DatabasesTable> databases_table_;
   std::unique_ptr<sql::MetaTable> meta_table_;
@@ -294,9 +301,12 @@ class STORAGE_EXPORT DatabaseTracker
   PendingDeletionCallbacks deletion_callbacks_;
 
   // Apps and Extensions can have special rights.
-  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
+  const scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
-  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
+  // Can be accessed from any thread via quota_manager_proxy().
+  //
+  // Thread-safety argument: The reference is immutable.
+  const scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
   // The database tracker thread we're supposed to run file IO on.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
