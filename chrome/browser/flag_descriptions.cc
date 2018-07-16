@@ -611,7 +611,7 @@ const char kEnableNupPrintingDescription[] =
 
 const char kEnableOptimizationHintsName[] = "Optimization Hints";
 const char kEnableOptimizationHintsDescription[] =
-    "Enable the Optimization Hints feature which incorporates server hints"
+    "Enable the Optimization Hints feature which incorporates server hints "
     "into decisions for what optimizations to perform on some pages on slow "
     "networks.";
 
