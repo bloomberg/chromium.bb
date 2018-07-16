@@ -550,6 +550,12 @@ if (use_v4l2_codec || use_vaapi) {
       "jpeg_decode_accelerator_unittest.cc",
       "test/video_accelerator_unittest_helpers.h",
     ]
+    data = [
+      "//media/test/data/peach_pi-1280x720.jpg",
+      "//media/test/data/peach_pi-40x23.jpg",
+      "//media/test/data/peach_pi-41x22.jpg",
+      "//media/test/data/peach_pi-41x23.jpg",
+    ]
     if (use_x11) {
       deps += [ "//ui/gfx/x" ]
     }
