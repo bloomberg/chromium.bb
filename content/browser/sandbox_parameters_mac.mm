@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/numerics/checked_math.h"
 #include "base/strings/stringprintf.h"
@@ -63,8 +64,8 @@ void SetupCommonSandboxParameters(sandbox::SeatbeltExecClient* client) {
   CHECK(client->SetParameter(service_manager::SandboxMac::kSandboxBundlePath,
                              bundle_path));
 
-  NSBundle* bundle = base::mac::OuterBundle();
-  std::string bundle_id = base::SysNSStringToUTF8([bundle bundleIdentifier]);
+  std::string bundle_id = base::mac::BaseBundleID();
+  DCHECK(!bundle_id.empty()) << "base::mac::OuterBundle is unset";
   CHECK(client->SetParameter(
       service_manager::SandboxMac::kSandboxChromeBundleId, bundle_id));
 

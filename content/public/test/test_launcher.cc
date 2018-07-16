@@ -57,6 +57,7 @@
 #include "services/service_manager/sandbox/win/sandbox_win.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "sandbox/mac/seatbelt_exec.h"
 #endif
 
 namespace content {
@@ -614,6 +615,13 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
   params.instance = GetModuleHandle(NULL);
   params.sandbox_info = &sandbox_info;
+#elif defined(OS_MACOSX)
+  sandbox::SeatbeltExecServer::CreateFromArgumentsResult seatbelt =
+      sandbox::SeatbeltExecServer::CreateFromArguments(
+          command_line->GetProgram().value().c_str(), argc, argv);
+  if (seatbelt.sandbox_required) {
+    CHECK(seatbelt.server->InitializeSandbox());
+  }
 #elif !defined(OS_ANDROID)
   params.argc = argc;
   params.argv = const_cast<const char**>(argv);
