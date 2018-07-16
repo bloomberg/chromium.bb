@@ -10,6 +10,11 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
+#include "base/sequence_checker.h"
+#include "base/single_thread_task_runner.h"
 
 namespace policy {
 
@@ -25,19 +30,22 @@ class BrowserDMTokenStorage {
 
   // Returns the global singleton object. Must be called from the UI thread.
   static BrowserDMTokenStorage* Get();
-  // Returns a client ID unique to the machine.
-  virtual std::string RetrieveClientId() = 0;
-  // Returns the enrollment token, or an empty string if there is none.
-  virtual std::string RetrieveEnrollmentToken() = 0;
-  // Asynchronously stores |dm_token| in the registry and calls |callback| with
-  // a boolean to indicate success or failure. It is an error to attempt
-  // concurrent store operations.
+  // Returns a client ID unique to the machine. Virtual for tests.
+  virtual std::string RetrieveClientId();
+  // Returns the enrollment token, or an empty string if there is none. Virtual
+  // for tests.
+  virtual std::string RetrieveEnrollmentToken();
+  // Asynchronously stores |dm_token| and calls |callback| with a boolean to
+  // indicate success or failure. It is an error to attempt concurrent store
+  // operations. Virtual for tests.
   virtual void StoreDMToken(const std::string& dm_token,
-                            StoreCallback callback) = 0;
-  // Returns an already stored DM token from the registry or from the cache in
-  // memory. An empty token is returned if no DM token exists on the system or
-  // an error is encountered.
-  virtual std::string RetrieveDMToken() = 0;
+                            StoreCallback callback);
+  // Returns an already stored DM token. An empty token is returned if no DM
+  // token exists on the system or an error is encountered. Virtual for tests.
+  virtual std::string RetrieveDMToken();
+  // Must be called after the DM token is saved, to ensure that the callback is
+  // invoked.
+  void OnDMTokenStored(bool success);
 
   // Set the mock BrowserDMTokenStorage for testing. The caller owns the
   // instance of the storage.
@@ -46,11 +54,41 @@ class BrowserDMTokenStorage {
   }
 
  protected:
-  BrowserDMTokenStorage() = default;
-  virtual ~BrowserDMTokenStorage() = default;
+  friend class base::NoDestructor<BrowserDMTokenStorage>;
+
+  // Get the global singleton instance by calling BrowserDMTokenStorage::Get().
+  BrowserDMTokenStorage();
+  virtual ~BrowserDMTokenStorage();
 
  private:
   static BrowserDMTokenStorage* storage_for_testing_;
+
+  // Initializes the DMTokenStorage object and caches the ids and tokens. This
+  // is called the first time the BrowserDMTokenStorage is interacted with.
+  void InitIfNeeded();
+
+  // Gets the client ID and stores it in |client_id_|. This implementation is
+  // platform dependant.
+  virtual std::string InitClientId();
+  // Gets the enrollment token and stores it in |enrollment_token_|. This
+  // implementation is platform dependant.
+  virtual std::string InitEnrollmentToken();
+  // Gets the DM token and stores it in |dm_token_|. This implementation is
+  // platform dependant.
+  virtual std::string InitDMToken();
+  // Saves the DM token. This implementation is platform dependant.
+  virtual void SaveDMToken(const std::string& token);
+
+  // Will be called after the DM token is stored.
+  StoreCallback store_callback_;
+
+  bool is_initialized_;
+
+  std::string client_id_;
+  std::string enrollment_token_;
+  std::string dm_token_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserDMTokenStorage);
 };
