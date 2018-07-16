@@ -26,7 +26,7 @@ namespace subresource_filter {
 namespace {
 
 void LogSecureInfo(AdDelayThrottle::SecureInfo info) {
-  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.AdDelay.SecureInfo", info);
+  UMA_HISTOGRAM_ENUMERATION("Ads.Features.ResourceIsSecure", info);
 }
 
 class InsecureCondition : public AdDelayThrottle::DeferCondition {
@@ -65,7 +65,7 @@ class NonIsolatedCondition : public AdDelayThrottle::DeferCondition {
   ~NonIsolatedCondition() override {
     if (provider()->IsAdRequest()) {
       UMA_HISTOGRAM_ENUMERATION(
-          "SubresourceFilter.AdDelay.IsolatedInfo",
+          "Ads.Features.AdResourceIsIsolated",
           was_condition_ever_satisfied()
               ? AdDelayThrottle::IsolatedInfo::kNonIsolatedAd
               : AdDelayThrottle::IsolatedInfo::kIsolatedAd);

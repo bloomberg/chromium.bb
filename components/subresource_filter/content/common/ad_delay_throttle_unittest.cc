@@ -448,7 +448,7 @@ TEST_P(AdDelayThrottleEnabledParamTest, SecureMetrics) {
   loader_factory_.AddResponse(insecure_url.spec(), "foo");
   loader_factory_.AddResponse(secure_url.spec(), "foo");
 
-  const char kSecureHistogram[] = "SubresourceFilter.AdDelay.SecureInfo";
+  const char kSecureHistogram[] = "Ads.Features.ResourceIsSecure";
   {
     base::HistogramTester histograms;
     {
@@ -510,7 +510,7 @@ TEST_P(AdDelayThrottleEnabledParamTest, IsolatedMetrics) {
   const GURL url("https://example.test/ad.js");
   loader_factory_.AddResponse(url.spec(), "foo");
 
-  const char kIsolatedHistogram[] = "SubresourceFilter.AdDelay.IsolatedInfo";
+  const char kIsolatedHistogram[] = "Ads.Features.AdResourceIsIsolated";
   {
     base::HistogramTester histograms;
     {
