@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/content/public/cpp/view.h"
+#include "services/content/public/cpp/navigable_contents.h"
 
 #include "services/content/public/cpp/buildflags.h"
 
@@ -15,43 +15,47 @@
 
 namespace content {
 
-View::View(mojom::ViewFactory* factory) : client_binding_(this) {
-  mojom::ViewClientPtr client;
+NavigableContents::NavigableContents(mojom::NavigableContentsFactory* factory)
+    : client_binding_(this) {
+  mojom::NavigableContentsClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client));
-  factory->CreateView(mojom::ViewParams::New(), mojo::MakeRequest(&view_),
-                      std::move(client));
+  factory->CreateContents(mojom::NavigableContentsParams::New(),
+                          mojo::MakeRequest(&contents_), std::move(client));
 }
 
-View::~View() = default;
+NavigableContents::~NavigableContents() = default;
 
-views::View* View::CreateUI() {
-  view_->PrepareToEmbed(
-      base::BindOnce(&View::OnEmbedTokenReceived, base::Unretained(this)));
+views::View* NavigableContents::GetView() {
 #if BUILDFLAG(ENABLE_AURA_CONTENT_VIEW_EMBEDDING)
-  DCHECK(!ui_view_);
-  ui_view_ = std::make_unique<views::View>();
-  ui_view_->set_owned_by_client();
-  ui_view_->SetLayoutManager(std::make_unique<views::FillLayout>());
+  if (!view_) {
+    view_ = std::make_unique<views::View>();
+    view_->set_owned_by_client();
+    view_->SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  DCHECK(!remote_view_host_);
-  remote_view_host_ = new views::RemoteViewHost;
-  ui_view_->AddChildView(remote_view_host_);
-  return ui_view_.get();
+    DCHECK(!remote_view_host_);
+    remote_view_host_ = new views::RemoteViewHost;
+    view_->AddChildView(remote_view_host_);
+
+    contents_->CreateView(base::BindOnce(
+        &NavigableContents::OnEmbedTokenReceived, base::Unretained(this)));
+  }
+  return view_.get();
 #else
   return nullptr;
 #endif
 }
 
-void View::Navigate(const GURL& url) {
-  view_->Navigate(url);
+void NavigableContents::Navigate(const GURL& url) {
+  contents_->Navigate(url);
 }
 
-void View::DidStopLoading() {
+void NavigableContents::DidStopLoading() {
   if (did_stop_loading_callback_)
     did_stop_loading_callback_.Run();
 }
 
-void View::OnEmbedTokenReceived(const base::UnguessableToken& token) {
+void NavigableContents::OnEmbedTokenReceived(
+    const base::UnguessableToken& token) {
 #if BUILDFLAG(ENABLE_AURA_CONTENT_VIEW_EMBEDDING)
   const uint32_t kEmbedFlags = ui::mojom::kEmbedFlagEmbedderInterceptsEvents |
                                ui::mojom::kEmbedFlagEmbedderControlsVisibility;

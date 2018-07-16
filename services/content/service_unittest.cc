@@ -11,11 +11,11 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/content/navigable_contents_delegate.h"
 #include "services/content/public/mojom/constants.mojom.h"
-#include "services/content/public/mojom/view.mojom.h"
-#include "services/content/public/mojom/view_factory.mojom.h"
+#include "services/content/public/mojom/navigable_contents.mojom.h"
+#include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "services/content/service_delegate.h"
-#include "services/content/view_delegate.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -23,22 +23,22 @@
 namespace content {
 namespace {
 
-class TestViewClient : public mojom::ViewClient {
+class TestNavigableContentsClient : public mojom::NavigableContentsClient {
  public:
-  TestViewClient() = default;
-  ~TestViewClient() override = default;
+  TestNavigableContentsClient() = default;
+  ~TestNavigableContentsClient() override = default;
 
  private:
-  // mojom::ViewClient:
+  // mojom::NavigableContentsClient:
   void DidStopLoading() override {}
 
-  DISALLOW_COPY_AND_ASSIGN(TestViewClient);
+  DISALLOW_COPY_AND_ASSIGN(TestNavigableContentsClient);
 };
 
-class TestViewDelegate : public ViewDelegate {
+class TestNavigableContentsDelegate : public NavigableContentsDelegate {
  public:
-  TestViewDelegate() = default;
-  ~TestViewDelegate() override = default;
+  TestNavigableContentsDelegate() = default;
+  ~TestNavigableContentsDelegate() override = default;
 
   const GURL& last_navigated_url() const { return last_navigated_url_; }
 
@@ -46,7 +46,7 @@ class TestViewDelegate : public ViewDelegate {
     navigation_callback_ = std::move(callback);
   }
 
-  // ViewDelegate:
+  // NavigableContentsDelegate:
   void Navigate(const GURL& url) override {
     last_navigated_url_ = url;
     if (navigation_callback_)
@@ -59,7 +59,7 @@ class TestViewDelegate : public ViewDelegate {
   GURL last_navigated_url_;
   base::RepeatingClosure navigation_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestViewDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestNavigableContentsDelegate);
 };
 
 class TestServiceDelegate : public ServiceDelegate {
@@ -67,25 +67,25 @@ class TestServiceDelegate : public ServiceDelegate {
   TestServiceDelegate() = default;
   ~TestServiceDelegate() override = default;
 
-  void set_view_delegate_created_callback(
-      base::RepeatingCallback<void(TestViewDelegate*)> callback) {
-    view_delegate_created_callback_ = std::move(callback);
+  void set_navigable_contents_delegate_created_callback(
+      base::RepeatingCallback<void(TestNavigableContentsDelegate*)> callback) {
+    navigable_contents_delegate_created_callback_ = std::move(callback);
   }
 
   // ServiceDelegate:
   void WillDestroyServiceInstance(Service* service) override {}
 
-  std::unique_ptr<ViewDelegate> CreateViewDelegate(
-      mojom::ViewClient* client) override {
-    auto object = std::make_unique<TestViewDelegate>();
-    if (view_delegate_created_callback_)
-      view_delegate_created_callback_.Run(object.get());
-    return object;
+  std::unique_ptr<NavigableContentsDelegate> CreateNavigableContentsDelegate(
+      mojom::NavigableContentsClient* client) override {
+    auto delegate = std::make_unique<TestNavigableContentsDelegate>();
+    if (navigable_contents_delegate_created_callback_)
+      navigable_contents_delegate_created_callback_.Run(delegate.get());
+    return delegate;
   }
 
  private:
-  base::RepeatingCallback<void(TestViewDelegate*)>
-      view_delegate_created_callback_;
+  base::RepeatingCallback<void(TestNavigableContentsDelegate*)>
+      navigable_contents_delegate_created_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestServiceDelegate);
 };
@@ -119,38 +119,39 @@ class ContentServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ContentServiceTest);
 };
 
-TEST_F(ContentServiceTest, ViewCreation) {
-  mojom::ViewFactoryPtr factory;
+TEST_F(ContentServiceTest, NavigableContentsCreation) {
+  mojom::NavigableContentsFactoryPtr factory;
   BindInterface(mojo::MakeRequest(&factory));
 
   base::RunLoop loop;
 
-  TestViewDelegate* view_delegate = nullptr;
-  delegate().set_view_delegate_created_callback(
-      base::BindLambdaForTesting([&](TestViewDelegate* delegate) {
-        EXPECT_FALSE(view_delegate);
-        view_delegate = delegate;
+  TestNavigableContentsDelegate* navigable_contents_delegate = nullptr;
+  delegate().set_navigable_contents_delegate_created_callback(
+      base::BindLambdaForTesting([&](TestNavigableContentsDelegate* delegate) {
+        EXPECT_FALSE(navigable_contents_delegate);
+        navigable_contents_delegate = delegate;
         loop.Quit();
       }));
 
-  mojom::ViewPtr view;
-  TestViewClient client_impl;
-  mojom::ViewClientPtr client;
-  mojo::Binding<mojom::ViewClient> client_binding(&client_impl,
-                                                  mojo::MakeRequest(&client));
-  factory->CreateView(mojom::ViewParams::New(), mojo::MakeRequest(&view),
-                      std::move(client));
+  mojom::NavigableContentsPtr contents;
+  TestNavigableContentsClient client_impl;
+  mojom::NavigableContentsClientPtr client;
+  mojo::Binding<mojom::NavigableContentsClient> client_binding(
+      &client_impl, mojo::MakeRequest(&client));
+  factory->CreateContents(mojom::NavigableContentsParams::New(),
+                          mojo::MakeRequest(&contents), std::move(client));
   loop.Run();
 
   base::RunLoop navigation_loop;
-  ASSERT_TRUE(view_delegate);
-  view_delegate->set_navigation_callback(navigation_loop.QuitClosure());
+  ASSERT_TRUE(navigable_contents_delegate);
+  navigable_contents_delegate->set_navigation_callback(
+      navigation_loop.QuitClosure());
 
   const GURL kTestUrl("https://example.com/");
-  view->Navigate(kTestUrl);
+  contents->Navigate(kTestUrl);
   navigation_loop.Run();
 
-  EXPECT_EQ(kTestUrl, view_delegate->last_navigated_url());
+  EXPECT_EQ(kTestUrl, navigable_contents_delegate->last_navigated_url());
 }
 
 }  // namespace

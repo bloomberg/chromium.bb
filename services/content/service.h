@@ -14,8 +14,8 @@
 namespace content {
 
 class ServiceDelegate;
-class ViewFactoryImpl;
-class ViewImpl;
+class NavigableContentsFactoryImpl;
+class NavigableContentsImpl;
 
 // The core Service implementation of the Content Service. This takes
 // responsibility for owning top-level state for an instance of the service,
@@ -38,14 +38,15 @@ class Service : public service_manager::Service {
   void ForceQuit();
 
  private:
-  friend class ViewFactoryImpl;
-  friend class ViewImpl;
+  friend class NavigableContentsFactoryImpl;
+  friend class NavigableContentsImpl;
 
-  void AddViewFactory(std::unique_ptr<ViewFactoryImpl> factory);
-  void RemoveViewFactory(ViewFactoryImpl* factory);
+  void AddNavigableContentsFactory(
+      std::unique_ptr<NavigableContentsFactoryImpl> factory);
+  void RemoveNavigableContentsFactory(NavigableContentsFactoryImpl* factory);
 
-  void AddView(std::unique_ptr<ViewImpl> view);
-  void RemoveView(ViewImpl* view);
+  void AddNavigableContents(std::unique_ptr<NavigableContentsImpl> contents);
+  void RemoveNavigableContents(NavigableContentsImpl* contents);
 
   // service_manager::Service:
   void OnBindInterface(const service_manager::BindSourceInfo& source,
@@ -55,8 +56,11 @@ class Service : public service_manager::Service {
   ServiceDelegate* const delegate_;
   service_manager::BinderRegistry binders_;
 
-  std::map<ViewFactoryImpl*, std::unique_ptr<ViewFactoryImpl>> view_factories_;
-  std::map<ViewImpl*, std::unique_ptr<ViewImpl>> views_;
+  std::map<NavigableContentsFactoryImpl*,
+           std::unique_ptr<NavigableContentsFactoryImpl>>
+      navigable_contents_factories_;
+  std::map<NavigableContentsImpl*, std::unique_ptr<NavigableContentsImpl>>
+      navigable_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

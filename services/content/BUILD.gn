@@ -12,17 +12,17 @@ source_set("impl") {
   ]
 
   public = [
+    "navigable_contents_delegate.h",
     "service.h",
     "service_delegate.h",
-    "view_delegate.h",
   ]
 
   sources = [
+    "navigable_contents_factory_impl.cc",
+    "navigable_contents_factory_impl.h",
+    "navigable_contents_impl.cc",
+    "navigable_contents_impl.h",
     "service.cc",
-    "view_factory_impl.cc",
-    "view_factory_impl.h",
-    "view_impl.cc",
-    "view_impl.h",
   ]
 
   public_deps = [

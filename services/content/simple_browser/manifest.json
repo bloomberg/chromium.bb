@@ -9,7 +9,7 @@
         "app": []
       },
       "requires": {
-        "content": [ "view" ],
+        "content": [ "navigation" ],
         "font_service": [ "font_service" ],
         "ui": [ "app" ]
       }

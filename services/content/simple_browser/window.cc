@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "services/content/public/cpp/view.h"
+#include "services/content/public/cpp/navigable_contents.h"
 #include "services/content/public/mojom/constants.mojom.h"
-#include "services/content/public/mojom/view_factory.mojom.h"
+#include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -35,11 +35,12 @@ class SimpleBrowserUI : public views::WidgetDelegateView,
     AddChildView(location_bar_);
 
     connector_->BindInterface(content::mojom::kServiceName,
-                              MakeRequest(&view_factory_));
-    view_ = std::make_unique<content::View>(view_factory_.get());
-    content_area_ = view_->CreateUI();
-    content_area_->SetBorder(views::CreateSolidBorder(2, SK_ColorGREEN));
-    AddChildView(content_area_);
+                              MakeRequest(&navigable_contents_factory_));
+    navigable_contents_ = std::make_unique<content::NavigableContents>(
+        navigable_contents_factory_.get());
+    content_view_ = navigable_contents_->GetView();
+    content_view_->SetBorder(views::CreateSolidBorder(2, SK_ColorGREEN));
+    AddChildView(content_view_);
   }
 
   ~SimpleBrowserUI() override = default;
@@ -56,9 +57,9 @@ class SimpleBrowserUI : public views::WidgetDelegateView,
     location_bar_bounds.Inset(5, 0);
     location_bar_->SetBoundsRect(location_bar_bounds);
 
-    gfx::Rect content_area_bounds = GetLocalBounds();
-    content_area_bounds.Inset(5, 25, 5, 5);
-    content_area_->SetBoundsRect(content_area_bounds);
+    gfx::Rect content_view_bounds = GetLocalBounds();
+    content_view_bounds.Inset(5, 25, 5, 5);
+    content_view_->SetBoundsRect(content_view_bounds);
   }
 
   gfx::Size CalculatePreferredSize() const override {
@@ -71,19 +72,21 @@ class SimpleBrowserUI : public views::WidgetDelegateView,
     if (key_event.type() != ui::ET_KEY_PRESSED)
       return false;
 
-    if (key_event.key_code() == ui::VKEY_RETURN)
-      view_->Navigate(GURL(base::UTF16ToUTF8(location_bar_->text())));
+    if (key_event.key_code() == ui::VKEY_RETURN) {
+      navigable_contents_->Navigate(
+          GURL(base::UTF16ToUTF8(location_bar_->text())));
+    }
 
     return false;
   }
 
   service_manager::Connector* const connector_;
 
-  content::mojom::ViewFactoryPtr view_factory_;
-  std::unique_ptr<content::View> view_;
+  content::mojom::NavigableContentsFactoryPtr navigable_contents_factory_;
+  std::unique_ptr<content::NavigableContents> navigable_contents_;
 
   views::Textfield* location_bar_;
-  views::View* content_area_;
+  views::View* content_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleBrowserUI);
 };

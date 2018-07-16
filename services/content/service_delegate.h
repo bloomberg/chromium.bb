@@ -5,12 +5,12 @@
 #ifndef SERVICES_CONTENT_SERVICE_DELEGATE_H_
 #define SERVICES_CONTENT_SERVICE_DELEGATE_H_
 
-#include "services/content/public/mojom/view.mojom.h"
+#include "services/content/public/mojom/navigable_contents.mojom.h"
 
 namespace content {
 
+class NavigableContentsDelegate;
 class Service;
-class ViewDelegate;
 
 // This is a delegate interface which allows the Content Service implementation
 // to delegate out to private src/content code without a circular dependency
@@ -28,12 +28,12 @@ class ServiceDelegate {
   // delegate) is about to be destroyed.
   virtual void WillDestroyServiceInstance(Service* service) = 0;
 
-  // Constructs a new ViewDelegate implementation to back a new ContentViewImpl
-  // instance, servicing a client's ContentView. |client| is a ViewClient
-  // interface the implementation can use to communicate with the client of this
-  // view.
-  virtual std::unique_ptr<ViewDelegate> CreateViewDelegate(
-      mojom::ViewClient* client) = 0;
+  // Constructs a new NavigableContentsDelegate implementation to back a new
+  // NavigableContentsImpl instance, servicing a client's NavigableContents.
+  // |client| is a NavigableContentsClient interface the implementation can use
+  // to communicate with the client of this contents.
+  virtual std::unique_ptr<NavigableContentsDelegate>
+  CreateNavigableContentsDelegate(mojom::NavigableContentsClient* client) = 0;
 };
 
 };  // namespace content
