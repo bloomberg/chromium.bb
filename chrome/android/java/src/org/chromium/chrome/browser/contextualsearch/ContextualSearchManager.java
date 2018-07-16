@@ -1396,8 +1396,8 @@ public class ContextualSearchManager
      * to expand the selection to a whole word.
      */
     @Override
-    public void handleSelection(String selection, boolean selectionValid, SelectionType type,
-            float x, float y) {
+    public void handleSelection(
+            String selection, boolean selectionValid, @SelectionType int type, float x, float y) {
         if (mIsAccessibilityModeEnabled) return;
 
         if (!selection.isEmpty()) {
