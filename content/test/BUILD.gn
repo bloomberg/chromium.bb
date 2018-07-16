@@ -483,7 +483,10 @@ jumbo_static_library("test_support") {
   }
 
   if (is_mac) {
-    deps += [ "//ui/accelerated_widget_mac" ]
+    deps += [
+      "//sandbox/mac:seatbelt",
+      "//ui/accelerated_widget_mac",
+    ]
   }
 }
 
