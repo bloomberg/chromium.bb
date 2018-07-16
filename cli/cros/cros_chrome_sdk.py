@@ -510,6 +510,7 @@ class ChromeSDKCommand(command.CliCommand):
       'AR',
       'AS',
       'LD',
+      'NM',
       'RANLIB',
 
       # Compiler flags.
@@ -794,6 +795,11 @@ class ChromeSDKCommand(command.CliCommand):
       env['CXXFLAGS'] = ' '.join(env['CXXFLAGS'].split() + clang_append_flags)
       env['LD'] = env['CXX']
 
+    # Use cros nm for the target builds. TODO: Delete it after Sept 2018 since
+    # NM env variable should already be set, https://crbug.com/862831.
+    if 'NM' not in env:
+      env['NM'] = sdk_ctx.target_tc + '-nm'
+
     # For host compiler, we use the compiler that comes with Chrome
     # instead of the target compiler.
     env['CC_host'] = os.path.join(chrome_clang_path, 'clang')
@@ -802,6 +808,7 @@ class ChromeSDKCommand(command.CliCommand):
 
     binutils_path = os.path.join(options.chrome_src, self._HOST_BINUTILS_DIR)
     env['AR_host'] = os.path.join(binutils_path, 'ar')
+    env['NM_host'] = os.path.join(binutils_path, 'nm')
 
   def _RelativizeToolchainPath(self, compiler):
     """Relativize toolchain path for GN."""
@@ -913,15 +920,18 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['cros_target_cc'] = self._RelativizeToolchainPath(env['CC'])
     gn_args['cros_target_cxx'] = self._RelativizeToolchainPath(env['CXX'])
     gn_args['cros_target_ld'] = env['LD']
+    gn_args['cros_target_nm'] = env['NM']
     gn_args['cros_target_extra_cflags'] = env.get('CFLAGS', '')
     gn_args['cros_target_extra_cxxflags'] = env.get('CXXFLAGS', '')
     gn_args['cros_host_cc'] = env['CC_host']
     gn_args['cros_host_cxx'] = env['CXX_host']
     gn_args['cros_host_ld'] = env['LD_host']
+    gn_args['cros_host_nm'] = env['NM_host']
     gn_args['cros_host_ar'] = env['AR_host']
     gn_args['cros_v8_snapshot_cc'] = env['CC_host']
     gn_args['cros_v8_snapshot_cxx'] = env['CXX_host']
     gn_args['cros_v8_snapshot_ld'] = env['LD_host']
+    gn_args['cros_v8_snapshot_nm'] = env['NM_host']
     gn_args['cros_v8_snapshot_ar'] = env['AR_host']
     # No need to adjust CFLAGS and CXXFLAGS for GN since the only
     # adjustment made in _SetupTCEnvironment is for split debug which
