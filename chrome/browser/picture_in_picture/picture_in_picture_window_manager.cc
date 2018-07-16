@@ -4,19 +4,30 @@
 
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/geometry/size.h"
 
-class PictureInPictureWindowManager::WebContentsDestroyedObserver
+class PictureInPictureWindowManager::ContentsObserver
     : public content::WebContentsObserver {
  public:
-  WebContentsDestroyedObserver(PictureInPictureWindowManager* owner,
-                               content::WebContents* web_contents)
+  ContentsObserver(PictureInPictureWindowManager* owner,
+                   content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents), owner_(owner) {}
 
-  ~WebContentsDestroyedObserver() final = default;
+  ~ContentsObserver() final = default;
+
+  void DidFinishNavigation(content::NavigationHandle* navigation_handle) final {
+    // Closes the active Picture-in-Picture window if user navigates away.
+    if (!navigation_handle->IsInMainFrame() ||
+        !navigation_handle->HasCommitted() ||
+        navigation_handle->IsSameDocument()) {
+      return;
+    }
+    owner_->CloseWindowInternal();
+  }
 
   void WebContentsDestroyed() final { owner_->CloseWindowInternal(); }
 
@@ -55,18 +66,17 @@ void PictureInPictureWindowManager::ExitPictureInPicture() {
 
 void PictureInPictureWindowManager::CreateWindowInternal(
     content::WebContents* web_contents) {
-  destroyed_observer_ =
-      std::make_unique<WebContentsDestroyedObserver>(this, web_contents);
+  contents_observer_ = std::make_unique<ContentsObserver>(this, web_contents);
   pip_window_controller_ =
       content::PictureInPictureWindowController::GetOrCreateForWebContents(
           web_contents);
 }
 
 void PictureInPictureWindowManager::CloseWindowInternal() {
-  DCHECK(destroyed_observer_);
+  DCHECK(contents_observer_);
   DCHECK(pip_window_controller_);
 
-  destroyed_observer_.reset();
+  contents_observer_.reset();
   pip_window_controller_->Close(false /* should_pause_video */);
   pip_window_controller_ = nullptr;
 }

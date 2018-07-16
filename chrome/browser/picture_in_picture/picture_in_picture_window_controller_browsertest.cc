@@ -774,6 +774,42 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       EnterPictureInPictureThenNavigateAwayCloseWindow) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+  ASSERT_TRUE(window_controller());
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
+
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  // Same document navigations should not close Picture-in-Picture window.
+  EXPECT_TRUE(content::ExecuteScript(
+      active_web_contents, "window.location = '#foo'; window.history.back();"));
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  // Picture-in-Picture window should be closed after navigating away.
+  GURL another_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/iframe-size.html")));
+  ui_test_utils::NavigateToURL(browser(), another_page_url);
+  EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
+}
+
 #if !defined(OS_ANDROID)
 
 // TODO(mlamouri): enable this tests on other platforms when aspect ratio is
