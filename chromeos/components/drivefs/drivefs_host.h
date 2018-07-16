@@ -68,7 +68,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
     CreateMojoConnectionDelegate();
 
     virtual void OnMounted(const base::FilePath& mount_path) = 0;
-    virtual void OnUnmounted() = 0;
+    virtual void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);

@@ -247,27 +247,56 @@ class DriveIntegrationService::DriveFsHolder
  public:
   DriveFsHolder(Profile* profile,
                 base::RepeatingClosure on_drivefs_mounted,
-                base::RepeatingClosure on_drivefs_unmounted,
+                base::RepeatingCallback<void(base::Optional<base::TimeDelta>)>
+                    on_drivefs_unmounted,
                 DriveFsMojoConnectionDelegateFactory
-                    test_drivefs_mojo_connection_delegate_factory);
+                    test_drivefs_mojo_connection_delegate_factory)
+      : profile_(profile),
+        on_drivefs_mounted_(std::move(on_drivefs_mounted)),
+        on_drivefs_unmounted_(std::move(on_drivefs_unmounted)),
+        test_drivefs_mojo_connection_delegate_factory_(
+            std::move(test_drivefs_mojo_connection_delegate_factory)),
+        drivefs_host_(profile_->GetPath(), this) {}
 
   drivefs::DriveFsHost* drivefs_host() { return &drivefs_host_; }
 
  private:
   // drivefs::DriveFsHost::Delegate:
-  net::URLRequestContextGetter* GetRequestContext() override;
-  service_manager::Connector* GetConnector() override;
-  const AccountId& GetAccountId() override;
-  void OnMounted(const base::FilePath& path) override;
-  void OnUnmounted() override;
+  net::URLRequestContextGetter* GetRequestContext() override {
+    return profile_->GetRequestContext();
+  }
+
+  service_manager::Connector* GetConnector() override {
+    return content::BrowserContext::GetConnectorFor(profile_);
+  }
+
+  const AccountId& GetAccountId() override {
+    return chromeos::ProfileHelper::Get()
+        ->GetUserByProfile(profile_)
+        ->GetAccountId();
+  }
+
+  void OnMounted(const base::FilePath& path) override {
+    on_drivefs_mounted_.Run();
+  }
+
+  void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override {
+    on_drivefs_unmounted_.Run(std::move(remount_delay));
+  }
+
   std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>
-  CreateMojoConnectionDelegate() override;
+  CreateMojoConnectionDelegate() override {
+    if (test_drivefs_mojo_connection_delegate_factory_)
+      return test_drivefs_mojo_connection_delegate_factory_.Run();
+    return Delegate::CreateMojoConnectionDelegate();
+  }
 
   Profile* const profile_;
 
   // Invoked when DriveFS mounting is completed.
   const base::RepeatingClosure on_drivefs_mounted_;
-  const base::RepeatingClosure on_drivefs_unmounted_;
+  const base::RepeatingCallback<void(base::Optional<base::TimeDelta>)>
+      on_drivefs_unmounted_;
 
   const DriveFsMojoConnectionDelegateFactory
       test_drivefs_mojo_connection_delegate_factory_;
@@ -276,51 +305,6 @@ class DriveIntegrationService::DriveFsHolder
 
   DISALLOW_COPY_AND_ASSIGN(DriveFsHolder);
 };
-
-DriveIntegrationService::DriveFsHolder::DriveFsHolder(
-    Profile* profile,
-    base::RepeatingClosure on_drivefs_mounted,
-    base::RepeatingClosure on_drivefs_unmounted,
-    DriveFsMojoConnectionDelegateFactory
-        test_drivefs_mojo_connection_delegate_factory)
-    : profile_(profile),
-      on_drivefs_mounted_(std::move(on_drivefs_mounted)),
-      on_drivefs_unmounted_(std::move(on_drivefs_unmounted)),
-      test_drivefs_mojo_connection_delegate_factory_(
-          std::move(test_drivefs_mojo_connection_delegate_factory)),
-      drivefs_host_(profile_->GetPath(), this) {}
-
-net::URLRequestContextGetter*
-DriveIntegrationService::DriveFsHolder::GetRequestContext() {
-  return profile_->GetRequestContext();
-}
-
-service_manager::Connector*
-DriveIntegrationService::DriveFsHolder::GetConnector() {
-  return content::BrowserContext::GetConnectorFor(profile_);
-}
-
-const AccountId& DriveIntegrationService::DriveFsHolder::GetAccountId() {
-  return chromeos::ProfileHelper::Get()
-      ->GetUserByProfile(profile_)
-      ->GetAccountId();
-}
-
-std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>
-DriveIntegrationService::DriveFsHolder::CreateMojoConnectionDelegate() {
-  if (test_drivefs_mojo_connection_delegate_factory_)
-    return test_drivefs_mojo_connection_delegate_factory_.Run();
-  return Delegate::CreateMojoConnectionDelegate();
-}
-
-void DriveIntegrationService::DriveFsHolder::OnMounted(
-    const base::FilePath& path) {
-  on_drivefs_mounted_.Run();
-}
-
-void DriveIntegrationService::DriveFsHolder::OnUnmounted() {
-  on_drivefs_unmounted_.Run();
-}
 
 DriveIntegrationService::DriveIntegrationService(
     Profile* profile,
@@ -347,7 +331,7 @@ DriveIntegrationService::DriveIntegrationService(
                                             AddDriveMountPointAfterMounted,
                                         base::Unretained(this)),
                     base::BindRepeating(
-                        &DriveIntegrationService::RemoveDriveMountPoint,
+                        &DriveIntegrationService::MaybeRemountFileSystem,
                         base::Unretained(this)),
                     std::move(test_drivefs_mojo_connection_delegate_factory))
               : nullptr),
@@ -610,6 +594,8 @@ void DriveIntegrationService::AddDriveMountPoint() {
   DCHECK_EQ(INITIALIZED, state_);
   DCHECK(enabled_);
 
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
   if (drivefs_holder_ && !drivefs_holder_->drivefs_host()->IsMounted()) {
     drivefs_holder_->drivefs_host()->Mount();
     return;
@@ -641,6 +627,8 @@ void DriveIntegrationService::AddDriveMountPointAfterMounted() {
 void DriveIntegrationService::RemoveDriveMountPoint() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
   if (!mount_point_name_.empty()) {
     if (!drivefs_holder_)
       job_list()->CancelAllJobs();
@@ -657,6 +645,21 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
   }
   if (drivefs_holder_)
     drivefs_holder_->drivefs_host()->Unmount();
+}
+
+void DriveIntegrationService::MaybeRemountFileSystem(
+    base::Optional<base::TimeDelta> remount_delay) {
+  DCHECK_EQ(INITIALIZED, state_);
+
+  RemoveDriveMountPoint();
+
+  if (remount_delay) {
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&DriveIntegrationService::AddDriveMountPoint,
+                       weak_ptr_factory_.GetWeakPtr()),
+        remount_delay.value());
+  }
 }
 
 void DriveIntegrationService::Initialize() {

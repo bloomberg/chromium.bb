@@ -192,13 +192,10 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     }
   }
 
-  void OnUnmounted(base::Optional<base::TimeDelta> retry_delay) override {
+  void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     drivefs_has_mounted_ = false;
-    NotifyDelegateOnUnmounted();
-    if (retry_delay) {
-      // TODO(crbug.com/845390): Schedule restart.
-    }
+    NotifyDelegateOnUnmounted(std::move(remount_delay));
   }
 
   void OnFilesChanged(std::vector<mojom::FileChangePtr> changes) override {
@@ -214,7 +211,10 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
 
   void NotifyDelegateOnMounted() { host_->delegate_->OnMounted(mount_path()); }
 
-  void NotifyDelegateOnUnmounted() { host_->delegate_->OnUnmounted(); }
+  void NotifyDelegateOnUnmounted(
+      base::Optional<base::TimeDelta> remount_delay) {
+    host_->delegate_->OnUnmounted(std::move(remount_delay));
+  }
 
   void AccountReady(const AccountInfo& info,
                     const identity::AccountState& state) {
@@ -328,7 +328,7 @@ bool DriveFsHost::IsMounted() const {
 }
 
 const base::FilePath& DriveFsHost::GetMountPath() const {
-  DCHECK(IsMounted());
+  DCHECK(mount_state_);
   return mount_state_->mount_path();
 }
 
