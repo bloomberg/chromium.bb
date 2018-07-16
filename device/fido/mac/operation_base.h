@@ -65,8 +65,8 @@ class API_AVAILABLE(macosx(10.12.2)) OperationBase : public Operation {
                                           base::Unretained(this)));
   }
 
-  // Callback for |PromptTouchId|. Any NSError that gets passed is autoreleased.
-  virtual void PromptTouchIdDone(bool success, NSError* err) = 0;
+  // Callback for |PromptTouchId|.
+  virtual void PromptTouchIdDone(bool success) = 0;
 
   // Subclasses override RpId to return the RP ID from the type-specific
   // request.

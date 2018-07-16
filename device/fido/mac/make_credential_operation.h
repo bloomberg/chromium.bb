@@ -58,7 +58,7 @@ class API_AVAILABLE(macosx(10.12.2))
  private:
   // OperationBase:
   const std::string& RpId() const override;
-  void PromptTouchIdDone(bool success, NSError* err) override;
+  void PromptTouchIdDone(bool success) override;
 
   base::Optional<std::vector<uint8_t>> GenerateCredentialIdForRequest() const;
 };

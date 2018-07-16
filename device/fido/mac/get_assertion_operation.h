@@ -40,7 +40,7 @@ class API_AVAILABLE(macosx(10.12.2))
 
  private:
   const std::string& RpId() const override;
-  void PromptTouchIdDone(bool success, NSError* err) override;
+  void PromptTouchIdDone(bool success) override;
 
   DISALLOW_COPY_AND_ASSIGN(GetAssertionOperation);
 };
