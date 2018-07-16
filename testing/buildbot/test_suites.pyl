@@ -547,12 +547,6 @@
     'storage_unittests': {},
     'ui_base_unittests': {},
     'ui_touch_selection_unittests': {},
-    'unit_tests': {
-      'android_swarming': {
-        'hard_timeout': 900,
-        'shards': 5,
-      },
-    },
     'url_unittests': {},
     'webkit_unit_tests': {},
     'wtf_unittests': {},
@@ -569,6 +563,12 @@
     'gfx_unittests': {
       'android_swarming': {
         'hard_timeout': 900,
+      },
+    },
+    'unit_tests': {
+      'android_swarming': {
+        'hard_timeout': 900,
+        'shards': 5,
       },
     },
     'viz_unittests': {},
