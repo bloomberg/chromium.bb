@@ -14,13 +14,7 @@ SyncSetupInProgressHandle::~SyncSetupInProgressHandle() {
 }
 
 bool SyncService::CanSyncStart() const {
-  int disable_reasons = GetDisableReasons();
-  // An unrecoverable error is currently *not* considered a start-preventing
-  // disable reason, because it occurs after Sync has already started.
-  // TODO(crbug.com/839834): Consider changing this, since Sync shuts down and
-  // won't start up again after an unrecoverable error.
-  disable_reasons = disable_reasons & ~DISABLE_REASON_UNRECOVERABLE_ERROR;
-  return disable_reasons == DISABLE_REASON_NONE;
+  return GetDisableReasons() == DISABLE_REASON_NONE;
 }
 
 bool SyncService::IsSyncAllowed() const {

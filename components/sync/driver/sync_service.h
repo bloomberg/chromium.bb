@@ -231,9 +231,8 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   virtual void OnDataTypeRequestsSyncStartup(ModelType type) = 0;
 
   // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
-  // Equivalent to having no disable reasons except UNRECOVERABLE_ERROR, i.e.
-  // "(GetDisableReasons() & ~DISABLE_REASON_UNRECOVERABLE_ERROR) ==
-  // DISABLE_REASON_NONE".
+  // Equivalent to having no disable reasons, i.e.
+  // "GetDisableReasons() == DISABLE_REASON_NONE".
   bool CanSyncStart() const;
 
   // Stops sync at the user's request. |data_fate| controls whether the sync
