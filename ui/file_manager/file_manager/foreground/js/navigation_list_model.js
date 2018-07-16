@@ -467,15 +467,16 @@ NavigationListModel.prototype.flatNavigationItems_ = function() {
  * Reorder navigation items and nest some within "Downloads"
  * which will be displayed as "My-Files". Desired order:
  *  1. Recents.
- *  2. Shortcuts.
- *  3. "My-Files" (grouping), actually Downloads volume.
- *    3.1. Downloads
- *    3.2. Play files (android volume) (if enabled).
- *    3.3. Linux files (crostini volume or fake item) (if enabled).
- *  4. Other volumes (MTP, ARCHIVE, REMOVABLE).
- *  5. Drive volumes.
- *  6. Other FSP (File System Provider) (when mounted).
- *  7. Add new services if (it exists).
+ *  2. Media Views (Images, Videos and Audio).
+ *  3. Shortcuts.
+ *  4. "My-Files" (grouping), actually Downloads volume.
+ *    4.1. Downloads
+ *    4.2. Play files (android volume) (if enabled).
+ *    4.3. Linux files (crostini volume or fake item) (if enabled).
+ *  5. Other volumes (MTP, ARCHIVE, REMOVABLE).
+ *  6. Drive volumes.
+ *  7. Other FSP (File System Provider) (when mounted).
+ *  8. Add new services if (it exists).
  * @private
  */
 NavigationListModel.prototype.orderAndNestItems_ = function() {
@@ -536,6 +537,14 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
 
   if (this.recentModelItem_)
     this.navigationItems_.push(this.recentModelItem_);
+
+  // Media View (Images, Videos and Audio).
+  for (const mediaView of getVolumes(
+           VolumeManagerCommon.VolumeType.MEDIA_VIEW)) {
+    this.navigationItems_.push(mediaView);
+    mediaView.section = NavigationSection.TOP;
+  }
+  // Shortcuts.
   for (const shortcut of this.shortcutList_)
     this.navigationItems_.push(shortcut);
 
@@ -603,7 +612,6 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
   // section.
   const otherVolumes =
       [].concat(
-            getVolumes(VolumeManagerCommon.VolumeType.MEDIA_VIEW),
             getVolumes(VolumeManagerCommon.VolumeType.REMOVABLE),
             getVolumes(VolumeManagerCommon.VolumeType.ARCHIVE),
             getVolumes(VolumeManagerCommon.VolumeType.MTP))
