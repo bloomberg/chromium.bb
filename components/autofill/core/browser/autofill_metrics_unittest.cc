@@ -7526,8 +7526,7 @@ TEST_F(AutofillMetricsTest, AutofillSuggestionShownTest) {
 TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
   scoped_feature_list_.InitWithFeatures(
       {features::kAutofillDynamicForms},
-      {features::kAutofillRequireSecureCreditCardContext,
-       features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
+      {features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
 
   // Set up our form data.
   FormData form;
