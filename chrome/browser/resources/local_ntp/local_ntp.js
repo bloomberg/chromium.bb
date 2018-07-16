@@ -949,7 +949,7 @@ function init() {
   args.push('removeTooltip=' +
       encodeURIComponent(configData.translatedStrings.removeThumbnailTooltip));
 
-  if (configData.isMDIconsEnabled || configData.isMDUIEnabled) {
+  if (configData.isMDIconsEnabled) {
     args.push('enableMD=1');
   }
 
