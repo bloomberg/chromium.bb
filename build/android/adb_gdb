@@ -703,16 +703,30 @@ fail_panic "Failed to run-as $PACKAGE_NAME, is the app debuggable?"
 TARGET_GDBSERVER="$APP_DATA_DIR/gdbserver-adb-gdb-$TMP_ID"
 TMP_TARGET_GDBSERVER=/data/local/tmp/gdbserver-adb-gdb-$TMP_ID
 
-# Return the build fingerprint contained in a build.prop file.
-# $1: path to build.prop file
-get_build_fingerprint_from () {
-  cat "$1" | grep -e '^ro.build.fingerprint=' | cut -d= -f2
-}
+# Select correct app_process for architecture.
+case $TARGET_ARCH in
+      arm|x86|mips) GDBEXEC=app_process32;;
+      arm64|x86_64) GDBEXEC=app_process64; SUFFIX_64_BIT=64;;
+      *) panic "Unknown app_process for architecture!";;
+esac
 
+# Default to app_process if bit-width specific process isn't found.
+adb_shell ls /system/bin/$GDBEXEC > /dev/null
+if [ $? != 0 ]; then
+    GDBEXEC=app_process
+fi
+
+# Detect AddressSanitizer setup on the device. In that case app_process is a
+# script, and the real executable is app_process.real.
+GDBEXEC_ASAN=app_process.real
+adb_shell ls /system/bin/$GDBEXEC_ASAN > /dev/null
+if [ $? == 0 ]; then
+    GDBEXEC=$GDBEXEC_ASAN
+fi
 
 ORG_PULL_LIBS_DIR=$PULL_LIBS_DIR
 if [[ -n "$ANDROID_SERIAL" ]]; then
-  DEFAULT_PULL_LIBS_DIR="$DEFAULT_PULL_LIBS_DIR/$ANDROID_SERIAL"
+  DEFAULT_PULL_LIBS_DIR="$DEFAULT_PULL_LIBS_DIR/$ANDROID_SERIAL-$SUFFIX_64_BIT"
 fi
 PULL_LIBS_DIR=${PULL_LIBS_DIR:-$DEFAULT_PULL_LIBS_DIR}
 
@@ -721,44 +735,18 @@ DEVICE_FINGERPRINT=$(adb_shell getprop ro.build.fingerprint)
 [[ "$DEVICE_FINGERPRINT" ]] || panic "Failed to get the device fingerprint"
 log "Device build fingerprint: $DEVICE_FINGERPRINT"
 
-# If --pull-libs-dir is not specified, and this is a platform build, look
-# if we can use the symbolic libraries under $ANDROID_PRODUCT_OUT/symbols/
-# directly, if the build fingerprint matches the device.
-if [ -z "$ORG_PULL_LIBS_DIR" -a \
-     "$ANDROID_PRODUCT_OUT" -a \
-     -f "$ANDROID_PRODUCT_OUT/system/build.prop" ]; then
-  ANDROID_FINGERPRINT=$(get_build_fingerprint_from \
-                        "$ANDROID_PRODUCT_OUT"/system/build.prop)
-  log "Android build fingerprint:  $ANDROID_FINGERPRINT"
-  if [ "$ANDROID_FINGERPRINT" = "$DEVICE_FINGERPRINT" ]; then
-    log "Perfect match!"
-    PULL_LIBS_DIR=$ANDROID_PRODUCT_OUT/symbols
-    HOST_FINGERPRINT=$ANDROID_FINGERPRINT
-    if [ "$PULL_LIBS" ]; then
-      log "Ignoring --pull-libs since the device and platform build \
-fingerprints match."
-      NO_PULL_LIBS=true
-    fi
-  fi
-fi
-
-# If neither --pull-libs an --no-pull-libs were specified, check the build
-# fingerprints of the device, and the cached system libraries on the host.
-#
-if [ -z "$NO_PULL_LIBS" -a -z "$PULL_LIBS" ]; then
-  if [ ! -f "$PULL_LIBS_DIR/build.fingerprint" ]; then
-    log "Auto-config: --pull-libs  (no cached libraries)"
-    PULL_LIBS=true
+if [ ! -f "$PULL_LIBS_DIR/build.fingerprint" ]; then
+  log "Auto-config: --pull-libs  (no cached libraries)"
+  PULL_LIBS=true
+else
+  HOST_FINGERPRINT=$(< "$PULL_LIBS_DIR/build.fingerprint")
+  log "Host build fingerprint:   $HOST_FINGERPRINT"
+  if [ "$HOST_FINGERPRINT" == "$DEVICE_FINGERPRINT" ]; then
+    log "Auto-config: --no-pull-libs (fingerprint match)"
+    NO_PULL_LIBS=true
   else
-    HOST_FINGERPRINT=$(< "$PULL_LIBS_DIR/build.fingerprint")
-    log "Host build fingerprint:   $HOST_FINGERPRINT"
-    if [ "$HOST_FINGERPRINT" == "$DEVICE_FINGERPRINT" ]; then
-      log "Auto-config: --no-pull-libs (fingerprint match)"
-      NO_PULL_LIBS=true
-    else
-      log "Auto-config: --pull-libs  (fingerprint mismatch)"
-      PULL_LIBS=true
-    fi
+    log "Auto-config: --pull-libs  (fingerprint mismatch)"
+    PULL_LIBS=true
   fi
 fi
 
@@ -834,7 +822,7 @@ if [ "$PULL_LIBS" -a -z "$NO_PULL_LIBS" ]; then
   rm -f "$PULL_LIBS_DIR/build.fingerprint"
   SYSTEM_LIBS=$(echo "$MAPPINGS" | \
       awk '$6 ~ /\/system\/.*\.so$/ { print $6; }' | sort -u)
-  for SYSLIB in /system/bin/linker $SYSTEM_LIBS; do
+  for SYSLIB in /system/bin/linker$SUFFIX_64_BIT $SYSTEM_LIBS; do
     echo "Pulling from device: $SYSLIB"
     DST_FILE=$PULL_LIBS_DIR$SYSLIB
     DST_DIR=$(dirname "$DST_FILE")
@@ -845,16 +833,21 @@ if [ "$PULL_LIBS" -a -z "$NO_PULL_LIBS" ]; then
   echo "$DEVICE_FINGERPRINT" > "$PULL_LIBS_DIR/build.fingerprint"
 fi
 
+# Pull the app_process binary from the device.
+log "Pulling $GDBEXEC from device"
+"$ADB" pull /system/bin/$GDBEXEC "$TMPDIR"/$GDBEXEC &>/dev/null
+fail_panic "Could not retrieve $GDBEXEC from the device!"
+
 # Find all the sub-directories of $PULL_LIBS_DIR, up to depth 4
 # so we can add them to solib-search-path later.
 SOLIB_DIRS=$(find $PULL_LIBS_DIR -mindepth 1 -maxdepth 4 -type d | \
              grep -v "^$" | tr '\n' ':')
 SOLIB_DIRS=${SOLIB_DIRS%:}  # Strip trailing :
 
-# This is a re-implementation of gdbclient, where we use compatible
-# versions of gdbserver and $GDBNAME to ensure that everything works
-# properly.
-#
+# Applications with minSdkVersion >= 24 will have their data directories
+# created with rwx------ permissions, preventing adbd from forwarding to
+# the gdbserver socket.
+adb_shell $COMMAND_PREFIX chmod a+x $APP_DATA_DIR $COMMAND_SUFFIX
 
 # Push gdbserver to the device
 log "Pushing gdbserver $GDBSERVER to $TARGET_GDBSERVER"
@@ -869,32 +862,6 @@ if [ -z "$PORT" ]; then
 fi
 HOST_PORT=$PORT
 TARGET_DOMAIN_SOCKET=$APP_DATA_DIR/gdb-socket-$HOST_PORT
-
-# Select correct app_process for architecture.
-case $TARGET_ARCH in
-      arm|x86|mips) GDBEXEC=app_process32;;
-      arm64|x86_64) GDBEXEC=app_process64;;
-      *) panic "Unknown app_process for architecture!";;
-esac
-
-# Default to app_process if bit-width specific process isn't found.
-adb_shell ls /system/bin/$GDBEXEC > /dev/null
-if [ $? != 0 ]; then
-    GDBEXEC=app_process
-fi
-
-# Detect AddressSanitizer setup on the device. In that case app_process is a
-# script, and the real executable is app_process.real.
-GDBEXEC_ASAN=app_process.real
-adb_shell ls /system/bin/$GDBEXEC_ASAN > /dev/null
-if [ $? == 0 ]; then
-    GDBEXEC=$GDBEXEC_ASAN
-fi
-
-# Pull the app_process binary from the device.
-log "Pulling $GDBEXEC from device"
-"$ADB" pull /system/bin/$GDBEXEC "$TMPDIR"/$GDBEXEC &>/dev/null
-fail_panic "Could not retrieve $GDBEXEC from the device!"
 
 # Setup network redirection
 log "Setting network redirection (host:$HOST_PORT -> device:$TARGET_DOMAIN_SOCKET)"
@@ -935,7 +902,7 @@ for i in 1 2; do
       old_pid=${pid_msg##* }
       old_pid=${old_pid//[$'\r\n']}  # Trim trailing \r.
       echo "Killing previous gdb server process (pid=$old_pid)"
-      adb_shell $COMMAND_PREFIX kill -9 $old_pid
+      adb_shell $COMMAND_PREFIX kill -9 $old_pid $COMMAND_SUFFIX
       continue
     fi
     echo "ERROR: GDBServer either failed to run or attach to PID $PID!"
@@ -952,6 +919,7 @@ done
 readonly COMMANDS=$TMPDIR/gdb.init
 log "Generating GDB initialization commands file: $COMMANDS"
 cat > "$COMMANDS" <<EOF
+set osabi GNU/Linux  # Copied from ndk-gdb.py.
 set print pretty 1
 python
 import sys

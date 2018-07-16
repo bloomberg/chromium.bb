@@ -1021,12 +1021,13 @@ If no apk process is currently running, sends a launch intent.
     pid_group.add_argument('--pid',
                            help='The process ID to attach to. Defaults to '
                                 'the main process for the package.')
-    pid_group.add_argument('--ide', action='store_true',
-                           help='Rather than enter a gdb prompt, set up the '
-                                'gdb connection and wait for an IDE to '
-                                'connect.')
-    pid_group.add_argument('--port', type=int, default=19631,
-                           help='Use the given port for the GDB connection')
+    group.add_argument('--ide', action='store_true',
+                       help='Rather than enter a gdb prompt, set up the '
+                            'gdb connection and wait for an IDE to '
+                            'connect.')
+    # Same default port that ndk-gdb.py uses.
+    group.add_argument('--port', type=int, default=5039,
+                       help='Use the given port for the GDB connection')
 
 
 class _LogcatCommand(_Command):
