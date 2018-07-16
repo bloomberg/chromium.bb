@@ -5937,6 +5937,13 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
                             ->navigation_state()
                             ->IsContentInitiated()
                       : !IsBrowserInitiated(pending_navigation_params_.get());
+  // TODO(dgozman): clean this up after some Canary coverage.
+  CHECK(!pending_navigation_params_);
+  if (info.extra_data) {
+    CHECK(static_cast<DocumentState*>(info.extra_data)
+              ->navigation_state()
+              ->IsContentInitiated());
+  }
 
   // Webkit is asking whether to navigate to a new URL.
   // This is fine normally, except if we're showing UI from one security
