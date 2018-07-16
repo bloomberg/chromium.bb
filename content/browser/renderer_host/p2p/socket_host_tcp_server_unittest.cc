@@ -7,11 +7,10 @@
 #include <stdint.h>
 
 #include <list>
-#include <utility>
 
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 #include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
-#include "net/base/completion_once_callback.h"
+#include "net/base/completion_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,7 +35,12 @@ class FakeServerSocket : public net::ServerSocket {
       accept_socket_->reset(socket);
       accept_socket_ = nullptr;
 
-      std::move(accept_callback_).Run(net::OK);
+      // This copy is necessary because this implementation of ServerSocket
+      // bases logic on the null-ness of |accept_callback_| in the bound
+      // callback.
+      net::CompletionCallback cb = accept_callback_;
+      accept_callback_.Reset();
+      std::move(cb).Run(net::OK);
     } else {
       incoming_sockets_.push_back(socket);
     }
@@ -54,7 +58,7 @@ class FakeServerSocket : public net::ServerSocket {
   }
 
   int Accept(std::unique_ptr<net::StreamSocket>* socket,
-             net::CompletionOnceCallback callback) override {
+             const net::CompletionCallback& callback) override {
     DCHECK(socket);
     if (!incoming_sockets_.empty()) {
       socket->reset(incoming_sockets_.front());
@@ -62,7 +66,7 @@ class FakeServerSocket : public net::ServerSocket {
       return net::OK;
     } else {
       accept_socket_ = socket;
-      accept_callback_ = std::move(callback);
+      accept_callback_ = callback;
       return net::ERR_IO_PENDING;
     }
   }
@@ -73,7 +77,7 @@ class FakeServerSocket : public net::ServerSocket {
   net::IPEndPoint local_address_;
 
   std::unique_ptr<net::StreamSocket>* accept_socket_;
-  net::CompletionOnceCallback accept_callback_;
+  net::CompletionCallback accept_callback_;
 
   std::list<net::StreamSocket*> incoming_sockets_;
 };

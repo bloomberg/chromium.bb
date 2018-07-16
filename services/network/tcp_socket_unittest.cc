@@ -17,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -56,13 +57,13 @@ class MockServerSocket : public net::ServerSocket {
   }
 
   int Accept(std::unique_ptr<net::StreamSocket>* socket,
-             net::CompletionOnceCallback callback) override {
+             const net::CompletionCallback& callback) override {
     DCHECK(accept_callback_.is_null());
     if (accept_result_ == net::OK && mode_ == net::SYNCHRONOUS)
       *socket = CreateMockAcceptSocket();
     if (mode_ == net::ASYNC || accept_result_ == net::ERR_IO_PENDING) {
       accept_socket_ = socket;
-      accept_callback_ = std::move(callback);
+      accept_callback_ = callback;
     }
     run_loop_.Quit();
 
@@ -107,7 +108,7 @@ class MockServerSocket : public net::ServerSocket {
 
   net::IoMode mode_ = net::SYNCHRONOUS;
   int accept_result_ = net::OK;
-  net::CompletionOnceCallback accept_callback_;
+  net::CompletionCallback accept_callback_;
   std::unique_ptr<net::StreamSocket>* accept_socket_;
   base::RunLoop run_loop_;
   std::vector<std::unique_ptr<net::StaticSocketDataProvider>> data_providers_;

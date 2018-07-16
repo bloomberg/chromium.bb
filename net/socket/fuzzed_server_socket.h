@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/completion_once_callback.h"
 #include "net/base/ip_endpoint.h"
 #include "net/socket/server_socket.h"
 
@@ -42,11 +41,11 @@ class FuzzedServerSocket : public ServerSocket {
   int GetLocalAddress(IPEndPoint* address) const override;
 
   int Accept(std::unique_ptr<StreamSocket>* socket,
-             CompletionOnceCallback callback) override;
+             const CompletionCallback& callback) override;
 
  private:
   void DispatchAccept(std::unique_ptr<StreamSocket>* socket,
-                      CompletionOnceCallback callback);
+                      const CompletionCallback& callback);
 
   base::FuzzedDataProvider* data_provider_;
   net::NetLog* net_log_;

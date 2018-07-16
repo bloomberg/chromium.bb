@@ -24,7 +24,6 @@
 #include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
-#include "net/base/completion_once_callback.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -53,7 +52,7 @@ class DummyServerSocket : public net::ServerSocket {
   }
 
   int Accept(std::unique_ptr<net::StreamSocket>* socket,
-             net::CompletionOnceCallback callback) override {
+             const net::CompletionCallback& callback) override {
     return net::ERR_IO_PENDING;
   }
 };
