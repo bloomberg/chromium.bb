@@ -366,12 +366,9 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByEventURL(
   AddToReferrerChain(out_referrer_chain, nav_event, GURL(),
                      ReferrerChainEntry::EVENT_URL);
   int user_gesture_count = 0;
-  GetRemainingReferrerChain(
-      nav_event,
-      user_gesture_count,
-      user_gesture_count_limit,
-      out_referrer_chain,
-      &result);
+  GetRemainingReferrerChain(nav_event, user_gesture_count,
+                            user_gesture_count_limit, out_referrer_chain,
+                            &result);
   return result;
 }
 
@@ -427,12 +424,9 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByHostingPage(
                        ReferrerChainEntry::CLIENT_REDIRECT);
   }
 
-  GetRemainingReferrerChain(
-      nav_event,
-      user_gesture_count,
-      user_gesture_count_limit,
-      out_referrer_chain,
-      &result);
+  GetRemainingReferrerChain(nav_event, user_gesture_count,
+                            user_gesture_count_limit, out_referrer_chain,
+                            &result);
   return result;
 }
 
@@ -444,6 +438,7 @@ void SafeBrowsingNavigationObserverManager::RecordNewWebContents(
     int source_render_process_id,
     int source_render_frame_id,
     GURL target_url,
+    ui::PageTransition page_transition,
     content::WebContents* target_web_contents,
     bool renderer_initiated) {
   DCHECK(source_web_contents);
@@ -469,6 +464,9 @@ void SafeBrowsingNavigationObserverManager::RecordNewWebContents(
   nav_event->original_request_url = cleaned_target_url;
   nav_event->target_tab_id = SessionTabHelper::IdForTab(target_web_contents);
   nav_event->frame_id = rfh ? rfh->GetFrameTreeNodeId() : -1;
+  nav_event->maybe_launched_by_external_application =
+      ui::PageTransitionCoreTypeIs(page_transition,
+                                   ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
 
   auto it = user_gesture_map_.find(source_web_contents);
   if (it == user_gesture_map_.end() ||
@@ -623,6 +621,8 @@ void SafeBrowsingNavigationObserverManager::AddToReferrerChain(
       server_redirect->set_url(ShortURLForReporting(redirect));
     }
   }
+  referrer_chain_entry->set_maybe_launched_by_external_application(
+      nav_event->maybe_launched_by_external_application);
   referrer_chain->Add()->Swap(referrer_chain_entry.get());
 }
 

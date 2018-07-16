@@ -40,7 +40,8 @@ NavigationEvent::NavigationEvent()
       frame_id(-1),
       last_updated(base::Time::Now()),
       navigation_initiation(ReferrerChainEntry::UNDEFINED),
-      has_committed(false) {}
+      has_committed(false),
+      maybe_launched_by_external_application() {}
 
 NavigationEvent::NavigationEvent(NavigationEvent&& nav_event)
     : source_url(std::move(nav_event.source_url)),
@@ -52,7 +53,9 @@ NavigationEvent::NavigationEvent(NavigationEvent&& nav_event)
       frame_id(nav_event.frame_id),
       last_updated(nav_event.last_updated),
       navigation_initiation(nav_event.navigation_initiation),
-      has_committed(nav_event.has_committed) {}
+      has_committed(nav_event.has_committed),
+      maybe_launched_by_external_application(
+          nav_event.maybe_launched_by_external_application) {}
 
 NavigationEvent& NavigationEvent::operator=(NavigationEvent&& nav_event) {
   source_url = std::move(nav_event.source_url);
@@ -64,6 +67,8 @@ NavigationEvent& NavigationEvent::operator=(NavigationEvent&& nav_event) {
   last_updated = nav_event.last_updated;
   navigation_initiation = nav_event.navigation_initiation;
   has_committed = nav_event.has_committed;
+  maybe_launched_by_external_application =
+      nav_event.maybe_launched_by_external_application;
   server_redirect_urls = std::move(nav_event.server_redirect_urls);
   return *this;
 }
@@ -233,6 +238,9 @@ void SafeBrowsingNavigationObserver::DidFinishNavigation(
   }
   NavigationEvent* nav_event = navigation_handle_map_[navigation_handle].get();
 
+  nav_event->maybe_launched_by_external_application =
+      PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
+                               ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   nav_event->has_committed = navigation_handle->HasCommitted();
   nav_event->target_tab_id =
       SessionTabHelper::IdForTab(navigation_handle->GetWebContents());
@@ -268,7 +276,7 @@ void SafeBrowsingNavigationObserver::DidOpenRequestedURL(
     bool renderer_initiated) {
   manager_->RecordNewWebContents(
       web_contents(), source_render_frame_host->GetProcess()->GetID(),
-      source_render_frame_host->GetRoutingID(), url, new_contents,
+      source_render_frame_host->GetRoutingID(), url, transition, new_contents,
       renderer_initiated);
 }
 

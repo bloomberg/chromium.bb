@@ -567,6 +567,10 @@ base::Value SerializeReferrer(const ReferrerChainEntry& referrer) {
   referrer_dict.SetKey("navigation_initiation",
                        base::Value(navigation_initiation));
 
+  referrer_dict.SetKey(
+      "maybe_launched_by_external_application",
+      base::Value(referrer.maybe_launched_by_external_application()));
+
   return std::move(referrer_dict);
 }
 

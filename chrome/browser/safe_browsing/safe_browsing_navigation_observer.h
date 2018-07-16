@@ -68,6 +68,9 @@ struct NavigationEvent {
   // committed.
   bool has_committed;
 
+  // Whether we think this event was launched by an external application.
+  bool maybe_launched_by_external_application;
+
   const GURL& GetDestinationUrl() const {
     if (!server_redirect_urls.empty())
       return server_redirect_urls.back();
