@@ -236,6 +236,15 @@ public class WebappActivity extends SingleTabActivity {
         mNotificationManager = new WebappActionsNotificationManager(this);
     }
 
+    private static LoadUrlParams createLoadUrlParams(WebappInfo info, Intent intent) {
+        LoadUrlParams params =
+                new LoadUrlParams(info.uri().toString(), PageTransition.AUTO_TOPLEVEL);
+        String headers = IntentHandler.getExtraHeadersFromIntent(intent);
+        if (headers != null) params.setVerbatimHeaders(headers);
+
+        return params;
+    }
+
     @Override
     protected void onNewIntent(Intent intent) {
         if (intent == null) return;
@@ -251,8 +260,7 @@ public class WebappActivity extends SingleTabActivity {
             Log.e(TAG, "Failed to parse new Intent: " + intent);
             ApiCompatibilityUtils.finishAndRemoveTask(this);
         } else if (newWebappInfo.shouldForceNavigation() && mIsInitialized) {
-            LoadUrlParams params =
-                    new LoadUrlParams(newWebappInfo.uri().toString(), PageTransition.AUTO_TOPLEVEL);
+            LoadUrlParams params = createLoadUrlParams(newWebappInfo, intent);
             params.setShouldClearHistoryList(true);
             getActivityTab().loadUrl(params);
         }
@@ -323,8 +331,8 @@ public class WebappActivity extends SingleTabActivity {
 
         // We do not load URL when restoring from saved instance states.
         if (savedInstanceState == null) {
-            tab.loadUrl(
-                    new LoadUrlParams(mWebappInfo.uri().toString(), PageTransition.AUTO_TOPLEVEL));
+            LoadUrlParams params = createLoadUrlParams(mWebappInfo, getIntent());
+            tab.loadUrl(params);
         } else {
             if (NetworkChangeNotifier.isOnline()) tab.reloadIgnoringCache();
         }
