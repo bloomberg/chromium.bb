@@ -782,7 +782,14 @@ void av1_inv_txfm_add_c(const tran_low_t* dqcoeff,
                         uint8_t* dst,
                         int stride,
                         const TxfmParam* txfm_param);
-#define av1_inv_txfm_add av1_inv_txfm_add_c
+void av1_inv_txfm_add_neon(const tran_low_t* dqcoeff,
+                           uint8_t* dst,
+                           int stride,
+                           const TxfmParam* txfm_param);
+RTCD_EXTERN void (*av1_inv_txfm_add)(const tran_low_t* dqcoeff,
+                                     uint8_t* dst,
+                                     int stride,
+                                     const TxfmParam* txfm_param);
 
 void av1_jnt_convolve_2d_c(const uint8_t* src,
                            int src_stride,
@@ -1173,6 +1180,9 @@ static void setup_rtcd_internal(void) {
   av1_convolve_y_sr = av1_convolve_y_sr_c;
   if (flags & HAS_NEON)
     av1_convolve_y_sr = av1_convolve_y_sr_neon;
+  av1_inv_txfm_add = av1_inv_txfm_add_c;
+  if (flags & HAS_NEON)
+    av1_inv_txfm_add = av1_inv_txfm_add_neon;
   av1_jnt_convolve_2d = av1_jnt_convolve_2d_c;
   if (flags & HAS_NEON)
     av1_jnt_convolve_2d = av1_jnt_convolve_2d_neon;
