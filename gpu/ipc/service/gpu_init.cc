@@ -38,6 +38,11 @@
 #include "ui/gl/gl_surface_egl.h"
 #endif
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/vulkan/init/vulkan_factory.h"
+#include "gpu/vulkan/vulkan_implementation.h"
+#endif
+
 namespace gpu {
 
 namespace {
@@ -171,6 +176,20 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     DCHECK(watchdog_started);
 #endif  // OS_WIN
   }
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (gpu_preferences_.enable_vulkan) {
+    vulkan_implementation_ = gpu::CreateVulkanImplementation();
+    if (!vulkan_implementation_ ||
+        !vulkan_implementation_->InitializeVulkanInstance()) {
+      DLOG(WARNING) << "Failed to create and initialize Vulkan implementation.";
+      vulkan_implementation_ = nullptr;
+    }
+    gpu_preferences_.enable_vulkan = !!vulkan_implementation_;
+  }
+#else
+  gpu_preferences_.enable_vulkan = false;
+#endif
 
   sandbox_helper_->PreSandboxStartup();
 

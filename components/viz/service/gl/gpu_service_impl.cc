@@ -18,6 +18,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/scheduler.h"
@@ -33,6 +35,7 @@
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
+#include "gpu/vulkan/buildflags.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -135,6 +138,7 @@ GpuServiceImpl::GpuServiceImpl(
     const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
     const base::Optional<gpu::GpuFeatureInfo>&
         gpu_feature_info_for_hardware_gpu,
+    gpu::VulkanImplementation* vulkan_implementation,
     base::OnceClosure exit_callback)
     : main_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_runner_(std::move(io_runner)),
@@ -146,6 +150,9 @@ GpuServiceImpl::GpuServiceImpl(
       gpu_feature_info_(gpu_feature_info),
       gpu_info_for_hardware_gpu_(gpu_info_for_hardware_gpu),
       gpu_feature_info_for_hardware_gpu_(gpu_feature_info_for_hardware_gpu),
+#if BUILDFLAG(ENABLE_VULKAN)
+      vulkan_implementation_(vulkan_implementation),
+#endif
       exit_callback_(std::move(exit_callback)),
       bindings_(std::make_unique<mojo::BindingSet<mojom::GpuService>>()),
       weak_ptr_factory_(this) {
@@ -153,6 +160,16 @@ GpuServiceImpl::GpuServiceImpl(
 #if defined(OS_CHROMEOS)
   protected_buffer_manager_ = new arc::ProtectedBufferManager();
 #endif  // defined(OS_CHROMEOS)
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (vulkan_implementation_) {
+    vulkan_context_provider_ =
+        VulkanInProcessContextProvider::Create(vulkan_implementation_);
+    if (!vulkan_context_provider_)
+      DLOG(WARNING) << "Failed to create Vulkan context provider.";
+  }
+#endif
+
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }
 
@@ -293,6 +310,7 @@ bool GpuServiceImpl::GetGrContextForGLSurface(gl::GLSurface* surface,
                                               GrContext** gr_context,
                                               gl::GLContext** gl_context) {
   DCHECK(main_runner_->BelongsToCurrentThread());
+  DCHECK(!is_using_vulkan());
   DCHECK(surface);
   DCHECK(gr_context && !*gr_context);
   DCHECK(gl_context && !*gl_context);
@@ -326,6 +344,17 @@ bool GpuServiceImpl::GetGrContextForGLSurface(gl::GLSurface* surface,
   *gr_context = data.gr_context.get();
   *gl_context = data.gl_context.get();
   return !!gr_context;
+}
+
+GrContext* GpuServiceImpl::GetGrContextForVulkan() {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+  DCHECK(is_using_vulkan());
+#if BUILDFLAG(ENABLE_VULKAN)
+  return vulkan_context_provider_->GetGrContext();
+#else
+  NOTREACHED();
+  return nullptr;
+#endif
 }
 
 gpu::ImageFactory* GpuServiceImpl::gpu_image_factory() {

@@ -315,12 +315,31 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
 
-  // Convert internal format from GLES2 to platform GL.
-  const auto* version_info = impl_on_gpu_->gl_version_info();
-  metadata.backend_format = GrBackendFormat::MakeGL(
-      gl::GetInternalFormat(version_info,
-                            *metadata.backend_format.getGLFormat()),
-      *metadata.backend_format.getGLTarget());
+  if (!gpu_service_->is_using_vulkan()) {
+    // Convert internal format from GLES2 to platform GL.
+    const auto* version_info = impl_on_gpu_->gl_version_info();
+    metadata.backend_format = GrBackendFormat::MakeGL(
+        gl::GetInternalFormat(version_info,
+                              *metadata.backend_format.getGLFormat()),
+        *metadata.backend_format.getGLTarget());
+  } else {
+#if BUILDFLAG(ENABLE_VULKAN)
+    VkFormat format = VK_FORMAT_UNDEFINED;
+    switch (metadata.color_type) {
+      case kRGBA_8888_SkColorType:
+        format = VK_FORMAT_R8G8B8A8_UNORM;
+        break;
+      case kBGRA_8888_SkColorType:
+        format = VK_FORMAT_B8G8R8A8_UNORM;
+        break;
+      default:
+        NOTREACHED();
+    }
+    metadata.backend_format = GrBackendFormat::MakeVk(format);
+#else
+    NOTREACHED();
+#endif
+  }
 
   DCHECK(!metadata.mailbox.IsZero());
   resource_sync_tokens_.push_back(metadata.sync_token);
@@ -343,10 +362,19 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
   // supported by Skia.
   YUVResourceMetadata yuv_metadata(std::move(metadatas), yuv_color_space);
 
-  // Convert internal format from GLES2 to platform GL.
-  const auto* version_info = impl_on_gpu_->gl_version_info();
-  auto backend_format = GrBackendFormat::MakeGL(
-      gl::GetInternalFormat(version_info, GL_BGRA8_EXT), GL_TEXTURE_2D);
+  GrBackendFormat backend_format;
+  if (!gpu_service_->is_using_vulkan()) {
+    // Convert internal format from GLES2 to platform GL.
+    const auto* version_info = impl_on_gpu_->gl_version_info();
+    backend_format = GrBackendFormat::MakeGL(
+        gl::GetInternalFormat(version_info, GL_BGRA8_EXT), GL_TEXTURE_2D);
+  } else {
+#if BUILDFLAG(ENABLE_VULKAN)
+    backend_format = GrBackendFormat::MakeVk(VK_FORMAT_B8G8R8A8_UNORM);
+#else
+    NOTREACHED();
+#endif
+  }
 
   return PromiseTextureHelper<YUVResourceMetadata>::MakePromiseSkImage(
       this, &recorder_.value(), backend_format, yuv_metadata.size(),
@@ -393,11 +421,21 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
 
   // TODO(penghuang): Figure out how to choose the right size.
   constexpr size_t kCacheMaxResourceBytes = 90 * 1024 * 1024;
-  const auto* version_info = impl_on_gpu_->gl_version_info();
-  unsigned int texture_storage_format = TextureStorageFormat(format);
-  auto backend_format = GrBackendFormat::MakeGL(
-      gl::GetInternalFormat(version_info, texture_storage_format),
-      GL_TEXTURE_2D);
+
+  GrBackendFormat backend_format;
+  if (!gpu_service_->is_using_vulkan()) {
+    const auto* version_info = impl_on_gpu_->gl_version_info();
+    unsigned int texture_storage_format = TextureStorageFormat(format);
+    backend_format = GrBackendFormat::MakeGL(
+        gl::GetInternalFormat(version_info, texture_storage_format),
+        GL_TEXTURE_2D);
+  } else {
+#if BUILDFLAG(ENABLE_VULKAN)
+    backend_format = GrBackendFormat::MakeVk(VK_FORMAT_B8G8R8A8_UNORM);
+#else
+    NOTREACHED();
+#endif
+  }
   auto characterization = gr_context_thread_safe->createCharacterization(
       kCacheMaxResourceBytes, image_info, backend_format, msaa_sample_count,
       kTopLeft_GrSurfaceOrigin, surface_props, mipmap);
@@ -441,14 +479,25 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
 
-  // Convert internal format from GLES2 to platform GL.
-  const auto* version_info = impl_on_gpu_->gl_version_info();
-  unsigned int texture_storage_format = TextureStorageFormat(format);
-  auto backend_format = GrBackendFormat::MakeGL(
-      gl::GetInternalFormat(version_info, texture_storage_format),
-      GL_TEXTURE_2D);
-  SkColorType color_type =
-      ResourceFormatToClosestSkColorType(true /*gpu_compositing */, format);
+  SkColorType color_type = kBGRA_8888_SkColorType;
+  GrBackendFormat backend_format;
+
+  if (!gpu_service_->is_using_vulkan()) {
+    // Convert internal format from GLES2 to platform GL.
+    const auto* version_info = impl_on_gpu_->gl_version_info();
+    unsigned int texture_storage_format = TextureStorageFormat(format);
+    backend_format = GrBackendFormat::MakeGL(
+        gl::GetInternalFormat(version_info, texture_storage_format),
+        GL_TEXTURE_2D);
+    color_type =
+        ResourceFormatToClosestSkColorType(true /*gpu_compositing */, format);
+  } else {
+#if BUILDFLAG(ENABLE_VULKAN)
+    backend_format = GrBackendFormat::MakeVk(VK_FORMAT_B8G8R8A8_UNORM);
+#else
+    NOTREACHED();
+#endif
+  }
   return PromiseTextureHelper<RenderPassId>::MakePromiseSkImage(
       this, &recorder_.value(), backend_format, size,
       mipmap ? GrMipMapped::kYes : GrMipMapped::kNo, kTopLeft_GrSurfaceOrigin,

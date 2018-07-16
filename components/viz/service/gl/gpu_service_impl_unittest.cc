@@ -50,9 +50,10 @@ class GpuServiceTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(io_thread_.Start());
     gpu_service_ = std::make_unique<GpuServiceImpl>(
-        gpu::GPUInfo(), /*watchdog_thread=*/nullptr, io_thread_.task_runner(),
+        gpu::GPUInfo(), nullptr /* watchdog_thread */, io_thread_.task_runner(),
         gpu::GpuFeatureInfo(), gpu::GpuPreferences(), gpu::GPUInfo(),
-        gpu::GpuFeatureInfo(), /*exit_callback=*/base::DoNothing());
+        gpu::GpuFeatureInfo(), nullptr /* vulkan_implementation */,
+        base::DoNothing() /* exit_callback */);
   }
 
   void TearDown() override {

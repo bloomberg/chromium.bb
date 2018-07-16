@@ -12,12 +12,15 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
+#include "gpu/vulkan/buildflags.h"
 
 namespace base {
 class CommandLine;
 }
 
 namespace gpu {
+
+class VulkanImplementation;
 
 class GPU_IPC_SERVICE_EXPORT GpuSandboxHelper {
  public:
@@ -60,6 +63,13 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
     return std::move(watchdog_thread_);
   }
   bool init_successful() const { return init_successful_; }
+#if BUILDFLAG(ENABLE_VULKAN)
+  VulkanImplementation* vulkan_implementation() {
+    return vulkan_implementation_.get();
+  }
+#else
+  VulkanImplementation* vulkan_implementation() { return nullptr; }
+#endif
 
  private:
   GpuSandboxHelper* sandbox_helper_ = nullptr;
@@ -73,6 +83,10 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
   // switching to SwiftShader.
   base::Optional<GPUInfo> gpu_info_for_hardware_gpu_;
   base::Optional<GpuFeatureInfo> gpu_feature_info_for_hardware_gpu_;
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  std::unique_ptr<VulkanImplementation> vulkan_implementation_;
+#endif
 
   void AdjustInfoToSwiftShader();
 

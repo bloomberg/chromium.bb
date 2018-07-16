@@ -121,6 +121,7 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->use_gpu_fences_for_overlay_planes =
         prefs.use_gpu_fences_for_overlay_planes();
     out->watchdog_starts_backgrounded = prefs.watchdog_starts_backgrounded();
+    out->enable_vulkan = prefs.enable_vulkan();
     return true;
   }
 
@@ -260,6 +261,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   }
   static bool watchdog_starts_backgrounded(const gpu::GpuPreferences& prefs) {
     return prefs.watchdog_starts_backgrounded;
+  }
+  static bool enable_vulkan(const gpu::GpuPreferences& prefs) {
+    return prefs.enable_vulkan;
   }
 };
 

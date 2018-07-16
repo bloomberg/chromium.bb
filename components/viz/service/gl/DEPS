@@ -8,6 +8,7 @@ include_rules = [
   "+gpu/ipc",
   "+gpu/ipc/common",
   "+gpu/ipc/service",
+  "+gpu/vulkan",
   "+ipc",
   "+media/gpu",
   "+media/mojo",

@@ -25,6 +25,7 @@
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/gpu_config.h"
 #include "gpu/ipc/service/x_util.h"
+#include "gpu/vulkan/buildflags.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
@@ -44,6 +45,7 @@ class GpuMemoryBufferFactory;
 class GpuWatchdogThread;
 class Scheduler;
 class SyncPointManager;
+class VulkanImplementation;
 }  // namespace gpu
 
 namespace media {
@@ -51,6 +53,8 @@ class MediaGpuChannelManager;
 }
 
 namespace viz {
+
+class VulkanContextProvider;
 
 // This runs in the GPU process, and communicates with the gpu host (which is
 // the window server) over the mojom APIs. This is responsible for setting up
@@ -66,6 +70,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                  const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
                  const base::Optional<gpu::GpuFeatureInfo>&
                      gpu_feature_info_for_hardware_gpu,
+                 gpu::VulkanImplementation* vulkan_implementation,
                  base::OnceClosure exit_callback);
 
   ~GpuServiceImpl() override;
@@ -82,6 +87,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   bool GetGrContextForGLSurface(gl::GLSurface* surface,
                                 GrContext** gr_context,
                                 gl::GLContext** gl_context);
+
+  GrContext* GetGrContextForVulkan();
 
   // Notifies the GpuHost to stop using GPU compositing. This should be called
   // in response to an error in the GPU process that occurred after
@@ -133,6 +140,16 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   gpu::SequenceId skia_output_surface_sequence_id() const {
     return skia_output_surface_sequence_id_;
   }
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  bool is_using_vulkan() const { return !!vulkan_context_provider_; }
+  VulkanContextProvider* vulkan_context_provider() {
+    return vulkan_context_provider_.get();
+  }
+#else
+  bool is_using_vulkan() const { return false; }
+  VulkanContextProvider* vulkan_context_provider() { return nullptr; }
+#endif
 
   void set_oopd_enabled() { oopd_enabled_ = true; }
 
@@ -266,6 +283,11 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // GL and Gr contexts used by Skia only.
   struct GrContextAndGLContext;
   base::flat_map<unsigned long, GrContextAndGLContext> contexts_for_gl_;
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  gpu::VulkanImplementation* vulkan_implementation_;
+  scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
+#endif
 
   // An event that will be signalled when we shutdown. On some platforms it
   // comes from external sources.

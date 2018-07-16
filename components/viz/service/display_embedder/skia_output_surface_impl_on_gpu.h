@@ -31,6 +31,10 @@ class GLSurface;
 
 namespace gpu {
 class SyncPointClientState;
+
+#if BUILDFLAG(ENABLE_VULKAN)
+class VulkanSurface;
+#endif
 }
 
 namespace viz {
@@ -140,12 +144,17 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void AddFilter(IPC::MessageFilter* message_filter) override;
   int32_t GetRouteID() const override;
 
+  void InitializeForGL();
+  void InitializeForVulkan();
+
   void BindOrCopyTextureIfNecessary(gpu::TextureBase* texture_base);
   void PreprocessYUVResources(
       std::vector<YUVResourceMetadata*> yuv_resource_metadatas);
 
   // Generage the next swap ID and push it to our pending swap ID queues.
   void OnSwapBuffers();
+
+  void CreateSkSurfaceForVulkan(const gfx::Size& size);
 
   const gpu::CommandBufferId command_buffer_id_;
   GpuServiceImpl* const gpu_service_;
@@ -154,12 +163,16 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   BufferPresentedCallback buffer_presented_callback_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
   gpu::GpuPreferences gpu_preferences_;
-  scoped_refptr<gl::GLSurface> surface_;
+  scoped_refptr<gl::GLSurface> gl_surface_;
   sk_sp<SkSurface> sk_surface_;
   GrContext* gr_context_ = nullptr;
   scoped_refptr<gl::GLContext> gl_context_;
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
   OutputSurface::Capabilities capabilities_;
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  std::unique_ptr<gpu::VulkanSurface> vulkan_surface_;
+#endif
 
   // Offscreen surfaces for render passes. It can only be accessed on GPU
   // thread.
