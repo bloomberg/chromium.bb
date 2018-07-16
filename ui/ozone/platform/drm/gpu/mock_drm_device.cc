@@ -7,10 +7,27 @@
 #include <xf86drm.h>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
+
+// Private types defined in libdrm. Define them here so we can peek at the
+// commit and ensure the expected state has been set correctly.
+struct drmModeAtomicReqItem {
+  uint32_t object_id;
+  uint32_t property_id;
+  uint64_t value;
+};
+
+typedef drmModeAtomicReqItem* drmModeAtomicReqItemPtr;
+
+struct _drmModeAtomicReq {
+  uint32_t cursor;
+  uint32_t size_items;
+  drmModeAtomicReqItemPtr items;
+};
 
 namespace ui {
 
@@ -36,6 +53,13 @@ ScopedDrmObjectPropertyPtr CreatePropertyObject(
   }
 
   return drm_properties;
+}
+
+template <class Type>
+Type* FindObjectById(uint32_t id, std::vector<Type>& properties) {
+  auto it = std::find_if(properties.begin(), properties.end(),
+                         [id](const Type& p) { return p.id == id; });
+  return it != properties.end() ? &(*it) : nullptr;
 }
 
 }  // namespace
@@ -150,21 +174,13 @@ ScopedDrmObjectPropertyPtr MockDrmDevice::GetObjectProperties(
     uint32_t object_id,
     uint32_t object_type) {
   if (object_type == DRM_MODE_OBJECT_PLANE) {
-    auto it = std::find_if(
-        plane_properties_.begin(), plane_properties_.end(),
-        [object_id](const PlaneProperties& p) { return p.id == object_id; });
-    if (it == plane_properties_.end())
-      return nullptr;
-
-    return CreatePropertyObject(it->properties);
+    PlaneProperties* properties = FindObjectById(object_id, plane_properties_);
+    if (properties)
+      return CreatePropertyObject(properties->properties);
   } else if (object_type == DRM_MODE_OBJECT_CRTC) {
-    auto it = std::find_if(
-        crtc_properties_.begin(), crtc_properties_.end(),
-        [object_id](const CrtcProperties& p) { return p.id == object_id; });
-    if (it == crtc_properties_.end())
-      return nullptr;
-
-    return CreatePropertyObject(it->properties);
+    CrtcProperties* properties = FindObjectById(object_id, crtc_properties_);
+    if (properties)
+      return CreatePropertyObject(properties->properties);
   }
 
   return nullptr;
@@ -245,15 +261,12 @@ bool MockDrmDevice::PageFlipOverlay(uint32_t crtc_id,
 }
 
 ScopedDrmPlanePtr MockDrmDevice::GetPlane(uint32_t plane_id) {
-  auto it = std::find_if(plane_properties_.begin(), plane_properties_.end(),
-                         [plane_id](const PlaneProperties& plane) {
-                           return plane.id == plane_id;
-                         });
-  if (it == plane_properties_.end())
+  PlaneProperties* properties = FindObjectById(plane_id, plane_properties_);
+  if (!properties)
     return nullptr;
 
   ScopedDrmPlanePtr plane(DrmAllocator<drmModePlane>());
-  plane->possible_crtcs = it->crtc_mask;
+  plane->possible_crtcs = properties->crtc_mask;
   return plane;
 }
 
@@ -281,10 +294,14 @@ bool MockDrmDevice::SetProperty(uint32_t connector_id,
 
 ScopedDrmPropertyBlob MockDrmDevice::CreatePropertyBlob(void* blob,
                                                         size_t size) {
-  return ScopedDrmPropertyBlob(new DrmPropertyBlobMetadata(this, 0xffffffff));
+  uint32_t id = ++property_id_generator_;
+  allocated_property_blobs_.insert(id);
+  return ScopedDrmPropertyBlob(new DrmPropertyBlobMetadata(this, id));
 }
 
-void MockDrmDevice::DestroyPropertyBlob(uint32_t id) {}
+void MockDrmDevice::DestroyPropertyBlob(uint32_t id) {
+  EXPECT_TRUE(allocated_property_blobs_.erase(id));
+}
 
 bool MockDrmDevice::GetCapability(uint64_t capability, uint64_t* value) {
   return true;
@@ -374,10 +391,18 @@ bool MockDrmDevice::CloseBufferHandle(uint32_t handle) {
 }
 
 bool MockDrmDevice::CommitProperties(
-    drmModeAtomicReq* properties,
+    drmModeAtomicReq* request,
     uint32_t flags,
     uint32_t crtc_count,
     scoped_refptr<PageFlipRequest> page_flip_request) {
+  for (uint32_t i = 0; i < request->cursor; ++i) {
+    EXPECT_TRUE(ValidatePropertyValue(request->items[i].property_id,
+                                      request->items[i].value));
+    EXPECT_TRUE(UpdateProperty(request->items[i].object_id,
+                               request->items[i].property_id,
+                               request->items[i].value));
+  }
+
   commit_count_++;
   if (page_flip_request) {
     callbacks_.push(page_flip_request->AddPageFlip());
@@ -405,6 +430,49 @@ void MockDrmDevice::RunCallbacks() {
 
 void MockDrmDevice::SetPropertyBlob(ScopedDrmPropertyBlobPtr blob) {
   blob_property_map_[blob->id] = std::move(blob);
+}
+
+bool MockDrmDevice::UpdateProperty(
+    uint32_t id,
+    uint64_t value,
+    std::vector<DrmDevice::Property>* properties) {
+  DrmDevice::Property* property = FindObjectById(id, *properties);
+  if (!property)
+    return false;
+
+  property->value = value;
+  return true;
+}
+
+bool MockDrmDevice::UpdateProperty(uint32_t object_id,
+                                   uint32_t property_id,
+                                   uint64_t value) {
+  PlaneProperties* plane_properties =
+      FindObjectById(object_id, plane_properties_);
+  if (plane_properties)
+    return UpdateProperty(property_id, value, &plane_properties->properties);
+
+  CrtcProperties* crtc_properties = FindObjectById(object_id, crtc_properties_);
+  if (crtc_properties)
+    return UpdateProperty(property_id, value, &crtc_properties->properties);
+
+  return false;
+}
+
+bool MockDrmDevice::ValidatePropertyValue(uint32_t id, uint64_t value) {
+  auto it = property_names_.find(id);
+  if (it == property_names_.end())
+    return false;
+
+  if (value == 0)
+    return true;
+
+  std::vector<std::string> blob_properties = {"CTM", "DEGAMMA_LUT", "GAMMA_LUT",
+                                              "PLANE_CTM"};
+  if (base::ContainsValue(blob_properties, it->second))
+    return base::ContainsKey(allocated_property_blobs_, value);
+
+  return true;
 }
 
 }  // namespace ui

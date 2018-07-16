@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <set>
 #include <vector>
 
 #include "base/containers/queue.h"
@@ -161,7 +162,7 @@ class MockDrmDevice : public DrmDevice {
   bool MapDumbBuffer(uint32_t handle, size_t size, void** pixels) override;
   bool UnmapDumbBuffer(void* pixels, size_t size) override;
   bool CloseBufferHandle(uint32_t handle) override;
-  bool CommitProperties(drmModeAtomicReq* properties,
+  bool CommitProperties(drmModeAtomicReq* request,
                         uint32_t flags,
                         uint32_t crtc_count,
                         scoped_refptr<PageFlipRequest> callback) override;
@@ -172,6 +173,14 @@ class MockDrmDevice : public DrmDevice {
 
  private:
   ~MockDrmDevice() override;
+
+  bool UpdateProperty(uint32_t id,
+                      uint64_t value,
+                      std::vector<DrmDevice::Property>* properties);
+
+  bool UpdateProperty(uint32_t object_id, uint32_t property_id, uint64_t value);
+
+  bool ValidatePropertyValue(uint32_t id, uint64_t value);
 
   int get_crtc_call_count_;
   int set_crtc_call_count_;
@@ -206,6 +215,12 @@ class MockDrmDevice : public DrmDevice {
   std::vector<PlaneProperties> plane_properties_;
 
   std::map<uint32_t, std::string> property_names_;
+
+  // TODO(dnicoara): Generate all IDs internal to MockDrmDevice.
+  // For now generate something with a high enough ID to be unique in tests.
+  uint32_t property_id_generator_ = 0xff000000;
+
+  std::set<uint32_t> allocated_property_blobs_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDrmDevice);
 };
