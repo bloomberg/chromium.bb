@@ -4461,6 +4461,191 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   CheckResponseData(&trans, "hello!");
 }
 
+TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
+  MockQuicData mock_quic_data;
+  quic::QuicStreamOffset client_header_stream_offset = 0;
+  quic::QuicStreamOffset server_header_stream_offset = 0;
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
+  mock_quic_data.AddWrite(SYNCHRONOUS,
+                          ConstructClientRequestHeadersPacket(
+                              1, GetNthClientInitiatedStreamId(0), true, true,
+                              GetRequestHeaders("GET", "https", "/"),
+                              &client_header_stream_offset));
+  mock_quic_data.AddRead(ASYNC, ConstructServerResponseHeadersPacket(
+                                    1, GetNthClientInitiatedStreamId(0), false,
+                                    false, GetResponseHeaders("425 TOO_EARLY"),
+                                    &server_header_stream_offset));
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientAckAndRstPacket(2, GetNthClientInitiatedStreamId(0),
+                                     quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
+
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+
+  spdy::SpdySettingsIR settings_frame;
+  settings_frame.AddSetting(spdy::SETTINGS_MAX_HEADER_LIST_SIZE,
+                            quic::kDefaultMaxUncompressedHeaderSize);
+  spdy::SpdySerializedFrame spdy_frame(
+      client_maker_.spdy_request_framer()->SerializeFrame(settings_frame));
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS,
+      client_maker_.MakeDataPacket(
+          3, 3, false, false, client_header_stream_offset,
+          quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size())));
+  client_header_stream_offset += spdy_frame.size();
+
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientRequestHeadersPacket(
+          4, GetNthClientInitiatedStreamId(1), false, true,
+          GetRequestHeaders("GET", "https", "/"),
+          GetNthClientInitiatedStreamId(0), &client_header_stream_offset));
+  mock_quic_data.AddRead(
+      ASYNC, ConstructServerResponseHeadersPacket(
+                 2, GetNthClientInitiatedStreamId(1), false, false,
+                 GetResponseHeaders("200 OK"), &server_header_stream_offset));
+  mock_quic_data.AddRead(
+      ASYNC, ConstructServerDataPacket(3, GetNthClientInitiatedStreamId(1),
+                                       false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS, ConstructClientAckAndConnectionClosePacket(5, 3, 1, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
+                                           "");
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
+  AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                         CompletionOnceCallback(), &request, net_log_.bound());
+
+  AddHangingNonAlternateProtocolSocketData();
+  CreateSession();
+  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Confirm the handshake after the 425 Too Early.
+  base::RunLoop().RunUntilIdle();
+
+  // The handshake hasn't been confirmed yet, so the retry should not have
+  // succeeded.
+  EXPECT_FALSE(callback.have_result());
+
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      quic::QuicSession::HANDSHAKE_CONFIRMED);
+
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+  CheckWasQuicResponse(&trans);
+  CheckResponseData(&trans, "hello!");
+}
+
+TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
+  MockQuicData mock_quic_data;
+  quic::QuicStreamOffset client_header_stream_offset = 0;
+  quic::QuicStreamOffset server_header_stream_offset = 0;
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
+  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
+  mock_quic_data.AddWrite(SYNCHRONOUS,
+                          ConstructClientRequestHeadersPacket(
+                              1, GetNthClientInitiatedStreamId(0), true, true,
+                              GetRequestHeaders("GET", "https", "/"),
+                              &client_header_stream_offset));
+  mock_quic_data.AddRead(ASYNC, ConstructServerResponseHeadersPacket(
+                                    1, GetNthClientInitiatedStreamId(0), false,
+                                    false, GetResponseHeaders("425 TOO_EARLY"),
+                                    &server_header_stream_offset));
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientAckAndRstPacket(2, GetNthClientInitiatedStreamId(0),
+                                     quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
+
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+
+  spdy::SpdySettingsIR settings_frame;
+  settings_frame.AddSetting(spdy::SETTINGS_MAX_HEADER_LIST_SIZE,
+                            quic::kDefaultMaxUncompressedHeaderSize);
+  spdy::SpdySerializedFrame spdy_frame(
+      client_maker_.spdy_request_framer()->SerializeFrame(settings_frame));
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS,
+      client_maker_.MakeDataPacket(
+          3, 3, false, false, client_header_stream_offset,
+          quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size())));
+  client_header_stream_offset += spdy_frame.size();
+
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientRequestHeadersPacket(
+          4, GetNthClientInitiatedStreamId(1), false, true,
+          GetRequestHeaders("GET", "https", "/"),
+          GetNthClientInitiatedStreamId(0), &client_header_stream_offset));
+  mock_quic_data.AddRead(ASYNC, ConstructServerResponseHeadersPacket(
+                                    2, GetNthClientInitiatedStreamId(1), false,
+                                    false, GetResponseHeaders("425 TOO_EARLY"),
+                                    &server_header_stream_offset));
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientAckAndRstPacket(5, GetNthClientInitiatedStreamId(1),
+                                     quic::QUIC_STREAM_CANCELLED, 2, 1, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("mail.example.org", "192.168.0.1",
+                                           "");
+  HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
+  AddressList address;
+  std::unique_ptr<HostResolver::Request> request;
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                         CompletionOnceCallback(), &request, net_log_.bound());
+
+  AddHangingNonAlternateProtocolSocketData();
+  CreateSession();
+  AddQuicAlternateProtocolMapping(quic::MockCryptoClientStream::ZERO_RTT);
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Confirm the handshake after the 425 Too Early.
+  base::RunLoop().RunUntilIdle();
+
+  // The handshake hasn't been confirmed yet, so the retry should not have
+  // succeeded.
+  EXPECT_FALSE(callback.have_result());
+
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      quic::QuicSession::HANDSHAKE_CONFIRMED);
+
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+  const HttpResponseInfo* response = trans.GetResponseInfo();
+  ASSERT_TRUE(response != nullptr);
+  ASSERT_TRUE(response->headers.get() != nullptr);
+  EXPECT_EQ("HTTP/1.1 425 TOO_EARLY", response->headers->GetStatusLine());
+  EXPECT_TRUE(response->was_fetched_via_spdy);
+  EXPECT_TRUE(response->was_alpn_negotiated);
+  EXPECT_EQ(QuicHttpStream::ConnectionInfoFromQuicVersion(version_),
+            response->connection_info);
+}
+
 TEST_P(QuicNetworkTransactionTest,
        LogGranularQuicErrorCodeOnQuicProtocolErrorLocal) {
   session_params_.retry_without_alt_svc_on_quic_errors = false;

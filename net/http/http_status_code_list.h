@@ -59,6 +59,7 @@ HTTP_STATUS(UNSUPPORTED_MEDIA_TYPE, 415, "Unsupported Media Type")
 HTTP_STATUS(REQUESTED_RANGE_NOT_SATISFIABLE, 416,
             "Requested Range Not Satisfiable")
 HTTP_STATUS(EXPECTATION_FAILED, 417, "Expectation Failed")
+HTTP_STATUS(TOO_EARLY, 425, "Too Early")
 
 // Server error 5xx
 HTTP_STATUS(INTERNAL_SERVER_ERROR, 500, "Internal Server Error")
