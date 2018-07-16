@@ -8,7 +8,7 @@
 
 <link id="first" rel="import" href="resources/hello.html">
 <link id="shouldBeInImportMap" rel="import" href="resources/hello.html">
-<link id="parentOfFirst" rel="import" href="resources/parent-of-hello.html">
+<link id="parentOfFirst" rel="import" href="resources/hello-parent.html">
 
 </head>
 <body>
@@ -19,7 +19,7 @@ test(function() {
 }, 'If LOCATION is already in the import map, let IMPORT be the imported document for LOCATION and stop. (1)');
 
 test(function() {
-   assert_true(window.first.import === window.parentOfFirst.import.getElementById('child').import);
+   assert_true(window.first.import === window.parentOfFirst.import.getElementById('original').import);
 }, 'If LOCATION is already in the import map, let IMPORT be the imported document for LOCATION and stop. (2)');
 </script>
 </body>
