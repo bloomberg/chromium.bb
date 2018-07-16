@@ -45,7 +45,6 @@ headless_unittests
 interactive_ui_tests
 ipc_tests
 jingle_unittests
-keyboard_unittests
 latency_unittests
 leveldb_service_unittests
 libjingle_xmpp_unittests
