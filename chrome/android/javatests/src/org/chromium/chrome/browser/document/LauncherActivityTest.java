@@ -148,6 +148,7 @@ public class LauncherActivityTest {
      * this will throw a BadParcelableException.
      */
     @SuppressLint("ParcelCreator")
+    @SuppressWarnings("ParcelableCreator")
     private static class InvalidParcelable implements Parcelable {
         @Override
         public void writeToParcel(Parcel parcel, int params) {
