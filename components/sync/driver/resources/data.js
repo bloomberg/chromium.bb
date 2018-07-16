@@ -66,10 +66,14 @@ function serializeNode(node) {
     var fieldVal;
     if (field == 'SERVER_VERSION_TIME') {
       var version = node['SERVER_VERSION'];
-      fieldVal = versionToDateString(version);
+      if (version != null) {
+        fieldVal = versionToDateString(version);
+      }
     } if (field == 'BASE_VERSION_TIME') {
       var version = node['BASE_VERSION'];
-      fieldVal = versionToDateString(version);
+      if (version != null) {
+        fieldVal = versionToDateString(version);
+      }
     } else if ((field == 'SERVER_SPECIFICS' || field == 'SPECIFICS') &&
             (!$('include-specifics').checked)) {
       fieldVal = 'REDACTED';
