@@ -51,6 +51,7 @@ class CORE_EXPORT TextMetrics final : public ScriptWrappable {
   }
 
   double width() const { return width_; }
+  const Vector<double>& advances() const { return advances_; }
   double actualBoundingBoxLeft() const { return actual_bounding_box_left_; }
   double actualBoundingBoxRight() const { return actual_bounding_box_right_; }
   double fontBoundingBoxAscent() const { return font_bounding_box_ascent_; }
@@ -77,6 +78,7 @@ class CORE_EXPORT TextMetrics final : public ScriptWrappable {
 
   // x-direction
   double width_ = 0.0;
+  Vector<double> advances_;
   double actual_bounding_box_left_ = 0.0;
   double actual_bounding_box_right_ = 0.0;
 
