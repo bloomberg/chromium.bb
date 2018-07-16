@@ -57,6 +57,10 @@ using chrome_test_util::SettingsDoneButton;
 // Tests if the Google Services settings contains only the non personalized
 // options when the user is not logged in.
 - (void)testServicesWhileSignedOut {
+  // TODO(crbug.com/863860): re-enable when fixed.
+  if (!IsIPadIdiom())
+    EARL_GREY_TEST_DISABLED(@"Fails on iPhones.");
+
   if (!IsUIRefreshPhase1Enabled())
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
   [self openGoogleServicesSettings];
