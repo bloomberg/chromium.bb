@@ -116,7 +116,8 @@ FindAppIdResult FindAppId(const base::DictionaryValue* prefs,
                           base::StringPiece prefs_key,
                           base::StringPiece search_value,
                           std::string* result,
-                          bool require_startup_notify = false) {
+                          bool require_startup_notify = false,
+                          bool need_display = false) {
   result->clear();
   for (const auto& item : prefs->DictItems()) {
     if (item.first == kCrostiniTerminalId)
@@ -127,6 +128,13 @@ FindAppIdResult FindAppId(const base::DictionaryValue* prefs,
              .FindKeyOfType(kAppStartupNotifyKey, base::Value::Type::BOOLEAN)
              ->GetBool())
       continue;
+
+    if (need_display) {
+      const base::Value* no_display = item.second.FindKeyOfType(
+          kAppNoDisplayKey, base::Value::Type::BOOLEAN);
+      if (no_display && no_display->GetBool())
+        continue;
+    }
 
     const base::Value* value = item.second.FindKey(prefs_key);
     if (!value)
@@ -378,8 +386,9 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
       FindAppIdResult::UniqueMatch)
     return app_id;
 
-  if (FindAppId(apps, kAppNameKey, key, &app_id) ==
-      FindAppIdResult::UniqueMatch)
+  if (FindAppId(apps, kAppNameKey, key, &app_id,
+                false /* require_startup_notification */,
+                true /* need_display */) == FindAppIdResult::UniqueMatch)
     return app_id;
 
   return kCrostiniAppIdPrefix + *window_app_id;
