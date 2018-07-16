@@ -241,17 +241,18 @@ configuration:
 1.  Add feature to the histogram suffix `IPHFeatures` in:
     `//tools/metrics/histograms/histograms.xml`.
     *   The suffix must match the `base::Feature` `name` member of your feature.
-1.  Add feature to the actions file (actions do not support automatic suffixes):
-    `//tools/metrics/actions/actions.xml`.
+1.  Add feature to the actions file at: `//tools/metrics/actions/actions.xml`.
     *   The suffix must match the `base::Feature` `name` member.
-    *   Use an old example to ensure you configure and describe it correctly.
-    *   For `IPH_MyFunFeature` it would look like this:
-        *   `<action name="InProductHelp.NotifyEvent.IPH_MyFunFeature">`
-        *   `<action name="InProductHelp.NotifyUsedEvent.IPH_MyFunFeature">`
-        *   `<action name="InProductHelp.ShouldTriggerHelpUI.IPH_MyFunFeature">`
-        *   `<action name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_MyFunFeature">`
-        *   `<action name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_MyFunFeature">`
-        *   `<action name="InProductHelp.ShouldTriggerHelpUIResult.WouldHaveTriggered.IPH_MyFunFeature">`
+    *   Find the `<action-suffix>` entry at the end of the file, where the
+        following `<affected-action>`s are listed:
+        *   `InProductHelp.NotifyEvent.IPH`
+        *   `InProductHelp.NotifyUsedEvent.IPH`
+        *   `InProductHelp.ShouldTriggerHelpUI.IPH`
+        *   `InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH`
+        *   `InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH`
+        *   `InProductHelp.ShouldTriggerHelpUIResult.WouldHaveTriggered.IPH`
+    *   Add an alphebetically sorted entry to the list of `<suffix>`es like:
+        `<suffix name="MyFunFeature" label="For MyFunFeature feature."/>`
 
 ### Adding a local field trial testing configuration
 
