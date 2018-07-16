@@ -389,7 +389,6 @@ blink::WebVector<blink::WebString> RTCRtpSender::StreamIds() const {
   for (size_t i = 0; i < stream_ids.size(); ++i)
     web_stream_ids[i] = blink::WebString::FromUTF8(stream_ids[i]);
   return web_stream_ids;
-  ;
 }
 
 void RTCRtpSender::ReplaceTrack(blink::WebMediaStreamTrack with_track,
@@ -430,6 +429,60 @@ void RTCRtpSender::ReplaceTrack(blink::WebMediaStreamTrack with_track,
 bool RTCRtpSender::RemoveFromPeerConnection(
     webrtc::PeerConnectionInterface* pc) {
   return internal_->RemoveFromPeerConnection(pc);
+}
+
+RTCRtpSenderOnlyTransceiver::RTCRtpSenderOnlyTransceiver(
+    std::unique_ptr<RTCRtpSender> sender)
+    : sender_(std::move(sender)) {
+  DCHECK(sender_);
+}
+
+RTCRtpSenderOnlyTransceiver::~RTCRtpSenderOnlyTransceiver() {}
+
+blink::WebRTCRtpTransceiverImplementationType
+RTCRtpSenderOnlyTransceiver::ImplementationType() const {
+  return blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly;
+}
+
+uintptr_t RTCRtpSenderOnlyTransceiver::Id() const {
+  NOTREACHED();
+  return 0u;
+}
+
+blink::WebString RTCRtpSenderOnlyTransceiver::Mid() const {
+  NOTREACHED();
+  return blink::WebString();
+}
+
+std::unique_ptr<blink::WebRTCRtpSender> RTCRtpSenderOnlyTransceiver::Sender()
+    const {
+  return sender_->ShallowCopy();
+}
+
+std::unique_ptr<blink::WebRTCRtpReceiver>
+RTCRtpSenderOnlyTransceiver::Receiver() const {
+  NOTREACHED();
+  return nullptr;
+}
+
+bool RTCRtpSenderOnlyTransceiver::Stopped() const {
+  NOTREACHED();
+  return false;
+}
+
+webrtc::RtpTransceiverDirection RTCRtpSenderOnlyTransceiver::Direction() const {
+  NOTREACHED();
+  return webrtc::RtpTransceiverDirection::kSendOnly;
+}
+
+base::Optional<webrtc::RtpTransceiverDirection>
+RTCRtpSenderOnlyTransceiver::CurrentDirection() const {
+  NOTREACHED();
+  return webrtc::RtpTransceiverDirection::kSendOnly;
+}
+
+void RTCRtpSenderOnlyTransceiver::Stop() {
+  NOTREACHED();
 }
 
 }  // namespace content

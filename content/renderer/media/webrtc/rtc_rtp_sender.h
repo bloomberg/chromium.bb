@@ -14,6 +14,7 @@
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/api/rtpsenderinterface.h"
@@ -151,6 +152,28 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
   struct RTCRtpSenderInternalTraits;
 
   scoped_refptr<RTCRtpSenderInternal> internal_;
+};
+
+class CONTENT_EXPORT RTCRtpSenderOnlyTransceiver
+    : public blink::WebRTCRtpTransceiver {
+ public:
+  RTCRtpSenderOnlyTransceiver(std::unique_ptr<RTCRtpSender> sender);
+  ~RTCRtpSenderOnlyTransceiver() override;
+
+  blink::WebRTCRtpTransceiverImplementationType ImplementationType()
+      const override;
+  uintptr_t Id() const override;
+  blink::WebString Mid() const override;
+  std::unique_ptr<blink::WebRTCRtpSender> Sender() const override;
+  std::unique_ptr<blink::WebRTCRtpReceiver> Receiver() const override;
+  bool Stopped() const override;
+  webrtc::RtpTransceiverDirection Direction() const override;
+  base::Optional<webrtc::RtpTransceiverDirection> CurrentDirection()
+      const override;
+  void Stop() override;
+
+ private:
+  std::unique_ptr<RTCRtpSender> sender_;
 };
 
 }  // namespace content

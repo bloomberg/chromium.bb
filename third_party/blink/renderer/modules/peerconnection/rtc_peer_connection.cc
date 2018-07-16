@@ -84,6 +84,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_data_channel_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_data_channel_init.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtmf_sender.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_server.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_offer_options.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.h"
@@ -1477,14 +1478,22 @@ RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,
   for (size_t i = 0; i < streams.size(); ++i) {
     web_streams[i] = streams[i]->Descriptor();
   }
-  std::unique_ptr<WebRTCRtpSender> web_rtp_sender =
-      peer_handler_->AddTrack(track->Component(), web_streams);
-  if (!web_rtp_sender) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "A sender could not be created for this track.");
+  webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+      error_or_transceiver =
+          peer_handler_->AddTrack(track->Component(), web_streams);
+  if (!error_or_transceiver.ok()) {
+    ThrowExceptionFromRTCError(error_or_transceiver.error(), exception_state);
     return nullptr;
   }
+
+  auto web_transceiver = error_or_transceiver.MoveValue();
+  // TODO(hbos): Currently the result of this operation is always to surface
+  // senders only - which is Plan B behavior - even if Unified Plan SDP
+  // semantics is used. Implement and surface transceivers under Unified Plan.
+  // https://crbug.com/777617
+  DCHECK_EQ(web_transceiver->ImplementationType(),
+            WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
+  std::unique_ptr<WebRTCRtpSender> web_rtp_sender = web_transceiver->Sender();
 
   DCHECK(FindSender(*web_rtp_sender) == rtp_senders_.end());
   RTCRtpSender* rtp_sender =

@@ -32,8 +32,10 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_PEER_CONNECTION_HANDLER_H_
 
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/webrtc/api/rtcerror.h"
 
 namespace webrtc {
 enum class RTCErrorType;
@@ -96,9 +98,9 @@ class WebRTCPeerConnectionHandler {
   virtual WebRTCDataChannelHandler* CreateDataChannel(
       const WebString& label,
       const WebRTCDataChannelInit&) = 0;
-  // Adds the track to the peer connection, returning the resulting sender on
-  // success and null on failure.
-  virtual std::unique_ptr<WebRTCRtpSender> AddTrack(
+  // Adds the track to the peer connection, returning the resulting transceiver
+  // or error.
+  virtual webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>> AddTrack(
       const WebMediaStreamTrack&,
       const WebVector<WebMediaStream>&) = 0;
   // Removes the sender, returning whether successful. On success, the sender's

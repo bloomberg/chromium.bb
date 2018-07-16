@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_TRANSCEIVER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_TRANSCEIVER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/optional.h"
@@ -16,6 +17,22 @@
 
 namespace blink {
 
+// In Unified Plan transceivers exist and a full implementation of
+// WebRTCRtpTransceiver is required.
+// In Plan B, the same methods that would be used to surface transceivers only
+// surface the sender or receiver component.
+// To make the Plan B -> Unified Plan transition easier, WebRTCRtpTransceiver
+// is used in both cases and ImplementationType indicates which methods are
+// applicable for the WebRTCRtpTransceiver implementation.
+enum class WebRTCRtpTransceiverImplementationType {
+  // Unified Plan: All methods implemented.
+  kFullTransceiver,
+  // Plan B: Only Sender() is implemented.
+  kPlanBSenderOnly,
+  // Plan B: Only Receiver() is implemented.
+  kPlanBReceiverOnly,
+};
+
 // Interface for content to implement as to allow the surfacing of transceivers.
 // TODO(hbos): [Onion Soup] Remove the content layer versions of this class and
 // rely on webrtc directly from blink. Requires coordination with senders and
@@ -23,6 +40,10 @@ namespace blink {
 class BLINK_PLATFORM_EXPORT WebRTCRtpTransceiver {
  public:
   virtual ~WebRTCRtpTransceiver();
+
+  // Which methods (other than ImplementationType()) is guaranteed to be
+  // implemented.
+  virtual WebRTCRtpTransceiverImplementationType ImplementationType() const = 0;
 
   // Identifies the webrtc-layer transceiver. Multiple WebRTCRtpTransceiver can
   // exist for the same webrtc-layer transceiver.

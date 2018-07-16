@@ -256,4 +256,59 @@ void RTCRtpReceiver::GetStats(
   internal_->GetStats(std::move(callback));
 }
 
+RTCRtpReceiverOnlyTransceiver::RTCRtpReceiverOnlyTransceiver(
+    std::unique_ptr<RTCRtpReceiver> receiver)
+    : receiver_(std::move(receiver)) {
+  DCHECK(receiver_);
+}
+
+RTCRtpReceiverOnlyTransceiver::~RTCRtpReceiverOnlyTransceiver() {}
+
+blink::WebRTCRtpTransceiverImplementationType
+RTCRtpReceiverOnlyTransceiver::ImplementationType() const {
+  return blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly;
+}
+
+uintptr_t RTCRtpReceiverOnlyTransceiver::Id() const {
+  NOTREACHED();
+  return 0u;
+}
+
+blink::WebString RTCRtpReceiverOnlyTransceiver::Mid() const {
+  NOTREACHED();
+  return blink::WebString();
+}
+
+std::unique_ptr<blink::WebRTCRtpSender> RTCRtpReceiverOnlyTransceiver::Sender()
+    const {
+  NOTREACHED();
+  return nullptr;
+}
+
+std::unique_ptr<blink::WebRTCRtpReceiver>
+RTCRtpReceiverOnlyTransceiver::Receiver() const {
+  return receiver_->ShallowCopy();
+}
+
+bool RTCRtpReceiverOnlyTransceiver::Stopped() const {
+  NOTREACHED();
+  return false;
+}
+
+webrtc::RtpTransceiverDirection RTCRtpReceiverOnlyTransceiver::Direction()
+    const {
+  NOTREACHED();
+  return webrtc::RtpTransceiverDirection::kSendOnly;
+}
+
+base::Optional<webrtc::RtpTransceiverDirection>
+RTCRtpReceiverOnlyTransceiver::CurrentDirection() const {
+  NOTREACHED();
+  return webrtc::RtpTransceiverDirection::kSendOnly;
+}
+
+void RTCRtpReceiverOnlyTransceiver::Stop() {
+  NOTREACHED();
+}
+
 }  // namespace content
