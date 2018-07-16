@@ -411,7 +411,7 @@ class RenderTextTest : public testing::Test,
       const internal::TextRunHarfBuzz& run = *run_list->runs()[logical_index];
       if (run.range.length() == 1) {
         result.append(base::StringPrintf("[%d]", run.range.start()));
-      } else if (run.is_rtl) {
+      } else if (run.common.is_rtl) {
         result.append(base::StringPrintf("[%d<-%d]", run.range.end() - 1,
                                          run.range.start()));
       } else {
@@ -3449,9 +3449,9 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_HorizontalAlignment) {
       EXPECT_EQ(8u, std::max(lines[0].length(), lines[1].length()));
       const internal::TextRunList* run_list = GetHarfBuzzRunList();
       ASSERT_EQ(3U, run_list->runs().size());
-      EXPECT_EQ(lines[0].length(), run_list->runs()[0]->glyph_count);
-      EXPECT_EQ(1u, run_list->runs()[1]->glyph_count);  // \n.
-      EXPECT_EQ(lines[1].length(), run_list->runs()[2]->glyph_count);
+      EXPECT_EQ(lines[0].length(), run_list->runs()[0]->shape.glyph_count);
+      EXPECT_EQ(1u, run_list->runs()[1]->shape.glyph_count);  // \n.
+      EXPECT_EQ(lines[1].length(), run_list->runs()[2]->shape.glyph_count);
 
       int difference = (lines[0].length() - lines[1].length()) * kGlyphSize;
       EXPECT_EQ(test_api()->GetAlignmentOffset(0).x() + difference,
@@ -3699,10 +3699,12 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_HorizontalPositions) {
 
     // Verifies the DrawText happens in the visual order and left-to-right.
     // If the text is RTL, the logically first run should be drawn at last.
-    EXPECT_EQ(run_list->runs()[run_list->logical_to_visual(0)]->glyph_count,
-              text_log[0].glyph_count);
-    EXPECT_EQ(run_list->runs()[run_list->logical_to_visual(1)]->glyph_count,
-              text_log[1].glyph_count);
+    EXPECT_EQ(
+        run_list->runs()[run_list->logical_to_visual(0)]->shape.glyph_count,
+        text_log[0].glyph_count);
+    EXPECT_EQ(
+        run_list->runs()[run_list->logical_to_visual(1)]->shape.glyph_count,
+        text_log[1].glyph_count);
     EXPECT_LT(text_log[0].origin.x(), text_log[1].origin.x());
   }
 }
@@ -3743,13 +3745,13 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_Clusters) {
 
   internal::TextRunHarfBuzz run((Font()));
   run.range = Range(0, 4);
-  run.glyph_count = 4;
-  run.glyph_to_char.resize(4);
+  run.shape.glyph_count = 4;
+  run.shape.glyph_to_char.resize(4);
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     std::copy(cases[i].glyph_to_char, cases[i].glyph_to_char + 4,
-              run.glyph_to_char.begin());
-    run.is_rtl = cases[i].is_rtl;
+              run.shape.glyph_to_char.begin());
+    run.common.is_rtl = cases[i].is_rtl;
 
     for (size_t j = 0; j < 4; ++j) {
       SCOPED_TRACE(base::StringPrintf("Case %" PRIuS ", char %" PRIuS, i, j));
@@ -3767,9 +3769,9 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_Clusters) {
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_NoCrashOnTextRunGetClusterAt) {
   internal::TextRunHarfBuzz run((Font()));
   run.range = Range(0, 4);
-  run.glyph_count = 4;
+  run.shape.glyph_count = 4;
   // Construct a |glyph_to_char| map where no glyph maps to the first character.
-  run.glyph_to_char = {1u, 1u, 2u, 3u};
+  run.shape.glyph_to_char = {1u, 1u, 2u, 3u};
 
   Range chars, glyphs;
   // GetClusterAt should not crash asking for the cluster at position 0.
@@ -3837,20 +3839,20 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_SubglyphGraphemePartition) {
 
   internal::TextRunHarfBuzz run((Font()));
   run.range = Range(0, 4);
-  run.glyph_count = 2;
-  run.glyph_to_char.resize(2);
-  run.positions.resize(4);
-  run.width = 20;
+  run.shape.glyph_count = 2;
+  run.shape.glyph_to_char.resize(2);
+  run.shape.positions.resize(4);
+  run.shape.width = 20;
 
   RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
   render_text->SetText(UTF8ToUTF16("abcd"));
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     std::copy(cases[i].glyph_to_char, cases[i].glyph_to_char + 2,
-              run.glyph_to_char.begin());
-    run.is_rtl = cases[i].is_rtl;
+              run.shape.glyph_to_char.begin());
+    run.common.is_rtl = cases[i].is_rtl;
     for (int j = 0; j < 2; ++j)
-      run.positions[j].set(j * 10, 0);
+      run.shape.positions[j].set(j * 10, 0);
 
     for (size_t j = 0; j < 4; ++j) {
       SCOPED_TRACE(base::StringPrintf("Case %" PRIuS ", char %" PRIuS, i, j));
@@ -4136,11 +4138,11 @@ TEST_P(RenderTextHarfBuzzTest, EmojiFlagGlyphCount) {
   ASSERT_EQ(1U, run_list->runs().size());
 #if defined(OS_MACOSX)
   // On Mac, the flags should be found, so two glyphs result.
-  EXPECT_EQ(2u, run_list->runs()[0]->glyph_count);
+  EXPECT_EQ(2u, run_list->runs()[0]->shape.glyph_count);
 #else
   // Elsewhere, the flags are not found, so each surrogate pair gets a
   // placeholder glyph. Eventually, all platforms should have 2 glyphs.
-  EXPECT_EQ(4u, run_list->runs()[0]->glyph_count);
+  EXPECT_EQ(4u, run_list->runs()[0]->shape.glyph_count);
 #endif
 }
 
@@ -4177,7 +4179,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_EmptyRun) {
   render_text->SetText(UTF8ToUTF16("abcdefgh"));
 
   run.range = Range(3, 8);
-  run.glyph_count = 0;
+  run.shape.glyph_count = 0;
   EXPECT_EQ(Range(0, 0), run.CharRangeToGlyphRange(Range(4, 5)));
   EXPECT_EQ(Range(0, 0), run.GetGraphemeBounds(render_text, 4).Round());
   Range chars;
@@ -4533,7 +4535,7 @@ TEST_P(RenderTextTest, SubpixelRenderingSuppressed) {
   // On Linux, whether subpixel AA is supported is determined by the platform
   // FontConfig. Force it into a particular style after computing runs. Other
   // platforms use a known default FontRenderParams from a static local.
-  GetHarfBuzzRunList()->runs()[0]->render_params.subpixel_rendering =
+  GetHarfBuzzRunList()->runs()[0]->common.render_params.subpixel_rendering =
       FontRenderParams::SUBPIXEL_RENDERING_RGB;
   DrawVisualText();
 #endif
@@ -4546,7 +4548,7 @@ TEST_P(RenderTextTest, SubpixelRenderingSuppressed) {
     // SUBPIXEL_RENDERING_RGB set above should now take effect. But, after
     // checking, apply the override anyway to be explicit that it is suppressed.
     EXPECT_FALSE(GetRendererPaint().isLCDRenderText());
-    GetHarfBuzzRunList()->runs()[0]->render_params.subpixel_rendering =
+    GetHarfBuzzRunList()->runs()[0]->common.render_params.subpixel_rendering =
         FontRenderParams::SUBPIXEL_RENDERING_RGB;
     DrawVisualText();
 #endif
@@ -5204,14 +5206,14 @@ TEST_P(RenderTextHarfBuzzTest, GlyphSpacing) {
   // The default glyph spacing is zero.
   EXPECT_EQ(0, render_text->glyph_spacing());
   ShapeRunWithFont(render_text->text(), Font(), FontRenderParams(), run);
-  const float width_without_glyph_spacing = run->width;
+  const float width_without_glyph_spacing = run->shape.width;
 
   const float kGlyphSpacing = 5;
   render_text->set_glyph_spacing(kGlyphSpacing);
   ShapeRunWithFont(render_text->text(), Font(), FontRenderParams(), run);
   // The new width is the sum of |width_without_glyph_spacing| and the spacing.
   const float total_spacing = seuss.length() * kGlyphSpacing;
-  EXPECT_EQ(width_without_glyph_spacing + total_spacing, run->width);
+  EXPECT_EQ(width_without_glyph_spacing + total_spacing, run->shape.width);
 }
 
 // Ensure font size overrides propagate through to text runs.
@@ -5227,9 +5229,10 @@ TEST_P(RenderTextHarfBuzzTest, FontSizeOverride) {
   const internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(3U, run_list->size());
 
-  EXPECT_EQ(default_font_size, run_list->runs()[0].get()->font_size);
-  EXPECT_EQ(test_font_size_override, run_list->runs()[1].get()->font_size);
-  EXPECT_EQ(default_font_size, run_list->runs()[2].get()->font_size);
+  EXPECT_EQ(default_font_size, run_list->runs()[0].get()->common.font_size);
+  EXPECT_EQ(test_font_size_override,
+            run_list->runs()[1].get()->common.font_size);
+  EXPECT_EQ(default_font_size, run_list->runs()[2].get()->common.font_size);
 }
 
 // Prefix for test instantiations intentionally left blank since each test
