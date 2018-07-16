@@ -2363,6 +2363,7 @@ static int64_t dist_8x8_yuv(const AV1_COMP *const cpi, MACROBLOCK *const x,
 static void reset_partition(PC_TREE *pc_tree, BLOCK_SIZE bsize) {
   pc_tree->partitioning = PARTITION_NONE;
   pc_tree->cb_search_range = SEARCH_FULL_PLANE;
+  pc_tree->none.skip = 0;
 
   if (bsize >= BLOCK_8X8) {
     BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
