@@ -46,6 +46,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fSignOperation
   using AllowedListIterator =
       std::vector<PublicKeyCredentialDescriptor>::const_iterator;
 
+  void SendFakeEnrollment();
   void RetrySign(bool is_fake_enrollment,
                  ApplicationParameterType application_parameter_type,
                  const std::vector<uint8_t>& key_handle);

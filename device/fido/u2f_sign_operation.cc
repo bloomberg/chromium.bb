@@ -27,15 +27,30 @@ U2fSignOperation::U2fSignOperation(FidoDevice* device,
 U2fSignOperation::~U2fSignOperation() = default;
 
 void U2fSignOperation::Start() {
-  // Non-empty allow list in |request_| is checked from above
-  // IsConvertibleToU2fSignCommand().
-  auto it = request().allow_list()->cbegin();
+  const auto& allow_list = request().allow_list();
+  if (allow_list && !allow_list->empty()) {
+    const auto it = allow_list->cbegin();
+    DispatchDeviceRequest(
+        ConvertToU2fSignCommand(request(), ApplicationParameterType::kPrimary,
+                                it->id(), true /* is_check_only */),
+        base::BindOnce(&U2fSignOperation::OnCheckForKeyHandlePresence,
+                       weak_factory_.GetWeakPtr(),
+                       ApplicationParameterType::kPrimary, it));
+  } else {
+    // In order to make U2F authenticators blink on sign request with an empty
+    // allow list, we send fake enrollment to the device and error out if the
+    // user has provided user presence.
+    SendFakeEnrollment();
+  }
+}
+
+void U2fSignOperation::SendFakeEnrollment() {
   DispatchDeviceRequest(
-      ConvertToU2fSignCommand(request(), ApplicationParameterType::kPrimary,
-                              it->id(), true /* is_check_only */),
-      base::BindOnce(&U2fSignOperation::OnCheckForKeyHandlePresence,
-                     weak_factory_.GetWeakPtr(),
-                     ApplicationParameterType::kPrimary, it));
+      ConstructBogusU2fRegistrationCommand(),
+      base::BindOnce(&U2fSignOperation::OnSignResponseReceived,
+                     weak_factory_.GetWeakPtr(), true /* is_fake_enrollment */,
+                     ApplicationParameterType::kPrimary,
+                     std::vector<uint8_t>()));
 }
 
 void U2fSignOperation::RetrySign(
@@ -160,13 +175,9 @@ void U2fSignOperation::OnCheckForKeyHandlePresence(
       } else {
         // No provided key was accepted by this device. Send registration
         // (Fake enroll) request to device.
-        DispatchDeviceRequest(
-            ConstructBogusU2fRegistrationCommand(),
-            base::BindOnce(
-                &U2fSignOperation::OnSignResponseReceived,
-                weak_factory_.GetWeakPtr(), true /* is_fake_enrollment */,
-                ApplicationParameterType::kPrimary, std::vector<uint8_t>()));
+        SendFakeEnrollment();
       }
+
       break;
     }
     default:

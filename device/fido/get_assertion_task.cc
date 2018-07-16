@@ -71,8 +71,10 @@ void GetAssertionTask::GetAssertion() {
 }
 
 void GetAssertionTask::U2fSign() {
+  DCHECK(!device()->device_info());
   device()->set_supported_protocol(ProtocolVersion::kU2f);
-  if (!IsConvertibleToU2fSignCommand(request_)) {
+
+  if (!CheckUserVerificationCompatible()) {
     std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
                              base::nullopt);
     return;
