@@ -22,11 +22,13 @@
 
 #include "third_party/blink/renderer/core/html/html_base_element.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 
 namespace blink {
 
@@ -64,6 +66,10 @@ bool HTMLBaseElement::IsURLAttribute(const Attribute& attribute) const {
          HTMLElement::IsURLAttribute(attribute);
 }
 
+void HTMLBaseElement::href(USVStringOrTrustedURL& result) const {
+  result.SetUSVString(href());
+}
+
 KURL HTMLBaseElement::href() const {
   // This does not use the GetURLAttribute function because that will resolve
   // relative to the document's base URL; base elements like this one can be
@@ -88,7 +94,22 @@ KURL HTMLBaseElement::href() const {
   return url;
 }
 
-void HTMLBaseElement::setHref(const AtomicString& value) {
+void HTMLBaseElement::setHref(const USVStringOrTrustedURL& stringOrUrl,
+                              ExceptionState& exception_state) {
+  DCHECK(stringOrUrl.IsUSVString() ||
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+  DCHECK(!stringOrUrl.IsNull());
+
+  if (stringOrUrl.IsUSVString() && GetDocument().RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedURL` assignment.");
+    return;
+  }
+
+  AtomicString value(stringOrUrl.IsUSVString()
+                         ? stringOrUrl.GetAsUSVString()
+                         : stringOrUrl.GetAsTrustedURL()->toString());
+
   setAttribute(hrefAttr, value);
 }
 
