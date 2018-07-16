@@ -79,12 +79,14 @@ std::string CrostiniTestHelper::GenerateAppId(
 
 // static
 App CrostiniTestHelper::BasicApp(const std::string& desktop_file_id,
-                                 const std::string& name) {
+                                 const std::string& name,
+                                 bool no_display) {
   App app;
   app.set_desktop_file_id(desktop_file_id);
   App::LocaleString::Entry* entry = app.mutable_name()->add_values();
   entry->set_locale(std::string());
   entry->set_value(name.empty() ? desktop_file_id : name);
+  app.set_no_display(no_display);
   return app;
 }
 

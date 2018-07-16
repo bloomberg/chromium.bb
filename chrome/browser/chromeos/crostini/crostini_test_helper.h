@@ -45,9 +45,11 @@ class CrostiniTestHelper {
       const std::string& vm_name = kCrostiniDefaultVmName,
       const std::string& container_name = kCrostiniDefaultContainerName);
 
-  // Returns an App with the desktop file id and default name as provided.
+  // Returns an App with the desktop file id, default name, and no_display
+  // as provided.
   static vm_tools::apps::App BasicApp(const std::string& desktop_file_id,
-                                      const std::string& name = "");
+                                      const std::string& name = "",
+                                      bool no_display = false);
 
   // Returns an ApplicationList with a single desktop file.
   static vm_tools::apps::ApplicationList BasicAppList(

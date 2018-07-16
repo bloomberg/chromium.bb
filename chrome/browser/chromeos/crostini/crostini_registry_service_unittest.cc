@@ -411,4 +411,16 @@ TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdName) {
             CrostiniTestHelper::GenerateAppId("app2", "vm", "container"));
 }
 
+TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdNameSkipNoDisplay) {
+  ApplicationList app_list =
+      CrostiniTestHelper::BasicAppList("app", "vm", "container");
+  *app_list.add_apps() = CrostiniTestHelper::BasicApp("app2", "name2");
+  *app_list.add_apps() = CrostiniTestHelper::BasicApp("another_app2", "name2",
+                                                      true /* no_display */);
+  service()->UpdateApplicationList(app_list);
+
+  std::string window_app_id = WindowIdForWMClass("name2");
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
+            CrostiniTestHelper::GenerateAppId("app2", "vm", "container"));
+}
 }  // namespace crostini
