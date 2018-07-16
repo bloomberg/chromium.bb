@@ -209,10 +209,6 @@ class MockConnectionManager : public ServerConnectionManager {
   void set_next_new_id(int value) { next_new_id_ = value; }
   void set_conflict_n_commits(int value) { conflict_n_commits_ = value; }
 
-  void set_use_legacy_bookmarks_protocol(bool value) {
-    use_legacy_bookmarks_protocol_ = value;
-  }
-
   void set_store_birthday(const std::string& new_birthday) {
     // Multiple threads can set store_birthday_ in our tests, need to lock it to
     // ensure atomic read/writes and avoid race conditions.
@@ -400,11 +396,6 @@ class MockConnectionManager : public ServerConnectionManager {
 
   // The next value to use for the position_in_parent property.
   int64_t next_position_in_parent_;
-
-  // The default is to use the newer sync_pb::BookmarkSpecifics-style protocol.
-  // If this option is set to true, then the MockConnectionManager will
-  // use the older sync_pb::SyncEntity_BookmarkData-style protocol.
-  bool use_legacy_bookmarks_protocol_;
 
   ModelTypeSet expected_filter_;
 
