@@ -324,6 +324,16 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
 #pragma mark View lifecycle
 
+- (void)viewDidLoad {
+  [super viewDidLoad];
+
+  // Change the separator inset from the settings default because this
+  // collectionview shows leading icons.
+  const CGFloat kSettingsSeparatorLeadingInset = 56;
+  self.styler.separatorInset =
+      UIEdgeInsetsMake(0, kSettingsSeparatorLeadingInset, 0, 0);
+}
+
 // TODO(crbug.com/661915): Refactor TemplateURLObserver and re-implement this so
 // it observes the default search engine name instead of reloading on
 // ViewWillAppear.

@@ -10,6 +10,7 @@
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/cells/byo_textfield_item.h"
@@ -86,7 +87,9 @@ using namespace sync_encryption_passphrase;
 - (CollectionViewItem*)confirmPassphraseItem {
   if (!confirmPassphrase_) {
     confirmPassphrase_ = [[UITextField alloc] init];
-    [confirmPassphrase_ setFont:[MDCTypography body1Font]];
+    if (!experimental_flags::IsSettingsUIRebootEnabled()) {
+      [confirmPassphrase_ setFont:[MDCTypography body1Font]];
+    }
     [confirmPassphrase_ setSecureTextEntry:YES];
     [confirmPassphrase_ setBackgroundColor:[UIColor clearColor]];
     [confirmPassphrase_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
