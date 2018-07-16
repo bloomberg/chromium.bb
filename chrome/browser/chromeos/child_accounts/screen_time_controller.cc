@@ -106,13 +106,15 @@ void ScreenTimeController::CheckTimeLimit() {
                                  first_screen_start_time_, now, last_state);
   SaveCurrentStateToPref(state);
 
+  // Show/hide time limits message based on the policy enforcement.
+  UpdateTimeLimitsMessage(
+      state.is_locked, state.is_locked ? state.next_unlock_time : base::Time());
+
   if (state.is_locked) {
     DCHECK(!state.next_unlock_time.is_null());
-    LockScreen(true /*force_lock_by_policy*/, state.next_unlock_time);
+    if (!session_manager::SessionManager::Get()->IsScreenLocked())
+      ForceScreenLockByPolicy(state.next_unlock_time);
   } else {
-    LockScreen(false /*force_lock_by_policy*/,
-               base::Time() /*next_unlock_time*/);
-
     base::Optional<TimeLimitNotificationType> notification_type;
     switch (state.next_state_active_policy) {
       case usage_time_limit::ActivePolicies::kFixedLimit:
@@ -175,28 +177,31 @@ void ScreenTimeController::CheckTimeLimit() {
   }
 }
 
-void ScreenTimeController::LockScreen(bool force_lock_by_policy,
-                                      base::Time next_unlock_time) {
-  bool is_locked = session_manager::SessionManager::Get()->IsScreenLocked();
-  // No-op if the screen is currently not locked and policy does not force the
-  // lock.
-  if (!is_locked && !force_lock_by_policy)
-    return;
+void ScreenTimeController::ForceScreenLockByPolicy(
+    base::Time next_unlock_time) {
+  DCHECK(!session_manager::SessionManager::Get()->IsScreenLocked());
+  chromeos::DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->RequestLockScreen();
 
-  // Request to show lock screen.
-  if (!is_locked && force_lock_by_policy) {
-    chromeos::DBusThreadManager::Get()
-        ->GetSessionManagerClient()
-        ->RequestLockScreen();
-  }
+  // Update the time limits message when the lock screen UI is ready.
+  next_unlock_time_ = next_unlock_time;
+}
+
+void ScreenTimeController::UpdateTimeLimitsMessage(
+    bool visible,
+    base::Time next_unlock_time) {
+  DCHECK(visible || next_unlock_time.is_null());
+  if (!session_manager::SessionManager::Get()->IsScreenLocked())
+    return;
 
   AccountId account_id =
       chromeos::ProfileHelper::Get()
           ->GetUserByProfile(Profile::FromBrowserContext(context_))
           ->GetAccountId();
   LoginScreenClient::Get()->login_screen()->SetAuthEnabledForUser(
-      account_id, !force_lock_by_policy,
-      force_lock_by_policy ? next_unlock_time : base::Optional<base::Time>());
+      account_id, !visible,
+      visible ? next_unlock_time : base::Optional<base::Time>());
 }
 
 void ScreenTimeController::ShowNotification(
@@ -389,6 +394,10 @@ void ScreenTimeController::OnSessionStateChanged() {
   session_manager::SessionState session_state =
       session_manager::SessionManager::Get()->session_state();
   if (session_state == session_manager::SessionState::LOCKED) {
+    if (next_unlock_time_) {
+      UpdateTimeLimitsMessage(true /*visible*/, next_unlock_time_.value());
+      next_unlock_time_.reset();
+    }
     SaveScreenTimeProgressBeforeExit();
   } else if (session_state == session_manager::SessionState::ACTIVE) {
     base::Time now = base::Time::Now();
