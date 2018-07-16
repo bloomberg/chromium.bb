@@ -27,27 +27,26 @@ class UserVerificationRequirement;
 
 namespace mojo {
 
-// password_manager::mojom::blink::CredentialManager --------------------------
+// blink::mojom::blink::CredentialManager --------------------------
 
 template <>
-struct TypeConverter<password_manager::mojom::blink::CredentialInfoPtr,
+struct TypeConverter<blink::mojom::blink::CredentialInfoPtr,
                      blink::Credential*> {
-  static password_manager::mojom::blink::CredentialInfoPtr Convert(
-      blink::Credential*);
+  static blink::mojom::blink::CredentialInfoPtr Convert(blink::Credential*);
 };
 
 template <>
 struct TypeConverter<blink::Credential*,
-                     password_manager::mojom::blink::CredentialInfoPtr> {
+                     blink::mojom::blink::CredentialInfoPtr> {
   static blink::Credential* Convert(
-      const password_manager::mojom::blink::CredentialInfoPtr&);
+      const blink::mojom::blink::CredentialInfoPtr&);
 };
 
 // webauth::mojom::blink::Authenticator ---------------------------------------
 template <>
-struct TypeConverter<password_manager::mojom::blink::CredentialManagerError,
+struct TypeConverter<blink::mojom::blink::CredentialManagerError,
                      webauth::mojom::blink::AuthenticatorStatus> {
-  static password_manager::mojom::blink::CredentialManagerError Convert(
+  static blink::mojom::blink::CredentialManagerError Convert(
       const webauth::mojom::blink::AuthenticatorStatus&);
 };
 

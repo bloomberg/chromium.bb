@@ -14,35 +14,35 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<password_manager::mojom::CredentialType,
+struct EnumTraits<blink::mojom::CredentialType,
                   password_manager::CredentialType> {
-  static password_manager::mojom::CredentialType ToMojom(
+  static blink::mojom::CredentialType ToMojom(
       password_manager::CredentialType input);
-  static bool FromMojom(password_manager::mojom::CredentialType input,
+  static bool FromMojom(blink::mojom::CredentialType input,
                         password_manager::CredentialType* output);
 };
 
 template <>
-struct EnumTraits<password_manager::mojom::CredentialManagerError,
+struct EnumTraits<blink::mojom::CredentialManagerError,
                   password_manager::CredentialManagerError> {
-  static password_manager::mojom::CredentialManagerError ToMojom(
+  static blink::mojom::CredentialManagerError ToMojom(
       password_manager::CredentialManagerError input);
-  static bool FromMojom(password_manager::mojom::CredentialManagerError input,
+  static bool FromMojom(blink::mojom::CredentialManagerError input,
                         password_manager::CredentialManagerError* output);
 };
 
 template <>
-struct EnumTraits<password_manager::mojom::CredentialMediationRequirement,
+struct EnumTraits<blink::mojom::CredentialMediationRequirement,
                   password_manager::CredentialMediationRequirement> {
-  static password_manager::mojom::CredentialMediationRequirement ToMojom(
+  static blink::mojom::CredentialMediationRequirement ToMojom(
       password_manager::CredentialMediationRequirement input);
   static bool FromMojom(
-      password_manager::mojom::CredentialMediationRequirement input,
+      blink::mojom::CredentialMediationRequirement input,
       password_manager::CredentialMediationRequirement* output);
 };
 
 template <>
-struct StructTraits<password_manager::mojom::CredentialInfoDataView,
+struct StructTraits<blink::mojom::CredentialInfoDataView,
                     password_manager::CredentialInfo> {
   static password_manager::CredentialType type(
       const password_manager::CredentialInfo& r) {
@@ -73,7 +73,7 @@ struct StructTraits<password_manager::mojom::CredentialInfoDataView,
     return r.federation;
   }
 
-  static bool Read(password_manager::mojom::CredentialInfoDataView data,
+  static bool Read(blink::mojom::CredentialInfoDataView data,
                    password_manager::CredentialInfo* out);
 };
 

@@ -15,9 +15,9 @@ class MockCredentialManager {
   constructor() {
     this.reset();
 
-    this.binding_ = new mojo.Binding(passwordManager.mojom.CredentialManager, this);
+    this.binding_ = new mojo.Binding(blink.mojom.CredentialManager, this);
     this.interceptor_ = new MojoInterfaceInterceptor(
-        passwordManager.mojom.CredentialManager.name);
+        blink.mojom.CredentialManager.name);
     this.interceptor_.oninterfacerequest = e => {
       this.binding_.bind(e.handle);
     };
@@ -25,7 +25,7 @@ class MockCredentialManager {
   }
 
   constructCredentialInfo_(type, id, password, name, icon) {
-  return new passwordManager.mojom.CredentialInfo({
+  return new blink.mojom.CredentialInfo({
       type: type,
       id: stringToMojoString16(id),
       name: stringToMojoString16(name),
@@ -39,7 +39,7 @@ class MockCredentialManager {
   // Mock functions:
 
   async get(mediation, includePasswords, federations) {
-    if (this.error_ == passwordManager.mojom.CredentialManagerError.SUCCESS) {
+    if (this.error_ == blink.mojom.CredentialManagerError.SUCCESS) {
       return {error: this.error_, credential: this.credentialInfo_};
     } else {
       return {error: this.error_, credential: null};
@@ -56,14 +56,14 @@ class MockCredentialManager {
 
   // Resets state of mock CredentialManager.
   reset() {
-    this.error_ = passwordManager.mojom.CredentialManagerError.SUCCESS;
+    this.error_ = blink.mojom.CredentialManagerError.SUCCESS;
     this.credentialInfo_ = this.constructCredentialInfo_(
-        passwordManager.mojom.CredentialType.EMPTY, '', '', '', '');
+        blink.mojom.CredentialType.EMPTY, '', '', '', '');
   }
 
   setResponse(id, password, name, icon) {
     this.credentialInfo_ = this.constructCredentialInfo_(
-        passwordManager.mojom.CredentialType.PASSWORD, id, password, name,
+        blink.mojom.CredentialType.PASSWORD, id, password, name,
         icon);
   }
 

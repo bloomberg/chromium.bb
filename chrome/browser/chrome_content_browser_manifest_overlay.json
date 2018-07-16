@@ -78,6 +78,7 @@
           "autofill.mojom.AutofillDriver",
           "autofill.mojom.PasswordManagerDriver",
           "blink.mojom.BudgetService",
+          "blink.mojom.CredentialManager",
           "blink.mojom.InstalledAppProvider",
           "blink.mojom.MediaDownloadInProductHelp",
           "blink.mojom.ShareService",
@@ -92,7 +93,6 @@
           "extensions.mojom.InlineInstall",
           "media_router.mojom.MediaRouter",
           "page_load_metrics.mojom.PageLoadMetrics",
-          "password_manager.mojom.CredentialManager",
           "safe_browsing.mojom.PhishingDetectorClient",
           "translate.mojom.ContentTranslateDriver",
 

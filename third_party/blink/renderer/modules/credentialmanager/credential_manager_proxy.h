@@ -38,7 +38,7 @@ class MODULES_EXPORT CredentialManagerProxy
   explicit CredentialManagerProxy(Document*);
   virtual ~CredentialManagerProxy();
 
-  ::password_manager::mojom::blink::CredentialManager* CredentialManager() {
+  mojom::blink::CredentialManager* CredentialManager() {
     return credential_manager_.get();
   }
 
@@ -58,7 +58,7 @@ class MODULES_EXPORT CredentialManagerProxy
  private:
   // TODO(crbug.com/740081): Merge |credential_manager_| and |authenticator_|
   // into a single Mojo interface.
-  ::password_manager::mojom::blink::CredentialManagerPtr credential_manager_;
+  mojom::blink::CredentialManagerPtr credential_manager_;
   ::webauth::mojom::blink::AuthenticatorPtr authenticator_;
 };
 

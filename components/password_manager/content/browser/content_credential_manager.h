@@ -16,19 +16,20 @@ namespace password_manager {
 class PasswordManagerClient;
 struct CredentialInfo;
 
-// Implements mojom::CredentialManager using core class CredentialManagerImpl.
-// Methods Store, PreventSilentAccess and Get are invoked from the renderer
-// with callbacks as arguments. PasswordManagerClient is used to invoke UI.
-class ContentCredentialManager : public mojom::CredentialManager {
+// Implements blink::mojom::CredentialManager using core class
+// CredentialManagerImpl. Methods Store, PreventSilentAccess and Get are invoked
+// from the renderer with callbacks as arguments. PasswordManagerClient is used
+// to invoke UI.
+class ContentCredentialManager : public blink::mojom::CredentialManager {
  public:
   explicit ContentCredentialManager(PasswordManagerClient* client);
   ~ContentCredentialManager() override;
 
-  void BindRequest(mojom::CredentialManagerRequest request);
+  void BindRequest(blink::mojom::CredentialManagerRequest request);
   bool HasBinding() const;
   void DisconnectBinding();
 
-  // mojom::CredentialManager methods:
+  // blink::mojom::CredentialManager methods:
   void Store(const CredentialInfo& credential, StoreCallback callback) override;
   void PreventSilentAccess(PreventSilentAccessCallback callback) override;
   void Get(CredentialMediationRequirement mediation,
@@ -39,7 +40,7 @@ class ContentCredentialManager : public mojom::CredentialManager {
  private:
   CredentialManagerImpl impl_;
 
-  mojo::Binding<mojom::CredentialManager> binding_;
+  mojo::Binding<blink::mojom::CredentialManager> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentCredentialManager);
 };

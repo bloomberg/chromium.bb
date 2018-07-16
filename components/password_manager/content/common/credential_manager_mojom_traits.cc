@@ -11,36 +11,35 @@
 namespace mojo {
 
 // static
-password_manager::mojom::CredentialType EnumTraits<
-    password_manager::mojom::CredentialType,
-    password_manager::CredentialType>::ToMojom(password_manager::CredentialType
-                                                   input) {
+blink::mojom::CredentialType
+EnumTraits<blink::mojom::CredentialType, password_manager::CredentialType>::
+    ToMojom(password_manager::CredentialType input) {
   switch (input) {
     case password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY:
-      return password_manager::mojom::CredentialType::EMPTY;
+      return blink::mojom::CredentialType::EMPTY;
     case password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD:
-      return password_manager::mojom::CredentialType::PASSWORD;
+      return blink::mojom::CredentialType::PASSWORD;
     case password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED:
-      return password_manager::mojom::CredentialType::FEDERATED;
+      return blink::mojom::CredentialType::FEDERATED;
   }
 
   NOTREACHED();
-  return password_manager::mojom::CredentialType::EMPTY;
+  return blink::mojom::CredentialType::EMPTY;
 }
 
 // static
-bool EnumTraits<password_manager::mojom::CredentialType,
+bool EnumTraits<blink::mojom::CredentialType,
                 password_manager::CredentialType>::
-    FromMojom(password_manager::mojom::CredentialType input,
+    FromMojom(blink::mojom::CredentialType input,
               password_manager::CredentialType* output) {
   switch (input) {
-    case password_manager::mojom::CredentialType::EMPTY:
+    case blink::mojom::CredentialType::EMPTY:
       *output = password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY;
       return true;
-    case password_manager::mojom::CredentialType::PASSWORD:
+    case blink::mojom::CredentialType::PASSWORD:
       *output = password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD;
       return true;
-    case password_manager::mojom::CredentialType::FEDERATED:
+    case blink::mojom::CredentialType::FEDERATED:
       *output = password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED;
       return true;
   }
@@ -50,58 +49,53 @@ bool EnumTraits<password_manager::mojom::CredentialType,
 }
 
 // static
-password_manager::mojom::CredentialManagerError
-EnumTraits<password_manager::mojom::CredentialManagerError,
+blink::mojom::CredentialManagerError
+EnumTraits<blink::mojom::CredentialManagerError,
            password_manager::CredentialManagerError>::
     ToMojom(password_manager::CredentialManagerError input) {
   switch (input) {
     case password_manager::CredentialManagerError::SUCCESS:
-      return password_manager::mojom::CredentialManagerError::SUCCESS;
+      return blink::mojom::CredentialManagerError::SUCCESS;
     case password_manager::CredentialManagerError::PENDING_REQUEST:
-      return password_manager::mojom::CredentialManagerError::PENDING_REQUEST;
+      return blink::mojom::CredentialManagerError::PENDING_REQUEST;
     case password_manager::CredentialManagerError::PASSWORDSTOREUNAVAILABLE:
-      return password_manager::mojom::CredentialManagerError::
-          PASSWORD_STORE_UNAVAILABLE;
+      return blink::mojom::CredentialManagerError::PASSWORD_STORE_UNAVAILABLE;
     case password_manager::CredentialManagerError::UNKNOWN:
-      return password_manager::mojom::CredentialManagerError::UNKNOWN;
+      return blink::mojom::CredentialManagerError::UNKNOWN;
   }
 
   NOTREACHED();
-  return password_manager::mojom::CredentialManagerError::UNKNOWN;
+  return blink::mojom::CredentialManagerError::UNKNOWN;
 }
 
 // static
-bool EnumTraits<password_manager::mojom::CredentialManagerError,
+bool EnumTraits<blink::mojom::CredentialManagerError,
                 password_manager::CredentialManagerError>::
-    FromMojom(password_manager::mojom::CredentialManagerError input,
+    FromMojom(blink::mojom::CredentialManagerError input,
               password_manager::CredentialManagerError* output) {
   switch (input) {
-    case password_manager::mojom::CredentialManagerError::SUCCESS:
+    case blink::mojom::CredentialManagerError::SUCCESS:
       *output = password_manager::CredentialManagerError::SUCCESS;
       return true;
-    case password_manager::mojom::CredentialManagerError::PENDING_REQUEST:
+    case blink::mojom::CredentialManagerError::PENDING_REQUEST:
       *output = password_manager::CredentialManagerError::PENDING_REQUEST;
       return true;
-    case password_manager::mojom::CredentialManagerError::
-        PASSWORD_STORE_UNAVAILABLE:
+    case blink::mojom::CredentialManagerError::PASSWORD_STORE_UNAVAILABLE:
       *output =
           password_manager::CredentialManagerError::PASSWORDSTOREUNAVAILABLE;
       return true;
-    case password_manager::mojom::CredentialManagerError::NOT_ALLOWED:
-    case password_manager::mojom::CredentialManagerError::
+    case blink::mojom::CredentialManagerError::NOT_ALLOWED:
+    case blink::mojom::CredentialManagerError::
         AUTHENTICATOR_CRITERIA_UNSUPPORTED:
-    case password_manager::mojom::CredentialManagerError::ALGORITHM_UNSUPPORTED:
-    case password_manager::mojom::CredentialManagerError::
-        EMPTY_ALLOW_CREDENTIALS:
-    case password_manager::mojom::CredentialManagerError::
-        USER_VERIFICATION_UNSUPPORTED:
-    case password_manager::mojom::CredentialManagerError::INVALID_DOMAIN:
-    case password_manager::mojom::CredentialManagerError::CREDENTIAL_EXCLUDED:
-    case password_manager::mojom::CredentialManagerError::
-        CREDENTIAL_NOT_RECOGNIZED:
-    case password_manager::mojom::CredentialManagerError::NOT_IMPLEMENTED:
-    case password_manager::mojom::CredentialManagerError::NOT_FOCUSED:
-    case password_manager::mojom::CredentialManagerError::UNKNOWN:
+    case blink::mojom::CredentialManagerError::ALGORITHM_UNSUPPORTED:
+    case blink::mojom::CredentialManagerError::EMPTY_ALLOW_CREDENTIALS:
+    case blink::mojom::CredentialManagerError::USER_VERIFICATION_UNSUPPORTED:
+    case blink::mojom::CredentialManagerError::INVALID_DOMAIN:
+    case blink::mojom::CredentialManagerError::CREDENTIAL_EXCLUDED:
+    case blink::mojom::CredentialManagerError::CREDENTIAL_NOT_RECOGNIZED:
+    case blink::mojom::CredentialManagerError::NOT_IMPLEMENTED:
+    case blink::mojom::CredentialManagerError::NOT_FOCUSED:
+    case blink::mojom::CredentialManagerError::UNKNOWN:
       *output = password_manager::CredentialManagerError::UNKNOWN;
       return true;
   }
@@ -111,36 +105,36 @@ bool EnumTraits<password_manager::mojom::CredentialManagerError,
 }
 
 // static
-password_manager::mojom::CredentialMediationRequirement
-EnumTraits<password_manager::mojom::CredentialMediationRequirement,
+blink::mojom::CredentialMediationRequirement
+EnumTraits<blink::mojom::CredentialMediationRequirement,
            password_manager::CredentialMediationRequirement>::
     ToMojom(password_manager::CredentialMediationRequirement input) {
   switch (input) {
     case password_manager::CredentialMediationRequirement::kSilent:
-      return password_manager::mojom::CredentialMediationRequirement::kSilent;
+      return blink::mojom::CredentialMediationRequirement::kSilent;
     case password_manager::CredentialMediationRequirement::kOptional:
-      return password_manager::mojom::CredentialMediationRequirement::kOptional;
+      return blink::mojom::CredentialMediationRequirement::kOptional;
     case password_manager::CredentialMediationRequirement::kRequired:
-      return password_manager::mojom::CredentialMediationRequirement::kRequired;
+      return blink::mojom::CredentialMediationRequirement::kRequired;
   }
 
   NOTREACHED();
-  return password_manager::mojom::CredentialMediationRequirement::kOptional;
+  return blink::mojom::CredentialMediationRequirement::kOptional;
 }
 
 // static
-bool EnumTraits<password_manager::mojom::CredentialMediationRequirement,
+bool EnumTraits<blink::mojom::CredentialMediationRequirement,
                 password_manager::CredentialMediationRequirement>::
-    FromMojom(password_manager::mojom::CredentialMediationRequirement input,
+    FromMojom(blink::mojom::CredentialMediationRequirement input,
               password_manager::CredentialMediationRequirement* output) {
   switch (input) {
-    case password_manager::mojom::CredentialMediationRequirement::kSilent:
+    case blink::mojom::CredentialMediationRequirement::kSilent:
       *output = password_manager::CredentialMediationRequirement::kSilent;
       return true;
-    case password_manager::mojom::CredentialMediationRequirement::kOptional:
+    case blink::mojom::CredentialMediationRequirement::kOptional:
       *output = password_manager::CredentialMediationRequirement::kOptional;
       return true;
-    case password_manager::mojom::CredentialMediationRequirement::kRequired:
+    case blink::mojom::CredentialMediationRequirement::kRequired:
       *output = password_manager::CredentialMediationRequirement::kRequired;
       return true;
   }
@@ -150,9 +144,9 @@ bool EnumTraits<password_manager::mojom::CredentialMediationRequirement,
 }
 
 // static
-bool StructTraits<password_manager::mojom::CredentialInfoDataView,
+bool StructTraits<blink::mojom::CredentialInfoDataView,
                   password_manager::CredentialInfo>::
-    Read(password_manager::mojom::CredentialInfoDataView data,
+    Read(blink::mojom::CredentialInfoDataView data,
          password_manager::CredentialInfo* out) {
   if (data.ReadType(&out->type) && data.ReadId(&out->id) &&
       data.ReadName(&out->name) && data.ReadIcon(&out->icon) &&
