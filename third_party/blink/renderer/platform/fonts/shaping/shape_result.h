@@ -74,6 +74,9 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                                     TextDirection direction) {
     return base::AdoptRef(new ShapeResult(font, num_characters, direction));
   }
+  static scoped_refptr<ShapeResult> Create(const ShapeResult& other) {
+    return base::AdoptRef(new ShapeResult(other));
+  }
   static scoped_refptr<ShapeResult> CreateForTabulationCharacters(
       const Font*,
       const TextRun&,
@@ -210,9 +213,6 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                                            TextDirection direction) {
     return base::AdoptRef(
         new ShapeResult(font_data, num_characters, direction));
-  }
-  static scoped_refptr<ShapeResult> Create(const ShapeResult& other) {
-    return base::AdoptRef(new ShapeResult(other));
   }
 
   struct GlyphIndexResult {
