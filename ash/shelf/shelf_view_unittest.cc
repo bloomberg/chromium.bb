@@ -982,8 +982,6 @@ TEST_F(ShelfViewTest, OverflowVisibleItemsInTabletMode) {
   test_api_->RunMessageLoopUntilAnimationsDone();
   overflow_test_api.RunMessageLoopUntilAnimationsDone();
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
-  EXPECT_EQ(test_api_->GetLastVisibleIndex(), last_visible_index - 1);
-  EXPECT_EQ(last_visible_index, overflow_test_api.GetFirstVisibleIndex());
   EXPECT_FALSE(is_visible_on_shelf(last_visible_index, test_api_.get()));
   EXPECT_TRUE(is_visible_on_shelf(last_visible_index, &overflow_test_api));
 
@@ -993,7 +991,6 @@ TEST_F(ShelfViewTest, OverflowVisibleItemsInTabletMode) {
   test_api_->RunMessageLoopUntilAnimationsDone();
   overflow_test_api.RunMessageLoopUntilAnimationsDone();
   ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
-  EXPECT_EQ(test_api_->GetLastVisibleIndex(), last_visible_index);
   EXPECT_TRUE(is_visible_on_shelf(last_visible_index, test_api_.get()));
   EXPECT_FALSE(is_visible_on_shelf(last_visible_index, &overflow_test_api));
 }
