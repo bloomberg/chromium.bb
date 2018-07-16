@@ -5,11 +5,13 @@
 #include "services/device/geolocation/public_ip_address_geolocator.h"
 
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,29 +20,18 @@ namespace {
 
 const char kTestGeolocationApiKey[] = "";
 
-// Simple request context producer that immediately produces a
-// TestURLRequestContextGetter.
-void TestRequestContextProducer(
-    const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
-    base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
-        response_callback) {
-  std::move(response_callback)
-      .Run(base::MakeRefCounted<net::TestURLRequestContextGetter>(
-          network_task_runner));
-}
-
 class PublicIpAddressGeolocatorTest : public testing::Test {
  public:
   PublicIpAddressGeolocatorTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO) {
     notifier_.reset(new PublicIpAddressLocationNotifier(
-        base::Bind(&TestRequestContextProducer,
-                   scoped_task_environment_.GetMainThreadTaskRunner()),
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_),
         kTestGeolocationApiKey));
   }
 
-  ~PublicIpAddressGeolocatorTest() override = default;
+  ~PublicIpAddressGeolocatorTest() override {}
 
  protected:
   void SetUp() override {
@@ -107,73 +98,33 @@ class PublicIpAddressGeolocatorTest : public testing::Test {
   // The object under test.
   mojom::GeolocationPtr public_ip_address_geolocator_;
 
-  // PublicIpAddressGeolocator implementation.
-  // std::unique_ptr<PublicIpAddressGeolocator> impl_;
+  // Test URLLoaderFactory for handling requests to the geolocation API.
+  network::TestURLLoaderFactory test_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PublicIpAddressGeolocatorTest);
 };
 
-// Observer that waits until a TestURLFetcher with the specified fetcher_id
-// starts, after which it is made available through .fetcher().
-class TestURLFetcherObserver : public net::TestURLFetcher::DelegateForTests {
- public:
-  explicit TestURLFetcherObserver(int expected_fetcher_id)
-      : expected_fetcher_id_(expected_fetcher_id) {
-    factory_.SetDelegateForTests(this);
-  }
-  virtual ~TestURLFetcherObserver() {}
-
-  void Wait() { loop_.Run(); }
-
-  net::TestURLFetcher* fetcher() { return fetcher_; }
-
-  // net::TestURLFetcher::DelegateForTests:
-  void OnRequestStart(int fetcher_id) override {
-    if (fetcher_id == expected_fetcher_id_) {
-      fetcher_ = factory_.GetFetcherByID(fetcher_id);
-      fetcher_->SetDelegateForTests(nullptr);
-      factory_.SetDelegateForTests(nullptr);
-      loop_.Quit();
-    }
-  }
-  void OnChunkUpload(int fetcher_id) override {}
-  void OnRequestEnd(int fetcher_id) override {}
-
- private:
-  const int expected_fetcher_id_;
-  net::TestURLFetcher* fetcher_ = nullptr;
-  net::TestURLFetcherFactory factory_;
-  base::RunLoop loop_;
-};
-
 // Basic test of a client invoking QueryNextPosition.
 TEST_F(PublicIpAddressGeolocatorTest, BindAndQuery) {
-  // Intercept the URLFetcher from network geolocation request.
-  TestURLFetcherObserver observer(
-      device::NetworkLocationRequest::url_fetcher_id_for_tests);
-
-  // Invoke QueryNextPosition and wait for a URLFetcher.
+  // Invoke QueryNextPosition.
   base::RunLoop loop;
   QueryNextPosition(loop.QuitClosure());
-  observer.Wait();
-  DCHECK(observer.fetcher());
 
-  // Issue a valid response to the URLFetcher.
-  observer.fetcher()->set_url(observer.fetcher()->GetOriginalURL());
-  observer.fetcher()->set_status(net::URLRequestStatus());
-  observer.fetcher()->set_response_code(200);
-  observer.fetcher()->SetResponseString(R"({
+  ASSERT_EQ(1, test_url_loader_factory_.NumPending());
+  const std::string& request_url =
+      test_url_loader_factory_.pending_requests()->back().request.url.spec();
+  EXPECT_TRUE(
+      base::StartsWith("https://www.googleapis.com/geolocation/v1/geolocate",
+                       request_url, base::CompareCase::SENSITIVE));
+
+  // Issue a valid response.
+  test_url_loader_factory_.AddResponse(request_url, R"({
         "accuracy": 100.0,
         "location": {
           "lat": 10.0,
           "lng": 20.0
         }
-      })");
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&net::URLFetcherDelegate::OnURLFetchComplete,
-                     base::Unretained(observer.fetcher()->delegate()),
-                     base::Unretained(observer.fetcher())));
+      })", net::HTTP_OK);
 
   // Wait for QueryNextPosition to return.
   loop.Run();

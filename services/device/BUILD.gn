@@ -117,6 +117,7 @@ source_set("tests") {
     "//services/device/public/cpp/power_monitor",
     "//services/device/public/mojom",
     "//services/device/wake_lock",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -237,6 +238,7 @@ source_set("test_support") {
     "//net:test_support",
     "//services/device/public/cpp/geolocation",
     "//services/device/public/mojom:constants",
+    "//services/network:test_support",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
   ]

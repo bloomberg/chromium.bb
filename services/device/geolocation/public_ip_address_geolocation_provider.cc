@@ -5,18 +5,19 @@
 #include "services/device/geolocation/public_ip_address_geolocation_provider.h"
 
 #include "services/device/geolocation/public_ip_address_geolocator.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace device {
 
 PublicIpAddressGeolocationProvider::PublicIpAddressGeolocationProvider(
-    GeolocationProvider::RequestContextProducer request_context_producer,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& api_key) {
   // Bind sequence_checker_ to the initialization sequence.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   public_ip_address_location_notifier_ =
       std::make_unique<PublicIpAddressLocationNotifier>(
-          request_context_producer, api_key);
+          std::move(url_loader_factory), api_key);
 }
 
 PublicIpAddressGeolocationProvider::~PublicIpAddressGeolocationProvider() {}

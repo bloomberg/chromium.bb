@@ -9,27 +9,15 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/device/device_service_test_base.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
-namespace {
-// Simple request context producer that immediately produces a
-// TestURLRequestContextGetter.
-void TestRequestContextProducer(
-    const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
-    base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
-        response_callback) {
-  std::move(response_callback)
-      .Run(base::MakeRefCounted<net::TestURLRequestContextGetter>(
-          network_task_runner));
-}
-
-}  // namespace
 
 class PublicIpAddressLocationNotifierTest : public testing::Test {
  protected:
@@ -64,31 +52,28 @@ class PublicIpAddressLocationNotifierTest : public testing::Test {
       : mock_time_task_runner_(
             base::MakeRefCounted<base::TestMockTimeTaskRunner>(
                 base::TestMockTimeTaskRunner::Type::kBoundToThread)),
-        mock_time_scoped_context_(mock_time_task_runner_.get()),
         network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         notifier_(
-            base::Bind(&TestRequestContextProducer, mock_time_task_runner_),
-            std::string() /* api_key */) {}
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_),
+            kTestGeolocationApiKey) {}
 
-  // Returns the current TestURLFetcher (if any) and advances the test fetcher
-  // id for disambiguation from subsequent tests.
-  net::TestURLFetcher* GetTestUrlFetcher() {
-    net::TestURLFetcher* const fetcher = url_fetcher_factory_.GetFetcherByID(
-        NetworkLocationRequest::url_fetcher_id_for_tests);
-    if (fetcher)
-      ++NetworkLocationRequest::url_fetcher_id_for_tests;
-    return fetcher;
-  }
+  ~PublicIpAddressLocationNotifierTest() override {}
 
   // Gives a valid JSON reponse to the specified URLFetcher.
   // For disambiguation purposes, the specified |latitude| is included in the
   // response.
-  void RespondToFetchWithLatitude(net::TestURLFetcher* const fetcher,
-                                  const float latitude) {
+  void RespondToFetchWithLatitude(const float latitude) {
+    ASSERT_EQ(1, test_url_loader_factory_.NumPending());
+    const std::string& request_url =
+        test_url_loader_factory_.pending_requests()->back().request.url.spec();
+    std::string expected_url =
+        "https://www.googleapis.com/geolocation/v1/"
+        "geolocate?key=";
+    expected_url.append(kTestGeolocationApiKey);
+    EXPECT_EQ(expected_url, request_url);
+
     // Issue a valid response including the specified latitude.
-    fetcher->set_url(fetcher->GetOriginalURL());
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(200);
     const char kNetworkResponseFormatString[] =
         R"({
             "accuracy": 100.0,
@@ -97,16 +82,28 @@ class PublicIpAddressLocationNotifierTest : public testing::Test {
               "lng": 90.0
             }
           })";
-    fetcher->SetResponseString(
-        base::StringPrintf(kNetworkResponseFormatString, latitude));
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    std::string body =
+        base::StringPrintf(kNetworkResponseFormatString, latitude);
+    test_url_loader_factory_.AddResponse(request_url, body, net::HTTP_OK);
+    mock_time_task_runner_->RunUntilIdle();
+    test_url_loader_factory_.ClearResponses();
   }
 
-  void RespondToFetchWithServerError(net::TestURLFetcher* const fetcher) {
-    fetcher->set_url(fetcher->GetOriginalURL());
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(500);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+  void RespondToFetchWithServerError() {
+    ASSERT_EQ(1, test_url_loader_factory_.NumPending());
+    const std::string& request_url =
+        test_url_loader_factory_.pending_requests()->back().request.url.spec();
+
+    std::string expected_url =
+        "https://www.googleapis.com/geolocation/v1/"
+        "geolocate?key=";
+    expected_url.append(kTestGeolocationApiKey);
+    EXPECT_EQ(expected_url, request_url);
+
+    test_url_loader_factory_.AddResponse(request_url, std::string(),
+                                         net::HTTP_INTERNAL_SERVER_ERROR);
+    mock_time_task_runner_->RunUntilIdle();
+    test_url_loader_factory_.ClearResponses();
   }
 
   // Expects a non-empty and valid Geoposition, including the specified
@@ -123,15 +120,15 @@ class PublicIpAddressLocationNotifierTest : public testing::Test {
     EXPECT_THAT(position->error_code,
                 mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE);
   }
+
   // Use a TaskRunner on which we can fast-forward time.
   const scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner_;
-  const base::TestMockTimeTaskRunner::ScopedContext mock_time_scoped_context_;
 
   // notifier_ requires a NetworkChangeNotifier to exist.
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
-  // Intercept URL fetchers.
-  net::TestURLFetcherFactory url_fetcher_factory_;
+  // Test URLLoaderFactory for handling requests to the geolocation API.
+  network::TestURLLoaderFactory test_url_loader_factory_;
 
   // The object under test.
   PublicIpAddressLocationNotifier notifier_;
@@ -144,10 +141,10 @@ TEST_F(PublicIpAddressLocationNotifierTest, SingleQueryReturns) {
   notifier_.QueryNextPosition(base::Time::Now(),
                               PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS,
                               query.MakeCallback());
+
   // Expect a URL fetch & send a valid response.
-  net::TestURLFetcher* const fetcher = GetTestUrlFetcher();
-  EXPECT_THAT(fetcher, testing::NotNull());
-  RespondToFetchWithLatitude(fetcher, 1.0f);
+  RespondToFetchWithLatitude(1.0f);
+
   // Expect the query to return.
   ExpectValidPosition(query.position(), 1.0f);
 }
@@ -160,9 +157,7 @@ TEST_F(PublicIpAddressLocationNotifierTest, OlderQueryReturnsCached) {
   TestPositionQuery query_1;
   notifier_.QueryNextPosition(time, PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS,
                               query_1.MakeCallback());
-  net::TestURLFetcher* const fetcher = GetTestUrlFetcher();
-  EXPECT_THAT(fetcher, testing::NotNull());
-  RespondToFetchWithLatitude(fetcher, 1.0f);
+  RespondToFetchWithLatitude(1.0f);
   ExpectValidPosition(query_1.position(), 1.0f);
 
   // Second query for an earlier time.
@@ -171,7 +166,7 @@ TEST_F(PublicIpAddressLocationNotifierTest, OlderQueryReturnsCached) {
                               PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS,
                               query_2.MakeCallback());
   // Expect a cached result, so no new network request.
-  EXPECT_THAT(GetTestUrlFetcher(), testing::IsNull());
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
   // Expect the same result as query_1.
   ExpectValidPosition(query_2.position(), 1.0f);
 }
@@ -185,9 +180,7 @@ TEST_F(PublicIpAddressLocationNotifierTest,
   notifier_.QueryNextPosition(base::Time::Now(),
                               PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS,
                               query_1.MakeCallback());
-  net::TestURLFetcher* const fetcher = GetTestUrlFetcher();
-  EXPECT_THAT(fetcher, testing::NotNull());
-  RespondToFetchWithLatitude(fetcher, 1.0f);
+  RespondToFetchWithLatitude(1.0f);
   ExpectValidPosition(query_1.position(), 1.0f);
 
   // Second query seeking a position newer than the result of query_1.
@@ -196,7 +189,7 @@ TEST_F(PublicIpAddressLocationNotifierTest,
                               PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS,
                               query_2.MakeCallback());
   // Expect no network request or callback.
-  EXPECT_THAT(GetTestUrlFetcher(), testing::IsNull());
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
   EXPECT_FALSE(query_2.position().has_value());
 
   // Fake a network change notification.
@@ -206,9 +199,7 @@ TEST_F(PublicIpAddressLocationNotifierTest,
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Now expect a network request and query_2 to return.
-  net::TestURLFetcher* const fetcher_2 = GetTestUrlFetcher();
-  EXPECT_THAT(fetcher_2, testing::NotNull());
-  RespondToFetchWithLatitude(fetcher_2, 2.0f);
+  RespondToFetchWithLatitude(2.0f);
   ExpectValidPosition(query_2.position(), 2.0f);
 }
 
@@ -221,9 +212,7 @@ TEST_F(PublicIpAddressLocationNotifierTest,
   notifier_.QueryNextPosition(base::Time::Now(),
                               PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS,
                               query_1.MakeCallback());
-  net::TestURLFetcher* const fetcher = GetTestUrlFetcher();
-  EXPECT_THAT(fetcher, testing::NotNull());
-  RespondToFetchWithLatitude(fetcher, 1.0f);
+  RespondToFetchWithLatitude(1.0f);
   ExpectValidPosition(query_1.position(), 1.0f);
 
   // Second query seeking a position newer than the result of query_1.
@@ -232,7 +221,7 @@ TEST_F(PublicIpAddressLocationNotifierTest,
                               PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS,
                               query_2.MakeCallback());
   // Expect no network request or callback since network has not changed.
-  EXPECT_THAT(GetTestUrlFetcher(), testing::IsNull());
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
   EXPECT_FALSE(query_2.position().has_value());
 
   // Fake several consecutive network changes notification.
@@ -242,16 +231,14 @@ TEST_F(PublicIpAddressLocationNotifierTest,
     mock_time_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(5));
   }
   // Expect still no network request or callback.
-  EXPECT_THAT(GetTestUrlFetcher(), testing::IsNull());
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
   EXPECT_FALSE(query_2.position().has_value());
 
   // Wait longer.
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Now expect a network request & query_2 to return.
-  net::TestURLFetcher* const fetcher_2 = GetTestUrlFetcher();
-  EXPECT_THAT(fetcher_2, testing::NotNull());
-  RespondToFetchWithLatitude(fetcher_2, 2.0f);
+  RespondToFetchWithLatitude(2.0f);
   ExpectValidPosition(query_2.position(), 2.0f);
 }
 
@@ -262,9 +249,7 @@ TEST_F(PublicIpAddressLocationNotifierTest, MutipleWaitingQueries) {
   notifier_.QueryNextPosition(base::Time::Now(),
                               PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS,
                               query_1.MakeCallback());
-  net::TestURLFetcher* const fetcher = GetTestUrlFetcher();
-  EXPECT_THAT(fetcher, testing::NotNull());
-  RespondToFetchWithLatitude(fetcher, 1.0f);
+  RespondToFetchWithLatitude(1.0f);
   ExpectValidPosition(query_1.position(), 1.0f);
 
   // Multiple queries seeking positions newer than the result of query_1.
@@ -278,7 +263,7 @@ TEST_F(PublicIpAddressLocationNotifierTest, MutipleWaitingQueries) {
                               query_3.MakeCallback());
 
   // Expect no network requests or callback since network has not changed.
-  EXPECT_THAT(GetTestUrlFetcher(), testing::IsNull());
+  EXPECT_EQ(0, test_url_loader_factory_.NumPending());
   EXPECT_FALSE(query_2.position().has_value());
   EXPECT_FALSE(query_3.position().has_value());
 
@@ -289,9 +274,7 @@ TEST_F(PublicIpAddressLocationNotifierTest, MutipleWaitingQueries) {
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
   // Now expect a network request & fake a valid response.
-  net::TestURLFetcher* const fetcher_2 = GetTestUrlFetcher();
-  EXPECT_THAT(fetcher_2, testing::NotNull());
-  RespondToFetchWithLatitude(fetcher_2, 2.0f);
+  RespondToFetchWithLatitude(2.0f);
   // Expect all queries to now return.
   ExpectValidPosition(query_2.position(), 2.0f);
   ExpectValidPosition(query_3.position(), 2.0f);
@@ -305,9 +288,7 @@ TEST_F(PublicIpAddressLocationNotifierTest, ServerError) {
                               PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS,
                               query.MakeCallback());
   // Expect a URL fetch & send a valid response.
-  net::TestURLFetcher* const fetcher = GetTestUrlFetcher();
-  EXPECT_THAT(fetcher, testing::NotNull());
-  RespondToFetchWithServerError(fetcher);
+  RespondToFetchWithServerError();
   // Expect the query to return.
   ExpectError(query.position());
 }

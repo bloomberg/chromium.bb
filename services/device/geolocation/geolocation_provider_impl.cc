@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/device/geolocation/location_arbitrator.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -29,8 +30,8 @@ namespace device {
 namespace {
 base::LazyInstance<CustomLocationProviderCallback>::Leaky
     g_custom_location_provider_callback = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<GeolocationProvider::RequestContextProducer>::Leaky
-    g_request_context_producer = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::unique_ptr<network::SharedURLLoaderFactoryInfo>>::Leaky
+    g_url_loader_factory_info = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<std::string>::Leaky g_api_key = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
@@ -41,11 +42,12 @@ GeolocationProvider* GeolocationProvider::GetInstance() {
 
 // static
 void GeolocationProviderImpl::SetGeolocationConfiguration(
-    const GeolocationProvider::RequestContextProducer request_context_producer,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& api_key,
     const CustomLocationProviderCallback& custom_location_provider_getter,
     bool use_gms_core_location_provider) {
-  g_request_context_producer.Get() = request_context_producer;
+  if (url_loader_factory)
+    g_url_loader_factory_info.Get() = url_loader_factory->Clone();
   g_api_key.Get() = api_key;
   g_custom_location_provider_callback.Get() = custom_location_provider_getter;
   if (use_gms_core_location_provider) {
@@ -226,9 +228,15 @@ void GeolocationProviderImpl::Init() {
   LocationProvider::LocationProviderUpdateCallback callback = base::Bind(
       &GeolocationProviderImpl::OnLocationUpdate, base::Unretained(this));
 
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
+  if (g_url_loader_factory_info.Get()) {
+    url_loader_factory = network::SharedURLLoaderFactory::Create(
+        std::move(g_url_loader_factory_info.Get()));
+  }
+
   arbitrator_ = std::make_unique<LocationArbitrator>(
-      g_custom_location_provider_callback.Get(),
-      g_request_context_producer.Get(), g_api_key.Get());
+      g_custom_location_provider_callback.Get(), std::move(url_loader_factory),
+      g_api_key.Get());
   arbitrator_->SetUpdateCallback(callback);
 }
 

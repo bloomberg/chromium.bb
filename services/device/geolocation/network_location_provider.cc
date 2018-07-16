@@ -13,8 +13,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace device {
 namespace {
@@ -101,7 +101,7 @@ bool NetworkLocationProvider::PositionCache::MakeKey(const WifiData& wifi_data,
 
 // NetworkLocationProvider
 NetworkLocationProvider::NetworkLocationProvider(
-    scoped_refptr<net::URLRequestContextGetter> url_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& api_key,
     LastPositionCache* last_position_cache)
     : wifi_data_provider_manager_(nullptr),
@@ -113,7 +113,7 @@ NetworkLocationProvider::NetworkLocationProvider(
       is_permission_granted_(false),
       is_new_data_available_(false),
       request_(new NetworkLocationRequest(
-          std::move(url_context_getter),
+          std::move(url_loader_factory),
           api_key,
           base::Bind(&NetworkLocationProvider::OnLocationResponse,
                      base::Unretained(this)))),

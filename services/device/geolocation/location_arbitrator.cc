@@ -15,6 +15,7 @@
 #include "services/device/geolocation/network_location_provider.h"
 #include "services/device/geolocation/wifi_polling_policy.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace device {
 
@@ -25,10 +26,10 @@ const base::TimeDelta LocationArbitrator::kFixStaleTimeoutTimeDelta =
 
 LocationArbitrator::LocationArbitrator(
     const CustomLocationProviderCallback& custom_location_provider_getter,
-    GeolocationProvider::RequestContextProducer request_context_producer,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& api_key)
     : custom_location_provider_getter_(custom_location_provider_getter),
-      request_context_producer_(request_context_producer),
+      url_loader_factory_(url_loader_factory),
       api_key_(api_key),
       position_provider_(nullptr),
       is_permission_granted_(false),
@@ -64,18 +65,7 @@ void LocationArbitrator::StartProvider(bool enable_high_accuracy) {
 
   if (providers_.empty()) {
     RegisterSystemProvider();
-
-    // Request a URLRequestContextGetter to use for network geolocation.
-    if (!request_context_producer_.is_null()) {
-      // Note: .Reset() will cancel any previous callback.
-      request_context_response_callback_.Reset(
-          base::Bind(&LocationArbitrator::OnRequestContextResponse,
-                     base::Unretained(this)));
-      // Invoke callback to obtain a URL request context.
-      request_context_producer_.Run(
-          request_context_response_callback_.callback());
-      return;
-    }
+    RegisterNetworkProvider();
   }
   DoStartProviders();
 }
@@ -105,16 +95,6 @@ void LocationArbitrator::StopProvider() {
   is_running_ = false;
 }
 
-void LocationArbitrator::OnRequestContextResponse(
-    scoped_refptr<net::URLRequestContextGetter> context_getter) {
-  if (context_getter != nullptr) {
-    // Create a NetworkLocationProvider using the provided request context.
-    RegisterProvider(
-        NewNetworkLocationProvider(std::move(context_getter), api_key_));
-  }
-  DoStartProviders();
-}
-
 void LocationArbitrator::RegisterProvider(
     std::unique_ptr<LocationProvider> provider) {
   if (!provider)
@@ -135,6 +115,13 @@ void LocationArbitrator::RegisterSystemProvider() {
   if (!provider)
     provider = NewSystemLocationProvider();
   RegisterProvider(std::move(provider));
+}
+
+void LocationArbitrator::RegisterNetworkProvider() {
+  if (!url_loader_factory_)
+    return;
+
+  RegisterProvider(NewNetworkLocationProvider(url_loader_factory_, api_key_));
 }
 
 void LocationArbitrator::OnLocationUpdate(
@@ -162,15 +149,15 @@ void LocationArbitrator::SetUpdateCallback(
 
 std::unique_ptr<LocationProvider>
 LocationArbitrator::NewNetworkLocationProvider(
-    scoped_refptr<net::URLRequestContextGetter> context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& api_key) {
-  DCHECK(context != nullptr);
+  DCHECK(url_loader_factory);
 #if defined(OS_ANDROID)
   // Android uses its own SystemLocationProvider.
   return nullptr;
 #else
-  return std::make_unique<NetworkLocationProvider>(std::move(context), api_key,
-                                                   this);
+  return std::make_unique<NetworkLocationProvider>(
+      std::move(url_loader_factory), api_key, this);
 #endif
 }
 

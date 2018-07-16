@@ -6,14 +6,15 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/device/device_service.h"
 #include "services/device/public/cpp/geolocation/location_provider.h"
 #include "services/device/public/mojom/constants.mojom.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
@@ -23,17 +24,6 @@ namespace device {
 namespace {
 
 const char kTestServiceName[] = "device_unittests";
-
-// Simple request context producer that immediately produces a
-// TestURLRequestContextGetter.
-void TestRequestContextProducer(
-    const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
-    base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
-        response_callback) {
-  std::move(response_callback)
-      .Run(base::MakeRefCounted<net::TestURLRequestContextGetter>(
-          network_task_runner));
-}
 
 // Simply return a nullptr which means no CustomLocationProvider from embedder.
 std::unique_ptr<LocationProvider> GetCustomLocationProviderForTest() {
@@ -47,10 +37,12 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
   explicit ServiceTestClient(
       service_manager::test::ServiceTest* test,
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : service_manager::test::ServiceTestClient(test),
         file_task_runner_(std::move(file_task_runner)),
-        io_task_runner_(std::move(io_task_runner)) {
+        io_task_runner_(std::move(io_task_runner)),
+        url_loader_factory_(std::move(url_loader_factory)) {
     registry_.AddInterface<service_manager::mojom::ServiceFactory>(
         base::Bind(&ServiceTestClient::Create, base::Unretained(this)));
   }
@@ -71,18 +63,16 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
 #if defined(OS_ANDROID)
       device_service_context_.reset(new service_manager::ServiceContext(
           CreateDeviceService(
-              file_task_runner_, io_task_runner_,
-              base::Bind(&TestRequestContextProducer, io_task_runner_),
+              file_task_runner_, io_task_runner_, url_loader_factory_,
               kTestGeolocationApiKey, false, wake_lock_context_callback_,
-              base::Bind(&GetCustomLocationProviderForTest), nullptr),
+              base::BindRepeating(&GetCustomLocationProviderForTest), nullptr),
           std::move(request)));
 #else
       device_service_context_.reset(new service_manager::ServiceContext(
           CreateDeviceService(
-              file_task_runner_, io_task_runner_,
-              base::Bind(&TestRequestContextProducer, io_task_runner_),
+              file_task_runner_, io_task_runner_, url_loader_factory_,
               kTestGeolocationApiKey,
-              base::Bind(&GetCustomLocationProviderForTest)),
+              base::BindRepeating(&GetCustomLocationProviderForTest)),
           std::move(request)));
 #endif
     }
@@ -97,10 +87,13 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
       service_factory_bindings_;
   std::unique_ptr<service_manager::ServiceContext> device_service_context_;
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   WakeLockContextCallback wake_lock_context_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceTestClient);
 };
 
 }  // namespace
@@ -118,8 +111,10 @@ DeviceServiceTestBase::~DeviceServiceTestBase() {}
 
 std::unique_ptr<service_manager::Service>
 DeviceServiceTestBase::CreateService() {
-  return std::make_unique<ServiceTestClient>(this, file_thread_.task_runner(),
-                                             io_thread_.task_runner());
+  return std::make_unique<ServiceTestClient>(
+      this, file_thread_.task_runner(), io_thread_.task_runner(),
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory_));
 }
 
 }  // namespace device

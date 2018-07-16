@@ -14,15 +14,14 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/device/geolocation/geolocation_provider_impl.h"
 #include "services/device/geolocation/network_location_provider.h"
 #include "services/device/public/cpp/geolocation/location_provider.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace device {
@@ -42,8 +41,7 @@ class LocationArbitrator : public LocationProvider,
   // LocationArbitrator uses the default system location provider.
   LocationArbitrator(
       const CustomLocationProviderCallback& custom_location_provider_getter,
-      const GeolocationProvider::RequestContextProducer
-          request_context_producer,
+      const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& api_key);
   ~LocationArbitrator() override;
 
@@ -66,7 +64,7 @@ class LocationArbitrator : public LocationProvider,
   // These functions are useful for injection of dependencies in derived
   // testing classes.
   virtual std::unique_ptr<LocationProvider> NewNetworkLocationProvider(
-      scoped_refptr<net::URLRequestContextGetter> context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& api_key);
   virtual std::unique_ptr<LocationProvider> NewSystemLocationProvider();
   virtual base::Time GetTimeNow() const;
@@ -78,16 +76,13 @@ class LocationArbitrator : public LocationProvider,
   // deleted on error (e.g. it fails to start).
   void RegisterProvider(std::unique_ptr<LocationProvider> provider);
   void RegisterSystemProvider();
+  void RegisterNetworkProvider();
 
   // Tells all registered providers to start.
   // If |providers_| is empty, immediately provides
   // Geoposition::ERROR_CODE_POSITION_UNAVAILABLE to the client via
   // |arbitrator_update_callback_|.
   void DoStartProviders();
-
-  // Response callback for request_context_callback_.
-  void OnRequestContextResponse(
-      scoped_refptr<net::URLRequestContextGetter> context_getter);
 
   // Gets called when a provider has a new position.
   void OnLocationUpdate(const LocationProvider* provider,
@@ -101,15 +96,10 @@ class LocationArbitrator : public LocationProvider,
                            bool from_same_provider) const;
 
   const CustomLocationProviderCallback custom_location_provider_getter_;
-  const GeolocationProvider::RequestContextProducer request_context_producer_;
+  const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const std::string api_key_;
 
   LocationProvider::LocationProviderUpdateCallback arbitrator_update_callback_;
-
-  // CancelableCallback to prevent OnRequestContextReponse from being called
-  // multiple times in case request_context_callback_ is invoked multiple times.
-  base::CancelableCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
-      request_context_response_callback_;
 
   std::vector<std::unique_ptr<LocationProvider>> providers_;
   bool enable_high_accuracy_;

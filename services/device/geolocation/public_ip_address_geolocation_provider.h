@@ -29,10 +29,9 @@ class PublicIpAddressGeolocationProvider
     : public mojom::PublicIpAddressGeolocationProvider {
  public:
   // Initialize PublicIpAddressGeolocationProvider using the specified Google
-  // |api_key| and a URL request context produced by |request_context_producer|
-  // for network location requests.
+  // |api_key| and |url_loader_factory| for network location requests.
   PublicIpAddressGeolocationProvider(
-      GeolocationProvider::RequestContextProducer request_context_producer,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& api_key);
   ~PublicIpAddressGeolocationProvider() override;
 
