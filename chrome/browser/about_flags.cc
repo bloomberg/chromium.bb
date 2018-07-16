@@ -2982,10 +2982,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowAndroidFilesInFilesAppName,
      flag_descriptions::kShowAndroidFilesInFilesAppDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kShowAndroidFilesInFilesApp)},
-    {"new-files-app-navigation",
-     flag_descriptions::kFilesAppNewStyleNavigationName,
-     flag_descriptions::kFilesAppNewStyleNavigationDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kFilesAppNewStyleNavigation)},
+    {"disable-my-files-navigation",
+     flag_descriptions::kFilesAppDisableMyFilesNavigationName,
+     flag_descriptions::kFilesAppDisableMyFilesNavigationDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kFilesAppDisableMyFilesNavigation)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_WIN)

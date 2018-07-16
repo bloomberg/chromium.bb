@@ -187,14 +187,15 @@ NavigationModelFakeItem.prototype = /** @struct */ {
  *     The list of folder shortcut.
  * @param {NavigationModelFakeItem} recentModelItem Recent folder.
  * @param {NavigationModelMenuItem} addNewServicesItem Add new services item.
- * @param {boolean=} opt_useNewNavigation true if should use the new navigation
- *     style, value should come from flag new-files-app-navigation.
+ * @param {boolean=} opt_disableMyFilesNavigation true if should use the new
+ *     navigation style, value should come from flag
+ *     disable-my-files-navigation.
  * @constructor
  * @extends {cr.EventTarget}
  */
 function NavigationListModel(
     volumeManager, shortcutListModel, recentModelItem, addNewServicesItem,
-    opt_useNewNavigation) {
+    opt_disableMyFilesNavigation) {
   cr.EventTarget.call(this);
 
   /**
@@ -277,10 +278,8 @@ function NavigationListModel(
     this.shortcutList_.push(entryToModelItem(shortcutEntry));
   }
 
-  // True if the flag new-files-app-navigation is enabled.
-  // Yes the member name is the opposite meaning.
-  // TODO(https://crbug.com/850348): Remove this flag.
-  this.disableNewNavigation_ = !!opt_useNewNavigation;
+  // True if the flag disable-my-files-navigation is enabled.
+  this.disableMyFilesNavigation_ = !!opt_disableMyFilesNavigation;
 
   // Reorder volumes, shortcuts, and optional items for initial display.
   this.reorderNavigationItems_();
@@ -437,7 +436,7 @@ NavigationListModel.prototype = {
  * it's disabled it has a flat structure with Linux Files after Recent menu.
  */
 NavigationListModel.prototype.reorderNavigationItems_ = function() {
-  if (!this.disableNewNavigation_) {
+  if (!this.disableMyFilesNavigation_) {
     return this.orderAndNestItems_();
   } else {
     return this.flatNavigationItems_();
