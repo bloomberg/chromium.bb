@@ -103,6 +103,7 @@ base::Optional<AuthenticatorData> MakeAuthenticatorData(
   std::array<uint8_t, 2> encoded_credential_id_length = {
       0, static_cast<uint8_t>(credential_id.size())};
   constexpr uint8_t flags =
+      static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserVerification) |
       static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
   return AuthenticatorData(
