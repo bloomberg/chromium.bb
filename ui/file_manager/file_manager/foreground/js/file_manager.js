@@ -517,10 +517,10 @@ FileManager.prototype = /** @struct */ {
     return Promise
         .all([
           this.appStateController_.loadInitialViewOptions(),
-          util.isNewNavigationEnabled(),
+          util.isMyFilesNavigationDisabled(),
         ])
         .then(values => {
-          this.commandLineFlags_['new-files-app-navigation'] =
+          this.commandLineFlags_['disable-my-files-navigation'] =
               /** @type {boolean} */ (values[1]);
           metrics.recordInterval('Load.InitSettings');
         });
@@ -1220,7 +1220,7 @@ FileManager.prototype = /** @struct */ {
                 str('ADD_NEW_SERVICES_BUTTON_LABEL'), '#add-new-services-menu',
                 'add-new-services') :
             null,
-        this.commandLineFlags_['new-files-app-navigation']);
+        this.commandLineFlags_['disable-my-files-navigation']);
     this.setupCrostini_();
     this.ui_.initDirectoryTree(directoryTree);
   };

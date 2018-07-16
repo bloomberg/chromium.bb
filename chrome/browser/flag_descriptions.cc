@@ -1553,10 +1553,10 @@ const char kShowAndroidFilesInFilesAppName[] =
 const char kShowAndroidFilesInFilesAppDescription[] =
     "Show Android files in Files app if Android is enabled on the device.";
 
-const char kFilesAppNewStyleNavigationName[] =
-    "Use new-style navigation in the Files app";
-const char kFilesAppNewStyleNavigationDescription[] =
-    "Enables the new-style navigation in the Files app, which displays a "
+const char kFilesAppDisableMyFilesNavigationName[] =
+    "Disable the My Files on the navigation in the Files app";
+const char kFilesAppDisableMyFilesNavigationDescription[] =
+    "Disables the My Files on the  navigation in the Files app, which displays "
     R"("My Files" root for Downloads, Linux and Play files)";
 
 const char kShowAutofillSignaturesName[] = "Show autofill signatures.";

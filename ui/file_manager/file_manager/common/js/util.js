@@ -1375,15 +1375,15 @@ util.isTouchModeEnabled = function() {
 };
 
 /**
- * Returns if the new-style navigation should be used.
+ * Returns if the My Files navigation should be disabled.
  * @return {!Promise<boolean>} Resolves with true if flag
- * "new-files-app-navigation" is enabled.
+ * "disable-my-files-navigation" is set to true.
  */
-util.isNewNavigationEnabled = function() {
+util.isMyFilesNavigationDisabled = function() {
   return new Promise(resolve => {
     chrome.commandLinePrivate.hasSwitch(
-        'new-files-app-navigation', isEnabled => {
-          resolve(isEnabled);
+        'disable-my-files-navigation', isDisabled => {
+          resolve(isDisabled);
         });
   });
 };
