@@ -193,6 +193,10 @@ bool IsOpeningNewWindow();
 // already existed, notify the AppController of the profile in use.
 void CreateGuestProfileIfNeeded();
 
+// Called when Enterprise startup dialog is close and repost
+// applicationDidFinished notification.
+void EnterpriseStartupDialogClosed();
+
 }  // namespace app_controller_mac
 
 #endif  // CHROME_BROWSER_APP_CONTROLLER_MAC_H_

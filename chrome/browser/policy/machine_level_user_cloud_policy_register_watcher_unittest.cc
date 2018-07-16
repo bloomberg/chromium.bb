@@ -151,7 +151,7 @@ class MachineLevelUserCloudPolicyRegisterWatcherTest : public ::testing::Test {
 TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
        NoEnrollmentNeededWithDMToken) {
   storage()->set_dm_token(kDMToken);
-  EXPECT_EQ(RegisterResult::kEnrollmentSuccess,
+  EXPECT_EQ(RegisterResult::kEnrollmentSuccessBeforeDialogDisplayed,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
 }
 

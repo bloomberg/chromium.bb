@@ -197,9 +197,6 @@ bool IsProfileSignedOut(Profile* profile) {
   return has_entry && entry->IsSigninRequired();
 }
 
-// Called when Chrome is launched successfully.
-void LaunchFinished(NSNotification* notify);
-
 }  // namespace
 
 @interface AppController () <HandoffActiveURLObserverBridgeDelegate>
@@ -229,11 +226,6 @@ void LaunchFinished(NSNotification* notify);
 // this method is called, and that tab is the NTP, then this method closes the
 // NTP after all the |urls| have been opened.
 - (void)openUrlsReplacingNTP:(const std::vector<GURL>&)urls;
-
-// Finish Chrome launching. It usually called by -applicationDidFinishLaunching:
-// notification. However, it will be delayed until Chrome browser window is
-// really if there is the EnterpriseStartupDialog blocks Chrome window display.
-- (void)doApplicationDidFinishLaunching:(NSNotification*)notify;
 
 // Whether instances of this class should use the Handoff feature.
 - (BOOL)shouldUseHandoff;
@@ -742,7 +734,15 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 // This is called after profiles have been loaded and preferences registered.
 // It is safe to access the default profile here.
-- (void)doApplicationDidFinishLaunching:(NSNotification*)notify {
+- (void)applicationDidFinishLaunching:(NSNotification*)notify {
+  if (g_browser_process->browser_policy_connector()
+          ->machine_level_user_cloud_policy_controller()
+          ->IsEnterpriseStartupDialogShowing()) {
+    // As Chrome is not ready when the Enterprise startup dialog is being shown.
+    // Store the notification as it will be reposted when the dialog is closed.
+    return;
+  }
+
   MacStartupProfiler::GetInstance()->Profile(
       MacStartupProfiler::DID_FINISH_LAUNCHING);
   MacStartupProfiler::GetInstance()->RecordMetrics();
@@ -814,20 +814,6 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
         @selector(_coreAttributesFromRange:whichAttributes:completionHandler:));
   }
 #endif
-}
-
-- (void)applicationDidFinishLaunching:(NSNotification*)notify {
-  if (g_browser_process->browser_policy_connector()
-          ->machine_level_user_cloud_policy_controller()
-          ->IsEnterpriseStartupDialogShowing()) {
-    // Repost the function with a delayed task if the enterprise startup dialog
-    // is being displayed. Because Chrome is not ready when the dialog is shown.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::BindOnce(&LaunchFinished, notify),
-        base::TimeDelta::FromSeconds(0));
-  } else {
-    [self doApplicationDidFinishLaunching:notify];
-  }
 }
 
 // Helper function for populating and displaying the in progress downloads at
@@ -1757,13 +1743,6 @@ void UpdateProfileInUse(Profile* profile, Profile::CreateStatus status) {
   }
 }
 
-void LaunchFinished(NSNotification* notify) {
-  AppController* controller =
-      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
-  if (controller == nil)
-    [controller doApplicationDidFinishLaunching:notify];
-}
-
 }  // namespace
 
 namespace app_controller_mac {
@@ -1777,6 +1756,17 @@ void CreateGuestProfileIfNeeded() {
       ProfileManager::GetGuestProfilePath(),
       base::BindRepeating(&UpdateProfileInUse), base::string16(), std::string(),
       std::string());
+}
+
+void EnterpriseStartupDialogClosed() {
+  AppController* controller =
+      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
+  if (controller != nil) {
+    NSNotification* notify = [NSNotification
+        notificationWithName:NSApplicationDidFinishLaunchingNotification
+                      object:NSApp];
+    [controller applicationDidFinishLaunching:notify];
+  }
 }
 
 }  // namespace app_controller_mac

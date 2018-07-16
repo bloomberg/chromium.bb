@@ -229,6 +229,7 @@
 #include <Security/Security.h>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/mac/keystone_glue.h"
 #endif  // defined(OS_MACOSX)
 
@@ -756,7 +757,12 @@ bool WaitUntilMachineLevelUserCloudPolicyEnrollmentFinished(
   switch (connector->machine_level_user_cloud_policy_controller()
               ->WaitUntilPolicyEnrollmentFinished()) {
     case RegisterResult::kNoEnrollmentNeeded:
+    case RegisterResult::kEnrollmentSuccessBeforeDialogDisplayed:
+      return true;
     case RegisterResult::kEnrollmentSuccess:
+#if defined(OS_MACOSX)
+      app_controller_mac::EnterpriseStartupDialogClosed();
+#endif
       return true;
     case RegisterResult::kRestartDueToFailure:
       chrome::AttemptRestart();
