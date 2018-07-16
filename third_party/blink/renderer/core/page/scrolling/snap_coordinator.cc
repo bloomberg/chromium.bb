@@ -270,8 +270,6 @@ void SnapCoordinator::PerformSnapping(const LayoutBox& snap_container,
   if (!snap_point.has_value())
     return;
 
-  scrollable_area->CancelScrollAnimation();
-  scrollable_area->CancelProgrammaticScrollAnimation();
   if (snap_point.value() != current_position) {
     scrollable_area->SetScrollOffset(
         scrollable_area->ScrollPositionToOffset(snap_point.value()),

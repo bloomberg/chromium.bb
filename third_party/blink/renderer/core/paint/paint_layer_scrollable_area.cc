@@ -1621,7 +1621,7 @@ int PaintLayerScrollableArea::HorizontalScrollbarHeight(
   return HorizontalScrollbar()->ScrollbarThickness();
 }
 
-void PaintLayerScrollableArea::SnapAfterScrollbarScrolling(
+void PaintLayerScrollableArea::SnapAfterScrollbarDragging(
     ScrollbarOrientation orientation) {
   SnapCoordinator* snap_coordinator =
       GetLayoutBox()->GetDocument().GetSnapCoordinator();
