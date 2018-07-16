@@ -19,7 +19,6 @@
   'targets': [
     {
       'target_name': 'crashpad_compat',
-      'type': 'static_library',
       'sources': [
         'android/dlfcn_internal.cc',
         'android/dlfcn_internal.h',
@@ -36,6 +35,7 @@
         'android/sys/user.h',
         'linux/signal.h',
         'linux/sys/ptrace.h',
+        'linux/sys/user.h',
         'mac/AvailabilityMacros.h',
         'mac/kern/exc_resource.h',
         'mac/mach/i386/thread_state.h',
@@ -62,6 +62,7 @@
       ],
       'conditions': [
         ['OS=="mac"', {
+          'type': 'none',
           'include_dirs': [
             'mac',
           ],
@@ -70,8 +71,18 @@
               'mac',
             ],
           },
+        }, {
+          'include_dirs': [
+            'non_mac',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              'non_mac',
+            ],
+          },
         }],
         ['OS=="win"', {
+          'type': 'static_library',
           'include_dirs': [
             'win',
           ],
@@ -94,6 +105,7 @@
           },
         }],
         ['OS=="android"', {
+          'type': 'static_library',
           'include_dirs': [
             'android',
             'linux',
@@ -111,6 +123,7 @@
           },
         }],
         ['OS=="linux"', {
+          'type': 'none',
           'include_dirs': [
             'linux',
           ],
