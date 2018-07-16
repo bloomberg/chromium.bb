@@ -310,20 +310,27 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Transfer, /* transfer.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("transferFromDriveToDownloads"),
-                      TestCase("transferFromDriveToDownloads").EnableDriveFs(),
-                      TestCase("transferFromDownloadsToDrive"),
-                      TestCase("transferFromDownloadsToDrive").EnableDriveFs(),
-                      TestCase("transferFromSharedToDownloads"),
-                      TestCase("transferFromSharedToDrive"),
-                      TestCase("transferFromOfflineToDownloads"),
-                      TestCase("transferFromOfflineToDrive"),
-                      TestCase("transferFromTeamDriveToDrive"),
-                      TestCase("transferFromDriveToTeamDrive"),
-                      TestCase("transferFromTeamDriveToDownloads"),
-                      TestCase("transferHostedFileFromTeamDriveToDownloads"),
-                      TestCase("transferFromDownloadsToTeamDrive"),
-                      TestCase("transferBetweenTeamDrives")));
+    ::testing::Values(
+        TestCase("transferFromDriveToDownloads"),
+        TestCase("transferFromDriveToDownloads").EnableDriveFs(),
+        TestCase("transferFromDownloadsToDrive"),
+        TestCase("transferFromDownloadsToDrive").EnableDriveFs(),
+        TestCase("transferFromSharedToDownloads"),
+        TestCase("transferFromSharedToDrive"),
+        TestCase("transferFromOfflineToDownloads"),
+        TestCase("transferFromOfflineToDrive"),
+        TestCase("transferFromTeamDriveToDrive"),
+        TestCase("transferFromTeamDriveToDrive").EnableDriveFs(),
+        TestCase("transferFromDriveToTeamDrive"),
+        TestCase("transferFromDriveToTeamDrive").EnableDriveFs(),
+        TestCase("transferFromTeamDriveToDownloads"),
+        TestCase("transferFromTeamDriveToDownloads").EnableDriveFs(),
+        TestCase("transferHostedFileFromTeamDriveToDownloads"),
+        TestCase("transferHostedFileFromTeamDriveToDownloads").EnableDriveFs(),
+        TestCase("transferFromDownloadsToTeamDrive"),
+        TestCase("transferFromDownloadsToTeamDrive").EnableDriveFs(),
+        TestCase("transferBetweenTeamDrives"),
+        TestCase("transferBetweenTeamDrives").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     RestorePrefs, /* restore_prefs.js */

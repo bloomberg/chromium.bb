@@ -782,8 +782,8 @@ class DriveFsTestVolume : public DriveTestVolume {
             << "Failed to create a directory: " << target_path.value();
         break;
       case AddEntriesMessage::TEAM_DRIVE:
-        // TODO(sashab): Add support for Team Drives in DriveFS tests.
-        NOTREACHED();
+        ASSERT_TRUE(base::CreateDirectory(target_path))
+            << "Failed to create a team drive: " << target_path.value();
         break;
     }
 
@@ -796,7 +796,9 @@ class DriveFsTestVolume : public DriveTestVolume {
   base::RepeatingCallback<
       std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>()>
   CreateDriveFsConnectionDelegate() override {
-    CHECK(base::CreateDirectory(GetDriveRoot()));
+    CHECK(base::CreateDirectory(GetMyDrivePath()));
+    CHECK(base::CreateDirectory(GetTeamDriveGrandRoot()));
+
     InitializeFakeDriveFs();
     return base::BindRepeating(&drivefs::FakeDriveFs::CreateConnectionDelegate,
                                base::Unretained(fake_drivefs_.get()));
@@ -827,7 +829,8 @@ class DriveFsTestVolume : public DriveTestVolume {
 
     // Update the modified time of parent directories because they may be
     // also affected by the update of child items.
-    if (path.DirName() != GetDriveRoot()) {
+    if (path.DirName() != GetTeamDriveGrandRoot() &&
+        path.DirName() != GetMyDrivePath()) {
       const auto it = entries_.find(path.DirName());
       if (it == entries_.end())
         return false;
@@ -840,7 +843,9 @@ class DriveFsTestVolume : public DriveTestVolume {
   base::FilePath GetTargetPathForTestEntry(
       const AddEntriesMessage::TestEntryInfo& entry) {
     const base::FilePath target_path =
-        GetDriveRoot().AppendASCII(entry.target_path);
+        entry.team_drive_name.empty()
+            ? GetMyDrivePath().Append(entry.target_path)
+            : GetTeamDrivePath(entry.team_drive_name).Append(entry.target_path);
     if (entry.name_text != entry.target_path)
       return target_path.DirName().Append(entry.name_text);
     return target_path;
@@ -854,7 +859,15 @@ class DriveFsTestVolume : public DriveTestVolume {
     return drive_path;
   }
 
-  base::FilePath GetDriveRoot() { return root_path().Append("root"); }
+  base::FilePath GetMyDrivePath() { return root_path().Append("root"); }
+
+  base::FilePath GetTeamDriveGrandRoot() {
+    return root_path().Append("team_drives");
+  }
+
+  base::FilePath GetTeamDrivePath(const std::string& team_drive_name) {
+    return GetTeamDriveGrandRoot().Append(team_drive_name);
+  }
 
   Profile* const profile_;
   std::map<base::FilePath, const AddEntriesMessage::TestEntryInfo> entries_;
