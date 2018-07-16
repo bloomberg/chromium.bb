@@ -151,13 +151,14 @@ Polymer({
   /** @override */
   attached: function() {
     // Create listener functions.
-    const setSavedPasswordsListener = list => this.updateList(
-        'savedPasswords',
-        item => `${item.entry.index}_${item.entry.loginPair.urls.shown}`,
-        list.map(entry => ({
-                   entry: entry,
-                   password: '',
-                 })));
+    const setSavedPasswordsListener = list =>
+        this.updateList('savedPasswords', item => {
+          return item.entry.loginPair.urls.origin + '_' +
+              item.entry.loginPair.username;
+        }, list.map(entry => ({
+                      entry: entry,
+                      password: '',
+                    })));
 
     const setPasswordExceptionsListener = list => {
       this.passwordExceptions = list;

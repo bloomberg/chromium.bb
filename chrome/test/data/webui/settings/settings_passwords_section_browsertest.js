@@ -59,11 +59,11 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
    */
   function validatePasswordList(listElement, passwordList) {
     assertEquals(passwordList.length, listElement.items.length);
-    if (passwordList.length > 0) {
+    for (let index = 0; index < passwordList.length; ++index) {
       // The first child is a template, skip and get the real 'first child'.
-      const node = Polymer.dom(listElement).children[1];
+      const node = Polymer.dom(listElement).children[index + 1];
       assert(node);
-      const passwordInfo = passwordList[0];
+      const passwordInfo = passwordList[index];
       assertEquals(
           passwordInfo.loginPair.urls.shown,
           node.$$('#originUrl').textContent.trim());
@@ -287,6 +287,32 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
           'longwebsite.com'));
       assertFalse(listContainsUrl(passwordList, 'longwebsite.com'));
 
+      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+    });
+
+    // Test verifies that removing one out of two passwords for the same website
+    // will update the elements.
+    test('verifyPasswordListRemoveSameWebsite', function() {
+      const passwordsSection = createPasswordsSection(passwordManager, [], []);
+
+      // Set-up initial list.
+      let passwordList = [
+        FakeDataMaker.passwordEntry('website.com', 'mario', 1, 0),
+        FakeDataMaker.passwordEntry('website.com', 'luigi', 7, 1)
+      ];
+
+      passwordManager.lastCallback.addSavedPasswordListChangedListener(
+          passwordList);
+      Polymer.dom.flush();
+      validatePasswordList(passwordsSection.$.passwordList, passwordList);
+
+      // Simulate '(website.com, mario)' being removed from the list.
+      passwordList =
+          [FakeDataMaker.passwordEntry('website.com', 'luigi', 7, 0)];
+
+      passwordManager.lastCallback.addSavedPasswordListChangedListener(
+          passwordList);
+      Polymer.dom.flush();
       validatePasswordList(passwordsSection.$.passwordList, passwordList);
     });
 
