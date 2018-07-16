@@ -124,4 +124,13 @@ public class VrIntentUtils {
         intent.removeCategory(DAYDREAM_CATEGORY);
         assert !isVrIntent(intent);
     }
+
+    /**
+     * Adds the necessary VR flags to an intent.
+     * @param intent The intent to add VR flags to.
+     * @return the intent with VR flags set.
+     */
+    public static Intent setupVrIntent(Intent intent) {
+        return VrShellDelegate.getVrClassesWrapper().setupVrIntent(intent);
+    }
 }

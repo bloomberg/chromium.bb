@@ -64,6 +64,7 @@ import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.VirtualDisplayAndroid;
+import org.chromium.ui.widget.UiWidgetFactory;
 
 /**
  * This view extends from GvrLayout which wraps a GLSurfaceView that renders VR shell.
@@ -104,6 +105,7 @@ public class VrShellImpl
     private boolean mReprojectedRendering;
 
     private TabRedirectHandler mNonVrTabRedirectHandler;
+    private UiWidgetFactory mNonVrUiWidgetFactory;
 
     private TabModelSelector mTabModelSelector;
     private float mLastContentWidth;
@@ -160,6 +162,12 @@ public class VrShellImpl
 
             // Hide FindInPage toolbar.
             mActivity.getFindToolbarManager().hideToolbar();
+        }
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) {
+            mNonVrUiWidgetFactory = UiWidgetFactory.getInstance();
+            UiWidgetFactory.setInstance(
+                    new VrUiWidgetFactory(this, mActivity.getModalDialogManager()));
         }
 
         // This overrides the default intent created by GVR to return to Chrome when the DON flow
@@ -773,6 +781,8 @@ public class VrShellImpl
         if (mActivity.getToolbarManager() != null) {
             mActivity.getToolbarManager().setProgressBarEnabled(true);
         }
+
+        if (mNonVrUiWidgetFactory != null) UiWidgetFactory.setInstance(mNonVrUiWidgetFactory);
 
         FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
         decor.removeView(mUiView);

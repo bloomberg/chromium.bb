@@ -41,11 +41,11 @@ public class TestVrShellDelegate extends VrShellDelegate {
     }
 
     public static boolean isDisplayingUrlForTesting() {
-        return VrShellDelegate.isDisplayingUrl();
+        return TestVrShellDelegate.getInstance().getVrShell().isDisplayingUrlForTesting();
     }
 
     public static VrShell getVrShellForTesting() {
-        return VrShellDelegate.getVrShell();
+        return TestVrShellDelegate.getInstance().getVrShell();
     }
 
     @Override
@@ -85,25 +85,21 @@ public class TestVrShellDelegate extends VrShellDelegate {
         return super.isShowingDoff();
     }
 
-    @Override
     public void acceptDoffPromptForTesting() {
-        super.acceptDoffPromptForTesting();
+        getVrShell().acceptDoffPromptForTesting();
     }
 
-    @Override
     public void performControllerActionForTesting(
             int elementName, int actionType, PointF position) {
-        super.performControllerActionForTesting(elementName, actionType, position);
+        getVrShell().performControllerActionForTesting(elementName, actionType, position);
     }
 
-    @Override
     public void setUiExpectingActivityForTesting(int quiescenceTimeoutMs, Runnable resultCallback) {
-        super.setUiExpectingActivityForTesting(quiescenceTimeoutMs, resultCallback);
+        getVrShell().setUiExpectingActivityForTesting(quiescenceTimeoutMs, resultCallback);
     }
 
-    @Override
     public int getLastUiActivityResultForTesting() {
-        return super.getLastUiActivityResultForTesting();
+        return getVrShell().getLastUiActivityResultForTesting();
     }
 
     @Override
