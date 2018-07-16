@@ -673,6 +673,7 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
   LayoutUnit result;
   LayoutUnit previous_floats_inline_size =
       input.float_left_inline_size + input.float_right_inline_size;
+  DCHECK_GE(previous_floats_inline_size, 0);
   while (!break_token || !break_token->IsFinished()) {
     unpositioned_floats.clear();
 
@@ -729,7 +730,10 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
           floats_inline_size = LayoutUnit();
         }
 
-        floats_inline_size += child_sizes.max_size + child_inline_margins;
+        // When negative margins move the float outside the content area,
+        // such float should not affect the content size.
+        floats_inline_size +=
+            (child_sizes.max_size + child_inline_margins).ClampNegativeToZero();
         previous_float_type = float_style.Floating();
       }
     }
