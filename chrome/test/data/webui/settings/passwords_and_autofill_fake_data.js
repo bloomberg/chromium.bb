@@ -11,18 +11,18 @@ function FakeDataMaker() {}
 
 /**
  * Creates a single item for the list of passwords.
- * @param {string|undefined} url
- * @param {string|undefined} username
- * @param {number|undefined} passwordLength
+ * @param {string=} url
+ * @param {string=} username
+ * @param {number=} passwordLength
+ * @param {number=} index
  * @return {chrome.passwordsPrivate.PasswordUiEntry}
  */
-FakeDataMaker.passwordEntry = function(url, username, passwordLength) {
+FakeDataMaker.passwordEntry = function(url, username, passwordLength, index) {
   // Generate fake data if param is undefined.
   url = url || FakeDataMaker.patternMaker_('www.xxxxxx.com', 16);
   username = username || FakeDataMaker.patternMaker_('user_xxxxx', 16);
   passwordLength = passwordLength || Math.floor(Math.random() * 15) + 3;
-  entryIndex = -1;
-  exceptionIndex = -1;
+  index = index || 0;
 
   return {
     loginPair: {
@@ -34,24 +34,26 @@ FakeDataMaker.passwordEntry = function(url, username, passwordLength) {
       username: username,
     },
     numCharactersInPassword: passwordLength,
-    index: ++entryIndex,
+    index: index,
   };
 };
 
 /**
  * Creates a single item for the list of password exceptions.
- * @param {string|undefined} url
+ * @param {string=} url
+ * @param {number=} index
  * @return {chrome.passwordsPrivate.ExceptionEntry}
  */
-FakeDataMaker.exceptionEntry = function(url) {
+FakeDataMaker.exceptionEntry = function(url, index) {
   url = url || FakeDataMaker.patternMaker_('www.xxxxxx.com', 16);
+  index = index || 0;
   return {
     urls: {
       origin: 'http://' + url + '/login',
       shown: url,
       link: 'http://' + url + '/login',
     },
-    index: ++exceptionIndex,
+    index: index,
   };
 };
 
