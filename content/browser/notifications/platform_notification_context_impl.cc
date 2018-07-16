@@ -308,17 +308,20 @@ void PlatformNotificationContextImpl::
 }
 
 void PlatformNotificationContextImpl::WriteNotificationData(
+    int64_t persistent_notification_id,
     const GURL& origin,
     const NotificationDatabaseData& database_data,
     const WriteResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LazyInitialize(
       base::Bind(&PlatformNotificationContextImpl::DoWriteNotificationData,
-                 this, origin, database_data, callback),
+                 this, persistent_notification_id, origin, database_data,
+                 callback),
       base::Bind(callback, false /* success */, "" /* notification_id */));
 }
 
 void PlatformNotificationContextImpl::DoWriteNotificationData(
+    int64_t persistent_notification_id,
     const GURL& origin,
     const NotificationDatabaseData& database_data,
     const WriteResultCallback& callback) {
@@ -355,7 +358,7 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
   write_database_data.notification_id =
       notification_id_generator_.GenerateForPersistentNotification(
           origin, database_data.notification_data.tag,
-          database_->GetNextPersistentNotificationId());
+          persistent_notification_id);
 
   NotificationDatabase::Status status =
       database_->WriteNotificationData(origin, write_database_data);

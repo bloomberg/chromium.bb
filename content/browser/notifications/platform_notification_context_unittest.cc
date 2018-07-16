@@ -123,6 +123,11 @@ class PlatformNotificationContextTest : public ::testing::Test {
   // Returns whether the last invoked callback finished successfully.
   bool success() const { return success_; }
 
+  // Returns the next persistent notification id for tests.
+  int64_t next_persistent_notification_id() {
+    return next_persistent_notification_id_++;
+  }
+
   // Returns the NotificationDatabaseData associated with the last invoked
   // ReadNotificationData callback.
   const NotificationDatabaseData& database_data() const {
@@ -133,12 +138,13 @@ class PlatformNotificationContextTest : public ::testing::Test {
   const std::string& notification_id() const { return notification_id_; }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  TestBrowserThreadBundle thread_bundle_;  // Must be first member
   TestBrowserContext browser_context_;
 
   bool success_;
   NotificationDatabaseData database_data_;
   std::string notification_id_;
+  int64_t next_persistent_notification_id_ = 1;
 };
 
 TEST_F(PlatformNotificationContextTest, ReadNonExistentNotification) {
@@ -166,7 +172,7 @@ TEST_F(PlatformNotificationContextTest, WriteReadNotification) {
   notification_database_data.origin = origin;
 
   context->WriteNotificationData(
-      origin, notification_database_data,
+      next_persistent_notification_id(), origin, notification_database_data,
       base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                  base::Unretained(this)));
 
@@ -207,10 +213,9 @@ TEST_F(PlatformNotificationContextTest, WriteReadReplacedNotification) {
 
   // Write the first notification with the given |tag|.
   context->WriteNotificationData(
-      origin, notification_database_data,
+      next_persistent_notification_id(), origin, notification_database_data,
       base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                  base::Unretained(this)));
-
   base::RunLoop().RunUntilIdle();
 
   std::string read_notification_id = notification_id();
@@ -224,7 +229,7 @@ TEST_F(PlatformNotificationContextTest, WriteReadReplacedNotification) {
 
   // Write the second notification with the given |tag|.
   context->WriteNotificationData(
-      origin, notification_database_data,
+      next_persistent_notification_id(), origin, notification_database_data,
       base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                  base::Unretained(this)));
 
@@ -278,7 +283,7 @@ TEST_F(PlatformNotificationContextTest, DeleteNotification) {
   NotificationDatabaseData notification_database_data;
 
   context->WriteNotificationData(
-      origin, notification_database_data,
+      next_persistent_notification_id(), origin, notification_database_data,
       base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                  base::Unretained(this)));
 
@@ -346,7 +351,7 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
 
   // Create a notification for that Service Worker registration.
   notification_context->WriteNotificationData(
-      origin, notification_database_data,
+      next_persistent_notification_id(), origin, notification_database_data,
       base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                  base::Unretained(this)));
 
@@ -385,7 +390,7 @@ TEST_F(PlatformNotificationContextTest, DestroyDatabaseOnStorageWiped) {
   NotificationDatabaseData notification_database_data;
 
   context->WriteNotificationData(
-      origin, notification_database_data,
+      next_persistent_notification_id(), origin, notification_database_data,
       base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                  base::Unretained(this)));
 
@@ -478,7 +483,7 @@ TEST_F(PlatformNotificationContextTest, ReadAllServiceWorkerDataFilled) {
   // test Service Worker Registration id.
   for (int i = 0; i < 10; ++i) {
     context->WriteNotificationData(
-        origin, notification_database_data,
+        next_persistent_notification_id(), origin, notification_database_data,
         base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                    base::Unretained(this)));
 
@@ -522,7 +527,7 @@ TEST_F(PlatformNotificationContextTest, SynchronizeNotifications) {
   content::NotificationResources notification_resources;
 
   context->WriteNotificationData(
-      origin, notification_database_data,
+      next_persistent_notification_id(), origin, notification_database_data,
       base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
                  base::Unretained(this)));
 

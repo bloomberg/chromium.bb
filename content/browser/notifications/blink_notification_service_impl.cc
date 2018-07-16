@@ -149,17 +149,23 @@ void BlinkNotificationServiceImpl::DisplayPersistentNotification(
     return;
   }
 
+  int64_t next_persistent_id =
+      GetNotificationService()->ReadNextPersistentNotificationId(
+          browser_context_);
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&BlinkNotificationServiceImpl::
                          DisplayPersistentNotificationOnIOThread,
                      weak_factory_for_io_.GetWeakPtr(),
-                     service_worker_registration_id, platform_notification_data,
-                     notification_resources, std::move(callback)));
+                     service_worker_registration_id, next_persistent_id,
+                     platform_notification_data, notification_resources,
+                     std::move(callback)));
 }
 
 void BlinkNotificationServiceImpl::DisplayPersistentNotificationOnIOThread(
     int64_t service_worker_registration_id,
+    int64_t next_persistent_notification_id,
     const PlatformNotificationData& platform_notification_data,
     const NotificationResources& notification_resources,
     DisplayPersistentNotificationCallback callback) {
@@ -173,7 +179,7 @@ void BlinkNotificationServiceImpl::DisplayPersistentNotificationOnIOThread(
   database_data.notification_data = platform_notification_data;
 
   notification_context_->WriteNotificationData(
-      origin_.GetURL(), database_data,
+      next_persistent_notification_id, origin_.GetURL(), database_data,
       base::AdaptCallbackForRepeating(base::BindOnce(
           &BlinkNotificationServiceImpl::
               DisplayPersistentNotificationWithIdOnIOThread,

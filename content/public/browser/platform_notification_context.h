@@ -77,6 +77,7 @@ class PlatformNotificationContext
   // the notification id when written successfully. The notification ID field
   // for |database_data| will be generated, and thus must be empty.
   virtual void WriteNotificationData(
+      int64_t persistent_notification_id,
       const GURL& origin,
       const NotificationDatabaseData& database_data,
       const WriteResultCallback& callback) = 0;

@@ -70,6 +70,11 @@ class CONTENT_EXPORT PlatformNotificationService {
   virtual void GetDisplayedNotifications(
       BrowserContext* browser_context,
       const DisplayedNotificationsCallback& callback) = 0;
+
+  // Reads the value of the next persistent notification ID from the profile and
+  // increments the value, as it is called once per notification write.
+  virtual int64_t ReadNextPersistentNotificationId(
+      BrowserContext* browser_context) = 0;
 };
 
 }  // namespace content

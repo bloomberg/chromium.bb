@@ -83,7 +83,8 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
       const GURL& origin,
       Interaction interaction,
       const ReadResultCallback& callback) override;
-  void WriteNotificationData(const GURL& origin,
+  void WriteNotificationData(int64_t persistent_notification_id,
+                             const GURL& origin,
                              const NotificationDatabaseData& database_data,
                              const WriteResultCallback& callback) override;
   void DeleteNotificationData(const std::string& notification_id,
@@ -164,7 +165,8 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // Actually writes the notification database to the database. Must only be
   // called on the |task_runner_| thread. |callback| will be invoked on the
   // IO thread when the operation has completed.
-  void DoWriteNotificationData(const GURL& origin,
+  void DoWriteNotificationData(int64_t persistent_notification_id,
+                               const GURL& origin,
                                const NotificationDatabaseData& database_data,
                                const WriteResultCallback& callback);
 

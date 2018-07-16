@@ -340,4 +340,12 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
             base::UTF16ToUTF8(notification.context_message()));
 }
 
+// Expect each call to ReadNextPersistentNotificationId to return a larger
+// value.
+TEST_F(PlatformNotificationServiceTest, NextPersistentNotificationId) {
+  int64_t first_id = service()->ReadNextPersistentNotificationId(&profile_);
+  int64_t second_id = service()->ReadNextPersistentNotificationId(&profile_);
+  EXPECT_LT(first_id, second_id);
+}
+
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
