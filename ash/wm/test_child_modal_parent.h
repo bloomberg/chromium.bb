@@ -13,7 +13,6 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {
-class LabelButton;
 class NativeViewHost;
 class Textfield;
 class View;
@@ -27,23 +26,22 @@ class TestChildModalParent : public views::WidgetDelegateView,
                              public views::ButtonListener,
                              public views::WidgetObserver {
  public:
-  // Creates the test window.
-  static void Create(aura::Window* context);
+  // Create and show a top-level window that hosts a modal parent. Returns the
+  // widget delegate, which is owned by the widget and deleted on window close.
+  static TestChildModalParent* Show(aura::Window* context = nullptr);
 
   explicit TestChildModalParent(aura::Window* context);
   ~TestChildModalParent() override;
 
-  void ShowChild();
+  // Returns the modal parent window hosted within the top-level window.
   aura::Window* GetModalParent() const;
-  aura::Window* GetChild() const;
+
+  // Create, show, and returns a child-modal window.
+  aura::Window* ShowModalChild();
 
  private:
-  views::Widget* CreateChild();
-
   // Overridden from views::WidgetDelegate:
   base::string16 GetWindowTitle() const override;
-  bool CanResize() const override;
-  void DeleteDelegate() override;
 
   // Overridden from views::View:
   void Layout() override;
@@ -56,13 +54,12 @@ class TestChildModalParent : public views::WidgetDelegateView,
   // Overridden from WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
-  // This is the Widget this class creates to contain the child Views. This
-  // class is *not* the WidgetDelegateView for this Widget.
-  std::unique_ptr<views::Widget> widget_;
+  // The widget for the modal parent, a child of TestChildModalParent's Widget.
+  std::unique_ptr<views::Widget> modal_parent_;
 
   // The button to toggle showing and hiding the child window. The child window
   // does not block input to this button.
-  views::LabelButton* button_;
+  views::Button* button_;
 
   // The text field to indicate the keyboard focus.
   views::Textfield* textfield_;
@@ -70,8 +67,8 @@ class TestChildModalParent : public views::WidgetDelegateView,
   // The host for the modal parent.
   views::NativeViewHost* host_;
 
-  // The child window.
-  views::Widget* child_;
+  // The modal child widget.
+  views::Widget* modal_child_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestChildModalParent);
 };
