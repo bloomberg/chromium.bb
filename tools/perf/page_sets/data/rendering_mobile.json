@@ -276,7 +276,7 @@
         "linkedin_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_002.wprgo"
         },
-        "google_docs": {
+	"google_docs": {
             "DEFAULT": "top_25_009.wprgo"
         },
         "google_docs_desktop_gpu_raster": {
@@ -431,6 +431,156 @@
         },
         "google_image_search_desktop_gpu_raster": {
             "DEFAULT": "top_25_007.wprgo"
+        },
+	"accu_weather_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "accu_weather_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "twitch_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "twitch_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+	"google_docs_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "google_docs_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "facebook_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "facebook_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "wikipedia_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "wikipedia_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "yahoo_answers_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "yahoo_answers_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "booking.com_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "booking.com_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "wordpress_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "wordpress_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "espn_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "espn_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "blogspot_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "blogspot_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "yahoo_news_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "yahoo_news_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "pinterest_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "pinterest_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "yahoo_sports_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "yahoo_sports_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "techcrunch_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "techcrunch_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "amazon_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "amazon_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "cnn_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "cnn_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "ebay_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "ebay_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "linkedin_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "linkedin_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "youtube_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "youtube_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "gmail_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "gmail_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "google_plus_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "google_plus_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "twitter_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "twitter_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "google_web_search_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "google_web_search_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "google_calendar_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "google_calendar_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "google_image_search_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "google_image_search_2018_desktop_gpu_raster": {
+            "DEFAULT": "top_25_012.wprgo"
         },
 	"filter_terrain_svg": {
             "DEFAULT": "tough_filters_cases_002.wprgo"

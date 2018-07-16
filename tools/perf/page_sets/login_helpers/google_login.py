@@ -29,9 +29,9 @@ _PASSWORD_INPUT_VISIBLE_CONDITION = (
     'document.querySelector("%s") !== null' % (_PASSWORD_SELECTOR))
 
 
-def LoginGoogleAccount(action_runner,
-                       credential='googletest',  # Recommended credential.
-                       credentials_path=login_utils.DEFAULT_CREDENTIAL_PATH):
+def BaseLoginGoogle(action_runner,
+                    credential='googletest',  # Recommended credential.
+                    credentials_path=login_utils.DEFAULT_CREDENTIAL_PATH):
   """Logs in into Google account.
 
   This function navigates the tab into Google's login page and logs in a user
@@ -73,4 +73,19 @@ def LoginGoogleAccount(action_runner,
 
   login_utils.InputWithSelector(action_runner, password, _PASSWORD_SELECTOR)
   action_runner.ClickElement(selector=_SIGNIN_SELECTOR)
+
+
+def LoginGoogleAccount(action_runner,
+                       credential='googletest',  # Recommended credential.
+                       credentials_path=login_utils.DEFAULT_CREDENTIAL_PATH):
+  """ Login for old UI """
+  BaseLoginGoogle(action_runner, credential, credentials_path)
   action_runner.WaitForElement(text='My Account')
+
+
+def NewLoginGoogleAccount(action_runner,
+                          credential='googletest',  # Recommended credential.
+                          credentials_path=login_utils.DEFAULT_CREDENTIAL_PATH):
+  """ Login for new UI """
+  BaseLoginGoogle(action_runner, credential, credentials_path)
+  action_runner.WaitForElement(text='Google Account')

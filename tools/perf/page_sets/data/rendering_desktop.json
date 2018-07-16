@@ -78,6 +78,81 @@
         "google_image_search": {
             "DEFAULT": "top_25_007.wprgo"
         },
+	"accu_weather_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "amazon_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "blogspot_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "booking.com_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "cnn_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "ebay_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "espn_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "facebook_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "gmail_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "google_calendar_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "google_docs_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "google_image_search_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "google_plus_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "google_web_search_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "linkedin_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "pinterest_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "techcrunch_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "twitch_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "twitter_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "wikipedia_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "wordpress_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "yahoo_answers_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "yahoo_news_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "yahoo_sports_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
+        "youtube_2018": {
+            "DEFAULT": "top_25_012.wprgo"
+        },
 	"maps_move": {
             "DEFAULT": "key_desktop_move_cases_000.wprgo"
         },
