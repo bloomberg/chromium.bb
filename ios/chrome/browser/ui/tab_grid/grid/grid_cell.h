@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_theme.h"
+#import "ios/chrome/browser/ui/tab_grid/transitions/grid_to_tab_transition_view.h"
 
 @class GridCell;
 
@@ -30,13 +31,21 @@
 @property(nonatomic, weak) UIImage* icon;
 @property(nonatomic, weak) UIImage* snapshot;
 @property(nonatomic, copy) NSString* title;
-// Fixed (immutable) UI elements that may be referenced in animations.
-@property(nonatomic, readonly, weak) UIView* topBar;
 
-// Returns a cell with the same theme, icon, snapshot, and title as the reciever
-// (but no delegate or identifier) for use in animated transitions.
-- (GridCell*)proxyForTransitions;
+@end
 
+// A GridCell for use in animated transitions that only shows selection state
+// (that is, its content view is hidden).
+@interface GridTransitionSelectionCell : GridCell
+// Returns a transition selection cell with the same theme and frame as |cell|,
+// but with no visible content view, no delegate, and no identifier.
++ (instancetype)transitionCellFromCell:(GridCell*)cell;
+@end
+
+@interface GridTransitionCell : GridCell<GridToTabTransitionView>
+// Returns a cell with the same theme, icon, snapshot, title, and frame as
+// |cell| (but no delegate or identifier) for use in animated transitions.
++ (instancetype)transitionCellFromCell:(GridCell*)cell;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_GRID_GRID_CELL_H_
