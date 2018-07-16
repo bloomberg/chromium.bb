@@ -9,7 +9,6 @@
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/vk/GrVkInterface.h"
 
 namespace viz {
 
@@ -23,9 +22,8 @@ VulkanInProcessContextProvider::Create(
   return context_provider;
 }
 
-GrVkInterface::GetProc make_unified_getter(
-    const GrVkInterface::GetInstanceProc& iproc,
-    const GrVkInterface::GetDeviceProc& dproc) {
+GrVkGetProc make_unified_getter(const PFN_vkGetInstanceProcAddr& iproc,
+                                const PFN_vkGetDeviceProcAddr& dproc) {
   return [&iproc, &dproc](const char* proc_name, VkInstance instance,
                           VkDevice device) {
     if (device != VK_NULL_HANDLE) {
@@ -65,12 +63,9 @@ bool VulkanInProcessContextProvider::Initialize() {
 
   gpu::VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
-  auto interface = sk_make_sp<GrVkInterface>(
+  backend_context.fGetProc =
       make_unified_getter(vulkan_function_pointers->vkGetInstanceProcAddrFn,
-                          vulkan_function_pointers->vkGetDeviceProcAddrFn),
-      backend_context.fInstance, backend_context.fDevice,
-      backend_context.fExtensions);
-  backend_context.fInterface.reset(interface.release());
+                          vulkan_function_pointers->vkGetDeviceProcAddrFn);
   backend_context.fOwnsInstanceAndDevice = false;
   gr_context_ = GrContext::MakeVulkan(backend_context);
   return true;
