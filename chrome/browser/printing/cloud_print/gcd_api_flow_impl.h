@@ -11,6 +11,7 @@
 #include "chrome/browser/printing/cloud_print/gcd_api_flow.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "services/identity/public/cpp/access_token_info.h"
 
 namespace identity {
 class PrimaryAccountAccessTokenFetcher;
@@ -33,7 +34,7 @@ class GCDApiFlowImpl : public GCDApiFlow, public net::URLFetcherDelegate {
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
-                                  std::string access_token);
+                                  identity::AccessTokenInfo access_token_info);
 
  private:
   void CreateRequest();

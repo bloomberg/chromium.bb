@@ -99,7 +99,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   void RequestAccessToken();
 
   void AccessTokenFetched(GoogleServiceAuthError error,
-                          std::string access_token);
+                          identity::AccessTokenInfo access_token_info);
 
   syncer::SyncPrefs* const sync_prefs_;
   identity::IdentityManager* const identity_manager_;

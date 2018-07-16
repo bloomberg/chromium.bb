@@ -16,6 +16,7 @@
 #include "chrome/browser/search/background/ntp_background_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/base/url_util.h"
+#include "services/identity/public/cpp/access_token_info.h"
 #include "url/gurl.h"
 
 class GoogleServiceAuthError;
@@ -129,16 +130,18 @@ class NtpBackgroundService : public KeyedService {
   void OnCollectionImageInfoFetchComplete(
       const std::unique_ptr<std::string> response_body);
 
-  void GetAccessTokenForAlbumCallback(GoogleServiceAuthError error,
-                                      std::string token);
+  void GetAccessTokenForAlbumCallback(
+      GoogleServiceAuthError error,
+      identity::AccessTokenInfo access_token_info);
 
   // Callback that processes the response from the FetchAlbumInfo request,
   // refreshing the contents of album_info_ with server-provided data.
   void OnAlbumInfoFetchComplete(
       const std::unique_ptr<std::string> response_body);
 
-  void GetAccessTokenForPhotosCallback(GoogleServiceAuthError error,
-                                       std::string token);
+  void GetAccessTokenForPhotosCallback(
+      GoogleServiceAuthError error,
+      identity::AccessTokenInfo access_token_info);
 
   // Callback that processes the response from SettingPreviewRequest, refreshing
   // the contents of album_photos_ with server-provided data.

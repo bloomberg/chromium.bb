@@ -40,7 +40,10 @@ class AccessTokenFetcherTest : public testing::Test,
   using TestTokenCallback =
       StrictMock<MockCallback<AccessTokenFetcher::TokenCallback>>;
 
-  AccessTokenFetcherTest() : signin_client_(&pref_service_) {
+  AccessTokenFetcherTest()
+      : signin_client_(&pref_service_),
+        access_token_info_("access token",
+                           base::Time::Now() + base::TimeDelta::FromHours(1)) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
 
     account_tracker_ = std::make_unique<AccountTrackerService>();
@@ -75,6 +78,10 @@ class AccessTokenFetcherTest : public testing::Test,
     on_access_token_request_callback_ = std::move(callback);
   }
 
+  // Returns an AccessTokenInfo with valid information that can be used for
+  // completing access token requests.
+  AccessTokenInfo access_token_info() { return access_token_info_; }
+
  private:
   // OAuth2TokenService::DiagnosticsObserver:
   void OnAccessTokenRequested(
@@ -89,6 +96,7 @@ class AccessTokenFetcherTest : public testing::Test,
   TestingPrefServiceSyncable pref_service_;
   TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
+  AccessTokenInfo access_token_info_;
 
   std::unique_ptr<AccountTrackerService> account_tracker_;
   base::OnceClosure on_access_token_request_callback_;
@@ -110,11 +118,12 @@ TEST_F(AccessTokenFetcherTest, CallsBackOnFulfilledRequest) {
 
   // Once the access token request is fulfilled, we should get called back with
   // the access token.
-  EXPECT_CALL(callback,
-              Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
+  EXPECT_CALL(callback, Run(GoogleServiceAuthError::AuthErrorNone(),
+                            access_token_info()));
+
   token_service()->IssueAllTokensForAccount(
-      account_id, "access token",
-      base::Time::Now() + base::TimeDelta::FromHours(1));
+      account_id, access_token_info().token,
+      access_token_info().expiration_time);
 }
 
 TEST_F(AccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
@@ -136,8 +145,8 @@ TEST_F(AccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
 
   // Now fulfilling the access token request should have no effect.
   token_service()->IssueAllTokensForAccount(
-      account_id, "access token",
-      base::Time::Now() + base::TimeDelta::FromHours(1));
+      account_id, access_token_info().token,
+      access_token_info().expiration_time);
 }
 
 TEST_F(AccessTokenFetcherTest, ReturnsErrorWhenAccountIsUnknown) {
@@ -151,7 +160,7 @@ TEST_F(AccessTokenFetcherTest, ReturnsErrorWhenAccountIsUnknown) {
   EXPECT_CALL(callback,
               Run(GoogleServiceAuthError(
                       GoogleServiceAuthError::State::USER_NOT_SIGNED_UP),
-                  ""))
+                  AccessTokenInfo()))
       .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
   run_loop.Run();
@@ -170,7 +179,7 @@ TEST_F(AccessTokenFetcherTest, ReturnsErrorWhenAccountHasNoRefreshToken) {
   EXPECT_CALL(callback,
               Run(GoogleServiceAuthError(
                       GoogleServiceAuthError::State::USER_NOT_SIGNED_UP),
-                  ""))
+                  AccessTokenInfo()))
       .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
   run_loop.Run();
@@ -193,7 +202,8 @@ TEST_F(AccessTokenFetcherTest, CanceledAccessTokenRequest) {
   base::RunLoop run_loop2;
   EXPECT_CALL(
       callback,
-      Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED), ""))
+      Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
+          AccessTokenInfo()))
       .WillOnce(testing::InvokeWithoutArgs(&run_loop2, &base::RunLoop::Quit));
 
   // A canceled access token request should result in a callback.
@@ -224,7 +234,7 @@ TEST_F(AccessTokenFetcherTest, RefreshTokenRevoked) {
   EXPECT_CALL(
       callback,
       Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
-          std::string()));
+          AccessTokenInfo()));
   token_service()->IssueErrorForAllPendingRequestsForAccount(
       account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
@@ -249,7 +259,7 @@ TEST_F(AccessTokenFetcherTest, FailedAccessTokenRequest) {
   EXPECT_CALL(
       callback,
       Run(GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE),
-          std::string()));
+          AccessTokenInfo()));
   token_service()->IssueErrorForAllPendingRequestsForAccount(
       account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
@@ -278,13 +288,13 @@ TEST_F(AccessTokenFetcherTest, MultipleRequestsForSameAccountFulfilled) {
 
   // Once the access token request is fulfilled, both requests should get
   // called back with the access token.
-  EXPECT_CALL(callback,
-              Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
-  EXPECT_CALL(callback2,
-              Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
+  EXPECT_CALL(callback, Run(GoogleServiceAuthError::AuthErrorNone(),
+                            access_token_info()));
+  EXPECT_CALL(callback2, Run(GoogleServiceAuthError::AuthErrorNone(),
+                             access_token_info()));
   token_service()->IssueAllTokensForAccount(
-      account_id, "access token",
-      base::Time::Now() + base::TimeDelta::FromHours(1));
+      account_id, access_token_info().token,
+      access_token_info().expiration_time);
 }
 
 TEST_F(AccessTokenFetcherTest, MultipleRequestsForDifferentAccountsFulfilled) {
@@ -312,19 +322,19 @@ TEST_F(AccessTokenFetcherTest, MultipleRequestsForDifferentAccountsFulfilled) {
 
   // Once the first access token request is fulfilled, it should get
   // called back with the access token.
-  EXPECT_CALL(callback,
-              Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
+  EXPECT_CALL(callback, Run(GoogleServiceAuthError::AuthErrorNone(),
+                            access_token_info()));
   token_service()->IssueAllTokensForAccount(
-      account_id, "access token",
-      base::Time::Now() + base::TimeDelta::FromHours(1));
+      account_id, access_token_info().token,
+      access_token_info().expiration_time);
 
   // Once the second access token request is fulfilled, it should get
   // called back with the access token.
-  EXPECT_CALL(callback2,
-              Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
+  EXPECT_CALL(callback2, Run(GoogleServiceAuthError::AuthErrorNone(),
+                             access_token_info()));
   token_service()->IssueAllTokensForAccount(
-      account_id2, "access token",
-      base::Time::Now() + base::TimeDelta::FromHours(1));
+      account_id2, access_token_info().token,
+      access_token_info().expiration_time);
 }
 
 TEST_F(AccessTokenFetcherTest,
@@ -357,7 +367,8 @@ TEST_F(AccessTokenFetcherTest,
   base::RunLoop run_loop3;
   EXPECT_CALL(
       callback,
-      Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED), ""))
+      Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
+          AccessTokenInfo()))
       .WillOnce(testing::InvokeWithoutArgs(&run_loop3, &base::RunLoop::Quit));
 
   token_service()->IssueErrorForAllPendingRequestsForAccount(
@@ -370,11 +381,11 @@ TEST_F(AccessTokenFetcherTest,
   // called back with the access token.
   base::RunLoop run_loop4;
   EXPECT_CALL(callback2,
-              Run(GoogleServiceAuthError::AuthErrorNone(), "access token"))
+              Run(GoogleServiceAuthError::AuthErrorNone(), access_token_info()))
       .WillOnce(testing::InvokeWithoutArgs(&run_loop4, &base::RunLoop::Quit));
   token_service()->IssueAllTokensForAccount(
-      account_id2, "access token",
-      base::Time::Now() + base::TimeDelta::FromHours(1));
+      account_id2, access_token_info().token,
+      access_token_info().expiration_time);
 
   run_loop4.Run();
 }

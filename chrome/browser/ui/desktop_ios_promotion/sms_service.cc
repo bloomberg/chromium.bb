@@ -123,7 +123,7 @@ class RequestImpl : public SMSService::Request {
   }
 
   void AccessTokenFetchComplete(GoogleServiceAuthError error,
-                                std::string access_token) {
+                                identity::AccessTokenInfo access_token_info) {
     token_fetcher_.reset();
 
     if (error.state() != GoogleServiceAuthError::NONE) {
@@ -136,6 +136,7 @@ class RequestImpl : public SMSService::Request {
       return;
     }
 
+    std::string access_token = access_token_info.token;
     DCHECK(!access_token.empty());
     access_token_ = access_token;
 

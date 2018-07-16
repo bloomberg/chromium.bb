@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "components/feedback/feedback_uploader.h"
+#include "services/identity/public/cpp/access_token_info.h"
 
 namespace identity {
 class PrimaryAccountAccessTokenFetcher;
@@ -34,7 +35,7 @@ class FeedbackUploaderChrome : public FeedbackUploader {
       network::ResourceRequest* resource_request) override;
 
   void AccessTokenAvailable(GoogleServiceAuthError error,
-                            std::string access_token);
+                            identity::AccessTokenInfo access_token_info);
 
   std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 

@@ -58,7 +58,7 @@ class NetworkFetch {
  private:
   void StartAccessTokenFetch();
   void AccessTokenFetchFinished(GoogleServiceAuthError error,
-                                std::string access_token);
+                                identity::AccessTokenInfo access_token_info);
   void StartLoader(const std::string& access_token);
   std::unique_ptr<network::SimpleURLLoader> MakeLoader(
       const std::string& access_token);
@@ -114,11 +114,12 @@ void NetworkFetch::StartAccessTokenFetch() {
       identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
-void NetworkFetch::AccessTokenFetchFinished(GoogleServiceAuthError error,
-                                            std::string access_token) {
+void NetworkFetch::AccessTokenFetchFinished(
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo access_token_info) {
   UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.TokenFetchStatus",
                             error.state(), GoogleServiceAuthError::NUM_STATES);
-  StartLoader(access_token);
+  StartLoader(access_token_info.token);
 }
 
 void NetworkFetch::StartLoader(const std::string& access_token) {

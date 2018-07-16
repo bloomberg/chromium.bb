@@ -112,15 +112,15 @@ void SubscriptionManagerImpl::StartAccessTokenRequest(
 void SubscriptionManagerImpl::AccessTokenFetchFinished(
     const std::string& subscription_token,
     GoogleServiceAuthError error,
-    std::string access_token) {
+    identity::AccessTokenInfo access_token_info) {
   access_token_fetcher_.reset();
 
   if (error.state() != GoogleServiceAuthError::NONE) {
     // In case of error, we will retry on next Chrome restart.
     return;
   }
-  DCHECK(!access_token.empty());
-  SubscribeInternal(subscription_token, access_token);
+  DCHECK(!access_token_info.token.empty());
+  SubscribeInternal(subscription_token, access_token_info.token);
 }
 
 void SubscriptionManagerImpl::DidSubscribe(

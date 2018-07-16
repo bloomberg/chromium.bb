@@ -103,7 +103,7 @@ class RequestImpl : public WebHistoryService::Request {
   }
 
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
-                                  std::string access_token) {
+                                  identity::AccessTokenInfo access_token_info) {
     access_token_fetcher_.reset();
 
     if (error.state() != GoogleServiceAuthError::NONE) {
@@ -116,8 +116,8 @@ class RequestImpl : public WebHistoryService::Request {
       return;
     }
 
-    DCHECK(!access_token.empty());
-    access_token_ = access_token;
+    DCHECK(!access_token_info.token.empty());
+    access_token_ = access_token_info.token;
 
     UMA_HISTOGRAM_BOOLEAN("WebHistory.OAuthTokenCompletion", true);
 
@@ -143,7 +143,7 @@ class RequestImpl : public WebHistoryService::Request {
         net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
     resource_request->method = post_data_ ? "POST" : "GET";
     resource_request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
-                                        "Bearer " + access_token);
+                                        "Bearer " + access_token_info.token);
     resource_request->headers.SetHeader(
         "X-Developer-Key", GaiaUrls::GetInstance()->oauth2_chrome_client_id());
     if (!user_agent_.empty()) {

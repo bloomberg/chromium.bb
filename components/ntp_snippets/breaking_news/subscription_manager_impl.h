@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/ntp_snippets/breaking_news/subscription_json_request.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager.h"
+#include "services/identity/public/cpp/access_token_info.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
@@ -90,7 +91,7 @@ class SubscriptionManagerImpl : public SubscriptionManager,
   void StartAccessTokenRequest(const std::string& subscription_token);
   void AccessTokenFetchFinished(const std::string& subscription_token,
                                 GoogleServiceAuthError error,
-                                std::string access_token);
+                                identity::AccessTokenInfo access_token_info);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 

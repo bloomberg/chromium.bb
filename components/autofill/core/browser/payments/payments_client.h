@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/access_token_info.h"
 
 namespace identity {
 class IdentityManager;
@@ -181,7 +182,7 @@ class PaymentsClient {
 
   // Callback that handles a completed access token request.
   void AccessTokenFetchFinished(GoogleServiceAuthError error,
-                                std::string access_token);
+                                identity::AccessTokenInfo access_token_info);
 
   // Handles a completed access token request in the case of failure.
   void AccessTokenError(const GoogleServiceAuthError& error);

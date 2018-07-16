@@ -22,9 +22,10 @@ class AccessTokenFetcherAdaptor : public ActiveAccountAccessTokenFetcher {
   ~AccessTokenFetcherAdaptor() override = default;
 
  private:
-  // Invokes |callback_| with (|access_token|, |error|).
-  void HandleTokenRequestCompletion(GoogleServiceAuthError error,
-                                    std::string access_token);
+  // Invokes |callback_| with (|error|, |access_token_info.token|).
+  void HandleTokenRequestCompletion(
+      GoogleServiceAuthError error,
+      identity::AccessTokenInfo access_token_info);
 
   ActiveAccountAccessTokenCallback callback_;
   std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
@@ -47,10 +48,10 @@ AccessTokenFetcherAdaptor::AccessTokenFetcherAdaptor(
 
 void AccessTokenFetcherAdaptor::HandleTokenRequestCompletion(
     GoogleServiceAuthError error,
-    std::string access_token) {
+    identity::AccessTokenInfo access_token_info) {
   access_token_fetcher_.reset();
 
-  std::move(callback_).Run(error, access_token);
+  std::move(callback_).Run(error, access_token_info.token);
 }
 
 }  // namespace

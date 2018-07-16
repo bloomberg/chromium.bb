@@ -6,6 +6,8 @@ source_set("cpp") {
   sources = [
     "access_token_fetcher.cc",
     "access_token_fetcher.h",
+    "access_token_info.cc",
+    "access_token_info.h",
     "identity_manager.cc",
     "identity_manager.h",
     "primary_account_access_token_fetcher.cc",

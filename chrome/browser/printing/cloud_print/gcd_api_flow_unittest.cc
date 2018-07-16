@@ -75,8 +75,10 @@ class GCDApiFlowTest : public testing::Test {
 };
 
 TEST_F(GCDApiFlowTest, SuccessOAuth2) {
-  gcd_flow_->OnAccessTokenFetchComplete(GoogleServiceAuthError::AuthErrorNone(),
-                                        "SomeToken");
+  gcd_flow_->OnAccessTokenFetchComplete(
+      GoogleServiceAuthError::AuthErrorNone(),
+      identity::AccessTokenInfo(
+          "SomeToken", base::Time::Now() + base::TimeDelta::FromHours(1)));
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
 
   EXPECT_EQ(GURL("https://www.google.com/cloudprint/confirm?token=SomeToken"),
@@ -105,12 +107,14 @@ TEST_F(GCDApiFlowTest, BadToken) {
   EXPECT_CALL(*mock_delegate_, OnGCDApiFlowError(GCDApiFlow::ERROR_TOKEN));
   gcd_flow_->OnAccessTokenFetchComplete(
       GoogleServiceAuthError(GoogleServiceAuthError::USER_NOT_SIGNED_UP),
-      std::string());
+      identity::AccessTokenInfo());
 }
 
 TEST_F(GCDApiFlowTest, BadJson) {
-  gcd_flow_->OnAccessTokenFetchComplete(GoogleServiceAuthError::AuthErrorNone(),
-                                        "SomeToken");
+  gcd_flow_->OnAccessTokenFetchComplete(
+      GoogleServiceAuthError::AuthErrorNone(),
+      identity::AccessTokenInfo(
+          "SomeToken", base::Time::Now() + base::TimeDelta::FromHours(1)));
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
 
   EXPECT_EQ(GURL("https://www.google.com/cloudprint/confirm?token=SomeToken"),

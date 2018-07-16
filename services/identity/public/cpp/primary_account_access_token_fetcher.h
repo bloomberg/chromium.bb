@@ -64,7 +64,7 @@ class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
 
   // Invoked by |fetcher_| when an access token request completes.
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
-                                  std::string access_token);
+                                  AccessTokenInfo access_token_info);
 
   std::string oauth_consumer_name_;
   IdentityManager* identity_manager_;

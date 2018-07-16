@@ -12,6 +12,7 @@
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/identity/public/cpp/access_token_info.h"
 
 namespace identity {
 class IdentityManager;
@@ -87,7 +88,7 @@ class CryptAuthClientImpl : public CryptAuthClient {
       const std::string& serialized_request,
       const base::Callback<void(const ResponseProto&)>& response_callback,
       GoogleServiceAuthError error,
-      std::string access_token);
+      identity::AccessTokenInfo access_token_info);
 
   // Called with CryptAuthApiCallFlow completes successfully to deserialize and
   // return the result.
