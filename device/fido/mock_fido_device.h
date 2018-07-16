@@ -23,7 +23,13 @@ namespace device {
 
 class MockFidoDevice : public FidoDevice {
  public:
+  static std::unique_ptr<MockFidoDevice> MakeU2f();
+  static std::unique_ptr<MockFidoDevice> MakeCtap(
+      base::Optional<AuthenticatorGetInfoResponse> device_info = base::nullopt);
+
   MockFidoDevice();
+  MockFidoDevice(ProtocolVersion protocol_version,
+                 base::Optional<AuthenticatorGetInfoResponse> device_info);
   ~MockFidoDevice() override;
 
   // TODO(crbug.com/729950): Remove these workarounds once support for move-only
