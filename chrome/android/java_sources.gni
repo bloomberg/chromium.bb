@@ -85,6 +85,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuButtonHelper.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuDragHelper.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuHandler.java",
+  "java/src/org/chromium/chrome/browser/appmenu/AppMenuIconRowFooter.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuItemIcon.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuObserver.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuPropertiesDelegate.java",
