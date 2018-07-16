@@ -34,7 +34,40 @@
     return;
 
   cursor_.reset([newCursor retain]);
-  [parent_->ns_window() resetCursorRects];
+
+  // The window has a tracking rect that was installed in -[BridgedContentView
+  // initWithView:] that uses the NSTrackingCursorUpdate option. In the case
+  // where the window is the key window, that tracking rect will cause
+  // -cursorUpdate: to be sent up the responder chain, which will cause the
+  // cursor to be set when the message gets to the NativeWidgetMacNSWindow.
+  NSWindow* window = parent_->ns_window();
+  [window resetCursorRects];
+
+  // However, if this window isn't the key window, that tracking area will have
+  // no effect. This is good if this window is just some top-level window that
+  // isn't key, but isn't so good if this window isn't key but is a child window
+  // of a window that is key. To handle that case, the case where the
+  // -cursorUpdate: message will never be sent, just set the cursor here.
+  //
+  // Only do this for non-key windows so that there will be no flickering
+  // between cursors set here and set elsewhere.
+  //
+  // (This is a known issue; see https://stackoverflow.com/questions/45712066/.)
+  if (![window isKeyWindow]) {
+    NSWindow* currentWindow = window;
+    // Walk up the window chain. If there is a key window in the window parent
+    // chain, then work around the issue and set the cursor.
+    while (true) {
+      NSWindow* parentWindow = [currentWindow parentWindow];
+      if (!parentWindow)
+        break;
+      currentWindow = parentWindow;
+      if ([currentWindow isKeyWindow]) {
+        [(newCursor ? newCursor : [NSCursor arrowCursor]) set];
+        break;
+      }
+    }
+  }
 }
 
 - (void)onWindowOrderChanged:(NSNotification*)notification {
