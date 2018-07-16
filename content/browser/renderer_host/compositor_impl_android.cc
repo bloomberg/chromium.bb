@@ -183,8 +183,10 @@ class CompositorDependencies {
   // http://crbug.com/657959.
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_impl;
 
+#if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanImplementation> vulkan_implementation;
   scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider;
+#endif
  private:
   friend class base::NoDestructor<CompositorDependencies>;
 
@@ -240,6 +242,7 @@ class CompositorDependencies {
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;
 
+#if BUILDFLAG(ENABLE_VULKAN)
 scoped_refptr<viz::VulkanContextProvider> GetSharedVulkanContextProvider() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableVulkan))
@@ -257,6 +260,7 @@ scoped_refptr<viz::VulkanContextProvider> GetSharedVulkanContextProvider() {
   }
   return context_provider;
 }
+#endif
 
 gpu::SharedMemoryLimits GetCompositorContextSharedMemoryLimits(
     gfx::NativeWindow window) {
@@ -405,10 +409,12 @@ class AndroidOutputSurface : public viz::OutputSurface {
     }
   }
 
+#if BUILDFLAG(ENABLE_VULKAN)
   gpu::VulkanSurface* GetVulkanSurface() override {
     NOTIMPLEMENTED();
     return nullptr;
   }
+#endif
 
   void BindToClient(viz::OutputSurfaceClient* client) override {
     DCHECK(client);
@@ -491,6 +497,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
   base::WeakPtrFactory<AndroidOutputSurface> weak_ptr_factory_;
 };
 
+#if BUILDFLAG(ENABLE_VULKAN)
 class VulkanOutputSurface : public viz::OutputSurface {
  public:
   explicit VulkanOutputSurface(
@@ -600,6 +607,7 @@ class VulkanOutputSurface : public viz::OutputSurface {
 
   DISALLOW_COPY_AND_ASSIGN(VulkanOutputSurface);
 };
+#endif
 
 // TODO(khushalsagar): These are being sent based on the CompositorImpl
 // visiblity which bakes in the assumption that there is a single CompositorImpl
@@ -954,8 +962,10 @@ void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {
   if (!host_->IsVisible())
     return;
 
+#if BUILDFLAG(ENABLE_VULKAN)
   if (CreateVulkanOutputSurface())
     return;
+#endif
 
   DCHECK(surface_handle_ != gpu::kNullSurfaceHandle);
   BrowserMainLoop::GetInstance()
@@ -965,6 +975,7 @@ void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {
                          weak_factory_.GetWeakPtr()));
 }
 
+#if BUILDFLAG(ENABLE_VULKAN)
 bool CompositorImpl::CreateVulkanOutputSurface() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableVulkan))
@@ -985,6 +996,7 @@ bool CompositorImpl::CreateVulkanOutputSurface() {
 
   return !!display_;
 }
+#endif
 
 void CompositorImpl::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
