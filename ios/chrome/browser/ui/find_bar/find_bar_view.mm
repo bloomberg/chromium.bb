@@ -94,6 +94,12 @@ const CGFloat kBlueTintColor = 0x1A73E8;
 - (void)setupConstraints {
   id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self);
 
+  [self.closeButton
+      setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
+                                      forAxis:UILayoutConstraintAxisHorizontal];
+  [self.inputField setContentHuggingPriority:UILayoutPriorityDefaultLow - 1
+                                     forAxis:UILayoutConstraintAxisHorizontal];
+
   [NSLayoutConstraint activateConstraints:@[
     // Input Field.
     [self.inputField.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
@@ -193,7 +199,7 @@ const CGFloat kBlueTintColor = 0x1A73E8;
       rightLabel, rightView,
       LayoutSides::kTop | LayoutSides::kBottom | LayoutSides::kLeading |
           LayoutSides::kTrailing,
-      ChromeDirectionalEdgeInsetsMake(0, 0, 0, kPadding));
+      ChromeDirectionalEdgeInsetsMake(0, kPadding, 0, kPadding));
   textField.rightView = rightView;
   textField.rightViewMode = UITextFieldViewModeAlways;
 }
