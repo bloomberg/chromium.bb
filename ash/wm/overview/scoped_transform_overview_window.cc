@@ -278,9 +278,8 @@ bool ScopedTransformOverviewWindow::HideTitleBarAndAnimate(
   return true;
 }
 
-void ScopedTransformOverviewWindow::OnCompositingStarted(
-    ui::Compositor* compositor,
-    base::TimeTicks start_time) {
+void ScopedTransformOverviewWindow::OnCompositingDidCommit(
+    ui::Compositor* compositor) {
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window_);
   DCHECK(widget);
   DCHECK_EQ(compositor, widget->GetCompositor());

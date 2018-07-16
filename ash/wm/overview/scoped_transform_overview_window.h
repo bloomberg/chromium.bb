@@ -200,9 +200,9 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   void OnImplicitAnimationsCompleted() override;
 
   // ui::CompositorObserver:
-  void OnCompositingDidCommit(ui::Compositor* compositor) override {}
+  void OnCompositingDidCommit(ui::Compositor* compositor) override;
   void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override;
+                            base::TimeTicks start_time) override {}
   void OnCompositingEnded(ui::Compositor* compositor) override {}
   void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
   void OnCompositingChildResizing(ui::Compositor* compositor) override {}
