@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -9,7 +12,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/resource_loading_hints/resource_loading_hints_web_contents_observer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -17,6 +23,7 @@
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_component_creator.h"
+#include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/test/browser_test_utils.h"
@@ -121,6 +128,24 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
   }
 
+  void SetResourceLoadingHintsPatterns() {
+    Profile* profile = browser()->profile();
+    DCHECK(!profile->IsOffTheRecord());
+
+    PreviewsService* previews_service =
+        PreviewsServiceFactory::GetForProfile(profile);
+    previews::PreviewsUIService* previews_ui_service =
+        previews_service->previews_ui_service();
+
+    std::vector<std::string> hints;
+    hints.push_back("jpg");
+    hints.push_back("png");
+    hints.push_back("woff2");
+
+    previews_ui_service->SetResourceLoadingHintsResourcePatternsToBlock(
+        https_url_, hints);
+  }
+
   void SetResourceLoadingHintsWhitelist(
       const std::vector<std::string>&
           whitelisted_resource_loading_hints_sites) {
@@ -215,6 +240,7 @@ class ResourceLoadingHintsBrowserTest
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
                        MAYBE_ResourceLoadingHintsHttpsWhitelisted) {
+  SetResourceLoadingHintsPatterns();
   TestOptimizationGuideServiceObserver observer;
   AddTestOptimizationGuideServiceObserver(&observer);
   base::RunLoop().RunUntilIdle();
@@ -235,8 +261,9 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
   histogram_tester.ExpectBucketCount(
       "Previews.InfoBarAction.ResourceLoadingHints", 0, 1);
+  // SetResourceLoadingHintsPatterns sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
-      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 1, 1);
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
 
   // Load the same webpage to ensure that the resource loading hints are sent
   // again.
@@ -249,13 +276,15 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 2);
   histogram_tester.ExpectBucketCount(
       "Previews.InfoBarAction.ResourceLoadingHints", 0, 2);
+  // SetResourceLoadingHintsPatterns sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
-      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 1, 2);
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 2);
 }
 
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
     MAYBE_ResourceLoadingHintsHttpsWhitelistedRedirectToHttps) {
+  SetResourceLoadingHintsPatterns();
   TestOptimizationGuideServiceObserver observer;
   AddTestOptimizationGuideServiceObserver(&observer);
   base::RunLoop().RunUntilIdle();
@@ -274,12 +303,14 @@ IN_PROC_BROWSER_TEST_F(
       static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
   histogram_tester.ExpectTotalCount(
       "Previews.InfoBarAction.ResourceLoadingHints", 1);
+  // SetResourceLoadingHintsPatterns sets 3 resource loading hints patterns.
   histogram_tester.ExpectBucketCount(
-      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 1, 1);
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
                        ResourceLoadingHintsHttpsNoWhitelisted) {
+  SetResourceLoadingHintsPatterns();
   TestOptimizationGuideServiceObserver observer;
   AddTestOptimizationGuideServiceObserver(&observer);
   base::RunLoop().RunUntilIdle();
@@ -304,6 +335,7 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
                        ResourceLoadingHintsHttp) {
+  SetResourceLoadingHintsPatterns();
   TestOptimizationGuideServiceObserver observer;
   AddTestOptimizationGuideServiceObserver(&observer);
   base::RunLoop().RunUntilIdle();
@@ -328,6 +360,7 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
                        ResourceLoadingHintsHttpsWhitelistedNoTransform) {
+  SetResourceLoadingHintsPatterns();
   TestOptimizationGuideServiceObserver observer;
   AddTestOptimizationGuideServiceObserver(&observer);
   base::RunLoop().RunUntilIdle();
