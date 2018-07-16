@@ -947,18 +947,6 @@ void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   }
 }
 
-base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
-    const std::string& source_path,
-    const std::vector<std::string>& mount_options) {
-  GURL source_url(source_path);
-  DCHECK(source_url.is_valid());
-  if (source_url.scheme() != "sshfs") {
-    return {};
-  }
-  CHECK(crostini_volume_->Mount(profile()));
-  return crostini_volume_->mount_path();
-}
-
 void FileManagerBrowserTestBase::SetUpOnMainThread() {
   extensions::ExtensionApiTest::SetUpOnMainThread();
   CHECK(profile());
@@ -974,9 +962,9 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     drive_volume_->ConfigureShareUrlBase(share_url_base);
     test_util::WaitUntilDriveMountPointIsAdded(profile());
 
-    // Init crostini.  Set prefs to enable crostini and register CustomMountPointCallback.
-    // TODO(joelhockey): It would be better if the crostini interface allowed
-    // for testing without such tight coupling.
+    // Init crostini.  Set prefs to enable crostini and register
+    // CustomMountPointCallback. TODO(joelhockey): It would be better if the
+    // crostini interface allowed for testing without such tight coupling.
     crostini_volume_ = std::make_unique<CrostiniTestVolume>();
     browser()->profile()->GetPrefs()->SetBoolean(
         crostini::prefs::kCrostiniEnabled, true);
@@ -1013,16 +1001,16 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
              ->Exists(kFileManagerAppId));
 }
 
+bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
+  return false;
+}
+
 void FileManagerBrowserTestBase::StartTest() {
   LOG(INFO) << "FileManagerBrowserTest::StartTest " << GetTestCaseName();
   static const base::FilePath test_extension_dir =
       base::FilePath(FILE_PATH_LITERAL("ui/file_manager/integration_tests"));
   LaunchExtension(test_extension_dir, GetTestExtensionManifestName());
   RunTestMessageLoop();
-}
-
-bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
-  return false;
 }
 
 void FileManagerBrowserTestBase::LaunchExtension(const base::FilePath& path,
@@ -1248,6 +1236,18 @@ FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
   }
   return drive_volumes_[profile->GetOriginalProfile()]
       ->CreateDriveIntegrationService(profile);
+}
+
+base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
+    const std::string& source_path,
+    const std::vector<std::string>& mount_options) {
+  GURL source_url(source_path);
+  DCHECK(source_url.is_valid());
+  if (source_url.scheme() != "sshfs") {
+    return {};
+  }
+  CHECK(crostini_volume_->Mount(profile()));
+  return crostini_volume_->mount_path();
 }
 
 }  // namespace file_manager
