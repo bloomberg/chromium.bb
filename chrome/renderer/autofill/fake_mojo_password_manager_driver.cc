@@ -2,46 +2,53 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/autofill/fake_content_password_manager_driver.h"
+#include "chrome/renderer/autofill/fake_mojo_password_manager_driver.h"
+
+#include <utility>
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-FakeContentPasswordManagerDriver::FakeContentPasswordManagerDriver() {}
+FakeMojoPasswordManagerDriver::FakeMojoPasswordManagerDriver()
+    : binding_(this) {}
 
-FakeContentPasswordManagerDriver::~FakeContentPasswordManagerDriver() {}
+FakeMojoPasswordManagerDriver::~FakeMojoPasswordManagerDriver() {}
 
-void FakeContentPasswordManagerDriver::BindRequest(
-    autofill::mojom::PasswordManagerDriverRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void FakeMojoPasswordManagerDriver::BindRequest(
+    autofill::mojom::PasswordManagerDriverAssociatedRequest request) {
+  binding_.Bind(std::move(request));
+}
+
+void FakeMojoPasswordManagerDriver::Flush() {
+  binding_.FlushForTesting();
 }
 
 // mojom::PasswordManagerDriver:
-void FakeContentPasswordManagerDriver::PasswordFormsParsed(
+void FakeMojoPasswordManagerDriver::PasswordFormsParsed(
     const std::vector<autofill::PasswordForm>& forms) {
   called_password_forms_parsed_ = true;
   password_forms_parsed_ = forms;
 }
 
-void FakeContentPasswordManagerDriver::PasswordFormsRendered(
+void FakeMojoPasswordManagerDriver::PasswordFormsRendered(
     const std::vector<autofill::PasswordForm>& visible_forms,
     bool did_stop_loading) {
   called_password_forms_rendered_ = true;
   password_forms_rendered_ = visible_forms;
 }
 
-void FakeContentPasswordManagerDriver::PasswordFormSubmitted(
+void FakeMojoPasswordManagerDriver::PasswordFormSubmitted(
     const autofill::PasswordForm& password_form) {
   called_password_form_submitted_ = true;
   password_form_submitted_ = password_form;
 }
 
-void FakeContentPasswordManagerDriver::SameDocumentNavigation(
+void FakeMojoPasswordManagerDriver::SameDocumentNavigation(
     const autofill::PasswordForm& password_form) {
   called_same_document_navigation_ = true;
   password_form_same_document_navigation_ = password_form;
 }
 
-void FakeContentPasswordManagerDriver::ShowPasswordSuggestions(
+void FakeMojoPasswordManagerDriver::ShowPasswordSuggestions(
     int key,
     base::i18n::TextDirection text_direction,
     const base::string16& typed_username,
@@ -53,33 +60,33 @@ void FakeContentPasswordManagerDriver::ShowPasswordSuggestions(
   show_pw_suggestions_options_ = options;
 }
 
-void FakeContentPasswordManagerDriver::RecordSavePasswordProgress(
+void FakeMojoPasswordManagerDriver::RecordSavePasswordProgress(
     const std::string& log) {
   called_record_save_progress_ = true;
 }
 
-void FakeContentPasswordManagerDriver::UserModifiedPasswordField() {
+void FakeMojoPasswordManagerDriver::UserModifiedPasswordField() {
   called_user_modified_password_field_ = true;
 }
 
-void FakeContentPasswordManagerDriver::SaveGenerationFieldDetectedByClassifier(
+void FakeMojoPasswordManagerDriver::SaveGenerationFieldDetectedByClassifier(
     const autofill::PasswordForm& password_form,
     const base::string16& generation_field) {
   called_save_generation_field_ = true;
   save_generation_field_ = generation_field;
 }
 
-void FakeContentPasswordManagerDriver::CheckSafeBrowsingReputation(
+void FakeMojoPasswordManagerDriver::CheckSafeBrowsingReputation(
     const GURL& form_action,
     const GURL& frame_url) {
   called_check_safe_browsing_reputation_cnt_++;
 }
 
-void FakeContentPasswordManagerDriver::ShowManualFallbackForSaving(
+void FakeMojoPasswordManagerDriver::ShowManualFallbackForSaving(
     const autofill::PasswordForm& password_form) {
   called_show_manual_fallback_for_saving_count_++;
 }
 
-void FakeContentPasswordManagerDriver::HideManualFallbackForSaving() {
+void FakeMojoPasswordManagerDriver::HideManualFallbackForSaving() {
   called_show_manual_fallback_for_saving_count_ = 0;
 }

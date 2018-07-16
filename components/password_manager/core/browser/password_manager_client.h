@@ -121,10 +121,6 @@ class PasswordManagerClient {
       const GURL& origin,
       const CredentialsCallback& callback) = 0;
 
-  // Informs the embedder that the user has manually requested to save the
-  // password in the focused password field.
-  virtual void ForceSavePassword();
-
   // Informs the embedder that the user has manually requested to generate a
   // password in the focused password field.
   virtual void GeneratePassword();

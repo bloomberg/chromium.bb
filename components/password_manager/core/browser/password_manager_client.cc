@@ -29,9 +29,6 @@ bool PasswordManagerClient::OnCredentialManagerUsed() {
   return true;
 }
 
-void PasswordManagerClient::ForceSavePassword() {
-}
-
 void PasswordManagerClient::GeneratePassword() {}
 
 void PasswordManagerClient::PasswordWasAutofilled(

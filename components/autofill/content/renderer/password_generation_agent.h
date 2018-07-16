@@ -74,6 +74,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   void set_maximum_offer_size_for_testing(size_t maximum_offer_size) {
     maximum_offer_size_ = maximum_offer_size;
   }
+
+  // This method requests the autofill::mojom::PasswordManagerClient which binds
+  // requests the binding if it wasn't bound yet.
+  void RequestPasswordManagerClientForTesting() { GetPasswordManagerClient(); }
 #endif
 
  protected:
@@ -105,7 +109,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   void DidFinishLoad() override;
   void OnDestruct() override;
 
-  const mojom::PasswordManagerDriverPtr& GetPasswordManagerDriver();
+  const mojom::PasswordManagerDriverAssociatedPtr& GetPasswordManagerDriver();
 
   const mojom::PasswordManagerClientAssociatedPtr& GetPasswordManagerClient();
 

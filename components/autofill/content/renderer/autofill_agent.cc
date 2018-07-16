@@ -1089,7 +1089,7 @@ const mojom::AutofillDriverPtr& AutofillAgent::GetAutofillDriver() {
   return autofill_driver_;
 }
 
-const mojom::PasswordManagerDriverPtr&
+const mojom::PasswordManagerDriverAssociatedPtr&
 AutofillAgent::GetPasswordManagerDriver() {
   DCHECK(password_autofill_agent_);
   return password_autofill_agent_->GetPasswordManagerDriver();

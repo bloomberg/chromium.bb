@@ -12,7 +12,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/renderer/autofill/fake_content_password_manager_driver.h"
+#include "chrome/renderer/autofill/fake_mojo_password_manager_driver.h"
 #include "chrome/renderer/autofill/fake_password_manager_client.h"
 #include "chrome/renderer/autofill/password_generation_test_utils.h"
 #include "chrome/test/base/chrome_render_view_test.h"
@@ -290,6 +290,27 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   void SetUp() override {
     ChromeRenderViewTest::SetUp();
 
+    // TODO(crbug/862989): Remove workaround preventing non-test classes to bind
+    // fake_driver_ or fake_pw_client_.
+    password_autofill_agent_->GetPasswordManagerDriver();
+    password_generation_->RequestPasswordManagerClientForTesting();
+    base::RunLoop().RunUntilIdle();  // Executes binding the interfaces.
+    // Reject all requests to bind driver/client to anything but the test class:
+    view_->GetMainRenderFrame()
+        ->GetRemoteAssociatedInterfaces()
+        ->OverrideBinderForTesting(
+            mojom::PasswordManagerClient::Name_,
+            base::BindRepeating([](mojo::ScopedInterfaceEndpointHandle handle) {
+              handle.reset();
+            }));
+    view_->GetMainRenderFrame()
+        ->GetRemoteAssociatedInterfaces()
+        ->OverrideBinderForTesting(
+            mojom::PasswordManagerDriver::Name_,
+            base::BindRepeating([](mojo::ScopedInterfaceEndpointHandle handle) {
+              handle.reset();
+            }));
+
     // Add a preferred login and an additional login to the FillData.
     username1_ = ASCIIToUTF16(kAliceUsername);
     password1_ = ASCIIToUTF16(kAlicePassword);
@@ -339,24 +360,20 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   }
 
   void RegisterMainFrameRemoteInterfaces() override {
-    // We only use the fake driver for main frame
-    // because our test cases only involve the main frame.
-    service_manager::InterfaceProvider* remote_interfaces =
-        view_->GetMainRenderFrame()->GetRemoteInterfaces();
-    service_manager::InterfaceProvider::TestApi test_api(remote_interfaces);
-    test_api.SetBinderForName(
-        mojom::PasswordManagerDriver::Name_,
-        base::Bind(&PasswordAutofillAgentTest::BindPasswordManagerDriver,
-                   base::Unretained(this)));
-
     // Because the test cases only involve the main frame in this test,
-    // the fake password client is only used for the main frame.
+    // the fake password client and the fake driver is only used on main frame.
     blink::AssociatedInterfaceProvider* remote_associated_interfaces =
         view_->GetMainRenderFrame()->GetRemoteAssociatedInterfaces();
     remote_associated_interfaces->OverrideBinderForTesting(
         mojom::PasswordManagerClient::Name_,
-        base::Bind(&PasswordAutofillAgentTest::BindPasswordManagerClient,
-                   base::Unretained(this)));
+        base::BindRepeating(
+            &PasswordAutofillAgentTest::BindPasswordManagerClient,
+            base::Unretained(this)));
+    remote_associated_interfaces->OverrideBinderForTesting(
+        mojom::PasswordManagerDriver::Name_,
+        base::BindRepeating(
+            &PasswordAutofillAgentTest::BindPasswordManagerDriver,
+            base::Unretained(this)));
   }
 
   void SetFillOnAccountSelect() {
@@ -653,9 +670,9 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     return fake_pw_client_.called_automatic_generation_status_changed_true();
   }
 
-  void BindPasswordManagerDriver(mojo::ScopedMessagePipeHandle handle) {
+  void BindPasswordManagerDriver(mojo::ScopedInterfaceEndpointHandle handle) {
     fake_driver_.BindRequest(
-        mojom::PasswordManagerDriverRequest(std::move(handle)));
+        mojom::PasswordManagerDriverAssociatedRequest(std::move(handle)));
   }
 
   void BindPasswordManagerClient(mojo::ScopedInterfaceEndpointHandle handle) {
@@ -690,7 +707,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         ->DidCommitProvisionalLoad(false, true);
   }
 
-  FakeContentPasswordManagerDriver fake_driver_;
+  FakeMojoPasswordManagerDriver fake_driver_;
   FakePasswordManagerClient fake_pw_client_;
 
   base::string16 username1_;
@@ -3424,7 +3441,7 @@ TEST_F(PasswordAutofillAgentTest, ManualFallbackForSaving_PasswordChangeForm) {
 // browser with information that the password should not be saved.
 TEST_F(PasswordAutofillAgentTest, GaiaReauthenticationFormIgnored) {
   // HTML is already loaded in test SetUp method, so information about password
-  // forms was already sent to the |fake_drive_|. Hence it should be reset.
+  // forms was already sent to the |fake_driver_|. Hence it should be reset.
   fake_driver_.reset_password_forms_calls();
 
   const char kGaiaReauthenticationFormHTML[] =
@@ -3443,6 +3460,7 @@ TEST_F(PasswordAutofillAgentTest, GaiaReauthenticationFormIgnored) {
   // Simulate a user clicking on the password element.
   autofill_agent_->FormControlElementClicked(password_element_, false);
 
+  fake_driver_.Flush();
   // Check that information about Gaia reauthentication is sent to the browser.
   ASSERT_TRUE(fake_driver_.called_password_forms_parsed());
   const std::vector<autofill::PasswordForm>& parsed_forms =

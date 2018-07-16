@@ -4059,9 +4059,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
       base::Bind(&autofill::ContentAutofillDriverFactory::BindAutofillDriver));
 
   frame_interfaces_parameterized_->AddInterface(
-      base::Bind(&password_manager::ContentPasswordManagerDriverFactory::
-                     BindPasswordManagerDriver));
-  frame_interfaces_parameterized_->AddInterface(
       base::BindRepeating(&ChromePasswordManagerClient::BindCredentialManager));
   frame_interfaces_parameterized_->AddInterface(
       base::Bind(&InsecureSensitiveInputDriverFactory::BindDriver));

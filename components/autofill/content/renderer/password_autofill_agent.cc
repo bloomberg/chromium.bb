@@ -40,6 +40,7 @@
 #include "content/public/renderer/render_view.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -1944,11 +1945,11 @@ void PasswordAutofillAgent::HidePopup() {
   }
 }
 
-const mojom::PasswordManagerDriverPtr&
+const mojom::PasswordManagerDriverAssociatedPtr&
 PasswordAutofillAgent::GetPasswordManagerDriver() {
   if (!password_manager_driver_) {
-    render_frame()->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&password_manager_driver_));
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &password_manager_driver_);
   }
   return password_manager_driver_;
 }
