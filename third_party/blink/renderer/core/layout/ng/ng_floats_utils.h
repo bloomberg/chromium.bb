@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class NGBlockNode;
 class NGConstraintSpace;
 class NGContainerFragmentBuilder;
 class NGExclusionSpace;
@@ -58,6 +59,11 @@ void AddUnpositionedFloat(
     Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats,
     NGContainerFragmentBuilder* fragment_builder,
     scoped_refptr<NGUnpositionedFloat> unpositioned_float);
+
+// Remove a pending float from the list.
+bool RemoveUnpositionedFloat(
+    Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats,
+    NGBlockNode float_node);
 
 NGFloatTypes ToFloatTypes(EClear clear);
 

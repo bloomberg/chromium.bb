@@ -1077,25 +1077,46 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleOverflow(
 }
 
 void NGLineBreaker::Rewind(NGLineInfo* line_info, unsigned new_end) {
-  NGInlineItemResults* item_results = &line_info->Results();
-  DCHECK_LT(new_end, item_results->size());
+  NGInlineItemResults& item_results = line_info->Results();
+  DCHECK_LT(new_end, item_results.size());
 
-  // TODO(ikilpatrick): Add DCHECK that we never rewind past any floats.
+  // Avoid rewinding floats if possible. They will be added back anyway while
+  // processing trailing items even when zero available width. Also this saves
+  // most cases where our support for rewinding positioned floats is not great
+  // yet (see below.)
+  while (item_results[new_end].item->Type() == NGInlineItem::kFloating) {
+    ++new_end;
+    if (new_end == item_results.size()) {
+      UpdatePosition(*line_info);
+      return;
+    }
+  }
 
   if (new_end) {
     // Use |results[new_end - 1].end_offset| because it may have been truncated
     // and may not be equal to |results[new_end].start_offset|.
-    MoveToNextOf((*item_results)[new_end - 1]);
+    MoveToNextOf(item_results[new_end - 1]);
   } else {
     // When rewinding all items, use |results[0].start_offset|.
-    const NGInlineItemResult& first_remove = (*item_results)[new_end];
+    const NGInlineItemResult& first_remove = item_results[new_end];
     item_index_ = first_remove.item_index;
     offset_ = first_remove.start_offset;
   }
 
-  // TODO(kojii): Should we keep results for the next line? We don't need to
-  // re-layout atomic inlines.
-  item_results->Shrink(new_end);
+  // Remove unpositioned floats that are to be rewound.
+  // Note, items before |handled_floats_end_item_index_| are inserted outside of
+  // the line breaker and that should not be removed when rewinding.
+  for (unsigned i = new_end; i < item_results.size(); i++) {
+    NGInlineItemResult& rewind = item_results[i];
+    if (rewind.item->Type() == NGInlineItem::kFloating) {
+      NGBlockNode float_node(ToLayoutBox(rewind.item->GetLayoutObject()));
+      RemoveUnpositionedFloat(unpositioned_floats_, float_node);
+      // TODO(kojii): Probably need to do something if this float was already
+      // positioned, but haven't got how to do this yet.
+    }
+  }
+
+  item_results.Shrink(new_end);
 
   SetLineEndFragment(nullptr, line_info);
   UpdatePosition(*line_info);

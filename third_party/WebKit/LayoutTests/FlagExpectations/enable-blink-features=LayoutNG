@@ -104,6 +104,7 @@ crbug.com/591099 external/wpt/WebCryptoAPI/generateKey/failures_RSASSA-PKCS1-v1_
 crbug.com/591099 external/wpt/WebCryptoAPI/generateKey/successes.worker.html [ Timeout ]
 crbug.com/591099 external/wpt/WebCryptoAPI/import_export/rsa_importKey.worker.html [ Timeout ]
 crbug.com/709227 external/wpt/WebCryptoAPI/import_export/symmetric_importKey.worker.html [ Failure ]
+crbug.com/591099 external/wpt/css/CSS2/floats/floats-line-wrap-shifted-001.html [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/normal-flow/block-in-inline-empty-001.xht [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/normal-flow/block-in-inline-empty-004.xht [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/normal-flow/block-in-inline-insert-001e.xht [ Pass ]
