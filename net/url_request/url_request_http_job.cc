@@ -953,7 +953,14 @@ void URLRequestHttpJob::ProcessNetworkErrorLoggingHeader() {
     return;
   }
 
-  service->OnHeader(url::Origin::Create(request_info_.url), value);
+  IPEndPoint endpoint;
+  if (!GetRemoteEndpoint(&endpoint)) {
+    NetworkErrorLoggingService::RecordHeaderDiscardedForMissingRemoteEndpoint();
+    return;
+  }
+
+  service->OnHeader(url::Origin::Create(request_info_.url), endpoint.address(),
+                    value);
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 

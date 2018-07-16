@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <utility>
 
 // This must be before Windows headers
@@ -7631,7 +7632,17 @@ class TestNetworkErrorLoggingService : public NetworkErrorLoggingService {
     Header() = default;
     ~Header() = default;
 
+    // Returns whether the |received_ip_address| field matches any of the
+    // addresses in |address_list|.
+    bool MatchesAddressList(const AddressList& address_list) const {
+      return std::any_of(address_list.begin(), address_list.end(),
+                         [this](const IPEndPoint& endpoint) {
+                           return endpoint.address() == received_ip_address;
+                         });
+    }
+
     url::Origin origin;
+    IPAddress received_ip_address;
     std::string value;
   };
 
@@ -7642,15 +7653,18 @@ class TestNetworkErrorLoggingService : public NetworkErrorLoggingService {
 
   ~TestNetworkErrorLoggingService() override = default;
 
-  void OnHeader(const url::Origin& origin, const std::string& value) override {
+  void OnHeader(const url::Origin& origin,
+                const IPAddress& received_ip_address,
+                const std::string& value) override {
     Header header;
     header.origin = origin;
+    header.received_ip_address = received_ip_address;
     header.value = value;
     headers_.push_back(header);
   }
 
-  void OnRequest(const RequestDetails& details) override {
-    errors_.push_back(details);
+  void OnRequest(RequestDetails details) override {
+    errors_.push_back(std::move(details));
   }
 
   void RemoveBrowsingData(const base::RepeatingCallback<bool(const GURL&)>&
@@ -7743,6 +7757,9 @@ TEST_F(URLRequestTestHTTP, ProcessNelHeaderHttps) {
 
   ASSERT_EQ(1u, nel_service.headers().size());
   EXPECT_EQ(url::Origin::Create(request_url), nel_service.headers()[0].origin);
+  AddressList address_list;
+  EXPECT_TRUE(https_test_server.GetAddressList(&address_list));
+  EXPECT_TRUE(nel_service.headers()[0].MatchesAddressList(address_list));
   EXPECT_EQ("foo", nel_service.headers()[0].value);
 }
 

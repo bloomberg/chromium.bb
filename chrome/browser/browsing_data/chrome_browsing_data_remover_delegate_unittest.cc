@@ -1081,11 +1081,13 @@ class MockNetworkErrorLoggingService : public net::NetworkErrorLoggingService {
 
   ~MockNetworkErrorLoggingService() override = default;
 
-  void OnHeader(const url::Origin& origin, const std::string& value) override {
+  void OnHeader(const url::Origin& origin,
+                const net::IPAddress& received_ip_address,
+                const std::string& value) override {
     NOTREACHED();
   }
 
-  void OnRequest(const RequestDetails& details) override { NOTREACHED(); }
+  void OnRequest(RequestDetails details) override { NOTREACHED(); }
 
   void RemoveBrowsingData(const base::RepeatingCallback<bool(const GURL&)>&
                               origin_filter) override {

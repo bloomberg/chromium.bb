@@ -1210,7 +1210,7 @@ void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
     details.reporting_upload_depth = 0;
   }
 
-  service->OnRequest(details);
+  service->OnRequest(std::move(details));
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
