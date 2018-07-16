@@ -503,7 +503,7 @@ void RenderViewImpl::Initialize(
   webview()->SetShowFPSCounter(
       command_line.HasSwitch(cc::switches::kShowFPSCounter));
 
-  ApplyWebPreferencesInternal(webkit_preferences_, webview(), compositor_deps_);
+  ApplyWebPreferencesInternal(webkit_preferences_, webview());
 
   if (switches::IsTouchDragDropEnabled())
     webview()->GetSettings()->SetTouchDragDropEnabled(true);
@@ -1217,10 +1217,8 @@ void RenderViewImpl::SendFrameStateUpdates() {
   frames_with_pending_state_.clear();
 }
 
-void RenderViewImpl::ApplyWebPreferencesInternal(
-    const WebPreferences& prefs,
-    blink::WebView* web_view,
-    CompositorDependencies* compositor_deps) {
+void RenderViewImpl::ApplyWebPreferencesInternal(const WebPreferences& prefs,
+                                                 blink::WebView* web_view) {
   ApplyWebPreferences(prefs, web_view);
 }
 
@@ -1833,7 +1831,7 @@ void RenderViewImpl::UpdateZoomLevel(double zoom_level) {
 
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
   webkit_preferences_ = prefs;
-  ApplyWebPreferencesInternal(webkit_preferences_, webview(), compositor_deps_);
+  ApplyWebPreferencesInternal(webkit_preferences_, webview());
 }
 
 void RenderViewImpl::OnEnumerateDirectoryResponse(
