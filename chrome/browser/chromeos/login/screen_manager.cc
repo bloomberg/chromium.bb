@@ -9,20 +9,21 @@
 
 namespace chromeos {
 
-ScreenManager::ScreenManager(WizardController* wizard_controller)
-    : wizard_controller_(wizard_controller) {}
+ScreenManager::ScreenManager() = default;
 
-ScreenManager::~ScreenManager() {}
+ScreenManager::~ScreenManager() = default;
 
 BaseScreen* ScreenManager::GetScreen(OobeScreen screen) {
   auto iter = screens_.find(screen);
   if (iter != screens_.end())
     return iter->second.get();
 
-  BaseScreen* result = wizard_controller_->CreateScreen(screen);
+  std::unique_ptr<BaseScreen> result =
+      WizardController::default_controller()->CreateScreen(screen);
   DCHECK(result) << "Can not create screen named " << GetOobeScreenName(screen);
-  screens_[screen] = base::WrapUnique(result);
-  return result;
+  BaseScreen* unowned_result = result.get();
+  screens_[screen] = std::move(result);
+  return unowned_result;
 }
 
 bool ScreenManager::HasScreen(OobeScreen screen) {

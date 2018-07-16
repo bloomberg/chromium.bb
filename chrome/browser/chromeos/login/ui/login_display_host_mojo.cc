@@ -148,10 +148,7 @@ void LoginDisplayHostMojo::SetStatusAreaVisible(bool visible) {
 void LoginDisplayHostMojo::StartWizard(OobeScreen first_screen) {
   DCHECK(GetOobeUI());
 
-  // Dtor of the old WizardController should be called before ctor of the
-  // new one to ensure only one |ExistingUserController| instance at a time.
-  wizard_controller_.reset();
-  wizard_controller_.reset(new WizardController(this, GetOobeUI()));
+  wizard_controller_ = std::make_unique<WizardController>();
   wizard_controller_->Init(first_screen);
 
   // Post login screens should not be closable by escape key.

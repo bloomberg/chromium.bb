@@ -56,10 +56,7 @@ void FakeLoginDisplayHost::Finalize(base::OnceClosure) {}
 void FakeLoginDisplayHost::SetStatusAreaVisible(bool visible) {}
 
 void FakeLoginDisplayHost::StartWizard(OobeScreen first_screen) {
-  // Reset the controller first since there could only be one wizard
-  // controller at any time.
-  wizard_controller_.reset();
-  wizard_controller_ = std::make_unique<WizardController>(nullptr, nullptr);
+  wizard_controller_ = std::make_unique<WizardController>();
 
   fake_screen_ = std::make_unique<FakeBaseScreen>(first_screen);
   wizard_controller_->SetCurrentScreenForTesting(fake_screen_.get());
