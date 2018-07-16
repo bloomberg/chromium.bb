@@ -119,6 +119,13 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
       const std::string& request_origin,
       std::unique_ptr<OfflinePageArchiver> archiver,
       SavePageResult expected_result);
+  // Start a save page simulating a file move failure.
+  int64_t SavePageWithFileMoveFailure(
+      const GURL& url,
+      const ClientId& client_id,
+      const GURL& original_url,
+      const std::string& request_origin,
+      std::unique_ptr<OfflinePageArchiver> archiver);
   // Insert an offline page in to store, it does not rely on the model
   // implementation.
   void InsertPageIntoStore(const OfflinePageItem& offline_page);
@@ -309,6 +316,20 @@ int64_t OfflinePageModelTaskifiedTest::SavePageWithExpectedResult(
   if (expected_result == SavePageResult::SUCCESS) {
     EXPECT_NE(OfflinePageModel::kInvalidOfflineId, offline_id);
   }
+  return offline_id;
+}
+
+int64_t OfflinePageModelTaskifiedTest::SavePageWithFileMoveFailure(
+    const GURL& url,
+    const ClientId& client_id,
+    const GURL& original_url,
+    const std::string& request_origin,
+    std::unique_ptr<OfflinePageArchiver> archiver) {
+  int64_t offline_id = OfflinePageModel::kInvalidOfflineId;
+  base::MockCallback<SavePageCallback> callback;
+
+  SavePageWithCallback(url, client_id, original_url, request_origin,
+                       std::move(archiver), callback.Get());
   return offline_id;
 }
 
@@ -1256,6 +1277,27 @@ TEST_F(OfflinePageModelTaskifiedTest,
   // that the file ended up in the correct place instead of just not the wrong
   // place.
   EXPECT_NE(temporary_page_path.DirName(), persistent_page_path.DirName());
+}
+
+// This test is affected by https://crbug.com/725685, which only affects windows
+// platform.
+#if defined(OS_WIN)
+#define MAYBE_PublishPageFailure DISABLED_PublishPageFailure
+#else
+#define MAYBE_PublishPageFailure PublishPageFailure
+#endif
+TEST_F(OfflinePageModelTaskifiedTest, MAYBE_PublishPageFailure) {
+  // Save a persistent page that will report failure to be copied to a public
+  // dir.
+  auto archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
+  archiver->set_archive_attempt_failure(true);
+  SavePageWithFileMoveFailure(kTestUrl, kTestUserRequestedClientId, GURL(),
+                              kEmptyRequestOrigin, std::move(archiver));
+
+  // Ensure that a histogram is emitted for the failure
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.PublishPageResult",
+      static_cast<int>(SavePageResult::FILE_MOVE_FAILED), 1);
 }
 
 // This test is affected by https://crbug.com/725685, which only affects windows

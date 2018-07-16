@@ -76,6 +76,10 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
 
   bool create_archive_called() const { return create_archive_called_; }
 
+  void set_archive_attempt_failure(bool fail) {
+    archive_attempt_failure_ = fail;
+  }
+
  private:
   // Not owned. Outlives OfflinePageTestArchiver.
   Observer* observer_;
@@ -87,6 +91,7 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
   int64_t size_to_report_;
   bool create_archive_called_;
   bool publish_archive_called_;
+  bool archive_attempt_failure_;
   bool delayed_;
   base::string16 result_title_;
   std::string digest_to_report_;

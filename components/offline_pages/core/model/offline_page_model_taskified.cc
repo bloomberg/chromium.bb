@@ -561,6 +561,11 @@ void OfflinePageModelTaskified::PublishArchiveDone(
     const OfflinePageItem& offline_page,
     PublishArchiveResult publish_results) {
   if (publish_results.move_result != SavePageResult::SUCCESS) {
+    // Add UMA for the failure reason.
+    UMA_HISTOGRAM_ENUMERATION("OfflinePages.PublishPageResult",
+                              publish_results.move_result,
+                              SavePageResult::RESULT_COUNT);
+
     std::move(save_page_callback).Run(publish_results.move_result, 0LL);
     return;
   }
