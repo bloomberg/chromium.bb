@@ -14,7 +14,8 @@
 
 vars = {
   'chromium_git': 'https://chromium.googlesource.com',
-  'pull_linux_clang': False
+  'pull_linux_clang': False,
+  'pull_win_toolchain': False
 }
 
 deps = {
@@ -29,7 +30,7 @@ deps = {
       '5e2b3ddde7cda5eb6bc09a5546a76b00e49d888f',
   'crashpad/third_party/mini_chromium/mini_chromium':
       Var('chromium_git') + '/chromium/mini_chromium@' +
-      'd5523a7033c013dd2ae73fa29428f7b70dc0b3a0',
+      '793e94e2c652831af2d25bb5288b04e59048c62d',
   'crashpad/third_party/libfuzzer/src':
       Var('chromium_git') + '/chromium/llvm-project/compiler-rt/lib/fuzzer.git@' +
       'fda403cf93ecb8792cb1d061564d89a6553ca020',
@@ -228,6 +229,23 @@ hooks = [
       'fuchsia/sdk/linux-amd64',
       'latest',
       '-root', 'crashpad/third_party/fuchsia/sdk/linux-amd64',
+      '-log-level', 'info',
+    ],
+  },
+  {
+    'name': 'toolchain_win',
+    'pattern': '.',
+    # This package is only updated when the solution in .gclient includes an
+    # entry like:
+    #   "custom_vars": { "pull_win_toolchain": True }
+    # This is because the contained bits are not redistributable.
+    'condition': 'checkout_win and pull_win_toolchain',
+    'action': [
+      'cipd',
+      'install',
+      'chrome_internal/third_party/sdk/windows',
+      'uploaded:2018-06-13',
+      '-root', 'crashpad/third_party/win/toolchain',
       '-log-level', 'info',
     ],
   },

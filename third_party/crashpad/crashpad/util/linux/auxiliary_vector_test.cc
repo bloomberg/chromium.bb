@@ -26,6 +26,7 @@
 #include "gtest/gtest.h"
 #include "test/errors.h"
 #include "test/linux/fake_ptrace_connection.h"
+#include "test/main_arguments.h"
 #include "test/multiprocess.h"
 #include "util/linux/address_types.h"
 #include "util/linux/memory_map.h"
@@ -37,7 +38,12 @@
 // TODO(jperaza): This symbol isn't defined when building in chromium for
 // Android. There may be another symbol to use.
 extern "C" {
-extern void _start();
+#if defined(ARCH_CPU_MIPS_FAMILY)
+#define START_SYMBOL __start
+#else
+#define START_SYMBOL _start
+#endif
+extern void START_SYMBOL();
 }  // extern "C"
 #endif
 
@@ -70,7 +76,7 @@ void TestAgainstCloneOrSelf(pid_t pid) {
 #if !defined(OS_ANDROID)
   LinuxVMAddress entry_addr;
   ASSERT_TRUE(aux.GetValue(AT_ENTRY, &entry_addr));
-  EXPECT_EQ(entry_addr, FromPointerCast<LinuxVMAddress>(_start));
+  EXPECT_EQ(entry_addr, FromPointerCast<LinuxVMAddress>(START_SYMBOL));
 #endif
 
   uid_t uid;
@@ -123,7 +129,7 @@ void TestAgainstCloneOrSelf(pid_t pid) {
   ASSERT_TRUE(aux.GetValue(AT_EXECFN, &filename_addr));
   std::string filename;
   ASSERT_TRUE(memory.ReadCStringSizeLimited(filename_addr, 4096, &filename));
-  EXPECT_TRUE(filename.find("crashpad_util_test") != std::string::npos);
+  EXPECT_TRUE(filename.find(GetMainArguments()[0]) != std::string::npos);
 #endif  // AT_EXECFN
 
   int ignore;
