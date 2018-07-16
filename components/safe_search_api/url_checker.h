@@ -43,10 +43,14 @@ class URLChecker {
   using CheckCallback = base::OnceCallback<
       void(const GURL&, Classification classification, bool /* uncertain */)>;
 
-  URLChecker(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-             const net::NetworkTrafficAnnotationTag& traffic_annotation);
+  // |country| should be a two-letter country code (ISO 3166-1 alpha-2), e.g.,
+  // "us".
   URLChecker(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
              const net::NetworkTrafficAnnotationTag& traffic_annotation,
+             const std::string& country);
+  URLChecker(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+             const net::NetworkTrafficAnnotationTag& traffic_annotation,
+             const std::string& country,
              size_t cache_size);
   ~URLChecker();
 
@@ -72,6 +76,7 @@ class URLChecker {
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
+  const std::string country_;
 
   CheckList checks_in_progress_;
 

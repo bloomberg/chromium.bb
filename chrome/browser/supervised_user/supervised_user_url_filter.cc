@@ -22,11 +22,13 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_matcher/url_matcher.h"
+#include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/escape.h"
@@ -553,8 +555,14 @@ void SupervisedUserURLFilter::InitAsyncURLChecker(
             "family dashboard."
           policy_exception_justification: "Not implemented."
         })");
+
+  std::string country;
+  variations::VariationsService* variations_service =
+      g_browser_process->variations_service();
+  if (variations_service)
+    country = variations_service->GetLatestCountry();
   async_url_checker_ = std::make_unique<safe_search_api::URLChecker>(
-      std::move(url_loader_factory), traffic_annotation);
+      std::move(url_loader_factory), traffic_annotation, country);
 }
 
 void SupervisedUserURLFilter::ClearAsyncURLChecker() {
