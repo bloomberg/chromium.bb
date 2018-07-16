@@ -199,6 +199,7 @@ class EnrollmentScreen
   Auth current_auth_ = AUTH_OAUTH;
   Auth last_auth_ = AUTH_OAUTH;
   bool enrollment_failed_once_ = false;
+  bool enrollment_succeeded_ = false;
   std::string enrolling_user_domain_;
   std::unique_ptr<base::ElapsedTimer> elapsed_timer_;
   net::BackoffEntry::Policy retry_policy_;

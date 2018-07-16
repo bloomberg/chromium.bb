@@ -270,6 +270,12 @@ void EnrollmentScreen::OnCancel() {
     return;
   }
 
+  if (enrollment_succeeded_) {
+    // Cancellation is the same to confirmation after the successful enrollment.
+    OnConfirmationClosed();
+    return;
+  }
+
   on_joined_callback_.Reset();
   if (authpolicy_login_helper_)
     authpolicy_login_helper_->CancelRequestsAndRestart();
@@ -337,6 +343,7 @@ void EnrollmentScreen::OnOtherError(
 }
 
 void EnrollmentScreen::OnDeviceEnrolled(const std::string& additional_token) {
+  enrollment_succeeded_ = true;
   if (!additional_token.empty())
     SendEnrollmentAuthToken(additional_token);
 
