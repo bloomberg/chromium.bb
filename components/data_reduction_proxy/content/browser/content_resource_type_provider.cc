@@ -68,4 +68,13 @@ void ContentResourceTypeProvider::SetContentType(
   resource_content_types_.Put(request.url().spec(), content_type);
 }
 
+bool ContentResourceTypeProvider::IsNonContentInitiatedRequest(
+    const net::URLRequest& request) const {
+  const auto* resource_request_info =
+      content::ResourceRequestInfo::ForRequest(&request);
+  return !resource_request_info ||
+         (resource_request_info->GetGlobalRequestID() ==
+          content::GlobalRequestID());
+}
+
 }  // namespace data_reduction_proxy

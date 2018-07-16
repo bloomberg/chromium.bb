@@ -44,10 +44,6 @@ class DataUseUserDataBytes : public base::SupportsUserData::Data {
   int64_t original_bytes_;
 };
 
-// Hostname used for the other bucket which consists of chrome-services traffic.
-// This should be in sync with the same in DataReductionSiteBreakdownView.java
-const char kOtherHostName[] = "Other";
-
 // static
 const void* const DataUseUserDataBytes::kUserDataKey =
     &DataUseUserDataBytes::kUserDataKey;
@@ -133,12 +129,14 @@ void DataReductionProxyDataUseObserver::OnPageResourceLoad(
                                 network_bytes, original_bytes));
     }
   } else {
+    // Report the datause that cannot be scoped to a page load to the other
+    // host. These include chrome services, service-worker, Downloads, etc.
     data_reduction_proxy_io_data_->UpdateDataUseForHost(
         network_bytes, original_bytes,
         data_use->traffic_type() ==
                 data_use_measurement::DataUse::TrafficType::USER_TRAFFIC
             ? data_use->url().HostNoBrackets()
-            : kOtherHostName);
+            : util::GetSiteBreakdownOtherHostName());
   }
 }
 

@@ -35,6 +35,10 @@ namespace {
 const char kApiKeyName[] = "key";
 #endif
 
+// Hostname used for the other bucket which consists of chrome-services traffic.
+// This should be in sync with the same in DataReductionSiteBreakdownView.java
+const char kOtherHostName[] = "Other";
+
 // Scales |byte_count| by the ratio of |numerator|:|denomenator|.
 int64_t ScaleByteCountByRatio(int64_t byte_count,
                               int64_t numerator,
@@ -282,6 +286,10 @@ ProxyScheme ConvertNetProxySchemeToProxyScheme(
       NOTREACHED() << scheme;
       return PROXY_SCHEME_UNKNOWN;
   }
+}
+
+const char* GetSiteBreakdownOtherHostName() {
+  return kOtherHostName;
 }
 
 }  // namespace util
