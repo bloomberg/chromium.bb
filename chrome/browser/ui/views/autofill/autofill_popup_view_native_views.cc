@@ -90,6 +90,7 @@ class AutofillPopupItemView : public AutofillPopupRowView {
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
 
  protected:
@@ -172,6 +173,7 @@ class AutofillPopupSeparatorView : public AutofillPopupRowView {
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnMouseEntered(const ui::MouseEvent& event) override {}
+  void OnMouseExited(const ui::MouseEvent& event) override {}
   void OnMouseReleased(const ui::MouseEvent& event) override {}
 
  protected:
@@ -251,6 +253,10 @@ void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void AutofillPopupItemView::OnMouseEntered(const ui::MouseEvent& event) {
   controller_->SetSelectedLine(line_number_);
+}
+
+void AutofillPopupItemView::OnMouseExited(const ui::MouseEvent& event) {
+  controller_->SelectionCleared();
 }
 
 void AutofillPopupItemView::OnMouseReleased(const ui::MouseEvent& event) {
