@@ -143,7 +143,7 @@ bool IsCollectionsUIRebootEnabled() {
 }
 
 bool IsSettingsUIRebootEnabled() {
-  return base::FeatureList::IsEnabled(kCollectionsUIReboot);
+  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
 }
 
 }  // namespace experimental_flags
