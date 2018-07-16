@@ -73,3 +73,7 @@ bool TestOmniboxView::IsImeComposing() const {
 int TestOmniboxView::GetOmniboxTextLength() const {
   return 0;
 }
+
+void TestOmniboxView::SetModel(OmniboxEditModel* model) {
+  model_.reset(model);
+}

@@ -17,40 +17,10 @@
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "components/omnibox/browser/test_omnibox_edit_controller.h"
+#include "components/omnibox/browser/test_omnibox_edit_model.h"
 #include "components/omnibox/browser/test_omnibox_view.h"
 #include "components/toolbar/test_toolbar_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
-
-class TestOmniboxEditModel : public OmniboxEditModel {
- public:
-  TestOmniboxEditModel(OmniboxView* view, OmniboxEditController* controller)
-      : OmniboxEditModel(view,
-                         controller,
-                         std::make_unique<TestOmniboxClient>()),
-        popup_is_open_(false) {}
-
-  bool PopupIsOpen() const override { return popup_is_open_; };
-
-  AutocompleteMatch CurrentMatch(GURL*) const override {
-    return current_match_;
-  };
-
-  void SetPopupIsOpen(bool open) { popup_is_open_ = open; }
-
-  void SetCurrentMatch(const AutocompleteMatch& match) {
-    current_match_ = match;
-  }
-
- private:
-  bool popup_is_open_;
-  AutocompleteMatch current_match_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestOmniboxEditModel);
-};
-
-}  // namespace
 
 class OmniboxEditModelTest : public testing::Test {
  public:

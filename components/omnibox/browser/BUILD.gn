@@ -242,6 +242,8 @@ static_library("test_support") {
     "test_omnibox_client.h",
     "test_omnibox_edit_controller.cc",
     "test_omnibox_edit_controller.h",
+    "test_omnibox_edit_model.cc",
+    "test_omnibox_edit_model.h",
     "test_omnibox_view.cc",
     "test_omnibox_view.h",
     "test_scheme_classifier.cc",
@@ -344,7 +346,7 @@ source_set("unit_tests") {
     "//sql:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//ui/base:base",
+    "//ui/base:test_support",
     "//url",
   ]
 }

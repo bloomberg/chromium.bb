@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -114,25 +115,46 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
         controller_->GetToolbarModel()->GetVectorIcon(), dip_size, color);
   }
 
-  // For Material Refresh, display the favicon of the default search engine.
-  const auto type = model_ ? model_->CurrentTextType()
-                           : AutocompleteMatchType::URL_WHAT_YOU_TYPED;
-  if (ui::MaterialDesignController::IsNewerMaterialUi() &&
-      AutocompleteMatch::IsSearchType(type)) {
-    gfx::Image favicon = model_->client()->GetFaviconForDefaultSearchProvider(
-        std::move(on_icon_fetched));
+  // For tests, model_ will be null.
+  if (!model_) {
+    const gfx::VectorIcon& vector_icon = AutocompleteMatch::TypeToVectorIcon(
+        AutocompleteMatchType::URL_WHAT_YOU_TYPED, false /*is_bookmark*/,
+        false /*is_tab_match*/);
+    return gfx::CreateVectorIcon(vector_icon, dip_size, color);
+  }
+
+  AutocompleteMatch match = model_->CurrentMatch(nullptr);
+  bool is_bookmarked = false;
+
+  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
+    gfx::Image favicon;
+
+    if (AutocompleteMatch::IsSearchType(match.type)) {
+      // For search queries, display default search engine's favicon.
+      favicon = model_->client()->GetFaviconForDefaultSearchProvider(
+          std::move(on_icon_fetched));
+
+    } else if (OmniboxFieldTrial::IsShowSuggestionFaviconsEnabled()) {
+      // For site suggestions, display site's favicon.
+      favicon = model_->client()->GetFaviconForPageUrl(
+          match.destination_url, std::move(on_icon_fetched));
+    }
+
     if (!favicon.IsEmpty())
       return favicon.AsImageSkia();
-
     // If the client returns an empty favicon, fall through to provide the
     // generic vector icon. |on_icon_fetched| may or may not be called later.
     // If it's never called, the vector icon we provide below should remain.
+
+    // For bookmarked suggestions, display bookmark icon.
+    bookmarks::BookmarkModel* bookmark_model =
+        model_->client()->GetBookmarkModel();
+    is_bookmarked =
+        bookmark_model && bookmark_model->IsBookmarked(match.destination_url);
   }
 
-  const gfx::VectorIcon& vector_icon =
-      AutocompleteMatch::TypeToVectorIcon(type,
-                                          /*is_bookmark=*/false,
-                                          /*is_tab_match=*/false);
+  const gfx::VectorIcon& vector_icon = AutocompleteMatch::TypeToVectorIcon(
+      match.type, is_bookmarked, false /*is_tab_match*/);
   return gfx::CreateVectorIcon(vector_icon, dip_size, color);
 #endif  // defined(OS_IOS)
 }

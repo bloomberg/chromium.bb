@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -36,16 +37,25 @@ class TestOmniboxClient : public OmniboxClient {
       const AutocompleteMatch& alternate_nav_match) override;
   bool IsPasteAndGoEnabled() const override;
   const SessionID& GetSessionID() const override;
+  void SetBookmarkModel(bookmarks::BookmarkModel* bookmark_model);
+  bookmarks::BookmarkModel* GetBookmarkModel() override;
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
   AutocompleteClassifier* GetAutocompleteClassifier() override;
   gfx::Image GetSizedIcon(const gfx::VectorIcon& vector_icon_type,
                           SkColor vector_icon_color) const override;
+  gfx::Image GetFaviconForPageUrl(
+      const GURL& page_url,
+      FaviconFetchedCallback on_favicon_fetched) override;
+
+  GURL GetPageUrlForLastFaviconRequest() const;
 
  private:
   AutocompleteMatch alternate_nav_match_;
   SessionID session_id_;
+  bookmarks::BookmarkModel* bookmark_model_;
   TestSchemeClassifier scheme_classifier_;
   AutocompleteClassifier autocomplete_classifier_;
+  GURL page_url_for_last_favicon_request_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOmniboxClient);
 };
