@@ -72,7 +72,7 @@ class MEDIA_EXPORT DecryptConfig {
     return encryption_pattern_;
   };
 
-  std::unique_ptr<DecryptConfig> Clone();
+  std::unique_ptr<DecryptConfig> Clone() const;
 
   // Returns whether this config has EncryptionPattern set or not.
   bool HasPattern() const;
