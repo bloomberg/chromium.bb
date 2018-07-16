@@ -52,6 +52,6 @@ xr_session_promise_test( (session) => new Promise((resolve, reject) => {
   }
 
   session.requestAnimationFrame(onSkipFrame);
-}), fakeDevices["FakeGooglePixelPhone"], [{ exclusive: true }],
+}), fakeDevices["FakeGooglePixelPhone"], [{ immersive: true }],
 "A frame should be submitted if the base layer was written to during requestAnimationFrame");
 </script>

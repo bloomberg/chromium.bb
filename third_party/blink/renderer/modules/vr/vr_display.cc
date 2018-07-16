@@ -464,7 +464,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
     // properties.
     device::mojom::blink::XRSessionOptionsPtr options =
         device::mojom::blink::XRSessionOptions::New();
-    options->exclusive = true;
+    options->immersive = true;
     options->use_legacy_webvr_render_path = true;
 
     display_->RequestSession(

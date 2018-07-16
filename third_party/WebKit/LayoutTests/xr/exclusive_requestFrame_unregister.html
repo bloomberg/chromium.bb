@@ -45,7 +45,7 @@ xr_session_promise_test( (session) => new Promise((resolve, reject) => {
   session.requestAnimationFrame(onFrameGood);
   handle2 = session.requestAnimationFrame(onFrameBad);
 }), fakeDevices["FakeGooglePixelPhone"], [
-      { exclusive: true },
+      { immersive: true },
       { outputContext: getOutputContext() }
   ],
 "XRSession requestAnimationFrame callbacks can be unregistered with cancelAnimationFrame");

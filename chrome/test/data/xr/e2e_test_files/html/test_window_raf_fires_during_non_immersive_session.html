@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-Tests that window.rAF continues to fire during a non-exclusive session.
+Tests that window.rAF continues to fire during a non-immersive session.
 -->
 <html>
   <head>
@@ -12,7 +12,7 @@ Tests that window.rAF continues to fire during a non-exclusive session.
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
-      var t = async_test("window.rAF fires during a non-exclusive session");
+      var t = async_test("window.rAF fires during a non-immersive session");
 
       onMagicWindowXRFrameCallback = function() {
         window.requestAnimationFrame( () => {

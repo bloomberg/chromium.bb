@@ -15,9 +15,9 @@ promise_test( (t) => {
     return promise_rejects(
       t,
       "NotSupportedError",
-      magicWindowOnlyDevice.supportsSession({ exclusive: true })
+      magicWindowOnlyDevice.supportsSession({ immersive: true })
     );
   });
-}, "supportsSession rejects when exclusive session is not supported on device");
+}, "supportsSession rejects when immersive session is not supported on device");
 
 </script>

@@ -45,13 +45,13 @@ class XRSession final : public EventTargetWithInlineData {
   };
 
   XRSession(XRDevice*,
-            bool exclusive,
+            bool immersive,
             XRPresentationContext* output_context,
             EnvironmentBlendMode environment_blend_mode);
   ~XRSession() override = default;
 
   XRDevice* device() const { return device_; }
-  bool exclusive() const { return exclusive_; }
+  bool immersive() const { return immersive_; }
   XRPresentationContext* outputContext() const { return output_context_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
 
@@ -136,7 +136,7 @@ class XRSession final : public EventTargetWithInlineData {
 
   void OnPoseReset();
 
-  void SetNonExclusiveProjectionMatrix(const WTF::Vector<float>&);
+  void SetNonImmersiveProjectionMatrix(const WTF::Vector<float>&);
 
   void Trace(blink::Visitor*) override;
 
@@ -162,7 +162,7 @@ class XRSession final : public EventTargetWithInlineData {
           results);
 
   const Member<XRDevice> device_;
-  const bool exclusive_;
+  const bool immersive_;
   const Member<XRPresentationContext> output_context_;
   String blend_mode_string_;
   Member<XRLayer> base_layer_;
@@ -174,7 +174,7 @@ class XRSession final : public EventTargetWithInlineData {
   TraceWrapperMember<XRFrameRequestCallbackCollection> callback_collection_;
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
 
-  WTF::Vector<float> non_exclusive_projection_matrix_;
+  WTF::Vector<float> non_immersive_projection_matrix_;
 
   double depth_near_ = 0.1;
   double depth_far_ = 1000.0;

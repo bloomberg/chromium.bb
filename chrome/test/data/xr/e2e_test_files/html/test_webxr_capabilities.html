@@ -14,8 +14,8 @@ Tests that the provided WebXR device has the expected capabilities
     <script>
       var expectations = {
         "Daydream": {
-          "exclusive": true,
-          "non-exclusive": true,
+          "immersive": true,
+          "non-immersive": true,
         }
       };
       var t = async_test("XRDevice capabilities match expectations");
@@ -29,25 +29,25 @@ Tests that the provided WebXR device has the expected capabilities
         }
 
         let expected = expectations[device];
-        var supportsNonExclusive;
-        var supportsExclusive;
+        var supportsNonImmersive;
+        var supportsImmersive;
         var ctx = webglCanvas.getContext("xrpresent");
         xrDevice.supportsSession(
-            {exclusive: false, outputContext: ctx}).then( () => {
-          supportsNonExclusive = true;
+            {immersive: false, outputContext: ctx}).then( () => {
+          supportsNonImmersive = true;
         }, () => {
-          supportsNonExclusive = false;
+          supportsNonImmersive = false;
         }).then( () => {
-          xrDevice.supportsSession({exclusive: true}).then( () => {
-            supportsExclusive = true;
+          xrDevice.supportsSession({immersive: true}).then( () => {
+            supportsImmersive = true;
           }, () => {
-            supportsExclusive = false;
+            supportsImmersive = false;
           }).then( () => {
             t.step( () => {
-              assert_equals(supportsNonExclusive, expected["non-exclusive"],
-                  'Device supports non-exclusive sessions');
-              assert_equals(supportsExclusive, expected["exclusive"],
-                  'Device supports exclusive sessions');
+              assert_equals(supportsNonImmersive, expected["non-immersive"],
+                  'Device supports non-immersive sessions');
+              assert_equals(supportsImmersive, expected["immersive"],
+                  'Device supports immersive sessions');
             });
             t.done();
           });

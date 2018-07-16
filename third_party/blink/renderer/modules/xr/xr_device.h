@@ -73,7 +73,7 @@ class XRDevice final : public ScriptWrappable,
   bool HasDeviceFocus() { return has_device_focus_; }
   bool HasDeviceAndFrameFocus() { return IsFrameFocused() && HasDeviceFocus(); }
 
-  bool SupportsExclusive() { return supports_exclusive_; }
+  bool SupportsImmersive() { return supports_immersive_; }
 
   int64_t GetSourceId() const;
 
@@ -102,12 +102,12 @@ class XRDevice final : public ScriptWrappable,
   Member<XRFrameProvider> frame_provider_;
   HeapHashSet<WeakMember<XRSession>> sessions_;
   bool is_external_ = false;
-  bool supports_exclusive_ = false;
+  bool supports_immersive_ = false;
   bool supports_ar_ = false;
   bool has_device_focus_ = true;
 
-  // Indicates whether we've already logged a request for an exclusive session.
-  bool did_log_request_exclusive_session_ = false;
+  // Indicates whether we've already logged a request for an immersive session.
+  bool did_log_request_immersive_session_ = false;
 
   device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider_;
   device::mojom::blink::VRDisplayHostPtr display_;

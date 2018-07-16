@@ -126,7 +126,7 @@ XRWebGLLayer::XRWebGLLayer(XRSession* session,
       framebuffer_scale_(framebuffer_scale) {
   DCHECK(drawing_buffer_);
   // If the contents need mirroring, indicate that to the drawing buffer.
-  if (session->exclusive() && session->outputContext() &&
+  if (session->immersive() && session->outputContext() &&
       session->device()->external()) {
     mirroring_ = true;
     drawing_buffer_->SetMirrorClient(this);
@@ -169,9 +169,9 @@ XRViewport* XRWebGLLayer::GetViewportForEye(XRView::Eye eye) {
 }
 
 void XRWebGLLayer::requestViewportScaling(double scale_factor) {
-  if (!session()->exclusive()) {
+  if (!session()->immersive()) {
     // TODO(bajones): For the moment we're just going to ignore viewport changes
-    // in non-exclusive mode. This is legal, but probably not what developers
+    // in non-immersive mode. This is legal, but probably not what developers
     // would like to see. Look into making viewport scale apply properly.
     scale_factor = 1.0;
   } else {
@@ -197,7 +197,7 @@ void XRWebGLLayer::UpdateViewports() {
 
   viewports_dirty_ = false;
 
-  if (session()->exclusive()) {
+  if (session()->immersive()) {
     left_viewport_ =
         new XRViewport(0, 0, framebuffer_width * 0.5 * viewport_scale_,
                        framebuffer_height * viewport_scale_);
@@ -283,7 +283,7 @@ void XRWebGLLayer::OnFrameEnd() {
   }
 
   // Submit the frame to the XR compositor.
-  if (session()->exclusive()) {
+  if (session()->immersive()) {
     // Always call submit, but notify if the contents were changed or not.
     session()->device()->frameProvider()->SubmitWebGLLayer(
         this, framebuffer_->HaveContentsChanged());
@@ -298,8 +298,8 @@ void XRWebGLLayer::OnFrameEnd() {
 }
 
 void XRWebGLLayer::OnResize() {
-  if (!session()->exclusive()) {
-    // For non-exclusive sessions a resize indicates we should adjust the
+  if (!session()->immersive()) {
+    // For non-immersive sessions a resize indicates we should adjust the
     // drawing buffer size to match the canvas.
     DoubleSize framebuffers_size = session()->DefaultFramebufferSize();
 
@@ -308,7 +308,7 @@ void XRWebGLLayer::OnResize() {
     drawing_buffer_->Resize(desired_size);
   }
 
-  // With both exclusive and non-exclusive session the viewports should be
+  // With both immersive and non-immersive session the viewports should be
   // recomputed when the output canvas resizes.
   viewports_dirty_ = true;
 }

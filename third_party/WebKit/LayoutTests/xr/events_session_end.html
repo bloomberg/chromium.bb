@@ -27,7 +27,7 @@ xr_session_promise_test( (session, t) => {
 
   return eventPromise;
 }, fakeDevices["FakeGooglePixelPhone"], [
-      { exclusive: true },
+      { immersive: true },
       { outputContext: getOutputContext() }
   ],
 "Test end fires when session ends");

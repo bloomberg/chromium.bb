@@ -21,7 +21,7 @@ import org.chromium.content_public.browser.WebContents;
 
 /**
  * Class containing utility functions for transitioning between different
- * states in WebXR, e.g. entering exclusive or AR sessions.
+ * states in WebXR, e.g. entering immersive or AR sessions.
  */
 public class XrTransitionUtils extends TransitionUtils {
     /**
@@ -30,10 +30,10 @@ public class XrTransitionUtils extends TransitionUtils {
      */
     public static void enterPresentationOrFail(WebContents webContents) {
         XrTestFramework.runJavaScriptOrFail(
-                "sessionTypeToRequest = sessionTypes.EXCLUSIVE", POLL_TIMEOUT_LONG_MS, webContents);
+                "sessionTypeToRequest = sessionTypes.IMMERSIVE", POLL_TIMEOUT_LONG_MS, webContents);
         enterPresentation(webContents);
         Assert.assertTrue(XrTestFramework.pollJavaScriptBoolean(
-                "sessionInfos[sessionTypes.EXCLUSIVE].currentSession != null", POLL_TIMEOUT_LONG_MS,
+                "sessionInfos[sessionTypes.IMMERSIVE].currentSession != null", POLL_TIMEOUT_LONG_MS,
                 webContents));
         Assert.assertTrue(TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
     }

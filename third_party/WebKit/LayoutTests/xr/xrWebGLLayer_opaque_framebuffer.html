@@ -99,7 +99,7 @@ xr_session_promise_test( (session) => new Promise((resolve, reject) => {
   });
 
 }), fakeDevices["FakeGooglePixelPhone"], [
-    { exclusive: true },
+    { immersive: true },
     { outputContext: getOutputContext() }
 ],
 "Ensure that the framebuffer given by the WebGL layer is opaque");

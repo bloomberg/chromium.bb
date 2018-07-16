@@ -16,8 +16,8 @@ presentation from the VR browser.
       var t = async_test("rAFs continue to fire after presentation re-entry");
 
       function stepVerifyFirstPresent() {
-        onExclusiveXRFrameCallback = () => {
-          onExclusiveXRFrameCallback = null;
+        onImmersiveXRFrameCallback = () => {
+          onImmersiveXRFrameCallback = null;
           finishJavaScriptStep();
         };
       }
@@ -29,7 +29,7 @@ presentation from the VR browser.
       }
 
       function stepVerifySecondPresent() {
-        onExclusiveXRFrameCallback = () => {
+        onImmersiveXRFrameCallback = () => {
           t.done();
         };
       }

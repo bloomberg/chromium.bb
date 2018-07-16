@@ -23,10 +23,10 @@ class VRDisplayImplTest : public testing::Test {
   void onDisplaySynced() {}
   void onPresentComplete(
       device::mojom::XRPresentationConnectionPtr connection,
-      mojom::XRSessionControllerPtr exclusive_session_controller) {
+      mojom::XRSessionControllerPtr immersive_session_controller) {
     is_request_presenting_success_ = connection ? true : false;
 
-    exclusive_session_controller_ = std::move(exclusive_session_controller);
+    immersive_session_controller_ = std::move(immersive_session_controller);
   }
 
  protected:
@@ -56,7 +56,7 @@ class VRDisplayImplTest : public testing::Test {
 
   void ExitPresent() {
     device_->StopSession();
-    exclusive_session_controller_ = nullptr;
+    immersive_session_controller_ = nullptr;
   }
 
   bool presenting() { return device_->IsPresenting(); }
@@ -67,7 +67,7 @@ class VRDisplayImplTest : public testing::Test {
   bool is_request_presenting_success_ = false;
   std::unique_ptr<FakeVRDevice> device_;
   std::unique_ptr<FakeVRServiceClient> client_;
-  mojom::XRSessionControllerPtr exclusive_session_controller_;
+  mojom::XRSessionControllerPtr immersive_session_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(VRDisplayImplTest);
 };

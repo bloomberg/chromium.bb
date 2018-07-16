@@ -16,7 +16,7 @@ xr_session_promise_test( (session, t) => {
     assert_equals(session.environmentBlendMode, 'opaque');
   });
 }, fakeDevices["FakeGooglePixelPhone"], [
-    { exclusive: true },
+    { immersive: true },
     { outputContext: getOutputContext() }
 ],
 "environmentBlendMode is correct for a VR device");

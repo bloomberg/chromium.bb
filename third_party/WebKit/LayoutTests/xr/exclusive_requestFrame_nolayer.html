@@ -34,7 +34,7 @@ xr_session_promise_test( (session) => new Promise((resolve, reject) => {
   assert_not_equals(goodHandle, 0);
 
 }), fakeDevices["FakeGooglePixelPhone"], [
-      { exclusive: true },
+      { immersive: true },
       { outputContext: getOutputContext() }
   ],
 "XRSession requestAnimationFrame must fail if the session has no baseLayer");

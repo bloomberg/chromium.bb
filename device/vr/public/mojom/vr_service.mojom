@@ -29,7 +29,7 @@ enum XRTargetRayMode {
 };
 
 struct XRSessionOptions {
-  bool exclusive;
+  bool immersive;
 
   // A flag to indicate if there has been a user activation when the request
   // session is made.
@@ -297,7 +297,7 @@ interface VRDisplayHost {
 // utility process on Windows.  The render process communicates with it.
 // For AR displays (VRDisplayCapabilities.can_provide_pass_through_images
 // is true), clients can use GetFrameData to get images.
-// TODO(836478): rename VRMagicWindowProvider to NonExclusiveWindowProvider or
+// TODO(836478): rename VRMagicWindowProvider to NonImmersiveWindowProvider or
 // similar.
 interface VRMagicWindowProvider {
   // frame_data is optional and will not be set if and only if the call fails

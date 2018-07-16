@@ -19,14 +19,14 @@ namespace blink {
 
 namespace {
 
-const char kActiveExclusiveSession[] =
-    "XRDevice already has an active, exclusive session";
+const char kActiveImmersiveSession[] =
+    "XRDevice already has an active, immersive session";
 
-const char kExclusiveNotSupported[] =
-    "XRDevice does not support the creation of exclusive sessions.";
+const char kImmersiveNotSupported[] =
+    "XRDevice does not support the creation of immersive sessions.";
 
 const char kNoOutputContext[] =
-    "Non-exclusive sessions must be created with an outputContext.";
+    "Non-immersive sessions must be created with an outputContext.";
 
 const char kRequestRequiresUserActivation[] =
     "The requested session requires user activation.";
@@ -53,8 +53,8 @@ XRDevice::XRDevice(
 
 const char* XRDevice::checkSessionSupport(
     const XRSessionCreationOptions& options) const {
-  if (!options.exclusive()) {
-    // Validation for non-exclusive sessions. Validation for exclusive sessions
+  if (!options.immersive()) {
+    // Validation for non-immersive sessions. Validation for immersive sessions
     // happens browser side.
     if (!options.hasOutputContext()) {
       return kNoOutputContext;
@@ -69,8 +69,8 @@ const char* XRDevice::checkSessionSupport(
     }
     // TODO(https://crbug.com/828321): Expose information necessary to check
     // combinations.
-    // For now, exclusive AR is not supported.
-    if (options.exclusive()) {
+    // For now, immersive AR is not supported.
+    if (options.immersive()) {
       return kSessionNotSupported;
     }
   } else {
@@ -94,7 +94,7 @@ ScriptPromise XRDevice::supportsSession(
   // Check to see if the device is capable of supporting the requested session
   // options. Note that reporting support here does not guarantee that creating
   // a session with those options will succeed, as other external and
-  // time-sensitve factors (focus state, existance of another exclusive session,
+  // time-sensitve factors (focus state, existance of another immersive session,
   // etc.) may prevent the creation of a session as well.
   const char* reject_reason = checkSessionSupport(options);
   if (reject_reason) {
@@ -110,7 +110,7 @@ ScriptPromise XRDevice::supportsSession(
 
   device::mojom::blink::XRSessionOptionsPtr session_options =
       device::mojom::blink::XRSessionOptions::New();
-  session_options->exclusive = options.exclusive();
+  session_options->immersive = options.immersive();
 
   display_->SupportsSession(
       std::move(session_options),
@@ -122,13 +122,13 @@ ScriptPromise XRDevice::supportsSession(
 
 void XRDevice::OnSupportsSessionReturned(ScriptPromiseResolver* resolver,
                                          bool supports_session) {
-  // kExclusiveNotSupported is currently the only reason that SupportsSession
+  // kImmersiveNotSupported is currently the only reason that SupportsSession
   // rejects on the browser side. That or there are no devices, but that should
   // technically not be possible.
   supports_session
       ? resolver->Resolve()
       : resolver->Reject(DOMException::Create(
-            DOMExceptionCode::kNotSupportedError, kExclusiveNotSupported));
+            DOMExceptionCode::kNotSupportedError, kImmersiveNotSupported));
 }
 
 int64_t XRDevice::GetSourceId() const {
@@ -140,11 +140,11 @@ ScriptPromise XRDevice::requestSession(
     const XRSessionCreationOptions& options) {
   Document* doc = ToDocumentOrNull(ExecutionContext::From(script_state));
 
-  if (options.exclusive() && !did_log_request_exclusive_session_ && doc) {
+  if (options.immersive() && !did_log_request_immersive_session_ && doc) {
     ukm::builders::XR_WebXR(GetSourceId())
         .SetDidRequestPresentation(1)
         .Record(doc->UkmRecorder());
-    did_log_request_exclusive_session_ = true;
+    did_log_request_immersive_session_ = true;
   }
 
   // Check first to see if the device is capable of supporting the requested
@@ -162,12 +162,12 @@ ScriptPromise XRDevice::requestSession(
 
   // Check if the current page state prevents the requested session from being
   // created.
-  if (options.exclusive()) {
-    if (frameProvider()->exclusive_session()) {
+  if (options.immersive()) {
+    if (frameProvider()->immersive_session()) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
           DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               kActiveExclusiveSession));
+                               kActiveImmersiveSession));
     }
 
     if (!has_user_activation) {
@@ -192,7 +192,7 @@ ScriptPromise XRDevice::requestSession(
 
   device::mojom::blink::XRSessionOptionsPtr session_options =
       device::mojom::blink::XRSessionOptions::New();
-  session_options->exclusive = options.exclusive();
+  session_options->immersive = options.immersive();
   session_options->has_user_activation = has_user_activation;
 
   // TODO(offenwanger): Once device activation is sorted out for WebXR, either
@@ -228,11 +228,11 @@ void XRDevice::OnRequestSessionReturned(
   }
 
   XRSession* session =
-      new XRSession(this, options.exclusive(), output_context, blend_mode);
+      new XRSession(this, options.immersive(), output_context, blend_mode);
   sessions_.insert(session);
 
-  if (options.exclusive()) {
-    frameProvider()->BeginExclusiveSession(session, std::move(connection));
+  if (options.immersive()) {
+    frameProvider()->BeginImmersiveSession(session, std::move(connection));
   }
 
   resolver->Resolve(session);
@@ -264,7 +264,7 @@ void XRDevice::OnExitPresent() {}
 void XRDevice::OnBlur() {
   // The device is reporting to us that it is blurred.  This could happen for a
   // variety of reasons, such as browser UI, a different application using the
-  // headset, or another page entering an exclusive session.
+  // headset, or another page entering an immersive session.
   has_device_focus_ = false;
   OnFocusChanged();
 }
@@ -295,7 +295,7 @@ void XRDevice::SetXRDisplayInfo(
   display_info_id_++;
   display_info_ = std::move(display_info);
   is_external_ = display_info_->capabilities->hasExternalDisplay;
-  supports_exclusive_ = (display_info_->capabilities->canPresent);
+  supports_immersive_ = (display_info_->capabilities->canPresent);
   supports_ar_ = display_info_->capabilities->can_provide_pass_through_images;
 }
 

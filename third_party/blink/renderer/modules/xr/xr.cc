@@ -154,7 +154,7 @@ void XR::ResolveRequestDevice() {
       pending_devices_resolver_->Reject(DOMException::Create(
           DOMExceptionCode::kNotFoundError, kNoDevicesMessage));
     } else {
-      if (!did_log_returned_device_ || !did_log_supports_exclusive_) {
+      if (!did_log_returned_device_ || !did_log_supports_immersive_) {
         Document* doc = GetFrame() ? GetFrame()->GetDocument() : nullptr;
         if (doc) {
           ukm::builders::XR_WebXR ukm_builder(ukm_source_id_);
@@ -163,9 +163,9 @@ void XR::ResolveRequestDevice() {
 
           // We only expose a single device to WebXR, so report that device's
           // capabilities.
-          if (devices_[0]->SupportsExclusive()) {
+          if (devices_[0]->SupportsImmersive()) {
             ukm_builder.SetReturnedPresentationCapableDevice(1);
-            did_log_supports_exclusive_ = true;
+            did_log_supports_immersive_ = true;
           }
 
           ukm_builder.Record(doc->UkmRecorder());

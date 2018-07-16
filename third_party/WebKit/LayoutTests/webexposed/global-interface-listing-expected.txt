@@ -10019,7 +10019,7 @@ interface XRSession : EventTarget
     getter depthNear
     getter device
     getter environmentBlendMode
-    getter exclusive
+    getter immersive
     getter onblur
     getter onend
     getter onfocus

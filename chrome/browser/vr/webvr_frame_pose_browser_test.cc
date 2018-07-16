@@ -48,7 +48,7 @@ class MyOpenVRMock : public MockOpenVRBase {
   }
 
   std::vector<Frame> submitted_frames;
-  device::PoseFrameData last_exclusive_frame_data = {};
+  device::PoseFrameData last_immersive_frame_data = {};
 
  private:
   // Set to null on background thread after calling Quit(), so we can ensure we
@@ -58,7 +58,7 @@ class MyOpenVRMock : public MockOpenVRBase {
   int wait_frame_count_ = 0;
   int num_frames_submitted_ = 0;
 
-  bool has_last_exclusive_frame_data_ = false;
+  bool has_last_immersive_frame_data_ = false;
   int frame_id_ = 0;
 };
 
@@ -74,7 +74,7 @@ void MyOpenVRMock::OnFrameSubmitted(device::SubmittedFrameData frame_data) {
   DLOG(ERROR) << "Frame Submitted: " << num_frames_submitted_ << " "
               << frame_id;
   submitted_frames.push_back(
-      {frame_data, last_exclusive_frame_data, WaitGetDeviceConfig()});
+      {frame_data, last_immersive_frame_data, WaitGetDeviceConfig()});
 
   num_frames_submitted_++;
   if (num_frames_submitted_ >= wait_frame_count_ && wait_frame_count_ > 0 &&
@@ -83,12 +83,12 @@ void MyOpenVRMock::OnFrameSubmitted(device::SubmittedFrameData frame_data) {
     wait_loop_ = nullptr;
   }
 
-  EXPECT_TRUE(has_last_exclusive_frame_data_);
+  EXPECT_TRUE(has_last_immersive_frame_data_);
 
   // We expect a waitGetPoses, then 2 submits (one for each eye), so after 2
   // submitted frames don't use the same frame_data again.
   if (num_frames_submitted_ % 2 == 0)
-    has_last_exclusive_frame_data_ = false;
+    has_last_immersive_frame_data_ = false;
 }
 
 device::PoseFrameData MyOpenVRMock::WaitGetMagicWindowPose() {
@@ -118,9 +118,9 @@ device::PoseFrameData MyOpenVRMock::WaitGetPresentingPose() {
   // to identify what the expected pose is.
   pose.device_to_origin[3] = frame_id_;
 
-  has_last_exclusive_frame_data_ = true;
+  has_last_immersive_frame_data_ = true;
   frame_id_++;
-  last_exclusive_frame_data = pose;
+  last_immersive_frame_data = pose;
 
   return pose;
 }

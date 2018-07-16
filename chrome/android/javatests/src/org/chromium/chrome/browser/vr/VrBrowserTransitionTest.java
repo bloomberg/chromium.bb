@@ -257,7 +257,7 @@ public class VrBrowserTransitionTest {
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         exitPresentationToVrShellImpl(
                 XrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webxr_page"),
-                mXrTestFramework, "exclusiveSession.end();");
+                mXrTestFramework, "immersiveSession.end();");
     }
 
     private void exitPresentationToVrShellImpl(String url, TestFramework framework,

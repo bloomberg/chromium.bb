@@ -97,27 +97,27 @@ IN_PROC_BROWSER_TEST_F(XrBrowserTestOpenVrDisabled,
 }
 
 // Tests that window.requestAnimationFrame continues to fire when we have a
-// non-exclusive WebXR session
+// non-immersive WebXR session
 IN_PROC_BROWSER_TEST_F(
     XrBrowserTestStandard,
-    REQUIRES_GPU(TestWindowRafFiresDuringNonExclusiveSession)) {
+    REQUIRES_GPU(TestWindowRafFiresDuringNonImmersiveSession)) {
   LoadUrlAndAwaitInitialization(
-      GetHtmlTestFile("test_window_raf_fires_during_non_exclusive_session"));
+      GetHtmlTestFile("test_window_raf_fires_during_non_immersive_session"));
   WaitOnJavaScriptStep(GetFirstTabWebContents());
   EndTest(GetFirstTabWebContents());
 }
 
-// Tests that non-exclusive sessions stop receiving rAFs during an exclusive
-// session, but resume once the exclusive session ends.
+// Tests that non-immersive sessions stop receiving rAFs during an immersive
+// session, but resume once the immersive session ends.
 IN_PROC_BROWSER_TEST_F(XrBrowserTestStandard,
-                       REQUIRES_GPU(TestNonExclusiveStopsDuringExclusive)) {
+                       REQUIRES_GPU(TestNonImmersiveStopsDuringImmersive)) {
   LoadUrlAndAwaitInitialization(
-      GetHtmlTestFile("test_non_exclusive_stops_during_exclusive"));
-  ExecuteStepAndWait("stepBeforeExclusive()", GetFirstTabWebContents());
+      GetHtmlTestFile("test_non_immersive_stops_during_immersive"));
+  ExecuteStepAndWait("stepBeforeImmersive()", GetFirstTabWebContents());
   EnterPresentationOrFail(GetFirstTabWebContents());
-  ExecuteStepAndWait("stepDuringExclusive()", GetFirstTabWebContents());
+  ExecuteStepAndWait("stepDuringImmersive()", GetFirstTabWebContents());
   ExitPresentationOrFail(GetFirstTabWebContents());
-  ExecuteStepAndWait("stepAfterExclusive()", GetFirstTabWebContents());
+  ExecuteStepAndWait("stepAfterImmersive()", GetFirstTabWebContents());
   EndTest(GetFirstTabWebContents());
 }
 

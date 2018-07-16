@@ -55,7 +55,7 @@ xr_session_promise_test( (session, t) =>  {
       session.requestAnimationFrame(onFrame);
     }));
 }, fakeDevices["FakeGooglePixelPhone"], [
-      { exclusive: true },
+      { immersive: true },
       { outputContext: getOutputContext() }
   ],
 "XRFrame getDevicePose updates on the next frame");

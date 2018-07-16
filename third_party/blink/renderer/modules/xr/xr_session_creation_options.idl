@@ -6,6 +6,6 @@
 [
     SecureContext
 ] dictionary XRSessionCreationOptions {
-  boolean exclusive = false;
+  boolean immersive = false;
   XRPresentationContext outputContext;
 };

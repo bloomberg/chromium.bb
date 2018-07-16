@@ -22,7 +22,7 @@ xr_session_promise_test( (session) => new Promise((resolve) => {
 
     session.requestAnimationFrame(onFrame);
   }), fakeDevices["FakeGooglePixelPhone"], [
-      { exclusive: true },
+      { immersive: true },
       { outputContext: getOutputContext() }
   ],
 "XRSession requestAnimationFrame properly calls the provided callback");

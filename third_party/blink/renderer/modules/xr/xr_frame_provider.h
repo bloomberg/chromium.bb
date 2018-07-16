@@ -26,17 +26,17 @@ class XRFrameProvider final
  public:
   explicit XRFrameProvider(XRDevice*);
 
-  XRSession* exclusive_session() const { return exclusive_session_; }
+  XRSession* immersive_session() const { return immersive_session_; }
   device::mojom::blink::VRSubmitFrameClientPtr GetSubmitFrameClient();
 
-  void BeginExclusiveSession(
+  void BeginImmersiveSession(
       XRSession* session,
       device::mojom::blink::XRPresentationConnectionPtr connection);
-  void OnExclusiveSessionEnded();
+  void OnImmersiveSessionEnded();
 
   void RequestFrame(XRSession*);
 
-  void OnNonExclusiveVSync(double timestamp);
+  void OnNonImmersiveVSync(double timestamp);
 
   void SubmitWebGLLayer(XRWebGLLayer*, bool was_changed);
   void UpdateWebGLLayerViewports(XRWebGLLayer*);
@@ -47,21 +47,21 @@ class XRFrameProvider final
   virtual void Trace(blink::Visitor*);
 
  private:
-  void OnExclusiveFrameData(device::mojom::blink::XRFrameDataPtr data);
-  void OnNonExclusiveFrameData(device::mojom::blink::XRFrameDataPtr data);
+  void OnImmersiveFrameData(device::mojom::blink::XRFrameDataPtr data);
+  void OnNonImmersiveFrameData(device::mojom::blink::XRFrameDataPtr data);
 
-  void ScheduleExclusiveFrame();
-  void ScheduleNonExclusiveFrame();
+  void ScheduleImmersiveFrame();
+  void ScheduleNonImmersiveFrame();
 
   void OnPresentationProviderConnectionError();
   void ProcessScheduledFrame(device::mojom::blink::XRFrameDataPtr frame_data,
                              double timestamp);
 
   const Member<XRDevice> device_;
-  Member<XRSession> exclusive_session_;
+  Member<XRSession> immersive_session_;
   Member<XRFrameTransport> frame_transport_;
 
-  // Non-exclusive Sessions which have requested a frame update.
+  // Non-immersive Sessions which have requested a frame update.
   HeapVector<Member<XRSession>> requesting_sessions_;
 
   device::mojom::blink::VRPresentationProviderPtr presentation_provider_;
@@ -72,8 +72,8 @@ class XRFrameProvider final
   // XR compositor so that it knows which poses to use, when to apply bounds
   // updates, etc.
   int16_t frame_id_ = -1;
-  bool pending_exclusive_vsync_ = false;
-  bool pending_non_exclusive_vsync_ = false;
+  bool pending_immersive_vsync_ = false;
+  bool pending_non_immersive_vsync_ = false;
   bool vsync_connection_failed_ = false;
 
   base::Optional<gpu::MailboxHolder> buffer_mailbox_holder_;

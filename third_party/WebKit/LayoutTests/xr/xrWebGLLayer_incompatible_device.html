@@ -16,7 +16,7 @@ promise_test( (t) => {
   webglCanvasSetup();
   return navigator.xr.requestDevice().then( (device) => new Promise((resolve) => {
     runWithUserGesture( () => {
-      resolve(device.requestSession({ exclusive: true })
+      resolve(device.requestSession({ immersive: true })
         .then( (session) => new Promise((resolve) => {
           try {
             let webglLayer = new XRWebGLLayer(session, gl);

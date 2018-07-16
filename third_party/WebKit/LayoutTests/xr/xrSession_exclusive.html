@@ -15,14 +15,14 @@ promise_test( (t) => {
   setFakeDevices([fakeDevices["FakeGooglePixelPhone"]]);
   return navigator.xr.requestDevice().then( (device) => new Promise((resolve) => {
     runWithUserGesture( () => {
-      resolve(device.requestSession({ exclusive: true }).then( (session) => {
-        assert_true(session.exclusive);
+      resolve(device.requestSession({ immersive: true }).then( (session) => {
+        assert_true(session.immersive);
         assert_equals(session.device, device);
         assert_approx_equals(session.depthNear, 0.1, FLOAT_EPSILON);
         assert_approx_equals(session.depthFar, 1000.0, FLOAT_EPSILON);
       }));
     });
   }));
-}, "supportsSession returns expected exclusive session");
+}, "supportsSession returns expected immersive session");
 
 </script>

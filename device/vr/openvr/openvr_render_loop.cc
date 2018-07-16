@@ -168,7 +168,7 @@ void OpenVRRenderLoop::RequestSession(
     base::OnceCallback<void()> on_presentation_ended,
     mojom::XRDeviceRuntimeSessionOptionsPtr options,
     RequestSessionCallback callback) {
-  DCHECK(options->exclusive);
+  DCHECK(options->immersive);
   binding_.Close();
 
   if (!openvr_) {

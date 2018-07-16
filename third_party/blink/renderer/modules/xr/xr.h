@@ -68,7 +68,7 @@ class XR final : public EventTargetWithInlineData,
   // Indicates whether use of requestDevice has already been logged.
   bool did_log_requestDevice_ = false;
   bool did_log_returned_device_ = false;
-  bool did_log_supports_exclusive_ = false;
+  bool did_log_supports_immersive_ = false;
   const int64_t ukm_source_id_;
 
   HeapVector<Member<XRDevice>> devices_;

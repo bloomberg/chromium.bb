@@ -45,7 +45,7 @@ xr_session_promise_test( (session) => new Promise((resolve, reject) => {
 
   lose_context_ext.loseContext();
 
-}), fakeDevices["FakeGooglePixelPhone"], [{ exclusive: true }],
+}), fakeDevices["FakeGooglePixelPhone"], [{ immersive: true }],
 "Ensure a WebGL layer's framebuffer can only be drawn to inside a XR frame");
 
 </script>

@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-Tests that a non-exclusive session's rAF stops firing when an exclusive session
+Tests that a non-immersive session's rAF stops firing when an immersive session
 is active, but resumes afterwards.
 -->
 <html>
@@ -13,18 +13,18 @@ is active, but resumes afterwards.
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
-      var t = async_test("Non-exclusive rAF stops during exclusive session");
+      var t = async_test("Non-immersive rAF stops during immersive session");
       let counter = 0;
 
-      function stepBeforeExclusive() {
+      function stepBeforeImmersive() {
         onMagicWindowXRFrameCallback = function() {
           // Verify that we call a rAF once, then make sure any subsequent calls
-          // are not done while there is an exclusive session.
+          // are not done while there is an immersive session.
           onMagicWindowXRFrameCallback = function() {
-            if (sessionInfos[sessionTypes.EXCLUSIVE].currentSession !== null) {
+            if (sessionInfos[sessionTypes.IMMERSIVE].currentSession !== null) {
               t.step( () => {
                 assert_unreached(
-                    "Non-exclusive rAF called during exclusive session");
+                    "Non-immersive rAF called during immersive session");
               });
             }
           }
@@ -32,22 +32,22 @@ is active, but resumes afterwards.
         };
       }
 
-      function stepDuringExclusive() {
-        // Let the exclusive session run for a bit so the non-exclusive rAF
+      function stepDuringImmersive() {
+        // Let the immersive session run for a bit so the non-immersive rAF
         // can fire if it's going to.
-        onExclusiveXRFrameCallback = function() {
+        onImmersiveXRFrameCallback = function() {
           if (counter < 10) {
             counter++;
             return;
           }
 
-          onExclusiveXRFrameCallback = null;
+          onImmersiveXRFrameCallback = null;
           finishJavaScriptStep();
         };
       }
 
-      function stepAfterExclusive() {
-        // Make sure we fire at least once after exiting the exclusive session
+      function stepAfterImmersive() {
+        // Make sure we fire at least once after exiting the immersive session
         onMagicWindowXRFrameCallback = function() {
           t.done();
         };

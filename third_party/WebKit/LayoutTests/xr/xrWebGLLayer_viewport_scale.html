@@ -69,6 +69,6 @@ xr_session_promise_test( (session, t) => new Promise((resolve, reject) => {
   }
 
   session.requestAnimationFrame(onFirstFrame);
-}), fakeDevices["FakeGooglePixelPhone"], [{ exclusive: true }],
+}), fakeDevices["FakeGooglePixelPhone"], [{ immersive: true }],
 "Ensure viewport scale changes only take effect on the next frame and are properly clamped.");
 </script>

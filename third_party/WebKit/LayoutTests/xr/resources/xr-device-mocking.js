@@ -327,7 +327,7 @@ class MockDevice {
   supportsSession(options) {
     return Promise.resolve({
       supportsSession:
-          !options.exclusive || this.displayInfo_.capabilities.canPresent
+          !options.immersive || this.displayInfo_.capabilities.canPresent
     });
   };
 
