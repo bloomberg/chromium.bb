@@ -64,8 +64,6 @@ Accelerator::Accelerator(const Accelerator& accelerator) {
   modifiers_ = accelerator.modifiers_;
   time_stamp_ = accelerator.time_stamp_;
   interrupted_by_mouse_event_ = accelerator.interrupted_by_mouse_event_;
-  if (accelerator.platform_accelerator_)
-    platform_accelerator_ = accelerator.platform_accelerator_->CreateCopy();
 }
 
 Accelerator::~Accelerator() {
@@ -90,10 +88,6 @@ Accelerator& Accelerator::operator=(const Accelerator& accelerator) {
     modifiers_ = accelerator.modifiers_;
     time_stamp_ = accelerator.time_stamp_;
     interrupted_by_mouse_event_ = accelerator.interrupted_by_mouse_event_;
-    if (accelerator.platform_accelerator_)
-      platform_accelerator_ = accelerator.platform_accelerator_->CreateCopy();
-    else
-      platform_accelerator_.reset();
   }
   return *this;
 }

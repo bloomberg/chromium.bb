@@ -7,36 +7,22 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
-#include "ui/base/accelerators/platform_accelerator.h"
+#include "ui/base/accelerators/accelerator.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
-// This is a Mac specific class for specifing accelerator keys.
-class UI_BASE_EXPORT PlatformAcceleratorCocoa : public PlatformAccelerator {
- public:
-  PlatformAcceleratorCocoa();
-  PlatformAcceleratorCocoa(NSString* key_code, NSUInteger modifier_mask);
-  ~PlatformAcceleratorCocoa() override;
-
-  // PlatformAccelerator:
-  std::unique_ptr<PlatformAccelerator> CreateCopy() const override;
-  bool Equals(const PlatformAccelerator& rhs) const override;
-
-  // The keyEquivalent of the NSMenuItem associated with the accelerator.
-  NSString* characters() const { return characters_.get(); }
-  // The keyEquivalentModifierMask of the NSMenuItem associated with the
-  // accelerator.
-  NSUInteger modifier_mask() const { return modifier_mask_; }
-
- private:
-  // String of characters for the key equivalent.
-  base::scoped_nsobject<NSString> characters_;
-  NSUInteger modifier_mask_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformAcceleratorCocoa);
-};
+// Returns |true| if there is an associated NSMenuItem, and populates output
+// variables |key_equivalent| and |modifier_mask|.
+//
+// On macOS, accelerators are primarily handled by the main menu. Most
+// accelerators have an associated NSMenuItem. Each NSMenuItem is specified with
+// a |key_equivalent| and |modifier_mask|. This function takes a ui::Accelerator
+// and returns the associated |key_equivalent| and |modifier_mask|.
+UI_BASE_EXPORT void GetKeyEquivalentAndModifierMaskFromAccelerator(
+    const ui::Accelerator& accelerator,
+    NSString** key_equivalent,
+    NSUInteger* modifier_mask);
 
 }  // namespace ui
 

@@ -193,14 +193,12 @@ NSString* const kMenuControllerMenuDidCloseNotification =
     [item setRepresentedObject:modelObject];  // Retains |modelObject|.
     ui::Accelerator accelerator;
     if (model->GetAcceleratorAt(index, &accelerator)) {
-      const ui::PlatformAcceleratorCocoa* platformAccelerator =
-          static_cast<const ui::PlatformAcceleratorCocoa*>(
-              accelerator.platform_accelerator());
-      if (platformAccelerator) {
-        [item setKeyEquivalent:platformAccelerator->characters()];
-        [item setKeyEquivalentModifierMask:
-            platformAccelerator->modifier_mask()];
-      }
+      NSString* key_equivalent;
+      NSUInteger modifier_mask;
+      GetKeyEquivalentAndModifierMaskFromAccelerator(
+          accelerator, &key_equivalent, &modifier_mask);
+      [item setKeyEquivalent:key_equivalent];
+      [item setKeyEquivalentModifierMask:modifier_mask];
     }
   }
   [menu insertItem:item atIndex:index];

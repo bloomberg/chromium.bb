@@ -4,37 +4,32 @@
 
 #import "ui/base/accelerators/platform_accelerator_cocoa.h"
 
-#include <memory>
+#import <AppKit/AppKit.h>
 
-#include "base/memory/ptr_util.h"
+#include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
 namespace ui {
 
-PlatformAcceleratorCocoa::PlatformAcceleratorCocoa() : modifier_mask_(0) {
-}
-
-PlatformAcceleratorCocoa::PlatformAcceleratorCocoa(NSString* key_code,
-                                                   NSUInteger modifier_mask)
-    : characters_([key_code copy]),
-      modifier_mask_(modifier_mask) {
-}
-
-PlatformAcceleratorCocoa::~PlatformAcceleratorCocoa() {
-}
-
-std::unique_ptr<PlatformAccelerator> PlatformAcceleratorCocoa::CreateCopy()
-    const {
-  std::unique_ptr<PlatformAcceleratorCocoa> copy(new PlatformAcceleratorCocoa);
-  copy->characters_.reset([characters_ copy]);
-  copy->modifier_mask_ = modifier_mask_;
-  return base::WrapUnique(copy.release());
-}
-
-bool PlatformAcceleratorCocoa::Equals(const PlatformAccelerator& rhs) const {
-  const PlatformAcceleratorCocoa& rhs_cocoa =
-      static_cast<const PlatformAcceleratorCocoa&>(rhs);
-  return [characters_ isEqualToString:rhs_cocoa.characters_] &&
-         modifier_mask_ == rhs_cocoa.modifier_mask_;
+void GetKeyEquivalentAndModifierMaskFromAccelerator(
+    const ui::Accelerator& accelerator,
+    NSString** key_equivalent,
+    NSUInteger* modifier_mask) {
+  DCHECK_NE(ui::VKEY_UNKNOWN, accelerator.key_code());
+  NSUInteger cocoa_modifiers = 0;
+  if (accelerator.IsShiftDown())
+    cocoa_modifiers |= NSEventModifierFlagShift;
+  if (accelerator.IsCtrlDown())
+    cocoa_modifiers |= NSEventModifierFlagControl;
+  if (accelerator.IsAltDown())
+    cocoa_modifiers |= NSEventModifierFlagOption;
+  if (accelerator.IsCmdDown())
+    cocoa_modifiers |= NSEventModifierFlagCommand;
+  unichar shifted_character;
+  int result = ui::MacKeyCodeForWindowsKeyCode(
+      accelerator.key_code(), cocoa_modifiers, &shifted_character, nullptr);
+  DCHECK(result != -1);
+  *key_equivalent = [NSString stringWithFormat:@"%C", shifted_character];
+  *modifier_mask = cocoa_modifiers;
 }
 
 }  // namespace ui
