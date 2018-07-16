@@ -404,7 +404,7 @@ public class PaymentRequestImpl
                 new AddressEditor(/*emailFieldIncluded=*/false, /*saveToDisk=*/!mIsIncognito);
         mCardEditor = new CardEditor(mWebContents, mAddressEditor, sObserverForTest);
 
-        mJourneyLogger = new JourneyLogger(mIsIncognito, mWebContents.getLastCommittedUrl());
+        mJourneyLogger = new JourneyLogger(mIsIncognito, mWebContents);
 
         if (sCanMakePaymentQueries == null) sCanMakePaymentQueries = new ArrayMap<>();
 

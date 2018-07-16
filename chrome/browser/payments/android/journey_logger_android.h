@@ -8,13 +8,14 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "components/payments/core/journey_logger.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace payments {
 
 // Forwarding calls to payments::JourneyLogger.
 class JourneyLoggerAndroid {
  public:
-  JourneyLoggerAndroid(bool is_incognito, const std::string& url);
+  JourneyLoggerAndroid(bool is_incognito, ukm::SourceId source_id);
   ~JourneyLoggerAndroid();
 
   // Message from Java to destroy this object.

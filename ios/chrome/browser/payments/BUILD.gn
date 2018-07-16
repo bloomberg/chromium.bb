@@ -44,6 +44,7 @@ source_set("payments") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/metrics",
     "//ios/chrome/browser/signin",
     "//ios/web",
     "//net",

@@ -23,8 +23,7 @@ namespace payments {
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentNotCalled_NoShow) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   logger.SetCompleted();
 
@@ -42,8 +41,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentNotCalled_ShowAndUserAbort) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The merchant does not query CanMakePayment, show the PaymentRequest and the
   // user aborts it.
@@ -66,8 +64,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentNotCalled_ShowAndOtherAbort) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The merchant does not query CanMakePayment, show the PaymentRequest and
   // there is an abort not initiated by the user.
@@ -90,8 +87,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentNotCalled_ShowAndComplete) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The merchant does not query CanMakePayment, show the PaymentRequest and the
   // user completes it.
@@ -114,8 +110,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_FalseAndNoShow) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The user cannot make payment and the PaymentRequest is not shown.
   logger.SetCanMakePaymentValue(false);
@@ -136,8 +131,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_TrueAndNoShow) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The user can make payment and the PaymentRequest is not shown.
   logger.SetCanMakePaymentValue(true);
@@ -158,8 +152,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_FalseShowAndUserAbort) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The user cannot make payment, the Payment Request is shown but is aborted
   // by the user.
@@ -183,8 +176,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_FalseShowAndOtherAbort) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The user cannot make payment, the Payment Request is shown but is aborted.
   logger.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
@@ -207,8 +199,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_FalseShowAndComplete) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The user cannot make payment, the payment request is shown and is
   // completed.
@@ -232,8 +223,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_TrueShowAndUserAbort) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The user can make payment, the Payment Request is shown and aborted by the
   // user.
@@ -257,8 +247,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_TrueShowAndOtherAbort) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The user can make a payment, the request is shown but the transaction is
   // aborted.
@@ -282,8 +271,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_TrueShowAndComplete) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The user can make a payment, the request is shown and the user completes
   // the checkout.
@@ -307,8 +295,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePayment_IncognitoTab) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/true, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/true, ukm::kInvalidSourceId);
 
   // The user can make a payment, the request is shown and the user completes
   // the checkout.
@@ -332,8 +319,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_SuggestionsForEverything_Completed) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The merchant only requests payment information.
   logger.SetRequestedInformation(
@@ -378,8 +364,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_SuggestionsForEverything_UserAborted) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The merchant only requests payment information.
   logger.SetRequestedInformation(
@@ -424,8 +409,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_SuggestionsForEverything_OtherAborted) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The merchant only requests payment information.
   logger.SetRequestedInformation(
@@ -471,8 +455,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_SuggestionsForEverything_Incognito) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/true, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/true, ukm::kInvalidSourceId);
 
   // The merchant only requests payment information.
   logger.SetRequestedInformation(
@@ -517,8 +500,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_NoSuggestionsForEverything_Completed) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The merchant only requests payment information.
   logger.SetRequestedInformation(
@@ -563,8 +545,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_NoSuggestionsForEverything_UserAborted) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The merchant only requests payment information.
   logger.SetRequestedInformation(
@@ -609,8 +590,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_NoSuggestionsForEverything_OtherAborted) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The merchant only requests payment information.
   logger.SetRequestedInformation(
@@ -656,8 +636,7 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_NoSuggestionsForEverything_Incognito) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/true, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/true, ukm::kInvalidSourceId);
 
   // The merchant only requests payment information.
   logger.SetRequestedInformation(
@@ -703,8 +682,7 @@ TEST(
     JourneyLoggerTest,
     RecordJourneyStatsHistograms_NoCompleteSuggestionsForEverything_OtherAborted) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The merchant only requests payment information.
   logger.SetRequestedInformation(
@@ -751,8 +729,7 @@ TEST(
     JourneyLoggerTest,
     RecordJourneyStatsHistograms_NoCompleteSuggestionsForEverything_SomeComplete_OtherAborted) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The merchant only requests payment information.
   logger.SetRequestedInformation(
@@ -801,8 +778,7 @@ TEST(
     JourneyLoggerTest,
     RecordJourneyStatsHistograms_CompleteSuggestionsForEverything_OtherAborted) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
-                       /*ukm_recorder=*/nullptr);
+  JourneyLogger logger(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // The merchant only requests payment information.
   logger.SetRequestedInformation(
@@ -849,10 +825,8 @@ TEST(
 // Requests.
 TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_TwoPaymentRequests) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger1(/*is_incognito=*/false, /*url=*/GURL(""),
-                        /*ukm_recorder=*/nullptr);
-  JourneyLogger logger2(/*is_incognito=*/false, /*url=*/GURL(""),
-                        /*ukm_recorder=*/nullptr);
+  JourneyLogger logger1(/*is_incognito=*/false, ukm::kInvalidSourceId);
+  JourneyLogger logger2(/*is_incognito=*/false, ukm::kInvalidSourceId);
 
   // Make the two loggers have different data.
   logger1.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
@@ -933,8 +907,9 @@ TEST(JourneyLoggerTest,
   char test_url[] = "http://www.google.com/";
 
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/true, /*url=*/GURL(test_url),
-                       /*ukm_recorder=*/&ukm_recorder);
+  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+  ukm_recorder.UpdateSourceURL(source_id, GURL(test_url));
+  JourneyLogger logger(/*is_incognito=*/true, source_id);
   logger.SetRequestedInformation(
       /*requested_shipping=*/true, /*requested_email=*/true,
       /*requested_phone=*/false, /*requested_name=*/false);
@@ -983,8 +958,9 @@ TEST(JourneyLoggerTest,
   char test_url[] = "http://www.google.com/";
 
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/true, /*url=*/GURL(test_url),
-                       /*ukm_recorder=*/&ukm_recorder);
+  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+  ukm_recorder.UpdateSourceURL(source_id, GURL(test_url));
+  JourneyLogger logger(/*is_incognito=*/true, source_id);
   logger.SetRequestedInformation(
       /*requested_shipping=*/true, /*requested_email=*/true,
       /*requested_phone=*/false, /*requested_name=*/false);

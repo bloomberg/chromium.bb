@@ -55,13 +55,10 @@ std::string GetHistogramNameSuffix(
 
 }  // namespace
 
-JourneyLogger::JourneyLogger(bool is_incognito,
-                             const GURL& url,
-                             ukm::UkmRecorder* ukm_recorder)
+JourneyLogger::JourneyLogger(bool is_incognito, ukm::SourceId source_id)
     : is_incognito_(is_incognito),
       events_(EVENT_INITIATED),
-      url_(url),
-      ukm_recorder_(ukm_recorder) {}
+      source_id_(source_id) {}
 
 JourneyLogger::~JourneyLogger() {
   if (WasPaymentRequestTriggered())
@@ -241,16 +238,14 @@ void JourneyLogger::RecordEventsMetric(CompletionStatus completion_status) {
   // Record the events in UMA.
   base::UmaHistogramSparse("PaymentRequest.Events", events_);
 
-  if (!ukm_recorder_ || !url_.is_valid())
+  if (source_id_ == ukm::kInvalidSourceId)
     return;
 
   // Record the events in UKM.
-  ukm::SourceId source_id = ukm_recorder_->GetNewSourceID();
-  ukm_recorder_->UpdateSourceURL(source_id, url_);
-  ukm::builders::PaymentRequest_CheckoutEvents(source_id)
+  ukm::builders::PaymentRequest_CheckoutEvents(source_id_)
       .SetCompletionStatus(completion_status)
       .SetEvents(events_)
-      .Record(ukm_recorder_);
+      .Record(ukm::UkmRecorder::Get());
 }
 
 bool JourneyLogger::WasPaymentRequestTriggered() {
