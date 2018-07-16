@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -1132,6 +1133,11 @@ void GpuProcessHost::OnProcessLaunched() {
 }
 
 void GpuProcessHost::OnProcessLaunchFailed(int error_code) {
+  // TODO(crbug.com/849639): Ensure |error_code| is included in crash minidumps.
+  // This is for debugging and should be removed when bug is closed.
+  int process_launch_error_code = error_code;
+  base::debug::Alias(&process_launch_error_code);
+
 #if defined(OS_WIN)
   if (kind_ == GPU_PROCESS_KIND_SANDBOXED)
     RecordAppContainerStatus(error_code, crashed_before_);
@@ -1140,6 +1146,11 @@ void GpuProcessHost::OnProcessLaunchFailed(int error_code) {
 }
 
 void GpuProcessHost::OnProcessCrashed(int exit_code) {
+  // TODO(crbug.com/849639): Ensure |exit_code| is included in crash minidumps.
+  // This is for debugging and should be removed when bug is closed.
+  int process_crash_exit_code = exit_code;
+  base::debug::Alias(&process_crash_exit_code);
+
   // If the GPU process crashed while compiling a shader, we may have invalid
   // cached binaries. Completely clear the shader cache to force shader binaries
   // to be re-created.
@@ -1531,6 +1542,16 @@ void GpuProcessHost::RecordProcessCrash() {
         static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
     recent_crash_count = display_compositor_recent_crash_count_;
   }
+
+  // TODO(crbug.com/849639): Ensure crash counts are included in crash
+  // minidumps. This is for debugging and should be removed when bug is closed.
+  int hardware_accelerated_crash_count =
+      hardware_accelerated_recent_crash_count_;
+  base::debug::Alias(&hardware_accelerated_crash_count);
+  int swiftshader_crash_count = swiftshader_recent_crash_count_;
+  base::debug::Alias(&swiftshader_crash_count);
+  int display_compositor_crash_count = display_compositor_recent_crash_count_;
+  base::debug::Alias(&display_compositor_crash_count);
 
   // GPU process initialization failed and fallback already happened.
   if (status_ == FAILURE)
