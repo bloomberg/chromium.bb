@@ -6,9 +6,6 @@
   ],
   "tests": [
     {
-      "app": "ios_chrome_unittests"
-    },
-    {
       "app": "ios_net_unittests"
     },
     {
