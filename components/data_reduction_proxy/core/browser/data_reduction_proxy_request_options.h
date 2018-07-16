@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -19,6 +20,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
+#include "net/http/http_request_headers.h"
 
 namespace net {
 class HttpRequestHeaders;
@@ -39,6 +41,9 @@ extern const char kAndroidWebViewProtocolVersion[];
 #endif
 
 class DataReductionProxyConfig;
+
+typedef base::RepeatingCallback<void(net::HttpRequestHeaders)>
+    UpdateHeaderCallback;
 
 class DataReductionProxyRequestOptions {
  public:
@@ -73,6 +78,11 @@ class DataReductionProxyRequestOptions {
 
   // Sets the credentials for sending to the Data Reduction Proxy.
   void SetSecureSession(const std::string& secure_session);
+
+  // Set the callback to call when the proxy request headers are updated.
+  void SetUpdateHeaderCallback(UpdateHeaderCallback callback) {
+    update_header_callback_ = callback;
+  }
 
   // Retrieves the credentials for sending to the Data Reduction Proxy.
   const std::string& GetSecureSession() const;
@@ -165,6 +175,10 @@ class DataReductionProxyRequestOptions {
 
   // The page identifier that was last generated for data saver proxy server.
   uint64_t current_page_id_;
+
+  // Callback to expose the chrome_proxy header to the UI thread. Called
+  // whenever the chrome_proxy header value changes. Can be null.
+  UpdateHeaderCallback update_header_callback_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;

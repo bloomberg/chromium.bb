@@ -150,6 +150,9 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // cleared.
   void OnCacheCleared(const base::Time start, const base::Time end);
 
+  // Forwards proxy authentication headers to the UI thread.
+  void UpdateProxyRequestHeaders(net::HttpRequestHeaders headers);
+
   // Various accessor methods.
   DataReductionProxyConfigurator* configurator() const {
     return configurator_.get();

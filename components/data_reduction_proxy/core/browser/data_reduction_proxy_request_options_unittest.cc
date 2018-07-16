@@ -9,11 +9,13 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -153,6 +155,17 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
     request_options_->Init();
   }
 
+  void CreateRequestOptionsWithCallback(const std::string& version) {
+    CreateRequestOptions(version);
+    request_options_->SetUpdateHeaderCallback(base::BindRepeating(
+        &DataReductionProxyRequestOptionsTest::UpdateHeaderCallback,
+        base::Unretained(this)));
+  }
+
+  void UpdateHeaderCallback(net::HttpRequestHeaders headers) {
+    callback_headers_ = headers;
+  }
+
   TestDataReductionProxyParams* params() {
     return test_context_->config()->test_params();
   }
@@ -160,6 +173,8 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
   TestDataReductionProxyRequestOptions* request_options() {
     return request_options_.get();
   }
+
+  net::HttpRequestHeaders callback_headers() { return callback_headers_; }
 
   void VerifyExpectedHeader(const std::string& expected_header,
                             uint64_t page_id) {
@@ -179,6 +194,7 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
   base::MessageLoopForIO message_loop_;
   std::unique_ptr<TestDataReductionProxyRequestOptions> request_options_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
+  net::HttpRequestHeaders callback_headers_;
 };
 
 TEST_F(DataReductionProxyRequestOptionsTest, AuthHashForSalt) {
@@ -243,6 +259,25 @@ TEST_F(DataReductionProxyRequestOptionsTest, SecureSession) {
   CreateRequestOptions(kVersion);
   request_options()->SetSecureSession(kSecureSession);
   VerifyExpectedHeader(expected_header, kPageIdValue);
+}
+
+TEST_F(DataReductionProxyRequestOptionsTest, CallsHeaderCallback) {
+  std::string expected_header;
+  SetHeaderExpectations(std::string(), std::string(), kSecureSession,
+                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
+                        std::vector<std::string>(), &expected_header);
+
+  CreateRequestOptionsWithCallback(kVersion);
+  request_options()->SetSecureSession(kSecureSession);
+  VerifyExpectedHeader(expected_header, kPageIdValue);
+
+  std::string callback_header;
+  callback_headers().GetHeader(kChromeProxyHeader, &callback_header);
+  // |callback_header| does not include a page id. Since the page id is always
+  // the last element in the header, check that |callback_header| is the prefix
+  // of |expected_header|.
+  EXPECT_TRUE(base::StartsWith(expected_header, callback_header,
+                               base::CompareCase::SENSITIVE));
 }
 
 TEST_F(DataReductionProxyRequestOptionsTest, ParseExperiments) {
