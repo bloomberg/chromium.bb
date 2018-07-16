@@ -97,10 +97,14 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
     nav_observer.StopWatchingNewWebContents();
   }
 
-  MediaRouterAction* GetMediaRouterAction() {
+  // Returns the dialog controller for the active WebContents.
+  MediaRouterDialogControllerImplBase* GetDialogController() {
     return MediaRouterDialogControllerImplBase::GetOrCreateForWebContents(
-               browser()->tab_strip_model()->GetActiveWebContents())
-        ->action();
+        browser()->tab_strip_model()->GetActiveWebContents());
+  }
+
+  MediaRouterAction* GetMediaRouterAction() {
+    return GetDialogController()->action();
   }
 
   ui::SimpleMenuModel* GetActionContextMenu() {
@@ -134,9 +138,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
 
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    MediaRouterDialogController* dialog_controller =
-        MediaRouterDialogController::GetOrCreateForWebContents(
-            browser()->tab_strip_model()->GetActiveWebContents());
+    MediaRouterDialogController* dialog_controller = GetDialogController();
     content::ContextMenuParams params;
     params.page_url =
         web_contents->GetController().GetLastCommittedEntry()->GetURL();
@@ -164,9 +166,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
         test::AppMenuTestApi::Create(browser());
     app_menu_test_api->ShowMenu();
 
-    MediaRouterDialogController* dialog_controller =
-        MediaRouterDialogController::GetOrCreateForWebContents(
-            browser()->tab_strip_model()->GetActiveWebContents());
+    MediaRouterDialogController* dialog_controller = GetDialogController();
     ASSERT_FALSE(dialog_controller->IsShowingMediaRouterDialog());
     app_menu_test_api->ExecuteCommand(IDC_ROUTE_MEDIA);
     EXPECT_TRUE(dialog_controller->IsShowingMediaRouterDialog());
@@ -180,9 +180,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   }
 
   void TestEphemeralToolbarIconForDialog() {
-    MediaRouterDialogController* dialog_controller =
-        MediaRouterDialogController::GetOrCreateForWebContents(
-            browser()->tab_strip_model()->GetActiveWebContents());
+    MediaRouterDialogController* dialog_controller = GetDialogController();
 
     EXPECT_FALSE(ActionExists());
     dialog_controller->ShowMediaRouterDialog();
@@ -208,6 +206,31 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
     SetAlwaysShowActionPref(false);
     EXPECT_TRUE(ActionExists());
     dialog_controller->HideMediaRouterDialog();
+    EXPECT_FALSE(ActionExists());
+  }
+
+  void TestPinAndUnpinToolbarIcon() {
+    GetDialogController()->ShowMediaRouterDialog();
+    EXPECT_TRUE(ActionExists());
+
+    // Pin the icon via its context menu.
+    ui::SimpleMenuModel* context_menu = GetActionContextMenu();
+    const int command_index = context_menu->GetIndexOfCommandId(
+        IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION);
+    if (IsCocoaBrowser()) {
+      // With Cocoa, OnContextMenuClosed() gets called before command execution.
+      GetMediaRouterAction()->OnContextMenuClosed();
+      context_menu->ActivatedAt(command_index);
+    } else {
+      context_menu->ActivatedAt(command_index);
+      GetMediaRouterAction()->OnContextMenuClosed();
+    }
+    GetDialogController()->HideMediaRouterDialog();
+    EXPECT_TRUE(ActionExists());
+
+    // Unpin the icon via its context menu.
+    GetActionContextMenu()->ActivatedAt(command_index);
+    GetMediaRouterAction()->OnContextMenuClosed();
     EXPECT_FALSE(ActionExists());
   }
 
@@ -393,6 +416,10 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, UpdateActionLocation) {
       toolbar_actions_bar_->IsActionVisibleOnMainBar(GetMediaRouterAction()));
 }
 
+IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, PinAndUnpinToolbarIcon) {
+  TestPinAndUnpinToolbarIcon();
+}
+
 // Runs dialog-related tests with the Views Cast dialog.
 class MediaRouterViewsUIBrowserTest : public MediaRouterUIBrowserTest {
  protected:
@@ -422,6 +449,12 @@ IN_PROC_BROWSER_TEST_F(MediaRouterViewsUIBrowserTest,
   if (IsCocoaBrowser())
     return;
   TestEphemeralToolbarIconForDialog();
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterViewsUIBrowserTest, PinAndUnpinToolbarIcon) {
+  if (IsCocoaBrowser())
+    return;
+  TestPinAndUnpinToolbarIcon();
 }
 
 }  // namespace media_router
