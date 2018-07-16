@@ -77,9 +77,12 @@ TrafficAnnotationExporter::TrafficAnnotationExporter(
     const base::FilePath& source_path)
     : source_path_(source_path), modified_(false) {
   all_supported_platforms_.push_back("linux");
+  all_supported_platforms_.push_back("mac");
   all_supported_platforms_.push_back("windows");
 #if defined(OS_LINUX)
   current_platform_ = "linux";
+#elif defined(OS_MACOSX)
+  current_platform_ = "mac";
 #elif defined(OS_WIN)
   current_platform_ = "windows";
 #else

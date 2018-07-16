@@ -1821,12 +1821,6 @@
     'sandbox_linux_unittests': {},
   },
 
-  'linux_specific_chromium_gtests': {
-    # Linux only.
-    # TODO(kbr): unclear why some of these aren't run more broadly.
-    'traffic_annotation_auditor_unittests': {},
-  },
-
   'linux_specific_chromium_isolated_scripts': {
     'devtools_closure_compile': {},
     'devtools_eslint': {},
@@ -1871,7 +1865,7 @@
     'accessibility_unittests': {},
     'app_shell_unittests': {},
     'blink_fuzzer_unittests': {},
-    'browser_tests': {
+    'browser_tests': {  # https://crbug.com/611756
       'swarming': {
         'shards': 10,
       },
@@ -1894,9 +1888,10 @@
     'ppapi_unittests': {},
     'printing_unittests': {},
     'remoting_unittests': {},
-    'service_manager_unittests': {}, # crbug.com/843134
+    'service_manager_unittests': {}, # https://crbug.com/843134
     'snapshot_unittests': {},
     'sync_integration_tests': {},
+    'traffic_annotation_auditor_unittests': {},
     'views_unittests': {},
     # TODO(thakis): When they work on Android, move viz_ tests to
     # chromium_gtests_for_devices_with_graphical_output.
@@ -2296,7 +2291,6 @@
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_linux_and_chromeos_only',
     'linux_flavor_specific_chromium_gtests',
-    'linux_specific_chromium_gtests',
     'network_service_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
@@ -2312,7 +2306,6 @@
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_linux_and_chromeos_only',
     'linux_flavor_specific_chromium_gtests',
-    'linux_specific_chromium_gtests',
     'network_service_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
@@ -2324,7 +2317,6 @@
   'linux_chromeos_gtests': [
     # This is:
     #   linux_chromium_gtests
-    #   - linux_specific_chromium_gtests
     #   - non_android_and_cast_and_chromeos_chromium_gtests
     #   + linux_chromeos_specific_gtests
     #   + mash_chromium_gtests
