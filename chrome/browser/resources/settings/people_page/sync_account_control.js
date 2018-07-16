@@ -228,11 +228,11 @@ Polymer({
   getSyncIcon_: function() {
     switch (this.getSyncIconStyle_()) {
       case 'sync-problem':
-        return 'sync-problem';
+        return 'settings:sync-problem';
       case 'sync-paused':
-        return 'sync-disabled';
+        return 'settings:sync-disabled';
       default:
-        return 'sync';
+        return 'cr:sync';
     }
   },
 

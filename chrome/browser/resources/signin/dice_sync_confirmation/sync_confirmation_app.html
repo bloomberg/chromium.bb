@@ -1,16 +1,15 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/notification-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="icons.html">
 <link rel="import" href="signin_shared_css.html">
 <link rel="import" href="sync_confirmation_browser_proxy.html">
 
@@ -215,13 +214,13 @@
       <div class="message-container">
         <!-- Container needed to contain the icon in a green circle. -->
         <div id="sync-logo-container" class="logo">
-          <iron-icon icon="notification:sync" class="logo">
-          </iron-icon>
+          <iron-icon icon="cr:sync" class="logo"></iron-icon>
         </div>
         <div consent-description>$i18n{syncConfirmationChromeSyncBody}</div>
       </div>
       <div class="message-container">
-        <iron-icon icon="image:assistant" id="personalize-logo" class="logo">
+        <iron-icon icon="sync-confirmation:assistant" id="personalize-logo"
+            class="logo">
         </iron-icon>
         <div consent-description>
           $i18n{syncConfirmationPersonalizeServicesBody}
@@ -233,7 +232,7 @@
       </div>
       <div class="footer">
         <div class="message-container">
-          <iron-icon icon="icons:settings" class="logo"></iron-icon>
+          <iron-icon icon="sync-confirmation:settings" class="logo"></iron-icon>
           <div consent-description>
             $i18n{syncConfirmationSyncSettingsDescription}
           </div>

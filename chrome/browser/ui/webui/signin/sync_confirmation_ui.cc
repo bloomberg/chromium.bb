@@ -41,6 +41,8 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   int undo_button_ids = -1;
   if (is_unified_consent_enabled && is_sync_allowed) {
     source->SetDefaultResource(IDR_DICE_SYNC_CONFIRMATION_HTML);
+    source->AddResourcePath("icons.html",
+                            IDR_DICE_SYNC_CONFIRMATION_ICONS_HTML);
     source->AddResourcePath("sync_confirmation_browser_proxy.html",
                             IDR_DICE_SYNC_CONFIRMATION_BROWSER_PROXY_HTML);
     source->AddResourcePath("sync_confirmation_browser_proxy.js",

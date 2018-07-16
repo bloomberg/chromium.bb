@@ -279,7 +279,7 @@ cr.define('settings_sync_account_control', function() {
 
       assertTrue(testElement.$$('#sync-icon-container')
                      .classList.contains('sync-disabled'));
-      assertTrue(!!testElement.$$('[icon=\'settings:sync\']'));
+      assertTrue(!!testElement.$$('[icon=\'cr:sync\']'));
       displayedText = userInfo.querySelector('span:not([hidden])').textContent;
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
