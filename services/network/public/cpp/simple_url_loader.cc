@@ -214,6 +214,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   int NetError() const override;
   const ResourceResponseHead* ResponseInfo() const override;
   const GURL& GetFinalURL() const override;
+  bool LoadedFromCache() const override;
 
   // Called by BodyHandler when the BodyHandler body handler is done. If |error|
   // is not net::OK, some error occurred reading or consuming the body. If it is
@@ -252,6 +253,8 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
 
     // Result of the request.
     int net_error = net::ERR_IO_PENDING;
+
+    bool loaded_from_cache = false;
 
     std::unique_ptr<ResourceResponseHead> response_info;
   };
@@ -1194,6 +1197,12 @@ const GURL& SimpleURLLoaderImpl::GetFinalURL() const {
   return final_url_;
 }
 
+bool SimpleURLLoaderImpl::LoadedFromCache() const {
+  // Should only be called once the request is compelete.
+  DCHECK(request_state_->finished);
+  return request_state_->loaded_from_cache;
+}
+
 const ResourceResponseHead* SimpleURLLoaderImpl::ResponseInfo() const {
   // Should only be called once the request is compelete.
   DCHECK(request_state_->finished);
@@ -1410,6 +1419,7 @@ void SimpleURLLoaderImpl::OnComplete(const URLLoaderCompletionStatus& status) {
   request_state_->request_completed = true;
   request_state_->expected_body_size = status.decoded_body_length;
   request_state_->net_error = status.error_code;
+  request_state_->loaded_from_cache = status.exists_in_cache;
   // If |status| indicates success, but the body pipe was never received, the
   // URLLoader is violating the API contract.
   if (request_state_->net_error == net::OK && !request_state_->body_started)

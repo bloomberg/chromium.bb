@@ -34,6 +34,8 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace autofill {
 
@@ -285,8 +287,7 @@ AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
       observer_(observer),
       autofill_server_url_(GetAutofillServerURL()),
       max_form_cache_size_(kMaxFormCacheSize),
-      fetcher_backoff_(&kAutofillBackoffPolicy),
-      fetcher_id_for_unittest_(0),
+      loader_backoff_(&kAutofillBackoffPolicy),
       weak_factory_(this) {
   DCHECK(observer_);
 }
@@ -362,24 +363,22 @@ bool AutofillDownloadManager::StartUploadRequest(
   return StartRequest(std::move(request_data));
 }
 
-std::tuple<GURL, net::URLFetcher::RequestType>
-AutofillDownloadManager::GetRequestURLAndMethod(
+std::tuple<GURL, std::string> AutofillDownloadManager::GetRequestURLAndMethod(
     const FormRequestData& request_data) const {
-  net::URLFetcher::RequestType method = net::URLFetcher::POST;
+  std::string method("POST");
   std::string query_str;
 
   if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY) {
     if (request_data.payload.length() <= kMaxQueryGetSize &&
         base::FeatureList::IsEnabled(features::kAutofillCacheQueryResponses)) {
-      method = net::URLFetcher::GET;
+      method = "GET";
       std::string base64_payload;
       base::Base64UrlEncode(request_data.payload,
                             base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                             &base64_payload);
       base::StrAppend(&query_str, {"q=", base64_payload});
     }
-    UMA_HISTOGRAM_BOOLEAN("Autofill.Query.Method",
-                          (method == net::URLFetcher::GET) ? 0 : 1);
+    UMA_HISTOGRAM_BOOLEAN("Autofill.Query.Method", (method == "GET") ? 0 : 1);
   }
 
   GURL::Replacements replacements;
@@ -388,52 +387,49 @@ AutofillDownloadManager::GetRequestURLAndMethod(
   GURL url = autofill_server_url_
                  .Resolve(RequestTypeToString(request_data.request_type))
                  .ReplaceComponents(replacements);
-  return std::make_tuple(std::move(url), method);
+  return std::make_tuple(std::move(url), std::move(method));
 }
 
 bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
-  net::URLRequestContextGetter* request_context =
-      driver_->GetURLRequestContext();
-  DCHECK(request_context);
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      driver_->GetURLLoaderFactory();
+  DCHECK(url_loader_factory);
 
   // Get the URL and method to use for this request.
-  net::URLFetcher::RequestType method;
+  std::string method;
   GURL request_url;
   std::tie(request_url, method) = GetRequestURLAndMethod(request_data);
 
-  // Id is ignored for regular chrome, in unit test id's for fake fetcher
-  // factory will be 0, 1, 2, ...
-  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
-      fetcher_id_for_unittest_++, request_url, method, this,
-      GetNetworkTrafficAnnotation(request_data.request_type));
-
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher.get(), data_use_measurement::DataUseUserData::AUTOFILL);
-  fetcher->SetAutomaticallyRetryOn5xx(false);
-  fetcher->SetRequestContext(request_context);
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                        net::LOAD_DO_NOT_SEND_COOKIES);
-  if (method == net::URLFetcher::POST) {
-    fetcher->SetUploadData("text/proto", request_data.payload);
-  }
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = request_url;
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->method = method;
 
   // Add Chrome experiment state to the request headers.
-  net::HttpRequestHeaders headers;
   variations::AppendVariationHeadersUnknownSignedIn(
-      fetcher->GetOriginalURL(),
+      request_url,
       driver_->IsIncognito() ? variations::InIncognito::kYes
                              : variations::InIncognito::kNo,
-      &headers);
-  fetcher->SetExtraRequestHeaders(headers.ToString());
+      &resource_request->headers);
 
-  // Transfer ownership of the fetcher into url_fetchers_. Temporarily hang
+  auto simple_loader = network::SimpleURLLoader::Create(
+      std::move(resource_request),
+      GetNetworkTrafficAnnotation(request_data.request_type));
+  if (method == "POST")
+    simple_loader->AttachStringForUpload(request_data.payload, "text/proto");
+
+  // Transfer ownership of the loader into url_loaders_. Temporarily hang
   // onto the raw pointer to use it as a key and to kick off the request;
-  // transferring ownership (std::move) invalidates the |fetcher| variable.
-  auto* raw_fetcher = fetcher.get();
-  url_fetchers_[raw_fetcher] =
-      std::make_pair(std::move(fetcher), std::move(request_data));
-  raw_fetcher->Start();
-
+  // transferring ownership (std::move) invalidates the |simple_loader|
+  // variable.
+  auto* raw_simple_loader = simple_loader.get();
+  url_loaders_.push_back(std::move(simple_loader));
+  raw_simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory.get(),
+      base::BindOnce(&AutofillDownloadManager::OnSimpleLoaderComplete,
+                     base::Unretained(this), std::move(--url_loaders_.end()),
+                     std::move(request_data)));
   return true;
 }
 
@@ -489,24 +485,22 @@ std::string AutofillDownloadManager::GetCombinedSignature(
   return signature;
 }
 
-void AutofillDownloadManager::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  auto it = url_fetchers_.find(const_cast<net::URLFetcher*>(source));
-  if (it == url_fetchers_.end()) {
-    // Looks like crash on Mac is possibly caused with callback entering here
-    // with unknown fetcher when network is refreshed.
-    return;
-  }
-
-  // Move the fetcher and request out of the active fetchers list.
-  std::unique_ptr<net::URLFetcher> fetcher = std::move(it->second.first);
-  FormRequestData request_data = std::move(it->second.second);
-  url_fetchers_.erase(it);
+void AutofillDownloadManager::OnSimpleLoaderComplete(
+    std::list<std::unique_ptr<network::SimpleURLLoader>>::iterator it,
+    FormRequestData request_data,
+    std::unique_ptr<std::string> response_body) {
+  // Move the loader out of the active loaders list.
+  std::unique_ptr<network::SimpleURLLoader> simple_loader = std::move(*it);
+  url_loaders_.erase(it);
 
   CHECK(request_data.form_signatures.size());
-  const int response_code = fetcher->GetResponseCode();
-  const bool success = (response_code == net::HTTP_OK);
-  fetcher_backoff_.InformOfRequest(success);
+  int response_code = -1;
+  if (simple_loader->ResponseInfo() && simple_loader->ResponseInfo()->headers) {
+    response_code = simple_loader->ResponseInfo()->headers->response_code();
+  }
+
+  const bool success = !!response_body;
+  loader_backoff_.InformOfRequest(success);
 
   LogHttpResponseCode(request_data.request_type, response_code);
 
@@ -532,16 +526,15 @@ void AutofillDownloadManager::OnURLFetchComplete(
         base::BindOnce(
             base::IgnoreResult(&AutofillDownloadManager::StartRequest),
             weak_factory_.GetWeakPtr(), std::move(request_data)),
-        fetcher_backoff_.GetTimeUntilRelease());
+        loader_backoff_.GetTimeUntilRelease());
     return;
   }
 
   if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY) {
-    std::string response_body;
-    fetcher->GetResponseAsString(&response_body);
-    CacheQueryRequest(request_data.form_signatures, response_body);
-    UMA_HISTOGRAM_BOOLEAN("Autofill.Query.WasInCache", fetcher->WasCached());
-    observer_->OnLoadedServerPredictions(std::move(response_body),
+    CacheQueryRequest(request_data.form_signatures, *response_body);
+    UMA_HISTOGRAM_BOOLEAN("Autofill.Query.WasInCache",
+                          simple_loader->LoadedFromCache());
+    observer_->OnLoadedServerPredictions(std::move(*response_body),
                                          request_data.form_signatures);
     return;
   }

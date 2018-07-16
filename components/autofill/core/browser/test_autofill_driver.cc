@@ -95,4 +95,9 @@ void TestAutofillDriver::SetURLRequestContext(
   url_request_context_ = url_request_context;
 }
 
+void TestAutofillDriver::SetSharedURLLoaderFactory(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  test_shared_loader_factory_ = url_loader_factory;
+}
+
 }  // namespace autofill
