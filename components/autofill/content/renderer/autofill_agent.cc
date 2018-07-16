@@ -413,6 +413,24 @@ void AutofillAgent::DoAcceptDataListSuggestion(
   DoFillFieldWithValue(new_value, input_element);
 }
 
+void AutofillAgent::TriggerRefillIfNeeded(const FormData& form) {
+  if (!base::FeatureList::IsEnabled(features::kAutofillDynamicForms))
+    return;
+  FormFieldData field;
+  FormData updated_form;
+  if (form_util::FindFormAndFieldForFormControlElement(element_, &updated_form,
+                                                       &field) &&
+      !form.DynamicallySameFormAs(updated_form)) {
+    base::TimeTicks forms_seen_timestamp = base::TimeTicks::Now();
+    WebLocalFrame* frame = render_frame()->GetWebFrame();
+    std::vector<FormData> forms;
+    forms.push_back(updated_form);
+    // Always communicate to browser process for topmost frame.
+    if (!forms.empty() || !frame->Parent())
+      GetAutofillDriver()->FormsSeen(forms, forms_seen_timestamp);
+  }
+}
+
 // mojom::AutofillAgent:
 void AutofillAgent::FillForm(int32_t id, const FormData& form) {
   if (element_.IsNull())
@@ -432,6 +450,8 @@ void AutofillAgent::FillForm(int32_t id, const FormData& form) {
     UpdateLastInteractedForm(element_.Form());
 
   GetAutofillDriver()->DidFillAutofillFormData(form, base::TimeTicks::Now());
+
+  TriggerRefillIfNeeded(form);
 }
 
 void AutofillAgent::PreviewForm(int32_t id, const FormData& form) {

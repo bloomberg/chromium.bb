@@ -89,6 +89,9 @@ struct FormFieldData {
   // other information isn't changed.
   bool SimilarFieldAs(const FormFieldData& field) const;
 
+  // If |field| is the same as this from the POV of dynamic refills.
+  bool DynamicallySameFieldAs(const FormFieldData& field) const;
+
   // Returns true for all of textfield-looking types such as text, password,
   // search, email, url, and number. It must work the same way as Blink function
   // WebInputElement::IsTextField(), and it returns false if |*this| represents

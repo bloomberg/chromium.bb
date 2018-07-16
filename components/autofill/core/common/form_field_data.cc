@@ -189,6 +189,12 @@ bool FormFieldData::SimilarFieldAs(const FormFieldData& field) const {
          IsCheckable(check_status) == IsCheckable(field.check_status);
 }
 
+bool FormFieldData::DynamicallySameFieldAs(const FormFieldData& field) const {
+  return name == field.name && id == field.id && HaveSameLabel(*this, field) &&
+         IsVisible() == field.IsVisible() &&
+         form_control_type == field.form_control_type;
+}
+
 bool FormFieldData::IsTextInputElement() const {
   return form_control_type == "text" || form_control_type == "password" ||
          form_control_type == "search" || form_control_type == "tel" ||

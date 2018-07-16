@@ -276,6 +276,11 @@ class AutofillAgent : public content::RenderFrameObserver,
   // |element_| with it if it's found.
   void ReplaceElementIfNowInvalid(const FormData& form);
 
+  // Trigger a refill if needed for dynamic forms. A refill is needed if some
+  // properties of the form (name, number of fields), or fields (name, id,
+  // label, visibility, control type) have changed after an autofill.
+  void TriggerRefillIfNeeded(const FormData& form);
+
   // Formerly cached forms for all frames, now only caches forms for the current
   // frame.
   FormCache form_cache_;
