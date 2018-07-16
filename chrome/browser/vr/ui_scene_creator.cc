@@ -1923,20 +1923,6 @@ void UiSceneCreator::CreateController() {
 
   auto group = std::make_unique<UiElement>();
   group->SetName(kControllerGroup);
-  group->SetTransitionedProperties({OPACITY});
-  group->AddBinding(std::make_unique<Binding<bool>>(
-      VR_BIND_LAMBDA(
-          [](Model* m) {
-            return !m->controller.quiescent || !m->skips_redraw_when_not_dirty;
-          },
-          base::Unretained(model_)),
-      VR_BIND_LAMBDA(
-          [](UiElement* e, const bool& visible) {
-            e->SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-                visible ? kControllerFadeInMs : kControllerFadeOutMs));
-            e->SetVisible(visible);
-          },
-          base::Unretained(group.get()))));
   scene_->AddUiElement(kControllerRoot, std::move(group));
 
   auto controller = CreateControllerElement(model_);

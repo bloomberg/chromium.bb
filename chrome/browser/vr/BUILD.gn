@@ -314,7 +314,6 @@ test("vr_common_unittests") {
     "gesture_detector_unittest.cc",
     "model/text_input_info_unittest.cc",
     "platform_ui_input_delegate_unittest.cc",
-    "pose_util_unittest.cc",
     "service/vr_device_manager_unittest.cc",
     "sliding_average_unittest.cc",
     "speech_recognizer_unittest.cc",

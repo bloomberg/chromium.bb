@@ -958,31 +958,6 @@ TEST_F(UiTest, OmniboxSuggestionNavigates) {
   ClickElement(suggestion);
 }
 
-TEST_F(UiTest, ControllerQuiescence) {
-  CreateScene(kNotInWebVr);
-  OnBeginFrame();
-  EXPECT_TRUE(IsVisible(kControllerGroup));
-  model_->skips_redraw_when_not_dirty = true;
-  model_->controller.quiescent = true;
-
-  UiElement* controller_group = scene_->GetUiElementByName(kControllerGroup);
-  EXPECT_TRUE(RunForMs(100));
-  EXPECT_LT(0.0f, controller_group->computed_opacity());
-  EXPECT_TRUE(RunForMs(500));
-  EXPECT_EQ(0.0f, controller_group->computed_opacity());
-
-  model_->controller.quiescent = false;
-  EXPECT_TRUE(RunForMs(100));
-  EXPECT_GT(1.0f, controller_group->computed_opacity());
-  EXPECT_TRUE(RunForMs(150));
-  EXPECT_EQ(1.0f, controller_group->computed_opacity());
-
-  model_->skips_redraw_when_not_dirty = false;
-  model_->controller.quiescent = true;
-  EXPECT_FALSE(RunForMs(1000));
-  EXPECT_TRUE(IsVisible(kControllerGroup));
-}
-
 TEST_F(UiTest, CloseButtonColorBindings) {
   CreateScene(kNotInWebVr);
   ui_->SetFullscreen(true);

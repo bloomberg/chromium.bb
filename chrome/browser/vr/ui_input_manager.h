@@ -62,7 +62,6 @@ class VR_UI_EXPORT UiInputManager {
   void OnInputCommitted(const EditedText& info);
   void OnKeyboardHidden();
 
-  bool controller_quiescent() const { return controller_quiescent_; }
   bool controller_resting_in_viewport() const {
     return controller_resting_in_viewport_;
   }
@@ -104,8 +103,6 @@ class VR_UI_EXPORT UiInputManager {
   UiElement* GetTargetElement(const ControllerModel& controller_model,
                               ReticleModel* reticle_model,
                               const InputEventList& input_event_list) const;
-  void UpdateQuiescenceState(base::TimeTicks current_time,
-                             const ControllerModel& controller_model);
   void UpdateControllerFocusState(base::TimeTicks current_time,
                                   const RenderInfo& render_info,
                                   const ControllerModel& controller_model);
@@ -129,10 +126,6 @@ class VR_UI_EXPORT UiInputManager {
   HitTestStrategy hit_test_strategy_ = HitTestStrategy::PROJECT_TO_WORLD_ORIGIN;
 
   ButtonState previous_button_state_ = ButtonState::UP;
-
-  base::TimeTicks last_significant_controller_update_time_;
-  gfx::Transform last_significant_controller_transform_;
-  bool controller_quiescent_ = false;
 
   base::TimeTicks last_controller_outside_viewport_time_;
   bool controller_resting_in_viewport_ = false;

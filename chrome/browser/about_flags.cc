@@ -2265,10 +2265,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kWebXrRenderPath,
                                     kWebXrRenderPathVariations,
                                     "WebXrRenderPath")},
-    {"vr-browsing-experimental-rendering",
-     flag_descriptions::kVrBrowsingExperimentalRenderingName,
-     flag_descriptions::kVrBrowsingExperimentalRenderingDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kVrBrowsingExperimentalRendering)},
     // TODO(crbug.com/731802): Only these should be #if defined(OS_ANDROID).
     {"vr-browsing-tabs-view", flag_descriptions::kVrBrowsingTabsViewName,
      flag_descriptions::kVrBrowsingTabsViewDescription, kOsAndroid,

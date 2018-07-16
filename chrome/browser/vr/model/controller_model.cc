@@ -16,7 +16,6 @@ ControllerModel::ControllerModel(const ControllerModel& other)
       app_button_state(other.app_button_state),
       home_button_state(other.home_button_state),
       opacity(other.opacity),
-      quiescent(other.quiescent),
       resting_in_viewport(other.resting_in_viewport),
       handedness(other.handedness),
       battery_level(other.battery_level) {}

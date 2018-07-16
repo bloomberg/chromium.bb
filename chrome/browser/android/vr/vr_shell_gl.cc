@@ -127,8 +127,6 @@ constexpr base::TimeDelta kWebVrSlowAcquireThreshold =
 // Drop at most one frame in MaxDropRate.
 constexpr int kWebVrUnstuffMaxDropRate = 7;
 
-constexpr float kRedrawSceneAngleDeltaDegrees = 1.0;
-
 // Taken from the GVR source code, this is the default vignette border fraction.
 constexpr float kContentVignetteBorder = 0.04;
 constexpr float kContentVignetteScale = 1.0 + (kContentVignetteBorder * 2.0);
@@ -1583,30 +1581,13 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
     ui_updated = true;
   }
 
-  // TODO(mthiesse): Determine if a visible controller is actually drawn in the
-  // viewport.
-  bool controller_dirty = ui_->IsControllerVisible();
-
   ui_updated |= content_frame_available_;
   ReportUiStatusForTesting(scene_start, ui_updated);
-
-  // TODO(mthiesse): Refine this notion of when we need to redraw. If only a
-  // portion of the screen is dirtied, we can update just redraw that portion.
-  bool redraw_needed = controller_dirty || ui_updated;
-
-  bool head_moved =
-      HeadMoveExceedsThreshold(last_used_head_pose_, render_info_.head_pose,
-                               kRedrawSceneAngleDeltaDegrees);
-
-  bool dirty = is_webvr_frame || head_moved || redraw_needed;
 
   base::TimeDelta scene_time = base::TimeTicks::Now() - scene_start;
   // Don't double-count the controller time that was part of the scene time.
   ui_processing_time_.AddSample(scene_time - controller_time);
   TRACE_EVENT_END0("gpu", "SceneUpdate");
-
-  if (!dirty && ui_->SkipsRedrawWhenNotDirty())
-    return;
 
   UpdateViewports();
 

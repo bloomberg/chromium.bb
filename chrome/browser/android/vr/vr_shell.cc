@@ -1345,8 +1345,6 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
   ui_initial_state.in_web_vr = for_web_vr;
   ui_initial_state.has_or_can_request_audio_permission =
       has_or_can_request_audio_permission;
-  ui_initial_state.skips_redraw_when_not_dirty =
-      base::FeatureList::IsEnabled(features::kVrBrowsingExperimentalRendering);
   ui_initial_state.assets_supported = AssetsLoader::AssetsSupported();
   ui_initial_state.is_standalone_vr_device = is_standalone_vr_device;
   ui_initial_state.create_tabs_view =
