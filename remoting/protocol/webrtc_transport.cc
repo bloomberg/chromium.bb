@@ -52,6 +52,13 @@ const int kTransportInfoSendDelayMs = 20;
 // XML namespace for the transport elements.
 const char kTransportNamespace[] = "google:remoting:webrtc";
 
+// Bitrate cap applied to relay connections. This is done to prevent
+// large amounts of packet loss, since the Google TURN/relay server drops
+// packets to limit the connection to ~10Mbps. The rate-limiting behavior works
+// badly with WebRTC's bandwidth-estimation, which results in the host process
+// trying to send frames too rapidly over the connection.
+constexpr int kMaxBitrateOnRelayKbps = 8000;
+
 #if !defined(NDEBUG)
 // Command line switch used to disable signature verification.
 // TODO(sergeyu): Remove this flag.
@@ -742,6 +749,32 @@ void WebrtcTransport::OnStatsDelivered(
   bool is_relay =
       local_candidate_type == "relay" || remote_candidate_type == "relay";
   VLOG(0) << "Relay connection: " << (is_relay ? "true" : "false");
+
+  if (is_relay) {
+    auto senders = peer_connection()->GetSenders();
+    for (rtc::scoped_refptr<webrtc::RtpSenderInterface> sender : senders) {
+      // x-google-max-bitrate is only set for video codecs in the SDP exchange.
+      // So avoid setting a very large bitrate cap on the audio sender.
+      if (sender->media_type() != cricket::MediaType::MEDIA_TYPE_VIDEO) {
+        continue;
+      }
+
+      webrtc::RtpParameters parameters = sender->GetParameters();
+      if (parameters.encodings.empty()) {
+        LOG(ERROR) << "No encodings found for sender " << sender->id();
+        continue;
+      }
+
+      if (parameters.encodings.size() != 1) {
+        LOG(ERROR) << "Unexpected number of encodings ("
+                   << parameters.encodings.size() << ") for sender "
+                   << sender->id();
+      }
+
+      parameters.encodings[0].max_bitrate_bps = kMaxBitrateOnRelayKbps * 1000;
+      sender->SetParameters(parameters);
+    }
+  }
 }
 
 void WebrtcTransport::EnsurePendingTransportInfoMessage() {
