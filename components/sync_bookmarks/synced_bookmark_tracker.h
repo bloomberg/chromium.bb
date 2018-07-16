@@ -97,6 +97,7 @@ class SyncedBookmarkTracker {
   void Update(const std::string& sync_id,
               int64_t server_version,
               base::Time modification_time,
+              const sync_pb::UniquePosition& unique_position,
               const sync_pb::EntitySpecifics& specifics);
 
   // Removes the entry coressponding to the |sync_id| from
