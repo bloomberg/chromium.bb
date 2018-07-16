@@ -752,41 +752,6 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
   return ok != FALSE;
 }
 
-bool VerifyAuthenticodeSignature(const base::FilePath& signed_file) {
-  // Don't pop up any windows
-  const HWND window_mode = reinterpret_cast<HWND>(INVALID_HANDLE_VALUE);
-
-  // Verify file & certificates using the Microsoft Authenticode Policy
-  // Provider.
-  GUID verification_type = WINTRUST_ACTION_GENERIC_VERIFY_V2;
-
-  // Info for the file we're going to verify.
-  WINTRUST_FILE_INFO file_info = {};
-  file_info.cbStruct = sizeof(file_info);
-  file_info.pcwszFilePath = signed_file.value().c_str();
-
-  // Info for request to WinVerifyTrust.
-  WINTRUST_DATA trust_data = {};
-  trust_data.cbStruct = sizeof(trust_data);
-  trust_data.dwUIChoice = WTD_UI_NONE;               // no graphics
-  trust_data.fdwRevocationChecks = WTD_REVOKE_NONE;  // no revocation checking
-  trust_data.dwUnionChoice = WTD_CHOICE_FILE;        // check a file
-  trust_data.pFile = &file_info;                     // check this file
-  trust_data.dwProvFlags = WTD_REVOCATION_CHECK_NONE;
-
-  // From the WinVerifyTrust documentation:
-  //   http://msdn2.microsoft.com/en-us/library/aa388208.aspx:
-  //   "If the trust provider verifies that the subject is trusted
-  //   for the specified action, the return value is zero. No other
-  //   value besides zero should be considered a successful return."
-  LONG result = ::WinVerifyTrust(window_mode, &verification_type, &trust_data);
-  if (result) {
-    LOG(ERROR) << "WinVerifyTrust failed: '" << SanitizePath(signed_file)
-               << "'. " << result;
-  }
-  return !result;
-}
-
 bool ShortPathContainsCaseInsensitive(const base::string16& value,
                                       const base::string16& substring) {
   DWORD long_value_len = ::GetLongPathName(value.c_str(), nullptr, 0);
