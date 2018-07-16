@@ -54,6 +54,7 @@ class VIEWS_EXPORT PenEventProcessor {
   bool send_touch_for_pen_ = false;
   bool sent_mouse_down_ = false;
   bool sent_touch_start_ = false;
+  int eraser_pointer_id_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(PenEventProcessor);
 };

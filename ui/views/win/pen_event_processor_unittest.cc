@@ -227,4 +227,37 @@ TEST(PenProcessorTest, MouseFlagDMEnabled) {
             event->AsMouseEvent()->changed_button_flags());
 }
 
+TEST(PenProcessorTest, PenEraserFlagDMEnabled) {
+  ui::SequentialIDGenerator id_generator(0);
+  PenEventProcessor processor(&id_generator,
+                              /*direct_manipulation_enabled*/ true);
+
+  POINTER_PEN_INFO pen_info;
+  memset(&pen_info, 0, sizeof(POINTER_PEN_INFO));
+  gfx::Point point(100, 100);
+
+  pen_info.pointerInfo.pointerFlags =
+      POINTER_FLAG_INCONTACT | POINTER_FLAG_FIRSTBUTTON;
+  pen_info.pointerInfo.ButtonChangeType = POINTER_CHANGE_FIRSTBUTTON_DOWN;
+  pen_info.penFlags = PEN_FLAG_ERASER;
+
+  std::unique_ptr<ui::Event> event =
+      processor.GenerateEvent(WM_POINTERDOWN, 0, pen_info, point);
+  ASSERT_TRUE(event);
+  ASSERT_TRUE(event->IsTouchEvent());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, event->AsTouchEvent()->type());
+  EXPECT_EQ(ui::EventPointerType::POINTER_TYPE_ERASER,
+            event->AsTouchEvent()->pointer_details().pointer_type);
+
+  pen_info.pointerInfo.pointerFlags = POINTER_FLAG_UP;
+  pen_info.pointerInfo.ButtonChangeType = POINTER_CHANGE_FIRSTBUTTON_UP;
+
+  event = processor.GenerateEvent(WM_POINTERUP, 0, pen_info, point);
+  ASSERT_TRUE(event);
+  ASSERT_TRUE(event->IsTouchEvent());
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, event->AsTouchEvent()->type());
+  EXPECT_EQ(ui::EventPointerType::POINTER_TYPE_ERASER,
+            event->AsTouchEvent()->pointer_details().pointer_type);
+}
+
 }  // namespace views

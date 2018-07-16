@@ -192,14 +192,6 @@ PointerEvent* PointerEventFactory::Create(
   SetIdTypeButtons(pointer_event_init, web_pointer_event);
 
   AtomicString type = PointerEventNameForEventType(event_type);
-  // Make sure chorded buttons fire pointermove instead of pointerup/down.
-  if ((event_type == WebInputEvent::kPointerDown &&
-       (pointer_event_init.buttons() &
-        ~ButtonToButtonsBitfield(web_pointer_event.button)) != 0) ||
-      (event_type == WebInputEvent::kPointerUp &&
-       pointer_event_init.buttons() != 0))
-    type = EventTypeNames::pointermove;
-
   if (event_type == WebInputEvent::kPointerDown ||
       event_type == WebInputEvent::kPointerUp) {
     WebPointerProperties::Button button = web_pointer_event.button;
@@ -209,6 +201,14 @@ PointerEvent* PointerEventFactory::Create(
         button == WebPointerProperties::Button::kLeft)
       button = WebPointerProperties::Button::kEraser;
     pointer_event_init.setButton(static_cast<int>(button));
+
+    // Make sure chorded buttons fire pointermove instead of pointerup/down.
+    if ((event_type == WebInputEvent::kPointerDown &&
+         (pointer_event_init.buttons() & ~ButtonToButtonsBitfield(button)) !=
+             0) ||
+        (event_type == WebInputEvent::kPointerUp &&
+         pointer_event_init.buttons() != 0))
+      type = EventTypeNames::pointermove;
   } else {
     pointer_event_init.setButton(
         static_cast<int>(WebPointerProperties::Button::kNoButton));

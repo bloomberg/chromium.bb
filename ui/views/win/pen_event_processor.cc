@@ -41,11 +41,17 @@ std::unique_ptr<ui::Event> PenEventProcessor::GenerateEvent(
   // the WM_POINTER message and then setting up an associated pointer
   // details in the MouseEvent which contains the pen's information.
   ui::EventPointerType input_type = ui::EventPointerType::POINTER_TYPE_PEN;
-  // TODO(lanwei): penFlags of PEN_FLAG_INVERTED may also indicate we are using
-  // an eraser, but it is under debate. Please see
-  // https://github.com/w3c/pointerevents/issues/134/.
-  if (pointer_pen_info.penFlags & PEN_FLAG_ERASER)
+  // For the pointerup event, the penFlags is not set to PEN_FLAG_ERASER, so we
+  // have to check if previously the pointer type is an eraser.
+  if (pointer_pen_info.penFlags & PEN_FLAG_ERASER) {
     input_type = ui::EventPointerType::POINTER_TYPE_ERASER;
+    DCHECK(eraser_pointer_id_ == -1 || eraser_pointer_id_ == mapped_pointer_id);
+    eraser_pointer_id_ = mapped_pointer_id;
+  } else if (eraser_pointer_id_ == mapped_pointer_id &&
+             message == WM_POINTERUP) {
+    input_type = ui::EventPointerType::POINTER_TYPE_ERASER;
+    eraser_pointer_id_ = -1;
+  }
 
   // convert pressure into a float [0, 1]. The range of the pressure is
   // [0, 1024] as specified on MSDN.
