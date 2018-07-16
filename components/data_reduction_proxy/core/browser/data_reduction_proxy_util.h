@@ -122,6 +122,10 @@ int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request,
 // Converts net::ProxyServer::Scheme to type ProxyScheme.
 ProxyScheme ConvertNetProxySchemeToProxyScheme(net::ProxyServer::Scheme scheme);
 
+// Returns the hostname used for the other bucket to record datause not scoped
+// to a page load such as chrome-services traffic, service worker, Downloads.
+const char* GetSiteBreakdownOtherHostName();
+
 }  // namespace util
 
 namespace protobuf_parser {

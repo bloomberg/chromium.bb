@@ -30,6 +30,8 @@ class ContentResourceTypeProvider : public ResourceTypeProvider {
   void SetContentType(const net::URLRequest& request) override;
   ResourceTypeProvider::ContentType GetContentType(
       const GURL& url) const override;
+  bool IsNonContentInitiatedRequest(
+      const net::URLRequest& request) const override;
 
   // Map that evicts entries lazily based on the recency of being added.
   base::MRUCache<std::string, ResourceTypeProvider::ContentType>

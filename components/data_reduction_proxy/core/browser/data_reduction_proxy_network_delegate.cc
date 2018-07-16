@@ -570,6 +570,17 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
       data_use_measurement::DataUseMeasurement::GetContentTypeForRequest(
           request),
       request.traffic_annotation().unique_id_hash_code);
+
+  if (params::IsDataSaverSiteBreakdownUsingPLMEnabled() &&
+      data_reduction_proxy_io_data_ &&
+      data_reduction_proxy_io_data_->resource_type_provider() &&
+      data_reduction_proxy_io_data_->resource_type_provider()
+          ->IsNonContentInitiatedRequest(request)) {
+    // Record non-content initiated traffic to the Other bucket for data saver
+    // site-breakdown.
+    data_reduction_proxy_io_data_->UpdateDataUseForHost(
+        data_used, original_size, util::GetSiteBreakdownOtherHostName());
+  }
 }
 
 void DataReductionProxyNetworkDelegate::AccumulateDataUsage(

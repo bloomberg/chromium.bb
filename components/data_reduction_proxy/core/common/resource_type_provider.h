@@ -32,6 +32,12 @@ class ResourceTypeProvider {
 
   virtual ContentType GetContentType(const GURL& url) const = 0;
 
+  // Returns if the request is initiated via non-content that cannot be scoped
+  // to a page load. These ResourceInfo-less requests can be issued by chrome
+  // services, service-worker, Downloads, etc.
+  virtual bool IsNonContentInitiatedRequest(
+      const net::URLRequest& request) const = 0;
+
  protected:
   ResourceTypeProvider() {}
 
