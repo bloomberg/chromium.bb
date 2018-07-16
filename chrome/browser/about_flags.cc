@@ -1426,6 +1426,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalWebPlatformFeaturesName,
      flag_descriptions::kExperimentalWebPlatformFeaturesDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableExperimentalWebPlatformFeatures)},
+#if defined(OS_ANDROID)
+    {"enable-app-notification-status-messaging",
+     flag_descriptions::kAppNotificationStatusMessagingName,
+     flag_descriptions::kAppNotificationStatusMessagingDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kAppNotificationStatusMessaging)},
+#endif  // OS_ANDROID
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {"enable-ble-advertising-in-apps",
      flag_descriptions::kBleAdvertisingInExtensionsName,

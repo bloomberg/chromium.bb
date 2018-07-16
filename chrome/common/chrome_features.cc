@@ -59,6 +59,13 @@ const base::Feature kAppBanners {
 };
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+// Enables messaging in site permissions UI informing user when notifications
+// are disabled for the entire app.
+const base::Feature kAppNotificationStatusMessaging{
+    "AppNotificationStatusMessaging", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID)
+
 // If enabled, the list of content suggestions on the New Tab page will contain
 // assets (e.g. books, pictures, audio) that the user downloaded for later use.
 // DO NOT check directly whether this feature is enabled (i.e. do not use
