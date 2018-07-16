@@ -215,10 +215,16 @@ KURL::KURL(const String& url) {
   else {
     // WebCore expects us to preserve the nullness of strings when this
     // constructor is used. In all other cases, it expects a non-null
-    // empty string, which is what init() will create.
+    // empty string, which is what Init() will create.
     is_valid_ = false;
     protocol_is_in_http_family_ = false;
   }
+}
+
+// Initializes with a GURL. This is used to covert from a GURL to a KURL.
+KURL::KURL(const GURL& gurl) {
+  Init(NullURL() /* base */, String(gurl.spec().c_str()) /* relative */,
+       nullptr /* query_encoding */);
 }
 
 KURL KURL::CreateIsolated(const String& url) {

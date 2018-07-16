@@ -78,6 +78,11 @@ class PLATFORM_EXPORT KURL {
 
   KURL();
   KURL(const KURL&);
+
+  // This should only be used to convert a GURL returned from a layer which
+  // operates in the base terms (e.g. from common/* code).
+  explicit KURL(const GURL&);
+
   KURL& operator=(const KURL&);
 
   // The argument is an absolute URL string. The string is assumed to be
@@ -218,6 +223,7 @@ class PLATFORM_EXPORT KURL {
   // Returns a GURL with the same properties. This can be used in platform/ and
   // web/. However, in core/ and modules/, this should only be used to pass
   // a GURL to a layer that is expecting one instead of a KURL or a WebURL.
+  // TODO(crbug.com/862940): Make this conversion explicit.
   operator GURL() const;
 
  private:
