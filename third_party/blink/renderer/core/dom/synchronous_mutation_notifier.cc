@@ -46,7 +46,14 @@ void SynchronousMutationNotifier::NotifyUpdateCharacterData(
     unsigned offset,
     unsigned old_length,
     unsigned new_length) {
-  ForEachObserver([&](SynchronousMutationObserver* observer) {
+  // Using ForEachObserverWithoutChecks() instead of ForEachObserver() is
+  // necessary because DocumentMarkerController::DidUpdateCharacterData ends up
+  // calling SynchronousMutationNotifier::RemoveObserver, which is unsafe and
+  // can result in memory corruption.
+  //
+  // TODO(crbug.com/862900): Fix DocumentMarkerController and switch to
+  //                         ForEachObsever() here.
+  ForEachObserverWithoutChecks([&](SynchronousMutationObserver* observer) {
     observer->DidUpdateCharacterData(character_data, offset, old_length,
                                      new_length);
   });
