@@ -3685,7 +3685,7 @@ crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attribu
 crbug.com/709227 external/wpt/user-timing/invoke_with_timing_attributes.worker.html [ Failure ]
 
 # Crashes
-crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Crash ]
+crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Crash Pass ]
 
 # ====== Tests from enabling .any.js/.worker.js tests end here ========
 
