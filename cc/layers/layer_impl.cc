@@ -71,7 +71,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       effect_tree_index_(EffectTree::kInvalidNodeId),
       clip_tree_index_(ClipTree::kInvalidNodeId),
       scroll_tree_index_(ScrollTree::kInvalidNodeId),
-      current_draw_mode_(DRAW_MODE_NONE),
       debug_info_(nullptr),
       has_will_change_transform_hint_(false),
       needs_push_properties_(false),
@@ -89,7 +88,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
 }
 
 LayerImpl::~LayerImpl() {
-  DCHECK_EQ(DRAW_MODE_NONE, current_draw_mode_);
   layer_tree_impl_->UnregisterLayer(this);
   layer_tree_impl_->RemoveFromElementLayerList(element_id_);
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
@@ -167,17 +165,17 @@ void LayerImpl::PopulateScaledSharedQuadState(viz::SharedQuadState* state,
 
 bool LayerImpl::WillDraw(DrawMode draw_mode,
                          viz::ClientResourceProvider* resource_provider) {
-  // WillDraw/DidDraw must be matched.
-  DCHECK_NE(DRAW_MODE_NONE, draw_mode);
-  DCHECK_EQ(DRAW_MODE_NONE, current_draw_mode_);
+  if (visible_layer_rect().IsEmpty() ||
+      draw_properties().occlusion_in_content_space.IsOccluded(
+          visible_layer_rect())) {
+    return false;
+  }
+
   current_draw_mode_ = draw_mode;
   return true;
 }
 
-void LayerImpl::DidDraw(viz::ClientResourceProvider* resource_provider) {
-  DCHECK_NE(DRAW_MODE_NONE, current_draw_mode_);
-  current_draw_mode_ = DRAW_MODE_NONE;
-}
+void LayerImpl::DidDraw(viz::ClientResourceProvider* resource_provider) {}
 
 bool LayerImpl::ShowDebugBorders(DebugBorderType type) const {
   return layer_tree_impl()->debug_state().show_debug_borders.test(type);

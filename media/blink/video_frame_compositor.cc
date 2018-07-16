@@ -9,6 +9,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/auto_open_close_event.h"
 #include "base/trace_event/trace_event.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/blink/webmediaplayer_params.h"
@@ -46,7 +47,21 @@ VideoFrameCompositor::VideoFrameCompositor(
     task_runner_->PostTask(
         FROM_HERE, base::Bind(&VideoFrameCompositor::InitializeSubmitter,
                               weak_ptr_factory_.GetWeakPtr()));
+    update_submission_state_callback_ = media::BindToLoop(
+        task_runner_,
+        base::BindRepeating(&VideoFrameCompositor::UpdateSubmissionState,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+cc::UpdateSubmissionStateCB
+VideoFrameCompositor::GetUpdateSubmissionStateCallback() {
+  return update_submission_state_callback_;
+}
+
+void VideoFrameCompositor::UpdateSubmissionState(bool state) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  submitter_->UpdateSubmissionState(state);
 }
 
 void VideoFrameCompositor::InitializeSubmitter() {
@@ -63,7 +78,7 @@ VideoFrameCompositor::~VideoFrameCompositor() {
 }
 
 void VideoFrameCompositor::EnableSubmission(
-    const viz::FrameSinkId& id,
+    const viz::SurfaceId& id,
     media::VideoRotation rotation,
     blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
