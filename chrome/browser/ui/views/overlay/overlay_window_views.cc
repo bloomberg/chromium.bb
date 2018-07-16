@@ -494,35 +494,6 @@ void OverlayWindowViews::OnNativeWidgetWorkspaceChanged() {
   // does not trigger this function. http://crbug.com/819673
 }
 
-void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
-  if (event->type() != ui::ET_KEY_RELEASED)
-    return;
-
-  if (event->key_code() == ui::VKEY_TAB) {
-    // Switch the control that is currently focused. When the window
-    // is focused, |focused_control_button_| resets to CONTROL_PLAY_PAUSE.
-    if (focused_control_button_ == CONTROL_PLAY_PAUSE)
-      focused_control_button_ = CONTROL_CLOSE;
-    else
-      focused_control_button_ = CONTROL_PLAY_PAUSE;
-
-    // The controls may be hidden after the window is already in focus, e.g.
-    // mouse exits the window space. If they are already shown, this is a
-    // no-op.
-    UpdateControlsVisibility(true);
-
-    event->SetHandled();
-  } else if (event->key_code() == ui::VKEY_RETURN) {
-    if (focused_control_button_ == CONTROL_PLAY_PAUSE) {
-      TogglePlayPause();
-    } else /* CONTROL_CLOSE */ {
-      controller_->Close(true /* should_pause_video */);
-    }
-
-    event->SetHandled();
-  }
-}
-
 void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     // Only show the media controls when the mouse is hovering over the window.
@@ -589,9 +560,6 @@ void OverlayWindowViews::OnNativeFocus() {
     should_show_controls_ = true;
   }
 
-  // Reset the first focused control to the play/pause button. This will
-  // always be called before key events can be handled.
-  focused_control_button_ = CONTROL_PLAY_PAUSE;
   views::Widget::OnNativeFocus();
 }
 
