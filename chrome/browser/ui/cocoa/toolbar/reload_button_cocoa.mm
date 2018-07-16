@@ -10,7 +10,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
@@ -224,6 +223,7 @@ const int kReloadMenuCommands[]  = {
   [menu_ addItemWithTitle:@""
                    action:nil
             keyEquivalent:@""];
+  AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
   for (size_t i = 0; i < arraysize(kReloadMenuItems); ++i) {
     NSString* title = l10n_util::GetNSStringWithFixup(kReloadMenuItems[i]);
     base::scoped_nsobject<NSMenuItem> item(
@@ -231,16 +231,16 @@ const int kReloadMenuCommands[]  = {
                                    action:@selector(executeMenuItem:)
                             keyEquivalent:@""]);
 
-    ui::Accelerator accelerator;
-    bool found = GetDefaultMacAcceleratorForCommandId(kReloadMenuCommands[i],
-                                                      &accelerator);
-    if (found) {
-      NSString* key_equivalent;
-      NSUInteger modifier_mask;
-      GetKeyEquivalentAndModifierMaskFromAccelerator(
-          accelerator, &key_equivalent, &modifier_mask);
-      [item setKeyEquivalent:key_equivalent];
-      [item setKeyEquivalentModifierMask:modifier_mask];
+    const ui::Accelerator* accelerator =
+        keymap->GetAcceleratorForCommand(kReloadMenuCommands[i]);
+    if (accelerator) {
+      const ui::PlatformAcceleratorCocoa* platform =
+          static_cast<const ui::PlatformAcceleratorCocoa*>(
+                accelerator->platform_accelerator());
+      if (platform) {
+        [item setKeyEquivalent:platform->characters()];
+        [item setKeyEquivalentModifierMask:platform->modifier_mask()];
+      }
     }
 
     [item setTag:kReloadMenuCommands[i]];

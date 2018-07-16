@@ -82,20 +82,11 @@ IN_PROC_BROWSER_TEST_F(AcceleratorsCocoaBrowserTest,
     // If the tag is zero, then the NSMenuItem must use a custom selector.
     // Check that the accelerator is present as an un-mapped accelerator.
     if (command_id == 0) {
-      bool found = false;
-      for (const auto& entry : *keymap) {
-        NSString* keyEquivalent;
-        NSUInteger modifierMask;
-        GetKeyEquivalentAndModifierMaskFromAccelerator(
-            entry.second, &keyEquivalent, &modifierMask);
-        if ([item.keyEquivalent isEqualToString:keyEquivalent] &&
-            item.keyEquivalentModifierMask == modifierMask) {
-          found = true;
-          break;
-        }
-      }
-      EXPECT_TRUE(found);
-      continue;
+      accelerator = keymap->GetAcceleratorForHotKey(
+          item.keyEquivalent, item.keyEquivalentModifierMask);
+
+      EXPECT_TRUE(accelerator);
+      return;
     }
 
     // If the tag isn't zero, then it must correspond to an IDC_* command.
@@ -105,22 +96,23 @@ IN_PROC_BROWSER_TEST_F(AcceleratorsCocoaBrowserTest,
       continue;
 
     // Get the Cocoa key_equivalent associated with the accelerator.
-    NSString* keyEquivalent;
-    NSUInteger modifierMask;
-    GetKeyEquivalentAndModifierMaskFromAccelerator(*accelerator, &keyEquivalent,
-                                                   &modifierMask);
+    const ui::PlatformAcceleratorCocoa* platform_accelerator =
+        static_cast<const ui::PlatformAcceleratorCocoa*>(
+            accelerator->platform_accelerator());
+    NSString* key_equivalent = platform_accelerator->characters();
 
     // Check that the menu item's keyEquivalent matches the one from the
     // Cocoa accelerator map.
-    EXPECT_NSEQ(keyEquivalent, item.keyEquivalent);
+    EXPECT_NSEQ(key_equivalent, item.keyEquivalent);
 
     // Check that the menu item's modifier mask matches the one stored in the
     // accelerator. A mask that include NSShiftKeyMask may not include the
     // relevant bit (the information is reflected in the keyEquivalent of the
     // NSMenuItem).
+    NSUInteger mask = platform_accelerator->modifier_mask();
     BOOL maskEqual =
-        (modifierMask == item.keyEquivalentModifierMask) ||
-        ((modifierMask & (~NSShiftKeyMask)) == item.keyEquivalentModifierMask);
+        (mask == item.keyEquivalentModifierMask) ||
+        ((mask & (~NSShiftKeyMask)) == item.keyEquivalentModifierMask);
     EXPECT_TRUE(maskEqual);
   }
 }
@@ -142,14 +134,15 @@ IN_PROC_BROWSER_TEST_F(AcceleratorsCocoaBrowserTest,
            keymap->accelerators_.begin();
        it != keymap->accelerators_.end();
        ++it) {
-    NSString* keyEquivalent;
-    NSUInteger modifierMask;
-    GetKeyEquivalentAndModifierMaskFromAccelerator(it->second, &keyEquivalent,
-                                                   &modifierMask);
+    const ui::PlatformAcceleratorCocoa* platform_accelerator =
+        static_cast<const ui::PlatformAcceleratorCocoa*>(
+            it->second.platform_accelerator());
 
     // Check that there exists a corresponding NSMenuItem.
     NSMenuItem* item =
-        MenuContainsAccelerator([NSApp mainMenu], keyEquivalent, modifierMask);
+        MenuContainsAccelerator([NSApp mainMenu],
+                                platform_accelerator->characters(),
+                                platform_accelerator->modifier_mask());
     EXPECT_TRUE(item);
 
     // If the menu uses a commandDispatch:, the tag must match the command id!

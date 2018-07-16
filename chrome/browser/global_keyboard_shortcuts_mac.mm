@@ -226,18 +226,17 @@ bool GetDefaultMacAcceleratorForCommandId(int command_id,
   // See if it corresponds to one of the non-menu shortcuts.
   for (const auto& shortcut : GetShortcutsNotPresentInMainMenu()) {
     if (shortcut.chrome_command == command_id) {
-      int modifiers = 0;
+      NSUInteger cocoa_modifiers = 0;
       if (shortcut.command_key)
-        modifiers |= ui::EF_COMMAND_DOWN;
+        cocoa_modifiers |= NSEventModifierFlagCommand;
       if (shortcut.shift_key)
-        modifiers |= ui::EF_SHIFT_DOWN;
+        cocoa_modifiers |= NSEventModifierFlagShift;
       if (shortcut.cntrl_key)
-        modifiers |= ui::EF_CONTROL_DOWN;
+        cocoa_modifiers |= NSEventModifierFlagControl;
       if (shortcut.opt_key)
-        modifiers |= ui::EF_ALT_DOWN;
-
-      *accelerator = ui::Accelerator(
-          ui::KeyboardCodeFromKeyCode(shortcut.vkey_code), modifiers);
+        cocoa_modifiers |= NSEventModifierFlagOption;
+      *accelerator = AcceleratorsCocoa::AcceleratorFromKeyCode(
+          ui::KeyboardCodeFromKeyCode(shortcut.vkey_code), cocoa_modifiers);
       return true;
     }
   }
