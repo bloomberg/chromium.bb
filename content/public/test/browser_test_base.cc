@@ -56,10 +56,6 @@
 #include "base/process/process_handle.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "base/mac/foundation_util.h"
-#endif
-
 #if defined(USE_AURA)
 #include "content/browser/compositor/image_transport_factory.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"  // nogncheck
@@ -132,10 +128,6 @@ BrowserTestBase::BrowserTestBase()
       use_software_compositing_(false),
       set_up_called_(false),
       disable_io_checks_(false) {
-#if defined(OS_MACOSX)
-  base::mac::SetOverrideAmIBundled(true);
-#endif
-
   ui::test::EnableTestConfigForPlatformWindows();
 
 #if defined(OS_POSIX)
