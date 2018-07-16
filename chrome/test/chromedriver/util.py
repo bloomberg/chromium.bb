@@ -8,7 +8,9 @@ import atexit
 import httplib
 import os
 import platform
+import random
 import signal
+import socket
 import stat
 import subprocess
 import sys
@@ -74,7 +76,11 @@ def GetAbsolutePathOfUserPath(user_path):
 
 
 def _DeleteDir(path):
-  """Deletes a directory recursively, which must exist."""
+  """Deletes a directory recursively, which must exist.
+
+  Note that this function can fail and raise OSError if another process is
+  making changes to the directory at the same time.
+  """
   # Don't use shutil.rmtree because it can't delete read-only files on Win.
   for root, dirs, files in os.walk(path, topdown=False):
     for name in files:
@@ -225,3 +231,25 @@ def AddLink(label, url):
     url: A string of the URL.
   """
   print '@@@STEP_LINK@%s@%s@@@' % (label, url)
+
+
+def FindProbableFreePorts():
+  """Get an generator returning random free ports on the system.
+
+  Note that this function has an inherent race condition: some other process
+  may bind to the port after we return it, so it may no longer be free by then.
+  The workaround is to do this inside a retry loop. Do not use this function
+  if there is any alternative.
+  """
+  # This is the range of dynamic ports. See RFC6335 page 10.
+  dynamic_ports = range(49152, 65535)
+  random.shuffle(dynamic_ports)
+
+  for port in dynamic_ports:
+    try:
+      socket.create_connection(('127.0.0.1', port), 0.2).close()
+    except socket.error:
+      # If we can't connect to the port, then clearly nothing is listening on
+      # it.
+      yield port
+  raise RuntimeError('Cannot find open port')
