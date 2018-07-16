@@ -153,7 +153,7 @@ class CONTENT_EXPORT AppCacheServiceImpl
   // Each child process in chrome uses a distinct backend instance.
   // See chrome/browser/AppCacheDispatcherHost.
   void RegisterBackend(AppCacheBackendImpl* backend_impl);
-  void UnregisterBackend(AppCacheBackendImpl* backend_impl);
+  virtual void UnregisterBackend(AppCacheBackendImpl* backend_impl);
   AppCacheBackendImpl* GetBackend(int id) const {
     BackendMap::const_iterator it = backends_.find(id);
     return (it != backends_.end()) ? it->second : NULL;

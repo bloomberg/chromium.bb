@@ -32,9 +32,17 @@ AppCacheDispatcherHost::~AppCacheDispatcherHost() = default;
 void AppCacheDispatcherHost::Create(ChromeAppCacheService* appcache_service,
                                     int process_id,
                                     mojom::AppCacheBackendRequest request) {
+  // The process_id is the id of the RenderProcessHost, which can be reused for
+  // a new renderer process if the previous renderer process was shutdown.
+  // It can take some time after shutdown for the pipe error to propagate
+  // and unregister the previous backend. Since the AppCacheService assumes
+  // that there is one backend per process_id, we need to ensure that the
+  // previous backend is unregistered by eagerly unbinding the pipe.
+  appcache_service->Unbind(process_id);
+
   appcache_service->Bind(
       std::make_unique<AppCacheDispatcherHost>(appcache_service, process_id),
-      std::move(request));
+      std::move(request), process_id);
 }
 
 void AppCacheDispatcherHost::RegisterHost(int32_t host_id) {
