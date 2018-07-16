@@ -92,10 +92,6 @@ void FidoRequestHandlerBase::DiscoveryStarted(FidoDiscovery* discovery,
 void FidoRequestHandlerBase::DeviceAdded(FidoDiscovery* discovery,
                                          FidoDevice* device) {
   DCHECK(!base::ContainsKey(active_authenticators(), device->GetId()));
-  // All devices are initially assumed to support CTAP protocol and thus
-  // AuthenticatorGetInfo command is sent to all connected devices. If device
-  // errors out, then it is assumed to support U2F protocol.
-  device->set_supported_protocol(ProtocolVersion::kCtap);
   AddAuthenticator(CreateAuthenticatorFromDevice(device));
 }
 

@@ -31,11 +31,9 @@ MakeCredentialTask::MakeCredentialTask(
 MakeCredentialTask::~MakeCredentialTask() = default;
 
 void MakeCredentialTask::StartTask() {
-  if (base::FeatureList::IsEnabled(kNewCtap2Device)) {
-    GetAuthenticatorInfo(base::BindOnce(&MakeCredentialTask::MakeCredential,
-                                        weak_factory_.GetWeakPtr()),
-                         base::BindOnce(&MakeCredentialTask::U2fRegister,
-                                        weak_factory_.GetWeakPtr()));
+  if (base::FeatureList::IsEnabled(kNewCtap2Device) &&
+      device()->supported_protocol() == ProtocolVersion::kCtap) {
+    MakeCredential();
   } else {
     U2fRegister();
   }

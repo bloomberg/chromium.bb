@@ -49,6 +49,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
     // before the client of FidoDiscovery calls FidoDiscovery::Start(). However,
     // for devices already known to the system at that point, DeviceAdded()
     // might already be called to reported already known devices.
+    //
+    // The supplied FidoDevice instance is guaranteed to have its protocol
+    // version initialized. I.e., FidoDiscovery calls
+    // FidoDevice::DiscoverSupportedProtocolAndDeviceInfo() before notifying
+    // the Observer.
     virtual void DeviceAdded(FidoDiscovery* discovery, FidoDevice* device) = 0;
     virtual void DeviceRemoved(FidoDiscovery* discovery,
                                FidoDevice* device) = 0;
@@ -112,6 +117,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
 
   const FidoTransportProtocol transport_;
   State state_ = State::kIdle;
+  base::WeakPtrFactory<FidoDiscovery> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FidoDiscovery);
 };

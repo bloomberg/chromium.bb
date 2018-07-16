@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "device/fido/fido_ble_discovery.h"
 #include "device/fido/fido_device.h"
@@ -67,7 +68,7 @@ std::unique_ptr<FidoDiscovery> FidoDiscovery::Create(
 }
 
 FidoDiscovery::FidoDiscovery(FidoTransportProtocol transport)
-    : transport_(transport) {}
+    : transport_(transport), weak_factory_(this) {}
 
 FidoDiscovery::~FidoDiscovery() = default;
 
@@ -132,9 +133,15 @@ const FidoDevice* FidoDiscovery::GetDevice(base::StringPiece device_id) const {
 bool FidoDiscovery::AddDevice(std::unique_ptr<FidoDevice> device) {
   std::string device_id = device->GetId();
   const auto result = devices_.emplace(std::move(device_id), std::move(device));
-  if (result.second)
-    NotifyDeviceAdded(result.first->second.get());
-  return result.second;
+  if (!result.second) {
+    return false;  // Duplicate device id.
+  }
+  FidoDevice* device_ptr = result.first->second.get();
+  // Determine the device protocol version before notifying observers.
+  device_ptr->DiscoverSupportedProtocolAndDeviceInfo(
+      base::BindOnce(&FidoDiscovery::NotifyDeviceAdded,
+                     weak_factory_.GetWeakPtr(), device_ptr));
+  return true;
 }
 
 bool FidoDiscovery::RemoveDevice(base::StringPiece device_id) {

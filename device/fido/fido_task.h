@@ -13,7 +13,6 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "device/fido/fido_device.h"
 
 namespace device {
@@ -42,27 +41,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoTask {
   // Asynchronously initiates CTAP request operation for a single device.
   virtual void StartTask() = 0;
 
-  // Invokes the AuthenticatorGetInfo method on |device_|. If successful and a
-  // well formed response is received, then |device_| is deemed to support CTAP
-  // protocol and |ctap_callback| is invoked, which sends CBOR encoded command
-  // to the authenticator. For all failure cases, |device_| is assumed to
-  // support the U2F protocol as FidoDiscovery selects only devices that support
-  // either the U2F or CTAP protocols during discovery. Therefore |u2f_callback|
-  // is invoked, which sends APDU encoded request to authenticator.
-  void GetAuthenticatorInfo(base::OnceClosure ctap_callback,
-                            base::OnceClosure u2f_callback);
-
   FidoDevice* device() const {
     DCHECK(device_);
     return device_;
   }
 
  private:
-  void OnAuthenticatorInfoReceived(
-      base::OnceClosure ctap_callback,
-      base::OnceClosure u2f_callback,
-      base::Optional<std::vector<uint8_t>> response);
-
   FidoDevice* const device_;
   base::WeakPtrFactory<FidoTask> weak_factory_;
 

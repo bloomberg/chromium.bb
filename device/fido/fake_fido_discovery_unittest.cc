@@ -11,6 +11,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "device/fido/fido_test_data.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/mock_fido_discovery_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -117,8 +118,15 @@ TEST_F(FakeFidoDiscoveryTest, AddDevice) {
 
   auto device0 = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device0, GetId()).WillOnce(::testing::Return("device0"));
-  EXPECT_CALL(observer, DeviceAdded(&discovery, ::testing::_));
+  device0->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestAuthenticatorGetInfoResponse);
+  base::RunLoop device0_done;
+  EXPECT_CALL(observer, DeviceAdded(&discovery, ::testing::_))
+      .WillOnce(testing::InvokeWithoutArgs(
+          [&device0_done]() { device0_done.Quit(); }));
   discovery.AddDevice(std::move(device0));
+  device0_done.Run();
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
   EXPECT_CALL(observer, DiscoveryStarted(&discovery, true));
@@ -127,8 +135,15 @@ TEST_F(FakeFidoDiscoveryTest, AddDevice) {
 
   auto device1 = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device1, GetId()).WillOnce(::testing::Return("device1"));
-  EXPECT_CALL(observer, DeviceAdded(&discovery, ::testing::_));
+  device1->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestAuthenticatorGetInfoResponse);
+  base::RunLoop device1_done;
+  EXPECT_CALL(observer, DeviceAdded(&discovery, ::testing::_))
+      .WillOnce(testing::InvokeWithoutArgs(
+          [&device1_done]() { device1_done.Quit(); }));
   discovery.AddDevice(std::move(device1));
+  device1_done.Run();
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
 

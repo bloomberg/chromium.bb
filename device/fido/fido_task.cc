@@ -9,14 +9,16 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "device/fido/ctap_empty_authenticator_request.h"
-#include "device/fido/device_response_converter.h"
 #include "device/fido/fido_constants.h"
 
 namespace device {
 
 FidoTask::FidoTask(FidoDevice* device) : device_(device), weak_factory_(this) {
   DCHECK(device_);
+  DCHECK((device_->supported_protocol() == ProtocolVersion::kCtap &&
+          device_->device_info()) ||
+         device_->supported_protocol() == ProtocolVersion::kU2f)
+      << "FidoDevice protocol version initialized incorrectly";
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&FidoTask::StartTask, weak_factory_.GetWeakPtr()));
@@ -29,37 +31,6 @@ void FidoTask::CancelTask() {
     return;
 
   device()->Cancel();
-}
-
-void FidoTask::GetAuthenticatorInfo(base::OnceClosure ctap_callback,
-                                    base::OnceClosure u2f_callback) {
-  // When AuthenticatorInfo command is sent to authenticators, we first assume
-  // that the connected device is a CTAP2 device.
-  device_->set_supported_protocol(ProtocolVersion::kCtap);
-  device()->DeviceTransact(
-      AuthenticatorGetInfoRequest().Serialize(),
-      base::BindOnce(&FidoTask::OnAuthenticatorInfoReceived,
-                     weak_factory_.GetWeakPtr(), std::move(ctap_callback),
-                     std::move(u2f_callback)));
-}
-
-void FidoTask::OnAuthenticatorInfoReceived(
-    base::OnceClosure ctap_callback,
-    base::OnceClosure u2f_callback,
-    base::Optional<std::vector<uint8_t>> response) {
-  device()->set_state(FidoDevice::State::kReady);
-
-  base::Optional<AuthenticatorGetInfoResponse> get_info_response;
-  if (!response || !(get_info_response = ReadCTAPGetInfoResponse(*response)) ||
-      !base::ContainsKey(get_info_response->versions(),
-                         ProtocolVersion::kCtap)) {
-    device()->set_supported_protocol(ProtocolVersion::kU2f);
-    std::move(u2f_callback).Run();
-    return;
-  }
-
-  device()->SetDeviceInfo(std::move(*get_info_response));
-  std::move(ctap_callback).Run();
 }
 
 }  // namespace device

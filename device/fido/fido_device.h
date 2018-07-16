@@ -21,6 +21,11 @@
 namespace device {
 
 // Device abstraction for an individual CTAP1.0/CTAP2.0 device.
+//
+// Devices are instantiated with an unknown protocol version. Users should call
+// |DiscoverSupportedProtocolAndDeviceInfo| to determine a device's
+// capabilities and initialize the instance accordingly. Instances returned by
+// |FidoDiscovery| are already fully initialized.
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
  public:
   using WinkCallback = base::OnceClosure;
@@ -41,11 +46,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   virtual void Cancel() = 0;
   virtual std::string GetId() const = 0;
 
-  void SetDeviceInfo(AuthenticatorGetInfoResponse device_info);
+  // Sends a speculative AuthenticatorGetInfo request to determine whether the
+  // device supports the CTAP2 protocol, and initializes supported_protocol_
+  // and device_info_ according to the result (unless the
+  // device::kNewCtap2Device feature is off, in which case U2F is assumed).
+  void DiscoverSupportedProtocolAndDeviceInfo(base::OnceClosure done);
+
+  // TODO(martinkr): Rename to "SetSupportedProtocolForTesting".
   void set_supported_protocol(ProtocolVersion supported_protocol) {
     supported_protocol_ = supported_protocol;
   }
-  void set_state(State state) { state_ = state; }
 
   ProtocolVersion supported_protocol() const { return supported_protocol_; }
   const base::Optional<AuthenticatorGetInfoResponse>& device_info() const {
@@ -55,6 +65,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
 
  protected:
   virtual base::WeakPtr<FidoDevice> GetWeakPtr() = 0;
+
+  void OnDeviceInfoReceived(base::OnceClosure done,
+                            base::Optional<std::vector<uint8_t>> response);
+  void SetDeviceInfo(AuthenticatorGetInfoResponse device_info);
 
   State state_ = State::kInit;
   ProtocolVersion supported_protocol_ = ProtocolVersion::kUnknown;
