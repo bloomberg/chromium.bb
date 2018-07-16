@@ -3110,8 +3110,9 @@ static int get_next_job_info(AV1Decoder *const pbi,
   const int end_tile = frame_row_mt_info->end_tile;
   const int sb_mi_size = mi_size_wide[cm->seq_params.sb_size];
   int num_mis_to_decode, num_threads_working;
+  int num_mis_waiting_for_decode;
   int min_threads_working = INT_MAX;
-  int max_mis_available = 0;
+  int max_mis_to_decode = 0;
   int tile_row_idx, tile_col_idx;
   int tile_row = 0;
   int tile_col = 0;
@@ -3145,21 +3146,27 @@ static int get_next_job_info(AV1Decoder *const pbi,
       dec_row_mt_sync = &tile_data->dec_row_mt_sync;
 
       num_threads_working = dec_row_mt_sync->num_threads_working;
-      num_mis_to_decode = (dec_row_mt_sync->mi_rows_parse_done -
-                           dec_row_mt_sync->mi_rows_decode_started) *
-                          dec_row_mt_sync->mi_cols;
+      num_mis_waiting_for_decode = (dec_row_mt_sync->mi_rows_parse_done -
+                                    dec_row_mt_sync->mi_rows_decode_started) *
+                                   dec_row_mt_sync->mi_cols;
+      num_mis_to_decode =
+          (dec_row_mt_sync->mi_rows - dec_row_mt_sync->mi_rows_decode_started) *
+          dec_row_mt_sync->mi_cols;
+
+      assert(num_mis_to_decode >= num_mis_waiting_for_decode);
 
       // Pick the tile which has minimum number of threads working on it.
-      if (num_mis_to_decode > 0 && num_threads_working < min_threads_working) {
-        min_threads_working = num_threads_working;
-        max_mis_available = 0;
-      }
-
-      if (num_threads_working == min_threads_working &&
-          num_mis_to_decode > max_mis_available) {
-        max_mis_available = num_mis_to_decode;
-        tile_row = tile_row_idx;
-        tile_col = tile_col_idx;
+      if (num_mis_waiting_for_decode > 0) {
+        if (num_threads_working < min_threads_working) {
+          min_threads_working = num_threads_working;
+          max_mis_to_decode = 0;
+        }
+        if (num_threads_working == min_threads_working &&
+            num_mis_to_decode > max_mis_to_decode) {
+          max_mis_to_decode = num_mis_to_decode;
+          tile_row = tile_row_idx;
+          tile_col = tile_col_idx;
+        }
       }
     }
   }
