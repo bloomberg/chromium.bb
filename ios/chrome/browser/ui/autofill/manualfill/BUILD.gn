@@ -15,8 +15,6 @@ source_set("manualfill") {
     "//base",
     "//third_party/material_design_icons:ic_account_circle",
     "//third_party/material_design_icons:ic_credit_card",
-    "//third_party/material_design_icons:ic_keyboard_arrow_down",
-    "//third_party/material_design_icons:ic_keyboard_arrow_up",
     "//third_party/material_design_icons:ic_vpn_key",
   ]
   libs = [ "UIKit.framework" ]

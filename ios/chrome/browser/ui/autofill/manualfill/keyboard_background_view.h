@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol KeyboardAccessoryViewDelegate;
+@protocol ManualFillKeyboardAccessoryViewDelegate;
 
 // View to show behind the keyboard. It contains an Accessory View and a
 // Container for more detailed content.
@@ -33,7 +33,8 @@
 //
 // @param delegate The delegate for this object.
 // @return A fresh object with the passed delegate.
-- (instancetype)initWithDelegate:(id<KeyboardAccessoryViewDelegate>)delegate
+- (instancetype)initWithDelegate:
+    (id<ManualFillKeyboardAccessoryViewDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 @end
