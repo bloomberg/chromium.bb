@@ -93,8 +93,6 @@ bool H264Decoder::ModifyReferencePicLists(const H264SliceHeader* slice_hdr,
 
 bool H264Decoder::DecodePicture() {
   DCHECK(curr_pic_.get());
-
-  DVLOG(4) << "Decoding POC " << curr_pic_->pic_order_cnt;
   return accelerator_->SubmitDecode(curr_pic_) == H264Accelerator::Status::kOk;
 }
 
