@@ -4,10 +4,15 @@
 
 #include "third_party/blink/renderer/modules/accessibility/testing/accessibility_selection_test.h"
 
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_position.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_selection.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -136,6 +141,90 @@ class AXSelectionSerializer final {
   AXSelection selection_;
 };
 
+// Deserializes an HTML snippet with or without selection markers to an
+// accessibility tree. A '^' could be present at the selection anchor offset and
+// a '|' at the focus offset. If multiple markers are present, the deserializer
+// will DCHECK. If there are no markers, no selection will be made.
+class AXSelectionDeserializer final {
+  STACK_ALLOCATED();
+
+ public:
+  AXSelectionDeserializer(AXObjectCacheImpl& cache)
+      : ax_object_cache_(&cache), base_(), extent_() {}
+  ~AXSelectionDeserializer() = default;
+
+  // Creates an accessibility tree rooted at the given HTML element from the
+  // provided HTML snippet, selects the part of the tree indicated by the
+  // selection markers in the snippet if present, and returns the tree's root.
+  AXObject* Deserialize(const std::string& html_snippet, HTMLElement& element) {
+    element.SetInnerHTMLFromString(String::FromUTF8(html_snippet.c_str()));
+    AXObject* root = ax_object_cache_->GetOrCreate(&element);
+    if (!root)
+      return nullptr;
+
+    FindSelectionMarkers(*root);
+    if (base_ && extent_) {
+      AXSelection::Builder builder;
+      AXSelection ax_selection =
+          builder.SetBase(base_).SetExtent(extent_).Build();
+      ax_selection.Select();
+    }
+
+    return root;
+  }
+
+ private:
+  void HandleCharacterData(const AXObject& text_object) {
+    int base_offset = -1;
+    int extent_offset = -1;
+    String name = text_object.ComputedName();
+    for (unsigned i = 0; i < name.length(); ++i) {
+      const UChar character = name[i];
+      if (character == '^') {
+        DCHECK_EQ(base_offset, -1) << text_object;
+        base_offset = static_cast<int>(i);
+        continue;
+      }
+      if (character == '|') {
+        DCHECK_EQ(extent_offset, -1) << text_object;
+        extent_offset = static_cast<int>(i);
+        continue;
+      }
+    }
+
+    if (base_offset == -1 && extent_offset == -1)
+      return;
+
+    if (base_offset >= 0)
+      base_ = AXPosition::CreatePositionInTextObject(text_object, base_offset);
+    if (extent_offset >= 0) {
+      extent_ =
+          AXPosition::CreatePositionInTextObject(text_object, extent_offset);
+    }
+  }
+
+  void HandleObject(const AXObject& object) {
+    for (const Member<AXObject>& child : object.Children()) {
+      if (!child)
+        continue;
+      FindSelectionMarkers(*child);
+    }
+  }
+
+  void FindSelectionMarkers(const AXObject& root) {
+    const Node* node = root.GetNode();
+    if (node && node->IsCharacterDataNode()) {
+      HandleCharacterData(root);
+      return;
+    }
+    HandleObject(root);
+  }
+
+  Member<AXObjectCacheImpl> const ax_object_cache_;
+  AXPosition base_;
+  AXPosition extent_;
+};
+
 }  // namespace
 
 AccessibilitySelectionTest::AccessibilitySelectionTest(
@@ -154,6 +243,22 @@ std::string AccessibilitySelectionTest::GetSelectionText(
     const AXSelection& selection,
     const AXObject& subtree) const {
   return AXSelectionSerializer(selection).Serialize(subtree);
+}
+
+AXObject* AccessibilitySelectionTest::SetSelectionText(
+    const std::string& selection_text) const {
+  HTMLElement* body = GetDocument().body();
+  if (!body)
+    return nullptr;
+  return AXSelectionDeserializer(GetAXObjectCache())
+      .Deserialize(selection_text, *body);
+}
+
+AXObject* AccessibilitySelectionTest::SetSelectionText(
+    const std::string& selection_text,
+    HTMLElement& element) const {
+  return AXSelectionDeserializer(GetAXObjectCache())
+      .Deserialize(selection_text, element);
 }
 
 }  // namespace blink
