@@ -8,14 +8,14 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_modality_controller.h"
+#include "ui/wm/core/window_util.h"
 
 using views::Widget;
 
@@ -23,101 +23,87 @@ namespace ash {
 
 namespace {
 
-// Parent window size and position.
+// Parent window layout.
 const int kWindowLeft = 170;
 const int kWindowTop = 200;
 const int kWindowWidth = 400;
 const int kWindowHeight = 400;
-
-// Parent window layout.
 const int kButtonHeight = 35;
-const int kTextfieldHeight = 35;
 
 // Child window size.
 const int kChildWindowWidth = 330;
 const int kChildWindowHeight = 200;
 
 // Child window layout.
-const int kChildTextfieldLeft = 20;
-const int kChildTextfieldTop = 50;
-const int kChildTextfieldWidth = 290;
-const int kChildTextfieldHeight = 35;
+const int kTextfieldLeft = 10;
+const int kTextfieldTop = 20;
+const int kTextfieldWidth = 300;
+const int kTextfieldHeight = 35;
 
-const SkColor kModalParentColor = SK_ColorWHITE;
+const SkColor kModalParentColor = SK_ColorBLUE;
 const SkColor kChildColor = SK_ColorWHITE;
 
 }  // namespace
 
 class ChildModalWindow : public views::WidgetDelegateView {
  public:
-  ChildModalWindow();
-  ~ChildModalWindow() override;
+  ChildModalWindow() {
+    SetBackground(views::CreateSolidBackground(kChildColor));
+    views::Textfield* modal_child_textfield = new views::Textfield;
+    AddChildView(modal_child_textfield);
+    modal_child_textfield->SetBounds(kTextfieldLeft, kTextfieldTop,
+                                     kTextfieldWidth, kTextfieldHeight);
+    modal_child_textfield->set_placeholder_text(
+        base::ASCIIToUTF16("modal child window"));
+  }
+  ~ChildModalWindow() override = default;
 
  private:
   // Overridden from View:
-  void OnPaint(gfx::Canvas* canvas) override;
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(kChildWindowWidth, kChildWindowHeight);
+  }
 
   // Overridden from WidgetDelegate:
-  base::string16 GetWindowTitle() const override;
-  bool CanResize() const override;
-  ui::ModalType GetModalType() const override;
+  base::string16 GetWindowTitle() const override {
+    return base::ASCIIToUTF16("Examples: Child Modal Window");
+  }
+  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_CHILD; }
 
   DISALLOW_COPY_AND_ASSIGN(ChildModalWindow);
 };
 
-ChildModalWindow::ChildModalWindow() {
-  views::Textfield* textfield = new views::Textfield;
-  AddChildView(textfield);
-  textfield->SetBounds(kChildTextfieldLeft, kChildTextfieldTop,
-                       kChildTextfieldWidth, kChildTextfieldHeight);
-}
-
-ChildModalWindow::~ChildModalWindow() = default;
-
-void ChildModalWindow::OnPaint(gfx::Canvas* canvas) {
-  canvas->FillRect(GetLocalBounds(), kChildColor);
-}
-
-gfx::Size ChildModalWindow::CalculatePreferredSize() const {
-  return gfx::Size(kChildWindowWidth, kChildWindowHeight);
-}
-
-base::string16 ChildModalWindow::GetWindowTitle() const {
-  return base::ASCIIToUTF16("Examples: Child Modal Window");
-}
-
-bool ChildModalWindow::CanResize() const {
-  return false;
-}
-
-ui::ModalType ChildModalWindow::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
-}
-
 // static
-void TestChildModalParent::Create(aura::Window* context) {
+TestChildModalParent* TestChildModalParent::Show(aura::Window* context) {
+  auto* test_child_modal_parent = new TestChildModalParent(context);
   Widget::CreateWindowWithContextAndBounds(
-      new TestChildModalParent(context), context,
+      test_child_modal_parent, context,
       gfx::Rect(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight))
       ->Show();
+  return test_child_modal_parent;
 }
 
 TestChildModalParent::TestChildModalParent(aura::Window* context)
-    : widget_(std::make_unique<Widget>()),
-      button_(new views::LabelButton(
+    : modal_parent_(std::make_unique<Widget>()),
+      button_(views::MdTextButton::Create(
           this,
           base::ASCIIToUTF16("Show/Hide Child Modal Window"))),
       textfield_(new views::Textfield),
-      host_(new views::NativeViewHost),
-      child_(nullptr) {
+      host_(new views::NativeViewHost) {
+  textfield_->set_placeholder_text(base::ASCIIToUTF16("top level window"));
   Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = context;
-  widget_->Init(params);
-  widget_->GetRootView()->SetBackground(
+  modal_parent_->Init(params);
+  modal_parent_->GetRootView()->SetBackground(
       views::CreateSolidBackground(kModalParentColor));
-  widget_->GetNativeView()->SetName("ModalParent");
+  auto* modal_parent_textfield = new views::Textfield;
+  modal_parent_->GetRootView()->AddChildView(modal_parent_textfield);
+  modal_parent_textfield->SetBounds(kTextfieldLeft, kTextfieldTop,
+                                    kTextfieldWidth, kTextfieldHeight);
+  modal_parent_textfield->set_placeholder_text(
+      base::ASCIIToUTF16("modal parent window"));
+  modal_parent_->GetNativeView()->SetName("ModalParent");
   AddChildView(button_);
   AddChildView(textfield_);
   AddChildView(host_);
@@ -125,47 +111,24 @@ TestChildModalParent::TestChildModalParent(aura::Window* context)
 
 TestChildModalParent::~TestChildModalParent() = default;
 
-void TestChildModalParent::ShowChild() {
-  if (!child_)
-    child_ = CreateChild();
-  child_->Show();
-}
-
 aura::Window* TestChildModalParent::GetModalParent() const {
-  return widget_->GetNativeView();
+  return modal_parent_->GetNativeView();
 }
 
-aura::Window* TestChildModalParent::GetChild() const {
-  if (child_)
-    return child_->GetNativeView();
-  return nullptr;
-}
-
-Widget* TestChildModalParent::CreateChild() {
-  Widget* child = Widget::CreateWindowWithParent(new ChildModalWindow,
-                                                 GetWidget()->GetNativeView());
-  wm::SetModalParent(child->GetNativeView(), GetModalParent());
-  child->AddObserver(this);
-  child->GetNativeView()->SetName("ChildModalWindow");
-  return child;
+aura::Window* TestChildModalParent::ShowModalChild() {
+  DCHECK(!modal_child_);
+  modal_child_ = Widget::CreateWindowWithParent(new ChildModalWindow,
+                                                GetWidget()->GetNativeView());
+  wm::SetModalParent(modal_child_->GetNativeView(),
+                     modal_parent_->GetNativeView());
+  modal_child_->AddObserver(this);
+  modal_child_->GetNativeView()->SetName("ChildModalWindow");
+  modal_child_->Show();
+  return modal_child_->GetNativeView();
 }
 
 base::string16 TestChildModalParent::GetWindowTitle() const {
   return base::ASCIIToUTF16("Examples: Child Modal Parent");
-}
-
-bool TestChildModalParent::CanResize() const {
-  return false;
-}
-
-void TestChildModalParent::DeleteDelegate() {
-  if (child_) {
-    child_->RemoveObserver(this);
-    child_->Close();
-    child_ = NULL;
-  }
-
-  delete this;
 }
 
 void TestChildModalParent::Layout() {
@@ -180,28 +143,23 @@ void TestChildModalParent::Layout() {
 void TestChildModalParent::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this) {
-    host_->Attach(widget_->GetNativeWindow());
+    host_->Attach(modal_parent_->GetNativeView());
     GetWidget()->GetNativeView()->SetName("Parent");
   }
 }
 
 void TestChildModalParent::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
-  if (sender == button_) {
-    if (!child_)
-      child_ = CreateChild();
-    if (child_->IsVisible())
-      child_->Hide();
-    else
-      child_->Show();
-  }
+  DCHECK_EQ(sender, button_);
+  if (!modal_child_)
+    ShowModalChild();
+  else
+    modal_child_->Close();
 }
 
 void TestChildModalParent::OnWidgetDestroying(Widget* widget) {
-  if (child_) {
-    DCHECK_EQ(child_, widget);
-    child_ = NULL;
-  }
+  DCHECK_EQ(modal_child_, widget);
+  modal_child_ = nullptr;
 }
 
 }  // namespace ash
