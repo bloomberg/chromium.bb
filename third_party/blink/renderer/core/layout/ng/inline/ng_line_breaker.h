@@ -221,6 +221,9 @@ class CORE_EXPORT NGLineBreaker {
   // https://quirks.spec.whatwg.org/#the-line-height-calculation-quirk
   bool in_line_height_quirks_mode_ = false;
 
+  // True when the line we are breaking has a list marker.
+  bool has_list_marker_ = false;
+
   bool ignore_floats_ = false;
 };
 

@@ -251,9 +251,10 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
                           IsLtr(line_info->BaseDirection()) ? 0 : 1, box);
   }
 
-  if (line_box_.IsEmpty() && !container_builder_.UnpositionedListMarker()) {
-    return;  // The line was empty.
-  }
+  // We can return early if we don't have any children (and don't need to
+  // create a line-box for a list marker, etc).
+  if (line_box_.IsEmpty() && line_info->IsEmptyLine())
+    return;
 
   box_states_->OnEndPlaceItems(&line_box_, baseline_type_);
 
@@ -284,12 +285,7 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 
   // Handle out-of-flow positioned objects. They need inline offsets for their
   // static positions.
-  if (!PlaceOutOfFlowObjects(*line_info, line_box_metrics) &&
-      !container_builder_.UnpositionedListMarker()) {
-    // If we have out-of-flow objects but nothing else, we don't have line box
-    // metrics nor BFC offset. Exit early.
-    return;
-  }
+  PlaceOutOfFlowObjects(*line_info, line_box_metrics);
 
   // Even if we have something in-flow, it may just be empty items that
   // shouldn't trigger creation of a line. Exit now if that's the case.
@@ -438,10 +434,9 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
 
 // Place all out-of-flow objects in |line_box_| and clear them.
 // @return whether |line_box_| has any in-flow fragments.
-bool NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
+void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
     const NGLineInfo& line_info,
     const NGLineHeightMetrics& line_box_metrics) {
-  bool has_fragments = false;
   for (NGLineBoxFragmentBuilder::Child& child : line_box_) {
     if (LayoutObject* box = child.out_of_flow_positioned_box) {
       // The static position is at the line-top. Ignore the block_offset.
@@ -471,11 +466,8 @@ bool NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
 
       child.out_of_flow_positioned_box = child.out_of_flow_containing_box =
           nullptr;
-    } else if (!has_fragments) {
-      has_fragments = child.HasFragment();
     }
   }
-  return has_fragments;
 }
 
 // Place a list marker.

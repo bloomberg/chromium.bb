@@ -64,7 +64,16 @@ bool NGUnpositionedListMarker::AddToBox(
   // Compute the baseline of the child content.
   NGLineHeightMetrics content_metrics;
   if (content.IsLineBox()) {
-    content_metrics = ToNGPhysicalLineBoxFragment(content).Metrics();
+    const NGPhysicalLineBoxFragment& line_box =
+        ToNGPhysicalLineBoxFragment(content);
+
+    // If this child is an empty line-box, the list marker should be aligned
+    // with the next non-empty line box produced. (This can occur with floats
+    // producing empty line-boxes).
+    if (line_box.Children().IsEmpty() && !line_box.BreakToken()->IsFinished())
+      return false;
+
+    content_metrics = line_box.Metrics();
   } else {
     NGBoxFragment content_fragment(space.GetWritingMode(),
                                    ToNGPhysicalBoxFragment(content));
