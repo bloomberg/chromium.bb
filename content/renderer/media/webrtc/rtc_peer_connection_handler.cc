@@ -37,7 +37,6 @@
 #include "content/renderer/media/webrtc/rtc_event_log_output_sink_proxy.h"
 #include "content/renderer/media/webrtc/rtc_stats.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
-#include "content/renderer/media/webrtc/webrtc_media_stream_adapter.h"
 #include "content/renderer/media/webrtc/webrtc_set_remote_description_observer.h"
 #include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
 #include "content/renderer/render_thread_impl.h"
