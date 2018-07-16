@@ -4,57 +4,74 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
 import org.chromium.content_public.browser.WebContents;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * An interface for logging to UMA via Ranker.
  */
 public interface ContextualSearchRankerLogger {
-    // TODO(donnd): consider changing this enum to an IntDef.
     // NOTE: this list needs to be kept in sync with the white list in
     // predictor_config_definitions.cc, the names list in ContextualSearchRankerLoggerImpl.java
     // and with ukm.xml!
-    enum Feature {
-        UNKNOWN,
+    @IntDef({Feature.UNKNOWN, Feature.OUTCOME_WAS_PANEL_OPENED,
+            Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED, Feature.OUTCOME_WAS_QUICK_ANSWER_SEEN,
+            Feature.OUTCOME_WAS_CARDS_DATA_SHOWN, Feature.DURATION_AFTER_SCROLL_MS,
+            Feature.SCREEN_TOP_DPS, Feature.WAS_SCREEN_BOTTOM,
+            Feature.PREVIOUS_WEEK_IMPRESSIONS_COUNT, Feature.PREVIOUS_WEEK_CTR_PERCENT,
+            Feature.PREVIOUS_28DAY_IMPRESSIONS_COUNT, Feature.PREVIOUS_28DAY_CTR_PERCENT,
+            Feature.DID_OPT_IN, Feature.IS_SHORT_WORD, Feature.IS_LONG_WORD, Feature.IS_WORD_EDGE,
+            Feature.IS_ENTITY, Feature.TAP_DURATION_MS, Feature.FONT_SIZE,
+            Feature.IS_SECOND_TAP_OVERRIDE, Feature.IS_HTTP, Feature.IS_ENTITY_ELIGIBLE,
+            Feature.IS_LANGUAGE_MISMATCH, Feature.PORTION_OF_ELEMENT, Feature.TAP_COUNT,
+            Feature.OPEN_COUNT, Feature.QUICK_ANSWER_COUNT, Feature.ENTITY_IMPRESSIONS_COUNT,
+            Feature.ENTITY_OPENS_COUNT, Feature.QUICK_ACTION_IMPRESSIONS_COUNT,
+            Feature.QUICK_ACTIONS_TAKEN_COUNT, Feature.QUICK_ACTIONS_IGNORED_COUNT})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface Feature {
+        int UNKNOWN = 0;
         // Outcome labels:
-        OUTCOME_WAS_PANEL_OPENED,
-        OUTCOME_WAS_QUICK_ACTION_CLICKED,
-        OUTCOME_WAS_QUICK_ANSWER_SEEN,
-        OUTCOME_WAS_CARDS_DATA_SHOWN, // a UKM CS v2 label.
-        // Features:
-        DURATION_AFTER_SCROLL_MS,
-        SCREEN_TOP_DPS,
-        WAS_SCREEN_BOTTOM,
+        int OUTCOME_WAS_PANEL_OPENED = 1;
+        int OUTCOME_WAS_QUICK_ACTION_CLICKED = 2;
+        int OUTCOME_WAS_QUICK_ANSWER_SEEN = 3;
+        int OUTCOME_WAS_CARDS_DATA_SHOWN = 4; // a UKM CS v2 label.
+                                              // Features:
+        int DURATION_AFTER_SCROLL_MS = 5;
+        int SCREEN_TOP_DPS = 6;
+        int WAS_SCREEN_BOTTOM = 7;
         // User usage features:
-        PREVIOUS_WEEK_IMPRESSIONS_COUNT,
-        PREVIOUS_WEEK_CTR_PERCENT,
-        PREVIOUS_28DAY_IMPRESSIONS_COUNT,
-        PREVIOUS_28DAY_CTR_PERCENT,
+        int PREVIOUS_WEEK_IMPRESSIONS_COUNT = 8;
+        int PREVIOUS_WEEK_CTR_PERCENT = 9;
+        int PREVIOUS_28DAY_IMPRESSIONS_COUNT = 10;
+        int PREVIOUS_28DAY_CTR_PERCENT = 11;
         // UKM CS v2 features (see go/ukm-cs-2).
-        DID_OPT_IN,
-        IS_SHORT_WORD,
-        IS_LONG_WORD,
-        IS_WORD_EDGE,
-        IS_ENTITY,
-        TAP_DURATION_MS,
+        int DID_OPT_IN = 12;
+        int IS_SHORT_WORD = 13;
+        int IS_LONG_WORD = 14;
+        int IS_WORD_EDGE = 15;
+        int IS_ENTITY = 16;
+        int TAP_DURATION_MS = 17;
         // UKM CS v3 features (see go/ukm-cs-3).
-        FONT_SIZE,
-        IS_SECOND_TAP_OVERRIDE,
-        IS_HTTP,
-        IS_ENTITY_ELIGIBLE,
-        IS_LANGUAGE_MISMATCH,
-        PORTION_OF_ELEMENT,
+        int FONT_SIZE = 18;
+        int IS_SECOND_TAP_OVERRIDE = 19;
+        int IS_HTTP = 20;
+        int IS_ENTITY_ELIGIBLE = 21;
+        int IS_LANGUAGE_MISMATCH = 22;
+        int PORTION_OF_ELEMENT = 23;
         // UKM CS v4 features (see go/ukm-cs-4).
-        TAP_COUNT,
-        OPEN_COUNT,
-        QUICK_ANSWER_COUNT,
-        ENTITY_IMPRESSIONS_COUNT,
-        ENTITY_OPENS_COUNT,
-        QUICK_ACTION_IMPRESSIONS_COUNT,
-        QUICK_ACTIONS_TAKEN_COUNT,
-        QUICK_ACTIONS_IGNORED_COUNT,
+        int TAP_COUNT = 24;
+        int OPEN_COUNT = 25;
+        int QUICK_ANSWER_COUNT = 26;
+        int ENTITY_IMPRESSIONS_COUNT = 27;
+        int ENTITY_OPENS_COUNT = 28;
+        int QUICK_ACTION_IMPRESSIONS_COUNT = 29;
+        int QUICK_ACTIONS_TAKEN_COUNT = 30;
+        int QUICK_ACTIONS_IGNORED_COUNT = 31;
     }
 
     /**
@@ -69,7 +86,7 @@ public interface ContextualSearchRankerLogger {
      * @param feature The feature to log.
      * @param value The value to log, which is associated with the given key.
      */
-    void logFeature(Feature feature, Object value);
+    void logFeature(@Feature int feature, Object value);
 
     /**
      * Returns whether or not AssistRanker query is enabled.
@@ -81,7 +98,7 @@ public interface ContextualSearchRankerLogger {
      * @param feature The feature to log.
      * @param value The outcome label value.
      */
-    void logOutcome(Feature feature, Object value);
+    void logOutcome(@Feature int feature, Object value);
 
     /**
      * Tries to run the machine intelligence model for tap suppression and returns an int that
