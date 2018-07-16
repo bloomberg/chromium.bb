@@ -40,10 +40,11 @@
 
 namespace {
 
-// By spec, dropdowns should have a min width of 64, and should always have
-// a width which is a multiple of 12.
+// By spec, dropdowns should have a min width of 64, a max width of 456, and
+// should always have a width which is a multiple of 12.
 const int kAutofillPopupWidthMultiple = 12;
 const int kAutofillPopupMinWidth = 64;
+const int kAutofillPopupMaxWidth = 456;
 
 // TODO(crbug.com/831603): Determine how colors should be shared with menus
 // and/or omnibox, and how these should interact (if at all) with native
@@ -52,6 +53,7 @@ const SkColor kAutofillPopupBackgroundColor = SK_ColorWHITE;
 const SkColor kAutofillPopupSelectedBackgroundColor = gfx::kGoogleGrey200;
 const SkColor kAutofillPopupFooterBackgroundColor = gfx::kGoogleGrey050;
 const SkColor kAutofillPopupSeparatorColor = gfx::kGoogleGrey200;
+const SkColor kAutofillPopupWarningColor = gfx::kGoogleRed600;
 
 // A space between the input element and the dropdown, so that the dropdown's
 // border doesn't look too close to the element.
@@ -65,6 +67,11 @@ int GetCornerRadius() {
 int GetContentsVerticalPadding() {
   return ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
+}
+
+int GetHorizontalMargin() {
+  return views::MenuConfig::instance().item_horizontal_padding +
+         GetCornerRadius();
 }
 
 }  // namespace
@@ -180,6 +187,32 @@ class AutofillPopupSeparatorView : public AutofillPopupRowView {
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupSeparatorView);
 };
 
+// Draws a row which contains a warning message.
+class AutofillPopupWarningView : public AutofillPopupRowView {
+ public:
+  ~AutofillPopupWarningView() override = default;
+
+  static AutofillPopupWarningView* Create(AutofillPopupController* controller,
+                                          int line_number);
+
+  // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override {}
+  void OnMouseReleased(const ui::MouseEvent& event) override {}
+
+ protected:
+  // AutofillPopupRowView:
+  void CreateContent() override;
+  void RefreshStyle() override {}
+  std::unique_ptr<views::Background> CreateBackground() override;
+
+ private:
+  AutofillPopupWarningView(AutofillPopupController* controller, int line_number)
+      : AutofillPopupRowView(controller, line_number) {}
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillPopupWarningView);
+};
+
 void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   auto suggestion = controller_->GetSuggestionAt(line_number_);
   std::vector<base::string16> text;
@@ -227,9 +260,7 @@ void AutofillPopupItemView::OnMouseReleased(const ui::MouseEvent& event) {
 
 void AutofillPopupItemView::CreateContent() {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
-      gfx::Insets(0, views::MenuConfig::instance().item_horizontal_padding +
-                         GetCornerRadius())));
+      views::BoxLayout::kHorizontal, gfx::Insets(0, GetHorizontalMargin())));
 
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
@@ -309,8 +340,7 @@ AutofillPopupSuggestionView::CreateBackground() {
 }
 
 int AutofillPopupSuggestionView::GetPrimaryTextStyle() {
-  return is_warning_ ? ChromeTextStyle::STYLE_RED
-                     : views::style::TextStyle::STYLE_PRIMARY;
+  return views::style::TextStyle::STYLE_PRIMARY;
 }
 
 AutofillPopupSuggestionView::AutofillPopupSuggestionView(
@@ -405,6 +435,53 @@ AutofillPopupSeparatorView::AutofillPopupSeparatorView(
   SetFocusBehavior(FocusBehavior::NEVER);
 }
 
+// static
+AutofillPopupWarningView* AutofillPopupWarningView::Create(
+    AutofillPopupController* controller,
+    int line_number) {
+  AutofillPopupWarningView* result =
+      new AutofillPopupWarningView(controller, line_number);
+  result->Init();
+  return result;
+}
+
+void AutofillPopupWarningView::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  node_data->SetName(controller_->GetSuggestionAt(line_number_).value);
+  node_data->role = ax::mojom::Role::kStaticText;
+}
+
+void AutofillPopupWarningView::CreateContent() {
+  int horizontal_margin = GetHorizontalMargin();
+  int vertical_margin = GetCornerRadius();
+
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+  SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(vertical_margin, horizontal_margin)));
+
+  views::Label* text_label = new views::Label(
+      controller_->GetElidedValueAt(line_number_),
+      {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+                             ChromeTextStyle::STYLE_RED)});
+  text_label->SetEnabledColor(kAutofillPopupWarningColor);
+  text_label->SetMultiLine(true);
+  int max_width =
+      std::min(kAutofillPopupMaxWidth,
+               PopupViewCommon().CalculateMaxWidth(
+                   gfx::ToEnclosingRect(controller_->element_bounds()),
+                   controller_->container_view()));
+  max_width -= 2 * horizontal_margin;
+  text_label->SetMaximumWidth(max_width);
+  text_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+
+  AddChildView(text_label);
+}
+
+std::unique_ptr<views::Background>
+AutofillPopupWarningView::CreateBackground() {
+  return views::CreateSolidBackground(SK_ColorWHITE);
+}
+
 }  // namespace
 
 void AutofillPopupRowView::SetSelected(bool is_selected) {
@@ -426,12 +503,7 @@ bool AutofillPopupRowView::OnMousePressed(const ui::MouseEvent& event) {
 
 AutofillPopupRowView::AutofillPopupRowView(AutofillPopupController* controller,
                                            int line_number)
-    : controller_(controller), line_number_(line_number) {
-  int frontend_id = controller_->GetSuggestionAt(line_number_).frontend_id;
-  is_warning_ =
-      frontend_id ==
-      autofill::POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
-}
+    : controller_(controller), line_number_(line_number) {}
 
 void AutofillPopupRowView::Init() {
   CreateContent();
@@ -505,7 +577,6 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   rows_.clear();
 
   // Create one container to wrap the "regular" (non-footer) rows.
-  // TODO(crbug.com/768881): Make |body_container| scrollable.
   views::View* body_container = new views::View();
   views::BoxLayout* body_layout =
       body_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -520,28 +591,36 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   // Process and add all the suggestions which are in the primary container.
   // Stop once the first footer item is found, or there are no more items.
   while (line_number < controller_->GetLineCount()) {
-    int item_id = controller_->GetSuggestionAt(line_number).frontend_id;
+    switch (controller_->GetSuggestionAt(line_number).frontend_id) {
+      case autofill::PopupItemId::POPUP_ITEM_ID_CLEAR_FORM:
+      case autofill::PopupItemId::POPUP_ITEM_ID_AUTOFILL_OPTIONS:
+      case autofill::PopupItemId::POPUP_ITEM_ID_SCAN_CREDIT_CARD:
+      case autofill::PopupItemId::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
+      case autofill::PopupItemId::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
+        // This is a footer, so this suggestion will be processed later. Don't
+        // increment |line_number|, or else it will be skipped when adding
+        // footer rows below.
+        has_footer = true;
+        break;
 
-    if (item_id == autofill::PopupItemId::POPUP_ITEM_ID_CLEAR_FORM ||
-        item_id == autofill::PopupItemId::POPUP_ITEM_ID_AUTOFILL_OPTIONS ||
-        item_id == autofill::PopupItemId::POPUP_ITEM_ID_SCAN_CREDIT_CARD ||
-        item_id ==
-            autofill::PopupItemId::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO ||
-        item_id == POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
-      // This is a footer, so this suggestion will be processed later. Don't
-      // increment |line_number|, or else it will be skipped when adding footer
-      // rows below.
-      has_footer = true;
+      case autofill::PopupItemId::POPUP_ITEM_ID_SEPARATOR:
+        rows_.push_back(
+            AutofillPopupSeparatorView::Create(controller_, line_number));
+        break;
+
+      case autofill::PopupItemId::
+          POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
+        rows_.push_back(
+            AutofillPopupWarningView::Create(controller_, line_number));
+        break;
+
+      default:
+        rows_.push_back(
+            AutofillPopupSuggestionView::Create(controller_, line_number));
+    }
+
+    if (has_footer)
       break;
-    }
-
-    if (item_id == autofill::PopupItemId::POPUP_ITEM_ID_SEPARATOR) {
-      rows_.push_back(
-          AutofillPopupSeparatorView::Create(controller_, line_number));
-    } else {
-      rows_.push_back(
-          AutofillPopupSuggestionView::Create(controller_, line_number));
-    }
     body_container->AddChildView(rows_.back());
     line_number++;
   }
@@ -580,27 +659,31 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
 }
 
 int AutofillPopupViewNativeViews::AdjustWidth(int width) const {
-  // The border of the input element should be aligned with the border of the
-  // dropdown when suggestions are not too wide.
-  int adjusted_width =
-      gfx::ToEnclosingRect(controller_->element_bounds()).width();
+  if (width >= kAutofillPopupMaxWidth)
+    return kAutofillPopupMaxWidth;
 
-  // Allow the dropdown to grow beyond the element width if it requires more
-  // horizontal space to render the suggestions.
-  if (adjusted_width < width) {
-    adjusted_width = width;
-    // Use multiples of |kAutofillPopupWidthMultiple| if the required width is
-    // larger than the element width.
-    if (adjusted_width % kAutofillPopupWidthMultiple) {
-      adjusted_width += kAutofillPopupWidthMultiple -
-                        (adjusted_width % kAutofillPopupWidthMultiple);
-    }
+  int elem_width = gfx::ToEnclosingRect(controller_->element_bounds()).width();
+
+  // If the element width is within the range of legal sizes for the popup, use
+  // it as the min width, so that the popup will align with its edges when
+  // possible.
+  int min_width = (kAutofillPopupMinWidth <= elem_width &&
+                   elem_width < kAutofillPopupMaxWidth)
+                      ? elem_width
+                      : kAutofillPopupMinWidth;
+
+  if (width <= min_width)
+    return min_width;
+
+  // The popup size is being determined by the contents, rather than the min/max
+  // or the element bounds. Round up to a multiple of
+  // |kAutofillPopupWidthMultiple|.
+  if (width % kAutofillPopupWidthMultiple) {
+    width +=
+        (kAutofillPopupWidthMultiple - (width % kAutofillPopupWidthMultiple));
   }
 
-  // Notwithstanding all the above rules, enforce a hard minimum so the dropdown
-  // is not too small to interact with.
-  adjusted_width = std::max(kAutofillPopupMinWidth, adjusted_width);
-  return adjusted_width;
+  return width;
 }
 
 void AutofillPopupViewNativeViews::AddExtraInitParams(

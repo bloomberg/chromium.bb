@@ -48,6 +48,12 @@ class PopupViewCommon {
   // testing.
   virtual gfx::Rect GetWindowBounds(gfx::NativeView container_view);
 
+  // Returns the greatest possible width for the popup, based on the distances
+  // between the edges of the element and the respective far edges of the
+  // window.
+  int CalculateMaxWidth(const gfx::Rect& element_bounds,
+                        gfx::NativeView container_view);
+
   DISALLOW_COPY_AND_ASSIGN(PopupViewCommon);
 };
 

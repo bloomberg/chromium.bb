@@ -54,7 +54,6 @@ class AutofillPopupRowView : public views::View {
 
   AutofillPopupController* controller_;
   const int line_number_;
-  bool is_warning_ = false;  // overwritten in ctor
   bool is_selected_ = false;
 };
 

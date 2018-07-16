@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
@@ -30,7 +31,7 @@ struct TypeClicks {
 
 const struct TypeClicks kClickTestCase[] = {
     {autofill::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY, 1},
-    {autofill::POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE, 1},
+    {autofill::POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE, 0},
     {autofill::POPUP_ITEM_ID_PASSWORD_ENTRY, 1},
     {autofill::POPUP_ITEM_ID_SEPARATOR, 0},
     {autofill::POPUP_ITEM_ID_CLEAR_FORM, 1},
@@ -61,7 +62,10 @@ class MockAutofillPopupController : public autofill::AutofillPopupController {
   MOCK_CONST_METHOD0(HasSelection, bool());
   MOCK_CONST_METHOD0(popup_bounds, gfx::Rect());
   MOCK_METHOD0(container_view, gfx::NativeView());
-  MOCK_CONST_METHOD0(element_bounds, const gfx::RectF&());
+  const gfx::RectF& element_bounds() const override {
+    static base::NoDestructor<gfx::RectF> bounds({100, 100, 250, 50});
+    return *bounds;
+  }
   MOCK_CONST_METHOD0(IsRTL, bool());
   const std::vector<autofill::Suggestion> GetSuggestions() override {
     return suggestions_;
