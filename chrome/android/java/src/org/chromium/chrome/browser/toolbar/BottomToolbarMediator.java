@@ -20,6 +20,8 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchObserver;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
+import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.base.WindowAndroid.KeyboardVisibilityListener;
 import org.chromium.ui.resources.ResourceManager;
 
 import javax.annotation.Nullable;
@@ -29,8 +31,8 @@ import javax.annotation.Nullable;
  * coordinators, running most of the business logic associated with the bottom toolbar, and updating
  * the model accordingly.
  */
-class BottomToolbarMediator
-        implements FullscreenListener, OverviewModeObserver, ContextualSearchObserver {
+class BottomToolbarMediator implements ContextualSearchObserver, FullscreenListener,
+                                       KeyboardVisibilityListener, OverviewModeObserver {
     /** The model for the bottom toolbar that holds all of its state. */
     private BottomToolbarModel mModel;
 
@@ -42,6 +44,12 @@ class BottomToolbarMediator
 
     /** The manager for Contextual Search to observe appearance/disappearance of the feature. */
     private ContextualSearchManager mContextualSearchManger;
+
+    /** A {@link WindowAndroid} for watching keyboard visibility events. */
+    private WindowAndroid mWindowAndroid;
+
+    /** The previous height of the bottom toolbar. */
+    private int mBottomToolbarHeightBeforeHide;
 
     /**
      * Build a new mediator that handles events from outside the bottom toolbar.
@@ -76,6 +84,7 @@ class BottomToolbarMediator
         mFullscreenManager.removeListener(this);
         if (mContextualSearchManger != null) mContextualSearchManger.removeObserver(this);
         if (mOverviewModeBehavior != null) mOverviewModeBehavior.removeOverviewModeObserver(this);
+        if (mWindowAndroid != null) mWindowAndroid.removeKeyboardVisibilityListener(this);
     }
 
     @Override
@@ -130,6 +139,24 @@ class BottomToolbarMediator
         mModel.setValue(BottomToolbarModel.SEARCH_ACCELERATOR_LISTENER, searchAcceleratorListener);
     }
 
+    @Override
+    public void keyboardVisibilityChanged(boolean isShowing) {
+        // The toolbars are force shown when the keyboard is visible, so we can blindly set
+        // the bottom toolbar view to visible or invisible regardless of the previous state.
+        ChromeFullscreenManager fullscreenManager =
+                mModel.getValue(BottomToolbarModel.LAYOUT_MANAGER).getFullscreenManager();
+        if (isShowing) {
+            mBottomToolbarHeightBeforeHide = fullscreenManager.getBottomControlsHeight();
+            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
+            mModel.setValue(BottomToolbarModel.COMPOSITED_VIEW_VISIBLE, false);
+            fullscreenManager.setBottomControlsHeight(0);
+        } else {
+            fullscreenManager.setBottomControlsHeight(mBottomToolbarHeightBeforeHide);
+            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
+            mModel.setValue(BottomToolbarModel.COMPOSITED_VIEW_VISIBLE, true);
+        }
+    }
+
     public void setLayoutManager(LayoutManager layoutManager) {
         mModel.setValue(BottomToolbarModel.LAYOUT_MANAGER, layoutManager);
 
@@ -171,5 +198,13 @@ class BottomToolbarMediator
 
     public void setToolbarSwipeLayout(ToolbarSwipeLayout layout) {
         mModel.setValue(BottomToolbarModel.TOOLBAR_SWIPE_LAYOUT, layout);
+    }
+
+    public void setWindowAndroid(WindowAndroid windowAndroid) {
+        assert mWindowAndroid == null : "#setWindowAndroid should only be called once per toolbar.";
+
+        // Watch for keyboard events so we can hide the bottom toolbar when the keyboard is showing.
+        mWindowAndroid = windowAndroid;
+        mWindowAndroid.addKeyboardVisibilityListener(this);
     }
 }

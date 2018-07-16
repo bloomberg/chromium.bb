@@ -22,6 +22,9 @@ public class BottomToolbarModel extends PropertyModel {
     /** Whether the Android view version of the toolbar is visible. */
     public static final BooleanPropertyKey ANDROID_VIEW_VISIBLE = new BooleanPropertyKey();
 
+    /** Whether the composited version of the toolbar is visible. */
+    public static final BooleanPropertyKey COMPOSITED_VIEW_VISIBLE = new BooleanPropertyKey();
+
     /** The click listener for the search accelerator. */
     public static final ObjectPropertyKey<OnClickListener> SEARCH_ACCELERATOR_LISTENER =
             new ObjectPropertyKey<>();
@@ -46,8 +49,8 @@ public class BottomToolbarModel extends PropertyModel {
 
     /** Default constructor. */
     public BottomToolbarModel() {
-        super(Y_OFFSET, ANDROID_VIEW_VISIBLE, SEARCH_ACCELERATOR_LISTENER, LAYOUT_MANAGER,
-                TOOLBAR_SWIPE_LAYOUT, RESOURCE_MANAGER, SEARCH_ACCELERATOR_VISIBLE,
+        super(Y_OFFSET, ANDROID_VIEW_VISIBLE, COMPOSITED_VIEW_VISIBLE, SEARCH_ACCELERATOR_LISTENER,
+                LAYOUT_MANAGER, TOOLBAR_SWIPE_LAYOUT, RESOURCE_MANAGER, SEARCH_ACCELERATOR_VISIBLE,
                 TOOLBAR_SWIPE_HANDLER);
     }
 }

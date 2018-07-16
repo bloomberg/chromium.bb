@@ -54,6 +54,10 @@ public class BottomToolbarViewBinder
             view.toolbarRoot.setVisibility(model.getValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE)
                             ? View.VISIBLE
                             : View.INVISIBLE);
+        } else if (BottomToolbarModel.COMPOSITED_VIEW_VISIBLE == propertyKey) {
+            view.sceneLayer.setIsVisible(
+                    model.getValue(BottomToolbarModel.COMPOSITED_VIEW_VISIBLE));
+            model.getValue(BottomToolbarModel.LAYOUT_MANAGER).requestUpdate();
         } else if (BottomToolbarModel.SEARCH_ACCELERATOR_LISTENER == propertyKey) {
             view.toolbarRoot.findViewById(R.id.search_button)
                     .setOnClickListener(
