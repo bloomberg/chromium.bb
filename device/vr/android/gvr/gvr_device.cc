@@ -186,27 +186,25 @@ void GvrDevice::RequestSession(
   }
 
   if (options->immersive) {
-    if (options->immersive) {
-      // StartWebXRPresentation is async as we may trigger a DON (Device ON)
-      // flow that pauses Chrome.
-      delegate_provider->StartWebXRPresentation(
-          GetVRDisplayInfo(), std::move(options),
-          base::BindOnce(&GvrDevice::OnRequestSessionResult,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-    } else {
-      // TODO(https://crbug.com/695937): This should be NOTREACHED() once
-      // orientation device handles non-immersive VR sessions.
-      // TODO(https://crbug.com/842025): Handle this when RequestSession is
-      // called for non-immersive sessions.
-      NOTREACHED();
-    }
+    // StartWebXRPresentation is async as we may trigger a DON (Device ON) flow
+    // that pauses Chrome.
+    delegate_provider->StartWebXRPresentation(
+        GetVRDisplayInfo(), std::move(options),
+        base::BindOnce(&GvrDevice::OnStartPresentResult,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  } else {
+    // TODO(https://crbug.com/695937): This should be NOTREACHED() once
+    // orientation device handles non-immersive VR sessions.
+    // TODO(https://crbug.com/842025): Handle this when RequestSession is called
+    // for non-immersive sessions.
+    NOTREACHED();
   }
 }
 
-void GvrDevice::OnRequestSessionResult(
+void GvrDevice::OnStartPresentResult(
     mojom::XRRuntime::RequestSessionCallback callback,
-    mojom::XRPresentationConnectionPtr connection) {
-  if (!connection) {
+    mojom::XRSessionPtr session) {
+  if (!session || !session->connection) {
     std::move(callback).Run(nullptr, nullptr);
     return;
   }
@@ -225,7 +223,8 @@ void GvrDevice::OnRequestSessionResult(
       base::BindOnce(&GvrDevice::OnPresentingControllerMojoConnectionError,
                      base::Unretained(this)));
 
-  std::move(callback).Run(std::move(connection), std::move(session_controller));
+  std::move(callback).Run(std::move(session->connection),
+                          std::move(session_controller));
 }
 
 // XRSessionController

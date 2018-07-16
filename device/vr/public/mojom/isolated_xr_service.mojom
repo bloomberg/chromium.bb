@@ -69,9 +69,9 @@ interface XRRuntime {
   // Attempt to start a "magic window" session.  Magic window sessions allow
   // Clients to obtain poses (device position and orientation), but rendering
   // goes through the standard Chrome compositor.
-  RequestMagicWindowSession(device.mojom.VRMagicWindowProvider& session,
-                            device.mojom.XRSessionController& controller) =>
-      (bool success);
+  RequestMagicWindowSession() =>
+      (device.mojom.VRMagicWindowProvider? session,
+       device.mojom.XRSessionController? controller);
 
   // The browser may register for changes to a device. Initial VRDisplayInfo
   // will immediately be returned to the listener to prevent races.

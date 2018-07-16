@@ -200,8 +200,10 @@ void XRFrameProvider::ScheduleImmersiveFrame() {
 void XRFrameProvider::ScheduleNonImmersiveFrame() {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(!immersive_session_)
-      << "Scheduling should be done via the immersive session if present.";
-  DCHECK(device_->xrMagicWindowProviderPtr());
+      << "Scheduling should be done via the exclusive session if present.";
+  DCHECK(device_->xrMagicWindowProviderPtr())
+      << "If there is no exclusive session, it should be impossible to "
+         "schedule a frame without a MagicWindowProvider.";
 
   if (pending_non_immersive_vsync_)
     return;

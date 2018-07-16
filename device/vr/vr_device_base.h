@@ -85,8 +85,6 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
 
   // XRRuntime
   void RequestMagicWindowSession(
-      mojom::VRMagicWindowProviderRequest provider_request,
-      mojom::XRSessionControllerRequest controller_request,
       mojom::XRRuntime::RequestMagicWindowSessionCallback callback) override;
 
   mojom::XRRuntimeEventListenerPtr listener_;

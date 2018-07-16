@@ -84,7 +84,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void StartWebXRPresentation(
       device::mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
-      device::mojom::VRDisplayHost::RequestSessionCallback callback) override;
+      base::OnceCallback<void(device::mojom::XRSessionPtr)> callback) override;
   void OnListeningForActivateChanged(bool listening) override;
 
   void OnActivateDisplayHandled(bool will_not_present);
@@ -92,7 +92,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void OnPresentResult(
       device::mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
-      device::mojom::VRDisplayHost::RequestSessionCallback callback,
+      base::OnceCallback<void(device::mojom::XRSessionPtr)> callback,
       bool success);
 
   std::unique_ptr<VrCoreInfo> MakeVrCoreInfo(JNIEnv* env);
@@ -108,7 +108,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   // Mojo callback waiting for request present response. This is temporarily
   // stored here from OnPresentResult's outgoing ConnectPresentingService call
   // until the reply arguments are received by SendRequestPresentReply.
-  device::mojom::VRDisplayHost::RequestSessionCallback
+  base::OnceCallback<void(device::mojom::XRSessionPtr)>
       request_present_response_callback_;
 
   bool pending_successful_present_request_ = false;

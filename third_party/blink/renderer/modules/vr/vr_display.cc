@@ -95,16 +95,25 @@ class VRDisplayFrameRequestCallback
 
 VRDisplay::VRDisplay(
     NavigatorVR* navigator_vr,
-    device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider,
     device::mojom::blink::VRDisplayHostPtr display,
     device::mojom::blink::VRDisplayClientRequest request)
     : PausableObject(navigator_vr->GetDocument()),
       navigator_vr_(navigator_vr),
       capabilities_(new VRDisplayCapabilities()),
-      magic_window_provider_(std::move(magic_window_provider)),
       display_(std::move(display)),
       display_client_binding_(this, std::move(request)) {
   PauseIfNeeded();  // Initialize SuspendabaleObject.
+
+  // Request a non-exclusive session to provide magic window.
+  device::mojom::blink::XRSessionOptionsPtr options =
+      device::mojom::blink::XRSessionOptions::New();
+  options->immersive = false;
+  // Set in_on_display_activate to true, this will prevent the request present
+  // from being logged.
+  // TODO(offenwanger): clean up the logging when refactors are complete.
+  display_->RequestSession(std::move(options), true,
+                           WTF::Bind(&VRDisplay::OnMagicWindowRequestReturned,
+                                     WrapPersistent(this)));
 }
 
 VRDisplay::~VRDisplay() = default;
@@ -227,7 +236,26 @@ void VRDisplay::RequestVSync() {
   if (display_blurred_)
     return;
 
-  if (!is_presenting_) {
+  if (is_presenting_) {
+    DCHECK(vr_presentation_provider_.is_bound());
+
+    if (pending_presenting_vsync_)
+      return;
+
+    pending_magic_window_vsync_ = false;
+    pending_presenting_vsync_ = true;
+    vr_presentation_provider_->GetFrameData(
+        WTF::Bind(&VRDisplay::OnPresentingVSync, WrapWeakPersistent(this)));
+
+    DVLOG(2) << __FUNCTION__ << " done: pending_presenting_vsync_="
+             << pending_presenting_vsync_;
+  } else {
+    // Check if magic_window_provider_, if not then we are not fully
+    // initialized, or we do not support magic window, so don't request the
+    // vsync. If and when magic_window_provider_ is set it will run this code
+    // again.
+    if (!magic_window_provider_)
+      return;
     if (pending_magic_window_vsync_)
       return;
     magic_window_vsync_waiting_for_pose_.Reset();
@@ -239,20 +267,7 @@ void VRDisplay::RequestVSync() {
         doc->RequestAnimationFrame(new VRDisplayFrameRequestCallback(this));
     DVLOG(2) << __FUNCTION__ << " done: pending_magic_window_vsync_="
              << pending_magic_window_vsync_;
-    return;
   }
-  DCHECK(vr_presentation_provider_.is_bound());
-
-  if (pending_presenting_vsync_)
-    return;
-
-  pending_magic_window_vsync_ = false;
-  pending_presenting_vsync_ = true;
-  vr_presentation_provider_->GetFrameData(
-      WTF::Bind(&VRDisplay::OnPresentingVSync, WrapWeakPersistent(this)));
-
-  DVLOG(2) << __FUNCTION__
-           << " done: pending_presenting_vsync_=" << pending_presenting_vsync_;
 }
 
 int VRDisplay::requestAnimationFrame(V8FrameRequestCallback* callback) {
@@ -485,19 +500,19 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
 }
 
 void VRDisplay::OnRequestSessionReturned(
-    device::mojom::blink::XRPresentationConnectionPtr connection) {
+    device::mojom::blink::XRSessionPtr session) {
   pending_present_request_ = false;
-  if (connection) {
-    vr_presentation_provider_.Bind(std::move(connection->provider));
+  if (session && session->connection) {
+    vr_presentation_provider_.Bind(std::move(session->connection->provider));
     vr_presentation_provider_.set_connection_error_handler(
         WTF::Bind(&VRDisplay::OnPresentationProviderConnectionError,
                   WrapWeakPersistent(this)));
 
     frame_transport_ = new XRFrameTransport();
     frame_transport_->BindSubmitFrameClient(
-        std::move(connection->client_request));
+        std::move(session->connection->client_request));
     frame_transport_->SetTransportOptions(
-        std::move(connection->transport_options));
+        std::move(session->connection->transport_options));
 
     this->BeginPresent();
   } else {
@@ -510,6 +525,16 @@ void VRDisplay::OnRequestSessionReturned(
       resolver->Reject(exception);
     }
   }
+}
+
+void VRDisplay::OnMagicWindowRequestReturned(
+    device::mojom::blink::XRSessionPtr session) {
+  if (!session || !session->magic_window_provider) {
+    // System does not support any kind of magic window.
+    return;
+  }
+  magic_window_provider_.Bind(std::move(session->magic_window_provider));
+  RequestVSync();
 }
 
 ScriptPromise VRDisplay::exitPresent(ScriptState* script_state) {

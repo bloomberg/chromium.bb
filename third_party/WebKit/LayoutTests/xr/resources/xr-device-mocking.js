@@ -313,14 +313,25 @@ class MockDevice {
       options.waitForRenderNotification = true;
 
       let connection;
-      if (result.supportsSession)
+      if (result.supportsSession) {
         connection = {
           clientRequest: this.presentation_provider_.getClientRequest(),
           provider: this.presentation_provider_.bindProvider(sessionOptions),
           transportOptions: options
         };
 
-      return Promise.resolve({connection: connection});
+        let magicWindowPtr = new device.mojom.VRMagicWindowProviderPtr();
+        let magicWindowRequest = mojo.makeRequest(magicWindowPtr);
+        let magicWindowBinding = new mojo.Binding(
+            device.mojom.VRMagicWindowProvider, this, magicWindowRequest);
+
+        return Promise.resolve({
+          session:
+              {connection: connection, magicWindowProvider: magicWindowPtr}
+        });
+      } else {
+        return Promise.resolve({session: null});
+      }
     });
   }
 
@@ -409,14 +420,9 @@ class MockDevice {
     let displayBinding =
         new mojo.Binding(device.mojom.VRDisplayHost, this, displayRequest);
 
-    let magicWindowPtr = new device.mojom.VRMagicWindowProviderPtr();
-    let magicWindowRequest = mojo.makeRequest(magicWindowPtr);
-    let magicWindowBinding = new mojo.Binding(
-        device.mojom.VRMagicWindowProvider, this, magicWindowRequest);
-
     let clientRequest = mojo.makeRequest(this.displayClient_);
     this.service_.client_.onDisplayConnected(
-        magicWindowPtr, displayPtr, clientRequest, this.displayInfo_);
+        displayPtr, clientRequest, this.displayInfo_);
   }
 
   addInputSource(input_source) {

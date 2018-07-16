@@ -119,7 +119,10 @@ void BrowserXrDevice::OnRequestSessionResult(
       presenting_display_host_ = display;
       immersive_session_controller_ = std::move(immersive_session_controller);
     }
-    std::move(callback).Run(std::move(connection));
+
+    device::mojom::XRSessionPtr xr_session = device::mojom::XRSession::New();
+    xr_session->connection = std::move(connection);
+    std::move(callback).Run(std::move(xr_session));
   } else {
     std::move(callback).Run(nullptr);
     if (connection) {

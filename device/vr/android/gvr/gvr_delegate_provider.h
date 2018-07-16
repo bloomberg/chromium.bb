@@ -23,7 +23,7 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
   virtual void StartWebXRPresentation(
       mojom::VRDisplayInfoPtr display_info,
       mojom::XRDeviceRuntimeSessionOptionsPtr options,
-      device::mojom::VRDisplayHost::RequestSessionCallback callback) = 0;
+      base::OnceCallback<void(device::mojom::XRSessionPtr)> callback) = 0;
   virtual void ExitWebVRPresent() = 0;
   virtual void OnListeningForActivateChanged(bool listening) = 0;
 
