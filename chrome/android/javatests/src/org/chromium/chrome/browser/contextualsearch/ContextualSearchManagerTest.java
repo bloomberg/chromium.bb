@@ -139,21 +139,23 @@ public class ContextualSearchManagerTest {
     private static final int ACTIVITY_STARTUP_DELAY_MS = 1000;
 
     // Ranker data that's expected to be logged.
-    private static final Set<ContextualSearchRankerLogger.Feature> EXPECTED_RANKER_OUTCOMES;
+    // Integer values should contain @Feature values only.
+    private static final Set<Integer> EXPECTED_RANKER_OUTCOMES;
     static {
-        Set<ContextualSearchRankerLogger.Feature> expectedOutcomes =
-                new HashSet<ContextualSearchRankerLogger.Feature>(
-                        ContextualSearchRankerLoggerImpl.OUTCOMES.keySet());
+        // Integer values should contain @Feature values only.
+        Set<Integer> expectedOutcomes =
+                new HashSet<Integer>(ContextualSearchRankerLoggerImpl.OUTCOMES.keySet());
         // We don't log whether the quick action was clicked unless we actually have a quick action.
         expectedOutcomes.remove(
                 ContextualSearchRankerLogger.Feature.OUTCOME_WAS_QUICK_ACTION_CLICKED);
         EXPECTED_RANKER_OUTCOMES = Collections.unmodifiableSet(expectedOutcomes);
     }
-    private static final Set<ContextualSearchRankerLogger.Feature> EXPECTED_RANKER_FEATURES;
+    // Integer values should contain @Feature values only.
+    private static final Set<Integer> EXPECTED_RANKER_FEATURES;
     static {
-        Set<ContextualSearchRankerLogger.Feature> expectedFeatures =
-                new HashSet<ContextualSearchRankerLogger.Feature>(
-                        ContextualSearchRankerLoggerImpl.FEATURES.keySet());
+        // Integer values should contain @Feature values only.
+        Set<Integer> expectedFeatures =
+                new HashSet<Integer>(ContextualSearchRankerLoggerImpl.FEATURES.keySet());
         // We don't log previous user impressions and CTR if not available for the current user.
         expectedFeatures.remove(ContextualSearchRankerLogger.Feature.PREVIOUS_WEEK_CTR_PERCENT);
         expectedFeatures.remove(
@@ -1109,20 +1111,20 @@ public class ContextualSearchManagerTest {
     }
 
     /** @return The value of the given logged feature, or {@code null} if not logged. */
-    private Object loggedToRanker(ContextualSearchRankerLogger.Feature feature) {
+    private Object loggedToRanker(@ContextualSearchRankerLogger.Feature int feature) {
         return getRankerLogger().getFeaturesLogged().get(feature);
     }
 
     /** Asserts that all the expected features have been logged to Ranker. **/
     private void assertLoggedAllExpectedFeaturesToRanker() {
-        for (ContextualSearchRankerLogger.Feature feature : EXPECTED_RANKER_FEATURES) {
+        for (@ContextualSearchRankerLogger.Feature Integer feature : EXPECTED_RANKER_FEATURES) {
             Assert.assertNotNull(loggedToRanker(feature));
         }
     }
 
     /** Asserts that all the expected outcomes have been logged to Ranker. **/
     private void assertLoggedAllExpectedOutcomesToRanker() {
-        for (ContextualSearchRankerLogger.Feature feature : EXPECTED_RANKER_OUTCOMES) {
+        for (@ContextualSearchRankerLogger.Feature Integer feature : EXPECTED_RANKER_OUTCOMES) {
             Assert.assertNotNull("Expected this outcome to be logged: " + feature,
                     getRankerLogger().getOutcomesLogged().get(feature));
         }
