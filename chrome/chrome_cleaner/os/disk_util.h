@@ -138,11 +138,6 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
                                uint32_t delay_before_delete_ms,
                                base::win::ScopedHandle* process_handle);
 
-// Verifies that |signed_file| has a valid signature from a trusted software
-// publisher. The signing certificate must be valid for code signing, and must
-// be issued by a trusted certificate authority (e.g., VeriSign, Inc).
-bool VerifyAuthenticodeSignature(const base::FilePath& signed_file);
-
 // Return true when string |value| contains an occurrence of |substring|,
 // ignoring the string case and taking into account that |value| might be a
 // shortened path (with it's tail replaced by ~N).
