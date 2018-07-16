@@ -3440,7 +3440,6 @@ crbug.com/626703 external/wpt/xhr/setrequestheader-header-allowed.htm [ Failure 
 crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-placeholder-shown-type-change-001.html [ Failure ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-read-write-type-change-002.html [ Failure ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-required-type-change-002.html [ Failure ]
-crbug.com/626703 [ Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/2dcontext/the-canvas-state/canvas_state_restore_001.htm [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-flexbox/auto-margins-001.html [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-after-discovery.html [ Timeout ]
@@ -3861,8 +3860,6 @@ crbug.com/737959 http/tests/misc/object-image-load-outlives-gc-without-crashing.
 crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
 
 crbug.com/734762 inspector-protocol/timeline/page-frames.js [ Failure Pass ]
-
-crbug.com/736255 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Skip ]
 
 # module script lacks XHTML support
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
