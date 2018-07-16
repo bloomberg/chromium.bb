@@ -15,7 +15,6 @@
                   #from " and " #to " arrays must be of same size"); \
     memcpy(to, from, sizeof(to));                                    \
   } while (0)
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
 
 namespace media {
 
@@ -295,7 +294,6 @@ Status VaapiH264Accelerator::SubmitSlice(
 
 Status VaapiH264Accelerator::SubmitDecode(
     const scoped_refptr<H264Picture>& pic) {
-  VLOGF(4) << "Decoding POC " << pic->pic_order_cnt;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   return vaapi_dec_->DecodeVASurface(pic->AsVaapiH264Picture()->va_surface())
