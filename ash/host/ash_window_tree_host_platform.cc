@@ -54,7 +54,10 @@ void AshWindowTreeHostPlatform::ConfineCursorToRootWindow() {
   if (!allow_confine_cursor())
     return;
 
-  gfx::Rect confined_bounds(GetBoundsInPixels().size());
+  // We want to limit the cursor to what is visible, which is the size of the
+  // compositor. |GetBoundsInPixels()| may include pixels that are not used.
+  // See https://crbug.com/843354
+  gfx::Rect confined_bounds(GetCompositorSizeInPixels());
   confined_bounds.Inset(transformer_helper_.GetHostInsets());
   last_cursor_confine_bounds_in_pixels_ = confined_bounds;
   platform_window()->ConfineCursorToBounds(confined_bounds);
@@ -160,6 +163,33 @@ void AshWindowTreeHostPlatform::SetBoundsInPixels(
     const viz::LocalSurfaceId& local_surface_id) {
   WindowTreeHostPlatform::SetBoundsInPixels(bounds, local_surface_id);
   ConfineCursorToRootWindow();
+}
+
+gfx::Size AshWindowTreeHostPlatform::GetCompositorSizeInPixels() const {
+  // For Chrome OS, the platform window size may be slightly different from the
+  // compositor pixel size. This is to prevent any trailing 1px line at the
+  // right or bottom edge due to rounding. This means we may not be using ALL
+  // the pixels on a display, however this is a temporary fix until we figure
+  // out a way to prevent these rounding artifacts.
+  // See https://crbug.com/843354 and https://crbug.com/862424 for more info.
+  if (device_scale_factor() == 1.f)
+    return GetBoundsInPixels().size();
+  return gfx::ScaleToRoundedSize(
+      gfx::ScaleToFlooredSize(GetBoundsInPixels().size(),
+                              1.f / device_scale_factor()),
+      device_scale_factor());
+}
+
+void AshWindowTreeHostPlatform::OnBoundsChanged(const gfx::Rect& new_bounds) {
+  // We need to recompute the bounds in pixels based on the DIP size. This is a
+  // temporary fix needed because the root layer has the bounds in DIP which
+  // when scaled by the compositor does not match the display bounds in pixels.
+  // So we need to change the display bounds to match the root layer's scaled
+  // size.
+  // See https://crbug.com/843354 for more info.
+  const float new_scale = ui::GetScaleFactorForNativeView(window());
+  WindowTreeHostPlatform::OnBoundsChanged(gfx::ScaleToRoundedRect(
+      gfx::ScaleToEnclosedRect(new_bounds, 1.f / new_scale), new_scale));
 }
 
 void AshWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {

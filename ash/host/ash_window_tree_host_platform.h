@@ -61,6 +61,8 @@ class ASH_EXPORT AshWindowTreeHostPlatform
   void OnCursorVisibilityChangedNative(bool show) override;
   void SetBoundsInPixels(const gfx::Rect& bounds,
                          const viz::LocalSurfaceId& local_surface_id) override;
+  gfx::Size GetCompositorSizeInPixels() const override;
+  void OnBoundsChanged(const gfx::Rect& new_bounds) override;
   void DispatchEvent(ui::Event* event) override;
 
   // aura::InputMethodMusDelegate:
