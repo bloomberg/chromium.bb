@@ -45,7 +45,7 @@ const int kMinPlayPauseButtonSize = 48;
 
 // Colors for the control buttons.
 SkColor kBgColor = SK_ColorWHITE;
-SkColor kControlIconColor = gfx::kChromeIconGrey;
+SkColor kControlIconColor = SK_ColorBLACK;
 }  // namespace
 
 // OverlayWindow implementation of NonClientFrameView.
