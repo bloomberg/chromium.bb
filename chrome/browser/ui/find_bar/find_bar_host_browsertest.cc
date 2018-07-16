@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -33,7 +32,6 @@
 #include "chrome/test/base/find_in_page_observer.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -196,14 +194,6 @@ class FindInPageControllerTest : public InProcessBrowserTest {
     return ui_test_utils::GetTestUrl(
         base::FilePath().AppendASCII("find_in_page"),
         base::FilePath().AppendASCII(filename));
-  }
-
-  void FlushHistoryService() {
-    HistoryServiceFactory::GetForProfile(browser()->profile(),
-                                         ServiceAccessType::IMPLICIT_ACCESS)
-        ->FlushForTest(
-            base::Bind(&base::RunLoop::QuitCurrentWhenIdleDeprecated));
-    content::RunMessageLoop();
   }
 };
 
