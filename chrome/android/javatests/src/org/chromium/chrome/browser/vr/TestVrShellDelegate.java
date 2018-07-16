@@ -48,11 +48,6 @@ public class TestVrShellDelegate extends VrShellDelegate {
         return TestVrShellDelegate.getInstance().getVrShell();
     }
 
-    @Override
-    public void shutdownVr(boolean disableVrMode, boolean stayingInChrome) {
-        super.shutdownVr(disableVrMode, stayingInChrome);
-    }
-
     public void overrideDaydreamApiForTesting(VrDaydreamApi api) {
         super.overrideDaydreamApi(api);
     }
