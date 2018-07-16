@@ -50,6 +50,9 @@ class HistoryReportJniBridge {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobjectArray>& batch);
+  // Clear all entries from the usage reports.
+  void ClearUsageReports(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj);
   // Populates the usage reports buffer with historic visits.
   // This should happen only once per corpus registration.
   jboolean AddHistoricVisitsToUsageReportsBuffer(
