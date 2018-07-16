@@ -921,11 +921,20 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
 }
 #endif  // defined(USE_AURA)
 
+#if defined(OS_CHROMEOS)
+// Times out flakily on Chrome OS. crbug.com/833380
+#define MAYBE_CancelWheelScrollBubblingOnWheelTargetDeletion \
+  DISABLED_CancelWheelScrollBubblingOnWheelTargetDeletion
+#else
+#define MAYBE_CancelWheelScrollBubblingOnWheelTargetDeletion \
+  CancelWheelScrollBubblingOnWheelTargetDeletion
+#endif
+
 // Tests that wheel scroll bubbling gets cancelled when the wheel target view
 // gets destroyed in the middle of a wheel scroll seqeunce. This happens in
 // cases like overscroll navigation from inside an oopif.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       CancelWheelScrollBubblingOnWheelTargetDeletion) {
+                       MAYBE_CancelWheelScrollBubblingOnWheelTargetDeletion) {
   ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
       0);
   GURL main_url(embedded_test_server()->GetURL(
@@ -1471,7 +1480,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 // and is needed for trackpad scrolling on Chromebooks.
 #if defined(USE_AURA)
 
-#if defined(THREAD_SANITIZER)
+#if defined(THREAD_SANITIZER) || defined(OS_CHROMEOS)
 // Flaky: https://crbug.com/833380
 #define MAYBE_ScrollEventToOOPIF DISABLED_ScrollEventToOOPIF
 #else
@@ -1618,9 +1627,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
 // Test that mouse events are being routed to the correct RenderWidgetHostView
 // based on coordinates.
-#if defined(THREAD_SANITIZER)
+#if defined(THREAD_SANITIZER) || defined(OS_CHROMEOS)
 // The test times out often on TSAN bot.
 // https://crbug.com/591170.
+// Also times out flakily on Chrome OS. crbug.com/833380
 #define MAYBE_SurfaceHitTestTest DISABLED_SurfaceHitTestTest
 #else
 #define MAYBE_SurfaceHitTestTest SurfaceHitTestTest
