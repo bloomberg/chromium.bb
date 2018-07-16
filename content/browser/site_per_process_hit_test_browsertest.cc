@@ -1236,8 +1236,15 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
   RunTest(PinchGoesToMainFrame);
 }
 
+#if defined(OS_CHROMEOS)
+// Flaky timeouts: https://crbug.com/833380
+#define MAYBE_EmulatedGestureScrollBubbles DISABLED_EmulatedGestureScrollBubbles
+#else
+#define MAYBE_EmulatedGestureScrollBubbles EmulatedGestureScrollBubbles
+#endif
+
 IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
-                       EmulatedGestureScrollBubbles) {
+                       MAYBE_EmulatedGestureScrollBubbles) {
   RunTest(TouchActionBubbling);
 }
 
