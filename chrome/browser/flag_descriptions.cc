@@ -1542,6 +1542,9 @@ const char kShelfHoverPreviewsDescription[] =
     "Shows previews of the open windows for a given running app when hovering "
     "over the shelf.";
 
+const char kShelfNewUiName[] = "Newest shelf redesign.";
+const char kShelfNewUiDescription[] = "Enables the newest shelf appearance.";
+
 const char kShowAllDialogsWithViewsToolkitName[] =
     "Show all dialogs with Views toolkit";
 const char kShowAllDialogsWithViewsToolkitDescription[] =
