@@ -24,6 +24,7 @@ import tempfile
 
 
 from core import path_util
+from core import undocumented_benchmarks as ub_module
 path_util.AddTelemetryToPath()
 
 from telemetry import benchmark as benchmark_module
@@ -816,13 +817,34 @@ def update_benchmark_csv(file_path):
   benchmark_metadata = get_all_benchmarks_metadata(all_benchmarks)
   _verify_benchmark_owners(benchmark_metadata)
 
+  undocumented_benchmarks = set()
   for benchmark_name in benchmark_metadata:
+    if not benchmark_metadata[benchmark_name].documentation_url:
+      undocumented_benchmarks.add(benchmark_name)
     csv_data.append([
         benchmark_name,
         benchmark_metadata[benchmark_name].emails,
         benchmark_metadata[benchmark_name].component,
         benchmark_metadata[benchmark_name].documentation_url,
     ])
+  if undocumented_benchmarks != ub_module.UNDOCUMENTED_BENCHMARKS:
+    error_message = (
+      'The list of known undocumented benchmarks does not reflect the actual '
+      'ones.\n')
+    if undocumented_benchmarks - ub_module.UNDOCUMENTED_BENCHMARKS:
+      error_message += (
+          'New undocumented benchmarks found. Please document them before '
+          'enabling on perf waterfall: %s' % (
+            ','.join(b for b in undocumented_benchmarks -
+                     ub_module.UNDOCUMENTED_BENCHMARKS)))
+    if ub_module.UNDOCUMENTED_BENCHMARKS - undocumented_benchmarks:
+      error_message += (
+          'These benchmarks are already documented. Please remove them from'
+          'the UNDOCUMENTED_BENCHMARKS list in undocumented_benchmarks.py: %s' %
+          (','.join(b for b in ub_module.UNDOCUMENTED_BENCHMARKS -
+                    undocumented_benchmarks)))
+
+    raise ValueError(error_message)
 
   csv_data = sorted(csv_data, key=lambda b: b[0])
   csv_data = header_data + csv_data
