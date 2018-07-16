@@ -107,20 +107,20 @@ html[dir=rtl] .bg-option-img {
 }
 
 #edit-bg-google-photos .bg-option-img {
-  background: url(photos.svg) no-repeat center;
+  background: url(icons/photos.svg) no-repeat center;
 }
 
 #edit-bg-default-wallpapers .bg-option-img {
-  background: url(wallpapers.svg) no-repeat center;
+  background: url(icons/wallpapers.svg) no-repeat center;
 }
 
 #edit-bg-upload-image .bg-option-img {
-  background: rgb(241, 243, 244) url(upload.svg) no-repeat center;
+  background: rgb(241, 243, 244) url(icons/upload.svg) no-repeat center;
   border-radius: 50%;
 }
 
 #edit-bg-restore-default .bg-option-img {
-  background: rgb(241, 243, 244) url(chrome.svg)  no-repeat center;
+  background: rgb(241, 243, 244) url(icons/chrome.svg)  no-repeat center;
   border-radius: 50%;
 }
 

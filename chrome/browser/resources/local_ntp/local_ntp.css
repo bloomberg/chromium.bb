@@ -410,7 +410,7 @@ html[dir=rtl] .md #fakebox-cursor {
 }
 
 #fakebox-microphone {
-  background: url(googlemic_clr_24px.svg) no-repeat center;
+  background: url(icons/googlemic_clr_24px.svg) no-repeat center;
   background-size: 24px 24px;
   bottom: 0;
   cursor: pointer;
