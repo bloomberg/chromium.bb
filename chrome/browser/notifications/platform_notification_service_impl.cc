@@ -42,6 +42,9 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_event_dispatcher.h"
@@ -132,6 +135,16 @@ PlatformNotificationServiceImpl::PlatformNotificationServiceImpl() {
 }
 
 PlatformNotificationServiceImpl::~PlatformNotificationServiceImpl() {}
+
+// static
+void PlatformNotificationServiceImpl::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  // The first persistent ID is registered as 10000 rather than 1 to prevent the
+  // reuse of persistent notification IDs, which must be unique. Reuse of
+  // notification IDs may occur as they were previously stored in a different
+  // data store.
+  registry->RegisterIntegerPref(prefs::kNotificationNextPersistentId, 10000);
+}
 
 // TODO(miguelg): Move this to PersistentNotificationHandler
 void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
@@ -314,6 +327,18 @@ void PlatformNotificationServiceImpl::GetDisplayedNotifications(
   }
   NotificationDisplayServiceFactory::GetForProfile(profile)->GetDisplayed(
       callback);
+}
+
+int64_t PlatformNotificationServiceImpl::ReadNextPersistentNotificationId(
+    BrowserContext* browser_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  PrefService* prefs = Profile::FromBrowserContext(browser_context)->GetPrefs();
+
+  int64_t current_id = prefs->GetInteger(prefs::kNotificationNextPersistentId);
+  int64_t next_id = current_id + 1;
+
+  prefs->SetInteger(prefs::kNotificationNextPersistentId, next_id);
+  return next_id;
 }
 
 void PlatformNotificationServiceImpl::OnClickEventDispatchComplete(

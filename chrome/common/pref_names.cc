@@ -2598,4 +2598,8 @@ const char kAutoplayWhitelist[] = "media.autoplay_whitelist";
 const char kNTPCustomBackgroundURL[] = "new_tab_page.custom_background_url";
 #endif  // !defined(OS_ANDROID)
 
+// Integer that holds the value of the next persistent notification ID to be
+// used.
+const char kNotificationNextPersistentId[] = "persistent_notifications.next_id";
+
 }  // namespace prefs

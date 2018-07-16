@@ -280,10 +280,14 @@ void PushMessagingNotificationManager::ProcessSilentPush(
       CreateDatabaseData(origin, service_worker_registration_id);
   scoped_refptr<PlatformNotificationContext> notification_context =
       GetStoragePartition(profile_, origin)->GetPlatformNotificationContext();
+  int64_t next_persistent_notification_id =
+      PlatformNotificationServiceImpl::GetInstance()
+          ->ReadNextPersistentNotificationId(profile_);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&PlatformNotificationContext::WriteNotificationData,
-                     notification_context, origin, database_data,
+                     notification_context, next_persistent_notification_id,
+                     origin, database_data,
                      base::Bind(&PushMessagingNotificationManager::
                                     DidWriteNotificationDataIOProxy,
                                 weak_factory_.GetWeakPtr(), origin,

@@ -38,14 +38,10 @@ namespace content {
 namespace {
 
 // Keys of the fields defined in the database.
-const char kNextNotificationIdKey[] = "NEXT_NOTIFICATION_ID";
 const char kDataKeyPrefix[] = "DATA:";
 
 // Separates the components of compound keys.
 const char kNotificationKeySeparator = '\x00';
-
-// The first notification id which to be handed out by the database.
-const int64_t kFirstPersistentNotificationId = 1;
 
 // Converts the LevelDB |status| to one of the notification database's values.
 NotificationDatabase::Status LevelDBStatusToNotificationDatabaseStatus(
@@ -144,16 +140,10 @@ NotificationDatabase::Status NotificationDatabase::Open(
 
   Status status = LevelDBStatusToNotificationDatabaseStatus(
       leveldb_env::OpenDB(options, path_.AsUTF8Unsafe(), &db_));
-  if (status != STATUS_OK)
-    return status;
+  if (status == STATUS_OK)
+    state_ = State::INITIALIZED;
 
-  state_ = State::INITIALIZED;
-
-  return ReadNextPersistentNotificationId();
-}
-
-int64_t NotificationDatabase::GetNextPersistentNotificationId() {
-  return next_persistent_notification_id_++;
+  return status;
 }
 
 NotificationDatabase::Status NotificationDatabase::ReadNotificationData(
@@ -260,12 +250,6 @@ NotificationDatabase::Status NotificationDatabase::WriteNotificationData(
   leveldb::WriteBatch batch;
   batch.Put(CreateDataKey(origin, notification_id), serialized_data);
 
-  if (written_persistent_notification_id_ != next_persistent_notification_id_) {
-    written_persistent_notification_id_ = next_persistent_notification_id_;
-    batch.Put(kNextNotificationIdKey,
-              base::Int64ToString(next_persistent_notification_id_));
-  }
-
   return LevelDBStatusToNotificationDatabaseStatus(
       db_->Write(leveldb::WriteOptions(), &batch));
 }
@@ -319,31 +303,6 @@ NotificationDatabase::Status NotificationDatabase::Destroy() {
 
   return LevelDBStatusToNotificationDatabaseStatus(
       leveldb::DestroyDB(path_.AsUTF8Unsafe(), options));
-}
-
-NotificationDatabase::Status
-NotificationDatabase::ReadNextPersistentNotificationId() {
-  std::string value;
-  Status status = LevelDBStatusToNotificationDatabaseStatus(
-      db_->Get(leveldb::ReadOptions(), kNextNotificationIdKey, &value));
-
-  if (status == STATUS_ERROR_NOT_FOUND) {
-    next_persistent_notification_id_ = kFirstPersistentNotificationId;
-    written_persistent_notification_id_ = kFirstPersistentNotificationId;
-    return STATUS_OK;
-  }
-
-  if (status != STATUS_OK)
-    return status;
-
-  if (!base::StringToInt64(value, &next_persistent_notification_id_) ||
-      next_persistent_notification_id_ < kFirstPersistentNotificationId) {
-    return STATUS_ERROR_CORRUPTED;
-  }
-
-  written_persistent_notification_id_ = next_persistent_notification_id_;
-
-  return STATUS_OK;
 }
 
 NotificationDatabase::Status

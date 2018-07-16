@@ -201,9 +201,6 @@ class CONTENT_EXPORT NotificationDatabase {
 
   base::FilePath path_;
 
-  int64_t next_persistent_notification_id_ = 0;
-  int64_t written_persistent_notification_id_ = 0;
-
   std::unique_ptr<const leveldb::FilterPolicy> filter_policy_;
 
   // The declaration order for these members matters, as |db_| depends on |env_|

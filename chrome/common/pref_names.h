@@ -917,6 +917,8 @@ extern const char kAutoplayWhitelist[];
 extern const char kNTPCustomBackgroundURL[];
 #endif
 
+extern const char kNotificationNextPersistentId[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

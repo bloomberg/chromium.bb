@@ -64,6 +64,7 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
 
   void DisplayPersistentNotificationOnIOThread(
       int64_t service_worker_registration_id,
+      int64_t persistent_notification_id,
       const PlatformNotificationData& platform_notification_data,
       const NotificationResources& notification_resources,
       DisplayPersistentNotificationCallback callback);

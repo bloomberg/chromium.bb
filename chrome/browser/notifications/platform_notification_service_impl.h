@@ -44,6 +44,9 @@ class PushMessagingBrowserTest;
 class PlatformNotificationServiceImpl
     : public content::PlatformNotificationService {
  public:
+  // Register profile-specific prefs.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
   // Returns the active instance of the service in the browser process. Safe to
   // be called from any thread.
   static PlatformNotificationServiceImpl* GetInstance();
@@ -90,6 +93,8 @@ class PlatformNotificationServiceImpl
   void GetDisplayedNotifications(
       content::BrowserContext* browser_context,
       const DisplayedNotificationsCallback& callback) override;
+  int64_t ReadNextPersistentNotificationId(
+      content::BrowserContext* browser_context) override;
 
  private:
   friend struct base::DefaultSingletonTraits<PlatformNotificationServiceImpl>;
