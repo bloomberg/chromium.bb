@@ -1135,7 +1135,6 @@
 <translation id="2690024944919328218">Εμφάνιση επιλογών γλώσσας</translation>
 <translation id="2691385045260836588">Μοντέλο</translation>
 <translation id="2693176596243495071">Ωχ! Παρουσιάστηκε ένα άγνωστο σφάλμα. Δοκιμάστε ξανά αργότερα ή επικοινωνήστε με τον διαχειριστή σας εάν το πρόβλημα δεν επιλυθεί.</translation>
-<translation id="2694026874607847549">1 cookie</translation>
 <translation id="2695749433451188613">Πρωτόκολλο εκτύπωσης στο διαδίκτυο (HTTPS)</translation>
 <translation id="270358213449696159">Περιεχόμενα όρων Google Chrome OS</translation>
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
@@ -1305,7 +1304,6 @@
 <translation id="2948320633360386059">Αποκλεισμός σε ιστοτόπους που τείνουν να εμφανίζουν παρεμβατικές διαφημίσεις</translation>
 <translation id="29488703364906173">Ένα γρήγορο, απλό και ασφαλές πρόγραμμα περιήγησης ιστού, το οποίο δημιουργήθηκε για τον σύγχρονο ιστό.</translation>
 <translation id="2951247061394563839">Κέντρο παραθύρου</translation>
-<translation id="2956763290572484660"><ph name="COOKIES" /> cookie</translation>
 <translation id="2958721676848865875">Προειδοποίηση στοίβαξης επέκτασης</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (παρέχεται επέκταση)</translation>
 <translation id="2961695502793809356">Κάντε κλικ για να πάτε μπροστά, κρατήστε το κουμπί πατημένο για να δείτε το ιστορικό</translation>
@@ -3774,7 +3772,6 @@
 <translation id="6798780071646309401">η λειτουργία Caps Lock ενεργοποιήθηκε</translation>
 <translation id="6798954102094737107">Προσθήκη: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Βαθμονόμηση οθόνης αφής</translation>
-<translation id="6801945461660022667">Υπάρχουν <ph name="NUMBER_OF_APPS" /> εφαρμογές οι οποίες έχουν συνδεθεί στον λογαριασμό σας και έχουν βελτιστοποιηθεί για Chromebook.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Άνοιγμα Όλων των Σελιδοδεικτών σε Νέο &amp;Παράθυρο</translation>
 <translation id="6805038906417219576">OK</translation>

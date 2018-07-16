@@ -1135,7 +1135,6 @@
 <translation id="2690024944919328218">言語オプションを表示</translation>
 <translation id="2691385045260836588">機種</translation>
 <translation id="2693176596243495071">不明なエラーが発生しました。後でもう一度お試しになるか、問題が解決しない場合は管理者にお問い合わせください。</translation>
-<translation id="2694026874607847549">Cookie: 1</translation>
 <translation id="2695749433451188613">インターネット印刷プロトコル（HTTPS）</translation>
 <translation id="270358213449696159">Google Chrome OS 利用規約コンテンツ</translation>
 <translation id="2704184184447774363">Microsoft ドキュメントの署名</translation>
@@ -1305,7 +1304,6 @@
 <translation id="2948320633360386059">煩わしい広告がよく表示されるサイトでブロック</translation>
 <translation id="29488703364906173">最新のウェブ環境に対応した高速、シンプル、安全なウェブブラウザです。</translation>
 <translation id="2951247061394563839">ウィンドウを中央に配置</translation>
-<translation id="2956763290572484660">Cookie: <ph name="COOKIES" /></translation>
 <translation id="2958721676848865875">拡張機能のパッケージ化に関する警告</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" />（期限延長済み）</translation>
 <translation id="2961695502793809356">クリックすると次に進みます。押したまま待つと履歴が表示されます。</translation>
@@ -3773,7 +3771,6 @@
 <translation id="6798780071646309401">CapsLock オン</translation>
 <translation id="6798954102094737107">プラグイン: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">タッチスクリーンのキャリブレーション</translation>
-<translation id="6801945461660022667">Chromebook 用に最適化された <ph name="NUMBER_OF_APPS" /> 件のアプリがアカウントに関連付けられています。</translation>
 <translation id="6802031077390104172"><ph name="USAGE" />（<ph name="OID" />）</translation>
 <translation id="6804671422566312077">すべてのブックマークを新しいウィンドウで開く(&amp;N)</translation>
 <translation id="6805038906417219576">OK</translation>

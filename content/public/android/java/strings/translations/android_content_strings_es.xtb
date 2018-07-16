@@ -1,17 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
-<translation id="1256337885411059545">No se puede reproducir el vídeo.</translation>
 <translation id="1412240523210238692">Selección de texto</translation>
 <translation id="1542044944667958430">Búsqueda web</translation>
 <translation id="1768717197362323622">Milisegundo</translation>
 <translation id="1822429046913737220">A.M./P.M.</translation>
 <translation id="2094750046714988961">No se puede iniciar el creador de perfiles porque el almacenamiento externo no está listo</translation>
-<translation id="2410828433627930127">Este vídeo no se puede reproducir.</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="2520230379124234395">Se ha iniciado el creador de perfiles</translation>
 <translation id="2732718972699418926">AM</translation>
-<translation id="273860350361291195">Este vídeo no se puede reproducir en este dispositivo.</translation>
 <translation id="2841013758207633010">Hora</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="3845599764535987402">Hora</translation>
@@ -28,7 +25,6 @@
 <translation id="6643016212128521049">Eliminar</translation>
 <translation id="6727102863431372879">Establecer</translation>
 <translation id="6849295950938417341">No se ha podido iniciar el creador de perfiles</translation>
-<translation id="6965382102122355670">Aceptar</translation>
 <translation id="7102218676258945610">Minuto</translation>
 <translation id="7138678301420049075">Otro</translation>
 <translation id="7575803462290353686">Establecer hora</translation>

@@ -1135,7 +1135,6 @@
 <translation id="2690024944919328218">የቋንቋ አማራጮችን ይጠቀሙ</translation>
 <translation id="2691385045260836588">ሞዴል</translation>
 <translation id="2693176596243495071">ውይ! አንድ ያልታወቀ ስህተት ተከስቷል። እባክዎ ቆይተው እንደገና ይሞክሩ ወይም ችግሩ ከቀጠለ አስተዳዳሪዎን ያነጋግሩ።</translation>
-<translation id="2694026874607847549">1 ኩኪ</translation>
 <translation id="2695749433451188613">የበይነመረብ ህትመት ፕሮቶኮል (ኤችቲቲፒኤስ)</translation>
 <translation id="270358213449696159">የGoogle Chrome OS ውል ይዘቶች</translation>
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
@@ -1305,7 +1304,6 @@
 <translation id="2948320633360386059">ጣልቃ ገቢ ማስታወቂያዎችን የማሳየት አዝማሚያ ባላቸው ጣቢያዎች ላይ ታግደዋል</translation>
 <translation id="29488703364906173">ለዘመናዊ ድር የተሰራ ፈጣን፣ ቀላል እና ደህንነቱ አስተማማኝ የሆነ የድር አሳሽ።</translation>
 <translation id="2951247061394563839">መስኮቱን ወደ መሃል አምጣ</translation>
-<translation id="2956763290572484660"><ph name="COOKIES" /> ኩኪዎች</translation>
 <translation id="2958721676848865875">የጥቅል ቅጥያ ማስጠንቀቂያ</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (ቅጥያ ቀርቧል)</translation>
 <translation id="2961695502793809356">ወደ ፊት ለመሄድ ጠቅ ያድርጉ፣ ታሪክ ለማየት ይያዙ</translation>
@@ -3770,7 +3768,6 @@
 <translation id="6798780071646309401">አቢያት ማድረጊያ በርቷል</translation>
 <translation id="6798954102094737107">ተሰኪ፦ <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">የማያንካ ልኬትን አስተካክል</translation>
-<translation id="6801945461660022667">ለChromebook የላቁ ከእርስዎ መለያ ጋር የተገናኙ <ph name="NUMBER_OF_APPS" /> መተግበሪያዎች አሉ።</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">&amp;ሁሉንም እልባቶች በአዲስ መስኮት ክፈት</translation>
 <translation id="6805038906417219576">እሺ</translation>

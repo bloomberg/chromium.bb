@@ -1,17 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
-<translation id="1256337885411059545">Tidak dapat memutar video</translation>
 <translation id="1412240523210238692">Pemilihan teks</translation>
 <translation id="1542044944667958430">Penelusuran web</translation>
 <translation id="1768717197362323622">Milidetik</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="2094750046714988961">Tidak dapat memulai profiler karena penyimpanan eksternal tidak siap</translation>
-<translation id="2410828433627930127">Maaf, video tidak dapat diputar.</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="2520230379124234395">Profiler dimulai</translation>
 <translation id="2732718972699418926">AM</translation>
-<translation id="273860350361291195">Maaf, video ini tidak dapat di-streaming ke perangkat ini.</translation>
 <translation id="2841013758207633010">Waktu</translation>
 <translation id="376869769528291915">.</translation>
 <translation id="3845599764535987402">Jam</translation>
@@ -28,7 +25,6 @@
 <translation id="6643016212128521049">Hapus</translation>
 <translation id="6727102863431372879">Setel</translation>
 <translation id="6849295950938417341">Gagal memulai profiler</translation>
-<translation id="6965382102122355670">Oke</translation>
 <translation id="7102218676258945610">Menit</translation>
 <translation id="7138678301420049075">Lainnya</translation>
 <translation id="7575803462290353686">Setel waktu</translation>

@@ -1,17 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
-<translation id="1256337885411059545">Cannot play video</translation>
 <translation id="1412240523210238692">Text selection</translation>
 <translation id="1542044944667958430">Web search</translation>
 <translation id="1768717197362323622">Millisecond</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="2094750046714988961">Can't start profiler because external storage is not ready</translation>
-<translation id="2410828433627930127">Sorry, this video cannot be played.</translation>
 <translation id="2429669115401274487">p.m.</translation>
 <translation id="2520230379124234395">Profiler started</translation>
 <translation id="2732718972699418926">a.m.</translation>
-<translation id="273860350361291195">Sorry, this video is not valid for streaming to this device.</translation>
 <translation id="2841013758207633010">Time</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="3845599764535987402">Hour</translation>
@@ -28,7 +25,6 @@
 <translation id="6643016212128521049">Clear</translation>
 <translation id="6727102863431372879">Set</translation>
 <translation id="6849295950938417341">Failed to start profiler</translation>
-<translation id="6965382102122355670">OK</translation>
 <translation id="7102218676258945610">Minute</translation>
 <translation id="7138678301420049075">Other</translation>
 <translation id="7575803462290353686">Set time</translation>

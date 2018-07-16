@@ -1,17 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
-<translation id="1256337885411059545">Impossible de lire la vidéo.</translation>
 <translation id="1412240523210238692">Sélection de texte</translation>
 <translation id="1542044944667958430">Recherche sur le Web</translation>
 <translation id="1768717197362323622">Milliseconde</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="2094750046714988961">Impossible de démarrer le générateur de profils, car la mémoire de stockage externe n'est pas disponible.</translation>
-<translation id="2410828433627930127">Désolé, impossible de lire cette vidéo.</translation>
 <translation id="2429669115401274487">p.m.</translation>
 <translation id="2520230379124234395">Le générateur de profils a été lancé.</translation>
 <translation id="2732718972699418926">a.m.</translation>
-<translation id="273860350361291195">Désolé, impossible de lire cette vidéo en streaming sur cet appareil.</translation>
 <translation id="2841013758207633010">Heure</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="3845599764535987402">Heure</translation>
@@ -28,7 +25,6 @@
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="6727102863431372879">Définir</translation>
 <translation id="6849295950938417341">Échec du démarrage du générateur de profils.</translation>
-<translation id="6965382102122355670">OK</translation>
 <translation id="7102218676258945610">Minute</translation>
 <translation id="7138678301420049075">Autre</translation>
 <translation id="7575803462290353686">Définir l'heure</translation>
