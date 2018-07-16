@@ -26,6 +26,10 @@ struct DefaultSingletonTraits;
 class SingleThreadTaskRunner;
 }  // namespace base
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace device {
 
 // Callback that returns the embedder's custom location provider. This callback
@@ -56,16 +60,14 @@ class GeolocationProviderImpl : public GeolocationProvider,
 
   // Optional: Provide global configuration to Geolocation. Should be called
   // before using Init() on the singleton GetInstance().
-  // |request_context_producer| : a callback to produce a request context for
-  // network geolocation requests.
+  // |url_loader_factory| : a factory to use for network geolocation requests.
   // |api_key| : a Google API key for network geolocation requests.
   // |custom_location_provider_getter| : a callback which returns a custom
   // location provider from embedder.
   // |use_gms_core_location_provider| : For android only, a flag indicates
   // whether using the GMS core location provider.
   static void SetGeolocationConfiguration(
-      const GeolocationProvider::RequestContextProducer
-          request_context_producer,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& api_key,
       const CustomLocationProviderCallback& custom_location_provider_getter,
       bool use_gms_core_location_provider = false);

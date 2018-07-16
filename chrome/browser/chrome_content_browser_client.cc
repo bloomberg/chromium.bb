@@ -925,15 +925,6 @@ void InvokeCallbackOnThread(
 }
 #endif
 
-// Gets the URL request context getter for the browser process.
-// Must be called on the UI thread.
-scoped_refptr<net::URLRequestContextGetter>
-GetSystemRequestContextOnUIThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return scoped_refptr<net::URLRequestContextGetter>(
-      g_browser_process->system_request_context());
-}
-
 chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(
     const base::Callback<content::WebContents*()>& wc_getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -2557,12 +2548,14 @@ ChromeContentBrowserClient::OverrideRequestContextForURL(
   return NULL;
 }
 
-void ChromeContentBrowserClient::GetGeolocationRequestContext(
-    base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
-        callback) {
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&GetSystemRequestContextOnUIThread), std::move(callback));
+scoped_refptr<network::SharedURLLoaderFactory>
+ChromeContentBrowserClient::GetSystemSharedURLLoaderFactory() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!g_browser_process->system_network_context_manager())
+    return nullptr;
+
+  return g_browser_process->system_network_context_manager()
+      ->GetSharedURLLoaderFactory();
 }
 
 std::string ChromeContentBrowserClient::GetGeolocationApiKey() {

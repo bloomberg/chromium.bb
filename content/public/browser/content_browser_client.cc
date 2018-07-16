@@ -370,10 +370,9 @@ ContentBrowserClient::OverrideSystemLocationProvider() {
   return nullptr;
 }
 
-void ContentBrowserClient::GetGeolocationRequestContext(
-    base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
-        callback) {
-  std::move(callback).Run(scoped_refptr<net::URLRequestContextGetter>(nullptr));
+scoped_refptr<network::SharedURLLoaderFactory>
+ContentBrowserClient::GetSystemSharedURLLoaderFactory() {
+  return nullptr;
 }
 
 std::string ContentBrowserClient::GetGeolocationApiKey() {

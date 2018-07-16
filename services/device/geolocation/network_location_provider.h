@@ -73,9 +73,10 @@ class NetworkLocationProvider : public LocationProvider {
     CacheAgeList cache_age_list_;  // Oldest first.
   };
 
-  NetworkLocationProvider(scoped_refptr<net::URLRequestContextGetter> context,
-                          const std::string& api_key,
-                          LastPositionCache* last_position_cache);
+  NetworkLocationProvider(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const std::string& api_key,
+      LastPositionCache* last_position_cache);
   ~NetworkLocationProvider() override;
 
   // LocationProvider implementation

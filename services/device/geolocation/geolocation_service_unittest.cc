@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/geolocation_handler.h"
 #endif
 #include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/geolocation/geolocation_provider_impl.h"
 #include "services/device/geolocation/network_location_request.h"
@@ -29,39 +29,6 @@ void CheckBoolReturnValue(base::OnceClosure quit_closure,
   EXPECT_EQ(expect, result);
   std::move(quit_closure).Run();
 }
-
-// Observer that waits until a TestURLFetcher with the specified fetcher_id
-// starts, after which it is made available through .fetcher().
-class TestURLFetcherObserver : public net::TestURLFetcher::DelegateForTests {
- public:
-  explicit TestURLFetcherObserver(int expected_fetcher_id)
-      : expected_fetcher_id_(expected_fetcher_id) {
-    factory_.SetDelegateForTests(this);
-  }
-  virtual ~TestURLFetcherObserver() {}
-
-  void Wait() { loop_.Run(); }
-
-  net::TestURLFetcher* fetcher() { return fetcher_; }
-
-  // net::TestURLFetcher::DelegateForTests:
-  void OnRequestStart(int fetcher_id) override {
-    if (fetcher_id == expected_fetcher_id_) {
-      fetcher_ = factory_.GetFetcherByID(fetcher_id);
-      fetcher_->SetDelegateForTests(nullptr);
-      factory_.SetDelegateForTests(nullptr);
-      loop_.Quit();
-    }
-  }
-  void OnChunkUpload(int fetcher_id) override {}
-  void OnRequestEnd(int fetcher_id) override {}
-
- private:
-  const int expected_fetcher_id_;
-  net::TestURLFetcher* fetcher_ = nullptr;
-  net::TestURLFetcherFactory factory_;
-  base::RunLoop loop_;
-};
 
 class GeolocationServiceUnitTest : public DeviceServiceTestBase {
  public:
@@ -118,23 +85,20 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
 // detected in a scan: https://crbug.com/767300.
 #else
 TEST_F(GeolocationServiceUnitTest, UrlWithApiKey) {
-  // Unique ID (derived from Gerrit CL number):
-  device::NetworkLocationRequest::url_fetcher_id_for_tests = 675023;
+  base::RunLoop loop;
+  test_url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(
+      [&loop](const network::ResourceRequest& request) {
+        // Verify the full URL including a fake Google API key.
+        std::string expected_url =
+            "https://www.googleapis.com/geolocation/v1/geolocate?key=";
+        expected_url.append(kTestGeolocationApiKey);
 
-  // Intercept the URLFetcher from network geolocation request.
-  TestURLFetcherObserver observer(
-      device::NetworkLocationRequest::url_fetcher_id_for_tests);
+        if (request.url == expected_url)
+          loop.Quit();
+      }));
 
   geolocation_->SetHighAccuracy(true);
-  observer.Wait();
-  DCHECK(observer.fetcher());
-
-  // Verify full URL including a fake Google API key.
-  std::string expected_url =
-      "https://www.googleapis.com/geolocation/v1/"
-      "geolocate?key=";
-  expected_url.append(kTestGeolocationApiKey);
-  EXPECT_EQ(expected_url, observer.fetcher()->GetOriginalURL());
+  loop.Run();
 }
 #endif
 

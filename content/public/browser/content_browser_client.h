@@ -87,6 +87,10 @@ namespace mojo {
 class ScopedInterfaceEndpointHandle;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace service_manager {
 class Identity;
 class Service;
@@ -582,14 +586,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::unique_ptr<device::LocationProvider>
   OverrideSystemLocationProvider();
 
-  // Allows the embedder to provide a URLRequestContextGetter to use for network
-  // geolocation queries.
-  // * May be called from any thread. A URLRequestContextGetter is then provided
-  //   by invoking |callback| on the calling thread.
-  // * Default implementation provides nullptr URLRequestContextGetter.
-  virtual void GetGeolocationRequestContext(
-      base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
-          callback);
+  // Returns a SharedURLLoaderFactory attached to the system network context.
+  // Must be called on the UI thread. The default implementation returns
+  // nullptr.
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetSystemSharedURLLoaderFactory();
 
   // Allows an embedder to provide a Google API Key to use for network
   // geolocation queries.

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "services/service_manager/public/cpp/service_test.h"
 
 namespace device {
@@ -22,6 +23,7 @@ class DeviceServiceTestBase : public service_manager::test::ServiceTest {
  protected:
   base::Thread file_thread_;
   base::Thread io_thread_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:
   // service_manager::test::ServiceTest:

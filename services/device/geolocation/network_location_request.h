@@ -11,39 +11,38 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "services/device/geolocation/wifi_data_provider.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
 #include "url/gurl.h"
 
 namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-
 struct PartialNetworkTrafficAnnotationTag;
 }  // namespace net
+
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace device {
 
 // Takes wifi data and sends it to a server to get a position fix.
 // It performs formatting of the request and interpretation of the response.
-class NetworkLocationRequest : private net::URLFetcherDelegate {
+class NetworkLocationRequest {
  public:
-  // ID passed to URLFetcher::Create(). Used for testing.
-  static int url_fetcher_id_for_tests;
-
   // Called when a new geo position is available. The second argument indicates
   // whether there was a server error or not. It is true when there was a
   // server or network error - either no response or a 500 error code.
   using LocationResponseCallback =
-      base::Callback<void(const mojom::Geoposition& /* position */,
-                          bool /* server_error */,
-                          const WifiData& /* wifi_data */)>;
+      base::RepeatingCallback<void(const mojom::Geoposition& /* position */,
+                                   bool /* server_error */,
+                                   const WifiData& /* wifi_data */)>;
 
-  NetworkLocationRequest(scoped_refptr<net::URLRequestContextGetter> context,
-                         const std::string& api_key,
-                         LocationResponseCallback callback);
-  ~NetworkLocationRequest() override;
+  NetworkLocationRequest(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const std::string& api_key,
+      LocationResponseCallback callback);
+  ~NetworkLocationRequest();
 
   // Makes a new request using the specified |wifi_data|. Returns true if the
   // new request was successfully started. In all cases, any currently pending
@@ -56,16 +55,15 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
                    const net::PartialNetworkTrafficAnnotationTag&
                        partial_traffic_annotation);
 
-  bool is_request_pending() const { return url_fetcher_ != NULL; }
+  bool is_request_pending() const { return bool(url_loader_); }
 
  private:
-  // net::URLFetcherDelegate
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnRequestComplete(std::unique_ptr<std::string> data);
 
-  const scoped_refptr<net::URLRequestContextGetter> url_context_;
+  const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const std::string api_key_;
   const LocationResponseCallback location_response_callback_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // Keep a copy of the data sent in the request, so we can refer back to it
   // when the response arrives.

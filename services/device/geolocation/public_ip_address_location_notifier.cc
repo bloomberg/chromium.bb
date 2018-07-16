@@ -6,6 +6,7 @@
 
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/geolocation/wifi_data.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace device {
 
@@ -17,11 +18,11 @@ constexpr base::TimeDelta kNetworkChangeReactionDelay =
 }  // namespace
 
 PublicIpAddressLocationNotifier::PublicIpAddressLocationNotifier(
-    GeolocationProvider::RequestContextProducer request_context_producer,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& api_key)
     : network_changed_since_last_request_(true),
       api_key_(api_key),
-      request_context_producer_(request_context_producer),
+      url_loader_factory_(url_loader_factory),
       network_traffic_annotation_tag_(nullptr),
       weak_ptr_factory_(this) {
   // Subscribe to notifications of changes in network configuration.
@@ -98,21 +99,11 @@ void PublicIpAddressLocationNotifier::ReactToNetworkChange() {
 void PublicIpAddressLocationNotifier::MakeNetworkLocationRequest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   network_changed_since_last_request_ = false;
-  // Obtain URL request context using provided producer callback, then continue
-  // request in MakeNetworkLocationRequestWithRequestContext.
-  request_context_producer_.Run(base::BindOnce(
-      &PublicIpAddressLocationNotifier::MakeNetworkLocationRequestWithContext,
-      weak_ptr_factory_.GetWeakPtr()));
-}
-
-void PublicIpAddressLocationNotifier::MakeNetworkLocationRequestWithContext(
-    scoped_refptr<net::URLRequestContextGetter> context_getter) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!context_getter)
+  if (!url_loader_factory_)
     return;
 
   network_location_request_ = std::make_unique<NetworkLocationRequest>(
-      std::move(context_getter), api_key_,
+      url_loader_factory_, api_key_,
       base::BindRepeating(
           &PublicIpAddressLocationNotifier::OnNetworkLocationResponse,
           weak_ptr_factory_.GetWeakPtr()));

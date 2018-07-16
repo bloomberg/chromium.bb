@@ -2,6 +2,9 @@ include_rules = [
   "+chromeos",
   "+dbus",
   "+jni",
-  "+net",
+  "+net/base",
+  "+net/traffic_annotation",
+  "+services/network/public/cpp",
+  "+services/network/test",
   "+third_party/cros_system_api/dbus",
 ]

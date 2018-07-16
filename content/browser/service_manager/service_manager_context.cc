@@ -295,15 +295,6 @@ class ServiceBinaryLauncherFactory
   DISALLOW_COPY_AND_ASSIGN(ServiceBinaryLauncherFactory);
 };
 
-// Helper to invoke GetGeolocationRequestContext on the currently-set
-// ContentBrowserClient.
-void GetGeolocationRequestContextFromContentClient(
-    base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
-        callback) {
-  GetContentClient()->browser()->GetGeolocationRequestContext(
-      std::move(callback));
-}
-
 bool ShouldEnableVizService() {
 #if defined(USE_AURA)
   // aura::Env can be null in tests.
@@ -530,7 +521,7 @@ ServiceManagerContext::ServiceManagerContext(
   device_info.factory = base::Bind(
       &device::CreateDeviceService, device_blocking_task_runner,
       service_manager_thread_task_runner_,
-      base::BindRepeating(&GetGeolocationRequestContextFromContentClient),
+      GetContentClient()->browser()->GetSystemSharedURLLoaderFactory(),
       GetContentClient()->browser()->GetGeolocationApiKey(),
       GetContentClient()->browser()->ShouldUseGmsCoreGeolocationProvider(),
       base::Bind(&WakeLockContextHost::GetNativeViewForContext),
@@ -541,7 +532,7 @@ ServiceManagerContext::ServiceManagerContext(
   device_info.factory = base::Bind(
       &device::CreateDeviceService, device_blocking_task_runner,
       service_manager_thread_task_runner_,
-      base::BindRepeating(&GetGeolocationRequestContextFromContentClient),
+      GetContentClient()->browser()->GetSystemSharedURLLoaderFactory(),
       GetContentClient()->browser()->GetGeolocationApiKey(),
       base::Bind(&ContentBrowserClient::OverrideSystemLocationProvider,
                  base::Unretained(GetContentClient()->browser())));

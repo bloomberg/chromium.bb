@@ -1,6 +1,7 @@
 include_rules = [
   "+device",
   "+jni",
-  "+net/url_request",
+  "+services/network/public/cpp",
+  "+services/network/test",
   "+ui/gfx/native_widget_types.h",
 ]

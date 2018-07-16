@@ -51,6 +51,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace device {
 
 #if !defined(OS_ANDROID)
@@ -68,8 +72,7 @@ class TimeZoneMonitor;
 std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    GeolocationProvider::RequestContextProducer
-        geolocation_request_context_producer,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& geolocation_api_key,
     bool use_gms_core_location_provider,
     const WakeLockContextCallback& wake_lock_context_callback,
@@ -79,8 +82,7 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
 std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    GeolocationProvider::RequestContextProducer
-        geolocation_request_context_producer,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& geolocation_api_key,
     const CustomLocationProviderCallback& custom_location_provider_callback);
 #endif
@@ -88,19 +90,19 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
 class DeviceService : public service_manager::Service {
  public:
 #if defined(OS_ANDROID)
-  DeviceService(scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-                scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-                GeolocationProvider::RequestContextProducer
-                    geolocation_request_context_producer,
-                const std::string& geolocation_api_key,
-                const WakeLockContextCallback& wake_lock_context_callback,
-                const base::android::JavaRef<jobject>& java_nfc_delegate);
+  DeviceService(
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const std::string& geolocation_api_key,
+      const WakeLockContextCallback& wake_lock_context_callback,
+      const base::android::JavaRef<jobject>& java_nfc_delegate);
 #else
-  DeviceService(scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-                scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-                GeolocationProvider::RequestContextProducer
-                    geolocation_request_context_producer,
-                const std::string& geolocation_api_key);
+  DeviceService(
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const std::string& geolocation_api_key);
 #endif
   ~DeviceService() override;
 
@@ -157,9 +159,8 @@ class DeviceService : public service_manager::Service {
   std::unique_ptr<TimeZoneMonitor> time_zone_monitor_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  GeolocationProvider::RequestContextProducer
-      geolocation_request_context_producer_;
   const std::string geolocation_api_key_;
   WakeLockContextCallback wake_lock_context_callback_;
 

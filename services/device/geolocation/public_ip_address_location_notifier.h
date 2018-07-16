@@ -31,11 +31,10 @@ struct WifiData;
 class PublicIpAddressLocationNotifier
     : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
-  // Creates a notifier that uses the specified Google |api_key| and a URL
-  // request context produced by |request_context_producer| for network location
-  // requests.
+  // Creates a notifier that uses the specified Google |api_key| and
+  // |url_loader_factory| for network location requests.
   PublicIpAddressLocationNotifier(
-      GeolocationProvider::RequestContextProducer request_context_producer,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& api_key);
   ~PublicIpAddressLocationNotifier() override;
 
@@ -69,15 +68,9 @@ class PublicIpAddressLocationNotifier
   // if any clients are waiting.
   void ReactToNetworkChange();
 
-  // Begins a network location request, by first obtaining a
-  // URLRequestContextGetter, then continuing in
-  // MakeNetworkLocationRequestWithContext.
-  void MakeNetworkLocationRequest();
-
-  // Creates network_location_request_ and starts the network request, which
+  // Creates |network_location_request_| and starts the network request, which
   // will invoke OnNetworkLocationResponse when done.
-  void MakeNetworkLocationRequestWithContext(
-      scoped_refptr<net::URLRequestContextGetter> context_getter);
+  void MakeNetworkLocationRequest();
 
   // Completion callback for network_location_request_.
   void OnNetworkLocationResponse(const mojom::Geoposition& position,
@@ -98,8 +91,8 @@ class PublicIpAddressLocationNotifier
   // Google API key for network geolocation requests.
   const std::string api_key_;
 
-  // Callback to produce a URL request context for network geolocation requests.
-  const GeolocationProvider::RequestContextProducer request_context_producer_;
+  // SharedURLLoaderFactory for network geolocation requests.
+  const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Used to make calls to the Maps geolocate API.
   // Empty unless a call is currently in progress.

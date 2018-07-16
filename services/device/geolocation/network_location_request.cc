@@ -23,11 +23,10 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "services/device/geolocation/location_arbitrator.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace device {
 namespace {
@@ -87,9 +86,9 @@ void FormUploadData(const WifiData& wifi_data,
 
 // Attempts to extract a position from the response. Detects and indicates
 // various failure cases.
-void GetLocationFromResponse(bool http_post_result,
+void GetLocationFromResponse(int net_error,
                              int status_code,
-                             const std::string& response_body,
+                             std::unique_ptr<std::string> response_body,
                              const base::Time& wifi_timestamp,
                              const GURL& server_url,
                              mojom::Geoposition* position);
@@ -105,15 +104,13 @@ void AddWifiData(const WifiData& wifi_data,
                  base::DictionaryValue* request);
 }  // namespace
 
-int NetworkLocationRequest::url_fetcher_id_for_tests = 0;
-
 NetworkLocationRequest::NetworkLocationRequest(
-    scoped_refptr<net::URLRequestContextGetter> context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& api_key,
     LocationResponseCallback callback)
-    : url_context_(std::move(context)),
+    : url_loader_factory_(std::move(url_loader_factory)),
       api_key_(api_key),
-      location_response_callback_(callback) {}
+      location_response_callback_(std::move(callback)) {}
 
 NetworkLocationRequest::~NetworkLocationRequest() = default;
 
@@ -123,10 +120,10 @@ bool NetworkLocationRequest::MakeRequest(
     const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_REQUEST_START);
   RecordUmaAccessPoints(wifi_data.access_point_data.size());
-  if (url_fetcher_ != NULL) {
+  if (url_loader_) {
     DVLOG(1) << "NetworkLocationRequest : Cancelling pending request";
     RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_REQUEST_CANCEL);
-    url_fetcher_.reset();
+    url_loader_.reset();
   }
   wifi_data_ = wifi_data;
   wifi_timestamp_ = wifi_timestamp;
@@ -147,41 +144,48 @@ bool NetworkLocationRequest::MakeRequest(
         policy {
           cookies_allowed: NO
       })");
-  const GURL request_url = FormRequestURL(api_key_);
-  DCHECK(request_url.is_valid());
-  url_fetcher_ =
-      net::URLFetcher::Create(url_fetcher_id_for_tests, request_url,
-                              net::URLFetcher::POST, this, traffic_annotation);
-  url_fetcher_->SetRequestContext(url_context_.get());
+
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->method = "POST";
+  resource_request->url = FormRequestURL(api_key_);
+  DCHECK(resource_request->url.is_valid());
+  resource_request->load_flags =
+      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
+      net::LOAD_DO_NOT_SEND_AUTH_DATA;
+
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 traffic_annotation);
+
   std::string upload_data;
   FormUploadData(wifi_data, wifi_timestamp, &upload_data);
-  url_fetcher_->SetUploadData("application/json", upload_data);
-  url_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-                             net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  url_loader_->AttachStringForUpload(upload_data, "application/json");
 
   request_start_time_ = base::TimeTicks::Now();
-  url_fetcher_->Start();
+  url_loader_->DownloadToString(
+      url_loader_factory_.get(),
+      base::BindOnce(&NetworkLocationRequest::OnRequestComplete,
+                     base::Unretained(this)),
+      1024 * 1024 /* 1 MiB */);
   return true;
 }
 
-void NetworkLocationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK_EQ(url_fetcher_.get(), source);
+void NetworkLocationRequest::OnRequestComplete(
+    std::unique_ptr<std::string> data) {
+  int net_error = url_loader_->NetError();
 
-  net::URLRequestStatus status = source->GetStatus();
-  int response_code = source->GetResponseCode();
+  int response_code = 0;
+  if (url_loader_->ResponseInfo())
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
   RecordUmaResponseCode(response_code);
 
   mojom::Geoposition position;
-  std::string data;
-  source->GetResponseAsString(&data);
-  GetLocationFromResponse(status.is_success(), response_code, data,
-                          wifi_timestamp_, source->GetURL(), &position);
-  const bool server_error =
-      !status.is_success() || (response_code >= 500 && response_code < 600);
-  url_fetcher_.reset();
+  GetLocationFromResponse(net_error, response_code, std::move(data),
+                          wifi_timestamp_, url_loader_->GetFinalURL(),
+                          &position);
 
+  bool server_error =
+      net_error != net::OK || (response_code >= 500 && response_code < 600);
   if (!server_error) {
     const base::TimeDelta request_time =
         base::TimeTicks::Now() - request_start_time_;
@@ -190,6 +194,8 @@ void NetworkLocationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
                                base::TimeDelta::FromMilliseconds(1),
                                base::TimeDelta::FromSeconds(10), 100);
   }
+
+  url_loader_.reset();
 
   DVLOG(1) << "NetworkLocationRequest::OnURLFetchComplete() : run callback.";
   location_response_callback_.Run(position, server_error, wifi_data_);
@@ -294,9 +300,9 @@ void FormatPositionError(const GURL& server_url,
           << position->error_message;
 }
 
-void GetLocationFromResponse(bool http_post_result,
+void GetLocationFromResponse(int net_error,
                              int status_code,
-                             const std::string& response_body,
+                             std::unique_ptr<std::string> response_body,
                              const base::Time& wifi_timestamp,
                              const GURL& server_url,
                              mojom::Geoposition* position) {
@@ -304,11 +310,12 @@ void GetLocationFromResponse(bool http_post_result,
 
   // HttpPost can fail for a number of reasons. Most likely this is because
   // we're offline, or there was no response.
-  if (!http_post_result) {
+  if (net_error != net::OK) {
     FormatPositionError(server_url, "No response received", position);
     RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_RESPONSE_EMPTY);
     return;
   }
+
   if (status_code != 200) {  // HTTP OK.
     std::string message = "Returned error code ";
     message += base::IntToString(status_code);
@@ -316,14 +323,17 @@ void GetLocationFromResponse(bool http_post_result,
     RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_RESPONSE_NOT_OK);
     return;
   }
+
   // We use the timestamp from the wifi data that was used to generate
   // this position fix.
-  if (!ParseServerResponse(response_body, wifi_timestamp, position)) {
+  DCHECK(response_body);
+  if (!ParseServerResponse(*response_body, wifi_timestamp, position)) {
     // We failed to parse the repsonse.
     FormatPositionError(server_url, "Response was malformed", position);
     RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_RESPONSE_MALFORMED);
     return;
   }
+
   // The response was successfully parsed, but it may not be a valid
   // position fix.
   if (!ValidateGeoposition(*position)) {
@@ -332,6 +342,7 @@ void GetLocationFromResponse(bool http_post_result,
     RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_RESPONSE_INVALID_FIX);
     return;
   }
+
   RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_RESPONSE_SUCCESS);
 }
 
