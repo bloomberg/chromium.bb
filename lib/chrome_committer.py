@@ -17,6 +17,9 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import tree_status
 
+# We need to use the account used by the builder to upload git CLs when
+# generating CLs.
+BUILDER_GOB_ACCOUNT = '3su6n15k.default@developer.gserviceaccount.com'
 
 class CommitError(Exception):
   """Raised if the commit failed."""
@@ -140,7 +143,7 @@ class ChromeCommitter(object):
     parser.add_argument('--dryrun', action='store_true', default=False,
                         help='Don\'t commit changes or send out emails.')
     parser.add_argument('--user_email', required=False,
-                        default='chromeos-commit-bot@chromium.org',
+                        default=BUILDER_GOB_ACCOUNT,
                         help='Email address to use when comitting changes.')
     parser.add_argument('--workdir',
                         default=os.path.join(os.getcwd(), 'chrome_src'),
