@@ -1740,7 +1740,6 @@ crbug.com/841922 [ Linux Win Mac ] virtual/video-surface-layer/media/video-contr
 
 
 crbug.com/862716 [ Mac Linux Win ] css3/filters/effect-brightness-clamping-hw.html [ Failure Pass ]
-crbug.com/862729 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-image-over-image.html [ Failure Pass ]
 crbug.com/862806 [ Mac ] css3/filters/effect-drop-shadow-hw.html [ Failure Pass ]
 crbug.com/862826 [ Mac Linux ] external/wpt/html/syntax/parsing/template/creating-an-element-for-the-token/template-owner-document.html [ Failure Pass ]
 
@@ -4595,9 +4594,6 @@ crbug.com/856601 [ Linux ] external/wpt/css/cssom-view/interfaces.html [ Timeout
 crbug.com/856601 [ Linux ] external/wpt/touch-events/idlharness.window.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] http/tests/event-timing/event-timing-retrievability.html [ Timeout Pass ]
 
-# Test timeouts on mac_chromium_rel_ng
-crbug.com/862215 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-image.html [ Timeout Pass ]
-
 ### fast/canvas/color-space/ + virtual/gpu/..., color management and transparency.
 crbug.com/859102 fast/canvas/color-space/canvas-drawImage-linear-rgb.html [ Pass Failure ]
 crbug.com/859102 fast/canvas/color-space/canvas-drawImage-p3.html [ Pass Failure ]
@@ -4629,17 +4625,19 @@ crbug.com/863067 [ Win10 ] virtual/user-activation-v2/fast/dom/Window/window-foc
 crbug.com/863160 [ Mac ] virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event.https.html [ Pass Timeout ]
 
 # Sheriff 2018-7-13
-crbug.com/863462 virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Timeout Pass ]
-crbug.com/863544 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-color-over-pattern.html [ Timeout Pass ]
-crbug.com/863550 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blend-image.html [ Timeout Pass ]
 crbug.com/863599 [ Linux Debug ] external/wpt/requestidlecallback/callback-iframe.html [ Pass Timeout ]
 
 #crbug.com/860706
-crbug.com/860706 [ Linux Mac ] css3/filters/effect-blur-hw.html [ Timeout Pass ]
-crbug.com/860706 [ Linux Mac ] css3/filters/filter-repaint-composited-fallback-crash.html [ Timeout Pass ]
 crbug.com/860706 fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Pass Timeout Failure ]
 crbug.com/860706 virtual/gpu/fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Pass Timeout Failure ]
+crbug.com/860706 [ Linux Mac ] css3/filters/effect-blur-hw.html [ Timeout Pass ]
+crbug.com/860706 [ Linux Mac ] css3/filters/filter-repaint-composited-fallback-crash.html [ Timeout Pass ]
 crbug.com/860706 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-image.html [ Timeout Pass ]
 crbug.com/860706 [ Linux Mac ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Timeout Pass ]
 crbug.com/860706 [ Linux Mac ] virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Timeout Pass ]
+crbug.com/860706 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-blend-image.html [ Timeout Pass ]
 crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-gradient-over-pattern.html [ Timeout Pass ]
+crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-image.html [ Timeout Pass ]
+crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-image-over-image.html [ Timeout Pass ]
+crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Timeout Pass ]
+crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-color-over-pattern.html [ Timeout Pass ]
