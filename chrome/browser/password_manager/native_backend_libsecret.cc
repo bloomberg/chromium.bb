@@ -491,13 +491,6 @@ NativeBackendLibsecret::ConvertFormList(
   for (GList* element = g_list_first(found); element != nullptr;
        element = g_list_next(element)) {
     SecretItem* secretItem = static_cast<SecretItem*>(element->data);
-    LibsecretLoader::secret_item_load_secret_sync(secretItem, nullptr, &error);
-    if (error) {
-      LOG(ERROR) << "Unable to load secret item" << error->message;
-      g_error_free(error);
-      error = nullptr;
-      continue;
-    }
     GHashTable* attrs = LibsecretLoader::secret_item_get_attributes(secretItem);
     std::unique_ptr<PasswordForm> form(FormOutOfAttributes(attrs));
     g_hash_table_unref(attrs);
@@ -524,6 +517,14 @@ NativeBackendLibsecret::ConvertFormList(
           form->is_public_suffix_match = true;
           break;
       }
+    }
+
+    LibsecretLoader::secret_item_load_secret_sync(secretItem, nullptr, &error);
+    if (error) {
+      LOG(ERROR) << "Unable to load secret item" << error->message;
+      g_error_free(error);
+      error = nullptr;
+      continue;
     }
 
     SecretValue* secretValue =
