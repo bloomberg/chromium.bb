@@ -32,7 +32,7 @@ void MediaRemotingDialogView::GetPermission(content::WebContents* web_contents,
           ->GetPrefs();
   DCHECK(pref_service);
   const PrefService::Preference* pref =
-      pref_service->FindPreference(prefs::kMediaRouterMediaRemotingEnabled);
+      pref_service->FindPreference(::prefs::kMediaRouterMediaRemotingEnabled);
   if (pref && !pref->IsDefaultValue()) {
     std::move(callback).Run(pref->GetValue()->GetBool());
     return;
@@ -157,8 +157,10 @@ void MediaRemotingDialogView::WindowClosing() {
 void MediaRemotingDialogView::ReportPermission(bool allowed) {
   DCHECK(remember_choice_checkbox_);
   DCHECK(permission_callback_);
-  if (remember_choice_checkbox_->checked())
-    pref_service_->SetBoolean(prefs::kMediaRouterMediaRemotingEnabled, allowed);
+  if (remember_choice_checkbox_->checked()) {
+    pref_service_->SetBoolean(::prefs::kMediaRouterMediaRemotingEnabled,
+                              allowed);
+  }
   std::move(permission_callback_).Run(allowed);
 }
 
