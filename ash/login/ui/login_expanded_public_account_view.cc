@@ -332,7 +332,7 @@ class RightPaneView : public NonAccessibleView,
           current_user_->basic_user_info->account_id,
           selected_language_item_.value, selected_keyboard_item_.value);
     } else if (sender == language_selection_) {
-      if (!language_menu_->IsVisible()) {
+      if (!language_menu_->IsVisible() && !language_items_.empty()) {
         LoginMenuView* view = new LoginMenuView(
             language_items_, language_selection_ /*anchor_view*/,
             base::BindRepeating(&RightPaneView::OnLanguageSelected,
@@ -343,7 +343,7 @@ class RightPaneView : public NonAccessibleView,
         language_menu_->Close();
       }
     } else if (sender == keyboard_selection_) {
-      if (!keyboard_menu_->IsVisible()) {
+      if (!keyboard_menu_->IsVisible() && !keyboard_items_.empty()) {
         LoginMenuView* view = new LoginMenuView(
             keyboard_items_, keyboard_selection_ /*anchor_view*/,
             base::BindRepeating(&RightPaneView::OnKeyboardSelected,

@@ -113,6 +113,8 @@ void LoginPublicAccountUserView::SetAuthEnabled(bool enabled, bool animate) {
   user_view_->SetTapEnabled(!enabled);
   if (enabled)
     arrow_button_->RequestFocus();
+
+  PreferredSizeChanged();
 }
 
 void LoginPublicAccountUserView::UpdateForUser(
