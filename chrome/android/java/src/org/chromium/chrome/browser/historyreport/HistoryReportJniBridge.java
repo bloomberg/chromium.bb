@@ -101,6 +101,12 @@ public class HistoryReportJniBridge implements SearchJniBridge {
     }
 
     @Override
+    public void clearUsageReports() {
+        if (!isInitialized()) return;
+        nativeClearUsageReports(mNativeHistoryReportJniBridge);
+    }
+
+    @Override
     public boolean addHistoricVisitsToUsageReportsBuffer() {
         if (!isInitialized()) return false;
         return nativeAddHistoricVisitsToUsageReportsBuffer(mNativeHistoryReportJniBridge);
@@ -171,6 +177,7 @@ public class HistoryReportJniBridge implements SearchJniBridge {
             int batchSize);
     private native void nativeRemoveUsageReports(long nativeHistoryReportJniBridge,
             String[] reportIds);
+    private native void nativeClearUsageReports(long nativeHistoryReportJniBridge);
     private native boolean nativeAddHistoricVisitsToUsageReportsBuffer(
             long nativeHistoryReportJniBridge);
     private native String nativeDump(long nativeHistoryReportJniBridge);

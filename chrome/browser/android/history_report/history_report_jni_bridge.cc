@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -143,6 +144,12 @@ void HistoryReportJniBridge::RemoveUsageReports(
   std::vector<std::string> to_remove;
   base::android::AppendJavaStringArrayToStringVector(env, batch, &to_remove);
   usage_reports_buffer_service_->Remove(to_remove);
+}
+
+void HistoryReportJniBridge::ClearUsageReports(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  usage_reports_buffer_service_->Clear();
 }
 
 void HistoryReportJniBridge::NotifyDataChanged() {
