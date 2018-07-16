@@ -1197,7 +1197,10 @@ int Tab::GetCornerRadius() {
 gfx::Insets Tab::GetContentsInsets() {
   const int endcap_width = MD::IsRefreshUi() ? (GetCornerRadius() * 2)
                                              : GetTabEndcapWidthForLayout();
-  return gfx::Insets(GetStrokeHeight(), endcap_width);
+  return gfx::Insets(
+      GetStrokeHeight(), endcap_width,
+      GetStrokeHeight() + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP),
+      endcap_width);
 }
 
 // static
