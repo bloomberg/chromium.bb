@@ -3422,16 +3422,6 @@ const char kWebVrVsyncAlignName[] = "WebVR VSync-aligned timing";
 const char kWebVrVsyncAlignDescription[] =
     "Align WebVR application rendering with VSync for smoother animations.";
 
-#if defined(OS_ANDROID)
-
-const char kVrBrowsingExperimentalRenderingName[] =
-    "VR browsing experimental rendering features";
-const char kVrBrowsingExperimentalRenderingDescription[] =
-    "Experimental rendering features for VR browsing (e.g. power-saving "
-    "rendering modes).";
-
-#endif  // OS_ANDROID
-
 #if BUILDFLAG(ENABLE_OCULUS_VR)
 const char kOculusVRName[] = "Oculus hardware support";
 const char kOculusVRDescription[] =

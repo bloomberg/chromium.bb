@@ -411,7 +411,6 @@ void Ui::OnControllerUpdated(const ControllerModel& controller_model,
                              const ReticleModel& reticle_model) {
   model_->controller = controller_model;
   model_->reticle = reticle_model;
-  model_->controller.quiescent = input_manager_->controller_quiescent();
   model_->controller.resting_in_viewport =
       input_manager_->controller_resting_in_viewport();
 }
@@ -536,8 +535,6 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   }
 
   model_->browsing_disabled = ui_initial_state.browsing_disabled;
-  model_->skips_redraw_when_not_dirty =
-      ui_initial_state.skips_redraw_when_not_dirty;
   model_->waiting_for_background = ui_initial_state.assets_supported;
   model_->supports_selection = ui_initial_state.supports_selection;
   model_->needs_keyboard_update = ui_initial_state.needs_keyboard_update;

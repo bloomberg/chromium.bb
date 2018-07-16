@@ -2107,13 +2107,6 @@ extern const char kDirectManipulationStylusDescription[];
 extern const char kWebVrVsyncAlignName[];
 extern const char kWebVrVsyncAlignDescription[];
 
-#if defined(OS_ANDROID)
-
-extern const char kVrBrowsingExperimentalRenderingName[];
-extern const char kVrBrowsingExperimentalRenderingDescription[];
-
-#endif  // OS_ANDROID
-
 #if BUILDFLAG(ENABLE_OCULUS_VR)
 extern const char kOculusVRName[];
 extern const char kOculusVRDescription[];

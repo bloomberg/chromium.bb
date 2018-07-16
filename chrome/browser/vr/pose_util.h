@@ -20,13 +20,6 @@ VR_EXPORT gfx::Vector3dF GetForwardVector(const gfx::Transform& head_pose);
 // Returns a vector heading upward from the viewer's head.
 gfx::Vector3dF GetUpVector(const gfx::Transform& head_pose);
 
-// Returns true if either the change is gaze direction (via GetForwardVector
-// above) exceeds the angular threshold, or if the change in up vector exceeds
-// this same threshold.
-VR_EXPORT bool HeadMoveExceedsThreshold(const gfx::Transform& old_pose,
-                                        const gfx::Transform& new_pose,
-                                        float angular_threshold_degrees);
-
 }  // namespace vr
 
 #endif  //  CHROME_BROWSER_VR_POSE_UTIL_H_

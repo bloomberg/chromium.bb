@@ -32,7 +32,6 @@ struct VR_EXPORT ControllerModel {
   bool touching_touchpad = false;
   gfx::PointF touchpad_touch_position;
   float opacity = 1.0f;
-  bool quiescent = false;
   bool resting_in_viewport = false;
   bool recentered = false;
   bool app_button_long_pressed = false;
