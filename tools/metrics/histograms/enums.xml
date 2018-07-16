@@ -21851,7 +21851,7 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="GCMRegistrationRequestStatus">
-  <int value="0" label="Success (this is not logged currently)"/>
+  <int value="0" label="Success"/>
   <int value="1" label="Invalid parameters"/>
   <int value="2" label="Invalid sender"/>
   <int value="3" label="Authentication failed"/>
