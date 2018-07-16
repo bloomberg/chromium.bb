@@ -87,7 +87,7 @@ void PrimaryAccountAccessTokenFetcher::ProcessSigninStateChange() {
 
 void PrimaryAccountAccessTokenFetcher::OnAccessTokenFetchComplete(
     GoogleServiceAuthError error,
-    std::string access_token) {
+    AccessTokenInfo access_token_info) {
   access_token_fetcher_.reset();
 
   // There is a special case for Android that RefreshTokenIsAvailable and
@@ -112,7 +112,7 @@ void PrimaryAccountAccessTokenFetcher::OnAccessTokenFetchComplete(
   // Per the contract of this class, it is allowed for consumers to delete this
   // object from within the callback that is run below. Hence, it is not safe to
   // add any code below this call.
-  std::move(callback_).Run(error, access_token);
+  std::move(callback_).Run(std::move(error), std::move(access_token_info));
 }
 
 }  // namespace identity

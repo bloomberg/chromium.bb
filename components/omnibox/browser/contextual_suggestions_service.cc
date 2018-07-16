@@ -319,16 +319,17 @@ void ContextualSuggestionsService::AccessTokenAvailable(
     StartCallback start_callback,
     CompletionCallback completion_callback,
     GoogleServiceAuthError error,
-    std::string access_token) {
+    identity::AccessTokenInfo access_token_info) {
   DCHECK(token_fetcher_);
   token_fetcher_.reset();
 
   // If there were no errors obtaining the access token, append it to the
   // request as a header.
   if (error.state() == GoogleServiceAuthError::NONE) {
-    DCHECK(!access_token.empty());
+    DCHECK(!access_token_info.token.empty());
     request->headers.SetHeader(
-        "Authorization", base::StringPrintf("Bearer %s", access_token.c_str()));
+        "Authorization",
+        base::StringPrintf("Bearer %s", access_token_info.token.c_str()));
   }
 
   StartDownloadAndTransferLoader(std::move(request), std::move(request_body),

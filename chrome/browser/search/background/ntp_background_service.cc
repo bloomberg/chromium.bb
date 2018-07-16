@@ -283,7 +283,7 @@ void NtpBackgroundService::FetchAlbumInfo() {
 
 void NtpBackgroundService::GetAccessTokenForAlbumCallback(
     GoogleServiceAuthError error,
-    std::string token) {
+    identity::AccessTokenInfo access_token_info) {
   token_fetcher_.reset();
 
   if (error != GoogleServiceAuthError::AuthErrorNone()) {
@@ -328,7 +328,8 @@ void NtpBackgroundService::GetAccessTokenForAlbumCallback(
   resource_request->headers.SetHeader(kVirtualDeviceIdParam,
                                       kVirtualDeviceIdValue);
   resource_request->headers.SetHeader(
-      kAuthHeaderParam, base::StringPrintf(kAuthHeaderValue, token.c_str()));
+      kAuthHeaderParam,
+      base::StringPrintf(kAuthHeaderValue, access_token_info.token.c_str()));
 
   albums_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                     traffic_annotation);
@@ -389,7 +390,7 @@ void NtpBackgroundService::FetchAlbumPhotos(
 
 void NtpBackgroundService::GetAccessTokenForPhotosCallback(
     GoogleServiceAuthError error,
-    std::string token) {
+    identity::AccessTokenInfo access_token_info) {
   token_fetcher_.reset();
 
   if (error != GoogleServiceAuthError::AuthErrorNone()) {
@@ -434,7 +435,8 @@ void NtpBackgroundService::GetAccessTokenForPhotosCallback(
   resource_request->load_flags =
       net::LOAD_DO_NOT_SEND_AUTH_DATA | net::LOAD_DO_NOT_SEND_COOKIES;
   resource_request->headers.SetHeader(
-      kAuthHeaderParam, base::StringPrintf(kAuthHeaderValue, token.c_str()));
+      kAuthHeaderParam,
+      base::StringPrintf(kAuthHeaderValue, access_token_info.token.c_str()));
 
   albums_photo_info_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);

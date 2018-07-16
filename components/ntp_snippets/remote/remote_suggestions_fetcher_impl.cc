@@ -19,6 +19,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "net/base/url_util.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using language::UrlLanguageHistogram;
@@ -284,7 +285,7 @@ void RemoteSuggestionsFetcherImpl::StartTokenRequest() {
 
 void RemoteSuggestionsFetcherImpl::AccessTokenFetchFinished(
     GoogleServiceAuthError error,
-    std::string access_token) {
+    identity::AccessTokenInfo access_token_info) {
   DCHECK(token_fetcher_);
   token_fetcher_.reset();
 
@@ -293,7 +294,7 @@ void RemoteSuggestionsFetcherImpl::AccessTokenFetchFinished(
     return;
   }
 
-  DCHECK(!access_token.empty());
+  DCHECK(!access_token_info.token.empty());
 
   while (!pending_requests_.empty()) {
     std::pair<JsonRequest::Builder, SnippetsAvailableCallback>
@@ -301,7 +302,7 @@ void RemoteSuggestionsFetcherImpl::AccessTokenFetchFinished(
     pending_requests_.pop();
     FetchSnippetsAuthenticated(std::move(builder_and_callback.first),
                                std::move(builder_and_callback.second),
-                               access_token);
+                               access_token_info.token);
   }
 }
 

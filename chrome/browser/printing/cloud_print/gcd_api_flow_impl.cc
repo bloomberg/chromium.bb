@@ -98,8 +98,9 @@ void GCDApiFlowImpl::Start(std::unique_ptr<Request> request) {
       identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
-void GCDApiFlowImpl::OnAccessTokenFetchComplete(GoogleServiceAuthError error,
-                                                std::string access_token) {
+void GCDApiFlowImpl::OnAccessTokenFetchComplete(
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo access_token_info) {
   token_fetcher_.reset();
 
   if (error.state() != GoogleServiceAuthError::NONE) {
@@ -109,8 +110,8 @@ void GCDApiFlowImpl::OnAccessTokenFetchComplete(GoogleServiceAuthError error,
 
   CreateRequest();
 
-  std::string authorization_header =
-      base::StringPrintf(kCloudPrintOAuthHeaderFormat, access_token.c_str());
+  std::string authorization_header = base::StringPrintf(
+      kCloudPrintOAuthHeaderFormat, access_token_info.token.c_str());
 
   url_fetcher_->AddExtraRequestHeader(authorization_header);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |

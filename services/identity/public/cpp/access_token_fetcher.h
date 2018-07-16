@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/access_token_info.h"
 
 namespace identity {
 
@@ -22,13 +23,14 @@ class AccessTokenFetcher : public OAuth2TokenService::Observer,
                            public OAuth2TokenService::Consumer {
  public:
   // Callback for when a request completes (successful or not). On successful
-  // requests, |error| is NONE and |access_token| contains the obtained OAuth2
-  // access token. On failed requests, |error| contains the actual error and
-  // |access_token| is empty.
+  // requests, |error| is NONE and |access_token_info| contains info of the
+  // obtained OAuth2 access token. On failed requests, |error| contains the
+  // actual error and |access_token_info| is empty.
   // NOTE: At the time that this method is invoked, it is safe for the client to
   // destroy the AccessTokenFetcher instance that is invoking this callback.
-  using TokenCallback = base::OnceCallback<void(GoogleServiceAuthError error,
-                                                std::string access_token)>;
+  using TokenCallback =
+      base::OnceCallback<void(GoogleServiceAuthError error,
+                              AccessTokenInfo access_token_info)>;
 
   // Instantiates a fetcher and immediately starts the process of obtaining an
   // OAuth2 access token for |account_id| and |scopes|. The |callback| is called
@@ -50,12 +52,12 @@ class AccessTokenFetcher : public OAuth2TokenService::Observer,
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 
-  // Invokes |callback_| with (|error|, |access_token|). Per the contract of
-  // this class, it is allowed for clients to delete this object as part of the
-  // invocation of |callback_|. Hence, this object must assume that it is dead
-  // after invoking this method and must not run any more code.
-  void RunCallbackAndMaybeDie(const GoogleServiceAuthError& error,
-                              const std::string& access_token);
+  // Invokes |callback_| with (|error|, |access_token_info|). Per the contract
+  // of this class, it is allowed for clients to delete this object as part of
+  // the invocation of |callback_|. Hence, this object must assume that it is
+  // dead after invoking this method and must not run any more code.
+  void RunCallbackAndMaybeDie(GoogleServiceAuthError error,
+                              AccessTokenInfo access_token_info);
 
   std::string account_id_;
   OAuth2TokenService* token_service_;

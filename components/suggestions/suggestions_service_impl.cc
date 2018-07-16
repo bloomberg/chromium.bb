@@ -37,6 +37,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 using base::TimeDelta;
 
@@ -384,9 +385,10 @@ void SuggestionsServiceImpl::IssueRequestIfNoneOngoing(const GURL& url) {
       identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
-void SuggestionsServiceImpl::AccessTokenAvailable(const GURL& url,
-                                                  GoogleServiceAuthError error,
-                                                  std::string access_token) {
+void SuggestionsServiceImpl::AccessTokenAvailable(
+    const GURL& url,
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo access_token_info) {
   DCHECK(token_fetcher_);
   token_fetcher_.reset();
 
@@ -396,9 +398,9 @@ void SuggestionsServiceImpl::AccessTokenAvailable(const GURL& url,
     return;
   }
 
-  DCHECK(!access_token.empty());
+  DCHECK(!access_token_info.token.empty());
 
-  IssueSuggestionsRequest(url, access_token);
+  IssueSuggestionsRequest(url, access_token_info.token);
 }
 
 void SuggestionsServiceImpl::IssueSuggestionsRequest(

@@ -18,7 +18,8 @@
 #include "components/ntp_snippets/remote/json_to_categories.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/request_params.h"
-#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
+#include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/access_token_info.h"
 
 class PrefService;
 
@@ -83,7 +84,7 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
   void StartTokenRequest();
 
   void AccessTokenFetchFinished(GoogleServiceAuthError error,
-                                std::string access_token);
+                                identity::AccessTokenInfo access_token_info);
   void AccessTokenError(const GoogleServiceAuthError& error);
 
   void JsonRequestDone(std::unique_ptr<internal::JsonRequest> request,

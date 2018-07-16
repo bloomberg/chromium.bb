@@ -29,13 +29,14 @@ FeedbackUploaderChrome::FeedbackUploaderChrome(
 
 FeedbackUploaderChrome::~FeedbackUploaderChrome() = default;
 
-void FeedbackUploaderChrome::AccessTokenAvailable(GoogleServiceAuthError error,
-                                                  std::string access_token) {
+void FeedbackUploaderChrome::AccessTokenAvailable(
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo access_token_info) {
   DCHECK(token_fetcher_);
   token_fetcher_.reset();
   if (error.state() == GoogleServiceAuthError::NONE) {
-    DCHECK(!access_token.empty());
-    access_token_ = access_token;
+    DCHECK(!access_token_info.token.empty());
+    access_token_ = access_token_info.token;
   } else {
     LOG(ERROR) << "Failed to get the access token. "
                << kAuthenticationErrorLogMessage;

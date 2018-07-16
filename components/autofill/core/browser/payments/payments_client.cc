@@ -641,8 +641,9 @@ void PaymentsClient::OnSimpleLoaderCompleteInternal(int response_code,
   request_->RespondToDelegate(result);
 }
 
-void PaymentsClient::AccessTokenFetchFinished(GoogleServiceAuthError error,
-                                              std::string access_token) {
+void PaymentsClient::AccessTokenFetchFinished(
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo access_token_info) {
   DCHECK(token_fetcher_);
   token_fetcher_.reset();
 
@@ -651,7 +652,7 @@ void PaymentsClient::AccessTokenFetchFinished(GoogleServiceAuthError error,
     return;
   }
 
-  access_token_ = access_token;
+  access_token_ = access_token_info.token;
   if (resource_request_)
     SetOAuth2TokenAndStartRequest();
 }

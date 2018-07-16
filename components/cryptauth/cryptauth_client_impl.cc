@@ -297,18 +297,18 @@ void CryptAuthClientImpl::OnAccessTokenFetched(
     const std::string& serialized_request,
     const base::Callback<void(const ResponseProto&)>& response_callback,
     GoogleServiceAuthError error,
-    std::string access_token) {
+    identity::AccessTokenInfo access_token_info) {
   access_token_fetcher_.reset();
 
   if (error.state() != GoogleServiceAuthError::NONE) {
     OnApiCallFailed("Failed to get a valid access token.");
     return;
   }
-  access_token_used_ = access_token;
+  access_token_used_ = access_token_info.token;
 
   api_call_flow_->Start(
-      CreateRequestUrl(request_path_), url_request_context_.get(), access_token,
-      serialized_request,
+      CreateRequestUrl(request_path_), url_request_context_.get(),
+      access_token_used_, serialized_request,
       base::Bind(&CryptAuthClientImpl::OnFlowSuccess<ResponseProto>,
                  weak_ptr_factory_.GetWeakPtr(), response_callback),
       base::Bind(&CryptAuthClientImpl::OnApiCallFailed,

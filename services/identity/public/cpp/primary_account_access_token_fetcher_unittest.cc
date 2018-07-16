@@ -26,14 +26,15 @@ namespace identity {
 
 namespace {
 
-void OnAccessTokenFetchComplete(base::OnceClosure done_closure,
-                                const GoogleServiceAuthError& expected_error,
-                                const std::string& expected_access_token,
-                                GoogleServiceAuthError error,
-                                std::string access_token) {
+void OnAccessTokenFetchComplete(
+    base::OnceClosure done_closure,
+    const GoogleServiceAuthError& expected_error,
+    const AccessTokenInfo& expected_access_token_info,
+    GoogleServiceAuthError error,
+    AccessTokenInfo access_token_info) {
   EXPECT_EQ(expected_error, error);
   if (expected_error == GoogleServiceAuthError::AuthErrorNone())
-    EXPECT_EQ(expected_access_token, access_token);
+    EXPECT_EQ(expected_access_token_info, access_token_info);
 
   std::move(done_closure).Run();
 }
@@ -46,7 +47,9 @@ class PrimaryAccountAccessTokenFetcherTest : public testing::Test,
   using TestTokenCallback =
       StrictMock<MockCallback<AccessTokenFetcher::TokenCallback>>;
 
-  PrimaryAccountAccessTokenFetcherTest() {}
+  PrimaryAccountAccessTokenFetcherTest()
+      : access_token_info_("access token",
+                           base::Time::Now() + base::TimeDelta::FromHours(1)) {}
 
   ~PrimaryAccountAccessTokenFetcherTest() override {
   }
@@ -68,9 +71,16 @@ class PrimaryAccountAccessTokenFetcherTest : public testing::Test,
         .account_id;
   }
 
+  // Returns an AccessTokenInfo with valid information that can be used for
+  // completing access token requests.
+  const AccessTokenInfo& access_token_info() const {
+    return access_token_info_;
+  }
+
  private:
   base::MessageLoop message_loop_;
   IdentityTestEnvironment identity_test_env_;
+  AccessTokenInfo access_token_info_;
 };
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest, OneShotShouldReturnAccessToken) {
@@ -85,10 +95,10 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, OneShotShouldReturnAccessToken) {
 
   // Once the access token request is fulfilled, we should get called back with
   // the access token.
-  EXPECT_CALL(callback,
-              Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
+  EXPECT_CALL(callback, Run(GoogleServiceAuthError::AuthErrorNone(),
+                            access_token_info()));
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      "access token", base::Time::Now() + base::TimeDelta::FromHours(1));
+      access_token_info().token, access_token_info().expiration_time);
 }
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest,
@@ -105,10 +115,10 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
   // Once the access token request is fulfilled, we should get called back with
   // the access token.
-  EXPECT_CALL(callback,
-              Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
+  EXPECT_CALL(callback, Run(GoogleServiceAuthError::AuthErrorNone(),
+                            access_token_info()));
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      "access token", base::Time::Now() + base::TimeDelta::FromHours(1));
+      access_token_info().token, access_token_info().expiration_time);
 }
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
@@ -126,7 +136,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
 
   // Fulfilling the request now should have no effect.
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      "access token", base::Time::Now() + base::TimeDelta::FromHours(1));
+      access_token_info().token, access_token_info().expiration_time);
 }
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest, OneShotCallsBackWhenSignedOut) {
@@ -137,7 +147,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, OneShotCallsBackWhenSignedOut) {
       base::BindOnce(&OnAccessTokenFetchComplete, run_loop.QuitClosure(),
                      GoogleServiceAuthError(
                          GoogleServiceAuthError::State::USER_NOT_SIGNED_UP),
-                     ""),
+                     AccessTokenInfo()),
       PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
@@ -154,7 +164,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       base::BindOnce(&OnAccessTokenFetchComplete, run_loop.QuitClosure(),
                      GoogleServiceAuthError(
                          GoogleServiceAuthError::State::USER_NOT_SIGNED_UP),
-                     ""),
+                     AccessTokenInfo()),
       PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
@@ -187,10 +197,10 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignIn) {
 
   // Once the access token request is fulfilled, we should get called back with
   // the access token.
-  EXPECT_CALL(callback,
-              Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
+  EXPECT_CALL(callback, Run(GoogleServiceAuthError::AuthErrorNone(),
+                            access_token_info()));
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      "access token", base::Time::Now() + base::TimeDelta::FromHours(1));
+      access_token_info().token, access_token_info().expiration_time);
 }
 
 #endif  // !OS_CHROMEOS
@@ -212,10 +222,10 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForRefreshToken) {
 
   // Once the access token request is fulfilled, we should get called back with
   // the access token.
-  EXPECT_CALL(callback,
-              Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
+  EXPECT_CALL(callback, Run(GoogleServiceAuthError::AuthErrorNone(),
+                            access_token_info()));
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      "access token", base::Time::Now() + base::TimeDelta::FromHours(1));
+      access_token_info().token, access_token_info().expiration_time);
 }
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest,
@@ -248,7 +258,8 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   auto fetcher = CreateFetcher(
       base::BindOnce(
           &OnAccessTokenFetchComplete, run_loop.QuitClosure(),
-          GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED), ""),
+          GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
+          AccessTokenInfo()),
       PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 
   // A canceled access token request should result in a callback.
@@ -274,10 +285,10 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
   // Once the access token request is fulfilled, we should get called back with
   // the access token.
-  EXPECT_CALL(callback,
-              Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
+  EXPECT_CALL(callback, Run(GoogleServiceAuthError::AuthErrorNone(),
+                            access_token_info()));
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      "access token", base::Time::Now() + base::TimeDelta::FromHours(1));
+      access_token_info().token, access_token_info().expiration_time);
 }
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest,
@@ -301,7 +312,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   EXPECT_CALL(
       callback,
       Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
-          std::string()));
+          AccessTokenInfo()));
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 }
@@ -327,7 +338,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   EXPECT_CALL(
       callback,
       Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
-          std::string()));
+          AccessTokenInfo()));
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 }
@@ -352,7 +363,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   EXPECT_CALL(
       callback,
       Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
-          std::string()));
+          AccessTokenInfo()));
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 }
@@ -374,7 +385,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   EXPECT_CALL(
       callback,
       Run(GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE),
-          std::string()));
+          AccessTokenInfo()));
   identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
 }

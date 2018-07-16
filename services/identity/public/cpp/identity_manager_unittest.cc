@@ -891,7 +891,7 @@ TEST_F(IdentityManagerTest, RemoveAccessTokenFromCache) {
 TEST_F(IdentityManagerTest, CreateAccessTokenFetcher) {
   std::set<std::string> scopes{"scope"};
   AccessTokenFetcher::TokenCallback callback = base::BindOnce(
-      [](GoogleServiceAuthError error, std::string access_token) {});
+      [](GoogleServiceAuthError error, AccessTokenInfo access_token_info) {});
   std::unique_ptr<AccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForAccount(
           identity_manager()->GetPrimaryAccountInfo().account_id,
@@ -910,7 +910,7 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
 
   std::set<std::string> scopes{"scope"};
   AccessTokenFetcher::TokenCallback callback = base::BindOnce(
-      [](GoogleServiceAuthError error, std::string access_token) {});
+      [](GoogleServiceAuthError error, AccessTokenInfo access_token_info) {});
   std::unique_ptr<AccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForAccount(
           identity_manager()->GetPrimaryAccountInfo().account_id,

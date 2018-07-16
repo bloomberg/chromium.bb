@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/identity/public/cpp/access_token_info.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -157,7 +158,7 @@ class ContextualSuggestionsService : public KeyedService {
                             StartCallback start_callback,
                             CompletionCallback completion_callback,
                             GoogleServiceAuthError error,
-                            std::string access_token);
+                            identity::AccessTokenInfo access_token_info);
 
   // Activates a loader for |request|, wiring it up to |completion_callback|,
   // and calls |start_callback|.  If |request_body| isn't empty, it will be
