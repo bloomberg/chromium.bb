@@ -16,9 +16,8 @@
 #endif
 
 @interface GridCell ()
-// Redeclare TopBar readwrite internally.
-@property(nonatomic, readwrite, weak) UIView* topBar;
 // Visual components of the cell.
+@property(nonatomic, weak) UIView* topBar;
 @property(nonatomic, weak) UIImageView* iconView;
 @property(nonatomic, weak) TopAlignedImageView* snapshotView;
 @property(nonatomic, weak) UILabel* titleLabel;
@@ -187,16 +186,6 @@
   _title = title;
 }
 
-- (GridCell*)proxyForTransitions {
-  GridCell* proxy = [[[self class] alloc] initWithFrame:self.bounds];
-  proxy.selected = NO;
-  proxy.theme = self.theme;
-  proxy.icon = self.icon;
-  proxy.snapshot = self.snapshot;
-  proxy.title = self.title;
-  return proxy;
-}
-
 #pragma mark - Private
 
 // Sets up the top bar with icon, title, and close button.
@@ -298,6 +287,51 @@
 // Selector registered to the close button.
 - (void)closeButtonTapped:(id)sender {
   [self.delegate closeButtonTappedForCell:self];
+}
+
+@end
+
+@implementation GridTransitionSelectionCell
+
++ (instancetype)transitionCellFromCell:(GridCell*)cell {
+  GridTransitionSelectionCell* proxy = [[self alloc] initWithFrame:cell.bounds];
+  proxy.selected = YES;
+  proxy.theme = cell.theme;
+  proxy.contentView.hidden = YES;
+  return proxy;
+}
+
+@end
+
+@implementation GridTransitionCell
+
++ (instancetype)transitionCellFromCell:(GridCell*)cell {
+  GridTransitionCell* proxy = [[self alloc] initWithFrame:cell.bounds];
+  proxy.selected = NO;
+  proxy.theme = cell.theme;
+  proxy.icon = cell.icon;
+  proxy.snapshot = cell.snapshot;
+  proxy.title = cell.title;
+  return proxy;
+}
+
+#pragma mark - GridToTabTransitionView
+
+- (void)setTopCellView:(UIView*)topCellView {
+  // The top cell is the top bar and can't be changed.
+  NOTREACHED();
+}
+
+- (UIView*)topCellView {
+  return self.topBar;
+}
+
+- (CGFloat)cornerRadius {
+  return self.contentView.layer.cornerRadius;
+}
+
+- (void)setCornerRadius:(CGFloat)radius {
+  self.contentView.layer.cornerRadius = radius;
 }
 
 @end

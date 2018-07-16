@@ -11,56 +11,64 @@
 #include "base/logging.h"
 
 @interface GridTransitionLayout ()
-@property(nonatomic, readwrite) NSArray<GridTransitionLayoutItem*>* items;
-@property(nonatomic, readwrite) GridTransitionLayoutItem* activeItem;
-@property(nonatomic, readwrite) GridTransitionLayoutItem* selectionItem;
+@property(nonatomic, readwrite) NSArray<GridTransitionItem*>* inactiveItems;
+@property(nonatomic, readwrite) GridTransitionActiveItem* activeItem;
+@property(nonatomic, readwrite) GridTransitionItem* selectionItem;
 @end
 
 @implementation GridTransitionLayout
 @synthesize activeItem = _activeItem;
 @synthesize selectionItem = _selectionItem;
-@synthesize items = _items;
+@synthesize inactiveItems = _inactiveItems;
 @synthesize expandedRect = _expandedRect;
 
-+ (instancetype)layoutWithItems:(NSArray<GridTransitionLayoutItem*>*)items
-                     activeItem:(GridTransitionLayoutItem*)activeItem
-                  selectionItem:(GridTransitionLayoutItem*)selectionItem {
++ (instancetype)layoutWithInactiveItems:(NSArray<GridTransitionItem*>*)items
+                             activeItem:(GridTransitionActiveItem*)activeItem
+                          selectionItem:(GridTransitionItem*)selectionItem {
   DCHECK(items);
   GridTransitionLayout* layout = [[GridTransitionLayout alloc] init];
-  layout.items = items;
+  layout.inactiveItems = items;
   layout.activeItem = activeItem;
   layout.selectionItem = selectionItem;
   return layout;
 }
 
-- (void)setActiveItem:(GridTransitionLayoutItem*)activeItem {
-  DCHECK(!activeItem || [self.items containsObject:activeItem]);
-  _activeItem = activeItem;
-}
-
 @end
 
-@interface GridTransitionLayoutItem ()
-@property(nonatomic, readwrite) UICollectionViewCell* cell;
-@property(nonatomic, readwrite) UIView* auxillaryView;
-@property(nonatomic, readwrite) UICollectionViewLayoutAttributes* attributes;
+@interface GridTransitionItem ()
+@property(nonatomic, readwrite) UIView* cell;
+@property(nonatomic, readwrite) CGPoint center;
 @end
 
-@implementation GridTransitionLayoutItem
+@implementation GridTransitionItem
 @synthesize cell = _cell;
-@synthesize auxillaryView = _auxillaryView;
-@synthesize attributes = _attributes;
+@synthesize center = _center;
 
-+ (instancetype)itemWithCell:(UICollectionViewCell*)cell
-               auxillaryView:(UIView*)auxillaryView
-                  attributes:(UICollectionViewLayoutAttributes*)attributes {
++ (instancetype)itemWithCell:(UIView*)cell center:(CGPoint)center {
   DCHECK(cell);
   DCHECK(!cell.superview);
-  DCHECK(!auxillaryView || [auxillaryView isDescendantOfView:cell]);
-  GridTransitionLayoutItem* item = [[GridTransitionLayoutItem alloc] init];
+  GridTransitionItem* item = [[self alloc] init];
   item.cell = cell;
-  item.auxillaryView = auxillaryView;
-  item.attributes = attributes;
+  item.center = center;
   return item;
 }
+@end
+
+@interface GridTransitionActiveItem ()
+@property(nonatomic, readwrite) UIView<GridToTabTransitionView>* cell;
+@property(nonatomic, readwrite) CGSize size;
+@end
+
+@implementation GridTransitionActiveItem
+@dynamic cell;
+@synthesize size = _size;
+
++ (instancetype)itemWithCell:(UIView<GridToTabTransitionView>*)cell
+                      center:(CGPoint)center
+                        size:(CGSize)size {
+  GridTransitionActiveItem* item = [self itemWithCell:cell center:center];
+  item.size = size;
+  return item;
+}
+
 @end

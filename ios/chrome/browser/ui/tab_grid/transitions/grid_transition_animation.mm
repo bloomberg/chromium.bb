@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_animation.h"
 
 #import "base/logging.h"
+#import "ios/chrome/browser/ui/tab_grid/transitions/grid_to_tab_transition_view.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/util/property_animator_group.h"
 
@@ -27,10 +28,6 @@ const CGFloat kInactiveItemScale = 0.95;
 @property(nonatomic, readonly, assign) NSTimeInterval duration;
 // The direction this animation is in.
 @property(nonatomic, readonly, assign) GridAnimationDirection direction;
-// Convenience properties for getting the size and center of the active cell
-// in the grid.
-@property(nonatomic, readonly) CGSize activeSize;
-@property(nonatomic, readonly) CGPoint activeCenter;
 // Corner radius that the active cell will have when it is animated into the
 // regulat grid.
 @property(nonatomic, assign) CGFloat finalActiveCellCornerRadius;
@@ -51,8 +48,7 @@ const CGFloat kInactiveItemScale = 0.95;
     _layout = layout;
     _duration = duration;
     _direction = direction;
-    _finalActiveCellCornerRadius =
-        _layout.activeItem.cell.contentView.layer.cornerRadius;
+    _finalActiveCellCornerRadius = _layout.activeItem.cell.cornerRadius;
   }
   return self;
 }
@@ -89,16 +85,6 @@ const CGFloat kInactiveItemScale = 0.95;
   // Make sure all of the layout after the view setup is complete before any
   // animations are run.
   [self layoutIfNeeded];
-}
-
-#pragma mark - Private Properties
-
-- (CGSize)activeSize {
-  return self.layout.activeItem.attributes.size;
-}
-
-- (CGPoint)activeCenter {
-  return self.layout.activeItem.attributes.center;
 }
 
 #pragma mark - Private methods
@@ -152,7 +138,7 @@ const CGFloat kInactiveItemScale = 0.95;
   [self.animations addAnimator:zoomActiveCell];
 
   // B: Fade in the active cell's auxillary view
-  UIView* auxillaryView = self.layout.activeItem.auxillaryView;
+  UIView* auxillaryView = self.layout.activeItem.cell.topCellView;
   auto fadeInAuxillaryKeyframeAnimation =
       [self keyframeAnimationWithRelativeStart:delay
                               relativeDuration:briefDuration
@@ -166,10 +152,10 @@ const CGFloat kInactiveItemScale = 0.95;
   [self.animations addAnimator:fadeInAuxillary];
 
   // C: Round the corners of the active cell.
-  UICollectionViewCell* cell = self.layout.activeItem.cell;
-  cell.contentView.layer.cornerRadius = 0.0;
+  UIView<GridToTabTransitionView>* cell = self.layout.activeItem.cell;
+  cell.cornerRadius = 0.0;
   auto roundCornersAnimation = ^{
-    cell.contentView.layer.cornerRadius = self.finalActiveCellCornerRadius;
+    cell.cornerRadius = self.finalActiveCellCornerRadius;
   };
   auto roundCornersKeyframeAnimation =
       [self keyframeAnimationWithRelativeStart:0
@@ -181,17 +167,14 @@ const CGFloat kInactiveItemScale = 0.95;
             animations:roundCornersKeyframeAnimation];
   [self.animations addAnimator:roundCorners];
 
-  if (self.layout.items.count == 1) {
-    // Single cell case.
+  // Single cell case.
+  if (self.layout.inactiveItems.count == 0)
     return;
-  }
 
   // Additional animations for multiple cells.
   // D: Scale up inactive cells.
   auto scaleUpCellsAnimation = ^{
-    for (GridTransitionLayoutItem* item in self.layout.items) {
-      if (item == self.layout.activeItem)
-        continue;
+    for (GridTransitionItem* item in self.layout.inactiveItems) {
       item.cell.transform = CGAffineTransformIdentity;
     }
   };
@@ -208,9 +191,7 @@ const CGFloat kInactiveItemScale = 0.95;
 
   // E: Fade in inactive cells.
   auto fadeInCellsAnimation = ^{
-    for (GridTransitionLayoutItem* item in self.layout.items) {
-      if (item == self.layout.activeItem)
-        continue;
+    for (GridTransitionItem* item in self.layout.inactiveItems) {
       item.cell.alpha = 1.0;
     }
   };
@@ -267,7 +248,7 @@ const CGFloat kInactiveItemScale = 0.95;
   [self.animations addAnimator:zoomActiveCell];
 
   // B: Fade out the active cell's auxillary view.
-  UIView* auxillaryView = self.layout.activeItem.auxillaryView;
+  UIView* auxillaryView = self.layout.activeItem.cell.topCellView;
   auto fadeOutAuxilliaryAnimation =
       [self keyframeAnimationWithRelativeStart:0
                               relativeDuration:briefDuration
@@ -281,9 +262,9 @@ const CGFloat kInactiveItemScale = 0.95;
   [self.animations addAnimator:fadeOutAuxilliary];
 
   // C: Square the active cell's corners.
-  UICollectionViewCell* cell = self.layout.activeItem.cell;
+  UIView<GridToTabTransitionView>* cell = self.layout.activeItem.cell;
   auto squareCornersAnimation = ^{
-    cell.contentView.layer.cornerRadius = 0.0;
+    cell.cornerRadius = 0.0;
   };
   auto squareCornersKeyframeAnimation =
       [self keyframeAnimationWithRelativeStart:1.0 - briefDuration
@@ -296,15 +277,13 @@ const CGFloat kInactiveItemScale = 0.95;
   [self.animations addAnimator:squareCorners];
 
   // If there's only a single cell, that's all.
-  if (self.layout.items.count == 1)
+  if (self.layout.inactiveItems.count == 0)
     return;
 
   // Additional animations for multiple cells.
   // D: Scale down inactive cells.
   auto scaleDownCellsAnimation = ^{
-    for (GridTransitionLayoutItem* item in self.layout.items) {
-      if (item == self.layout.activeItem)
-        continue;
+    for (GridTransitionItem* item in self.layout.inactiveItems) {
       item.cell.transform = CGAffineTransformScale(
           item.cell.transform, kInactiveItemScale, kInactiveItemScale);
     }
@@ -317,9 +296,7 @@ const CGFloat kInactiveItemScale = 0.95;
 
   // E: Fade out inactive cells.
   auto fadeOutCellsAnimation = ^{
-    for (GridTransitionLayoutItem* item in self.layout.items) {
-      if (item == self.layout.activeItem)
-        continue;
+    for (GridTransitionItem* item in self.layout.inactiveItems) {
       item.cell.alpha = 0.0;
     }
   };
@@ -340,44 +317,36 @@ const CGFloat kInactiveItemScale = 0.95;
   // Add the selection item first, so it's under ther other views.
   [self addSubview:self.layout.selectionItem.cell];
 
-  // Only show the selection part.
-  self.layout.selectionItem.cell.contentView.hidden = YES;
-  self.layout.selectionItem.cell.selected = YES;
-
-  // Add the active item last so it's always the top subview.
-  for (GridTransitionLayoutItem* item in self.layout.items) {
-    if (item == self.layout.activeItem)
-      continue;
+  for (GridTransitionItem* item in self.layout.inactiveItems) {
     [self addSubview:item.cell];
   }
+
+  // Add the active item last so it's always the top subview.
   [self addSubview:self.layout.activeItem.cell];
 }
 
 // Positions the active item in the expanded grid position with a zero corner
 // radius and a 0% opacity auxilliary view.
 - (void)positionExpandedActiveItem {
-  GridTransitionLayoutItem* activeItem = self.layout.activeItem;
-  UICollectionViewCell* cell = activeItem.cell;
+  UIView<GridToTabTransitionView>* cell = self.layout.activeItem.cell;
   // Ensure that the cell's subviews are correctly positioned.
   [cell layoutIfNeeded];
   // Position the cell frame so so that the area below the aux view matches the
   // expanded rect.
   // Easiest way to do this is to set the frame to the expanded rect and then
   // add height to it to include the aux view height.
-  CGFloat auxHeight = activeItem.auxillaryView.frame.size.height;
+  CGFloat auxHeight = cell.topCellView.frame.size.height;
   CGRect cellFrame = self.layout.expandedRect;
   cellFrame.size.height += auxHeight;
   cellFrame.origin.y -= auxHeight;
   cell.frame = cellFrame;
-  activeItem.auxillaryView.alpha = 0.0;
+  cell.topCellView.alpha = 0.0;
 }
 
 // Positions all of the inactive items in their grid positions.
 // Fades and scales each of those items.
 - (void)prepareInactiveItemsForAppearance {
-  for (GridTransitionLayoutItem* item in self.layout.items) {
-    if (item == self.layout.activeItem)
-      continue;
+  for (GridTransitionItem* item in self.layout.inactiveItems) {
     [self positionItemInGrid:item];
     item.cell.alpha = 0.0;
     item.cell.transform = CGAffineTransformScale(
@@ -389,26 +358,27 @@ const CGFloat kInactiveItemScale = 0.95;
 // Positions the active item in the regular grid position with its final
 // corner radius.
 - (void)positionAndScaleActiveItemInGrid {
-  UICollectionViewCell* cell = self.layout.activeItem.cell;
+  UIView* cell = self.layout.activeItem.cell;
   cell.transform = CGAffineTransformIdentity;
-  cell.frame = self.layout.activeItem.attributes.frame;
+  CGRect frame = cell.frame;
+  frame.size = self.layout.activeItem.size;
+  cell.frame = frame;
   [self positionItemInGrid:self.layout.activeItem];
 }
 
 // Prepares all of the items for an expansion anumation.
 - (void)prepareAllItemsForExpansion {
-  for (GridTransitionLayoutItem* item in self.layout.items) {
+  for (GridTransitionItem* item in self.layout.inactiveItems) {
     [self positionItemInGrid:item];
   }
+  [self positionItemInGrid:self.layout.activeItem];
   [self positionItemInGrid:self.layout.selectionItem];
 }
 
 // Positions |item| in it grid position.
-- (void)positionItemInGrid:(GridTransitionLayoutItem*)item {
+- (void)positionItemInGrid:(GridTransitionItem*)item {
   UIView* cell = item.cell;
-  CGPoint attributeCenter = item.attributes.center;
-  CGPoint newCenter =
-      [self.superview convertPoint:attributeCenter fromView:nil];
+  CGPoint newCenter = [self.superview convertPoint:item.center fromView:nil];
   cell.center = newCenter;
 }
 

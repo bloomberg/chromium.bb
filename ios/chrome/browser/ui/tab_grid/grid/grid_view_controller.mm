@@ -188,10 +188,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (GridTransitionLayout*)transitionLayout {
   [self.collectionView layoutIfNeeded];
-  NSMutableArray<GridTransitionLayoutItem*>* items =
-      [[NSMutableArray alloc] init];
-  GridTransitionLayoutItem* activeItem;
-  GridTransitionLayoutItem* selectionItem;
+  NSMutableArray<GridTransitionItem*>* items = [[NSMutableArray alloc] init];
+  GridTransitionActiveItem* activeItem;
+  GridTransitionItem* selectionItem;
   for (NSIndexPath* path in self.collectionView.indexPathsForVisibleItems) {
     GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
         [self.collectionView cellForItemAtIndexPath:path]);
@@ -201,24 +200,26 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     // change to the other properties such as center, bounds, etc.
     attributes.frame =
         [self.collectionView convertRect:attributes.frame toView:nil];
-    GridCell* proxyCell = [cell proxyForTransitions];
-    GridTransitionLayoutItem* item =
-        [GridTransitionLayoutItem itemWithCell:proxyCell
-                                 auxillaryView:proxyCell.topBar
-                                    attributes:attributes];
-    [items addObject:item];
     if ([cell.itemIdentifier isEqualToString:self.selectedItemID]) {
-      activeItem = item;
-
-      selectionItem =
-          [GridTransitionLayoutItem itemWithCell:[cell proxyForTransitions]
-                                   auxillaryView:nil
-                                      attributes:attributes];
+      GridTransitionCell* activeCell =
+          [GridTransitionCell transitionCellFromCell:cell];
+      activeItem = [GridTransitionActiveItem itemWithCell:activeCell
+                                                   center:attributes.center
+                                                     size:attributes.size];
+      selectionItem = [GridTransitionItem
+          itemWithCell:[GridTransitionSelectionCell transitionCellFromCell:cell]
+                center:attributes.center];
+    } else {
+      UIView* cellSnapshot = [cell snapshotViewAfterScreenUpdates:YES];
+      GridTransitionItem* item =
+          [GridTransitionItem itemWithCell:cellSnapshot
+                                    center:attributes.center];
+      [items addObject:item];
     }
   }
-  return [GridTransitionLayout layoutWithItems:items
-                                    activeItem:activeItem
-                                 selectionItem:selectionItem];
+  return [GridTransitionLayout layoutWithInactiveItems:items
+                                            activeItem:activeItem
+                                         selectionItem:selectionItem];
 }
 
 #pragma mark - UICollectionViewDataSource
