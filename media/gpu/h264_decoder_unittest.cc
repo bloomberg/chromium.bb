@@ -40,23 +40,28 @@ const std::string kHighFrame1 = "bear-320x192-high-frame-1.h264";
 const std::string kHighFrame2 = "bear-320x192-high-frame-2.h264";
 const std::string kHighFrame3 = "bear-320x192-high-frame-3.h264";
 
+// Checks whether the decrypt config in the picture matches the decrypt config
+// passed to this matcher.
+MATCHER_P(DecryptConfigMatches, decrypt_config, "") {
+  const scoped_refptr<H264Picture>& pic = arg;
+  return pic->decrypt_config()->Matches(*decrypt_config);
+}
+
 class MockH264Accelerator : public H264Decoder::H264Accelerator {
  public:
   MockH264Accelerator() = default;
 
   MOCK_METHOD0(CreateH264Picture, scoped_refptr<H264Picture>());
   MOCK_METHOD1(SubmitDecode, Status(const scoped_refptr<H264Picture>& pic));
+  MOCK_METHOD7(SubmitFrameMetadata,
+               Status(const H264SPS* sps,
+                      const H264PPS* pps,
+                      const H264DPB& dpb,
+                      const H264Picture::Vector& ref_pic_listp0,
+                      const H264Picture::Vector& ref_pic_listb0,
+                      const H264Picture::Vector& ref_pic_listb1,
+                      const scoped_refptr<H264Picture>& pic));
   MOCK_METHOD1(OutputPicture, bool(const scoped_refptr<H264Picture>& pic));
-
-  Status SubmitFrameMetadata(const H264SPS* sps,
-                             const H264PPS* pps,
-                             const H264DPB& dpb,
-                             const H264Picture::Vector& ref_pic_listp0,
-                             const H264Picture::Vector& ref_pic_listb0,
-                             const H264Picture::Vector& ref_pic_listb1,
-                             const scoped_refptr<H264Picture>& pic) override {
-    return Status::kOk;
-  }
 
   Status SubmitSlice(const H264PPS* pps,
                      const H264SliceHeader* slice_hdr,
@@ -113,6 +118,8 @@ void H264DecoderTest::SetUp() {
   ON_CALL(*accelerator_, CreateH264Picture()).WillByDefault(Invoke([]() {
     return new H264Picture();
   }));
+  ON_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _))
+      .WillByDefault(Return(H264Decoder::H264Accelerator::Status::kOk));
   ON_CALL(*accelerator_, SubmitDecode(_))
       .WillByDefault(Return(H264Decoder::H264Accelerator::Status::kOk));
   ON_CALL(*accelerator_, OutputPicture(_)).WillByDefault(Return(true));
@@ -338,6 +345,37 @@ TEST_F(H264DecoderTest, SwitchHighToBaseline) {
   }
   ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
   ASSERT_TRUE(decoder_->Flush());
+}
+
+// Verify that the decryption config is passed to the accelerator.
+TEST_F(H264DecoderTest, SetEncryptedStream) {
+  std::string bitstream;
+  auto input_file = GetTestDataFilePath(kBaselineFrame0);
+  CHECK(base::ReadFileToString(input_file, &bitstream));
+
+  const char kAnyKeyId[] = "any_16byte_keyid";
+  const char kAnyIv[] = "any_16byte_iv___";
+  const std::vector<SubsampleEntry> subsamples = {
+      // No encrypted bytes. This test only checks whether the data is passed
+      // thru to the acclerator so making this completely clear.
+      {bitstream.size(), 0},
+  };
+
+  std::unique_ptr<DecryptConfig> decrypt_config =
+      DecryptConfig::CreateCencConfig(kAnyKeyId, kAnyIv, subsamples);
+  EXPECT_CALL(*accelerator_,
+              SubmitFrameMetadata(_, _, _, _, _, _,
+                                  DecryptConfigMatches(decrypt_config.get())))
+      .WillOnce(Return(H264Decoder::H264Accelerator::Status::kOk));
+  EXPECT_CALL(*accelerator_,
+              SubmitDecode(DecryptConfigMatches(decrypt_config.get())))
+      .WillOnce(Return(H264Decoder::H264Accelerator::Status::kOk));
+
+  decoder_->SetStream(0, reinterpret_cast<const uint8_t*>(bitstream.data()),
+                      bitstream.size(), decrypt_config.get());
+  EXPECT_EQ(AcceleratedVideoDecoder::kAllocateNewSurfaces, decoder_->Decode());
+  EXPECT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, decoder_->Decode());
+  EXPECT_TRUE(decoder_->Flush());
 }
 
 }  // namespace

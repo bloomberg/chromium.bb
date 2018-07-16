@@ -72,7 +72,7 @@ DecryptConfig::DecryptConfig(
 
 DecryptConfig::~DecryptConfig() = default;
 
-std::unique_ptr<DecryptConfig> DecryptConfig::Clone() {
+std::unique_ptr<DecryptConfig> DecryptConfig::Clone() const {
   return base::WrapUnique(new DecryptConfig(*this));
 }
 

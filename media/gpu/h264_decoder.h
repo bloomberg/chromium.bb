@@ -261,6 +261,9 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   // Parser in use.
   H264Parser parser_;
 
+  // Decrypting config for the most recent data passed to SetStream().
+  std::unique_ptr<DecryptConfig> current_decrypt_config_;
+
   // DPB in use.
   H264DPB dpb_;
 

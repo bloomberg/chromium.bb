@@ -1231,16 +1231,17 @@ void H264Decoder::SetStream(int32_t id,
                             const DecryptConfig* decrypt_config) {
   DCHECK(ptr);
   DCHECK(size);
-  if (decrypt_config) {
-    NOTIMPLEMENTED();
-    state_ = kError;
-    return;
-  }
 
   DVLOG(4) << "New input stream id: " << id << " at: " << (void*)ptr
            << " size: " << size;
   stream_id_ = id;
-  parser_.SetStream(ptr, size);
+  if (decrypt_config) {
+    parser_.SetEncryptedStream(ptr, size, decrypt_config->subsamples());
+    current_decrypt_config_ = decrypt_config->Clone();
+  } else {
+    parser_.SetStream(ptr, size);
+    current_decrypt_config_ = nullptr;
+  }
 }
 
 H264Decoder::DecodeResult H264Decoder::Decode() {
@@ -1299,6 +1300,8 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
           curr_pic_ = accelerator_->CreateH264Picture();
           if (!curr_pic_)
             return kRanOutOfSurfaces;
+          if (current_decrypt_config_)
+            curr_pic_->set_decrypt_config(current_decrypt_config_->Clone());
 
           if (!StartNewFrame(curr_slice_hdr_.get()))
             SET_ERROR_AND_RETURN();
