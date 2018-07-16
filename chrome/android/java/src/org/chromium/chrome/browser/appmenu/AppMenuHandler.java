@@ -233,4 +233,12 @@ public class AppMenuHandler {
             mObservers.get(i).onMenuVisibilityChanged(isVisible);
         }
     }
+
+    /**
+     * A notification that the footer view has been inflated.
+     * @param view The inflated view.
+     */
+    void onFooterInflated(View view) {
+        if (mDelegate != null) mDelegate.onFooterViewInflated(mAppMenu, view);
+    }
 }

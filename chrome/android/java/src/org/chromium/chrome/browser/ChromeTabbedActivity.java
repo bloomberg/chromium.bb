@@ -53,6 +53,8 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
+import org.chromium.chrome.browser.appmenu.AppMenu;
+import org.chromium.chrome.browser.appmenu.AppMenuIconRowFooter;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.browseractions.BrowserActionsService;
@@ -1512,7 +1514,18 @@ public class ChromeTabbedActivity
 
             @Override
             public int getFooterResourceId() {
+                if (FeatureUtilities.isBottomToolbarEnabled()) {
+                    return this.shouldShowPageMenu() ? R.layout.icon_row_menu_footer : 0;
+                }
                 return showDataSaverFooter() ? R.layout.data_reduction_main_menu_item : 0;
+            }
+
+            @Override
+            public void onFooterViewInflated(AppMenu menu, View view) {
+                if (view instanceof AppMenuIconRowFooter) {
+                    ((AppMenuIconRowFooter) view)
+                            .initialize(ChromeTabbedActivity.this, menu, mBookmarkBridge);
+                }
             }
 
             @Override
@@ -1522,6 +1535,7 @@ public class ChromeTabbedActivity
 
             @Override
             public boolean shouldShowFooter(int maxMenuHeight) {
+                if (FeatureUtilities.isBottomToolbarEnabled()) return true;
                 if (showDataSaverFooter()) {
                     return canShowDataReductionItem(maxMenuHeight);
                 }

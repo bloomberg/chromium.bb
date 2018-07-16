@@ -529,6 +529,8 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             ViewHighlighter.turnOnHighlight(viewToHighlight, viewToHighlight != mFooterView);
         }
 
+        if (mHandler != null) mHandler.onFooterInflated(mFooterView);
+
         return mFooterView.getMeasuredHeight();
     }
 

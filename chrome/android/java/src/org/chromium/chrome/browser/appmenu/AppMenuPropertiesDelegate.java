@@ -120,6 +120,10 @@ public class AppMenuPropertiesDelegate {
                             < DeviceFormFactor.getMinimumTabletWidthPx(
                                       mActivity.getWindowAndroid().getDisplay());
 
+            boolean bottomToolbarEnabled = mActivity.getToolbarManager() != null
+                    && mActivity.getToolbarManager().getBottomToolbarCoordinator() != null;
+            shouldShowIconRow &= !bottomToolbarEnabled;
+
             // Update the icon row items (shown in narrow form factors).
             menu.findItem(R.id.icon_row_menu_id).setVisible(shouldShowIconRow);
             if (shouldShowIconRow) {
@@ -412,4 +416,11 @@ public class AppMenuPropertiesDelegate {
                         ? mActivity.getString(R.string.menu_request_desktop_site_on)
                         : mActivity.getString(R.string.menu_request_desktop_site_off));
     }
+
+    /**
+     * A notification that the footer view has finished inflating.
+     * @param view The view that was inflated.
+     * @param appMenu The menu the view is inside of.
+     */
+    public void onFooterViewInflated(AppMenu appMenu, View view) {}
 }
