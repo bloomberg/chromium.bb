@@ -137,8 +137,10 @@ class HudSoftwareBacking : public ResourcePool::SoftwareBacking {
 bool HeadsUpDisplayLayerImpl::WillDraw(
     DrawMode draw_mode,
     viz::ClientResourceProvider* resource_provider) {
-  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
+  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE &&
+      !LayerImpl::WillDraw(draw_mode, resource_provider)) {
     return false;
+  }
 
   int max_texture_size = layer_tree_impl()->max_texture_size();
   internal_contents_scale_ = GetIdealContentsScale();
@@ -147,7 +149,7 @@ bool HeadsUpDisplayLayerImpl::WillDraw(
   internal_content_bounds_.SetToMin(
       gfx::Size(max_texture_size, max_texture_size));
 
-  return LayerImpl::WillDraw(draw_mode, resource_provider);
+  return true;
 }
 
 void HeadsUpDisplayLayerImpl::AppendQuads(viz::RenderPass* render_pass,

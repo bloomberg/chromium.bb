@@ -17,7 +17,18 @@ scoped_refptr<SurfaceLayer> SurfaceLayer::Create() {
   return base::WrapRefCounted(new SurfaceLayer());
 }
 
+scoped_refptr<SurfaceLayer> SurfaceLayer::Create(
+    UpdateSubmissionStateCB update_submission_state_callback) {
+  return base::WrapRefCounted(
+      new SurfaceLayer(std::move(update_submission_state_callback)));
+}
+
 SurfaceLayer::SurfaceLayer() = default;
+
+SurfaceLayer::SurfaceLayer(
+    UpdateSubmissionStateCB update_submission_state_callback)
+    : update_submission_state_callback_(
+          std::move(update_submission_state_callback)) {}
 
 SurfaceLayer::~SurfaceLayer() {
   DCHECK(!layer_tree_host());
@@ -97,9 +108,16 @@ void SurfaceLayer::SetSurfaceHitTestable(bool surface_hit_testable) {
   SetNeedsPushProperties();
 }
 
+void SurfaceLayer::SetMayContainVideo(bool may_contain_video) {
+  may_contain_video_ = may_contain_video;
+}
+
 std::unique_ptr<LayerImpl> SurfaceLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return SurfaceLayerImpl::Create(tree_impl, id());
+  auto layer_impl = SurfaceLayerImpl::Create(tree_impl, id(),
+                                             update_submission_state_callback_);
+  layer_impl->set_may_contain_video(may_contain_video_);
+  return layer_impl;
 }
 
 bool SurfaceLayer::HasDrawableContent() const {

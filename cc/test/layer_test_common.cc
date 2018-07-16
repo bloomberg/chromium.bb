@@ -191,9 +191,10 @@ void LayerTestCommon::LayerImplTest::AppendQuadsWithOcclusion(
                       SimpleEnclosedRegion(occluded), SimpleEnclosedRegion());
   layer_impl->draw_properties().occlusion_in_content_space = occlusion;
 
-  layer_impl->WillDraw(DRAW_MODE_HARDWARE, resource_provider());
-  layer_impl->AppendQuads(render_pass_.get(), &data);
-  layer_impl->DidDraw(resource_provider());
+  if (layer_impl->WillDraw(DRAW_MODE_HARDWARE, resource_provider())) {
+    layer_impl->AppendQuads(render_pass_.get(), &data);
+    layer_impl->DidDraw(resource_provider());
+  }
 }
 
 void LayerTestCommon::LayerImplTest::AppendQuadsForPassWithOcclusion(

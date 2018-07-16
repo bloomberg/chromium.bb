@@ -50,6 +50,7 @@ TEST(VideoLayerImplTest, Occlusion) {
       impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
+  video_layer_impl->set_visible_layer_rect(gfx::Rect(layer_size));
 
   impl.CalcDrawProps(viewport_size);
 
@@ -313,6 +314,7 @@ TEST(VideoLayerImplTest, SoftwareVideoFrameGeneratesYUVQuad) {
       impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
+  video_layer_impl->set_visible_layer_rect(gfx::Rect(layer_size));
   impl.host_impl()->active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::Rect occluded;
@@ -350,6 +352,7 @@ TEST(VideoLayerImplTest, HibitSoftwareVideoFrameGeneratesYUVQuad) {
       impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
+  video_layer_impl->set_visible_layer_rect(gfx::Rect(layer_size));
   impl.host_impl()->active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::Rect occluded;
@@ -393,6 +396,7 @@ TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
       impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
+  video_layer_impl->set_visible_layer_rect(gfx::Rect(layer_size));
   impl.host_impl()->active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::Rect occluded;
@@ -436,6 +440,7 @@ TEST(VideoLayerImplTest, NativeARGBFrameGeneratesTextureQuad) {
       impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
   video_layer_impl->SetBounds(layer_size);
   video_layer_impl->SetDrawsContent(true);
+  video_layer_impl->set_visible_layer_rect(gfx::Rect(layer_size));
   impl.host_impl()->active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   gfx::Rect occluded;

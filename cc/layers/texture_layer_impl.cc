@@ -88,6 +88,9 @@ bool TextureLayerImpl::WillDraw(
     return false;
   }
 
+  if (!LayerImpl::WillDraw(draw_mode, resource_provider))
+    return false;
+
   if (own_resource_) {
     DCHECK(!resource_id_);
     if (!transferable_resource_.mailbox_holder.mailbox.IsZero()) {
@@ -98,7 +101,7 @@ bool TextureLayerImpl::WillDraw(
     own_resource_ = false;
   }
 
-  return resource_id_ && LayerImpl::WillDraw(draw_mode, resource_provider);
+  return resource_id_;
 }
 
 void TextureLayerImpl::AppendQuads(viz::RenderPass* render_pass,

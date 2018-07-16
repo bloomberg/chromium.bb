@@ -44,6 +44,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
     LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(),
                                                  gfx::Rect(layer_size));
     EXPECT_EQ(1u, impl.quad_list().size());
+    EXPECT_TRUE(surface_layer_impl->WillDraw(DRAW_MODE_HARDWARE, nullptr));
   }
 
   {
@@ -53,6 +54,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
 
     LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
     EXPECT_EQ(impl.quad_list().size(), 0u);
+    EXPECT_FALSE(surface_layer_impl->WillDraw(DRAW_MODE_HARDWARE, nullptr));
   }
 
   {
@@ -66,6 +68,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
     // The layer outputs one quad, which is partially occluded.
     EXPECT_EQ(1u, impl.quad_list().size());
     EXPECT_EQ(1u, partially_occluded_count);
+    EXPECT_TRUE(surface_layer_impl->WillDraw(DRAW_MODE_HARDWARE, nullptr));
   }
 }
 
