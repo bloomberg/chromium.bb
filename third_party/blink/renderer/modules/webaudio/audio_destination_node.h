@@ -64,9 +64,20 @@ class AudioDestinationHandler : public AudioHandler {
   virtual double SampleRate() const = 0;
   virtual unsigned long MaxChannelCount() const = 0;
 
+  void ContextDestroyed() { is_execution_context_destroyed_ = true; }
+  bool IsExecutionContextDestroyed() const {
+    return is_execution_context_destroyed_;
+  }
+
  protected:
   // The number of sample frames processed by the destination so far.
   size_t current_sample_frame_;
+
+ private:
+  // True if the execution context is being destroyed.  If this is true, the
+  // destination ndoe must avoid checking for or accessing the execution
+  // context.
+  bool is_execution_context_destroyed_ = false;
 };
 
 // -----------------------------------------------------------------------------

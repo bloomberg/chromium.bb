@@ -160,6 +160,7 @@ void BaseAudioContext::Uninitialize() {
 }
 
 void BaseAudioContext::ContextDestroyed(ExecutionContext*) {
+  destination()->GetAudioDestinationHandler().ContextDestroyed();
   Uninitialize();
 }
 
