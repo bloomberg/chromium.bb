@@ -464,7 +464,24 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
     bool has_video;
     bool has_audio;
   };
-  using MediaPlayerId = std::pair<RenderFrameHost*, int>;
+
+  struct CONTENT_EXPORT MediaPlayerId {
+   public:
+    static MediaPlayerId createMediaPlayerIdForTests();
+
+    MediaPlayerId(RenderFrameHost* render_frame_host, int delegate_id);
+
+    bool operator==(const MediaPlayerId& other) const;
+    bool operator!=(const MediaPlayerId& other) const;
+    bool operator<(const MediaPlayerId& other) const;
+
+    RenderFrameHost* render_frame_host = nullptr;
+    int delegate_id = 0;
+
+   private:
+    MediaPlayerId() = default;
+  };
+
   virtual void MediaStartedPlaying(const MediaPlayerInfo& video_type,
                                    const MediaPlayerId& id) {}
   enum class MediaStoppedReason {

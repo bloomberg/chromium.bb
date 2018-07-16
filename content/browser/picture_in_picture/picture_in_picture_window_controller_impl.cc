@@ -77,9 +77,10 @@ void PictureInPictureWindowControllerImpl::ClickCustomControl() {
   DCHECK(window_);
   DCHECK(media_player_id_.has_value());
 
-  media_player_id_->first->Send(
+  media_player_id_->render_frame_host->Send(
       new MediaPlayerDelegateMsg_ClickPictureInPictureControl(
-          media_player_id_->first->GetRoutingID(), media_player_id_->second));
+          media_player_id_->render_frame_host->GetRoutingID(),
+          media_player_id_->delegate_id));
 }
 
 void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
@@ -165,15 +166,15 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
   DCHECK(window_ && window_->IsActive());
 
   if (IsPlayerActive()) {
-    media_player_id_->first->Send(new MediaPlayerDelegateMsg_Pause(
-        media_player_id_->first->GetRoutingID(), media_player_id_->second));
+    media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
+        media_player_id_->render_frame_host->GetRoutingID(),
+        media_player_id_->delegate_id));
     return false;
   }
 
-  if (media_player_id_.has_value()) {
-    media_player_id_->first->Send(new MediaPlayerDelegateMsg_Play(
-        media_player_id_->first->GetRoutingID(), media_player_id_->second));
-  }
+  media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Play(
+      media_player_id_->render_frame_host->GetRoutingID(),
+      media_player_id_->delegate_id));
   return true;
 }
 
@@ -181,14 +182,16 @@ void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
     bool should_pause_video) {
   if (IsPlayerActive() && should_pause_video) {
     // Pause the current video so there is only one video playing at a time.
-    media_player_id_->first->Send(new MediaPlayerDelegateMsg_Pause(
-        media_player_id_->first->GetRoutingID(), media_player_id_->second));
+    media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
+        media_player_id_->render_frame_host->GetRoutingID(),
+        media_player_id_->delegate_id));
   }
 
   if (media_player_id_.has_value()) {
-    media_player_id_->first->Send(
+    media_player_id_->render_frame_host->Send(
         new MediaPlayerDelegateMsg_EndPictureInPictureMode(
-            media_player_id_->first->GetRoutingID(), media_player_id_->second));
+            media_player_id_->render_frame_host->GetRoutingID(),
+            media_player_id_->delegate_id));
   }
 }
 

@@ -90,7 +90,9 @@ class MediaSessionControllersManagerTest
   }
 
  protected:
-  MediaSessionControllersManager::MediaPlayerId media_player_id_;
+  MediaSessionControllersManager::MediaPlayerId media_player_id_ =
+      MediaSessionControllersManager::MediaPlayerId::
+          createMediaPlayerIdForTests();
   std::unique_ptr<StrictMock<MockMediaSessionController>>
       mock_media_session_controller_;
   StrictMock<MockMediaSessionController>* mock_media_session_controller_ptr_ =

@@ -74,9 +74,9 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     if (!T::Read(msg, &result))
       return false;
 
-    EXPECT_EQ(id_.second, std::get<0>(result));
+    EXPECT_EQ(id_.delegate_id, std::get<0>(result));
     test_sink().ClearMessages();
-    return id_.second == std::get<0>(result);
+    return id_.delegate_id == std::get<0>(result);
   }
 
   template <typename T>
@@ -89,8 +89,8 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     if (!T::Read(msg, &result))
       return false;
 
-    EXPECT_EQ(id_.second, std::get<0>(result));
-    if (id_.second != std::get<0>(result))
+    EXPECT_EQ(id_.delegate_id, std::get<0>(result));
+    if (id_.delegate_id != std::get<0>(result))
       return false;
 
     EXPECT_EQ(expected_seek_time, std::get<1>(result));
@@ -108,8 +108,8 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     if (!T::Read(msg, &result))
       return false;
 
-    EXPECT_EQ(id_.second, std::get<0>(result));
-    if (id_.second != std::get<0>(result))
+    EXPECT_EQ(id_.delegate_id, std::get<0>(result));
+    if (id_.delegate_id != std::get<0>(result))
       return false;
 
     EXPECT_EQ(expected_multiplier, std::get<1>(result));
@@ -117,7 +117,8 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     return expected_multiplier == std::get<1>(result);
   }
 
-  WebContentsObserver::MediaPlayerId id_;
+  WebContentsObserver::MediaPlayerId id_ =
+      WebContentsObserver::MediaPlayerId::createMediaPlayerIdForTests();
   std::unique_ptr<MediaSessionController> controller_;
 };
 

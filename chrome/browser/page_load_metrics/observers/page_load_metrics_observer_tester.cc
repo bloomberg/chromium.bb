@@ -144,8 +144,9 @@ void PageLoadMetricsObserverTester::SimulateMediaPlayed() {
   content::WebContentsObserver::MediaPlayerInfo video_type(
       true /* has_video*/, true /* has_audio */);
   content::RenderFrameHost* render_frame_host = web_contents()->GetMainFrame();
-  observer_->MediaStartedPlaying(video_type,
-                                 std::make_pair(render_frame_host, 0));
+  observer_->MediaStartedPlaying(
+      video_type,
+      content::WebContentsObserver::MediaPlayerId(render_frame_host, 0));
 }
 
 MetricsWebContentsObserver* PageLoadMetricsObserverTester::observer() const {

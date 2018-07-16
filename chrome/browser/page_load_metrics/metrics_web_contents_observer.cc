@@ -153,15 +153,14 @@ void MetricsWebContentsObserver::RenderViewHostChanged(
 void MetricsWebContentsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
     const content::WebContentsObserver::MediaPlayerId& id) {
-  content::RenderFrameHost* render_frame_host = id.first;
-  if (GetMainFrame(render_frame_host) != web_contents()->GetMainFrame()) {
+  if (GetMainFrame(id.render_frame_host) != web_contents()->GetMainFrame()) {
     // Ignore media that starts playing in a document that was navigated away
     // from.
     return;
   }
   if (committed_load_)
     committed_load_->MediaStartedPlaying(
-        video_type, render_frame_host == web_contents()->GetMainFrame());
+        video_type, id.render_frame_host == web_contents()->GetMainFrame());
 }
 
 void MetricsWebContentsObserver::WillStartNavigationRequest(
