@@ -109,7 +109,7 @@ class BackgroundSyncManagerTest : public testing::Test {
     ON_CALL(*mock_permission_manager,
             GetPermissionStatus(PermissionType::BACKGROUND_SYNC, _, _))
         .WillByDefault(Return(blink::mojom::PermissionStatus::GRANTED));
-    helper_->browser_context()->SetPermissionManager(
+    helper_->browser_context()->SetPermissionControllerDelegate(
         std::move(mock_permission_manager));
 
     // Create a StoragePartition with the correct BrowserContext so that the
@@ -264,9 +264,9 @@ class BackgroundSyncManagerTest : public testing::Test {
     return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
   }
 
-  MockPermissionManager* GetPermissionManager() {
+  MockPermissionManager* GetPermissionControllerDelegate() {
     return static_cast<MockPermissionManager*>(
-        helper_->browser_context()->GetPermissionManager());
+        helper_->browser_context()->GetPermissionControllerDelegate());
   }
 
   bool GetRegistration(
@@ -484,7 +484,8 @@ TEST_F(BackgroundSyncManagerTest, RegisterBadBackend) {
 
 TEST_F(BackgroundSyncManagerTest, RegisterPermissionDenied) {
   GURL expected_origin = GURL(kPattern1).GetOrigin();
-  MockPermissionManager* mock_permission_manager = GetPermissionManager();
+  MockPermissionManager* mock_permission_manager =
+      GetPermissionControllerDelegate();
 
   EXPECT_CALL(*mock_permission_manager,
               GetPermissionStatus(PermissionType::BACKGROUND_SYNC,
@@ -495,7 +496,8 @@ TEST_F(BackgroundSyncManagerTest, RegisterPermissionDenied) {
 
 TEST_F(BackgroundSyncManagerTest, RegisterPermissionGranted) {
   GURL expected_origin = GURL(kPattern1).GetOrigin();
-  MockPermissionManager* mock_permission_manager = GetPermissionManager();
+  MockPermissionManager* mock_permission_manager =
+      GetPermissionControllerDelegate();
 
   EXPECT_CALL(*mock_permission_manager,
               GetPermissionStatus(PermissionType::BACKGROUND_SYNC,

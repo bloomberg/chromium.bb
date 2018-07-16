@@ -139,9 +139,9 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     return;
   }
 
-  // This does not use content::PermissionManager because that only works with
-  // content settings, while this permission is a non-persisted, per-attested-
-  // registration consent.
+  // This does not use content::PermissionControllerDelegate because that only
+  // works with content settings, while this permission is a non-persisted,
+  // per-attested- registration consent.
   auto* permission_request_manager = PermissionRequestManager::FromWebContents(
       content::WebContents::FromRenderFrameHost(render_frame_host()));
   if (!permission_request_manager) {

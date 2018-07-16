@@ -16,7 +16,7 @@ namespace content {
 class RenderFrameHost;
 
 // This class allows the content layer to manipulate permissions. It's behavior
-// is defined by the embedder via PermissionManager implementation.
+// is defined by the embedder via PermissionControllerDelegate implementation.
 class CONTENT_EXPORT PermissionController
     : public base::SupportsUserData::Data {
  public:

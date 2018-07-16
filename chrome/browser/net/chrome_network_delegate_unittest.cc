@@ -551,7 +551,8 @@ class TestingPermissionProfile : public TestingProfile {
     return &mock_permission_manager_;
   }
 
-  content::PermissionManager* GetPermissionManager() override {
+  content::PermissionControllerDelegate* GetPermissionControllerDelegate()
+      override {
     return &mock_permission_manager_;
   }
 

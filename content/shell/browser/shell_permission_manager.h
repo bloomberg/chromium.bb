@@ -7,11 +7,11 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "content/public/browser/permission_manager.h"
+#include "content/public/browser/permission_controller_delegate.h"
 
 namespace content {
 
-class ShellPermissionManager : public PermissionManager {
+class ShellPermissionManager : public PermissionControllerDelegate {
  public:
   ShellPermissionManager();
   ~ShellPermissionManager() override;

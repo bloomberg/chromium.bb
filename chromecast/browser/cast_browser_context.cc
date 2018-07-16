@@ -132,7 +132,8 @@ content::SSLHostStateDelegate* CastBrowserContext::GetSSLHostStateDelegate() {
   return nullptr;
 }
 
-content::PermissionManager* CastBrowserContext::GetPermissionManager() {
+content::PermissionControllerDelegate*
+CastBrowserContext::GetPermissionControllerDelegate() {
   if (!permission_manager_.get())
     permission_manager_.reset(new CastPermissionManager());
   return permission_manager_.get();
