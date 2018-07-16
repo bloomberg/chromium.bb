@@ -224,8 +224,15 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, OffscreenTabEndToEnd) {
   ASSERT_FALSE(profile()->HasOffTheRecordProfile());
 }
 
+#if defined(OS_MACOSX)
+// Timeout on Mac. crbug.com/864250
+#define MAYBE_OffscreenTabEvilTests DISABLED_OffscreenTabEvilTests
+#else
+#define MAYBE_OffscreenTabEvilTests OffscreenTabEvilTests
+#endif
+
 // Tests that off-screen tabs can't do evil things (e.g., access local files).
-IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, OffscreenTabEvilTests) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, MAYBE_OffscreenTabEvilTests) {
   if (IsTooIntensiveForThisPlatform()) {
     LOG(WARNING) << "Skipping this CPU-intensive test on this platform/build.";
     return;
