@@ -67,11 +67,14 @@ void GpuClientImpl::OnError(ErrorReason reason) {
 }
 
 void GpuClientImpl::PreEstablishGpuChannel() {
-  DCHECK(!task_runner_->RunsTasksInCurrentSequence());
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&GpuClientImpl::EstablishGpuChannel,
-                     base::Unretained(this), EstablishGpuChannelCallback()));
+  if (task_runner_->RunsTasksInCurrentSequence()) {
+    EstablishGpuChannel(EstablishGpuChannelCallback());
+  } else {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&GpuClientImpl::EstablishGpuChannel,
+                       base::Unretained(this), EstablishGpuChannelCallback()));
+  }
 }
 
 void GpuClientImpl::SetConnectionErrorHandler(
