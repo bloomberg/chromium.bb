@@ -1784,6 +1784,7 @@ TEST_F(NetworkContextTest, ClearNetworkErrorLogging) {
 
   GURL domain("https://google.com");
   logging_service->OnHeader(url::Origin::Create(domain),
+                            net::IPAddress(192, 168, 0, 1),
                             "{\"report_to\":\"group\",\"max_age\":86400}");
 
   ASSERT_EQ(1u, logging_service->GetPolicyOriginsForTesting().size());
@@ -1808,9 +1809,11 @@ TEST_F(NetworkContextTest, ClearNetworkErrorLoggingWithFilter) {
 
   GURL domain1("https://google.com");
   logging_service->OnHeader(url::Origin::Create(domain1),
+                            net::IPAddress(192, 168, 0, 1),
                             "{\"report_to\":\"group\",\"max_age\":86400}");
   GURL domain2("https://chromium.org");
   logging_service->OnHeader(url::Origin::Create(domain2),
+                            net::IPAddress(192, 168, 0, 1),
                             "{\"report_to\":\"group\",\"max_age\":86400}");
 
   ASSERT_EQ(2u, logging_service->GetPolicyOriginsForTesting().size());

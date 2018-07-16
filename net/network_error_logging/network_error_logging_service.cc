@@ -61,6 +61,8 @@ std::string GetSuperdomain(const std::string& domain) {
 const char kApplicationPhase[] = "application";
 const char kConnectionPhase[] = "connection";
 const char kDnsPhase[] = "dns";
+
+const char kDnsAddressChangedType[] = "dns.address_changed";
 const char kHttpErrorType[] = "http.error";
 
 const struct {
@@ -147,6 +149,8 @@ enum class HeaderOutcome {
   REMOVED = 12,
   SET = 13,
 
+  DISCARDED_MISSING_REMOTE_ENDPOINT = 14,
+
   MAX
 };
 
@@ -188,7 +192,9 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
   // NetworkErrorLoggingService implementation:
 
-  void OnHeader(const url::Origin& origin, const std::string& value) override {
+  void OnHeader(const url::Origin& origin,
+                const IPAddress& received_ip_address,
+                const std::string& value) override {
     // NEL is only available to secure origins, so don't permit insecure origins
     // to set policies.
     if (!origin.GetURL().SchemeIsCryptographic()) {
@@ -197,6 +203,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     }
 
     OriginPolicy policy;
+    policy.received_ip_address = received_ip_address;
     HeaderOutcome outcome =
         ParseHeader(value, tick_clock_->NowTicks(), &policy);
     RecordHeaderOutcome(outcome);
@@ -217,7 +224,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     MaybeAddWildcardPolicy(origin, &inserted.first->second);
   }
 
-  void OnRequest(const RequestDetails& details) override {
+  void OnRequest(RequestDetails details) override {
     if (!reporting_service_) {
       RecordRequestOutcome(RequestOutcome::DISCARDED_NO_REPORTING_SERVICE);
       return;
@@ -268,6 +275,18 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     if (details.reporting_upload_depth > kMaxNestedReportDepth) {
       RecordRequestOutcome(RequestOutcome::DISCARDED_REPORTING_UPLOAD);
       return;
+    }
+
+    // If the server that handled the request is different than the server that
+    // delivered the NEL policy (as determined by their IP address), then we
+    // have to "downgrade" the NEL report, so that it only includes information
+    // about DNS resolution.
+    if (phase_string != kDnsPhase && details.server_ip.IsValid() &&
+        details.server_ip != policy->received_ip_address) {
+      phase_string = kDnsPhase;
+      type_string = kDnsAddressChangedType;
+      details.elapsed_time = base::TimeDelta();
+      details.status_code = 0;
     }
 
     // include_subdomains policies are only allowed to report on DNS resolution
@@ -351,6 +370,8 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
  private:
   // NEL Policy set by an origin.
   struct OriginPolicy {
+    IPAddress received_ip_address;
+
     // Reporting API endpoint group to which reports should be sent.
     std::string report_to;
 
@@ -590,6 +611,12 @@ void NetworkErrorLoggingService::RecordHeaderDiscardedForInvalidSSLInfo() {
 // static
 void NetworkErrorLoggingService::RecordHeaderDiscardedForCertStatusError() {
   RecordHeaderOutcome(HeaderOutcome::DISCARDED_CERT_STATUS_ERROR);
+}
+
+// static
+void NetworkErrorLoggingService::
+    RecordHeaderDiscardedForMissingRemoteEndpoint() {
+  RecordHeaderOutcome(HeaderOutcome::DISCARDED_MISSING_REMOTE_ENDPOINT);
 }
 
 // static

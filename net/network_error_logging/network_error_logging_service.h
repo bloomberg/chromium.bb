@@ -90,6 +90,7 @@ class NET_EXPORT NetworkErrorLoggingService {
   static void RecordHeaderDiscardedForNoNetworkErrorLoggingService();
   static void RecordHeaderDiscardedForInvalidSSLInfo();
   static void RecordHeaderDiscardedForCertStatusError();
+  static void RecordHeaderDiscardedForMissingRemoteEndpoint();
 
   static void RecordRequestDiscardedForNoNetworkErrorLoggingService();
 
@@ -98,16 +99,24 @@ class NET_EXPORT NetworkErrorLoggingService {
 
   virtual ~NetworkErrorLoggingService();
 
-  // Ingests a "NEL:" header received from |orogin| with normalized value
-  // |value|. May or may not actually set a policy for that origin.
+  // Ingests a "NEL:" header received for |origin| from |received_ip_address|
+  // with normalized value |value|. May or may not actually set a policy for
+  // that origin.
   virtual void OnHeader(const url::Origin& origin,
+                        const IPAddress& received_ip_address,
                         const std::string& value) = 0;
 
   // Considers queueing a network error report for the request described in
-  // |details|. Note that Network Error Logging can report a fraction of
-  // successful requests as well (to calculate error rates), so this should be
-  // called on *all* requests.
-  virtual void OnRequest(const RequestDetails& details) = 0;
+  // |details|.  The contents of |details| might be changed, depending on the
+  // NEL policy associated with the request's origin.  Note that |details| is
+  // passed by value, so that it doesn't need to be copied in this function if
+  // it needs to be changed.  Consider using std::move to pass this parameter if
+  // the caller doesn't need to access it after this method call.
+  //
+  // Note that Network Error Logging can report a fraction of successful
+  // requests as well (to calculate error rates), so this should be called on
+  // *all* requests.
+  virtual void OnRequest(RequestDetails details) = 0;
 
   // Removes browsing data (origin policies) associated with any origin for
   // which |origin_filter| returns true.
