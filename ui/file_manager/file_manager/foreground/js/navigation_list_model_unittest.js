@@ -198,22 +198,34 @@ function testOrderAndNestItems() {
   volumeManager.volumeInfoList.push(
       MockVolumeManagerWrapper.createMockVolumeInfo(
           VolumeManagerCommon.VolumeType.ANDROID_FILES, 'android_files:droid'));
+  volumeManager.volumeInfoList.push(
+      MockVolumeManagerWrapper.createMockVolumeInfo(
+          VolumeManagerCommon.VolumeType.MEDIA_VIEW, 'media_view:images_root'));
+  volumeManager.volumeInfoList.push(
+      MockVolumeManagerWrapper.createMockVolumeInfo(
+          VolumeManagerCommon.VolumeType.MEDIA_VIEW, 'media_view:videos_root'));
+  volumeManager.volumeInfoList.push(
+      MockVolumeManagerWrapper.createMockVolumeInfo(
+          VolumeManagerCommon.VolumeType.MEDIA_VIEW, 'media_view:audio_root'));
 
   // Navigation items built above:
   //  1.  fake-entry://recent
-  //  2.  /root/shortcut
-  //  3.  /root/shortcut2
-  //  4.  My-Files
+  //  2.  media_view:images_root
+  //  3.  media_view:videos_root
+  //  4.  media_view:audio_root
+  //  5.  /root/shortcut
+  //  6.  /root/shortcut2
+  //  7.  My-Files
   //        -> Downloads
   //        -> Play Files
   //        -> Linux Files
-  //  5.  removable:hoge
-  //  6.  archive:a-zip
-  //  7.  removable:fuga
-  //  8.  mtp:a-phone
-  //  9.  Drive  - from setup()
-  // 10.  provided:prov1
-  // 11.  provided:prov2
+  //  8.  removable:hoge
+  //  9.  archive:a-rar  - mounted as archive
+  // 10.  removable:fuga
+  // 11.  mtp:a-phone
+  // 12.  Drive  - from setup()
+  // 13.  provided:prov1
+  // 14.  provided:prov2
 
   // Constructor already calls orderAndNestItems_.
   const model = new NavigationListModel(
@@ -221,54 +233,67 @@ function testOrderAndNestItems() {
 
   // Check items order and that MTP/Archive/Removable respect the original
   // order.
-  assertEquals(11, model.length);
+  assertEquals(14, model.length);
   assertEquals('recent-label', model.item(0).label);
-  assertEquals('shortcut', model.item(1).label);
-  assertEquals('shortcut2', model.item(2).label);
-  assertEquals('My Files', model.item(3).label);
-  assertEquals('removable:hoge', model.item(4).label);
-  assertEquals('archive:a-zip', model.item(5).label);
-  assertEquals('removable:fuga', model.item(6).label);
-  assertEquals('mtp:a-phone', model.item(7).label);
-  assertEquals('My Drive', model.item(8).label);
-  assertEquals('provided:prov1', model.item(9).label);
-  assertEquals('provided:prov2', model.item(10).label);
+
+  assertEquals('media_view:images_root', model.item(1).label);
+  assertEquals('media_view:videos_root', model.item(2).label);
+  assertEquals('media_view:audio_root', model.item(3).label);
+
+  assertEquals('shortcut', model.item(4).label);
+  assertEquals('shortcut2', model.item(5).label);
+  assertEquals('My Files', model.item(6).label);
+  assertEquals('removable:hoge', model.item(7).label);
+  assertEquals('archive:a-zip', model.item(8).label);
+  assertEquals('removable:fuga', model.item(9).label);
+  assertEquals('mtp:a-phone', model.item(10).label);
+
+  assertEquals('My Drive', model.item(11).label);
+  assertEquals('provided:prov1', model.item(12).label);
+  assertEquals('provided:prov2', model.item(13).label);
 
   // Check NavigationSection, which defaults to TOP.
   // recent-label.
   assertEquals(NavigationSection.TOP, model.item(0).section);
-  // shortcut.
+  // Media View.
+  // Images.
   assertEquals(NavigationSection.TOP, model.item(1).section);
-  // shortcut2.
+  // Videos.
   assertEquals(NavigationSection.TOP, model.item(2).section);
+  // Audio.
+  assertEquals(NavigationSection.TOP, model.item(3).section);
+  // shortcut.
+  assertEquals(NavigationSection.TOP, model.item(4).section);
+  // shortcut2.
+  assertEquals(NavigationSection.TOP, model.item(5).section);
 
   // My Files.
-  assertEquals(NavigationSection.MY_FILES, model.item(3).section);
+  assertEquals(NavigationSection.MY_FILES, model.item(6).section);
 
   // MTP/Archive/Removable are grouped together.
   // removable:hoge.
-  assertEquals(NavigationSection.REMOVABLE, model.item(4).section);
-  // archive:a-zip.
-  assertEquals(NavigationSection.REMOVABLE, model.item(5).section);
-  // removable:fuga.
-  assertEquals(NavigationSection.REMOVABLE, model.item(6).section);
-  // mtp:a-phone.
   assertEquals(NavigationSection.REMOVABLE, model.item(7).section);
+  // archive:a-zip.
+  assertEquals(NavigationSection.REMOVABLE, model.item(8).section);
+  // removable:fuga.
+  assertEquals(NavigationSection.REMOVABLE, model.item(9).section);
+  // mtp:a-phone.
+  assertEquals(NavigationSection.REMOVABLE, model.item(10).section);
 
   // Drive and FSP are grouped together.
   // My Drive.
-  assertEquals(NavigationSection.CLOUD, model.item(8).section);
+  assertEquals(NavigationSection.CLOUD, model.item(11).section);
   // provided:prov1.
-  assertEquals(NavigationSection.CLOUD, model.item(9).section);
+  assertEquals(NavigationSection.CLOUD, model.item(12).section);
   // provided:prov2.
-  assertEquals(NavigationSection.CLOUD, model.item(10).section);
+  assertEquals(NavigationSection.CLOUD, model.item(13).section);
 
-  const myFilesModel = model.item(3);
+  const myFilesModel = model.item(6);
   // Re-order again.
   model.orderAndNestItems_();
   // Check if My Files continues on the same position.
-  assertEquals(NavigationSection.MY_FILES, model.item(3).section);
+  assertEquals(NavigationSection.MY_FILES, model.item(6).section);
   // Check if My Files model is still the same instance, because DirectoryTree
   // expects it to be the same instance to be able to find it on the tree.
-  assertEquals(myFilesModel, model.item(3));
+  assertEquals(myFilesModel, model.item(6));
 }
