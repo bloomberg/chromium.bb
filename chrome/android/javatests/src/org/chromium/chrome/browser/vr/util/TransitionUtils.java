@@ -69,8 +69,7 @@ public class TransitionUtils {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                VrShellDelegateUtils.getDelegateInstance().shutdownVr(
-                        true /* disableVrMode */, true /* stayingInChrome */);
+                VrShellDelegate.forceExitVrImmediately();
             }
         });
     }
