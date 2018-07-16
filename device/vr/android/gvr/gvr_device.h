@@ -44,8 +44,8 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
   void OnMagicWindowFrameDataRequest(
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback) override;
 
-  void OnRequestSessionResult(mojom::XRRuntime::RequestSessionCallback callback,
-                              mojom::XRPresentationConnectionPtr connection);
+  void OnStartPresentResult(mojom::XRRuntime::RequestSessionCallback callback,
+                            mojom::XRSessionPtr session);
 
   // XRSessionController
   void SetFrameDataRestricted(bool restricted) override;

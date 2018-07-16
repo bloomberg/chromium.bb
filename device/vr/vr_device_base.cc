@@ -111,12 +111,12 @@ void VRDeviceBase::RequestHitTest(
 }
 
 void VRDeviceBase::RequestMagicWindowSession(
-    mojom::VRMagicWindowProviderRequest provider_request,
-    mojom::XRSessionControllerRequest controller_request,
     mojom::XRRuntime::RequestMagicWindowSessionCallback callback) {
+  mojom::VRMagicWindowProviderPtr provider;
+  mojom::XRSessionControllerPtr controller;
   magic_window_sessions_.push_back(std::make_unique<VRDisplayImpl>(
-      this, std::move(provider_request), std::move(controller_request)));
-  std::move(callback).Run(true);
+      this, mojo::MakeRequest(&provider), mojo::MakeRequest(&controller)));
+  std::move(callback).Run(std::move(provider), std::move(controller));
 }
 
 void VRDeviceBase::EndMagicWindowSession(VRDisplayImpl* session) {

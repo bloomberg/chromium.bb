@@ -21,11 +21,20 @@ class MockVRDisplay {
         device.mojom.VRDisplayFrameTransportMethod.SUBMIT_AS_MAILBOX_HOLDER;
     options.waitForTransferNotification = true;
     options.waitForRenderNotification = true;
+
+    let magicWindowPtr = new device.mojom.VRMagicWindowProviderPtr();
+    let magicWindowRequest = mojo.makeRequest(magicWindowPtr);
+    let magicWindowBinding = new mojo.Binding(
+        device.mojom.VRMagicWindowProvider, this, magicWindowRequest);
+
     return Promise.resolve({
-      connection: {
-        clientRequest: request,
-        provider: provider,
-        transportOptions: options
+      session: {
+        connection: {
+          clientRequest: request,
+          provider: provider,
+          transportOptions: options
+        },
+        magicWindowProvider: magicWindowPtr
       }
     });
   }
@@ -80,14 +89,9 @@ class MockVRDisplay {
     let displayBinding =
         new mojo.Binding(device.mojom.VRDisplayHost, this, displayRequest);
 
-    let magicWindowPtr = new device.mojom.VRMagicWindowProviderPtr();
-    let magicWindowRequest = mojo.makeRequest(magicWindowPtr);
-    let magicWindowBinding = new mojo.Binding(
-        device.mojom.VRMagicWindowProvider, this, magicWindowRequest);
-
     let clientRequest = mojo.makeRequest(this.displayClient_);
-    this.service_.client_.onDisplayConnected(magicWindowPtr, displayPtr,
-        clientRequest, this.displayInfo_);
+    this.service_.client_.onDisplayConnected(
+        displayPtr, clientRequest, this.displayInfo_);
   }
 }
 

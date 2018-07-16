@@ -28,7 +28,6 @@ class XRDevice final : public ScriptWrappable,
 
  public:
   XRDevice(XR*,
-           device::mojom::blink::VRMagicWindowProviderPtr,
            device::mojom::blink::VRDisplayHostPtr,
            device::mojom::blink::VRDisplayClientRequest,
            device::mojom::blink::VRDisplayInfoPtr);
@@ -84,10 +83,9 @@ class XRDevice final : public ScriptWrappable,
 
   const char* checkSessionSupport(const XRSessionCreationOptions&) const;
 
-  void OnRequestSessionReturned(
-      ScriptPromiseResolver* resolver,
-      const XRSessionCreationOptions& options,
-      device::mojom::blink::XRPresentationConnectionPtr connection);
+  void OnRequestSessionReturned(ScriptPromiseResolver* resolver,
+                                const XRSessionCreationOptions& options,
+                                device::mojom::blink::XRSessionPtr session);
   void OnSupportsSessionReturned(ScriptPromiseResolver* resolver,
                                  bool supports_session);
 

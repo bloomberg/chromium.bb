@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VR_SERVICE_VR_DISPLAY_HOST_H_
 #define CHROME_BROWSER_VR_SERVICE_VR_DISPLAY_HOST_H_
 
+#include <map>
 #include <memory>
 
 #include "base/macros.h"
@@ -12,6 +13,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace content {
 class RenderFrameHost;
@@ -36,9 +38,10 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   ~VRDisplayHost() override;
 
   // device::mojom::VRDisplayHost
-  void RequestSession(device::mojom::XRSessionOptionsPtr options,
-                      bool triggered_by_displayactive,
-                      RequestSessionCallback callback) override;
+  void RequestSession(
+      device::mojom::XRSessionOptionsPtr options,
+      bool triggered_by_displayactive,
+      device::mojom::VRDisplayHost::RequestSessionCallback callback) override;
   void SupportsSession(device::mojom::XRSessionOptionsPtr options,
                        SupportsSessionCallback callback) override;
   void ExitPresent() override;
@@ -62,7 +65,13 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   bool IsAnotherHostPresenting();
 
   bool InternalSupportsSession(device::mojom::XRSessionOptions* options);
-  void OnMagicWindowSessionCreated(bool success);
+  void OnMagicWindowSessionCreated(
+      device::mojom::VRDisplayHost::RequestSessionCallback callback,
+      device::mojom::VRMagicWindowProviderPtr session,
+      device::mojom::XRSessionControllerPtr controller);
+  void OnARSessionCreated(
+      device::mojom::VRDisplayHost::RequestSessionCallback callback,
+      device::mojom::XRSessionPtr session);
 
   // TODO(https://crbug.com/837538): Instead, check before returning this
   // object.
@@ -76,7 +85,9 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   mojo::Binding<device::mojom::VRDisplayHost> binding_;
   device::mojom::VRDisplayClientPtr client_;
 
-  device::mojom::XRSessionControllerPtr magic_window_controller_;
+  mojo::InterfacePtrSet<device::mojom::XRSessionController>
+      magic_window_controllers_;
+  int next_key_ = 0;
 
   base::WeakPtrFactory<VRDisplayHost> weak_ptr_factory_;
 

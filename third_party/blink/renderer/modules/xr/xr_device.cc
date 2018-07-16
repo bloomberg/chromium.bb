@@ -40,12 +40,10 @@ const char kRequestFailed[] = "Request for XRSession failed.";
 
 XRDevice::XRDevice(
     XR* xr,
-    device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider,
     device::mojom::blink::VRDisplayHostPtr display,
     device::mojom::blink::VRDisplayClientRequest client_request,
     device::mojom::blink::VRDisplayInfoPtr display_info)
     : xr_(xr),
-      magic_window_provider_(std::move(magic_window_provider)),
       display_(std::move(display)),
       display_client_binding_(this, std::move(client_request)) {
   SetXRDisplayInfo(std::move(display_info));
@@ -208,13 +206,16 @@ ScriptPromise XRDevice::requestSession(
 void XRDevice::OnRequestSessionReturned(
     ScriptPromiseResolver* resolver,
     const XRSessionCreationOptions& options,
-    device::mojom::blink::XRPresentationConnectionPtr connection) {
-  if (!connection) {
+    device::mojom::blink::XRSessionPtr session_ptr) {
+  if (!session_ptr) {
     DOMException* exception = DOMException::Create(
         DOMExceptionCode::kNotAllowedError, kRequestFailed);
     resolver->Reject(exception);
     return;
   }
+
+  if (session_ptr->magic_window_provider)
+    magic_window_provider_.Bind(std::move(session_ptr->magic_window_provider));
 
   XRPresentationContext* output_context = nullptr;
   if (options.hasOutputContext()) {
@@ -232,7 +233,8 @@ void XRDevice::OnRequestSessionReturned(
   sessions_.insert(session);
 
   if (options.immersive()) {
-    frameProvider()->BeginImmersiveSession(session, std::move(connection));
+    frameProvider()->BeginImmersiveSession(session,
+                                           std::move(session_ptr->connection));
   }
 
   resolver->Resolve(session);

@@ -176,7 +176,7 @@ void VrShellDelegate::RecordVrStartAction(
 void VrShellDelegate::OnPresentResult(
     device::mojom::VRDisplayInfoPtr display_info,
     device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
-    device::mojom::VRDisplayHost::RequestSessionCallback callback,
+    base::OnceCallback<void(device::mojom::XRSessionPtr)> callback,
     bool success) {
   DVLOG(1) << __FUNCTION__ << ": success=" << success;
   if (!success) {
@@ -227,8 +227,11 @@ void VrShellDelegate::SendRequestPresentReply(
     connection->provider = provider.PassInterface();
     connection->transport_options = std::move(transport_options);
 
+    device::mojom::XRSessionPtr xr_session = device::mojom::XRSession::New();
+    xr_session->connection = std::move(connection);
+
     base::ResetAndReturn(&request_present_response_callback_)
-        .Run(std::move(connection));
+        .Run(std::move(xr_session));
   } else {
     base::ResetAndReturn(&request_present_response_callback_).Run(nullptr);
   }
@@ -299,7 +302,7 @@ void VrShellDelegate::SetDeviceId(unsigned int device_id) {
 void VrShellDelegate::StartWebXRPresentation(
     device::mojom::VRDisplayInfoPtr display_info,
     device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
-    device::mojom::VRDisplayHost::RequestSessionCallback callback) {
+    base::OnceCallback<void(device::mojom::XRSessionPtr)> callback) {
   if (!on_present_result_callback_.is_null() ||
       !request_present_response_callback_.is_null()) {
     // Can only handle one request at a time. This is also extremely unlikely to

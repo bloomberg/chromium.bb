@@ -62,39 +62,58 @@ VRDisplayHost::VRDisplayHost(BrowserXrDevice* device,
       render_frame_host_(render_frame_host),
       binding_(this),
       weak_ptr_factory_(this) {
-  device::mojom::VRMagicWindowProviderPtr magic_window_provider;
-  device->GetRuntime()->RequestMagicWindowSession(
-      mojo::MakeRequest(&magic_window_provider),
-      mojo::MakeRequest(&magic_window_controller_),
-      base::BindOnce(&VRDisplayHost::OnMagicWindowSessionCreated,
-                     weak_ptr_factory_.GetWeakPtr()));
-
   // Tell blink that we are available.
   device::mojom::VRDisplayHostPtr display_host;
   binding_.Bind(mojo::MakeRequest(&display_host));
 
-  service_client->OnDisplayConnected(
-      std::move(magic_window_provider), std::move(display_host),
-      mojo::MakeRequest(&client_), browser_device_->GetVRDisplayInfo());
-
   // Tell the BrowserXrDevice about us.
   browser_device_->OnDisplayHostAdded(this);
+  service_client->OnDisplayConnected(std::move(display_host),
+                                     mojo::MakeRequest(&client_),
+                                     device->GetVRDisplayInfo());
 }
 
-void VRDisplayHost::OnMagicWindowSessionCreated(bool success) {
-  if (success) {
-    // Start giving out magic window data if we are focused.
-    magic_window_controller_->SetFrameDataRestricted(!in_focused_frame_);
+void VRDisplayHost::OnARSessionCreated(
+    device::mojom::VRDisplayHost::RequestSessionCallback callback,
+    device::mojom::XRSessionPtr session) {
+  if (!session) {
+    std::move(callback).Run(nullptr);
+    return;
   }
+
+  browser_device_->GetRuntime()->RequestMagicWindowSession(
+      base::BindOnce(&VRDisplayHost::OnMagicWindowSessionCreated,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void VRDisplayHost::OnMagicWindowSessionCreated(
+    device::mojom::VRDisplayHost::RequestSessionCallback callback,
+    device::mojom::VRMagicWindowProviderPtr magic_window_provider,
+    device::mojom::XRSessionControllerPtr controller) {
+  if (!magic_window_provider) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  // Start giving out magic window data if we are focused.
+  controller->SetFrameDataRestricted(!in_focused_frame_);
+
+  magic_window_controllers_.AddPtr(std::move(controller));
+
+  device::mojom::XRSessionPtr xr_session = device::mojom::XRSession::New();
+  xr_session->magic_window_provider = magic_window_provider.PassInterface();
+
+  std::move(callback).Run(std::move(xr_session));
 }
 
 VRDisplayHost::~VRDisplayHost() {
   browser_device_->OnDisplayHostRemoved(this);
 }
 
-void VRDisplayHost::RequestSession(device::mojom::XRSessionOptionsPtr options,
-                                   bool triggered_by_displayactive,
-                                   RequestSessionCallback callback) {
+void VRDisplayHost::RequestSession(
+    device::mojom::XRSessionOptionsPtr options,
+    bool triggered_by_displayactive,
+    device::mojom::VRDisplayHost::RequestSessionCallback callback) {
   DCHECK(options);
 
   if (!InternalSupportsSession(options.get()) ||
@@ -121,28 +140,26 @@ void VRDisplayHost::RequestSession(device::mojom::XRSessionOptionsPtr options,
 
   // AR currently uses a non-immersive session but we still want to call request
   // session on it.
-  if (runtime_options->immersive ||
-      base::FeatureList::IsEnabled(features::kWebXrHitTest)) {
+  if (runtime_options->immersive) {
     if (!triggered_by_displayactive) {
       ReportRequestPresent();
     }
 
     browser_device_->RequestSession(this, std::move(runtime_options),
                                     std::move(callback));
+  } else if (base::FeatureList::IsEnabled(features::kWebXrHitTest)) {
+    // WebXrHitTest enabled means we are requesting an AR session.  This means
+    // we make two requests to the device - one to request permissions and start
+    // the runtime, then a followup to actually get the magic window provider.
+    // TODO(offenwanger): Clean this up and make only one request.
+    browser_device_->RequestSession(
+        this, std::move(runtime_options),
+        base::BindOnce(&VRDisplayHost::OnARSessionCreated,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   } else {
-    // TODO(offenwanger) When the XRMagicWindowProvider or equivalent is
-    // returned here, clean out this dummy code.
-    auto connection = device::mojom::XRPresentationConnection::New();
-    device::mojom::VRSubmitFrameClientPtr submit_client;
-    connection->client_request = mojo::MakeRequest(&submit_client);
-    device::mojom::VRPresentationProviderPtr provider;
-    mojo::MakeRequest(&provider);
-    connection->provider = provider.PassInterface();
-    connection->transport_options =
-        device::mojom::VRDisplayFrameTransportOptions::New();
-    // Non immersive session setup happens on device initialization, so we don't
-    // need to do anything further.
-    std::move(callback).Run(std::move(connection));
+    browser_device_->GetRuntime()->RequestMagicWindowSession(
+        base::BindOnce(&VRDisplayHost::OnMagicWindowSessionCreated,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 }
 
@@ -186,8 +203,11 @@ void VRDisplayHost::SetListeningForActivate(bool listening) {
 void VRDisplayHost::SetInFocusedFrame(bool in_focused_frame) {
   in_focused_frame_ = in_focused_frame;
   browser_device_->UpdateListeningForActivate(this);
-  if (magic_window_controller_)
-    magic_window_controller_->SetFrameDataRestricted(!in_focused_frame_);
+
+  magic_window_controllers_.ForAllPtrs(
+      [&in_focused_frame](device::mojom::XRSessionController* controller) {
+        controller->SetFrameDataRestricted(!in_focused_frame);
+      });
 }
 
 void VRDisplayHost::OnChanged(device::mojom::VRDisplayInfoPtr vr_device_info) {
