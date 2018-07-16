@@ -492,10 +492,6 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   return browserActionsController_.get();
 }
 
-- (ui::AcceleratorProvider*)acceleratorProvider {
-  return acceleratorDelegate_.get();
-}
-
 - (void)createModel {
   DCHECK(browser_);
   recentTabsMenuModelDelegate_.reset();

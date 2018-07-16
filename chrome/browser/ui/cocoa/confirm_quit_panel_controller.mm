@@ -152,7 +152,7 @@ const NSTimeInterval kTimeDeltaFuzzFactor = 1.0;
 - (void)hideAllWindowsForApplication:(NSApplication*)app
                         withDuration:(NSTimeInterval)duration;
 // Returns the Accelerator for the Quit menu item.
-+ (NSMenuItem*)quitAccelerator;
++ (std::unique_ptr<ui::PlatformAcceleratorCocoa>)quitAccelerator;
 @end
 
 ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
@@ -200,11 +200,12 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 + (BOOL)eventTriggersFeature:(NSEvent*)event {
   if ([event type] != NSKeyDown)
     return NO;
-  NSMenuItem* item = [self quitAccelerator];
-  return item.keyEquivalentModifierMask ==
-             ([event modifierFlags] & NSDeviceIndependentModifierFlagsMask) &&
-         [item.keyEquivalent
-             isEqualToString:[event charactersIgnoringModifiers]];
+  ui::PlatformAcceleratorCocoa eventAccelerator(
+      [event charactersIgnoringModifiers],
+      [event modifierFlags] & NSDeviceIndependentModifierFlagsMask);
+  std::unique_ptr<ui::PlatformAcceleratorCocoa> quitAccelerator(
+      [self quitAccelerator]);
+  return quitAccelerator->Equals(eventAccelerator);
 }
 
 - (NSApplicationTerminateReply)runModalLoopForApplication:(NSApplication*)app {
@@ -347,7 +348,9 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 // key combination for quit. It then gets the modifiers and builds a string
 // to display them.
 + (NSString*)keyCommandString {
-  return [[self class] keyCombinationForAccelerator:[self quitAccelerator]];
+  std::unique_ptr<ui::PlatformAcceleratorCocoa> accelerator(
+      [self quitAccelerator]);
+  return [[self class] keyCombinationForAccelerator:*accelerator];
 }
 
 // Runs a nested loop that pumps the event queue until the next KeyUp event.
@@ -371,28 +374,27 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 // This looks at the Main Menu and determines what the user has set as the
 // key combination for quit. It then gets the modifiers and builds an object
 // to hold the data.
-+ (NSMenuItem*)quitAccelerator {
++ (std::unique_ptr<ui::PlatformAcceleratorCocoa>)quitAccelerator {
   NSMenu* mainMenu = [NSApp mainMenu];
   // Get the application menu (i.e. Chromium).
   NSMenu* appMenu = [[mainMenu itemAtIndex:0] submenu];
   for (NSMenuItem* item in [appMenu itemArray]) {
     // Find the Quit item.
     if ([item action] == @selector(terminate:)) {
-      return item;
+      return std::unique_ptr<ui::PlatformAcceleratorCocoa>(
+          new ui::PlatformAcceleratorCocoa([item keyEquivalent],
+                                           [item keyEquivalentModifierMask]));
     }
   }
-
   // Default to Cmd+Q.
-  NSMenuItem* item = [[[NSMenuItem alloc] initWithTitle:@""
-                                                 action:@selector(terminate:)
-                                          keyEquivalent:@"q"] autorelease];
-  item.keyEquivalentModifierMask = NSCommandKeyMask;
-  return item;
+  return std::unique_ptr<ui::PlatformAcceleratorCocoa>(
+      new ui::PlatformAcceleratorCocoa(@"q", NSCommandKeyMask));
 }
 
-+ (NSString*)keyCombinationForAccelerator:(NSMenuItem*)item {
++ (NSString*)keyCombinationForAccelerator:
+    (const ui::PlatformAcceleratorCocoa&)item {
   NSMutableString* string = [NSMutableString string];
-  NSUInteger modifiers = item.keyEquivalentModifierMask;
+  NSUInteger modifiers = item.modifier_mask();
 
   if (modifiers & NSCommandKeyMask)
     [string appendString:@"\u2318"];
@@ -403,7 +405,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
   if (modifiers & NSShiftKeyMask)
     [string appendString:@"\u21E7"];
 
-  [string appendString:[item.keyEquivalent uppercaseString]];
+  [string appendString:[item.characters() uppercaseString]];
   return string;
 }
 
