@@ -291,20 +291,14 @@ jsimd_ycc_rgb_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
 
   switch (cinfo->out_color_space) {
   case JCS_EXT_RGB:
-    if (simd_features & JSIMD_FASTST3)
-      neonfct = jsimd_ycc_extrgb_convert_neon;
-    else
-      neonfct = jsimd_ycc_extrgb_convert_neon_slowst3;
+    neonfct = jsimd_ycc_extrgb_convert_neon;
     break;
   case JCS_EXT_RGBX:
   case JCS_EXT_RGBA:
     neonfct = jsimd_ycc_extrgbx_convert_neon;
     break;
   case JCS_EXT_BGR:
-    if (simd_features & JSIMD_FASTST3)
-      neonfct = jsimd_ycc_extbgr_convert_neon;
-    else
-      neonfct = jsimd_ycc_extbgr_convert_neon_slowst3;
+    neonfct = jsimd_ycc_extbgr_convert_neon;
     break;
   case JCS_EXT_BGRX:
   case JCS_EXT_BGRA:
@@ -319,11 +313,7 @@ jsimd_ycc_rgb_convert(j_decompress_ptr cinfo, JSAMPIMAGE input_buf,
     neonfct = jsimd_ycc_extxrgb_convert_neon;
     break;
   default:
-    if (simd_features & JSIMD_FASTST3)
-      neonfct = jsimd_ycc_extrgb_convert_neon;
-    else
-      neonfct = jsimd_ycc_extrgb_convert_neon_slowst3;
-    break;
+    neonfct = jsimd_ycc_extrgb_convert_neon;
   }
 
   neonfct(cinfo->output_width, input_buf, input_row, output_buf, num_rows);
