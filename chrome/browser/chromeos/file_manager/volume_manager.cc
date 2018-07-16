@@ -559,6 +559,9 @@ void VolumeManager::RemoveSshfsCrostiniVolume(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
                  *Volume::CreateForSshfsCrostini(sshfs_mount_path));
+  disk_mount_manager_->UnmountPath(
+      sshfs_mount_path.value(), chromeos::UNMOUNT_OPTIONS_NONE,
+      chromeos::disks::DiskMountManager::UnmountPathCallback());
 }
 
 bool VolumeManager::RegisterDownloadsDirectoryForTesting(
