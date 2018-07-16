@@ -14,7 +14,8 @@
 
 @synthesize containerView = _containerView;
 
-- (instancetype)initWithDelegate:(id<KeyboardAccessoryViewDelegate>)delegate {
+- (instancetype)initWithDelegate:
+    (id<ManualFillKeyboardAccessoryViewDelegate>)delegate {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     // TODO:(javierrobles) abstract this color to a constant.
@@ -23,8 +24,8 @@
                                             blue:245.0 / 255.0
                                            alpha:1.0];
 
-    KeyboardAccessoryView* toolbar =
-        [[KeyboardAccessoryView alloc] initWithDelegate:delegate];
+    ManualFillKeyboardAccessoryView* toolbar =
+        [[ManualFillKeyboardAccessoryView alloc] initWithDelegate:delegate];
     toolbar.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:toolbar];
 

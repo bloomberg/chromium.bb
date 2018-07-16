@@ -7,32 +7,31 @@
 
 #import <UIKit/UIKit.h>
 
-// Protocol to handle user interactions in a KeyboardAccessoryView.
-@protocol KeyboardAccessoryViewDelegate
+// Protocol to handle user interactions in a ManualFillKeyboardAccessoryView.
+@protocol ManualFillKeyboardAccessoryViewDelegate
 
 // Invoked after the user touches the `accounts` button.
 - (void)accountButtonPressed;
 
 // Invoked after the user touches the `credit cards` button.
-- (void)cardsButtonPressed;
+- (void)cardButtonPressed;
 
 // Invoked after the user touches the `passwords` button.
 - (void)passwordButtonPressed;
-
-// Invoked after the user touches the `previous` button.
-- (void)arrowUpPressed;
-
-// Invoked after the user touches the `next` button.
-- (void)arrowDownPressed;
-
-// Invoked after the user touches the `cancel` button.
-- (void)cancelButtonPressed;
 
 @end
 
 // This view contains the icons to activate "Manual Fill". It is meant to be
 // shown above the keyboard on iPhone and above the manual fill view.
-@interface KeyboardAccessoryView : UIView
+@interface ManualFillKeyboardAccessoryView : UIView
+
+// Instances an object with the desired delegate.
+//
+// @param delegate The delegate for this object.
+// @return A fresh object with the passed delegate.
+- (instancetype)initWithDelegate:
+    (id<ManualFillKeyboardAccessoryViewDelegate>)delegate
+    NS_DESIGNATED_INITIALIZER;
 
 // Unavailable. Use `initWithDelegate:`.
 - (instancetype)init NS_UNAVAILABLE;
@@ -45,13 +44,6 @@
 
 // Unavailable. Use `initWithDelegate:`.
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
-
-// Instances an object with the desired delegate.
-//
-// @param delegate The delegate for this object.
-// @return A fresh object with the passed delegate.
-- (instancetype)initWithDelegate:(id<KeyboardAccessoryViewDelegate>)delegate
-    NS_DESIGNATED_INITIALIZER;
 
 @end
 
