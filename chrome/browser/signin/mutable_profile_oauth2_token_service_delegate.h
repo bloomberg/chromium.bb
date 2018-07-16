@@ -43,7 +43,6 @@ class MutableProfileOAuth2TokenServiceDelegate
   // OAuth2TokenServiceDelegate overrides.
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
-      net::URLRequestContextGetter* getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
 
@@ -56,7 +55,6 @@ class MutableProfileOAuth2TokenServiceDelegate
   GoogleServiceAuthError GetAuthError(
       const std::string& account_id) const override;
   std::vector<std::string> GetAccounts() override;
-  net::URLRequestContextGetter* GetRequestContext() const override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
 

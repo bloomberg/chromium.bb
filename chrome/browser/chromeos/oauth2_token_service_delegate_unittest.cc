@@ -21,6 +21,8 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -82,16 +84,17 @@ class TokenServiceObserver : public OAuth2TokenService::Observer {
 
 class CrOSOAuthDelegateTest : public testing::Test {
  public:
-  CrOSOAuthDelegateTest() = default;
+  CrOSOAuthDelegateTest()
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {}
   ~CrOSOAuthDelegateTest() override = default;
 
  protected:
   void SetUp() override {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
 
-    request_context_ = new net::TestURLRequestContextGetter(
-        scoped_task_environment_.GetMainThreadTaskRunner());
-    account_manager_.Initialize(tmp_dir_.GetPath(), request_context_.get(),
+    account_manager_.Initialize(tmp_dir_.GetPath(), test_shared_loader_factory_,
                                 immediate_callback_runner_);
     scoped_task_environment_.RunUntilIdle();
 
@@ -100,9 +103,7 @@ class CrOSOAuthDelegateTest : public testing::Test {
     pref_service_.registry()->RegisterIntegerPref(
         prefs::kAccountIdMigrationState,
         AccountTrackerService::MIGRATION_NOT_STARTED);
-    client_.reset(new TestSigninClient(&pref_service_));
-    client_->SetURLRequestContext(new net::TestURLRequestContextGetter(
-        base::ThreadTaskRunnerHandle::Get()));
+    client_ = std::make_unique<TestSigninClient>(&pref_service_);
 
     account_tracker_service_.Initialize(client_.get());
 
@@ -115,6 +116,8 @@ class CrOSOAuthDelegateTest : public testing::Test {
     delegate_->LoadCredentials(
         account_info_.account_id /* primary_account_id */);
   }
+
+  void TearDown() override { test_shared_loader_factory_->Detach(); }
 
   AccountInfo CreateAccountInfoTestFixture(const std::string& gaia_id,
                                            const std::string& email) {
@@ -143,7 +146,9 @@ class CrOSOAuthDelegateTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   base::ScopedTempDir tmp_dir_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      test_shared_loader_factory_;
   AccountInfo account_info_;
   AccountTrackerService account_tracker_service_;
   AccountManager account_manager_;
@@ -264,7 +269,7 @@ TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
   AccountManager account_manager;
   // AccountManager will not be fully initialized until
   // |scoped_task_environment_.RunUntilIdle()| is called.
-  account_manager.Initialize(tmp_dir_.GetPath(), request_context_.get(),
+  account_manager.Initialize(tmp_dir_.GetPath(), test_shared_loader_factory_,
                              immediate_callback_runner_);
 
   // Register callbacks before AccountManager has been fully initialized.

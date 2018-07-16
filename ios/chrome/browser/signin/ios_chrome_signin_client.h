@@ -45,7 +45,8 @@ class IOSChromeSigninClient : public SigninClient,
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
       const std::string& source,
-      net::URLRequestContextGetter* getter) override;
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      override;
   void PreGaiaLogout(base::OnceClosure callback) override;
   scoped_refptr<TokenWebData> GetDatabase() override;
   PrefService* GetPrefs() override;

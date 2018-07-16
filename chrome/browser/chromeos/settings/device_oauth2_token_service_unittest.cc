@@ -68,8 +68,6 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
  public:
   DeviceOAuth2TokenServiceTest()
       : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
-        request_context_getter_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
@@ -142,8 +140,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 
   void CreateService() {
     auto delegate = std::make_unique<DeviceOAuth2TokenServiceDelegate>(
-        request_context_getter_.get(), test_shared_loader_factory_,
-        scoped_testing_local_state_.Get());
+        test_shared_loader_factory_, scoped_testing_local_state_.Get());
     delegate->max_refresh_token_validation_retries_ = 0;
     oauth2_service_.reset(new DeviceOAuth2TokenService(std::move(delegate)));
     oauth2_service_->set_max_authorization_token_fetch_retries_for_testing(0);
@@ -216,7 +213,6 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   ScopedTestingLocalState scoped_testing_local_state_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       test_shared_loader_factory_;

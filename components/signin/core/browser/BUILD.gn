@@ -148,6 +148,7 @@ static_library("browser") {
     "//components/pref_registry",
     "//components/webdata/common",
     "//crypto",
+    "//services/network/public/cpp",
     "//skia",
     "//sql",
     "//third_party/icu",

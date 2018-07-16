@@ -58,7 +58,9 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -153,7 +155,7 @@ class MockInlineSigninHelper : public InlineSigninHelper {
  public:
   MockInlineSigninHelper(
       base::WeakPtr<InlineLoginHandlerImpl> handler,
-      net::URLRequestContextGetter* getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Profile* profile,
       const GURL& current_url,
       const std::string& email,
@@ -175,13 +177,15 @@ class MockInlineSigninHelper : public InlineSigninHelper {
                     OneClickSigninSyncStarter::StartSyncMode,
                     OneClickSigninSyncStarter::ConfirmationRequired));
 
+  GaiaAuthFetcher* GetGaiaAuthFetcher() { return GetGaiaAuthFetcherForTest(); }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInlineSigninHelper);
 };
 
 MockInlineSigninHelper::MockInlineSigninHelper(
     base::WeakPtr<InlineLoginHandlerImpl> handler,
-    net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     Profile* profile,
     const GURL& current_url,
     const std::string& email,
@@ -193,7 +197,7 @@ MockInlineSigninHelper::MockInlineSigninHelper(
     bool choose_what_to_sync,
     bool confirm_untrusted_signin)
     : InlineSigninHelper(handler,
-                         getter,
+                         url_loader_factory,
                          profile,
                          Profile::CreateStatus::CREATE_STATUS_INITIALIZED,
                          current_url,
@@ -213,7 +217,7 @@ class MockSyncStarterInlineSigninHelper : public InlineSigninHelper {
  public:
   MockSyncStarterInlineSigninHelper(
       base::WeakPtr<InlineLoginHandlerImpl> handler,
-      net::URLRequestContextGetter* getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Profile* profile,
       const GURL& current_url,
       const std::string& email,
@@ -240,7 +244,7 @@ class MockSyncStarterInlineSigninHelper : public InlineSigninHelper {
 
 MockSyncStarterInlineSigninHelper::MockSyncStarterInlineSigninHelper(
     base::WeakPtr<InlineLoginHandlerImpl> handler,
-    net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     Profile* profile,
     const GURL& current_url,
     const std::string& email,
@@ -253,7 +257,7 @@ MockSyncStarterInlineSigninHelper::MockSyncStarterInlineSigninHelper(
     bool confirm_untrusted_signin,
     bool is_force_sign_in_with_usermanager)
     : InlineSigninHelper(handler,
-                         getter,
+                         url_loader_factory,
                          profile,
                          Profile::CreateStatus::CREATE_STATUS_INITIALIZED,
                          current_url,
@@ -454,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferNoSigninCookies) {
 
 class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
  public:
-  InlineLoginHelperBrowserTest() {}
+  InlineLoginHelperBrowserTest() = default;
 
   void SetUpInProcessBrowserTestFixture() override {
     will_create_browser_context_services_subscription_ =
@@ -475,7 +479,42 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
         context, &BuildFakeProfileOAuth2TokenService);
   }
 
+  void SetUp() override {
+    // Don't spin up the IO thread yet since no threads are allowed while
+    // spawning sandbox host process. See crbug.com/322732.
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    const GURL& base_url = embedded_test_server()->base_url();
+    command_line->AppendSwitchASCII(::switches::kGaiaUrl, base_url.spec());
+    command_line->AppendSwitchASCII(::switches::kLsoUrl, base_url.spec());
+    command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
+                                    base_url.spec());
+  }
+
   void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    deprecated_client_login_to_oauth2_response_ =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            embedded_test_server(),
+            GaiaUrls::GetInstance()
+                ->deprecated_client_login_to_oauth2_url()
+                .path(),
+            /*relative_url_is_prefix=*/true);
+    oauth2_token_exchange_success_ =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            embedded_test_server(),
+            GaiaUrls::GetInstance()->oauth2_token_url().path(),
+            /*relative_url_is_prefix=*/true);
+
+    embedded_test_server()->StartAcceptingConnections();
+
     // Grab references to the fake signin manager and token service.
     Profile* profile = browser()->profile();
     signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
@@ -487,27 +526,20 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(token_service_);
   }
 
-    void SimulateStartCookieForOAuthLoginTokenExchangeSuccess(
+  void SimulateStartCookieForOAuthLoginTokenExchangeSuccess(
       const std::string& cookie_string) {
-    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-    ASSERT_TRUE(fetcher);
-    scoped_refptr<net::HttpResponseHeaders> reponse_headers =
-        new net::HttpResponseHeaders("");
-    reponse_headers->AddCookie(cookie_string);
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(net::HTTP_OK);
-    fetcher->set_response_headers(reponse_headers);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    deprecated_client_login_to_oauth2_response_->WaitForRequest();
+    deprecated_client_login_to_oauth2_response_->Send(
+        net::HTTP_OK, "text/html; charset=utf-8", "", {cookie_string});
+    deprecated_client_login_to_oauth2_response_->Done();
   }
 
   void SimulateStartAuthCodeForOAuth2TokenExchangeSuccess(
       const std::string& json_response) {
-    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-    ASSERT_TRUE(fetcher);
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(net::HTTP_OK);
-    fetcher->SetResponseString(json_response);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    oauth2_token_exchange_success_->WaitForRequest();
+    oauth2_token_exchange_success_->Send(
+        net::HTTP_OK, "application/json; charset=utf-8", json_response);
+    oauth2_token_exchange_success_->Done();
   }
 
   void SimulateOnClientOAuthSuccess(GaiaAuthConsumer* consumer,
@@ -519,9 +551,19 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
 
   FakeSigninManagerForTesting* signin_manager() { return signin_manager_; }
   FakeProfileOAuth2TokenService* token_service() { return token_service_; }
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory() {
+    return content::BrowserContext::GetDefaultStoragePartition(
+               browser()->profile())
+        ->GetURLLoaderFactoryForBrowserProcess();
+  }
+
+ protected:
+  std::unique_ptr<net::test_server::ControllableHttpResponse>
+      deprecated_client_login_to_oauth2_response_;
+  std::unique_ptr<net::test_server::ControllableHttpResponse>
+      oauth2_token_exchange_success_;
 
  private:
-  net::TestURLFetcherFactory url_fetcher_factory_;
   FakeSigninManagerForTesting* signin_manager_;
   FakeProfileOAuth2TokenService* token_service_;
   std::unique_ptr<
@@ -531,52 +573,57 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(InlineLoginHelperBrowserTest);
 };
 
-// Test signin helper calls correct fetcher methods when called with a
-// session index.
+// Test signin helper calls correct fetcher methods when called with a session
+// index.
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest, WithSessionIndex) {
   base::WeakPtr<InlineLoginHandlerImpl> handler;
-  MockInlineSigninHelper helper(handler,
-                                browser()->profile()->GetRequestContext(),
-                                browser()->profile(),
-                                GURL(),
-                                "foo@gmail.com",
-                                "gaiaid-12345",
-                                "password",
-                                "0",  // session index from above
+  MockInlineSigninHelper helper(handler, test_shared_loader_factory(),
+                                browser()->profile(), GURL(), "foo@gmail.com",
+                                "gaiaid-12345", "password",
+                                "0",            // session index from above
                                 std::string(),  // auth code
                                 std::string(),
-                                false,  // choose what to sync
+                                false,   // choose what to sync
                                 false);  // confirm untrusted signin
-  EXPECT_CALL(helper, OnClientOAuthSuccess(_));
+  base::RunLoop run_loop;
+  EXPECT_CALL(helper, OnClientOAuthSuccess(_))
+      .WillOnce(testing::InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
 
   SimulateStartCookieForOAuthLoginTokenExchangeSuccess(
-      "secure; httponly; oauth_code=code");
+      "oauth_code=code; secure; httponly");
+
   SimulateStartAuthCodeForOAuth2TokenExchangeSuccess(
-      "{\"access_token\": \"access_token\", \"expires_in\": 1234567890,"
-      " \"refresh_token\": \"refresh_token\"}");
+      R"({
+           "access_token": "access_token",
+           "expires_in": 1234567890,
+           "refresh_token": "refresh_token"
+         })");
+  run_loop.Run();
 }
 
 // Test signin helper calls correct fetcher methods when called with an
 // auth code.
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest, WithAuthCode) {
   base::WeakPtr<InlineLoginHandlerImpl> handler;
-  MockInlineSigninHelper helper(handler,
-                                browser()->profile()->GetRequestContext(),
-                                browser()->profile(),
-                                GURL(),
-                                "foo@gmail.com",
-                                "gaiaid-12345",
-                                "password",
-                                "",  // session index
+  MockInlineSigninHelper helper(handler, test_shared_loader_factory(),
+                                browser()->profile(), GURL(), "foo@gmail.com",
+                                "gaiaid-12345", "password",
+                                "",           // session index
                                 "auth_code",  // auth code
                                 std::string(),
-                                false,  // choose what to sync
+                                false,   // choose what to sync
                                 false);  // confirm untrusted signin
-  EXPECT_CALL(helper, OnClientOAuthSuccess(_));
+  base::RunLoop run_loop;
+  EXPECT_CALL(helper, OnClientOAuthSuccess(_))
+      .WillOnce(testing::InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
 
   SimulateStartAuthCodeForOAuth2TokenExchangeSuccess(
-      "{\"access_token\": \"access_token\", \"expires_in\": 1234567890,"
-      " \"refresh_token\": \"refresh_token\"}");
+      R"({
+           "access_token": "access_token",
+           "expires_in": 1234567890,
+           "refresh_token": "refresh_token"
+         })");
+  run_loop.Run();
 }
 
 // Test signin helper creates sync starter with correct confirmation when
@@ -592,7 +639,10 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
-          handler, browser()->profile()->GetRequestContext(),
+          handler,
+          content::BrowserContext::GetDefaultStoragePartition(
+              browser()->profile())
+              ->GetURLLoaderFactoryForBrowserProcess(),
           browser()->profile(), url, "foo@gmail.com", "gaiaid-12345",
           "password",
           "",           // session index
@@ -637,9 +687,8 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
-          handler, browser()->profile()->GetRequestContext(),
-          browser()->profile(), url, "foo@gmail.com", "gaiaid-12345",
-          "password",
+          handler, test_shared_loader_factory(), browser()->profile(), url,
+          "foo@gmail.com", "gaiaid-12345", "password",
           "",           // session index
           "auth_code",  // auth code
           std::string(),
@@ -669,9 +718,8 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
-          handler, browser()->profile()->GetRequestContext(),
-          browser()->profile(), url, "foo@gmail.com", "gaiaid-12345",
-          "password",
+          handler, test_shared_loader_factory(), browser()->profile(), url,
+          "foo@gmail.com", "gaiaid-12345", "password",
           "",           // session index
           "auth_code",  // auth code
           std::string(),
@@ -702,9 +750,8 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
-          handler, browser()->profile()->GetRequestContext(),
-          browser()->profile(), url, "foo@gmail.com", "gaiaid-12345",
-          "password",
+          handler, test_shared_loader_factory(), browser()->profile(), url,
+          "foo@gmail.com", "gaiaid-12345", "password",
           "",           // session index
           "auth_code",  // auth code
           std::string(),
@@ -733,7 +780,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // possible values of access_point=, reason=.
   GURL url("chrome://chrome-signin/?access_point=3&reason=2");
   base::WeakPtr<InlineLoginHandlerImpl> handler;
-  InlineSigninHelper helper(handler, browser()->profile()->GetRequestContext(),
+  InlineSigninHelper helper(handler, test_shared_loader_factory(),
                             browser()->profile(),
                             Profile::CreateStatus::CREATE_STATUS_INITIALIZED,
                             url, "foo@gmail.com", "gaiaid-12345", "password",
@@ -758,7 +805,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // possible values of access_point=, reason=.
   GURL url("chrome://chrome-signin/?access_point=10&reason=1");
   base::WeakPtr<InlineLoginHandlerImpl> handler;
-  InlineSigninHelper helper(handler, browser()->profile()->GetRequestContext(),
+  InlineSigninHelper helper(handler, test_shared_loader_factory(),
                             browser()->profile(),
                             Profile::CreateStatus::CREATE_STATUS_INITIALIZED,
                             url, "foo@gmail.com", "gaiaid-12345", "password",
@@ -782,9 +829,9 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // do need the RunUntilIdle() at the end.
   MockSyncStarterInlineSigninHelper* helper =
       new MockSyncStarterInlineSigninHelper(
-          handler, browser()->profile()->GetRequestContext(),
-          browser()->profile(), url, "foo@gmail.com", "gaiaid-12345",
-          "password", "", "auth_code", std::string(), false, false, true);
+          handler, test_shared_loader_factory(), browser()->profile(), url,
+          "foo@gmail.com", "gaiaid-12345", "password", "", "auth_code",
+          std::string(), false, false, true);
   EXPECT_CALL(
       *helper,
       CreateSyncStarter(_, _, "refresh_token",

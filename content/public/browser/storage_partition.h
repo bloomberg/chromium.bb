@@ -224,6 +224,10 @@ class CONTENT_EXPORT StoragePartition {
   // Wait until all deletions tasks are finished. For test use only.
   virtual void WaitForDeletionTasksForTesting() = 0;
 
+  // Used in tests to force the cached SharedURLLoaderFactory to be dropped, as
+  // a way to work-around https://crbug.com/857577.
+  virtual void ResetURLLoaderFactoryForBrowserProcessForTesting() {}
+
  protected:
   virtual ~StoragePartition() {}
 };

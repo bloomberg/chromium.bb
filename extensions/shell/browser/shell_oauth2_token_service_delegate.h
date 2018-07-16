@@ -8,20 +8,14 @@
 #include <string>
 
 #include "base/macros.h"
-#include "content/public/browser/browser_context.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
-
-namespace content {
-class BrowserContext;
-}
 
 namespace extensions {
 
 class ShellOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
  public:
-  ShellOAuth2TokenServiceDelegate(content::BrowserContext* browser_context,
-                                  std::string account_id,
+  ShellOAuth2TokenServiceDelegate(std::string account_id,
                                   std::string refresh_token);
   ~ShellOAuth2TokenServiceDelegate() override;
 
@@ -29,10 +23,8 @@ class ShellOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
 
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
-      net::URLRequestContextGetter* getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
-  net::URLRequestContextGetter* GetRequestContext() const override;
 
   std::vector<std::string> GetAccounts() override;
 
@@ -40,9 +32,6 @@ class ShellOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
                          const std::string& refresh_token) override;
 
  private:
-  // Not owned.
-  content::BrowserContext* browser_context_;
-
   // User account id, such as "foo@gmail.com".
   std::string account_id_;
 

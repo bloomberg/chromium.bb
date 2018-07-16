@@ -20,6 +20,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -150,7 +151,6 @@ void DoPostRequest(WKWebView* web_view,
 @implementation GaiaAuthFetcherNavigationDelegate {
   GaiaAuthFetcherIOSBridge* bridge_;  // weak
 }
-
 - (instancetype)initWithBridge:(GaiaAuthFetcherIOSBridge*)bridge {
   self = [super init];
   if (self) {
@@ -319,11 +319,12 @@ void GaiaAuthFetcherIOSBridge::OnInactive() {
 
 #pragma mark - GaiaAuthFetcherIOS definition
 
-GaiaAuthFetcherIOS::GaiaAuthFetcherIOS(GaiaAuthConsumer* consumer,
-                                       const std::string& source,
-                                       net::URLRequestContextGetter* getter,
-                                       web::BrowserState* browser_state)
-    : GaiaAuthFetcher(consumer, source, getter),
+GaiaAuthFetcherIOS::GaiaAuthFetcherIOS(
+    GaiaAuthConsumer* consumer,
+    const std::string& source,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    web::BrowserState* browser_state)
+    : GaiaAuthFetcher(consumer, source, url_loader_factory),
       bridge_(new GaiaAuthFetcherIOSBridge(this, browser_state)),
       browser_state_(browser_state) {}
 
@@ -373,7 +374,9 @@ void GaiaAuthFetcherIOS::FetchComplete(const GURL& url,
   DVLOG(2) << "Response " << url.spec() << ", code = " << response_code << "\n";
   DVLOG(2) << "data: " << data << "\n";
   SetPendingFetch(false);
-  DispatchFetchedRequest(url, data, cookies, status, response_code);
+  DispatchFetchedRequest(url, data, cookies,
+                         static_cast<net::Error>(status.error()),
+                         response_code);
 }
 
 void GaiaAuthFetcherIOS::SetShouldUseGaiaAuthFetcherIOSForTesting(

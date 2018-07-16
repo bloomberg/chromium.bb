@@ -16,6 +16,7 @@
 #include "google/cacheinvalidation/types.pb.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 // TODO(maroun): Remove this file.
 
@@ -48,11 +49,11 @@ ChildAccountInfoFetcherImpl::ChildAccountInfoFetcherImpl(
     const std::string& account_id,
     AccountFetcherService* fetcher_service,
     OAuth2TokenService* token_service,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     invalidation::InvalidationService* invalidation_service)
     : OAuth2TokenService::Consumer(kFetcherId),
       token_service_(token_service),
-      request_context_getter_(request_context_getter),
+      url_loader_factory_(url_loader_factory),
       fetcher_service_(fetcher_service),
       invalidation_service_(invalidation_service),
       account_id_(account_id),
@@ -100,7 +101,7 @@ void ChildAccountInfoFetcherImpl::OnGetTokenSuccess(
   DCHECK_EQ(request, login_token_request_.get());
 
   gaia_auth_fetcher_ = fetcher_service_->signin_client_->CreateGaiaAuthFetcher(
-      this, GaiaConstants::kChromeSource, request_context_getter_);
+      this, GaiaConstants::kChromeSource, url_loader_factory_);
   gaia_auth_fetcher_->StartOAuthLogin(access_token,
                                       GaiaConstants::kGaiaService);
 }

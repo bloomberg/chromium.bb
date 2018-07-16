@@ -10,10 +10,6 @@
 #include "base/macros.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace extensions {
 
 // Requests OAuth2 access tokens for app_shell. Requires the OAuth2 refresh
@@ -22,9 +18,7 @@ namespace extensions {
 // allowed.
 class ShellOAuth2TokenService : public OAuth2TokenService {
  public:
-  ShellOAuth2TokenService(content::BrowserContext* browser_context,
-                          std::string account_id,
-                          std::string refresh_token);
+  ShellOAuth2TokenService(std::string account_id, std::string refresh_token);
   ~ShellOAuth2TokenService() override;
 
   // Returns the single instance for app_shell.

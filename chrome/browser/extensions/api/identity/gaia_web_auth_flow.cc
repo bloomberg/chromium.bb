@@ -94,9 +94,9 @@ GaiaWebAuthFlow::~GaiaWebAuthFlow() {
 void GaiaWebAuthFlow::Start() {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  ubertoken_fetcher_.reset(new UbertokenFetcher(token_service, this,
-                                                GaiaConstants::kChromeSource,
-                                                profile_->GetRequestContext()));
+  ubertoken_fetcher_.reset(
+      new UbertokenFetcher(token_service, this, GaiaConstants::kChromeSource,
+                           profile_->GetURLLoaderFactory()));
   ubertoken_fetcher_->set_is_bound_to_channel_id(false);
   ubertoken_fetcher_->StartFetchingToken(account_id_);
 }

@@ -358,8 +358,6 @@ bool FileManagerPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
 
   ProfileOAuth2TokenService* oauth_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
-  net::URLRequestContextGetter* url_request_context_getter =
-      g_browser_process->system_request_context();
 
   if (!oauth_service) {
     drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
@@ -376,7 +374,6 @@ bool FileManagerPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
       SigninManagerFactory::GetForProfile(GetProfile());
   auth_service_ = std::make_unique<google_apis::AuthService>(
       oauth_service, signin_manager->GetAuthenticatedAccountId(),
-      url_request_context_getter,
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       scopes);

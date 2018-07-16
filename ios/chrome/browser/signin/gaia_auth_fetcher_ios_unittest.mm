@@ -7,12 +7,16 @@
 #include <memory>
 
 #include "base/ios/ios_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios_private.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -57,17 +61,22 @@ class MockGaiaConsumer : public GaiaAuthConsumer {
 // Tests fixture for GaiaAuthFetcherIOS
 class GaiaAuthFetcherIOSTest : public PlatformTest {
  protected:
-  GaiaAuthFetcherIOSTest() {
+  GaiaAuthFetcherIOSTest()
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {
     browser_state_ = TestChromeBrowserState::Builder().Build();
 
     ActiveStateManager::FromBrowserState(browser_state())->SetActive(true);
     gaia_auth_fetcher_.reset(new GaiaAuthFetcherIOS(&consumer_, std::string(),
-                                                    nullptr, browser_state()));
+                                                    test_shared_loader_factory_,
+                                                    browser_state()));
     gaia_auth_fetcher_->bridge_.reset(new FakeGaiaAuthFetcherIOSBridge(
         gaia_auth_fetcher_.get(), browser_state()));
   }
 
   ~GaiaAuthFetcherIOSTest() override {
+    test_shared_loader_factory_->Detach();
     gaia_auth_fetcher_.reset();
     ActiveStateManager::FromBrowserState(browser_state())->SetActive(false);
   }
@@ -84,6 +93,9 @@ class GaiaAuthFetcherIOSTest : public PlatformTest {
   // BrowserState, required for WKWebView creation.
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   MockGaiaConsumer consumer_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      test_shared_loader_factory_;
   std::unique_ptr<GaiaAuthFetcherIOS> gaia_auth_fetcher_;
 };
 
@@ -146,13 +158,12 @@ TEST_F(GaiaAuthFetcherIOSTest, StartGetCheckConnectionInfo) {
       "[{\"carryBackToken\": \"token1\", \"url\": \"http://www.google.com\"}]");
   EXPECT_CALL(consumer_, OnGetCheckConnectionInfoSuccess(data)).Times(1);
 
-  // Set up the fake URL Fetcher.
-  std::unique_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory(
-      new net::FakeURLFetcherFactory(new net::URLFetcherImplFactory()));
-  fake_url_fetcher_factory->SetFakeResponse(
-      GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(
-          std::string()),
-      data, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  // Set up the fake response.
+  test_url_loader_factory_.AddResponse(
+      GaiaUrls::GetInstance()
+          ->GetCheckConnectionInfoURLWithSource(std::string())
+          .spec(),
+      data);
 
   gaia_auth_fetcher_->StartGetCheckConnectionInfo();
   base::RunLoop().RunUntilIdle();

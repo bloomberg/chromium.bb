@@ -26,8 +26,6 @@
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -162,12 +160,13 @@ class GaiaCookieManagerServiceTest : public testing::Test {
     consumer->OnLogOutFailure(error);
   }
 
-  void SimulateGetCheckConnctionInfoSuccess(net::TestURLFetcher* fetcher,
-                                            const std::string& data) {
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(200);
-    fetcher->SetResponseString(data);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+  void SimulateGetCheckConnectionInfoSuccess(const std::string& data) {
+    signin_client_->test_url_loader_factory()->AddResponse(
+        GaiaUrls::GetInstance()
+            ->GetCheckConnectionInfoURLWithSource(GaiaConstants::kChromeSource)
+            .spec(),
+        data);
+    base::RunLoop().RunUntilIdle();
   }
 
   void SimulateGetCheckConnectionInfoResult(const std::string& url,
@@ -181,15 +180,20 @@ class GaiaCookieManagerServiceTest : public testing::Test {
         GURL(url).spec());
   }
 
+  bool IsLoadPending() {
+    return signin_client_->test_url_loader_factory()->NumPending() > 0;
+  }
+
   const GoogleServiceAuthError& no_error() { return no_error_; }
   const GoogleServiceAuthError& error() { return error_; }
   const GoogleServiceAuthError& canceled() { return canceled_; }
 
-  net::TestURLFetcherFactory* factory() { return &factory_; }
+  scoped_refptr<network::SharedURLLoaderFactory> factory() const {
+    return signin_client_->GetURLLoaderFactory();
+  }
 
  private:
   base::MessageLoop message_loop_;
-  net::TestURLFetcherFactory factory_;
   FakeOAuth2TokenService token_service_;
   GoogleServiceAuthError no_error_;
   GoogleServiceAuthError error_;
@@ -734,10 +738,7 @@ TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcher) {
   result_fetcher.Start();
 
   // Simulate a successful completion of GetCheckConnctionInfo.
-  net::TestURLFetcher* fetcher = factory()->GetFetcherByID(0);
-  ASSERT_TRUE(nullptr != fetcher);
-  SimulateGetCheckConnctionInfoSuccess(
-      fetcher,
+  SimulateGetCheckConnectionInfoSuccess(
       "[{\"carryBackToken\": \"yt\", \"url\": \"http://www.yt.com\"},"
       " {\"carryBackToken\": \"bl\", \"url\": \"http://www.bl.com\"}]");
 
@@ -762,10 +763,7 @@ TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcherTimeout) {
   result_fetcher.Start();
 
   // Simulate a successful completion of GetCheckConnctionInfo.
-  net::TestURLFetcher* fetcher = factory()->GetFetcherByID(0);
-  ASSERT_TRUE(nullptr != fetcher);
-  SimulateGetCheckConnctionInfoSuccess(
-      fetcher,
+  SimulateGetCheckConnectionInfoSuccess(
       "[{\"carryBackToken\": \"yt\", \"url\": \"http://www.yt.com\"},"
       " {\"carryBackToken\": \"bl\", \"url\": \"http://www.bl.com\"}]");
 
@@ -794,10 +792,7 @@ TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcherTruncate) {
   result_fetcher.Start();
 
   // Simulate a successful completion of GetCheckConnctionInfo.
-  net::TestURLFetcher* fetcher = factory()->GetFetcherByID(0);
-  ASSERT_TRUE(nullptr != fetcher);
-  SimulateGetCheckConnctionInfoSuccess(
-      fetcher,
+  SimulateGetCheckConnectionInfoSuccess(
       "[{\"carryBackToken\": \"yt\", \"url\": \"http://www.yt.com\"}]");
 
   GaiaCookieManagerService::ExternalCcResultFetcher::LoaderToToken loaders =
@@ -817,14 +812,11 @@ TEST_F(GaiaCookieManagerServiceTest, UbertokenSuccessFetchesExternalCC) {
   EXPECT_CALL(helper, StartFetchingUbertoken());
   helper.AddAccountToCookie("acc1@gmail.com", GaiaConstants::kChromeSource);
 
-  ASSERT_FALSE(factory()->GetFetcherByID(0));
+  ASSERT_FALSE(IsLoadPending());
   SimulateUbertokenSuccess(&helper, "token");
 
   // Check there is now a fetcher that belongs to the ExternalCCResultFetcher.
-  net::TestURLFetcher* fetcher = factory()->GetFetcherByID(0);
-  ASSERT_TRUE(nullptr != fetcher);
-  SimulateGetCheckConnctionInfoSuccess(
-      fetcher,
+  SimulateGetCheckConnectionInfoSuccess(
       "[{\"carryBackToken\": \"bl\", \"url\": \"http://www.bl.com\"}]");
   GaiaCookieManagerService::ExternalCcResultFetcher* result_fetcher =
       helper.external_cc_result_fetcher_for_testing();

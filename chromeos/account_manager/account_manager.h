@@ -31,10 +31,6 @@ class SequencedTaskRunner;
 class ImportantFileWriter;
 }  // namespace base
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -101,9 +97,10 @@ class CHROMEOS_EXPORT AccountManager {
   // |chromeos::DelayNetworkCall|. Cannot use |chromeos::DelayNetworkCall| due
   // to linking/dependency constraints.
   // This method MUST be called at least once in the lifetime of AccountManager.
-  void Initialize(const base::FilePath& home_dir,
-                  net::URLRequestContextGetter* request_context,
-                  DelayNetworkCallRunner delay_network_call_runner);
+  void Initialize(
+      const base::FilePath& home_dir,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      DelayNetworkCallRunner delay_network_call_runner);
 
   // Gets (async) a list of account keys known to |AccountManager|.
   void GetAccounts(AccountListCallback callback);
@@ -127,9 +124,6 @@ class CHROMEOS_EXPORT AccountManager {
   // Removes an |AccountManager::Observer|. Does nothing if the |observer| is
   // not in the list of known observers.
   void RemoveObserver(Observer* observer);
-
-  // Gets AccountManager's URL Request Context.
-  net::URLRequestContextGetter* GetUrlRequestContext();
 
   // Creates and returns an |OAuth2AccessTokenFetcher| using the refresh token
   // stored for |account_key|. |IsTokenAvailable| should be |true| for
@@ -161,10 +155,11 @@ class CHROMEOS_EXPORT AccountManager {
   FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, TestInitialization);
 
   // Same as the public |Initialize| except for a |task_runner|.
-  void Initialize(const base::FilePath& home_dir,
-                  net::URLRequestContextGetter* request_context,
-                  DelayNetworkCallRunner delay_network_call_runner,
-                  scoped_refptr<base::SequencedTaskRunner> task_runner);
+  void Initialize(
+      const base::FilePath& home_dir,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      DelayNetworkCallRunner delay_network_call_runner,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Reads tokens from |tokens| and inserts them in |tokens_| and runs all
   // callbacks waiting on |AccountManager| initialization.
@@ -216,9 +211,8 @@ class CHROMEOS_EXPORT AccountManager {
   // Status of this object's initialization.
   InitializationState init_state_ = InitializationState::kNotStarted;
 
-  // All tokens, if channel bound, are bound to |request_context_|. This is a
-  // non-owning pointer.
-  net::URLRequestContextGetter* request_context_ = nullptr;
+  // All tokens, if channel bound, are bound to |url_loader_factory_|.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // An indirect way to access |chromeos::DelayNetworkCall|. We cannot use
   // |chromeos::DelayNetworkCall| directly here due to linking/dependency

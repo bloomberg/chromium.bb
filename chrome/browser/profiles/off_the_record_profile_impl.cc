@@ -393,6 +393,12 @@ net::URLRequestContextGetter*
   return io_data_->GetExtensionsRequestContextGetter().get();
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>
+OffTheRecordProfileImpl::GetURLLoaderFactory() {
+  return GetDefaultStoragePartition(this)
+      ->GetURLLoaderFactoryForBrowserProcess();
+}
+
 net::URLRequestContextGetter*
 OffTheRecordProfileImpl::CreateRequestContextForStoragePartition(
     const base::FilePath& partition_path,

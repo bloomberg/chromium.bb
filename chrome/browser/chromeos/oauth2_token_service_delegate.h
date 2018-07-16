@@ -35,7 +35,6 @@ class ChromeOSOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate,
   // OAuth2TokenServiceDelegate overrides
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
-      net::URLRequestContextGetter* getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
   bool RefreshTokenIsAvailable(const std::string& account_id) const override;
@@ -47,7 +46,6 @@ class ChromeOSOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate,
   void LoadCredentials(const std::string& primary_account_id) override;
   void UpdateCredentials(const std::string& account_id,
                          const std::string& refresh_token) override;
-  net::URLRequestContextGetter* GetRequestContext() const override;
   LoadCredentialsState GetLoadCredentialsState() const override;
   void RevokeCredentials(const std::string& account_id) override;
   void RevokeAllCredentials() override;

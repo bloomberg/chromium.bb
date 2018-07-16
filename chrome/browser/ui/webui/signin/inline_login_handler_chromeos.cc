@@ -9,6 +9,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
@@ -17,7 +18,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 namespace {
@@ -30,18 +31,19 @@ namespace {
 // itself after its work is complete.
 class SigninHelper : public GaiaAuthConsumer {
  public:
-  SigninHelper(Profile* profile,
-               chromeos::AccountManager* account_manager,
-               net::URLRequestContextGetter* request_context,
-               const std::string& gaia_id,
-               const std::string& email,
-               const std::string& auth_code)
+  SigninHelper(
+      Profile* profile,
+      chromeos::AccountManager* account_manager,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const std::string& gaia_id,
+      const std::string& email,
+      const std::string& auth_code)
       : profile_(profile),
         account_manager_(account_manager),
         email_(email),
         gaia_auth_fetcher_(this,
                            GaiaConstants::kChromeSource,
-                           request_context) {
+                           url_loader_factory) {
     account_key_ = chromeos::AccountManager::AccountKey{
         gaia_id, chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA};
 
@@ -120,6 +122,10 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const base::ListValue* args) {
   const std::string& email = auth_data->FindKey("email")->GetString();
   CHECK(!email.empty());
 
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory();
+
   // TODO(sinhak): Do not depend on Profile unnecessarily.
   Profile* profile = Profile::FromWebUI(web_ui());
 
@@ -132,8 +138,7 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const base::ListValue* args) {
           ->GetAccountManager(profile->GetPath().value());
 
   // SigninHelper deletes itself after its work is done.
-  new SigninHelper(profile, account_manager,
-                   account_manager->GetUrlRequestContext(), gaia_id, email,
+  new SigninHelper(profile, account_manager, url_loader_factory, gaia_id, email,
                    auth_code);
 }
 

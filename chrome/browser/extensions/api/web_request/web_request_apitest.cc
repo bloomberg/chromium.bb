@@ -267,6 +267,17 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
       bool wait_for_extension_loaded_in_incognito,
       const char* expected_content_regular_window,
       const char* exptected_content_incognito_window);
+
+  // TODO(https://crbug.com/857577): remove this hack. When an unrelated
+  // browser issued request (typically from GaiaAuthFetcher) has run, it causes
+  // the StoragePartitionImpl to create and cache a URLLoaderFactory without the
+  // web request proxying. This resets it so one with the web request proxying
+  // is created the next time a request is made.
+  void ResetStoragePartitionURLLoaderFactory() {
+    base::RunLoop().RunUntilIdle();
+    content::BrowserContext::GetDefaultStoragePartition(profile())
+        ->ResetURLLoaderFactoryForBrowserProcessForTesting();
+  }
 };
 
 class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
@@ -1028,6 +1039,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
     EXPECT_EQ(200, loader->ResponseInfo()->headers->response_code());
   };
 
+  // TODO(https://crbug.com/857577): remove this call.
+  ResetStoragePartitionURLLoaderFactory();
+
   // Now perform a request to "client1.google.com" from the browser process.
   // This should *not* be visible to the WebRequest API. We should still have
   // only seen the single render-initiated request from the first half of the
@@ -1347,6 +1361,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
           EXPECT_EQ(simple_loader->NetError(), expected_net_code);
         }
       };
+
+  // TODO(https://crbug.com/857577): remove this call.
+  ResetStoragePartitionURLLoaderFactory();
 
   // Next, try a series of requests through URLRequestFetchers (rather than a
   // renderer).

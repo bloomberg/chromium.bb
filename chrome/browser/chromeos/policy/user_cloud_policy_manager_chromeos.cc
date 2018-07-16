@@ -172,6 +172,11 @@ void UserCloudPolicyManagerChromeOS::ForceTimeoutForTest() {
   OnPolicyRefreshTimeout();
 }
 
+void UserCloudPolicyManagerChromeOS::SetSignInURLLoaderFactoryForTests(
+    scoped_refptr<network::SharedURLLoaderFactory> signin_url_loader_factory) {
+  signin_url_loader_factory_for_tests_ = signin_url_loader_factory;
+}
+
 void UserCloudPolicyManagerChromeOS::SetSystemURLLoaderFactoryForTests(
     scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory) {
   system_url_loader_factory_for_tests_ = system_url_loader_factory;
@@ -535,26 +540,26 @@ void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthToken() {
   if (!refresh_token.empty()) {
     token_fetcher_.reset(PolicyOAuth2TokenFetcher::CreateInstance());
     token_fetcher_->StartWithRefreshToken(
-        refresh_token, g_browser_process->system_request_context(),
-        system_url_loader_factory,
+        refresh_token, system_url_loader_factory,
         base::Bind(&UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched,
                    base::Unretained(this)));
     return;
   }
 
-  scoped_refptr<net::URLRequestContextGetter> signin_context =
-      chromeos::login::GetSigninContext();
-  if (!signin_context.get()) {
-    LOG(ERROR) << "No signin context for policy oauth token fetch!";
+  scoped_refptr<network::SharedURLLoaderFactory> signin_url_loader_factory =
+      signin_url_loader_factory_for_tests_;
+  if (!signin_url_loader_factory)
+    signin_url_loader_factory = chromeos::login::GetSigninURLLoaderFactory();
+  if (!signin_url_loader_factory) {
+    LOG(ERROR) << "No signin URLLoaderfactory for policy oauth token fetch!";
     OnOAuth2PolicyTokenFetched(
         std::string(), GoogleServiceAuthError(GoogleServiceAuthError::NONE));
     return;
   }
 
   token_fetcher_.reset(PolicyOAuth2TokenFetcher::CreateInstance());
-  token_fetcher_->StartWithSigninContext(
-      signin_context.get(), g_browser_process->system_request_context(),
-      system_url_loader_factory,
+  token_fetcher_->StartWithSigninURLLoaderFactory(
+      signin_url_loader_factory, system_url_loader_factory,
       base::Bind(&UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched,
                  base::Unretained(this)));
 }

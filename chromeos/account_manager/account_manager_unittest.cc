@@ -16,7 +16,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,16 +38,19 @@ class AccountManagerSpy : public AccountManager {
 
 class AccountManagerTest : public testing::Test {
  public:
-  AccountManagerTest() = default;
+  AccountManagerTest()
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {}
   ~AccountManagerTest() override {}
 
  protected:
   void SetUp() override {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
-    request_context_ = new net::TestURLRequestContextGetter(
-        scoped_task_environment_.GetMainThreadTaskRunner());
     ResetAndInitializeAccountManager();
   }
+
+  void TearDown() override { test_shared_loader_factory_->Detach(); }
 
   // Gets the list of accounts stored in |account_manager_|.
   std::vector<AccountManager::AccountKey> GetAccountsBlocking() {
@@ -70,16 +74,20 @@ class AccountManagerTest : public testing::Test {
   // parameters.
   void ResetAndInitializeAccountManager() {
     account_manager_ = std::make_unique<AccountManagerSpy>();
-    account_manager_->Initialize(tmp_dir_.GetPath(), request_context_.get(),
-                                 immediate_callback_runner_,
-                                 base::SequencedTaskRunnerHandle::Get());
+    account_manager_->Initialize(
+        tmp_dir_.GetPath(), test_shared_loader_factory_,
+        immediate_callback_runner_, base::SequencedTaskRunnerHandle::Get());
   }
 
   // Check base/test/scoped_task_environment.h. This must be the first member /
   // declared before any member that cares about tasks.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir tmp_dir_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      test_shared_loader_factory_;
+
   std::unique_ptr<AccountManagerSpy> account_manager_;
   const AccountManager::AccountKey kAccountKey_{
       "111", account_manager::AccountType::ACCOUNT_TYPE_GAIA};
@@ -134,7 +142,7 @@ TEST_F(AccountManagerTest, TestInitialization) {
 
   EXPECT_EQ(account_manager.init_state_,
             AccountManager::InitializationState::kNotStarted);
-  account_manager.Initialize(tmp_dir_.GetPath(), request_context_.get(),
+  account_manager.Initialize(tmp_dir_.GetPath(), test_shared_loader_factory_,
                              immediate_callback_runner_,
                              base::SequencedTaskRunnerHandle::Get());
   scoped_task_environment_.RunUntilIdle();

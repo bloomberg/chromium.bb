@@ -24,14 +24,14 @@
 class GaiaAuthFetcher;
 class GoogleServiceAuthError;
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 using GaiaAuthFetcherFactory = base::Callback<std::unique_ptr<GaiaAuthFetcher>(
     GaiaAuthConsumer*,
     const std::string&,
-    net::URLRequestContextGetter*)>;
+    scoped_refptr<network::SharedURLLoaderFactory>)>;
 
 // Callback for the |UbertokenFetcher| class.
 class UbertokenConsumer {
@@ -49,15 +49,17 @@ class UbertokenFetcher : public GaiaAuthConsumer,
   // Maximum number of retries to get the uber-auth token before giving up.
   static const int kMaxRetries;
 
-  UbertokenFetcher(OAuth2TokenService* token_service,
-                   UbertokenConsumer* consumer,
-                   const std::string& source,
-                   net::URLRequestContextGetter* request_context);
-  UbertokenFetcher(OAuth2TokenService* token_service,
-                   UbertokenConsumer* consumer,
-                   const std::string& source,
-                   net::URLRequestContextGetter* request_context,
-                   GaiaAuthFetcherFactory factory);
+  UbertokenFetcher(
+      OAuth2TokenService* token_service,
+      UbertokenConsumer* consumer,
+      const std::string& source,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  UbertokenFetcher(
+      OAuth2TokenService* token_service,
+      UbertokenConsumer* consumer,
+      const std::string& source,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      GaiaAuthFetcherFactory factory);
   ~UbertokenFetcher() override;
 
   void set_is_bound_to_channel_id(bool is_bound_to_channel_id) {
@@ -90,7 +92,7 @@ class UbertokenFetcher : public GaiaAuthConsumer,
   OAuth2TokenService* token_service_;
   UbertokenConsumer* consumer_;
   std::string source_;
-  net::URLRequestContextGetter* request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   bool is_bound_to_channel_id_;  // defaults to true
   GaiaAuthFetcherFactory gaia_auth_fetcher_factory_;
   std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;

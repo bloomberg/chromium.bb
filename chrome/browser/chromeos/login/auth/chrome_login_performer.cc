@@ -100,8 +100,8 @@ void ChromeLoginPerformer::RunOnlineWhitelistCheck(
       !connector->IsNonEnterpriseUser(account_id.GetUserEmail())) {
     wildcard_login_checker_.reset(new policy::WildcardLoginChecker());
     if (refresh_token.empty()) {
-      wildcard_login_checker_->StartWithSigninContext(
-          GetSigninRequestContext(),
+      wildcard_login_checker_->StartWithSigninURLLoaderFactory(
+          GetSigninURLLoaderFactory(),
           base::Bind(&ChromeLoginPerformer::OnlineWildcardLoginCheckCompleted,
                      weak_factory_.GetWeakPtr(), success_callback,
                      failure_callback));
@@ -170,8 +170,9 @@ content::BrowserContext* ChromeLoginPerformer::GetSigninContext() {
   return ProfileHelper::GetSigninProfile();
 }
 
-net::URLRequestContextGetter* ChromeLoginPerformer::GetSigninRequestContext() {
-  return login::GetSigninContext();
+scoped_refptr<network::SharedURLLoaderFactory>
+ChromeLoginPerformer::GetSigninURLLoaderFactory() {
+  return login::GetSigninURLLoaderFactory();
 }
 
 void ChromeLoginPerformer::OnlineWildcardLoginCheckCompleted(

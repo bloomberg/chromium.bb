@@ -41,8 +41,7 @@ void DeviceOAuth2TokenServiceFactory::Initialize(
   DCHECK(!g_device_oauth2_token_service_);
   g_device_oauth2_token_service_ = new DeviceOAuth2TokenService(
       std::make_unique<DeviceOAuth2TokenServiceDelegate>(
-          g_browser_process->system_request_context(), url_loader_factory,
-          g_browser_process->local_state()));
+          url_loader_factory, g_browser_process->local_state()));
 }
 
 // static

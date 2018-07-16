@@ -33,11 +33,9 @@ void DeviceOAuth2TokenServiceDelegate::OnServiceAccountIdentityChanged() {
 }
 
 DeviceOAuth2TokenServiceDelegate::DeviceOAuth2TokenServiceDelegate(
-    net::URLRequestContextGetter* getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     PrefService* local_state)
-    : url_request_context_getter_(getter),
-      url_loader_factory_(url_loader_factory),
+    : url_loader_factory_(url_loader_factory),
       local_state_(local_state),
       state_(STATE_LOADING),
       max_refresh_token_validation_retries_(3),
@@ -160,11 +158,6 @@ std::string DeviceOAuth2TokenServiceDelegate::GetRefreshToken(
   return std::string();
 }
 
-net::URLRequestContextGetter*
-DeviceOAuth2TokenServiceDelegate::GetRequestContext() const {
-  return url_request_context_getter_.get();
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 DeviceOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return url_loader_factory_;
@@ -173,7 +166,6 @@ DeviceOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
 OAuth2AccessTokenFetcher*
 DeviceOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     const std::string& account_id,
-    net::URLRequestContextGetter* getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   std::string refresh_token = GetRefreshToken(account_id);

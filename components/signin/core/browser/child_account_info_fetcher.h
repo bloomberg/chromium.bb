@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 
 #if defined(OS_ANDROID)
@@ -17,8 +18,8 @@
 namespace invalidation {
 class InvalidationService;
 }
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 class AccountFetcherService;
 class OAuth2TokenService;
@@ -31,7 +32,7 @@ class ChildAccountInfoFetcher {
       const std::string& account_id,
       AccountFetcherService* fetcher_service,
       OAuth2TokenService* token_service,
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       invalidation::InvalidationService* invalidation_service);
   virtual ~ChildAccountInfoFetcher();
 

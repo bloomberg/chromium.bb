@@ -305,7 +305,6 @@ void DriveAPIService::Initialize(const std::string& account_id) {
 
   sender_ = std::make_unique<RequestSender>(
       new google_apis::AuthService(oauth2_token_service_, account_id,
-                                   url_request_context_getter_.get(),
                                    url_loader_factory_, scopes),
       url_request_context_getter_.get(), blocking_task_runner_.get(),
       custom_user_agent_, traffic_annotation_);

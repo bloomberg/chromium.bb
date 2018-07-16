@@ -22,9 +22,6 @@ namespace gaia {
 class GaiaOAuthClient;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -38,7 +35,6 @@ class DeviceOAuth2TokenServiceDelegate
       public gaia::GaiaOAuthClient::Delegate {
  public:
   DeviceOAuth2TokenServiceDelegate(
-      net::URLRequestContextGetter* getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       PrefService* local_state);
   ~DeviceOAuth2TokenServiceDelegate() override;
@@ -57,14 +53,11 @@ class DeviceOAuth2TokenServiceDelegate
   // Implementation of OAuth2TokenServiceDelegate.
   bool RefreshTokenIsAvailable(const std::string& account_id) const override;
 
-  net::URLRequestContextGetter* GetRequestContext() const override;
-
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
 
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
-      net::URLRequestContextGetter* getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
 
@@ -131,7 +124,6 @@ class DeviceOAuth2TokenServiceDelegate
   void ReportServiceError(GoogleServiceAuthError::State error);
 
   // Dependencies.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   PrefService* local_state_;
 

@@ -70,7 +70,7 @@ std::unique_ptr<network::SimpleURLLoader> DownloadUrl(
   request->url = url;
   std::unique_ptr<network::SimpleURLLoader> url_loader =
       network::SimpleURLLoader::Create(std::move(request),
-                                       NO_TRAFFIC_ANNOTATION_YET);
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
   SimpleURLLoaderTestHelper url_loader_helper;
   url_loader->DownloadToString(
       partition->GetURLLoaderFactoryForBrowserProcess().get(),

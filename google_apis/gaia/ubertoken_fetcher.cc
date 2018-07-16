@@ -14,13 +14,15 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 
 namespace {
 std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
     const std::string& source,
-    net::URLRequestContextGetter* request_context) {
-  return std::make_unique<GaiaAuthFetcher>(consumer, source, request_context);
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  return std::make_unique<GaiaAuthFetcher>(consumer, source,
+                                           url_loader_factory);
 }
 }
 
@@ -30,32 +32,31 @@ UbertokenFetcher::UbertokenFetcher(
     OAuth2TokenService* token_service,
     UbertokenConsumer* consumer,
     const std::string& source,
-    net::URLRequestContextGetter* request_context)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : UbertokenFetcher(token_service,
                        consumer,
                        source,
-                       request_context,
-                       base::Bind(CreateGaiaAuthFetcher)) {
-}
+                       url_loader_factory,
+                       base::BindRepeating(CreateGaiaAuthFetcher)) {}
 
 UbertokenFetcher::UbertokenFetcher(
     OAuth2TokenService* token_service,
     UbertokenConsumer* consumer,
     const std::string& source,
-    net::URLRequestContextGetter* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     GaiaAuthFetcherFactory factory)
     : OAuth2TokenService::Consumer("uber_token_fetcher"),
       token_service_(token_service),
       consumer_(consumer),
       source_(source),
-      request_context_(request_context),
+      url_loader_factory_(url_loader_factory),
       is_bound_to_channel_id_(true),
       gaia_auth_fetcher_factory_(factory),
       retry_number_(0),
       second_access_token_request_(false) {
   DCHECK(token_service);
   DCHECK(consumer);
-  DCHECK(request_context);
+  DCHECK(url_loader_factory);
 }
 
 UbertokenFetcher::~UbertokenFetcher() {
@@ -151,7 +152,7 @@ void UbertokenFetcher::RequestAccessToken() {
 
 void UbertokenFetcher::ExchangeTokens() {
   gaia_auth_fetcher_ =
-      gaia_auth_fetcher_factory_.Run(this, source_, request_context_);
+      gaia_auth_fetcher_factory_.Run(this, source_, url_loader_factory_);
   gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(
       access_token_, is_bound_to_channel_id_);
 }

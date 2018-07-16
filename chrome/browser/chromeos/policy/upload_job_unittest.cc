@@ -73,7 +73,6 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
   void FetchOAuth2Token(
       RequestImpl* request,
       const std::string& account_id,
-      net::URLRequestContextGetter* getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,
@@ -106,7 +105,6 @@ MockOAuth2TokenService::~MockOAuth2TokenService() {
 void MockOAuth2TokenService::FetchOAuth2Token(
     OAuth2TokenService::RequestImpl* request,
     const std::string& account_id,
-    net::URLRequestContextGetter* getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,

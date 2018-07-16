@@ -15,7 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/drive/auth_service_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace google_apis {
@@ -41,7 +40,6 @@ class AuthRequest : public OAuth2TokenService::Consumer {
  public:
   AuthRequest(OAuth2TokenService* oauth2_token_service,
               const std::string& account_id,
-              net::URLRequestContextGetter* url_request_context_getter,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
               const AuthStatusCallback& callback,
               const std::vector<std::string>& scopes);
@@ -65,14 +63,13 @@ class AuthRequest : public OAuth2TokenService::Consumer {
 AuthRequest::AuthRequest(
     OAuth2TokenService* oauth2_token_service,
     const std::string& account_id,
-    net::URLRequestContextGetter* url_request_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const AuthStatusCallback& callback,
     const std::vector<std::string>& scopes)
     : OAuth2TokenService::Consumer("auth_service"), callback_(callback) {
   DCHECK(!callback_.is_null());
   request_ = oauth2_token_service->StartRequestWithContext(
-      account_id, url_request_context_getter, url_loader_factory,
+      account_id, url_loader_factory,
       OAuth2TokenService::ScopeSet(scopes.begin(), scopes.end()), this);
 }
 
@@ -120,12 +117,10 @@ void AuthRequest::OnGetTokenFailure(const OAuth2TokenService::Request* request,
 AuthService::AuthService(
     OAuth2TokenService* oauth2_token_service,
     const std::string& account_id,
-    net::URLRequestContextGetter* url_request_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::vector<std::string>& scopes)
     : oauth2_token_service_(oauth2_token_service),
       account_id_(account_id),
-      url_request_context_getter_(url_request_context_getter),
       url_loader_factory_(url_loader_factory),
       scopes_(scopes),
       weak_ptr_factory_(this) {
@@ -150,8 +145,7 @@ void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
         FROM_HERE, base::Bind(callback, HTTP_SUCCESS, access_token_));
   } else if (HasRefreshToken()) {
     // We have refresh token, let's get an access token.
-    new AuthRequest(oauth2_token_service_, account_id_,
-                    url_request_context_getter_.get(), url_loader_factory_,
+    new AuthRequest(oauth2_token_service_, account_id_, url_loader_factory_,
                     base::Bind(&AuthService::OnAuthCompleted,
                                weak_ptr_factory_.GetWeakPtr(), callback),
                     scopes_);

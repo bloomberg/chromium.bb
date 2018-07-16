@@ -58,6 +58,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
@@ -1033,6 +1034,9 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
               if (params->url_request.url.path() == "/searchdomaincheck")
                 return false;
               if (params->url_request.url.path() == "/favicon.ico")
+                return false;
+              if (params->url_request.url.GetOrigin() ==
+                  GaiaUrls::GetInstance()->gaia_url())
                 return false;
               (*requests)++;
               if (*failures < requests_to_fail) {

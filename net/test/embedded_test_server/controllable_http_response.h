@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -14,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -45,6 +47,12 @@ class ControllableHttpResponse {
   // 2) Send raw response data in response to a request.
   //    May be called several time.
   void Send(const std::string& bytes);
+
+  // Same as 2) but with more specific parameters.
+  void Send(net::HttpStatusCode http_status,
+            const std::string& content_type = std::string("text/html"),
+            const std::string& content = std::string(),
+            const std::vector<std::string>& cookies = {});
 
   // 3) Notify there are no more data to be sent and close the socket.
   void Done();

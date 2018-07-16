@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +26,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "net/base/load_flags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/simple_connection_listener.h"
@@ -94,7 +97,23 @@ class ProxyBrowserTest : public InProcessBrowserTest {
 
   void SetUp() override {
     ASSERT_TRUE(proxy_server_.Start());
+    // Block the GaiaAuthFetcher related requests, they somehow interfere with
+    // the test when the network service is running.
+    url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
+        base::BindLambdaForTesting(
+            [&](content::URLLoaderInterceptor::RequestParams* params) -> bool {
+              if (params->url_request.url.host() ==
+                  GaiaUrls::GetInstance()->gaia_url().host()) {
+                return true;
+              }
+              return false;
+            }));
     InProcessBrowserTest::SetUp();
+  }
+
+  void PostRunTestOnMainThread() override {
+    url_loader_interceptor_.reset();
+    InProcessBrowserTest::PostRunTestOnMainThread();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -106,6 +125,7 @@ class ProxyBrowserTest : public InProcessBrowserTest {
   net::SpawnedTestServer proxy_server_;
 
  private:
+  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
   DISALLOW_COPY_AND_ASSIGN(ProxyBrowserTest);
 };
 

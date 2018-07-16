@@ -28,14 +28,18 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace {
 
 const int kLoadFlagsIgnoreCookies = net::LOAD_DO_NOT_SEND_COOKIES |
                                     net::LOAD_DO_NOT_SAVE_COOKIES;
+
+const size_t kMaxMessageSize = 1024 * 1024;  // 1MB
 
 static bool CookiePartsContains(const std::vector<std::string>& parts,
                                 const char* part) {
@@ -77,16 +81,13 @@ ExtractOAuth2TokenPairResponse(const std::string& data) {
       refresh_token, access_token, expires_in_secs, is_child_account);
 }
 
-void GetCookiesFromResponse(const net::HttpResponseHeaders* headers,
-                            net::ResponseCookies* cookies) {
-  if (!headers)
-    return;
-
-  std::string value;
-  size_t iter = 0;
-  while (headers->EnumerateHeader(&iter, "Set-Cookie", &value)) {
-    if (!value.empty())
-      cookies->push_back(value);
+void GetCookiesFromResponse(
+    const network::HttpRawRequestResponseInfo::HeadersVector& headers,
+    net::ResponseCookies* cookies) {
+  for (const auto& header : headers) {
+    if (header.first == "Set-Cookie" && !header.second.empty()) {
+      cookies->push_back(header.second);
+    }
   }
 }
 
@@ -204,11 +205,12 @@ const char GaiaAuthFetcher::kClientLoginToOAuth2CookiePartCodePrefix[] =
 const int GaiaAuthFetcher::kClientLoginToOAuth2CookiePartCodePrefixLength =
     arraysize(GaiaAuthFetcher::kClientLoginToOAuth2CookiePartCodePrefix) - 1;
 
-GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
-                                 const std::string& source,
-                                 net::URLRequestContextGetter* getter)
-    : consumer_(consumer),
-      getter_(getter),
+GaiaAuthFetcher::GaiaAuthFetcher(
+    GaiaAuthConsumer* consumer,
+    const std::string& source,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : url_loader_factory_(url_loader_factory),
+      consumer_(consumer),
       source_(source),
       oauth2_token_gurl_(GaiaUrls::GetInstance()->oauth2_token_url()),
       oauth2_revoke_gurl_(GaiaUrls::GetInstance()->oauth2_revoke_url()),
@@ -236,7 +238,8 @@ void GaiaAuthFetcher::SetPendingFetch(bool pending_fetch) {
 }
 
 void GaiaAuthFetcher::CancelRequest() {
-  fetcher_.reset();
+  url_loader_.reset();
+  original_url_ = GURL();
   fetch_pending_ = false;
 }
 
@@ -247,35 +250,55 @@ void GaiaAuthFetcher::CreateAndStartGaiaFetcher(
     int load_flags,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
-  fetcher_ = net::URLFetcher::Create(
-      0, gaia_gurl, body.empty() ? net::URLFetcher::GET : net::URLFetcher::POST,
-      this, traffic_annotation);
-  fetcher_->SetRequestContext(getter_);
-  fetcher_->SetUploadData("application/x-www-form-urlencoded", body);
-  gaia::MarkURLFetcherAsGaia(fetcher_.get());
 
-  VLOG(2) << "Gaia fetcher URL: " << gaia_gurl.spec();
-  VLOG(2) << "Gaia fetcher headers: " << headers;
-  VLOG(2) << "Gaia fetcher body: " << body;
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = gaia_gurl;
+  original_url_ = gaia_gurl;
+
+  if (!body.empty())
+    resource_request->method = "POST";
+
+  if (!headers.empty())
+    resource_request->headers.AddHeadersFromString(headers);
 
   // The Gaia token exchange requests do not require any cookie-based
   // identification as part of requests.  We suppress sending any cookies to
   // maintain a separation between the user's browsing and Chrome's internal
   // services.  Where such mixing is desired (MergeSession or OAuthLogin), it
   // will be done explicitly.
-  fetcher_->SetLoadFlags(load_flags);
+  resource_request->load_flags = load_flags;
+
+  // Use raw headers as the cookies are filtered-out of the response when
+  // serialized at the IPC layer.
+  resource_request->report_raw_headers = true;
+
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 traffic_annotation);
+  if (!body.empty())
+    url_loader_->AttachStringForUpload(body,
+                                       "application/x-www-form-urlencoded");
+
+  url_loader_->SetAllowHttpErrorResults(true);
+
+  VLOG(2) << "Gaia fetcher URL: " << gaia_gurl.spec();
+  VLOG(2) << "Gaia fetcher headers: " << headers;
+  VLOG(2) << "Gaia fetcher body: " << body;
 
   // Fetchers are sometimes cancelled because a network change was detected,
   // especially at startup and after sign-in on ChromeOS. Retrying once should
   // be enough in those cases; let the fetcher retry up to 3 times just in case.
   // http://crbug.com/163710
-  fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
-
-  if (!headers.empty())
-    fetcher_->SetExtraRequestHeaders(headers);
+  url_loader_->SetRetryOptions(
+      3, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
 
   fetch_pending_ = true;
-  fetcher_->Start();
+
+  // Unretained is OK below as |url_loader_| is owned by this.
+  url_loader_->DownloadToString(
+      url_loader_factory_.get(),
+      base::BindOnce(&GaiaAuthFetcher::OnURLLoadComplete,
+                     base::Unretained(this)),
+      kMaxMessageSize);
 }
 
 // static
@@ -893,14 +916,14 @@ void GaiaAuthFetcher::StartGetCheckConnectionInfo() {
 // static
 GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
     const std::string& data,
-    const net::URLRequestStatus& status) {
-  if (!status.is_success()) {
-    if (status.status() == net::URLRequestStatus::CANCELED) {
+    net::Error net_error) {
+  if (net_error != net::OK) {
+    if (net_error == net::ERR_ABORTED) {
       return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
     }
     DLOG(WARNING) << "Could not reach Google Accounts servers: errno "
-                  << status.error();
-    return GoogleServiceAuthError::FromConnectionError(status.error());
+                  << net_error;
+    return GoogleServiceAuthError::FromConnectionError(net_error);
   }
 
   if (IsSecondFactorSuccess(data))
@@ -944,9 +967,9 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
 void GaiaAuthFetcher::OnClientLoginToOAuth2Fetched(
     const std::string& data,
     const net::ResponseCookies& cookies,
-    const net::URLRequestStatus& status,
+    net::Error net_error,
     int response_code) {
-  if (status.is_success() && response_code == net::HTTP_OK) {
+  if (net_error == net::OK && response_code == net::HTTP_OK) {
     std::string auth_code;
     if (ParseClientLoginToOAuth2Response(cookies, &auth_code)) {
       if (fetch_token_from_auth_code_)
@@ -960,51 +983,49 @@ void GaiaAuthFetcher::OnClientLoginToOAuth2Fetched(
       consumer_->OnClientOAuthFailure(auth_error);
     }
   } else {
-    GoogleServiceAuthError auth_error(GenerateAuthError(data, status));
+    GoogleServiceAuthError auth_error(GenerateAuthError(data, net_error));
     consumer_->OnClientOAuthFailure(auth_error);
   }
 }
 
-void GaiaAuthFetcher::OnOAuth2TokenPairFetched(
-    const std::string& data,
-    const net::URLRequestStatus& status,
-    int response_code) {
+void GaiaAuthFetcher::OnOAuth2TokenPairFetched(const std::string& data,
+                                               net::Error net_error,
+                                               int response_code) {
   std::unique_ptr<const GaiaAuthConsumer::ClientOAuthResult> result;
-  if (status.is_success() && response_code == net::HTTP_OK) {
+  if (net_error == net::OK && response_code == net::HTTP_OK) {
     result = ExtractOAuth2TokenPairResponse(data);
   }
 
   if (result) {
     consumer_->OnClientOAuthSuccess(*result);
   } else {
-    consumer_->OnClientOAuthFailure(GenerateAuthError(data, status));
+    consumer_->OnClientOAuthFailure(GenerateAuthError(data, net_error));
   }
 }
 
-void GaiaAuthFetcher::OnOAuth2RevokeTokenFetched(
-    const std::string& data,
-    const net::URLRequestStatus& status,
-    int response_code) {
+void GaiaAuthFetcher::OnOAuth2RevokeTokenFetched(const std::string& data,
+                                                 net::Error net_error,
+                                                 int response_code) {
   GaiaAuthConsumer::TokenRevocationStatus revocation_status =
       GaiaAuthConsumer::TokenRevocationStatus::kUnknownError;
 
-  switch (status.status()) {
-    case net::URLRequestStatus::SUCCESS:
+  switch (net_error) {
+    case net::OK:
       revocation_status =
           GetTokenRevocationStatusFromResponseData(data, response_code);
       break;
-    case net::URLRequestStatus::IO_PENDING:
+    case net::ERR_IO_PENDING:
       NOTREACHED();
       break;
-    case net::URLRequestStatus::FAILED:
-      revocation_status =
-          (status.ToNetError() == net::ERR_TIMED_OUT)
-              ? GaiaAuthConsumer::TokenRevocationStatus::kConnectionTimeout
-              : GaiaAuthConsumer::TokenRevocationStatus::kConnectionFailed;
-      break;
-    case net::URLRequestStatus::CANCELED:
+    case net::ERR_ABORTED:
       revocation_status =
           GaiaAuthConsumer::TokenRevocationStatus::kConnectionCanceled;
+      break;
+    default:
+      revocation_status =
+          (net_error == net::ERR_TIMED_OUT)
+              ? GaiaAuthConsumer::TokenRevocationStatus::kConnectionTimeout
+              : GaiaAuthConsumer::TokenRevocationStatus::kConnectionFailed;
       break;
   }
 
@@ -1012,30 +1033,29 @@ void GaiaAuthFetcher::OnOAuth2RevokeTokenFetched(
 }
 
 void GaiaAuthFetcher::OnListAccountsFetched(const std::string& data,
-                                            const net::URLRequestStatus& status,
+                                            net::Error net_error,
                                             int response_code) {
-  if (status.is_success() && response_code == net::HTTP_OK) {
+  if (net_error == net::OK && response_code == net::HTTP_OK) {
     consumer_->OnListAccountsSuccess(data);
   } else {
-    consumer_->OnListAccountsFailure(GenerateAuthError(data, status));
+    consumer_->OnListAccountsFailure(GenerateAuthError(data, net_error));
   }
 }
 
 void GaiaAuthFetcher::OnLogOutFetched(const std::string& data,
-                                      const net::URLRequestStatus& status,
+                                      net::Error net_error,
                                       int response_code) {
-  if (status.is_success() && response_code == net::HTTP_OK) {
+  if (net_error == net::OK && response_code == net::HTTP_OK) {
     consumer_->OnLogOutSuccess();
   } else {
-    consumer_->OnLogOutFailure(GenerateAuthError(data, status));
+    consumer_->OnLogOutFailure(GenerateAuthError(data, net_error));
   }
 }
 
-void GaiaAuthFetcher::OnGetUserInfoFetched(
-    const std::string& data,
-    const net::URLRequestStatus& status,
-    int response_code) {
-  if (status.is_success() && response_code == net::HTTP_OK) {
+void GaiaAuthFetcher::OnGetUserInfoFetched(const std::string& data,
+                                           net::Error net_error,
+                                           int response_code) {
+  if (net_error == net::OK && response_code == net::HTTP_OK) {
     base::StringPairs tokens;
     UserInfoMap matches;
     base::SplitStringIntoKeyValuePairs(data, '=', '\n', &tokens);
@@ -1045,34 +1065,34 @@ void GaiaAuthFetcher::OnGetUserInfoFetched(
     }
     consumer_->OnGetUserInfoSuccess(matches);
   } else {
-    consumer_->OnGetUserInfoFailure(GenerateAuthError(data, status));
+    consumer_->OnGetUserInfoFailure(GenerateAuthError(data, net_error));
   }
 }
 
 void GaiaAuthFetcher::OnMergeSessionFetched(const std::string& data,
-                                            const net::URLRequestStatus& status,
+                                            net::Error net_error,
                                             int response_code) {
-  if (status.is_success() && response_code == net::HTTP_OK) {
+  if (net_error == net::OK && response_code == net::HTTP_OK) {
     consumer_->OnMergeSessionSuccess(data);
   } else {
-    consumer_->OnMergeSessionFailure(GenerateAuthError(data, status));
+    consumer_->OnMergeSessionFailure(GenerateAuthError(data, net_error));
   }
 }
 
 void GaiaAuthFetcher::OnUberAuthTokenFetch(const std::string& data,
-                                           const net::URLRequestStatus& status,
+                                           net::Error net_error,
                                            int response_code) {
-  if (status.is_success() && response_code == net::HTTP_OK) {
+  if (net_error == net::OK && response_code == net::HTTP_OK) {
     consumer_->OnUberAuthTokenSuccess(data);
   } else {
-    consumer_->OnUberAuthTokenFailure(GenerateAuthError(data, status));
+    consumer_->OnUberAuthTokenFailure(GenerateAuthError(data, net_error));
   }
 }
 
 void GaiaAuthFetcher::OnOAuthLoginFetched(const std::string& data,
-                                          const net::URLRequestStatus& status,
+                                          net::Error net_error,
                                           int response_code) {
-  if (status.is_success() && response_code == net::HTTP_OK) {
+  if (net_error == net::OK && response_code == net::HTTP_OK) {
     VLOG(1) << "ClientLogin successful!";
     std::string sid;
     std::string lsid;
@@ -1081,78 +1101,85 @@ void GaiaAuthFetcher::OnOAuthLoginFetched(const std::string& data,
     consumer_->OnClientLoginSuccess(
         GaiaAuthConsumer::ClientLoginResult(sid, lsid, token, data));
   } else {
-    consumer_->OnClientLoginFailure(GenerateAuthError(data, status));
+    consumer_->OnClientLoginFailure(GenerateAuthError(data, net_error));
   }
 }
 
-void GaiaAuthFetcher::OnGetCheckConnectionInfoFetched(
-    const std::string& data,
-    const net::URLRequestStatus& status,
-    int response_code) {
-  if (status.is_success() && response_code == net::HTTP_OK) {
+void GaiaAuthFetcher::OnGetCheckConnectionInfoFetched(const std::string& data,
+                                                      net::Error net_error,
+                                                      int response_code) {
+  if (net_error == net::Error::OK && response_code == net::HTTP_OK) {
     consumer_->OnGetCheckConnectionInfoSuccess(data);
   } else {
-    consumer_->OnGetCheckConnectionInfoError(GenerateAuthError(data, status));
+    consumer_->OnGetCheckConnectionInfoError(
+        GenerateAuthError(data, net_error));
   }
 }
 
-void GaiaAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
+void GaiaAuthFetcher::OnURLLoadComplete(
+    std::unique_ptr<std::string> response_body) {
+  net::Error net_error = static_cast<net::Error>(url_loader_->NetError());
+  std::string data = response_body ? std::move(*response_body) : "";
+
+  int response_code = 0;
+  network::HttpRawRequestResponseInfo::HeadersVector headers;
+  if (url_loader_->ResponseInfo()) {
+    if (url_loader_->ResponseInfo()->headers)
+      response_code = url_loader_->ResponseInfo()->headers->response_code();
+    if (url_loader_->ResponseInfo()->raw_request_response_info) {
+      headers = url_loader_->ResponseInfo()
+                    ->raw_request_response_info->response_headers;
+    }
+  }
+  OnURLLoadCompleteInternal(net_error, response_code, headers, data);
+}
+
+void GaiaAuthFetcher::OnURLLoadCompleteInternal(
+    net::Error net_error,
+    int response_code,
+    const network::HttpRawRequestResponseInfo::HeadersVector& headers,
+    std::string data) {
   fetch_pending_ = false;
-  // Some of the GAIA requests perform redirects, which results in the final
-  // URL of the fetcher not being the original URL requested.  Therefore use
-  // the original URL when determining which OnXXX function to call.
-  const GURL& url = source->GetOriginalURL();
-  const net::URLRequestStatus& status = source->GetStatus();
-  int response_code = source->GetResponseCode();
-  std::string data;
-  source->GetResponseAsString(&data);
-
-// Retrieve the response headers from the request.  Must only be called after
-// the OnURLFetchComplete callback has run.
-#ifndef NDEBUG
-  std::string headers;
-  if (source->GetResponseHeaders())
-    headers = net::HttpUtil::ConvertHeadersBackToHTTPResponse(
-        source->GetResponseHeaders()->raw_headers());
-  DVLOG(2) << "Response " << url.spec() << ", code = " << response_code << "\n"
-           << headers << "\n";
-  DVLOG(2) << "data: " << data << "\n";
-#endif
-
   net::ResponseCookies cookies;
-  GetCookiesFromResponse(source->GetResponseHeaders(), &cookies);
-  DispatchFetchedRequest(url, data, cookies, status, response_code);
+  GetCookiesFromResponse(headers, &cookies);
+
+  // Some of the GAIA requests perform redirects, which results in the final URL
+  // of the fetcher not being the original URL requested.  Therefore use the
+  // original URL when determining which OnXXX function to call.
+  GURL url = original_url_;
+  original_url_ = GURL();
+  DispatchFetchedRequest(url, data, cookies, net_error, response_code);
 }
 
 void GaiaAuthFetcher::DispatchFetchedRequest(
     const GURL& url,
     const std::string& data,
     const net::ResponseCookies& cookies,
-    const net::URLRequestStatus& status,
+    net::Error net_error,
     int response_code) {
   if (base::StartsWith(url.spec(),
                        deprecated_client_login_to_oauth2_gurl_.spec(),
                        base::CompareCase::SENSITIVE)) {
-    OnClientLoginToOAuth2Fetched(data, cookies, status, response_code);
+    OnClientLoginToOAuth2Fetched(data, cookies, net_error, response_code);
   } else if (url == oauth2_token_gurl_) {
-    OnOAuth2TokenPairFetched(data, status, response_code);
+    OnOAuth2TokenPairFetched(data, net_error, response_code);
   } else if (url == get_user_info_gurl_) {
-    OnGetUserInfoFetched(data, status, response_code);
+    OnGetUserInfoFetched(data, net_error, response_code);
   } else if (base::StartsWith(url.spec(), merge_session_gurl_.spec(),
                               base::CompareCase::SENSITIVE)) {
-    OnMergeSessionFetched(data, status, response_code);
+    OnMergeSessionFetched(data, net_error, response_code);
   } else if (url == uberauth_token_gurl_) {
-    OnUberAuthTokenFetch(data, status, response_code);
+    OnUberAuthTokenFetch(data, net_error, response_code);
   } else if (url == oauth_login_gurl_) {
-    OnOAuthLoginFetched(data, status, response_code);
+    OnOAuthLoginFetched(data, net_error, response_code);
   } else if (url == oauth2_revoke_gurl_) {
-    OnOAuth2RevokeTokenFetched(data, status, response_code);
+    OnOAuth2RevokeTokenFetched(data, net_error, response_code);
   } else if (url == list_accounts_gurl_) {
-    OnListAccountsFetched(data, status, response_code);
+    OnListAccountsFetched(data, net_error, response_code);
   } else if (url == logout_gurl_) {
-    OnLogOutFetched(data, status, response_code);
+    OnLogOutFetched(data, net_error, response_code);
   } else if (url == get_check_connection_info_url_) {
-    OnGetCheckConnectionInfoFetched(data, status, response_code);
+    OnGetCheckConnectionInfoFetched(data, net_error, response_code);
   } else {
     NOTREACHED();
   }

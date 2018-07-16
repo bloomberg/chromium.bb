@@ -6,12 +6,22 @@
 #define IOS_CHROME_BROWSER_SIGNIN_GAIA_AUTH_FETCHER_IOS_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 class GaiaAuthFetcherIOSBridge;
+class GURL;
+
+namespace net {
+class URLRequestStatus;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace web {
 class BrowserState;
@@ -37,10 +47,11 @@ class GaiaAuthFetcherIOS : public GaiaAuthFetcher {
   // used.
   static bool ShouldUseGaiaAuthFetcherIOS();
 
-  GaiaAuthFetcherIOS(GaiaAuthConsumer* consumer,
-                     const std::string& source,
-                     net::URLRequestContextGetter* getter,
-                     web::BrowserState* browser_state);
+  GaiaAuthFetcherIOS(
+      GaiaAuthConsumer* consumer,
+      const std::string& source,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      web::BrowserState* browser_state);
   ~GaiaAuthFetcherIOS() override;
 
   void CancelRequest() override;

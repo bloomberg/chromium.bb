@@ -16,7 +16,7 @@ class ShellOAuth2TokenServiceTest : public ExtensionsTest {
 
 // Verifies setting the refresh token makes it available.
 TEST_F(ShellOAuth2TokenServiceTest, SetRefreshToken) {
-  ShellOAuth2TokenService service(nullptr, "larry@google.com", "token123");
+  ShellOAuth2TokenService service("larry@google.com", "token123");
 
   // Only has a token for the account in the constructor.
   EXPECT_EQ("larry@google.com", service.AccountId());

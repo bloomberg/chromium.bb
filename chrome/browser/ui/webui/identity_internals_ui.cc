@@ -276,8 +276,9 @@ IdentityInternalsTokenRevoker::IdentityInternalsTokenRevoker(
     const std::string& access_token,
     Profile* profile,
     IdentityInternalsUIMessageHandler* consumer)
-    : fetcher_(this, GaiaConstants::kChromeSource,
-               profile->GetRequestContext()),
+    : fetcher_(this,
+               GaiaConstants::kChromeSource,
+               profile->GetURLLoaderFactory()),
       extension_id_(extension_id),
       access_token_(access_token),
       consumer_(consumer) {

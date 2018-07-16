@@ -75,7 +75,6 @@ std::string DeviceOAuth2TokenService::GetRobotAccountId() const {
 void DeviceOAuth2TokenService::FetchOAuth2Token(
     RequestImpl* request,
     const std::string& account_id,
-    net::URLRequestContextGetter* getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
@@ -100,7 +99,7 @@ void DeviceOAuth2TokenService::FetchOAuth2Token(
       return;
     case DeviceOAuth2TokenServiceDelegate::STATE_TOKEN_VALID:
       // Pass through to OAuth2TokenService to satisfy the request.
-      OAuth2TokenService::FetchOAuth2Token(request, account_id, getter,
+      OAuth2TokenService::FetchOAuth2Token(request, account_id,
                                            url_loader_factory, client_id,
                                            client_secret, scopes);
       return;
@@ -125,7 +124,6 @@ void DeviceOAuth2TokenService::FlushPendingRequests(
       OAuth2TokenService::FetchOAuth2Token(
           scoped_request->request.get(),
           scoped_request->request->GetAccountId(),
-          GetDeviceDelegate()->GetRequestContext(),
           GetDeviceDelegate()->GetURLLoaderFactory(), scoped_request->client_id,
           scoped_request->client_secret, scoped_request->scopes);
     } else {

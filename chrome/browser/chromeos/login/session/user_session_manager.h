@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -48,6 +49,10 @@ class CommandLine;
 
 namespace net {
 class URLRequestContextGetter;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace user_manager {
@@ -280,8 +285,11 @@ class UserSessionManager
   // Update Easy unlock cryptohome keys for given user context.
   void UpdateEasyUnlockKeys(const UserContext& user_context);
 
-  // Returns the auth request context associated with auth data.
+  // Returns the auth request context/URLLoaderFactory associated with auth
+  // data.
   net::URLRequestContextGetter* GetAuthRequestContext() const;
+  scoped_refptr<network::SharedURLLoaderFactory> GetAuthURLLoaderFactory()
+      const;
 
   // Removes a profile from the per-user input methods states map.
   void RemoveProfileForTesting(Profile* profile);
