@@ -12,8 +12,9 @@
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace gcm {
 
@@ -101,21 +102,20 @@ CheckinRequest::CheckinRequest(
     const RequestInfo& request_info,
     const net::BackoffEntry::Policy& backoff_policy,
     const CheckinRequestCallback& callback,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     GCMStatsRecorder* recorder)
-    : request_context_getter_(request_context_getter),
+    : url_loader_factory_(url_loader_factory),
       callback_(callback),
       backoff_entry_(&backoff_policy),
       checkin_url_(checkin_url),
       request_info_(request_info),
       recorder_(recorder),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 CheckinRequest::~CheckinRequest() {}
 
 void CheckinRequest::Start() {
-  DCHECK(!url_fetcher_.get());
+  DCHECK(!url_loader_.get());
 
   checkin_proto::AndroidCheckinRequest request;
   request.set_id(request_info_.android_id);
@@ -177,20 +177,27 @@ void CheckinRequest::Start() {
           policy_exception_justification:
             "Not implemented, considered not useful."
         })");
-  url_fetcher_ = net::URLFetcher::Create(checkin_url_, net::URLFetcher::POST,
-                                         this, traffic_annotation);
-  url_fetcher_->SetRequestContext(request_context_getter_);
-  url_fetcher_->SetUploadData(kRequestContentType, upload_data);
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SAVE_COOKIES);
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = checkin_url_;
+  resource_request->method = "POST";
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 traffic_annotation);
+  url_loader_->AttachStringForUpload(upload_data, kRequestContentType);
+  url_loader_->SetAllowHttpErrorResults(true);
   recorder_->RecordCheckinInitiated(request_info_.android_id);
   request_start_time_ = base::TimeTicks::Now();
-  url_fetcher_->Start();
+
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&CheckinRequest::OnURLLoadComplete, base::Unretained(this),
+                     url_loader_.get()));
 }
 
 void CheckinRequest::RetryWithBackoff() {
   backoff_entry_.InformOfRequest(false);
-  url_fetcher_.reset();
+  url_loader_.reset();
 
   DVLOG(1) << "Delay GCM checkin for: "
            << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
@@ -204,10 +211,11 @@ void CheckinRequest::RetryWithBackoff() {
       backoff_entry_.GetTimeUntilRelease());
 }
 
-void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
-  std::string response_string;
+void CheckinRequest::OnURLLoadComplete(const network::SimpleURLLoader* source,
+                                       std::unique_ptr<std::string> body) {
   checkin_proto::AndroidCheckinResponse response_proto;
-  if (!source->GetStatus().is_success()) {
+  if (source->NetError() != net::OK || !source->ResponseInfo() ||
+      !source->ResponseInfo()->headers) {
     LOG(ERROR) << "Failed to get checkin response. Fetcher failed. Retrying.";
     RecordCheckinStatusAndReportUMA(URL_FETCHING_FAILED, recorder_, true);
     RetryWithBackoff();
@@ -215,7 +223,7 @@ void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   net::HttpStatusCode response_status = static_cast<net::HttpStatusCode>(
-      source->GetResponseCode());
+      source->ResponseInfo()->headers->response_code());
   if (response_status == net::HTTP_BAD_REQUEST ||
       response_status == net::HTTP_UNAUTHORIZED) {
     // BAD_REQUEST indicates that the request was malformed.
@@ -229,9 +237,8 @@ void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  if (response_status != net::HTTP_OK ||
-      !source->GetResponseAsString(&response_string) ||
-      !response_proto.ParseFromString(response_string)) {
+  if (response_status != net::HTTP_OK || !body ||
+      !response_proto.ParseFromString(*body)) {
     LOG(ERROR) << "Failed to get checkin response. HTTP Status: "
                << response_status << ". Retrying.";
     CheckinRequestStatus status = response_status != net::HTTP_OK ?

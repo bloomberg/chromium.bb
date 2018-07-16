@@ -15,6 +15,7 @@
 #include "google_apis/gcm/engine/instance_id_delete_token_request_handler.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
 #include "net/base/load_flags.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace gcm {
 
@@ -42,7 +43,7 @@ class UnregistrationRequestTest : public GCMRequestTestBase {
 
   void UnregistrationCallback(UnregistrationRequest::Status status);
 
-  void CompleteFetch() override;
+  void OnAboutToCompleteFetch() override;
 
   int max_retry_count() const { return max_retry_count_; }
   void set_max_retry_count(int max_retry_count) {
@@ -70,11 +71,9 @@ void UnregistrationRequestTest::UnregistrationCallback(
   status_ = status;
 }
 
-void UnregistrationRequestTest::CompleteFetch() {
+void UnregistrationRequestTest::OnAboutToCompleteFetch() {
   status_ = UnregistrationRequest::UNREGISTRATION_STATUS_COUNT;
   callback_called_ = false;
-
-  GCMRequestTestBase::CompleteFetch();
 }
 
 class GCMUnregistrationRequestTest : public UnregistrationRequestTest {
@@ -102,29 +101,25 @@ void GCMUnregistrationRequestTest::CreateRequest() {
       GetBackoffPolicy(),
       base::Bind(&UnregistrationRequestTest::UnregistrationCallback,
                  base::Unretained(this)),
-      max_retry_count_, url_request_context_getter(), &recorder_,
-      std::string()));
+      max_retry_count_, url_loader_factory(), &recorder_, std::string()));
 }
 
 TEST_F(GCMUnregistrationRequestTest, RequestDataPassedToFetcher) {
   CreateRequest();
   request_->Start();
 
-  // Get data sent by request.
-  net::TestURLFetcher* fetcher = GetFetcher();
-  ASSERT_TRUE(fetcher);
-
-  EXPECT_EQ(GURL(kRegistrationURL), fetcher->GetOriginalURL());
-
-  int flags = fetcher->GetLoadFlags();
+  // Verify that the no-cookie flag is set.
+  int flags = 0;
+  ASSERT_TRUE(test_url_loader_factory()->IsPending(kRegistrationURL, &flags));
   EXPECT_TRUE(flags & net::LOAD_DO_NOT_SEND_COOKIES);
   EXPECT_TRUE(flags & net::LOAD_DO_NOT_SAVE_COOKIES);
 
   // Verify that authorization header was put together properly.
-  net::HttpRequestHeaders headers;
-  fetcher->GetExtraRequestHeaders(&headers);
+  const net::HttpRequestHeaders* headers =
+      GetExtraHeadersForURL(kRegistrationURL);
+  ASSERT_TRUE(headers);
   std::string auth_header;
-  headers.GetHeader(net::HttpRequestHeaders::kAuthorization, &auth_header);
+  headers->GetHeader(net::HttpRequestHeaders::kAuthorization, &auth_header);
   base::StringTokenizer auth_tokenizer(auth_header, " :");
   ASSERT_TRUE(auth_tokenizer.GetNext());
   EXPECT_EQ(kLoginHeader, auth_tokenizer.token());
@@ -139,7 +134,8 @@ TEST_F(GCMUnregistrationRequestTest, RequestDataPassedToFetcher) {
   expected_pairs["delete"] = "true";
   expected_pairs["gcm_unreg_caller"] = "false";
 
-  ASSERT_NO_FATAL_FAILURE(VerifyFetcherUploadData(&expected_pairs));
+  ASSERT_NO_FATAL_FAILURE(
+      VerifyFetcherUploadDataForURL(kRegistrationURL, &expected_pairs));
 }
 
 TEST_F(GCMUnregistrationRequestTest, SuccessfulUnregistration) {
@@ -147,9 +143,7 @@ TEST_F(GCMUnregistrationRequestTest, SuccessfulUnregistration) {
   CreateRequest();
   request_->Start();
 
-  SetResponse(net::HTTP_OK, kDeletedAppId);
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK, kDeletedAppId);
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
@@ -158,14 +152,10 @@ TEST_F(GCMUnregistrationRequestTest, ResponseHttpStatusNotOK) {
   CreateRequest();
   request_->Start();
 
-  SetResponse(net::HTTP_UNAUTHORIZED, "");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_UNAUTHORIZED, "");
   EXPECT_FALSE(callback_called_);
 
-  SetResponse(net::HTTP_OK, kDeletedAppId);
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK, kDeletedAppId);
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
@@ -174,14 +164,10 @@ TEST_F(GCMUnregistrationRequestTest, ResponseEmpty) {
   CreateRequest();
   request_->Start();
 
-  SetResponse(net::HTTP_OK, "");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK, "");
   EXPECT_FALSE(callback_called_);
 
-  SetResponse(net::HTTP_OK, kDeletedAppId);
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK, kDeletedAppId);
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
@@ -190,9 +176,8 @@ TEST_F(GCMUnregistrationRequestTest, InvalidParametersError) {
   CreateRequest();
   request_->Start();
 
-  SetResponse(net::HTTP_OK, "Error=INVALID_PARAMETERS");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK,
+                               "Error=INVALID_PARAMETERS");
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::INVALID_PARAMETERS, status_);
 }
@@ -201,9 +186,8 @@ TEST_F(GCMUnregistrationRequestTest, DeviceRegistrationError) {
   CreateRequest();
   request_->Start();
 
-  SetResponse(net::HTTP_OK, "Error=PHONE_REGISTRATION_ERROR");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK,
+                               "Error=PHONE_REGISTRATION_ERROR");
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::DEVICE_REGISTRATION_ERROR, status_);
 }
@@ -212,9 +196,7 @@ TEST_F(GCMUnregistrationRequestTest, UnkwnownError) {
   CreateRequest();
   request_->Start();
 
-  SetResponse(net::HTTP_OK, "Error=XXX");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK, "Error=XXX");
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::UNKNOWN_ERROR, status_);
 }
@@ -223,14 +205,11 @@ TEST_F(GCMUnregistrationRequestTest, ServiceUnavailable) {
   CreateRequest();
   request_->Start();
 
-  SetResponse(net::HTTP_SERVICE_UNAVAILABLE, "");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_SERVICE_UNAVAILABLE,
+                               "");
   EXPECT_FALSE(callback_called_);
 
-  SetResponse(net::HTTP_OK, kDeletedAppId);
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK, kDeletedAppId);
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
@@ -239,14 +218,11 @@ TEST_F(GCMUnregistrationRequestTest, InternalServerError) {
   CreateRequest();
   request_->Start();
 
-  SetResponse(net::HTTP_INTERNAL_SERVER_ERROR, "");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL,
+                               net::HTTP_INTERNAL_SERVER_ERROR, "");
   EXPECT_FALSE(callback_called_);
 
-  SetResponse(net::HTTP_OK, kDeletedAppId);
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK, kDeletedAppId);
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
@@ -255,14 +231,11 @@ TEST_F(GCMUnregistrationRequestTest, IncorrectAppId) {
   CreateRequest();
   request_->Start();
 
-  SetResponse(net::HTTP_OK, "deleted=OtherTestAppId");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK,
+                               "deleted=OtherTestAppId");
   EXPECT_FALSE(callback_called_);
 
-  SetResponse(net::HTTP_OK, kDeletedAppId);
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK, kDeletedAppId);
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
@@ -271,14 +244,11 @@ TEST_F(GCMUnregistrationRequestTest, ResponseParsingFailed) {
   CreateRequest();
   request_->Start();
 
-  SetResponse(net::HTTP_OK, "some malformed response");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK,
+                               "some malformed response");
   EXPECT_FALSE(callback_called_);
 
-  SetResponse(net::HTTP_OK, kDeletedAppId);
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK, kDeletedAppId);
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
@@ -288,9 +258,8 @@ TEST_F(GCMUnregistrationRequestTest, MaximumAttemptsReachedWithZeroRetries) {
   CreateRequest();
   request_->Start();
 
-  SetResponse(net::HTTP_GATEWAY_TIMEOUT, "bad response");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_GATEWAY_TIMEOUT,
+                               "bad response");
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::REACHED_MAX_RETRIES, status_);
 }
@@ -299,19 +268,16 @@ TEST_F(GCMUnregistrationRequestTest, MaximumAttemptsReached) {
   CreateRequest();
   request_->Start();
 
-  SetResponse(net::HTTP_GATEWAY_TIMEOUT, "bad response");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_GATEWAY_TIMEOUT,
+                               "bad response");
   EXPECT_FALSE(callback_called_);
 
-  SetResponse(net::HTTP_GATEWAY_TIMEOUT, "bad response");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_GATEWAY_TIMEOUT,
+                               "bad response");
   EXPECT_FALSE(callback_called_);
 
-  SetResponse(net::HTTP_GATEWAY_TIMEOUT, "bad response");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_GATEWAY_TIMEOUT,
+                               "bad response");
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::REACHED_MAX_RETRIES, status_);
 }
@@ -350,25 +316,19 @@ void InstaceIDDeleteTokenRequestTest::CreateRequest(
       GetBackoffPolicy(),
       base::Bind(&UnregistrationRequestTest::UnregistrationCallback,
                  base::Unretained(this)),
-      max_retry_count(), url_request_context_getter(), &recorder_,
-      std::string()));
+      max_retry_count(), url_loader_factory(), &recorder_, std::string()));
 }
 
 TEST_F(InstaceIDDeleteTokenRequestTest, RequestDataPassedToFetcher) {
   CreateRequest(false /* use_subtype */, kInstanceId, kDeveloperId, kScope);
   request_->Start();
 
-  // Get data sent by request.
-  net::TestURLFetcher* fetcher = GetFetcher();
-  ASSERT_TRUE(fetcher);
-
-  EXPECT_EQ(GURL(kRegistrationURL), fetcher->GetOriginalURL());
-
   // Verify that authorization header was put together properly.
-  net::HttpRequestHeaders headers;
-  fetcher->GetExtraRequestHeaders(&headers);
+  const net::HttpRequestHeaders* headers =
+      GetExtraHeadersForURL(kRegistrationURL);
+  ASSERT_TRUE(headers);
   std::string auth_header;
-  headers.GetHeader(net::HttpRequestHeaders::kAuthorization, &auth_header);
+  headers->GetHeader(net::HttpRequestHeaders::kAuthorization, &auth_header);
   base::StringTokenizer auth_tokenizer(auth_header, " :");
   ASSERT_TRUE(auth_tokenizer.GetNext());
   EXPECT_EQ(kLoginHeader, auth_tokenizer.token());
@@ -387,16 +347,13 @@ TEST_F(InstaceIDDeleteTokenRequestTest, RequestDataPassedToFetcher) {
   expected_pairs["scope"] = kScope;
   expected_pairs["X-scope"] = kScope;
 
-  ASSERT_NO_FATAL_FAILURE(VerifyFetcherUploadData(&expected_pairs));
+  ASSERT_NO_FATAL_FAILURE(
+      VerifyFetcherUploadDataForURL(kRegistrationURL, &expected_pairs));
 }
 
 TEST_F(InstaceIDDeleteTokenRequestTest, RequestDataWithSubtype) {
   CreateRequest(true /* use_subtype */, kInstanceId, kDeveloperId, kScope);
   request_->Start();
-
-  // Get data sent by request.
-  net::TestURLFetcher* fetcher = GetFetcher();
-  ASSERT_TRUE(fetcher);
 
   // Same as RequestDataPassedToFetcher except "app" and "X-subtype".
   std::map<std::string, std::string> expected_pairs;
@@ -410,16 +367,15 @@ TEST_F(InstaceIDDeleteTokenRequestTest, RequestDataWithSubtype) {
   expected_pairs["scope"] = kScope;
   expected_pairs["X-scope"] = kScope;
 
-  ASSERT_NO_FATAL_FAILURE(VerifyFetcherUploadData(&expected_pairs));
+  ASSERT_NO_FATAL_FAILURE(
+      VerifyFetcherUploadDataForURL(kRegistrationURL, &expected_pairs));
 }
 
 TEST_F(InstaceIDDeleteTokenRequestTest, SuccessfulUnregistration) {
   CreateRequest(false /* use_subtype */, kInstanceId, kDeveloperId, kScope);
   request_->Start();
 
-  SetResponse(net::HTTP_OK, kDeletedToken);
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK, kDeletedToken);
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
@@ -428,14 +384,10 @@ TEST_F(InstaceIDDeleteTokenRequestTest, ResponseHttpStatusNotOK) {
   CreateRequest(false /* use_subtype */, kInstanceId, kDeveloperId, kScope);
   request_->Start();
 
-  SetResponse(net::HTTP_UNAUTHORIZED, "");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_UNAUTHORIZED, "");
   EXPECT_FALSE(callback_called_);
 
-  SetResponse(net::HTTP_OK, kDeletedToken);
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK, kDeletedToken);
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::SUCCESS, status_);
 }
@@ -444,9 +396,8 @@ TEST_F(InstaceIDDeleteTokenRequestTest, InvalidParametersError) {
   CreateRequest(false /* use_subtype */, kInstanceId, kDeveloperId, kScope);
   request_->Start();
 
-  SetResponse(net::HTTP_OK, "Error=INVALID_PARAMETERS");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK,
+                               "Error=INVALID_PARAMETERS");
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::INVALID_PARAMETERS, status_);
 }
@@ -455,9 +406,7 @@ TEST_F(InstaceIDDeleteTokenRequestTest, UnkwnownError) {
   CreateRequest(false /* use_subtype */, kInstanceId, kDeveloperId, kScope);
   request_->Start();
 
-  SetResponse(net::HTTP_OK, "Error=XXX");
-  CompleteFetch();
-
+  SetResponseForURLAndComplete(kRegistrationURL, net::HTTP_OK, "Error=XXX");
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(UnregistrationRequest::UNKNOWN_ERROR, status_);
 }

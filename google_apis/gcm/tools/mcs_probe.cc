@@ -39,6 +39,7 @@
 #include "google_apis/gcm/engine/gservices_settings.h"
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
+#include "mojo/core/embedder/embedder.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -55,6 +56,11 @@
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/network_context.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -260,6 +266,11 @@ class MCSProbe {
 
   base::Thread file_thread_;
 
+  std::unique_ptr<network::NetworkContext> network_context_;
+  network::mojom::NetworkContextPtr network_context_pipe_;
+  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+
   std::unique_ptr<base::RunLoop> run_loop_;
 };
 
@@ -385,6 +396,21 @@ void MCSProbe::InitializeNetworkState() {
   http_server_properties_ = std::make_unique<net::HttpServerPropertiesImpl>();
   proxy_resolution_service_ =
       net::ProxyResolutionService::CreateDirectWithNetLog(&net_log_);
+
+  // Wrap it up with network service APIs.
+  network_context_ = std::make_unique<network::NetworkContext>(
+      nullptr /* network_service */, mojo::MakeRequest(&network_context_pipe_),
+      url_request_context_getter_->GetURLRequestContext());
+  auto url_loader_factory_params =
+      network::mojom::URLLoaderFactoryParams::New();
+  url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
+  url_loader_factory_params->is_corb_enabled = false;
+  network_context_->CreateURLLoaderFactory(
+      mojo::MakeRequest(&url_loader_factory_),
+      std::move(url_loader_factory_params));
+  shared_url_loader_factory_ =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          url_loader_factory_.get());
 }
 
 void MCSProbe::ErrorCallback() {
@@ -407,7 +433,7 @@ void MCSProbe::CheckIn() {
   checkin_request_ = std::make_unique<CheckinRequest>(
       GServicesSettings().GetCheckinURL(), request_info, kDefaultBackoffPolicy,
       base::Bind(&MCSProbe::OnCheckInCompleted, base::Unretained(this)),
-      url_request_context_getter_.get(), &recorder_);
+      shared_url_loader_factory_, &recorder_);
   checkin_request_->Start();
 }
 
@@ -449,6 +475,8 @@ int MCSProbeMain(int argc, char* argv[]) {
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
+
+  mojo::core::Init();
 
   base::MessageLoopForIO message_loop;
   base::TaskScheduler::CreateAndStartWithDefaultParams("MCSProbe");

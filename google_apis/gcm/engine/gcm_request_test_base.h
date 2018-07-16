@@ -10,8 +10,6 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/backoff_entry.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,30 +27,11 @@ class GCMRequestTestBase : public testing::Test {
   ~GCMRequestTestBase() override;
 
   const net::BackoffEntry::Policy& GetBackoffPolicy() const;
-  net::TestURLFetcher* GetFetcher() const;
 
-  // Set the response status and body that will be returned by the URL fetch.
-  void SetResponse(net::HttpStatusCode status_code,
-                   const std::string& response_body);
+  // Called before fetch about to be completed. Can be overridden by the test
+  // class to add additional logic.
+  virtual void OnAboutToCompleteFetch();
 
-  // Completes the URL fetch.
-  // It can be overridden by the test class to add additional logic.
-  virtual void CompleteFetch();
-
-  // Verifies that the Fetcher's upload_data exactly matches the given
-  // properties. The map will be cleared as a side-effect. Wrap calls to this
-  // with ASSERT_NO_FATAL_FAILURE.
-  void VerifyFetcherUploadData(
-      std::map<std::string, std::string>* expected_pairs);
-
-  net::URLRequestContextGetter* url_request_context_getter() const {
-    return url_request_context_getter_.get();
-  }
-
-  // The code is in transition away from URLRequestContextGetter +
-  // URLFetcherFactory to SharedURLLoaderFactory. For now, both are needed.
-  // Things that use url_loader_factory() will be matched with test APIs with
-  // "ForURL" in their names below.
   network::SharedURLLoaderFactory* url_loader_factory() const {
     return shared_factory_.get();
   }
@@ -83,9 +62,6 @@ class GCMRequestTestBase : public testing::Test {
   void FastForwardToTriggerNextRetry();
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-
-  scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
-  net::TestURLFetcherFactory url_fetcher_factory_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;

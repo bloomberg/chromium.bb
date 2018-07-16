@@ -126,8 +126,12 @@ if (!is_ios) {
       ":test_support",
       "//base",
       "//build/win:default_exe_manifest",
+      "//mojo/core/embedder",
       "//net",
       "//net:test_support",
+      "//services/network:network_service",
+      "//services/network/public/cpp",
+      "//services/network/public/mojom",
       "//third_party/protobuf:protobuf_lite",
     ]
   }

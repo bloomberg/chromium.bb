@@ -695,14 +695,11 @@ void GCMClientImpl::StartCheckin() {
                                            device_checkin_info_.account_tokens,
                                            gservices_settings_.digest(),
                                            chrome_build_proto);
-  checkin_request_.reset(
-      new CheckinRequest(gservices_settings_.GetCheckinURL(),
-                         request_info,
-                         GetGCMBackoffPolicy(),
-                         base::Bind(&GCMClientImpl::OnCheckinCompleted,
-                                    weak_ptr_factory_.GetWeakPtr()),
-                         url_request_context_getter_.get(),
-                         &recorder_));
+  checkin_request_.reset(new CheckinRequest(
+      gservices_settings_.GetCheckinURL(), request_info, GetGCMBackoffPolicy(),
+      base::Bind(&GCMClientImpl::OnCheckinCompleted,
+                 weak_ptr_factory_.GetWeakPtr()),
+      url_loader_factory_, &recorder_));
   // Taking a snapshot of the accounts count here, as there might be an asynch
   // update of the account tokens while checkin is in progress.
   device_checkin_info_.SnapshotCheckinAccounts();
@@ -1162,7 +1159,7 @@ void GCMClientImpl::Unregister(
           std::move(request_handler), GetGCMBackoffPolicy(),
           base::Bind(&GCMClientImpl::OnUnregisterCompleted,
                      weak_ptr_factory_.GetWeakPtr(), registration_info),
-          kMaxUnregistrationRetries, url_request_context_getter_, &recorder_,
+          kMaxUnregistrationRetries, url_loader_factory_, &recorder_,
           source_to_record));
   unregistration_request->Start();
   pending_unregistration_requests_.insert(

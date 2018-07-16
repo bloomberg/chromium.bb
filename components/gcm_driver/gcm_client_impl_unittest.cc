@@ -566,11 +566,10 @@ void GCMClientImplTest::CompleteCheckinImpl(
   std::string response_string;
   response.SerializeToString(&response_string);
 
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(response_code);
-  fetcher->SetResponseString(response_string);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_TRUE(url_loader_factory()->SimulateResponseForPendingRequest(
+      gservices_settings().GetCheckinURL(),
+      network::URLLoaderCompletionStatus(net::OK),
+      network::CreateResourceResponseHead(response_code), response_string));
   // Give a chance for GCMStoreImpl::Backend to finish persisting data.
   PumpLoopUntilIdle();
 }
@@ -592,11 +591,11 @@ void GCMClientImplTest::CompleteUnregistration(
     const std::string& app_id) {
   std::string response(kUnregistrationResponsePrefix);
   response.append(app_id);
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(response);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  EXPECT_TRUE(url_loader_factory()->SimulateResponseForPendingRequest(
+      GURL(kRegisterUrl), network::URLLoaderCompletionStatus(net::OK),
+      network::CreateResourceResponseHead(net::HTTP_OK), response));
+
   // Give a chance for GCMStoreImpl::Backend to finish persisting data.
   PumpLoopUntilIdle();
 }
@@ -1705,11 +1704,11 @@ void GCMClientInstanceIDTest::DeleteToken(const std::string& app_id,
 
 void GCMClientInstanceIDTest::CompleteDeleteToken() {
   std::string response(kDeleteTokenResponse);
-  net::TestURLFetcher* fetcher = url_fetcher_factory()->GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(response);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  EXPECT_TRUE(url_loader_factory()->SimulateResponseForPendingRequest(
+      GURL(kRegisterUrl), network::URLLoaderCompletionStatus(net::OK),
+      network::CreateResourceResponseHead(net::HTTP_OK), response));
+
   // Give a chance for GCMStoreImpl::Backend to finish persisting data.
   PumpLoopUntilIdle();
 }

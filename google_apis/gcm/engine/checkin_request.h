@@ -18,11 +18,11 @@
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "net/base/backoff_entry.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
 }
 
 namespace gcm {
@@ -33,7 +33,7 @@ class GCMStatsRecorder;
 // with android_id and security_token both set to 0 it is an initial check-in
 // used to obtain credentials. These should be persisted and used for subsequent
 // check-ins.
-class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
+class GCM_EXPORT CheckinRequest {
  public:
   // A callback function for the checkin request, accepting |checkin_response|
   // protobuf.
@@ -64,29 +64,31 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
     checkin_proto::ChromeBuildProto chrome_build_proto;
   };
 
-  CheckinRequest(const GURL& checkin_url,
-                 const RequestInfo& request_info,
-                 const net::BackoffEntry::Policy& backoff_policy,
-                 const CheckinRequestCallback& callback,
-                 net::URLRequestContextGetter* request_context_getter,
-                 GCMStatsRecorder* recorder);
-  ~CheckinRequest() override;
+  CheckinRequest(
+      const GURL& checkin_url,
+      const RequestInfo& request_info,
+      const net::BackoffEntry::Policy& backoff_policy,
+      const CheckinRequestCallback& callback,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      GCMStatsRecorder* recorder);
+  ~CheckinRequest();
 
   void Start();
 
-  // URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Invoked from SimpleURLLoader.
+  void OnURLLoadComplete(const network::SimpleURLLoader* source,
+                         std::unique_ptr<std::string> body);
 
  private:
   // Schedules a retry attempt with a backoff.
   void RetryWithBackoff();
 
-  net::URLRequestContextGetter* request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   CheckinRequestCallback callback_;
 
   net::BackoffEntry backoff_entry_;
   GURL checkin_url_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
   const RequestInfo request_info_;
   base::TimeTicks request_start_time_;
 
