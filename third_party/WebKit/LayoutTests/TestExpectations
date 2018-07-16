@@ -102,7 +102,6 @@ crbug.com/845267 [ Mac ] http/tests/inspector-protocol/page/page-lifecycleEvents
 
 # SwiftShader Failures
 crbug.com/726075 [ Win Linux Mac ] compositing/3d-cube.html [ Failure ]
-crbug.com/726075 [ Linux ] shapedetection/detection-HTMLVideoElement.html [ Timeout ]
 
 # Looks like a filuare to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
