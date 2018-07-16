@@ -417,7 +417,6 @@ crbug.com/591099 external/wpt/requestidlecallback/callback-iframe.html [ Pass Ti
 crbug.com/591099 external/wpt/requestidlecallback/callback-timeout-when-busy.html [ Timeout ]
 crbug.com/591099 external/wpt/requestidlecallback/callback-timeout.html [ Timeout ]
 crbug.com/591099 external/wpt/requestidlecallback/cancel-invoked.html [ Pass Timeout ]
-crbug.com/591099 external/wpt/requestidlecallback/idlharness.html [ Pass Timeout ]
 crbug.com/591099 external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Failure ]
 crbug.com/591099 external/wpt/speech-api/SpeechSynthesis-speak-twice.html [ Timeout ]
 crbug.com/591099 external/wpt/svg/painting/reftests/paint-context-001.svg [ Failure ]
