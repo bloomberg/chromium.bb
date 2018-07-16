@@ -57,6 +57,8 @@ class TestAutofillDriver : public AutofillDriver {
   // Sets the URL request context for this instance. |url_request_context|
   // should outlive this instance.
   void SetURLRequestContext(net::URLRequestContextGetter* url_request_context);
+  void SetSharedURLLoaderFactory(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
  private:
   net::URLRequestContextGetter* url_request_context_;

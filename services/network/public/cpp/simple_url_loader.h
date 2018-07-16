@@ -270,6 +270,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // loader has informed the caller of completion.
   virtual const GURL& GetFinalURL() const = 0;
 
+  // Indicates the request that this loader is processing was loaded from the
+  // HTTP cache. May only be called once the loader has informed the caller of
+  // completion.
+  virtual bool LoadedFromCache() const = 0;
+
  protected:
   SimpleURLLoader();
 

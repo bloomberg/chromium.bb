@@ -20,8 +20,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "net/base/backoff_entry.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -30,7 +29,7 @@ class AutofillDriver;
 class FormStructure;
 
 // Handles getting and updating Autofill heuristics.
-class AutofillDownloadManager : public net::URLFetcherDelegate {
+class AutofillDownloadManager {
  public:
   enum RequestType { REQUEST_QUERY, REQUEST_UPLOAD, };
 
@@ -64,7 +63,7 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   // |observer| - observer to notify on successful completion or error.
   AutofillDownloadManager(AutofillDriver* driver,
                           Observer* observer);
-  ~AutofillDownloadManager() override;
+  virtual ~AutofillDownloadManager();
 
   // Starts a query request to Autofill servers. The observer is called with the
   // list of the fields of all requested forms.
@@ -102,7 +101,7 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   // described by |request_data|. If the returned method is GET, the URL
   // fully encompasses the request, do not include request_data.payload when
   // transmitting the request.
-  std::tuple<GURL, net::URLFetcher::RequestType> GetRequestURLAndMethod(
+  std::tuple<GURL, std::string> GetRequestURLAndMethod(
       const FormRequestData& request_data) const;
 
   // Initiates request to Autofill servers to download/upload type predictions.
@@ -130,8 +129,10 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   std::string GetCombinedSignature(
       const std::vector<std::string>& forms_in_query) const;
 
-  // net::URLFetcherDelegate implementation:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(
+      std::list<std::unique_ptr<network::SimpleURLLoader>>::iterator it,
+      FormRequestData request_data,
+      std::unique_ptr<std::string> response_body);
 
   // The AutofillDriver that this instance will use. Must not be null, and must
   // outlive this instance.
@@ -145,23 +146,15 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   // final path component for the request and the query params.
   GURL autofill_server_url_;
 
-  // For each requested form for both query and upload we create a separate
-  // request and save its info. As url fetcher is identified by its address
-  // we use a map between fetchers and info. The value type is a pair of an
-  // owning pointer to the key and the actual FormRequestData.
-  std::map<net::URLFetcher*,
-           std::pair<std::unique_ptr<net::URLFetcher>, FormRequestData>>
-      url_fetchers_;
+  // Loaders used for the processing the requests. Invalidated after completion.
+  std::list<std::unique_ptr<network::SimpleURLLoader>> url_loaders_;
 
   // Cached QUERY requests.
   QueryRequestCache cached_forms_;
   size_t max_form_cache_size_;
 
   // Used for exponential backoff of requests.
-  net::BackoffEntry fetcher_backoff_;
-
-  // Needed for unit-test.
-  int fetcher_id_for_unittest_;
+  net::BackoffEntry loader_backoff_;
 
   base::WeakPtrFactory<AutofillDownloadManager> weak_factory_;
 };
