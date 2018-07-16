@@ -32,6 +32,12 @@ interface Assistant {
   AddAssistantNotificationSubscriber(
       AssistantNotificationSubscriber subscriber);
 
+  // Retrieves a notification. A voiceless interaction will be sent to server to
+  // retrieve the notification payload, which can trigger other assistant's
+  // events such as OnTextResponse to show the result in the UI. The reteived
+  // notification will be removed from the UI.
+  RetrieveNotification(AssistantNotification notification, int32 action_index);
+
   // Dismisses a notification.
   DismissNotification(AssistantNotification notification);
 

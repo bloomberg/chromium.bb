@@ -218,6 +218,24 @@ void AssistantManagerServiceImpl::AddAssistantNotificationSubscriber(
   notification_subscribers_.AddPtr(std::move(subscriber));
 }
 
+void AssistantManagerServiceImpl::RetrieveNotification(
+    mojom::AssistantNotificationPtr notification,
+    int action_index) {
+  const std::string& notification_id = notification->notification_id;
+  const std::string& consistency_token = notification->consistency_token;
+  const std::string& opaque_token = notification->opaque_token;
+
+  const std::string request_interaction =
+      SerializeNotificationRequestInteraction(
+          notification_id, consistency_token, opaque_token, action_index);
+
+  assistant_client::VoicelessOptions options;
+  options.is_user_initiated = true;
+
+  assistant_manager_internal_->SendVoicelessInteraction(
+      request_interaction, "RequestNotification", options, [](auto) {});
+}
+
 void AssistantManagerServiceImpl::DismissNotification(
     mojom::AssistantNotificationPtr notification) {
   const std::string& notification_id = notification->notification_id;

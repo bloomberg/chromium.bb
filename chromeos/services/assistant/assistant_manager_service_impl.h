@@ -89,6 +89,8 @@ class AssistantManagerServiceImpl
       mojom::AssistantInteractionSubscriberPtr subscriber) override;
   void AddAssistantNotificationSubscriber(
       mojom::AssistantNotificationSubscriberPtr subscriber) override;
+  void RetrieveNotification(mojom::AssistantNotificationPtr notification,
+                            int action_index) override;
   void DismissNotification(
       mojom::AssistantNotificationPtr notification) override;
   void RequestScreenContext(const gfx::Rect& region,
