@@ -22,6 +22,7 @@
 #include "content/renderer/media/webrtc/media_stream_track_metrics.h"
 #include "content/renderer/media/webrtc/rtc_rtp_receiver.h"
 #include "content/renderer/media/webrtc/rtc_rtp_sender.h"
+#include "content/renderer/media/webrtc/transceiver_state_surfacer.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -142,7 +143,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void GetStats(const blink::WebRTCStatsRequest& request) override;
   void GetStats(
       std::unique_ptr<blink::WebRTCStatsReportCallback> callback) override;
-  std::unique_ptr<blink::WebRTCRtpSender> AddTrack(
+  webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>> AddTrack(
       const blink::WebMediaStreamTrack& web_track,
       const blink::WebVector<blink::WebMediaStream>& web_streams) override;
   bool RemoveTrack(blink::WebRTCRtpSender* web_sender) override;
@@ -235,6 +236,12 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void ReportFirstSessionDescriptions(const FirstSessionDescription& local,
                                       const FirstSessionDescription& remote);
 
+  void AddTrackOnSignalingThread(
+      rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
+      std::vector<std::string> stream_ids,
+      TransceiverStateSurfacer* transceiver_state_surfacer,
+      webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpSenderInterface>>*
+          error_or_sender);
   std::vector<std::unique_ptr<RTCRtpSender>>::iterator FindSender(uintptr_t id);
 
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;

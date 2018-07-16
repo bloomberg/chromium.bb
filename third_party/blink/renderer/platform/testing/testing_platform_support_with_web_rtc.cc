@@ -8,8 +8,7 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
@@ -45,6 +44,33 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
 };
 
 uintptr_t DummyWebRTCRtpSender::last_id_ = 0;
+
+class DummyRTCRtpTransceiver : public WebRTCRtpTransceiver {
+ public:
+  DummyRTCRtpTransceiver() {}
+  ~DummyRTCRtpTransceiver() override {}
+
+  WebRTCRtpTransceiverImplementationType ImplementationType() const override {
+    return WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly;
+  }
+  uintptr_t Id() const override { return 0u; }
+  WebString Mid() const override { return WebString(); }
+  std::unique_ptr<WebRTCRtpSender> Sender() const override {
+    return std::make_unique<DummyWebRTCRtpSender>();
+  }
+  std::unique_ptr<WebRTCRtpReceiver> Receiver() const override {
+    return nullptr;
+  }
+  bool Stopped() const override { return true; }
+  webrtc::RtpTransceiverDirection Direction() const override {
+    return webrtc::RtpTransceiverDirection::kInactive;
+  }
+  base::Optional<webrtc::RtpTransceiverDirection> CurrentDirection()
+      const override {
+    return base::nullopt;
+  }
+  void Stop() override {}
+};
 
 }  // namespace
 
@@ -99,10 +125,12 @@ void MockWebRTCPeerConnectionHandler::GetStats(const WebRTCStatsRequest&) {}
 void MockWebRTCPeerConnectionHandler::GetStats(
     std::unique_ptr<WebRTCStatsReportCallback>) {}
 
-std::unique_ptr<WebRTCRtpSender> MockWebRTCPeerConnectionHandler::AddTrack(
-    const WebMediaStreamTrack&,
-    const WebVector<WebMediaStream>&) {
-  return std::make_unique<DummyWebRTCRtpSender>();
+webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+MockWebRTCPeerConnectionHandler::AddTrack(const WebMediaStreamTrack&,
+                                          const WebVector<WebMediaStream>&) {
+  std::unique_ptr<WebRTCRtpTransceiver> transceiver =
+      std::make_unique<DummyRTCRtpTransceiver>();
+  return transceiver;
 }
 
 bool MockWebRTCPeerConnectionHandler::RemoveTrack(WebRTCRtpSender*) {

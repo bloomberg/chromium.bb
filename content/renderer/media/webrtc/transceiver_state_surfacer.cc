@@ -62,9 +62,15 @@ void TransceiverStateSurfacer::Initialize(
       std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
           sender_track_ref;
       if (webrtc_sender->track()) {
+        // The track adapter for this track must already exist for us to obtain
+        // it, since this cannot be created from the signaling thread.
+        // TODO(hbos): Consider either making it possible to create local track
+        // adapters on the signaling thread for initialization on the main
+        // thread or wait for Onion Souping to simplify this.
+        // https://crbug.com/787254
         sender_track_ref =
             track_adapter_map->GetLocalTrackAdapter(webrtc_sender->track());
-        DCHECK(sender_track_ref);
+        CHECK(sender_track_ref);
       }
       sender_state = RtpSenderState(
           main_task_runner_, signaling_task_runner_, webrtc_sender.get(),

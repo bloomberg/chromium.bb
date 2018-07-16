@@ -130,6 +130,8 @@ class CONTENT_EXPORT RTCRtpTransceiver : public blink::WebRTCRtpTransceiver {
   RTCRtpSender* content_sender();
   RTCRtpReceiver* content_receiver();
 
+  blink::WebRTCRtpTransceiverImplementationType ImplementationType()
+      const override;
   uintptr_t Id() const override;
   blink::WebString Mid() const override;
   std::unique_ptr<blink::WebRTCRtpSender> Sender() const override;

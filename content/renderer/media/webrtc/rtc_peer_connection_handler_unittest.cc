@@ -393,17 +393,25 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   bool AddStream(const blink::WebMediaStream& web_stream) {
     size_t senders_size_before_add = senders_.size();
     for (const auto& web_audio_track : web_stream.AudioTracks()) {
-      auto sender = pc_handler_->AddTrack(
+      auto error_or_transceiver = pc_handler_->AddTrack(
           web_audio_track, std::vector<blink::WebMediaStream>({web_stream}));
-      if (sender) {
+      if (error_or_transceiver.ok()) {
+        DCHECK_EQ(
+            error_or_transceiver.value()->ImplementationType(),
+            blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
+        auto sender = error_or_transceiver.value()->Sender();
         senders_.push_back(std::unique_ptr<RTCRtpSender>(
             static_cast<RTCRtpSender*>(sender.release())));
       }
     }
     for (const auto& web_video_track : web_stream.VideoTracks()) {
-      auto sender = pc_handler_->AddTrack(
+      auto error_or_transceiver = pc_handler_->AddTrack(
           web_video_track, std::vector<blink::WebMediaStream>({web_stream}));
-      if (sender) {
+      if (error_or_transceiver.ok()) {
+        DCHECK_EQ(
+            error_or_transceiver.value()->ImplementationType(),
+            blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
+        auto sender = error_or_transceiver.value()->Sender();
         senders_.push_back(std::unique_ptr<RTCRtpSender>(
             static_cast<RTCRtpSender*>(sender.release())));
       }

@@ -318,6 +318,11 @@ void RTCRtpTransceiver::set_state(RtpTransceiverState transceiver_state) {
   internal_->set_state(std::move(transceiver_state));
 }
 
+blink::WebRTCRtpTransceiverImplementationType
+RTCRtpTransceiver::ImplementationType() const {
+  return blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver;
+}
+
 uintptr_t RTCRtpTransceiver::Id() const {
   return GetId(internal_->state().webrtc_transceiver().get());
 }
