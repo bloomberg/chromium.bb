@@ -2169,14 +2169,16 @@ static int update_type_2_rf_level(FRAME_UPDATE_TYPE update_type) {
 
 static void set_multi_layer_params(GF_GROUP *const gf_group, int l, int r,
                                    int *frame_ind, int arf_ind, int level) {
-  if (r - l == 2) {
-    // leaf node, not a look-ahead frame
-    gf_group->update_type[*frame_ind] = LF_UPDATE;
-    gf_group->arf_src_offset[*frame_ind] = 0;
-    gf_group->arf_pos_in_gf[*frame_ind] = 0;
-    gf_group->arf_update_idx[*frame_ind] = arf_ind;
-    gf_group->pyramid_level[*frame_ind] = level;
-    ++(*frame_ind);
+  if (r - l < 4) {
+    while (++l < r) {
+      // leaf nodes, not a look-ahead frame
+      gf_group->update_type[*frame_ind] = LF_UPDATE;
+      gf_group->arf_src_offset[*frame_ind] = 0;
+      gf_group->arf_pos_in_gf[*frame_ind] = 0;
+      gf_group->arf_update_idx[*frame_ind] = arf_ind;
+      gf_group->pyramid_level[*frame_ind] = level;
+      ++(*frame_ind);
+    }
   } else {
     int m = (l + r) / 2;
     int arf_pos_in_gf = *frame_ind;
@@ -2209,7 +2211,7 @@ static INLINE unsigned char get_pyramid_height(int pyramid_width) {
   assert(pyramid_width <= 16 && pyramid_width >= 4 &&
          "invalid gf interval for pyramid structure");
 
-  return pyramid_width == 16 ? 4 : (pyramid_width >= 8 ? 3 : 2);
+  return pyramid_width > 12 ? 4 : (pyramid_width > 6 ? 3 : 2);
 }
 
 static int construct_multi_layer_gf_structure(GF_GROUP *const gf_group,
@@ -2248,8 +2250,7 @@ void define_customized_gf_group_structure(AV1_COMP *cpi) {
   GF_GROUP *const gf_group = &twopass->gf_group;
   const int key_frame = cpi->common.frame_type == KEY_FRAME;
 
-  assert(rc->baseline_gf_interval == 4 || rc->baseline_gf_interval == 8 ||
-         rc->baseline_gf_interval == 16);
+  assert(rc->baseline_gf_interval >= 4 && rc->baseline_gf_interval <= 16);
 
   const int gf_update_frames =
       construct_multi_layer_gf_structure(gf_group, rc->baseline_gf_interval);
@@ -2454,9 +2455,8 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
   }
 #endif  // USE_GF16_MULTI_LAYER
 #if USE_SYMM_MULTI_LAYER
-  const int valid_customized_gf_length = rc->baseline_gf_interval == 4 ||
-                                         rc->baseline_gf_interval == 8 ||
-                                         rc->baseline_gf_interval == 16;
+  const int valid_customized_gf_length =
+      rc->baseline_gf_interval >= 4 && rc->baseline_gf_interval <= 16;
   // used the new structure only if extra_arf is allowed
   if (valid_customized_gf_length && rc->source_alt_ref_pending &&
       cpi->extra_arf_allowed > 0) {
