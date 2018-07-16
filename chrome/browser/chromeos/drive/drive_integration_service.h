@@ -183,6 +183,10 @@ class DriveIntegrationService : public KeyedService,
   void AddBackDriveMountPoint(const base::Callback<void(bool)>& callback,
                               FileError error);
 
+  // Unregisters drive mount point, and if |remount_delay| is specified
+  // then tries to add it back after that delay.
+  void MaybeRemountFileSystem(base::Optional<base::TimeDelta> remount_delay);
+
   // Initializes the object. This function should be called before any
   // other functions.
   void Initialize();

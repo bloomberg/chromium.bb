@@ -119,7 +119,7 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate {
 
   // DriveFsHost::Delegate:
   MOCK_METHOD1(OnMounted, void(const base::FilePath&));
-  MOCK_METHOD0(OnUnmounted, void());
+  MOCK_METHOD1(OnUnmounted, void(base::Optional<base::TimeDelta>));
 
  private:
   // DriveFsHost::Delegate:
@@ -296,7 +296,9 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
 
   void SendOnMounted() { delegate_ptr_->OnMounted(); }
 
-  void SendOnUnmounted() { delegate_ptr_->OnUnmounted({}); }
+  void SendOnUnmounted(base::Optional<base::TimeDelta> delay) {
+    delegate_ptr_->OnUnmounted(std::move(delay));
+  }
 
   void DoMount() {
     auto token = StartMount();
@@ -477,8 +479,9 @@ TEST_F(DriveFsHostTest, MountWhileAlreadyMounted) {
 
 TEST_F(DriveFsHostTest, UnmountByRemote) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
-  EXPECT_CALL(*host_delegate_, OnUnmounted());
-  SendOnUnmounted();
+  base::Optional<base::TimeDelta> delay = base::TimeDelta::FromSeconds(5);
+  EXPECT_CALL(*host_delegate_, OnUnmounted(delay));
+  SendOnUnmounted(delay);
   base::RunLoop().RunUntilIdle();
 }
 
