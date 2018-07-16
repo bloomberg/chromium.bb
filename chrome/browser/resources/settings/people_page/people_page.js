@@ -548,7 +548,7 @@ Polymer({
     if (!syncStatus)
       return '';
 
-    let syncIcon = 'settings:sync';
+    let syncIcon = 'cr:sync';
 
     if (syncStatus.hasError)
       syncIcon = 'settings:sync-problem';
