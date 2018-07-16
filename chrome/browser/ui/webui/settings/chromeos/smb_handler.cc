@@ -59,9 +59,17 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
   mo.display_name = mount_name.empty() ? mount_url : mount_name;
   mo.writable = true;
 
-  service->Mount(mo, base::FilePath(mount_url), username, password,
-                 base::BindOnce(&SmbHandler::HandleSmbMountResponse,
-                                weak_ptr_factory_.GetWeakPtr()));
+  auto mount_response = base::BindOnce(&SmbHandler::HandleSmbMountResponse,
+                                       weak_ptr_factory_.GetWeakPtr());
+  auto mount_call = base::BindOnce(
+      &smb_client::SmbService::Mount, base::Unretained(service), mo,
+      base::FilePath(mount_url), username, password, std::move(mount_response));
+
+  if (host_discovery_done_) {
+    std::move(mount_call).Run();
+  } else {
+    stored_mount_call_ = std::move(mount_call);
+  }
 }
 
 void SmbHandler::HandleSmbMountResponse(SmbMountResult result) {
@@ -78,6 +86,11 @@ void SmbHandler::HandleStartDiscovery(const base::ListValue* args) {
 
 void SmbHandler::HandleGatherSharesResponse(
     const std::vector<smb_client::SmbUrl>& shares_gathered) {
+  host_discovery_done_ = true;
+  if (!stored_mount_call_.is_null()) {
+    std::move(stored_mount_call_).Run();
+  }
+
   // TODO(zentaro): Pass the shares discovered back to the UI.
   // https://crbug.com/852199.
 }
