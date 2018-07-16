@@ -1577,6 +1577,24 @@ void Element::SetSynchronizedLazyAttribute(const QualifiedName& name,
 }
 
 void Element::setAttribute(const QualifiedName& name,
+                           const StringOrTrustedHTML& stringOrHTML,
+                           ExceptionState& exception_state) {
+  DCHECK(stringOrHTML.IsString() ||
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+  if (stringOrHTML.IsString() && GetDocument().RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedHTML` assignment.");
+    return;
+  }
+
+  String valueString = stringOrHTML.IsString()
+                           ? stringOrHTML.GetAsString()
+                           : stringOrHTML.GetAsTrustedHTML()->toString();
+
+  setAttribute(name, AtomicString(valueString));
+}
+
+void Element::setAttribute(const QualifiedName& name,
                            const StringOrTrustedScriptURL& stringOrURL,
                            ExceptionState& exception_state) {
   DCHECK(stringOrURL.IsString() ||
@@ -4209,6 +4227,12 @@ void Element::GetURLAttribute(const QualifiedName& name,
                               StringOrTrustedScriptURL& result) const {
   KURL url = GetURLAttribute(name);
   result.SetString(url.GetString());
+}
+
+void Element::FastGetAttribute(const QualifiedName& name,
+                               StringOrTrustedHTML& result) const {
+  String html = FastGetAttribute(name);
+  result.SetString(html);
 }
 
 KURL Element::GetNonEmptyURLAttribute(const QualifiedName& name) const {
