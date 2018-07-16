@@ -343,7 +343,6 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/text-indent-rtl.html
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/truncation-rtl.html [ Failure ]
 
 ### virtual/layout_ng/fast/block/float
-crbug.com/810335 virtual/layout_ng/fast/block/float/003.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/020.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/026.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/028.html [ Failure ]
