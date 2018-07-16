@@ -402,13 +402,8 @@ void DelegatedFrameHost::OnBeginFrame(const viz::BeginFrameArgs& args) {
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
-  // It is possible that we are embedding the contents of previous
-  // DelegatedFrameHost. In this case, HasSavedFrame() will return false but we
-  // still need to clear the layer.
-  if (HasFallbackSurface()) {
-    client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
-        viz::SurfaceId());
-  }
+  // Replaces the SurfaceLayer with a SolidColorLayer.
+  client_->DelegatedFrameHostGetLayer()->SetShowSolidColorContent();
 
   if (!HasSavedFrame())
     return;
