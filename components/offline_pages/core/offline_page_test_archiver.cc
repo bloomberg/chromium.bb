@@ -26,13 +26,15 @@ OfflinePageTestArchiver::OfflinePageTestArchiver(
       size_to_report_(size_to_report),
       create_archive_called_(false),
       publish_archive_called_(false),
+      archive_attempt_failure_(false),
       delayed_(false),
       result_title_(result_title),
       digest_to_report_(digest_to_report),
       task_runner_(task_runner) {}
 
 OfflinePageTestArchiver::~OfflinePageTestArchiver() {
-  EXPECT_TRUE(create_archive_called_ || publish_archive_called_);
+  EXPECT_TRUE(create_archive_called_ || publish_archive_called_ ||
+              archive_attempt_failure_);
 }
 
 void OfflinePageTestArchiver::CreateArchive(
@@ -59,6 +61,10 @@ void OfflinePageTestArchiver::PublishArchive(
   publish_archive_result.move_result = SavePageResult::SUCCESS;
   publish_archive_result.new_file_path = offline_page.file_path;
   publish_archive_result.download_id = 0;
+
+  if (archive_attempt_failure_) {
+    publish_archive_result.move_result = SavePageResult::FILE_MOVE_FAILED;
+  }
 
   // Note: once the |publish_done_callback| is invoked it is very likely that
   // this instance will be destroyed. So all parameters sent to it must not be
