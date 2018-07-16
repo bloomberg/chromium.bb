@@ -22,6 +22,8 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -34,9 +36,7 @@ using SigninManagerForTest = FakeSigninManagerBase;
 using SigninManagerForTest = FakeSigninManager;
 #endif  // OS_CHROMEOS
 
-const char kGaiaId1[] = "account_1";
 const char kEmail1[] = "account_1@me.com";
-const char kGaiaId2[] = "account_2";
 const char kEmail2[] = "account_2@me.com";
 
 std::string AccountIdToObfuscatedId(const std::string& account_id) {
@@ -186,14 +186,11 @@ class GCMAccountTrackerTest : public testing::Test {
   // the account ID of the newly-added account, which can then be passed into
   // any methods that take in an account ID.
   // Call to RemoveAccount is not mandatory.
-  std::string StartAccountAddition(const std::string& gaia_id,
-                                   const std::string& email);
-  std::string StartPrimaryAccountAddition(const std::string& gaia_id,
-                                          const std::string& email);
+  std::string StartAccountAddition(const std::string& email);
+  std::string StartPrimaryAccountAddition(const std::string& email);
   void FinishAccountAddition(const std::string& account_id);
-  std::string AddAccount(const std::string& gaia_id, const std::string& email);
-  std::string AddPrimaryAccount(const std::string& gaia_id,
-                                const std::string& email);
+  std::string AddAccount(const std::string& email);
+  std::string AddPrimaryAccount(const std::string& email);
   void RemoveAccount(const std::string& account_id);
 
   // Helpers for dealing with OAuth2 access token requests.
@@ -220,6 +217,7 @@ class GCMAccountTrackerTest : public testing::Test {
   std::unique_ptr<TestSigninClient> test_signin_client_;
   std::unique_ptr<SigninManagerForTest> fake_signin_manager_;
   std::unique_ptr<FakeProfileOAuth2TokenService> fake_token_service_;
+  std::unique_ptr<identity::IdentityManager> identity_manager_;
   std::unique_ptr<GCMAccountTracker> tracker_;
 };
 
@@ -241,12 +239,16 @@ GCMAccountTrackerTest::GCMAccountTrackerTest() {
   SigninManagerBase::RegisterPrefs(pref_service_.registry());
   account_tracker_service_.Initialize(test_signin_client_.get());
 
+  identity_manager_ = std::make_unique<identity::IdentityManager>(
+      fake_signin_manager_.get(), fake_token_service_.get(),
+      &account_tracker_service_);
+
   std::unique_ptr<AccountTracker> gaia_account_tracker(new AccountTracker(
       fake_signin_manager_.get(), fake_token_service_.get(),
       new net::TestURLRequestContextGetter(message_loop_.task_runner())));
 
   tracker_.reset(new GCMAccountTracker(std::move(gaia_account_tracker),
-                                       fake_token_service_.get(), &driver_));
+                                       identity_manager_.get(), &driver_));
 }
 
 GCMAccountTrackerTest::~GCMAccountTrackerTest() {
@@ -255,16 +257,14 @@ GCMAccountTrackerTest::~GCMAccountTrackerTest() {
 }
 
 std::string GCMAccountTrackerTest::StartAccountAddition(
-    const std::string& gaia_id,
     const std::string& email) {
-  std::string account_id =
-      account_tracker_service_.SeedAccountInfo(gaia_id, email);
-  fake_token_service_->UpdateCredentials(account_id, "fake_refresh_token");
-  return account_id;
+  return identity::MakeAccountAvailable(&account_tracker_service_,
+                                        fake_token_service_.get(),
+                                        identity_manager_.get(), email)
+      .account_id;
 }
 
 std::string GCMAccountTrackerTest::StartPrimaryAccountAddition(
-    const std::string& gaia_id,
     const std::string& email) {
 // NOTE: Setting of the primary account info must be done first on ChromeOS
 // to ensure that AccountTracker and GCMAccountTracker respond as expected
@@ -273,16 +273,10 @@ std::string GCMAccountTrackerTest::StartPrimaryAccountAddition(
 // setting of the primary account is done afterward to check that the flow
 // that ensues from the GoogleSigninSucceeded callback firing works as
 // expected.
-#if defined(OS_CHROMEOS)
-  fake_signin_manager_->SignIn(email);
-#else
-  fake_signin_manager_->SignIn(gaia_id, email, "" /* password */);
-#endif
-
-  std::string account_id = fake_signin_manager_->GetAuthenticatedAccountId();
-  fake_token_service_->UpdateCredentials(account_id, "fake_refresh_token");
-
-  return account_id;
+return identity::MakePrimaryAccountAvailable(fake_signin_manager_.get(),
+                                             fake_token_service_.get(),
+                                             identity_manager_.get(), email)
+    .account_id;
 }
 
 void GCMAccountTrackerTest::FinishAccountAddition(
@@ -297,22 +291,21 @@ void GCMAccountTrackerTest::FinishAccountAddition(
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
-std::string GCMAccountTrackerTest::AddPrimaryAccount(const std::string& gaia_id,
-                                                     const std::string& email) {
-  std::string account_id = StartPrimaryAccountAddition(gaia_id, email);
+std::string GCMAccountTrackerTest::AddPrimaryAccount(const std::string& email) {
+  std::string account_id = StartPrimaryAccountAddition(email);
   FinishAccountAddition(account_id);
   return account_id;
 }
 
-std::string GCMAccountTrackerTest::AddAccount(const std::string& gaia_id,
-                                              const std::string& email) {
-  std::string account_id = StartAccountAddition(gaia_id, email);
+std::string GCMAccountTrackerTest::AddAccount(const std::string& email) {
+  std::string account_id = StartAccountAddition(email);
   FinishAccountAddition(account_id);
   return account_id;
 }
 
 void GCMAccountTrackerTest::RemoveAccount(const std::string& account_id) {
-  fake_token_service_->RevokeCredentials(account_id);
+  identity::RemoveRefreshTokenForAccount(fake_token_service_.get(),
+                                         identity_manager_.get(), account_id);
 }
 
 void GCMAccountTrackerTest::IssueAccessToken(const std::string& account_id) {
@@ -356,7 +349,7 @@ TEST_F(GCMAccountTrackerTest, NoAccounts) {
 // with a specific scope. In this scenario, the underlying account tracker is
 // still working when the CompleteCollectingTokens is called for the first time.
 TEST_F(GCMAccountTrackerTest, SingleAccount) {
-  std::string account_id1 = StartPrimaryAccountAddition(kGaiaId1, kEmail1);
+  std::string account_id1 = StartPrimaryAccountAddition(kEmail1);
 
   tracker()->Start();
   // We don't have any accounts to report, but given the inner account tracker
@@ -375,9 +368,9 @@ TEST_F(GCMAccountTrackerTest, SingleAccount) {
 }
 
 TEST_F(GCMAccountTrackerTest, MultipleAccounts) {
-  std::string account_id1 = StartPrimaryAccountAddition(kGaiaId1, kEmail1);
+  std::string account_id1 = StartPrimaryAccountAddition(kEmail1);
 
-  std::string account_id2 = StartAccountAddition(kGaiaId2, kEmail2);
+  std::string account_id2 = StartAccountAddition(kEmail2);
 
   tracker()->Start();
   EXPECT_FALSE(driver()->update_accounts_called());
@@ -400,7 +393,7 @@ TEST_F(GCMAccountTrackerTest, AccountAdded) {
   tracker()->Start();
   driver()->ResetResults();
 
-  std::string account_id1 = AddPrimaryAccount(kGaiaId1, kEmail1);
+  std::string account_id1 = AddPrimaryAccount(kEmail1);
   EXPECT_FALSE(driver()->update_accounts_called());
 
   IssueAccessToken(account_id1);
@@ -412,8 +405,8 @@ TEST_F(GCMAccountTrackerTest, AccountAdded) {
 }
 
 TEST_F(GCMAccountTrackerTest, AccountRemoved) {
-  std::string account_id1 = AddPrimaryAccount(kGaiaId1, kEmail1);
-  std::string account_id2 = AddAccount(kGaiaId2, kEmail2);
+  std::string account_id1 = AddPrimaryAccount(kEmail1);
+  std::string account_id2 = AddAccount(kEmail2);
 
   tracker()->Start();
   IssueAccessToken(account_id1);
@@ -432,8 +425,8 @@ TEST_F(GCMAccountTrackerTest, AccountRemoved) {
 }
 
 TEST_F(GCMAccountTrackerTest, GetTokenFailed) {
-  std::string account_id1 = AddPrimaryAccount(kGaiaId1, kEmail1);
-  std::string account_id2 = AddAccount(kGaiaId2, kEmail2);
+  std::string account_id1 = AddPrimaryAccount(kEmail1);
+  std::string account_id2 = AddAccount(kEmail2);
 
   tracker()->Start();
   IssueAccessToken(account_id1);
@@ -451,8 +444,8 @@ TEST_F(GCMAccountTrackerTest, GetTokenFailed) {
 }
 
 TEST_F(GCMAccountTrackerTest, GetTokenFailedAccountRemoved) {
-  std::string account_id1 = AddPrimaryAccount(kGaiaId1, kEmail1);
-  std::string account_id2 = AddAccount(kGaiaId2, kEmail2);
+  std::string account_id1 = AddPrimaryAccount(kEmail1);
+  std::string account_id2 = AddAccount(kEmail2);
 
   tracker()->Start();
   IssueAccessToken(account_id1);
@@ -469,8 +462,8 @@ TEST_F(GCMAccountTrackerTest, GetTokenFailedAccountRemoved) {
 }
 
 TEST_F(GCMAccountTrackerTest, AccountRemovedWhileRequestsPending) {
-  std::string account_id1 = AddPrimaryAccount(kGaiaId1, kEmail1);
-  std::string account_id2 = AddAccount(kGaiaId2, kEmail2);
+  std::string account_id1 = AddPrimaryAccount(kEmail1);
+  std::string account_id2 = AddAccount(kEmail2);
 
   tracker()->Start();
   IssueAccessToken(account_id1);
@@ -497,7 +490,7 @@ TEST_F(GCMAccountTrackerTest, TrackerObservesConnection) {
 // Makes sure that token fetching happens only after connection is established.
 TEST_F(GCMAccountTrackerTest, PostponeTokenFetchingUntilConnected) {
   driver()->SetConnected(false);
-  std::string account_id1 = StartPrimaryAccountAddition(kGaiaId1, kEmail1);
+  std::string account_id1 = StartPrimaryAccountAddition(kEmail1);
   tracker()->Start();
   FinishAccountAddition(account_id1);
 
@@ -508,8 +501,8 @@ TEST_F(GCMAccountTrackerTest, PostponeTokenFetchingUntilConnected) {
 }
 
 TEST_F(GCMAccountTrackerTest, InvalidateExpiredTokens) {
-  std::string account_id1 = StartPrimaryAccountAddition(kGaiaId1, kEmail1);
-  std::string account_id2 = StartAccountAddition(kGaiaId2, kEmail2);
+  std::string account_id1 = StartPrimaryAccountAddition(kEmail1);
+  std::string account_id2 = StartAccountAddition(kEmail2);
   tracker()->Start();
   FinishAccountAddition(account_id1);
   FinishAccountAddition(account_id2);
@@ -532,7 +525,7 @@ TEST_F(GCMAccountTrackerTest, IsTokenFetchingRequired) {
   tracker()->Start();
   driver()->SetConnected(false);
   EXPECT_FALSE(IsFetchingRequired());
-  std::string account_id1 = StartPrimaryAccountAddition(kGaiaId1, kEmail1);
+  std::string account_id1 = StartPrimaryAccountAddition(kEmail1);
   FinishAccountAddition(account_id1);
   EXPECT_TRUE(IsFetchingRequired());
 
@@ -541,7 +534,7 @@ TEST_F(GCMAccountTrackerTest, IsTokenFetchingRequired) {
   IssueAccessToken(account_id1);
   EXPECT_FALSE(IsFetchingRequired());
 
-  std::string account_id2 = StartAccountAddition(kGaiaId2, kEmail2);
+  std::string account_id2 = StartAccountAddition(kEmail2);
   FinishAccountAddition(account_id2);
   EXPECT_FALSE(IsFetchingRequired());  // Indicates that fetching has started.
 
@@ -592,7 +585,7 @@ TEST_F(GCMAccountTrackerTest, IsTokenReportingRequired) {
   driver()->SetLastTokenFetchTime(base::Time::Now());
   EXPECT_FALSE(IsTokenReportingRequired());
 
-  std::string account_id1 = AddPrimaryAccount(kGaiaId1, kEmail1);
+  std::string account_id1 = AddPrimaryAccount(kEmail1);
   IssueAccessToken(account_id1);
   driver()->ResetResults();
   // Reporting was triggered, which means testing for required will give false,

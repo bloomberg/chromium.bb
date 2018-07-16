@@ -63,6 +63,7 @@ static_library("gcm_driver") {
     "//google_apis",
     "//google_apis/gcm",
     "//net",
+    "//services/identity/public/cpp",
     "//services/network/public/cpp",
     "//url:url",
   ]
@@ -206,5 +207,7 @@ source_set("unit_tests") {
     "//components/signin/core/browser",
     "//components/signin/core/browser:test_support",
     "//components/sync_preferences:test_support",
+    "//services/identity/public/cpp",
+    "//services/identity/public/cpp:test_support",
   ]
 }
