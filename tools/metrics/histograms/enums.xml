@@ -11298,6 +11298,14 @@ Called by update_net_error_codes.py.-->
   <int value="307" label="shtm"/>
   <int value="308" label="sht"/>
   <int value="309" label="slk"/>
+  <int value="310" label="applescript"/>
+  <int value="311" label="scpt"/>
+  <int value="312" label="scptd"/>
+  <int value="313" label="seplugin"/>
+  <int value="314" label="osas"/>
+  <int value="315" label="osax"/>
+  <int value="316" label="settingcontent-ms"/>
+  <int value="317" label="oxt"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
@@ -41788,6 +41796,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="314" label="OSAS"/>
   <int value="315" label="OSAX"/>
   <int value="316" label="SETTINGCONTENT-MS"/>
+  <int value="317" label="OXT"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">

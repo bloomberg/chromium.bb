@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 20
+version_id: 21
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -821,6 +821,17 @@ file_types {
   extension: "btsearch"
   uma_value: 302
   ping_setting: FULL_PING
+}
+file_types {
+  # OpenOffice extension, can execute arbitrary code.
+  # https://crbug.com/862163
+  extension: "oxt"
+  uma_value: 317
+  ping_setting: FULL_PING
+  platform_settings {
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
 }
 
 ##
