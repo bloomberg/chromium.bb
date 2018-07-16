@@ -196,7 +196,8 @@ class MEDIA_EXPORT VideoResourceUpdater
   uint32_t next_plane_resource_id_ = 1;
 
   // Temporary pixel buffer when converting between formats.
-  std::vector<uint8_t> upload_pixels_;
+  std::unique_ptr<uint8_t[]> upload_pixels_;
+  size_t upload_pixels_size_ = 0;
 
   VideoFrameResourceType frame_resource_type_;
 
