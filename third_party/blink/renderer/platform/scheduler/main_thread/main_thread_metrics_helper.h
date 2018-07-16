@@ -12,6 +12,7 @@
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/common/metrics_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/total_duration_metric_reporter.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/use_case.h"
 #include "third_party/blink/renderer/platform/scheduler/renderer/frame_status.h"
@@ -127,6 +128,8 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
       background_after_tenth_minute_per_task_type_duration_reporter_;
 
   TaskDurationMetricReporter<UseCase> per_task_use_case_duration_reporter_;
+
+  TotalDurationMetricReporter total_task_time_reporter_;
 
   MainThreadTaskLoadState main_thread_task_load_state_;
 

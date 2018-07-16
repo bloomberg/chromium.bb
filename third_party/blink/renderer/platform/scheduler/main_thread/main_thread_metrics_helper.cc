@@ -125,6 +125,9 @@ MainThreadMetricsHelper::MainThreadMetricsHelper(
       background_after_tenth_minute_per_task_type_duration_reporter_(
           DURATION_PER_TASK_TYPE_METRIC_NAME ".Background.AfterTenthMinute"),
       per_task_use_case_duration_reporter_(DURATION_PER_TASK_USE_CASE_NAME),
+      total_task_time_reporter_(
+          "Scheduler.Experimental.Renderer.TotalTime.Wall.MainThread.Positive",
+          "Scheduler.Experimental.Renderer.TotalTime.Wall.MainThread.Negative"),
       main_thread_task_load_state_(MainThreadTaskLoadState::kUnknown) {
   main_thread_load_tracker_.Resume(now);
   if (renderer_backgrounded) {
@@ -198,6 +201,9 @@ void MainThreadMetricsHelper::RecordTaskMetrics(
     return;
 
   MetricsHelper::RecordCommonTaskMetrics(queue, task, task_timing);
+
+  total_task_time_reporter_.RecordAdditionalDuration(
+      task_timing.wall_duration());
 
   MainThreadTaskQueue::QueueType queue_type =
       queue ? queue->queue_type() : MainThreadTaskQueue::QueueType::kDetached;
