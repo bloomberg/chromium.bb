@@ -139,12 +139,20 @@ const char kEnableInput[] = "enable-input";
 const char kCastAppBackgroundColor[] = "cast-app-background-color";
 
 // The number of pixels from the very left or right of the screen to consider as
-// a valid origin for the left or right swipe gesture.
+// a valid origin for the left or right swipe gesture.  Overrides the default
+// value in cast_system_gesture_handler.cc.
 const char kSystemGestureStartWidth[] = "system-gesture-start-width";
 
 // The number of pixels from the very top or bottom of the screen to consider as
-// a valid origin for the top or bottom swipe gesture.
+// a valid origin for the top or bottom swipe gesture. Overrides the default
+// value in cast_system_gesture_handler.cc.
 const char kSystemGestureStartHeight[] = "system-gesture-start-height";
+
+// The number of pixels up from the bottom of the screen to consider as a valid
+// origin for a bottom swipe gesture. If set, overrides the value of both the
+// above system-gesture-start-height flag and the default value in
+// cast_system_gesture_handler.cc.
+const char kBottomSystemGestureStartHeight[] = "bottom-gesture-start-height";
 
 // The number of pixels from the start of a left swipe gesture to consider as a
 // 'back' gesture.

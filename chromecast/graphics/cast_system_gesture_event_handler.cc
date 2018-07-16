@@ -25,6 +25,15 @@ constexpr int kDefaultSideGestureStartWidth = 35;
 // a valid origin for the top or bottom swipe gesture.
 constexpr int kDefaultSideGestureStartHeight = 35;
 
+// Get the correct bottom gesture start height by checking both margin flags in
+// order, and then the default value if neither is set.
+int BottomGestureStartHeight() {
+  return GetSwitchValueInt(
+      switches::kBottomSystemGestureStartHeight,
+      GetSwitchValueInt(switches::kSystemGestureStartHeight,
+                        kDefaultSideGestureStartHeight));
+}
+
 }  // namespace
 
 CastSystemGestureEventHandler::CastSystemGestureEventHandler(
@@ -35,6 +44,7 @@ CastSystemGestureEventHandler::CastSystemGestureEventHandler(
       gesture_start_height_(
           GetSwitchValueInt(switches::kSystemGestureStartHeight,
                             kDefaultSideGestureStartHeight)),
+      bottom_gesture_start_height_(BottomGestureStartHeight()),
       root_window_(root_window),
       current_swipe_(CastSideSwipeOrigin::NONE) {
   DCHECK(root_window);
@@ -59,8 +69,8 @@ CastSideSwipeOrigin CastSystemGestureEventHandler::GetDragPosition(
       (screen_bounds.x() + screen_bounds.width() - gesture_start_width_)) {
     return CastSideSwipeOrigin::RIGHT;
   }
-  if (point.y() >
-      (screen_bounds.y() + screen_bounds.height() - gesture_start_height_)) {
+  if (point.y() > (screen_bounds.y() + screen_bounds.height() -
+                   bottom_gesture_start_height_)) {
     return CastSideSwipeOrigin::BOTTOM;
   }
   return CastSideSwipeOrigin::NONE;
