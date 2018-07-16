@@ -88,6 +88,12 @@ Polymer({
       value: false,
     },
 
+    /** @private */
+    shouldShowCookieException_: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * Time in ms, when the dialog was opened.
      * @private
@@ -165,34 +171,54 @@ Polymer({
    *
    * @param {boolean} signedIn Whether the user is signed in.
    * @param {boolean} syncing Whether the user is syncing history.
+   * @param {boolean} shouldShowCookieException Whether the exception about not
+   *    being signed out of your Google account should be shown.
    * @private
    */
-  updateSyncState_: function(signedIn, syncing) {
+  updateSyncState_: function(signedIn, syncing, shouldShowCookieException) {
     this.isSignedIn_ = signedIn;
     this.isSyncingHistory_ = syncing;
+    this.shouldShowCookieException_ = shouldShowCookieException;
     this.$.clearBrowsingDataDialog.classList.add('fully-rendered');
   },
 
   /**
-   * Choose a summary checkbox label.
+   * Choose a label for the history checkbox.
    * @param {boolean} isSignedIn
    * @param {boolean} isSyncingHistory
    * @param {string} historySummary
-   * @param {string} historySummarySigned
+   * @param {string} historySummarySignedIn
    * @param {string} historySummarySynced
    * @return {string}
    * @private
    */
   browsingCheckboxLabel_: function(
-      isSignedIn, isSyncingHistory, historySummary, historySummarySigned,
+      isSignedIn, isSyncingHistory, historySummary, historySummarySignedIn,
       historySummarySynced) {
     if (isSyncingHistory) {
       return historySummarySynced;
     } else if (isSignedIn) {
-      return historySummarySigned;
+      return historySummarySignedIn;
     }
     return historySummary;
   },
+
+  /**
+   * Choose a label for the cookie checkbox.
+   * @param {boolean} shouldShowCookieException
+   * @param {string} cookiesSummary
+   * @param {string} cookiesSummarySignedIn
+   * @return {string}
+   * @private
+   */
+  cookiesCheckboxLabel_: function(
+      shouldShowCookieException, cookiesSummary, cookiesSummarySignedIn) {
+    if (shouldShowCookieException) {
+      return cookiesSummarySignedIn;
+    }
+    return cookiesSummary;
+  },
+
 
   /**
    * Choose a content/site settings label.

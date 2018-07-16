@@ -333,7 +333,8 @@ void ClearBrowsingDataHandler::UpdateSyncState() {
       base::Value(signin_manager && signin_manager->IsAuthenticated()),
       base::Value(sync_service_ && sync_service_->IsSyncActive() &&
                   sync_service_->GetActiveDataTypes().Has(
-                      syncer::HISTORY_DELETE_DIRECTIVES)));
+                      syncer::HISTORY_DELETE_DIRECTIVES)),
+      base::Value(ShouldShowCookieException(profile_)));
 }
 
 void ClearBrowsingDataHandler::RefreshHistoryNotice() {

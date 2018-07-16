@@ -138,7 +138,10 @@
                 class="cookies-checkbox"
                 pref="{{prefs.browser.clear_data.cookies_basic}}"
                 label="$i18n{clearCookies}"
-                sub-label="$i18n{clearCookiesSummary}"
+                sub-label="[[cookiesCheckboxLabel_(
+                    shouldShowCookieException_,
+                    '$i18nPolymer{clearCookiesSummary}',
+                    '$i18nPolymer{clearCookiesSummarySignedIn}')]]"
                 disabled="[[clearingInProgress_]]">
             </settings-checkbox>
             <settings-checkbox id="cacheCheckboxBasic"
