@@ -300,7 +300,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // To make sure the observers are released after native_peer_connection_,
   // they have to come first.
   scoped_refptr<Observer> peer_connection_observer_;
-  scoped_refptr<webrtc::UMAObserver> uma_observer_;
 
   // |native_peer_connection_| is the libjingle native PeerConnection object.
   scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
