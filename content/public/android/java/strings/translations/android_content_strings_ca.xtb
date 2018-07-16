@@ -1,17 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
-<translation id="1256337885411059545">No es pot reproduir el vídeo</translation>
 <translation id="1412240523210238692">Selecció de text</translation>
 <translation id="1542044944667958430">Cerca al web</translation>
 <translation id="1768717197362323622">Mil·lisegon</translation>
 <translation id="1822429046913737220">a. m./p. m.</translation>
 <translation id="2094750046714988961">No es pot iniciar el generador de perfils perquè l'emmagatzematge extern no està preparat.</translation>
-<translation id="2410828433627930127">No es pot reproduir aquest vídeo.</translation>
 <translation id="2429669115401274487">p. m.</translation>
 <translation id="2520230379124234395">El generador de perfils s'ha iniciat.</translation>
 <translation id="2732718972699418926">a. m.</translation>
-<translation id="273860350361291195">Aquest vídeo no és vàlid per reproduir-lo en temps real en aquest dispositiu.</translation>
 <translation id="2841013758207633010">Hora</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="3845599764535987402">Hora</translation>
@@ -28,7 +25,6 @@
 <translation id="6643016212128521049">Esborra</translation>
 <translation id="6727102863431372879">Configura</translation>
 <translation id="6849295950938417341">S'ha produït un error en iniciar el generador de perfils.</translation>
-<translation id="6965382102122355670">D'acord</translation>
 <translation id="7102218676258945610">Minut</translation>
 <translation id="7138678301420049075">Altres</translation>
 <translation id="7575803462290353686">Defineix l'hora</translation>

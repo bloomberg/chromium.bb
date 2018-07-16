@@ -1,17 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
-<translation id="1256337885411059545">Haiwezi kucheza video</translation>
 <translation id="1412240523210238692">Chaguo la maandishi</translation>
 <translation id="1542044944667958430">Tafuta kwenye wavuti</translation>
 <translation id="1768717197362323622">Milisekunde</translation>
 <translation id="1822429046913737220">AM / PM</translation>
 <translation id="2094750046714988961">Haiwezi kuanzisha kihoji rejesta kwa sababu hifadhi ya nje haiko tayari</translation>
-<translation id="2410828433627930127">Samahani, video hii haiwezi kuchezwa.</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="2520230379124234395">Kihoji rejesta kimeanzishwa</translation>
 <translation id="2732718972699418926">AM</translation>
-<translation id="273860350361291195">Samahani, video hii sio sahihi kutiririshwa kwenye kifaa hiki.</translation>
 <translation id="2841013758207633010">Muda</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="3845599764535987402">Saa</translation>
@@ -28,7 +25,6 @@
 <translation id="6643016212128521049">Futa</translation>
 <translation id="6727102863431372879">Weka</translation>
 <translation id="6849295950938417341">Imeshindwa kuanzisha kihoji rejesta</translation>
-<translation id="6965382102122355670">Sawa</translation>
 <translation id="7102218676258945610">Dakika</translation>
 <translation id="7138678301420049075">Nyingine</translation>
 <translation id="7575803462290353686">Weka saa</translation>

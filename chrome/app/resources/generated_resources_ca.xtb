@@ -1134,7 +1134,6 @@
 <translation id="2690024944919328218">Mostra les opcions d'idioma</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">S'ha produït un error desconegut. Torna-ho a provar més tard o contacta amb l'administrador si el problema no es resol.</translation>
-<translation id="2694026874607847549">Una galeta</translation>
 <translation id="2695749433451188613">Protocol d'impressió per Internet (HTTPS)</translation>
 <translation id="270358213449696159">Contingut de les Condicions de Google Chrome OS</translation>
 <translation id="2704184184447774363">Signatura de documents de Microsoft</translation>
@@ -1304,7 +1303,6 @@
 <translation id="2948320633360386059">Bloquejats en llocs web que acostumen a mostrar anuncis intrusius</translation>
 <translation id="29488703364906173">Un navegador web ràpid, senzill i segur dissenyat per al web modern.</translation>
 <translation id="2951247061394563839">Finestra central</translation>
-<translation id="2956763290572484660"><ph name="COOKIES" /> galetes</translation>
 <translation id="2958721676848865875">Advertiment de l'empaquetatge d'extensió</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (extensió proporcionada)</translation>
 <translation id="2961695502793809356">Feu clic per anar endavant o manteniu premut per veure l'historial</translation>
@@ -3772,7 +3770,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6798780071646309401">bloqueig de majúscules activat</translation>
 <translation id="6798954102094737107">Connector: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Calibra la pantalla tàctil</translation>
-<translation id="6801945461660022667">Hi ha <ph name="NUMBER_OF_APPS" /> aplicacions connectades al teu compte que estan optimitzades per a Chromebook.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Obre totes les adreces d'interès en una &amp;finestra nova</translation>
 <translation id="6805038906417219576">D'acord</translation>

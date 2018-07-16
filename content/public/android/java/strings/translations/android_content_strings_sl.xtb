@@ -1,17 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
-<translation id="1256337885411059545">Videa ni mogoče predvajati</translation>
 <translation id="1412240523210238692">Izbiranje besedila</translation>
 <translation id="1542044944667958430">Spletno iskanje</translation>
 <translation id="1768717197362323622">Milisekunda</translation>
 <translation id="1822429046913737220">Dopoldne/popoldne</translation>
 <translation id="2094750046714988961">Orodja za spremljanje delovanja aplikacije ali sistema ni mogoče zagnati, ker zunanja naprava za shranjevanje ni pripravljena</translation>
-<translation id="2410828433627930127">Tega videa ni mogoče predvajati.</translation>
 <translation id="2429669115401274487">pop.</translation>
 <translation id="2520230379124234395">Orodje za spremljanje delovanja aplikacije ali sistema se je zagnalo</translation>
 <translation id="2732718972699418926">dop.</translation>
-<translation id="273860350361291195">Ta video ni veljaven za pretakanje v to napravo.</translation>
 <translation id="2841013758207633010">Čas</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="3845599764535987402">Ura</translation>
@@ -28,7 +25,6 @@
 <translation id="6643016212128521049">Počisti</translation>
 <translation id="6727102863431372879">Nastavi</translation>
 <translation id="6849295950938417341">Orodja za spremljanje delovanja aplikacije ali sistema ni bilo mogoče zagnati</translation>
-<translation id="6965382102122355670">V redu</translation>
 <translation id="7102218676258945610">Minuta</translation>
 <translation id="7138678301420049075">Drugo</translation>
 <translation id="7575803462290353686">Nastavitev časa</translation>

@@ -1,17 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
-<translation id="1256337885411059545">Не удается воспроизвести видео</translation>
 <translation id="1412240523210238692">Выделение текста</translation>
 <translation id="1542044944667958430">Веб-поиск</translation>
 <translation id="1768717197362323622">Миллисекунды</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="2094750046714988961">Не удалось запустить профайлер, поскольку внешнее хранилище недоступно</translation>
-<translation id="2410828433627930127">Невозможно воспроизвести видео.</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="2520230379124234395">Профайлер запущен</translation>
 <translation id="2732718972699418926">AM</translation>
-<translation id="273860350361291195">Невозможно воспроизвести видео на этом устройстве</translation>
 <translation id="2841013758207633010">Время</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="3845599764535987402">Часы</translation>
@@ -28,7 +25,6 @@
 <translation id="6643016212128521049">Очистить</translation>
 <translation id="6727102863431372879">Установить</translation>
 <translation id="6849295950938417341">Не удалось запустить профайлер</translation>
-<translation id="6965382102122355670">ОК</translation>
 <translation id="7102218676258945610">Минуты</translation>
 <translation id="7138678301420049075">Другое</translation>
 <translation id="7575803462290353686">Установите время</translation>

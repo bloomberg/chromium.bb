@@ -1,17 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
-<translation id="1256337885411059545">ቪዲዮ ማጫወት አልተቻለም</translation>
 <translation id="1412240523210238692">የጽሑፍ ምርጫ</translation>
 <translation id="1542044944667958430">የድር ፍለጋ</translation>
 <translation id="1768717197362323622">ሚሊሰከንድ</translation>
 <translation id="1822429046913737220">ጥዋት/ከሰዓት</translation>
 <translation id="2094750046714988961">ውጫዊ ማከማቻ ዝግጁ ስላልሆነ መገለጫ ሰሪውን ማስጀመር አልተቻለም</translation>
-<translation id="2410828433627930127">ይቅርታ፣ ይህ ቪዲዮ ሊጫወት አልቻለም።</translation>
 <translation id="2429669115401274487">ከሰዓት</translation>
 <translation id="2520230379124234395">መገለጫ ሰሪ ተጀምሯል</translation>
 <translation id="2732718972699418926">ጥዋት</translation>
-<translation id="273860350361291195">ይቅርታ፣ ይህ ቪዲዮ ወደዚህ መሣሪያ በዥረት ለመልቀቅ ልክ የሆነ አይደለም።</translation>
 <translation id="2841013758207633010">ሰዓት</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="3845599764535987402">ሰዓት</translation>
@@ -28,7 +25,6 @@
 <translation id="6643016212128521049">አጽዳ</translation>
 <translation id="6727102863431372879">አዘጋጅ</translation>
 <translation id="6849295950938417341">መገለጫ ሰሪውን ማስጀመር አልተሳካም</translation>
-<translation id="6965382102122355670">እሺ</translation>
 <translation id="7102218676258945610">ደቂቃ</translation>
 <translation id="7138678301420049075">ሌላ</translation>
 <translation id="7575803462290353686">ሰዓት ያዘጋጁ</translation>

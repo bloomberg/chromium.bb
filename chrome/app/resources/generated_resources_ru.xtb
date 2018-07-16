@@ -1136,7 +1136,6 @@
 <translation id="2690024944919328218">Показать языковые настройки</translation>
 <translation id="2691385045260836588">Модель</translation>
 <translation id="2693176596243495071">Произошла неизвестная ошибка. Повторите попытку позже. Если ситуация не изменится, обратитесь к администратору.</translation>
-<translation id="2694026874607847549">Файлов cookie: 1</translation>
 <translation id="2695749433451188613">Internet Printing Protocol (HTTPS)</translation>
 <translation id="270358213449696159">Полный текст Условий использования Google Chrome OS</translation>
 <translation id="2704184184447774363">Подпись документов Microsoft</translation>
@@ -1306,7 +1305,6 @@
 <translation id="2948320633360386059">Заблокировано на сайтах, на которых много навязчивой рекламы</translation>
 <translation id="29488703364906173">Chrome – это простой, быстрый и безопасный браузер для современного Интернета.</translation>
 <translation id="2951247061394563839">Разместить окно по центру</translation>
-<translation id="2956763290572484660">Файлов cookie: <ph name="COOKIES" /></translation>
 <translation id="2958721676848865875">Внимание!</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (предусмотрено продление)</translation>
 <translation id="2961695502793809356">Нажмите, чтобы перейти вперед. Удерживайте, чтобы просмотреть историю.</translation>
@@ -3774,7 +3772,6 @@
 <translation id="6798780071646309401">клавиша Caps Lock нажата</translation>
 <translation id="6798954102094737107">Плагин: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Откалибровать сенсорный экран</translation>
-<translation id="6801945461660022667">С вашим аккаунтом связано несколько приложений (<ph name="NUMBER_OF_APPS" />), оптимизированных для Chromebook.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Открыть все закладки в &amp;новом окне</translation>
 <translation id="6805038906417219576">ОК</translation>

@@ -1135,7 +1135,6 @@
 <translation id="2690024944919328218">Dil seçeneklerini göster</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Hay aksi!  Bilinmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin veya sorunun devam etmesi halinde yöneticinizle iletişime geçin.</translation>
-<translation id="2694026874607847549">1 çerez</translation>
 <translation id="2695749433451188613">İnternet Yazdırma Protokolü (HTTPS)</translation>
 <translation id="270358213449696159">Google Chrome OS Şartları içeriği</translation>
 <translation id="2704184184447774363">Microsoft Belge İmzalama</translation>
@@ -1305,7 +1304,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="2948320633360386059">Araya giren reklamlar gösterme eğiliminde olan sitelerde engellendi</translation>
 <translation id="29488703364906173">Modern web için geliştirilmiş hızlı, basit ve güvenli bir web tarayıcısı.</translation>
 <translation id="2951247061394563839">Pencereyi ortala</translation>
-<translation id="2956763290572484660"><ph name="COOKIES" /> çerez</translation>
 <translation id="2958721676848865875">Uzantı paketleme uyarısı</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (süresi uzatıldı)</translation>
 <translation id="2961695502793809356">İlerlemek için tıkla, geçmişi görmek için tıklayıp tut</translation>
@@ -3774,7 +3772,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6798780071646309401">caps lock açık</translation>
 <translation id="6798954102094737107">Eklenti: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Dokunmatik ekranı ayarla</translation>
-<translation id="6801945461660022667">Hesabınıza bağlı, Chromebook için optimize edilmiş <ph name="NUMBER_OF_APPS" /> uygulama var.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Tüm Yer İşaretlerini &amp;Yeni Pencerede Aç</translation>
 <translation id="6805038906417219576">Tamam</translation>

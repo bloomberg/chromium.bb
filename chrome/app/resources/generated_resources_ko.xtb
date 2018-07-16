@@ -1135,7 +1135,6 @@
 <translation id="2690024944919328218">언어 옵션 표시</translation>
 <translation id="2691385045260836588">모델</translation>
 <translation id="2693176596243495071">죄송합니다. 알 수 없는 오류가 발생했습니다. 나중에 다시 시도하거나 문제가 계속되는 경우 관리자에게 문의하세요.</translation>
-<translation id="2694026874607847549">쿠키 1개</translation>
 <translation id="2695749433451188613">인터넷 인쇄 프로토콜(HTTPS)</translation>
 <translation id="270358213449696159">Google Chrome OS 이용약관 내용</translation>
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
@@ -1305,7 +1304,6 @@
 <translation id="2948320633360386059">방해가 되는 광고를 표시하는 경향이 있는 사이트에서 차단됨</translation>
 <translation id="29488703364906173">최신 웹에 맞게 구축된 빠르고 단순하며 안전한 웹 브라우저입니다.</translation>
 <translation id="2951247061394563839">창을 중앙에 맞춤</translation>
-<translation id="2956763290572484660">쿠키 <ph name="COOKIES" />개</translation>
 <translation id="2958721676848865875">확장 프로그램 패키지 경고</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" />(확장 프로그램에서 제공)</translation>
 <translation id="2961695502793809356">클릭하면 다음 페이지로 가고 누르고 있으면 방문 기록이 나타납니다.</translation>
@@ -3771,7 +3769,6 @@
 <translation id="6798780071646309401">Caps Lock 사용</translation>
 <translation id="6798954102094737107">플러그인: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">터치스크린 보정</translation>
-<translation id="6801945461660022667">계정에 연결된 앱 중 Chromebook에 최적화된 앱이 <ph name="NUMBER_OF_APPS" />개 있습니다.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" />(<ph name="OID" />)</translation>
 <translation id="6804671422566312077">모든 북마크를 새 창에서 열기(&amp;N)</translation>
 <translation id="6805038906417219576">확인</translation>

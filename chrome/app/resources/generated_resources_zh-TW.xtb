@@ -1135,7 +1135,6 @@
 <translation id="2690024944919328218">顯示語言選項</translation>
 <translation id="2691385045260836588">型號</translation>
 <translation id="2693176596243495071">糟糕！發生不明錯誤，請稍後再試。如果這樣無法解決問題，請與你的管理員聯絡。</translation>
-<translation id="2694026874607847549">1 個 Cookie</translation>
 <translation id="2695749433451188613">網際網路列印通訊協定 (HTTPS)</translation>
 <translation id="270358213449696159">Google Chrome 作業系統條款內容</translation>
 <translation id="2704184184447774363">Microsoft 文件簽署</translation>
@@ -1305,7 +1304,6 @@
 <translation id="2948320633360386059">已針對經常顯示侵入式廣告的網站封鎖廣告</translation>
 <translation id="29488703364906173">一款快速、簡單又安全的新世代網路瀏覽器。</translation>
 <translation id="2951247061394563839">置中視窗</translation>
-<translation id="2956763290572484660"><ph name="COOKIES" /> 個 Cookie</translation>
 <translation id="2958721676848865875">封裝擴充功能警告</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (擴充功能已提供)</translation>
 <translation id="2961695502793809356">按一下到下一頁，按住可查看記錄</translation>
@@ -3770,7 +3768,6 @@
 <translation id="6798780071646309401">大寫鎖定模式已開啟</translation>
 <translation id="6798954102094737107">外掛程式：<ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">校正觸控螢幕</translation>
-<translation id="6801945461660022667">有 <ph name="NUMBER_OF_APPS" /> 個針對 Chromebook 經過最佳化處理的應用程式與你的帳戶連結。</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">在新視窗中開啟所有書籤(&amp;N)</translation>
 <translation id="6805038906417219576">確定</translation>

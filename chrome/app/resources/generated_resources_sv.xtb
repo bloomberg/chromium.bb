@@ -1134,7 +1134,6 @@
 <translation id="2690024944919328218">Visa språkalternativ</translation>
 <translation id="2691385045260836588">Modell</translation>
 <translation id="2693176596243495071">Hoppsan! Ett okänt fel har uppstått. Försök igen senare eller kontakta administratören om felet kvarstår.</translation>
-<translation id="2694026874607847549">1 cookie</translation>
 <translation id="2695749433451188613">Protokoll för internetutskrift (HTTPS)</translation>
 <translation id="270358213449696159">Innehåll i villkor för Google Chrome OS</translation>
 <translation id="2704184184447774363">Microsofts Signering av dokument</translation>
@@ -1304,7 +1303,6 @@
 <translation id="2948320633360386059">Blockeras på webbplatser som brukar visa påträngande annonser</translation>
 <translation id="29488703364906173">En snabb, enkel och säker webbläsare som är anpassad för den moderna webben.</translation>
 <translation id="2951247061394563839">Centrera fönster</translation>
-<translation id="2956763290572484660"><ph name="COOKIES" /> cookies</translation>
 <translation id="2958721676848865875">Varning vid paketering av tillägg</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (tillägg har angetts)</translation>
 <translation id="2961695502793809356">Klicka för att fortsätta, håll ned för att se historik</translation>
@@ -3772,7 +3770,6 @@
 <translation id="6798780071646309401">caps lock på</translation>
 <translation id="6798954102094737107">Pluginprogram: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Kalibrera pekskärmen</translation>
-<translation id="6801945461660022667">Det finns <ph name="NUMBER_OF_APPS" /> appar kopplade till ditt konto som har optimerats för Chromebook.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Öppna alla bokmärken i &amp;nytt fönster</translation>
 <translation id="6805038906417219576">OK</translation>

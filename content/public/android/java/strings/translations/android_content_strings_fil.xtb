@@ -1,17 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
-<translation id="1256337885411059545">Hindi ma-play ang video</translation>
 <translation id="1412240523210238692">Pagpili ng teksto</translation>
 <translation id="1542044944667958430">Paghahanap sa web</translation>
 <translation id="1768717197362323622">Millisecond</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="2094750046714988961">Hindi masimulan ang profiler dahil hindi handa ang panlabas na storage</translation>
-<translation id="2410828433627930127">Paumanhin, hindi mape-play ang video na ito.</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="2520230379124234395">Nagsimula na ang profiler</translation>
 <translation id="2732718972699418926">AM</translation>
-<translation id="273860350361291195">Paumanhin, di-wasto ang video na ito para sa pag-stream sa device na ito.</translation>
 <translation id="2841013758207633010">Oras</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="3845599764535987402">Oras</translation>
@@ -28,7 +25,6 @@
 <translation id="6643016212128521049">I-clear</translation>
 <translation id="6727102863431372879">Itakda</translation>
 <translation id="6849295950938417341">Nabigong simulan ang profiler</translation>
-<translation id="6965382102122355670">OK</translation>
 <translation id="7102218676258945610">Minuto</translation>
 <translation id="7138678301420049075">Iba pa</translation>
 <translation id="7575803462290353686">Itakda ang oras</translation>

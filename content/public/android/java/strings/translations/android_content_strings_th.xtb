@@ -1,17 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
-<translation id="1256337885411059545">ไม่สามารถเล่นวิดีโอ</translation>
 <translation id="1412240523210238692">การเลือกข้อความ</translation>
 <translation id="1542044944667958430">ค้นเว็บ</translation>
 <translation id="1768717197362323622">มิลลิวินาที</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="2094750046714988961">ไม่สามารถเริ่มโปรแกรมโปรไฟล์เลอร์ได้เนื่องจากที่จัดเก็บข้อมูลภายนอกไม่พร้อมใช้งาน</translation>
-<translation id="2410828433627930127">ขออภัย วิดีโอนี้เล่นไม่ได้</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="2520230379124234395">เริ่มโปรแกรมโปรไฟล์เลอร์แล้ว</translation>
 <translation id="2732718972699418926">AM</translation>
-<translation id="273860350361291195">ขออภัย ไม่สามารถสตรีมวิดีโอไปยังอุปกรณ์นี้</translation>
 <translation id="2841013758207633010">เวลา</translation>
 <translation id="376869769528291915">.</translation>
 <translation id="3845599764535987402">ชั่วโมง</translation>
@@ -28,7 +25,6 @@
 <translation id="6643016212128521049">ล้าง</translation>
 <translation id="6727102863431372879">ตั้งค่า</translation>
 <translation id="6849295950938417341">ไม่สามารถเริ่มโปรแกรมโปรไฟล์เลอร์</translation>
-<translation id="6965382102122355670">ตกลง</translation>
 <translation id="7102218676258945610">นาที</translation>
 <translation id="7138678301420049075">อื่นๆ</translation>
 <translation id="7575803462290353686">ตั้งเวลา</translation>

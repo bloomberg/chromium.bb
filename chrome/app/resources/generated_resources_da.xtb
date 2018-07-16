@@ -1133,7 +1133,6 @@
 <translation id="2690024944919328218">Vis sprogindstillinger</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Ups! Der opstod en ukendt fejl. Prøv igen senere, eller kontakt din administrator, hvis problemet fortsætter.</translation>
-<translation id="2694026874607847549">Én cookie</translation>
 <translation id="2695749433451188613">Internet Printing Protocol (HTTPS)</translation>
 <translation id="270358213449696159">Indholdet i vilkårene for Google Chrome OS</translation>
 <translation id="2704184184447774363">Microsoft-signering af dokument</translation>
@@ -1303,7 +1302,6 @@
 <translation id="2948320633360386059">Blokeret på websites, der har tendens til at vise påtrængende annoncer</translation>
 <translation id="29488703364906173">En hurtig, enkel og sikker webbrowser, der er udviklet til det moderne internet.</translation>
 <translation id="2951247061394563839">Midtervindue</translation>
-<translation id="2956763290572484660"><ph name="COOKIES" /> cookies</translation>
 <translation id="2958721676848865875">Advarsel om pakkeudvidelse</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (forlængelse givet)</translation>
 <translation id="2961695502793809356">Klik for at gå frem. Hold knappen inde for at se historikken.</translation>
@@ -3772,7 +3770,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6798780071646309401">capslock er slået til</translation>
 <translation id="6798954102094737107">Plugin: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Kalibrer touchskærm</translation>
-<translation id="6801945461660022667">Der er <ph name="NUMBER_OF_APPS" /> apps, som er tilknyttet din konto og er optimeret til Chromebook.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Åbn alle bogmærker i &amp;nyt vindue</translation>
 <translation id="6805038906417219576">OK</translation>

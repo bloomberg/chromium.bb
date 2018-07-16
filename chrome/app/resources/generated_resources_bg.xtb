@@ -1132,7 +1132,6 @@
 <translation id="2690024944919328218">Показване на езиковите опции</translation>
 <translation id="2691385045260836588">Модел</translation>
 <translation id="2693176596243495071">Ами сега! Възникна неизвестна грешка. Моля, опитайте отново по-късно или се свържете с администратора си, ако проблемът продължи.</translation>
-<translation id="2694026874607847549">1 „бисквитка“</translation>
 <translation id="2695749433451188613">Internet Printing Protocol (HTTPS)</translation>
 <translation id="270358213449696159">Съдържание на Общите условия на Google Chrome OS</translation>
 <translation id="2704184184447774363">Подписване на документи от Microsoft</translation>
@@ -1302,7 +1301,6 @@
 <translation id="2948320633360386059">Блокиране за сайтовете, на които обикновено се показват натрапчиви реклами</translation>
 <translation id="29488703364906173">Бърз, опростен и сигурен уеб браузър, създаден за модерната мрежа.</translation>
 <translation id="2951247061394563839">Центриране на прозореца</translation>
-<translation id="2956763290572484660"><ph name="COOKIES" /> „бисквитки“</translation>
 <translation id="2958721676848865875">Предупреждение за пакетиране на разширението</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (предоставено от разширение)</translation>
 <translation id="2961695502793809356">Кликнете, за да преминете напред. Задръжте, за да видите историята.</translation>
@@ -3773,7 +3771,6 @@
 <translation id="6798780071646309401">caps lock е включен</translation>
 <translation id="6798954102094737107">Приставка: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Калибриране на сензорния екран</translation>
-<translation id="6801945461660022667">С профила ви са свързани <ph name="NUMBER_OF_APPS" /> приложения, които са оптимизирани за Chromebook.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Отваряне на всички отметки в &amp;нов прозорец</translation>
 <translation id="6805038906417219576">OK</translation>

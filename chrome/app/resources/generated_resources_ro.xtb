@@ -1135,7 +1135,6 @@
 <translation id="2690024944919328218">Afișează opțiunile de limbă</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Hopa! A apărut o eroare necunoscută. Încearcă din nou mai târziu sau contactează administratorul dacă problema persistă.</translation>
-<translation id="2694026874607847549">1 cookie</translation>
 <translation id="2695749433451188613">Internet Printing Protocol (HTTPS)</translation>
 <translation id="270358213449696159">Conținutul Termenilor Google Chrome OS</translation>
 <translation id="2704184184447774363">Semnare Microsoft a documentelor</translation>
@@ -1305,7 +1304,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="2948320633360386059">Blocate pe site-urile care tind să afișeze anunțuri deranjante</translation>
 <translation id="29488703364906173">Un browser web rapid, simplu și sigur, creat pentru internetul modern.</translation>
 <translation id="2951247061394563839">Centrați fereastra</translation>
-<translation id="2956763290572484660"><ph name="COOKIES" /> cookie-uri</translation>
 <translation id="2958721676848865875">Avertisment privind pachetul pentru extensie</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (oferit de extensie)</translation>
 <translation id="2961695502793809356">Dă clic pentru a naviga înainte, ține apăsat pentru a vedea istoricul</translation>
@@ -3773,7 +3771,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6798780071646309401">tasta Caps Lock este activată</translation>
 <translation id="6798954102094737107">Plugin: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Calibrează ecranul tactil</translation>
-<translation id="6801945461660022667">Există <ph name="NUMBER_OF_APPS" /> aplicații conectate la cont care sunt optimizate pentru Chromebook.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Deschideți toate marcajele într-o &amp;fereastră nouă</translation>
 <translation id="6805038906417219576">OK</translation>

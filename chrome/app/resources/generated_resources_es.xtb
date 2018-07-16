@@ -1135,7 +1135,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2690024944919328218">Mostrar opciones de idioma</translation>
 <translation id="2691385045260836588">Modelo</translation>
 <translation id="2693176596243495071">¡Vaya! Se ha producido un error desconocido. Vuelve a intentarlo más tarde o ponte en contacto con el administrador si el problema persiste.</translation>
-<translation id="2694026874607847549">1 cookie</translation>
 <translation id="2695749433451188613">Protocolo de impresión en Internet (HTTPS)</translation>
 <translation id="270358213449696159">Contenido de las condiciones de Google Chrome OS</translation>
 <translation id="2704184184447774363">Firma de documentos de Microsoft</translation>
@@ -1305,7 +1304,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2948320633360386059">Bloqueados en sitios web que suelen mostrar anuncios invasivos</translation>
 <translation id="29488703364906173">Un navegador web rápido, seguro y fácil de usar creado para la Web actual.</translation>
 <translation id="2951247061394563839">Centrar ventana</translation>
-<translation id="2956763290572484660"><ph name="COOKIES" /> cookies</translation>
 <translation id="2958721676848865875">Advertencia sobre el empaquetado de extensión</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (extensión proporcionada)</translation>
 <translation id="2961695502793809356">Haz clic para avanzar una página o pulsa unos segundos para ver el historial</translation>
@@ -3768,7 +3766,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6798780071646309401">bloqueo de mayúsculas activado</translation>
 <translation id="6798954102094737107">Complemento: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Calibrar la pantalla táctil</translation>
-<translation id="6801945461660022667">Aplicaciones conectadas a tu cuenta que están optimizadas para Chromebook: <ph name="NUMBER_OF_APPS" />.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Abrir todos los marcadores en una &amp;ventana nueva</translation>
 <translation id="6805038906417219576">Aceptar</translation>

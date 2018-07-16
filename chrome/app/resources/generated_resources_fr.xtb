@@ -1135,7 +1135,6 @@
 <translation id="2690024944919328218">Afficher les options linguistiques</translation>
 <translation id="2691385045260836588">Modèle</translation>
 <translation id="2693176596243495071">Petit problème… Une erreur inconnue s'est produite. Veuillez réessayer plus tard ou contacter votre administrateur si le problème persiste.</translation>
-<translation id="2694026874607847549">1 cookie</translation>
 <translation id="2695749433451188613">Protocole d'impression Internet (HTTPS)</translation>
 <translation id="270358213449696159">Conditions d'utilisation de Google Chrome OS</translation>
 <translation id="2704184184447774363">Signature de document Microsoft</translation>
@@ -1305,7 +1304,6 @@
 <translation id="2948320633360386059">Bloqué sur les sites qui ont tendance à afficher des annonces intrusives</translation>
 <translation id="29488703364906173">Un navigateur Internet rapide, simple et sécurisé, conçu pour le Web d'aujourd'hui</translation>
 <translation id="2951247061394563839">Centrer la fenêtre</translation>
-<translation id="2956763290572484660"><ph name="COOKIES" /> cookies</translation>
 <translation id="2958721676848865875">Avertissement relatif à la mise en package des extensions</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (extension accordée)</translation>
 <translation id="2961695502793809356">Cliquer pour avancer, maintenir pour voir l'historique</translation>
@@ -3774,7 +3772,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6798780071646309401">touche de verrouillage des majuscules activée</translation>
 <translation id="6798954102094737107">Plug-in : <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Calibrer l'écran tactile</translation>
-<translation id="6801945461660022667"><ph name="NUMBER_OF_APPS" /> applications associées à votre compte sont optimisées pour le Chromebook.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Ouvrir tous les favoris dans une &amp;nouvelle fenêtre</translation>
 <translation id="6805038906417219576">OK</translation>

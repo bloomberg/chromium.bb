@@ -1,17 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="1256337885411059545">Không thể phát video</translation>
 <translation id="1412240523210238692">Lựa chọn văn bản</translation>
 <translation id="1542044944667958430">Tìm kiếm trên web</translation>
 <translation id="1768717197362323622">Mili giây</translation>
 <translation id="1822429046913737220">SA/CH</translation>
 <translation id="2094750046714988961">Không thể khởi động profiler vì bộ nhớ ngoài không sẵn sàng</translation>
-<translation id="2410828433627930127">Rất tiếc, không thể phát video này.</translation>
 <translation id="2429669115401274487">CH</translation>
 <translation id="2520230379124234395">Đã chạy Profiler</translation>
 <translation id="2732718972699418926">SA</translation>
-<translation id="273860350361291195">Rất tiếc, video này không hợp lệ để phát trực tuyến sang thiết bị này.</translation>
 <translation id="2841013758207633010">Thời gian</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="3845599764535987402">Giờ</translation>
@@ -28,7 +25,6 @@
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="6727102863431372879">Đặt</translation>
 <translation id="6849295950938417341">Không khởi động được profiler</translation>
-<translation id="6965382102122355670">OK</translation>
 <translation id="7102218676258945610">Phút</translation>
 <translation id="7138678301420049075">Khác</translation>
 <translation id="7575803462290353686">Đặt thời gian</translation>

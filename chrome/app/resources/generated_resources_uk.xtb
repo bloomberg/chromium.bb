@@ -1135,7 +1135,6 @@
 <translation id="2690024944919328218">Показати опції мови</translation>
 <translation id="2691385045260836588">Модель</translation>
 <translation id="2693176596243495071">На жаль, сталася невідома помилка. Спробуйте пізніше або зв’яжіться з адміністратором, якщо проблема не зникне.</translation>
-<translation id="2694026874607847549">1 файл cookie</translation>
 <translation id="2695749433451188613">Протокол друку через Інтернет (HTTPS)</translation>
 <translation id="270358213449696159">Умови ОС Google Chrome</translation>
 <translation id="2704184184447774363">Підписування документа Microsoft</translation>
@@ -1305,7 +1304,6 @@
 <translation id="2948320633360386059">Заблоковано на сайтах, які часто показують нав’язливі оголошення</translation>
 <translation id="29488703364906173">Швидкий, простий і надійний веб-переглядач, створений для сучасного Інтернету.</translation>
 <translation id="2951247061394563839">Відцентрувати вікно</translation>
-<translation id="2956763290572484660">Файлів cookie: <ph name="COOKIES" /></translation>
 <translation id="2958721676848865875">Застереження щодо пакування розширення</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (розширення встановлено)</translation>
 <translation id="2961695502793809356">Натисніть, щоб перейти далі; утримуйте, щоб переглянути історію</translation>
@@ -3773,7 +3771,6 @@
 <translation id="6798780071646309401">Caps Lock увімкнено</translation>
 <translation id="6798954102094737107">Плагін: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Калібрувати сенсорний екран</translation>
-<translation id="6801945461660022667">Стільки зв’язаних з обліковим записом додатків оптимізовано для комп’ютерів Chromebook: <ph name="NUMBER_OF_APPS" />.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Відкрити всі закладки в &amp;новому вікні</translation>
 <translation id="6805038906417219576">ОК</translation>

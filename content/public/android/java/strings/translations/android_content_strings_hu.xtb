@@ -1,17 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
-<translation id="1256337885411059545">Nem lehet lejátszani a videót</translation>
 <translation id="1412240523210238692">Szöveg kijelölése</translation>
 <translation id="1542044944667958430">Internetes keresés</translation>
 <translation id="1768717197362323622">Ezredmásodperc</translation>
 <translation id="1822429046913737220">de./du.</translation>
 <translation id="2094750046714988961">Nem lehet elindítani a profilozót, mert a külső tároló nem áll készen</translation>
-<translation id="2410828433627930127">Sajnos a videót nem lehet lejátszani.</translation>
 <translation id="2429669115401274487">du.</translation>
 <translation id="2520230379124234395">A profilozó elindult</translation>
 <translation id="2732718972699418926">de.</translation>
-<translation id="273860350361291195">Sajnos ezt a videót nem lehet erre az eszközre sugározni.</translation>
 <translation id="2841013758207633010">Idő</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="3845599764535987402">Óra</translation>
@@ -28,7 +25,6 @@
 <translation id="6643016212128521049">Törlés</translation>
 <translation id="6727102863431372879">Beállítás</translation>
 <translation id="6849295950938417341">Nem sikerült elindítani a profilozót</translation>
-<translation id="6965382102122355670">OK</translation>
 <translation id="7102218676258945610">Perc</translation>
 <translation id="7138678301420049075">Egyéb</translation>
 <translation id="7575803462290353686">Idő beállítása</translation>

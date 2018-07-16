@@ -1131,7 +1131,6 @@
 <translation id="2690024944919328218">显示语言选项</translation>
 <translation id="2691385045260836588">型号</translation>
 <translation id="2693176596243495071">糟糕！发生了未知错误。请稍后重试；如果问题依然存在，请与您的管理员联系。</translation>
-<translation id="2694026874607847549">1 个 Cookie</translation>
 <translation id="2695749433451188613">互联网打印协议 (HTTPS)</translation>
 <translation id="270358213449696159">Google Chrome 操作系统条款内容</translation>
 <translation id="2704184184447774363">Microsoft 文档签名</translation>
@@ -1301,7 +1300,6 @@
 <translation id="2948320633360386059">已阻止常常会展示侵扰性广告的网站显示广告</translation>
 <translation id="29488703364906173">一款快速、简单且安全的网络浏览器，能很好满足现代网络对浏览器的要求。</translation>
 <translation id="2951247061394563839">使窗口居中</translation>
-<translation id="2956763290572484660"><ph name="COOKIES" /> 个 Cookie</translation>
 <translation id="2958721676848865875">打包扩展程序警告</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" />（已提供扩展功能）</translation>
 <translation id="2961695502793809356">点击可前进，按住可查看历史记录</translation>
@@ -3759,7 +3757,6 @@
 <translation id="6798780071646309401">已开启大写锁定模式</translation>
 <translation id="6798954102094737107">插件：<ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">校准触摸屏</translation>
-<translation id="6801945461660022667">有 <ph name="NUMBER_OF_APPS" /> 个与您的帐号关联的应用已针对 Chromebook 进行优化。</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">在新窗口中打开所有书签(&amp;N)</translation>
 <translation id="6805038906417219576">确定</translation>

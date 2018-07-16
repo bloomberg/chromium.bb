@@ -1,17 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
-<translation id="1256337885411059545">ویدئو پخش نمی‌شود</translation>
 <translation id="1412240523210238692">انتخاب نوشتار</translation>
 <translation id="1542044944667958430">جستجوی وب</translation>
 <translation id="1768717197362323622">میلی‌ثانیه</translation>
 <translation id="1822429046913737220">ق.ظ/ب.ظ</translation>
 <translation id="2094750046714988961">نمایه‌ساز اجرا نمی‌شود زیرا حافظه خارجی آماده نیست</translation>
-<translation id="2410828433627930127">با عرض پوزش، این ویدئو پخش نمی‌شود.</translation>
 <translation id="2429669115401274487">ب.ظ</translation>
 <translation id="2520230379124234395">نمایه‌ساز اجرا شد</translation>
 <translation id="2732718972699418926">ق.ظ</translation>
-<translation id="273860350361291195">با عرض پوزش، این ویدئو برای پخش هم‌زمان در این دستگاه معتبر نیست.</translation>
 <translation id="2841013758207633010">زمان</translation>
 <translation id="376869769528291915">:</translation>
 <translation id="3845599764535987402">ساعت</translation>
@@ -28,7 +25,6 @@
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6727102863431372879">تنظیم</translation>
 <translation id="6849295950938417341">نمایه‌ساز اجرا نشد</translation>
-<translation id="6965382102122355670">قبول</translation>
 <translation id="7102218676258945610">دقیقه</translation>
 <translation id="7138678301420049075">دیگر</translation>
 <translation id="7575803462290353686">تنظیم زمان</translation>

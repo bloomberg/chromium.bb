@@ -1136,7 +1136,6 @@
 <translation id="2690024944919328218">மொழி விருப்பங்களைக் காட்டு</translation>
 <translation id="2691385045260836588">மாடல்</translation>
 <translation id="2693176596243495071">அச்சச்சோ! எதிர்பாராத பிழை ஏற்பட்டது. பிறகு முயலவும் அல்லது சிக்கல் தொடர்ந்தால், உங்கள் நிர்வாகியைத் தொடர்புகொள்ளவும்.</translation>
-<translation id="2694026874607847549">1 குக்கீ</translation>
 <translation id="2695749433451188613">இன்டர்நெட் பிரிண்டிங் புரோட்டோகால் (HTTPS)</translation>
 <translation id="270358213449696159">Google Chrome OS விதிமுறைகளின் உள்ளடக்கம்</translation>
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
@@ -1306,7 +1305,6 @@
 <translation id="2948320633360386059">குறுக்கிடும் விளம்பரங்களை அடிக்கடிக் காட்டும் தளங்களில் தடுக்கப்பட்டது</translation>
 <translation id="29488703364906173">நவீன இணையத்திற்காக, விரைவான, எளிமையான மற்றும் பாதுகாப்பான இணைய உலாவியாக உருவாக்கப்பட்டது.</translation>
 <translation id="2951247061394563839">சாளரத்தை மையப்படுத்து</translation>
-<translation id="2956763290572484660"><ph name="COOKIES" /> குக்கீகள்</translation>
 <translation id="2958721676848865875">தொகுப்பு நீட்டிப்பு எச்சரிக்கை</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (நீட்டிப்பு வழங்கப்பட்டது)</translation>
 <translation id="2961695502793809356">அடுத்தப் பக்கத்திற்கு செல்ல கிளிக் செய்க, வரலாற்றைக் காண அழுத்திக்கொண்டே இருங்கள்</translation>
@@ -3774,7 +3772,6 @@
 <translation id="6798780071646309401">கேப்ஸ்லாக் இயக்கப்பட்டுள்ளது</translation>
 <translation id="6798954102094737107">செருகுநிரல்: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">டச்ஸ்கிரீனை அளவுத்திருத்தம் செய்</translation>
-<translation id="6801945461660022667">Chromebookக்காக மேம்படுத்தப்பட்ட மற்றும் உங்கள் கணக்குடன் தொடர்புடைய <ph name="NUMBER_OF_APPS" /> ஆப்ஸ் உள்ளன.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">&amp;புதிய சாளரத்தில் எல்லா புக்மார்க்ஸையும் திற</translation>
 <translation id="6805038906417219576">சரி</translation>
