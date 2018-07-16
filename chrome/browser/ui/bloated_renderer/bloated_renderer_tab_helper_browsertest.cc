@@ -17,9 +17,7 @@
 
 using BloatedRendererTabHelperBrowserTest = InProcessBrowserTest;
 
-// TODO(ulan): Enable the test after fixing crbug.com/850921.
-IN_PROC_BROWSER_TEST_F(BloatedRendererTabHelperBrowserTest,
-                       DISABLED_ReloadBloatedTab) {
+IN_PROC_BROWSER_TEST_F(BloatedRendererTabHelperBrowserTest, ReloadBloatedTab) {
   content::WindowedNotificationObserver load(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
@@ -38,7 +36,11 @@ IN_PROC_BROWSER_TEST_F(BloatedRendererTabHelperBrowserTest,
       InfoBarService::FromWebContents(web_contents);
   EXPECT_EQ(0u, infobar_service->infobar_count());
 
+  auto* page_signal_receiver =
+      resource_coordinator::PageSignalReceiver::GetInstance();
   resource_coordinator::PageNavigationIdentity page_id;
+  page_id.navigation_id =
+      page_signal_receiver->GetNavigationIDForWebContents(web_contents);
   BloatedRendererTabHelper::FromWebContents(web_contents)
       ->OnRendererIsBloated(web_contents, page_id);
   reload.Wait();

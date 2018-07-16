@@ -45,8 +45,26 @@ void ChromeAppCacheService::InitializeOnIOThread(
 
 void ChromeAppCacheService::Bind(
     std::unique_ptr<mojom::AppCacheBackend> backend,
-    mojom::AppCacheBackendRequest request) {
-  bindings_.AddBinding(std::move(backend), std::move(request));
+    mojom::AppCacheBackendRequest request,
+    int process_id) {
+  DCHECK(process_bindings_.find(process_id) == process_bindings_.end());
+  process_bindings_[process_id] =
+      bindings_.AddBinding(std::move(backend), std::move(request));
+}
+
+void ChromeAppCacheService::Unbind(int process_id) {
+  auto it = process_bindings_.find(process_id);
+  if (it != process_bindings_.end()) {
+    bindings_.RemoveBinding(it->second);
+    DCHECK(process_bindings_.find(process_id) == process_bindings_.end());
+  }
+}
+
+void ChromeAppCacheService::UnregisterBackend(
+    AppCacheBackendImpl* backend_impl) {
+  int process_id = backend_impl->process_id();
+  process_bindings_.erase(process_bindings_.find(process_id));
+  AppCacheServiceImpl::UnregisterBackend(backend_impl);
 }
 
 void ChromeAppCacheService::Shutdown() {
