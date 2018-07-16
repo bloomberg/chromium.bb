@@ -18,7 +18,6 @@ import optparse
 import os
 import re
 import shutil
-import socket
 import subprocess
 import sys
 import tempfile
@@ -2063,21 +2062,25 @@ class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
         None,
         driver.ExecuteScript('return window.domAutomationController'))
 
-  def testRemoteDebugPortSwitchError(self):
-    """Tests that passing --remote-debugging-port through capabilities raises a
-    ChromeDriver error."""
-    exception_raised = False
-    try:
-      driver = self.CreateDriver(chrome_switches=['remote-debugging-port=5'])
-    except Exception as e:
-      self.assertIn(
-          '\'remote-debugging-port\' is not allowed', e.message,
-          'ChromeDriver should provide a useful error message for '
-          'remote-debugging-port users.')
-      exception_raised = True
-    self.assertTrue(
-        exception_raised,
-        'ChromeDriver should not allow the --remote-debugging-port flag.')
+  def testRemoteDebuggingPort(self):
+    """Tests that passing --remote-debugging-port through capabilities works.
+    """
+    # Must use retries since there is an inherent race condition in port
+    # selection.
+    ports_generator = util.FindProbableFreePorts()
+    for _ in range(3):
+      port = ports_generator.next()
+      port_flag = 'remote-debugging-port=%s' % port
+      try:
+        driver = self.CreateDriver(chrome_switches=[port_flag])
+      except:
+        continue
+      driver.Load('chrome:version')
+      command_line = driver.FindElement('id', 'command_line').GetText()
+      self.assertIn(port_flag, command_line)
+      break
+    else:  # Else clause gets invoked if "break" never happens.
+      raise  # This re-raises the most recent exception.
 
 
 class ChromeDesiredCapabilityTest(ChromeDriverBaseTest):
@@ -2645,30 +2648,40 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
                     'must supply a chrome binary arg')
 
   def testConnectToRemoteBrowser(self):
-    port = self.FindFreePort()
-    temp_dir = util.MakeTempDir()
-    print 'temp dir is ' + temp_dir
-    cmd = [_CHROME_BINARY,
-           '--remote-debugging-port=%d' % port,
-           '--user-data-dir=%s' % temp_dir,
-           '--use-mock-keychain']
-    process = subprocess.Popen(cmd)
-    if process is None:
-      raise RuntimeError('Chrome could not be started with debugging port')
-    try:
-      driver = self.CreateDriver(debugger_address='localhost:%d' % port)
-      driver.ExecuteScript('console.info("%s")' % 'connecting at %d!' % port)
-      driver.Quit()
-    finally:
-      process.terminate()
-
-  def FindFreePort(self):
-    for port in range(10000, 10100):
+    # Must use retries since there is an inherent race condition in port
+    # selection.
+    ports_generator = util.FindProbableFreePorts()
+    for _ in range(3):
+      port = ports_generator.next()
+      temp_dir = util.MakeTempDir()
+      print 'temp dir is ' + temp_dir
+      cmd = [_CHROME_BINARY,
+             '--remote-debugging-port=%d' % port,
+             '--user-data-dir=%s' % temp_dir,
+             '--use-mock-keychain']
+      process = subprocess.Popen(cmd)
       try:
-        socket.create_connection(('127.0.0.1', port), 0.2).close()
-      except socket.error:
-        return port
-    raise RuntimeError('Cannot find open port')
+        driver = self.CreateDriver(debugger_address='localhost:%d' % port)
+        driver.ExecuteScript('console.info("%s")' % 'connecting at %d!' % port)
+        driver.Quit()
+      except:
+        continue
+      finally:
+        if process.poll() is None:
+          process.terminate()
+          # Wait for Chrome to exit here to prevent a race with Chrome to
+          # delete/modify the temporary user-data-dir.
+          # Maximum wait ~1 second.
+          for _ in range(20):
+            if process.poll() is not None:
+              break
+            print 'continuing to wait for Chrome to exit'
+            time.sleep(.05)
+          else:
+            process.kill()
+      break
+    else:  # Else clause gets invoked if "break" never happens.
+      raise  # This re-raises the most recent exception.
 
 
 class LaunchDesktopTest(ChromeDriverBaseTest):
