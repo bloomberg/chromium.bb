@@ -299,9 +299,12 @@ class _CompilerDispatcher(object):
       sys.stderr.write('\n')
     done_count = self.__success_count + self.__failed_count
     percentage = (float(done_count) / len(self.__compdb_entries)) * 100
-    sys.stderr.write(
-        'Processed %d files with %s tool (%d failures) [%.2f%%]\r' %
-        (done_count, self.__toolname, self.__failed_count, percentage))
+    # Only output progress for every 100th entry, to make log files easier to
+    # inspect.
+    if done_count % 100 == 0 or done_count == len(self.__compdb_entries):
+      sys.stderr.write(
+          'Processed %d files with %s tool (%d failures) [%.2f%%]\r' %
+          (done_count, self.__toolname, self.__failed_count, percentage))
 
 
 def main():
