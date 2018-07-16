@@ -1204,8 +1204,11 @@ void BridgedNativeWidget::CreateCompositor() {
 
   AddCompositorSuperview();
 
+  // TODO(ccameron): Re-enable compositor recycling here.
+  // https://crbug.com/863817
   compositor_ = ui::RecyclableCompositorMacFactory::Get()->CreateCompositor(
-      context_factory, context_factory_private);
+      context_factory, context_factory_private,
+      true /* force_new_compositor */);
   compositor_->widget()->SetNSView(this);
 }
 
@@ -1236,8 +1239,9 @@ void BridgedNativeWidget::DestroyCompositor() {
     return;
   compositor_->widget()->ResetNSView();
   compositor_->compositor()->SetRootLayer(nullptr);
-  ui::RecyclableCompositorMacFactory::Get()->RecycleCompositor(
-      std::move(compositor_));
+  // TODO(ccameron): Re-enable compositor recycling here.
+  // https://crbug.com/863817
+  compositor_.reset();
 }
 
 void BridgedNativeWidget::AddCompositorSuperview() {

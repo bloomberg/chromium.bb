@@ -16,6 +16,9 @@ namespace ui {
 
 namespace {
 
+// The number of RecyclableCompositorMacs in existence.
+size_t g_recyclable_compositor_count = 0;
+
 // Returns a task runner for creating a ui::Compositor. This allows compositor
 // tasks to be funneled through ui::WindowResizeHelper's task runner to allow
 // resize operations to coordinate with frames provided by the GPU process.
@@ -43,6 +46,7 @@ RecyclableCompositorMac::RecyclableCompositorMac(
                   GetCompositorTaskRunner(),
                   features::IsSurfaceSynchronizationEnabled(),
                   ui::IsPixelCanvasRecordingEnabled()) {
+  g_recyclable_compositor_count += 1;
   compositor_.SetAcceleratedWidget(
       accelerated_widget_mac_->accelerated_widget());
   Suspend();
@@ -51,6 +55,7 @@ RecyclableCompositorMac::RecyclableCompositorMac(
 
 RecyclableCompositorMac::~RecyclableCompositorMac() {
   compositor_.RemoveObserver(this);
+  g_recyclable_compositor_count -= 1;
 }
 
 void RecyclableCompositorMac::Suspend() {
@@ -100,9 +105,9 @@ RecyclableCompositorMacFactory* RecyclableCompositorMacFactory::Get() {
 std::unique_ptr<RecyclableCompositorMac>
 RecyclableCompositorMacFactory::CreateCompositor(
     ui::ContextFactory* context_factory,
-    ui::ContextFactoryPrivate* context_factory_private) {
-  active_compositor_count_ += 1;
-  if (!compositors_.empty()) {
+    ui::ContextFactoryPrivate* context_factory_private,
+    bool force_new_compositor) {
+  if (!compositors_.empty() && !force_new_compositor) {
     std::unique_ptr<RecyclableCompositorMac> result;
     result = std::move(compositors_.back());
     compositors_.pop_back();
@@ -114,16 +119,6 @@ RecyclableCompositorMacFactory::CreateCompositor(
 
 void RecyclableCompositorMacFactory::RecycleCompositor(
     std::unique_ptr<RecyclableCompositorMac> compositor) {
-  // When we get to zero compositors in use, destroy all spare compositors.
-  // This is done to appease tests that rely on compositors being destroyed
-  // immediately (if the compositor is recycled and continues to exist, its
-  // subsequent initialization will crash).
-  active_compositor_count_ -= 1;
-  if (!active_compositor_count_) {
-    compositors_.clear();
-    return;
-  }
-
   if (recycling_disabled_)
     return;
 
@@ -131,6 +126,15 @@ void RecyclableCompositorMacFactory::RecycleCompositor(
 
   // Make this RecyclableCompositorMac recyclable for future instances.
   compositors_.push_back(std::move(compositor));
+
+  // When we get to zero active compositors in use, destroy all spare
+  // compositors. This is done to appease tests that rely on compositors being
+  // destroyed immediately (if the compositor is recycled and continues to
+  // exist, its subsequent initialization will crash).
+  if (g_recyclable_compositor_count == compositors_.size()) {
+    compositors_.clear();
+    return;
+  }
 
   // Post a task to free up the spare ui::Compositors when needed. Post this
   // to the browser main thread so that we won't free any compositors while

@@ -82,7 +82,8 @@ class COMPOSITOR_EXPORT RecyclableCompositorMacFactory {
   // Create a compositor, or recycle a preexisting one.
   std::unique_ptr<RecyclableCompositorMac> CreateCompositor(
       ui::ContextFactory* context_factory,
-      ui::ContextFactoryPrivate* context_factory_private);
+      ui::ContextFactoryPrivate* context_factory_private,
+      bool force_new_compositor = false);
 
   // Delete a compositor, or allow it to be recycled.
   void RecycleCompositor(std::unique_ptr<RecyclableCompositorMac> compositor);
@@ -92,13 +93,11 @@ class COMPOSITOR_EXPORT RecyclableCompositorMacFactory {
 
  private:
   friend class base::NoDestructor<ui::RecyclableCompositorMacFactory>;
+  friend class RecyclableCompositorMac;
   RecyclableCompositorMacFactory();
   ~RecyclableCompositorMacFactory();
   void ReduceSpareCompositors();
 
-  // The number of RecyclableCompositors that have been vended out and have
-  // not yet been recycled.
-  size_t active_compositor_count_ = 0;
   bool recycling_disabled_ = false;
   std::list<std::unique_ptr<RecyclableCompositorMac>> compositors_;
   base::WeakPtrFactory<RecyclableCompositorMacFactory> weak_factory_;
