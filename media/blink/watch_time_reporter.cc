@@ -509,7 +509,7 @@ WatchTimeReporter::CreateControlsComponent() {
                                              FOREGROUND_KEY(NativeControlsOff)};
 
   return std::make_unique<WatchTimeComponent<bool>>(
-      IsOnBatteryPower(), std::move(keys_to_finalize),
+      false, std::move(keys_to_finalize),
       base::BindRepeating(&WatchTimeReporter::GetControlsKey,
                           base::Unretained(this)),
       get_media_time_cb_, recorder_.get());
