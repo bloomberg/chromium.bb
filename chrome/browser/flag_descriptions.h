@@ -992,6 +992,9 @@ extern const char kSimplifyHttpsIndicatorDescription[];
 extern const char kSingleClickAutofillName[];
 extern const char kSingleClickAutofillDescription[];
 
+extern const char kSingleTabMode[];
+extern const char kSingleTabModeDescription[];
+
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
 

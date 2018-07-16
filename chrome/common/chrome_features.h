@@ -284,6 +284,8 @@ extern const char kSitePerProcessOnlyForHighMemoryClientsParamName[];
 extern const base::Feature kNativeSmb;
 #endif
 
+extern const base::Feature kSingleTabMode;
+
 extern const base::Feature kSoundContentSetting;
 
 #if defined(OS_MACOSX)
