@@ -1,0 +1,19 @@
+<html>
+<body>
+
+<script>
+  if (!window.location.origin) {
+      window.location.origin = window.location.protocol + "//" + window.location.hostname;
+  }
+
+  var loc = window.location;
+  var locOrigin = loc.origin;
+  loc.href='about:blank';
+
+  window.parent.postMessage("done", locOrigin);
+</script>
+
+This html posts a message to window.parent.
+
+</body>
+</html>
