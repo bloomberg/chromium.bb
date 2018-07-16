@@ -3711,8 +3711,6 @@ crbug.com/810254 [ Win7 ] storage/indexeddb/observer-frame.html [ Pass Timeout ]
 crbug.com/810254 [ Win7 ] storage/indexeddb/observer-workers.html [ Pass Timeout ]
 
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Pass Timeout ]
-# Temporarily disabled due to conflicting NeedsManualRebaseline below
-# crbug.com/678346 [ Win7 Debug ] storage/indexeddb/structured-clone.html [ Pass Timeout ]
 
 crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
 crbug.com/678499 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
