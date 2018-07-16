@@ -295,7 +295,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
             'mode-' + modes[i], data.enrollment_mode == modes[i]);
       }
       this.isManualEnrollment_ = data.enrollment_mode === 'manual';
-      this.isCancelDisabled = true;
       this.navigation_.disabled = false;
 
       this.showStep(data.attestationBased ? STEP_WORKING : STEP_SIGNIN);
@@ -331,10 +330,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * screen (either the next authentication or the login screen).
      */
     cancel: function() {
-      if (this.currentStep_ == STEP_WORKING ||
-          this.currentStep_ == STEP_AD_JOIN) {
-        return;
-      }
       if (this.isCancelDisabled)
         return;
       this.isCancelDisabled = true;
@@ -383,6 +378,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.classList.toggle('oauth-enroll-state-' + this.currentStep_, false);
       this.classList.toggle('oauth-enroll-state-' + step, true);
 
+      this.isCancelDisabled =
+          (step == STEP_SIGNIN && !this.isManualEnrollment_) ||
+          step == STEP_AD_JOIN || step == STEP_WORKING;
       if (step == STEP_SIGNIN) {
         $('oauth-enroll-auth-view').focus();
       } else if (step == STEP_LICENSE_TYPE) {
@@ -426,7 +424,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         this.showStep(STEP_ACTIVE_DIRECTORY_JOIN_ERROR);
         return;
       }
-      this.isCancelDisabled_ = false;  // Re-enable if called before Gaia loads.
       $('oauth-enroll-error-card').textContent = message;
       $('oauth-enroll-error-card').buttonLabel =
           retry ? loadTimeData.getString('oauthEnrollRetry') : '';
