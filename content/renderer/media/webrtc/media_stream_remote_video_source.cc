@@ -160,6 +160,23 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
           const_cast<uint8_t*>(yuv_buffer->DataV()), elapsed_timestamp);
       break;
     }
+    case webrtc::VideoFrameBuffer::Type::kI010: {
+      webrtc::I010BufferInterface* yuv_buffer = buffer->GetI010();
+      // WebRTC defines I010 data as uint16 whereas Chromium uses uint8 for all
+      // video formats, so conversion and cast is needed.
+      video_frame = media::VideoFrame::WrapExternalYuvData(
+          media::PIXEL_FORMAT_YUV420P10, size, gfx::Rect(size), size,
+          yuv_buffer->StrideY() * 2, yuv_buffer->StrideU() * 2,
+          yuv_buffer->StrideV() * 2,
+          const_cast<uint8_t*>(
+              reinterpret_cast<const uint8_t*>(yuv_buffer->DataY())),
+          const_cast<uint8_t*>(
+              reinterpret_cast<const uint8_t*>(yuv_buffer->DataU())),
+          const_cast<uint8_t*>(
+              reinterpret_cast<const uint8_t*>(yuv_buffer->DataV())),
+          elapsed_timestamp);
+      break;
+    }
     default:
       NOTREACHED();
   }
