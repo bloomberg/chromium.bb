@@ -312,22 +312,22 @@ public class ToolbarSwipeLayout extends Layout {
             mLeftTab.setX(leftX);
             needUpdate = mLeftTab.updateSnap(dt) || needUpdate;
             if (mLeftBottomToolbarSceneLayer != null) {
-                mLeftBottomToolbarSceneLayer.setIsVisibile(true);
+                mLeftBottomToolbarSceneLayer.setIsVisible(true);
                 mLeftBottomToolbarSceneLayer.setXOffset((int) (mLeftTab.getX() * mDpToPx));
             }
         } else if (mLeftBottomToolbarSceneLayer != null) {
-            mLeftBottomToolbarSceneLayer.setIsVisibile(false);
+            mLeftBottomToolbarSceneLayer.setIsVisible(false);
         }
 
         if (mRightTab != null) {
             mRightTab.setX(rightX);
             needUpdate = mRightTab.updateSnap(dt) || needUpdate;
             if (mRightBottomToolbarSceneLayer != null) {
-                mRightBottomToolbarSceneLayer.setIsVisibile(true);
+                mRightBottomToolbarSceneLayer.setIsVisible(true);
                 mRightBottomToolbarSceneLayer.setXOffset((int) (mRightTab.getX() * mDpToPx));
             }
         } else if (mRightBottomToolbarSceneLayer != null) {
-            mRightBottomToolbarSceneLayer.setIsVisibile(false);
+            mRightBottomToolbarSceneLayer.setIsVisible(false);
         }
 
         if (needUpdate) requestUpdate();

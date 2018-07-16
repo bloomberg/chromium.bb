@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.BottomToolbarViewBinder.ViewHolder;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
@@ -95,13 +96,14 @@ public class BottomToolbarCoordinator {
             OnClickListener tabSwitcherListener, OnClickListener searchAcceleratorListener,
             OnClickListener homeButtonListener, OnTouchListener menuButtonListener,
             TabModelSelector tabModelSelector, OverviewModeBehavior overviewModeBehavior,
-            ContextualSearchManager contextualSearchManager) {
+            ContextualSearchManager contextualSearchManager, WindowAndroid windowAndroid) {
         mMediator.setSearchAcceleratorListener(searchAcceleratorListener);
         mMediator.setLayoutManager(layoutManager);
         mMediator.setResourceManager(resourceManager);
         mMediator.setOverviewModeBehavior(overviewModeBehavior);
         mMediator.setToolbarSwipeHandler(layoutManager.getToolbarSwipeHandler());
         mMediator.setContextualSearchManager(contextualSearchManager);
+        mMediator.setWindowAndroid(windowAndroid);
 
         mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);
         mTabSwitcherButtonCoordinator.setTabModelSelector(tabModelSelector);

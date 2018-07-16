@@ -40,7 +40,7 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
     private int mCurrentXOffsetPx;
 
     /** Whether the {@link SceneLayer}is visible. */
-    private boolean mIsVisibile;
+    private boolean mIsVisible;
 
     /** The {@link ViewResourceFrameLayout} that this scene layer represents. */
     private ViewResourceFrameLayout mBottomView;
@@ -55,7 +55,7 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
         mBottomView = bottomView;
         mResourceId = mBottomView.getId();
         mTopShadowHeightPx = topShadowHeightPx;
-        mIsVisibile = true;
+        mIsVisible = true;
     }
 
     /**
@@ -86,8 +86,8 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
     /**
      * @param visible Whether this {@link SceneLayer} is visible.
      */
-    public void setIsVisibile(boolean visible) {
-        mIsVisibile = visible;
+    public void setIsVisible(boolean visible) {
+        mIsVisible = visible;
     }
 
     @Override
@@ -119,7 +119,7 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
     @Override
     public boolean isSceneOverlayTreeShowing() {
         // If the offset is greater than the toolbar's height, don't draw the layer.
-        return mIsVisibile && mCurrentYOffsetPx < mBottomView.getHeight() - mTopShadowHeightPx;
+        return mIsVisible && mCurrentYOffsetPx < mBottomView.getHeight() - mTopShadowHeightPx;
     }
 
     @Override
