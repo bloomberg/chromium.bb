@@ -179,8 +179,8 @@ void ViewAXPlatformNodeDelegate::OnMenuStart() {
 void ViewAXPlatformNodeDelegate::OnMenuEnd() {
   // When a native menu is hidden, restore accessibility focus to the current
   // focus in the document.
-  DCHECK_GE(menu_depth_, 1);
-  --menu_depth_;
+  if (menu_depth_ >= 1)
+    --menu_depth_;
   if (menu_depth_ == 0)
     ui::AXPlatformNode::SetPopupFocusOverride(nullptr);
 }
