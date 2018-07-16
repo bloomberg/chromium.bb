@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import math
 import os
 import random
 import sys
@@ -119,9 +120,17 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         "window.draw({{ red }}, {{ green }}, {{ blue }});",
         red=canvasRGB.r, green=canvasRGB.g, blue=canvasRGB.b)
     screenshot = tab.Screenshot(10)
+    # Avoid checking along antialiased boundary due to limited Adreno 3xx
+    # interpolation precision (crbug.com/847984). We inset by one CSS pixel
+    # adjusted by the device pixel ratio.
+    inset = int(math.ceil(tab.EvaluateJavaScript('window.devicePixelRatio')))
+    # It seems that we should be able to set start_x to 2 * inset (one to
+    # account for the inner div having left=1 and one to avoid sampling the
+    # aa edge). For reasons not fully understood this is insufficent on
+    # several bots (N9, 6P, mac_chromium_rel_ng).
     start_x = 10
-    start_y = 0
-    outer_size = 256
+    start_y = inset
+    outer_size = 256 - inset
     skip = 10
     for y in range(start_y, outer_size, skip):
       for x in range(start_x, outer_size, skip):
