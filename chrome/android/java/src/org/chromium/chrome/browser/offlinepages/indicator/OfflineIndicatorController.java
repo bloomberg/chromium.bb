@@ -18,6 +18,7 @@ import android.support.v7.content.res.AppCompatResources;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -45,6 +46,8 @@ public class OfflineIndicatorController
     public static final int OFFLINE_INDICATOR_CTR_COUNT = 2;
 
     private static final int DURATION_MS = 10000;
+
+    private static boolean sSkipSystemCheckForTesting = false;
 
     @SuppressLint("StaticFieldLeak")
     private static OfflineIndicatorController sInstance;
@@ -120,6 +123,8 @@ public class OfflineIndicatorController
      */
     @TargetApi(Build.VERSION_CODES.M)
     private boolean performSystemCheckForValidatedNetwork() {
+        if (sSkipSystemCheckForTesting) return false;
+
         // NetworkCapabilities.NET_CAPABILITY_VALIDATED is only available on Marshmallow and
         // later versions.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
@@ -199,5 +204,10 @@ public class OfflineIndicatorController
     private void hideOfflineIndicator(SnackbarManager snackbarManager) {
         if (!mIsShowingOfflineIndicator) return;
         snackbarManager.dismissSnackbars(this);
+    }
+
+    @VisibleForTesting
+    static void skipSystemCheckForTesting() {
+        sSkipSystemCheckForTesting = true;
     }
 }
