@@ -7,13 +7,16 @@ package org.chromium.chrome.browser.page_info;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.support.v4.app.NotificationManagerCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.style.StyleSpan;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
@@ -87,6 +90,10 @@ class PermissionParamsListBuilder {
                     && !locationUtils.isSystemLocationSettingEnabled()) {
                 permissionParams.warningTextResource = R.string.page_info_android_location_blocked;
                 intentOverride = locationUtils.getSystemLocationSettingsIntent();
+            } else if (shouldShowNotificationsDisabledWarning(permission)) {
+                permissionParams.warningTextResource =
+                        R.string.page_info_android_permission_blocked;
+                intentOverride = ApiCompatibilityUtils.getNotificationSettingsIntent(mContext);
             } else if (!hasAndroidPermission(permission.type)) {
                 permissionParams.warningTextResource =
                         R.string.page_info_android_permission_blocked;
@@ -133,6 +140,12 @@ class PermissionParamsListBuilder {
         permissionParams.status = builder;
 
         return permissionParams;
+    }
+
+    private boolean shouldShowNotificationsDisabledWarning(PageInfoPermissionEntry permission) {
+        return permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS
+                && !NotificationManagerCompat.from(mContext).areNotificationsEnabled()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.APP_NOTIFICATION_STATUS_MESSAGING);
     }
 
     private boolean hasAndroidPermission(int contentSettingType) {

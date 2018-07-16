@@ -318,6 +318,24 @@ public class ApiCompatibilityUtils {
         return true;
     }
 
+    /**
+     *  Gets an intent to start the Android system notification settings activity for an app.
+     *
+     *  @param context Context of the app whose settings intent should be returned.
+     */
+    public static Intent getNotificationSettingsIntent(Context context) {
+        Intent intent = new Intent();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+            intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName());
+        } else {
+            intent.setAction("android.settings.ACTION_APP_NOTIFICATION_SETTINGS");
+            intent.putExtra("app_package", context.getPackageName());
+            intent.putExtra("app_uid", context.getApplicationInfo().uid);
+        }
+        return intent;
+    }
+
     private static class FinishAndRemoveTaskWithRetry implements Runnable {
         private static final long RETRY_DELAY_MS = 500;
         private static final long MAX_TRY_COUNT = 3;

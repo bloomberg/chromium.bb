@@ -1263,6 +1263,9 @@ extern const char kAndroidAutofillAccessibilityDescription[];
 extern const char kAndroidPaymentAppsName[];
 extern const char kAndroidPaymentAppsDescription[];
 
+extern const char kAppNotificationStatusMessagingName[];
+extern const char kAppNotificationStatusMessagingDescription[];
+
 extern const char kAsyncDnsName[];
 extern const char kAsyncDnsDescription[];
 

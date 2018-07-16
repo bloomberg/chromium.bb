@@ -40,6 +40,10 @@ extern const base::Feature kAnimatedAppMenuIcon;
 extern const base::Feature kAppBanners;
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+extern const base::Feature kAppNotificationStatusMessaging;
+#endif  // defined(OS_ANDROID)
+
 extern const base::Feature kAssetDownloadSuggestionsFeature;
 
 extern const base::Feature kAsyncDns;

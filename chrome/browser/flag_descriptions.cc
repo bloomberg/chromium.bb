@@ -2074,6 +2074,12 @@ const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
 const char kAndroidAutofillAccessibilityDescription[] =
     "Enable accessibility for autofill popup.";
 
+const char kAppNotificationStatusMessagingName[] =
+    "App notification status messaging";
+const char kAppNotificationStatusMessagingDescription[] =
+    "Enables messaging in site permissions UI informing user when "
+    "notifications are disabled for the entire app.";
+
 const char kAndroidPaymentAppsName[] = "Android payment apps";
 const char kAndroidPaymentAppsDescription[] =
     "Enable third party Android apps to integrate as payment apps";

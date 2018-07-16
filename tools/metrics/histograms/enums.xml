@@ -27406,6 +27406,7 @@ from previous Chrome versions.
   <int value="-2009622663" label="WebRtcHWH264Encoding:enabled"/>
   <int value="-2008272679" label="disable-webrtc-hw-encoding"/>
   <int value="-2005089558" label="BackgroundVideoTrackOptimization:disabled"/>
+  <int value="-2004231189" label="AppNotificationStatusMessaging:disabled"/>
   <int value="-2003354337"
       label="enable-search-button-in-omnibox-for-str-or-iip"/>
   <int value="-2000567059" label="SimplifyHttpsIndicator:enabled"/>
@@ -28452,6 +28453,7 @@ from previous Chrome versions.
   <int value="125581289" label="WebRtcHWVP8Encoding:disabled"/>
   <int value="125934378" label="enable-password-link"/>
   <int value="131881947" label="D3DVsync:enabled"/>
+  <int value="133482330" label="AppNotificationStatusMessaging:enabled"/>
   <int value="143725809" label="DownloadProgressInfoBar:enabled"/>
   <int value="147342055" label="ChromeHomeClearUrlOnOpen:disabled"/>
   <int value="147373243" label="enable-deferred-image-decoding"/>
