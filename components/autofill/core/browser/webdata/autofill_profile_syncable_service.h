@@ -128,6 +128,10 @@ class AutofillProfileSyncableService
                            MergeSimilarProfiles_DifferentNames);
   FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
                            MergeSimilarProfiles_NonZeroUseCounts);
+  FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
+                           OverwriteProfileWithServerData_NonSettingsOrigin);
+  FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
+                           OverwriteProfileWithServerData_SettingsOrigin);
 
   // The map of the guid to profiles owned by the |profiles_| vector.
   typedef std::map<std::string, AutofillProfile*> GUIDToProfileMap;

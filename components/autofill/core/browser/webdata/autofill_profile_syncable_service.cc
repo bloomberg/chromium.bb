@@ -21,6 +21,7 @@
 #include "components/autofill/core/browser/form_group.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -323,7 +324,10 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
   bool diff = false;
   if (specifics.has_origin() && profile->origin() != specifics.origin()) {
     bool was_verified = profile->IsVerified();
-    profile->set_origin(specifics.origin());
+    // In this case, the local origin must be empty on the local |profile|, but
+    // the remote profile was verified.
+    if (specifics.origin() == kSettingsOrigin)
+      profile->set_origin(kSettingsOrigin);
     diff = true;
 
     // Verified profiles should never be overwritten by unverified ones.

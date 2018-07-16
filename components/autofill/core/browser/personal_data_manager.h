@@ -391,6 +391,10 @@ class PersonalDataManager : public KeyedService,
                            GetCreditCardSuggestions_CreditCardAutofillDisabled);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            GetCreditCardSuggestions_NoCardsLoadedIfDisabled);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           ClearProfileNonSettingsOrigins);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           ClearCreditCardNonSettingsOrigins);
 
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::PersonalDataManagerFactory;
@@ -469,6 +473,11 @@ class PersonalDataManager : public KeyedService,
   // Sets which PrefService to use and observe. |pref_service| is not owned by
   // this class and must outlive |this|.
   void SetPrefService(PrefService* pref_service);
+
+  // Clears the value of the origin field of the autofill profiles or cards that
+  // were not created from the settings page.
+  void ClearProfileNonSettingsOrigins();
+  void ClearCreditCardNonSettingsOrigins();
 
   void set_database(scoped_refptr<AutofillWebDataService> database) {
     database_ = database;
