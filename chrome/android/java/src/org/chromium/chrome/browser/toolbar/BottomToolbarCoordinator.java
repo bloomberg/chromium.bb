@@ -143,6 +143,10 @@ public class BottomToolbarCoordinator {
         mMediator.setToolbarSwipeLayout(layout);
     }
 
+    public View getMenuButton() {
+        return mMenuButton.getMenuButton();
+    }
+
     /**
      * Clean up any state when the bottom toolbar is destroyed.
      */

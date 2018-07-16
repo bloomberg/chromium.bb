@@ -54,4 +54,8 @@ class MenuButton extends FrameLayout {
     boolean isShowingAppMenuUpdateBadge() {
         return mUpdateBadgeView.getVisibility() == View.VISIBLE;
     }
+
+    View getMenuButton() {
+        return mMenuButtonView;
+    }
 }
