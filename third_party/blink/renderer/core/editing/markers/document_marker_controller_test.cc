@@ -189,6 +189,30 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML) {
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
+// TODO(crbug.com/862900): Fix DocumentMarkerController::DidUpdateCharacterData
+//                         and enable this test.
+TEST_F(DocumentMarkerControllerTest,
+       DISABLED_SynchronousMutationNotificationAfterGC) {
+  SetBodyContent("<b><i>foo</i></b>");
+  Persistent<Text> sibling_text = CreateTextNode("bar");
+  {
+    Element* parent =
+        ToElement(GetDocument().body()->firstChild()->firstChild());
+    parent->parentNode()->AppendChild(sibling_text);
+    MarkNodeContents(parent);
+    EXPECT_EQ(1u, MarkerController().Markers().size());
+    parent->parentNode()->RemoveChild(parent);
+  }
+
+  // GC the marked node, so it disappears from WeakMember collections.
+  ThreadState::Current()->CollectAllGarbage();
+  EXPECT_EQ(0u, MarkerController().Markers().size());
+
+  // Trigger SynchronousMutationNotifier::NotifyUpdateCharacterData().
+  // This matches the conditions for the crashes in crbug.com/862960.
+  sibling_text->setData("baz");
+}
+
 TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects) {
   SetBodyContent("<div style='margin: 100px'>foo</div>");
   Element* div = ToElement(GetDocument().body()->firstChild());
