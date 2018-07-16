@@ -44,9 +44,9 @@ class ContextLostExpectations(GpuTestExpectations):
 
     # There are probably multiple race conditions in the renderer
     # process related to context loss, but they're happening most
-    # often on the Mac ASAN bot.
+    # often on the Mac bots.
     self.Flaky('GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash',
-               ['mac', 'asan'], bug=861956)
+               ['mac'], bug=861956)
 
     # 'Browser must support tab control' raised on Android
     self.Skip('GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash',
