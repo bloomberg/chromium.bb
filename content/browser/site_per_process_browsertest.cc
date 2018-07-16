@@ -1763,8 +1763,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   scroll_observer->Wait();
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
 // Flaky: https://crbug.com/836200.
+// Flaky timeouts on Mac: https://crbug.com/863971.
 #define MAYBE_ScrollBubblingFromOOPIFWithBodyOverflowHidden \
   DISABLED_ScrollBubblingFromOOPIFWithBodyOverflowHidden
 #else
