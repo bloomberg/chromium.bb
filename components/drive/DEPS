@@ -7,6 +7,7 @@ include_rules = [
   "+mojo/public/cpp/bindings/interface_request.h",
   "+net",
   "+services/device/public/mojom",
+  "+services/network",
   "+third_party/leveldatabase",
   "+third_party/re2",
   "+services/network/public/cpp",

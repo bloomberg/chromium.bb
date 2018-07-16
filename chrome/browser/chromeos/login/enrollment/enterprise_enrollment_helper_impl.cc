@@ -52,7 +52,8 @@ class TokenRevoker : public GaiaAuthConsumer {
 TokenRevoker::TokenRevoker()
     : gaia_fetcher_(this,
                     GaiaConstants::kChromeOSSource,
-                    g_browser_process->system_request_context()) {}
+                    g_browser_process->system_network_context_manager()
+                        ->GetSharedURLLoaderFactory()) {}
 
 TokenRevoker::~TokenRevoker() {}
 
@@ -99,7 +100,7 @@ void EnterpriseEnrollmentHelperImpl::EnrollUsingAuthCode(
   oauth_status_ = OAUTH_STARTED_WITH_AUTH_CODE;
   oauth_fetcher_.reset(policy::PolicyOAuth2TokenFetcher::CreateInstance());
   oauth_fetcher_->StartWithAuthCode(
-      auth_code, g_browser_process->system_request_context(),
+      auth_code,
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       base::Bind(&EnterpriseEnrollmentHelperImpl::OnTokenFetched,
@@ -270,7 +271,7 @@ void EnterpriseEnrollmentHelperImpl::OnTokenFetched(
   std::string refresh_token = oauth_fetcher_->OAuth2RefreshToken();
   oauth_fetcher_.reset(policy::PolicyOAuth2TokenFetcher::CreateInstance());
   oauth_fetcher_->StartWithRefreshToken(
-      refresh_token, g_browser_process->system_request_context(),
+      refresh_token,
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       base::Bind(&EnterpriseEnrollmentHelperImpl::OnTokenFetched,

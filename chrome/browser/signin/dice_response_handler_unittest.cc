@@ -35,6 +35,7 @@
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,14 +61,16 @@ class DiceTestSigninClient : public TestSigninClient, public GaiaAuthConsumer {
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
       const std::string& source,
-      net::URLRequestContextGetter* getter) override {
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      override {
     DCHECK(!consumer_ || (consumer_ == consumer));
     consumer_ = consumer;
 
     // Pass |this| as a dummy consumer to CreateGaiaAuthFetcher().
     // Since DiceTestSigninClient does not overrides any consumer method,
     // everything will be dropped on the floor.
-    return TestSigninClient::CreateGaiaAuthFetcher(this, source, getter);
+    return TestSigninClient::CreateGaiaAuthFetcher(this, source,
+                                                   url_loader_factory);
   }
 
   GaiaAuthConsumer* consumer_;
@@ -119,8 +122,7 @@ class DiceResponseHandlerTest : public testing::Test,
         request_context_getter_(
             new net::TestURLRequestContextGetter(task_runner_)),
         signin_client_(&pref_service_),
-        token_service_(std::make_unique<FakeOAuth2TokenServiceDelegate>(
-            request_context_getter_.get())),
+        token_service_(std::make_unique<FakeOAuth2TokenServiceDelegate>()),
         signin_error_controller_(
             SigninErrorController::AccountMode::PRIMARY_ACCOUNT),
         signin_manager_(&signin_client_,

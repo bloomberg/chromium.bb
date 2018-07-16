@@ -5,7 +5,6 @@
 #include "extensions/shell/browser/shell_oauth2_token_service.h"
 
 #include "base/logging.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/shell/browser/shell_oauth2_token_service_delegate.h"
 
@@ -16,13 +15,10 @@ ShellOAuth2TokenService* g_instance = nullptr;
 
 }  // namespace
 
-ShellOAuth2TokenService::ShellOAuth2TokenService(
-    content::BrowserContext* browser_context,
-    std::string account_id,
-    std::string refresh_token)
+ShellOAuth2TokenService::ShellOAuth2TokenService(std::string account_id,
+                                                 std::string refresh_token)
     : OAuth2TokenService(
-          std::make_unique<ShellOAuth2TokenServiceDelegate>(browser_context,
-                                                            account_id,
+          std::make_unique<ShellOAuth2TokenServiceDelegate>(account_id,
                                                             refresh_token)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!g_instance);

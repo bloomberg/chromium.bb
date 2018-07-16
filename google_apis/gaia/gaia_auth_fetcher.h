@@ -11,10 +11,13 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/http_raw_request_response_info.h"
 #include "url/gurl.h"
 
 // Authenticate a user against the Google Accounts ClientLogin API
@@ -29,13 +32,12 @@
 
 class GaiaAuthFetcherTest;
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-class URLRequestStatus;
-}
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
-class GaiaAuthFetcher : public net::URLFetcherDelegate {
+class GaiaAuthFetcher {
  public:
   // Magic string indicating that, while a second factor is still
   // needed to complete authentication, the user provided the right password.
@@ -45,12 +47,12 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   // Apps enabled, the user provided the right password.
   static const char kWebLoginRequired[];
 
-  // This will later be hidden behind an auth service which caches
-  // tokens.
-  GaiaAuthFetcher(GaiaAuthConsumer* consumer,
-                  const std::string& source,
-                  net::URLRequestContextGetter* getter);
-  ~GaiaAuthFetcher() override;
+  // This will later be hidden behind an auth service which caches tokens.
+  GaiaAuthFetcher(
+      GaiaAuthConsumer* consumer,
+      const std::string& source,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  virtual ~GaiaAuthFetcher();
 
   // Start a request to revoke |auth_token|.
   //
@@ -175,29 +177,25 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   // /MergeSession requests.
   void StartGetCheckConnectionInfo();
 
-  // Implementation of net::URLFetcherDelegate
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-
   // StartClientLogin been called && results not back yet?
   bool HasPendingFetch();
 
   // Stop any URL fetches in progress.
   virtual void CancelRequest();
 
-  // From a URLFetcher result, generate an appropriate error.
-  // From the API documentation, both IssueAuthToken and ClientLogin have
+  // From the data loaded from a SimpleURLLoader, generates an appropriate
+  // error. From the API documentation, both IssueAuthToken and ClientLogin have
   // the same error returns.
-  static GoogleServiceAuthError GenerateOAuthLoginError(
-      const std::string& data,
-      const net::URLRequestStatus& status);
+  static GoogleServiceAuthError GenerateOAuthLoginError(const std::string& data,
+                                                        net::Error net_error);
 
  protected:
-  // Create and start |fetcher_|, used to make all Gaia request.  |body| is
+  // Creates and starts |url_loader_|, used to make all Gaia request.  |body| is
   // used as the body of the POST request sent to GAIA.  Any strings listed in
   // |headers| are added as extra HTTP headers in the request.
   //
-  // |load_flags| are passed to directly to net::URLFetcher::Create() when
-  // creating the URL fetcher.
+  // |load_flags| are passed to directly to network::SimpleURLLoader::Create()
+  // when creating the SimpleURLLoader.
   //
   // HasPendingFetch() should return false before calling this method, and will
   // return true afterwards.
@@ -208,11 +206,18 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
       int load_flags,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
+  // Called by OnURLLoadComplete, exposed for ease of testing.
+  virtual void OnURLLoadCompleteInternal(
+      net::Error net_error,
+      int response_code,
+      const network::HttpRawRequestResponseInfo::HeadersVector& headers,
+      std::string response_body);
+
   // Dispatch the results of a request.
   void DispatchFetchedRequest(const GURL& url,
                               const std::string& data,
                               const net::ResponseCookies& cookies,
-                              const net::URLRequestStatus& status,
+                              net::Error net_error,
                               int response_code);
 
   void SetPendingFetch(bool pending_fetch);
@@ -268,45 +273,47 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   static const char kClientLoginToOAuth2CookiePartCodePrefix[];
   static const int kClientLoginToOAuth2CookiePartCodePrefixLength;
 
+  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
+
   void OnClientLoginToOAuth2Fetched(const std::string& data,
                                     const net::ResponseCookies& cookies,
-                                    const net::URLRequestStatus& status,
+                                    net::Error net_error,
                                     int response_code);
 
   void OnOAuth2TokenPairFetched(const std::string& data,
-                                const net::URLRequestStatus& status,
+                                net::Error net_error,
                                 int response_code);
 
   void OnOAuth2RevokeTokenFetched(const std::string& data,
-                                  const net::URLRequestStatus& status,
+                                  net::Error net_error,
                                   int response_code);
 
   void OnListAccountsFetched(const std::string& data,
-                             const net::URLRequestStatus& status,
+                             net::Error net_error,
                              int response_code);
 
   void OnLogOutFetched(const std::string& data,
-                       const net::URLRequestStatus& status,
+                       net::Error net_error,
                        int response_code);
 
   void OnGetUserInfoFetched(const std::string& data,
-                            const net::URLRequestStatus& status,
+                            net::Error net_error,
                             int response_code);
 
   void OnMergeSessionFetched(const std::string& data,
-                             const net::URLRequestStatus& status,
+                             net::Error net_error,
                              int response_code);
 
   void OnUberAuthTokenFetch(const std::string& data,
-                            const net::URLRequestStatus& status,
+                            net::Error net_error,
                             int response_code);
 
   void OnOAuthLoginFetched(const std::string& data,
-                           const net::URLRequestStatus& status,
+                           net::Error net_error,
                            int response_code);
 
   void OnGetCheckConnectionInfoFetched(const std::string& data,
-                                       const net::URLRequestStatus& status,
+                                       net::Error net_error,
                                        int response_code);
 
   // Tokenize the results of a ClientLogin fetch.
@@ -362,16 +369,15 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   static std::string MakeOAuthLoginBody(const std::string& service,
                                         const std::string& source);
 
-  // From a URLFetcher result, generate an appropriate error.
+  // From a SimpleURLLoader result, generates an appropriate error.
   // From the API documentation, both IssueAuthToken and ClientLogin have
   // the same error returns.
-  static GoogleServiceAuthError GenerateAuthError(
-      const std::string& data,
-      const net::URLRequestStatus& status);
+  static GoogleServiceAuthError GenerateAuthError(const std::string& data,
+                                                  net::Error net_error);
 
   // These fields are common to GaiaAuthFetcher, same every request.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   GaiaAuthConsumer* const consumer_;
-  net::URLRequestContextGetter* const getter_;
   std::string source_;
   const GURL oauth2_token_gurl_;
   const GURL oauth2_revoke_gurl_;
@@ -384,7 +390,8 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   const GURL get_check_connection_info_url_;
 
   // While a fetch is going on:
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+  GURL original_url_;
   GURL deprecated_client_login_to_oauth2_gurl_;
   std::string request_body_;
 

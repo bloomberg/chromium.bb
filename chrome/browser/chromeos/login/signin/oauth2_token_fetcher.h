@@ -10,12 +10,13 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace chromeos {
@@ -34,8 +35,9 @@ class OAuth2TokenFetcher : public base::SupportsWeakPtr<OAuth2TokenFetcher>,
     virtual void OnOAuth2TokensFetchFailed() = 0;
   };
 
-  OAuth2TokenFetcher(OAuth2TokenFetcher::Delegate* delegate,
-                     net::URLRequestContextGetter* context_getter);
+  OAuth2TokenFetcher(
+      OAuth2TokenFetcher::Delegate* delegate,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~OAuth2TokenFetcher() override;
 
   void StartExchangeFromCookies(const std::string& session_index,

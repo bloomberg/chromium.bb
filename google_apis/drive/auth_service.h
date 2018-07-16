@@ -9,15 +9,13 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "google_apis/drive/auth_service_interface.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -33,13 +31,12 @@ class AuthServiceObserver;
 class AuthService : public AuthServiceInterface,
                     public OAuth2TokenService::Observer {
  public:
-  // |url_request_context_getter| is used to perform authentication with
-  // URLFetcher.
+  // |url_loader_factory| is used to perform authentication with
+  // SimpleURLLoader.
   //
   // |scopes| specifies OAuth2 scopes.
   AuthService(OAuth2TokenService* oauth2_token_service,
               const std::string& account_id,
-              net::URLRequestContextGetter* url_request_context_getter,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
               const std::vector<std::string>& scopes);
   ~AuthService() override;
@@ -70,7 +67,6 @@ class AuthService : public AuthServiceInterface,
 
   OAuth2TokenService* oauth2_token_service_;
   std::string account_id_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   bool has_refresh_token_;
   std::string access_token_;

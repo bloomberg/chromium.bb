@@ -845,6 +845,11 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
   return extensions_request_context_.get();
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>
+TestingProfile::GetURLLoaderFactory() {
+  return nullptr;
+}
+
 content::ResourceContext* TestingProfile::GetResourceContext() {
   if (!resource_context_)
     resource_context_ = new content::MockResourceContext();

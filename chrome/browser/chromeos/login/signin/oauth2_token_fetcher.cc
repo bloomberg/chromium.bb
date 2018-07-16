@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
@@ -29,9 +30,9 @@ namespace chromeos {
 
 OAuth2TokenFetcher::OAuth2TokenFetcher(
     OAuth2TokenFetcher::Delegate* delegate,
-    net::URLRequestContextGetter* context_getter)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : delegate_(delegate),
-      auth_fetcher_(this, GaiaConstants::kChromeSource, context_getter),
+      auth_fetcher_(this, GaiaConstants::kChromeSource, url_loader_factory),
       retry_count_(0) {
   DCHECK(delegate);
 }

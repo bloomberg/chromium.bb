@@ -159,7 +159,7 @@ bool ShouldShowAccountManagement(const GURL& url, bool is_mirror_enabled) {
 
 InlineSigninHelper::InlineSigninHelper(
     base::WeakPtr<InlineLoginHandlerImpl> handler,
-    net::URLRequestContextGetter* getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     Profile* profile,
     Profile::CreateStatus create_status,
     const GURL& current_url,
@@ -172,7 +172,9 @@ InlineSigninHelper::InlineSigninHelper(
     bool choose_what_to_sync,
     bool confirm_untrusted_signin,
     bool is_force_sign_in_with_usermanager)
-    : gaia_auth_fetcher_(this, GaiaConstants::kChromeSource, getter),
+    : gaia_auth_fetcher_(this,
+                         GaiaConstants::kChromeSource,
+                         url_loader_factory),
       handler_(handler),
       profile_(profile),
       create_status_(create_status),
@@ -724,8 +726,9 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
 
   // InlineSigninHelper will delete itself.
   new InlineSigninHelper(
-      handler_weak_ptr, params.partition->GetURLRequestContext(), profile,
-      status, params.url, params.email, params.gaia_id, params.password,
+      handler_weak_ptr,
+      params.partition->GetURLLoaderFactoryForBrowserProcess(), profile, status,
+      params.url, params.email, params.gaia_id, params.password,
       params.session_index, params.auth_code, signin_scoped_device_id,
       params.choose_what_to_sync, params.confirm_untrusted_signin,
       params.is_force_sign_in_with_usermanager);

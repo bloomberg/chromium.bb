@@ -5,7 +5,9 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_token_initializer.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_features.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 
@@ -19,7 +21,8 @@ void OAuth2TokenInitializer::Start(const UserContext& user_context,
   callback_ = callback;
   user_context_ = user_context;
   oauth2_token_fetcher_.reset(new OAuth2TokenFetcher(
-      this, g_browser_process->system_request_context()));
+      this, g_browser_process->system_network_context_manager()
+                ->GetSharedURLLoaderFactory()));
   if (user_context.GetDeviceId().empty())
     NOTREACHED() << "Device ID is not set";
   oauth2_token_fetcher_->StartExchangeFromAuthCode(user_context.GetAuthCode(),

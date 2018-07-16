@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #if defined(OS_ANDROID)
 #include "components/signin/core/browser/child_account_info_fetcher_android.h"
 #else
@@ -17,13 +18,13 @@ std::unique_ptr<ChildAccountInfoFetcher> ChildAccountInfoFetcher::CreateFrom(
     const std::string& account_id,
     AccountFetcherService* fetcher_service,
     OAuth2TokenService* token_service,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     invalidation::InvalidationService* invalidation_service) {
 #if defined(OS_ANDROID)
   return ChildAccountInfoFetcherAndroid::Create(fetcher_service, account_id);
 #else
   return std::make_unique<ChildAccountInfoFetcherImpl>(
-      account_id, fetcher_service, token_service, request_context_getter,
+      account_id, fetcher_service, token_service, url_loader_factory,
       invalidation_service);
 #endif
 }

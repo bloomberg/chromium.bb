@@ -11,12 +11,17 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_dialog.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 // Implementation for the inline login WebUI handler on desktop Chrome. Once
 // CrOS migrates to the same webview approach as desktop Chrome, much of the
@@ -122,21 +127,25 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
 // InlineLoginHandlerImpl is destryed once the UI is closed.
 class InlineSigninHelper : public GaiaAuthConsumer {
  public:
-  InlineSigninHelper(base::WeakPtr<InlineLoginHandlerImpl> handler,
-                     net::URLRequestContextGetter* getter,
-                     Profile* profile,
-                     Profile::CreateStatus create_status,
-                     const GURL& current_url,
-                     const std::string& email,
-                     const std::string& gaia_id,
-                     const std::string& password,
-                     const std::string& session_index,
-                     const std::string& auth_code,
-                     const std::string& signin_scoped_device_id,
-                     bool choose_what_to_sync,
-                     bool confirm_untrusted_signin,
-                     bool is_force_sign_in_with_usermanager);
+  InlineSigninHelper(
+      base::WeakPtr<InlineLoginHandlerImpl> handler,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      Profile* profile,
+      Profile::CreateStatus create_status,
+      const GURL& current_url,
+      const std::string& email,
+      const std::string& gaia_id,
+      const std::string& password,
+      const std::string& session_index,
+      const std::string& auth_code,
+      const std::string& signin_scoped_device_id,
+      bool choose_what_to_sync,
+      bool confirm_untrusted_signin,
+      bool is_force_sign_in_with_usermanager);
   ~InlineSigninHelper() override;
+
+ protected:
+  GaiaAuthFetcher* GetGaiaAuthFetcherForTest() { return &gaia_auth_fetcher_; }
 
  private:
   // Handles cross account sign in error. If the supplied |email| does not match

@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -30,6 +31,10 @@ class StoragePartition;
 
 namespace net {
 class URLRequestContextGetter;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace chromeos {
@@ -108,6 +113,12 @@ content::StoragePartition* GetSigninPartition();
 // based flow, the context of the sign-in profile is returned. For webview based
 // flow, the context of the sign-in webview storage partition is returned.
 net::URLRequestContextGetter* GetSigninContext();
+
+// Returns the URLLoaderFactory that contains sign-in cookies. For old iframe
+// based flow, the URLLoaderFactory of the sign-in profile is returned. For
+// webview basedflow, the URLLoaderFactory of the sign-in webview storage
+// partition is returned.
+scoped_refptr<network::SharedURLLoaderFactory> GetSigninURLLoaderFactory();
 
 // Saves sync password hash and salt to profile prefs. These will be used to
 // detect Gaia password reuses.

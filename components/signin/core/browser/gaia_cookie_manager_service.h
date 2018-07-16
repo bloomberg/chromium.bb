@@ -232,12 +232,13 @@ class GaiaCookieManagerService : public KeyedService,
     return &fetcher_backoff_;
   }
 
+  // Can be overridden by tests.
+  virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
+
  private:
   net::URLRequestContextGetter* request_context() {
     return signin_client_->GetURLRequestContext();
   }
-
-  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
   // Returns the source value to use for GaiaFetcher requests.  This is
   // virtual to allow tests and fake classes to override.
@@ -295,8 +296,8 @@ class GaiaCookieManagerService : public KeyedService,
   std::unique_ptr<UbertokenFetcher> uber_token_fetcher_;
   ExternalCcResultFetcher external_cc_result_fetcher_;
 
-  // If the GaiaAuthFetcher or URLFetcher fails, retry with exponential backoff
-  // and network delay.
+  // If the GaiaAuthFetcher or SimpleURLLoader fails, retry with exponential
+  // backoff and network delay.
   net::BackoffEntry fetcher_backoff_;
   base::OneShotTimer fetcher_timer_;
   int fetcher_retries_;

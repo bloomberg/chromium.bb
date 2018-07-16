@@ -8,10 +8,12 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 
-namespace net {
-class FakeURLFetcherFactory;
+namespace network {
+class TestURLLoaderFactory;
+class WeakWrapperSharedURLLoaderFactory;
 }
 
 class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
@@ -50,9 +52,12 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
   std::string GetSourceForRequest(
       const GaiaCookieManagerService::GaiaCookieRequest& request) override;
   std::string GetDefaultSourceForRequest() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
   // Provide a fake response for calls to /ListAccounts.
-  std::unique_ptr<net::FakeURLFetcherFactory> url_fetcher_factory_;
+  std::unique_ptr<network::TestURLLoaderFactory> test_url_loader_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      shared_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGaiaCookieManagerService);
 };

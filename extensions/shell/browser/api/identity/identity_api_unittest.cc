@@ -22,7 +22,7 @@ namespace shell {
 class MockShellOAuth2TokenService : public ShellOAuth2TokenService {
  public:
   // The service starts with no account id or refresh token.
-  MockShellOAuth2TokenService() : ShellOAuth2TokenService(nullptr, "", "") {}
+  MockShellOAuth2TokenService() : ShellOAuth2TokenService("", "") {}
   ~MockShellOAuth2TokenService() override {}
 
   // OAuth2TokenService:

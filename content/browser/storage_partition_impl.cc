@@ -1197,6 +1197,10 @@ void StoragePartitionImpl::WaitForDeletionTasksForTesting() {
   }
 }
 
+void StoragePartitionImpl::ResetURLLoaderFactoryForBrowserProcessForTesting() {
+  url_loader_factory_for_browser_process_.reset();
+}
+
 BrowserContext* StoragePartitionImpl::browser_context() const {
   return browser_context_;
 }

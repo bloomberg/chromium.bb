@@ -20,7 +20,6 @@
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
@@ -98,7 +97,7 @@ std::vector<AccountManager::AccountKey> GetAccountKeys(
 class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
  public:
   GaiaTokenRevocationRequest(
-      net::URLRequestContextGetter* request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       AccountManager::DelayNetworkCallRunner delay_network_call_runner,
       const std::string& refresh_token,
       base::WeakPtr<AccountManager> account_manager)
@@ -107,7 +106,7 @@ class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
         weak_factory_(this) {
     DCHECK(!refresh_token_.empty());
     gaia_auth_fetcher_ = std::make_unique<GaiaAuthFetcher>(
-        this, GaiaConstants::kChromeOSSource, request_context);
+        this, GaiaConstants::kChromeOSSource, url_loader_factory);
     base::RepeatingClosure start_revoke_token = base::BindRepeating(
         &GaiaTokenRevocationRequest::Start, weak_factory_.GetWeakPtr());
     delay_network_call_runner.Run(start_revoke_token);
@@ -171,17 +170,17 @@ AccountManager::AccountManager() : weak_factory_(this) {}
 
 void AccountManager::Initialize(
     const base::FilePath& home_dir,
-    net::URLRequestContextGetter* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     DelayNetworkCallRunner delay_network_call_runner) {
   Initialize(
-      home_dir, request_context, std::move(delay_network_call_runner),
+      home_dir, url_loader_factory, std::move(delay_network_call_runner),
       base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()}));
 }
 
 void AccountManager::Initialize(
     const base::FilePath& home_dir,
-    net::URLRequestContextGetter* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     DelayNetworkCallRunner delay_network_call_runner,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   VLOG(1) << "AccountManager::Initialize";
@@ -197,7 +196,7 @@ void AccountManager::Initialize(
   }
 
   init_state_ = InitializationState::kInProgress;
-  request_context_ = request_context;
+  url_loader_factory_ = url_loader_factory;
   delay_network_call_runner_ = std::move(delay_network_call_runner);
   task_runner_ = task_runner;
   writer_ = std::make_unique<base::ImportantFileWriter>(
@@ -342,17 +341,6 @@ void AccountManager::RemoveObserver(AccountManager::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-net::URLRequestContextGetter* AccountManager::GetUrlRequestContext() {
-  // LSTs on Chrome are not channel/token bound for now and hence we can use
-  // the system request context.
-  // Note that we cannot use the Profile's request context since
-  // |AccountManager| acts outside the scope of Profiles.
-  // TODO(sinhak): Create a new |URLRequestContext| for |AccountManager| which
-  // conforms to token binding when those details are finalized.
-  DCHECK(request_context_);
-  return request_context_;
-}
-
 std::unique_ptr<OAuth2AccessTokenFetcher>
 AccountManager::CreateAccessTokenFetcher(
     const AccountKey& account_key,
@@ -400,7 +388,7 @@ void AccountManager::RevokeGaiaTokenOnServer(const std::string& refresh_token) {
 
   pending_token_revocation_requests_.emplace_back(
       std::make_unique<GaiaTokenRevocationRequest>(
-          GetUrlRequestContext(), delay_network_call_runner_, refresh_token,
+          url_loader_factory_, delay_network_call_runner_, refresh_token,
           weak_factory_.GetWeakPtr()));
 }
 

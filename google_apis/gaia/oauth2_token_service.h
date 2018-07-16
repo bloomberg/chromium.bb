@@ -23,9 +23,10 @@
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
+
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -178,12 +179,11 @@ class OAuth2TokenService {
       const ScopeSet& scopes,
       Consumer* consumer);
 
-  // This method does the same as |StartRequest| except it uses the request
-  // context given by |getter| instead of using the one returned by
-  // |GetRequestContext| implemented by derived classes.
+  // This method does the same as |StartRequest| except it uses the
+  // URLLoaderfactory given by |url_loader_factory| instead of using the one
+  // returned by |GetURLLoaderFactory| implemented by derived classes.
   std::unique_ptr<Request> StartRequestWithContext(
       const std::string& account_id,
-      net::URLRequestContextGetter* getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const ScopeSet& scopes,
       Consumer* consumer);
@@ -295,7 +295,6 @@ class OAuth2TokenService {
   virtual void FetchOAuth2Token(
       RequestImpl* request,
       const std::string& account_id,
-      net::URLRequestContextGetter* getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,
@@ -304,7 +303,6 @@ class OAuth2TokenService {
   // Create an access token fetcher for the given account id.
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
-      net::URLRequestContextGetter* getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer);
 
@@ -338,9 +336,9 @@ class OAuth2TokenService {
     ScopeSet scopes;
   };
 
-  // Provide a request context used for fetching access tokens with the
+  // Provide a URLLoaderFactory used for fetching access tokens with the
   // |StartRequest| method.
-  net::URLRequestContextGetter* GetRequestContext() const;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() const;
 
   // Struct that contains the information of an OAuth2 access token.
   struct CacheEntry {
@@ -353,7 +351,6 @@ class OAuth2TokenService {
   // client app instead of using Chrome's default values.
   std::unique_ptr<Request> StartRequestForClientWithContext(
       const std::string& account_id,
-      net::URLRequestContextGetter* getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,

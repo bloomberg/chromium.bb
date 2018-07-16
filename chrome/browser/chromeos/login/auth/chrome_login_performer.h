@@ -61,7 +61,8 @@ class ChromeLoginPerformer : public LoginPerformer {
   scoped_refptr<Authenticator> CreateAuthenticator() override;
   bool CheckPolicyForUser(const AccountId& account_id) override;
   content::BrowserContext* GetSigninContext() override;
-  net::URLRequestContextGetter* GetSigninRequestContext() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetSigninURLLoaderFactory()
+      override;
 
  private:
   void OnlineWildcardLoginCheckCompleted(

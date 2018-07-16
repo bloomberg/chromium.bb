@@ -10,9 +10,6 @@
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -42,7 +39,6 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
   void FetchOAuth2Token(
       RequestImpl* request,
       const std::string& account_id,
-      net::URLRequestContextGetter* getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,

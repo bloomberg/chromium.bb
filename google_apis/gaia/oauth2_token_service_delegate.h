@@ -12,9 +12,6 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -44,8 +41,7 @@ class OAuth2TokenServiceDelegate {
 
   virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
-      net::URLRequestContextGetter* getter,
-      scoped_refptr<network::SharedURLLoaderFactory> url_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) = 0;
 
   virtual bool RefreshTokenIsAvailable(const std::string& account_id) const = 0;
@@ -67,7 +63,6 @@ class OAuth2TokenServiceDelegate {
   virtual void UpdateCredentials(const std::string& account_id,
                                  const std::string& refresh_token) {}
   virtual void RevokeCredentials(const std::string& account_id) {}
-  virtual net::URLRequestContextGetter* GetRequestContext() const;
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const;
 

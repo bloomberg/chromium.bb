@@ -309,6 +309,8 @@ class TestingProfile : public Profile {
 #endif  // !defined(OS_ANDROID)
   net::URLRequestContextGetter* GetRequestContext() override;
   net::URLRequestContextGetter* GetRequestContextForExtensions() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+
   void set_last_session_exited_cleanly(bool value) {
     last_session_exited_cleanly_ = value;
   }

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/signin/token_revoker_test_utils.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -13,8 +14,8 @@ namespace token_revoker_test_utils {
 RefreshTokenRevoker::RefreshTokenRevoker()
     : gaia_fetcher_(this,
                     GaiaConstants::kChromeSource,
-                    g_browser_process->system_request_context()) {
-}
+                    g_browser_process->system_network_context_manager()
+                        ->GetSharedURLLoaderFactory()) {}
 
 RefreshTokenRevoker::~RefreshTokenRevoker() {
 }

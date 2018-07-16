@@ -5,6 +5,7 @@
 #include "net/test/embedded_test_server/controllable_http_response.h"
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace net {
@@ -63,6 +64,20 @@ void ControllableHttpResponse::WaitForRequest() {
   DCHECK(send_);
   DCHECK(done_);
   state_ = State::READY_TO_SEND_DATA;
+}
+
+void ControllableHttpResponse::Send(net::HttpStatusCode http_status,
+                                    const std::string& content_type,
+                                    const std::string& content,
+                                    const std::vector<std::string>& cookies) {
+  std::string content_data(base::StringPrintf(
+      "HTTP/1.1 %d %s\nContent-type: %s\n", static_cast<int>(http_status),
+      net::GetHttpReasonPhrase(http_status), content_type.c_str()));
+  for (auto& cookie : cookies)
+    content_data += "Set-Cookie: " + cookie + "\n";
+  content_data += "\n";
+  content_data += content;
+  Send(content_data);
 }
 
 void ControllableHttpResponse::Send(const std::string& bytes) {

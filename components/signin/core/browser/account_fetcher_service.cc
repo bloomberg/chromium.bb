@@ -222,7 +222,7 @@ void AccountFetcherService::StartFetchingChildInfo(
     const std::string& account_id) {
   child_info_request_ = ChildAccountInfoFetcher::CreateFrom(
       child_request_account_id_, this, token_service_,
-      signin_client_->GetURLRequestContext(), invalidation_service_);
+      signin_client_->GetURLLoaderFactory(), invalidation_service_);
 }
 
 void AccountFetcherService::ResetChildInfo() {

@@ -21,7 +21,7 @@ FakeProfileOAuth2TokenService::PendingRequest::~PendingRequest() {}
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService()
     : FakeProfileOAuth2TokenService(
-          std::make_unique<FakeOAuth2TokenServiceDelegate>(nullptr)) {}
+          std::make_unique<FakeOAuth2TokenServiceDelegate>()) {}
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService(
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
@@ -122,7 +122,6 @@ FakeProfileOAuth2TokenService::GetPendingRequests() {
 void FakeProfileOAuth2TokenService::FetchOAuth2Token(
     RequestImpl* request,
     const std::string& account_id,
-    net::URLRequestContextGetter* getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,

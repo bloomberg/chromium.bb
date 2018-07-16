@@ -7,12 +7,13 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "mojo/core/embedder/embedder.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -48,22 +49,28 @@ class MockUbertokenConsumer : public UbertokenConsumer {
 
 class UbertokenFetcherTest : public testing::Test {
  public:
+  UbertokenFetcherTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &url_loader_factory_)) {}
+
   void SetUp() override {
-    request_context_getter_ = new net::TestURLRequestContextGetter(
-        base::ThreadTaskRunnerHandle::Get());
-    fetcher_.reset(new UbertokenFetcher(&token_service_,
-                                        &consumer_,
-                                        GaiaConstants::kChromeSource,
-                                        request_context_getter_.get()));
+    mojo::core::Init();
+
+    fetcher_ = std::make_unique<UbertokenFetcher>(&token_service_, &consumer_,
+                                                  GaiaConstants::kChromeSource,
+                                                  test_shared_loader_factory_);
   }
 
   void TearDown() override { fetcher_.reset(); }
 
  protected:
-  base::MessageLoop message_loop_;
-  net::TestURLFetcherFactory factory_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   FakeOAuth2TokenService token_service_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  network::TestURLLoaderFactory url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   MockUbertokenConsumer consumer_;
   std::unique_ptr<UbertokenFetcher> fetcher_;
 };

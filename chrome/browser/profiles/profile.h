@@ -12,6 +12,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "content/public/browser/browser_context.h"
@@ -37,6 +38,10 @@ class Predictor;
 
 namespace content {
 class WebUI;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace user_prefs {
@@ -199,6 +204,10 @@ class Profile : public content::BrowserContext {
   // Returns the request context used for extension-related requests.  This
   // is only used for a separate cookie store currently.
   virtual net::URLRequestContextGetter* GetRequestContextForExtensions() = 0;
+
+  // Returns the main URLLoaderFactory.
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactory() = 0;
 
   // Return whether 2 profiles are the same. 2 profiles are the same if they
   // represent the same profile. This can happen if there is pointer equality

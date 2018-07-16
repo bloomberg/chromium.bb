@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/sync_file_system/drive_backend/callback_tracker.h"
@@ -21,6 +22,7 @@
 #include "components/drive/service/drive_service_interface.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/network_connection_tracker.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 class OAuth2TokenService;
 

@@ -27,7 +27,6 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
@@ -251,7 +250,7 @@ MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
     : token_service_delegate_(token_service_delegate),
       fetcher_(this,
                GaiaConstants::kChromeSource,
-               token_service_delegate_->GetRequestContext()),
+               token_service_delegate_->GetURLLoaderFactory()),
       weak_ptr_factory_(this) {
   RecordRefreshTokenRevocationRequestEvent(
       TokenRevocationRequestProgress::kRequestCreated);
@@ -387,7 +386,6 @@ void MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(
 OAuth2AccessTokenFetcher*
 MutableProfileOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     const std::string& account_id,
-    net::URLRequestContextGetter* getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   ValidateAccountId(account_id);
@@ -477,11 +475,6 @@ MutableProfileOAuth2TokenServiceDelegate::GetAccounts() {
     account_ids.push_back(token.first);
   }
   return account_ids;
-}
-
-net::URLRequestContextGetter*
-MutableProfileOAuth2TokenServiceDelegate::GetRequestContext() const {
-  return client_->GetURLRequestContext();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

@@ -97,11 +97,6 @@ void OAuth2TokenServiceDelegate::FireAuthErrorChanged(
     observer.OnAuthErrorChanged(account_id, error);
 }
 
-net::URLRequestContextGetter* OAuth2TokenServiceDelegate::GetRequestContext()
-    const {
-  return nullptr;
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 OAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return nullptr;

@@ -113,7 +113,7 @@ class SpyReconcilorDelegate : public signin::AccountReconcilorDelegate {
 // Introduce a dummy class creating the delegate internally, to avoid the move.
 class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
  public:
-  explicit DummyAccountReconcilorWithDelegate(
+  DummyAccountReconcilorWithDelegate(
       ProfileOAuth2TokenService* token_service,
       SigninManagerBase* signin_manager,
       SigninClient* client,
@@ -132,7 +132,7 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
 
   // Takes ownership of |delegate|.
   // gmock can't work with move only parameters.
-  explicit DummyAccountReconcilorWithDelegate(
+  DummyAccountReconcilorWithDelegate(
       ProfileOAuth2TokenService* token_service,
       SigninManagerBase* signin_manager,
       SigninClient* client,

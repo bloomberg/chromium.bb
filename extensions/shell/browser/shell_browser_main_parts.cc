@@ -233,7 +233,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // Initialize OAuth2 support from command line.
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   oauth2_token_service_.reset(new ShellOAuth2TokenService(
-      browser_context_.get(),
       cmd->GetSwitchValueASCII(switches::kAppShellUser),
       cmd->GetSwitchValueASCII(switches::kAppShellRefreshToken)));
 

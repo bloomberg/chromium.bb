@@ -82,8 +82,6 @@
 using captive_portal::CaptivePortalResult;
 using content::BrowserThread;
 using content::WebContents;
-using net::URLRequestFailedJob;
-using net::URLRequestMockHTTPJob;
 
 namespace {
 
@@ -138,6 +136,16 @@ const char* const kMockHttpsUrl2 =
 // Same as kMockHttpsUrl, except the timeout happens instantly.
 const char* const kMockHttpsQuickTimeoutUrl =
     "https://mock.captive.portal.quick.timeout/title2.html";
+
+// The intercepted URLs used to mock errors.
+const char* const kMockHttpConnectionTimeoutErr =
+    "http://mock.captive.portal.quick.error/timeout";
+const char* const kMockHttpsConnectionTimeoutErr =
+    "https://mock.captive.portal.quick.error/timeout";
+const char* const kMockHttpsConnectionUnexpectedErr =
+    "https://mock.captive.portal.quick.error/unexpected";
+const char* const kMockHttpConnectionConnectionClosedErr =
+    "http://mock.captive.portal.quick.error/connection_closed";
 
 // Expected title of a tab once an HTTPS load completes, when not behind a
 // captive portal.
@@ -898,6 +906,20 @@ bool CaptivePortalBrowserTest::OnIntercept(
   }
 
   auto url_string = params->url_request.url.spec();
+  net::Error error = net::OK;
+  if (url_string == kMockHttpConnectionTimeoutErr ||
+      url_string == kMockHttpsConnectionTimeoutErr) {
+    error = net::ERR_CONNECTION_TIMED_OUT;
+  } else if (url_string == kMockHttpsConnectionUnexpectedErr) {
+    error = net::ERR_UNEXPECTED;
+  } else if (url_string == kMockHttpConnectionConnectionClosedErr) {
+    error = net::ERR_CONNECTION_CLOSED;
+  }
+  if (error != net::OK) {
+    params->client->OnComplete(network::URLLoaderCompletionStatus(error));
+    return true;
+  }
+
   if (url_string == kMockHttpsUrl || url_string == kMockHttpsUrl2 ||
       url_string == kMockHttpsQuickTimeoutUrl ||
       params->url_request.url.path() == kRedirectToMockHttpsPath) {
@@ -939,8 +961,8 @@ bool CaptivePortalBrowserTest::OnIntercept(
         }
       }
     } else {
-      // Once logged in to the portal, HTTPS requests return the
-      // page that was actually requested.
+      // Once logged in to the portal, HTTPS requests return the page that was
+      // actually requested.
       content::URLLoaderInterceptor::WriteResponse(
           "HTTP/1.1 200 OK\nContent-type: text/html\n\n",
           GetContents("title2.html"), params->client.get());
@@ -1146,9 +1168,7 @@ void CaptivePortalBrowserTest::FastTimeoutNoCaptivePortal(
   int active_index = browser->tab_strip_model()->active_index();
   int expected_tab_count = browser->tab_strip_model()->count();
 
-  ui_test_utils::NavigateToURL(
-      browser,
-      URLRequestFailedJob::GetMockHttpsUrl(net::ERR_CONNECTION_TIMED_OUT));
+  ui_test_utils::NavigateToURL(browser, GURL(kMockHttpsConnectionTimeoutErr));
 
   // An attempt to detect a captive portal should have started by now.  If not,
   // abort early to prevent hanging.
@@ -1641,15 +1661,14 @@ CaptivePortalTabReloader* CaptivePortalBrowserTest::GetTabReloader(
 // also trigger the link doctor page, which results in the load of a second
 // error page.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpTimeout) {
-  GURL url = URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_TIMED_OUT);
-  NavigateToPageExpectNoTest(browser(), url, 2);
+  NavigateToPageExpectNoTest(browser(), GURL(kMockHttpConnectionTimeoutErr), 2);
 }
 
 // Make sure there's no check for a captive portal on HTTPS errors other than
 // timeouts, when they preempt the slow load timer.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpsNonTimeoutError) {
-  GURL url = URLRequestFailedJob::GetMockHttpsUrl(net::ERR_UNEXPECTED);
-  NavigateToPageExpectNoTest(browser(), url, 1);
+  NavigateToPageExpectNoTest(browser(), GURL(kMockHttpsConnectionUnexpectedErr),
+                             1);
 }
 
 // Make sure no captive portal test triggers on HTTPS timeouts of iframes.
@@ -1667,18 +1686,16 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpsIframeTimeout) {
 // error.  The check is triggered by a slow loading page, and the page
 // errors out only after getting a captive portal result.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, RequestFails) {
-  SetUpCaptivePortalService(
-      browser()->profile(),
-      URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_CLOSED));
+  SetUpCaptivePortalService(browser()->profile(),
+                            GURL(kMockHttpConnectionConnectionClosedErr));
   SlowLoadNoCaptivePortal(browser(), captive_portal::RESULT_NO_RESPONSE);
 }
 
 // Same as above, but for the rather unlikely case that the connection times out
 // before the timer triggers.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, RequestFailsFastTimout) {
-  SetUpCaptivePortalService(
-      browser()->profile(),
-      URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_CLOSED));
+  SetUpCaptivePortalService(browser()->profile(),
+                            GURL(kMockHttpConnectionConnectionClosedErr));
   FastTimeoutNoCaptivePortal(browser(), captive_portal::RESULT_NO_RESPONSE);
 }
 

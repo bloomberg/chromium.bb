@@ -1632,6 +1632,15 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   request->resource_type = content::ResourceType::RESOURCE_TYPE_SCRIPT;
   request->render_frame_id = MSG_ROUTING_NONE;
 
+  // TODO(https://crbug.com/857577): remove this hack. When an unrelated
+  // browser issued request (typically from GaiaAuthFetcher) has run, it causes
+  // the StoragePartitionImpl to create and cache a URLLoaderFactory without the
+  // web request proxying. This resets it so one with the web request proxying
+  // is created the next time a request is made.
+  base::RunLoop().RunUntilIdle();
+  content::BrowserContext::GetDefaultStoragePartition(profile())
+      ->ResetURLLoaderFactoryForBrowserProcessForTesting();
+
   auto loader = network::SimpleURLLoader::Create(std::move(request),
                                                  TRAFFIC_ANNOTATION_FOR_TESTS);
   content::SimpleURLLoaderTestHelper loader_helper;

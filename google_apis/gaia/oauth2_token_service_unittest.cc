@@ -73,8 +73,7 @@ class OAuth2TokenServiceTest : public testing::Test {
  public:
   void SetUp() override {
     mojo::core::Init();
-    auto delegate = std::make_unique<FakeOAuth2TokenServiceDelegate>(
-        new net::TestURLRequestContextGetter(message_loop_.task_runner()));
+    auto delegate = std::make_unique<FakeOAuth2TokenServiceDelegate>();
     test_url_loader_factory_ = delegate->test_url_loader_factory();
     oauth2_service_ =
         std::make_unique<TestOAuth2TokenService>(std::move(delegate));
@@ -362,6 +361,7 @@ TEST_F(OAuth2TokenServiceTest,
   std::unique_ptr<OAuth2TokenService::Request> request2(
       oauth2_service_->StartRequest(account_id_, scopes1, &consumer2));
   base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(2, test_url_loader_factory_->NumPending());
 
   network::URLLoaderCompletionStatus ok_status(net::OK);
   network::ResourceResponseHead response_head =
