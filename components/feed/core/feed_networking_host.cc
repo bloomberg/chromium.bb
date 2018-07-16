@@ -107,8 +107,8 @@ void NetworkFetch::StartAccessTokenFetch() {
   OAuth2TokenService::ScopeSet scopes{kAuthenticationScope};
   // It's safe to pass base::Unretained(this) since deleting the token fetcher
   // will prevent the callback from being completed.
-  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
-      "feed", scopes,
+  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+      "feed", identity_manager_, scopes,
       base::BindOnce(&NetworkFetch::AccessTokenFetchFinished,
                      base::Unretained(this)),
       identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);

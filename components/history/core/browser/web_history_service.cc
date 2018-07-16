@@ -29,6 +29,7 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -172,8 +173,8 @@ class RequestImpl : public WebHistoryService::Request {
     oauth_scopes.insert(kHistoryOAuthScope);
 
     access_token_fetcher_ =
-        identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
-            "web_history", oauth_scopes,
+        std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+            "web_history", identity_manager_, oauth_scopes,
             base::BindOnce(&RequestImpl::OnAccessTokenFetchComplete,
                            base::Unretained(this)),
             identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);

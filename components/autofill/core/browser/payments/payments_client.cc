@@ -31,6 +31,7 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -677,8 +678,8 @@ void PaymentsClient::StartTokenFetch(bool invalidate_old) {
         access_token_);
   }
   access_token_.clear();
-  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
-      kTokenFetchId, payments_scopes,
+  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+      kTokenFetchId, identity_manager_, payments_scopes,
       base::BindOnce(&PaymentsClient::AccessTokenFetchFinished,
                      base::Unretained(this)),
       identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);

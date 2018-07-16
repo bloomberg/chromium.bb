@@ -58,8 +58,8 @@ void FeedbackUploaderChrome::StartDispatchingReport() {
     OAuth2TokenService::ScopeSet scopes;
     scopes.insert("https://www.googleapis.com/auth/supportcontent");
     token_fetcher_ =
-        identity_manager->CreateAccessTokenFetcherForPrimaryAccount(
-            "feedback_uploader_chrome", scopes,
+        std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+            "feedback_uploader_chrome", identity_manager, scopes,
             base::BindOnce(&FeedbackUploaderChrome::AccessTokenAvailable,
                            base::Unretained(this)),
             identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);

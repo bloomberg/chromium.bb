@@ -91,8 +91,8 @@ void GCDApiFlowImpl::Start(std::unique_ptr<Request> request) {
   OAuth2TokenService::ScopeSet oauth_scopes;
   oauth_scopes.insert(request_->GetOAuthScope());
   DCHECK(identity_manager_);
-  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
-      "cloud_print", oauth_scopes,
+  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+      "cloud_print", identity_manager_, oauth_scopes,
       base::BindOnce(&GCDApiFlowImpl::OnAccessTokenFetchComplete,
                      base::Unretained(this)),
       identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);

@@ -7,23 +7,21 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace identity {
 
 PrimaryAccountAccessTokenFetcher::PrimaryAccountAccessTokenFetcher(
     const std::string& oauth_consumer_name,
-    SigninManagerBase* signin_manager,
-    OAuth2TokenService* token_service,
+    IdentityManager* identity_manager,
     const OAuth2TokenService::ScopeSet& scopes,
     AccessTokenFetcher::TokenCallback callback,
     Mode mode)
     : oauth_consumer_name_(oauth_consumer_name),
-      signin_manager_(signin_manager),
-      token_service_(token_service),
+      identity_manager_(identity_manager),
       scopes_(scopes),
       callback_(std::move(callback)),
-      signin_manager_observer_(this),
-      token_service_observer_(this),
+      identity_manager_observer_(this),
       access_token_retried_(false),
       mode_(mode) {
   if (mode_ == Mode::kImmediate || AreCredentialsAvailable()) {
@@ -31,11 +29,10 @@ PrimaryAccountAccessTokenFetcher::PrimaryAccountAccessTokenFetcher(
     return;
   }
 
-  // Start observing the SigninManager and Token Service. These observers will
-  // be removed either when credentials are obtained and an access token request
-  // is started or when this object is destroyed.
-  signin_manager_observer_.Add(signin_manager_);
-  token_service_observer_.Add(token_service_);
+  // Start observing the IdentityManager. This observer will be removed either
+  // when credentials are obtained and an access token request is started or
+  // when this object is destroyed.
+  identity_manager_observer_.Add(identity_manager_);
 }
 
 PrimaryAccountAccessTokenFetcher::~PrimaryAccountAccessTokenFetcher() {}
@@ -43,9 +40,7 @@ PrimaryAccountAccessTokenFetcher::~PrimaryAccountAccessTokenFetcher() {}
 bool PrimaryAccountAccessTokenFetcher::AreCredentialsAvailable() const {
   DCHECK_EQ(Mode::kWaitUntilAvailable, mode_);
 
-  return (signin_manager_->IsAuthenticated() &&
-          token_service_->RefreshTokenIsAvailable(
-              signin_manager_->GetAuthenticatedAccountId()));
+  return identity_manager_->HasPrimaryAccountWithRefreshToken();
 }
 
 void PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest() {
@@ -53,30 +48,29 @@ void PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest() {
 
   // By the time of starting an access token request, we should no longer be
   // listening for signin-related events.
-  DCHECK(!signin_manager_observer_.IsObserving(signin_manager_));
-  DCHECK(!token_service_observer_.IsObserving(token_service_));
+  DCHECK(!identity_manager_observer_.IsObserving(identity_manager_));
 
   // Note: We might get here even in cases where we know that there's no refresh
   // token. We're requesting an access token anyway, so that the token service
   // will generate an appropriate error code that we can return to the client.
   DCHECK(!access_token_fetcher_);
 
-  access_token_fetcher_ = std::make_unique<AccessTokenFetcher>(
-      signin_manager_->GetAuthenticatedAccountId(), oauth_consumer_name_,
-      token_service_, scopes_,
+  access_token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
+      identity_manager_->GetPrimaryAccountInfo().account_id,
+      oauth_consumer_name_, scopes_,
       base::BindOnce(
           &PrimaryAccountAccessTokenFetcher::OnAccessTokenFetchComplete,
           base::Unretained(this)));
 }
 
-void PrimaryAccountAccessTokenFetcher::GoogleSigninSucceeded(
-    const std::string& account_id,
-    const std::string& username) {
+void PrimaryAccountAccessTokenFetcher::OnPrimaryAccountSet(
+    const AccountInfo& primary_account_info) {
   ProcessSigninStateChange();
 }
 
-void PrimaryAccountAccessTokenFetcher::OnRefreshTokenAvailable(
-    const std::string& account_id) {
+void PrimaryAccountAccessTokenFetcher::OnRefreshTokenUpdatedForAccount(
+    const AccountInfo& account_info,
+    bool is_valid) {
   ProcessSigninStateChange();
 }
 
@@ -86,8 +80,7 @@ void PrimaryAccountAccessTokenFetcher::ProcessSigninStateChange() {
   if (!AreCredentialsAvailable())
     return;
 
-  signin_manager_observer_.Remove(signin_manager_);
-  token_service_observer_.Remove(token_service_);
+  identity_manager_observer_.Remove(identity_manager_);
 
   StartAccessTokenRequest();
 }

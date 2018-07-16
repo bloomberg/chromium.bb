@@ -11,10 +11,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace identity {
 
@@ -23,8 +23,7 @@ namespace identity {
 // refresh token isn't loaded yet (during startup), or when there is some
 // transient error.
 // May only be used on the UI thread.
-class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
-                                         public OAuth2TokenService::Observer {
+class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
  public:
   // Specifies how this instance should behave:
   // |kImmediate|: Makes one-shot immediate request.
@@ -40,8 +39,7 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
   // PrimaryAccountAccessTokenFetcher is destroyed before the process completes,
   // the callback is not called.
   PrimaryAccountAccessTokenFetcher(const std::string& oauth_consumer_name,
-                                   SigninManagerBase* signin_manager,
-                                   OAuth2TokenService* token_service,
+                                   IdentityManager* identity_manager,
                                    const OAuth2TokenService::ScopeSet& scopes,
                                    AccessTokenFetcher::TokenCallback callback,
                                    Mode mode);
@@ -55,12 +53,10 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
 
   void StartAccessTokenRequest();
 
-  // SigninManagerBase::Observer implementation.
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-
-  // OAuth2TokenService::Observer implementation.
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  // IdentityManager::Observer implementation.
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
+                                       bool is_valid) override;
 
   // Checks whether credentials are now available and starts an access token
   // request if so. Should only be called in mode |kWaitUntilAvailable|.
@@ -71,8 +67,7 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
                                   std::string access_token);
 
   std::string oauth_consumer_name_;
-  SigninManagerBase* signin_manager_;
-  OAuth2TokenService* token_service_;
+  IdentityManager* identity_manager_;
   OAuth2TokenService::ScopeSet scopes_;
 
   // Per the contract of this class, it is allowed for clients to delete this
@@ -81,10 +76,8 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
   // code.
   AccessTokenFetcher::TokenCallback callback_;
 
-  ScopedObserver<SigninManagerBase, PrimaryAccountAccessTokenFetcher>
-      signin_manager_observer_;
-  ScopedObserver<OAuth2TokenService, PrimaryAccountAccessTokenFetcher>
-      token_service_observer_;
+  ScopedObserver<IdentityManager, PrimaryAccountAccessTokenFetcher>
+      identity_manager_observer_;
 
   // Internal fetcher that does the actual access token request.
   std::unique_ptr<AccessTokenFetcher> access_token_fetcher_;

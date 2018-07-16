@@ -275,8 +275,8 @@ void RemoteSuggestionsFetcherImpl::StartTokenRequest() {
   }
 
   OAuth2TokenService::ScopeSet scopes{kContentSuggestionsApiScope};
-  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
-      "ntp_snippets", scopes,
+  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+      "ntp_snippets", identity_manager_, scopes,
       base::BindOnce(&RemoteSuggestionsFetcherImpl::AccessTokenFetchFinished,
                      base::Unretained(this)),
       identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
