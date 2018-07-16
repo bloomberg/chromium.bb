@@ -30,7 +30,7 @@ ORDER BY
 QUERY_LAST_100_RUNS = """
 SELECT
   name,
-  AVG(time) AS duration
+  ROUND(AVG(time)) AS duration
 FROM (
   SELECT
     name,
@@ -73,11 +73,12 @@ def _run_query(query, fd):
 def main(args):
   """
     To run this script, you need to be able to run bigquery in your terminal.
+    If this is the first time you run the script, do the following steps:
 
     1) Follow the steps at https://cloud.google.com/sdk/docs/ to download and
        unpack google-cloud-sdk in your home directory.
-    2) Run 'bq help' in your terminal
-    3) Select 'test-results-hrd' as the project
+    2) Run `glcoud auth login`
+    3) Run `gcloud config set project test-results-hrd`
        3a) If 'test-results-hrd' does not show up, contact seanmccullough@
            to be added as a user of the table
     4) Run this script!
