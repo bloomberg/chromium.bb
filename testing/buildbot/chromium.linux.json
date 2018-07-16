@@ -123,10 +123,10 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=src/testing/buildbot/filters/cast-linux.content_browsertests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/cast-linux.content_browsertests.filter"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true
         },
         "test": "content_browsertests"
       },
@@ -428,10 +428,10 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=src/testing/buildbot/filters/cast-linux.content_browsertests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/cast-linux.content_browsertests.filter"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": false
+          "can_use_on_swarming_builders": true
         },
         "test": "content_browsertests"
       },

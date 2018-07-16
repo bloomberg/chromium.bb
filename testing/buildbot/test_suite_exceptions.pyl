@@ -380,19 +380,13 @@
       # chromium.linux
       'Cast Audio Linux': {
         'args': [
-          '--test-launcher-filter-file=src/testing/buildbot/filters/cast-linux.content_browsertests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/cast-linux.content_browsertests.filter',
         ],
-        'swarming': {
-          'can_use_on_swarming_builders': False,  # https://crbug.com/861843
-        },
       },
       'Cast Linux': {
         'args': [
-          '--test-launcher-filter-file=src/testing/buildbot/filters/cast-linux.content_browsertests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/cast-linux.content_browsertests.filter',
         ],
-        'swarming': {
-          'can_use_on_swarming_builders': False,  # https://crbug.com/861843
-        },
       },
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
