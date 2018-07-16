@@ -2657,6 +2657,60 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("phone_form1", "5125551234");
 }
 
+// Test that we can autofill forms that dynamically change select fields to text
+// fields by changing the visibilities.
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+                       DynamicFormFill_SelectToText) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/dynamic_form_select_to_text.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  TriggerFormFill("firstname");
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetWebContents(), "hasRefilled()", &has_refilled));
+  ASSERT_TRUE(has_refilled);
+
+  // Make sure the new form was filled correctly.
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
+  ExpectFieldValue("state_us", "Texas");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("email", "red.swingline@initech.com");
+  ExpectFieldValue("phone", "15125551234");
+}
+
+// Test that we can autofill forms that dynamically change the visibility of a
+// field after it's autofilled.
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+                       DynamicFormFill_VisibilitySwitch) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/dynamic_form_visibility_switch.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+  TriggerFormFill("firstname");
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetWebContents(), "hasRefilled()", &has_refilled));
+  ASSERT_TRUE(has_refilled);
+
+  // Make sure the new form was filled correctly.
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
+  // Both fields must be filled after a refill.
+  ExpectFieldValue("state_first", "Texas");
+  ExpectFieldValue("state_second", "Texas");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("email", "red.swingline@initech.com");
+  ExpectFieldValue("phone", "15125551234");
+}
+
 // Test that credit card fields are never re-filled.
 IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicChangingFormFill_NotForCreditCard) {

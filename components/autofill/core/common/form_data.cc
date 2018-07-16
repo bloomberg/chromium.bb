@@ -110,6 +110,16 @@ bool FormData::SimilarFormAs(const FormData& form) const {
   return true;
 }
 
+bool FormData::DynamicallySameFormAs(const FormData& form) const {
+  if (name != form.name || fields.size() != form.fields.size())
+    return false;
+  for (size_t i = 0; i < fields.size(); ++i) {
+    if (!fields[i].DynamicallySameFieldAs(form.fields[i]))
+      return false;
+  }
+  return true;
+}
+
 bool FormData::operator==(const FormData& form) const {
   return name == form.name && origin == form.origin && action == form.action &&
          unique_renderer_id == form.unique_renderer_id &&

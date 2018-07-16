@@ -32,6 +32,9 @@ struct FormData {
   // compare fields.
   bool SimilarFormAs(const FormData& other) const;
 
+  // If |form| is the same as this from the POV of dynamic refills.
+  bool DynamicallySameFormAs(const FormData& form) const;
+
   // Note: operator==() performs a full-field-comparison(byte by byte), this is
   // different from SameFormAs(), which ignores comparison for those "values" of
   // all form fields, just like what FormFieldData::SameFieldAs() ignores.
