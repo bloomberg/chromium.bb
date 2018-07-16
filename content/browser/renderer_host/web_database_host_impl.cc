@@ -91,8 +91,8 @@ void WebDatabaseHostImpl::OpenFile(const base::string16& vfs_file_name,
   // open handles to them in the database tracker to make sure they're
   // around for as long as needed.
   if (vfs_file_name.empty()) {
-    file = VfsBackend::OpenTempFileInDirectory(db_tracker_->DatabaseDirectory(),
-                                               desired_flags);
+    file = VfsBackend::OpenTempFileInDirectory(
+        db_tracker_->database_directory(), desired_flags);
   } else if (DatabaseUtil::CrackVfsFileName(vfs_file_name, &origin_identifier,
                                             &database_name, nullptr) &&
              !db_tracker_->IsDatabaseScheduledForDeletion(origin_identifier,
