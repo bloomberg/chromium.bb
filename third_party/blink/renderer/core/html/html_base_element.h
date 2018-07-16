@@ -27,6 +27,9 @@
 
 namespace blink {
 
+class ExceptionState;
+class USVStringOrTrustedURL;
+
 class HTMLBaseElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -34,7 +37,8 @@ class HTMLBaseElement final : public HTMLElement {
   DECLARE_NODE_FACTORY(HTMLBaseElement);
 
   KURL href() const;
-  void setHref(const AtomicString&);
+  void href(USVStringOrTrustedURL&) const;
+  void setHref(const USVStringOrTrustedURL&, ExceptionState&);
 
  private:
   explicit HTMLBaseElement(Document&);
