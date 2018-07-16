@@ -13,13 +13,17 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "components/arc/arc_prefs.h"
-#include "components/prefs/pref_service.h"
 #include "ui/base/layout.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
 namespace chromeos {
+
+namespace {
+
+constexpr int kNonComplianceReasonAppNotInstalled = 5;
+
+}  // namespace
 
 // Timeout maintenance session after 30 minutes.
 constexpr base::TimeDelta kArcKioskMaintenanceSessionTimeout =
@@ -43,6 +47,7 @@ void ArcKioskAppService::Shutdown() {
   ArcAppListPrefs::Get(profile_)->RemoveObserver(this);
   arc::ArcSessionManager::Get()->RemoveObserver(this);
   app_manager_->RemoveObserver(this);
+  arc::ArcPolicyBridge::GetForBrowserContext(profile_)->RemoveObserver(this);
 }
 
 void ArcKioskAppService::OnAppRegistered(
@@ -135,19 +140,39 @@ void ArcKioskAppService::OnArcSessionStopped(arc::ArcStopReason reason) {
   ResetAppLauncher();
 }
 
+void ArcKioskAppService::OnComplianceReportReceived(
+    const base::Value* compliance_report) {
+  VLOG(2) << "Compliance report received";
+  compliance_report_received_ = true;
+  pending_policy_app_installs_.clear();
+  const base::Value* const details = compliance_report->FindKeyOfType(
+      "nonComplianceDetails", base::Value::Type::LIST);
+  if (!details) {
+    PreconditionsChanged();
+    return;
+  }
+
+  for (const auto& detail : details->GetList()) {
+    const base::Value* const reason =
+        detail.FindKeyOfType("nonComplianceReason", base::Value::Type::INTEGER);
+    if (!reason || reason->GetInt() != kNonComplianceReasonAppNotInstalled)
+      continue;
+    const base::Value* const app_name =
+        detail.FindKeyOfType("packageName", base::Value::Type::STRING);
+    if (!app_name || app_name->GetString().empty())
+      continue;
+    pending_policy_app_installs_.insert(app_name->GetString());
+  }
+  PreconditionsChanged();
+}
+
 ArcKioskAppService::ArcKioskAppService(Profile* profile) : profile_(profile) {
   ArcAppListPrefs::Get(profile_)->AddObserver(this);
   arc::ArcSessionManager::Get()->AddObserver(this);
   app_manager_ = ArcKioskAppManager::Get();
   DCHECK(app_manager_);
   app_manager_->AddObserver(this);
-  pref_change_registrar_.reset(new PrefChangeRegistrar());
-  pref_change_registrar_->Init(profile_->GetPrefs());
-  // Kiosk app can be started only when policy compliance is reported.
-  pref_change_registrar_->Add(
-      arc::prefs::kArcPolicyComplianceReported,
-      base::Bind(&ArcKioskAppService::PreconditionsChanged,
-                 base::Unretained(this)));
+  arc::ArcPolicyBridge::GetForBrowserContext(profile_)->AddObserver(this);
   PreconditionsChanged();
 }
 
@@ -181,15 +206,16 @@ void ArcKioskAppService::PreconditionsChanged() {
   VLOG(2) << "Maintenance session is "
           << (maintenance_session_running_ ? "running" : "not running");
   VLOG(2) << "Policy compliance is "
-          << (profile_->GetPrefs()->GetBoolean(
-                  arc::prefs::kArcPolicyComplianceReported)
-                  ? "reported"
-                  : "not yet reported");
+          << (compliance_report_received_ ? "reported" : "not yet reported");
   VLOG(2) << "Kiosk app with id: " << app_id_ << " is "
           << (app_launcher_ ? "already launched" : "not yet launched");
+  VLOG(2) << "Kiosk app is policy "
+          << (pending_policy_app_installs_.count(app_info_->package_name)
+                  ? "non-compliant"
+                  : "compliant");
   if (app_info_ && app_info_->ready && !maintenance_session_running_ &&
-      profile_->GetPrefs()->GetBoolean(
-          arc::prefs::kArcPolicyComplianceReported)) {
+      compliance_report_received_ &&
+      pending_policy_app_installs_.count(app_info_->package_name) == 0) {
     if (!app_launcher_) {
       VLOG(2) << "Starting kiosk app";
       app_launcher_ = std::make_unique<ArcKioskAppLauncher>(
