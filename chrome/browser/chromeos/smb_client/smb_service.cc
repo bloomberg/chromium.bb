@@ -11,6 +11,8 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/smb_client/discovery/mdns_host_locator.h"
+#include "chrome/browser/chromeos/smb_client/discovery/netbios_client.h"
+#include "chrome/browser/chromeos/smb_client/discovery/netbios_host_locator.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
 #include "chrome/browser/chromeos/smb_client/smb_provider.h"
@@ -20,6 +22,9 @@
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
+#include "net/base/network_interfaces.h"
 
 using chromeos::file_system_provider::Service;
 
@@ -30,6 +35,21 @@ namespace {
 
 bool ContainsAt(const std::string& username) {
   return username.find('@') != std::string::npos;
+}
+
+net::NetworkInterfaceList GetInterfaces() {
+  net::NetworkInterfaceList list;
+  if (!net::GetNetworkList(&list, net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
+    LOG(ERROR) << "GetInterfaces failed";
+  }
+  return list;
+}
+
+std::unique_ptr<NetBiosClientInterface> GetNetBiosClient(Profile* profile) {
+  auto* network_context =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetNetworkContext();
+  return std::make_unique<NetBiosClient>(network_context);
 }
 
 // Metric recording functions.
@@ -280,10 +300,22 @@ void SmbService::FireMountCallback(MountResponse callback,
 
 void SmbService::RegisterHostLocators() {
   SetUpMdnsHostLocator();
+  SetUpNetBiosHostLocator();
 }
 
 void SmbService::SetUpMdnsHostLocator() {
   share_finder_->RegisterHostLocator(std::make_unique<MDnsHostLocator>());
+}
+
+void SmbService::SetUpNetBiosHostLocator() {
+  auto get_interfaces = base::BindRepeating(&GetInterfaces);
+  auto client_factory = base::BindRepeating(&GetNetBiosClient, profile_);
+
+  auto netbios_host_locator = std::make_unique<NetBiosHostLocator>(
+      std::move(get_interfaces), std::move(client_factory),
+      GetSmbProviderClient());
+
+  share_finder_->RegisterHostLocator(std::move(netbios_host_locator));
 }
 
 void SmbService::RecordMountCount() const {

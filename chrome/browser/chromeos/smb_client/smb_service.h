@@ -126,6 +126,9 @@ class SmbService : public KeyedService,
   // Set up Multicast DNS host locator.
   void SetUpMdnsHostLocator();
 
+  // Set up NetBios host locator.
+  void SetUpNetBiosHostLocator();
+
   // Records metrics on the number of SMB mounts a user has.
   void RecordMountCount() const;
 
