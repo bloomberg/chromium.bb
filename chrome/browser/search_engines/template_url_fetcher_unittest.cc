@@ -20,8 +20,11 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -32,9 +35,8 @@ using base::ASCIIToUTF16;
 class TestTemplateUrlFetcher : public TemplateURLFetcher {
  public:
   TestTemplateUrlFetcher(TemplateURLService* template_url_service,
-                         net::URLRequestContextGetter* request_context,
                          const base::Closure& request_completed_callback)
-      : TemplateURLFetcher(template_url_service, request_context),
+      : TemplateURLFetcher(template_url_service),
         callback_(request_completed_callback) {}
   ~TestTemplateUrlFetcher() override {}
 
@@ -57,10 +59,8 @@ class TemplateURLFetcherTest : public testing::Test {
   TemplateURLFetcherTest();
 
   void SetUp() override {
-    TestingProfile* profile = test_util_.profile();
-    ASSERT_TRUE(profile->GetRequestContext());
     template_url_fetcher_.reset(new TestTemplateUrlFetcher(
-        test_util_.model(), profile->GetRequestContext(),
+        test_util_.model(),
         base::Bind(&TemplateURLFetcherTest::RequestCompletedCallback,
                    base::Unretained(this))));
 
@@ -145,9 +145,14 @@ void TemplateURLFetcherTest::StartDownload(
   // Start the fetch.
   GURL osdd_url = test_server_.GetURL("/" + osdd_file_name);
   GURL favicon_url;
+
+  TestingProfile* profile = test_util_.profile();
   template_url_fetcher_->ScheduleDownload(
-      keyword, osdd_url, favicon_url,
-      TemplateURLFetcher::URLFetcherCustomizeCallback());
+      keyword, osdd_url, favicon_url, url::Origin::Create(GURL()),
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get(),
+      0 /* render_frame_id */, 0 /* resource_type */);
 }
 
 void TemplateURLFetcherTest::WaitForDownloadToFinish() {

@@ -247,6 +247,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point&,
       const blink::WebMediaPlayerAction& action) override;
+  void CreateNetworkServiceDefaultFactory(
+      network::mojom::URLLoaderFactoryRequest default_factory_request) override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;

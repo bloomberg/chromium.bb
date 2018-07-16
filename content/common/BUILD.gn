@@ -217,7 +217,6 @@ source_set("common") {
     "navigation_subresource_loader_params.h",
     "net/record_load_histograms.cc",
     "net/record_load_histograms.h",
-    "net/url_fetcher.cc",
     "net/url_request_service_worker_data.cc",
     "net/url_request_service_worker_data.h",
     "net/url_request_user_data.cc",

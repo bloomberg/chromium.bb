@@ -17,6 +17,8 @@ include_rules = [
   "+google_apis",
   "+libxml",
   "+net",
+  "+services/network/public/cpp",
+  "+services/network/test",
   "+sql",
   "+ui/base",
   "+ui/gfx",
