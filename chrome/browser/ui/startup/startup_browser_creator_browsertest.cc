@@ -1451,8 +1451,13 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
 }
 #endif  // defined(OS_WIN)
 
+#if defined(OS_LINUX)
+#define MAYBE_WelcomeBackStandardNoPolicy DISABLED_WelcomeBackStandardNoPolicy
+#else
+#define MAYBE_WelcomeBackStandardNoPolicy WelcomeBackStandardNoPolicy
+#endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
-                       WelcomeBackStandardNoPolicy) {
+                       MAYBE_WelcomeBackStandardNoPolicy) {
   ASSERT_NO_FATAL_FAILURE(
       StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard,
                    PolicyVariant()));
