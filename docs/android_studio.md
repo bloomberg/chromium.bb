@@ -11,10 +11,6 @@ Make sure you have followed
 build/android/gradle/generate_gradle.py --output-directory out/Debug
 ```
 
-Use the flag `--sdk AndroidStudioDefault` to create and use a custom sdk
-directory and avoid issues with `gclient sync` and to use emulators. This will
-become the default soon.
-
 ```shell
 build/android/gradle/generate_gradle.py --output-directory out/Debug --sdk AndroidStudioDefault
 ```
@@ -26,17 +22,14 @@ To import the project:
 * Use "Import Project", and select the directory containing the generated
   project, e.g. `out/Debug/gradle`.
 
-For first-time Android Studio users:
-* Only run the setup wizard if you are planning to use emulators.
-    * The wizard will force you to download SDK components that are only needed
-      for emulation.
-    * To skip it, select "Cancel" when it comes up.
-
 See [android_test_instructions.md](android_test_instructions.md#Using-Emulators)
 for more information about building and running emulators.
 
 If you're asked to use Studio's Android SDK:
-* No. (Always use your project's SDK configured by generate_gradle.py)
+* No.
+    * Selecting No ensures that the SDK used by Android Studio is the same as
+      the one set by `generate_gradle.py`. If you want a different SDK pass
+      `--sdk` to `generate_gradle.py`.
 
 If you're asked to use Studio's Gradle wrapper:
 * Yes.
