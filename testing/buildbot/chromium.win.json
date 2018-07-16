@@ -1935,6 +1935,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "url_unittests"
       },
       {
@@ -2028,6 +2034,17 @@
         "name": "telemetry_gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "args": [
+          "--jobs=1"
+        ],
+        "isolate_name": "telemetry_unittests",
+        "name": "telemetry_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 4
         }
       },
       {

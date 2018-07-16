@@ -476,8 +476,6 @@
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # https://crbug.com/831667
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
-      # client.v8.chromium
-      'Linux - Future (dbg)',
     ],
   },
   'gl_tests': {
@@ -1196,17 +1194,7 @@
       'Win10 Tests x64 (dbg)',
     ],
   },
-  'telemetry_unittests': {
-    'remove_from': [
-      # chromium.win
-      'Win10 Tests x64 (dbg)',
-    ],
-  },
   'unit_tests': {
-    'remove_from': [
-      # chromium.win
-      'Win10 Tests x64 (dbg)',
-    ],
     'modifications': {
       # chromium.clang
       'ToTLinuxASan': {
