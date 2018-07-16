@@ -14,7 +14,7 @@ enum XREnvironmentBlendMode {
     OriginTrialEnabled=WebXR
 ] interface XRSession : EventTarget {
   readonly attribute XRDevice device;
-  readonly attribute boolean exclusive;
+  readonly attribute boolean immersive;
   readonly attribute XRPresentationContext outputContext;
   readonly attribute XREnvironmentBlendMode environmentBlendMode;
 

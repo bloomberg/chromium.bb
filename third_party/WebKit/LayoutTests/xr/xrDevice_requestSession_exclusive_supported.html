@@ -13,6 +13,6 @@ let fakeDevices = fakeXRDevices();
 
 xr_session_promise_test( (session) => {
   assert_not_equals(session, null);
-}, fakeDevices["FakeGooglePixelPhone"], [{ exclusive: true }],
-"requestSession for an exclusive session with a user gesture resolves");
+}, fakeDevices["FakeGooglePixelPhone"], [{ immersive: true }],
+"requestSession for an immersive session with a user gesture resolves");
 </script>

@@ -65,7 +65,7 @@ xr_session_promise_test( (session, t) => {
       }
       session.requestAnimationFrame(onFrame);
   }));
-}, fakeDevices["FakeGooglePixelPhone"], [{ exclusive: true }],
+}, fakeDevices["FakeGooglePixelPhone"], [{ immersive: true }],
 "XRViewport attributes are valid");
 
 </script>

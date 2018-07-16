@@ -14,8 +14,8 @@ resolved or rejected while the DON flow is active.
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
       var t = async_test("Presentation promise is unresolved during DON flow");
-      function onExclusiveRequestWithDon() {
-        xrDevice.requestSession({exclusive: true}).then( (session) => {
+      function onImmersiveRequestWithDon() {
+        xrDevice.requestSession({immersive: true}).then( (session) => {
           t.step( () => {
             assert_unreached("requestSession promise resolved");
           });
@@ -26,7 +26,7 @@ resolved or rejected while the DON flow is active.
         });
         window.setTimeout( () => {t.done();}, 2000);
       }
-      webglCanvas.onclick = onExclusiveRequestWithDon;
+      webglCanvas.onclick = onImmersiveRequestWithDon;
     </script>
   </body>
 </html>

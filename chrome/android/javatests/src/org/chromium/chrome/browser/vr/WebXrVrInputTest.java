@@ -88,7 +88,7 @@ public class WebXrVrInputTest {
     private void assertAppButtonEffect(boolean shouldHaveExited, TestFramework framework) {
         String boolExpression = (framework instanceof VrTestFramework)
                 ? "!vrDisplay.isPresenting"
-                : "sessionInfos[sessionTypes.EXCLUSIVE].currentSession == null";
+                : "sessionInfos[sessionTypes.IMMERSIVE].currentSession == null";
         Assert.assertEquals("App button exited presentation", shouldHaveExited,
                 TestFramework.pollJavaScriptBoolean(
                         boolExpression, POLL_TIMEOUT_SHORT_MS, framework.getFirstTabWebContents()));
@@ -109,7 +109,7 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Tests that screen touches are not registered when in an exclusive session.
+     * Tests that screen touches are not registered when in an immersive session.
      */
     @Test
     @MediumTest
@@ -199,7 +199,7 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Tests that Daydream controller clicks are registered as XR input in an exclusive session.
+     * Tests that Daydream controller clicks are registered as XR input in an immersive session.
      */
     @Test
     @MediumTest
@@ -347,7 +347,7 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Tests that focus is locked to the device with an exclusive session for the purposes of
+     * Tests that focus is locked to the device with an immersive session for the purposes of
      * VR input.
      */
     @Test
@@ -386,7 +386,7 @@ public class WebXrVrInputTest {
 
     /**
      * Tests that pressing the Daydream controller's 'app' button causes the user to exit a
-     * WebXR exclusive session.
+     * WebXR immersive session.
      */
     @Test
     @MediumTest
@@ -440,7 +440,7 @@ public class WebXrVrInputTest {
 
     /**
      * Verifies that pressing the Daydream controller's 'app' button does not cause the user to exit
-     * a WebXR exclusive session when VR browsing is disabled.
+     * a WebXR immersive session when VR browsing is disabled.
      */
     @Test
     @MediumTest
@@ -457,7 +457,7 @@ public class WebXrVrInputTest {
 
     /**
      * Verifies that pressing the Daydream controller's 'app' button does not cause the user to exit
-     * a WebXR exclusive session when VR browsing isn't supported by the Activity.
+     * a WebXR immersive session when VR browsing isn't supported by the Activity.
      */
     @Test
     @MediumTest

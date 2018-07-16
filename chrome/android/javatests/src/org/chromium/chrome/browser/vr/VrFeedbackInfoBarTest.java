@@ -172,7 +172,7 @@ public class VrFeedbackInfoBarTest {
     }
 
     /**
-     * Tests that we show the prompt if the VR browser is used after exiting a WebXR exclusive
+     * Tests that we show the prompt if the VR browser is used after exiting a WebXR immersive
      * session.
      */
     @Test

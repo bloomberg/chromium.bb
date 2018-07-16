@@ -12,7 +12,7 @@ WebXR page that only submits one frame.
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
       var has_submitted = false;
-      onExclusiveXRFrameCallback = function() {
+      onImmersiveXRFrameCallback = function() {
         if (has_submitted) {
           shouldSubmitFrame = false;
           finishJavaScriptStep();

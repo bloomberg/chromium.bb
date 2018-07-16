@@ -55,17 +55,17 @@ class BrowserXrDevice : public device::mojom::XRRuntimeEventListener {
 
   void OnInitialDevicePropertiesReceived(
       device::mojom::VRDisplayInfoPtr display_info);
-  void StopExclusiveSession();
+  void StopImmersiveSession();
   void OnListeningForActivate(bool is_listening);
   void OnRequestSessionResult(
       VRDisplayHost* display,
       device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
       device::mojom::VRDisplayHost::RequestSessionCallback callback,
       device::mojom::XRPresentationConnectionPtr connection,
-      device::mojom::XRSessionControllerPtr exclusive_session_controller);
+      device::mojom::XRSessionControllerPtr immersive_session_controller);
 
   device::mojom::XRRuntimePtr device_;
-  device::mojom::XRSessionControllerPtr exclusive_session_controller_;
+  device::mojom::XRSessionControllerPtr immersive_session_controller_;
 
   std::set<VRDisplayHost*> displays_;
   device::mojom::VRDisplayInfoPtr display_info_;

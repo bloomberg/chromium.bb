@@ -37,7 +37,7 @@ xr_session_promise_test( (session) => new Promise((resolve) => {
   session.cancelAnimationFrame(0.5);
   session.cancelAnimationFrame(null);
 }), fakeDevices["FakeGooglePixelPhone"], [
-      { exclusive: true },
+      { immersive: true },
       { outputContext: getOutputContext() }
   ],
 "XRSession cancelAnimationFrame does not have unexpected behavior when given invalid handles");

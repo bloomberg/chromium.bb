@@ -19,17 +19,17 @@ var glAttribs = {
 var gl = null;
 var xrDevice = null;
 var onMagicWindowXRFrameCallback = null;
-var onExclusiveXRFrameCallback = null;
+var onImmersiveXRFrameCallback = null;
 var shouldSubmitFrame = true;
 var hasPresentedFrame = false;
 var arSessionRequestWouldTriggerPermissionPrompt = null;
 
 var sessionTypes = Object.freeze({
-  EXCLUSIVE: 1,
+  IMMERSIVE: 1,
   AR: 2,
   MAGIC_WINDOW: 3
 });
-var sessionTypeToRequest = sessionTypes.EXCLUSIVE;
+var sessionTypeToRequest = sessionTypes.IMMERSIVE;
 
 class SessionInfo {
   constructor() {
@@ -60,13 +60,13 @@ class SessionInfo {
 }
 
 var sessionInfos = {}
-sessionInfos[sessionTypes.EXCLUSIVE] = new SessionInfo();
+sessionInfos[sessionTypes.IMMERSIVE] = new SessionInfo();
 sessionInfos[sessionTypes.AR] = new SessionInfo();
 sessionInfos[sessionTypes.MAGIC_WINDOW] = new SessionInfo();
 
 function getSessionType(session) {
-  if (session.exclusive) {
-    return sessionTypes.EXCLUSIVE;
+  if (session.immersive) {
+    return sessionTypes.IMMERSIVE;
   } else if (sessionInfos[sessionTypes.AR].currentSession == session) {
     // TODO(bsheedy): Replace this check if there's ever something like
     // session.ar for checking if the session is AR-capable.
@@ -78,9 +78,9 @@ function getSessionType(session) {
 
 function onRequestSession() {
   switch (sessionTypeToRequest) {
-    case sessionTypes.EXCLUSIVE:
-      xrDevice.requestSession({exclusive: true}).then( (session) => {
-        sessionInfos[sessionTypes.EXCLUSIVE].currentSession = session;
+    case sessionTypes.IMMERSIVE:
+      xrDevice.requestSession({immersive: true}).then( (session) => {
+        sessionInfos[sessionTypes.IMMERSIVE].currentSession = session;
         onSessionStarted(session);
       });
       break;
@@ -144,14 +144,14 @@ function onXRFrame(t, frame) {
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, session.baseLayer.framebuffer);
 
-  // If in an exclusive session, set canvas to blue.
+  // If in an immersive session, set canvas to blue.
   // If in an AR session, just draw the camera.
   // Otherwise, red.
   switch (getSessionType(session)) {
-    case sessionTypes.EXCLUSIVE:
+    case sessionTypes.IMMERSIVE:
       gl.clearColor(0.0, 0.0, 1.0, 1.0);
-      if (onExclusiveXRFrameCallback) {
-        onExclusiveXRFrameCallback(session, frame, gl);
+      if (onImmersiveXRFrameCallback) {
+        onImmersiveXRFrameCallback(session, frame, gl);
       }
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       break;
@@ -178,24 +178,24 @@ function checkIfArSessionWouldTriggerPermissionPrompt() {
   });
 }
 
-// Try to get an XRDevice and set up a non-exclusive session with it
+// Try to get an XRDevice and set up a non-immersive session with it
 if (navigator.xr) {
   navigator.xr.requestDevice().then( (device) => {
     xrDevice = device;
     if (!device)
       return;
 
-    // Set up the device to have a non-exclusive session (magic window) drawing
+    // Set up the device to have a non-immersive session (magic window) drawing
     // into the full screen canvas on the page
     let ctx = webglCanvas.getContext('xrpresent');
-    // WebXR for VR tests want a non-exclusive session to be automatically
+    // WebXR for VR tests want a non-immersive session to be automatically
     // created on page load to reduce the amount of boilerplate code necessary.
     // However, doing so during AR tests currently fails due to AR sessions
     // always requiring a user gesture. So, allow a page to set a variable
     // before loading this JavaScript file if they wish to skip the automatic
-    // non-exclusive session creation.
-    if (typeof shouldAutoCreateNonExclusiveSession === 'undefined'
-        || shouldAutoCreateNonExclusiveSession === true) {
+    // non-immersive session creation.
+    if (typeof shouldAutoCreateNonImmersiveSession === 'undefined'
+        || shouldAutoCreateNonImmersiveSession === true) {
       device.requestSession({outputContext: ctx}).then( (session) => {
         onSessionStarted(session);
       }).then( () => {

@@ -62,11 +62,11 @@ test can query for whether each submitted frame used the correct pose.
         return MatrixCompare(pose.poseModelMatrix, expected);
       }
 
-      onExclusiveXRFrameCallback = function(session, frame, gl) {
+      onImmersiveXRFrameCallback = function(session, frame, gl) {
         // Encode an index into the clear color.
         frame_id++;
         frame_data_array[frame_id] = frame;
-        cached_frame_of_ref = sessionInfos[sessionTypes.EXCLUSIVE].currentFrameOfRef;
+        cached_frame_of_ref = sessionInfos[sessionTypes.IMMERSIVE].currentFrameOfRef;
 
         var encoded_frame_id = {};
         encoded_frame_id.r = frame_id % 256;

@@ -41,7 +41,7 @@ device::mojom::XRDeviceRuntimeSessionOptionsPtr GetRuntimeOptions(
     device::mojom::XRSessionOptions* options) {
   device::mojom::XRDeviceRuntimeSessionOptionsPtr runtime_options =
       device::mojom::XRDeviceRuntimeSessionOptions::New();
-  runtime_options->exclusive = options->exclusive;
+  runtime_options->immersive = options->immersive;
   runtime_options->has_user_activation = options->has_user_activation;
   runtime_options->use_legacy_webvr_render_path =
       options->use_legacy_webvr_render_path;
@@ -119,9 +119,9 @@ void VRDisplayHost::RequestSession(device::mojom::XRSessionOptionsPtr options,
   runtime_options->render_frame_id =
       render_frame_host_ ? render_frame_host_->GetRoutingID() : -1;
 
-  // AR currently uses a non-exclusive session but we still want to call request
+  // AR currently uses a non-immersive session but we still want to call request
   // session on it.
-  if (runtime_options->exclusive ||
+  if (runtime_options->immersive ||
       base::FeatureList::IsEnabled(features::kWebXrHitTest)) {
     if (!triggered_by_displayactive) {
       ReportRequestPresent();
@@ -140,7 +140,7 @@ void VRDisplayHost::RequestSession(device::mojom::XRSessionOptionsPtr options,
     connection->provider = provider.PassInterface();
     connection->transport_options =
         device::mojom::VRDisplayFrameTransportOptions::New();
-    // Non exclusive session setup happens on device initialization, so we don't
+    // Non immersive session setup happens on device initialization, so we don't
     // need to do anything further.
     std::move(callback).Run(std::move(connection));
   }
@@ -153,7 +153,7 @@ void VRDisplayHost::SupportsSession(device::mojom::XRSessionOptionsPtr options,
 
 bool VRDisplayHost::InternalSupportsSession(
     device::mojom::XRSessionOptions* options) {
-  if (options->exclusive) {
+  if (options->immersive) {
     return browser_device_->GetVRDisplayInfo()->capabilities->canPresent;
   }
 

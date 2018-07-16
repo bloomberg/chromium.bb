@@ -54,7 +54,7 @@ xr_session_promise_test( (session) => {
 
     session.requestAnimationFrame(onFrame);
   }));
-}, fakeDevices["FakeGooglePixelPhone"], [{ exclusive: true }],
+}, fakeDevices["FakeGooglePixelPhone"], [{ immersive: true }],
 "XRFrame contains the expected views");
 
 </script>

@@ -82,7 +82,7 @@ xr_session_promise_test( (session, t) => new Promise((resolve) => {
       // Can only request input poses in an xr frame.
       session.requestAnimationFrame(CheckInvalidGrip);
     });
-  }), fakeDevices["FakeGooglePixelPhone"], [ { exclusive: true } ],
+  }), fakeDevices["FakeGooglePixelPhone"], [ { immersive: true } ],
 "XRInputSources with a pointer origin of 'hand' properly communicate their poses");
 
 </script>

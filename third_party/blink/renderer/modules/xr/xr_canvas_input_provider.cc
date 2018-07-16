@@ -66,8 +66,8 @@ void XRCanvasInputProvider::Stop() {
 }
 
 bool XRCanvasInputProvider::ShouldProcessEvents() {
-  // Don't process canvas gestures if there's an active exclusive session.
-  return !(session_->device()->frameProvider()->exclusive_session());
+  // Don't process canvas gestures if there's an active immersive session.
+  return !(session_->device()->frameProvider()->immersive_session());
 }
 
 void XRCanvasInputProvider::OnClick(MouseEvent* event) {

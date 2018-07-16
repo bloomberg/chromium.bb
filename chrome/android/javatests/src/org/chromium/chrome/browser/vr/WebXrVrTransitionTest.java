@@ -98,7 +98,7 @@ public class WebXrVrTransitionTest {
     }
 
     /**
-     * Tests that a successful request for an exclusive session actually enters VR.
+     * Tests that a successful request for an immersive session actually enters VR.
      */
     @Test
     @MediumTest
@@ -227,7 +227,7 @@ public class WebXrVrTransitionTest {
     }
 
     /**
-     * Tests that the exclusive session promise doesn't resolve if the DON flow is
+     * Tests that the immersive session promise doesn't resolve if the DON flow is
      * not completed.
      */
     @Test
@@ -267,7 +267,7 @@ public class WebXrVrTransitionTest {
     }
 
     /**
-     * Tests that the exclusive session promise is rejected if the DON flow is canceled.
+     * Tests that the immersive session promise is rejected if the DON flow is canceled.
      */
     @Test
     @MediumTest
@@ -315,7 +315,7 @@ public class WebXrVrTransitionTest {
     }
 
     /**
-     * Tests that the omnibox reappears after exiting an exclusive session.
+     * Tests that the omnibox reappears after exiting an immersive session.
      */
     @Test
     @MediumTest
@@ -361,7 +361,7 @@ public class WebXrVrTransitionTest {
     }
 
     /**
-     * Tests that window.requestAnimationFrame stops firing while in a WebXR exclusive session, but
+     * Tests that window.requestAnimationFrame stops firing while in a WebXR immersive session, but
      * resumes afterwards.
      */
     @Test
@@ -374,7 +374,7 @@ public class WebXrVrTransitionTest {
             throws InterruptedException {
         windowRafStopsFiringWhilePresentingImpl(
                 XrTestFramework.getFileUrlForHtmlTestFile(
-                        "webxr_test_window_raf_stops_firing_during_exclusive_session"),
+                        "webxr_test_window_raf_stops_firing_during_immersive_session"),
                 mXrTestFramework);
     }
 
@@ -433,7 +433,7 @@ public class WebXrVrTransitionTest {
     }
 
     /**
-     * Tests that window.rAF continues to fire when we have a non-exclusive session.
+     * Tests that window.rAF continues to fire when we have a non-immersive session.
      */
     @Test
     @MediumTest
@@ -441,18 +441,18 @@ public class WebXrVrTransitionTest {
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            public void testWindowRafFiresDuringNonExclusiveSession() throws InterruptedException {
+            public void testWindowRafFiresDuringNonImmersiveSession() throws InterruptedException {
         mXrTestFramework.loadUrlAndAwaitInitialization(
                 XrTestFramework.getFileUrlForHtmlTestFile(
-                        "test_window_raf_fires_during_non_exclusive_session"),
+                        "test_window_raf_fires_during_non_immersive_session"),
                 PAGE_LOAD_TIMEOUT_S);
         XrTestFramework.waitOnJavaScriptStep(mXrTestFramework.getFirstTabWebContents());
         XrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
     }
 
     /**
-     * Tests that non-exclusive sessions stop receiving rAFs during an exclusive session, but resume
-     * once the exclusive session ends.
+     * Tests that non-immersive sessions stop receiving rAFs during an immersive session, but resume
+     * once the immersive session ends.
      */
     @Test
     @MediumTest
@@ -460,19 +460,19 @@ public class WebXrVrTransitionTest {
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            public void testNonExclusiveStopsDuringExclusive() throws InterruptedException {
+            public void testNonImmersiveStopsDuringImmersive() throws InterruptedException {
         mXrTestFramework.loadUrlAndAwaitInitialization(
                 XrTestFramework.getFileUrlForHtmlTestFile(
-                        "test_non_exclusive_stops_during_exclusive"),
+                        "test_non_immersive_stops_during_immersive"),
                 PAGE_LOAD_TIMEOUT_S);
         XrTestFramework.executeStepAndWait(
-                "stepBeforeExclusive()", mXrTestFramework.getFirstTabWebContents());
+                "stepBeforeImmersive()", mXrTestFramework.getFirstTabWebContents());
         TransitionUtils.enterPresentationOrFail(mXrTestFramework);
         XrTestFramework.executeStepAndWait(
-                "stepDuringExclusive()", mXrTestFramework.getFirstTabWebContents());
+                "stepDuringImmersive()", mXrTestFramework.getFirstTabWebContents());
         TransitionUtils.forceExitVr();
         XrTestFramework.executeStepAndWait(
-                "stepAfterExclusive()", mXrTestFramework.getFirstTabWebContents());
+                "stepAfterImmersive()", mXrTestFramework.getFirstTabWebContents());
         XrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
     }
 }

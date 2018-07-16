@@ -43,9 +43,9 @@ void BrowserXrDevice::OnDisplayInfoChanged(
   }
 }
 
-void BrowserXrDevice::StopExclusiveSession() {
-  if (exclusive_session_controller_) {
-    exclusive_session_controller_ = nullptr;
+void BrowserXrDevice::StopImmersiveSession() {
+  if (immersive_session_controller_) {
+    immersive_session_controller_ = nullptr;
     presenting_display_host_ = nullptr;
   }
 }
@@ -94,7 +94,7 @@ void BrowserXrDevice::OnDisplayHostRemoved(VRDisplayHost* display) {
 
 void BrowserXrDevice::ExitPresent(VRDisplayHost* display) {
   if (display == presenting_display_host_) {
-    StopExclusiveSession();
+    StopImmersiveSession();
   }
 }
 
@@ -113,11 +113,11 @@ void BrowserXrDevice::OnRequestSessionResult(
     device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
     device::mojom::VRDisplayHost::RequestSessionCallback callback,
     device::mojom::XRPresentationConnectionPtr connection,
-    device::mojom::XRSessionControllerPtr exclusive_session_controller) {
+    device::mojom::XRSessionControllerPtr immersive_session_controller) {
   if (connection && (displays_.find(display) != displays_.end())) {
-    if (options->exclusive) {
+    if (options->immersive) {
       presenting_display_host_ = display;
-      exclusive_session_controller_ = std::move(exclusive_session_controller);
+      immersive_session_controller_ = std::move(immersive_session_controller);
     }
     std::move(callback).Run(std::move(connection));
   } else {
@@ -125,8 +125,8 @@ void BrowserXrDevice::OnRequestSessionResult(
     if (connection) {
       // The device has been removed, but we still got a connection, so make
       // sure to clean up this weird state.
-      exclusive_session_controller_ = std::move(exclusive_session_controller);
-      StopExclusiveSession();
+      immersive_session_controller_ = std::move(immersive_session_controller);
+      StopImmersiveSession();
     }
   }
 }

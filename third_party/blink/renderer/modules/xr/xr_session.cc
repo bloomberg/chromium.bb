@@ -90,11 +90,11 @@ class XRSession::XRSessionResizeObserverDelegate final
 };
 
 XRSession::XRSession(XRDevice* device,
-                     bool exclusive,
+                     bool immersive,
                      XRPresentationContext* output_context,
                      EnvironmentBlendMode environment_blend_mode)
     : device_(device),
-      exclusive_(exclusive),
+      immersive_(immersive),
       output_context_(output_context),
       callback_collection_(new XRFrameRequestCallbackCollection(
           device->xr()->GetExecutionContext())) {
@@ -109,7 +109,7 @@ XRSession::XRSession(XRDevice* device,
       resize_observer_->observe(canvas);
 
       // Begin processing input events on the output context's canvas.
-      if (!exclusive_) {
+      if (!immersive_) {
         canvas_input_provider_ = new XRCanvasInputProvider(this, canvas);
       }
 
@@ -151,17 +151,17 @@ void XRSession::setDepthFar(double value) {
 void XRSession::setBaseLayer(XRLayer* value) {
   base_layer_ = value;
   // Make sure that the layer's drawing buffer is updated to the right size
-  // if this is a non-exclusive session.
-  if (!exclusive_ && base_layer_) {
+  // if this is a non-immersive session.
+  if (!immersive_ && base_layer_) {
     base_layer_->OnResize();
   }
 }
 
-void XRSession::SetNonExclusiveProjectionMatrix(
+void XRSession::SetNonImmersiveProjectionMatrix(
     const WTF::Vector<float>& projection_matrix) {
   DCHECK_EQ(projection_matrix.size(), 16lu);
 
-  non_exclusive_projection_matrix_ = projection_matrix;
+  non_immersive_projection_matrix_ = projection_matrix;
   // It is about as expensive to check equality as to just
   // update the views, so just update.
   update_views_next_frame_ = true;
@@ -372,17 +372,17 @@ void XRSession::ForceEnd() {
     canvas_input_provider_ = nullptr;
   }
 
-  // If this session is the active exclusive session for the device, notify the
+  // If this session is the active immersive session for the device, notify the
   // frameProvider that it's ended.
-  if (device_->frameProvider()->exclusive_session() == this) {
-    device_->frameProvider()->OnExclusiveSessionEnded();
+  if (device_->frameProvider()->immersive_session() == this) {
+    device_->frameProvider()->OnImmersiveSessionEnded();
   }
 
   DispatchEvent(XRSessionEvent::Create(EventTypeNames::end, this));
 }
 
 double XRSession::NativeFramebufferScale() const {
-  if (exclusive_) {
+  if (immersive_) {
     double scale = device_->xrDisplayInfoPtr()->webxr_default_framebuffer_scale;
     DCHECK(scale);
 
@@ -394,7 +394,7 @@ double XRSession::NativeFramebufferScale() const {
 }
 
 DoubleSize XRSession::DefaultFramebufferSize() const {
-  if (!exclusive_) {
+  if (!immersive_) {
     return OutputCanvasSize();
   }
 
@@ -431,11 +431,11 @@ void XRSession::OnBlur() {
   DispatchEvent(XRSessionEvent::Create(EventTypeNames::blur, this));
 }
 
-// Exclusive sessions may still not be blurred in headset even if the page isn't
+// Immersive sessions may still not be blurred in headset even if the page isn't
 // focused.  This prevents the in-headset experience from freezing on an
 // external display headset when the user clicks on another tab.
 bool XRSession::HasAppropriateFocus() {
-  return exclusive_ ? device_->HasDeviceFocus()
+  return immersive_ ? device_->HasDeviceFocus()
                     : device_->HasDeviceAndFrameFocus();
 }
 
@@ -721,18 +721,18 @@ XRInputSourceEvent* XRSession::CreateInputSourceEvent(
 }
 
 const HeapVector<Member<XRView>>& XRSession::views() {
-  // TODO(bajones): For now we assume that exclusive sessions render a stereo
-  // pair of views and non-exclusive sessions render a single view. That doesn't
+  // TODO(bajones): For now we assume that immersive sessions render a stereo
+  // pair of views and non-immersive sessions render a single view. That doesn't
   // always hold true, however, so the view configuration should ultimately come
   // from the backing service.
   if (views_dirty_) {
-    if (exclusive_) {
+    if (immersive_) {
       // If we don't already have the views allocated, do so now.
       if (views_.IsEmpty()) {
         views_.push_back(new XRView(this, XRView::kEyeLeft));
         views_.push_back(new XRView(this, XRView::kEyeRight));
       }
-      // In exclusive mode the projection and view matrices must be aligned with
+      // In immersive mode the projection and view matrices must be aligned with
       // the device's physical optics.
       UpdateViewFromEyeParameters(views_[XRView::kEyeLeft],
                                   device_->xrDisplayInfoPtr()->leftEye,
@@ -752,11 +752,11 @@ const HeapVector<Member<XRView>>& XRSession::views() {
                  static_cast<float>(output_height_);
       }
 
-      if (non_exclusive_projection_matrix_.size() > 0) {
+      if (non_immersive_projection_matrix_.size() > 0) {
         views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromRawValues(
-            non_exclusive_projection_matrix_, depth_near_, depth_far_);
+            non_immersive_projection_matrix_, depth_near_, depth_far_);
       } else {
-        // In non-exclusive mode, if there is no explicit projection matrix
+        // In non-immersive mode, if there is no explicit projection matrix
         // provided, the projection matrix must be aligned with the
         // output canvas dimensions.
         views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromAspect(
@@ -770,9 +770,9 @@ const HeapVector<Member<XRView>>& XRSession::views() {
     // AR mode, we're not picking up the change on the right frame. Remove this
     // fallback once that's sorted out.
     DVLOG(2) << __FUNCTION__ << ": FIXME, fallback proj matrix update";
-    if (non_exclusive_projection_matrix_.size() > 0) {
+    if (non_immersive_projection_matrix_.size() > 0) {
       views_[XRView::kEyeLeft]->UpdateProjectionMatrixFromRawValues(
-          non_exclusive_projection_matrix_, depth_near_, depth_far_);
+          non_immersive_projection_matrix_, depth_near_, depth_far_);
     }
   }
 

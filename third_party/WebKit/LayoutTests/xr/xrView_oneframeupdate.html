@@ -62,7 +62,7 @@ xr_session_promise_test( (session) => {
 
       session.requestAnimationFrame(onFrame);
   }));
-}, fakeDevices["FakeGooglePixelPhone"], [{ exclusive: true }],
+}, fakeDevices["FakeGooglePixelPhone"], [{ immersive: true }],
 "XRView projection matrices update near and far depths on the next frame");
 
 </script>

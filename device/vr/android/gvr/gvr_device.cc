@@ -185,19 +185,21 @@ void GvrDevice::RequestSession(
     return;
   }
 
-  if (options->exclusive) {
-    // StartWebXRPresentation is async as we may trigger a DON (Device ON) flow
-    // that pauses Chrome.
-    delegate_provider->StartWebXRPresentation(
-        GetVRDisplayInfo(), std::move(options),
-        base::BindOnce(&GvrDevice::OnRequestSessionResult,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  } else {
-    // TODO(https://crbug.com/695937): This should be NOTREACHED() once
-    // orientation device handles non-exclusive VR sessions.
-    // TODO(https://crbug.com/842025): Handle this when RequestSession is called
-    // for non-exclusive sessions.
-    NOTREACHED();
+  if (options->immersive) {
+    if (options->immersive) {
+      // StartWebXRPresentation is async as we may trigger a DON (Device ON)
+      // flow that pauses Chrome.
+      delegate_provider->StartWebXRPresentation(
+          GetVRDisplayInfo(), std::move(options),
+          base::BindOnce(&GvrDevice::OnRequestSessionResult,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    } else {
+      // TODO(https://crbug.com/695937): This should be NOTREACHED() once
+      // orientation device handles non-immersive VR sessions.
+      // TODO(https://crbug.com/842025): Handle this when RequestSession is
+      // called for non-immersive sessions.
+      NOTREACHED();
+    }
   }
 }
 

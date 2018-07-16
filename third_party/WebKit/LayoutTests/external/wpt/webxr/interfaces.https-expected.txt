@@ -33,8 +33,8 @@ PASS XRSession interface: existence and properties of interface prototype object
 PASS XRSession interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRSession interface: attribute device
 PASS Unscopable handled correctly for device property on XRSession
-PASS XRSession interface: attribute exclusive
-PASS Unscopable handled correctly for exclusive property on XRSession
+PASS XRSession interface: attribute immersive
+PASS Unscopable handled correctly for immersive property on XRSession
 PASS XRSession interface: attribute outputContext
 PASS Unscopable handled correctly for outputContext property on XRSession
 PASS XRSession interface: attribute depthNear

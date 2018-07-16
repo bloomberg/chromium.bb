@@ -39,7 +39,7 @@ xr_session_promise_test( (session, t) => {
     return eventPromise;
   }, fakeDevices["FakeGooglePixelPhone"], [
     { outputContext: getOutputContext() },
-    { exclusive: true },
+    { immersive: true },
   ],
 "XRSession resetpose from a device properly fires off the right events");
 
