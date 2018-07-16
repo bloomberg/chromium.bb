@@ -244,7 +244,13 @@ IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest, LanguageModelLogSucceed) {
   EXPECT_NEAR(10.0 / (11.0 + 10.0), langs[1].frequency, 0.001f);
 }
 
-IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest, DontLogInIncognito) {
+#if defined(OS_LINUX)
+#define MAYBE_DontLogInIncognito DISABLED_DontLogInIncognito
+#else
+#define MAYBE_DontLogInIncognito DontLogInIncognito
+#endif
+
+IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest, MAYBE_DontLogInIncognito) {
   InitInIncognitoMode(true);
 
   for (int i = 0; i < 10; ++i) {
