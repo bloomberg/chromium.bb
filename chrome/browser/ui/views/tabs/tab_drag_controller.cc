@@ -540,7 +540,7 @@ void TabDragController::SaveFocus() {
   DCHECK(source_tabstrip_);
   old_focused_view_tracker_->SetView(
       source_tabstrip_->GetFocusManager()->GetFocusedView());
-  source_tabstrip_->GetFocusManager()->SetFocusedView(source_tabstrip_);
+  source_tabstrip_->GetFocusManager()->ClearFocus();
   // WARNING: we may have been deleted.
 }
 

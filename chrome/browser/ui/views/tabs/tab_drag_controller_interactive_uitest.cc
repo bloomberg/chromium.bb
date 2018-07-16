@@ -2656,7 +2656,7 @@ void DragToOverviewNewWindowItemStep2(
     TabStrip* attached_tab_strip) {
   ASSERT_TRUE(attached_tab_strip->IsDragSessionActive());
   ASSERT_TRUE(TabDragController::IsActive());
-  EXPECT_TRUE(attached_tab_strip->HasFocus());
+  EXPECT_TRUE(attached_tab_strip->GetWidget()->GetNativeWindow()->HasFocus());
 
   // Put the attached window in overview to simulate the "drop on the new
   // selector item" scenario.
