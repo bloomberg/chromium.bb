@@ -2,4 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Deliberately left empty.
+// Service Worker initialization listeners.
+self.addEventListener('install', e => e.waitUntil(skipWaiting()));
+self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+
+// Posts |msg| to background_fetch.js.
+function postToWindowClients(msg) {
+  clients.matchAll({ type: 'window' }).then(clientWindows => {
+    for (const client of clientWindows) client.postMessage(msg);
+  });
+}
+
+// Background Fetch event listeners.
+self.addEventListener('backgroundfetched', e => postToWindowClients(e.type));
+self.addEventListener('backgroundfetchfail', e => postToWindowClients(e.type));
