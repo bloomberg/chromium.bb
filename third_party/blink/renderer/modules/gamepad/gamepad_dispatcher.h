@@ -13,6 +13,8 @@
 
 namespace blink {
 
+class GamepadSharedMemoryReader;
+
 class GamepadDispatcher final
     : public GarbageCollectedFinalized<GamepadDispatcher>,
       public PlatformEventDispatcher,
@@ -53,6 +55,7 @@ class GamepadDispatcher final
                                              const device::Gamepad&,
                                              bool connected);
 
+  std::unique_ptr<GamepadSharedMemoryReader> reader_;
   device::mojom::blink::GamepadHapticsManagerPtr gamepad_haptics_manager_;
 };
 

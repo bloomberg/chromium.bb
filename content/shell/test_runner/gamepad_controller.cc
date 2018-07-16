@@ -8,12 +8,13 @@
 
 #include "base/macros.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_gamepad_listener.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -170,14 +171,17 @@ void GamepadController::Reset() {
 }
 
 void GamepadController::Install(blink::WebLocalFrame* frame) {
-  service_manager::Connector::TestApi connector_test_api(
-      blink::Platform::Current()->GetConnector());
-  connector_test_api.OverrideBinderForTesting(
-      service_manager::Identity(content::mojom::kBrowserServiceName),
+  content::RenderFrame* render_frame =
+      content::RenderFrame::FromWebFrame(frame);
+  if (!render_frame)
+    return;
+
+  service_manager::InterfaceProvider::TestApi connector_test_api(
+      render_frame->GetRemoteInterfaces());
+  connector_test_api.SetBinderForName(
       device::mojom::GamepadMonitor::Name_,
       base::BindRepeating(&GamepadController::OnInterfaceRequest,
                           base::Unretained(this)));
-
   GamepadControllerBindings::Install(weak_factory_.GetWeakPtr(), frame);
 }
 
