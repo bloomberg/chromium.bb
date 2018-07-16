@@ -186,6 +186,12 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // unique origins aren't allowed access.
   virtual bool FrameCanAccessPasswordManager();
 
+  // Determine whether the current frame is allowed to access the password
+  // manager without an additional check for about:blank. There is a valid
+  // usecase for about:blank iframe where a website POSTs a form to the empty
+  // iframe from the main frame.
+  virtual bool FrameCanAccessPasswordManagerWithoutAboutBlankCheck();
+
  private:
   // Ways to restrict which passwords are saved in ProvisionallySavePassword.
   enum ProvisionallySaveRestriction {

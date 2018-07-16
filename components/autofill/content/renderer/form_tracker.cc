@@ -186,7 +186,11 @@ void FormTracker::DidStartProvisionalLoad(WebDocumentLoader* document_loader) {
   // (i.e. DidStartProvisionalLoad is called twice in this case).  The check for
   // kWebNavigationTypeLinkClicked is reliable only for content initiated
   // navigations.
+  // Don't handle kWebNavigationTypeFormSubmitted here, it is handled in
+  // WillSubmitForm().
   if (navigation_state->IsContentInitiated() &&
+      document_loader->GetNavigationType() !=
+          blink::kWebNavigationTypeFormSubmitted &&
       document_loader->GetNavigationType() !=
           blink::kWebNavigationTypeLinkClicked) {
     FireProbablyFormSubmitted();

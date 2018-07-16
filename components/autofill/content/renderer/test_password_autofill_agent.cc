@@ -17,4 +17,9 @@ bool TestPasswordAutofillAgent::FrameCanAccessPasswordManager() {
   return true;
 }
 
+bool TestPasswordAutofillAgent::
+    FrameCanAccessPasswordManagerWithoutAboutBlankCheck() {
+  return true;
+}
+
 }  // namespace autofill
