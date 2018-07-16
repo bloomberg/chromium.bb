@@ -1974,6 +1974,7 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
                             arraysize(conditional_localized_strings));
   }
 
+  html_source->AddString("privacyLearnMoreURL", chrome::kPrivacyLearnMoreURL);
   html_source->AddString(
       "improveBrowsingExperience",
       l10n_util::GetStringFUTF16(
