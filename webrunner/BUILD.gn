@@ -70,6 +70,11 @@ executable("service_exe") {
   ]
 }
 
+fuchsia_package_runner("service_runner") {
+  package = ":service_pkg"
+  package_name_override = "web_service"
+}
+
 component("service_lib") {
   deps = [
     ":service_pak",
@@ -82,7 +87,9 @@ component("service_lib") {
     "//content/public/renderer",
     "//services/network/public/cpp",
     "//services/service_manager/embedder:embedder_switches",
+    "//ui/aura",
     "//ui/display",
+    "//ui/platform_window",
   ]
 
   data_deps = [
@@ -97,6 +104,10 @@ component("service_lib") {
   configs += [ ":webrunner_implementation" ]
 
   sources = [
+    "browser/context_impl.cc",
+    "browser/context_impl.h",
+    "browser/frame_impl.cc",
+    "browser/frame_impl.h",
     "browser/webrunner_browser_context.cc",
     "browser/webrunner_browser_context.h",
     "browser/webrunner_browser_main.cc",
@@ -116,14 +127,10 @@ component("service_lib") {
     "common/webrunner_export.h",
     "service/common.cc",
     "service/common.h",
-    "service/context_impl.cc",
-    "service/context_impl.h",
     "service/context_provider_impl.cc",
     "service/context_provider_impl.h",
     "service/context_provider_main.cc",
     "service/context_provider_main.h",
-    "service/frame_impl.cc",
-    "service/frame_impl.h",
     "service/webrunner_main_delegate.cc",
     "service/webrunner_main_delegate.h",
   ]

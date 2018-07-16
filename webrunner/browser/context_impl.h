@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBRUNNER_SERVICE_CONTEXT_IMPL_H_
-#define WEBRUNNER_SERVICE_CONTEXT_IMPL_H_
+#ifndef WEBRUNNER_BROWSER_CONTEXT_IMPL_H_
+#define WEBRUNNER_BROWSER_CONTEXT_IMPL_H_
 
 #include <lib/fidl/cpp/binding_set.h>
 #include <memory>
 
 #include "base/macros.h"
-#include "chromium/web/cpp/fidl.h"
 #include "webrunner/common/webrunner_export.h"
+#include "webrunner/fidl/chromium/web/cpp/fidl.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace webrunner {
 
@@ -19,17 +23,18 @@ namespace webrunner {
 // All created Frames are owned by this object.
 class WEBRUNNER_EXPORT ContextImpl : public chromium::web::Context {
  public:
-  ContextImpl();
+  // |browser_context| must outlive ContextImpl.
+  explicit ContextImpl(content::BrowserContext* browser_context);
 
   // Tears down the Context, destroying any active Frames in the process.
   ~ContextImpl() override;
 
   // chromium::web::Context implementation.
-  void CreateFrame(
-      ::fidl::InterfaceHandle<chromium::web::FrameObserver> observer,
-      ::fidl::InterfaceRequest<chromium::web::Frame> frame) override;
+  void CreateFrame(fidl::InterfaceHandle<chromium::web::FrameObserver> observer,
+                   fidl::InterfaceRequest<chromium::web::Frame> frame) override;
 
  private:
+  content::BrowserContext* browser_context_;
   fidl::BindingSet<chromium::web::Frame, std::unique_ptr<chromium::web::Frame>>
       frame_bindings_;
 
@@ -38,4 +43,4 @@ class WEBRUNNER_EXPORT ContextImpl : public chromium::web::Context {
 
 }  // namespace webrunner
 
-#endif  // WEBRUNNER_SERVICE_CONTEXT_IMPL_H_
+#endif  // WEBRUNNER_BROWSER_CONTEXT_IMPL_H_

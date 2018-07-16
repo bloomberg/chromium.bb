@@ -4,10 +4,10 @@
 
 #include "webrunner/browser/webrunner_browser_main_parts.h"
 
+#include "webrunner/browser/context_impl.h"
 #include "webrunner/browser/webrunner_browser_context.h"
 #include "webrunner/browser/webrunner_screen.h"
 #include "webrunner/service/common.h"
-#include "webrunner/service/context_impl.h"
 
 namespace webrunner {
 
@@ -29,7 +29,7 @@ void WebRunnerBrowserMainParts::PreMainMessageLoopRun() {
   fidl::InterfaceRequest<chromium::web::Context> context_request(
       std::move(context_handle));
 
-  context_impl_ = std::make_unique<ContextImpl>();
+  context_impl_ = std::make_unique<ContextImpl>(browser_context_.get());
   context_binding_ = std::make_unique<fidl::Binding<chromium::web::Context>>(
       context_impl_.get(), std::move(context_request));
 
