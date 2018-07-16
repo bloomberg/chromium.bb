@@ -427,6 +427,16 @@ IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyEnrollmentTest, Test) {
   histogram_tester_.ExpectBucketCount(kEnrollmentResultMetrics, expected_result,
                                       1);
   histogram_tester_.ExpectTotalCount(kEnrollmentResultMetrics, 1);
+
+#if defined(OS_MACOSX)
+  // Verify the last mericis of launch is recorded in
+  // applicationDidFinishNotification.
+  if (is_enrollment_token_valid()) {
+    EXPECT_EQ(1u, histogram_tester_
+                      .GetAllSamples("Startup.OSX.DockIconWillFinishBouncing")
+                      .size());
+  }
+#endif
 }
 
 INSTANTIATE_TEST_CASE_P(,
