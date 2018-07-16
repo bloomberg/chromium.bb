@@ -1730,6 +1730,9 @@ public class ChromeTabbedActivity
         // BottomSheet can be opened before native is initialized.
         if (!mUIInitialized) return getBottomSheet() != null && getBottomSheet().handleBackPress();
 
+        if (getManualFillingController() != null && getManualFillingController().handleBackPress())
+            return true;
+
         final Tab currentTab = getActivityTab();
 
         if (exitFullscreenIfShowing()) {

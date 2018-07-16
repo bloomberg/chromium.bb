@@ -176,6 +176,14 @@ class ManualFillingMediator
         mKeyboardAccessory.destroy();
     }
 
+    boolean handleBackPress() {
+        if (mAccessorySheet.isShown()) {
+            mKeyboardAccessory.dismiss();
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void onChangeAccessorySheet(int tabIndex) {
         assert mActivity != null : "ManualFillingMediator needs initialization.";

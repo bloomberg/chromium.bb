@@ -82,10 +82,13 @@ class KeyboardAccessoryMediator
     }
 
     void dismiss() {
+        mModel.setActiveTab(null);
         mVisibilityDelegate.onCloseKeyboardAccessory();
-        if (mModel.getAutofillSuggestions() == null) return; // Nothing to do here.
-        mModel.getAutofillSuggestions().dismiss();
-        mModel.setAutofillSuggestions(null);
+        if (mModel.getAutofillSuggestions() != null) {
+            mModel.getAutofillSuggestions().dismiss();
+            mModel.setAutofillSuggestions(null);
+        }
+        updateVisibility();
     }
 
     @VisibleForTesting
