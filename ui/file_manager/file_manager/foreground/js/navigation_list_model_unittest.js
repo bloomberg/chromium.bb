@@ -175,6 +175,9 @@ function testOrderAndNestItems() {
       'recent-label', NavigationModelItemType.RECENT,
       {toURL: () => 'fake-entry://recent'});
   const addNewServicesItem = null;
+  const zipVolumeId = 'provided:dmboannefpncccogfdikhmhpmdnddgoe:' +
+      '~%2FDownloads%2Fazip_file%2Ezip:' +
+      '096eaa592ea7e8ffb9a27435e50dabd6c809c125';
 
   // Create different volumes.
   volumeManager.volumeInfoList.push(
@@ -185,7 +188,7 @@ function testOrderAndNestItems() {
           VolumeManagerCommon.VolumeType.PROVIDED, 'provided:prov1'));
   volumeManager.volumeInfoList.push(
       MockVolumeManagerWrapper.createMockVolumeInfo(
-          VolumeManagerCommon.VolumeType.ARCHIVE, 'archive:a-zip'));
+          VolumeManagerCommon.VolumeType.ARCHIVE, 'archive:a-rar'));
   volumeManager.volumeInfoList.push(
       MockVolumeManagerWrapper.createMockVolumeInfo(
           VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:fuga'));
@@ -207,6 +210,10 @@ function testOrderAndNestItems() {
   volumeManager.volumeInfoList.push(
       MockVolumeManagerWrapper.createMockVolumeInfo(
           VolumeManagerCommon.VolumeType.MEDIA_VIEW, 'media_view:audio_root'));
+  // ZipArchiver mounts zip files as PROVIDED volume type.
+  volumeManager.volumeInfoList.push(
+      MockVolumeManagerWrapper.createMockVolumeInfo(
+          VolumeManagerCommon.VolumeType.PROVIDED, zipVolumeId));
 
   // Navigation items built above:
   //  1.  fake-entry://recent
@@ -223,9 +230,10 @@ function testOrderAndNestItems() {
   //  9.  archive:a-rar  - mounted as archive
   // 10.  removable:fuga
   // 11.  mtp:a-phone
-  // 12.  Drive  - from setup()
-  // 13.  provided:prov1
-  // 14.  provided:prov2
+  // 12.  provided:"zip" - mounted as provided: $zipVolumeId
+  // 13.  Drive  - from setup()
+  // 14.  provided:prov1
+  // 15.  provided:prov2
 
   // Constructor already calls orderAndNestItems_.
   const model = new NavigationListModel(
@@ -233,7 +241,7 @@ function testOrderAndNestItems() {
 
   // Check items order and that MTP/Archive/Removable respect the original
   // order.
-  assertEquals(14, model.length);
+  assertEquals(15, model.length);
   assertEquals('recent-label', model.item(0).label);
 
   assertEquals('media_view:images_root', model.item(1).label);
@@ -243,14 +251,16 @@ function testOrderAndNestItems() {
   assertEquals('shortcut', model.item(4).label);
   assertEquals('shortcut2', model.item(5).label);
   assertEquals('My Files', model.item(6).label);
+
   assertEquals('removable:hoge', model.item(7).label);
-  assertEquals('archive:a-zip', model.item(8).label);
+  assertEquals('archive:a-rar', model.item(8).label);
   assertEquals('removable:fuga', model.item(9).label);
   assertEquals('mtp:a-phone', model.item(10).label);
+  assertEquals(zipVolumeId, model.item(11).label);
 
-  assertEquals('My Drive', model.item(11).label);
-  assertEquals('provided:prov1', model.item(12).label);
-  assertEquals('provided:prov2', model.item(13).label);
+  assertEquals('My Drive', model.item(12).label);
+  assertEquals('provided:prov1', model.item(13).label);
+  assertEquals('provided:prov2', model.item(14).label);
 
   // Check NavigationSection, which defaults to TOP.
   // recent-label.
@@ -273,20 +283,22 @@ function testOrderAndNestItems() {
   // MTP/Archive/Removable are grouped together.
   // removable:hoge.
   assertEquals(NavigationSection.REMOVABLE, model.item(7).section);
-  // archive:a-zip.
+  // archive:a-rar.
   assertEquals(NavigationSection.REMOVABLE, model.item(8).section);
   // removable:fuga.
   assertEquals(NavigationSection.REMOVABLE, model.item(9).section);
   // mtp:a-phone.
   assertEquals(NavigationSection.REMOVABLE, model.item(10).section);
+  // archive:"zip" - $zipVolumeId
+  assertEquals(NavigationSection.REMOVABLE, model.item(11).section);
 
   // Drive and FSP are grouped together.
   // My Drive.
-  assertEquals(NavigationSection.CLOUD, model.item(11).section);
-  // provided:prov1.
   assertEquals(NavigationSection.CLOUD, model.item(12).section);
-  // provided:prov2.
+  // provided:prov1.
   assertEquals(NavigationSection.CLOUD, model.item(13).section);
+  // provided:prov2.
+  assertEquals(NavigationSection.CLOUD, model.item(14).section);
 
   const myFilesModel = model.item(6);
   // Re-order again.
