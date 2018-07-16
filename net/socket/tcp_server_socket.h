@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "net/base/completion_once_callback.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/socket/server_socket.h"
@@ -36,7 +35,7 @@ class NET_EXPORT TCPServerSocket : public ServerSocket {
   int Listen(const IPEndPoint& address, int backlog) override;
   int GetLocalAddress(IPEndPoint* address) const override;
   int Accept(std::unique_ptr<StreamSocket>* socket,
-             CompletionOnceCallback callback) override;
+             const CompletionCallback& callback) override;
 
   // Detachs from the current thread, to allow the socket to be transferred to
   // a new thread. Should only be called when the object is no longer used by
@@ -53,7 +52,7 @@ class NET_EXPORT TCPServerSocket : public ServerSocket {
       std::unique_ptr<StreamSocket>* output_accepted_socket);
   // Completion callback for calling TCPSocket::Accept().
   void OnAcceptCompleted(std::unique_ptr<StreamSocket>* output_accepted_socket,
-                         CompletionOnceCallback forward_callback,
+                         const CompletionCallback& forward_callback,
                          int result);
 
   TCPSocket socket_;

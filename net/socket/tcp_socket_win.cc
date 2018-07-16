@@ -384,7 +384,7 @@ int TCPSocketWin::Listen(int backlog) {
 
 int TCPSocketWin::Accept(std::unique_ptr<TCPSocketWin>* socket,
                          IPEndPoint* address,
-                         CompletionOnceCallback callback) {
+                         const CompletionCallback& callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(socket);
   DCHECK(address);
@@ -402,7 +402,7 @@ int TCPSocketWin::Accept(std::unique_ptr<TCPSocketWin>* socket,
 
     accept_socket_ = socket;
     accept_address_ = address;
-    accept_callback_ = std::move(callback);
+    accept_callback_ = callback;
   }
 
   return result;

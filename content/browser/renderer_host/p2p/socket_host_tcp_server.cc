@@ -4,8 +4,6 @@
 
 #include "content/browser/renderer_host/p2p/socket_host_tcp_server.h"
 
-#include <utility>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
@@ -27,8 +25,9 @@ P2PSocketHostTcpServer::P2PSocketHostTcpServer(IPC::Sender* message_sender,
     : P2PSocketHost(message_sender, socket_id, P2PSocketHost::TCP),
       client_type_(client_type),
       socket_(new net::TCPServerSocket(nullptr, net::NetLogSource())),
-      accept_callback_(base::BindRepeating(&P2PSocketHostTcpServer::OnAccepted,
-                                           base::Unretained(this))) {}
+      accept_callback_(base::Bind(&P2PSocketHostTcpServer::OnAccepted,
+                                  base::Unretained(this))) {
+}
 
 P2PSocketHostTcpServer::~P2PSocketHostTcpServer() {
   if (state_ == STATE_OPEN) {
