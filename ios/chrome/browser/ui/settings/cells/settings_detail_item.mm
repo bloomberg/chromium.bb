@@ -24,6 +24,9 @@ namespace {
 // two labels.
 const CGFloat kHorizontalPadding = 16;
 
+// Padding used between the icon and the text labels.
+const CGFloat kIconTrailingPadding = 12;
+
 // Padding used on the top and bottom edges of the cell.
 const CGFloat kVerticalPadding = 16;
 
@@ -134,7 +137,7 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
                        constant:kHorizontalPadding];
     _iconVisibleConstraint = [_labelContainerGuide.leadingAnchor
         constraintEqualToAnchor:_iconImageView.trailingAnchor
-                       constant:kHorizontalPadding];
+                       constant:kIconTrailingPadding];
 
     [NSLayoutConstraint activateConstraints:@[
       [_iconImageView.leadingAnchor

@@ -22,6 +22,9 @@ namespace {
 // Padding used on the leading and trailing edges of the cell.
 const CGFloat kHorizontalPadding = 16;
 
+// Padding used between the icon and the text labels.
+const CGFloat kIconTrailingPadding = 12;
+
 // Padding used on the top and bottom edges of the cell.
 const CGFloat kVerticalPadding = 16;
 
@@ -122,7 +125,7 @@ const CGFloat kIconImageSize = 28;
     // Set up the constraints assuming that the icon image is hidden..
     _iconVisibleConstraint = [_textLabel.leadingAnchor
         constraintEqualToAnchor:_iconImageView.trailingAnchor
-                       constant:kHorizontalPadding];
+                       constant:kIconTrailingPadding];
     _iconHiddenConstraint = [_textLabel.leadingAnchor
         constraintEqualToAnchor:self.contentView.leadingAnchor
                        constant:kHorizontalPadding];

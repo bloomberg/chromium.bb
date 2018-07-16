@@ -538,6 +538,13 @@ initWithRootViewController:(UIViewController*)rootViewController
     appBarContainer.view.backgroundColor = [UIColor whiteColor];
     ConfigureAppBarWithCardStyle(appBarContainer.appBar);
 
+    // Override the header view's background color if the UIRefresh experiment
+    // is enabled.
+    if (experimental_flags::IsSettingsUIRebootEnabled()) {
+      appBarContainer.appBar.headerViewController.headerView.backgroundColor =
+          [UIColor groupTableViewBackgroundColor];
+    }
+
     // Register the app bar container and return it.
     [self registerAppBarContainer:appBarContainer];
     return appBarContainer;

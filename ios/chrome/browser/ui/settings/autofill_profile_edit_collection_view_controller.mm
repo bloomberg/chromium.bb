@@ -184,6 +184,7 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
     const AutofillFieldDisplayInfo& field = kFieldsToDisplay[i];
     AutofillEditItem* item =
         [[AutofillEditItem alloc] initWithType:ItemTypeField];
+    item.cellStyle = CollectionViewCellStyle::kUIKit;
     item.textFieldName = l10n_util::GetNSString(field.displayStringID);
     item.textFieldValue = base::SysUTF16ToNSString(_autofillProfile.GetInfo(
         autofill::AutofillType(field.autofillType), locale));

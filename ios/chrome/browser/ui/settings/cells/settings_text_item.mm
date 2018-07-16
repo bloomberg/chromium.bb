@@ -90,7 +90,7 @@ const CGFloat kMinimalHeight = 48;
 - (UIFont*)detailTextFont {
   if (!_detailTextFont) {
     if (experimental_flags::IsSettingsUIRebootEnabled()) {
-      _detailTextFont = [UIFont systemFontOfSize:kUIKitDetailFontSize];
+      _detailTextFont = [UIFont systemFontOfSize:kUIKitMultilineDetailFontSize];
     } else {
       _detailTextFont = [[MDCTypography fontLoader] regularFontOfSize:14];
     }
@@ -101,7 +101,7 @@ const CGFloat kMinimalHeight = 48;
 - (UIColor*)detailTextColor {
   if (!_detailTextColor) {
     if (experimental_flags::IsSettingsUIRebootEnabled()) {
-      _detailTextColor = UIColorFromRGB(kUIKitDetailTextColor);
+      _detailTextColor = UIColorFromRGB(kUIKitMultilineDetailTextColor);
     } else {
       _detailTextColor = [[MDCPalette greyPalette] tint500];
     }
