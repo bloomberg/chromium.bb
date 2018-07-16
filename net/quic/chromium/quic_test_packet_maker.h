@@ -347,6 +347,9 @@ class QuicTestPacketMaker {
   spdy::SpdyHeaderBlock GetResponseHeaders(const std::string& status,
                                            const std::string& alt_svc);
 
+  spdy::SpdyFramer* spdy_request_framer() { return &spdy_request_framer_; }
+  spdy::SpdyFramer* spdy_response_framer() { return &spdy_response_framer_; }
+
  private:
   std::unique_ptr<quic::QuicReceivedPacket> MakePacket(
       const quic::QuicPacketHeader& header,
