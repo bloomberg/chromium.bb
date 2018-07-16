@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -663,8 +664,9 @@ TEST_F(ChromePasswordManagerClientTest,
   EXPECT_CALL(*client->password_protection_service(),
               MaybeStartPasswordFieldOnFocusRequest(_, _, _, _))
       .Times(1);
-  client->CheckSafeBrowsingReputation(GURL("http://foo.com/submit"),
-                                      GURL("http://foo.com/iframe.html"));
+  PasswordManagerClient* mojom_client = client.get();
+  mojom_client->CheckSafeBrowsingReputation(GURL("http://foo.com/submit"),
+                                            GURL("http://foo.com/iframe.html"));
 }
 
 TEST_F(ChromePasswordManagerClientTest,
@@ -703,7 +705,6 @@ TEST_F(ChromePasswordManagerClientTest, VerifyLogPasswordReuseDetectedEvent) {
       .Times(1);
   client->LogPasswordReuseDetectedEvent();
 }
-
 #endif
 
 TEST_F(ChromePasswordManagerClientTest, MissingUIDelegate) {
@@ -712,7 +713,7 @@ TEST_F(ChromePasswordManagerClientTest, MissingUIDelegate) {
   GURL kUrl("https://example.com/");
   NavigateAndCommit(kUrl);
   std::unique_ptr<password_manager::PasswordFormManager> form_manager;
-  GetClient()->ShowManualFallbackForSaving(std::move(form_manager), false,
-                                           false);
-  GetClient()->HideManualFallbackForSaving();
+  PasswordManagerClient* client = GetClient();
+  client->ShowManualFallbackForSaving(std::move(form_manager), false, false);
+  client->HideManualFallbackForSaving();
 }

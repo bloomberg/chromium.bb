@@ -81,7 +81,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   void SetPasswordGenerationAgent(PasswordGenerationAgent* generation_agent);
 
-  const mojom::PasswordManagerDriverPtr& GetPasswordManagerDriver();
+  const mojom::PasswordManagerDriverAssociatedPtr& GetPasswordManagerDriver();
 
   // mojom::PasswordAutofillAgent:
   void FillPasswordForm(int key,
@@ -429,7 +429,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   PagePasswordsAnalyser page_passwords_analyser_;
 #endif
 
-  mojom::PasswordManagerDriverPtr password_manager_driver_;
+  mojom::PasswordManagerDriverAssociatedPtr password_manager_driver_;
 
   mojo::Binding<mojom::PasswordAutofillAgent> binding_;
 

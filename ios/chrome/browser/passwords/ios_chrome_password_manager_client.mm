@@ -162,10 +162,6 @@ void IOSChromePasswordManagerClient::NotifyStorePasswordCalled() {
   helper_.NotifyStorePasswordCalled();
 }
 
-void IOSChromePasswordManagerClient::ForceSavePassword() {
-  NOTIMPLEMENTED();
-}
-
 bool IOSChromePasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage()
     const {
   return *saving_passwords_enabled_ && !IsIncognito() &&

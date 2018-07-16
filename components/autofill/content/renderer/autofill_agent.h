@@ -64,7 +64,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   const mojom::AutofillDriverPtr& GetAutofillDriver();
 
-  const mojom::PasswordManagerDriverPtr& GetPasswordManagerDriver();
+  const mojom::PasswordManagerDriverAssociatedPtr& GetPasswordManagerDriver();
 
   // mojom::AutofillAgent:
   void FillForm(int32_t id, const FormData& form) override;

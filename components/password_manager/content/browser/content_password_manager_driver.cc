@@ -18,7 +18,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "net/cert/cert_status_flags.h"
@@ -35,7 +34,6 @@ ContentPasswordManagerDriver::ContentPasswordManagerDriver(
       password_generation_manager_(client, this),
       password_autofill_manager_(this, autofill_client, client),
       is_main_frame_(render_frame_host->GetParent() == nullptr),
-      password_manager_binding_(this),
       weak_factory_(this) {
   // For some frames |this| may be instantiated before log manager creation, so
   // here we can not send logging state to renderer process for them. For such
@@ -62,11 +60,6 @@ ContentPasswordManagerDriver::GetForRenderFrameHost(
       ContentPasswordManagerDriverFactory::FromWebContents(
           content::WebContents::FromRenderFrameHost(render_frame_host));
   return factory ? factory->GetDriverForFrame(render_frame_host) : nullptr;
-}
-
-void ContentPasswordManagerDriver::BindRequest(
-    autofill::mojom::PasswordManagerDriverRequest request) {
-  password_manager_binding_.Bind(std::move(request));
 }
 
 void ContentPasswordManagerDriver::FillPasswordForm(
@@ -184,101 +177,6 @@ void ContentPasswordManagerDriver::DidNavigateFrame(
   }
 }
 
-
-void ContentPasswordManagerDriver::PasswordFormsParsed(
-    const std::vector<autofill::PasswordForm>& forms) {
-  if (!bad_message::CheckChildProcessSecurityPolicy(
-          render_frame_host_, forms,
-          BadMessageReason::CPMD_BAD_ORIGIN_FORMS_PARSED))
-    return;
-
-  GetPasswordManager()->OnPasswordFormsParsed(this, forms);
-  GetPasswordGenerationManager()->CheckIfFormClassifierShouldRun();
-}
-
-void ContentPasswordManagerDriver::PasswordFormsRendered(
-    const std::vector<autofill::PasswordForm>& visible_forms,
-    bool did_stop_loading) {
-  if (!bad_message::CheckChildProcessSecurityPolicy(
-          render_frame_host_, visible_forms,
-          BadMessageReason::CPMD_BAD_ORIGIN_FORMS_RENDERED))
-    return;
-
-  GetPasswordManager()->OnPasswordFormsRendered(this, visible_forms,
-                                                did_stop_loading);
-}
-
-void ContentPasswordManagerDriver::PasswordFormSubmitted(
-    const autofill::PasswordForm& password_form) {
-  if (!bad_message::CheckChildProcessSecurityPolicy(
-          render_frame_host_, password_form,
-          BadMessageReason::CPMD_BAD_ORIGIN_FORM_SUBMITTED))
-    return;
-  GetPasswordManager()->OnPasswordFormSubmitted(this, password_form);
-}
-
-void ContentPasswordManagerDriver::ShowManualFallbackForSaving(
-    const autofill::PasswordForm& password_form) {
-  if (!bad_message::CheckChildProcessSecurityPolicy(
-          render_frame_host_, password_form,
-          BadMessageReason::CPMD_BAD_ORIGIN_SHOW_FALLBACK_FOR_SAVING))
-    return;
-  GetPasswordManager()->ShowManualFallbackForSaving(this, password_form);
-}
-
-void ContentPasswordManagerDriver::SameDocumentNavigation(
-    const autofill::PasswordForm& password_form) {
-  if (!bad_message::CheckChildProcessSecurityPolicy(
-          render_frame_host_, password_form,
-          BadMessageReason::CPMD_BAD_ORIGIN_IN_PAGE_NAVIGATION))
-    return;
-  GetPasswordManager()->OnPasswordFormSubmittedNoChecks(this, password_form);
-}
-
-void ContentPasswordManagerDriver::ShowPasswordSuggestions(
-    int key,
-    base::i18n::TextDirection text_direction,
-    const base::string16& typed_username,
-    int options,
-    const gfx::RectF& bounds) {
-  password_autofill_manager_.OnShowPasswordSuggestions(
-      key, text_direction, typed_username, options,
-      TransformToRootCoordinates(bounds));
-}
-
-void ContentPasswordManagerDriver::HideManualFallbackForSaving() {
-  GetPasswordManager()->HideManualFallbackForSaving();
-}
-
-void ContentPasswordManagerDriver::RecordSavePasswordProgress(
-    const std::string& log) {
-  client_->GetLogManager()->LogSavePasswordProgress(log);
-}
-
-void ContentPasswordManagerDriver::UserModifiedPasswordField() {
-  client_->GetMetricsRecorder().RecordUserModifiedPasswordField();
-}
-
-void ContentPasswordManagerDriver::SaveGenerationFieldDetectedByClassifier(
-    const autofill::PasswordForm& password_form,
-    const base::string16& generation_field) {
-  if (!bad_message::CheckChildProcessSecurityPolicy(
-          render_frame_host_, password_form,
-          BadMessageReason::
-              CPMD_BAD_ORIGIN_SAVE_GENERATION_FIELD_DETECTED_BY_CLASSIFIER))
-    return;
-  GetPasswordManager()->SaveGenerationFieldDetectedByClassifier(
-      password_form, generation_field);
-}
-
-void ContentPasswordManagerDriver::CheckSafeBrowsingReputation(
-    const GURL& form_action,
-    const GURL& frame_url) {
-#if defined(SAFE_BROWSING_DB_LOCAL)
-  client_->CheckSafeBrowsingReputation(form_action, frame_url);
-#endif
-}
-
 void ContentPasswordManagerDriver::OnFocusedPasswordFormFound(
     const autofill::PasswordForm& password_form) {
   if (!bad_message::CheckChildProcessSecurityPolicy(
@@ -319,16 +217,6 @@ ContentPasswordManagerDriver::GetPasswordGenerationAgent() {
   }
 
   return password_gen_agent_;
-}
-
-gfx::RectF ContentPasswordManagerDriver::TransformToRootCoordinates(
-    const gfx::RectF& bounds_in_frame_coordinates) {
-  content::RenderWidgetHostView* rwhv = render_frame_host_->GetView();
-  if (!rwhv)
-    return bounds_in_frame_coordinates;
-  return gfx::RectF(rwhv->TransformPointToRootCoordSpaceF(
-                        bounds_in_frame_coordinates.origin()),
-                    bounds_in_frame_coordinates.size());
 }
 
 int ContentPasswordManagerDriver::GetNextKey() {

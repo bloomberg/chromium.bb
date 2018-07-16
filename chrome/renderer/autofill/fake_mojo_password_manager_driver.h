@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_AUTOFILL_FAKE_CONTENT_PASSWORD_MANAGER_DRIVER_H_
-#define CHROME_RENDERER_AUTOFILL_FAKE_CONTENT_PASSWORD_MANAGER_DRIVER_H_
+#ifndef CHROME_RENDERER_AUTOFILL_FAKE_MOJO_PASSWORD_MANAGER_DRIVER_H_
+#define CHROME_RENDERER_AUTOFILL_FAKE_MOJO_PASSWORD_MANAGER_DRIVER_H_
 
 #include <string>
 #include <vector>
@@ -12,16 +12,20 @@
 #include "base/strings/string16.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/core/common/password_form.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 
-class FakeContentPasswordManagerDriver
+class FakeMojoPasswordManagerDriver
     : public autofill::mojom::PasswordManagerDriver {
  public:
-  FakeContentPasswordManagerDriver();
+  FakeMojoPasswordManagerDriver();
 
-  ~FakeContentPasswordManagerDriver() override;
+  ~FakeMojoPasswordManagerDriver() override;
 
-  void BindRequest(autofill::mojom::PasswordManagerDriverRequest request);
+  void BindRequest(
+      autofill::mojom::PasswordManagerDriverAssociatedRequest request);
+
+  // Flushes all pending messages from the associated binding.
+  void Flush();
 
   bool called_show_pw_suggestions() const {
     return called_show_pw_suggestions_;
@@ -203,7 +207,7 @@ class FakeContentPasswordManagerDriver
   // If it is zero, the fallback is not available.
   int called_show_manual_fallback_for_saving_count_ = 0;
 
-  mojo::BindingSet<autofill::mojom::PasswordManagerDriver> bindings_;
+  mojo::AssociatedBinding<autofill::mojom::PasswordManagerDriver> binding_;
 };
 
-#endif  // CHROME_RENDERER_AUTOFILL_FAKE_CONTENT_PASSWORD_MANAGER_DRIVER_H_
+#endif  // CHROME_RENDERER_AUTOFILL_FAKE_MOJO_PASSWORD_MANAGER_DRIVER_H_

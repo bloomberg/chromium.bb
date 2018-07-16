@@ -244,16 +244,6 @@ TEST_F(ContentPasswordManagerDriverTest, NotInformAboutBlacklistedForm) {
   driver->FillPasswordForm(fill_data);
 }
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
-TEST_F(ContentPasswordManagerDriverTest, CheckSafeBrowsingReputationCalled) {
-  std::unique_ptr<ContentPasswordManagerDriver> driver(
-      new ContentPasswordManagerDriver(main_rfh(), &password_manager_client_,
-                                       &autofill_client_));
-  EXPECT_CALL(password_manager_client_, CheckSafeBrowsingReputation(_, _));
-  driver->CheckSafeBrowsingReputation(GURL(), GURL());
-}
-#endif
-
 INSTANTIATE_TEST_CASE_P(,
                         ContentPasswordManagerDriverTest,
                         testing::Values(true, false));

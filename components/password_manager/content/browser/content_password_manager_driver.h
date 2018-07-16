@@ -12,15 +12,13 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/autofill/content/common/autofill_agent.mojom.h"
-#include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -36,9 +34,7 @@ enum class BadMessageReason;
 
 // There is one ContentPasswordManagerDriver per RenderFrameHost.
 // The lifetime is managed by the ContentPasswordManagerDriverFactory.
-class ContentPasswordManagerDriver
-    : public PasswordManagerDriver,
-      public autofill::mojom::PasswordManagerDriver {
+class ContentPasswordManagerDriver : public PasswordManagerDriver {
  public:
   ContentPasswordManagerDriver(content::RenderFrameHost* render_frame_host,
                                PasswordManagerClient* client,
@@ -48,8 +44,6 @@ class ContentPasswordManagerDriver
   // Gets the driver for |render_frame_host|.
   static ContentPasswordManagerDriver* GetForRenderFrameHost(
       content::RenderFrameHost* render_frame_host);
-
-  void BindRequest(autofill::mojom::PasswordManagerDriverRequest request);
 
   // PasswordManagerDriver implementation.
   void FillPasswordForm(
@@ -84,34 +78,6 @@ class ContentPasswordManagerDriver
 
   void DidNavigateFrame(content::NavigationHandle* navigation_handle);
 
-  // autofill::mojom::PasswordManagerDriver:
-  // Note that these messages received from a potentially compromised renderer.
-  // For that reason, any access to form data should be validated via
-  // bad_message::CheckChildProcessSecurityPolicy.
-  void PasswordFormsParsed(
-      const std::vector<autofill::PasswordForm>& forms) override;
-  void PasswordFormsRendered(
-      const std::vector<autofill::PasswordForm>& visible_forms,
-      bool did_stop_loading) override;
-  void PasswordFormSubmitted(
-      const autofill::PasswordForm& password_form) override;
-  void ShowManualFallbackForSaving(const autofill::PasswordForm& form) override;
-  void HideManualFallbackForSaving() override;
-  void SameDocumentNavigation(
-      const autofill::PasswordForm& password_form) override;
-  void ShowPasswordSuggestions(int key,
-                               base::i18n::TextDirection text_direction,
-                               const base::string16& typed_username,
-                               int options,
-                               const gfx::RectF& bounds) override;
-  void RecordSavePasswordProgress(const std::string& log) override;
-  void UserModifiedPasswordField() override;
-  void SaveGenerationFieldDetectedByClassifier(
-      const autofill::PasswordForm& password_form,
-      const base::string16& generation_field) override;
-  void CheckSafeBrowsingReputation(const GURL& form_action,
-                                   const GURL& frame_url) override;
-
  private:
   void OnFocusedPasswordFormFound(const autofill::PasswordForm& password_form);
 
@@ -121,9 +87,6 @@ class ContentPasswordManagerDriver
 
   const autofill::mojom::PasswordGenerationAgentPtr&
   GetPasswordGenerationAgent();
-
-  gfx::RectF TransformToRootCoordinates(
-      const gfx::RectF& bounds_in_frame_coordinates);
 
   // Returns the next key to be used for PasswordFormFillData sent to
   // PasswordAutofillManager and PasswordAutofillAgent.
@@ -150,9 +113,6 @@ class ContentPasswordManagerDriver
   autofill::mojom::PasswordAutofillAgentPtr password_autofill_agent_;
 
   autofill::mojom::PasswordGenerationAgentPtr password_gen_agent_;
-
-  mojo::Binding<autofill::mojom::PasswordManagerDriver>
-      password_manager_binding_;
 
   base::WeakPtrFactory<ContentPasswordManagerDriver> weak_factory_;
 

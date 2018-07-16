@@ -730,7 +730,7 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
     ShowGenerationPopup(true /* is_manual_generation */);
 }
 
-const mojom::PasswordManagerDriverPtr&
+const mojom::PasswordManagerDriverAssociatedPtr&
 PasswordGenerationAgent::GetPasswordManagerDriver() {
   DCHECK(password_agent_);
   return password_agent_->GetPasswordManagerDriver();

@@ -49,6 +49,7 @@ class ChromePasswordManagerClient
       public password_manager::PasswordManagerClientHelperDelegate,
       public content::WebContentsObserver,
       public content::WebContentsUserData<ChromePasswordManagerClient>,
+      public autofill::mojom::PasswordManagerDriver,
       public autofill::mojom::PasswordManagerClient,
       public content::RenderWidgetHost::InputEventObserver {
  public:
@@ -68,12 +69,10 @@ class ChromePasswordManagerClient
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool has_generated_password,
       bool is_update) override;
-  void HideManualFallbackForSaving() override;
   bool PromptUserToChooseCredentials(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const GURL& origin,
       const CredentialsCallback& callback) override;
-  void ForceSavePassword() override;
   void GeneratePassword() override;
   void NotifyUserAutoSignin(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
@@ -135,8 +134,6 @@ class ChromePasswordManagerClient
 #if defined(SAFE_BROWSING_DB_LOCAL)
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
       const override;
-  void CheckSafeBrowsingReputation(const GURL& form_action,
-                                   const GURL& frame_url) override;
 
   void CheckProtectedPasswordEntry(
       password_manager::metrics_util::PasswordType reused_password_type,
@@ -165,6 +162,10 @@ class ChromePasswordManagerClient
   // on this |url|.
   static bool CanShowBubbleOnURL(const GURL& url);
 
+  // Informs the embedder that the user has manually requested to save the
+  // password in the focused password field.
+  void ForceSavePassword();
+
 #if defined(UNIT_TEST)
   bool was_store_ever_called() const { return was_store_ever_called_; }
   bool has_binding_for_credential_manager() const {
@@ -179,6 +180,34 @@ class ChromePasswordManagerClient
 
  private:
   friend class content::WebContentsUserData<ChromePasswordManagerClient>;
+
+  // autofill::mojom::PasswordManagerDriver:
+  // Note that these messages received from a potentially compromised renderer.
+  // For that reason, any access to form data should be validated via
+  // bad_message::CheckChildProcessSecurityPolicy.
+  void PasswordFormsParsed(
+      const std::vector<autofill::PasswordForm>& forms) override;
+  void PasswordFormsRendered(
+      const std::vector<autofill::PasswordForm>& visible_forms,
+      bool did_stop_loading) override;
+  void PasswordFormSubmitted(
+      const autofill::PasswordForm& password_form) override;
+  void ShowManualFallbackForSaving(const autofill::PasswordForm& form) override;
+  void HideManualFallbackForSaving() override;
+  void SameDocumentNavigation(
+      const autofill::PasswordForm& password_form) override;
+  void ShowPasswordSuggestions(int key,
+                               base::i18n::TextDirection text_direction,
+                               const base::string16& typed_username,
+                               int options,
+                               const gfx::RectF& bounds) override;
+  void RecordSavePasswordProgress(const std::string& log) override;
+  void UserModifiedPasswordField() override;
+  void SaveGenerationFieldDetectedByClassifier(
+      const autofill::PasswordForm& password_form,
+      const base::string16& generation_field) override;
+  void CheckSafeBrowsingReputation(const GURL& form_action,
+                                   const GURL& frame_url) override;
 
   // content::WebContentsObserver overrides.
   void DidStartNavigation(
@@ -213,6 +242,9 @@ class ChromePasswordManagerClient
       const autofill::password_generation::PasswordGenerationUIData& ui_data,
       bool is_manually_triggered);
 
+  gfx::RectF TransformToRootCoordinates(
+      const gfx::RectF& bounds_in_frame_coordinates);
+
   Profile* const profile_;
 
   password_manager::PasswordManager password_manager_;
@@ -232,6 +264,8 @@ class ChromePasswordManagerClient
 
   content::WebContentsFrameBindingSet<autofill::mojom::PasswordManagerClient>
       password_manager_client_bindings_;
+  content::WebContentsFrameBindingSet<autofill::mojom::PasswordManagerDriver>
+      password_manager_driver_bindings_;
 
   // Observer for password generation popup.
   PasswordGenerationPopupObserver* observer_;
