@@ -60,7 +60,7 @@ class CC_EXPORT SurfaceLayer : public Layer {
  private:
   ~SurfaceLayer() override;
 
-  // Returns a SurfaceRange corresponding the surface layer.
+  // Returns a SurfaceRange corresponding to the surface layer.
   viz::SurfaceRange GetSurfaceRange() const;
 
   viz::SurfaceId primary_surface_id_;
