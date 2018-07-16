@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_router.h"
@@ -22,6 +24,7 @@
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
@@ -137,6 +140,9 @@ gfx::NativeView MediaRouterAction::GetPopupNativeView() {
 }
 
 ui::MenuModel* MediaRouterAction::GetContextMenu() {
+  // If there is an existing context menu, destroy it before we instantiate a
+  // new one.
+  DestroyContextMenu();
   MediaRouterActionController* controller =
       media_router::MediaRouterUIService::Get(browser_->profile())
           ->action_controller();
@@ -155,7 +161,14 @@ void MediaRouterAction::OnContextMenuClosed() {
       !GetMediaRouterDialogController()->IsShowingMediaRouterDialog()) {
     toolbar_actions_bar_->UndoPopOut();
   }
-  contextual_menu_.reset();
+  // We must destroy the context menu asynchronously to prevent it from being
+  // destroyed before the command execution.
+  // TODO(takumif): Using task sequence to order operations is fragile. Consider
+  // other ways to do so when we move the icon to the trusted area.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&MediaRouterAction::DestroyContextMenu,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool MediaRouterAction::ExecuteAction(bool by_user) {
@@ -301,4 +314,8 @@ const gfx::VectorIcon& MediaRouterAction::GetCurrentIcon() const {
 
   return has_local_display_route_ ? vector_icons::kMediaRouterActiveIcon
                                   : vector_icons::kMediaRouterIdleIcon;
+}
+
+void MediaRouterAction::DestroyContextMenu() {
+  contextual_menu_.reset();
 }

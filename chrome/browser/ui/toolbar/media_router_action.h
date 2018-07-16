@@ -115,6 +115,8 @@ class MediaRouterAction : public ToolbarActionViewController,
 
   const gfx::VectorIcon& GetCurrentIcon() const;
 
+  void DestroyContextMenu();
+
   // The current icon to show. This is updated based on the current issues and
   // routes since |this| is an IssueObserver and MediaRoutesObserver.
   const gfx::VectorIcon* current_icon_;
