@@ -127,11 +127,19 @@ class MODULES_EXPORT BaseAudioContext
   AudioDestinationNode* destination() const;
 
   size_t CurrentSampleFrame() const {
-    return destination_node_->GetAudioDestinationHandler().CurrentSampleFrame();
+    // TODO(crbug.com/863951): |destination_node| is a GC-mananged object and
+    // should not be touched by the audio rendering thread.
+    return destination_node_ ? destination_node_->GetAudioDestinationHandler()
+                                   .CurrentSampleFrame()
+                             : 0;
   }
 
   double currentTime() const {
-    return destination_node_->GetAudioDestinationHandler().CurrentTime();
+    // TODO(crbug.com/863951): |destination_node| is a GC-mananged object and
+    // should not be touched by the audio rendering thread.
+    return destination_node_
+               ? destination_node_->GetAudioDestinationHandler().CurrentTime()
+               : 0;
   }
 
   float sampleRate() const {
