@@ -3,6 +3,6 @@ include_rules = [
 ]
 specific_include_rules = {
   ".*test\.cc": [
-    "+content/public/test/test_browser_context.h",
+    "+content/public/test",
   ],
 }
