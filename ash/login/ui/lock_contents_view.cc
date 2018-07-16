@@ -1267,7 +1267,10 @@ keyboard::KeyboardController* LockContentsView::GetKeyboardController() const {
   return GetWidget() ? GetKeyboardControllerForWidget(GetWidget()) : nullptr;
 }
 
-void LockContentsView::OnPublicAccountTapped() {
+void LockContentsView::OnPublicAccountTapped(bool is_primary) {
+  // Set the public account user to be the active user.
+  SwapActiveAuthBetweenPrimaryAndSecondary(is_primary);
+
   // Update expanded_view_ in case CurrentBigUserView has changed.
   // 1. It happens when the active big user is changed. For example both
   // primary and secondary big user are public account and user switches from
@@ -1299,8 +1302,9 @@ LoginBigUserView* LockContentsView::AllocateLoginBigUserView(
 
   LoginPublicAccountUserView::Callbacks public_account_callbacks;
   public_account_callbacks.on_tap = auth_user_callbacks.on_tap;
-  public_account_callbacks.on_public_account_tapped = base::BindRepeating(
-      &LockContentsView::OnPublicAccountTapped, base::Unretained(this));
+  public_account_callbacks.on_public_account_tapped =
+      base::BindRepeating(&LockContentsView::OnPublicAccountTapped,
+                          base::Unretained(this), is_primary);
   return new LoginBigUserView(user, auth_user_callbacks,
                               public_account_callbacks);
 }
@@ -1358,6 +1362,8 @@ void LockContentsView::UpdateAuthForPublicAccount(
     opt_to_update->SetAuthEnabled(true /*enabled*/, animate);
   if (opt_to_hide)
     opt_to_hide->SetAuthEnabled(false /*enabled*/, animate);
+
+  Layout();
 }
 
 void LockContentsView::UpdateAuthForAuthUser(LoginAuthUserView* opt_to_update,

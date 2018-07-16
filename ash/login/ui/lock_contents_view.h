@@ -302,7 +302,7 @@ class ASH_EXPORT LockContentsView
   keyboard::KeyboardController* GetKeyboardController() const;
 
   // Called when the public account is tapped.
-  void OnPublicAccountTapped();
+  void OnPublicAccountTapped(bool is_primary);
 
   // Helper method to allocate a LoginBigUserView instance.
   LoginBigUserView* AllocateLoginBigUserView(
