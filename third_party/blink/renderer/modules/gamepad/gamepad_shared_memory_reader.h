@@ -2,25 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GAMEPAD_SHARED_MEMORY_READER_H_
-#define CONTENT_RENDERER_GAMEPAD_SHARED_MEMORY_READER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_SHARED_MEMORY_READER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_SHARED_MEMORY_READER_H_
 
 #include <memory>
 
-#include "base/macros.h"
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "device/gamepad/public/cpp/gamepads.h"
-#include "device/gamepad/public/mojom/gamepad.mojom.h"
+#include "device/gamepad/public/mojom/gamepad.mojom-blink.h"
 #include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "third_party/blink/public/platform/web_gamepad_listener.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
-namespace content {
+namespace blink {
 
-class GamepadSharedMemoryReader : public device::mojom::GamepadObserver {
+class LocalFrame;
+
+class GamepadSharedMemoryReader : public device::mojom::blink::GamepadObserver {
+  WTF_MAKE_NONCOPYABLE(GamepadSharedMemoryReader);
+
  public:
-  GamepadSharedMemoryReader();
+  explicit GamepadSharedMemoryReader(LocalFrame& frame);
   ~GamepadSharedMemoryReader() override;
 
   void SampleGamepads(device::Gamepads& gamepads);
@@ -32,7 +36,7 @@ class GamepadSharedMemoryReader : public device::mojom::GamepadObserver {
   void SendStopMessage();
 
  private:
-  // device::mojom::GamepadObserver methods.
+  // device::mojom::blink::GamepadObserver methods.
   void GamepadConnected(int index, const device::Gamepad& gamepad) override;
   void GamepadDisconnected(int index, const device::Gamepad& gamepad) override;
 
@@ -42,13 +46,11 @@ class GamepadSharedMemoryReader : public device::mojom::GamepadObserver {
 
   bool ever_interacted_with_ = false;
 
-  mojo::Binding<device::mojom::GamepadObserver> binding_;
-  device::mojom::GamepadMonitorPtr gamepad_monitor_;
+  mojo::Binding<device::mojom::blink::GamepadObserver> binding_;
+  device::mojom::blink::GamepadMonitorPtr gamepad_monitor_;
   blink::WebGamepadListener* listener_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(GamepadSharedMemoryReader);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_GAMEPAD_SHARED_MEMORY_READER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_SHARED_MEMORY_READER_H_

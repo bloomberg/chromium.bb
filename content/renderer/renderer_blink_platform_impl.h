@@ -51,17 +51,12 @@ class WebMediaStream;
 class WebSecurityOrigin;
 }  // namespace blink
 
-namespace device {
-class Gamepads;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 }
 
 namespace content {
 class BlinkInterfaceProviderImpl;
-class GamepadSharedMemoryReader;
 class ChildURLLoaderFactoryBundle;
 class LocalStorageCachedAreas;
 class PlatformEventObserverBase;
@@ -306,10 +301,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   base::IDMap<std::unique_ptr<PlatformEventObserverBase>>
       platform_event_observers_;
-
-  // TODO(crbug.com/612330): Remove when GamepadSharedMemoryReader class is
-  // moved to blink
-  std::unique_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
 
   // NOT OWNED
   blink::scheduler::WebThreadScheduler* main_thread_scheduler_;

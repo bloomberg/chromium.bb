@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gamepad_shared_memory_reader.h"
-
+#include "third_party/blink/renderer/modules/gamepad/gamepad_shared_memory_reader.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/trace_event/trace_event.h"
-#include "content/renderer/renderer_blink_platform_impl.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 
-namespace content {
+namespace blink {
 
-GamepadSharedMemoryReader::GamepadSharedMemoryReader() : binding_(this) {
-  blink::Platform::Current()->GetInterfaceProvider()->GetInterface(
+GamepadSharedMemoryReader::GamepadSharedMemoryReader(LocalFrame& frame)
+    : binding_(this) {
+  frame.GetInterfaceProvider().GetInterface(
       mojo::MakeRequest(&gamepad_monitor_));
-  device::mojom::GamepadObserverPtr observer;
+  device::mojom::blink::GamepadObserverPtr observer;
   binding_.Bind(mojo::MakeRequest(&observer));
   gamepad_monitor_->SetObserver(std::move(observer));
 }
@@ -40,9 +39,10 @@ void GamepadSharedMemoryReader::Start(blink::WebGamepadListener* listener) {
 
   // If we don't get a valid handle from the browser, don't try to Map (we're
   // probably out of memory or file handles).
-  bool valid_handle = renderer_shared_buffer_handle_.is_valid();
-  UMA_HISTOGRAM_BOOLEAN("Gamepad.ValidSharedMemoryHandle", valid_handle);
-  if (!valid_handle)
+  bool is_valid = renderer_shared_buffer_handle_.is_valid();
+  UMA_HISTOGRAM_BOOLEAN("Gamepad.ValidSharedMemoryHandle", is_valid);
+
+  if (!is_valid)
     return;
 
   renderer_shared_buffer_mapping_ = renderer_shared_buffer_handle_->Map(
@@ -135,4 +135,4 @@ void GamepadSharedMemoryReader::GamepadDisconnected(
     listener_->DidDisconnectGamepad(index, gamepad);
 }
 
-} // namespace content
+}  // namespace blink

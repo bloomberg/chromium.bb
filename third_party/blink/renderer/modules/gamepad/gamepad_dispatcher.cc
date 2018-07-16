@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad_shared_memory_reader.h"
 #include "third_party/blink/renderer/modules/gamepad/navigator_gamepad.h"
 
 namespace blink {
@@ -19,7 +20,9 @@ GamepadDispatcher& GamepadDispatcher::Instance() {
 }
 
 void GamepadDispatcher::SampleGamepads(device::Gamepads& gamepads) {
-  Platform::Current()->SampleGamepads(gamepads);
+  if (reader_) {
+    reader_->SampleGamepads(gamepads);
+  }
 }
 
 void GamepadDispatcher::PlayVibrationEffectOnce(
@@ -76,11 +79,17 @@ void GamepadDispatcher::DispatchDidConnectOrDisconnectGamepad(
 }
 
 void GamepadDispatcher::StartListening(LocalFrame* frame) {
-  Platform::Current()->StartListening(kWebPlatformEventTypeGamepad, this);
+  // TODO(crbug.com/850619): ensure a valid frame is passed
+  if (!frame)
+    return;
+  if (!reader_)
+    reader_ = std::make_unique<GamepadSharedMemoryReader>(*frame);
+  reader_->Start(this);
 }
 
 void GamepadDispatcher::StopListening() {
-  Platform::Current()->StopListening(kWebPlatformEventTypeGamepad);
+  if (reader_)
+    reader_->Stop();
 }
 
 }  // namespace blink

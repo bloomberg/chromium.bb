@@ -302,7 +302,10 @@ _CONFIG = [
             'third_party/blink/renderer/modules/gamepad/',
             'third_party/blink/renderer/modules/sensor/',
         ],
-        'allowed': ['device::.+'],
+        'allowed': [
+            'base::subtle::Atomic32',
+            'device::.+',
+        ],
     },
     {
         'paths': [

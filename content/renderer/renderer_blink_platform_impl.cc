@@ -50,7 +50,6 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/file_info_util.h"
 #include "content/renderer/fileapi/webfilesystem_impl.h"
-#include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/image_capture/image_capture_frame_grabber.h"
 #include "content/renderer/indexed_db/webidbfactory_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
@@ -778,8 +777,6 @@ WebBlobRegistry* RendererBlinkPlatformImpl::GetBlobRegistry() {
 //------------------------------------------------------------------------------
 
 void RendererBlinkPlatformImpl::SampleGamepads(device::Gamepads& gamepads) {
-  if (gamepad_shared_memory_reader_)
-    gamepad_shared_memory_reader_->SampleGamepads(gamepads);
 }
 
 //------------------------------------------------------------------------------
@@ -1071,25 +1068,11 @@ blink::InterfaceProvider* RendererBlinkPlatformImpl::GetInterfaceProvider() {
 void RendererBlinkPlatformImpl::StartListening(
     blink::WebPlatformEventType type,
     blink::WebPlatformEventListener* listener) {
-  if (type == blink::kWebPlatformEventTypeGamepad) {
-    if (!gamepad_shared_memory_reader_) {
-      gamepad_shared_memory_reader_ =
-          std::make_unique<GamepadSharedMemoryReader>();
-    }
-    gamepad_shared_memory_reader_->Start(
-        static_cast<blink::WebGamepadListener*>(listener));
-  } else {
-    DVLOG(1) << "RendererBlinkPlatformImpl::startListening() with "
-                "unknown type.";
-  }
+
 }
 
 void RendererBlinkPlatformImpl::StopListening(
     blink::WebPlatformEventType type) {
-  if (type == blink::kWebPlatformEventTypeGamepad) {
-    if (gamepad_shared_memory_reader_)
-      gamepad_shared_memory_reader_->Stop();
-  }
 }
 
 //------------------------------------------------------------------------------

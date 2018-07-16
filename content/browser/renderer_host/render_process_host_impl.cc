@@ -171,7 +171,6 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "device/gamepad/gamepad_haptics_manager.h"
-#include "device/gamepad/gamepad_monitor.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
@@ -1977,8 +1976,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 #endif
 
   registry->AddInterface(base::Bind(&device::GamepadHapticsManager::Create));
-
-  registry->AddInterface(base::Bind(&device::GamepadMonitor::Create));
 
   registry->AddInterface(
       base::Bind(&PushMessagingManager::BindRequest,
