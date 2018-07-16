@@ -51,6 +51,7 @@ void OverlaySurfaceEmbedder::SetPrimarySurfaceId(
 
 void OverlaySurfaceEmbedder::UpdateLayerBounds() {
   // Update the size of window background.
+  window_background_layer_ = window_->GetWindowBackgroundLayer();
   window_background_layer_->SetBounds(
       gfx::Rect(gfx::Point(0, 0), window_->GetBounds().size()));
 
