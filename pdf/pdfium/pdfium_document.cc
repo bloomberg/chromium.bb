@@ -4,30 +4,90 @@
 
 #include "pdf/pdfium/pdfium_document.h"
 
-#include "pdf/pdfium/pdfium_engine.h"
+#include <utility>
+
+#include "base/logging.h"
+#include "pdf/document_loader.h"
 
 namespace chrome_pdf {
 
+namespace {
+
+class FileAvail : public FX_FILEAVAIL {
+ public:
+  explicit FileAvail(DocumentLoader* doc_loader) : doc_loader_(doc_loader) {
+    DCHECK(doc_loader);
+    version = 1;
+    IsDataAvail = &FileAvail::IsDataAvailImpl;
+  }
+
+ private:
+  // PDFium interface to check is block of data is available.
+  static FPDF_BOOL IsDataAvailImpl(FX_FILEAVAIL* param,
+                                   size_t offset,
+                                   size_t size) {
+    auto* file_avail = static_cast<FileAvail*>(param);
+    return file_avail->doc_loader_->IsDataAvailable(offset, size);
+  }
+
+  DocumentLoader* doc_loader_;
+};
+
+class DownloadHints : public FX_DOWNLOADHINTS {
+ public:
+  explicit DownloadHints(DocumentLoader* doc_loader) : doc_loader_(doc_loader) {
+    DCHECK(doc_loader);
+    version = 1;
+    AddSegment = &DownloadHints::AddSegmentImpl;
+  }
+
+ private:
+  // PDFium interface to request download of the block of data.
+  static void AddSegmentImpl(FX_DOWNLOADHINTS* param,
+                             size_t offset,
+                             size_t size) {
+    auto* download_hints = static_cast<DownloadHints*>(param);
+    return download_hints->doc_loader_->RequestData(offset, size);
+  }
+
+  DocumentLoader* doc_loader_;
+};
+
+class FileAccess : public FPDF_FILEACCESS {
+ public:
+  explicit FileAccess(DocumentLoader* doc_loader) : doc_loader_(doc_loader) {
+    DCHECK(doc_loader);
+    m_FileLen = 0;
+    m_GetBlock = &FileAccess::GetBlockImpl;
+    m_Param = this;
+  }
+
+ private:
+  // PDFium interface to get block of data.
+  static int GetBlockImpl(void* param,
+                          unsigned long position,
+                          unsigned char* buffer,
+                          unsigned long size) {
+    auto* file_access = static_cast<FileAccess*>(param);
+    return file_access->doc_loader_->GetBlock(position, size, buffer);
+  }
+
+  DocumentLoader* doc_loader_;
+};
+
+}  // namespace
+
 PDFiumDocument::PDFiumDocument(DocumentLoader* doc_loader)
-    : doc_loader_(doc_loader) {
-  file_access_.m_FileLen = 0;
-  file_access_.m_GetBlock = &GetBlock;
-  file_access_.m_Param = doc_loader_;
-
-  file_availability_.version = 1;
-  file_availability_.IsDataAvail = &IsDataAvail;
-  file_availability_.doc_loader = doc_loader_;
-
-  download_hints_.version = 1;
-  download_hints_.AddSegment = &AddSegment;
-  download_hints_.doc_loader = doc_loader_;
-}
+    : doc_loader_(doc_loader),
+      file_access_(std::make_unique<FileAccess>(doc_loader)),
+      file_availability_(std::make_unique<FileAvail>(doc_loader)),
+      download_hints_(std::make_unique<DownloadHints>(doc_loader)) {}
 
 PDFiumDocument::~PDFiumDocument() = default;
 
 void PDFiumDocument::CreateFPDFAvailability() {
   fpdf_availability_.reset(
-      FPDFAvail_Create(&file_availability_, &file_access_));
+      FPDFAvail_Create(file_availability_.get(), file_access_.get()));
 }
 
 void PDFiumDocument::ResetFPDFAvailability() {
@@ -36,44 +96,21 @@ void PDFiumDocument::ResetFPDFAvailability() {
 
 void PDFiumDocument::LoadDocument(const char* password) {
   if (doc_loader_->IsDocumentComplete() &&
-      !FPDFAvail_IsLinearized(fpdf_availability())) {
-    doc_.reset(FPDF_LoadCustomDocument(&file_access_, password));
+      !FPDFAvail_IsLinearized(fpdf_availability_.get())) {
+    doc_handle_.reset(FPDF_LoadCustomDocument(file_access_.get(), password));
   } else {
-    doc_.reset(FPDFAvail_GetDocument(fpdf_availability(), password));
+    doc_handle_.reset(
+        FPDFAvail_GetDocument(fpdf_availability_.get(), password));
   }
 }
 
 void PDFiumDocument::SetFormStatus() {
-  form_status_ = FPDFAvail_IsFormAvail(fpdf_availability(), &download_hints_);
+  form_status_ =
+      FPDFAvail_IsFormAvail(fpdf_availability_.get(), download_hints_.get());
 }
 
 void PDFiumDocument::InitializeForm(FPDF_FORMFILLINFO* form_info) {
-  form_.reset(FPDFDOC_InitFormFillEnvironment(doc(), form_info));
-}
-
-// static
-int PDFiumDocument::GetBlock(void* param,
-                             unsigned long position,
-                             unsigned char* buffer,
-                             unsigned long size) {
-  auto* doc_loader = static_cast<DocumentLoader*>(param);
-  return doc_loader->GetBlock(position, size, buffer);
-}
-
-// static
-FPDF_BOOL PDFiumDocument::IsDataAvail(FX_FILEAVAIL* param,
-                                      size_t offset,
-                                      size_t size) {
-  auto* file_avail = static_cast<FileAvail*>(param);
-  return file_avail->doc_loader->IsDataAvailable(offset, size);
-}
-
-// static
-void PDFiumDocument::AddSegment(FX_DOWNLOADHINTS* param,
-                                size_t offset,
-                                size_t size) {
-  auto* download_hints = static_cast<DownloadHints*>(param);
-  return download_hints->doc_loader->RequestData(offset, size);
+  form_handle_.reset(FPDFDOC_InitFormFillEnvironment(doc(), form_info));
 }
 
 }  // namespace chrome_pdf
