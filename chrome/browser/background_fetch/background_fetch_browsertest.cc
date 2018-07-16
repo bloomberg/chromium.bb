@@ -88,7 +88,7 @@ class WaitableDownloadLoggerObserver : public download::Logger::Observer {
     const std::string& result = service_request.FindKey("result")->GetString();
 
     if (client != kBackgroundFetchClient)
-      return;  // this event is not targeted to us
+      return;  // This event is not targeted to us.
 
     if (result == kResultAccepted && download_accepted_callback_)
       std::move(download_accepted_callback_).Run(guid);
@@ -215,6 +215,15 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
     ASSERT_EQ("ok", result);
 
     run_loop.Run();
+  }
+
+  // Runs the |script| and waits for a background fetch event.
+  // Wrap in ASSERT_NO_FATAL_FAILURE().
+  void RunScriptAndCheckResultingEvent(const std::string& script,
+                                       const std::string& expected_event) {
+    std::string result;
+    ASSERT_NO_FATAL_FAILURE(RunScript(script, &result));
+    ASSERT_EQ(expected_event, result);
   }
 
   void GetVisualsForOfflineItemSync(
@@ -473,6 +482,14 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(offline_item.progress.value, 0);
   EXPECT_EQ(offline_item.progress.max.value(), kDownloadedResourceSizeInBytes);
   EXPECT_EQ(offline_item.progress.unit, OfflineItemProgressUnit::PERCENTAGE);
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchesRunToCompletion) {
+  // Starts two seperate multifile fetches and waits for them to complete.
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingEvent(
+      "RunFetchTillCompletion()", "backgroundfetched"));
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingEvent(
+      "RunFetchTillCompletionWithMissingResource()", "backgroundfetchfail"));
 }
 
 }  // namespace

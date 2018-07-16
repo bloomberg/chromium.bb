@@ -84,3 +84,35 @@ function StartSingleFileDownloadWithCorrectDownloadTotal() {
     sendResultToTest('ok');
   }).catch(sendErrorToTest);
 }
+
+// Listens for a postMessage from sw.js and sends the result to the test.
+navigator.serviceWorker.addEventListener('message', (event) => {
+  if (['backgroundfetched', 'backgroundfetchfail'].includes(event.data))
+    sendResultToTest(event.data);
+  else
+    sendErrorToTest(Error('Unexpected message received: ' + event.data));
+});
+
+// Starts a Backgound Fetch that should succeed.
+function RunFetchTillCompletion() {
+  const resources = [
+    '/background_fetch/types_of_cheese.txt?idx=1',
+    '/background_fetch/types_of_cheese.txt?idx=2',
+  ];
+  navigator.serviceWorker.ready.then(swRegistration => {
+    return swRegistration.backgroundFetch.fetch(
+        kBackgroundFetchId, resources);
+  }).catch(sendErrorToTest);
+}
+
+// Starts a Background Fetch that should fail due to a missing resource.
+function RunFetchTillCompletionWithMissingResource() {
+  const resources = [
+    '/background_fetch/types_of_cheese.txt',
+    '/background_fetch/missing_cat.txt',
+  ];
+  navigator.serviceWorker.ready.then(swRegistration => {
+    return swRegistration.backgroundFetch.fetch(
+        kBackgroundFetchId, resources);
+  }).catch(sendErrorToTest);
+}
