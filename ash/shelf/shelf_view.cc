@@ -911,7 +911,7 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
                                  ? kShelfButtonSpacingNewUi
                                  : kShelfButtonSpacing;
 
-  const int available_size = 400;
+  const int available_size = shelf_->PrimaryAxisValue(width(), height());
   const int first_panel_index = model_->FirstPanelIndex();
   const int last_button_index = first_panel_index - 1;
 
@@ -1713,7 +1713,8 @@ void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (shelf_->is_tablet_mode_animation_running()) {
     AnimateToIdealBounds();
     if (IsShowingOverflowBubble()) {
-      overflow_bubble_->bubble_view()->shelf_view()->OnBoundsChanged(previous_bounds);
+      overflow_bubble_->bubble_view()->shelf_view()->OnBoundsChanged(
+          previous_bounds);
     }
     return;
   }
