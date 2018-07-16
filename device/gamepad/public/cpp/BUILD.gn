@@ -44,7 +44,13 @@ component("shared_typemap_traits") {
 
 static_library("switches") {
   sources = [
+    "gamepad_features.cc",
+    "gamepad_features.h",
     "gamepad_switches.cc",
     "gamepad_switches.h",
+  ]
+
+  public_deps = [
+    "//base",
   ]
 }

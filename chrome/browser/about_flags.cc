@@ -105,7 +105,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "device/base/features.h"
-#include "device/gamepad/public/cpp/gamepad_switches.h"
+#include "device/gamepad/public/cpp/gamepad_features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/drive/drive_switches.h"
@@ -1157,12 +1157,24 @@ const FeatureEntry::FeatureVariation kProactiveTabFreezeAndDiscardVariations[] =
       base::size(kProactiveTabFreezeAndDiscard_FreezeAndDiscard), nullptr}};
 #endif
 
-const FeatureEntry::Choice kGamepadPollingRateChoices[] = {
-    {"60 Hz (Default)", "", ""},  // 16 ms, technically 62.5 Hz
-    {"100 Hz", switches::kGamepadPollingInterval, "10"},
-    {"125 Hz", switches::kGamepadPollingInterval, "8"},
-    {"200 Hz", switches::kGamepadPollingInterval, "5"},
-    {"250 Hz", switches::kGamepadPollingInterval, "4"},
+const FeatureEntry::FeatureParam kGamepadPollingRate100Hz[] = {
+    {features::kGamepadPollingIntervalParamKey, "10"}};
+const FeatureEntry::FeatureParam kGamepadPollingRate125Hz[] = {
+    {features::kGamepadPollingIntervalParamKey, "8"}};
+const FeatureEntry::FeatureParam kGamepadPollingRate200Hz[] = {
+    {features::kGamepadPollingIntervalParamKey, "5"}};
+const FeatureEntry::FeatureParam kGamepadPollingRate250Hz[] = {
+    {features::kGamepadPollingIntervalParamKey, "4"}};
+
+const FeatureEntry::FeatureVariation kGamepadPollingRateVariations[] = {
+    {"(100 Hz)", kGamepadPollingRate100Hz, base::size(kGamepadPollingRate100Hz),
+     nullptr},
+    {"(125 Hz)", kGamepadPollingRate125Hz, base::size(kGamepadPollingRate125Hz),
+     nullptr},
+    {"(200 Hz)", kGamepadPollingRate200Hz, base::size(kGamepadPollingRate200Hz),
+     nullptr},
+    {"(250 Hz)", kGamepadPollingRate250Hz, base::size(kGamepadPollingRate250Hz),
+     nullptr},
 };
 
 // RECORDING USER METRICS FOR FLAGS:
@@ -4031,7 +4043,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"gamepad-polling-rate", flag_descriptions::kGamepadPollingRateName,
      flag_descriptions::kGamepadPollingRateDescription, kOsDesktop,
-     MULTI_VALUE_TYPE(kGamepadPollingRateChoices)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kGamepadPollingInterval,
+                                    kGamepadPollingRateVariations,
+                                    "GamepadPollingInterval")},
 
 #if defined(OS_CHROMEOS)
     {"enable-drive-fs", flag_descriptions::kEnableDriveFsName,

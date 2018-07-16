@@ -895,9 +895,9 @@ const char kFramebustingDescription[] =
 const char kGamepadExtensionsName[] = "Gamepad Extensions";
 const char kGamepadExtensionsDescription[] =
     "Enables experimental extensions to the Gamepad APIs.";
-const char kGamepadPollingRateName[] = "Gamepad Polling Rate";
+const char kGamepadPollingRateName[] = "Override Gamepad Polling Rate";
 const char kGamepadPollingRateDescription[] =
-    "Changes the rate at which gamepad input devices are polled. Increasing "
+    "Overrides the rate at which gamepad input devices are polled. Increasing "
     "the polling rate improves the average latency of button and axis inputs "
     "but may negatively affect performance.";
 const char kGamepadVibrationName[] = "Gamepad Vibration";
