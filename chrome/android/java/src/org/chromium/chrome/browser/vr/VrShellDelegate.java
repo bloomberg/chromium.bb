@@ -467,6 +467,10 @@ public class VrShellDelegate
         if (sInstance != null) return; // Will be handled in onResume.
         if (!activitySupportsVrBrowsing(activity) && sRegisteredVrAssetsComponent) return;
 
+        // Short-circuit the asnyc task if we've already queried support level previously. Creating
+        // the async task takes ~1ms on my Android Go device.
+        if (sVrSupportLevel != null && sVrSupportLevel != VrSupportLevel.VR_DAYDREAM) return;
+
         try {
             // Reading VR support level and version can be slow, so do it asynchronously.
             new AsyncTask<Void, Void, Integer>() {
