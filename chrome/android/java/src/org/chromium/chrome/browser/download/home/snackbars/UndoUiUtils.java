@@ -19,20 +19,15 @@ final class UndoUiUtils {
 
     /** @return A {@link String} representing the title text for an undo snackbar. */
     public static String getTitleFor(Collection<OfflineItem> items) {
-        if (items.size() == 1) {
-            return items.iterator().next().title;
-        } else {
-            return String.format(Locale.getDefault(), "%d", items.size());
-        }
+        return items.size() == 1 ? items.iterator().next().title
+                                 : String.format(Locale.getDefault(), "%d", items.size());
     }
 
     /** @return A {@link String} representing the template text for an undo snackbar. */
     public static String getTemplateTextFor(Collection<OfflineItem> items) {
         Context context = ContextUtils.getApplicationContext();
-        if (items.size() == 1) {
-            return context.getString(R.string.undo_bar_delete_message);
-        } else {
-            return context.getString(R.string.undo_bar_multiple_downloads_delete_message);
-        }
+        return items.size() == 1
+                ? context.getString(R.string.undo_bar_delete_message)
+                : context.getString(R.string.undo_bar_multiple_downloads_delete_message);
     }
 }

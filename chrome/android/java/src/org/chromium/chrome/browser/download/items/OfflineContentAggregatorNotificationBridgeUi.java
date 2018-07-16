@@ -189,7 +189,7 @@ public class OfflineContentAggregatorNotificationBridgeUi
             case OfflineItemState.FAILED:
             case OfflineItemState.PAUSED:
                 return true;
-            case OfflineItemState.CANCELLED:
+            // OfflineItemState.CANCELLED
             default:
                 return false;
         }
@@ -200,11 +200,9 @@ public class OfflineContentAggregatorNotificationBridgeUi
             case OfflineItemState.IN_PROGRESS:
             case OfflineItemState.PENDING:
                 return true;
-            case OfflineItemState.COMPLETE:
-            case OfflineItemState.INTERRUPTED:
-            case OfflineItemState.FAILED:
-            case OfflineItemState.PAUSED:
-            case OfflineItemState.CANCELLED:
+            // OfflineItemState.COMPLETE, OfflineItemState.INTERRUPTED,
+            // OfflineItemState.FAILED, OfflineItemState.PAUSED,
+            // OfflineItemState.CANCELLED
             default:
                 return false;
         }
@@ -217,9 +215,8 @@ public class OfflineContentAggregatorNotificationBridgeUi
             case OfflineItemState.INTERRUPTED:
             case OfflineItemState.PAUSED:
                 return true;
-            case OfflineItemState.FAILED:
-            case OfflineItemState.COMPLETE:
-            case OfflineItemState.CANCELLED:
+            // OfflineItemState.FAILED, OfflineItemState.COMPLETE,
+            // OfflineItemState.CANCELLED
             default:
                 return false;
         }

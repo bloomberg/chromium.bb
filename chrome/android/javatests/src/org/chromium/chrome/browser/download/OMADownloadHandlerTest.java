@@ -296,14 +296,13 @@ public class OMADownloadHandlerTest {
 
         DownloadManagerDelegate downloadManagerDelegate = new DownloadManagerDelegate(context);
         DownloadQueryResultVerifier verifier =
-                new DownloadQueryResultVerifier(DownloadManagerService.DOWNLOAD_STATUS_COMPLETE);
+                new DownloadQueryResultVerifier(DownloadManagerService.DownloadStatus.COMPLETE);
         downloadManagerDelegate.queryDownloadResult(downloadItem, false, verifier);
         waitForQueryCompletion(verifier);
 
         manager.remove(downloadId1);
         downloadItem.setSystemDownloadId(downloadId1);
-        verifier =
-                new DownloadQueryResultVerifier(DownloadManagerService.DOWNLOAD_STATUS_CANCELLED);
+        verifier = new DownloadQueryResultVerifier(DownloadManagerService.DownloadStatus.CANCELLED);
         downloadManagerDelegate.queryDownloadResult(downloadItem, false, verifier);
         waitForQueryCompletion(verifier);
     }

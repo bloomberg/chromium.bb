@@ -61,17 +61,24 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
 
     // Values for the histogram Android.Download.InfoBar.Shown. Keep this in sync with the
     // DownloadInfoBar.ShownState enum in enums.xml.
-    private static final int UMA_INFOBAR_SHOWN_ANY_STATE = 0;
-    private static final int UMA_INFOBAR_SHOWN_ACCELERATED = 1;
-    private static final int UMA_INFOBAR_SHOWN_DOWNLOADING = 2;
-    private static final int UMA_INFOBAR_SHOWN_COMPLETE = 3;
-    private static final int UMA_INFOBAR_SHOWN_FAILED = 4;
-    private static final int UMA_INFOBAR_SHOWN_PENDING = 5;
-    private static final int UMA_INFOBAR_SHOWN_MULTIPLE_DOWNLOADING = 6;
-    private static final int UMA_INFOBAR_SHOWN_MULTIPLE_COMPLETE = 7;
-    private static final int UMA_INFOBAR_SHOWN_MULTIPLE_FAILED = 8;
-    private static final int UMA_INFOBAR_SHOWN_MULTIPLE_PENDING = 9;
-    private static final int UMA_INFOBAR_SHOWN_COUNT = 10;
+    @IntDef({UmaInfobarShown.ANY_STATE, UmaInfobarShown.ACCELERATED, UmaInfobarShown.DOWNLOADING,
+            UmaInfobarShown.COMPLETE, UmaInfobarShown.FAILED, UmaInfobarShown.PENDING,
+            UmaInfobarShown.MULTIPLE_DOWNLOADING, UmaInfobarShown.MULTIPLE_COMPLETE,
+            UmaInfobarShown.MULTIPLE_FAILED, UmaInfobarShown.MULTIPLE_PENDING})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface UmaInfobarShown {
+        int ANY_STATE = 0;
+        int ACCELERATED = 1;
+        int DOWNLOADING = 2;
+        int COMPLETE = 3;
+        int FAILED = 4;
+        int PENDING = 5;
+        int MULTIPLE_DOWNLOADING = 6;
+        int MULTIPLE_COMPLETE = 7;
+        int MULTIPLE_FAILED = 8;
+        int MULTIPLE_PENDING = 9;
+        int NUM_ENTRIES = 10;
+    }
 
     /**
      * Represents various UI states that the InfoBar cycles through.
@@ -348,14 +355,13 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     }
 
     private boolean isVisibleToUser(OfflineItem offlineItem) {
-        if (offlineItem.isTransient) return false;
-        if (offlineItem.isOffTheRecord != mIsIncognito) return false;
-        if (offlineItem.isSuggested) return false;
-        if (offlineItem.isDangerous) return false;
-        if (LegacyHelpers.isLegacyDownload(offlineItem.id)) {
-            if (TextUtils.isEmpty(offlineItem.filePath)) {
-                return false;
-            }
+        if (offlineItem.isTransient || offlineItem.isOffTheRecord != mIsIncognito
+                || offlineItem.isSuggested || offlineItem.isDangerous) {
+            return false;
+        }
+        if (LegacyHelpers.isLegacyDownload(offlineItem.id)
+                && TextUtils.isEmpty(offlineItem.filePath)) {
+            return false;
         }
 
         return true;
@@ -888,8 +894,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
             mTrackedItems.remove(itemId);
             removeNotification(itemId);
             if (itemId != null) {
-                DownloadUtils.openItem(
-                        itemId, mIsIncognito, DownloadMetrics.DOWNLOAD_PROGRESS_INFO_BAR);
+                DownloadUtils.openItem(itemId, mIsIncognito,
+                        DownloadMetrics.DownloadOpenSource.DOWNLOAD_PROGRESS_INFO_BAR);
             } else {
                 DownloadManagerService.getDownloadManagerService().openDownloadsPage(getContext());
             }
@@ -914,24 +920,23 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         int multipleDownloadState = -1;
         if (state == DownloadInfoBarState.DOWNLOADING) {
             shownState = mEndTimerRunnable != null
-                    ? UMA_INFOBAR_SHOWN_ACCELERATED
-                    : (info.downloadCount.inProgress == 1 ? UMA_INFOBAR_SHOWN_DOWNLOADING
-                                                          : UMA_INFOBAR_SHOWN_MULTIPLE_DOWNLOADING);
+                    ? UmaInfobarShown.ACCELERATED
+                    : (info.downloadCount.inProgress == 1 ? UmaInfobarShown.DOWNLOADING
+                                                          : UmaInfobarShown.MULTIPLE_DOWNLOADING);
         } else if (state == DownloadInfoBarState.SHOW_RESULT) {
             switch (info.resultState) {
                 case OfflineItemState.COMPLETE:
                     shownState = info.downloadCount.completed == 1
-                            ? UMA_INFOBAR_SHOWN_COMPLETE
-                            : UMA_INFOBAR_SHOWN_MULTIPLE_COMPLETE;
+                            ? UmaInfobarShown.COMPLETE
+                            : UmaInfobarShown.MULTIPLE_COMPLETE;
                     break;
                 case OfflineItemState.FAILED:
-                    shownState = info.downloadCount.failed == 1 ? UMA_INFOBAR_SHOWN_FAILED
-                                                                : UMA_INFOBAR_SHOWN_MULTIPLE_FAILED;
+                    shownState = info.downloadCount.failed == 1 ? UmaInfobarShown.FAILED
+                                                                : UmaInfobarShown.MULTIPLE_FAILED;
                     break;
                 case OfflineItemState.PENDING:
-                    shownState = info.downloadCount.pending == 1
-                            ? UMA_INFOBAR_SHOWN_PENDING
-                            : UMA_INFOBAR_SHOWN_MULTIPLE_PENDING;
+                    shownState = info.downloadCount.pending == 1 ? UmaInfobarShown.PENDING
+                                                                 : UmaInfobarShown.MULTIPLE_PENDING;
                     break;
                 default:
                     assert false : "Unexpected state " + info.resultState;
@@ -942,12 +947,12 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         assert shownState != -1 : "Invalid state " + state;
 
         RecordHistogram.recordEnumeratedHistogram(
-                "Android.Download.InfoBar.Shown", shownState, UMA_INFOBAR_SHOWN_COUNT);
+                "Android.Download.InfoBar.Shown", shownState, UmaInfobarShown.NUM_ENTRIES);
         RecordHistogram.recordEnumeratedHistogram("Android.Download.InfoBar.Shown",
-                UMA_INFOBAR_SHOWN_ANY_STATE, UMA_INFOBAR_SHOWN_COUNT);
+                UmaInfobarShown.ANY_STATE, UmaInfobarShown.NUM_ENTRIES);
         if (multipleDownloadState != -1) {
             RecordHistogram.recordEnumeratedHistogram("Android.Download.InfoBar.Shown",
-                    multipleDownloadState, UMA_INFOBAR_SHOWN_COUNT);
+                    multipleDownloadState, UmaInfobarShown.NUM_ENTRIES);
         }
     }
 

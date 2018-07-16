@@ -499,20 +499,20 @@ public class DownloadHistoryAdapterTest {
                 HEADER, null, item5, item4, item6, null, item3, item2, null, item1, item0);
         Assert.assertEquals(1666, mAdapter.getTotalDownloadSize());
 
-        onFilterChanged(DownloadFilter.FILTER_AUDIO, 2);
+        onFilterChanged(DownloadFilter.Type.AUDIO, 2);
         checkAdapterContents(HEADER, null, item5, item4);
         Assert.assertEquals(1666, mAdapter.getTotalDownloadSize()); // Total size ignores filters.
 
-        onFilterChanged(DownloadFilter.FILTER_VIDEO, 2);
+        onFilterChanged(DownloadFilter.Type.VIDEO, 2);
         checkAdapterContents(HEADER, null, item3);
 
-        onFilterChanged(DownloadFilter.FILTER_IMAGE, 2);
+        onFilterChanged(DownloadFilter.Type.IMAGE, 2);
         checkAdapterContents(HEADER, null, item1, item0);
 
-        onFilterChanged(DownloadFilter.FILTER_PAGE, 2);
+        onFilterChanged(DownloadFilter.Type.PAGE, 2);
         checkAdapterContents(HEADER, null, item6);
 
-        onFilterChanged(DownloadFilter.FILTER_ALL, 2);
+        onFilterChanged(DownloadFilter.Type.ALL, 2);
         checkAdapterContents(
                 HEADER, null, item5, item4, item6, null, item3, item2, null, item1, item0);
         Assert.assertEquals(1666, mAdapter.getTotalDownloadSize());
@@ -537,13 +537,13 @@ public class DownloadHistoryAdapterTest {
         checkAdapterContents(HEADER, null, item2, null, item0);
 
         // Filter shows nothing when the item is deleted because it's a different kind of item.
-        onFilterChanged(DownloadFilter.FILTER_AUDIO, 1);
+        onFilterChanged(DownloadFilter.Type.AUDIO, 1);
         Assert.assertEquals(0, mAdapter.getItemCount());
         onOfflineItemDeleted(item0.id, 0);
         Assert.assertEquals(0, mAdapter.getItemCount());
 
         // Filter shows just pages.
-        onFilterChanged(DownloadFilter.FILTER_PAGE, 2);
+        onFilterChanged(DownloadFilter.Type.PAGE, 2);
         checkAdapterContents(HEADER, null, item2);
         onOfflineItemDeleted(item2.id, 1);
         Assert.assertEquals(0, mAdapter.getItemCount());
@@ -668,7 +668,7 @@ public class DownloadHistoryAdapterTest {
                 HEADER, null, item5, item4, item6, null, item3, item2, null, item1, item0);
 
         // Change the filter
-        onFilterChanged(DownloadFilter.FILTER_IMAGE, 2);
+        onFilterChanged(DownloadFilter.Type.IMAGE, 2);
         checkAdapterContents(HEADER, null, item1, item0);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

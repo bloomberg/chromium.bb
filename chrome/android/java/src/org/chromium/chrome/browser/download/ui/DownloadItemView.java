@@ -40,6 +40,8 @@ import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.UiUtils;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /**
@@ -53,17 +55,18 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
     // Please treat this list as append only and keep it in sync with
     // Android.DownloadManager.List.View.Actions in enums.xml.
-    @IntDef({VIEW_ACTION_OPEN, VIEW_ACTION_RESUME, VIEW_ACTION_PAUSE, VIEW_ACTION_CANCEL,
-            VIEW_ACTION_MENU_SHARE, VIEW_ACTION_MENU_DELETE})
-    public @interface ViewAction {}
-
-    private static final int VIEW_ACTION_OPEN = 0;
-    private static final int VIEW_ACTION_RESUME = 1;
-    private static final int VIEW_ACTION_PAUSE = 2;
-    private static final int VIEW_ACTION_CANCEL = 3;
-    private static final int VIEW_ACTION_MENU_SHARE = 4;
-    private static final int VIEW_ACTION_MENU_DELETE = 5;
-    private static final int VIEW_ACTION_BOUNDARY = 6;
+    @IntDef({ViewAction.OPEN, ViewAction.RESUME, ViewAction.PAUSE, ViewAction.CANCEL,
+            ViewAction.MENU_SHARE, ViewAction.MENU_DELETE})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface ViewAction {
+        int OPEN = 0;
+        int RESUME = 1;
+        int PAUSE = 2;
+        int CANCEL = 3;
+        int MENU_SHARE = 4;
+        int MENU_DELETE = 5;
+        int NUM_ENTRIES = 6;
+    }
 
     /**
      * Set based on Chrome Variations to determine whether or not to show the "more" menu button on
@@ -138,10 +141,10 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     @Override
     public void onItemSelected(Item item) {
         if (item.getTextId() == R.string.share) {
-            recordViewActionHistogram(VIEW_ACTION_MENU_SHARE);
+            recordViewActionHistogram(ViewAction.MENU_SHARE);
             mItem.share();
         } else if (item.getTextId() == R.string.delete) {
-            recordViewActionHistogram(VIEW_ACTION_MENU_DELETE);
+            recordViewActionHistogram(ViewAction.MENU_DELETE);
             mItem.startRemove();
             RecordUserAction.record("Android.DownloadManager.RemoveItem");
         }
@@ -170,15 +173,15 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mMoreButton.setDelegate(this);
         mPauseResumeButton.setOnClickListener(view -> {
             if (mItem.isPaused()) {
-                recordViewActionHistogram(VIEW_ACTION_RESUME);
+                recordViewActionHistogram(ViewAction.RESUME);
                 mItem.resume();
             } else if (!mItem.isComplete()) {
-                recordViewActionHistogram(VIEW_ACTION_PAUSE);
+                recordViewActionHistogram(ViewAction.PAUSE);
                 mItem.pause();
             }
         });
         mCancelButton.setOnClickListener(view -> {
-            recordViewActionHistogram(VIEW_ACTION_CANCEL);
+            recordViewActionHistogram(ViewAction.CANCEL);
             mItem.cancel();
         });
     }
@@ -249,8 +252,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         // immediately if the thumbnail is cached or asynchronously if it has to be fetched from a
         // remote source.
         mThumbnailBitmap = null;
-        if (item.isOfflinePage()
-                || (fileType == DownloadFilter.FILTER_IMAGE && item.isComplete())) {
+        if (item.isOfflinePage() || (fileType == DownloadFilter.Type.IMAGE && item.isComplete())) {
             thumbnailProvider.getThumbnail(this);
         } else {
             // TODO(dfalcantara): Get thumbnails for audio and video files when possible.
@@ -337,18 +339,14 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     @Override
     public void onClick() {
         if (mItem != null && mItem.isComplete()) {
-            recordViewActionHistogram(VIEW_ACTION_OPEN);
+            recordViewActionHistogram(ViewAction.OPEN);
             mItem.open();
         }
     }
 
     @Override
     public boolean onLongClick(View view) {
-        if (mItem != null && mItem.isComplete()) {
-            return super.onLongClick(view);
-        } else {
-            return true;
-        }
+        return mItem != null && mItem.isComplete() ? super.onLongClick(view) : true;
     }
 
     @Override
@@ -407,7 +405,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
     private static void recordViewActionHistogram(@ViewAction int action) {
         RecordHistogram.recordEnumeratedHistogram(
-                "Android.DownloadManager.List.View.Action", action, VIEW_ACTION_BOUNDARY);
+                "Android.DownloadManager.List.View.Action", action, ViewAction.NUM_ENTRIES);
     }
 
     /**

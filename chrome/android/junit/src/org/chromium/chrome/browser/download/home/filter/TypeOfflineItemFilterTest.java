@@ -56,37 +56,37 @@ public class TypeOfflineItemFilterTest {
         Assert.assertEquals(CollectionUtil.newHashSet(item1, item2, item3, item4, item5, item6),
                 filter.getItems());
 
-        filter.onFilterSelected(Filters.VIDEOS);
+        filter.onFilterSelected(Filters.FilterType.VIDEOS);
         verify(mObserver, times(1))
                 .onItemsRemoved(CollectionUtil.newHashSet(item1, item3, item4, item5, item6));
         Assert.assertEquals(CollectionUtil.newHashSet(item2), filter.getItems());
 
-        filter.onFilterSelected(Filters.MUSIC);
+        filter.onFilterSelected(Filters.FilterType.MUSIC);
         verify(mObserver, times(1)).onItemsRemoved(CollectionUtil.newHashSet(item2));
         verify(mObserver, times(1)).onItemsAdded(CollectionUtil.newHashSet(item3));
         Assert.assertEquals(CollectionUtil.newHashSet(item3), filter.getItems());
 
-        filter.onFilterSelected(Filters.IMAGES);
+        filter.onFilterSelected(Filters.FilterType.IMAGES);
         verify(mObserver, times(1)).onItemsRemoved(CollectionUtil.newHashSet(item3));
         verify(mObserver, times(1)).onItemsAdded(CollectionUtil.newHashSet(item4));
         Assert.assertEquals(CollectionUtil.newHashSet(item4), filter.getItems());
 
-        filter.onFilterSelected(Filters.SITES);
+        filter.onFilterSelected(Filters.FilterType.SITES);
         verify(mObserver, times(1)).onItemsRemoved(CollectionUtil.newHashSet(item4));
         verify(mObserver, times(1)).onItemsAdded(CollectionUtil.newHashSet(item1));
         Assert.assertEquals(CollectionUtil.newHashSet(item1), filter.getItems());
 
-        filter.onFilterSelected(Filters.OTHER);
+        filter.onFilterSelected(Filters.FilterType.OTHER);
         verify(mObserver, times(1)).onItemsRemoved(CollectionUtil.newHashSet(item1));
         verify(mObserver, times(1)).onItemsAdded(CollectionUtil.newHashSet(item5, item6));
         Assert.assertEquals(CollectionUtil.newHashSet(item5, item6), filter.getItems());
 
-        filter.onFilterSelected(Filters.PREFETCHED);
+        filter.onFilterSelected(Filters.FilterType.PREFETCHED);
         verify(mObserver, times(1)).onItemsRemoved(CollectionUtil.newHashSet(item5, item6));
         verify(mObserver, times(1)).onItemsAdded(CollectionUtil.newHashSet(item7, item8));
         Assert.assertEquals(CollectionUtil.newHashSet(item7, item8), filter.getItems());
 
-        filter.onFilterSelected(Filters.NONE);
+        filter.onFilterSelected(Filters.FilterType.NONE);
         verify(mObserver, times(1))
                 .onItemsAdded(CollectionUtil.newHashSet(item1, item2, item3, item4, item5, item6));
         Assert.assertEquals(CollectionUtil.newHashSet(item1, item2, item3, item4, item5, item6),

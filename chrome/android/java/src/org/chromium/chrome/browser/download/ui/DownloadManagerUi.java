@@ -452,8 +452,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             mNativePage.onStateChange(DownloadFilter.getUrlForFilter(filter));
         }
 
-        RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Filter", filter,
-                DownloadFilter.FILTER_BOUNDARY);
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.DownloadManager.Filter", filter, DownloadFilter.Type.NUM_ENTRIES);
     }
 
     @Override

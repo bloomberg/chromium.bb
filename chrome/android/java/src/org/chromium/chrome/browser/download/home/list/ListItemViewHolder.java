@@ -51,19 +51,19 @@ abstract class ListItemViewHolder extends ViewHolder {
      */
     public static ListItemViewHolder create(ViewGroup parent, @ListUtils.ViewType int viewType) {
         switch (viewType) {
-            case ListUtils.DATE:
+            case ListUtils.ViewType.DATE:
                 return DateViewHolder.create(parent);
-            case ListUtils.IN_PROGRESS:
+            case ListUtils.ViewType.IN_PROGRESS:
                 return new InProgressViewHolder(parent);
-            case ListUtils.GENERIC:
+            case ListUtils.ViewType.GENERIC:
                 return GenericViewHolder.create(parent);
-            case ListUtils.VIDEO:
+            case ListUtils.ViewType.VIDEO:
                 return new VideoViewHolder(parent);
-            case ListUtils.IMAGE:
+            case ListUtils.ViewType.IMAGE:
                 return new ImageViewHolder(parent);
-            case ListUtils.CUSTOM_VIEW:
+            case ListUtils.ViewType.CUSTOM_VIEW:
                 return new CustomViewHolder(parent);
-            case ListUtils.PREFETCH:
+            case ListUtils.ViewType.PREFETCH:
                 return PrefetchViewHolder.create(parent);
         }
 
