@@ -75,6 +75,7 @@ class SafeSearchURLCheckerTest : public testing::Test {
                 &test_url_loader_factory_)),
         checker_(test_shared_loader_factory_,
                  TRAFFIC_ANNOTATION_FOR_TESTS,
+                 "us",
                  kCacheSize) {}
 
   MOCK_METHOD3(OnCheckDone,
