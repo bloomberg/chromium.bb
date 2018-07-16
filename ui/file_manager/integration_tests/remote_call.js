@@ -5,6 +5,19 @@
 'use strict';
 
 /**
+ * When step by step tests are enabled, turns on automatic step() calls. Note
+ * that if step() is defined at the time of this call, invoke it to start the
+ * test auto-stepping ball rolling.
+ */
+function autoStep() {
+  window.autostep = window.autostep || false;
+  if (!autostep)
+    autostep = true;
+  if (autostep && typeof window.step == 'function')
+    window.step();
+}
+
+/**
  * Class to manipulate the window in the remote extension.
  *
  * @param {string} extensionId ID of extension to be manipulated.
@@ -45,11 +58,16 @@ RemoteCall.prototype.callRemoteTestUtil =
     return new Promise(function(onFulfilled) {
       console.info('Executing: ' + func + ' on ' + appId + ' with args: ');
       console.info(args);
-      console.info('Type step() to continue...');
-      window.step = function() {
-        window.step = null;
+      if (window.autostep !== true) {
+        console.info('Type step() to continue...');
+        window.step = function() {
+          window.step = null;
+          onFulfilled(stepByStep);
+        };
+      } else {
+        console.info('Auto calling step() ...');
         onFulfilled(stepByStep);
-      };
+      }
     });
   }).then(function(stepByStep) {
     return new Promise(function(onFulfilled) {
