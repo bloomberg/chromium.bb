@@ -2019,10 +2019,7 @@ void AutofillManager::GetAvailableSuggestions(
     }
   }
 
-  context->is_context_secure =
-      !IsFormNonSecure(form) ||
-      !base::FeatureList::IsEnabled(
-          features::kAutofillRequireSecureCreditCardContext);
+  context->is_context_secure = !IsFormNonSecure(form);
 
   // TODO(rogerm): Early exit here on !driver()->RendererIsAvailable()?
   // We skip populating autofill data, but might generate warnings and or

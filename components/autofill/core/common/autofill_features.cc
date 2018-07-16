@@ -72,10 +72,6 @@ const base::Feature kAutofillEnforceMinRequiredFieldsForUpload{
 const base::Feature kAutofillManualFallback{"AutofillManualFallback",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether credit card suggestions are made on insecure pages.
-const base::Feature kAutofillRequireSecureCreditCardContext{
-    "AutofillRequireSecureCreditCardContext", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether Full Server credit cards should be reset when the sync
 // service is in an auth error state.
 const base::Feature kAutofillResetFullServerCardsOnAuthError{

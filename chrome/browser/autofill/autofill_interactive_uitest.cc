@@ -29,6 +29,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
@@ -62,10 +64,12 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -228,6 +232,7 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
  protected:
   explicit AutofillInteractiveTestBase(bool popup_views_enabled)
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        cert_verifier_(&mock_cert_verifier_),
         popup_views_enabled_(popup_views_enabled) {
     scoped_feature_list_.InitWithFeatureState(kAutofillExpandedPopupViews,
                                               popup_views_enabled_);
@@ -257,10 +262,25 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     // Ensure that |embedded_test_server()| serves both domains used below.
     host_resolver()->AddRule("*", "127.0.0.1");
     embedded_test_server()->StartAcceptingConnections();
+
+    // By default, all SSL cert checks are valid. Can be overriden in tests if
+    // needed.
+    cert_verifier_.set_default_result(net::OK);
   }
 
-  void TearDownOnMainThread() override {
-    AutofillUiTest::TearDownOnMainThread();
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    AutofillUiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kUseMockCertVerifierForTesting);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    AutofillUiTest::SetUpInProcessBrowserTestFixture();
+    ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    ProfileIOData::SetCertVerifierForTesting(nullptr);
+    AutofillUiTest::TearDownInProcessBrowserTestFixture();
   }
 
   content::WebContents* GetWebContents() {
@@ -588,6 +608,13 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
 
  private:
   net::EmbeddedTestServer https_server_;
+
+  net::MockCertVerifier mock_cert_verifier_;
+
+  // Similar to net::MockCertVerifier, but also updates the CertVerifier
+  // used by the NetworkService. This is needed for when tests run with
+  // the NetworkService enabled.
+  CertVerifierBrowserTest::CertVerifier cert_verifier_;
 
   net::TestURLFetcherFactory url_fetcher_factory_;
 
@@ -2049,13 +2076,8 @@ class AutofillCreditCardInteractiveTest
       : AutofillInteractiveTestBase(GetParam()) {}
   ~AutofillCreditCardInteractiveTest() override = default;
 
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {}, {features::kAutofillRequireSecureCreditCardContext});
-    AutofillInteractiveTestBase::SetUp();
-  }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    AutofillInteractiveTestBase::SetUpCommandLine(command_line);
     // HTTPS server only serves a valid cert for localhost, so this is needed to
     // load pages from "a.com" without an interstitial.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
@@ -2068,7 +2090,6 @@ class AutofillCreditCardInteractiveTest
   void TearDownOnMainThread() override {}
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(AutofillCreditCardInteractiveTest);
 };
 
@@ -2458,13 +2479,13 @@ class AutofillDynamicFormInteractiveTest
     // requirement for a secure context to fill credit cards.
     scoped_feature_list_.InitWithFeatures(
         {features::kAutofillDynamicForms},
-        {features::kAutofillRequireSecureCreditCardContext,
-         features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
+        {features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
 
     AutofillInteractiveTestBase::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    AutofillInteractiveTestBase::SetUpCommandLine(command_line);
     // HTTPS server only serves a valid cert for localhost, so this is needed to
     // load pages from "a.com" without an interstitial.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);

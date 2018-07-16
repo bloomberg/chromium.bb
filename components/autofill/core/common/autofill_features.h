@@ -21,7 +21,6 @@ extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;
 extern const base::Feature kAutofillManualFallback;
 extern const base::Feature kAutofillPrefilledFields;
-extern const base::Feature kAutofillRequireSecureCreditCardContext;
 extern const base::Feature kAutofillResetFullServerCardsOnAuthError;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
 extern const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs;
