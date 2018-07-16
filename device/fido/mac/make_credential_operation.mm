@@ -70,11 +70,8 @@ void MakeCredentialOperation::Run() {
   PromptTouchId("register with " + RpId());
 }
 
-void MakeCredentialOperation::PromptTouchIdDone(bool success, NSError* err) {
+void MakeCredentialOperation::PromptTouchIdDone(bool success) {
   if (!success) {
-    // err is autoreleased.
-    CHECK(err != nil);
-    DVLOG(1) << "Touch ID prompt failed: " << base::mac::NSToCFCast(err);
     std::move(callback())
         .Run(CtapDeviceResponseCode::kCtap2ErrOperationDenied, base::nullopt);
     return;

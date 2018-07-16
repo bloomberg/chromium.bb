@@ -23,9 +23,8 @@ namespace mac {
 class API_AVAILABLE(macosx(10.12.2)) TouchIdContext {
  public:
   // The callback is invoked when the Touch ID prompt completes. It receives a
-  // boolean indicating success and an autoreleased NSError if the prompt was
-  // denied or failed.
-  using Callback = base::OnceCallback<void(bool, NSError*)>;
+  // boolean indicating whether obtaining the fingerprint was successful.
+  using Callback = base::OnceCallback<void(bool)>;
 
   TouchIdContext();
   ~TouchIdContext();
@@ -44,6 +43,8 @@ class API_AVAILABLE(macosx(10.12.2)) TouchIdContext {
   SecAccessControlRef access_control() const { return access_control_; }
 
  private:
+  void RunCallback(bool success);
+
   base::scoped_nsobject<LAContext> context_;
   base::ScopedCFTypeRef<SecAccessControlRef> access_control_;
   Callback callback_;
