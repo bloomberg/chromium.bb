@@ -341,6 +341,9 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fSignRequestWithEmptyAllowedList) {
   auto device = std::make_unique<MockFidoDevice>();
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
+  device->ExpectRequestAndRespondWith(
+      test_data::kU2fFakeRegisterCommand,
+      test_data::kApduEncodedNoErrorSignResponse);
 
   auto task = std::make_unique<GetAssertionTask>(
       device.get(), std::move(request),
@@ -348,7 +351,7 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fSignRequestWithEmptyAllowedList) {
 
   get_assertion_callback_receiver().WaitForCallback();
   EXPECT_EQ(device->supported_protocol(), ProtocolVersion::kU2f);
-  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
+  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrCredentialNotValid,
             get_assertion_callback_receiver().status());
   EXPECT_FALSE(get_assertion_callback_receiver().value());
 }
