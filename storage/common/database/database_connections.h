@@ -38,7 +38,7 @@ class STORAGE_COMMON_EXPORT DatabaseConnections {
   std::vector<std::pair<std::string, base::string16>> RemoveConnections(
       const DatabaseConnections& connections);
 
-  // Database sizes can be kept only if IsDatabaseOpened returns true.
+  // Can be called only if IsDatabaseOpened would have returned true.
   int64_t GetOpenDatabaseSize(const std::string& origin_identifier,
                               const base::string16& database_name) const;
   void SetOpenDatabaseSize(const std::string& origin_identifier,
@@ -49,10 +49,12 @@ class STORAGE_COMMON_EXPORT DatabaseConnections {
   std::vector<std::pair<std::string, base::string16>> ListConnections() const;
 
  private:
-  // Mapping from name to <openCount, size>
-  typedef std::map<base::string16, std::pair<int, int64_t>> DBConnections;
-  typedef std::map<std::string, DBConnections> OriginConnections;
-  mutable OriginConnections connections_;  // mutable for GetOpenDatabaseSize
+  // Maps database names to (open count, database size).
+  using DBConnections = std::map<base::string16, std::pair<int, int64_t>>;
+  // Maps origin identifiers to DBConnections.
+  using OriginConnections = std::map<std::string, DBConnections>;
+
+  OriginConnections connections_;
 
   // Returns true if the last connection was removed.
   bool RemoveConnectionsHelper(const std::string& origin_identifier,

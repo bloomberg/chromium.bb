@@ -71,8 +71,12 @@ DatabaseConnections::RemoveConnections(const DatabaseConnections& connections) {
 int64_t DatabaseConnections::GetOpenDatabaseSize(
     const std::string& origin_identifier,
     const base::string16& database_name) const {
-  DCHECK(IsDatabaseOpened(origin_identifier, database_name));
-  return connections_[origin_identifier][database_name].second;
+  OriginConnections::const_iterator origin_it =
+      connections_.find(origin_identifier);
+  DCHECK(origin_it != connections_.end()) << "Database not opened";
+  DBConnections::const_iterator it = origin_it->second.find(database_name);
+  DCHECK(it != origin_it->second.end()) << "Database not opened";
+  return it->second.second;
 }
 
 void DatabaseConnections::SetOpenDatabaseSize(
