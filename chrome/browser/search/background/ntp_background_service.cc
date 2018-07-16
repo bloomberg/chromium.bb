@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
@@ -273,8 +274,8 @@ void NtpBackgroundService::FetchAlbumInfo() {
     return;
 
   OAuth2TokenService::ScopeSet scopes{kScopePhotos};
-  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
-      "ntp_backgrounds_service", scopes,
+  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+      "ntp_backgrounds_service", identity_manager_, scopes,
       base::BindOnce(&NtpBackgroundService::GetAccessTokenForAlbumCallback,
                      base::Unretained(this)),
       identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
@@ -379,8 +380,8 @@ void NtpBackgroundService::FetchAlbumPhotos(
   requested_album_id_ = album_id;
   requested_photo_container_id_ = photo_container_id;
   OAuth2TokenService::ScopeSet scopes{kScopePhotos};
-  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
-      "ntp_backgrounds_service", scopes,
+  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+      "ntp_backgrounds_service", identity_manager_, scopes,
       base::BindOnce(&NtpBackgroundService::GetAccessTokenForPhotosCallback,
                      base::Unretained(this)),
       identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);

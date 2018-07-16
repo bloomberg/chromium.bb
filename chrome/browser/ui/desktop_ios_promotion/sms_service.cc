@@ -76,8 +76,8 @@ class RequestImpl : public SMSService::Request {
     OAuth2TokenService::ScopeSet oauth_scopes;
     oauth_scopes.insert(kDesktopIOSPromotionOAuthScope);
     token_fetcher_ =
-        identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
-            "desktop_ios_promotion", oauth_scopes,
+        std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+            "desktop_ios_promotion", identity_manager_, oauth_scopes,
             base::BindOnce(&RequestImpl::AccessTokenFetchComplete,
                            base::Unretained(this)),
             identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);

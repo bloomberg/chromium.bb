@@ -283,8 +283,8 @@ void CryptAuthClientImpl::MakeApiCall(
   scopes.insert("https://www.googleapis.com/auth/cryptauth");
 
   access_token_fetcher_ =
-      identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
-          "cryptauth_client", scopes,
+      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+          "cryptauth_client", identity_manager_, scopes,
           base::BindOnce(
               &CryptAuthClientImpl::OnAccessTokenFetched<ResponseProto>,
               weak_ptr_factory_.GetWeakPtr(), serialized_request,

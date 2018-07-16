@@ -287,13 +287,12 @@ void SyncAuthManager::RequestAccessToken() {
   token_status_.token_request_time = base::Time::Now();
   token_status_.token_receive_time = base::Time();
   token_status_.next_token_request_time = base::Time();
-  ongoing_access_token_fetch_ =
-      identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
-          kSyncOAuthConsumerName, oauth2_scopes,
-          base::BindOnce(&SyncAuthManager::AccessTokenFetched,
-                         base::Unretained(this)),
-          identity::PrimaryAccountAccessTokenFetcher::Mode::
-              kWaitUntilAvailable);
+  ongoing_access_token_fetch_ = std::make_unique<
+      identity::PrimaryAccountAccessTokenFetcher>(
+      kSyncOAuthConsumerName, identity_manager_, oauth2_scopes,
+      base::BindOnce(&SyncAuthManager::AccessTokenFetched,
+                     base::Unretained(this)),
+      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void SyncAuthManager::AccessTokenFetched(GoogleServiceAuthError error,

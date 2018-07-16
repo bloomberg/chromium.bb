@@ -101,13 +101,12 @@ void SubscriptionManagerImpl::StartAccessTokenRequest(
   }
 
   OAuth2TokenService::ScopeSet scopes = {kContentSuggestionsApiScope};
-  access_token_fetcher_ =
-      identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
-          "ntp_snippets", scopes,
-          base::BindOnce(&SubscriptionManagerImpl::AccessTokenFetchFinished,
-                         base::Unretained(this), subscription_token),
-          identity::PrimaryAccountAccessTokenFetcher::Mode::
-              kWaitUntilAvailable);
+  access_token_fetcher_ = std::make_unique<
+      identity::PrimaryAccountAccessTokenFetcher>(
+      "ntp_snippets", identity_manager_, scopes,
+      base::BindOnce(&SubscriptionManagerImpl::AccessTokenFetchFinished,
+                     base::Unretained(this), subscription_token),
+      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void SubscriptionManagerImpl::AccessTokenFetchFinished(
