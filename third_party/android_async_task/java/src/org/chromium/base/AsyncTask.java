@@ -25,14 +25,18 @@ import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
+import java.lang.reflect.Field;
 import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -205,20 +209,12 @@ public abstract class AsyncTask<Params, Progress, Result> {
     };
 
     private static final BlockingQueue<Runnable> sPoolWorkQueue =
-            new LinkedBlockingQueue<Runnable>(128);
+            new ArrayBlockingQueue<Runnable>(128);
 
     /**
      * An {@link Executor} that can be used to execute tasks in parallel.
      */
-    public static final Executor THREAD_POOL_EXECUTOR;
-
-    static {
-        ThreadPoolExecutor threadPoolExecutor =
-                new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE_SECONDS,
-                        TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory);
-        threadPoolExecutor.allowCoreThreadTimeOut(true);
-        THREAD_POOL_EXECUTOR = threadPoolExecutor;
-    }
+    public static final Executor THREAD_POOL_EXECUTOR = new ChromeThreadPoolExecutor();
 
     /**
      * An {@link Executor} that executes tasks one at a time in serial
@@ -243,6 +239,87 @@ public abstract class AsyncTask<Params, Progress, Result> {
     private final AtomicBoolean mTaskInvoked = new AtomicBoolean();
 
     private final Handler mHandler;
+
+    public static class ChromeThreadPoolExecutor extends ThreadPoolExecutor {
+        // May have to be lowered if we are not capturing any Runnable sources.
+        private static final int RUNNABLE_WARNING_COUNT = 32;
+
+        ChromeThreadPoolExecutor() {
+            this(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE_SECONDS, TimeUnit.SECONDS,
+                    sPoolWorkQueue, sThreadFactory);
+        }
+
+        @VisibleForTesting
+        ChromeThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
+                TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory) {
+            super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
+            allowCoreThreadTimeOut(true);
+        }
+
+        private static String getClassName(Runnable runnable) {
+            Class blamedClass = runnable.getClass();
+            try {
+                if (blamedClass == AsyncTask.NamedFutureTask.class) {
+                    blamedClass = ((AsyncTask.NamedFutureTask) runnable).getBlamedClass();
+                } else if (blamedClass.getEnclosingClass() == android.os.AsyncTask.class) {
+                    // This gets the AsyncTask that produced the runnable.
+                    Field field = blamedClass.getDeclaredField("this$0");
+                    field.setAccessible(true);
+                    blamedClass = field.get(runnable).getClass();
+                }
+            } catch (NoSuchFieldException e) {
+                if (BuildConfig.DCHECK_IS_ON) {
+                    throw new RuntimeException(e);
+                }
+            } catch (IllegalAccessException e) {
+                if (BuildConfig.DCHECK_IS_ON) {
+                    throw new RuntimeException(e);
+                }
+            }
+            return blamedClass.getName();
+        }
+
+        private Map<String, Integer> getNumberOfClassNameOccurrencesInQueue() {
+            Map<String, Integer> counts = new HashMap<>();
+            Runnable[] copiedQueue = getQueue().toArray(new Runnable[0]);
+            for (Runnable runnable : copiedQueue) {
+                String className = getClassName(runnable);
+                int count = counts.containsKey(className) ? counts.get(className) : 0;
+                counts.put(className, count + 1);
+            }
+            return counts;
+        }
+
+        private String findClassNamesWithTooManyRunnables(Map<String, Integer> counts) {
+            // We only show the classes over RUNNABLE_WARNING_COUNT appearances so that these
+            // crashes group up together in the reporting dashboards. If we were to print all
+            // the Runnables or their counts, this would fragment the reporting, with one for
+            // each unique set of Runnables/counts.
+            StringBuilder classesWithTooManyRunnables = new StringBuilder();
+            for (Map.Entry<String, Integer> entry : counts.entrySet()) {
+                if (entry.getValue() > RUNNABLE_WARNING_COUNT) {
+                    classesWithTooManyRunnables.append(entry.getKey()).append(' ');
+                }
+            }
+            if (classesWithTooManyRunnables.length() == 0) {
+                return "NO CLASSES FOUND";
+            }
+            return classesWithTooManyRunnables.toString();
+        }
+
+        @Override
+        public void execute(Runnable command) {
+            try {
+                super.execute(command);
+            } catch (RejectedExecutionException e) {
+                Map<String, Integer> counts = getNumberOfClassNameOccurrencesInQueue();
+
+                throw new RejectedExecutionException("Prominent classes in AsyncTask: "
+                                + findClassNamesWithTooManyRunnables(counts),
+                        e);
+            }
+        }
+    }
 
     private static class SerialExecutor implements Executor {
         final ArrayDeque<Runnable> mTasks = new ArrayDeque<Runnable>();
@@ -368,21 +445,7 @@ public abstract class AsyncTask<Params, Progress, Result> {
             }
         };
 
-        mFuture = new FutureTask<Result>(mWorker) {
-            @Override
-            protected void done() {
-                try {
-                    postResultIfNotInvoked(get());
-                } catch (InterruptedException e) {
-                    android.util.Log.w(TAG, e);
-                } catch (ExecutionException e) {
-                    throw new RuntimeException(
-                            "An error occurred while executing doInBackground()", e.getCause());
-                } catch (CancellationException e) {
-                    postResultIfNotInvoked(null);
-                }
-            }
-        };
+        mFuture = new NamedFutureTask(mWorker);
     }
 
     private void postResultIfNotInvoked(Result result) {
@@ -748,6 +811,30 @@ public abstract class AsyncTask<Params, Progress, Result> {
 
     private static abstract class WorkerRunnable<Params, Result> implements Callable<Result> {
         Params[] mParams;
+    }
+
+    private class NamedFutureTask extends FutureTask<Result> {
+        NamedFutureTask(Callable<Result> c) {
+            super(c);
+        }
+
+        Class getBlamedClass() {
+            return AsyncTask.this.getClass();
+        }
+
+        @Override
+        protected void done() {
+            try {
+                postResultIfNotInvoked(get());
+            } catch (InterruptedException e) {
+                android.util.Log.w(TAG, e);
+            } catch (ExecutionException e) {
+                throw new RuntimeException(
+                        "An error occurred while executing doInBackground()", e.getCause());
+            } catch (CancellationException e) {
+                postResultIfNotInvoked(null);
+            }
+        }
     }
 
     @SuppressWarnings({"unchecked", "RawUseOfParameterizedType"})
