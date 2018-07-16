@@ -282,7 +282,15 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
   SetAlwaysShowActionPref(false);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, OpenDialogsInMultipleTabs) {
+#if defined(MEMORY_SANITIZER)
+// Flaky crashes. crbug.com/863945
+#define MAYBE_OpenDialogsInMultipleTabs DISABLED_OpenDialogsInMultipleTabs
+#else
+#define MAYBE_OpenDialogsInMultipleTabs OpenDialogsInMultipleTabs
+#endif
+  
+IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
+                       MAYBE_OpenDialogsInMultipleTabs) {
   // Start with two tabs.
   chrome::NewTab(browser());
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
