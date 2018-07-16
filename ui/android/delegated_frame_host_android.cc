@@ -26,16 +26,6 @@ namespace ui {
 
 namespace {
 
-// Wait up to 5 seconds for the first frame to be produced. Having Android
-// display a placeholder for a longer period of time is preferable to drawing
-// nothing, and the first frame can take a while on low-end systems.
-static const int64_t kFirstFrameTimeoutSeconds = 5;
-
-// Wait up to 1 second for a frame of the correct size to be produced. Android
-// OS will only wait 4 seconds, so we limit this to 1 second to make sure we
-// have always produced a frame before the OS stops waiting.
-static const int64_t kResizeTimeoutSeconds = 1;
-
 scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
     const viz::SurfaceId& primary_surface_id,
     const viz::SurfaceId& fallback_surface_id,
@@ -225,8 +215,8 @@ void DelegatedFrameHostAndroid::AttachToCompositor(
   // a renderer frame is available instead.
   if (!enable_surface_synchronization_ &&
       compositor->IsDrawingFirstVisibleFrame() && !HasDelegatedContent()) {
-    compositor_attach_until_frame_lock_ = compositor->GetCompositorLock(
-        this, base::TimeDelta::FromSeconds(kFirstFrameTimeoutSeconds));
+    compositor_attach_until_frame_lock_ =
+        compositor->GetCompositorLock(this, FirstFrameTimeout());
   }
   compositor->AddChildFrameSink(frame_sink_id_);
   if (!enable_viz_)
@@ -267,12 +257,9 @@ void DelegatedFrameHostAndroid::WasShown(
   if (!enable_surface_synchronization_)
     return;
 
-  // Use the default deadline to synchronize web content with browser UI.
-  // TODO(fsamuel): We probably want to use the deadlines
-  // kFirstFrameTimeoutSeconds and kResizeTimeoutSeconds for equivalent
-  // cases with surface synchronization too.
-  EmbedSurface(new_pending_local_surface_id, new_pending_size_in_pixels,
-               cc::DeadlinePolicy::UseDefaultDeadline());
+  EmbedSurface(
+      new_pending_local_surface_id, new_pending_size_in_pixels,
+      cc::DeadlinePolicy::UseSpecifiedDeadline(FirstFrameTimeoutFrames()));
 }
 
 void DelegatedFrameHostAndroid::EmbedSurface(
@@ -284,6 +271,8 @@ void DelegatedFrameHostAndroid::EmbedSurface(
 
   pending_local_surface_id_ = new_pending_local_surface_id;
   pending_surface_size_in_pixels_ = new_pending_size_in_pixels;
+  viz::SurfaceId current_primary_surface_id =
+      content_layer_->primary_surface_id();
 
   if (!frame_evictor_->visible()) {
     // If the tab is resized while hidden, reset the fallback so that the next
@@ -299,10 +288,28 @@ void DelegatedFrameHostAndroid::EmbedSurface(
     // is visible, EmbedSurface will be called again. See WasShown.
     return;
   }
-
-  viz::SurfaceId primary_surface_id(frame_sink_id_, pending_local_surface_id_);
-  content_layer_->SetPrimarySurfaceId(primary_surface_id, deadline_policy);
-  content_layer_->SetBounds(new_pending_size_in_pixels);
+  if (!current_primary_surface_id.is_valid() ||
+      current_primary_surface_id.local_surface_id() !=
+          pending_local_surface_id_) {
+    if (base::android::BuildInfo::GetInstance()->sdk_int() <
+        base::android::SDK_VERSION_OREO) {
+      // On version of Android earlier than Oreo, we would like to produce new
+      // content as soon as possible or the OS will create an additional black
+      // gutter. We only reset the deadline on the first frame (no bounds yet
+      // specified) or on resize, and only if the deadline policy is not
+      // infinite.
+      if (deadline_policy.policy_type() !=
+              cc::DeadlinePolicy::kUseInfiniteDeadline &&
+          (content_layer_->bounds().IsEmpty() ||
+           content_layer_->bounds() != pending_surface_size_in_pixels_)) {
+        deadline_policy = cc::DeadlinePolicy::UseSpecifiedDeadline(0u);
+      }
+    }
+    viz::SurfaceId primary_surface_id(frame_sink_id_,
+                                      pending_local_surface_id_);
+    content_layer_->SetPrimarySurfaceId(primary_surface_id, deadline_policy);
+    content_layer_->SetBounds(new_pending_size_in_pixels);
+  }
 }
 
 void DelegatedFrameHostAndroid::PixelSizeWillChange(
@@ -322,8 +329,8 @@ void DelegatedFrameHostAndroid::PixelSizeWillChange(
   if (registered_parent_compositor_) {
     if (HasSavedFrame() && content_layer_->bounds() != expected_pixel_size_) {
       compositor_pending_resize_lock_ =
-          registered_parent_compositor_->GetCompositorLock(
-              this, base::TimeDelta::FromSeconds(kResizeTimeoutSeconds));
+          registered_parent_compositor_->GetCompositorLock(this,
+                                                           ResizeTimeout());
     }
   }
 }

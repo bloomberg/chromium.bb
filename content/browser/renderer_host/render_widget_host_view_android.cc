@@ -1372,8 +1372,15 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
 
   if (delegated_frame_host_ &&
       delegated_frame_host_->IsPrimarySurfaceEvicted()) {
-    SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                base::nullopt);
+    ui::WindowAndroidCompositor* compositor =
+        view_.GetWindowAndroid() ? view_.GetWindowAndroid()->GetCompositor()
+                                 : nullptr;
+    SynchronizeVisualProperties(
+        compositor && compositor->IsDrawingFirstVisibleFrame()
+            ? cc::DeadlinePolicy::UseSpecifiedDeadline(
+                  ui::DelegatedFrameHostAndroid::FirstFrameTimeoutFrames())
+            : cc::DeadlinePolicy::UseDefaultDeadline(),
+        base::nullopt);
   }
 
   host()->WasShown(false /* record_presentation_time */);
@@ -1976,8 +1983,10 @@ void RenderWidgetHostViewAndroid::UpdateNativeViewTree(
     StartObservingRootWindow();
 
   if (resize) {
-    SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                base::nullopt);
+    SynchronizeVisualProperties(
+        cc::DeadlinePolicy::UseSpecifiedDeadline(
+            ui::DelegatedFrameHostAndroid::ResizeTimeoutFrames()),
+        base::nullopt);
   }
 
   if (!touch_selection_controller_) {
@@ -2069,8 +2078,10 @@ void RenderWidgetHostViewAndroid::OnSizeChanged() {
 
 void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged() {
   EvictFrameIfNecessary();
-  SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                              base::nullopt);
+  SynchronizeVisualProperties(
+      cc::DeadlinePolicy::UseSpecifiedDeadline(
+          ui::DelegatedFrameHostAndroid::ResizeTimeoutFrames()),
+      base::nullopt);
 }
 
 void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {
