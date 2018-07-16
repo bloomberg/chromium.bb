@@ -70,22 +70,19 @@ ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
                             : 0u;
 
   // Compute and cache the size of the data.
-  // We write the following:
-  // - Image color type (uint32_t)
-  // - Image width (uint32_t)
-  // - Image height (uint32_t)
-  // - Pixels size (uint32_t)
-  // - Pixels (variable)
   base::CheckedNumeric<size_t> safe_size;
+  safe_size += PaintOpWriter::HeaderBytes();
   safe_size += sizeof(uint32_t);  // color type
   safe_size += sizeof(uint32_t);  // width
   safe_size += sizeof(uint32_t);  // height
   safe_size += sizeof(uint32_t);  // has mips
   safe_size += sizeof(size_t);    // pixels size
-  safe_size += pixmap_->computeByteSize();
-  safe_size += PaintOpWriter::HeaderBytes();
   safe_size += target_color_space_size + sizeof(size_t);
   safe_size += pixmap_color_space_size + sizeof(size_t);
+  // Include 4 bytes of padding so we can always align our data pointer to a
+  // 4-byte boundary.
+  safe_size += 4;
+  safe_size += pixmap_->computeByteSize();
   size_ = safe_size.ValueOrDie();
 }
 
@@ -119,8 +116,11 @@ bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
   // TODO(enne): we should consider caching these in some form.
   writer.Write(pixmap_->colorSpace());
   writer.Write(target_color_space_);
+  writer.AlignMemory(4);
   writer.WriteData(pixmap_size, pixmap_->addr());
-  if (writer.size() != data.size())
+
+  // Size can't be 0 after serialization unless the writer has become invalid.
+  if (writer.size() == 0u)
     return false;
 
   return true;
@@ -171,6 +171,9 @@ bool ServiceImageTransferCacheEntry::Deserialize(
       width, height, color_type, kPremul_SkAlphaType, pixmap_color_space);
   if (image_info.computeMinByteSize() > pixel_size)
     return false;
+
+  // Align data to a 4-byte boundry, to match what we did when writing.
+  reader.AlignMemory(4);
   const volatile void* pixel_data = reader.ExtractReadableMemory(pixel_size);
   if (!reader.valid())
     return false;
