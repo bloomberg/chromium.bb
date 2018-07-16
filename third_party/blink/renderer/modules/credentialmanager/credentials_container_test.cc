@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,8 +28,6 @@ namespace blink {
 namespace {
 
 class MockCredentialManager : public mojom::blink::CredentialManager {
-  WTF_MAKE_NONCOPYABLE(MockCredentialManager);
-
  public:
   MockCredentialManager() : binding_(this) {}
   ~MockCredentialManager() override {}
@@ -79,6 +78,8 @@ class MockCredentialManager : public mojom::blink::CredentialManager {
   mojo::Binding<::blink::mojom::blink::CredentialManager> binding_;
 
   GetCallback get_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockCredentialManager);
 };
 
 class CredentialManagerTestingContext {
