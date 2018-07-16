@@ -225,6 +225,9 @@ if(ENABLE_TESTS)
 
   if(MSVC) # Force static run time to avoid collisions with googletest.
     include("${AOM_ROOT}/build/cmake/msvc_runtime.cmake")
+    if(BUILD_SHARED_LIBS)
+      set(AOM_DISABLE_GTEST_CMAKE 1)
+    endif()
   endif()
 
   if(BUILD_SHARED_LIBS AND APPLE) # Silence an RPATH warning.
