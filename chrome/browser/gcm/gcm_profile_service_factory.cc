@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/gcm_driver/gcm_profile_service.h"
@@ -57,6 +58,7 @@ GCMProfileServiceFactory::GCMProfileServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "GCMProfileService",
         BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -87,6 +89,7 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
           ->GetURLLoaderFactoryForBrowserProcess(),
       chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
+      IdentityManagerFactory::GetForProfile(profile),
       SigninManagerFactory::GetForProfile(profile),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       std::unique_ptr<GCMClientFactory>(new GCMClientFactory),

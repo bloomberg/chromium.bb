@@ -26,6 +26,10 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace identity {
+class IdentityManager;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -54,6 +58,7 @@ class GCMProfileService : public KeyedService {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       version_info::Channel channel,
       const std::string& product_category_for_subtypes,
+      identity::IdentityManager* identity_manager,
       SigninManagerBase* signin_manager,
       ProfileOAuth2TokenService* token_service,
       std::unique_ptr<GCMClientFactory> gcm_client_factory,
@@ -82,6 +87,7 @@ class GCMProfileService : public KeyedService {
   std::unique_ptr<GCMDriver> driver_;
 
 #if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
+  identity::IdentityManager* identity_manager_;
   SigninManagerBase* signin_manager_;
   ProfileOAuth2TokenService* token_service_;
 
