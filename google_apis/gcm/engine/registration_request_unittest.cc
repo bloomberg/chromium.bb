@@ -44,7 +44,7 @@ class RegistrationRequestTest : public GCMRequestTestBase {
   void RegistrationCallback(RegistrationRequest::Status status,
                             const std::string& registration_id);
 
-  void CompleteFetch() override;
+  void OnAboutToCompleteFetch() override;
 
   void set_max_retry_count(int max_retry_count) {
     max_retry_count_ = max_retry_count;
@@ -75,12 +75,10 @@ void RegistrationRequestTest::RegistrationCallback(
   callback_called_ = true;
 }
 
-void RegistrationRequestTest::CompleteFetch() {
+void RegistrationRequestTest::OnAboutToCompleteFetch() {
   registration_id_.clear();
   status_ = RegistrationRequest::SUCCESS;
   callback_called_ = false;
-
-  GCMRequestTestBase::CompleteFetch();
 }
 
 class GCMRegistrationRequestTest : public RegistrationRequestTest {

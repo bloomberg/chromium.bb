@@ -141,11 +141,18 @@ bool TestURLLoaderFactory::SimulateResponseForPendingRequest(
   const bool url_match_prefix = flags & kUrlMatchPrefix;
   const bool reverse = flags & kMostRecentMatch;
 
+  // Give any cancellations a chance to happen...
+  base::RunLoop().RunUntilIdle();
+
   bool found_request = false;
   network::TestURLLoaderFactory::PendingRequest request;
   for (int i = (reverse ? static_cast<int>(pending_requests_.size()) - 1 : 0);
        reverse ? i >= 0 : i < static_cast<int>(pending_requests_.size());
        reverse ? --i : ++i) {
+    // Skip already cancelled.
+    if (pending_requests_[i].client.encountered_error())
+      continue;
+
     if (pending_requests_[i].request.url == url ||
         (url_match_prefix &&
          base::StartsWith(pending_requests_[i].request.url.spec(), url.spec(),
