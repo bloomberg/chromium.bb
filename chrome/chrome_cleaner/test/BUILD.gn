@@ -2,6 +2,32 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+shared_library("empty_dll") {
+  sources = [
+    "empty_dll.cc",
+  ]
+}
+
+source_set("scoped_file") {
+  sources = [
+    "scoped_file.cc",
+    "scoped_file.h",
+  ]
+
+  deps = [
+    "//base:base",
+  ]
+}
+
+source_set("test_strings") {
+  testonly = true
+
+  sources = [
+    "test_strings.cc",
+    "test_strings.h",
+  ]
+}
+
 static_library("test_util") {
   testonly = true
 
