@@ -67,6 +67,26 @@ std::string ClassifierOutcomeToString(
   return std::string();
 }
 
+std::string VoteTypeToString(
+    AutofillUploadContents::Field::VoteType vote_type) {
+  switch (vote_type) {
+    case AutofillUploadContents::Field::NO_INFORMATION:
+      return "No information";
+    case AutofillUploadContents::Field::CREDENTIALS_REUSED:
+      return "Credentials reused";
+    case AutofillUploadContents::Field::USERNAME_OVERWRITTEN:
+      return "Username overwritten";
+    case AutofillUploadContents::Field::USERNAME_EDITED:
+      return "Username edited";
+    case AutofillUploadContents::Field::BASE_HEURISTIC:
+      return "Base heuristic";
+    case AutofillUploadContents::Field::HTML_CLASSIFIER:
+      return "HTML classifier";
+    case AutofillUploadContents::Field::FIRST_USE:
+      return "First use";
+  }
+}
+
 }  // namespace
 
 BrowserSavePasswordProgressLogger::BrowserSavePasswordProgressLogger(
@@ -149,8 +169,11 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
       field_info +=
           ", VOTE: " + autofill::AutofillType::ServerFieldTypeToString(type);
 
+    if (field->vote_type())
+      field_info += ", vote_type=" + VoteTypeToString(field->vote_type());
+
     if (field->properties_mask) {
-      field_info += ", properties = ";
+      field_info += ", properties=";
       field_info +=
           (field->properties_mask & autofill::FieldPropertiesFlags::USER_TYPED)
               ? "T"
