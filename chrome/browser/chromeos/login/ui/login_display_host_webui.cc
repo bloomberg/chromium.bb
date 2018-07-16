@@ -602,11 +602,7 @@ void LoginDisplayHostWebUI::StartWizard(OobeScreen first_screen) {
   DVLOG(1) << "Starting wizard, first_screen: "
            << GetOobeScreenName(first_screen);
   // Create and show the wizard.
-  // Note, dtor of the old WizardController should be called before ctor of the
-  // new one, because "default_controller()" is updated there. So pure "reset()"
-  // is done before new controller creation.
-  wizard_controller_.reset();
-  wizard_controller_.reset(CreateWizardController());
+  wizard_controller_ = std::make_unique<WizardController>();
 
   oobe_progress_bar_visible_ = !StartupUtils::IsDeviceRegistered();
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);
@@ -754,12 +750,6 @@ bool LoginDisplayHostWebUI::IsVoiceInteractionOobe() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostWebUI, public
-
-WizardController* LoginDisplayHostWebUI::CreateWizardController() {
-  // TODO(altimofeev): ensure that WebUI is ready.
-  OobeUI* oobe_ui = GetOobeUI();
-  return new WizardController(this, oobe_ui);
-}
 
 void LoginDisplayHostWebUI::OnBrowserCreated() {
   // Close lock window now so that the launched browser can receive focus.

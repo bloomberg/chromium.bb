@@ -81,9 +81,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void ShowFeedback() override;
   void OnCancelPasswordChangedFlow() override;
 
-  // Creates WizardController instance.
-  WizardController* CreateWizardController();
-
   // Trace id for ShowLoginWebUI event (since there exists at most one login
   // WebUI at a time).
   static const int kShowLoginWebUIid;

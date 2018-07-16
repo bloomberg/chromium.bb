@@ -44,7 +44,6 @@ class ErrorScreen;
 struct Geoposition;
 class LoginDisplayHost;
 class LoginScreenContext;
-class OobeUI;
 class SimpleGeolocationProvider;
 class TimeZoneProvider;
 struct TimeZoneResponseData;
@@ -59,11 +58,12 @@ class WizardController : public BaseScreenDelegate,
                          public HIDDetectionScreen::Delegate,
                          public OobeConfiguration::Observer {
  public:
-  WizardController(LoginDisplayHost* host, OobeUI* oobe_ui);
+  WizardController();
   ~WizardController() override;
 
-  // Returns the default wizard controller if it has been created.
-  static WizardController* default_controller() { return default_controller_; }
+  // Returns the default wizard controller if it has been created. This is a
+  // helper for LoginDisplayHost::default_host()->GetWizardController();
+  static WizardController* default_controller();
 
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).
@@ -144,7 +144,7 @@ class WizardController : public BaseScreenDelegate,
 
   // Allocate a given BaseScreen for the given |Screen|. Used by
   // |screen_manager_|.
-  BaseScreen* CreateScreen(OobeScreen screen);
+  std::unique_ptr<BaseScreen> CreateScreen(OobeScreen screen);
 
   // Set the current screen. For Test use only.
   void SetCurrentScreenForTesting(BaseScreen* screen);
@@ -393,15 +393,7 @@ class WizardController : public BaseScreenDelegate,
   // Value of the screen name that WizardController was started with.
   OobeScreen first_screen_;
 
-  // OOBE/login display host.
-  LoginDisplayHost* host_ = nullptr;
-
-  // Default WizardController.
-  static WizardController* default_controller_;
-
   base::OneShotTimer smooth_show_timer_;
-
-  OobeUI* const oobe_ui_;
 
   // State of Usage stat/error reporting checkbox on EULA screen
   // during wizard lifetime.
