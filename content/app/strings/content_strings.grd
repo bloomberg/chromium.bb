@@ -792,12 +792,6 @@ below:
         Year
       </message>
 
-      <if expr="is_linux">
-        <message name="IDS_FONT_SERVICE_PROCESS_TITLE" desc="The user-visible process title displayed for the font_service process used by Chrome on Linux.">
-          Linux Font Service
-        </message>
-      </if>
-
       <message name="IDS_FORM_INPUT_WEEK_TEMPLATE" desc="A specific week (1-53) in a specific year shown in a form control">
         Week <ph name="WEEKNUMBER">$2<ex>51</ex></ph>, <ph name="YEAR">$1<ex>2012</ex></ph>
       </message>

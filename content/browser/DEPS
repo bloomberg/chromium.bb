@@ -7,6 +7,7 @@ include_rules = [
   "+components/download/public/common",
   "+components/download/quarantine/quarantine.h",
   "+components/filename_generation",
+  "+components/services/font",
   "+components/services/filesystem",
   "+components/services/font/ppapi_fontconfig_matching.h",
   "+components/services/leveldb",

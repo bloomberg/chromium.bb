@@ -96,6 +96,7 @@
 #endif
 
 #if defined(OS_LINUX)
+#include "components/services/font/font_service_app.h"
 #include "components/services/font/public/interfaces/constants.mojom.h"
 #endif
 
@@ -609,16 +610,16 @@ ServiceManagerContext::ServiceManagerContext(
       base::BindRepeating(&base::ASCIIToUTF16, "Data Decoder Service");
 
 #if defined(OS_LINUX)
-  out_of_process_services[font_service::mojom::kServiceName] =
-      base::BindRepeating([] {
-        auto title = GetContentClient()->GetLocalizedString(
-            IDS_FONT_SERVICE_PROCESS_TITLE);
-        if (!title.empty())
-          return title;
-
-        // Default to a non-localized string if we have to.
-        return base::ASCIIToUTF16("Linux Font Service");
-      });
+  {
+    service_manager::EmbeddedServiceInfo font_service_info;
+    font_service_info.factory =
+        base::BindRepeating(font_service::FontServiceApp::CreateService);
+    font_service_info.task_runner = base::CreateSequencedTaskRunnerWithTraits(
+        base::TaskTraits({base::MayBlock(), base::WithBaseSyncPrimitives(),
+                          base::TaskPriority::USER_BLOCKING}));
+    packaged_services_connection_->AddEmbeddedService(
+        font_service::mojom::kServiceName, font_service_info);
+  }
 #endif
 
   bool network_service_enabled =
