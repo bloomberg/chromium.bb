@@ -66,13 +66,11 @@ void AutofillProfileSyncBridge::CreateForWebDataServiceAndBackend(
 }
 
 // static
-base::WeakPtr<syncer::ModelTypeSyncBridge>
-AutofillProfileSyncBridge::FromWebDataService(
+syncer::ModelTypeSyncBridge* AutofillProfileSyncBridge::FromWebDataService(
     AutofillWebDataService* web_data_service) {
   return static_cast<AutofillProfileSyncBridge*>(
-             web_data_service->GetDBUserData()->GetUserData(
-                 &kAutofillProfileSyncBridgeUserDataKey))
-      ->AsWeakPtr();
+      web_data_service->GetDBUserData()->GetUserData(
+          &kAutofillProfileSyncBridgeUserDataKey));
 }
 
 AutofillProfileSyncBridge::AutofillProfileSyncBridge(

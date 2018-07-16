@@ -34,7 +34,7 @@ class UserEventServiceImpl : public UserEventService {
   void RecordUserEvent(
       std::unique_ptr<sync_pb::UserEventSpecifics> specifics) override;
   void RecordUserEvent(const sync_pb::UserEventSpecifics& specifics) override;
-  base::WeakPtr<ModelTypeSyncBridge> GetSyncBridge() override;
+  ModelTypeSyncBridge* GetSyncBridge() override;
 
   // Checks known (and immutable) conditions that should not change at runtime.
   static bool MightRecordEvents(bool off_the_record, SyncService* sync_service);

@@ -26,7 +26,7 @@ class NoOpUserEventService : public UserEventService {
   void RecordUserEvent(
       std::unique_ptr<sync_pb::UserEventSpecifics> specifics) override;
   void RecordUserEvent(const sync_pb::UserEventSpecifics& specifics) override;
-  base::WeakPtr<ModelTypeSyncBridge> GetSyncBridge() override;
+  ModelTypeSyncBridge* GetSyncBridge() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoOpUserEventService);

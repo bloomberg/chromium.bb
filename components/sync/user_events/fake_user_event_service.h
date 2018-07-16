@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/sync/user_events/user_event_service.h"
 
@@ -29,7 +28,7 @@ class FakeUserEventService : public UserEventService {
   void RecordUserEvent(
       std::unique_ptr<sync_pb::UserEventSpecifics> specifics) override;
   void RecordUserEvent(const sync_pb::UserEventSpecifics& specifics) override;
-  base::WeakPtr<ModelTypeSyncBridge> GetSyncBridge() override;
+  ModelTypeSyncBridge* GetSyncBridge() override;
 
   const std::vector<sync_pb::UserEventSpecifics>& GetRecordedUserEvents() const;
 

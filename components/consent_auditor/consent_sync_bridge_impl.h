@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/consent_auditor/consent_sync_bridge.h"
 #include "components/sync/model/model_type_change_processor.h"
@@ -89,6 +90,8 @@ class ConsentSyncBridgeImpl : public ConsentSyncBridge,
 
   // Empty if sync not running.
   std::string syncing_account_id_;
+
+  base::WeakPtrFactory<ConsentSyncBridgeImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsentSyncBridgeImpl);
 };

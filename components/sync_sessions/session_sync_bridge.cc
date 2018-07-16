@@ -119,7 +119,8 @@ SessionSyncBridge::SessionSyncBridge(
           local_device_info_provider,
           store_factory,
           base::BindRepeating(&FaviconCache::UpdateMappingsFromForeignTab,
-                              base::Unretained(&favicon_cache_)))) {
+                              base::Unretained(&favicon_cache_)))),
+      weak_ptr_factory_(this) {
   DCHECK(sessions_client_);
   DCHECK(local_session_event_router_);
   DCHECK(foreign_sessions_updated_callback_);
@@ -137,7 +138,7 @@ void SessionSyncBridge::ScheduleGarbageCollection() {
   }
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&SessionSyncBridge::DoGarbageCollection,
-                                base::AsWeakPtr(this)));
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 FaviconCache* SessionSyncBridge::GetFaviconCache() {
@@ -317,7 +318,7 @@ SessionSyncBridge::CreateLocalSessionWriteBatch() {
     // local changes that triggered this function.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&SessionSyncBridge::ResubmitLocalSession,
-                                  base::AsWeakPtr(this)));
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 
   return std::make_unique<LocalSessionWriteBatch>(
@@ -344,7 +345,7 @@ void SessionSyncBridge::OnSyncStarting(
   DCHECK(!syncing_);
 
   session_store_factory_.Run(base::BindOnce(
-      &SessionSyncBridge::OnStoreInitialized, base::AsWeakPtr(this)));
+      &SessionSyncBridge::OnStoreInitialized, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SessionSyncBridge::OnStoreInitialized(
@@ -449,8 +450,8 @@ std::unique_ptr<SessionStore::WriteBatch>
 SessionSyncBridge::CreateSessionStoreWriteBatch() {
   DCHECK(syncing_);
 
-  return syncing_->store->CreateWriteBatch(
-      base::BindOnce(&SessionSyncBridge::ReportError, base::AsWeakPtr(this)));
+  return syncing_->store->CreateWriteBatch(base::BindOnce(
+      &SessionSyncBridge::ReportError, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SessionSyncBridge::ResubmitLocalSession() {
