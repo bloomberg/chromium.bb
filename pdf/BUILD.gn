@@ -8,6 +8,7 @@ import("//build/config/jumbo.gni")
 import("//pdf/features.gni")
 import("//testing/test.gni")
 import("//third_party/pdfium/pdfium.gni")
+import("//v8/gni/v8.gni")
 
 # Generate a buildflag header for compile-time checking of PDF support.
 buildflag_header("buildflags") {
@@ -134,8 +135,19 @@ if (enable_pdf) {
     ]
 
     if (pdf_engine == 0) {
-      sources += [ "pdfium/findtext_unittest.cc" ]
+      configs += [ "//v8:external_startup_data" ]
+      sources += [
+        "pdfium/findtext_unittest.cc",
+        "pdfium/pdfium_engine_exports_unittest.cc",
+      ]
       include_dirs = [ "//third_party/pdfium" ]
+
+      if (v8_use_external_startup_data) {
+        data += [
+          "$root_out_dir/natives_blob.bin",
+          "$root_out_dir/snapshot_blob.bin",
+        ]
+      }
     }
   }
 } else {
