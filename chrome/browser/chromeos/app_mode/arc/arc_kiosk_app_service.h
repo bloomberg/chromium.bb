@@ -5,16 +5,17 @@
 #ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_ARC_ARC_KIOSK_APP_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_APP_MODE_ARC_ARC_KIOSK_APP_SERVICE_H_
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/kiosk/arc_kiosk_bridge.h"
+#include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/prefs/pref_change_registrar.h"
 
 class Profile;
 
@@ -37,7 +38,8 @@ class ArcKioskAppService
       public arc::ArcKioskBridge::Delegate,
       public ArcKioskAppLauncher::Delegate,
       public ArcAppIcon::Observer,
-      public arc::ArcSessionManager::Observer {
+      public arc::ArcSessionManager::Observer,
+      public arc::ArcPolicyBridge::Observer {
  public:
   class Delegate {
    public:
@@ -88,6 +90,10 @@ class ArcKioskAppService
   void OnArcSessionRestarting() override;
   void OnArcSessionStopped(arc::ArcStopReason reason) override;
 
+  // ArcPolicyBridge::Observer overrides
+  void OnComplianceReportReceived(
+      const base::Value* compliance_report) override;
+
  private:
   explicit ArcKioskAppService(Profile* profile);
   ~ArcKioskAppService() override;
@@ -108,7 +114,14 @@ class ArcKioskAppService
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info_;
   std::unique_ptr<ArcAppIcon> app_icon_;
   int32_t task_id_ = -1;
-  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  // This contains the list of apps that must be installed for the device to be
+  // policy-compliant according to the policy report. Even if an app has already
+  // finished installing, it could still remain in this list for some time.
+  // ArcKioskAppService may only start apps which are not in this list anymore,
+  // because it's only assured that kiosk policies have been applied (e.g.
+  // permission policies) when the app is not in this list anymore.
+  base::flat_set<std::string> pending_policy_app_installs_;
+  bool compliance_report_received_ = false;
   // Keeps track whether the app is already launched
   std::unique_ptr<ArcKioskAppLauncher> app_launcher_;
   // Not owning the delegate, delegate removes itself in destructor
