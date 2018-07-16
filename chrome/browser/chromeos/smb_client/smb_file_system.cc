@@ -309,13 +309,11 @@ AbortCallback SmbFileSystem::CopyEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
     storage::AsyncFileUtil::StatusCallback callback) {
-  auto reply = base::BindOnce(&SmbFileSystem::HandleStatusCallback, AsWeakPtr(),
-                              std::move(callback));
-  SmbTask task =
-      base::BindOnce(&SmbProviderClient::CopyEntry, GetWeakSmbProviderClient(),
-                     GetMountId(), source_path, target_path, std::move(reply));
+  OperationId operation_id = task_queue_.GetNextOperationId();
 
-  return EnqueueTaskAndGetCallback(std::move(task));
+  StartCopy(source_path, target_path, operation_id, std::move(callback));
+
+  return CreateAbortCallback(operation_id);
 }
 
 AbortCallback SmbFileSystem::MoveEntry(
