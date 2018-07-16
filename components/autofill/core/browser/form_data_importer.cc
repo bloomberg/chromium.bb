@@ -226,7 +226,6 @@ bool FormDataImporter::ImportAddressProfileForSection(
   // The candidate for profile import. There are many ways for the candidate to
   // be rejected (see everywhere this function returns false).
   AutofillProfile candidate_profile;
-  candidate_profile.set_origin(form.source_url().spec());
 
   // We only set complete phone, so aggregate phone parts in these vars and set
   // complete at the end.
@@ -413,7 +412,6 @@ CreditCard FormDataImporter::ExtractCreditCardFromForm(
   *has_duplicate_field_type = false;
 
   CreditCard candidate_credit_card;
-  candidate_credit_card.set_origin(form.source_url().spec());
 
   std::set<ServerFieldType> types_seen;
   for (const auto& field : form) {

@@ -219,18 +219,18 @@ TEST(CreditCardTest, NetworkOrBankNameAndLastFourDigitsStrings) {
 }
 
 TEST(CreditCardTest, AssignmentOperator) {
-  CreditCard a(base::GenerateGUID(), "some origin");
+  CreditCard a(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010",
                           "1");
 
   // Result of assignment should be logically equal to the original profile.
-  CreditCard b(base::GenerateGUID(), "some other origin");
+  CreditCard b(base::GenerateGUID(), test::kEmptyOrigin);
   b = a;
-  EXPECT_TRUE(a == b);
+  EXPECT_EQ(a, b);
 
   // Assignment to self should not change the profile value.
   a = *&a;  // The *& defeats Clang's -Wself-assign warning.
-  EXPECT_TRUE(a == b);
+  EXPECT_EQ(a, b);
 }
 
 struct SetExpirationYearFromStringTestCase {
@@ -318,7 +318,7 @@ INSTANTIATE_TEST_CASE_P(
         SetExpirationDateFromStringTestCase{"05_2045", 0, 0}));
 
 TEST(CreditCardTest, Copy) {
-  CreditCard a(base::GenerateGUID(), "https://www.example.com");
+  CreditCard a(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010",
                           base::GenerateGUID());
 
@@ -496,7 +496,7 @@ TEST(CreditCardTest, IconResourceId) {
 }
 
 TEST(CreditCardTest, UpdateFromImportedCard) {
-  CreditCard original_card(base::GenerateGUID(), "https://www.example.com");
+  CreditCard original_card(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&original_card, "John Dillinger", "123456789012",
                           "09", "2017", "1");
 
@@ -505,14 +505,14 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
   // The new card has a different name, expiration date, and origin.
   CreditCard b = a;
   b.set_guid(base::GenerateGUID());
-  b.set_origin("https://www.example.org");
+  b.set_origin(test::kEmptyOrigin);
   b.SetRawInfo(CREDIT_CARD_NAME_FULL, ASCIIToUTF16("J. Dillinger"));
   b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("08"));
   b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2019"));
 
   // |a| should be updated with the information from |b|.
   EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
-  EXPECT_EQ("https://www.example.org", a.origin());
+  EXPECT_EQ(test::kEmptyOrigin, a.origin());
   EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
@@ -524,7 +524,7 @@ TEST(CreditCardTest, UpdateFromImportedCard) {
   b.SetRawInfo(CREDIT_CARD_NAME_FULL, base::string16());
 
   EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
-  EXPECT_EQ("https://www.example.org", a.origin());
+  EXPECT_EQ(test::kEmptyOrigin, a.origin());
   EXPECT_EQ(ASCIIToUTF16("John Dillinger"),
             a.GetRawInfo(CREDIT_CARD_NAME_FULL));
   EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));

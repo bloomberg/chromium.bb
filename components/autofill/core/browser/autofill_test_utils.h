@@ -30,6 +30,8 @@ struct FormFieldData;
 // Common utilities shared amongst Autofill tests.
 namespace test {
 
+const char kEmptyOrigin[] = "";
+
 // The following methods return a PrefService that can be used for
 // Autofill-related testing in contexts where the PrefService would otherwise
 // have to be constructed manually (e.g., in unit tests within Autofill core

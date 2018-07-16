@@ -196,7 +196,7 @@ class FormDataImporterTestBase {
         .WillOnce(QuitMessageLoop(&run_loop));
     run_loop.Run();
 
-    CreditCard expected(base::GenerateGUID(), "https://www.example.com");
+    CreditCard expected(base::GenerateGUID(), test::kEmptyOrigin);
     test::SetCreditCardInfo(&expected, exp_name, exp_cc_num, exp_cc_month,
                             exp_cc_year, "");
     const std::vector<CreditCard*>& results =
@@ -300,7 +300,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles) {
 
   WaitForOnPersonalDataChanged();
 
-  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
                        "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
                        "San Francisco", "California", "94102", nullptr,
@@ -540,7 +540,7 @@ TEST_F(FormDataImporterTest,
 
   WaitForOnPersonalDataChanged();
 
-  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington", nullptr,
                        nullptr, "21 Laussat St", nullptr, "San Francisco",
                        "California", "94102", nullptr, "(650) 555-0000");
@@ -580,7 +580,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MultilineAddress) {
 
   WaitForOnPersonalDataChanged();
 
-  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
                        "theprez@gmail.com", nullptr, "21 Laussat St",
                        "Apt. #42", "San Francisco", "California", "94102",
@@ -621,7 +621,7 @@ TEST_F(FormDataImporterTest,
 
   WaitForOnPersonalDataChanged();
 
-  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
                        "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
                        "San Francisco", "California", "94102", nullptr,
@@ -658,7 +658,7 @@ TEST_F(FormDataImporterTest,
 
   WaitForOnPersonalDataChanged();
 
-  AutofillProfile expected2(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected2(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected2, "John", nullptr, "Adams", "second@gmail.com",
                        nullptr, "22 Laussat St", nullptr, "San Francisco",
                        "California", "94102", nullptr, nullptr);
@@ -716,12 +716,12 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_TwoValidProfilesSameForm) {
 
   WaitForOnPersonalDataChanged();
 
-  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
                        "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
                        "San Francisco", "California", "94102", nullptr,
                        nullptr);
-  AutofillProfile expected2(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected2(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected2, "John", nullptr, "Adams", "second@gmail.com",
                        nullptr, "22 Laussat St", nullptr, "San Francisco",
                        "California", "94102", nullptr, nullptr);
@@ -791,7 +791,7 @@ TEST_F(FormDataImporterTest,
 
   WaitForOnPersonalDataChanged();
 
-  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
                        "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
                        "San Francisco", "California", "94102", nullptr,
@@ -875,12 +875,12 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_ThreeValidProfilesSameForm) {
   WaitForOnPersonalDataChanged();
 
   // Only two are saved.
-  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
                        "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
                        "San Francisco", "California", "94102", nullptr,
                        nullptr);
-  AutofillProfile expected2(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected2(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected2, "John", nullptr, "Adams", "second@gmail.com",
                        nullptr, "22 Laussat St", nullptr, "San Francisco",
                        "California", "94102", nullptr, nullptr);
@@ -929,7 +929,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_SameProfileWithConflict) {
 
   WaitForOnPersonalDataChanged();
 
-  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
                        "theprez@gmail.com", nullptr, "1600 Pennsylvania Avenue",
                        "Suite A", "San Francisco", "California", "94102",
@@ -1014,7 +1014,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MissingInfoInOld) {
 
   WaitForOnPersonalDataChanged();
 
-  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington", nullptr,
                        nullptr, "190 High Street", nullptr, "Philadelphia",
                        "Pennsylvania", "19106", nullptr, nullptr);
@@ -1054,7 +1054,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MissingInfoInOld) {
   const std::vector<AutofillProfile*>& results2 =
       personal_data_manager_->GetProfiles();
 
-  AutofillProfile expected2(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected2(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected2, "George", nullptr, "Washington",
                        "theprez@gmail.com", nullptr, "190 High Street", nullptr,
                        "Philadelphia", "Pennsylvania", "19106", nullptr,
@@ -1096,7 +1096,7 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_MissingInfoInNew) {
 
   WaitForOnPersonalDataChanged();
 
-  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
                        "theprez@gmail.com", "Government", "190 High Street",
                        nullptr, "Philadelphia", "Pennsylvania", "19106",
@@ -1327,7 +1327,7 @@ TEST_F(FormDataImporterTest,
 
   WaitForOnPersonalDataChanged();
 
-  AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected, "George", nullptr, "Washington",
                        "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
                        "San Francisco", "California", "94102", "MM", nullptr);
@@ -1404,7 +1404,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_Valid) {
 
   WaitForOnPersonalDataChanged();
 
-  CreditCard expected(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected, "Biggie Smalls", "4111111111111111", "01",
                           "2999", "");  // Imported cards have no billing info.
   const std::vector<CreditCard*>& results =
@@ -1495,7 +1495,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MonthSelectInvalidText) {
   WaitForOnPersonalDataChanged();
 
   // See that the invalid option text was converted to the right value.
-  CreditCard expected(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected, "Biggie Smalls", "4111111111111111", "02",
                           "2999", "");  // Imported cards have no billing info.
   const std::vector<CreditCard*>& results =
@@ -1520,7 +1520,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_TwoValidCards) {
 
   WaitForOnPersonalDataChanged();
 
-  CreditCard expected(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected, "Biggie Smalls", "4111111111111111", "01",
                           "2999", "");  // Imported cards have no billing info.
   const std::vector<CreditCard*>& results =
@@ -1542,7 +1542,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_TwoValidCards) {
 
   WaitForOnPersonalDataChanged();
 
-  CreditCard expected2(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected2(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected2, "", "5500000000000004", "02", "2999",
                           "");  // Imported cards have no billing info.
   std::vector<CreditCard*> cards;
@@ -1705,7 +1705,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_SameCreditCardWithConflict) {
 
   WaitForOnPersonalDataChanged();
 
-  CreditCard expected(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected, "Biggie Smalls", "4111111111111111", "01",
                           "2998", "");  // Imported cards have no billing info.
   const std::vector<CreditCard*>& results =
@@ -1730,7 +1730,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_SameCreditCardWithConflict) {
 
   // Expect that the newer information is saved.  In this case the year is
   // updated to "2999".
-  CreditCard expected2(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected2(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected2, "Biggie Smalls", "4111111111111111", "01",
                           "2999", "");  // Imported cards have no billing info.
   const std::vector<CreditCard*>& results2 =
@@ -1755,7 +1755,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_ShouldReturnLocalCard) {
 
   WaitForOnPersonalDataChanged();
 
-  CreditCard expected(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected, "Biggie Smalls", "4111111111111111", "01",
                           "2998", "");  // Imported cards have no billing info.
   const std::vector<CreditCard*>& results =
@@ -1783,7 +1783,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_ShouldReturnLocalCard) {
 
   // Expect that the newer information is saved.  In this case the year is
   // updated to "2999".
-  CreditCard expected2(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected2(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected2, "Biggie Smalls", "4111111111111111", "01",
                           "2999", "");  // Imported cards have no billing info.
   const std::vector<CreditCard*>& results2 =
@@ -1808,7 +1808,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_EmptyCardWithConflict) {
 
   WaitForOnPersonalDataChanged();
 
-  CreditCard expected(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected, "Biggie Smalls", "4111111111111111", "01",
                           "2998", "");  // Imported cards have no billing info.
   const std::vector<CreditCard*>& results =
@@ -1834,7 +1834,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_EmptyCardWithConflict) {
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
   // No change is expected.
-  CreditCard expected2(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected2(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected2, "Biggie Smalls", "4111111111111111", "01",
                           "2998", "");
   const std::vector<CreditCard*>& results2 =
@@ -1859,7 +1859,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MissingInfoInNew) {
 
   WaitForOnPersonalDataChanged();
 
-  CreditCard expected(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected, "Biggie Smalls", "4111111111111111", "01",
                           "2999", "");
   const std::vector<CreditCard*>& results =
@@ -1885,7 +1885,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MissingInfoInNew) {
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
   // No change is expected.
-  CreditCard expected2(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected2(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected2, "Biggie Smalls", "4111111111111111", "01",
                           "2999", "");
   const std::vector<CreditCard*>& results2 =
@@ -1912,7 +1912,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MissingInfoInNew) {
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
   // No change is expected.
-  CreditCard expected3(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected3(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected3, "Biggie Smalls", "4111111111111111", "01",
                           "2999", "");
   const std::vector<CreditCard*>& results3 =
@@ -1924,7 +1924,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MissingInfoInNew) {
 TEST_F(FormDataImporterTest, ImportCreditCard_MissingInfoInOld) {
   // Start with a single valid credit card stored via the preferences.
   // Note the empty name.
-  CreditCard saved_credit_card(base::GenerateGUID(), "https://www.example.com");
+  CreditCard saved_credit_card(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&saved_credit_card, "", "4111111111111111" /* Visa */,
                           "01", "2998", "1");
   personal_data_manager_->AddCreditCard(saved_credit_card);
@@ -1953,7 +1953,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MissingInfoInOld) {
 
   // Expect that the newer information is saved.  In this case the year is
   // added to the existing credit card.
-  CreditCard expected2(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected2(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected2, "Biggie Smalls", "4111111111111111", "01",
                           "2999", "1");
   const std::vector<CreditCard*>& results2 =
@@ -1967,7 +1967,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MissingInfoInOld) {
 TEST_F(FormDataImporterTest, ImportCreditCard_SameCardWithSeparators) {
   // Start with a single valid credit card stored via the preferences.
   // Note the separators in the credit card number.
-  CreditCard saved_credit_card(base::GenerateGUID(), "https://www.example.com");
+  CreditCard saved_credit_card(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&saved_credit_card, "Biggie Smalls",
                           "4111 1111 1111 1111" /* Visa */, "01", "2999", "");
   personal_data_manager_->AddCreditCard(saved_credit_card);
@@ -2047,7 +2047,7 @@ TEST_F(FormDataImporterTest,
 TEST_F(FormDataImporterTest,
        ImportFormData_SecondImportResetsCreditCardRecordType) {
   // Start with a single valid credit card stored via the preferences.
-  CreditCard saved_credit_card(base::GenerateGUID(), "https://www.example.com");
+  CreditCard saved_credit_card(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&saved_credit_card, "Biggie Smalls",
                           "4111 1111 1111 1111" /* Visa */, "01", "2999", "");
   personal_data_manager_->AddCreditCard(saved_credit_card);
@@ -2164,7 +2164,7 @@ TEST_F(FormDataImporterTest,
 TEST_F(FormDataImporterTest,
        ImportFormData_ImportCreditCardRecordType_LocalCard) {
   // Start with a single valid credit card stored via the preferences.
-  CreditCard saved_credit_card(base::GenerateGUID(), "https://www.example.com");
+  CreditCard saved_credit_card(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&saved_credit_card, "Biggie Smalls",
                           "4111 1111 1111 1111" /* Visa */, "01", "2999", "");
   personal_data_manager_->AddCreditCard(saved_credit_card);
@@ -2398,8 +2398,7 @@ TEST_F(FormDataImporterTest, ImportFormData_OneAddressOneCreditCard) {
   WaitForOnPersonalDataChanged();
 
   // Test that the address has been saved.
-  AutofillProfile expected_address(base::GenerateGUID(),
-                                   "https://www.example.com");
+  AutofillProfile expected_address(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected_address, "George", nullptr, "Washington",
                        "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
                        "San Francisco", "California", "94102", nullptr,
@@ -2410,7 +2409,7 @@ TEST_F(FormDataImporterTest, ImportFormData_OneAddressOneCreditCard) {
   EXPECT_EQ(0, expected_address.Compare(*results_addr[0]));
 
   // Test that the credit card has also been saved.
-  CreditCard expected_card(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected_card(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected_card, "Biggie Smalls", "4111111111111111",
                           "01", "2999", "");
   const std::vector<CreditCard*>& results_cards =
@@ -2481,7 +2480,7 @@ TEST_F(FormDataImporterTest, ImportFormData_TwoAddressesOneCreditCard) {
   EXPECT_EQ(2U, personal_data_manager_->GetProfiles().size());
 
   // Test that the credit card has been saved.
-  CreditCard expected_card(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected_card(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected_card, "Biggie Smalls", "4111111111111111",
                           "01", "2999", "");
   const std::vector<CreditCard*>& results =
@@ -2536,7 +2535,7 @@ TEST_F(FormDataImporterTest, ImportFormData_AddressesDisabledOneCreditCard) {
   EXPECT_EQ(0U, personal_data_manager_->GetProfiles().size());
 
   // Test that the credit card has been saved.
-  CreditCard expected_card(base::GenerateGUID(), "https://www.example.com");
+  CreditCard expected_card(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&expected_card, "Biggie Smalls", "4111111111111111",
                           "01", "2999", "");
   const std::vector<CreditCard*>& results =
@@ -2588,8 +2587,7 @@ TEST_F(FormDataImporterTest, ImportFormData_OneAddressCreditCardDisabled) {
   WaitForOnPersonalDataChanged();
 
   // Test that the address has been saved.
-  AutofillProfile expected_address(base::GenerateGUID(),
-                                   "https://www.example.com");
+  AutofillProfile expected_address(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&expected_address, "George", nullptr, "Washington",
                        "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
                        "San Francisco", "California", "94102", nullptr,

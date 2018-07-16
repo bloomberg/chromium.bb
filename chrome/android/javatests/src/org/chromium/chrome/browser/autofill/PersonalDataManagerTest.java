@@ -43,9 +43,9 @@ public class PersonalDataManagerTest {
     }
 
     private AutofillProfile createTestProfile() {
-        return new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                "John Major", "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210", "",
-                "US", "555 123-4567", "jm@example.com", "");
+        return new AutofillProfile("" /* guid */, "" /* origin */, "John Major", "Acme Inc.",
+                "123 Main", "California", "Los Angeles", "", "90210", "", "US", "555 123-4567",
+                "jm@example.com", "");
     }
 
     @Test
@@ -54,21 +54,15 @@ public class PersonalDataManagerTest {
     @RetryOnFailure
     public void testAddAndEditProfiles()
             throws InterruptedException, ExecutionException, TimeoutException {
-        AutofillProfile profile = new AutofillProfile(
-                "" /* guid */, "https://www.example.com" /* origin */,
-                "John Smith", "Acme Inc.",
-                "1 Main\nApt A", "CA", "San Francisco", "",
-                "94102", "",
-                "US", "4158889999", "john@acme.inc", "");
+        AutofillProfile profile = new AutofillProfile("" /* guid */, "" /* origin */, "John Smith",
+                "Acme Inc.", "1 Main\nApt A", "CA", "San Francisco", "", "94102", "", "US",
+                "4158889999", "john@acme.inc", "");
         String profileOneGUID = mHelper.setProfile(profile);
         Assert.assertEquals(1, mHelper.getNumberOfProfilesForSettings());
 
-        AutofillProfile profile2 = new AutofillProfile(
-                "" /* guid */, "http://www.example.com" /* origin */,
-                "John Hackock", "Acme Inc.",
-                "1 Main\nApt A", "CA", "San Francisco", "",
-                "94102", "",
-                "US", "4158889999", "john@acme.inc", "");
+        AutofillProfile profile2 = new AutofillProfile("" /* guid */, "" /* origin */,
+                "John Hackock", "Acme Inc.", "1 Main\nApt A", "CA", "San Francisco", "", "94102",
+                "", "US", "4158889999", "john@acme.inc", "");
         String profileTwoGUID = mHelper.setProfile(profile2);
         Assert.assertEquals(2, mHelper.getNumberOfProfilesForSettings());
 
@@ -80,7 +74,7 @@ public class PersonalDataManagerTest {
 
         AutofillProfile storedProfile = mHelper.getProfile(profileOneGUID);
         Assert.assertEquals(profileOneGUID, storedProfile.getGUID());
-        Assert.assertEquals("https://www.example.com", storedProfile.getOrigin());
+        Assert.assertEquals("", storedProfile.getOrigin());
         Assert.assertEquals("CA", storedProfile.getCountryCode());
         Assert.assertEquals("San Francisco", storedProfile.getLocality());
         Assert.assertNotNull(mHelper.getProfile(profileTwoGUID));
@@ -92,12 +86,9 @@ public class PersonalDataManagerTest {
     @RetryOnFailure
     public void testUpdateLanguageCodeInProfile()
             throws InterruptedException, ExecutionException, TimeoutException {
-        AutofillProfile profile = new AutofillProfile(
-                "" /* guid */, "https://www.example.com" /* origin */,
-                "John Smith", "Acme Inc.",
-                "1 Main\nApt A", "CA", "San Francisco", "",
-                "94102", "",
-                "US", "4158889999", "john@acme.inc", "fr");
+        AutofillProfile profile = new AutofillProfile("" /* guid */, "" /* origin */, "John Smith",
+                "Acme Inc.", "1 Main\nApt A", "CA", "San Francisco", "", "94102", "", "US",
+                "4158889999", "john@acme.inc", "fr");
         Assert.assertEquals("fr", profile.getLanguageCode());
         String profileOneGUID = mHelper.setProfile(profile);
         Assert.assertEquals(1, mHelper.getNumberOfProfilesForSettings());
@@ -116,7 +107,7 @@ public class PersonalDataManagerTest {
         Assert.assertEquals("en", storedProfile2.getLanguageCode());
         Assert.assertEquals("US", storedProfile2.getCountryCode());
         Assert.assertEquals("San Francisco", storedProfile2.getLocality());
-        Assert.assertEquals("https://www.example.com", storedProfile2.getOrigin());
+        Assert.assertEquals("", storedProfile2.getOrigin());
     }
 
     @Test
@@ -139,14 +130,12 @@ public class PersonalDataManagerTest {
     public void testAddAndEditCreditCards()
             throws InterruptedException, ExecutionException, TimeoutException {
         CreditCard card = new CreditCard(
-                "" /* guid */, "https://www.example.com" /* origin */,
-                "Visa", "1234123412341234", "", "5", "2020");
+                "" /* guid */, "" /* origin */, "Visa", "1234123412341234", "", "5", "2020");
         String cardOneGUID = mHelper.setCreditCard(card);
         Assert.assertEquals(1, mHelper.getNumberOfCreditCardsForSettings());
 
-        CreditCard card2 = new CreditCard(
-                "" /* guid */, "http://www.example.com" /* origin */,
-                "American Express", "1234123412341234", "", "8", "2020");
+        CreditCard card2 = new CreditCard("" /* guid */, "" /* origin */, "American Express",
+                "1234123412341234", "", "8", "2020");
         String cardTwoGUID = mHelper.setCreditCard(card2);
         Assert.assertEquals(2, mHelper.getNumberOfCreditCardsForSettings());
 
@@ -159,7 +148,7 @@ public class PersonalDataManagerTest {
 
         CreditCard storedCard = mHelper.getCreditCard(cardOneGUID);
         Assert.assertEquals(cardOneGUID, storedCard.getGUID());
-        Assert.assertEquals("https://www.example.com", storedCard.getOrigin());
+        Assert.assertEquals("", storedCard.getOrigin());
         Assert.assertEquals("Visa", storedCard.getName());
         Assert.assertEquals("10", storedCard.getMonth());
         Assert.assertEquals("4012888888881881", storedCard.getNumber());
@@ -195,20 +184,14 @@ public class PersonalDataManagerTest {
             throws InterruptedException, ExecutionException, TimeoutException {
         // The constructor should accept country names and ISO 3166-1-alpha-2 country codes.
         // getCountryCode() should return a country code.
-        AutofillProfile profile1 = new AutofillProfile(
-                "" /* guid */, "https://www.example.com" /* origin */,
-                "John Smith", "Acme Inc.",
-                "1 Main\nApt A", "Quebec", "Montreal", "",
-                "H3B 2Y5", "",
-                "Canada", "514-670-1234", "john@acme.inc", "");
+        AutofillProfile profile1 = new AutofillProfile("" /* guid */, "" /* origin */, "John Smith",
+                "Acme Inc.", "1 Main\nApt A", "Quebec", "Montreal", "", "H3B 2Y5", "", "Canada",
+                "514-670-1234", "john@acme.inc", "");
         String profileGuid1 = mHelper.setProfile(profile1);
 
-        AutofillProfile profile2 = new AutofillProfile(
-                "" /* guid */, "https://www.example.com" /* origin */,
-                "Greg Smith", "Ucme Inc.",
-                "123 Bush\nApt 125", "Quebec", "Montreal", "",
-                "H3B 2Y5", "",
-                "CA", "514-670-4321", "greg@ucme.inc", "");
+        AutofillProfile profile2 = new AutofillProfile("" /* guid */, "" /* origin */, "Greg Smith",
+                "Ucme Inc.", "123 Bush\nApt 125", "Quebec", "Montreal", "", "H3B 2Y5", "", "CA",
+                "514-670-4321", "greg@ucme.inc", "");
         String profileGuid2 = mHelper.setProfile(profile2);
 
         Assert.assertEquals(2, mHelper.getNumberOfProfilesForSettings());
@@ -232,13 +215,10 @@ public class PersonalDataManagerTest {
         final String streetAddress2 = streetAddress1 + "\n"
                 + "Fourth floor\n"
                 + "The red bell";
-        AutofillProfile profile = new AutofillProfile(
-                "" /* guid */, "https://www.example.com" /* origin */,
-                "Monsieur Jean DELHOURME", "Acme Inc.",
-                streetAddress1,
-                "Tahiti", "Mahina", "Orofara",
-                "98709", "CEDEX 98703",
-                "French Polynesia", "44.71.53", "john@acme.inc", "");
+        AutofillProfile profile =
+                new AutofillProfile("" /* guid */, "" /* origin */, "Monsieur Jean DELHOURME",
+                        "Acme Inc.", streetAddress1, "Tahiti", "Mahina", "Orofara", "98709",
+                        "CEDEX 98703", "French Polynesia", "44.71.53", "john@acme.inc", "");
         String profileGuid1 = mHelper.setProfile(profile);
         Assert.assertEquals(1, mHelper.getNumberOfProfilesForSettings());
         AutofillProfile storedProfile1 = mHelper.getProfile(profileGuid1);
@@ -264,33 +244,20 @@ public class PersonalDataManagerTest {
     @SmallTest
     @Feature({"Autofill"})
     public void testLabels() throws InterruptedException, ExecutionException, TimeoutException {
-        AutofillProfile profile1 = new AutofillProfile(
-                 "" /* guid */, "https://www.example.com" /* origin */,
-                 "John Major", "Acme Inc.",
-                 "123 Main", "California", "Los Angeles", "",
-                 "90210", "",
-                 "US", "555 123-4567", "jm@example.com", "");
+        AutofillProfile profile1 = new AutofillProfile("" /* guid */, "" /* origin */, "John Major",
+                "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210", "", "US",
+                "555 123-4567", "jm@example.com", "");
         // An almost identical profile.
-        AutofillProfile profile2 = new AutofillProfile(
-                 "" /* guid */, "https://www.example.com" /* origin */,
-                 "John Major", "Acme Inc.",
-                 "123 Main", "California", "Los Angeles", "",
-                 "90210", "",
-                 "US", "555 123-4567", "jm-work@example.com", "");
+        AutofillProfile profile2 = new AutofillProfile("" /* guid */, "" /* origin */, "John Major",
+                "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210", "", "US",
+                "555 123-4567", "jm-work@example.com", "");
         // A different profile.
-        AutofillProfile profile3 = new AutofillProfile(
-                 "" /* guid */, "https://www.example.com" /* origin */,
-                 "Jasper Lundgren", "",
-                 "1500 Second Ave", "California", "Hollywood", "",
-                 "90068", "",
-                 "US", "555 123-9876", "jasperl@example.com", "");
+        AutofillProfile profile3 = new AutofillProfile("" /* guid */, "" /* origin */,
+                "Jasper Lundgren", "", "1500 Second Ave", "California", "Hollywood", "", "90068",
+                "", "US", "555 123-9876", "jasperl@example.com", "");
         // A profile where a lot of stuff is missing.
-        AutofillProfile profile4 = new AutofillProfile(
-                 "" /* guid */, "https://www.example.com" /* origin */,
-                 "Joe Sergeant", "",
-                 "", "Texas", "Fort Worth", "",
-                 "", "",
-                 "US", "", "", "");
+        AutofillProfile profile4 = new AutofillProfile("" /* guid */, "" /* origin */,
+                "Joe Sergeant", "", "", "Texas", "Fort Worth", "", "", "", "US", "", "", "");
 
         mHelper.setProfile(profile1);
         mHelper.setProfile(profile2);
@@ -319,18 +286,15 @@ public class PersonalDataManagerTest {
     public void testProfilesFrecency()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Create 3 profiles.
-        AutofillProfile profile1 =
-                new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                        "John Major", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                        "90210", "", "US", "555 123-4567", "jm@example.com", "");
-        AutofillProfile profile2 =
-                new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                        "John Major", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                        "90210", "", "US", "555 123-4567", "jm-work@example.com", "");
-        AutofillProfile profile3 =
-                new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                        "Jasper Lundgren", "", "1500 Second Ave", "California", "Hollywood", "",
-                        "90068", "", "US", "555 123-9876", "jasperl@example.com", "");
+        AutofillProfile profile1 = new AutofillProfile("" /* guid */, "" /* origin */, "John Major",
+                "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210", "", "US",
+                "555 123-4567", "jm@example.com", "");
+        AutofillProfile profile2 = new AutofillProfile("" /* guid */, "" /* origin */, "John Major",
+                "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210", "", "US",
+                "555 123-4567", "jm-work@example.com", "");
+        AutofillProfile profile3 = new AutofillProfile("" /* guid */, "" /* origin */,
+                "Jasper Lundgren", "", "1500 Second Ave", "California", "Hollywood", "", "90068",
+                "", "US", "555 123-9876", "jasperl@example.com", "");
 
         String guid1 = mHelper.setProfile(profile1);
         String guid2 = mHelper.setProfile(profile2);
@@ -363,8 +327,8 @@ public class PersonalDataManagerTest {
     public void testCreditCardsFrecency()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Create 3 credit cards.
-        CreditCard card1 = new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
-                "Visa", "1234123412341234", "", "5", "2020");
+        CreditCard card1 = new CreditCard(
+                "" /* guid */, "" /* origin */, "Visa", "1234123412341234", "", "5", "2020");
 
         CreditCard card2 = new CreditCard("" /* guid */, "http://www.example.com" /* origin */,
                 "American Express", "1234123412341234", "", "8", "2020");
@@ -400,15 +364,15 @@ public class PersonalDataManagerTest {
     public void testCreditCardsDeduping()
             throws InterruptedException, ExecutionException, TimeoutException {
         // Create a local card and an identical server card.
-        CreditCard card1 = new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
-                true /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "", "5",
-                "2020", "Visa", 0 /* issuerIconDrawableId */, CardType.UNKNOWN,
-                "" /* billingAddressId */, "" /* serverId */);
+        CreditCard card1 = new CreditCard("" /* guid */, "" /* origin */, true /* isLocal */,
+                false /* isCached */, "John Doe", "1234123412341234", "", "5", "2020", "Visa",
+                0 /* issuerIconDrawableId */, CardType.UNKNOWN, "" /* billingAddressId */,
+                "" /* serverId */);
 
-        CreditCard card2 = new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
-                false /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "", "5",
-                "2020", "Visa", 0 /* issuerIconDrawableId */, CardType.UNKNOWN,
-                "" /* billingAddressId */, "" /* serverId */);
+        CreditCard card2 = new CreditCard("" /* guid */, "" /* origin */, false /* isLocal */,
+                false /* isCached */, "John Doe", "1234123412341234", "", "5", "2020", "Visa",
+                0 /* issuerIconDrawableId */, CardType.UNKNOWN, "" /* billingAddressId */,
+                "" /* serverId */);
 
         mHelper.setCreditCard(card1);
         mHelper.addServerCreditCard(card2);
@@ -446,11 +410,10 @@ public class PersonalDataManagerTest {
     @RetryOnFailure
     public void testCreditCardUseStatsSettingAndGetting()
             throws InterruptedException, ExecutionException, TimeoutException {
-        String guid = mHelper.setCreditCard(
-                new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
-                        true /* isLocal */, false /* isCached */, "John Doe", "1234123412341234",
-                        "", "5", "2020", "Visa", 0 /* issuerIconDrawableId */, CardType.UNKNOWN,
-                        "" /* billingAddressId */, "" /* serverId */));
+        String guid = mHelper.setCreditCard(new CreditCard("" /* guid */, "" /* origin */,
+                true /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "", "5",
+                "2020", "Visa", 0 /* issuerIconDrawableId */, CardType.UNKNOWN,
+                "" /* billingAddressId */, "" /* serverId */));
 
         // Make sure the credit card does not have the specific use stats form the start.
         Assert.assertTrue(1234 != mHelper.getCreditCardUseCountForTesting(guid));
@@ -496,11 +459,10 @@ public class PersonalDataManagerTest {
     @RetryOnFailure
     public void testRecordAndLogCreditCardUse()
             throws InterruptedException, ExecutionException, TimeoutException {
-        String guid = mHelper.setCreditCard(
-                new CreditCard("" /* guid */, "https://www.example.com" /* origin */,
-                        true /* isLocal */, false /* isCached */, "John Doe", "1234123412341234",
-                        "", "5", "2020", "Visa", 0 /* issuerIconDrawableId */, CardType.UNKNOWN,
-                        "" /* billingAddressId */, "" /* serverId */));
+        String guid = mHelper.setCreditCard(new CreditCard("" /* guid */, "" /* origin */,
+                true /* isLocal */, false /* isCached */, "John Doe", "1234123412341234", "", "5",
+                "2020", "Visa", 0 /* issuerIconDrawableId */, CardType.UNKNOWN,
+                "" /* billingAddressId */, "" /* serverId */));
 
         // Set specific use stats for the credit card.
         mHelper.setCreditCardUseStatsForTesting(guid, 1234, 1234);
