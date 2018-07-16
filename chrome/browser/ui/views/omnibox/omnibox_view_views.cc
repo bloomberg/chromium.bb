@@ -1054,8 +1054,6 @@ void OmniboxViewViews::OnBlur() {
     CloseOmniboxPopup();
   }
 
-  OnShiftKeyChanged(false);
-
   // Tell the model to reset itself.
   model()->OnKillFocus();
 
@@ -1181,8 +1179,6 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     // The omnibox contents may change while the control key is pressed.
     if (event.key_code() == ui::VKEY_CONTROL)
       model()->OnControlKeyChanged(false);
-    else if (event.key_code() == ui::VKEY_SHIFT)
-      OnShiftKeyChanged(false);
 
     return false;
   }
@@ -1209,6 +1205,8 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
         } else if (command) {
           model()->AcceptInput(WindowOpenDisposition::NEW_BACKGROUND_TAB,
                                false);
+        } else if (shift) {
+          model()->AcceptInput(WindowOpenDisposition::NEW_WINDOW, false);
         } else {
           model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB, false);
         }
@@ -1220,10 +1218,6 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
 
     case ui::VKEY_CONTROL:
       model()->OnControlKeyChanged(true);
-      break;
-
-    case ui::VKEY_SHIFT:
-      OnShiftKeyChanged(true);
       break;
 
     case ui::VKEY_DELETE:

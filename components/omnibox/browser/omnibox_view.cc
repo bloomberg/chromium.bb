@@ -220,7 +220,7 @@ OmniboxView::StateChanges OmniboxView::GetStateChanges(const State& before,
 
 OmniboxView::OmniboxView(OmniboxEditController* controller,
                          std::unique_ptr<OmniboxClient> client)
-    : controller_(controller), shift_key_down_(false) {
+    : controller_(controller) {
   // |client| can be null in tests.
   if (client) {
     model_.reset(new OmniboxEditModel(this, controller, std::move(client)));
