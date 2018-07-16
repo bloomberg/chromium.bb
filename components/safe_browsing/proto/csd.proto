@@ -705,7 +705,12 @@ message ReferrerChainEntry {
   // How this navigation is initiated.
   optional NavigationInitiation navigation_initiation = 10;
 
-  // next available tag number: 11.
+  // Whether we think this entry may have been launched by an external
+  // application. This will have no false negatives, but some false positives
+  // are possible.
+  optional bool maybe_launched_by_external_application = 11;
+
+  // next available tag number: 12.
 }  // End of ReferrerChainEntry
 
 message ClientDownloadResponse {
