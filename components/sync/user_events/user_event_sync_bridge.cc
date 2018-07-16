@@ -75,13 +75,15 @@ UserEventSyncBridge::UserEventSyncBridge(
     std::unique_ptr<ModelTypeChangeProcessor> change_processor,
     GlobalIdMapper* global_id_mapper)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      global_id_mapper_(global_id_mapper) {
+      global_id_mapper_(global_id_mapper),
+      weak_ptr_factory_(this) {
   DCHECK(global_id_mapper_);
   std::move(store_factory)
       .Run(USER_EVENTS, base::BindOnce(&UserEventSyncBridge::OnStoreCreated,
-                                       base::AsWeakPtr(this)));
-  global_id_mapper_->AddGlobalIdChangeObserver(base::Bind(
-      &UserEventSyncBridge::HandleGlobalIdChange, base::AsWeakPtr(this)));
+                                       weak_ptr_factory_.GetWeakPtr()));
+  global_id_mapper_->AddGlobalIdChangeObserver(
+      base::Bind(&UserEventSyncBridge::HandleGlobalIdChange,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 UserEventSyncBridge::~UserEventSyncBridge() {
@@ -124,22 +126,23 @@ base::Optional<ModelError> UserEventSyncBridge::ApplySyncChanges(
                 });
 
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
-  store_->CommitWriteBatch(
-      std::move(batch),
-      base::Bind(&UserEventSyncBridge::OnCommit, base::AsWeakPtr(this)));
+  store_->CommitWriteBatch(std::move(batch),
+                           base::Bind(&UserEventSyncBridge::OnCommit,
+                                      weak_ptr_factory_.GetWeakPtr()));
   return {};
 }
 
 void UserEventSyncBridge::GetData(StorageKeyList storage_keys,
                                   DataCallback callback) {
-  store_->ReadData(storage_keys,
-                   base::BindOnce(&UserEventSyncBridge::OnReadData,
-                                  base::AsWeakPtr(this), std::move(callback)));
+  store_->ReadData(
+      storage_keys,
+      base::BindOnce(&UserEventSyncBridge::OnReadData,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void UserEventSyncBridge::GetAllDataForDebugging(DataCallback callback) {
   store_->ReadAllData(base::BindOnce(&UserEventSyncBridge::OnReadAllData,
-                                     base::AsWeakPtr(this),
+                                     weak_ptr_factory_.GetWeakPtr(),
                                      std::move(callback)));
 }
 
@@ -174,9 +177,10 @@ ModelTypeSyncBridge::StopSyncResponse UserEventSyncBridge::ApplyStopSyncChanges(
     // Delete everything except user consents. With DICE the signout may happen
     // frequently. It is important to report all user consents, thus, they are
     // persisted for some time even after signout.
-    store_->ReadAllData(base::BindOnce(
-        &UserEventSyncBridge::OnReadAllDataToDelete, base::AsWeakPtr(this),
-        std::move(delete_metadata_change_list)));
+    store_->ReadAllData(
+        base::BindOnce(&UserEventSyncBridge::OnReadAllDataToDelete,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(delete_metadata_change_list)));
   }
 
   return StopSyncResponse::kModelStillReadyToSync;
@@ -206,17 +210,18 @@ void UserEventSyncBridge::OnReadAllDataToDelete(
     }
   }
 
-  store_->CommitWriteBatch(
-      std::move(batch),
-      base::BindOnce(&UserEventSyncBridge::OnCommit, base::AsWeakPtr(this)));
+  store_->CommitWriteBatch(std::move(batch),
+                           base::BindOnce(&UserEventSyncBridge::OnCommit,
+                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void UserEventSyncBridge::ReadAllDataAndResubmit() {
   DCHECK(!syncing_account_id_.empty());
   DCHECK(change_processor()->IsTrackingMetadata());
   DCHECK(store_);
-  store_->ReadAllData(base::BindOnce(
-      &UserEventSyncBridge::OnReadAllDataToResubmit, base::AsWeakPtr(this)));
+  store_->ReadAllData(
+      base::BindOnce(&UserEventSyncBridge::OnReadAllDataToResubmit,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void UserEventSyncBridge::OnReadAllDataToResubmit(
@@ -286,9 +291,9 @@ void UserEventSyncBridge::RecordUserEventImpl(
 
   change_processor()->Put(storage_key, MoveToEntityData(std::move(specifics)),
                           batch->GetMetadataChangeList());
-  store_->CommitWriteBatch(
-      std::move(batch),
-      base::Bind(&UserEventSyncBridge::OnCommit, base::AsWeakPtr(this)));
+  store_->CommitWriteBatch(std::move(batch),
+                           base::Bind(&UserEventSyncBridge::OnCommit,
+                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void UserEventSyncBridge::ProcessQueuedEvents() {
@@ -312,7 +317,7 @@ void UserEventSyncBridge::OnStoreCreated(
 
   store_ = std::move(store);
   store_->ReadAllMetadata(base::BindOnce(
-      &UserEventSyncBridge::OnReadAllMetadata, base::AsWeakPtr(this)));
+      &UserEventSyncBridge::OnReadAllMetadata, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void UserEventSyncBridge::OnReadAllMetadata(

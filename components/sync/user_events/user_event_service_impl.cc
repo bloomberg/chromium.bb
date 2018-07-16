@@ -87,8 +87,8 @@ void UserEventServiceImpl::RecordUserEvent(
   RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics));
 }
 
-base::WeakPtr<ModelTypeSyncBridge> UserEventServiceImpl::GetSyncBridge() {
-  return bridge_->AsWeakPtr();
+ModelTypeSyncBridge* UserEventServiceImpl::GetSyncBridge() {
+  return bridge_.get();
 }
 
 // static

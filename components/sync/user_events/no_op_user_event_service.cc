@@ -20,8 +20,8 @@ void NoOpUserEventService::RecordUserEvent(
 void NoOpUserEventService::RecordUserEvent(
     const UserEventSpecifics& specifics) {}
 
-base::WeakPtr<ModelTypeSyncBridge> NoOpUserEventService::GetSyncBridge() {
-  return base::WeakPtr<ModelTypeSyncBridge>();
+ModelTypeSyncBridge* NoOpUserEventService::GetSyncBridge() {
+  return nullptr;
 }
 
 }  // namespace syncer

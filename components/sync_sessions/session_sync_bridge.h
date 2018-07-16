@@ -128,6 +128,8 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
 
   base::Optional<SyncingState> syncing_;
 
+  base::WeakPtrFactory<SessionSyncBridge> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(SessionSyncBridge);
 };
 

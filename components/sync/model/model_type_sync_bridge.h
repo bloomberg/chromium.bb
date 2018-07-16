@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/model_type_change_processor.h"
@@ -32,8 +31,7 @@ class ModelError;
 // immediately begin locally tracking changes and can start syncing with the
 // server soon afterward. If an error occurs during startup, the processor's
 // ReportError() method should be called instead of ModelReadyToSync().
-// TODO(jkrcal): Remove all uses of AsWeakPtr and remove the inheritance here.
-class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
+class ModelTypeSyncBridge {
  public:
   using DataCallback = base::OnceCallback<void(std::unique_ptr<DataBatch>)>;
   using StorageKeyList = std::vector<std::string>;

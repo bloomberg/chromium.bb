@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/reading_list/core/reading_list_model_storage.h"
 #include "components/reading_list/core/reading_list_store_delegate.h"
@@ -166,6 +167,8 @@ class ReadingListStore : public ReadingListModelStorage {
   base::Clock* clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<ReadingListStore> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListStore);
 };

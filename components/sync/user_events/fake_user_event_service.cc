@@ -23,8 +23,8 @@ void FakeUserEventService::RecordUserEvent(
   recorded_user_events_.push_back(specifics);
 }
 
-base::WeakPtr<ModelTypeSyncBridge> FakeUserEventService::GetSyncBridge() {
-  return base::WeakPtr<ModelTypeSyncBridge>();
+ModelTypeSyncBridge* FakeUserEventService::GetSyncBridge() {
+  return nullptr;
 }
 
 const std::vector<UserEventSpecifics>&

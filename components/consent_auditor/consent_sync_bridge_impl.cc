@@ -66,10 +66,11 @@ std::unique_ptr<EntityData> CopyToEntityData(
 ConsentSyncBridgeImpl::ConsentSyncBridgeImpl(
     OnceModelTypeStoreFactory store_factory,
     std::unique_ptr<ModelTypeChangeProcessor> change_processor)
-    : ModelTypeSyncBridge(std::move(change_processor)) {
+    : ModelTypeSyncBridge(std::move(change_processor)),
+      weak_ptr_factory_(this) {
   std::move(store_factory)
       .Run(USER_CONSENTS, base::BindOnce(&ConsentSyncBridgeImpl::OnStoreCreated,
-                                         base::AsWeakPtr(this)));
+                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 ConsentSyncBridgeImpl::~ConsentSyncBridgeImpl() {
@@ -99,22 +100,23 @@ base::Optional<ModelError> ConsentSyncBridgeImpl::ApplySyncChanges(
   }
 
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
-  store_->CommitWriteBatch(
-      std::move(batch),
-      base::BindOnce(&ConsentSyncBridgeImpl::OnCommit, base::AsWeakPtr(this)));
+  store_->CommitWriteBatch(std::move(batch),
+                           base::BindOnce(&ConsentSyncBridgeImpl::OnCommit,
+                                          weak_ptr_factory_.GetWeakPtr()));
   return {};
 }
 
 void ConsentSyncBridgeImpl::GetData(StorageKeyList storage_keys,
                                     DataCallback callback) {
-  store_->ReadData(storage_keys,
-                   base::BindOnce(&ConsentSyncBridgeImpl::OnReadData,
-                                  base::AsWeakPtr(this), std::move(callback)));
+  store_->ReadData(
+      storage_keys,
+      base::BindOnce(&ConsentSyncBridgeImpl::OnReadData,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ConsentSyncBridgeImpl::GetAllDataForDebugging(DataCallback callback) {
   store_->ReadAllData(base::BindOnce(&ConsentSyncBridgeImpl::OnReadAllData,
-                                     base::AsWeakPtr(this),
+                                     weak_ptr_factory_.GetWeakPtr(),
                                      std::move(callback)));
 }
 
@@ -159,7 +161,7 @@ ConsentSyncBridgeImpl::ApplyStopSyncChanges(
 
     store_->CommitWriteBatch(std::move(batch),
                              base::BindOnce(&ConsentSyncBridgeImpl::OnCommit,
-                                            base::AsWeakPtr(this)));
+                                            weak_ptr_factory_.GetWeakPtr()));
   }
 
   return StopSyncResponse::kModelStillReadyToSync;
@@ -169,8 +171,9 @@ void ConsentSyncBridgeImpl::ReadAllDataAndResubmit() {
   DCHECK(!syncing_account_id_.empty());
   DCHECK(change_processor()->IsTrackingMetadata());
   DCHECK(store_);
-  store_->ReadAllData(base::BindOnce(
-      &ConsentSyncBridgeImpl::OnReadAllDataToResubmit, base::AsWeakPtr(this)));
+  store_->ReadAllData(
+      base::BindOnce(&ConsentSyncBridgeImpl::OnReadAllDataToResubmit,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ConsentSyncBridgeImpl::OnReadAllDataToResubmit(
@@ -219,9 +222,9 @@ void ConsentSyncBridgeImpl::RecordConsentImpl(
 
   change_processor()->Put(storage_key, MoveToEntityData(std::move(specifics)),
                           batch->GetMetadataChangeList());
-  store_->CommitWriteBatch(
-      std::move(batch),
-      base::BindOnce(&ConsentSyncBridgeImpl::OnCommit, base::AsWeakPtr(this)));
+  store_->CommitWriteBatch(std::move(batch),
+                           base::BindOnce(&ConsentSyncBridgeImpl::OnCommit,
+                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -249,8 +252,9 @@ void ConsentSyncBridgeImpl::OnStoreCreated(
   // TODO(vitaliii): Garbage collect old consents if sync is disabled.
 
   store_ = std::move(store);
-  store_->ReadAllMetadata(base::BindOnce(
-      &ConsentSyncBridgeImpl::OnReadAllMetadata, base::AsWeakPtr(this)));
+  store_->ReadAllMetadata(
+      base::BindOnce(&ConsentSyncBridgeImpl::OnReadAllMetadata,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ConsentSyncBridgeImpl::OnReadAllMetadata(

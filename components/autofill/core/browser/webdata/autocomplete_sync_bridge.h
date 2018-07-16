@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/supports_user_data.h"
@@ -41,7 +40,7 @@ class AutocompleteSyncBridge
       AutofillWebDataService* web_data_service,
       AutofillWebDataBackend* web_data_backend);
 
-  static base::WeakPtr<syncer::ModelTypeSyncBridge> FromWebDataService(
+  static syncer::ModelTypeSyncBridge* FromWebDataService(
       AutofillWebDataService* web_data_service);
 
   // syncer::ModelTypeSyncBridge implementation.

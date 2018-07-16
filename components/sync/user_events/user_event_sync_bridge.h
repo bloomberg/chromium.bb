@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_store.h"
@@ -97,6 +98,8 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
 
   // Empty if sync not running.
   std::string syncing_account_id_;
+
+  base::WeakPtrFactory<UserEventSyncBridge> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserEventSyncBridge);
 };

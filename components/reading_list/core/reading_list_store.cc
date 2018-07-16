@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/clock.h"
 #include "components/reading_list/core/proto/reading_list.pb.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
@@ -25,7 +24,8 @@ ReadingListStore::ReadingListStore(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
     : ReadingListModelStorage(std::move(change_processor)),
       create_store_callback_(std::move(create_store_callback)),
-      pending_transaction_count_(0) {}
+      pending_transaction_count_(0),
+      weak_ptr_factory_(this) {}
 
 ReadingListStore::~ReadingListStore() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -42,13 +42,12 @@ void ReadingListStore::SetReadingListModel(ReadingListModel* model,
   std::move(create_store_callback_)
       .Run(syncer::READING_LIST,
            base::BindOnce(&ReadingListStore::OnStoreCreated,
-                          base::AsWeakPtr(this)));
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 std::unique_ptr<ReadingListModelStorage::ScopedBatchUpdate>
 ReadingListStore::EnsureBatchCreated() {
-  return base::WrapUnique<ReadingListModelStorage::ScopedBatchUpdate>(
-      new ScopedBatchUpdate(this));
+  return std::make_unique<ScopedBatchUpdate>(this);
 }
 
 ReadingListStore::ScopedBatchUpdate::ScopedBatchUpdate(ReadingListStore* store)
@@ -72,9 +71,9 @@ void ReadingListStore::CommitTransaction() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pending_transaction_count_--;
   if (pending_transaction_count_ == 0) {
-    store_->CommitWriteBatch(
-        std::move(batch_),
-        base::Bind(&ReadingListStore::OnDatabaseSave, base::AsWeakPtr(this)));
+    store_->CommitWriteBatch(std::move(batch_),
+                             base::Bind(&ReadingListStore::OnDatabaseSave,
+                                        weak_ptr_factory_.GetWeakPtr()));
     batch_.reset();
   }
 }
@@ -145,8 +144,8 @@ void ReadingListStore::OnDatabaseLoad(
 
   delegate_->StoreLoaded(std::move(loaded_entries));
 
-  store_->ReadAllMetadata(
-      base::Bind(&ReadingListStore::OnReadAllMetadata, base::AsWeakPtr(this)));
+  store_->ReadAllMetadata(base::Bind(&ReadingListStore::OnReadAllMetadata,
+                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ReadingListStore::OnReadAllMetadata(
@@ -174,8 +173,8 @@ void ReadingListStore::OnStoreCreated(
     return;
   }
   store_ = std::move(store);
-  store_->ReadAllData(
-      base::Bind(&ReadingListStore::OnDatabaseLoad, base::AsWeakPtr(this)));
+  store_->ReadAllData(base::Bind(&ReadingListStore::OnDatabaseLoad,
+                                 weak_ptr_factory_.GetWeakPtr()));
   return;
 }
 

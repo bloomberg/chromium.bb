@@ -87,7 +87,8 @@ DeviceInfoSyncBridge::DeviceInfoSyncBridge(
     OnceModelTypeStoreFactory store_factory,
     std::unique_ptr<ModelTypeChangeProcessor> change_processor)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      local_device_info_provider_(local_device_info_provider) {
+      local_device_info_provider_(local_device_info_provider),
+      weak_ptr_factory_(this) {
   DCHECK(local_device_info_provider);
 
   // This is not threadsafe, but presuably the provider initializes on the same
@@ -102,7 +103,7 @@ DeviceInfoSyncBridge::DeviceInfoSyncBridge(
 
   std::move(store_factory)
       .Run(DEVICE_INFO, base::BindOnce(&DeviceInfoSyncBridge::OnStoreCreated,
-                                       base::AsWeakPtr(this)));
+                                       weak_ptr_factory_.GetWeakPtr()));
 }
 
 DeviceInfoSyncBridge::~DeviceInfoSyncBridge() {}
@@ -352,7 +353,7 @@ void DeviceInfoSyncBridge::OnStoreCreated(
 
   store_ = std::move(store);
   store_->ReadAllData(base::BindOnce(&DeviceInfoSyncBridge::OnReadAllData,
-                                     base::AsWeakPtr(this)));
+                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeviceInfoSyncBridge::OnReadAllData(
@@ -381,8 +382,9 @@ void DeviceInfoSyncBridge::OnReadAllData(
 
 void DeviceInfoSyncBridge::LoadMetadataIfReady() {
   if (has_data_loaded_ && has_provider_initialized_) {
-    store_->ReadAllMetadata(base::BindOnce(
-        &DeviceInfoSyncBridge::OnReadAllMetadata, base::AsWeakPtr(this)));
+    store_->ReadAllMetadata(
+        base::BindOnce(&DeviceInfoSyncBridge::OnReadAllMetadata,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -472,9 +474,9 @@ void DeviceInfoSyncBridge::SendLocalData() {
 
 void DeviceInfoSyncBridge::CommitAndNotify(std::unique_ptr<WriteBatch> batch,
                                            bool should_notify) {
-  store_->CommitWriteBatch(
-      std::move(batch),
-      base::BindOnce(&DeviceInfoSyncBridge::OnCommit, base::AsWeakPtr(this)));
+  store_->CommitWriteBatch(std::move(batch),
+                           base::BindOnce(&DeviceInfoSyncBridge::OnCommit,
+                                          weak_ptr_factory_.GetWeakPtr()));
   if (should_notify) {
     NotifyObservers();
   }
