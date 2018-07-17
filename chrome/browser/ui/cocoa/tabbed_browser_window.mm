@@ -36,7 +36,7 @@ WEAK_IMPORT_ATTRIBUTE
     __attribute__((availability(macos, obsoleted = 10.10)));
 @end
 
-@interface NSWindow (PrivateAPI)
+@interface NSWindow (PrivateTabbedBrowserWindowAPI)
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle;
 @end
 
@@ -125,7 +125,7 @@ WEAK_IMPORT_ATTRIBUTE
   return styleMask;
 }
 
-// NSWindow (PrivateAPI) overrides.
+// NSWindow (PrivateTabbedBrowserWindowAPI) overrides.
 
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle {
   // Because NSThemeFrame is imported weakly, if it's not present at runtime

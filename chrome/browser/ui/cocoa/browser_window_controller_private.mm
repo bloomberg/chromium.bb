@@ -57,7 +57,7 @@
 using content::RenderWidgetHostView;
 using content::WebContents;
 
-@interface NSView (PrivateAPI)
+@interface NSView (PrivateBrowserWindowControllerAPI)
 // Returns the fullscreen button's origin in window coordinates. This method is
 // only available on NSThemeFrame (the contentView's superview), and it should
 // not be relied on to exist on macOS >10.9 (which doesn't have a separate
@@ -80,7 +80,7 @@ enum WindowLocation {
 
 }  // namespace
 
-@interface NSWindow (NSPrivateApis)
+@interface NSWindow (NSPrivateBrowserWindowControllerApis)
 // Note: These functions are private, use -[NSObject respondsToSelector:]
 // before calling them.
 - (NSWindow*)_windowForToolbar;

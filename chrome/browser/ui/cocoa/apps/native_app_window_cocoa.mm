@@ -44,7 +44,7 @@
 
 using extensions::AppWindow;
 
-@interface NSWindow (NSPrivateApis)
+@interface NSWindow (NSPrivateNativeAppWindowApis)
 - (void)setBottomCornerRounded:(BOOL)rounded;
 - (BOOL)_isTitleHidden;
 @end
