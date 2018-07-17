@@ -13,7 +13,6 @@ import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.support.v7.widget.RecyclerView.ItemAnimator;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
@@ -54,8 +53,7 @@ public class SelectableListLayout<E>
         extends FrameLayout implements DisplayStyleObserver, SelectionObserver<E> {
 
     private static final int WIDE_DISPLAY_MIN_PADDING_DP = 16;
-
-    private Adapter<RecyclerView.ViewHolder> mAdapter;
+    private RecyclerView.Adapter mAdapter;
     private ViewStub mToolbarStub;
     private TextView mEmptyView;
     private LoadingView mLoadingView;
@@ -129,19 +127,48 @@ public class SelectableListLayout<E>
     }
 
     /**
-     * Initializes the RecyclerView.
+     * Creates a RecyclerView for the given adapter.
      *
      * @param adapter The adapter that provides a binding from an app-specific data set to views
      *                that are displayed within the RecyclerView.
      * @return The RecyclerView itself.
      */
-    public RecyclerView initializeRecyclerView(Adapter<RecyclerView.ViewHolder> adapter) {
-        mAdapter = adapter;
-        mAdapter.registerAdapterDataObserver(mAdapterObserver);
+    public RecyclerView initializeRecyclerView(RecyclerView.Adapter adapter) {
+        return initializeRecyclerView(adapter, null);
+    }
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+    /**
+     * Initializes the layout with the given recycler view and adapter.
+     *
+     * @param adapter The adapter that provides a binding from an app-specific data set to views
+     *                that are displayed within the RecyclerView.
+     * @param recyclerView The recycler view to be shown.
+     * @return The RecyclerView itself.
+     */
+    public RecyclerView initializeRecyclerView(
+            RecyclerView.Adapter adapter, @Nullable RecyclerView recyclerView) {
+        mAdapter = adapter;
+
+        if (recyclerView == null) {
+            mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+            mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        } else {
+            mRecyclerView = recyclerView;
+
+            // Replace the inflated recycler view with the one supplied to this method.
+            FrameLayout contentView = findViewById(R.id.list_content);
+            RecyclerView existingView = contentView.findViewById(R.id.recycler_view);
+            contentView.removeView(existingView);
+            contentView.addView(mRecyclerView, 0);
+        }
+
         mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        initializeRecyclerViewProperties();
+        return mRecyclerView;
+    }
+
+    private void initializeRecyclerViewProperties() {
+        mAdapter.registerAdapterDataObserver(mAdapterObserver);
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.addOnScrollListener(new OnScrollListener() {
@@ -152,8 +179,6 @@ public class SelectableListLayout<E>
         });
 
         mItemAnimator = mRecyclerView.getItemAnimator();
-
-        return mRecyclerView;
     }
 
     /**

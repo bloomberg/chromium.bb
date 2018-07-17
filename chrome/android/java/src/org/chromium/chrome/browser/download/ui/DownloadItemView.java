@@ -258,7 +258,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             // TODO(dfalcantara): Get thumbnails for audio and video files when possible.
         }
 
-        if (mThumbnailBitmap == null) updateIconView();
+        if (mThumbnailBitmap == null) updateView();
 
         Context context = mDescriptionCompletedView.getContext();
         mFilenameCompletedView.setText(item.getDisplayFileName());
@@ -327,7 +327,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
     private void setThumbnailBitmap(Bitmap thumbnail) {
         mThumbnailBitmap = thumbnail;
-        updateIconView();
+        updateView();
     }
 
     @Override
@@ -350,7 +350,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     }
 
     @Override
-    protected void updateIconView() {
+    protected void updateView() {
         if (isChecked()) {
             if (FeatureUtilities.isChromeModernDesignEnabled()) {
                 mIconView.setBackgroundResource(mIconBackgroundResId);

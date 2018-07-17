@@ -12,30 +12,19 @@ import android.support.annotation.VisibleForTesting;
 import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
-import android.widget.Checkable;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.TintedImageView;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
-
-import java.util.List;
 
 /**
- * An item that can be selected. When selected, the item will be highlighted. A selection is
- * initially established via long-press. If a selection is already established, clicking on the item
- * will toggle its selection.
+ * Default implementation of SelectableItemViewBase.
  *
- * @param <E> The type of the item associated with this SelectableItemView.
+ * @param <E> The type of the item associated with this SelectableItemViewBase.
  */
-public abstract class SelectableItemView<E> extends FrameLayout implements Checkable,
-        OnClickListener, OnLongClickListener, SelectionObserver<E> {
+public abstract class SelectableItemView<E> extends SelectableItemViewBase<E> {
     protected final int mDefaultLevel;
     protected final int mSelectedLevel;
     protected final AnimatedVectorDrawableCompat mCheckDrawable;
@@ -44,10 +33,6 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
     protected TextView mTitleView;
     protected TextView mDescriptionView;
     protected ColorStateList mIconColorList;
-
-    private SelectionDelegate<E> mSelectionDelegate;
-    private E mItem;
-    private boolean mIsChecked;
     private Drawable mIconDrawable;
 
     /**
@@ -61,43 +46,6 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
         mSelectedLevel = getResources().getInteger(R.integer.list_item_level_selected);
         mCheckDrawable = AnimatedVectorDrawableCompat.create(
                 getContext(), R.drawable.ic_check_googblue_24dp_animated);
-    }
-
-    /**
-     * Destroys and cleans up itself.
-     */
-    public void destroy() {
-        if (mSelectionDelegate != null) {
-            mSelectionDelegate.removeObserver(this);
-        }
-    }
-
-    /**
-     * Sets the SelectionDelegate and registers this object as an observer. The SelectionDelegate
-     * must be set before the item can respond to click events.
-     * @param delegate The SelectionDelegate that will inform this item of selection changes.
-     */
-    public void setSelectionDelegate(SelectionDelegate<E> delegate) {
-        if (mSelectionDelegate != delegate) {
-            if (mSelectionDelegate != null) mSelectionDelegate.removeObserver(this);
-            mSelectionDelegate = delegate;
-            mSelectionDelegate.addObserver(this);
-        }
-    }
-
-    /**
-     * @param item The item associated with this SelectableItemView.
-     */
-    public void setItem(E item) {
-        mItem = item;
-        setChecked(mSelectionDelegate.isItemSelected(item));
-    }
-
-    /**
-     * @return The item associated with this SelectableItemView.
-     */
-    public E getItem() {
-        return mItem;
     }
 
     // FrameLayout implementations.
@@ -116,84 +64,6 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
                 mIconView.getBackground().setAlpha(0);
             }
         }
-
-        setOnClickListener(this);
-        setOnLongClickListener(this);
-    }
-
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        if (mSelectionDelegate != null) {
-            setChecked(mSelectionDelegate.isItemSelected(mItem));
-        }
-    }
-
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        setChecked(false);
-    }
-
-    // OnClickListener implementation.
-    @Override
-    public final void onClick(View view) {
-        assert view == this;
-
-        if (isSelectionModeActive()) {
-            onLongClick(view);
-        }  else {
-            onClick();
-        }
-    }
-
-    // OnLongClickListener implementation.
-    @Override
-    public boolean onLongClick(View view) {
-        assert view == this;
-        boolean checked = toggleSelectionForItem(mItem);
-        setChecked(checked);
-        return true;
-    }
-
-    /**
-     * @return Whether we are currently in selection mode.
-     */
-    protected boolean isSelectionModeActive() {
-        return mSelectionDelegate.isSelectionEnabled();
-    }
-
-    /**
-     * Toggles the selection state for a given item.
-     * @param item The given item.
-     * @return Whether the item was in selected state after the toggle.
-     */
-    protected boolean toggleSelectionForItem(E item) {
-        return mSelectionDelegate.toggleSelectionForItem(item);
-    }
-
-    // Checkable implementations.
-    @Override
-    public boolean isChecked() {
-        return mIsChecked;
-    }
-
-    @Override
-    public void toggle() {
-        setChecked(!isChecked());
-    }
-
-    @Override
-    public void setChecked(boolean checked) {
-        if (checked == mIsChecked) return;
-        mIsChecked = checked;
-        updateIconView();
-    }
-
-    // SelectionObserver implementation.
-    @Override
-    public void onSelectionStateChange(List<E> selectedItems) {
-        setChecked(mSelectionDelegate.isItemSelected(mItem));
     }
 
     /**
@@ -202,13 +72,14 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
      */
     protected void setIconDrawable(Drawable iconDrawable) {
         mIconDrawable = iconDrawable;
-        updateIconView();
+        updateView();
     }
 
     /**
      * Update icon image and background based on whether this item is selected.
      */
-    protected void updateIconView() {
+    @Override
+    protected void updateView() {
         // TODO(huayinz): Refactor this method so that mIconView is not exposed to subclass.
         if (mIconView == null) return;
 
@@ -235,14 +106,6 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
     protected @Nullable ColorStateList getDefaultIconTint() {
         return null;
     }
-
-    /**
-     * Same as {@link OnClickListener#onClick(View)} on this.
-     * Subclasses should override this instead of setting their own OnClickListener because this
-     * class handles onClick events in selection mode, and won't forward events to subclasses in
-     * that case.
-     */
-    protected abstract void onClick();
 
     @VisibleForTesting
     public void endAnimationsForTests() {
