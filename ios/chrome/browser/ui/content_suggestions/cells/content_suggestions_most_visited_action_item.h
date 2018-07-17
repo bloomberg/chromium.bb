@@ -27,8 +27,12 @@ typedef NS_ENUM(NSInteger, ContentSuggestionsMostVisitedAction) {
 - (nonnull instancetype)initWithAction:
     (ContentSuggestionsMostVisitedAction)action;
 
-// Text for the title and the accessibility label of the cell.
+// Text for the title of the cell.
 @property(nonatomic, copy, nonnull) NSString* title;
+
+// The accessibility label of the cell.  If none is provided, self.title is used
+// as the label.
+@property(nonatomic, copy, nullable) NSString* accessibilityLabel;
 
 // The action type for this button.
 @property(nonatomic, assign) ContentSuggestionsMostVisitedAction action;
