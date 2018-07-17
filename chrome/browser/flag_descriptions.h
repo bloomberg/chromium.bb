@@ -1427,6 +1427,9 @@ extern const char kGrantNotificationsToDSENameDescription[];
 extern const char kHomePageButtonName[];
 extern const char kHomePageButtonDescription[];
 
+extern const char kHomepageTileName[];
+extern const char kHomepageTileDescription[];
+
 extern const char kInterestFeedContentSuggestionsName[];
 extern const char kInterestFeedContentSuggestionsDescription[];
 

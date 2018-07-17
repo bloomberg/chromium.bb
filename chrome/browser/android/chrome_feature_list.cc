@@ -103,6 +103,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kFullscreenActivity,
     &kHandleMediaIntents,
     &kHomePageButtonForceEnabled,
+    &kHomepageTile,
     &kHorizontalTabSwitcherAndroid,
     &kImprovedA2HS,
     &kLanguagesPreference,
@@ -283,6 +284,9 @@ const base::Feature kHandleMediaIntents{"HandleMediaIntents",
 
 const base::Feature kHomePageButtonForceEnabled{
     "HomePageButtonForceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kHomepageTile{"HomepageTile",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kHorizontalTabSwitcherAndroid{
     "HorizontalTabSwitcherAndroid", base::FEATURE_DISABLED_BY_DEFAULT};

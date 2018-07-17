@@ -1942,6 +1942,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-ntp-button", flag_descriptions::kNtpButtonName,
      flag_descriptions::kNtpButtonDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNTPButton)},
+    {"enable-homepage-tile", flag_descriptions::kHomepageTileName,
+     flag_descriptions::kHomepageTileDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kHomepageTile)},
 #endif  // OS_ANDROID
 #if defined(OS_ANDROID)
     {"enable-tab-modal-js-dialog-android",
