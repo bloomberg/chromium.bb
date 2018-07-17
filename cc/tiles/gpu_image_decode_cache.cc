@@ -303,8 +303,7 @@ sk_sp<SkImage> MakeTextureImage(viz::RasterContextProvider* context,
   // Step 2: Apply a color-space conversion if necessary.
   if (uploaded_image && target_color_space) {
     sk_sp<SkImage> pre_converted_image = uploaded_image;
-    uploaded_image = uploaded_image->makeColorSpace(
-        target_color_space, SkTransferFunctionBehavior::kIgnore);
+    uploaded_image = uploaded_image->makeColorSpace(target_color_space);
 
     if (uploaded_image != pre_converted_image)
       DeleteSkImageAndPreventCaching(context, std::move(pre_converted_image));

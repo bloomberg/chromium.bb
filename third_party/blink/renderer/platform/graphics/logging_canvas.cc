@@ -273,7 +273,6 @@ std::unique_ptr<JSONObject> ObjectForBitmapData(const SkBitmap& bitmap) {
   SkPngEncoder::Options options;
   options.fFilterFlags = SkPngEncoder::FilterFlag::kSub;
   options.fZLibLevel = 3;
-  options.fUnpremulBehavior = SkTransferFunctionBehavior::kIgnore;
   if (!ImageEncoder::Encode(&output, src, options)) {
     return nullptr;
   }

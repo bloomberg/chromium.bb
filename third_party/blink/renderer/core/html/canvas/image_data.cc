@@ -367,8 +367,7 @@ ImageData* ImageData::Create(scoped_refptr<StaticBitmapImage> image,
     if (!f16_array)
       return nullptr;
     if (!pixmap.readPixels(image_info, f16_array->Data(),
-                           image_info.minRowBytes(), 0, 0,
-                           SkTransferFunctionBehavior::kIgnore)) {
+                           image_info.minRowBytes())) {
       NOTREACHED();
       return nullptr;
     }

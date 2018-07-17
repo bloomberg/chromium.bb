@@ -113,9 +113,7 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   // Methods have exactly the same implementation for all sub-classes
   bool OriginClean() const { return is_origin_clean_; }
   void SetOriginClean(bool flag) { is_origin_clean_ = flag; }
-  scoped_refptr<StaticBitmapImage> ConvertToColorSpace(
-      sk_sp<SkColorSpace>,
-      SkTransferFunctionBehavior);
+  scoped_refptr<StaticBitmapImage> ConvertToColorSpace(sk_sp<SkColorSpace>);
 
   static bool ConvertToArrayBufferContents(
       scoped_refptr<StaticBitmapImage> src_image,

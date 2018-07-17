@@ -85,9 +85,7 @@ class PLATFORM_EXPORT ImageEncoder {
    *  is out of range, this will perform a lossy encode with the default
    *  value (80).
    */
-  static SkWebpEncoder::Options ComputeWebpOptions(
-      double quality,
-      SkTransferFunctionBehavior unpremulBehavior);
+  static SkWebpEncoder::Options ComputeWebpOptions(double quality);
 
  private:
   ImageEncoder(Vector<unsigned char>* dst) : dst_(dst) {}
