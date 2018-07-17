@@ -91,9 +91,6 @@ bool CleanupDownloadsSync(
     const std::map<std::string, std::pair<base::FilePath, int64_t>>&
         success_downloads,
     sql::Connection* db) {
-  if (!db)
-    return false;
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
@@ -164,7 +161,8 @@ void DownloadCleanupTask::Run() {
       base::BindOnce(&CleanupDownloadsSync, kMaxDownloadAttempts,
                      outstanding_download_ids_, success_downloads_),
       base::BindOnce(&DownloadCleanupTask::OnFinished,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      false);
 }
 
 void DownloadCleanupTask::OnFinished(bool success) {

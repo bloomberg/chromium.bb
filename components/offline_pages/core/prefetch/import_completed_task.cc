@@ -21,9 +21,6 @@ namespace {
 bool UpdateToFinishedStateSync(int64_t offline_id,
                                bool success,
                                sql::Connection* db) {
-  if (!db)
-    return false;
-
   static const char kSql[] =
       "UPDATE prefetch_items"
       " SET state = ?, error_code = ?"
@@ -61,7 +58,8 @@ void ImportCompletedTask::Run() {
   prefetch_store_->Execute(
       base::BindOnce(&UpdateToFinishedStateSync, offline_id_, success_),
       base::BindOnce(&ImportCompletedTask::OnStateUpdatedToFinished,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      false);
 }
 
 void ImportCompletedTask::OnStateUpdatedToFinished(bool row_was_updated) {

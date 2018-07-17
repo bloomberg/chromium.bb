@@ -44,9 +44,6 @@ MarkOperationDoneTask::TaskResult MakeStoreError() {
 MarkOperationDoneTask::TaskResult MarkOperationCompletedOnServerSync(
     const std::string& operation_name,
     sql::Connection* db) {
-  if (!db)
-    return MakeStoreError();
-
   sql::Transaction transaction(db);
   if (transaction.Begin() && UpdatePrefetchItemsSync(db, operation_name) &&
       transaction.Commit()) {
@@ -72,7 +69,8 @@ MarkOperationDoneTask::~MarkOperationDoneTask() {}
 void MarkOperationDoneTask::Run() {
   prefetch_store_->Execute(
       base::BindOnce(&MarkOperationCompletedOnServerSync, operation_name_),
-      base::BindOnce(&MarkOperationDoneTask::Done, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&MarkOperationDoneTask::Done, weak_factory_.GetWeakPtr()),
+      MakeStoreError());
 }
 
 void MarkOperationDoneTask::Done(TaskResult result) {

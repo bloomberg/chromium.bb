@@ -111,9 +111,6 @@ bool MarkUrlFinishedWithError(sql::Connection* db, const FetchedUrl& url) {
 
 std::unique_ptr<UrlAndIds> SelectUrlsToPrefetchSync(base::Clock* clock,
                                                     sql::Connection* db) {
-  if (!db)
-    return nullptr;
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return nullptr;
@@ -167,7 +164,8 @@ void GeneratePageBundleTask::Run() {
   prefetch_store_->Execute(
       base::BindOnce(&SelectUrlsToPrefetchSync, clock_),
       base::BindOnce(&GeneratePageBundleTask::StartGeneratePageBundle,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr()),
+      std::unique_ptr<UrlAndIds>());
 }
 
 void GeneratePageBundleTask::SetClockForTesting(base::Clock* clock) {

@@ -174,9 +174,6 @@ void ReportAndFinalizeStuckItems(base::Time now, sql::Connection* db) {
 
 Result FinalizeStaleEntriesSync(StaleEntryFinalizerTask::NowGetter now_getter,
                                 sql::Connection* db) {
-  if (!db)
-    return Result::NO_MORE_WORK;
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return Result::NO_MORE_WORK;
@@ -232,7 +229,8 @@ void StaleEntryFinalizerTask::Run() {
   prefetch_store_->Execute(
       base::BindOnce(&FinalizeStaleEntriesSync, now_getter_),
       base::BindOnce(&StaleEntryFinalizerTask::OnFinished,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      Result::NO_MORE_WORK);
 }
 
 void StaleEntryFinalizerTask::SetNowGetterForTesting(NowGetter now_getter) {

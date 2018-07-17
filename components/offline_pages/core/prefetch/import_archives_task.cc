@@ -68,9 +68,6 @@ bool UpdateToImportingStateSync(int64_t offline_id, sql::Connection* db) {
 
 std::unique_ptr<std::vector<PrefetchArchiveInfo>>
 GetArchivesAndUpdateToImportingStateSync(sql::Connection* db) {
-  if (!db)
-    return nullptr;
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return nullptr;
@@ -105,7 +102,8 @@ void ImportArchivesTask::Run() {
   prefetch_store_->Execute(
       base::BindOnce(&GetArchivesAndUpdateToImportingStateSync),
       base::BindOnce(&ImportArchivesTask::OnArchivesRetrieved,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      std::unique_ptr<std::vector<PrefetchArchiveInfo>>());
 }
 
 void ImportArchivesTask::OnArchivesRetrieved(

@@ -82,9 +82,6 @@ Result AddUrlsAndCleanupZombiesSync(
     const std::string& name_space,
     const std::vector<PrefetchURL>& candidate_prefetch_urls,
     sql::Connection* db) {
-  if (!db)
-    return Result::STORE_ERROR;
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return Result::STORE_ERROR;
@@ -155,7 +152,8 @@ void AddUniqueUrlsTask::Run() {
   prefetch_store_->Execute(base::BindOnce(&AddUrlsAndCleanupZombiesSync,
                                           name_space_, prefetch_urls_),
                            base::BindOnce(&AddUniqueUrlsTask::OnUrlsAdded,
-                                          weak_ptr_factory_.GetWeakPtr()));
+                                          weak_ptr_factory_.GetWeakPtr()),
+                           Result::STORE_ERROR);
 }
 
 void AddUniqueUrlsTask::OnUrlsAdded(Result result) {

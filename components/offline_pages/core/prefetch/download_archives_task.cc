@@ -83,9 +83,6 @@ bool MarkItemAsDownloading(sql::Connection* db,
 
 std::unique_ptr<ItemsToDownload> SelectAndMarkItemsForDownloadSync(
     sql::Connection* db) {
-  if (!db)
-    return nullptr;
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return nullptr;
@@ -190,7 +187,8 @@ void DownloadArchivesTask::Run() {
   prefetch_store_->Execute(
       base::BindOnce(SelectAndMarkItemsForDownloadSync),
       base::BindOnce(&DownloadArchivesTask::SendItemsToPrefetchDownloader,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      std::unique_ptr<ItemsToDownload>());
 }
 
 void DownloadArchivesTask::SendItemsToPrefetchDownloader(

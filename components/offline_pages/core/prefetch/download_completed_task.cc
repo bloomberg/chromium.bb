@@ -50,8 +50,6 @@ UpdateInfo UpdatePrefetchItemOnDownloadSuccessSync(
     const base::FilePath& file_path,
     int64_t file_size,
     sql::Connection* db) {
-  if (!db)
-    return UpdateInfo();
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return UpdateInfo();
@@ -94,9 +92,6 @@ UpdateInfo UpdatePrefetchItemOnDownloadSuccessSync(
 // true if the respective row was successfully updated (as normally expected).
 UpdateInfo UpdatePrefetchItemOnDownloadErrorSync(const std::string& guid,
                                                  sql::Connection* db) {
-  if (!db)
-    return UpdateInfo();
-
   static const char kSql[] =
       "UPDATE prefetch_items"
       " SET state = ?, error_code = ?"
@@ -138,13 +133,15 @@ void DownloadCompletedTask::Run() {
                        download_result_.download_id, download_result_.file_path,
                        download_result_.file_size),
         base::BindOnce(&DownloadCompletedTask::OnPrefetchItemUpdated,
-                       weak_ptr_factory_.GetWeakPtr(), true));
+                       weak_ptr_factory_.GetWeakPtr(), true),
+        UpdateInfo());
   } else {
     prefetch_store_->Execute(
         base::BindOnce(&UpdatePrefetchItemOnDownloadErrorSync,
                        download_result_.download_id),
         base::BindOnce(&DownloadCompletedTask::OnPrefetchItemUpdated,
-                       weak_ptr_factory_.GetWeakPtr(), false));
+                       weak_ptr_factory_.GetWeakPtr(), false),
+        UpdateInfo());
   }
 }
 

@@ -71,17 +71,19 @@ class PrefetchStore {
   // its result back to calling thread through |result_callback|.
   // Calling |Execute| when store is NOT_INITIALIZED will cause the store
   // initialization to start.
-  // Store initialization status needs to be SUCCESS for test task to run, or
-  // FAILURE, in which case the |db| pointer passed to |run_callback| will be
-  // null and such case should be gracefully handled.
+  // Store initialization status needs to be SUCCESS for run_callback to run.
+  // If initialization fails, |result_callback| is invoked with |default_value|.
   template <typename T>
-  void Execute(RunCallback<T> run_callback, ResultCallback<T> result_callback) {
+  void Execute(RunCallback<T> run_callback,
+               ResultCallback<T> result_callback,
+               T default_value) {
     CHECK_NE(initialization_status_, InitializationStatus::INITIALIZING);
 
     if (initialization_status_ == InitializationStatus::NOT_INITIALIZED) {
       Initialize(base::BindOnce(
           &PrefetchStore::Execute<T>, weak_ptr_factory_.GetWeakPtr(),
-          std::move(run_callback), std::move(result_callback)));
+          std::move(run_callback), std::move(result_callback),
+          std::move(default_value)));
       return;
     }
 
@@ -95,12 +97,18 @@ class PrefetchStore {
     sql::Connection* db =
         initialization_status_ == InitializationStatus::SUCCESS ? db_.get()
                                                                 : nullptr;
-    base::PostTaskAndReplyWithResult(
-        blocking_task_runner_.get(), FROM_HERE,
-        base::BindOnce(std::move(run_callback), db),
-        base::BindOnce(&PrefetchStore::RescheduleClosing<T>,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       std::move(result_callback)));
+    if (!db) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(result_callback), std::move(default_value)));
+    } else {
+      base::PostTaskAndReplyWithResult(
+          blocking_task_runner_.get(), FROM_HERE,
+          base::BindOnce(std::move(run_callback), db),
+          base::BindOnce(&PrefetchStore::RescheduleClosing<T>,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(result_callback)));
+    }
   }
 
   // Gets the initialization status of the store.
