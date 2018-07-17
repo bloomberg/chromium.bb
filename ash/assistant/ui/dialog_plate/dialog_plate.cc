@@ -10,11 +10,13 @@
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/util/animation_util.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -32,6 +34,12 @@ namespace {
 // Appearance.
 constexpr int kIconSizeDip = 24;
 constexpr int kPreferredHeightDip = 48;
+
+// Animation.
+constexpr base::TimeDelta kAnimationFadeInDuration =
+    base::TimeDelta::FromMilliseconds(100);
+constexpr base::TimeDelta kAnimationFadeOutDuration =
+    base::TimeDelta::FromMilliseconds(83);
 
 // Helpers ---------------------------------------------------------------------
 
@@ -105,6 +113,8 @@ void DialogPlate::InitLayout() {
 
 void DialogPlate::InitKeyboardLayoutContainer() {
   keyboard_layout_container_ = new views::View();
+  keyboard_layout_container_->SetPaintToLayer();
+  keyboard_layout_container_->layer()->SetFillsBoundsOpaquely(false);
 
   views::BoxLayout* layout_manager =
       keyboard_layout_container_->SetLayoutManager(
@@ -155,6 +165,8 @@ void DialogPlate::InitKeyboardLayoutContainer() {
 
 void DialogPlate::InitVoiceLayoutContainer() {
   voice_layout_container_ = new views::View();
+  voice_layout_container_->SetPaintToLayer();
+  voice_layout_container_->layer()->SetFillsBoundsOpaquely(false);
 
   views::BoxLayout* layout_manager = voice_layout_container_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
@@ -215,18 +227,38 @@ void DialogPlate::OnButtonPressed(DialogPlateButtonId id) {
 void DialogPlate::OnInputModalityChanged(InputModality input_modality) {
   switch (input_modality) {
     case InputModality::kKeyboard:
-      keyboard_layout_container_->SetVisible(true);
-      voice_layout_container_->SetVisible(false);
+      // Animate voice layout container opacity to 0%.
+      voice_layout_container_->layer()->GetAnimator()->StartAnimation(
+          assistant::util::CreateLayerAnimationSequence(
+              ui::LayerAnimationElement::CreateOpacityElement(
+                  0.f, kAnimationFadeOutDuration)));
 
-      // When switching to text input modality we give focus to the textfield.
+      // Animate keyboard layout container opacity to 100% with delay.
+      keyboard_layout_container_->layer()->GetAnimator()->StartAnimation(
+          assistant::util::CreateLayerAnimationSequenceWithDelay(
+              ui::LayerAnimationElement::CreateOpacityElement(
+                  1.f, kAnimationFadeInDuration),
+              /*delay=*/kAnimationFadeOutDuration));
+
+      // When switching to keyboard input modality, we focus the textfield.
       textfield_->RequestFocus();
       break;
     case InputModality::kVoice:
-      keyboard_layout_container_->SetVisible(false);
-      voice_layout_container_->SetVisible(true);
+      // Animate keyboard layout container opacity to 0%.
+      keyboard_layout_container_->layer()->GetAnimator()->StartAnimation(
+          assistant::util::CreateLayerAnimationSequence(
+              ui::LayerAnimationElement::CreateOpacityElement(
+                  0.f, kAnimationFadeOutDuration)));
+
+      // Animate voice layout container opacity to 100% with delay;
+      voice_layout_container_->layer()->GetAnimator()->StartAnimation(
+          assistant::util::CreateLayerAnimationSequenceWithDelay(
+              ui::LayerAnimationElement::CreateOpacityElement(
+                  1.f, kAnimationFadeInDuration),
+              /*delay=*/kAnimationFadeOutDuration));
       break;
     case InputModality::kStylus:
-      // Not action necessary.
+      // No action necessary.
       break;
   }
 }
