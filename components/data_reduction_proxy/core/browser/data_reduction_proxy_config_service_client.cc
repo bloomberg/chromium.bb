@@ -190,7 +190,7 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
 
 DataReductionProxyConfigServiceClient::
     ~DataReductionProxyConfigServiceClient() {
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 base::TimeDelta
@@ -230,7 +230,7 @@ void DataReductionProxyConfigServiceClient::InitializeOnIOThread(
           &DataReductionProxyConfigServiceClient::OnApplicationStateChange,
           base::Unretained(this))));
 #endif
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   url_request_context_getter_ = url_request_context_getter;
 }
 
@@ -391,8 +391,13 @@ base::Time DataReductionProxyConfigServiceClient::Now() {
   return base::Time::Now();
 }
 
-void DataReductionProxyConfigServiceClient::OnIPAddressChanged() {
+void DataReductionProxyConfigServiceClient::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
+    return;
+
   GetBackoffEntry()->Reset();
   last_ip_address_change_ = base::TimeTicks::Now();
   failed_attempts_before_success_ = 0;

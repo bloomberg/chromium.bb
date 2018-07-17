@@ -109,7 +109,7 @@ class TestDataReductionProxyConfigServiceClient
 
   ~TestDataReductionProxyConfigServiceClient() override;
 
-  using DataReductionProxyConfigServiceClient::OnIPAddressChanged;
+  using DataReductionProxyConfigServiceClient::OnNetworkChanged;
 
   void SetNow(const base::Time& time);
 

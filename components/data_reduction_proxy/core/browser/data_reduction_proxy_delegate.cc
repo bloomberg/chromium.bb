@@ -58,14 +58,14 @@ DataReductionProxyDelegate::DataReductionProxyDelegate(
 
 DataReductionProxyDelegate::~DataReductionProxyDelegate() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void DataReductionProxyDelegate::InitializeOnIOThread(
     DataReductionProxyIOData* io_data) {
   DCHECK(io_data);
   DCHECK(thread_checker_.CalledOnValidThread());
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   io_data_ = io_data;
 }
 
@@ -238,8 +238,13 @@ void DataReductionProxyDelegate::RecordQuicProxyStatus(
                             QUIC_PROXY_STATUS_BOUNDARY);
 }
 
-void DataReductionProxyDelegate::OnIPAddressChanged() {
+void DataReductionProxyDelegate::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
+    return;
+
   last_network_change_time_ = tick_clock_->NowTicks();
 }
 
