@@ -83,7 +83,7 @@ const net::BackoffEntry::Policy& GetBackoffPolicy();
 // fetch policy is different if Chrome is in the background. Every time a config
 // is fetched, it is written to the disk.
 class DataReductionProxyConfigServiceClient
-    : public net::NetworkChangeNotifier::IPAddressObserver,
+    : public net::NetworkChangeNotifier::NetworkChangeObserver,
       public net::URLFetcherDelegate {
  public:
   // The caller must ensure that all parameters remain alive for the lifetime of
@@ -162,8 +162,9 @@ class DataReductionProxyConfigServiceClient
       const base::TimeDelta& config_expiration,
       const base::TimeDelta& backoff_delay);
 
-  // Override of net::NetworkChangeNotifier::IPAddressObserver.
-  void OnIPAddressChanged() override;
+  // Override of net::NetworkChangeNotifier::NetworkChangeObserver.
+  void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Override of net::URLFetcherDelegate.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
