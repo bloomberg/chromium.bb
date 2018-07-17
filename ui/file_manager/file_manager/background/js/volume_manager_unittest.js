@@ -6,7 +6,8 @@ var chrome;
 
 loadTimeData.data = {
   DRIVE_DIRECTORY_LABEL: 'My Drive',
-  DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
+  DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
+  ANDROID_FILES_ROOT_LABEL: 'Play files'
 };
 
 function setUp() {
@@ -106,12 +107,23 @@ function setUp() {
       configurable: false,
       watchable: true,
       source: VolumeManagerCommon.Source.NETWORK
+    },
+    {
+      volumeId: 'android_files:0',
+      volumeLabel: '',
+      volumeType: VolumeManagerCommon.VolumeType.ANDROID_FILES,
+      isReadOnly: false,
+      provile: getMockProfile(),
+      configurable: false,
+      watchable: true,
+      source: VolumeManagerCommon.Source.SYSTEM
     }
   ];
   chrome.fileManagerPrivate.fileSystemMap_ = {
     'download:Downloads': new MockFileSystem('download:Downloads'),
     'drive:drive-foobar%40chromium.org-hash':
-        new MockFileSystem('drive:drive-foobar%40chromium.org-hash')
+        new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+    'android_files:0': new MockFileSystem('android_files:0')
   };
 }
 
@@ -284,6 +296,20 @@ function testGetLocationInfo(callback) {
         assertFalse(teamDriveLocationInfo.hasFixedLabel);
         assertFalse(teamDriveLocationInfo.isReadOnly);
         assertTrue(teamDriveLocationInfo.isRootEntry);
+
+        var androidRoot =
+            new MockFileEntry(new MockFileSystem('android_files:0'), '/');
+        var androidRootLocationInfo =
+            volumeManager.getLocationInfo(androidRoot);
+        assertTrue(androidRootLocationInfo.isReadOnly);
+        assertTrue(androidRootLocationInfo.isRootEntry);
+
+        var androidSubFolder = new MockFileEntry(
+            new MockFileSystem('android_files:0'), '/Pictures');
+        var androidSubFolderLocationInfo =
+            volumeManager.getLocationInfo(androidSubFolder);
+        assertFalse(androidSubFolderLocationInfo.isReadOnly);
+        assertFalse(androidSubFolderLocationInfo.isRootEntry);
       }),
       callback);
 }

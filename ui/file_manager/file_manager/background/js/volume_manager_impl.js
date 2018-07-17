@@ -371,8 +371,17 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
         // Programming error, throw an exception.
         throw new Error('Invalid volume type: ' + volumeInfo.volumeType);
     }
-    isReadOnly = volumeInfo.isReadOnly;
     isRootEntry = util.isSameEntry(entry, volumeInfo.fileSystem.root);
+    // Although "Play files" root directory is writable in file system level,
+    // we prohibit write operations on it in the UI level to avoid confusion.
+    // Users can still have write access in sub directories like
+    // /Play files/Pictures, /Play files/DCIM, etc...
+    if (volumeInfo.volumeType == VolumeManagerCommon.VolumeType.ANDROID_FILES &&
+        isRootEntry) {
+      isReadOnly = true;
+    } else {
+      isReadOnly = volumeInfo.isReadOnly;
+    }
   }
 
   return new EntryLocationImpl(volumeInfo, rootType, isRootEntry, isReadOnly);
