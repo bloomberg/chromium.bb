@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_ANDROID_ANDROID_IMAGE_READER_COMPAT_H_
-#define MEDIA_GPU_ANDROID_ANDROID_IMAGE_READER_COMPAT_H_
+#ifndef BASE_ANDROID_ANDROID_IMAGE_READER_COMPAT_H_
+#define BASE_ANDROID_ANDROID_IMAGE_READER_COMPAT_H_
 
+#include "base/android/android_image_reader_abi.h"
+#include "base/base_export.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#include "media/gpu/android/android_image_reader_abi.h"
-#include "media/gpu/media_gpu_export.h"
 
-namespace media {
+namespace base {
+namespace android {
 
 // This class provides runtime support for working with AImage, AImageReader and
 // ANativeWindow objects on Android O systems without requiring building for the
 // Android O NDK level. Don't call GetInstance() unless IsSupported() returns
 // true.
-class MEDIA_GPU_EXPORT AndroidImageReader {
+class BASE_EXPORT AndroidImageReader {
  public:
   // Thread safe GetInstance.
   static AndroidImageReader& GetInstance();
@@ -72,6 +73,7 @@ class MEDIA_GPU_EXPORT AndroidImageReader {
   DISALLOW_COPY_AND_ASSIGN(AndroidImageReader);
 };
 
-}  // namespace media
+}  // namespace android
+}  // namespace base
 
-#endif  // MEDIA_GPU_ANDROID_ANDROID_IMAGE_READER_COMPAT_H_
+#endif  // BASE_ANDROID_ANDROID_IMAGE_READER_COMPAT_H_

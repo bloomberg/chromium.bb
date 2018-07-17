@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/android/image_reader_gl_owner.h"
+#include "media/gpu/android/texture_owner.h"
 
 #include <stdint.h>
 #include <memory>
@@ -36,7 +36,7 @@ class ImageReaderGLOwnerTest : public testing::Test {
     context_->Initialize(surface_.get(), gl::GLContextAttribs());
     ASSERT_TRUE(context_->MakeCurrent(surface_.get()));
 
-    image_reader_ = ImageReaderGLOwner::Create();
+    image_reader_ = TextureOwner::Create();
   }
 
   void TearDown() override {

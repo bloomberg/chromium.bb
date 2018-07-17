@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_ANDROID_ANDROID_IMAGE_READER_ABI_H_
-#define MEDIA_GPU_ANDROID_ANDROID_IMAGE_READER_ABI_H_
+#ifndef BASE_ANDROID_ANDROID_IMAGE_READER_ABI_H_
+#define BASE_ANDROID_ANDROID_IMAGE_READER_ABI_H_
 
 // Minimal binary interface definitions for AImage,AImageReader
 // and ANativeWindow based on include/media/NdkImage.h,
@@ -94,4 +94,4 @@ using pANativeWindow_toSurface = jobject (*)(JNIEnv* env,
 
 }  // extern "C"
 
-#endif  // MEDIA_GPU_ANDROID_ANDROID_IMAGE_READER_ABI_H_
+#endif  // BASE_ANDROID_ANDROID_IMAGE_READER_ABI_H_

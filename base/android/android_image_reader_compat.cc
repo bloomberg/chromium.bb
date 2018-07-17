@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/android/android_image_reader_compat.h"
+#include "base/android/android_image_reader_compat.h"
 
 #include <dlfcn.h>
 
 #include "base/android/build_info.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "media/base/media_switches.h"
 
 #define LOAD_FUNCTION(lib, func)                            \
   do {                                                      \
@@ -20,7 +19,8 @@
     }                                                       \
   } while (0)
 
-namespace media {
+namespace base {
+namespace android {
 
 AndroidImageReader& AndroidImageReader::GetInstance() {
   // C++11 static local variable initialization is
@@ -34,9 +34,7 @@ bool AndroidImageReader::IsSupported() {
 }
 
 AndroidImageReader::AndroidImageReader() {
-  is_supported_ =
-      base::FeatureList::IsEnabled(media::kAImageReaderVideoOutput) &&
-      LoadFunctions();
+  is_supported_ = LoadFunctions();
 }
 
 bool AndroidImageReader::LoadFunctions() {
@@ -140,4 +138,5 @@ jobject AndroidImageReader::ANativeWindow_toSurface(JNIEnv* env,
   return ANativeWindow_toSurface_(env, window);
 }
 
-}  // namespace media
+}  // namespace android
+}  // namespace base

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "media/gpu/android/android_image_reader_compat.h"
+#include "base/android/android_image_reader_compat.h"
 #include "media/gpu/android/texture_owner.h"
 #include "ui/gl/gl_fence_egl.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
@@ -53,7 +53,7 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
 
   // reference to the class instance which is used to dynamically
   // load the functions in android libraries at runtime.
-  AndroidImageReader& loader_;
+  base::android::AndroidImageReader& loader_;
 
   // The context and surface that were used to create |texture_id_|.
   scoped_refptr<gl::GLContext> context_;
