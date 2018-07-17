@@ -364,9 +364,12 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
             TestUtils::GetContentSetting(&pref_content_settings_provider, host,
                                          host, CONTENT_SETTINGS_TYPE_PLUGINS,
                                          resource1, false));
-  pref_content_settings_provider.SetWebsiteSetting(
-      pattern, pattern, CONTENT_SETTINGS_TYPE_PLUGINS, resource1,
-      new base::Value(CONTENT_SETTING_BLOCK));
+  std::unique_ptr<base::Value> value(new base::Value(CONTENT_SETTING_BLOCK));
+  if (pref_content_settings_provider.SetWebsiteSetting(
+          pattern, pattern, CONTENT_SETTINGS_TYPE_PLUGINS, resource1,
+          value.get())) {
+    value.release();
+  }
 
   bool flash_is_ephemeral =
       ContentSettingsRegistry::GetInstance()
@@ -501,12 +504,20 @@ TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
                              ResourceIdentifier(), value->DeepCopy());
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Non-empty pattern, plugins, non-empty resource identifier.
-  provider.SetWebsiteSetting(pattern, wildcard, CONTENT_SETTINGS_TYPE_PLUGINS,
-                             res_id, value->DeepCopy());
+  std::unique_ptr<base::Value> value_copy(value->DeepCopy());
+  if (provider.SetWebsiteSetting(pattern, wildcard,
+                                 CONTENT_SETTINGS_TYPE_PLUGINS, res_id,
+                                 value_copy.get())) {
+    value_copy.release();
+  }
 
   // Empty pattern, plugins, non-empty resource identifier.
-  provider.SetWebsiteSetting(wildcard, wildcard, CONTENT_SETTINGS_TYPE_PLUGINS,
-                             res_id, value->DeepCopy());
+  value_copy.reset(value->DeepCopy());
+  if (provider.SetWebsiteSetting(wildcard, wildcard,
+                                 CONTENT_SETTINGS_TYPE_PLUGINS, res_id,
+                                 value_copy.get())) {
+    value_copy.release();
+  }
 #endif
   // Non-empty pattern, syncable, empty resource identifier.
   provider.SetWebsiteSetting(pattern, wildcard, CONTENT_SETTINGS_TYPE_COOKIES,
