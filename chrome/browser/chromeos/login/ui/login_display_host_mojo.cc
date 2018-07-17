@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
-#include "chrome/browser/chromeos/login/ui/oobe_ui_dialog_delegate.h"
 #include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
@@ -103,6 +102,14 @@ void LoginDisplayHostMojo::ShowSigninUI(const std::string& email) {
   DCHECK(GetOobeUI());
   GetOobeUI()->signin_screen_handler()->ShowSigninUI(email);
   dialog_->Show(true /*closable_by_esc*/);
+}
+
+void LoginDisplayHostMojo::ShowDialogForCaptivePortal() {
+  dialog_->Show(false /*closable_by_esc*/);
+}
+
+void LoginDisplayHostMojo::HideDialogForCaptivePortal() {
+  dialog_->Hide();
 }
 
 LoginDisplay* LoginDisplayHostMojo::GetLoginDisplay() {

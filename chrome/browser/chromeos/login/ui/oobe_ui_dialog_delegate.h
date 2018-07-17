@@ -11,7 +11,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
+#include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/display/display_observer.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
@@ -48,7 +51,9 @@ class OobeUI;
 //   clientView---->Widget's view hierarchy
 class OobeUIDialogDelegate : public display::DisplayObserver,
                              public TabletModeClientObserver,
-                             public ui::WebDialogDelegate {
+                             public ui::WebDialogDelegate,
+                             public ChromeWebModalDialogManagerDelegate,
+                             public web_modal::WebContentsModalDialogHost {
  public:
   explicit OobeUIDialogDelegate(base::WeakPtr<LoginDisplayHostMojo> controller);
   ~OobeUIDialogDelegate() override;
@@ -72,6 +77,17 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   void UpdateSizeAndPosition(int width, int height);
   OobeUI* GetOobeUI() const;
   gfx::NativeWindow GetNativeWindow() const;
+
+  // ChromeWebModalDialogManagerDelegate:
+  web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
+      override;
+
+  // web_modal::WebContentsModalDialogHost:
+  gfx::NativeView GetHostView() const override;
+  gfx::Point GetDialogPosition(const gfx::Size& size) override;
+  gfx::Size GetMaximumDialogSize() override;
+  void AddObserver(web_modal::ModalDialogHostObserver* observer) override;
+  void RemoveObserver(web_modal::ModalDialogHostObserver* observer) override;
 
  private:
   // display::DisplayObserver:
@@ -105,7 +121,6 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   views::Widget* dialog_widget_ = nullptr;
   views::WebDialogView* dialog_view_ = nullptr;
   gfx::Size size_;
-  bool closable_by_esc_ = true;
   bool showing_fullscreen_ = false;
 
   ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;

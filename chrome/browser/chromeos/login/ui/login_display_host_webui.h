@@ -80,6 +80,9 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void UpdateOobeDialogSize(int width, int height) override;
   const user_manager::UserList GetUsers() override;
   void ShowFeedback() override;
+  void ShowDialogForCaptivePortal() override;
+  void HideDialogForCaptivePortal() override;
+
   void OnCancelPasswordChangedFlow() override;
 
   // Trace id for ShowLoginWebUI event (since there exists at most one login

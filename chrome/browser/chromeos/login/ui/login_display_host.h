@@ -194,6 +194,14 @@ class LoginDisplayHost {
   // Shows a feedback report dialog.
   virtual void ShowFeedback() = 0;
 
+  // In the views case, make the OobeUIDialogDelegate visible so that Captive
+  // Portal web modal can be seen. In webui login, this should be a no-op.
+  virtual void ShowDialogForCaptivePortal() = 0;
+
+  // Hide the captive portal signin dialog (e.g. when authentication is
+  // complete). In webui login, this should be a no-op.
+  virtual void HideDialogForCaptivePortal() = 0;
+
  protected:
   LoginDisplayHost();
   virtual ~LoginDisplayHost();

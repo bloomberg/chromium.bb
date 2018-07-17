@@ -140,4 +140,8 @@ void FakeLoginDisplayHost::ResyncUserData() {}
 
 void FakeLoginDisplayHost::ShowFeedback() {}
 
+void FakeLoginDisplayHost::ShowDialogForCaptivePortal() {}
+
+void FakeLoginDisplayHost::HideDialogForCaptivePortal() {}
+
 }  // namespace chromeos

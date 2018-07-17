@@ -14,7 +14,9 @@
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -63,6 +65,13 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
 
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       dialog_view_->web_contents());
+
+  // Set this as the web modal delegate so that captive portal dialog can
+  // appear.
+  web_modal::WebContentsModalDialogManager::CreateForWebContents(
+      GetWebContents());
+  web_modal::WebContentsModalDialogManager::FromWebContents(GetWebContents())
+      ->SetDelegate(this);
 }
 
 OobeUIDialogDelegate::~OobeUIDialogDelegate() {
@@ -76,7 +85,6 @@ content::WebContents* OobeUIDialogDelegate::GetWebContents() {
 
 void OobeUIDialogDelegate::Show(bool closable_by_esc) {
   LoginScreenClient::Get()->login_screen()->NotifyOobeDialogVisibility(true);
-  closable_by_esc_ = closable_by_esc;
   dialog_widget_->Show();
 }
 
@@ -141,6 +149,35 @@ OobeUI* OobeUIDialogDelegate::GetOobeUI() const {
 gfx::NativeWindow OobeUIDialogDelegate::GetNativeWindow() const {
   return dialog_widget_ ? dialog_widget_->GetNativeWindow() : nullptr;
 }
+
+web_modal::WebContentsModalDialogHost*
+OobeUIDialogDelegate::GetWebContentsModalDialogHost() {
+  return this;
+}
+
+gfx::NativeView OobeUIDialogDelegate::GetHostView() const {
+  return GetNativeWindow();
+}
+
+gfx::Point OobeUIDialogDelegate::GetDialogPosition(const gfx::Size& size) {
+  // Center the dialog in the screen.
+  gfx::Size host_size = GetHostView()->GetBoundsInScreen().size();
+  return gfx::Point(host_size.width() / 2 - size.width() / 2,
+                    host_size.height() / 2 - size.height() / 2);
+}
+
+gfx::Size OobeUIDialogDelegate::GetMaximumDialogSize() {
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(GetNativeWindow())
+      .work_area()
+      .size();
+}
+
+void OobeUIDialogDelegate::AddObserver(
+    web_modal::ModalDialogHostObserver* observer) {}
+
+void OobeUIDialogDelegate::RemoveObserver(
+    web_modal::ModalDialogHostObserver* observer) {}
 
 void OobeUIDialogDelegate::OnDisplayMetricsChanged(
     const display::Display& display,
