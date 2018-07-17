@@ -42,7 +42,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -207,7 +206,6 @@ public class VrShellDelegate
 
     private static final List<VrModeObserver> sVrModeObservers = new ArrayList<>();
 
-    @VisibleForTesting
     protected boolean mTestWorkaroundDontCancelVrEntryOnResume;
 
     private long mNativeVrShellDelegate;
@@ -908,7 +906,7 @@ public class VrShellDelegate
     }
 
     /**
-     *  @return Whether or not VR is enabled in this build.
+     *  @return Whether or not VR is supported on this platform.
      */
     /* package */ static boolean isVrEnabled() {
         return getVrClassesWrapper() != null;
@@ -1044,8 +1042,8 @@ public class VrShellDelegate
         // If an activity isn't resumed at the point, it must have been paused.
         mPaused = ApplicationStatus.getStateForActivity(activity) != ActivityState.RESUMED;
         mVisible = activity.hasWindowFocus();
-        mNativeVrShellDelegate = nativeInit();
         updateVrSupportLevel(null);
+        mNativeVrShellDelegate = nativeInit();
         mFeedbackFrequency = VrFeedbackStatus.getFeedbackFrequency();
         ensureLifecycleObserverInitialized();
         if (!mPaused) onResume();
@@ -1161,7 +1159,6 @@ public class VrShellDelegate
                 buttonText, null, true);
     }
 
-    @VisibleForTesting
     protected boolean isVrBrowsingEnabled() {
         return isVrBrowsingEnabled(mActivity, getVrSupportLevel());
     }
@@ -1218,11 +1215,16 @@ public class VrShellDelegate
     }
 
     private void enterVr(final boolean tentativeWebVrMode) {
-        // We should only enter VR when we're the resumed Activity or our changes to things like
-        // system UI flags might get lost.
+        // We can't enter VR before the application resumes, or we encounter bizarre crashes
+        // related to gpu surfaces.
+        // TODO(mthiesse): Is the above comment still accurate? It may have been tied to our HTML
+        // UI which is gone.
         assert !mPaused;
-        assert mNativeVrShellDelegate != 0;
         if (mInVr) return;
+        if (mNativeVrShellDelegate == 0) {
+            cancelPendingVrEntry();
+            return;
+        }
         mInVr = true;
         setVrModeEnabled(mActivity, true);
 
@@ -1242,11 +1244,11 @@ public class VrShellDelegate
         mExitedDueToUnsupportedMode = false;
 
         addVrViews();
+        boolean webVrMode = mRequestedWebVr || tentativeWebVrMode;
         // Make sure that assets component is registered when creating native VR shell.
         if (!sRegisteredVrAssetsComponent) {
             registerVrAssetsComponentIfDaydreamUser(isDaydreamCurrentViewer());
         }
-        boolean webVrMode = mRequestedWebVr || tentativeWebVrMode;
         mVrShell.initializeNative(webVrMode, getVrClassesWrapper().bootsToVr());
         mVrShell.setWebVrModeEnabled(webVrMode);
 
@@ -1288,9 +1290,6 @@ public class VrShellDelegate
         // Nothing to do if we were launched by an internal intent.
         if (mInternalIntentUsedToStartVr) {
             mInternalIntentUsedToStartVr = false;
-            // This is extremely unlikely in practice. Some code must have called shutdownVR() while
-            // we were entering VR through NFC insertion.
-            if (!mDonSucceeded) cancelPendingVrEntry();
             return;
         }
 
@@ -1545,7 +1544,6 @@ public class VrShellDelegate
         return true;
     }
 
-    @VisibleForTesting
     protected void onResume() {
         if (DEBUG_LOGS) Log.i(TAG, "onResume");
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) return;
@@ -1666,7 +1664,7 @@ public class VrShellDelegate
         if (mInVr) mVrShell.pause();
     }
 
-    private void onPause() {
+    protected void onPause() {
         if (DEBUG_LOGS) Log.i(TAG, "onPause");
         mPaused = true;
         if (mCancellingEntryAnimation) return;
@@ -1757,9 +1755,13 @@ public class VrShellDelegate
 
         mShowingDaydreamDoff = false;
 
-        if (mShowingDoffForGvrUpdate) mShowVrServicesUpdatePrompt = success;
+        if (mShowingDoffForGvrUpdate) {
+            mShowVrServicesUpdatePrompt = success;
+        }
 
-        if (success) shutdownVr(true /* disableVrMode */, true /* stayingInChrome */);
+        if (success) {
+            shutdownVr(true /* disableVrMode */, true /* stayingInChrome */);
+        }
 
         callOnExitVrRequestListener(success);
         mShowingDoffForGvrUpdate = false;
@@ -1776,7 +1778,8 @@ public class VrShellDelegate
     @CalledByNative
     private void setListeningForWebVrActivate(boolean listening) {
         if (DEBUG_LOGS) Log.i(TAG, "WebVR page listening for vrdisplayactivate: " + listening);
-        // Non-Daydream devices do not have the concept of activation.
+        // Non-Daydream devices may not have the concept of display activate. So disable
+        // mListeningForWebVrActivate for them.
         if (getVrSupportLevel() != VrSupportLevel.VR_DAYDREAM) return;
         if (mListeningForWebVrActivate == listening) return;
         mListeningForWebVrActivate = listening;
@@ -1821,7 +1824,7 @@ public class VrShellDelegate
     /**
      * Exits VR Shell, performing all necessary cleanup.
      */
-    private void shutdownVr(boolean disableVrMode, boolean stayingInChrome) {
+    protected void shutdownVr(boolean disableVrMode, boolean stayingInChrome) {
         if (DEBUG_LOGS) Log.i(TAG, "shuttdown VR");
         cancelPendingVrEntry();
 
@@ -1938,13 +1941,11 @@ public class VrShellDelegate
                 GVR_KEYBOARD_UPDATE_RESULT);
     }
 
-    @VisibleForTesting
     protected boolean canLaunch2DIntentsInternal() {
         return getVrClassesWrapper().supports2dInVr()
                 && !sVrModeEnabledActivitys.contains(sInstance.mActivity);
     }
 
-    @VisibleForTesting
     protected boolean createVrShell() {
         assert mVrShell == null;
         if (getVrClassesWrapper() == null) return false;
@@ -1971,7 +1972,6 @@ public class VrShellDelegate
         mActivity.onEnterVr();
     }
 
-    @VisibleForTesting
     protected boolean isBlackOverlayVisible() {
         View overlay = mActivity.getWindow().findViewById(R.id.vr_overlay_view);
         return overlay != null;
@@ -1997,7 +1997,6 @@ public class VrShellDelegate
     /**
      * @param api The VrDaydreamApi object this delegate will use instead of the default one
      */
-    @VisibleForTesting
     protected void overrideDaydreamApi(VrDaydreamApi api) {
         sVrDaydreamApi = api;
     }
@@ -2005,7 +2004,6 @@ public class VrShellDelegate
     /**
      * @return The VrShell for the VrShellDelegate instance
      */
-    @VisibleForTesting
     protected VrShell getVrShell() {
         return mVrShell;
     }
@@ -2013,7 +2011,6 @@ public class VrShellDelegate
     /**
      * @param versionChecker The VrCoreVersionChecker object this delegate will use
      */
-    @VisibleForTesting
     protected void overrideVrCoreVersionChecker(VrCoreVersionChecker versionChecker) {
         sVrCoreVersionChecker = versionChecker;
         updateVrSupportLevel(null);
@@ -2022,30 +2019,24 @@ public class VrShellDelegate
     /**
      * @param frequency Sets how often to show the feedback prompt.
      */
-    @VisibleForTesting
     protected void setFeedbackFrequency(int frequency) {
         mFeedbackFrequency = frequency;
     }
 
-    @VisibleForTesting
     protected boolean isListeningForWebVrActivate() {
         return mListeningForWebVrActivate;
     }
 
-    @VisibleForTesting
     protected boolean isVrEntryComplete() {
         return mInVr && !mProbablyInDon;
     }
 
-    @VisibleForTesting
     protected boolean isShowingDoff() {
         return mShowingDaydreamDoff;
     }
 
-    @VisibleForTesting
     protected void onBroadcastReceived() {}
 
-    @VisibleForTesting
     protected void setExpectingIntent(boolean expectingIntent) {}
 
     /**

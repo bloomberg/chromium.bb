@@ -24,6 +24,8 @@ public class VrFirstRunActivity extends Activity {
 
     private static final BooleanHistogramSample sFreNotCompleteBrowserHistogram =
             new BooleanHistogramSample("VRFreNotComplete.Browser");
+    private static final BooleanHistogramSample sFreNotCompleteAutopresentHistogram =
+            new BooleanHistogramSample("VRFreNotComplete.WebVRAutopresent");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
