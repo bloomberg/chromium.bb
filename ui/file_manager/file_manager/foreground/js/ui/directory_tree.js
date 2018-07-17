@@ -1049,7 +1049,6 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
     this.add(item);
     item.updateSubDirectories(false);
   }
-  this.expanded = true;
 };
 
 /**

@@ -258,19 +258,23 @@ test.util.sync.collapseSelectedFolderInTree = function(contentWindow) {
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {string} folderName Name of the folder to be selected.
- * @return {boolean} True if file got selected, false otherwise.
+ * @return {boolean} True if Team Drive folder got selected, false otherwise.
  */
 test.util.sync.selectTeamDrive = function(contentWindow, teamDriveName) {
-  // Select the 'Team Drives' root.
-  if (!test.util.sync.selectFolderInTree(contentWindow, 'Team Drives'))
+  // Select + expand Team Drives gran root.
+  const teamDrivesSelector = '#directory-tree .tree-item ' +
+      '[entry-label="Team Drives"]:not([hidden])';
+  if (!test.util.sync.fakeMouseClick(contentWindow, teamDrivesSelector))
     return false;
 
   // Expand the 'Team Drives' root.
   if (!test.util.sync.expandSelectedFolderInTree(contentWindow))
     return false;
 
-  // Select the team drive.
-  if (!test.util.sync.selectFolderInTree(contentWindow, teamDriveName))
+  // Select the team drive folder.
+  const teamDriveNameSelector = '#directory-tree .tree-item ' +
+      '[entry-label="' + teamDriveName + '"]:not([hidden])';
+  if (!test.util.sync.fakeMouseClick(contentWindow, teamDriveNameSelector))
     return false;
 
   return true;
