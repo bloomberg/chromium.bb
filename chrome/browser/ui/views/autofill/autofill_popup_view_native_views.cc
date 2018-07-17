@@ -89,10 +89,10 @@ class AutofillPopupItemView : public AutofillPopupRowView {
   void OnMouseReleased(const ui::MouseEvent& event) override;
 
  protected:
-  AutofillPopupItemView(AutofillPopupController* controller,
+  AutofillPopupItemView(AutofillPopupViewNativeViews* popup_view,
                         int line_number,
                         int extra_height = 0)
-      : AutofillPopupRowView(controller, line_number),
+      : AutofillPopupRowView(popup_view, line_number),
         extra_height_(extra_height) {}
 
   // AutofillPopupRowView:
@@ -119,7 +119,7 @@ class AutofillPopupSuggestionView : public AutofillPopupItemView {
   ~AutofillPopupSuggestionView() override = default;
 
   static AutofillPopupSuggestionView* Create(
-      AutofillPopupController* controller,
+      AutofillPopupViewNativeViews* popup_view,
       int line_number);
 
  protected:
@@ -128,7 +128,7 @@ class AutofillPopupSuggestionView : public AutofillPopupItemView {
   int GetPrimaryTextStyle() override;
 
  private:
-  AutofillPopupSuggestionView(AutofillPopupController* controller,
+  AutofillPopupSuggestionView(AutofillPopupViewNativeViews* popup_view,
                               int line_number);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupSuggestionView);
@@ -140,8 +140,9 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
  public:
   ~AutofillPopupFooterView() override = default;
 
-  static AutofillPopupFooterView* Create(AutofillPopupController* controller,
-                                         int line_number);
+  static AutofillPopupFooterView* Create(
+      AutofillPopupViewNativeViews* popup_view,
+      int line_number);
 
  protected:
   // AutofillPopupItemView:
@@ -150,7 +151,8 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
   int GetPrimaryTextStyle() override;
 
  private:
-  AutofillPopupFooterView(AutofillPopupController* controller, int line_number);
+  AutofillPopupFooterView(AutofillPopupViewNativeViews* popup_view,
+                          int line_number);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupFooterView);
 };
@@ -162,8 +164,9 @@ class AutofillPopupSeparatorView : public AutofillPopupRowView {
  public:
   ~AutofillPopupSeparatorView() override = default;
 
-  static AutofillPopupSeparatorView* Create(AutofillPopupController* controller,
-                                            int line_number);
+  static AutofillPopupSeparatorView* Create(
+      AutofillPopupViewNativeViews* popup_view,
+      int line_number);
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -178,7 +181,7 @@ class AutofillPopupSeparatorView : public AutofillPopupRowView {
   std::unique_ptr<views::Background> CreateBackground() override;
 
  private:
-  AutofillPopupSeparatorView(AutofillPopupController* controller,
+  AutofillPopupSeparatorView(AutofillPopupViewNativeViews* popup_view,
                              int line_number);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupSeparatorView);
@@ -189,8 +192,9 @@ class AutofillPopupWarningView : public AutofillPopupRowView {
  public:
   ~AutofillPopupWarningView() override = default;
 
-  static AutofillPopupWarningView* Create(AutofillPopupController* controller,
-                                          int line_number);
+  static AutofillPopupWarningView* Create(
+      AutofillPopupViewNativeViews* popup_view,
+      int line_number);
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -204,21 +208,23 @@ class AutofillPopupWarningView : public AutofillPopupRowView {
   std::unique_ptr<views::Background> CreateBackground() override;
 
  private:
-  AutofillPopupWarningView(AutofillPopupController* controller, int line_number)
-      : AutofillPopupRowView(controller, line_number) {}
+  AutofillPopupWarningView(AutofillPopupViewNativeViews* popup_view,
+                           int line_number)
+      : AutofillPopupRowView(popup_view, line_number) {}
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupWarningView);
 };
 
 void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  auto suggestion = controller_->GetSuggestionAt(line_number_);
+  AutofillPopupController* controller = popup_view_->controller();
+  auto suggestion = controller->GetSuggestionAt(line_number_);
   std::vector<base::string16> text;
   text.push_back(suggestion.value);
   text.push_back(suggestion.label);
 
   base::string16 icon_description;
   if (!suggestion.icon.empty()) {
-    const int id = controller_->layout_model().GetIconAccessibleNameResourceId(
+    const int id = controller->layout_model().GetIconAccessibleNameResourceId(
         suggestion.icon);
     if (id > 0)
       text.push_back(l10n_util::GetStringUTF16(id));
@@ -233,8 +239,8 @@ void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Compute set size and position in set, which must not include separators.
   int set_size = 0;
   int pos_in_set = line_number_ + 1;
-  for (int i = 0; i < controller_->GetLineCount(); ++i) {
-    if (controller_->GetSuggestionAt(i).frontend_id ==
+  for (int i = 0; i < controller->GetLineCount(); ++i) {
+    if (controller->GetSuggestionAt(i).frontend_id ==
         autofill::POPUP_ITEM_ID_SEPARATOR) {
       if (i < line_number_)
         --pos_in_set;
@@ -247,19 +253,27 @@ void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void AutofillPopupItemView::OnMouseEntered(const ui::MouseEvent& event) {
-  controller_->SetSelectedLine(line_number_);
+  AutofillPopupController* controller = popup_view_->controller();
+  if (controller)
+    controller->SetSelectedLine(line_number_);
 }
 
 void AutofillPopupItemView::OnMouseExited(const ui::MouseEvent& event) {
-  controller_->SelectionCleared();
+  AutofillPopupController* controller = popup_view_->controller();
+  if (controller)
+    controller->SelectionCleared();
 }
 
 void AutofillPopupItemView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location()))
-    controller_->AcceptSuggestion(line_number_);
+  AutofillPopupController* controller = popup_view_->controller();
+  if (controller && event.IsOnlyLeftMouseButton() &&
+      HitTestPoint(event.location())) {
+    controller->AcceptSuggestion(line_number_);
+  }
 }
 
 void AutofillPopupItemView::CreateContent() {
+  AutofillPopupController* controller = popup_view_->controller();
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(0, GetHorizontalMargin())));
 
@@ -270,7 +284,7 @@ void AutofillPopupItemView::CreateContent() {
 
   // TODO(crbug.com/831603): Remove elision responsibilities from controller.
   views::Label* text_label = new views::Label(
-      controller_->GetElidedValueAt(line_number_),
+      controller->GetElidedValueAt(line_number_),
       {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
                              GetPrimaryTextStyle())});
   text_label->SetEnabledColor(
@@ -283,7 +297,7 @@ void AutofillPopupItemView::CreateContent() {
                     /*resize=*/true, layout);
 
   const base::string16& description_text =
-      controller_->GetElidedLabelAt(line_number_);
+      controller->GetElidedLabelAt(line_number_);
   if (!description_text.empty()) {
     views::Label* subtext_label = new views::Label(
         description_text,
@@ -297,7 +311,7 @@ void AutofillPopupItemView::CreateContent() {
   }
 
   const gfx::ImageSkia icon =
-      controller_->layout_model().GetIconImage(line_number_);
+      controller->layout_model().GetIconImage(line_number_);
   if (!icon.isNull()) {
     AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
                       /*resize=*/false, layout);
@@ -325,10 +339,10 @@ void AutofillPopupItemView::AddSpacerWithSize(int spacer_width,
 
 // static
 AutofillPopupSuggestionView* AutofillPopupSuggestionView::Create(
-    AutofillPopupController* controller,
+    AutofillPopupViewNativeViews* popup_view,
     int line_number) {
   AutofillPopupSuggestionView* result =
-      new AutofillPopupSuggestionView(controller, line_number);
+      new AutofillPopupSuggestionView(popup_view, line_number);
   result->Init();
   return result;
 }
@@ -345,18 +359,18 @@ int AutofillPopupSuggestionView::GetPrimaryTextStyle() {
 }
 
 AutofillPopupSuggestionView::AutofillPopupSuggestionView(
-    AutofillPopupController* controller,
+    AutofillPopupViewNativeViews* popup_view,
     int line_number)
-    : AutofillPopupItemView(controller, line_number) {
+    : AutofillPopupItemView(popup_view, line_number) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
 // static
 AutofillPopupFooterView* AutofillPopupFooterView::Create(
-    AutofillPopupController* controller,
+    AutofillPopupViewNativeViews* popup_view,
     int line_number) {
   AutofillPopupFooterView* result =
-      new AutofillPopupFooterView(controller, line_number);
+      new AutofillPopupFooterView(popup_view, line_number);
   result->Init();
   return result;
 }
@@ -382,18 +396,18 @@ int AutofillPopupFooterView::GetPrimaryTextStyle() {
 }
 
 AutofillPopupFooterView::AutofillPopupFooterView(
-    AutofillPopupController* controller,
+    AutofillPopupViewNativeViews* popup_view,
     int line_number)
-    : AutofillPopupItemView(controller, line_number) {
+    : AutofillPopupItemView(popup_view, line_number) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
 // static
 AutofillPopupSeparatorView* AutofillPopupSeparatorView::Create(
-    AutofillPopupController* controller,
+    AutofillPopupViewNativeViews* popup_view,
     int line_number) {
   AutofillPopupSeparatorView* result =
-      new AutofillPopupSeparatorView(controller, line_number);
+      new AutofillPopupSeparatorView(popup_view, line_number);
   result->Init();
   return result;
 }
@@ -430,29 +444,35 @@ AutofillPopupSeparatorView::CreateBackground() {
 }
 
 AutofillPopupSeparatorView::AutofillPopupSeparatorView(
-    AutofillPopupController* controller,
+    AutofillPopupViewNativeViews* popup_view,
     int line_number)
-    : AutofillPopupRowView(controller, line_number) {
+    : AutofillPopupRowView(popup_view, line_number) {
   SetFocusBehavior(FocusBehavior::NEVER);
 }
 
 // static
 AutofillPopupWarningView* AutofillPopupWarningView::Create(
-    AutofillPopupController* controller,
+    AutofillPopupViewNativeViews* popup_view,
     int line_number) {
   AutofillPopupWarningView* result =
-      new AutofillPopupWarningView(controller, line_number);
+      new AutofillPopupWarningView(popup_view, line_number);
   result->Init();
   return result;
 }
 
 void AutofillPopupWarningView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
-  node_data->SetName(controller_->GetSuggestionAt(line_number_).value);
+  AutofillPopupController* controller = popup_view_->controller();
+  if (controller)
+    return;
+
+  node_data->SetName(controller->GetSuggestionAt(line_number_).value);
   node_data->role = ax::mojom::Role::kStaticText;
 }
 
 void AutofillPopupWarningView::CreateContent() {
+  AutofillPopupController* controller = popup_view_->controller();
+
   int horizontal_margin = GetHorizontalMargin();
   int vertical_margin = AutofillPopupBaseView::GetCornerRadius();
 
@@ -461,7 +481,7 @@ void AutofillPopupWarningView::CreateContent() {
       gfx::Insets(vertical_margin, horizontal_margin)));
 
   views::Label* text_label = new views::Label(
-      controller_->GetElidedValueAt(line_number_),
+      controller->GetElidedValueAt(line_number_),
       {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
                              ChromeTextStyle::STYLE_RED)});
   text_label->SetEnabledColor(kAutofillPopupWarningColor);
@@ -469,8 +489,8 @@ void AutofillPopupWarningView::CreateContent() {
   int max_width =
       std::min(kAutofillPopupMaxWidth,
                PopupViewCommon().CalculateMaxWidth(
-                   gfx::ToEnclosingRect(controller_->element_bounds()),
-                   controller_->container_view()));
+                   gfx::ToEnclosingRect(controller->element_bounds()),
+                   controller->container_view()));
   max_width -= 2 * horizontal_margin;
   text_label->SetMaximumWidth(max_width);
   text_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
@@ -502,9 +522,10 @@ bool AutofillPopupRowView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
-AutofillPopupRowView::AutofillPopupRowView(AutofillPopupController* controller,
-                                           int line_number)
-    : controller_(controller), line_number_(line_number) {}
+AutofillPopupRowView::AutofillPopupRowView(
+    AutofillPopupViewNativeViews* popup_view,
+    int line_number)
+    : popup_view_(popup_view), line_number_(line_number) {}
 
 void AutofillPopupRowView::Init() {
   CreateContent();
@@ -605,19 +626,16 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
         break;
 
       case autofill::PopupItemId::POPUP_ITEM_ID_SEPARATOR:
-        rows_.push_back(
-            AutofillPopupSeparatorView::Create(controller_, line_number));
+        rows_.push_back(AutofillPopupSeparatorView::Create(this, line_number));
         break;
 
       case autofill::PopupItemId::
           POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
-        rows_.push_back(
-            AutofillPopupWarningView::Create(controller_, line_number));
+        rows_.push_back(AutofillPopupWarningView::Create(this, line_number));
         break;
 
       default:
-        rows_.push_back(
-            AutofillPopupSuggestionView::Create(controller_, line_number));
+        rows_.push_back(AutofillPopupSuggestionView::Create(this, line_number));
     }
 
     if (has_footer)
@@ -648,8 +666,7 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
 
     while (line_number < controller_->GetLineCount()) {
-      rows_.push_back(
-          AutofillPopupFooterView::Create(controller_, line_number));
+      rows_.push_back(AutofillPopupFooterView::Create(this, line_number));
       footer_container->AddChildView(rows_.back());
       line_number++;
     }
