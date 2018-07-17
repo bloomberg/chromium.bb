@@ -932,6 +932,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         }
 
         if (mOmniboxStartupMetrics != null) {
+            // Record the histogram before destroying, if we have the data.
+            mOmniboxStartupMetrics.maybeRecordHistograms();
             mOmniboxStartupMetrics.destroy();
             mOmniboxStartupMetrics = null;
         }
@@ -1280,9 +1282,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         }
         RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarFirstDrawTime2." + activityName,
                 mToolbar.getFirstDrawTime() - activityCreationTimeMs, TimeUnit.MILLISECONDS);
+
         // mOmniboxStartupMetrics might be null. ie. ToolbarManager is destroyed. See
         // https://crbug.com/860449
-        if (mOmniboxStartupMetrics != null) mOmniboxStartupMetrics.recordHistogram();
+        if (mOmniboxStartupMetrics != null) mOmniboxStartupMetrics.maybeRecordHistograms();
     }
 
     /**
