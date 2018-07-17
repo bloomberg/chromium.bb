@@ -458,18 +458,16 @@ cr-menu-item[command='#install-new-extension'] .icon.start {
 [file-type-icon='crostini'],
 [root-type-icon='crostini'],
 [volume-type-icon='crostini'] {
-  /* Need !important to override inline style applied to provided volumes. */
   background-image: -webkit-image-set(
       url(../images/volumes/linux_files.png) 1x,
-      url(../images/volumes/2x/linux_files.png) 2x) !important;
+      url(../images/volumes/2x/linux_files.png) 2x);
 }
 
 .tree-row[selected] [root-type-icon='crostini'],
 .tree-row[selected] [volume-type-icon='crostini'] {
-  /* Need !important to override inline style applied to provided volumes. */
   background-image: -webkit-image-set(
       url(../images/volumes/linux_files_active.png) 1x,
-      url(../images/volumes/2x/linux_files_active.png) 2x) !important;
+      url(../images/volumes/2x/linux_files_active.png) 2x);
 }
 
 [file-type-icon='android_files'],
