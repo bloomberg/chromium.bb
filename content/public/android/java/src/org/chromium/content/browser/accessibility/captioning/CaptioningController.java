@@ -5,7 +5,6 @@
 package org.chromium.content.browser.accessibility.captioning;
 
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.os.Build;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -20,8 +19,8 @@ public class CaptioningController implements SystemCaptioningBridge.SystemCaptio
     private SystemCaptioningBridge mSystemCaptioningBridge;
     private long mNativeCaptioningController;
 
-    public CaptioningController(WebContents webContents, Context context) {
-        mSystemCaptioningBridge = CaptioningBridgeFactory.getSystemCaptioningBridge(context);
+    public CaptioningController(WebContents webContents) {
+        mSystemCaptioningBridge = CaptioningBridgeFactory.getSystemCaptioningBridge();
         mNativeCaptioningController = nativeInit(webContents);
     }
 

@@ -163,7 +163,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mProductVersion = productVersion;
         mAccessibilityManager =
                 (AccessibilityManager) mContext.getSystemService(Context.ACCESSIBILITY_SERVICE);
-        mCaptioningController = new CaptioningController(mWebContents, mContext);
+        mCaptioningController = new CaptioningController(mWebContents);
         WindowEventObserverManager.from(mWebContents).addObserver(this);
 
         mInitialized = true;
