@@ -4485,7 +4485,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                 inBackground:inBackground];
   };
 
-  if (!IsUIRefreshPhase1Enabled() || !inBackground ||
+  if (!IsUIRefreshPhase1Enabled() || !inBackground || [self canShowTabStrip] ||
       CGPointEqualToPoint(originPoint, CGPointZero)) {
     openTab();
   } else {
