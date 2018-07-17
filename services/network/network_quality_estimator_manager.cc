@@ -88,6 +88,8 @@ NetworkQualityEstimatorManager::NetworkQualityEstimatorManager(
       network_quality_estimator_->GetEffectiveConnectionType();
   http_rtt_ =
       network_quality_estimator_->GetHttpRTT().value_or(base::TimeDelta());
+  transport_rtt_ =
+      network_quality_estimator_->GetTransportRTT().value_or(base::TimeDelta());
   downstream_throughput_kbps_ =
       network_quality_estimator_->GetDownstreamThroughputKbps().value_or(
           INT32_MAX);
@@ -109,6 +111,7 @@ void NetworkQualityEstimatorManager::RequestNotifications(
     mojom::NetworkQualityEstimatorManagerClientPtr client_ptr) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   client_ptr->OnNetworkQualityChanged(effective_connection_type_, http_rtt_,
+                                      transport_rtt_,
                                       downstream_throughput_kbps_);
   clients_.AddPtr(std::move(client_ptr));
 }
@@ -117,15 +120,16 @@ void NetworkQualityEstimatorManager::OnEffectiveConnectionTypeChanged(
     net::EffectiveConnectionType effective_connection_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::TimeDelta http_rtt = http_rtt_;
+  base::TimeDelta transport_rtt = transport_rtt_;
   int32_t downstream_throughput_kbps = downstream_throughput_kbps_;
 
   effective_connection_type_ = effective_connection_type;
-  clients_.ForAllPtrs(
-      [effective_connection_type, http_rtt, downstream_throughput_kbps](
-          mojom::NetworkQualityEstimatorManagerClient* client) {
-        client->OnNetworkQualityChanged(effective_connection_type, http_rtt,
-                                        downstream_throughput_kbps);
-      });
+  clients_.ForAllPtrs([effective_connection_type, http_rtt, transport_rtt,
+                       downstream_throughput_kbps](
+                          mojom::NetworkQualityEstimatorManagerClient* client) {
+    client->OnNetworkQualityChanged(effective_connection_type, http_rtt,
+                                    transport_rtt, downstream_throughput_kbps);
+  });
 }
 
 void NetworkQualityEstimatorManager::OnRTTOrThroughputEstimatesComputed(
@@ -134,25 +138,30 @@ void NetworkQualityEstimatorManager::OnRTTOrThroughputEstimatesComputed(
     int32_t downstream_throughput_kbps) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  bool rtt_changed_meaningfully = MetricChangedMeaningfully(
+  bool http_rtt_changed_meaningfully = MetricChangedMeaningfully(
       http_rtt.InMilliseconds(), http_rtt_.InMilliseconds());
+  bool transport_rtt_changed_meaningfully = MetricChangedMeaningfully(
+      transport_rtt.InMilliseconds(), transport_rtt_.InMilliseconds());
   bool downlink_changed_meaningfully = MetricChangedMeaningfully(
       downstream_throughput_kbps, downstream_throughput_kbps_);
 
-  if (!rtt_changed_meaningfully && !downlink_changed_meaningfully)
+  if (!http_rtt_changed_meaningfully && !transport_rtt_changed_meaningfully &&
+      !downlink_changed_meaningfully) {
     return;
+  }
 
   net::EffectiveConnectionType effective_connection_type =
       effective_connection_type_;
   http_rtt_ = http_rtt;
+  transport_rtt_ = transport_rtt;
   downstream_throughput_kbps_ = downstream_throughput_kbps;
 
-  clients_.ForAllPtrs(
-      [effective_connection_type, http_rtt, downstream_throughput_kbps](
-          mojom::NetworkQualityEstimatorManagerClient* client) {
-        client->OnNetworkQualityChanged(effective_connection_type, http_rtt,
-                                        downstream_throughput_kbps);
-      });
+  clients_.ForAllPtrs([effective_connection_type, http_rtt, transport_rtt,
+                       downstream_throughput_kbps](
+                          mojom::NetworkQualityEstimatorManagerClient* client) {
+    client->OnNetworkQualityChanged(effective_connection_type, http_rtt,
+                                    transport_rtt, downstream_throughput_kbps);
+  });
 }
 
 net::NetworkQualityEstimator*

@@ -31,6 +31,7 @@ class TestNetworkQualityEstimatorManagerClient
         run_loop_(std::make_unique<base::RunLoop>()),
         effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
         http_rtt_(base::TimeDelta()),
+        transport_rtt_(base::TimeDelta()),
         downlink_bandwidth_kbps_(INT32_MAX),
         binding_(this) {
     mojom::NetworkQualityEstimatorManagerPtr manager_ptr;
@@ -49,10 +50,12 @@ class TestNetworkQualityEstimatorManagerClient
 
   void OnNetworkQualityChanged(net::EffectiveConnectionType type,
                                base::TimeDelta http_rtt,
+                               base::TimeDelta transport_rtt,
                                int32_t downlink_bandwidth_kbps) override {
     num_network_quality_changed_++;
     effective_connection_type_ = type;
     http_rtt_ = http_rtt;
+    transport_rtt_ = transport_rtt;
     downlink_bandwidth_kbps_ = downlink_bandwidth_kbps;
     if (run_loop_wait_effective_connection_type_ == type)
       run_loop_->Quit();
@@ -77,6 +80,7 @@ class TestNetworkQualityEstimatorManagerClient
     return effective_connection_type_;
   }
   base::TimeDelta http_rtt() const { return http_rtt_; }
+  base::TimeDelta transport_rtt() const { return transport_rtt_; }
   int32_t downlink_bandwidth_kbps() const { return downlink_bandwidth_kbps_; }
 
  private:
@@ -86,6 +90,7 @@ class TestNetworkQualityEstimatorManagerClient
   net::EffectiveConnectionType run_loop_wait_effective_connection_type_;
   net::EffectiveConnectionType effective_connection_type_;
   base::TimeDelta http_rtt_;
+  base::TimeDelta transport_rtt_;
   int32_t downlink_bandwidth_kbps_;
   mojo::Binding<mojom::NetworkQualityEstimatorManagerClient> binding_;
 
@@ -152,6 +157,8 @@ TEST_F(NetworkQualityEstimatorManagerTest, ClientNotified) {
   // from net::NetworkQualityEstimatorParams.
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(450),
             network_quality_estimator_manager_client()->http_rtt());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(400),
+            network_quality_estimator_manager_client()->transport_rtt());
   EXPECT_EQ(
       400,
       network_quality_estimator_manager_client()->downlink_bandwidth_kbps());
@@ -179,6 +186,8 @@ TEST_F(NetworkQualityEstimatorManagerTest, OneClientPipeBroken) {
   // from net::NetworkQualityEstimatorParams.
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(175),
             network_quality_estimator_manager_client2->http_rtt());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(125),
+            network_quality_estimator_manager_client()->transport_rtt());
   EXPECT_EQ(
       1600,
       network_quality_estimator_manager_client2->downlink_bandwidth_kbps());
@@ -206,6 +215,8 @@ TEST_F(NetworkQualityEstimatorManagerTest, OneClientPipeBroken) {
                     ->num_network_quality_changed());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1800),
             network_quality_estimator_manager_client()->http_rtt());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1500),
+            network_quality_estimator_manager_client()->transport_rtt());
   EXPECT_EQ(
       75,
       network_quality_estimator_manager_client()->downlink_bandwidth_kbps());
@@ -226,6 +237,8 @@ TEST_F(NetworkQualityEstimatorManagerTest,
   // from net::NetworkQualityEstimatorParams.
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1800),
             network_quality_estimator_manager_client()->http_rtt());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1500),
+            network_quality_estimator_manager_client()->transport_rtt());
   EXPECT_EQ(
       75,
       network_quality_estimator_manager_client()->downlink_bandwidth_kbps());
@@ -244,6 +257,8 @@ TEST_F(NetworkQualityEstimatorManagerTest,
   // Taken from net::NetworkQualityEstimatorParams.
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1800),
             network_quality_estimator_manager_client2.http_rtt());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1500),
+            network_quality_estimator_manager_client()->transport_rtt());
   EXPECT_EQ(
       75, network_quality_estimator_manager_client2.downlink_bandwidth_kbps());
 }

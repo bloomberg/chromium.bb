@@ -33,6 +33,11 @@ base::TimeDelta NetworkQualityTracker::GetHttpRTT() const {
   return http_rtt_;
 }
 
+base::TimeDelta NetworkQualityTracker::GetTransportRTT() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return transport_rtt_;
+}
+
 int32_t NetworkQualityTracker::GetDownstreamThroughputKbps() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return downlink_bandwidth_kbps_;
@@ -55,10 +60,12 @@ void NetworkQualityTracker::RemoveEffectiveConnectionTypeObserver(
 void NetworkQualityTracker::OnNetworkQualityChanged(
     net::EffectiveConnectionType effective_connection_type,
     base::TimeDelta http_rtt,
+    base::TimeDelta transport_rtt,
     int32_t bandwidth_kbps) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   http_rtt_ = http_rtt;
+  transport_rtt_ = transport_rtt;
   downlink_bandwidth_kbps_ = bandwidth_kbps;
 
   if (effective_connection_type == effective_connection_type_)
