@@ -31,6 +31,7 @@
 @class NSDate;
 
 @class BluetoothLowEnergyCentralManagerDelegate;
+@class BluetoothLowEnergyPeripheralManagerDelegate;
 
 namespace device {
 
@@ -151,6 +152,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // Returns the CBCentralManager instance.
   CBCentralManager* GetCentralManager();
 
+  // Returns the CBPeripheralManager instance.
+  CBPeripheralManager* GetPeripheralManager();
+
   // Allow the mocking out of getting the HostController state for testing.
   void SetHostControllerStateFunctionForTesting(
       HostControllerStateFunction controller_state_function);
@@ -167,6 +171,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   friend class BluetoothTestMac;
   friend class BluetoothAdapterMacTest;
   friend class BluetoothLowEnergyCentralManagerBridge;
+  friend class BluetoothLowEnergyPeripheralManagerBridge;
 
   BluetoothAdapterMac();
   ~BluetoothAdapterMac() override;
@@ -263,6 +268,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   base::scoped_nsobject<CBCentralManager> low_energy_central_manager_;
   base::scoped_nsobject<BluetoothLowEnergyCentralManagerDelegate>
       low_energy_central_manager_delegate_;
+
+  // Underlying CoreBluetooth CBPeripheralManager and its delegate.
+  base::scoped_nsobject<CBPeripheralManager> low_energy_peripheral_manager_;
+  base::scoped_nsobject<BluetoothLowEnergyPeripheralManagerDelegate>
+      low_energy_peripheral_manager_delegate_;
 
   base::WeakPtrFactory<BluetoothAdapterMac> weak_ptr_factory_;
 
