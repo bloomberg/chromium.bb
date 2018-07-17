@@ -631,6 +631,21 @@
             ]
         }
     ],
+    "BackgroundTaskComponentUpdate": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "BackgroundTaskComponentUpdateEnabled",
+                    "enable_features": [
+                        "BackgroundTaskComponentUpdate"
+                    ]
+                }
+            ]
+        }
+    ],
     "BackgroundVideoOptimizations": [
         {
             "platforms": [
