@@ -79,6 +79,7 @@ namespace content {
 class BrowserPluginEmbedder;
 class BrowserPluginGuest;
 class DateTimeChooserAndroid;
+class DisplayCutoutHostImpl;
 class FindRequestManager;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
@@ -1389,6 +1390,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                              AXTreeSnapshotCombiner* combiner,
                                              ui::AXMode ax_mode);
 
+  // Notify observers that the viewport fit value changed. This is called by
+  // |DisplayCutoutHostImpl|.
+  void NotifyViewportFitChanged(blink::mojom::ViewportFit value);
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -1752,7 +1757,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool should_override_user_agent_in_new_tabs_ = false;
 
   // Gets notified about changes in viewport fit events.
-  class DisplayCutoutHostImpl;
   std::unique_ptr<DisplayCutoutHostImpl> display_cutout_host_impl_;
 
   // Stores a set of FrameTreeNode ids that are fullscreen.
