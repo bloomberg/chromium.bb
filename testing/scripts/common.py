@@ -167,6 +167,24 @@ def parse_common_test_results(json_results, test_separator='/'):
 
 def get_gtest_summary_passes(output):
   """Returns a mapping of test to boolean indicating if the test passed.
+  """
+  if not output:
+    return {}
+
+  mapping = {}
+
+  for test_suite in output.get('testsuites', []):
+    suite_name = test_suite['name']
+    for test in test_suite['testsuite']:
+      full_name = '%s.%s' % (suite_name, test['name'])
+
+      mapping[full_name] = 'failures' in test
+
+  return mapping
+
+
+def get_chromium_gtest_summary_passes(output):
+  """Returns a mapping of test to boolean indicating if the test passed.
 
   Only partially parses the format. This code is based on code in tools/build,
   specifically

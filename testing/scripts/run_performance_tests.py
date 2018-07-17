@@ -59,6 +59,19 @@ import run_telemetry_benchmark_as_googletest
 import run_gtest_perf_test
 
 
+# List of gtests which are somewhat specialized for chromium; they accept the
+# --test-launcher-summary-output argument.
+CHROMIUM_GTESTS = {
+  'angle_perftests',
+  'components_perftests',
+  'cc_perftests',
+  'gpu_perftests',
+  'media_perftests',
+  'performance_browser_tests',
+  'views_perftests',
+}
+
+
 def get_sharding_map_path(args):
   return os.path.join(
       os.path.dirname(__file__), '..', '..', 'tools', 'perf', 'core',
@@ -197,7 +210,7 @@ def main():
     # For non telemetry tests the benchmark name is the name of the executable.
     benchmark_name = rest_args[0]
     return_code, charts, output_json = run_gtest_perf_test.execute_perf_test(
-        args, rest_args)
+        args, rest_args, benchmark_name in CHROMIUM_GTESTS)
 
     write_results(benchmark_name, charts, output_json,
                   benchmark_log='Not available for C++ perf test',
