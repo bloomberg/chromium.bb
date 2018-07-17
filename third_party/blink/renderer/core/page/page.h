@@ -59,6 +59,7 @@ class DragCaret;
 class DragController;
 class FocusController;
 class Frame;
+class LinkHighlights;
 class OverscrollController;
 struct PageScaleConstraints;
 class PageScaleConstraintsSet;
@@ -216,6 +217,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   VisualViewport& GetVisualViewport();
   const VisualViewport& GetVisualViewport() const;
 
+  LinkHighlights& GetLinkHighlights();
+
   OverscrollController& GetOverscrollController();
   const OverscrollController& GetOverscrollController() const;
 
@@ -363,6 +366,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
       global_root_scroller_controller_;
   const Member<VisualViewport> visual_viewport_;
   const Member<OverscrollController> overscroll_controller_;
+  const Member<LinkHighlights> link_highlights_;
 
   Member<PluginData> plugin_data_;
 

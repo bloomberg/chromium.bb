@@ -38,10 +38,10 @@
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
-#include "third_party/blink/renderer/core/exported/web_settings_impl.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
@@ -68,15 +68,12 @@
 
 namespace blink {
 
-std::unique_ptr<LinkHighlightImpl> LinkHighlightImpl::Create(
-    Node* node,
-    WebViewImpl* owning_web_view) {
-  return base::WrapUnique(new LinkHighlightImpl(node, owning_web_view));
+std::unique_ptr<LinkHighlightImpl> LinkHighlightImpl::Create(Node* node) {
+  return base::WrapUnique(new LinkHighlightImpl(node));
 }
 
-LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
+LinkHighlightImpl::LinkHighlightImpl(Node* node)
     : node_(node),
-      owning_web_view_(owning_web_view),
       current_graphics_layer_(nullptr),
       is_scrolling_graphics_layer_(false),
       geometry_needs_update_(false),
@@ -84,15 +81,12 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
       start_time_(CurrentTimeTicks()),
       unique_id_(NewUniqueObjectId()) {
   DCHECK(node_);
-  DCHECK(owning_web_view);
   content_layer_ = cc::PictureLayer::Create(this);
   content_layer_->SetTransformOrigin(FloatPoint3D());
 
   compositor_animation_ = CompositorAnimation::Create();
   DCHECK(compositor_animation_);
   compositor_animation_->SetAnimationDelegate(this);
-  if (owning_web_view_->LinkHighlightsTimeline())
-    owning_web_view_->LinkHighlightsTimeline()->AnimationAttached(*this);
 
   CompositorElementId element_id =
       CompositorElementIdFromUniqueObjectId(unique_id_);
@@ -106,8 +100,6 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
 LinkHighlightImpl::~LinkHighlightImpl() {
   if (compositor_animation_->IsElementAttached())
     compositor_animation_->DetachElement();
-  if (owning_web_view_->LinkHighlightsTimeline())
-    owning_web_view_->LinkHighlightsTimeline()->AnimationDestroyed(*this);
   compositor_animation_->SetAnimationDelegate(nullptr);
   compositor_animation_.reset();
 
@@ -228,7 +220,9 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
     // links: these should ideally be merged into a single rect before creating
     // the path, but that's another CL.
     if (quads.size() == 1 && transformed_quad.IsRectilinear() &&
-        !owning_web_view_->SettingsImpl()->MockGestureTapHighlightsEnabled()) {
+        !node_->GetDocument()
+             .GetSettings()
+             ->GetMockGestureTapHighlightsEnabled()) {
       FloatSize rect_rounding_radii(3, 3);
       new_path.AddRoundedRect(transformed_quad.BoundingBox(),
                               rect_rounding_radii);
@@ -326,7 +320,6 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
   compositor_animation_->AddKeyframeModel(std::move(keyframe_model));
 
   Invalidate();
-  owning_web_view_->MainFrameImpl()->FrameWidgetImpl()->ScheduleAnimation();
 }
 
 void LinkHighlightImpl::ClearGraphicsLayerLinkHighlightPointer() {
