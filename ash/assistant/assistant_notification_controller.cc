@@ -76,12 +76,22 @@ class AssistantNotificationDelegate
   DISALLOW_COPY_AND_ASSIGN(AssistantNotificationDelegate);
 };
 
+std::string GetNotificationId(const std::string& grouping_key) {
+  return kNotificationId + grouping_key;
+}
+
+message_center::NotifierId GetNotifierId() {
+  return message_center::NotifierId(
+      message_center::NotifierId::SYSTEM_COMPONENT, kNotifierAssistant);
+}
+
 }  // namespace
 
 AssistantNotificationController::AssistantNotificationController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
       assistant_notification_subscriber_binding_(this),
+      notifier_id_(GetNotifierId()),
       weak_factory_(this) {}
 
 AssistantNotificationController::~AssistantNotificationController() = default;
@@ -113,9 +123,8 @@ void AssistantNotificationController::OnShowNotification(
 
   // Create the specified |notification| that should be rendered in the
   // |message_center| for the interaction.
-  notification_ = std::move(notification);
-  const base::string16 title = base::UTF8ToUTF16(notification_->title);
-  const base::string16 message = base::UTF8ToUTF16(notification_->message);
+  const base::string16 title = base::UTF8ToUTF16(notification->title);
+  const base::string16 message = base::UTF8ToUTF16(notification->message);
   const base::string16 display_source =
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_NOTIFICATION_DISPLAY_SOURCE);
 
@@ -125,14 +134,12 @@ void AssistantNotificationController::OnShowNotification(
 
   std::unique_ptr<message_center::Notification> system_notification =
       message_center::Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title,
-          message, gfx::Image(), display_source, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierAssistant),
-          optional_field,
+          message_center::NOTIFICATION_TYPE_SIMPLE,
+          GetNotificationId(notification->grouping_key), title, message,
+          gfx::Image(), display_source, GURL(), notifier_id_, optional_field,
           new AssistantNotificationDelegate(weak_factory_.GetWeakPtr(),
                                             assistant_controller_->GetWeakPtr(),
-                                            notification_.Clone()),
+                                            notification.Clone()),
           kAssistantIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   system_notification->set_priority(message_center::DEFAULT_PRIORITY);
@@ -141,17 +148,17 @@ void AssistantNotificationController::OnShowNotification(
 
 void AssistantNotificationController::OnRemoveNotification(
     const std::string& grouping_key) {
-  if (!grouping_key.empty() &&
-      (!notification_ || notification_->grouping_key != grouping_key)) {
-    return;
-  }
-
-  // message_center has only one Assistant notification, so there is no
-  // difference between removing all and removing one Assistant notification.
-  notification_.reset();
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
-  message_center->RemoveNotification(kNotificationId, /*by_user=*/false);
+  if (grouping_key.empty()) {
+    // Remove all assistant notifications by NotifierId.
+    message_center->RemoveNotificationsForNotifierId(notifier_id_);
+  } else {
+    // Remove the notification with |grouping_key|. It is no-op if no
+    // corresponding notification is found in |message_center|.
+    message_center->RemoveNotification(GetNotificationId(grouping_key),
+                                       /*by_user=*/false);
+  }
 }
 
 }  // namespace ash
