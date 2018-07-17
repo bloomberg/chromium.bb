@@ -343,9 +343,8 @@ gfx::Rect BrowserAccessibility::GetPageBoundsRect(bool* offscreen,
   return RelativeToAbsoluteBounds(gfx::RectF(), false, offscreen, clip_bounds);
 }
 
-gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start,
-                                                      int len,
-                                                      bool clipped) const {
+gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start, int len)
+    const {
   DCHECK_GE(start, 0);
   DCHECK_GE(len, 0);
 
@@ -465,11 +464,9 @@ gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start,
       }
     }
 
-    // Don't clip bounds. Some screen magnifiers (e.g. ZoomText) prefer to
-    // get unclipped bounds so that they can make smooth scrolling calculations.
     gfx::Rect absolute_child_rect = child->RelativeToAbsoluteBounds(
         child_overlap_rect, false /* frame_only */, nullptr /* offscreen */,
-        clipped /* clip_bounds */);
+        true /* clip_bounds */);
     if (bounds.width() == 0 && bounds.height() == 0) {
       bounds = absolute_child_rect;
     } else {
@@ -480,10 +477,9 @@ gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start,
   return bounds;
 }
 
-gfx::Rect BrowserAccessibility::GetScreenBoundsForRange(int start,
-                                                        int len,
-                                                        bool clipped) const {
-  gfx::Rect bounds = GetPageBoundsForRange(start, len, clipped);
+gfx::Rect BrowserAccessibility::GetScreenBoundsForRange(int start, int len)
+    const {
+  gfx::Rect bounds = GetPageBoundsForRange(start, len);
 
   // Adjust the bounds by the top left corner of the containing view's bounds
   // in screen coordinates.
