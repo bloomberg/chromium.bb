@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "chrome_elf/sha1/sha1.h"
@@ -44,16 +45,16 @@ const std::string kTestPaths[] = {
 };
 
 static_assert(
-    arraysize(kTestLogs) == arraysize(kTestPaths),
+    base::size(kTestLogs) == base::size(kTestPaths),
     "Some tests currently expect these two arrays to be the same size.");
 
 // Ensure |buffer_size| passed in is the actual bytes written by DrainLog().
 void VerifyBuffer(uint8_t* buffer, uint32_t buffer_size) {
   uint32_t total_logs = 0;
   size_t index = 0;
-  size_t array_size = arraysize(kTestLogs);
+  size_t array_size = base::size(kTestLogs);
 
-  // Verify against kTestLogs/kTestPaths.  Expect 2 * arraysize(kTestLogs)
+  // Verify against kTestLogs/kTestPaths.  Expect 2 * base::size(kTestLogs)
   // entries: first half are "blocked", second half are "allowed".
   LogEntry* entry = nullptr;
   uint8_t* tracker = buffer;
@@ -125,7 +126,7 @@ TEST(ThirdParty, Logs) {
   // Init.
   ASSERT_EQ(InitLogs(), ThirdPartyStatus::kSuccess);
 
-  for (size_t i = 0; i < arraysize(kTestLogs); ++i) {
+  for (size_t i = 0; i < base::size(kTestLogs); ++i) {
     // Add some blocked entries.
     LogLoadAttempt(LogType::kBlocked, kTestLogs[i].image_size,
                    kTestLogs[i].time_date_stamp, std::string());
@@ -161,7 +162,7 @@ TEST(ThirdParty, LogNotifications) {
 
   // Set up the required arguments for the test thread.
   NotificationHandlerArguments handler_data;
-  handler_data.logs_expected = arraysize(kTestLogs);
+  handler_data.logs_expected = base::size(kTestLogs);
   handler_data.notification_event.reset(
       new base::WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED));
@@ -185,6 +186,62 @@ TEST(ThirdParty, LogNotifications) {
   DWORD exit_code = 1;
   EXPECT_TRUE(::GetExitCodeThread(thread.Get(), &exit_code));
   EXPECT_EQ(exit_code, DWORD{0});
+
+  DeinitLogs();
+}
+
+// Test that "spam", duplicate block logs are handled as expected across drains.
+TEST(ThirdParty, BlockedLogDuplicates) {
+  // Init.
+  ASSERT_EQ(InitLogs(), ThirdPartyStatus::kSuccess);
+
+  for (size_t i = 0; i < base::size(kTestLogs); ++i) {
+    // Add some blocked entries.
+    LogLoadAttempt(LogType::kBlocked, kTestLogs[i].image_size,
+                   kTestLogs[i].time_date_stamp, kTestPaths[i]);
+
+    // Add some allowed entries.
+    LogLoadAttempt(LogType::kAllowed, kTestLogs[i].image_size,
+                   kTestLogs[i].time_date_stamp, kTestPaths[i]);
+  }
+
+  uint32_t initial_log = 0;
+  DrainLog(nullptr, 0, &initial_log);
+  ASSERT_TRUE(initial_log);
+
+  auto buffer = std::unique_ptr<uint8_t[]>(new uint8_t[initial_log]);
+  uint32_t remaining_log = 0;
+  uint32_t bytes_written = DrainLog(&buffer[0], initial_log, &remaining_log);
+  EXPECT_EQ(bytes_written, initial_log);
+  EXPECT_EQ(remaining_log, uint32_t{0});
+
+  // Validate that all of the logs have been drained.
+  EXPECT_EQ(GetLogCount(&buffer[0], bytes_written), base::size(kTestLogs) * 2);
+
+  // Now the real test.  Add the same log entries again, and expect that the
+  // blocked logs will NOT be re-added and drained this time.
+  for (size_t i = 0; i < base::size(kTestLogs); ++i) {
+    // Add some blocked entries.
+    LogLoadAttempt(LogType::kBlocked, kTestLogs[i].image_size,
+                   kTestLogs[i].time_date_stamp, kTestPaths[i]);
+
+    // Add some allowed entries.
+    LogLoadAttempt(LogType::kAllowed, kTestLogs[i].image_size,
+                   kTestLogs[i].time_date_stamp, kTestPaths[i]);
+  }
+
+  initial_log = 0;
+  DrainLog(nullptr, 0, &initial_log);
+  ASSERT_TRUE(initial_log);
+
+  buffer = std::unique_ptr<uint8_t[]>(new uint8_t[initial_log]);
+  remaining_log = 0;
+  bytes_written = DrainLog(&buffer[0], initial_log, &remaining_log);
+  EXPECT_EQ(bytes_written, initial_log);
+  EXPECT_EQ(remaining_log, uint32_t{0});
+
+  // Validate that only half of the logs have been drained.
+  EXPECT_EQ(GetLogCount(&buffer[0], bytes_written), base::size(kTestLogs));
 
   DeinitLogs();
 }
