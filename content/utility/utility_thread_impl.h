@@ -42,7 +42,7 @@ class UtilityThreadImpl : public UtilityThread,
   // UtilityThread:
   void ReleaseProcess() override;
   void EnsureBlinkInitialized() override;
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
   void EnsureBlinkInitializedWithSandboxSupport() override;
 #endif
 #if defined(OS_MACOSX)

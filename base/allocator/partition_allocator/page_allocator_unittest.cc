@@ -11,12 +11,12 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 #include <setjmp.h>
 #include <signal.h>
 #include <sys/mman.h>
 #include <sys/time.h>
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 #if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
@@ -134,7 +134,7 @@ TEST(PageAllocatorTest, AllocAndFreePages) {
 }
 
 // Test permission setting on POSIX, where we can set a trap handler.
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 
 namespace {
 sigjmp_buf g_continuation;
@@ -217,7 +217,7 @@ TEST(PageAllocatorTest, ReadExecutePages) {
   FreePages(buffer, kPageAllocationGranularity);
 }
 
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 }  // namespace base
 

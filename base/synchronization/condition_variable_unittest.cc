@@ -194,7 +194,7 @@ TEST_F(ConditionVariableTest, TimeoutTest) {
   lock.Release();
 }
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 const int kDiscontinuitySeconds = 2;
 
 void BackInTime(Lock* lock) {

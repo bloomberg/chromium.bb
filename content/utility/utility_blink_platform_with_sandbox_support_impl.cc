@@ -10,7 +10,7 @@
 #include "base/mac/foundation_util.h"
 #include "content/child/child_process_sandbox_support_impl_mac.h"
 #include "third_party/blink/public/platform/mac/web_sandbox_support.h"
-#elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
 #include "base/synchronization/lock.h"
 #include "content/child/child_process_sandbox_support_impl_linux.h"
 #include "content/child/child_thread_impl.h"
@@ -27,7 +27,7 @@ struct WebFontRenderStyle;
 
 namespace content {
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
 
 class UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport
     : public blink::WebSandboxSupport {
@@ -63,7 +63,7 @@ class UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport
 #endif  // defined(OS_MACOSX)
 };
 
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX) && !defined(OS_ANDROID)
 
 UtilityBlinkPlatformWithSandboxSupportImpl::
     UtilityBlinkPlatformWithSandboxSupportImpl(
@@ -82,7 +82,7 @@ UtilityBlinkPlatformWithSandboxSupportImpl::
 
 blink::WebSandboxSupport*
 UtilityBlinkPlatformWithSandboxSupportImpl::GetSandboxSupport() {
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
   return sandbox_support_.get();
 #else
   return nullptr;
@@ -98,7 +98,7 @@ bool UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport::LoadFont(
   return content::LoadFont(src_font, out, font_id);
 }
 
-#elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
 
 void UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport::
     GetFallbackFontForCharacter(blink::WebUChar32 character,

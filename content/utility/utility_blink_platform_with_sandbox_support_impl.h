@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "content/utility/utility_blink_platform_impl.h"
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
 #include "components/services/font/public/cpp/font_loader.h"  // nogncheck
 #include "third_party/skia/include/core/SkRefCnt.h"           // nogncheck
 #endif
@@ -40,7 +40,7 @@ class UtilityBlinkPlatformWithSandboxSupportImpl
   blink::WebSandboxSupport* GetSandboxSupport() override;
 
  private:
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
   class SandboxSupport;
   std::unique_ptr<SandboxSupport> sandbox_support_;
 #endif

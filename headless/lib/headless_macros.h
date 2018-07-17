@@ -7,8 +7,8 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 #define HEADLESS_USE_BREAKPAD
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
 #endif  // HEADLESS_LIB_HEADLESS_MACROS_H_

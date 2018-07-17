@@ -53,7 +53,7 @@ const int kChunkSize = 32 * 1024;
 const int kMaxParallelOperations = 10;
 
 void MaybeIncreaseFdLimitTo(unsigned int max_descriptors) {
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
   base::IncreaseFdLimitTo(max_descriptors);
 #endif
 }

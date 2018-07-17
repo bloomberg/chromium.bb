@@ -11,7 +11,7 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 #include <signal.h>
 #define USE_SIGNALS 1
 #elif defined(OS_WIN)
