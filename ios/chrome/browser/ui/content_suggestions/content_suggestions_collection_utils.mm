@@ -86,7 +86,7 @@ namespace content_suggestions {
 
 const CGFloat kSearchFieldHeight = 50;
 const int kSearchFieldBackgroundColor = 0xF1F3F4;
-const CGFloat kHintTextScale = 0.85;
+const CGFloat kHintTextScale = 0.15;
 
 const NSUInteger kMostVisitedItemsPerLine = 4;
 
@@ -232,7 +232,8 @@ void configureSearchHintLabel(UILabel* searchHintLabel,
   }
   if (IsUIRefreshPhase1Enabled()) {
     [searchHintLabel setTextColor:[UIColor colorWithWhite:0 alpha:kHintAlpha]];
-    searchHintLabel.font = [UIFont systemFontOfSize:20];
+    searchHintLabel.font = [UIFont systemFontOfSize:17];
+    searchHintLabel.textAlignment = NSTextAlignmentCenter;
   } else {
     [searchHintLabel
         setTextColor:
@@ -244,7 +245,6 @@ void configureSearchHintLabel(UILabel* searchHintLabel,
 
 void configureVoiceSearchButton(UIButton* voiceSearchButton,
                                 UIButton* searchTapTarget) {
-  UIImage* micImage = [UIImage imageNamed:@"voice_icon"];
   [voiceSearchButton setTranslatesAutoresizingMaskIntoConstraints:NO];
   [searchTapTarget addSubview:voiceSearchButton];
 
@@ -258,7 +258,16 @@ void configureVoiceSearchButton(UIButton* voiceSearchButton,
   ]];
 
   [voiceSearchButton setAdjustsImageWhenHighlighted:NO];
+
+  UIImage* micImage =
+      IsUIRefreshPhase1Enabled()
+          ? [[UIImage imageNamed:@"location_bar_voice"]
+                imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
+          : [UIImage imageNamed:@"voice_icon"];
   [voiceSearchButton setImage:micImage forState:UIControlStateNormal];
+  if (IsUIRefreshPhase1Enabled()) {
+    voiceSearchButton.tintColor = [UIColor colorWithWhite:0 alpha:0.7];
+  }
   [voiceSearchButton setAccessibilityLabel:l10n_util::GetNSString(
                                                IDS_IOS_ACCNAME_VOICE_SEARCH)];
   [voiceSearchButton setAccessibilityIdentifier:@"Voice Search"];

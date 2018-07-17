@@ -27,9 +27,6 @@
 
 namespace {
 
-// Left margin for search icon.
-const CGFloat kSearchIconLeftMargin = 9;
-
 // Landscape inset for fake omnibox background container
 const CGFloat kBackgroundLandscapeInset = 169;
 
@@ -42,11 +39,13 @@ const CGFloat kBackgroundLandscapeInset = 169;
 @property(nonatomic, strong) NSLayoutConstraint* backgroundLeadingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* backgroundTrailingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* blurTopConstraint;
+@property(nonatomic, strong) UIView* backgroundContainer;
 
 @end
 
 @implementation ContentSuggestionsHeaderView
 
+@synthesize backgroundContainer = _backgroundContainer;
 @synthesize backgroundHeightConstraint = _backgroundHeightConstraint;
 @synthesize backgroundLeadingConstraint = _backgroundLeadingConstraint;
 @synthesize backgroundTrailingConstraint = _backgroundTrailingConstraint;
@@ -66,17 +65,10 @@ const CGFloat kBackgroundLandscapeInset = 169;
 #pragma mark - Private
 
 // Scale the the hint label down to at most content_suggestions::kHintTextScale.
-// Also maintains autoresizing frame origin after the transform.
 - (void)scaleHintLabel:(UIView*)hintLabel percent:(CGFloat)percent {
-  CGFloat scaleValue = (content_suggestions::kHintTextScale - 1) * percent + 1;
+  CGFloat scaleValue =
+      1 + (content_suggestions::kHintTextScale * (1 - percent));
   hintLabel.transform = CGAffineTransformMakeScale(scaleValue, scaleValue);
-  // The transform above is anchored around the center of the frame, which means
-  // the origin x and y value will be updated as well as it's width and height.
-  // Since the source of truth for this views layout is governed by it's parent
-  // view in autolayout, reset the frame's origin.x to 0 below.
-  CGRect frame = hintLabel.frame;
-  frame.origin.x = 0;
-  hintLabel.frame = frame;
 }
 
 #pragma mark - NTPHeaderViewAdapter
@@ -105,7 +97,6 @@ const CGFloat kBackgroundLandscapeInset = 169;
     blur = [[UIView alloc] init];
   }
   blur.backgroundColor = buttonFactory.toolbarConfiguration.blurBackgroundColor;
-  blur.layer.cornerRadius = kAdaptiveLocationBarCornerRadius;
   [searchField insertSubview:blur atIndex:0];
   blur.translatesAutoresizingMaskIntoConstraints = NO;
   self.blurTopConstraint =
@@ -125,38 +116,27 @@ const CGFloat kBackgroundLandscapeInset = 169;
   vibrancyView.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(vibrancyView, searchField);
 
-  UIView* backgroundContainer = [[UIView alloc] init];
-  backgroundContainer.userInteractionEnabled = NO;
-  backgroundContainer.backgroundColor =
-      UIColorFromRGB(content_suggestions::kSearchFieldBackgroundColor);
-  backgroundContainer.layer.cornerRadius = kAdaptiveLocationBarCornerRadius;
-  [vibrancyView.contentView addSubview:backgroundContainer];
+  self.backgroundContainer = [[UIView alloc] init];
+  self.backgroundContainer.userInteractionEnabled = NO;
+  self.backgroundContainer.backgroundColor =
+      [UIColor colorWithWhite:0 alpha:kAdaptiveLocationBarBackgroundAlpha];
+  self.backgroundContainer.layer.cornerRadius =
+      kAdaptiveLocationBarCornerRadius;
+  [vibrancyView.contentView addSubview:self.backgroundContainer];
 
-  backgroundContainer.translatesAutoresizingMaskIntoConstraints = NO;
-  self.backgroundLeadingConstraint = [backgroundContainer.leadingAnchor
+  self.backgroundContainer.translatesAutoresizingMaskIntoConstraints = NO;
+  self.backgroundLeadingConstraint = [self.backgroundContainer.leadingAnchor
       constraintEqualToAnchor:searchField.leadingAnchor];
-  self.backgroundTrailingConstraint = [backgroundContainer.trailingAnchor
+  self.backgroundTrailingConstraint = [self.backgroundContainer.trailingAnchor
       constraintEqualToAnchor:searchField.trailingAnchor];
-  self.backgroundHeightConstraint = [backgroundContainer.heightAnchor
+  self.backgroundHeightConstraint = [self.backgroundContainer.heightAnchor
       constraintEqualToConstant:content_suggestions::kSearchFieldHeight];
   [NSLayoutConstraint activateConstraints:@[
-    [backgroundContainer.centerYAnchor
+    [self.backgroundContainer.centerYAnchor
         constraintEqualToAnchor:searchField.centerYAnchor],
     self.backgroundLeadingConstraint,
     self.backgroundTrailingConstraint,
     self.backgroundHeightConstraint,
-  ]];
-
-  UIImage* search_icon = [UIImage imageNamed:@"ntp_search_icon"];
-  UIImageView* search_view = [[UIImageView alloc] initWithImage:search_icon];
-  [searchField addSubview:search_view];
-  search_view.translatesAutoresizingMaskIntoConstraints = NO;
-  [NSLayoutConstraint activateConstraints:@[
-    [search_view.centerYAnchor
-        constraintEqualToAnchor:backgroundContainer.centerYAnchor],
-    [search_view.leadingAnchor
-        constraintEqualToAnchor:backgroundContainer.leadingAnchor
-                       constant:kSearchIconLeftMargin],
   ]];
 }
 
@@ -165,6 +145,12 @@ const CGFloat kBackgroundLandscapeInset = 169;
   // The scroll offset at which point searchField's frame should stop growing.
   CGFloat maxScaleOffset = self.frame.size.height -
                            ntp_header::kMinHeaderHeight - safeAreaInsets.top;
+
+  // With RxR the search field should scroll under the toolbar.
+  if (IsRegularXRegularSizeClass(self)) {
+    maxScaleOffset += kAdaptiveToolbarHeight;
+  }
+
   // The scroll offset at which point searchField's frame should start
   // growing.
   CGFloat startScaleOffset = maxScaleOffset - ntp_header::kAnimationDistance;
@@ -199,8 +185,11 @@ const CGFloat kBackgroundLandscapeInset = 169;
     widthConstraint.constant = searchFieldNormalWidth;
     self.backgroundHeightConstraint.constant =
         content_suggestions::kSearchFieldHeight;
+    self.backgroundContainer.layer.cornerRadius =
+        content_suggestions::kSearchFieldHeight / 2;
     [self scaleHintLabel:hintLabel percent:percent];
     self.blurTopConstraint.constant = 0;
+
     return;
   } else {
     self.alpha = 1;
@@ -238,6 +227,8 @@ const CGFloat kBackgroundLandscapeInset = 169;
       kLocationBarHeight - content_suggestions::kSearchFieldHeight;
   self.backgroundHeightConstraint.constant =
       content_suggestions::kSearchFieldHeight + minHeightDiff * percent;
+  self.backgroundContainer.layer.cornerRadius =
+      self.backgroundHeightConstraint.constant / 2;
 
   // Scale the hintLabel, and make sure the frame stays left aligned.
   [self scaleHintLabel:hintLabel percent:percent];
