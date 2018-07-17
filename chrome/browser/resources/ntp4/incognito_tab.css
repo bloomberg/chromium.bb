@@ -13,15 +13,15 @@ body {
 .content {
   /* This is identical to the default background color. It's necessary to set it
      for the case when a theme with a background image is installed. */
-  background-color: #303030;
-  color: rgba(255, 255, 255, 0.7);
+  background-color: rgb(50, 54, 57);
+  color: rgb(189, 193, 198);
   font-size: calc(100% - 2px);
   line-height: calc(100% + 6px);
   min-width: 240px;
 }
 
 h1 {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgb(218, 220, 224);
   font-size: calc(100% + 8px);
   font-weight: 400;
   line-height: calc(100% + 8px);
@@ -33,7 +33,7 @@ em {
 }
 
 .learn-more-button {
-  color: rgb(123, 170, 247);
+  color: rgb(138, 180, 248);
   text-decoration: none;
 }
 
