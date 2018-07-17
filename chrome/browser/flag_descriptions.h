@@ -1346,6 +1346,9 @@ extern const char kDownloadsLocationChangeDescription[];
 extern const char kDownloadProgressInfoBarName[];
 extern const char kDownloadProgressInfoBarDescription[];
 
+extern const char kDownloadHomeV2Name[];
+extern const char kDownloadHomeV2Description[];
+
 extern const char kEnableAndroidPayIntegrationV1Name[];
 extern const char kEnableAndroidPayIntegrationV1Description[];
 

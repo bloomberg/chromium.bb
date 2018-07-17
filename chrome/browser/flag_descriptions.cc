@@ -2207,6 +2207,10 @@ const char kDownloadProgressInfoBarName[] = "Enable download progress infobar";
 const char kDownloadProgressInfoBarDescription[] =
     "Enables an infobar notifying users about status of current downloads.";
 
+const char kDownloadHomeV2Name[] = "Enable download home v2";
+const char kDownloadHomeV2Description[] =
+    "Enables the new UI for download home";
+
 const char kEnableAndroidPayIntegrationV1Name[] = "Enable Android Pay v1";
 const char kEnableAndroidPayIntegrationV1Description[] =
     "Enable integration with Android Pay using the first version of the API";
