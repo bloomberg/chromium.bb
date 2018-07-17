@@ -19352,6 +19352,7 @@ Called by update_net_error_codes.py.-->
   <int value="2506" label="DOMNodeRemovedFromDocumentEventListenedAtNonTarget"/>
   <int value="2507" label="CSSFillAvailableLogicalWidth"/>
   <int value="2508" label="CSSFillAvailableLogicalHeight"/>
+  <int value="2509" label="PopupOpenWhileFileChooserOpened"/>
 </enum>
 
 <enum name="FeedbackSource">

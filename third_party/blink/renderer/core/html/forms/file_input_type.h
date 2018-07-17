@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/html/forms/file_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/input_type.h"
 #include "third_party/blink/renderer/core/html/forms/keyboard_clickable_input_type_view.h"
+#include "third_party/blink/renderer/core/page/popup_opening_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -46,7 +47,8 @@ class FileList;
 
 class CORE_EXPORT FileInputType final : public InputType,
                                         public KeyboardClickableInputTypeView,
-                                        private FileChooserClient {
+                                        private FileChooserClient,
+                                        private PopupOpeningObserver {
   USING_GARBAGE_COLLECTED_MIXIN(FileInputType);
 
  public:
@@ -97,6 +99,9 @@ class CORE_EXPORT FileInputType final : public InputType,
 
   // FileChooserClient implementation.
   void FilesChosen(const Vector<FileChooserFileInfo>&) override;
+
+  // PopupOpeningObserver implementation.
+  void WillOpenPopup() override;
 
   void SetFilesFromDirectory(const String&);
 
