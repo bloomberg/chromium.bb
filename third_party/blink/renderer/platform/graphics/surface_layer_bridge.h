@@ -34,7 +34,10 @@ class PLATFORM_EXPORT SurfaceLayerBridge
     : public blink::mojom::blink::EmbeddedFrameSinkClient,
       public WebSurfaceLayerBridge {
  public:
-  SurfaceLayerBridge(WebLayerTreeView*, WebSurfaceLayerBridgeObserver*);
+  SurfaceLayerBridge(
+      WebLayerTreeView*,
+      WebSurfaceLayerBridgeObserver*,
+      cc::UpdateSubmissionStateCB update_submission_state_callback);
   ~SurfaceLayerBridge() override;
 
   void CreateSolidColorLayer();
@@ -48,7 +51,10 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   void ClearSurfaceId() override;
   void SetContentsOpaque(bool) override;
   void CreateSurfaceLayer() override;
-  const viz::SurfaceId& GetSurfaceId() const override;
+
+  const viz::SurfaceId& GetSurfaceId() const override {
+    return current_surface_id_;
+  }
 
  private:
   scoped_refptr<cc::SurfaceLayer> surface_layer_;
@@ -56,6 +62,7 @@ class PLATFORM_EXPORT SurfaceLayerBridge
 
   // The |observer_| handles unregistering the contents layer on its own.
   WebSurfaceLayerBridgeObserver* observer_;
+  cc::UpdateSubmissionStateCB update_submission_state_callback_;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   mojo::Binding<blink::mojom::blink::EmbeddedFrameSinkClient> binding_;
 

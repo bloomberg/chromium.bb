@@ -51,6 +51,7 @@ TEST(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
   std::unique_ptr<HeadsUpDisplayLayerImpl> layer_ptr =
       HeadsUpDisplayLayerImpl::Create(host_impl.pending_tree(), 1);
   layer_ptr->SetBounds(gfx::Size(100, 100));
+  layer_ptr->set_visible_layer_rect(gfx::Rect(100, 100));
 
   HeadsUpDisplayLayerImpl* layer = layer_ptr.get();
 
@@ -84,6 +85,7 @@ TEST(HeadsUpDisplayLayerImplTest, CPUAndGPURasterCanvas) {
   std::unique_ptr<HeadsUpDisplayLayerImpl> layer_ptr =
       HeadsUpDisplayLayerImpl::Create(host_impl.pending_tree(), 1);
   layer_ptr->SetBounds(gfx::Size(100, 100));
+  layer_ptr->set_visible_layer_rect(gfx::Rect(100, 100));
 
   HeadsUpDisplayLayerImpl* layer = layer_ptr.get();
 

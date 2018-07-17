@@ -16,14 +16,20 @@
 
 namespace cc {
 
-SurfaceLayerImpl::SurfaceLayerImpl(LayerTreeImpl* tree_impl, int id)
-    : LayerImpl(tree_impl, id) {}
+SurfaceLayerImpl::SurfaceLayerImpl(
+    LayerTreeImpl* tree_impl,
+    int id,
+    UpdateSubmissionStateCB update_submission_state_callback)
+    : LayerImpl(tree_impl, id),
+      update_submission_state_callback_(
+          std::move(update_submission_state_callback)) {}
 
 SurfaceLayerImpl::~SurfaceLayerImpl() = default;
 
 std::unique_ptr<LayerImpl> SurfaceLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return SurfaceLayerImpl::Create(tree_impl, id());
+  return SurfaceLayerImpl::Create(tree_impl, id(),
+                                  std::move(update_submission_state_callback_));
 }
 
 void SurfaceLayerImpl::SetPrimarySurfaceId(
@@ -87,6 +93,22 @@ void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer_impl->SetFallbackSurfaceId(fallback_surface_id_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
   layer_impl->SetSurfaceHitTestable(surface_hit_testable_);
+}
+
+bool SurfaceLayerImpl::WillDraw(
+    DrawMode draw_mode,
+    viz::ClientResourceProvider* resource_provider) {
+  bool will_draw = LayerImpl::WillDraw(draw_mode, resource_provider);
+  // If we have a change in WillDraw (meaning that visibility has changed), we
+  // want to inform the VideoFrameSubmitter to start or stop submitting
+  // compositor frames.
+  if (will_draw_ != will_draw) {
+    will_draw_ = will_draw;
+    if (update_submission_state_callback_)
+      update_submission_state_callback_.Run(will_draw);
+  }
+
+  return primary_surface_id_.is_valid() && will_draw;
 }
 
 void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
