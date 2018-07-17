@@ -40,10 +40,10 @@ class RecommendAppsScreenHandler : public BaseScreenHandler,
 
   // RecommendAppsScreenView:
   void OnLoadError() override;
-  void OnLoadSuccess(const std::string& terms_of_service) override;
+  void OnLoadSuccess(const base::Value& app_list) override;
 
   // Call the JS function to load the list of apps in the WebView.
-  void LoadAppListInUI();
+  void LoadAppListInUI(const base::Value& app_list);
 
   void HandleSkip();
   void HandleRetry();

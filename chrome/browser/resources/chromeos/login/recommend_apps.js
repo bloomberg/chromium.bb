@@ -13,11 +13,6 @@ Polymer({
   behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
   properties: {
-    apps: {
-      type: Array,
-      value: []  // TODO(rsgingerrs): add the function to fetch the list of apps
-    },
-
     /**
      * Reference to OOBE screen object.
      * @type {!OobeTypes.Screen}

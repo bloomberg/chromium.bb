@@ -84,25 +84,25 @@ void RecommendAppsScreenHandler::Hide() {}
 
 void RecommendAppsScreenHandler::Initialize() {}
 
-void RecommendAppsScreenHandler::LoadAppListInUI() {
-  if (!page_is_ready())
+void RecommendAppsScreenHandler::LoadAppListInUI(const base::Value& app_list) {
+  if (!page_is_ready()) {
+    CallJS("showError");
     return;
-
+  }
   const ui::ResourceBundle& resource_bundle =
       ui::ResourceBundle::GetSharedInstance();
   base::StringPiece app_list_webview = resource_bundle.GetRawDataResource(
       IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML);
   CallJS("setWebview", app_list_webview.as_string());
-  CallJS("loadAppList");
+  CallJS("loadAppList", app_list);
 }
 
 void RecommendAppsScreenHandler::OnLoadError() {
   CallJS("showError");
 }
 
-void RecommendAppsScreenHandler::OnLoadSuccess(const std::string& app_list) {
-  // TODO(rsgingerrs): Parse the app_list and pass it to the UI.
-  LoadAppListInUI();
+void RecommendAppsScreenHandler::OnLoadSuccess(const base::Value& app_list) {
+  LoadAppListInUI(app_list);
 }
 
 void RecommendAppsScreenHandler::HandleSkip() {

@@ -39,7 +39,7 @@ class RecommendAppsScreenView {
 
   // Called when the download of the recommend app list is successful. Shows the
   // downloaded |app_list| to the user.
-  virtual void OnLoadSuccess(const std::string& app_list) = 0;
+  virtual void OnLoadSuccess(const base::Value& app_list) = 0;
 };
 
 }  // namespace chromeos

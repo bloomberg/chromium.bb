@@ -23,7 +23,7 @@ function generateContents(appIcon, appTitle, appPackageName) {
 
   var img = doc.createElement('img');
   img.classList.add('app-icon');
-  img.setAttribute('src', appIcon);
+  img.setAttribute('src', decodeURIComponent(appIcon));
 
   var title = doc.createElement('span');
   title.classList.add('app-title');
