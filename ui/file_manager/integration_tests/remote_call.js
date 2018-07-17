@@ -413,7 +413,7 @@ RemoteCallFilesApp.prototype.waitUntilCurrentDirectoryIsChanged = function(
       function(path) {
         // TODO(lucmult): Remove this once MyFiles flag is removed.
         // https://crbug.com/850348.
-        const myFilesExpectedPath = '/My Files' + expectedPath;
+        const myFilesExpectedPath = '/My files' + expectedPath;
         if(!(path === expectedPath || path === myFilesExpectedPath)) {
           return pending(
               caller, 'Expected path is %s got %s', expectedPath, path);

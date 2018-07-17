@@ -6,8 +6,8 @@
 
 /**  Test constructor and default public attributes. */
 function testEntryList(testReportCallback) {
-  const entryList = new EntryList('My Files', 'my_files');
-  assertEquals('My Files', entryList.label);
+  const entryList = new EntryList('My files', 'my_files');
+  assertEquals('My files', entryList.label);
   assertEquals('entry-list://my_files', entryList.toURL());
   assertEquals('my_files', entryList.rootType);
   assertFalse(entryList.isNativeType);
@@ -48,7 +48,7 @@ function testEntryList(testReportCallback) {
 
 /** Tests method EntryList.getParent. */
 function testEntryListGetParent(testReportCallback) {
-  const entryList = new EntryList('My Files', 'my_files');
+  const entryList = new EntryList('My files', 'my_files');
   let callbackTriggered = false;
   entryList.getParent(parentEntry => {
     // EntryList should return itself since it's a root and that's what the web
@@ -61,7 +61,7 @@ function testEntryListGetParent(testReportCallback) {
 
 /** Tests method EntryList.addEntry. */
 function testEntryListAddEntry() {
-  const entryList = new EntryList('My Files');
+  const entryList = new EntryList('My files');
   assertEquals(0, entryList.children.length);
 
   const fakeRootEntry = createFakeDisplayRoot();
@@ -78,7 +78,7 @@ function testEntryListAddEntry() {
 
 /** Tests methods to remove entries. */
 function testEntryListRemoveEntry() {
-  const entryList = new EntryList('My Files');
+  const entryList = new EntryList('My files');
 
   const fakeRootEntry = createFakeDisplayRoot();
   const fakeVolumeInfo = {
@@ -95,7 +95,7 @@ function testEntryListRemoveEntry() {
  * Tests methods findIndexByVolumeInfo, removeByVolumeType, removeByRootType.
  */
 function testEntryFindIndex() {
-  const entryList = new EntryList('My Files');
+  const entryList = new EntryList('My files');
 
   const fakeRootEntry = createFakeDisplayRoot();
   const downloadsVolumeInfo = {
@@ -116,7 +116,7 @@ function testEntryFindIndex() {
   const fakeEntry = {
     isDirectory: true,
     rootType: VolumeManagerCommon.RootType.CROSTINI,
-    name: 'Linux Files',
+    name: 'Linux files',
     toURL: function() {
       return 'fake-entry://linux-files';
     }
@@ -145,7 +145,7 @@ function testEntryFindIndex() {
 
 /** Tests method EntryList.getMetadata. */
 function testEntryListGetMetadata(testReportCallback) {
-  const entryList = new EntryList('My Files');
+  const entryList = new EntryList('My files');
 
   let modificationTime = null;
   entryList.getMetadata(metadata => {
@@ -330,7 +330,7 @@ function testEntryListAddEntrySetsPrefix() {
     label: 'Fake Filesystem',
   };
   const volumeEntry = new VolumeEntry(fakeVolumeInfo);
-  const entryList = new EntryList('My Files', 'my_files');
+  const entryList = new EntryList('My files', 'my_files');
 
   entryList.addEntry(volumeEntry);
   assertEquals(1, entryList.children.length);
