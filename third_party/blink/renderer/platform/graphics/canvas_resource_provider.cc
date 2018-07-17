@@ -420,6 +420,8 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
         if (presentation_mode !=
             CanvasResourceProvider::kAllowImageChromiumPresentationMode)
           continue;
+        if (!context_provider_wrapper)
+          continue;
         if (!gpu::IsImageFromGpuMemoryBufferFormatSupported(
                 color_params.GetBufferFormat(),
                 context_provider_wrapper->ContextProvider()
@@ -454,6 +456,8 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
             size, color_params, resource_dispatcher);
         break;
       case kTextureResourceType:
+        if (!context_provider_wrapper)
+          continue;
         provider = std::make_unique<CanvasResourceProviderTexture>(
             size, msaa_sample_count, color_params, context_provider_wrapper,
             resource_dispatcher);
