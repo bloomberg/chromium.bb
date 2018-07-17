@@ -738,11 +738,13 @@ void V4L2VideoEncodeAccelerator::Dequeue() {
 
     child_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(
-            &Client::BitstreamBufferReady, client_, bitstream_buffer_id,
-            BitstreamBufferMetadata(
-                output_data_size, key_frame,
-                base::Time::FromTimeVal(dqbuf.timestamp).since_origin())));
+        base::Bind(&Client::BitstreamBufferReady, client_, bitstream_buffer_id,
+                   BitstreamBufferMetadata(
+                       output_data_size, key_frame,
+                       base::TimeDelta::FromMicroseconds(
+                           dqbuf.timestamp.tv_usec +
+                           dqbuf.timestamp.tv_sec *
+                               base::Time::kMicrosecondsPerSecond))));
     if ((encoder_state_ == kFlushing) && (dqbuf.flags & V4L2_BUF_FLAG_LAST)) {
       // Notify client that flush has finished successfully. The flush callback
       // should be called after notifying the last buffer is ready.
