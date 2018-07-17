@@ -430,6 +430,14 @@ class VolumeEntry {
   }
 
   /**
+   * String used to determine the icon.
+   * @return {string}
+   */
+  get iconName() {
+    return this.volumeInfo_.volumeType;
+  }
+
+  /**
    * @param {function(Entry)|function(FilesAppEntry)} success callback, it
    * returns itself since EntryList is intended to be used as root node and the
    * Web Standard says to do so.

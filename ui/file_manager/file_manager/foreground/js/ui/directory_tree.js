@@ -1109,7 +1109,7 @@ function ShortcutItem(modelItem, tree) {
 
   var icon = item.querySelector('.icon');
   icon.classList.add('item-icon');
-  icon.setAttribute('volume-type-icon', VolumeManagerCommon.VolumeType.DRIVE);
+  icon.setAttribute('volume-type-icon', 'shortcut');
 
   if (tree.contextMenuForRootItems)
     item.setContextMenu_(tree.contextMenuForRootItems);
