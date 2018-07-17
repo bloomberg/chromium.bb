@@ -45,7 +45,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Called on Linux X11 after the browser window is maximized or restored.
   virtual void OnMaximizedStateChanged();
 
-  // Called on Linux X11 after the browser window is fullscreened or
+  // Called on Linux X11 and Mac after the browser window is fullscreened or
   // unfullscreened.
   virtual void OnFullscreenStateChanged();
 

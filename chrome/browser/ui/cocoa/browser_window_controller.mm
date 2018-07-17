@@ -57,7 +57,7 @@
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
-#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_cocoa.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h"
 #include "chrome/browser/ui/cocoa/fullscreen_placeholder_view.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
@@ -1864,12 +1864,12 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [sheet orderOut:self];
 }
 
-- (FullscreenToolbarController*)fullscreenToolbarController {
+- (FullscreenToolbarControllerCocoa*)fullscreenToolbarController {
   return fullscreenToolbarController_.get();
 }
 
 - (void)setFullscreenToolbarController:
-    (FullscreenToolbarController*)controller {
+    (FullscreenToolbarControllerCocoa*)controller {
   fullscreenToolbarController_.reset([controller retain]);
 }
 

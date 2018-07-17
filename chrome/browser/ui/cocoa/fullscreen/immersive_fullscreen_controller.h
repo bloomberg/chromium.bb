@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class BrowserWindowController;
+@protocol FullscreenToolbarContextDelegate;
 
 // This class manages the menubar and dock visibility for Immersive Fullscreen.
 // It uses a tracking area to show/hide the menubar if the user interacts with
@@ -15,7 +15,7 @@
 @interface ImmersiveFullscreenController : NSObject
 
 // Designated initializer.
-- (instancetype)initWithBrowserController:(BrowserWindowController*)bwc;
+- (instancetype)initWithDelegate:(id<FullscreenToolbarContextDelegate>)delegate;
 
 // Updates the menubar and dock visibility according the state of the
 // immersive fullscreen.

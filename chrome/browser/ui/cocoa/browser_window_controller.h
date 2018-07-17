@@ -47,7 +47,7 @@ class ExclusiveAccessController;
 class ExclusiveAccessContext;
 @class FindBarCocoaController;
 @class FullscreenModeController;
-@class FullscreenToolbarController;
+@class FullscreenToolbarControllerCocoa;
 @class FullscreenToolbarVisibilityLockController;
 @class FullscreenWindow;
 @class InfoBarContainerController;
@@ -91,7 +91,7 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   base::scoped_nsobject<DevToolsController> devToolsController_;
   base::scoped_nsobject<OverlayableContentsController>
       overlayableContentsController_;
-  base::scoped_nsobject<FullscreenToolbarController>
+  base::scoped_nsobject<FullscreenToolbarControllerCocoa>
       fullscreenToolbarController_;
   std::unique_ptr<ExclusiveAccessController> exclusiveAccessController_;
   base::scoped_nsobject<BrowserWindowFullscreenTransition>
@@ -622,10 +622,11 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 - (BOOL)isActiveTabContentsControllerResizeBlocked;
 
 // Returns the fullscreen toolbar controller.
-- (FullscreenToolbarController*)fullscreenToolbarController;
+- (FullscreenToolbarControllerCocoa*)fullscreenToolbarController;
 
 // Sets the fullscreen toolbar controller.
-- (void)setFullscreenToolbarController:(FullscreenToolbarController*)controller;
+- (void)setFullscreenToolbarController:
+    (FullscreenToolbarControllerCocoa*)controller;
 
 // Sets |touchbarController_|.
 - (void)setBrowserWindowTouchBarController:

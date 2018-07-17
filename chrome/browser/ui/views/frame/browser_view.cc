@@ -982,6 +982,7 @@ void BrowserView::FullscreenStateChanged() {
       fullscreen
           ? GetExclusiveAccessManager()->GetExclusiveAccessExitBubbleType()
           : EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
+  frame_->GetFrameView()->OnFullscreenStateChanged();
 }
 
 void BrowserView::SetToolbarButtonProvider(ToolbarButtonProvider* provider) {

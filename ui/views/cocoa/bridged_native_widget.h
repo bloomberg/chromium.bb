@@ -211,6 +211,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   bool target_fullscreen_state() const { return target_fullscreen_state_; }
   bool window_visible() const { return window_visible_; }
   bool wants_to_be_visible() const { return wants_to_be_visible_; }
+  bool in_fullscreen_transition() const { return in_fullscreen_transition_; }
 
   bool GetAnimate() const;
   void SetAnimate(bool animate);
