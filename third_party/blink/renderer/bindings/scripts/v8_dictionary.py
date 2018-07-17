@@ -116,6 +116,14 @@ def member_context(dictionary, member):
         raise Exception(
             'Required member %s must not have a default value.' % member.name)
 
+    # In most cases, we don't have to distinguish `null` and `not present`,
+    # and use null-states (e.g. nullptr, foo.IsUndefinedOrNull()) to show such
+    # states for some types for memory usage and performance.
+    # For types whose |has_explicit_presence| is True, we provide explicit
+    # states of presence.
+    has_explicit_presence = (
+        idl_type.is_nullable and idl_type.inner_type.is_interface_type)
+
     def default_values():
         if not member.default_value:
             return None, None
@@ -145,6 +153,7 @@ def member_context(dictionary, member):
         'enum_type': idl_type.enum_type,
         'enum_values': idl_type.enum_values,
         'getter_name': getter_name,
+        'has_explicit_presence': has_explicit_presence,
         'has_method_name': has_method_name_for_dictionary_member(member),
         'idl_type': idl_type.base_type,
         'is_interface_type': idl_type.is_interface_type and not is_deprecated_dictionary,

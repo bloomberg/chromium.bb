@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 270: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 269: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 IDL dictionary unittest
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -20,7 +20,7 @@ PASS dict.stringSequenceMember is undefined.
 PASS dict.stringSequenceMemberWithDefault is []
 PASS dict.stringSequenceOrNullMember is null
 PASS dict.elementMember is undefined.
-PASS dict.elementOrNullMember is null
+PASS dict.elementOrNullMember is undefined.
 PASS dict.enumMember is undefined.
 PASS dict.enumMemberWithDefault is "foo"
 PASS dict.enumOrNullMember is null
@@ -47,7 +47,7 @@ PASS dict.stringSequenceMember is undefined.
 PASS dict.stringSequenceMemberWithDefault is []
 PASS dict.stringSequenceOrNullMember is null
 PASS dict.elementMember is undefined.
-PASS dict.elementOrNullMember is null
+PASS dict.elementOrNullMember is undefined.
 PASS dict.objectMember is undefined.
 PASS dict.objectOrNullMemberWithDefault is null
 PASS dict.eventTargetOrNullMember is null
@@ -176,7 +176,7 @@ PASS derived.stringSequenceMember is undefined.
 PASS derived.stringSequenceMemberWithDefault is []
 PASS derived.stringSequenceOrNullMember is null
 PASS derived.elementMember is undefined.
-PASS derived.elementOrNullMember is null
+PASS derived.elementOrNullMember is undefined.
 PASS derived.enumMember is undefined.
 PASS derived.enumMemberWithDefault is "foo"
 PASS derived.enumOrNullMember is null

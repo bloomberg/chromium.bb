@@ -79,7 +79,7 @@ class DictionaryTest : public ScriptWrappable {
   String enum_member_with_default_;
   String enum_or_null_member_;
   Member<Element> element_member_;
-  Member<Element> element_or_null_member_;
+  base::Optional<Member<Element>> element_or_null_member_;
   ScriptValue object_member_;
   ScriptValue object_or_null_member_with_default_;
   DoubleOrString double_or_string_member_;
