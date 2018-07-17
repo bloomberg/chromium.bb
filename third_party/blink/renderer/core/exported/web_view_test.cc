@@ -121,6 +121,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
@@ -5151,6 +5152,56 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
               0.01);
   EXPECT_EQ(longest_input_timestamp,
             interactive_detector->GetLongestInputTimestamp());
+}
+
+TEST_F(WebViewTest, InputDelayReported) {
+  WTF::ScopedMockClock clock;
+  clock.Advance(TimeDelta::FromMilliseconds(50));
+
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+
+  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(),
+                                   "<html><body></body></html>", base_url);
+
+  clock.Advance(TimeDelta::FromMilliseconds(70));
+
+  HistogramTester histogram_tester;
+  WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
+                              WebInputEvent::kNoModifiers,
+                              WebInputEvent::GetStaticTimeStampForTests());
+  key_event1.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event1.windows_key_code = VKEY_SPACE;
+  key_event1.SetTimeStamp(CurrentTimeTicks());
+  clock.Advance(TimeDelta::FromMilliseconds(50));
+  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event1));
+
+  WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
+                              WebInputEvent::kNoModifiers,
+                              WebInputEvent::GetStaticTimeStampForTests());
+  key_event2.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event2.windows_key_code = VKEY_SPACE;
+  key_event2.SetTimeStamp(CurrentTimeTicks());
+  clock.Advance(TimeDelta::FromMilliseconds(50));
+  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event2));
+
+  WebKeyboardEvent key_event3(WebInputEvent::kRawKeyDown,
+                              WebInputEvent::kNoModifiers,
+                              WebInputEvent::GetStaticTimeStampForTests());
+  key_event3.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event3.windows_key_code = VKEY_SPACE;
+  key_event3.SetTimeStamp(CurrentTimeTicks());
+  clock.Advance(TimeDelta::FromMilliseconds(70));
+  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event3));
+
+  histogram_tester.ExpectTotalCount("PageLoad.InteractiveTiming.InputDelay", 3);
+  histogram_tester.ExpectBucketCount("PageLoad.InteractiveTiming.InputDelay", 50, 2);
+  histogram_tester.ExpectBucketCount("PageLoad.InteractiveTiming.InputDelay", 70, 1);
+
+  histogram_tester.ExpectTotalCount("PageLoad.InteractiveTiming.InputTimestamp", 3);
+  histogram_tester.ExpectBucketCount("PageLoad.InteractiveTiming.InputTimestamp", 70, 1);
+  histogram_tester.ExpectBucketCount("PageLoad.InteractiveTiming.InputTimestamp", 120, 1);
+  histogram_tester.ExpectBucketCount("PageLoad.InteractiveTiming.InputTimestamp", 170, 1);
 }
 
 // Tests that if the page was backgrounded while an input event was queued,
