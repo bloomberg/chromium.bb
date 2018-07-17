@@ -1227,8 +1227,15 @@ class SitePerProcessEmulatedTouchBrowserTest
   }
 };
 
+#if defined(OS_CHROMEOS)
+// Flaky: https://crbug.com/833380
+#define MAYBE_EmulatedTouchScrollBubbles DISABLED_EmulatedTouchScrollBubbles
+#else
+#define MAYBE_EmulatedTouchScrollBubbles EmulatedTouchScrollBubbles
+#endif
+
 IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
-                       EmulatedTouchScrollBubbles) {
+                       MAYBE_EmulatedTouchScrollBubbles) {
   RunTest(ScrollBubbling);
 }
 
