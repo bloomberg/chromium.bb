@@ -390,6 +390,9 @@ void GLES2Implementation::SendErrorMessage(std::string message, int32_t id) {
 }
 
 void GLES2Implementation::CallDeferredErrorCallbacks() {
+  if (deferred_error_callbacks_.empty())
+    return;
+
   if (error_message_callback_.is_null()) {
     // User probably cleared this out.
     deferred_error_callbacks_.clear();
