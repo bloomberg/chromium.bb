@@ -7,6 +7,7 @@
 
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -18,14 +19,16 @@ from testing_support import coverage_utils
 import git_cache
 
 class GitCacheTest(unittest.TestCase):
-  @classmethod
-  def setUpClass(cls):
-    cls.cache_dir = tempfile.mkdtemp(prefix='git_cache_test_')
-    git_cache.Mirror.SetCachePath(cls.cache_dir)
+  def setUp(self):
+    self.cache_dir = tempfile.mkdtemp(prefix='git_cache_test_')
+    self.addCleanup(shutil.rmtree, self.cache_dir, ignore_errors=True)
+    self.origin_dir = tempfile.mkdtemp(suffix='origin.git')
+    self.addCleanup(shutil.rmtree, self.origin_dir, ignore_errors=True)
+    git_cache.Mirror.SetCachePath(self.cache_dir)
 
-  @classmethod
-  def tearDownClass(cls):
-    shutil.rmtree(cls.cache_dir, ignore_errors=True)
+  def git(self, cmd, cwd=None):
+    cwd = cwd or self.origin_dir
+    subprocess.check_call(['git'] + cmd, cwd=cwd)
 
   def testParseFetchSpec(self):
     testData = [
@@ -50,6 +53,46 @@ class GitCacheTest(unittest.TestCase):
     for fetch_specs, expected in testData:
       mirror = git_cache.Mirror('test://phony.example.biz', refs=fetch_specs)
       self.assertItemsEqual(mirror.fetch_specs, expected)
+
+  def testPopulate(self):
+    self.git(['init', '-q'])
+    with open(os.path.join(self.origin_dir, 'foo'), 'w') as f:
+      f.write('touched\n')
+    self.git(['add', 'foo'])
+    self.git(['commit', '-m', 'foo'])
+
+    mirror = git_cache.Mirror(self.origin_dir)
+    mirror.populate()
+
+  def testPopulateResetFetchConfig(self):
+    self.git(['init', '-q'])
+    with open(os.path.join(self.origin_dir, 'foo'), 'w') as f:
+      f.write('touched\n')
+    self.git(['add', 'foo'])
+    self.git(['commit', '-m', 'foo'])
+
+    mirror = git_cache.Mirror(self.origin_dir)
+    mirror.populate()
+
+    # Add a bad refspec to the cache's fetch config.
+    cache_dir = os.path.join(
+        self.cache_dir, mirror.UrlToCacheDir(self.origin_dir))
+    self.git(['config', '--add', 'remote.origin.fetch',
+              '+refs/heads/foo:refs/heads/foo'],
+             cwd=cache_dir)
+
+    mirror.populate(reset_fetch_config=True)
+
+
+  def testPopulateResetFetchConfigEmptyFetchConfig(self):
+    self.git(['init', '-q'])
+    with open(os.path.join(self.origin_dir, 'foo'), 'w') as f:
+      f.write('touched\n')
+    self.git(['add', 'foo'])
+    self.git(['commit', '-m', 'foo'])
+
+    mirror = git_cache.Mirror(self.origin_dir)
+    mirror.populate(reset_fetch_config=True)
 
 
 class GitCacheDirTest(unittest.TestCase):
