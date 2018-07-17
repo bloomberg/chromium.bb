@@ -863,6 +863,7 @@ test("content_browsertests") {
     "../browser/webrtc/webrtc_internals_browsertest.cc",
     "../browser/webrtc/webrtc_ip_permissions_browsertest.cc",
     "../browser/webrtc/webrtc_media_recorder_browsertest.cc",
+    "../browser/webrtc/webrtc_stress_image_capture_browsertest.cc",
     "../browser/webrtc/webrtc_stress_pause_browsertest.cc",
     "../browser/webrtc/webrtc_stress_resolution_switch_browsertest.cc",
     "../browser/webrtc/webrtc_stress_source_switch_browsertest.cc",
