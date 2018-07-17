@@ -18,17 +18,21 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.list.ListItem.DateListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
@@ -54,7 +58,7 @@ abstract class ListItemViewHolder extends ViewHolder {
             case ListUtils.ViewType.DATE:
                 return DateViewHolder.create(parent);
             case ListUtils.ViewType.IN_PROGRESS:
-                return new InProgressViewHolder(parent);
+                return InProgressViewHolder.create(parent);
             case ListUtils.ViewType.GENERIC:
                 return GenericViewHolder.create(parent);
             case ListUtils.ViewType.VIDEO:
@@ -126,16 +130,77 @@ abstract class ListItemViewHolder extends ViewHolder {
 
     /** A {@link ViewHolder} specifically meant to display an in-progress {@code OfflineItem}. */
     public static class InProgressViewHolder extends ListItemViewHolder {
-        /** Creates a new {@link InProgressViewHolder} instance. */
-        public InProgressViewHolder(ViewGroup parent) {
-            super(new AppCompatTextView(parent.getContext()));
+        private final ProgressBar mProgressBar;
+        private final TextView mTitle;
+        private final TextView mCaption;
+        private final TintedImageButton mPauseResumeButton;
+        private final TintedImageButton mCancelButton;
+
+        /**
+         * Creates a new {@link InProgressViewHolder} instance.
+         */
+        public static InProgressViewHolder create(ViewGroup parent) {
+            View view = LayoutInflater.from(parent.getContext())
+                                .inflate(R.layout.download_manager_in_progress_item, null);
+            return new InProgressViewHolder(view);
+        }
+
+        /**
+         * Creates a new {@link InProgressViewHolder} instance.
+         */
+        public InProgressViewHolder(View view) {
+            super(view);
+            mProgressBar = view.findViewById(R.id.progress_bar);
+            mTitle = view.findViewById(R.id.title);
+            mCaption = view.findViewById(R.id.caption);
+            mPauseResumeButton = view.findViewById(R.id.pause_button);
+            mCancelButton = view.findViewById(R.id.cancel_button);
         }
 
         // ListItemViewHolder implementation.
         @Override
         public void bind(ListPropertyModel properties, ListItem item) {
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
-            ((TextView) itemView).setText(offlineItem.item.title);
+            mTitle.setText(offlineItem.item.title);
+            mCancelButton.setOnClickListener(
+                    v -> properties.getCancelCallback().onResult(offlineItem.item));
+
+            if (offlineItem.item.state == OfflineItemState.PAUSED) {
+                mPauseResumeButton.setImageResource(R.drawable.ic_play_arrow_white_24dp);
+                mPauseResumeButton.setContentDescription(itemView.getContext().getString(
+                        R.string.download_notification_resume_button));
+            } else {
+                mPauseResumeButton.setImageResource(R.drawable.ic_pause_white_24dp);
+                mPauseResumeButton.setContentDescription(itemView.getContext().getString(
+                        R.string.download_notification_pause_button));
+            }
+
+            // TODO(shaktisahu): Create status string for the new specs.
+            mCaption.setText(
+                    DownloadUtils.getProgressTextForNotification(offlineItem.item.progress));
+            mPauseResumeButton.setOnClickListener(view -> {
+                if (offlineItem.item.state == OfflineItemState.PAUSED) {
+                    properties.getResumeCallback().onResult(offlineItem.item);
+                } else {
+                    properties.getPauseCallback().onResult(offlineItem.item);
+                }
+            });
+
+            boolean showIndeterminate = offlineItem.item.progress.isIndeterminate()
+                    && offlineItem.item.state != OfflineItemState.PAUSED
+                    && offlineItem.item.state != OfflineItemState.PENDING;
+            if (showIndeterminate) {
+                mProgressBar.setIndeterminate(true);
+                mProgressBar.setIndeterminateDrawable(
+                        itemView.getContext().getResources().getDrawable(
+                                R.drawable.download_circular_progress_bar));
+            } else {
+                mProgressBar.setIndeterminate(false);
+            }
+
+            if (!offlineItem.item.progress.isIndeterminate()) {
+                mProgressBar.setProgress(offlineItem.item.progress.getPercentage());
+            }
         }
     }
 
@@ -217,7 +282,9 @@ abstract class ListItemViewHolder extends ViewHolder {
         }
     }
 
-    /** A {@link ViewHolder} specifically meant to display a video {@code OfflineItem}. */
+    /**
+     * A {@link ViewHolder} specifically meant to display a video {@code OfflineItem}.
+     */
     public static class VideoViewHolder extends ListItemViewHolder {
         public VideoViewHolder(ViewGroup parent) {
             super(new AppCompatTextView(parent.getContext()));
@@ -263,13 +330,17 @@ abstract class ListItemViewHolder extends ViewHolder {
         }
     }
 
-    /** A {@link ViewHolder} specifically meant to display a prefetch item. */
+    /**
+     * A {@link ViewHolder} specifically meant to display a prefetch item.
+     */
     public static class PrefetchViewHolder extends ThumbnailAwareViewHolder {
         private final TextView mTitle;
         private final TextView mCaption;
         private final TextView mTimestamp;
 
-        /** Creates a new instance of a {@link PrefetchViewHolder}. */
+        /**
+         * Creates a new instance of a {@link PrefetchViewHolder}.
+         */
         public static PrefetchViewHolder create(ViewGroup parent) {
             View view = LayoutInflater.from(parent.getContext())
                                 .inflate(R.layout.download_manager_prefetch_item, null);
@@ -305,7 +376,9 @@ abstract class ListItemViewHolder extends ViewHolder {
         }
     }
 
-    /** Helper {@link ViewHolder} that handles showing a 3-dot menu with preset actions. */
+    /**
+     * Helper {@link ViewHolder} that handles showing a 3-dot menu with preset actions.
+     */
     private static class MoreButtonViewHolder
             extends ListItemViewHolder implements ListMenuButton.Delegate {
         private final ListMenuButton mMore;
@@ -313,7 +386,9 @@ abstract class ListItemViewHolder extends ViewHolder {
         private Runnable mShareCallback;
         private Runnable mDeleteCallback;
 
-        /** Creates a new instance of a {@link MoreButtonViewHolder}. */
+        /**
+         * Creates a new instance of a {@link MoreButtonViewHolder}.
+         */
         public MoreButtonViewHolder(View view) {
             super(view);
             mMore = (ListMenuButton) view.findViewById(R.id.more);
@@ -346,24 +421,36 @@ abstract class ListItemViewHolder extends ViewHolder {
         }
     }
 
-    /** Helper {@link ViewHolder} that handles querying for thumbnails if necessary. */
+    /**
+     * Helper {@link ViewHolder} that handles querying for thumbnails if necessary.
+     */
     private abstract static class ThumbnailAwareViewHolder
             extends MoreButtonViewHolder implements VisualsCallback {
         private final ImageView mThumbnail;
 
-        /** The {@link ContentId} of the associated thumbnail/request if any. */
+        /**
+         * The {@link ContentId} of the associated thumbnail/request if any.
+         */
         private @Nullable ContentId mId;
 
-        /** A {@link Runnable} to cancel an outstanding thumbnail request if any. */
+        /**
+         * A {@link Runnable} to cancel an outstanding thumbnail request if any.
+         */
         private @Nullable Runnable mCancellable;
 
-        /** Whether or not a request is outstanding to support synchronous responses. */
+        /**
+         * Whether or not a request is outstanding to support synchronous responses.
+         */
         private boolean mIsRequesting;
 
-        /** The ideal width of the queried thumbnail. */
+        /**
+         * The ideal width of the queried thumbnail.
+         */
         private int mWidthPx;
 
-        /** The ideal height of the queried thumbnail. */
+        /**
+         * The ideal height of the queried thumbnail.
+         */
         private int mHeightPx;
 
         /**

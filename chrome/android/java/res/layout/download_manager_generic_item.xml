@@ -30,24 +30,16 @@
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        style="@style/DownloadItemText"
         android:layout_marginTop="11dp"
-        android:maxLines="1"
-        android:ellipsize="end"
         android:textAppearance="@style/BlackTitle1"
-        android:textAlignment="viewStart"
         app:layout_column="1"
         app:layout_row="0"
         app:layout_gravity="fill_horizontal" />
     <TextView
         android:id="@+id/caption"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:ellipsize="end"
+        style="@style/DownloadItemText"
         android:textAppearance="@style/BlackHint2"
-        android:textAlignment="viewStart"
         app:layout_column="1"
         app:layout_row="1"
         app:layout_gravity="fill_horizontal" />
