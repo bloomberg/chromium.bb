@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "cc/scheduler/compositor_timing_history.h"
 #include "cc/scheduler/scheduler.h"
-#include "components/viz/test/ordered_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -79,7 +78,7 @@ class TestScheduler : public Scheduler {
       SchedulerClient* client,
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
-      OrderedSimpleTaskRunner* task_runner,
+      base::SingleThreadTaskRunner* task_runner,
       std::unique_ptr<CompositorTimingHistory> compositor_timing_history);
 
   bool IsDrawThrottled() const { return state_machine_.IsDrawThrottled(); }

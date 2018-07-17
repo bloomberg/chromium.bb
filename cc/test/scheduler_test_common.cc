@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/time/tick_clock.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 
 namespace cc {
@@ -133,7 +134,7 @@ TestScheduler::TestScheduler(
     SchedulerClient* client,
     const SchedulerSettings& scheduler_settings,
     int layer_tree_host_id,
-    OrderedSimpleTaskRunner* task_runner,
+    base::SingleThreadTaskRunner* task_runner,
     std::unique_ptr<CompositorTimingHistory> compositor_timing_history)
     : Scheduler(client,
                 scheduler_settings,
