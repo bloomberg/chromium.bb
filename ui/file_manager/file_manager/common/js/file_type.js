@@ -431,6 +431,6 @@ FileType.isHosted = function(entry, opt_mimeType) {
  *     It refers to a file 'images/filetype_' + icon + '.png'.
  */
 FileType.getIcon = function(entry, opt_mimeType) {
-  var fileType = FileType.getType(entry, opt_mimeType);
-  return fileType.icon || fileType.type || 'unknown';
+  const fileType = FileType.getType(entry, opt_mimeType);
+  return entry.iconName || fileType.icon || fileType.type || 'unknown';
 };

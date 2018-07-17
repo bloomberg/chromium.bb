@@ -68,6 +68,7 @@ function testEntryListAddEntry() {
   const fakeVolumeInfo = {
     displayRoot: fakeRootEntry,
     label: 'Fake Filesystem',
+    volumeType: VolumeManagerCommon.VolumeType.DOWNLOADS,
   };
   const childEntry = new VolumeEntry(fakeVolumeInfo);
   entryList.addEntry(childEntry);
@@ -228,10 +229,12 @@ function testVolumeEntry() {
   const fakeVolumeInfo = {
     displayRoot: fakeRootEntry,
     label: 'Fake Filesystem',
+    volumeType: VolumeManagerCommon.VolumeType.DOWNLOADS,
   };
 
   const volumeEntry = new VolumeEntry(fakeVolumeInfo);
   assertEquals(fakeRootEntry, volumeEntry.rootEntry);
+  assertEquals(VolumeManagerCommon.VolumeType.DOWNLOADS, volumeEntry.iconName);
   assertEquals('fake-filesystem://', volumeEntry.filesystem);
   assertEquals('/fake/full/path', volumeEntry.fullPath);
   assertEquals('fake-filesystem://fake/full/path', volumeEntry.toURL());

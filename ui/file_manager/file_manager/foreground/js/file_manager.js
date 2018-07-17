@@ -1240,6 +1240,7 @@ FileManager.prototype = /** @struct */ {
                 toURL: function() {
                   return 'fake-entry://linux-files';
                 },
+                iconName: VolumeManagerCommon.VolumeType.CROSTINI,
               }) :
           null;
       this.directoryTree.redraw(false);
