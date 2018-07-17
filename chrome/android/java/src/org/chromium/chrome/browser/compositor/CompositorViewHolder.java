@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
@@ -117,6 +118,7 @@ public class CompositorViewHolder extends FrameLayout
     // Cache objects that should not be created frequently.
     private final RectF mCacheViewport = new RectF();
     private final Rect mCacheRect = new Rect();
+    private final Point mCachePoint = new Point();
 
     // If we've drawn at least one frame.
     private boolean mHasDrawnOnce;
@@ -213,7 +215,8 @@ public class CompositorViewHolder extends FrameLayout
                 // ViewAndroid that stores the size.
                 View view = getContentView();
                 if (view != null) {
-                    setSize(getWebContents(), view, getWidthForViewport(), getHeightForViewport());
+                    Point viewportSize = getViewportSize();
+                    setSize(getWebContents(), view, viewportSize.x, viewportSize.y);
                 }
                 onViewportChanged();
 
@@ -243,7 +246,7 @@ public class CompositorViewHolder extends FrameLayout
         handleSystemUiVisibilityChange();
     }
 
-    private int getWidthForViewport() {
+    private Point getViewportSize() {
         // When in fullscreen mode, the window does not get resized when showing the onscreen
         // keyboard[1].  To work around this, we monitor the visible display frame to mimic the
         // resize state to ensure the web contents has the correct width and height.
@@ -255,26 +258,18 @@ public class CompositorViewHolder extends FrameLayout
         // contents.
         //
         // [1] - https://developer.android.com/reference/android/view/WindowManager.LayoutParams.html#FLAG_FULLSCREEN
-        if (mShowingFullscreenNonVideoContent) {
+        if (mShowingFullscreenNonVideoContent && UiUtils.isKeyboardShowing(getContext(), this)) {
             getWindowVisibleDisplayFrame(mCacheRect);
 
             // On certain devices, getWindowVisibleDisplayFrame is larger than the screen size, so
             // this ensures we never draw beyond the underlying dimensions of the view.
             // https://crbug.com/854109
-            return Math.min(mCacheRect.width(), getWidth());
+            mCachePoint.set(Math.min(mCacheRect.width(), getWidth()),
+                    Math.min(mCacheRect.height(), getHeight()));
         } else {
-            return getWidth();
+            mCachePoint.set(getWidth(), getHeight());
         }
-    }
-
-    private int getHeightForViewport() {
-        // See comment in getWidthForViewport() for an explainer of why this is done.
-        if (mShowingFullscreenNonVideoContent) {
-            getWindowVisibleDisplayFrame(mCacheRect);
-            return Math.min(mCacheRect.height(), getHeight());
-        } else {
-            return getHeight();
-        }
+        return mCachePoint;
     }
 
     private void handleSystemUiVisibilityChange() {
@@ -313,8 +308,8 @@ public class CompositorViewHolder extends FrameLayout
             mSystemUiFullscreenResizeRunnable = () -> {
                 View contentView = getContentView();
                 if (contentView != null) {
-                    setSize(getWebContents(), contentView, getWidthForViewport(),
-                            getHeightForViewport());
+                    Point viewportSize = getViewportSize();
+                    setSize(getWebContents(), contentView, viewportSize.x, viewportSize.y);
                 }
                 onViewportChanged();
             };
@@ -557,13 +552,12 @@ public class CompositorViewHolder extends FrameLayout
         super.onSizeChanged(w, h, oldw, oldh);
         if (mTabModelSelector == null) return;
 
-        w = getWidthForViewport();
-        h = getHeightForViewport();
+        Point viewportSize = getViewportSize();
         for (TabModel tabModel : mTabModelSelector.getModels()) {
             for (int i = 0; i < tabModel.getCount(); ++i) {
                 Tab tab = tabModel.getTabAt(i);
                 if (tab == null) continue;
-                setSize(tab.getWebContents(), tab.getContentView(), w, h);
+                setSize(tab.getWebContents(), tab.getContentView(), viewportSize.x, viewportSize.y);
             }
         }
     }
@@ -646,8 +640,9 @@ public class CompositorViewHolder extends FrameLayout
     public void onBottomControlsHeightChanged(int bottomControlsHeight) {
         if (mTabVisible == null) return;
         mTabVisible.setBottomControlsHeight(bottomControlsHeight);
-        setSize(mTabVisible.getWebContents(), mTabVisible.getContentView(), getWidthForViewport(),
-                getHeightForViewport());
+        Point viewportSize = getViewportSize();
+        setSize(mTabVisible.getWebContents(), mTabVisible.getContentView(), viewportSize.x,
+                viewportSize.y);
     }
 
     @Override
@@ -660,7 +655,8 @@ public class CompositorViewHolder extends FrameLayout
     @Override
     public void onUpdateViewportSize() {
         // Reflect the changes that may have happened in in view/control size.
-        setSize(getWebContents(), getContentView(), getWidthForViewport(), getHeightForViewport());
+        Point viewportSize = getViewportSize();
+        setSize(getWebContents(), getContentView(), viewportSize.x, viewportSize.y);
     }
 
     /**
@@ -714,7 +710,8 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public void getWindowViewport(RectF outRect) {
-        outRect.set(0, 0, getWidthForViewport(), getHeightForViewport());
+        Point viewportSize = getViewportSize();
+        outRect.set(0, 0, viewportSize.x, viewportSize.y);
     }
 
     @Override
@@ -1067,8 +1064,9 @@ public class CompositorViewHolder extends FrameLayout
         // size than the ContentViewCore it might think a future size update is a NOOP and not call
         // onSizeChanged() on the ContentViewCore.
         if (isAttachedToWindow(view)) return;
-        int width = getWidthForViewport();
-        int height = getHeightForViewport();
+        Point viewportSize = getViewportSize();
+        int width = viewportSize.x;
+        int height = viewportSize.y;
         view.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
         view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
