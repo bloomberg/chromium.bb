@@ -185,14 +185,16 @@ BeginFrameProviderParams DedicatedWorker::CreateBeginFrameProviderParams() {
   // won't be initialized. If that's the case, the Worker will initialize it by
   // itself later.
   BeginFrameProviderParams begin_frame_provider_params;
-  if (GetExecutionContext()->IsDocument()) {
+  if (GetExecutionContext() && GetExecutionContext()->IsDocument()) {
     LocalFrame* frame = ToDocument(GetExecutionContext())->GetFrame();
     WebLayerTreeView* layer_tree_view = nullptr;
-    if (frame) {
+    if (frame && frame->GetPage()) {
       layer_tree_view =
           frame->GetPage()->GetChromeClient().GetWebLayerTreeView(frame);
-      begin_frame_provider_params.parent_frame_sink_id =
-          layer_tree_view->GetFrameSinkId();
+      if (layer_tree_view) {
+        begin_frame_provider_params.parent_frame_sink_id =
+            layer_tree_view->GetFrameSinkId();
+      }
     }
     begin_frame_provider_params.frame_sink_id =
         Platform::Current()->GenerateFrameSinkId();
