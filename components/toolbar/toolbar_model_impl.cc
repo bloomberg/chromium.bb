@@ -163,12 +163,10 @@ base::string16 ToolbarModelImpl::GetSecureVerboseText() const {
       return GetEVCertName();
     case security_state::SECURE:
       if (parameter ==
-              toolbar::features::kSimplifyHttpsIndicatorParameterSecureToLock ||
-          parameter ==
-              toolbar::features::kSimplifyHttpsIndicatorParameterBothToLock) {
-        return base::string16();
+          toolbar::features::kSimplifyHttpsIndicatorParameterKeepSecureChip) {
+        return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
       }
-      return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
+      return base::string16();
     case security_state::DANGEROUS:
       return l10n_util::GetStringUTF16(delegate_->FailsMalwareCheck()
                                            ? IDS_DANGEROUS_VERBOSE_STATE

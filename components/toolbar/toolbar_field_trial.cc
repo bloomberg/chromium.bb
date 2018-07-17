@@ -16,6 +16,8 @@ const char kSimplifyHttpsIndicatorParameterName[] = "treatment";
 const char kSimplifyHttpsIndicatorParameterEvToSecure[] = "ev-to-secure";
 const char kSimplifyHttpsIndicatorParameterSecureToLock[] = "secure-to-lock";
 const char kSimplifyHttpsIndicatorParameterBothToLock[] = "both-to-lock";
+const char kSimplifyHttpsIndicatorParameterKeepSecureChip[] =
+    "keep-secure-chip";
 
 }  // namespace features
 }  // namespace toolbar

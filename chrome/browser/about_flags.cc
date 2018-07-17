@@ -1113,15 +1113,21 @@ const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorSecureToLock[] = {
 const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorBothToLock[] = {
     {toolbar::features::kSimplifyHttpsIndicatorParameterName,
      toolbar::features::kSimplifyHttpsIndicatorParameterBothToLock}};
+const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorKeepSecureChip[] = {
+    {toolbar::features::kSimplifyHttpsIndicatorParameterName,
+     toolbar::features::kSimplifyHttpsIndicatorParameterKeepSecureChip}};
 
 const FeatureEntry::FeatureVariation kSimplifyHttpsIndicatorVariations[] = {
     {"(show Secure chip for EV pages)", kSimplifyHttpsIndicatorEvToSecure,
-     arraysize(kSimplifyHttpsIndicatorEvToSecure), nullptr},
+     base::size(kSimplifyHttpsIndicatorEvToSecure), nullptr},
     {"(show Lock icon for non-EV HTTPS pages)",
      kSimplifyHttpsIndicatorSecureToLock,
-     arraysize(kSimplifyHttpsIndicatorSecureToLock), nullptr},
+     base::size(kSimplifyHttpsIndicatorSecureToLock), nullptr},
     {"(show Lock icon for all HTTPS pages)", kSimplifyHttpsIndicatorBothToLock,
-     arraysize(kSimplifyHttpsIndicatorBothToLock), nullptr}};
+     base::size(kSimplifyHttpsIndicatorBothToLock), nullptr},
+    {"(show Secure chip for non-EV HTTPS pages)",
+     kSimplifyHttpsIndicatorKeepSecureChip,
+     base::size(kSimplifyHttpsIndicatorKeepSecureChip), nullptr}};
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kTranslateForceTriggerOnEnglishHeuristic[] = {
