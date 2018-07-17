@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -73,14 +72,12 @@ struct ShapeResult::RunInfo {
           hb_script_t script,
           unsigned start_index,
           unsigned num_glyphs,
-          unsigned num_characters,
-          Vector<unsigned> graphemes)
+          unsigned num_characters)
       : font_data_(const_cast<SimpleFontData*>(font)),
         direction_(dir),
         canvas_rotation_(canvas_rotation),
         script_(script),
         glyph_data_(num_glyphs),
-        graphemes_(graphemes),
         start_index_(start_index),
         num_characters_(num_characters),
         width_(0.0f) {}
@@ -91,7 +88,6 @@ struct ShapeResult::RunInfo {
         canvas_rotation_(other.canvas_rotation_),
         script_(other.script_),
         glyph_data_(other.glyph_data_),
-        graphemes_(other.graphemes_),
         start_index_(other.start_index_),
         num_characters_(other.num_characters_),
         width_(other.width_) {}
@@ -104,20 +100,11 @@ struct ShapeResult::RunInfo {
   unsigned PreviousSafeToBreakOffset(unsigned) const;
   float XPositionForVisualOffset(unsigned, AdjustMidCluster) const;
   float XPositionForOffset(unsigned, AdjustMidCluster) const;
-  void CharacterIndexForXPosition(float,
-                                  BreakGlyphsOption,
-                                  GlyphIndexResult*) const;
-  void SetGlyphAndPositions(unsigned index,
-                            uint16_t glyph_id,
-                            float advance,
-                            float offset_x,
-                            float offset_y);
+  void CharacterIndexForXPosition(float, GlyphIndexResult*) const;
 
   size_t GlyphToCharacterIndex(size_t i) const {
     return start_index_ + glyph_data_[i].character_index;
   }
-
-  unsigned NumGraphemes(unsigned start, unsigned end) const;
 
   // For memory reporting.
   size_t ByteSize() const {
@@ -172,18 +159,9 @@ struct ShapeResult::RunInfo {
     auto glyphs = FindGlyphDataRange(start, end);
     unsigned number_of_glyphs = std::distance(glyphs.begin, glyphs.end);
 
-    Vector<unsigned> sub_graphemes;
-    if (graphemes_.size()) {
-      sub_graphemes.resize(number_of_characters);
-      for (unsigned i = 0; i < number_of_characters; ++i) {
-        sub_graphemes[i] = graphemes_[start + i];
-      }
-    }
-
     auto run = std::make_unique<RunInfo>(
         font_data_.get(), direction_, canvas_rotation_, script_,
-        start_index_ + start, number_of_glyphs, number_of_characters,
-        std::move(sub_graphemes));
+        start_index_ + start, number_of_glyphs, number_of_characters);
 
     static_assert(base::is_trivially_copyable<HarfBuzzRunGlyphData>::value,
                   "HarfBuzzRunGlyphData should be trivially copyable");
@@ -292,11 +270,6 @@ struct ShapeResult::RunInfo {
   CanvasRotationInVertical canvas_rotation_;
   hb_script_t script_;
   Vector<HarfBuzzRunGlyphData> glyph_data_;
-
-  // graphemes_[i] is the number of graphemes up to (and including) the ith
-  // character in the run.
-  Vector<unsigned> graphemes_;
-
   unsigned start_index_;
   unsigned num_characters_;
   float width_;

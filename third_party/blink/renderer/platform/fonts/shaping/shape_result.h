@@ -67,22 +67,6 @@ struct ShapeResultCharacterData {
   unsigned safe_to_break_before : 1;
 };
 
-// There are two options for how OffsetForPosition behaves:
-// IncludePartialGlyphs - decides what to do when the position hits more than
-// 50% of the glyph. If enabled, we count that glyph, if disable we don't.
-enum IncludePartialGlyphsOption {
-  OnlyFullGlyphs,
-  IncludePartialGlyphs,
-};
-
-// BreakGlyphs - allows OffsetForPosition to consider graphemes separations
-// inside a glyph. It allows the function to return a point inside a glyph when
-// multiple graphemes share a glyph (for example, in a ligature)
-enum BreakGlyphsOption {
-  DontBreakGlyphs,
-  BreakGlyphs,
-};
-
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
  public:
   static scoped_refptr<ShapeResult> Create(const Font* font,
@@ -140,21 +124,18 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
   // Returns the offset, relative to StartIndexForResult, whose (origin,
   // origin+advance) contains |x|.
-  unsigned OffsetForPosition(float x, BreakGlyphsOption) const;
+  unsigned OffsetForPosition(float x) const;
+
   // Returns the offset whose glyph boundary is nearest to |x|. Depends on
   // whether |x| is on the left-half or the right-half of the glyph, it
   // determines the left-boundary or the right-boundary, then computes the
   // offset from the bidi direction.
-  unsigned OffsetForHitTest(float x, BreakGlyphsOption) const;
+  unsigned OffsetForHitTest(float x) const;
   // Returns the offset that can fit to between |x| and the left or the right
   // edge. The side of the edge is determined by |line_direction|.
   unsigned OffsetToFit(float x, TextDirection line_direction) const;
-  unsigned OffsetForPosition(float x,
-                             IncludePartialGlyphsOption include_partial_glyphs,
-                             BreakGlyphsOption break_glyphs_option) const {
-    return include_partial_glyphs == OnlyFullGlyphs
-               ? OffsetForPosition(x, break_glyphs_option)
-               : OffsetForHitTest(x, break_glyphs_option);
+  unsigned OffsetForPosition(float x, bool include_partial_glyphs) const {
+    return !include_partial_glyphs ? OffsetForPosition(x) : OffsetForHitTest(x);
   }
 
   // Returns the position for a given offset, relative to StartIndexForResult.
@@ -217,8 +198,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   RunInfo* InsertRunForTesting(unsigned start_index,
                                unsigned num_characters,
                                TextDirection,
-                               Vector<uint16_t> safe_break_offsets = {},
-                               Vector<unsigned> graphemes = {});
+                               Vector<uint16_t> safe_break_offsets = {});
 #if DCHECK_IS_ON()
   void CheckConsistency() const;
 #endif
@@ -241,21 +221,26 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
     unsigned run_index = 0;
     // The total number of characters of runs_[0..run_index - 1].
     unsigned characters_on_left_runs = 0;
-
-    // Those are the left and right character indexes of the group of glyphs
-    // that were selected by OffsetForPosition.
-    unsigned left_character_index = 0;
-    unsigned right_character_index = 0;
-
+    unsigned character_index = 0;
+    unsigned glyph_index = 0;
+    // |next_glyph_index| may not be |glyph_index| + 1 when a cluster is of
+    // multiple glyphs; i.e., ligatures or combining glyphs.
+    unsigned next_glyph_index = 0;
     // The glyph origin of the glyph.
     float origin_x = 0;
     // The advance of the glyph.
     float advance = 0;
+
+    // True if the position was found on a run. False otherwise.
+    bool IsInRun() const { return next_glyph_index; }
   };
 
-  void OffsetForPosition(float target_x,
-                         BreakGlyphsOption,
-                         GlyphIndexResult*) const;
+  unsigned OffsetLtr(const GlyphIndexResult&) const;
+  unsigned OffsetRtl(const GlyphIndexResult&, float x) const;
+  unsigned OffsetRightLtr(const GlyphIndexResult&) const;
+  unsigned OffsetLeftRtl(const GlyphIndexResult&) const;
+
+  void OffsetForPosition(float target_x, GlyphIndexResult*) const;
 
   // Helper class storing a map between offsets and x-positions.
   // Unlike the RunInfo and GlyphData structures in ShapeResult, which operates

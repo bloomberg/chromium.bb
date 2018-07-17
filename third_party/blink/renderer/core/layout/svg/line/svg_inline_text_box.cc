@@ -57,9 +57,7 @@ void SVGInlineTextBox::DirtyLineBoxes() {
     next_box->DirtyLineBoxes();
 }
 
-int SVGInlineTextBox::OffsetForPosition(LayoutUnit,
-                                        IncludePartialGlyphsOption,
-                                        BreakGlyphsOption) const {
+int SVGInlineTextBox::OffsetForPosition(LayoutUnit, bool) const {
   // SVG doesn't use the standard offset <-> position selection system, as it's
   // not suitable for SVGs complex needs. Vertical text selection, inline boxes
   // spanning multiple lines (contrary to HTML, etc.)
@@ -82,10 +80,11 @@ int SVGInlineTextBox::OffsetForPositionInFragment(
   if (fragment.AffectedByTextLength())
     position /= fragment.length_adjust_scale;
 
+  const bool include_partial_glyphs = true;
   TextRun text_run = ConstructTextRun(line_layout_item.StyleRef(), fragment);
   return fragment.character_offset - Start() +
          line_layout_item.ScaledFont().OffsetForPosition(
-             text_run, position, IncludePartialGlyphs, BreakGlyphs);
+             text_run, position, include_partial_glyphs);
 }
 
 LayoutUnit SVGInlineTextBox::PositionForOffset(int) const {

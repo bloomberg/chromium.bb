@@ -1732,7 +1732,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "feature_policy/feature_policy_test.cc",
     "fonts/android/font_cache_android_test.cc",
     "fonts/bitmap_glyphs_blacklist_test.cc",
-    "fonts/cursor_position_test.cc",
     "fonts/font_cache_test.cc",
     "fonts/font_description_test.cc",
     "fonts/font_family_test.cc",
@@ -1973,7 +1972,6 @@ test("blink_platform_perftests") {
     "testing/blink_perf_test_suite.cc",
     "testing/blink_perf_test_suite.h",
     "testing/run_all_perf_tests.cc",
-    "testing/shape_result_perf_test.cc",
     "testing/shaping_line_breaker_perf_test.cc",
   ]
 

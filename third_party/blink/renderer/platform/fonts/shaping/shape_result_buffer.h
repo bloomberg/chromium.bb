@@ -33,12 +33,11 @@ class PLATFORM_EXPORT ShapeResultBuffer {
 
   bool HasVerticalOffsets() const { return has_vertical_offsets_; }
 
-  int OffsetForPosition(const TextRun& run,
+  int OffsetForPosition(const TextRun&,
                         float target_x,
-                        IncludePartialGlyphsOption,
-                        BreakGlyphsOption) const;
-  CharacterRange GetCharacterRange(float total_width,
-                                   TextDirection,
+                        bool include_partial_glyphs) const;
+  CharacterRange GetCharacterRange(TextDirection,
+                                   float total_width,
                                    unsigned from,
                                    unsigned to) const;
   Vector<CharacterRange> IndividualCharacterRanges(TextDirection,
