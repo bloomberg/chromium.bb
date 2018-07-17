@@ -471,9 +471,6 @@ const CGFloat kResizeFactor = 4;
         [_rightCard setFrame:rightFrame];
       }
       completion:^(BOOL finished) {
-        // Changing the model even when the tab is the same at the end of the
-        // animation allows the UI to recover.
-        [model_ setCurrentTab:destinationTab];
         [_leftCard setImage:nil];
         [_rightCard setImage:nil];
         [_leftCard setTopToolbarImage:nil isNewTabPage:NO];
@@ -481,6 +478,12 @@ const CGFloat kResizeFactor = 4;
         [_leftCard setBottomToolbarImage:nil];
         [_rightCard setBottomToolbarImage:nil];
         [_delegate sideSwipeViewDismissAnimationDidEnd:self];
+        // Changing the model even when the tab is the same at the end of the
+        // animation allows the UI to recover.  This call must come last,
+        // because setCurrentTab triggers behavior that depends on the view
+        // hierarchy being reassembled, which happens in
+        // sideSwipeViewDismissAnimationDidEnd.
+        [model_ setCurrentTab:destinationTab];
       }];
 }
 
