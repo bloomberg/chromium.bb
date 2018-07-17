@@ -36,9 +36,15 @@ enum class TaskType : unsigned {
   // (e.g. click events) must be fired using tasks queued with the user
   // interaction task source.
   kUserInteraction = 2,
+  // TODO(altimin) Fix the networking task source related namings once it is
+  // clear how
+  // all loading tasks are annotated.
   // This task source is used for features that trigger in response to network
   // activity.
   kNetworking = 3,
+  // This is a part of Networking task source used to annotate tasks which are
+  // posted from the loading stack (i.e. WebURLLoader).
+  kNetworkingWithURLLoaderAnnotation = 50,
   // This task source is used for control messages between kNetworking tasks.
   kNetworkingControl = 4,
   // This task source is used to queue calls to history.back() and similar APIs.
@@ -188,7 +194,7 @@ enum class TaskType : unsigned {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 50,
+  kCount = 51,
 };
 
 }  // namespace blink

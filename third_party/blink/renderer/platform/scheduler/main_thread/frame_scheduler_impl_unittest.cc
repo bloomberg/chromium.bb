@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/scheduler/child/features.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/resource_loading_task_runner_handle_impl.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 
@@ -100,6 +101,11 @@ class FrameSchedulerImplTest : public testing::Test {
     return frame_scheduler_->UnpausableTaskQueue();
   }
 
+  std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
+  GetResourceLoadingTaskRunnerHandleImpl() {
+    return frame_scheduler_->CreateResourceLoadingTaskRunnerHandleImpl();
+  }
+
   bool IsThrottled() {
     EXPECT_TRUE(throttleable_task_queue());
     return scheduler_->task_queue_throttler()->IsThrottled(
@@ -109,6 +115,12 @@ class FrameSchedulerImplTest : public testing::Test {
   SchedulingLifecycleState CalculateLifecycleState(
       FrameScheduler::ObserverType type) {
     return frame_scheduler_->CalculateLifecycleState(type);
+  }
+
+  void DidChangeResourceLoadingPriority(
+      scoped_refptr<MainThreadTaskQueue> task_queue,
+      TaskQueue::QueuePriority priority) {
+    frame_scheduler_->DidChangeResourceLoadingPriority(task_queue, priority);
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -1317,6 +1329,52 @@ TEST_F(BestEffortPriorityAdFrameDuringLoadingExperimentTest,
             TaskQueue::QueuePriority::kNormalPriority);
   EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
+}
+
+class ResourceFetchPriorityExperimentTest : public FrameSchedulerImplTest {
+ public:
+  ResourceFetchPriorityExperimentTest()
+      : FrameSchedulerImplTest({kUseResourceFetchPriority}, {}) {}
+};
+
+TEST_F(ResourceFetchPriorityExperimentTest, DidChangePriority) {
+  std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl> handle =
+      GetResourceLoadingTaskRunnerHandleImpl();
+  scoped_refptr<MainThreadTaskQueue> task_queue = handle->task_queue();
+
+  TaskQueue::QueuePriority priority = task_queue->GetQueuePriority();
+  EXPECT_EQ(priority, TaskQueue::QueuePriority::kNormalPriority);
+
+  DidChangeResourceLoadingPriority(task_queue,
+                                   TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(task_queue->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+
+  DidChangeResourceLoadingPriority(task_queue,
+                                   TaskQueue::QueuePriority::kHighPriority);
+  EXPECT_EQ(task_queue->GetQueuePriority(),
+            TaskQueue::QueuePriority::kHighPriority);
+}
+
+TEST_F(
+    FrameSchedulerImplTest,
+    DidChangeResourceLoadingPriority_ResourceFecthPriorityExperimentDisabled) {
+  // If the experiment is disabled, we use |loading_task_queue_| for resource
+  // loading tasks and we don't want the priority of this queue to be affected
+  // by individual resources.
+  std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl> handle =
+      GetResourceLoadingTaskRunnerHandleImpl();
+  scoped_refptr<MainThreadTaskQueue> task_queue = handle->task_queue();
+
+  TaskQueue::QueuePriority priority = task_queue->GetQueuePriority();
+
+  DidChangeResourceLoadingPriority(task_queue,
+                                   TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(task_queue->GetQueuePriority(), priority);
+
+  DidChangeResourceLoadingPriority(task_queue,
+                                   TaskQueue::QueuePriority::kHighPriority);
+  EXPECT_EQ(task_queue->GetQueuePriority(), priority);
 }
 
 }  // namespace frame_scheduler_impl_unittest

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 
 #include <memory>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/blame_context.h"
 #include "third_party/blink/public/platform/blame_context.h"
@@ -17,6 +18,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/resource_loading_task_runner_handle_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 
@@ -207,6 +209,10 @@ FrameSchedulerImpl::~FrameSchedulerImpl() {
   CleanUpQueue(pausable_task_queue_.get());
   CleanUpQueue(unpausable_task_queue_.get());
 
+  for (const auto& pair : resource_loading_task_queues_) {
+    CleanUpQueue(pair.key.get());
+  }
+
   if (parent_page_scheduler_) {
     parent_page_scheduler_->Unregister(this);
 
@@ -247,7 +253,6 @@ void FrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
   UMA_HISTOGRAM_BOOLEAN("RendererScheduler.IPC.FrameVisibility", frame_visible);
   frame_visible_ = frame_visible;
   UpdatePolicy();
-  UpdateQueuePriorities();
 }
 
 bool FrameSchedulerImpl::IsFrameVisible() const {
@@ -270,7 +275,7 @@ void FrameSchedulerImpl::SetCrossOrigin(bool cross_origin) {
 
 void FrameSchedulerImpl::SetIsAdFrame() {
   is_ad_frame_ = true;
-  UpdateQueuePriorities();
+  UpdatePolicy();
 }
 
 bool FrameSchedulerImpl::IsAdFrame() const {
@@ -297,6 +302,7 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
       return TaskQueueWithTaskType::Create(ThrottleableTaskQueue(), type);
     case TaskType::kInternalLoading:
     case TaskType::kNetworking:
+    case TaskType::kNetworkingWithURLLoaderAnnotation:
       return TaskQueueWithTaskType::Create(LoadingTaskQueue(), type);
     case TaskType::kNetworkingControl:
       return TaskQueueWithTaskType::Create(LoadingControlTaskQueue(), type);
@@ -370,18 +376,80 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
   return nullptr;
 }
 
+std::pair<scoped_refptr<MainThreadTaskQueue>,
+          std::unique_ptr<TaskQueue::QueueEnabledVoter>>
+FrameSchedulerImpl::CreateNewLoadingTaskQueue() {
+  // TODO(panicker): Avoid adding this queue in RS task_runners_.
+  scoped_refptr<MainThreadTaskQueue> loading_task_queue =
+      main_thread_scheduler_->NewLoadingTaskQueue(
+          MainThreadTaskQueue::QueueType::kFrameLoading, this);
+  loading_task_queue->SetBlameContext(blame_context_);
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      loading_task_queue->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(!frame_paused_);
+  return std::make_pair(loading_task_queue, std::move(voter));
+}
+
 scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!loading_task_queue_) {
-    // TODO(panicker): Avoid adding this queue in RS task_runners_.
-    loading_task_queue_ = main_thread_scheduler_->NewLoadingTaskQueue(
-        MainThreadTaskQueue::QueueType::kFrameLoading, this);
-    loading_task_queue_->SetBlameContext(blame_context_);
-    loading_queue_enabled_voter_ =
-        loading_task_queue_->CreateQueueEnabledVoter();
-    loading_queue_enabled_voter_->SetQueueEnabled(!frame_paused_);
+    auto queue_voter_pair = CreateNewLoadingTaskQueue();
+    loading_task_queue_ = queue_voter_pair.first;
+    loading_queue_enabled_voter_ = std::move(queue_voter_pair.second);
   }
   return loading_task_queue_;
+}
+
+std::unique_ptr<WebResourceLoadingTaskRunnerHandle>
+FrameSchedulerImpl::CreateResourceLoadingTaskRunnerHandle() {
+  return CreateResourceLoadingTaskRunnerHandleImpl();
+}
+
+std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
+FrameSchedulerImpl::CreateResourceLoadingTaskRunnerHandleImpl() {
+  if (main_thread_scheduler_->scheduling_settings()
+          .use_resource_fetch_priority) {
+    auto queue_voter_pair = CreateNewLoadingTaskQueue();
+
+    resource_loading_task_queues_.insert(
+        queue_voter_pair.first, ResourceLoadingTaskQueueMetadata(
+                                    queue_voter_pair.first->GetQueuePriority(),
+                                    std::move(queue_voter_pair.second)));
+
+    return ResourceLoadingTaskRunnerHandleImpl::WrapTaskRunner(
+        queue_voter_pair.first);
+  }
+
+  // Make sure the loading task queue exists.
+  LoadingTaskQueue();
+  return ResourceLoadingTaskRunnerHandleImpl::WrapTaskRunner(
+      loading_task_queue_);
+}
+
+void FrameSchedulerImpl::DidChangeResourceLoadingPriority(
+    scoped_refptr<MainThreadTaskQueue> task_queue,
+    TaskQueue::QueuePriority priority) {
+  // This check is done since in some cases (when kUseResourceFetchPriority
+  // feature isn't enabled) we use |loading_task_queue_| for resource loading
+  // and the priority of this queue shouldn't be affected by resource
+  // priorities.
+  auto queue_metadata_pair = resource_loading_task_queues_.find(task_queue);
+  if (queue_metadata_pair != resource_loading_task_queues_.end()) {
+    queue_metadata_pair->value.priority = priority;
+    UpdateQueuePolicy(task_queue.get(), queue_metadata_pair->value.voter.get());
+  }
+}
+
+void FrameSchedulerImpl::OnShutdownResourceLoadingTaskQueue(
+    scoped_refptr<MainThreadTaskQueue> task_queue) {
+  // This check is done since in some cases (when kUseResourceFetchPriority
+  // feature isn't enabled) we use |loading_task_queue_| for resource loading,
+  // and the lifetime of this queue isn't bound to one resource.
+  auto iter = resource_loading_task_queues_.find(task_queue);
+  if (iter != resource_loading_task_queues_.end()) {
+    resource_loading_task_queues_.erase(iter);
+    CleanUpQueue(task_queue.get());
+  }
 }
 
 scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingControlTaskQueue() {
@@ -519,15 +587,6 @@ void FrameSchedulerImpl::DidCloseActiveConnection() {
     parent_page_scheduler_->OnConnectionUpdated();
 }
 
-void FrameSchedulerImpl::UpdateQueuePriorities() {
-  UpdatePriority(loading_task_queue_.get());
-  UpdatePriority(loading_control_task_queue_.get());
-  UpdatePriority(throttleable_task_queue_.get());
-  UpdatePriority(deferrable_task_queue_.get());
-  UpdatePriority(pausable_task_queue_.get());
-  UpdatePriority(unpausable_task_queue_.get());
-}
-
 void FrameSchedulerImpl::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetBoolean("frame_visible", frame_visible_);
@@ -564,6 +623,13 @@ void FrameSchedulerImpl::AsValueInto(
     state->SetString("unpausable_task_queue",
                      PointerToString(unpausable_task_queue_.get()));
   }
+
+  state->BeginArray("resource_loading_task_queues");
+  for (const auto& queue : resource_loading_task_queues_) {
+    state->AppendString(PointerToString(queue.key.get()));
+  }
+  state->EndArray();
+
   if (blame_context_) {
     state->BeginDictionary("blame_context");
     state->SetString(
@@ -617,6 +683,11 @@ void FrameSchedulerImpl::UpdatePolicy() {
   UpdateQueuePolicy(deferrable_task_queue_,
                     deferrable_queue_enabled_voter_.get());
   UpdateQueuePolicy(pausable_task_queue_, pausable_queue_enabled_voter_.get());
+  UpdateQueuePolicy(unpausable_task_queue_, nullptr);
+
+  for (const auto& pair : resource_loading_task_queues_) {
+    UpdateQueuePolicy(pair.key, pair.value.voter.get());
+  }
 
   UpdateThrottling();
 
@@ -626,7 +697,10 @@ void FrameSchedulerImpl::UpdatePolicy() {
 void FrameSchedulerImpl::UpdateQueuePolicy(
     const scoped_refptr<MainThreadTaskQueue>& queue,
     TaskQueue::QueueEnabledVoter* voter) {
-  if (!queue || !voter)
+  if (!queue)
+    return;
+  UpdatePriority(queue.get());
+  if (!voter)
     return;
   DCHECK(parent_page_scheduler_);
   bool queue_paused = frame_paused_ && queue->CanBePaused();
@@ -717,6 +791,12 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
   // Checks the task queue is associated with this frame scheduler.
   DCHECK_EQ(frame_scheduler, this);
 
+  auto queue_metadata_pair =
+      resource_loading_task_queues_.find(base::WrapRefCounted(task_queue));
+  if (queue_metadata_pair != resource_loading_task_queues_.end()) {
+    return queue_metadata_pair->value.priority;
+  }
+
   base::Optional<TaskQueue::QueuePriority> fixed_priority =
       task_queue->FixedPriority();
 
@@ -778,8 +858,6 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
     }
   }
 
-  // TODO(farahcharab) Change highest priority to high priority for frame
-  // loading control.
   return task_queue->queue_type() ==
                  MainThreadTaskQueue::QueueType::kFrameLoadingControl
              ? TaskQueue::QueuePriority::kHighPriority

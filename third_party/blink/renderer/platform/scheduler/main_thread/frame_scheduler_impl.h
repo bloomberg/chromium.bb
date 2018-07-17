@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_FRAME_SCHEDULER_IMPL_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace base {
 namespace sequence_manager {
@@ -36,6 +38,7 @@ namespace scheduler {
 class MainThreadSchedulerImpl;
 class MainThreadTaskQueue;
 class PageSchedulerImpl;
+class ResourceLoadingTaskRunnerHandleImpl;
 
 namespace main_thread_scheduler_impl_unittest {
 class MainThreadSchedulerImplTest;
@@ -75,6 +78,14 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   void TraceUrlChange(const String& url) override;
   FrameScheduler::FrameType GetFrameType() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
+
+  // Returns a wrapper around an instance of MainThreadTaskQueue which is
+  // maintained in |resource_loading_task_queues_| map. The main thread task
+  // queue is removed from the map and detached from both the main thread and
+  // the frame schedulers when the wrapper instance goes out of scope.
+  std::unique_ptr<WebResourceLoadingTaskRunnerHandle>
+  CreateResourceLoadingTaskRunnerHandle() override;
+
   PageScheduler* GetPageScheduler() const override;
   void DidStartProvisionalLoad(bool is_main_frame) override;
   void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
@@ -118,11 +129,19 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   // page scheduler. Should be used only for testing purposes.
   FrameSchedulerImpl();
 
+  void OnShutdownResourceLoadingTaskQueue(
+      scoped_refptr<MainThreadTaskQueue> task_queue);
+
+  void DidChangeResourceLoadingPriority(
+      scoped_refptr<MainThreadTaskQueue> task_queue,
+      base::sequence_manager::TaskQueue::QueuePriority priority);
+
  private:
   friend class PageSchedulerImpl;
   friend class main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest;
   friend class frame_scheduler_impl_unittest::FrameSchedulerImplTest;
   friend class page_scheduler_impl_unittest::PageSchedulerImplTest;
+  friend class ResourceLoadingTaskRunnerHandleImpl;
 
   class ActiveConnectionHandleImpl : public ActiveConnectionHandle {
    public:
@@ -152,6 +171,19 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
     DISALLOW_COPY_AND_ASSIGN(PauseSubresourceLoadingHandleImpl);
   };
 
+  struct ResourceLoadingTaskQueueMetadata {
+    ResourceLoadingTaskQueueMetadata(){};
+
+    ResourceLoadingTaskQueueMetadata(
+        base::sequence_manager::TaskQueue::QueuePriority queue_priority,
+        std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
+            queue_voter)
+        : priority(queue_priority), voter(std::move(queue_voter)) {}
+
+    base::sequence_manager::TaskQueue::QueuePriority priority;
+    std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter> voter;
+  };
+
   void DetachFromPageScheduler();
   void RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool();
   void ApplyPolicyToThrottleableQueue();
@@ -166,12 +198,16 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   void DidOpenActiveConnection();
   void DidCloseActiveConnection();
 
-  // Updates the priorities of all the task queues associated with this
-  // frame scheduler.
-  void UpdateQueuePriorities();
-
   void AddPauseSubresourceLoadingHandle();
   void RemovePauseSubresourceLoadingHandle();
+
+  std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
+  CreateResourceLoadingTaskRunnerHandleImpl();
+
+  std::pair<
+      scoped_refptr<MainThreadTaskQueue>,
+      std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>>
+  CreateNewLoadingTaskQueue();
 
   scoped_refptr<base::sequence_manager::TaskQueue> LoadingTaskQueue();
   scoped_refptr<base::sequence_manager::TaskQueue> LoadingControlTaskQueue();
@@ -201,6 +237,14 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
       deferrable_queue_enabled_voter_;
   std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
       pausable_queue_enabled_voter_;
+
+  using ResourceLoadingTaskQueueMetadataMap =
+      WTF::HashMap<scoped_refptr<MainThreadTaskQueue>,
+                   ResourceLoadingTaskQueueMetadata>;
+
+  // Holds queues created by CreateResourceLoadingTaskRunnerHandle.
+  ResourceLoadingTaskQueueMetadataMap resource_loading_task_queues_;
+
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
   PageSchedulerImpl* parent_page_scheduler_;        // NOT OWNED
   base::trace_event::BlameContext* blame_context_;  // NOT OWNED
