@@ -1728,7 +1728,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
     {
         // NOLINT
         0,  // g_usage
-        8,  // g_threads
+        0,  // g_threads
         0,  // g_profile
 
         320,         // g_width
