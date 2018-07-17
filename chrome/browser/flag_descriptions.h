@@ -252,6 +252,9 @@ extern const char kEnableAutofillCreditCardAblationExperimentDescription[];
 extern const char kEnableAutofillCreditCardLastUsedDateDisplayName[];
 extern const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[];
 
+extern const char kEnableAutofillCreditCardLocalCardMigrationName[];
+extern const char kEnableAutofillCreditCardLocalCardMigrationDescription[];
+
 extern const char kEnableAutofillCreditCardUploadEditableCardholderNameName[];
 extern const char
     kEnableAutofillCreditCardUploadEditableCardholderNameDescription[];

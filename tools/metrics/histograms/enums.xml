@@ -27604,6 +27604,8 @@ from previous Chrome versions.
   <int value="-1648216169" label="NewOmniboxAnswerTypes:disabled"/>
   <int value="-1638815914" label="enable-experimental-productivity-features"/>
   <int value="-1634878515" label="ChromeHomeModernLayout:enabled"/>
+  <int value="-1634490190"
+      label="AutofillCreditCardLocalCardMigration:disabled"/>
   <int value="-1634154256" label="ZeroSuggestRedirectToChrome:enabled"/>
   <int value="-1633586675" label="TabModalJsDialog:enabled"/>
   <int value="-1631329950" label="ssl-version-max"/>
@@ -28965,6 +28967,7 @@ from previous Chrome versions.
   <int value="1214219155" label="gamepad-polling-interval"/>
   <int value="1214455758" label="VideoRotateToFullscreen:disabled"/>
   <int value="1215531732" label="OmniboxUIExperiments:disabled"/>
+  <int value="1215768255" label="AutofillCreditCardLocalCardMigration:enabled"/>
   <int value="1217907443" label="spurious-power-button-keyboard-accel"/>
   <int value="1219317631" label="ContextualSuggestionsAboveArticles:disabled"/>
   <int value="1219628795" label="PrintScaling:disabled"/>

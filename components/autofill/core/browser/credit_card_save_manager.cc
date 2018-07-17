@@ -101,6 +101,10 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     const FormStructure& submitted_form,
     const CreditCard& card,
     const bool uploading_local_card) {
+  // Abort the uploading if |payments_client_| is nullptr.
+  if (!payments_client_)
+    return;
+  payments_client_->SetSaveDelegate(this);
   upload_request_ = payments::PaymentsClient::UploadRequestDetails();
   upload_request_.card = card;
   uploading_local_card_ = uploading_local_card;

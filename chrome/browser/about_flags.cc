@@ -2923,6 +2923,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillCreditCardAblationExperimentDescription,
      kOsAll,
      FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardAblationExperiment)},
+    {"enable-autofill-credit-card-local-card-migration",
+     flag_descriptions::kEnableAutofillCreditCardLocalCardMigrationName,
+     flag_descriptions::kEnableAutofillCreditCardLocalCardMigrationDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardLocalCardMigration)},
     {"enable-autofill-credit-card-upload-editable-cardholder-name",
      flag_descriptions::
          kEnableAutofillCreditCardUploadEditableCardholderNameName,

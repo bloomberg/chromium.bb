@@ -25,7 +25,6 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/credit_card_save_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/phone_number.h"
@@ -102,6 +101,12 @@ FormDataImporter::FormDataImporter(AutofillClient* client,
                                                   payments_client,
                                                   app_locale,
                                                   personal_data_manager)),
+      local_card_migration_manager_(
+          std::make_unique<LocalCardMigrationManager>(client,
+                                                      payments_client,
+                                                      app_locale,
+                                                      personal_data_manager)),
+
       personal_data_manager_(personal_data_manager),
       app_locale_(app_locale) {}
 
@@ -111,28 +116,58 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
                                       bool profile_autofill_enabled,
                                       bool credit_card_autofill_enabled) {
   std::unique_ptr<CreditCard> imported_credit_card;
-  if (!ImportFormData(submitted_form, profile_autofill_enabled,
-                      credit_card_autofill_enabled,
-                      credit_card_save_manager_->IsCreditCardUploadEnabled(),
-                      &imported_credit_card))
-    return;
 
-  // No card available to offer save or upload.
+  bool is_credit_card_upstream_enabled =
+      credit_card_save_manager_->IsCreditCardUploadEnabled();
+  // ImportFormData will set the |imported_credit_card_record_type_|. If the
+  // imported card is invalid or already a server card, or if
+  // |credit_card_save_manager_| does not allow uploading,
+  // |imported_credit_card| will be nullptr.
+  ImportFormData(submitted_form, profile_autofill_enabled,
+                 credit_card_autofill_enabled,
+                 /*should_return_local_card=*/is_credit_card_upstream_enabled,
+                 &imported_credit_card);
+  // If no card was successfully imported from the form, return.
+  if (imported_credit_card_record_type_ ==
+      ImportedCreditCardRecordType::NO_CARD) {
+    return;
+  }
+  // A credit card was successfully imported, but it's possible it is already a
+  // local or server card. First, check to see if we should offer local card
+  // migration in this case, as local cards could go either way.
+  if (local_card_migration_manager_ &&
+      local_card_migration_manager_->ShouldOfferLocalCardMigration(
+          imported_credit_card_record_type_)) {
+    local_card_migration_manager_->AttemptToOfferLocalCardMigration();
+    return;
+  }
+
+  // Local card migration will not be offered. If we do not have a new card to
+  // save (or a local card to upload save), return.
   if (!imported_credit_card)
     return;
 
-  if (!credit_card_save_manager_->IsCreditCardUploadEnabled()) {
-    // Offer local save.
-    credit_card_save_manager_->OfferCardLocalSave(*imported_credit_card);
-  } else {
-    // Attempt to offer upload save. Because we pass IsCreditCardUploadEnabled()
-    // to ImportFormData, this block can be reached on observing either a new
-    // card or one already stored locally and whose |TypeAndLastFourDigits| do
-    // not match a masked server card. We can offer to upload either kind.
+  // We have a card to save; decide what type of save flow to display.
+  if (is_credit_card_upstream_enabled) {
+    // Attempt to offer upload save. Because we pass
+    // |credit_card_upstream_enabled| to ImportFormData, this block can be
+    // reached on observing either a new card or one already stored locally
+    // which doesn't match an existing server card. If Google Payments declines
+    // allowing upload, |credit_card_save_manager_| is tasked with deciding if
+    // we should fall back to local save or not.
+    DCHECK(imported_credit_card_record_type_ ==
+               ImportedCreditCardRecordType::LOCAL_CARD ||
+           imported_credit_card_record_type_ ==
+               ImportedCreditCardRecordType::NEW_CARD);
     credit_card_save_manager_->AttemptToOfferCardUploadSave(
         submitted_form, *imported_credit_card,
-        imported_credit_card_record_type_ ==
+        /*uploading_local_card=*/imported_credit_card_record_type_ ==
             ImportedCreditCardRecordType::LOCAL_CARD);
+  } else {
+    // If upload save is not allowed, new cards should be saved locally.
+    DCHECK(imported_credit_card_record_type_ ==
+           ImportedCreditCardRecordType::NEW_CARD);
+    credit_card_save_manager_->OfferCardLocalSave(*imported_credit_card);
   }
 }
 
@@ -401,7 +436,6 @@ bool FormDataImporter::ImportCreditCard(
       return false;
     }
   }
-
   *imported_credit_card = std::make_unique<CreditCard>(candidate_credit_card);
   return true;
 }

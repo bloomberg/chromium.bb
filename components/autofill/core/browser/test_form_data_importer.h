@@ -19,7 +19,9 @@ class TestFormDataImporter : public FormDataImporter {
       payments::PaymentsClient* payments_client,
       std::unique_ptr<CreditCardSaveManager> credit_card_save_manager,
       PersonalDataManager* personal_data_manager,
-      const std::string& app_locale);
+      const std::string& app_locale,
+      std::unique_ptr<LocalCardMigrationManager> local_card_migration_manager =
+          nullptr);
 };
 
 }  // namespace autofill

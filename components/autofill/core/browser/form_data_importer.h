@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/credit_card_save_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 
@@ -67,6 +68,12 @@ class FormDataImporter {
     credit_card_save_manager_ = std::move(credit_card_save_manager);
   }
 
+  // Exposed for testing.
+  void set_local_card_migration_manager(
+      std::unique_ptr<LocalCardMigrationManager> local_card_migration_manager) {
+    local_card_migration_manager_ = std::move(local_card_migration_manager);
+  }
+
  private:
   // Scans the given |form| for importable Autofill data. If the form includes
   // sufficient address data for a new profile, it is immediately imported. If
@@ -114,6 +121,9 @@ class FormDataImporter {
 
   // Responsible for managing credit card save flows (local or upload).
   std::unique_ptr<CreditCardSaveManager> credit_card_save_manager_;
+
+  // Responsible for migrating locally saved credit cards to Google Pay.
+  std::unique_ptr<LocalCardMigrationManager> local_card_migration_manager_;
 
   // The personal data manager, used to save and load personal data to/from the
   // web database.  This is overridden by the AutofillManagerTest.
