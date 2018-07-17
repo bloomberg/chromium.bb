@@ -4,13 +4,22 @@ We're starting to collect metrics about how developers use gclient and other
 tools in depot\_tools to better understand the performance and failure modes of
 the tools, as well of the pain points and workflows of depot\_tools users.
 
-Pleas consider opting in. It will allow us to know what features are the most
+We will collect metrics only if you’re a Googler on the corp network: If you can
+access https://cit-cli-metrics.appspot.com/should-upload, then we will collect
+metrics from you.
+
+The first ten executions of depot\_tools commands will print large warnings
+counting down to zero. When the counter hits zero, metrics collection will
+automatically begin, and depot\_tools will display large warning messages
+informing you of it. These messages will continue until you explicitly opt in or
+opt out.
+
+You can run `gclient metrics --opt-in` or `gclient metrics --opt-out` to do so.
+And you can opt-in or out at any time.
+
+Please consider opting in. It will allow us to know what features are the most
 important, what features can we deprecate, and what features should we develop
 to better cover your use case.
-
-You will be opted in by default after 10 executions of depot\_tools commands,
-after which the message will change to let you know metrics collection is taking
-place.
 
 ## What metrics are you collecting?
 
