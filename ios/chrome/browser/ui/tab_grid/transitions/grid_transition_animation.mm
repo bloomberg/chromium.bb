@@ -90,7 +90,7 @@ const CGFloat kInactiveItemScale = 0.95;
 #pragma mark - Private methods
 
 - (void)buildContractingAnimations {
-  // The transition is structured as two or four separate animations. They are
+  // The transition is structured as three or five separate animations. They are
   // timed based on various sub-durations and delays which are expressed as
   // fractions of the overall animation duration.
   CGFloat partialDuration = 0.6;
@@ -100,11 +100,11 @@ const CGFloat kInactiveItemScale = 0.95;
 
   // If there's only one cell, the animation has two parts.
   //   (A) Zooming the active cell into position.
-  //   (B) Fading in the active cell's auxilliary view.
+  //   (B) Crossfading from the tab to cell top view.
   //   (C) Rounding the corners of the active cell.
   //
   //  {0%}------------------[A]----------{60%}
-  //                 {40%}--[B]---------------{70%}
+  //                                {50%}---[B]---{80%}
   //  {0%}---[C]---{30%}
 
   // If there's more than once cell, the animation adds two more parts:
@@ -113,15 +113,23 @@ const CGFloat kInactiveItemScale = 0.95;
   // The overall timing is as follows:
   //
   //  {0%}------------------[A]----------{60%}
-  //                 {40%}--[B]---------------{70%}
+  //                                {50%}---[B]---{80%}
   //  {0%}---[C]---{30%}
-  //           {20%}--[D]-------------------------{100%}
-  //           {20%}--[E]----------------------{80%}
+  //           {20%}--[D]-----------------------------{100%}
+  //           {20%}--[E]-------------------------{80%}
   //
   // All animations are timed ease-in (so more motion happens later), except
-  // for C which is relatively small in space and short in duration; it has
-  // linear timing so it doesn't seem instantaneous.
+  // for B and C. B is a crossfade timed ease in/out, and C is relatively small
+  // in space and short in duration; it has linear timing so it doesn't seem
+  // instantaneous.
   // (Changing the timing constants above will change the timing % values)
+
+  UIView<GridToTabTransitionView>* activeCell = self.layout.activeItem.cell;
+  // The final cell snapshot exactly matches the main tab view of the cell, so
+  // it can have an alpha of 0 for the whole animation.
+  activeCell.mainTabView.alpha = 0.0;
+  // The final cell header starts at 0 alpha and is cross-faded in.
+  activeCell.topCellView.alpha = 0.0;
 
   // A: Zoom the active cell into position.
   auto zoomActiveCellAnimation = ^{
@@ -137,17 +145,17 @@ const CGFloat kInactiveItemScale = 0.95;
             animations:zoomActiveCellKeyframeAnimation];
   [self.animations addAnimator:zoomActiveCell];
 
-  // B: Fade in the active cell's auxillary view
-  UIView* auxillaryView = self.layout.activeItem.cell.topCellView;
+  // B: Fade in the active cell top cell view, fade out the active cell's
+  // top tab view.
   auto fadeInAuxillaryKeyframeAnimation =
-      [self keyframeAnimationWithRelativeStart:delay
-                              relativeDuration:briefDuration
-                                    animations:^{
-                                      auxillaryView.alpha = 1.0;
-                                    }];
+      [self keyframeAnimationFadingView:activeCell.topTabView
+                          throughToView:activeCell.topCellView
+                          relativeStart:0.5
+                       relativeDuration:briefDuration];
+
   UIViewPropertyAnimator* fadeInAuxillary = [[UIViewPropertyAnimator alloc]
       initWithDuration:self.duration
-                 curve:UIViewAnimationCurveEaseIn
+                 curve:UIViewAnimationCurveEaseInOut
             animations:fadeInAuxillaryKeyframeAnimation];
   [self.animations addAnimator:fadeInAuxillary];
 
@@ -207,36 +215,53 @@ const CGFloat kInactiveItemScale = 0.95;
 }
 
 - (void)buildExpandingAnimations {
-  // The transition is structured as two or four separate animations. They are
+  // The transition is structured as four or six separate animations. They are
   // timed based on two sub-durations which are expressed as fractions of the
   // overall animation duration.
   CGFloat partialDuration = 0.66;
-  CGFloat briefDuration = 0.23;
+  CGFloat briefDuration = 0.3;
+  CGFloat veryBriefDuration = 0.2;
+  CGFloat delay = (1.0 - veryBriefDuration) / 2.0;
 
   // If there's only one cell, the animation has three parts:
   //   (A) Zooming the active cell out into the expanded position.
-  //   (B) Fading out the active cell's auxilliary view.
+  //   (B) Crossfading the active cell's top views.
   //   (C) Squaring the corners of the active cell.
+  //   (D) Fading out the main cell view and fading in the main tab view.
   // These parts are timed over |duration| like this:
   //
   //  {0%}--[A]-----------------------------------{100%}
-  //  {0%}--[B]--{23%}
-  //                                {77%}---[C]---{100%}
+  //  {0%}--[B]---{30%}
+  //                               {70%}----[C]---{100%}
+  //                   {40%}-[D]-{60%}
 
   // If there's more than once cell, the animation adds:
-  //   (C) Scaling the inactive cells to 95%
-  //   (D) Fading out the inactive cells.
+  //   (E) Scaling the inactive cells to 95%
+  //   (F) Fading out the inactive cells.
   // The overall timing is as follows:
   //
   //  {0%}--[A]-----------------------------------{100%}
-  //  {0%}--[B]--{23%}
-  //                                {77%}---[C]---{100%}
-  //  {0%}--[D]-----------------------------------{100%}
-  //  {0%}--[E]-----------------{66%}
+  //  {0%}--[B]---{30%}
+  //                               {70%}----[C]---{100%}
+  //                   {40%}-[D]-{60%}
+  //  {0%}--[E]-----------------------------------{100%}
+  //  {0%}--[F]-------------------{66%}
   //
   // All animations are timed ease-out (so more motion happens sooner), except
-  // for C which is relatively small in space and short in duration; it has
-  // linear timing so it doesn't seem instantaneous.
+  // for B, C and D. B is a crossfade and eases in/out. C and D are relatively
+  // short in duration; they have linear timing so they doesn't seem
+  // instantaneous, and D is also linear so that identical views animate
+  // smoothly.
+  //
+  // Animation D is necessary because the cell content and the tab content may
+  // no longer match in aspect ratio; a quick cross-fade in mid-transition
+  // prevents an abrupt jump when the transition ends and the "real" tab content
+  // is shown.
+
+  UIView<GridToTabTransitionView>* activeCell = self.layout.activeItem.cell;
+  // The top and main tab views start at zero alpha but are crossfaded in.
+  activeCell.mainTabView.alpha = 0.0;
+  activeCell.topTabView.alpha = 0.0;
 
   // A: Zoom the active cell into position.
   UIViewPropertyAnimator* zoomActiveCell = [[UIViewPropertyAnimator alloc]
@@ -247,17 +272,15 @@ const CGFloat kInactiveItemScale = 0.95;
             }];
   [self.animations addAnimator:zoomActiveCell];
 
-  // B: Fade out the active cell's auxillary view.
-  UIView* auxillaryView = self.layout.activeItem.cell.topCellView;
+  // B: Crossfade the top views.
   auto fadeOutAuxilliaryAnimation =
-      [self keyframeAnimationWithRelativeStart:0
-                              relativeDuration:briefDuration
-                                    animations:^{
-                                      auxillaryView.alpha = 0.0;
-                                    }];
+      [self keyframeAnimationFadingView:activeCell.topCellView
+                          throughToView:activeCell.topTabView
+                          relativeStart:0
+                       relativeDuration:briefDuration];
   UIViewPropertyAnimator* fadeOutAuxilliary = [[UIViewPropertyAnimator alloc]
       initWithDuration:self.duration
-                 curve:UIViewAnimationCurveEaseOut
+                 curve:UIViewAnimationCurveEaseInOut
             animations:fadeOutAuxilliaryAnimation];
   [self.animations addAnimator:fadeOutAuxilliary];
 
@@ -276,12 +299,31 @@ const CGFloat kInactiveItemScale = 0.95;
             animations:squareCornersKeyframeAnimation];
   [self.animations addAnimator:squareCorners];
 
+  // D: crossfade the main cell content.
+  // Two notes on this transition. (1) In cases where the cell and tab views are
+  // the same, having both alphas change at the same time means the overall
+  // transition is seamless. (2) using a linear animation curve means that the
+  // sum of the opacities is contstant though the animation, which will help it
+  // seem less abrupt by keeping a relatively constant brightness.
+  auto crossfadeContentAnimation =
+      [self keyframeAnimationWithRelativeStart:delay
+                              relativeDuration:veryBriefDuration
+                                    animations:^{
+                                      activeCell.mainCellView.alpha = 0;
+                                      activeCell.mainTabView.alpha = 1.0;
+                                    }];
+  UIViewPropertyAnimator* crossfadeContent = [[UIViewPropertyAnimator alloc]
+      initWithDuration:self.duration
+                 curve:UIViewAnimationCurveLinear
+            animations:crossfadeContentAnimation];
+  [self.animations addAnimator:crossfadeContent];
+
   // If there's only a single cell, that's all.
   if (self.layout.inactiveItems.count == 0)
     return;
 
   // Additional animations for multiple cells.
-  // D: Scale down inactive cells.
+  // E: Scale down inactive cells.
   auto scaleDownCellsAnimation = ^{
     for (GridTransitionItem* item in self.layout.inactiveItems) {
       item.cell.transform = CGAffineTransformScale(
@@ -294,7 +336,7 @@ const CGFloat kInactiveItemScale = 0.95;
             animations:scaleDownCellsAnimation];
   [self.animations addAnimator:scaleDownCells];
 
-  // E: Fade out inactive cells.
+  // F: Fade out inactive cells.
   auto fadeOutCellsAnimation = ^{
     for (GridTransitionItem* item in self.layout.inactiveItems) {
       item.cell.alpha = 0.0;
@@ -329,18 +371,8 @@ const CGFloat kInactiveItemScale = 0.95;
 // radius and a 0% opacity auxilliary view.
 - (void)positionExpandedActiveItem {
   UIView<GridToTabTransitionView>* cell = self.layout.activeItem.cell;
-  // Ensure that the cell's subviews are correctly positioned.
-  [cell layoutIfNeeded];
-  // Position the cell frame so so that the area below the aux view matches the
-  // expanded rect.
-  // Easiest way to do this is to set the frame to the expanded rect and then
-  // add height to it to include the aux view height.
-  CGFloat auxHeight = cell.topCellView.frame.size.height;
-  CGRect cellFrame = self.layout.expandedRect;
-  cellFrame.size.height += auxHeight;
-  cellFrame.origin.y -= auxHeight;
-  cell.frame = cellFrame;
-  cell.topCellView.alpha = 0.0;
+  cell.frame = self.layout.expandedRect;
+  [cell positionTabViews];
 }
 
 // Positions all of the inactive items in their grid positions.
@@ -358,12 +390,13 @@ const CGFloat kInactiveItemScale = 0.95;
 // Positions the active item in the regular grid position with its final
 // corner radius.
 - (void)positionAndScaleActiveItemInGrid {
-  UIView* cell = self.layout.activeItem.cell;
+  UIView<GridToTabTransitionView>* cell = self.layout.activeItem.cell;
   cell.transform = CGAffineTransformIdentity;
   CGRect frame = cell.frame;
   frame.size = self.layout.activeItem.size;
   cell.frame = frame;
   [self positionItemInGrid:self.layout.activeItem];
+  [cell positionCellViews];
 }
 
 // Prepares all of the items for an expansion anumation.
@@ -372,6 +405,7 @@ const CGFloat kInactiveItemScale = 0.95;
     [self positionItemInGrid:item];
   }
   [self positionItemInGrid:self.layout.activeItem];
+  [self.layout.activeItem.cell positionCellViews];
   [self positionItemInGrid:self.layout.selectionItem];
 }
 
@@ -400,6 +434,40 @@ const CGFloat kInactiveItemScale = 0.95;
                                    delay:0
                                  options:UIViewAnimationOptionLayoutSubviews
                               animations:keyframe
+                              completion:nil];
+  };
+}
+
+// Returns a cross-fade keyframe animation between two views.
+// |startView| should have an alpha of 1; |endView| should have an alpha of 0.
+// |start| and |duration| are in the [0.0]-[1.0] interval and represent timing
+// relative to |self.duration|.
+// The animation returned by this method will fade |startView| to 0 over the
+// first half of |duration|, and then fade |endView| to 1.0 over the second
+// half, preventing any blurred frames showing both views. For best results, the
+// animation curev should be EaseInEaseOut.
+- (void (^)(void))keyframeAnimationFadingView:(UIView*)startView
+                                throughToView:(UIView*)endView
+                                relativeStart:(double)start
+                             relativeDuration:(double)duration {
+  CGFloat halfDuration = duration / 2;
+  auto keyframes = ^{
+    [UIView addKeyframeWithRelativeStartTime:start
+                            relativeDuration:halfDuration
+                                  animations:^{
+                                    startView.alpha = 0.0;
+                                  }];
+    [UIView addKeyframeWithRelativeStartTime:start + halfDuration
+                            relativeDuration:halfDuration
+                                  animations:^{
+                                    endView.alpha = 1.0;
+                                  }];
+  };
+  return ^{
+    [UIView animateKeyframesWithDuration:self.duration
+                                   delay:0
+                                 options:UIViewAnimationOptionLayoutSubviews
+                              animations:keyframes
                               completion:nil];
   };
 }

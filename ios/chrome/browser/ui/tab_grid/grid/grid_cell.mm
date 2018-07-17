@@ -15,7 +15,33 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Frame-based layout utilities for GridTransitionCell.
+// Scales the size of |view|'s frame by |factor| in both height and width. This
+// scaling is done by changing the frame size without changing its origin,
+// unlike a scale transform which scales around the view's center.
+void ScaleView(UIView* view, CGFloat factor) {
+  if (!view)
+    return;
+  CGRect frame = view.frame;
+  frame.size.width *= factor;
+  frame.size.height *= factor;
+  view.frame = frame;
+}
+
+// Positions |view| by setting its frame's origin to |point|.
+void PositionView(UIView* view, CGPoint point) {
+  if (!view)
+    return;
+  CGRect frame = view.frame;
+  frame.origin = point;
+  view.frame = frame;
+}
+}  // namespace
+
 @interface GridCell ()
+// Header height of the cell.
+@property(nonatomic, strong) NSLayoutConstraint* topBarHeight;
 // Visual components of the cell.
 @property(nonatomic, weak) UIView* topBar;
 @property(nonatomic, weak) UIImageView* iconView;
@@ -36,8 +62,9 @@
 @synthesize icon = _icon;
 @synthesize snapshot = _snapshot;
 @synthesize title = _title;
-@synthesize topBar = _topBar;
 // Private properties.
+@synthesize topBarHeight = _topBarHeight;
+@synthesize topBar = _topBar;
 @synthesize iconView = _iconView;
 @synthesize snapshotView = _snapshotView;
 @synthesize titleLabel = _titleLabel;
@@ -74,12 +101,15 @@
     _snapshotView = snapshotView;
     _closeTapTargetButton = closeTapTargetButton;
 
+    _topBarHeight =
+        [topBar.heightAnchor constraintEqualToConstant:kGridCellHeaderHeight];
+
     NSArray* constraints = @[
       [topBar.topAnchor constraintEqualToAnchor:contentView.topAnchor],
       [topBar.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
       [topBar.trailingAnchor
           constraintEqualToAnchor:contentView.trailingAnchor],
-      [topBar.heightAnchor constraintEqualToConstant:kGridCellHeaderHeight],
+      _topBarHeight,
       [snapshotView.topAnchor constraintEqualToAnchor:topBar.bottomAnchor],
       [snapshotView.leadingAnchor
           constraintEqualToAnchor:contentView.leadingAnchor],
@@ -303,7 +333,15 @@
 
 @end
 
-@implementation GridTransitionCell
+@implementation GridTransitionCell {
+  // Previous tab view width, used to scale the tab views.
+  CGFloat _previousTabViewWidth;
+}
+
+// Synthesis of GridToTabTransitionView properties.
+@synthesize topTabView = _topTabView;
+@synthesize mainTabView = _mainTabView;
+@synthesize bottomTabView = _bottomTabView;
 
 + (instancetype)transitionCellFromCell:(GridCell*)cell {
   GridTransitionCell* proxy = [[self alloc] initWithFrame:cell.bounds];
@@ -314,16 +352,46 @@
   proxy.title = cell.title;
   return proxy;
 }
-
-#pragma mark - GridToTabTransitionView
+#pragma mark - GridToTabTransitionView properties.
 
 - (void)setTopCellView:(UIView*)topCellView {
-  // The top cell is the top bar and can't be changed.
+  // The top cell view is |topBar| and can't be changed.
   NOTREACHED();
 }
 
 - (UIView*)topCellView {
   return self.topBar;
+}
+
+- (void)setTopTabView:(UIView*)topTabView {
+  DCHECK(!_topTabView) << "topTabView should only be set once.";
+  if (!topTabView.superview)
+    [self.contentView addSubview:topTabView];
+  _topTabView = topTabView;
+}
+
+- (void)setMainCellView:(UIView*)mainCellView {
+  // The main cell view is the snapshot view and can't be changed.
+  NOTREACHED();
+}
+
+- (UIView*)mainCellView {
+  return self.snapshotView;
+}
+
+- (void)setMainTabView:(UIView*)mainTabView {
+  DCHECK(!_mainTabView) << "mainTabView should only be set once.";
+  if (!mainTabView.superview)
+    [self.contentView addSubview:mainTabView];
+  _previousTabViewWidth = mainTabView.frame.size.width;
+  _mainTabView = mainTabView;
+}
+
+- (void)setBottomTabView:(UIView*)bottomTabView {
+  DCHECK(!_bottomTabView) << "bottomTabView should only be set once.";
+  if (!bottomTabView.superview)
+    [self.contentView addSubview:bottomTabView];
+  _bottomTabView = bottomTabView;
 }
 
 - (CGFloat)cornerRadius {
@@ -332,6 +400,60 @@
 
 - (void)setCornerRadius:(CGFloat)radius {
   self.contentView.layer.cornerRadius = radius;
+}
+
+#pragma mark - GridToTabTransitionView methods
+
+- (void)positionTabViews {
+  [self scaleTabViews];
+  self.topBarHeight.constant = self.topTabView.frame.size.height;
+  [self setNeedsUpdateConstraints];
+  [self layoutIfNeeded];
+  PositionView(self.topTabView, CGPointMake(0, 0));
+  // Position the main view so it's top-aligned with the main cell view.
+  PositionView(self.mainTabView, self.mainCellView.frame.origin);
+  if (!self.bottomTabView)
+    return;
+
+  // Position the bottom tab view at the bottom.
+  CGFloat yPosition = CGRectGetMaxY(self.contentView.bounds) -
+                      self.bottomTabView.frame.size.height;
+  PositionView(self.bottomTabView, CGPointMake(0, yPosition));
+}
+
+- (void)positionCellViews {
+  [self scaleTabViews];
+  self.topBarHeight.constant = kGridCellHeaderHeight;
+  [self setNeedsUpdateConstraints];
+  [self layoutIfNeeded];
+  CGFloat yOffset = kGridCellHeaderHeight - self.topTabView.frame.size.height;
+  PositionView(self.topTabView, CGPointMake(0, yOffset));
+  // Position the main view so it's top-aligned with the main cell view.
+  PositionView(self.mainTabView, self.mainCellView.frame.origin);
+  if (!self.bottomTabView)
+    return;
+
+  if (self.bottomTabView.frame.origin.y > 0) {
+    // Position the bottom tab so it's equivalently located.
+    CGFloat scale = self.bounds.size.width / _previousTabViewWidth;
+    PositionView(self.bottomTabView,
+                 CGPointMake(0, self.bottomTabView.frame.origin.y * scale));
+  } else {
+    // Position the bottom tab view below the main content view.
+    CGFloat yOffset = CGRectGetMaxY(self.mainCellView.frame);
+    PositionView(self.bottomTabView, CGPointMake(0, yOffset));
+  }
+}
+
+#pragma mark - Private helper methods
+
+// Scales the tab views relative to the current width of the cell.
+- (void)scaleTabViews {
+  CGFloat scale = self.bounds.size.width / _previousTabViewWidth;
+  ScaleView(self.topTabView, scale);
+  ScaleView(self.mainTabView, scale);
+  ScaleView(self.bottomTabView, scale);
+  _previousTabViewWidth = self.mainTabView.frame.size.width;
 }
 
 @end
