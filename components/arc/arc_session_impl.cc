@@ -371,9 +371,12 @@ void ArcSessionImpl::DoUpgrade() {
   for (const std::string& language : upgrade_params_.preferred_languages)
     request.add_preferred_languages(language);
 
-  if (!upgrade_params_.demo_session_apps_path.empty())
+  request.set_is_demo_session(upgrade_params_.is_demo_session);
+  if (!upgrade_params_.demo_session_apps_path.empty()) {
+    DCHECK(upgrade_params_.is_demo_session);
     request.set_demo_session_apps_path(
         upgrade_params_.demo_session_apps_path.value());
+  }
 
   chromeos::SessionManagerClient* client = GetSessionManagerClient();
   client->UpgradeArcContainer(

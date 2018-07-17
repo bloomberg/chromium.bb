@@ -623,5 +623,42 @@ TEST_F(ArcSessionImplTest, IsChild) {
   EXPECT_TRUE(GetSessionManagerClient()->last_upgrade_arc_request().is_child());
 }
 
+TEST_F(ArcSessionImplTest, DemoSession) {
+  auto arc_session = CreateArcSession();
+  arc_session->StartMiniInstance();
+
+  const std::string demo_apps_path =
+      "/run/imageloader/demo_mode_resources/android_apps.squash";
+  ArcSession::UpgradeParams params;
+  params.is_demo_session = true;
+  params.demo_session_apps_path = base::FilePath(demo_apps_path);
+  params.locale = kDefaultLocale;
+  arc_session->RequestUpgrade(std::move(params));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(
+      GetSessionManagerClient()->last_upgrade_arc_request().is_demo_session());
+  EXPECT_EQ(demo_apps_path, GetSessionManagerClient()
+                                ->last_upgrade_arc_request()
+                                .demo_session_apps_path());
+}
+
+TEST_F(ArcSessionImplTest, DemoSessionWithoutOfflineDemoApps) {
+  auto arc_session = CreateArcSession();
+  arc_session->StartMiniInstance();
+
+  ArcSession::UpgradeParams params;
+  params.is_demo_session = true;
+  params.locale = kDefaultLocale;
+  arc_session->RequestUpgrade(std::move(params));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(
+      GetSessionManagerClient()->last_upgrade_arc_request().is_demo_session());
+  EXPECT_EQ(std::string(), GetSessionManagerClient()
+                               ->last_upgrade_arc_request()
+                               .demo_session_apps_path());
+}
+
 }  // namespace
 }  // namespace arc
