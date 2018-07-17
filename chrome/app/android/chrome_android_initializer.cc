@@ -13,7 +13,7 @@ bool RunChrome() {
   // Pass the library version number to content so that we can check it from the
   // Java side before continuing initialization
   base::android::SetVersionNumber(version_info::GetVersionNumber().c_str());
-  content::SetContentMainDelegate(ChromeMainDelegateAndroid::Create());
+  content::SetContentMainDelegate(new ChromeMainDelegateAndroid);
 
   return true;
 }

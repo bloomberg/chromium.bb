@@ -924,7 +924,6 @@ template("chrome_shared_library") {
 
 chrome_shared_library("libchrome") {
   sources = [
-    "../app/android/chrome_main_delegate_android_initializer.cc",
     "../browser/android/chrome_entry_point.cc",
   ]
   deps = [
@@ -935,7 +934,6 @@ chrome_shared_library("libchrome") {
 chrome_shared_library("libchromefortest") {
   testonly = true
   sources = [
-    "../app/android/chrome_main_delegate_android_initializer.cc",
     "../browser/android/chrome_entry_point_for_test.cc",
   ]
   deps = [
@@ -1108,7 +1106,6 @@ if (!android_64bit_target_cpu ||
     current_toolchain == android_secondary_abi_toolchain) {
   shared_library("monochrome") {
     sources = [
-      "../app/android/chrome_main_delegate_android_initializer.cc",
       "../browser/android/monochrome_entry_point.cc",
     ]
     deps = [
@@ -1145,7 +1142,6 @@ shared_library("chrome_sync_shell") {
   testonly = true
   sources = [
     "../browser/android/chrome_sync_shell_entry_point.cc",
-    "../browser/android/chrome_sync_shell_main_delegate_initializer.cc",
   ]
   deps = [
     ":chrome_sync_shell_jni_registration($default_toolchain)",
