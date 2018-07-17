@@ -29,12 +29,9 @@ enum class CredentialFieldType {
 CredentialFieldType DeriveFromServerFieldType(autofill::ServerFieldType type);
 
 // Contains server predictions for a field.
-// This is the struct rather than using because it will be expanded soon with
-// additional information.
-// TODO(https://crbug.com/831123): Remove comment about struct usage purposes as
-// soon as additional fields added.
 struct PasswordFieldPrediction {
   autofill::ServerFieldType type;
+  bool may_use_prefilled_placeholder = false;
 };
 
 // Contains server predictions for a form. Keys are unique renderer ids of

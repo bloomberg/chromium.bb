@@ -1726,7 +1726,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
     blink::WebInputElement* password_element,
     const PasswordFormFillData& fill_data,
     bool exact_username_match,
-    bool set_selection,
+    bool username_may_use_prefilled_placeholder,
     FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
     RendererSavePasswordProgressLogger* logger) {
   if (logger)
@@ -1747,23 +1747,28 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   // not autocompletable (no username case).
   base::string16 current_username;
 
-  // Whether the username element was prefilled with content that was not on a
-  // list of known placeholder texts (e.g. "username or email").
-  bool prefilled_not_placeholder_username = false;
+  // Whether the username element was prefilled with content that was on a
+  // list of known placeholder texts that should be overridden (e.g. "username
+  // or email" or there is a server hint that it is just a placeholder).
+  bool prefilled_placeholder_username = false;
 
   if (!username_element->IsNull()) {
+    prefilled_placeholder_username =
+        !username_element->Value().IsEmpty() &&
+        (PossiblePrefilledUsernameValue(username_element->Value().Utf8()) ||
+         username_may_use_prefilled_placeholder);
     if (!username_element->Value().IsEmpty() &&
-        !PossiblePrefilledUsernameValue(username_element->Value().Utf8())) {
+        !prefilled_placeholder_username) {
       // Username is filled with content that was not on a list of known
-      // placeholder texts (e.g. "username or email").
+      // placeholder texts (e.g. "username or email") nor there is server-side
+      // data that this value is placeholder.
       current_username = username_element->Value().Utf16();
-      prefilled_not_placeholder_username = true;
     } else if (IsElementAutocompletable(*username_element)) {
       current_username = fill_data.username_field.value;
     }
   }
 
-  // username and password will contain the match found if any.
+  // |username| and |password| will contain the match found if any.
   base::string16 username;
   base::string16 password;
 
@@ -1771,7 +1776,8 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
                         logger, &username, &password);
 
   if (password.empty()) {
-    if (prefilled_not_placeholder_username) {
+    if (!username_element->IsNull() && !username_element->Value().IsEmpty() &&
+        !prefilled_placeholder_username) {
       LogPrefilledUsernameFillOutcome(
           PrefilledUsernameFillOutcome::kPrefilledUsernameNotOverridden);
     }
@@ -1786,34 +1792,24 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   // Input matches the username, fill in required values.
   if (!username_element->IsNull() &&
       IsElementAutocompletable(*username_element)) {
-    // Fill a non-empty username if it is safe to override the value of the
-    // username element. It is safe to override if the value is empty or a known
-    // placeholder value.
-    if (!username.empty()) {
-      if (username_element->Value().IsEmpty()) {
-        username_element->SetSuggestedValue(
-            blink::WebString::FromUTF16(username));
-        gatekeeper_.RegisterElement(username_element);
-      } else if (PossiblePrefilledUsernameValue(
-                     username_element->Value().Utf8())) {
-        username_element->SetSuggestedValue(
-            blink::WebString::FromUTF16(username));
-        gatekeeper_.RegisterElement(username_element);
+    if (!username.empty() && (username_element->Value().IsEmpty() ||
+                              prefilled_placeholder_username)) {
+      username_element->SetSuggestedValue(
+          blink::WebString::FromUTF16(username));
+      gatekeeper_.RegisterElement(username_element);
+      if (prefilled_placeholder_username) {
         LogPrefilledUsernameFillOutcome(
             PrefilledUsernameFillOutcome::
                 kPrefilledPlaceholderUsernameOverridden);
       }
     }
+
     UpdateFieldValueAndPropertiesMaskMap(*username_element, &username,
                                          FieldPropertiesFlags::AUTOFILLED,
                                          field_value_and_properties_map);
     username_element->SetAutofillState(WebAutofillState::kAutofilled);
     if (logger)
       logger->LogElementName(Logger::STRING_USERNAME_FILLED, *username_element);
-    if (set_selection) {
-      form_util::PreviewSuggestion(username, current_username,
-                                   username_element);
-    }
   }
 
   // Wait to fill in the password until a user gesture occurs. This is to make
@@ -1875,7 +1871,8 @@ bool PasswordAutofillAgent::FillFormOnPasswordReceived(
   // match for read-only username fields.
   return FillUserNameAndPassword(
       &username_element, &password_element, fill_data, exact_username_match,
-      false /* set_selection */, field_value_and_properties_map, logger);
+      fill_data.username_may_use_prefilled_placeholder,
+      field_value_and_properties_map, logger);
 }
 
 void PasswordAutofillAgent::OnProvisionallySaveForm(
