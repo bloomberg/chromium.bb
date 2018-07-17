@@ -157,7 +157,15 @@ class VideoFrameSubmitterTest : public testing::Test {
     viz::mojom::blink::CompositorFrameSinkRequest request =
         mojo::MakeRequest(&submitter_sink);
     sink_ = std::make_unique<StrictMock<MockCompositorFrameSink>>(&request);
+
+    // By setting the submission state before we set the sink, we can make
+    // testing easier without having to worry about the first sent frame.
+    submitter_->UpdateSubmissionState(true);
     submitter_->SetSink(&submitter_sink);
+    submitter_->SetSurfaceId(viz::SurfaceId(
+        viz::FrameSinkId(1, 1),
+        viz::LocalSurfaceId(11,
+                            base::UnguessableToken::Deserialize(0x111111, 0))));
   }
 
  protected:
@@ -260,6 +268,44 @@ TEST_F(VideoFrameSubmitterTest, DidReceiveFrameSubmitsFrame) {
 
   submitter_->DidReceiveFrame();
   scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(VideoFrameSubmitterTest, ShouldSubmitPreventsSubmission) {
+  MakeSubmitter();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
+  submitter_->UpdateSubmissionState(false);
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
+  submitter_->StartRendering();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
+  EXPECT_CALL(*provider_, GetCurrentFrame())
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+          gfx::Size(8, 8), base::TimeDelta())));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
+  EXPECT_CALL(*provider_, PutCurrentFrame());
+  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
+  submitter_->UpdateSubmissionState(true);
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
+  submitter_->UpdateSubmissionState(false);
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(*provider_, GetCurrentFrame())
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+          gfx::Size(8, 8), base::TimeDelta())));
+  EXPECT_CALL(*provider_, PutCurrentFrame());
+
+  submitter_->SubmitSingleFrame();
 }
 
 TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {

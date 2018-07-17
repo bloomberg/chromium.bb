@@ -850,6 +850,12 @@ class TextureLayerImplWithResourceTest : public TextureLayerTest {
     EXPECT_TRUE(host_impl_.InitializeFrameSink(layer_tree_frame_sink_.get()));
   }
 
+  std::unique_ptr<TextureLayerImpl> CreateTextureLayer() {
+    auto layer = TextureLayerImpl::Create(host_impl_.active_tree(), 1);
+    layer->set_visible_layer_rect(gfx::Rect(100, 100));
+    return layer;
+  }
+
   bool WillDraw(TextureLayerImpl* layer, DrawMode mode) {
     bool will_draw = layer->WillDraw(
         mode, host_impl_.active_tree()->resource_provider());
@@ -873,8 +879,7 @@ TEST_F(TextureLayerImplWithResourceTest, TestWillDraw) {
       .Times(AnyNumber());
   // Hardware mode.
   {
-    std::unique_ptr<TextureLayerImpl> impl_layer =
-        TextureLayerImpl::Create(host_impl_.active_tree(), 1);
+    std::unique_ptr<TextureLayerImpl> impl_layer = CreateTextureLayer();
     impl_layer->SetTransferableResource(
         test_data_.resource1_,
         viz::SingleReleaseCallback::Create(test_data_.release_callback1_));
@@ -890,8 +895,7 @@ TEST_F(TextureLayerImplWithResourceTest, TestWillDraw) {
 
   // Software mode.
   {
-    std::unique_ptr<TextureLayerImpl> impl_layer =
-        TextureLayerImpl::Create(host_impl_.active_tree(), 1);
+    std::unique_ptr<TextureLayerImpl> impl_layer = CreateTextureLayer();
     impl_layer->SetTransferableResource(
         test_data_.resource1_,
         viz::SingleReleaseCallback::Create(test_data_.release_callback1_));
@@ -899,16 +903,14 @@ TEST_F(TextureLayerImplWithResourceTest, TestWillDraw) {
   }
 
   {
-    std::unique_ptr<TextureLayerImpl> impl_layer =
-        TextureLayerImpl::Create(host_impl_.active_tree(), 1);
+    std::unique_ptr<TextureLayerImpl> impl_layer = CreateTextureLayer();
     impl_layer->SetTransferableResource(viz::TransferableResource(), nullptr);
     EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_SOFTWARE));
   }
 
   {
     // Software resource.
-    std::unique_ptr<TextureLayerImpl> impl_layer =
-        TextureLayerImpl::Create(host_impl_.active_tree(), 1);
+    std::unique_ptr<TextureLayerImpl> impl_layer = CreateTextureLayer();
     impl_layer->SetTransferableResource(
         test_data_.sw_resource_,
         viz::SingleReleaseCallback::Create(test_data_.sw_release_callback_));
@@ -917,8 +919,7 @@ TEST_F(TextureLayerImplWithResourceTest, TestWillDraw) {
 
   // Resourceless software mode.
   {
-    std::unique_ptr<TextureLayerImpl> impl_layer =
-        TextureLayerImpl::Create(host_impl_.active_tree(), 1);
+    std::unique_ptr<TextureLayerImpl> impl_layer = CreateTextureLayer();
     impl_layer->SetTransferableResource(
         test_data_.resource1_,
         viz::SingleReleaseCallback::Create(test_data_.release_callback1_));
@@ -990,8 +991,7 @@ TEST_F(TextureLayerImplWithResourceTest, TestImplLayerCallbacks) {
 
 TEST_F(TextureLayerImplWithResourceTest,
        TestDestructorCallbackOnCreatedResource) {
-  std::unique_ptr<TextureLayerImpl> impl_layer;
-  impl_layer = TextureLayerImpl::Create(host_impl_.active_tree(), 1);
+  std::unique_ptr<TextureLayerImpl> impl_layer = CreateTextureLayer();
   ASSERT_TRUE(impl_layer);
 
   EXPECT_CALL(test_data_.mock_callback_,
