@@ -105,7 +105,7 @@ Status D3D11H264Accelerator::SubmitFrameMetadata(
         pic->decrypt_config()->key_id());
     if (!decrypt_context) {
       DVLOG(1) << "Cannot find decrypt context for the frame.";
-      return Status::kNoKey;
+      return Status::kTryAgain;
     }
 
     content_key =

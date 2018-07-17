@@ -34,10 +34,20 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
  public:
   class MEDIA_GPU_EXPORT H264Accelerator {
    public:
+    // Methods may return kTryAgain if they need additional data (provided
+    // independently) in order to proceed. Examples are things like not having
+    // an appropriate key to decode encrypted content, or needing to wait
+    // until hardware buffers are available. This is not considered an
+    // unrecoverable error, but rather a pause to allow an application to
+    // independently provide the required data. When H264Decoder::Decode()
+    // is called again, it will attempt to resume processing of the stream
+    // by calling the same method again.
     enum class Status {
-      kOk,     // Operation completed successfully.
-      kFail,   // Operation failed.
-      kNoKey,  // Operation failed because the key for decryption is missing.
+      kOk,        // Operation completed successfully.
+      kFail,      // Operation failed.
+      kTryAgain,  // Operation failed because some external data is missing.
+                  // Retry the same operation later, once the data has been
+                  // provided.
     };
 
     H264Accelerator();
@@ -60,9 +70,8 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
     // Note that this does not run decode in the accelerator and the decoder
     // is expected to follow this call with one or more SubmitSlice() calls
     // before calling SubmitDecode().
-    // Returns kOk if successful, kNoKey if the buffer is encrypted and could
-    // not be processed because the key for decryption is missing, or kFail
-    // if there are errors.
+    // Returns kOk if successful, kFail if there are errors, or kTryAgain if
+    // the accelerator needs additional data before being able to proceed.
     virtual Status SubmitFrameMetadata(
         const H264SPS* sps,
         const H264PPS* pps,
@@ -81,9 +90,8 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
     // |subsamples| specifies which part of the slice data is encrypted.
     // This must be called one or more times per frame, before SubmitDecode().
     // Note that |data| does not have to remain valid after this call returns.
-    // Returns kOk if successful, kNoKey if the buffer is encrypted and could
-    // not be processed because the key for decryption is missing, or kFail
-    // if there are errors.
+    // Returns kOk if successful, kFail if there are errors, or kTryAgain if
+    // the accelerator needs additional data before being able to proceed.
     virtual Status SubmitSlice(
         const H264PPS* pps,
         const H264SliceHeader* slice_hdr,
@@ -97,9 +105,8 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
     // Execute the decode in hardware for |pic|, using all the slices and
     // metadata submitted via SubmitFrameMetadata() and SubmitSlice() since
     // the previous call to SubmitDecode().
-    // Returns kOk if successful, kNoKey if the buffer is encrypted and could
-    // not be processed because the key for decryption is missing, or kFail
-    // if there are errors.
+    // Returns kOk if successful, kFail if there are errors, or kTryAgain if
+    // the accelerator needs additional data before being able to proceed.
     virtual Status SubmitDecode(const scoped_refptr<H264Picture>& pic) = 0;
 
     // Schedule output (display) of |pic|. Note that returning from this
@@ -159,19 +166,32 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
 
   // Internal state of the decoder.
   enum State {
-    kNeedStreamMetadata,  // After initialization, need an SPS.
-    kDecoding,            // Ready to decode from any point.
-    kAfterReset,          // After Reset(), need a resume point.
-    kError,               // Error in decode, can't continue.
+    // After initialization, need an SPS.
+    kNeedStreamMetadata,
+    // Ready to decode from any point.
+    kDecoding,
+    // After Reset(), need a resume point.
+    kAfterReset,
+    // The following keep track of what step is next in Decode() processing
+    // in order to resume properly after H264Decoder::kTryAgain (or another
+    // retryable error) is returned. The next time Decode() is called the call
+    // that previously failed will be retried and execution continues from
+    // there (if possible).
+    kTryPreprocessCurrentSlice,
+    kEnsurePicture,
+    kTryNewFrame,
+    kTryCurrentSlice,
+    // Error in decode, can't continue.
+    kError,
   };
 
   // Process H264 stream structures.
   bool ProcessSPS(int sps_id, bool* need_new_buffers);
   // Process current slice header to discover if we need to start a new picture,
   // finishing up the current one.
-  bool PreprocessCurrentSlice();
+  H264Accelerator::Status PreprocessCurrentSlice();
   // Process current slice as a slice of the current picture.
-  bool ProcessCurrentSlice();
+  H264Accelerator::Status ProcessCurrentSlice();
 
   // Initialize the current picture according to data in |slice_hdr|.
   bool InitCurrPicture(const H264SliceHeader* slice_hdr);
@@ -226,10 +246,10 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   bool HandleFrameNumGap(int frame_num);
 
   // Start processing a new frame.
-  bool StartNewFrame(const H264SliceHeader* slice_hdr);
+  H264Accelerator::Status StartNewFrame(const H264SliceHeader* slice_hdr);
 
   // All data for a frame received, process it and decode.
-  bool FinishPrevFrameIfPresent();
+  H264Accelerator::Status FinishPrevFrameIfPresent();
 
   // Called after we are done processing |pic|. Performs all operations to be
   // done after decoding, including DPB management, reference picture marking
@@ -244,7 +264,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   void ClearDPB();
 
   // Commits all pending data for HW decoder and starts HW decoder.
-  bool DecodePicture();
+  H264Accelerator::Status DecodePicture();
 
   // Notifies client that a picture is ready for output.
   void OutputPic(scoped_refptr<H264Picture> pic);

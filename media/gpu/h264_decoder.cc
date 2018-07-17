@@ -91,9 +91,10 @@ bool H264Decoder::ModifyReferencePicLists(const H264SliceHeader* slice_hdr,
   return true;
 }
 
-bool H264Decoder::DecodePicture() {
+H264Decoder::H264Accelerator::Status H264Decoder::DecodePicture() {
   DCHECK(curr_pic_.get());
-  return accelerator_->SubmitDecode(curr_pic_) == H264Accelerator::Status::kOk;
+
+  return accelerator_->SubmitDecode(curr_pic_);
 }
 
 bool H264Decoder::InitNonexistingPicture(scoped_refptr<H264Picture> pic,
@@ -672,7 +673,8 @@ bool H264Decoder::Flush() {
   return true;
 }
 
-bool H264Decoder::StartNewFrame(const H264SliceHeader* slice_hdr) {
+H264Decoder::H264Accelerator::Status H264Decoder::StartNewFrame(
+    const H264SliceHeader* slice_hdr) {
   // TODO posciak: add handling of max_num_ref_frames per spec.
   CHECK(curr_pic_.get());
   DCHECK(slice_hdr);
@@ -680,12 +682,12 @@ bool H264Decoder::StartNewFrame(const H264SliceHeader* slice_hdr) {
   curr_pps_id_ = slice_hdr->pic_parameter_set_id;
   const H264PPS* pps = parser_.GetPPS(curr_pps_id_);
   if (!pps)
-    return false;
+    return H264Accelerator::Status::kFail;
 
   curr_sps_id_ = pps->seq_parameter_set_id;
   const H264SPS* sps = parser_.GetSPS(curr_sps_id_);
   if (!sps)
-    return false;
+    return H264Accelerator::Status::kFail;
 
   max_frame_num_ = 1 << (sps->log2_max_frame_num_minus4 + 4);
   int frame_num = slice_hdr->frame_num;
@@ -696,18 +698,18 @@ bool H264Decoder::StartNewFrame(const H264SliceHeader* slice_hdr) {
   if (frame_num != prev_ref_frame_num_ &&
       frame_num != (prev_ref_frame_num_ + 1) % max_frame_num_) {
     if (!HandleFrameNumGap(frame_num))
-      return false;
+      return H264Accelerator::Status::kFail;
   }
 
   if (!InitCurrPicture(slice_hdr))
-    return false;
+    return H264Accelerator::Status::kFail;
 
   UpdatePicNums(frame_num);
   PrepareRefPicLists(slice_hdr);
 
-  return accelerator_->SubmitFrameMetadata(
-             sps, pps, dpb_, ref_pic_list_p0_, ref_pic_list_b0_,
-             ref_pic_list_b1_, curr_pic_.get()) == H264Accelerator::Status::kOk;
+  return accelerator_->SubmitFrameMetadata(sps, pps, dpb_, ref_pic_list_p0_,
+                                           ref_pic_list_b0_, ref_pic_list_b1_,
+                                           curr_pic_.get());
 }
 
 bool H264Decoder::HandleMemoryManagementOps(scoped_refptr<H264Picture> pic) {
@@ -1113,18 +1115,20 @@ bool H264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
   return true;
 }
 
-bool H264Decoder::FinishPrevFrameIfPresent() {
+H264Decoder::H264Accelerator::Status H264Decoder::FinishPrevFrameIfPresent() {
   // If we already have a frame waiting to be decoded, decode it and finish.
   if (curr_pic_) {
-    if (!DecodePicture())
-      return false;
+    H264Accelerator::Status result = DecodePicture();
+    if (result != H264Accelerator::Status::kOk)
+      return result;
 
     scoped_refptr<H264Picture> pic = curr_pic_;
     curr_pic_ = nullptr;
-    return FinishPicture(pic);
+    if (!FinishPicture(pic))
+      return H264Accelerator::Status::kFail;
   }
 
-  return true;
+  return H264Accelerator::Status::kOk;
 }
 
 bool H264Decoder::HandleFrameNumGap(int frame_num) {
@@ -1159,22 +1163,23 @@ bool H264Decoder::HandleFrameNumGap(int frame_num) {
   return true;
 }
 
-bool H264Decoder::PreprocessCurrentSlice() {
+H264Decoder::H264Accelerator::Status H264Decoder::PreprocessCurrentSlice() {
   const H264SliceHeader* slice_hdr = curr_slice_hdr_.get();
   DCHECK(slice_hdr);
 
   if (IsNewPrimaryCodedPicture(curr_pic_.get(), curr_pps_id_,
                                parser_.GetSPS(curr_sps_id_), *slice_hdr)) {
     // New picture, so first finish the previous one before processing it.
-    if (!FinishPrevFrameIfPresent())
-      return false;
+    H264Accelerator::Status result = FinishPrevFrameIfPresent();
+    if (result != H264Accelerator::Status::kOk)
+      return result;
 
     DCHECK(!curr_pic_);
 
     if (slice_hdr->first_mb_in_slice != 0) {
       DVLOG(1) << "ASO/invalid stream, first_mb_in_slice: "
                << slice_hdr->first_mb_in_slice;
-      return false;
+      return H264Accelerator::Status::kFail;
     }
 
     // If the new picture is an IDR, flush DPB.
@@ -1183,17 +1188,17 @@ bool H264Decoder::PreprocessCurrentSlice() {
       // not to do so.
       if (!slice_hdr->no_output_of_prior_pics_flag) {
         if (!Flush())
-          return false;
+          return H264Accelerator::Status::kFail;
       }
       dpb_.Clear();
       last_output_poc_ = std::numeric_limits<int>::min();
     }
   }
 
-  return true;
+  return H264Accelerator::Status::kOk;
 }
 
-bool H264Decoder::ProcessCurrentSlice() {
+H264Decoder::H264Accelerator::Status H264Decoder::ProcessCurrentSlice() {
   DCHECK(curr_pic_);
 
   const H264SliceHeader* slice_hdr = curr_slice_hdr_.get();
@@ -1206,16 +1211,16 @@ bool H264Decoder::ProcessCurrentSlice() {
 
   H264Picture::Vector ref_pic_list0, ref_pic_list1;
   if (!ModifyReferencePicLists(slice_hdr, &ref_pic_list0, &ref_pic_list1))
-    return false;
+    return H264Accelerator::Status::kFail;
 
   const H264PPS* pps = parser_.GetPPS(curr_pps_id_);
   if (!pps)
-    return false;
+    return H264Accelerator::Status::kFail;
 
-  return accelerator_->SubmitSlice(
-             pps, slice_hdr, ref_pic_list0, ref_pic_list1, curr_pic_.get(),
-             slice_hdr->nalu_data, slice_hdr->nalu_size,
-             parser_.GetCurrentSubsamples()) == H264Accelerator::Status::kOk;
+  return accelerator_->SubmitSlice(pps, slice_hdr, ref_pic_list0, ref_pic_list1,
+                                   curr_pic_.get(), slice_hdr->nalu_data,
+                                   slice_hdr->nalu_size,
+                                   parser_.GetCurrentSubsamples());
 }
 
 #define SET_ERROR_AND_RETURN()         \
@@ -1223,6 +1228,20 @@ bool H264Decoder::ProcessCurrentSlice() {
     DVLOG(1) << "Error during decode"; \
     state_ = kError;                   \
     return H264Decoder::kDecodeError;  \
+  } while (0)
+
+#define CHECK_ACCELERATOR_RESULT(func)           \
+  do {                                           \
+    H264Accelerator::Status result = (func);     \
+    switch (result) {                            \
+      case H264Accelerator::Status::kOk:         \
+        break;                                   \
+      case H264Accelerator::Status::kTryAgain:   \
+        DVLOG(1) << #func " needs to try again"; \
+        return H264Decoder::kTryAgain;           \
+      case H264Accelerator::Status::kFail:       \
+        SET_ERROR_AND_RETURN();                  \
+    }                                            \
   } while (0)
 
 void H264Decoder::SetStream(int32_t id,
@@ -1267,7 +1286,7 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
     switch (curr_nalu_->nal_unit_type) {
       case H264NALU::kNonIDRSlice:
         // We can't resume from a non-IDR slice.
-        if (state_ != kDecoding)
+        if (state_ == kError || state_ == kAfterReset)
           break;
 
         FALLTHROUGH;
@@ -1280,8 +1299,13 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
           break;
         }
 
-        // If after reset, we should be able to recover from an IDR.
-        state_ = kDecoding;
+        // If after reset or waiting for a key, we should be able to recover
+        // from an IDR. |state_|, |curr_slice_hdr_|, and |curr_pic_| are used
+        // to keep track of what has previously been attempted, so that after
+        // a retryable result is returned, subsequent calls to Decode() retry
+        // the call that failed previously. If it succeeds (it may not if no
+        // additional key has been provided, for example), then the remaining
+        // steps will be executed.
 
         if (!curr_slice_hdr_) {
           curr_slice_hdr_.reset(new H264SliceHeader());
@@ -1290,36 +1314,47 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
           if (par_res != H264Parser::kOk)
             SET_ERROR_AND_RETURN();
 
-          if (!PreprocessCurrentSlice())
-            SET_ERROR_AND_RETURN();
+          state_ = kTryPreprocessCurrentSlice;
         }
 
-        if (!curr_pic_) {
-          // New picture/finished previous one, try to start a new one
-          // or tell the client we need more surfaces.
-          curr_pic_ = accelerator_->CreateH264Picture();
-          if (!curr_pic_)
-            return kRanOutOfSurfaces;
-          if (current_decrypt_config_)
-            curr_pic_->set_decrypt_config(current_decrypt_config_->Clone());
-
-          if (!StartNewFrame(curr_slice_hdr_.get()))
-            SET_ERROR_AND_RETURN();
+        if (state_ == kTryPreprocessCurrentSlice) {
+          CHECK_ACCELERATOR_RESULT(PreprocessCurrentSlice());
+          state_ = kEnsurePicture;
         }
 
-        if (!ProcessCurrentSlice())
-          SET_ERROR_AND_RETURN();
+        if (state_ == kEnsurePicture) {
+          if (curr_pic_) {
+            // |curr_pic_| already exists, so skip to ProcessCurrentSlice().
+            state_ = kTryCurrentSlice;
+          } else {
+            // New picture/finished previous one, try to start a new one
+            // or tell the client we need more surfaces.
+            curr_pic_ = accelerator_->CreateH264Picture();
+            if (!curr_pic_)
+              return kRanOutOfSurfaces;
+            if (current_decrypt_config_)
+              curr_pic_->set_decrypt_config(current_decrypt_config_->Clone());
 
+            state_ = kTryNewFrame;
+          }
+        }
+
+        if (state_ == kTryNewFrame) {
+          CHECK_ACCELERATOR_RESULT(StartNewFrame(curr_slice_hdr_.get()));
+          state_ = kTryCurrentSlice;
+        }
+
+        DCHECK_EQ(state_, kTryCurrentSlice);
+        CHECK_ACCELERATOR_RESULT(ProcessCurrentSlice());
         curr_slice_hdr_.reset();
+        state_ = kDecoding;
         break;
       }
 
       case H264NALU::kSPS: {
         int sps_id;
 
-        if (!FinishPrevFrameIfPresent())
-          SET_ERROR_AND_RETURN();
-
+        CHECK_ACCELERATOR_RESULT(FinishPrevFrameIfPresent());
         par_res = parser_.ParseSPS(&sps_id);
         if (par_res != H264Parser::kOk)
           SET_ERROR_AND_RETURN();
@@ -1346,9 +1381,7 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
       case H264NALU::kPPS: {
         int pps_id;
 
-        if (!FinishPrevFrameIfPresent())
-          SET_ERROR_AND_RETURN();
-
+        CHECK_ACCELERATOR_RESULT(FinishPrevFrameIfPresent());
         par_res = parser_.ParsePPS(&pps_id);
         if (par_res != H264Parser::kOk)
           SET_ERROR_AND_RETURN();
@@ -1362,9 +1395,7 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
         if (state_ != kDecoding)
           break;
 
-        if (!FinishPrevFrameIfPresent())
-          SET_ERROR_AND_RETURN();
-
+        CHECK_ACCELERATOR_RESULT(FinishPrevFrameIfPresent());
         break;
 
       default:
