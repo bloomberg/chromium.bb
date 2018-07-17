@@ -9,8 +9,7 @@
 const redStyleTexts = [".red { color: red; }", ".red + span + span { color: red; }"];
 
 test(() => {
-  // Style sheets can be created
-const sheet = new CSSStyleSheet({title: "Red", disabled: true, media: "screen, print"});
+  const sheet = new CSSStyleSheet({title: "Red", disabled: true, media: "screen, print"});
   assert_equals(sheet.title, "Red");
   assert_equals(sheet.ownerNode, null);
   assert_equals(sheet.ownerRule, null);
@@ -28,4 +27,24 @@ const sheet = new CSSStyleSheet({title: "Red", disabled: true, media: "screen, p
   assert_equals(sheet.cssRules.length, 2);
   assert_equals(sheet.cssRules[0].cssText, redStyleTexts[1]);
 }, 'Empty CSSStyleSheet can be constructed using script');
+
+promise_test(() => {
+  const promise_sheet = document.createCSSStyleSheet(redStyleTexts[0], {title: "Red", disabled: true, media: "screen, print"});
+  return promise_sheet.then(function(sheet) {
+    assert_equals(sheet.title, "Red");
+    assert_equals(sheet.ownerNode, null);
+    assert_equals(sheet.ownerRule, null);
+    assert_equals(sheet.media.length, 2);
+    assert_equals(sheet.media.item(0), "screen");
+    assert_equals(sheet.media.item(1), "print");
+    assert_true(sheet.disabled);
+    assert_equals(sheet.cssRules.length, 1);
+    assert_equals(sheet.cssRules[0].cssText, redStyleTexts[0]);
+
+    sheet.insertRule(redStyleTexts[1]);
+    assert_equals(sheet.cssRules.length, 2);
+    assert_equals(sheet.cssRules[0].cssText, redStyleTexts[1]);
+  });
+}, 'Document.createCSSStyleSheet produces Promise<CSSStyleSheet>');
+
 </script>

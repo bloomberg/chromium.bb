@@ -1629,6 +1629,7 @@ interface Document : Node
     method createAttribute
     method createAttributeNS
     method createCDATASection
+    method createCSSStyleSheet
     method createComment
     method createDocumentFragment
     method createElement

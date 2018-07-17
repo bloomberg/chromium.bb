@@ -36,7 +36,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet_init.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/dom/document_encoding_data.h"
@@ -357,6 +360,15 @@ class CORE_EXPORT Document : public ContainerNode,
   // Creates an element without custom element processing.
   Element* CreateRawElement(const QualifiedName&,
                             const CreateElementFlags = CreateElementFlags());
+
+  ScriptPromise createCSSStyleSheet(ScriptState*,
+                                    const String&,
+                                    ExceptionState&);
+
+  ScriptPromise createCSSStyleSheet(ScriptState*,
+                                    const String&,
+                                    const CSSStyleSheetInit&,
+                                    ExceptionState&);
 
   Element* ElementFromPoint(double x, double y) const;
   HeapVector<Member<Element>> ElementsFromPoint(double x, double y) const;

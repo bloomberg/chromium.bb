@@ -204,6 +204,13 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   FRIEND_TEST_ALL_PREFIXES(
       CSSStyleSheetTest,
       CSSStyleSheetConstructionWithNonEmptyCSSStyleSheetInit);
+  FRIEND_TEST_ALL_PREFIXES(
+      CSSStyleSheetTest,
+      CreateCSSStyleSheetWithEmptyCSSStyleSheetInitAndText);
+  FRIEND_TEST_ALL_PREFIXES(
+      CSSStyleSheetTest,
+      CreateCSSStyleSheetWithNonEmptyCSSStyleSheetInitAndText);
+
   bool AlternateFromConstructor() const { return alternate_from_constructor_; }
 
   Member<StyleSheetContents> contents_;
