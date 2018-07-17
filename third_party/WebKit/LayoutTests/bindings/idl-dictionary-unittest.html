@@ -27,7 +27,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBe('dict.stringSequenceMemberWithDefault', '[]');
     shouldBeNull('dict.stringSequenceOrNullMember');
     shouldBeUndefined('dict.elementMember');
-    shouldBeNull('dict.elementOrNullMember');
+    shouldBeUndefined('dict.elementOrNullMember');
     shouldBeUndefined('dict.enumMember');
     shouldBeEqualToString('dict.enumMemberWithDefault', 'foo');
     shouldBeNull('dict.enumOrNullMember');
@@ -57,7 +57,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBe('dict.stringSequenceMemberWithDefault', '[]');
     shouldBeNull('dict.stringSequenceOrNullMember');
     shouldBeUndefined('dict.elementMember');
-    shouldBeNull('dict.elementOrNullMember');
+    shouldBeUndefined('dict.elementOrNullMember');
     shouldBeUndefined('dict.objectMember');
     shouldBeNull('dict.objectOrNullMemberWithDefault');
     shouldBeNull('dict.eventTargetOrNullMember');
@@ -111,7 +111,6 @@ if (window.internals && internals.dictionaryTest) {
     shouldBe('dict.stringSequenceMemberWithDefault', '["foo", "bar", "baz"]');
     shouldBe('dict.stringSequenceOrNullMember', '[]');
     shouldBe('dict.elementMember', 'element1');
-    // This will be undefined as the spec says
     shouldBeNull('dict.elementOrNullMember');
     shouldBeEqualToString('dict.enumMember', 'foo');
     shouldBeEqualToString('dict.enumMemberWithDefault', 'bar');
@@ -326,7 +325,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBe('derived.stringSequenceMemberWithDefault', '[]');
     shouldBeNull('derived.stringSequenceOrNullMember');
     shouldBeUndefined('derived.elementMember');
-    shouldBeNull('derived.elementOrNullMember');
+    shouldBeUndefined('derived.elementOrNullMember');
     shouldBeUndefined('derived.enumMember');
     shouldBeEqualToString('derived.enumMemberWithDefault', 'foo');
     shouldBeNull('derived.enumOrNullMember');

@@ -150,7 +150,7 @@ bool toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Local<v8::Object> dictiona
   } else {
     {{member.name}}Value = {{member.v8_default_value}};
     {{member.name}}HasValueOrDefault = true;
-  {% elif member.is_nullable %}
+  {% elif member.is_nullable and not member.has_explicit_presence %}
   } else {
     {{member.name}}Value = v8::Null(isolate);
     {{member.name}}HasValueOrDefault = true;

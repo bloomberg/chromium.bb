@@ -1170,9 +1170,6 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
   if (impl.hasElementOrNullMember()) {
     elementOrNullMemberValue = ToV8(impl.elementOrNullMember(), creationContext, isolate);
     elementOrNullMemberHasValueOrDefault = true;
-  } else {
-    elementOrNullMemberValue = v8::Null(isolate);
-    elementOrNullMemberHasValueOrDefault = true;
   }
   if (elementOrNullMemberHasValueOrDefault &&
       !V8CallBoolean(dictionary->CreateDataProperty(context, keys[15].Get(isolate), elementOrNullMemberValue))) {
@@ -1484,9 +1481,6 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
   bool testInterfaceOrNullMemberHasValueOrDefault = false;
   if (impl.hasTestInterfaceOrNullMember()) {
     testInterfaceOrNullMemberValue = ToV8(impl.testInterfaceOrNullMember(), creationContext, isolate);
-    testInterfaceOrNullMemberHasValueOrDefault = true;
-  } else {
-    testInterfaceOrNullMemberValue = v8::Null(isolate);
     testInterfaceOrNullMemberHasValueOrDefault = true;
   }
   if (testInterfaceOrNullMemberHasValueOrDefault &&

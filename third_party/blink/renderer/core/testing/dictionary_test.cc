@@ -141,8 +141,8 @@ void DictionaryTest::get(InternalDictionary& result) {
   result.setEnumOrNullMember(enum_or_null_member_);
   if (element_member_)
     result.setElementMember(element_member_);
-  if (element_or_null_member_)
-    result.setElementOrNullMember(element_or_null_member_);
+  if (element_or_null_member_.has_value())
+    result.setElementOrNullMember(element_or_null_member_.value());
   result.setObjectMember(object_member_);
   result.setObjectOrNullMemberWithDefault(object_or_null_member_with_default_);
   if (!double_or_string_member_.IsNull())
@@ -246,7 +246,7 @@ void DictionaryTest::Reset() {
   enum_member_with_default_ = String();
   enum_or_null_member_ = String();
   element_member_ = nullptr;
-  element_or_null_member_ = nullptr;
+  element_or_null_member_.reset();
   object_member_ = ScriptValue();
   object_or_null_member_with_default_ = ScriptValue();
   double_or_string_member_ = DoubleOrString();
