@@ -276,7 +276,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // connected. If called at all, must be called only once, and before Start().
   void set_remote_process(ScopedProcessHandle remote_process) {
     DCHECK(!remote_process_.is_valid());
-    DCHECK(remote_process.is_valid());
     remote_process_ = std::move(remote_process);
   }
   const ScopedProcessHandle& remote_process() const { return remote_process_; }
