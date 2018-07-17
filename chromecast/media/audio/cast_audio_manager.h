@@ -24,7 +24,7 @@ class CastAudioManager : public ::media::AudioManagerBase {
   CastAudioManager(
       std::unique_ptr<::media::AudioThread> audio_thread,
       ::media::AudioLogFactory* audio_log_factory,
-      std::unique_ptr<CmaBackendFactory> backend_factory,
+      base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
       scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
       bool use_mixer);
   ~CastAudioManager() override;
@@ -39,7 +39,7 @@ class CastAudioManager : public ::media::AudioManagerBase {
   const char* GetName() override;
   void ReleaseOutputStream(::media::AudioOutputStream* stream) override;
 
-  CmaBackendFactory* backend_factory() { return backend_factory_.get(); }
+  CmaBackendFactory* backend_factory();
   base::SingleThreadTaskRunner* backend_task_runner() {
     return backend_task_runner_.get();
   }
@@ -72,7 +72,8 @@ class CastAudioManager : public ::media::AudioManagerBase {
  private:
   friend class CastAudioMixer;
 
-  std::unique_ptr<CmaBackendFactory> backend_factory_;
+  base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter_;
+  CmaBackendFactory* backend_factory_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
   std::unique_ptr<::media::AudioOutputStream> mixer_output_stream_;
   std::unique_ptr<CastAudioMixer> mixer_;

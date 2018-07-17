@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -201,12 +202,13 @@ class CastAudioOutputStreamTest : public ::testing::Test {
         sample_rate_(::media::AudioParameters::kAudioCDSampleRate),
         frames_per_buffer_(256) {}
   ~CastAudioOutputStreamTest() override {}
+  CmaBackendFactory* GetCmaBackendFactory() { return backend_factory_.get(); }
 
  protected:
   void SetUp() override {
     CHECK(media_thread_.Start());
-    auto backend_factory = std::make_unique<NiceMock<MockCmaBackendFactory>>();
-    ON_CALL(*backend_factory, CreateBackend(_))
+    backend_factory_ = std::make_unique<NiceMock<MockCmaBackendFactory>>();
+    ON_CALL(*backend_factory_, CreateBackend(_))
         .WillByDefault(Invoke([this](const MediaPipelineDeviceParams& params) {
           auto backend = std::make_unique<FakeCmaBackend>(params);
           media_pipeline_backend_ = backend.get();
@@ -214,7 +216,10 @@ class CastAudioOutputStreamTest : public ::testing::Test {
         }));
     audio_manager_ = std::make_unique<CastAudioManager>(
         std::make_unique<::media::TestAudioThread>(), nullptr,
-        std::move(backend_factory), media_thread_.task_runner(), false);
+        base::BindRepeating(&CastAudioOutputStreamTest::GetCmaBackendFactory,
+                            base::Unretained(this)),
+        media_thread_.task_runner(), false);
+    EXPECT_EQ(backend_factory_.get(), audio_manager_->backend_factory());
   }
 
   void TearDown() override { audio_manager_->Shutdown(); }
@@ -252,6 +257,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::Thread media_thread_;
   std::unique_ptr<CastAudioManager> audio_manager_;
+  std::unique_ptr<MockCmaBackendFactory> backend_factory_;
   FakeCmaBackend* media_pipeline_backend_;
   // AudioParameters used to create AudioOutputStream.
   // Tests can modify these parameters before calling CreateStream.

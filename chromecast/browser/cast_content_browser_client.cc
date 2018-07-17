@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/i18n/rtl.h"
@@ -216,14 +217,14 @@ CastContentBrowserClient::CreateAudioManager(
 #if defined(USE_ALSA)
   return std::make_unique<media::CastAudioManagerAlsa>(
       std::make_unique<::media::AudioThreadImpl>(), audio_log_factory,
-      std::make_unique<media::CmaBackendFactoryImpl>(
-          media_pipeline_backend_manager()),
+      base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
+                          base::Unretained(this)),
       GetMediaTaskRunner(), use_mixer);
 #else
   return std::make_unique<media::CastAudioManager>(
       std::make_unique<::media::AudioThreadImpl>(), audio_log_factory,
-      std::make_unique<media::CmaBackendFactoryImpl>(
-          media_pipeline_backend_manager()),
+      base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
+                          base::Unretained(this)),
       GetMediaTaskRunner(), use_mixer);
 #endif  // defined(USE_ALSA)
 }

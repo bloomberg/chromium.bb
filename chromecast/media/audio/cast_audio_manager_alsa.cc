@@ -33,12 +33,12 @@ static const char* kInvalidAudioInputDevices[] = {
 CastAudioManagerAlsa::CastAudioManagerAlsa(
     std::unique_ptr<::media::AudioThread> audio_thread,
     ::media::AudioLogFactory* audio_log_factory,
-    std::unique_ptr<CmaBackendFactory> backend_factory,
+    base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
     scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
     bool use_mixer)
     : CastAudioManager(std::move(audio_thread),
                        audio_log_factory,
-                       std::move(backend_factory),
+                       std::move(backend_factory_getter),
                        backend_task_runner,
                        use_mixer),
       wrapper_(new ::media::AlsaWrapper()) {}
