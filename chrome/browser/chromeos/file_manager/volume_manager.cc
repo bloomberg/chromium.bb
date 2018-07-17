@@ -76,11 +76,11 @@ bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path) {
                                           path);
 }
 
-// Returns true if the flag to show Android files
-// (--show-android-files-in-files-app) is enabled.
+// Returns true if the "Play files" root should be shown based on the current
+// flag settings (chrome://flags/#android-files-in-files-app).
 bool IsShowAndroidFilesEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kShowAndroidFilesInFilesApp);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kHideAndroidFilesInFilesApp);
 }
 
 // Registers a mount point for Android files to ExternalMountPoints.
