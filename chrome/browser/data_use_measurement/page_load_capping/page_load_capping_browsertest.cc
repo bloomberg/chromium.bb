@@ -19,11 +19,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -99,6 +101,12 @@ class PageLoadCappingBrowserTest : public InProcessBrowserTest {
         ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
   }
 
+  void EnableDataSaver(bool enabled) {
+    browser()->profile()->GetPrefs()->SetBoolean(prefs::kDataSaverEnabled,
+                                                 enabled);
+    base::RunLoop().RunUntilIdle();
+  }
+
  private:
   void SetUp() override {
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
@@ -159,6 +167,7 @@ class PageLoadCappingBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, PageLoadCappingBlocksLoads) {
   // Tests that subresource loading can be blocked from the browser process.
 
+  EnableDataSaver(true);
   // Load a mostly empty page.
   NavigateToHeavyPage();
   // Pause subresource loading.
@@ -188,6 +197,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
   // Tests that after triggerring subresource pausing, resuming allows deferred
   // requests to be initiated.
 
+  EnableDataSaver(true);
   // Load a mostly empty page.
   NavigateToHeavyPage();
   // Pause subresource loading.
@@ -217,6 +227,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, PageLoadCappingAllowLoads) {
   // Tests that the image request loads normally when the page has not been
   // paused.
 
+  EnableDataSaver(true);
   // Load a mostly empty page.
   NavigateToHeavyPage();
 
@@ -240,6 +251,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
   // Tests that the image request loads normally when the page has not been
   // paused.
 
+  EnableDataSaver(true);
   // Load a mostly empty page.
   NavigateToHeavyPage();
   // Pause subresource loading.
@@ -284,6 +296,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
   // Tests that the image request loads normally when the page has not been
   // paused.
 
+  EnableDataSaver(true);
   // Load a mostly empty page.
   NavigateToHeavyPage();
   // Pause subresource loading.
@@ -330,6 +343,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
                        PageLoadCappingInfobarShownAfterSamePageNavigation) {
   // Verifies that same page navigations do not dismiss the InfoBar.
 
+  EnableDataSaver(true);
   // Load a page.
   NavigateToHeavyPage();
 
@@ -349,6 +363,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
                        PageLoadCappingInfoBarNotShownAfterBlacklisted) {
   // Verifies the blacklist prevents over-showing the InfoBar.
 
+  EnableDataSaver(true);
   // Load a page and ignore the InfoBar.
   NavigateToHeavyPage();
   ASSERT_EQ(1u, InfoBarCount());
@@ -367,6 +382,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
                        NavigationDataRemovedFromBlacklist) {
   // Verifies that clearing browsing data resets blacklist rules.
 
+  EnableDataSaver(true);
   // Load a page and ignore the InfoBar.
   NavigateToHeavyPage();
   ASSERT_EQ(1u, InfoBarCount());
@@ -388,17 +404,28 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
 
   // After clearing history, the InfoBar should be allowed again.
   NavigateToHeavyPage();
-  ASSERT_EQ(1u, InfoBarCount());
+  EXPECT_EQ(1u, InfoBarCount());
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, IncognitoTest) {
   // Verifies the InfoBar is not shown in incognito.
+
+  EnableDataSaver(true);
   auto* browser = CreateIncognitoBrowser();
 
   // Navigate to the page.
   NavigateToHeavyPageAnchorInBrowser(browser, std::string());
 
-  DCHECK_EQ(0u, InfoBarService::FromWebContents(
+  EXPECT_EQ(0u, InfoBarService::FromWebContents(
                     browser->tab_strip_model()->GetActiveWebContents())
                     ->infobar_count());
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, DataSaverOffTest) {
+  // Verifies that non-data saver users do not see the InfoBar.
+
+  // Navigate to the page.
+  NavigateToHeavyPage();
+
+  EXPECT_EQ(0u, InfoBarCount());
 }

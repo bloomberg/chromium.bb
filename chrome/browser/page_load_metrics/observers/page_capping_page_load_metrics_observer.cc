@@ -293,6 +293,7 @@ bool PageCappingPageLoadMetricsObserver::IsBlacklisted() {
   if (blacklisted_)
     return blacklisted_.value();
 
+  DCHECK_EQ(PageCappingState::kInfoBarNotShown, page_capping_state_);
   auto* blacklist = GetPageLoadCappingBlacklist();
   // Treat incognito profiles as blacklisted.
   if (!blacklist) {
@@ -313,10 +314,20 @@ bool PageCappingPageLoadMetricsObserver::IsBlacklisted() {
 
 PageLoadCappingBlacklist*
 PageCappingPageLoadMetricsObserver::GetPageLoadCappingBlacklist() const {
+  auto* data_reduction_proxy_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          web_contents_->GetBrowserContext());
+
+  if (!data_reduction_proxy_settings ||
+      !data_reduction_proxy_settings->IsDataReductionProxyEnabled()) {
+    return nullptr;
+  }
+
   auto* page_capping_service =
       PageLoadCappingServiceFactory::GetForBrowserContext(
           web_contents_->GetBrowserContext());
   if (!page_capping_service)
     return nullptr;
+
   return page_capping_service->page_load_capping_blacklist();
 }

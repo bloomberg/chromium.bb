@@ -532,7 +532,8 @@ const char kEnableHeavyPageCappingName[] = "Heavy Page Capping";
 const char kEnableHeavyPageCappingDescription[] =
     "Enable showing an InfoBar on data heavy pages that allows the user to "
     "pause sub-resource request loading on the page. Using the 'Low' option "
-    "will reduce the triggering threshold 1MB.";
+    "will reduce the triggering threshold to 1MB. Data saver must be enabled "
+    "in order to see the InfoBar.";
 
 const char kEnableHttpFormWarningName[] =
     "Show in-form warnings for sensitive fields when the top-level page is not "
