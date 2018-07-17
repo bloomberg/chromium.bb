@@ -15,7 +15,6 @@
 
 namespace device {
 
-class AuthenticatorSelectionCriteria;
 class CtapGetAssertionRequest;
 class CtapMakeCredentialRequest;
 class FidoDevice;
@@ -32,13 +31,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
 
   // FidoAuthenticator:
   void MakeCredential(
-      AuthenticatorSelectionCriteria authenticator_selection_criteria,
       CtapMakeCredentialRequest request,
       MakeCredentialCallback callback) override;
   void GetAssertion(CtapGetAssertionRequest request,
                     GetAssertionCallback callback) override;
   void Cancel() override;
   std::string GetId() const override;
+  const AuthenticatorSupportedOptions& Options() const override;
 
  protected:
   void OnCtapMakeCredentialResponseReceived(

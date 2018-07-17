@@ -38,19 +38,24 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   }
 
   std::unique_ptr<GetAssertionRequestHandler> CreateGetAssertionHandler() {
-    ForgeNextHidDiscovery();
-
-    CtapGetAssertionRequest request_param(test_data::kRelyingPartyId,
-                                          test_data::kClientDataHash);
-    request_param.SetAllowList(
+    CtapGetAssertionRequest request(test_data::kRelyingPartyId,
+                                    test_data::kClientDataHash);
+    request.SetAllowList(
         {{CredentialType::kPublicKey,
           fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)}});
+
+    return CreateGetAssertionHandlerWithRequest(std::move(request));
+  }
+
+  std::unique_ptr<GetAssertionRequestHandler>
+  CreateGetAssertionHandlerWithRequest(CtapGetAssertionRequest request) {
+    ForgeNextHidDiscovery();
 
     return std::make_unique<GetAssertionRequestHandler>(
         nullptr /* connector */,
         base::flat_set<FidoTransportProtocol>(
             {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
-        std::move(request_param), get_assertion_cb_.callback());
+        std::move(request), get_assertion_cb_.callback());
   }
 
   void InitFeatureListAndDisableCtapFlag() {
@@ -136,6 +141,49 @@ TEST_F(FidoGetAssertionHandlerTest, TestU2fSignWithoutCtapFlag) {
   EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
   EXPECT_TRUE(get_assertion_callback().value());
   EXPECT_TRUE(request_handler->is_complete());
+}
+
+TEST_F(FidoGetAssertionHandlerTest, TestIncompatibleUserVerificationSetting) {
+  auto request = CtapGetAssertionRequest(test_data::kRelyingPartyId,
+                                         test_data::kClientDataHash);
+  request.SetUserVerification(UserVerificationRequirement::kRequired);
+  auto request_handler =
+      CreateGetAssertionHandlerWithRequest(std::move(request));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestGetInfoResponseWithoutUvSupport);
+
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(get_assertion_callback().was_called());
+}
+
+TEST_F(FidoGetAssertionHandlerTest,
+       TestU2fSignRequestWithUserVerificationRequired) {
+  auto request = CtapGetAssertionRequest(test_data::kRelyingPartyId,
+                                         test_data::kClientDataHash);
+  request.SetAllowList(
+      {{CredentialType::kPublicKey,
+        fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)}});
+  request.SetUserVerification(UserVerificationRequirement::kRequired);
+  auto request_handler =
+      CreateGetAssertionHandlerWithRequest(std::move(request));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
+
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(get_assertion_callback().was_called());
 }
 
 }  // namespace device

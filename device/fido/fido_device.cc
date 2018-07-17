@@ -34,6 +34,11 @@ void FidoDevice::DiscoverSupportedProtocolAndDeviceInfo(
   }
 }
 
+bool FidoDevice::SupportedProtocolIsInitialized() {
+  return (supported_protocol_ == ProtocolVersion::kU2f && !device_info_) ||
+         (supported_protocol_ == ProtocolVersion::kCtap && device_info_);
+}
+
 void FidoDevice::OnDeviceInfoReceived(
     base::OnceClosure done,
     base::Optional<std::vector<uint8_t>> response) {

@@ -16,7 +16,7 @@
 
 namespace device {
 
-class AuthenticatorSelectionCriteria;
+class AuthenticatorSupportedOptions;
 class CtapGetAssertionRequest;
 class CtapMakeCredentialRequest;
 
@@ -36,13 +36,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual ~FidoAuthenticator() = default;
 
   virtual void MakeCredential(
-      AuthenticatorSelectionCriteria authenticator_selection_criteria,
       CtapMakeCredentialRequest request,
       MakeCredentialCallback callback) = 0;
   virtual void GetAssertion(CtapGetAssertionRequest request,
                             GetAssertionCallback callback) = 0;
   virtual void Cancel() = 0;
   virtual std::string GetId() const = 0;
+  virtual const AuthenticatorSupportedOptions& Options() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FidoAuthenticator);

@@ -15,10 +15,7 @@ namespace device {
 
 FidoTask::FidoTask(FidoDevice* device) : device_(device), weak_factory_(this) {
   DCHECK(device_);
-  DCHECK((device_->supported_protocol() == ProtocolVersion::kCtap &&
-          device_->device_info()) ||
-         device_->supported_protocol() == ProtocolVersion::kU2f)
-      << "FidoDevice protocol version initialized incorrectly";
+  DCHECK(device_->SupportedProtocolIsInitialized());
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&FidoTask::StartTask, weak_factory_.GetWeakPtr()));

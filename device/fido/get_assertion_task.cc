@@ -52,12 +52,6 @@ void GetAssertionTask::StartTask() {
 }
 
 void GetAssertionTask::GetAssertion() {
-  if (!CheckUserVerificationCompatible()) {
-    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
-                             base::nullopt);
-    return;
-  }
-
   sign_operation_ =
       std::make_unique<Ctap2DeviceOperation<CtapGetAssertionRequest,
                                             AuthenticatorGetAssertionResponse>>(
@@ -70,13 +64,7 @@ void GetAssertionTask::GetAssertion() {
 
 void GetAssertionTask::U2fSign() {
   DCHECK(!device()->device_info());
-  device()->set_supported_protocol(ProtocolVersion::kU2f);
-
-  if (!CheckUserVerificationCompatible()) {
-    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
-                             base::nullopt);
-    return;
-  }
+  DCHECK_EQ(ProtocolVersion::kU2f, device()->supported_protocol());
 
   sign_operation_ = std::make_unique<U2fSignOperation>(
       device(), request_,
@@ -132,6 +120,8 @@ void GetAssertionTask::OnCtapGetAssertionResponseReceived(
     return;
   }
 
+  // TODO(martinkr): CheckRpIdHash invocation needs to move into the Request
+  // handler. See https://crbug.com/863988.
   if (!device_response || !device_response->CheckRpIdHash(request_.rp_id()) ||
       !CheckRequirementsOnReturnedCredentialId(*device_response) ||
       !CheckRequirementsOnReturnedUserEntities(*device_response)) {
@@ -141,39 +131,6 @@ void GetAssertionTask::OnCtapGetAssertionResponseReceived(
   }
 
   std::move(callback_).Run(response_code, std::move(device_response));
-}
-
-bool GetAssertionTask::CheckUserVerificationCompatible() {
-  if (!device()->device_info()) {
-    return request_.user_verification() !=
-           UserVerificationRequirement::kRequired;
-  }
-
-  const auto uv_availability =
-      device()->device_info()->options().user_verification_availability();
-
-  switch (request_.user_verification()) {
-    case UserVerificationRequirement::kRequired:
-      return uv_availability ==
-             AuthenticatorSupportedOptions::UserVerificationAvailability::
-                 kSupportedAndConfigured;
-
-    case UserVerificationRequirement::kDiscouraged:
-      return true;
-
-    case UserVerificationRequirement::kPreferred:
-      if (uv_availability ==
-          AuthenticatorSupportedOptions::UserVerificationAvailability::
-              kSupportedAndConfigured) {
-        request_.SetUserVerification(UserVerificationRequirement::kRequired);
-      } else {
-        request_.SetUserVerification(UserVerificationRequirement::kDiscouraged);
-      }
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
 }
 
 }  // namespace device

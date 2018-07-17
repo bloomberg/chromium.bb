@@ -252,43 +252,6 @@ TEST_F(FidoGetAssertionTaskTest, TestIncorrectGetAssertionResponse) {
   EXPECT_FALSE(get_assertion_callback_receiver().value());
 }
 
-TEST_F(FidoGetAssertionTaskTest, TestIncompatibleUserVerificationSetting) {
-  auto device = MockFidoDevice::MakeCtap(*ReadCTAPGetInfoResponse(
-      test_data::kTestGetInfoResponseWithoutUvSupport));
-  auto request = CtapGetAssertionRequest(test_data::kRelyingPartyId,
-                                         test_data::kClientDataHash);
-  request.SetUserVerification(UserVerificationRequirement::kRequired);
-
-  auto task = std::make_unique<GetAssertionTask>(
-      device.get(), std::move(request),
-      get_assertion_callback_receiver().callback());
-
-  get_assertion_callback_receiver().WaitForCallback();
-  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
-            get_assertion_callback_receiver().status());
-  EXPECT_FALSE(get_assertion_callback_receiver().value());
-}
-
-TEST_F(FidoGetAssertionTaskTest,
-       TestU2fSignRequestWithUserVerificationRequired) {
-  auto request = CtapGetAssertionRequest(test_data::kRelyingPartyId,
-                                         test_data::kClientDataHash);
-  request.SetAllowList(
-      {{CredentialType::kPublicKey,
-        fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)}});
-  request.SetUserVerification(UserVerificationRequirement::kRequired);
-
-  auto device = MockFidoDevice::MakeU2f();
-  auto task = std::make_unique<GetAssertionTask>(
-      device.get(), std::move(request),
-      get_assertion_callback_receiver().callback());
-
-  get_assertion_callback_receiver().WaitForCallback();
-  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
-            get_assertion_callback_receiver().status());
-  EXPECT_FALSE(get_assertion_callback_receiver().value());
-}
-
 TEST_F(FidoGetAssertionTaskTest, TestU2fSignRequestWithEmptyAllowedList) {
   auto request = CtapGetAssertionRequest(test_data::kRelyingPartyId,
                                          test_data::kClientDataHash);

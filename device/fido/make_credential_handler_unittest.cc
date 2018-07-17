@@ -42,6 +42,13 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   }
 
   std::unique_ptr<MakeCredentialRequestHandler> CreateMakeCredentialHandler() {
+    return CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+        AuthenticatorSelectionCriteria());
+  }
+
+  std::unique_ptr<MakeCredentialRequestHandler>
+  CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+      AuthenticatorSelectionCriteria authenticator_selection_criteria) {
     ForgeNextHidDiscovery();
     PublicKeyCredentialRpEntity rp(test_data::kRelyingPartyId);
     PublicKeyCredentialUserEntity user(
@@ -57,8 +64,8 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
         nullptr,
         base::flat_set<FidoTransportProtocol>(
             {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
-        std::move(request_parameter), AuthenticatorSelectionCriteria(),
-        cb_.callback());
+        std::move(request_parameter),
+        std::move(authenticator_selection_criteria), cb_.callback());
   }
 
   void InitFeatureListAndDisableCtapFlag() {
@@ -132,6 +139,183 @@ TEST_F(FidoMakeCredentialHandlerTest, TestU2fRegisterWithoutFlagEnabled) {
   callback().WaitForCallback();
   EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
   EXPECT_TRUE(request_handler->is_complete());
+}
+
+TEST_F(FidoMakeCredentialHandlerTest, U2fRegisterWithUserVerificationRequired) {
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny,
+              false /* require_resident_key */,
+              UserVerificationRequirement::kRequired));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
+
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(callback().was_called());
+}
+
+TEST_F(FidoMakeCredentialHandlerTest,
+       U2fRegisterWithPlatformDeviceRequirement) {
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorSelectionCriteria::AuthenticatorAttachment::
+                  kPlatform,
+              false /* require_resident_key */,
+              UserVerificationRequirement::kPreferred));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
+
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(callback().was_called());
+}
+
+TEST_F(FidoMakeCredentialHandlerTest, U2fRegisterWithResidentKeyRequirement) {
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny,
+              true /* require_resident_key */,
+              UserVerificationRequirement::kPreferred));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
+
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(callback().was_called());
+}
+
+TEST_F(FidoMakeCredentialHandlerTest,
+       UserVerificationAuthenticatorSelectionCriteria) {
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny,
+              false /* require_resident_key */,
+              UserVerificationRequirement::kRequired));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestGetInfoResponseWithoutUvSupport);
+
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(callback().was_called());
+}
+
+TEST_F(FidoMakeCredentialHandlerTest,
+       PlatformDeviceAuthenticatorSelectionCriteria) {
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorSelectionCriteria::AuthenticatorAttachment::
+                  kPlatform,
+              false /* require_resident_key */,
+              UserVerificationRequirement::kRequired));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestGetInfoResponseCrossPlatformDevice);
+
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(callback().was_called());
+}
+
+TEST_F(FidoMakeCredentialHandlerTest,
+       ResidentKeyAuthenticatorSelectionCriteria) {
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny,
+              true /* require_resident_key */,
+              UserVerificationRequirement::kPreferred));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestGetInfoResponseWithoutResidentKeySupport);
+
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(callback().was_called());
+}
+
+TEST_F(FidoMakeCredentialHandlerTest,
+       SatisfyAllAuthenticatorSelectionCriteria) {
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorSelectionCriteria::AuthenticatorAttachment::
+                  kPlatform,
+              true /* require_resident_key */,
+              UserVerificationRequirement::kRequired));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestAuthenticatorGetInfoResponse);
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorMakeCredential,
+      test_data::kTestMakeCredentialResponse);
+
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  callback().WaitForCallback();
+  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+}
+
+TEST_F(FidoMakeCredentialHandlerTest, IncompatibleUserVerificationSetting) {
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny,
+              false /* require_resident_key */,
+              UserVerificationRequirement::kRequired));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestGetInfoResponseWithoutUvSupport);
+
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(callback().was_called());
 }
 
 }  // namespace device

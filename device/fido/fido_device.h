@@ -51,7 +51,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   // and device_info_ according to the result (unless the
   // device::kNewCtap2Device feature is off, in which case U2F is assumed).
   void DiscoverSupportedProtocolAndDeviceInfo(base::OnceClosure done);
-
+  // Returns whether supported_protocol has been correctly initialized (usually
+  // by calling DiscoverSupportedProtocolAndDeviceInfo).
+  bool SupportedProtocolIsInitialized();
   // TODO(martinkr): Rename to "SetSupportedProtocolForTesting".
   void set_supported_protocol(ProtocolVersion supported_protocol) {
     supported_protocol_ = supported_protocol;
