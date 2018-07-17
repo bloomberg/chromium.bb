@@ -137,7 +137,8 @@ TestNetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
     base::TimeDelta* transport_rtt,
     base::TimeDelta* end_to_end_rtt,
     int32_t* downstream_throughput_kbps,
-    size_t* observations_count) const {
+    size_t* observations_count,
+    size_t* end_to_end_rtt_observation_count) const {
   if (recent_effective_connection_type_) {
     GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP, start_time, http_rtt,
                  nullptr);
@@ -149,7 +150,8 @@ TestNetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
   return NetworkQualityEstimator::
       GetRecentEffectiveConnectionTypeAndNetworkQuality(
           start_time, http_rtt, transport_rtt, end_to_end_rtt,
-          downstream_throughput_kbps, observations_count);
+          downstream_throughput_kbps, observations_count,
+          end_to_end_rtt_observation_count);
 }
 
 bool TestNetworkQualityEstimator::GetRecentRTT(

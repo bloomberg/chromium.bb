@@ -1767,6 +1767,9 @@ TEST_F(NetworkQualityEstimatorTest, TestRttThroughputObservers) {
       estimator.GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_TRANSPORT,
                              base::TimeTicks(), &rtt, nullptr));
 
+  EXPECT_EQ(quic_rtt, estimator.end_to_end_rtt_.value());
+  EXPECT_LT(
+      0u, estimator.end_to_end_rtt_observation_count_at_last_ect_computation_);
   const std::vector<base::Bucket> end_to_end_rtt_samples =
       histogram_tester.GetAllSamples("NQE.EndToEndRTT.OnECTComputation");
   EXPECT_FALSE(end_to_end_rtt_samples.empty());
