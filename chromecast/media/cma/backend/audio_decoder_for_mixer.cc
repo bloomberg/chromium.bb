@@ -53,6 +53,21 @@ const int64_t kInvalidTimestamp = std::numeric_limits<int64_t>::min();
 
 const int64_t kNoPendingOutput = -1;
 
+// TODO(jameswest): Replace numeric playout channel with AudioChannel enum in
+// mixer.
+int ToPlayoutChannel(AudioChannel audio_channel) {
+  switch (audio_channel) {
+    case AudioChannel::kAll:
+      return kChannelAll;
+    case AudioChannel::kLeft:
+      return 0;
+    case AudioChannel::kRight:
+      return 1;
+  }
+  NOTREACHED();
+  return kChannelAll;
+}
+
 }  // namespace
 
 // static
@@ -123,8 +138,8 @@ bool AudioDecoderForMixer::Start(int64_t playback_start_timestamp) {
   DCHECK(IsValidConfig(config_));
   mixer_input_.reset(new BufferingMixerSource(
       this, config_.samples_per_second, backend_->Primary(),
-      backend_->DeviceId(), backend_->ContentType(), config_.playout_channel,
-      playback_start_timestamp));
+      backend_->DeviceId(), backend_->ContentType(),
+      ToPlayoutChannel(backend_->AudioChannel()), playback_start_timestamp));
 
   mixer_input_->SetVolumeMultiplier(volume_multiplier_);
   // Create decoder_ if necessary. This can happen if Stop() was called, and
@@ -283,8 +298,8 @@ bool AudioDecoderForMixer::SetConfig(const AudioConfig& config) {
     mixer_input_.reset();
     mixer_input_.reset(new BufferingMixerSource(
         this, config.samples_per_second, backend_->Primary(),
-        backend_->DeviceId(), backend_->ContentType(), config.playout_channel,
-        playback_start_timestamp_));
+        backend_->DeviceId(), backend_->ContentType(),
+        ToPlayoutChannel(backend_->AudioChannel()), playback_start_timestamp_));
     mixer_input_->SetVolumeMultiplier(volume_multiplier_);
     pending_output_frames_ = kNoPendingOutput;
   }

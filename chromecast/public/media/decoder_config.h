@@ -309,8 +309,6 @@ struct AudioConfig {
   std::vector<uint8_t> extra_data;
   // Encryption scheme (if any) used for the content.
   EncryptionScheme encryption_scheme;
-  // Selected channel.
-  int playout_channel;
 };
 
 inline AudioConfig::AudioConfig()
@@ -319,8 +317,7 @@ inline AudioConfig::AudioConfig()
       sample_format(kUnknownSampleFormat),
       bytes_per_channel(0),
       channel_number(0),
-      samples_per_second(0),
-      playout_channel(kChannelAll) {}
+      samples_per_second(0) {}
 inline AudioConfig::AudioConfig(const AudioConfig& other) = default;
 inline AudioConfig::~AudioConfig() {
 }

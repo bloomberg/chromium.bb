@@ -48,6 +48,7 @@ class MediaPipelineBackendAndroid : public MediaPipelineBackend {
   bool Primary() const;
   std::string DeviceId() const;
   AudioContentType ContentType() const;
+  AudioChannel AudioChannel() const;
   const scoped_refptr<base::SingleThreadTaskRunner>& GetTaskRunner() const;
 
  private:

@@ -21,6 +21,7 @@ cast_source_set("service") {
   deps = [
     "//base",
     "//chromecast/base",
+    "//chromecast/common/mojom",
     "//chromecast/media",
     "//media",
     "//ui/gfx/geometry",

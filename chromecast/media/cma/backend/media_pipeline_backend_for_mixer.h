@@ -46,6 +46,7 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend {
   bool Primary() const;
   std::string DeviceId() const;
   AudioContentType ContentType() const;
+  AudioChannel AudioChannel() const;
   const scoped_refptr<base::SingleThreadTaskRunner>& GetTaskRunner() const;
   VideoDecoderForMixer* video_decoder() const { return video_decoder_.get(); }
   AudioDecoderForMixer* audio_decoder() const { return audio_decoder_.get(); }

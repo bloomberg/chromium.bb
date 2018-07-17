@@ -5,6 +5,9 @@
 #ifndef CHROMECAST_PUBLIC_MEDIA_MEDIA_PIPELINE_DEVICE_PARAMS_H_
 #define CHROMECAST_PUBLIC_MEDIA_MEDIA_PIPELINE_DEVICE_PARAMS_H_
 
+#include <stdint.h>
+
+#include <ostream>
 #include <string>
 
 namespace service_manager {
@@ -17,6 +20,12 @@ class TaskRunner;
 namespace media {
 
 enum class AudioContentType;  // See chromecast/public/volume_control.h
+
+enum class AudioChannel {
+  kAll = 0,
+  kLeft = 1,
+  kRight = 2,
+};
 
 // Supplies creation parameters to platform-specific pipeline backend.
 struct MediaPipelineDeviceParams {
@@ -47,37 +56,21 @@ struct MediaPipelineDeviceParams {
 
   MediaPipelineDeviceParams(TaskRunner* task_runner_in,
                             AudioContentType content_type_in,
-                            const std::string& device_id_in)
-      : sync_type(kModeSyncPts),
-        audio_type(kAudioStreamNormal),
-        task_runner(task_runner_in),
-        connector(nullptr),
-        content_type(content_type_in),
-        device_id(device_id_in) {}
+                            const std::string& device_id_in);
 
   MediaPipelineDeviceParams(MediaSyncType sync_type_in,
                             TaskRunner* task_runner_in,
                             AudioContentType content_type_in,
-                            const std::string& device_id_in)
-      : sync_type(sync_type_in),
-        audio_type(kAudioStreamNormal),
-        task_runner(task_runner_in),
-        connector(nullptr),
-        content_type(content_type_in),
-        device_id(device_id_in) {}
+                            const std::string& device_id_in);
 
   MediaPipelineDeviceParams(MediaSyncType sync_type_in,
                             AudioStreamType audio_type_in,
                             TaskRunner* task_runner_in,
                             AudioContentType content_type_in,
-                            const std::string& device_id_in,
-                            service_manager::Connector* connector_in = nullptr)
-      : sync_type(sync_type_in),
-        audio_type(audio_type_in),
-        task_runner(task_runner_in),
-        connector(connector_in),
-        content_type(content_type_in),
-        device_id(device_id_in) {}
+                            const std::string& device_id_in);
+
+  MediaPipelineDeviceParams(const MediaPipelineDeviceParams& other);
+  MediaPipelineDeviceParams(MediaPipelineDeviceParams&& other);
 
   const MediaSyncType sync_type;
   const AudioStreamType audio_type;
@@ -89,12 +82,83 @@ struct MediaPipelineDeviceParams {
   TaskRunner* const task_runner;
 
   // connector allows the backend to bind to services through ServiceManager.
-  service_manager::Connector* const connector;
+  service_manager::Connector* connector;
 
   // Identifies the content type for volume control.
   const AudioContentType content_type;
   const std::string device_id;
+
+  // ID of the current session.
+  std::string session_id;
+
+  // True if casting to multiple devices, or false otherwise.
+  bool multiroom;
+
+  // Audio channel this device is playing.
+  AudioChannel audio_channel;
+
+  // Intrinsic output delay of this device.
+  int64_t output_delay_us;
 };
+
+inline MediaPipelineDeviceParams::MediaPipelineDeviceParams(
+    TaskRunner* task_runner_in,
+    AudioContentType content_type_in,
+    const std::string& device_id_in)
+    : MediaPipelineDeviceParams(kModeSyncPts,
+                                kAudioStreamNormal,
+                                task_runner_in,
+                                content_type_in,
+                                device_id_in) {}
+
+inline MediaPipelineDeviceParams::MediaPipelineDeviceParams(
+    MediaSyncType sync_type_in,
+    TaskRunner* task_runner_in,
+    AudioContentType content_type_in,
+    const std::string& device_id_in)
+    : MediaPipelineDeviceParams(sync_type_in,
+                                kAudioStreamNormal,
+                                task_runner_in,
+                                content_type_in,
+                                device_id_in) {}
+
+inline MediaPipelineDeviceParams::MediaPipelineDeviceParams(
+    MediaSyncType sync_type_in,
+    AudioStreamType audio_type_in,
+    TaskRunner* task_runner_in,
+    AudioContentType content_type_in,
+    const std::string& device_id_in)
+    : sync_type(sync_type_in),
+      audio_type(audio_type_in),
+      task_runner(task_runner_in),
+      connector(nullptr),
+      content_type(content_type_in),
+      device_id(device_id_in),
+      multiroom(false),
+      audio_channel(AudioChannel::kAll),
+      output_delay_us(0) {}
+
+inline MediaPipelineDeviceParams::MediaPipelineDeviceParams(
+    const MediaPipelineDeviceParams& other) = default;
+
+inline MediaPipelineDeviceParams::MediaPipelineDeviceParams(
+    MediaPipelineDeviceParams&& other) = default;
+
+inline std::ostream& operator<<(std::ostream& os, AudioChannel audio_channel) {
+  switch (audio_channel) {
+    case AudioChannel::kAll:
+      os << "all";
+      return os;
+    case AudioChannel::kLeft:
+      os << "left";
+      return os;
+    case AudioChannel::kRight:
+      os << "right";
+      return os;
+  }
+  os << "unknown";
+  return os;
+}
 
 }  // namespace media
 }  // namespace chromecast

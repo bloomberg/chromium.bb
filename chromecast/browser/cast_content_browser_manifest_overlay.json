@@ -6,6 +6,7 @@
       "provides": {
         "renderer": [
           "chromecast.media.mojom.MediaCaps",
+          "chromecast.media.mojom.MultiroomManager",
           "chromecast.mojom.MemoryPressureController"
         ]
       }

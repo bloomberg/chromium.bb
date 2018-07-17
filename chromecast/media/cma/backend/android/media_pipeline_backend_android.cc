@@ -118,6 +118,10 @@ AudioContentType MediaPipelineBackendAndroid::ContentType() const {
   return params_.content_type;
 }
 
+AudioChannel MediaPipelineBackendAndroid::AudioChannel() const {
+  return params_.audio_channel;
+}
+
 const scoped_refptr<base::SingleThreadTaskRunner>&
 MediaPipelineBackendAndroid::GetTaskRunner() const {
   return static_cast<TaskRunnerImpl*>(params_.task_runner)->runner();
