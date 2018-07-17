@@ -9,6 +9,7 @@
 #import "ios/web_view/test/web_view_int_test.h"
 #import "ios/web_view/test/web_view_test_util.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
 
@@ -47,6 +48,7 @@ using WebViewScriptCommandTest = WebViewIntTest;
 // Tests that a handler added by -[CWVWebView
 // addScriptCommandHandler:commandPrefix] is invoked by JavaScript.
 TEST_F(WebViewScriptCommandTest, TestScriptCommand) {
+  ASSERT_TRUE(test_server_->Start());
   CWVFakeScriptCommandHandler* handler =
       [[CWVFakeScriptCommandHandler alloc] init];
   [web_view_ addScriptCommandHandler:handler commandPrefix:@"test"];
@@ -83,6 +85,7 @@ TEST_F(WebViewScriptCommandTest, TestScriptCommand) {
 // Tests that added script commands are still valid after state restoration.
 // Tests the same thing as TestScriptCommand() after state restoration.
 TEST_F(WebViewScriptCommandTest, TestScriptCommandAfterStateRestoration) {
+  ASSERT_TRUE(test_server_->Start());
   CWVFakeScriptCommandHandler* handler =
       [[CWVFakeScriptCommandHandler alloc] init];
   [web_view_ addScriptCommandHandler:handler commandPrefix:@"test"];

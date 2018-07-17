@@ -34,18 +34,21 @@ class WebViewIntTest : public PlatformTest {
   ~WebViewIntTest() override;
 
   // Returns URL to an html page with title set to |title|.
+  //
+  // Call ASSERT_TRUE(test_server_->Start()) before accessing the returned URL.
   GURL GetUrlForPageWithTitle(const std::string& title);
 
   // Returns URL to an html page with |html| within page's body tags.
+  //
+  // Call ASSERT_TRUE(test_server_->Start()) before accessing the returned URL.
   GURL GetUrlForPageWithHtmlBody(const std::string& html);
 
   // Returns URL to an html page with title set to |title| and |body| within
   // the page's body tags.
+  //
+  // Call ASSERT_TRUE(test_server_->Start()) before accessing the returned URL.
   GURL GetUrlForPageWithTitleAndBody(const std::string& title,
                                      const std::string& body);
-
-  // PlatformTest methods.
-  void SetUp() override;
 
   // CWVWebView created with default configuration and frame equal to screen
   // bounds.
