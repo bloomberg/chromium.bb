@@ -374,10 +374,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   NavigationState state_;
 
-  // It's important to ensure |navigation_handle_| outlives |loader_|, since
-  // the loader holds raw pointers to objects owned by the navigation handle
-  // (namely, the AppCache and service worker handles). So, declare the handle
-  // before the loader.
+  // It's important to ensure |navigation_handle_| outlives |loader_|, since the
+  // loader holds raw pointers to objects owned by the navigation handle
+  // (namely, the AppCache and service worker handles). The destruction order
+  // matters because it occurs over separate tasks on the IO thread. So, declare
+  // the handle before the loader.
   std::unique_ptr<NavigationHandleImpl> navigation_handle_;
   std::unique_ptr<NavigationURLLoader> loader_;
 
