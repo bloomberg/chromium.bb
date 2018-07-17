@@ -10024,6 +10024,8 @@ static int inter_mode_search_order_independent_skip(
   if (comp_pred) {
     if (!cpi->allow_comp_inter_inter) return 1;
 
+    if (cm->reference_mode == SINGLE_REFERENCE) return 1;
+
     // Skip compound inter modes if ARF is not available.
     if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame[1]])) return 1;
 
