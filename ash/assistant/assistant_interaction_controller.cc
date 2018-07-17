@@ -130,9 +130,14 @@ void AssistantInteractionController::OnInteractionStarted(
     bool is_voice_interaction) {
   assistant_interaction_model_.SetInteractionState(InteractionState::kActive);
 
-  // In the case of a voice interaction, we assume that the mic is open.
-  assistant_interaction_model_.SetMicState(
-      is_voice_interaction ? MicState::kOpen : MicState::kClosed);
+  // In the case of a voice interaction, we assume that the mic is open and
+  // transition to voice input modality.
+  if (is_voice_interaction) {
+    assistant_interaction_model_.SetInputModality(InputModality::kVoice);
+    assistant_interaction_model_.SetMicState(MicState::kOpen);
+  } else {
+    assistant_interaction_model_.SetMicState(MicState::kClosed);
+  }
 }
 
 void AssistantInteractionController::OnInteractionFinished(
