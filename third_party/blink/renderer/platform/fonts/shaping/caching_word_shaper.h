@@ -55,7 +55,8 @@ class PLATFORM_EXPORT CachingWordShaper final {
               FloatRect* glyph_bounds);
   int OffsetForPosition(const TextRun&,
                         float target_x,
-                        bool include_partial_glyphs);
+                        IncludePartialGlyphsOption,
+                        BreakGlyphsOption);
 
   void FillResultBuffer(const TextRunPaintInfo&, ShapeResultBuffer*);
   CharacterRange GetCharacterRange(const TextRun&, unsigned from, unsigned to);

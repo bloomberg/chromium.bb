@@ -75,8 +75,7 @@ class TextBreakIteratorTest : public testing::Test {
                                         unsigned start,
                                         unsigned length) {
     Vector<unsigned> result;
-    ::blink::GraphemesClusterList(input.Characters16(), input.length(), start,
-                                  length, &result);
+    ::blink::GraphemesClusterList(input, start, length, &result);
     return result;
   }
 
