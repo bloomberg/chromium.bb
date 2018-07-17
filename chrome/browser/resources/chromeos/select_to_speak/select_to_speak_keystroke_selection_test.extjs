@@ -31,7 +31,7 @@ SelectToSpeakKeystrokeSelectionTest.prototype = {
         {keyCode: SelectToSpeak.SEARCH_KEY_CODE});
     selectToSpeak.fireMockKeyDownEvent(
         {keyCode: SelectToSpeak.READ_SELECTION_KEY_CODE});
-    assertTrue(selectToSpeak.isSelectionKeyDown_);
+    assertTrue(selectToSpeak.inputHandler_.isSelectionKeyDown_);
     selectToSpeak.fireMockKeyUpEvent(
         {keyCode: SelectToSpeak.READ_SELECTION_KEY_CODE});
     selectToSpeak.fireMockKeyUpEvent(
@@ -51,7 +51,8 @@ SelectToSpeakKeystrokeSelectionTest.prototype = {
    * @param {string} expected The expected string that will be read, ignoring
    *     extra whitespace, after this selection is triggered.
    */
-  testSimpleTextAtKeystroke: function(text, anchorOffset, focusOffset, expected) {
+  testSimpleTextAtKeystroke: function(text, anchorOffset, focusOffset,
+      expected) {
     this.testReadTextAtKeystroke('<p>' + text + '</p>',
       function(desktop) {
         // Set the document selection. This will fire the changed event
@@ -245,8 +246,8 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest',
   // Using JS to do the selection instead of Automation, so that we can
   // ensure this is stable against changes in chrome.automation.
   let selectionCode =
-      'let body = document.getElementsByTagName("body")[0];' + 
-      'range.setStart(body, 1);' + 
+      'let body = document.getElementsByTagName("body")[0];' +
+      'range.setStart(body, 1);' +
       'range.setEnd(body, 2);';
   this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
       '<img id="one" src="pipe.jpg" alt="one"/>' +
@@ -263,8 +264,8 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest',
 TEST_F('SelectToSpeakKeystrokeSelectionTest',
     'HandlesMultipleImagesCorrectlyWithJS2', function() {
   let selectionCode =
-      'let body = document.getElementsByTagName("body")[0];' + 
-      'range.setStart(body, 1);' + 
+      'let body = document.getElementsByTagName("body")[0];' +
+      'range.setStart(body, 1);' +
       'range.setEnd(body, 3);';
   this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
       '<img id="one" src="pipe.jpg" alt="one"/>' +
@@ -282,8 +283,8 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest', 'TextFieldFullySelected',
     function() {
   let selectionCode =
       'let p = document.getElementsByTagName("p")[0];' +
-      'let body = document.getElementsByTagName("body")[0];' + 
-      'range.setStart(p, 0);' + 
+      'let body = document.getElementsByTagName("body")[0];' +
+      'range.setStart(p, 0);' +
       'range.setEnd(body, 2);';
   this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
       '<p>paragraph</p>' +
@@ -301,8 +302,8 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest', 'TextFieldFullySelected',
 TEST_F('SelectToSpeakKeystrokeSelectionTest', 'TwoTextFieldsFullySelected',
     function() {
   let selectionCode =
-      'let body = document.getElementsByTagName("body")[0];' + 
-      'range.setStart(body, 0);' + 
+      'let body = document.getElementsByTagName("body")[0];' +
+      'range.setStart(body, 0);' +
       'range.setEnd(body, 2);';
   this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
       '<input type="text" value="one"></input><textarea cols="5">two three</textarea>'),
@@ -325,8 +326,8 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest', 'TextInputPartiallySelected',
           'let input = document.getElementById("input");' +
           'input.focus();' +
           'input.setSelectionRange(5, 10);' +
-        '}' + 
-    '</script>' + 
+        '}' +
+    '</script>' +
     '<body onload="doSelection()">' +
     '<input id="input" type="text" value="text field"></input>' +
     '</body>';
@@ -347,8 +348,8 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest', 'TextAreaPartiallySelected',
           'let input = document.getElementById("input");' +
           'input.focus();' +
           'input.setSelectionRange(6, 17);' +
-        '}' + 
-    '</script>' + 
+        '}' +
+    '</script>' +
     '<body onload="doSelection()">' +
     '<textarea id="input" type="text" cols="10">first line second line</textarea>' +
     '</body>';
@@ -364,8 +365,8 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest', 'TextAreaPartiallySelected',
 TEST_F('SelectToSpeakKeystrokeSelectionTest', 'HandlesTextWithBr',
     function() {
   let selectionCode =
-      'let body = document.getElementsByTagName("body")[0];' + 
-      'range.setStart(body, 0);' + 
+      'let body = document.getElementsByTagName("body")[0];' +
+      'range.setStart(body, 0);' +
       'range.setEnd(body, 3);';
   this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
       'Test<br/><br/>Unread'), function() {
@@ -381,8 +382,8 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest', 'HandlesTextWithBrComplex',
     function() {
   let selectionCode =
       'let p = document.getElementsByTagName("p")[0];' +
-      'let body = document.getElementsByTagName("body")[0];' + 
-      'range.setStart(p, 0);' + 
+      'let body = document.getElementsByTagName("body")[0];' +
+      'range.setStart(p, 0);' +
       'range.setEnd(body, 2);';
   this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
       '<p>Some text</p><br/><br/>Unread'), function() {
@@ -401,8 +402,8 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest', 'HandlesTextWithBrAfterText',
   // the further off it got.
   let selectionCode =
       'let p = document.getElementsByTagName("p")[0];' +
-      'let body = document.getElementsByTagName("body")[0];' + 
-      'range.setStart(p, 1);' + 
+      'let body = document.getElementsByTagName("body")[0];' +
+      'range.setStart(p, 1);' +
       'range.setEnd(body, 2);';
   this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
       '<p>Unread</p><p>Some text</p><br/>Unread'), function() {
@@ -417,8 +418,8 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest', 'HandlesTextWithBrAfterText',
 TEST_F('SelectToSpeakKeystrokeSelectionTest', 'HandlesTextAreaAndBrs',
     function() {
   let selectionCode =
-      'let body = document.getElementsByTagName("body")[0];' + 
-      'range.setStart(body, 1);' + 
+      'let body = document.getElementsByTagName("body")[0];' +
+      'range.setStart(body, 1);' +
       'range.setEnd(body, 4);';
   this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
       '<br/><br/><textarea>Some text</textarea><br/><br/>Unread'),
@@ -434,8 +435,8 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest', 'HandlesTextAreaAndBrs',
 TEST_F('SelectToSpeakKeystrokeSelectionTest', 'textFieldWithComboBoxSimple',
     function() {
   let selectionCode =
-      'let body = document.getElementsByTagName("body")[0];' + 
-      'range.setStart(body, 0);' + 
+      'let body = document.getElementsByTagName("body")[0];' +
+      'range.setStart(body, 0);' +
       'range.setEnd(body, 1);';
   this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
       '<input list="list" value="one"></label><datalist id="list">' +
@@ -460,11 +461,11 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest',
           'selection.removeAllRanges();' +
           'let p1 = document.getElementsByTagName("p")[0];' +
           'let p2 = document.getElementsByTagName("p")[1];' +
-          'range.setStart(p1.firstChild, 1);' + 
+          'range.setStart(p1.firstChild, 1);' +
           'range.setEnd(p2.firstChild, 3);' +
           'selection.addRange(range);' +
-        '}' + 
-      '</script>' + 
+        '}' +
+      '</script>' +
       '<body onload="doSelection()">' +
       '<div id="input" contenteditable><p>a b c</p><p>d e f</p></div>' +
       '</body>';
@@ -483,7 +484,7 @@ TEST_F('SelectToSpeakKeystrokeSelectionTest',
     'contentEditableExternallySelected', function() {
   let selectionCode =
       'let body = document.getElementsByTagName("body")[0];' +
-      'range.setStart(body, 1);' + 
+      'range.setStart(body, 1);' +
       'range.setEnd(body, 2);';
   this.runWithLoadedTree(this.generateHtmlWithSelection(selectionCode,
       'Unread <div id="input" contenteditable><p>a b c</p><p>d e f</p></div>' +

@@ -34,6 +34,7 @@ run_jsbundler("select_to_speak_copied_files") {
     "checked.png",
     "closure_shim.js",
     "earcons/null_selection.ogg",
+    "input_handler.js",
     "node_utils.js",
     "options.css",
     "options.html",
@@ -169,6 +170,7 @@ js_type_check("closure_compile") {
     ":../chromevox/cvox2/background/constants",
     ":../chromevox/cvox2/background/tree_walker",
     ":closure_shim",
+    ":input_handler",
     ":node_utils",
     ":paragraph_utils",
     ":rect_utils",
@@ -182,6 +184,7 @@ js_library("select_to_speak") {
   deps = [
     ":../chromevox/cvox2/background/automation_util",
     ":../chromevox/cvox2/background/constants",
+    ":input_handler",
     ":node_utils",
     ":paragraph_utils",
     ":rect_utils",
@@ -235,6 +238,12 @@ js_library("paragraph_utils") {
     "$externs_path/accessibility_private.js",
     "$externs_path/automation.js",
     "$externs_path/chrome_extensions.js",
+  ]
+}
+
+js_library("input_handler") {
+  deps = [
+    ":rect_utils",
   ]
 }
 
