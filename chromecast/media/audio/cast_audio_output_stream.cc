@@ -64,11 +64,14 @@ class CastAudioOutputStream::Backend : public CmaBackend::Decoder::Delegate {
       backend_->Stop();
   }
 
-  void Open(CmaBackendFactory* backend_factory,
+  void Open(CastAudioManager* audio_manager,
             OpenCompletionCallback completion_cb) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    DCHECK(backend_factory);
+    DCHECK(audio_manager);
     DCHECK(backend_ == nullptr);
+
+    CmaBackendFactory* backend_factory = audio_manager->backend_factory();
+    DCHECK(backend_factory);
 
     backend_task_runner_.reset(new TaskRunnerImpl());
     MediaPipelineDeviceParams device_params(
@@ -289,8 +292,7 @@ bool CastAudioOutputStream::Open() {
     audio_manager_->backend_task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(
-            &Backend::Open, base::Unretained(backend_.get()),
-            audio_manager_->backend_factory(),
+            &Backend::Open, base::Unretained(backend_.get()), audio_manager_,
             base::BindOnce(&SignalWaitableEvent, &success, &completion_event)));
     completion_event.Wait();
   }

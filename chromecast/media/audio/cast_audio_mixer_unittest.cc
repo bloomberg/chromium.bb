@@ -90,15 +90,18 @@ class MockCastAudioOutputStream : public CastAudioOutputStream {
 class MockCastAudioManager : public CastAudioManager {
  public:
   MockCastAudioManager()
-      : CastAudioManager(std::make_unique<::media::TestAudioThread>(),
-                         nullptr,
-                         nullptr,
-                         nullptr,
-                         true /* use_mixer */) {
+      : CastAudioManager(
+            std::make_unique<::media::TestAudioThread>(),
+            nullptr,
+            base::BindRepeating(&MockCastAudioManager::GetCmaBackendFactory,
+                                base::Unretained(this)),
+            nullptr,
+            true /* use_mixer */) {
     ON_CALL(*this, ReleaseOutputStream(_))
         .WillByDefault(
             Invoke(this, &MockCastAudioManager::ReleaseOutputStreamConcrete));
   }
+  media::CmaBackendFactory* GetCmaBackendFactory() { return nullptr; }
 
   MOCK_METHOD1(
       MakeMixerOutputStream,

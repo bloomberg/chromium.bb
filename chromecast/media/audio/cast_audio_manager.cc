@@ -35,12 +35,13 @@ namespace media {
 CastAudioManager::CastAudioManager(
     std::unique_ptr<::media::AudioThread> audio_thread,
     ::media::AudioLogFactory* audio_log_factory,
-    std::unique_ptr<CmaBackendFactory> backend_factory,
+    base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
     scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
     bool use_mixer)
     : AudioManagerBase(std::move(audio_thread), audio_log_factory),
-      backend_factory_(std::move(backend_factory)),
+      backend_factory_getter_(std::move(backend_factory_getter)),
       backend_task_runner_(std::move(backend_task_runner)) {
+  DCHECK(backend_factory_getter_);
   if (use_mixer)
     mixer_ = std::make_unique<CastAudioMixer>(this);
 }
@@ -88,6 +89,12 @@ void CastAudioManager::ReleaseOutputStream(::media::AudioOutputStream* stream) {
   } else {
     AudioManagerBase::ReleaseOutputStream(stream);
   }
+}
+
+CmaBackendFactory* CastAudioManager::backend_factory() {
+  if (!backend_factory_)
+    backend_factory_ = backend_factory_getter_.Run();
+  return backend_factory_;
 }
 
 ::media::AudioOutputStream* CastAudioManager::MakeLinearOutputStream(

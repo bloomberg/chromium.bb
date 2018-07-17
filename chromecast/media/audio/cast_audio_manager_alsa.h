@@ -25,7 +25,7 @@ class CastAudioManagerAlsa : public CastAudioManager {
   CastAudioManagerAlsa(
       std::unique_ptr<::media::AudioThread> audio_thread,
       ::media::AudioLogFactory* audio_log_factory,
-      std::unique_ptr<CmaBackendFactory> backend_factory,
+      base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
       scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
       bool use_mixer);
   ~CastAudioManagerAlsa() override;

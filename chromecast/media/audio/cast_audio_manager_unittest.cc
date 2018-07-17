@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/test/test_message_loop.h"
 #include "chromecast/media/cma/test/mock_cma_backend.h"
 #include "chromecast/media/cma/test/mock_cma_backend_factory.h"
@@ -36,23 +37,23 @@ class CastAudioManagerTest : public testing::Test {
   CastAudioManagerTest() : media_thread_("CastMediaThread") {
     CHECK(media_thread_.Start());
 
-    auto backend = std::make_unique<MockCmaBackendFactory>();
-    backend_factory_ = backend.get();
+    backend_factory_ = std::make_unique<MockCmaBackendFactory>();
     audio_manager_ = std::make_unique<CastAudioManager>(
         std::make_unique<::media::TestAudioThread>(), &audio_log_factory_,
-        std::move(backend), media_thread_.task_runner(), false);
+        base::BindRepeating(&CastAudioManagerTest::GetCmaBackendFactory,
+                            base::Unretained(this)),
+        media_thread_.task_runner(), false);
   }
 
   ~CastAudioManagerTest() override { audio_manager_->Shutdown(); }
+  CmaBackendFactory* GetCmaBackendFactory() { return backend_factory_.get(); }
 
  protected:
   base::TestMessageLoop message_loop_;
   base::Thread media_thread_;
   ::media::FakeAudioLogFactory audio_log_factory_;
   std::unique_ptr<CastAudioManager> audio_manager_;
-
-  // Owned by |audio_manager_|
-  MockCmaBackendFactory* backend_factory_;
+  std::unique_ptr<MockCmaBackendFactory> backend_factory_;
 };
 
 TEST_F(CastAudioManagerTest, MakeAudioOutputStreamProxy) {
@@ -68,6 +69,7 @@ TEST_F(CastAudioManagerTest, MakeAudioOutputStreamProxy) {
       .WillOnce(Invoke([&backend](const MediaPipelineDeviceParams&) {
         return std::move(backend);
       }));
+  EXPECT_EQ(backend_factory_.get(), audio_manager_->backend_factory());
 
   ::media::AudioOutputStream* stream =
       audio_manager_->MakeAudioOutputStreamProxy(kDefaultAudioParams,
