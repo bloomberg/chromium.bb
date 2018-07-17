@@ -131,8 +131,9 @@ IN_PROC_BROWSER_TEST_P(FindBarPlatformHelperMacInteractiveUITest,
 // Equivalent to browser_tests
 // FindInPageControllerTest.GlobalPasteBoardClearMatches.
 // TODO(http://crbug.com/843878): Remove when referenced bug is fixed.
+// Flaky. crbug.com/864585
 IN_PROC_BROWSER_TEST_P(FindBarPlatformHelperMacInteractiveUITest,
-                       GlobalPasteBoardClearMatches) {
+                       DISABLED_GlobalPasteBoardClearMatches) {
   FindBarController* find_bar_controller = browser()->GetFindBarController();
   ASSERT_NE(nullptr, find_bar_controller);
 
