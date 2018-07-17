@@ -52,6 +52,7 @@ class ChromeOmniboxClient : public OmniboxClient {
       const AutocompleteMatch& match) const override;
   gfx::Image GetSizedIcon(const gfx::VectorIcon& vector_icon_type,
                           SkColor vector_icon_color) const override;
+  gfx::Image GetSizedIcon(const gfx::Image& icon) const override;
   bool ProcessExtensionKeyword(const TemplateURL* template_url,
                                const AutocompleteMatch& match,
                                WindowOpenDisposition disposition,

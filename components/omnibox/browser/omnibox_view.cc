@@ -102,6 +102,13 @@ bool OmniboxView::IsEditingOrEmpty() const {
       (GetOmniboxTextLength() == 0);
 }
 
+// TODO (manukh) OmniboxView::GetIcon is very similar to
+// OmniboxPopupModel::GetMatchIcon. They contain certain inconsistencies
+// concerning what flags are required to display url favicons and bookmark star
+// icons. OmniboxPopupModel::GetMatchIcon also doesn't display default search
+// provider icons. It's possible they have other inconsistencies as well. In the
+// future, once the Material and Favicon flags are always enabled, we may want
+// to consider reusing the same code for both the popup and omnibox icons.
 gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
                                     SkColor color,
                                     IconFetchedCallback on_icon_fetched) const {
@@ -141,7 +148,7 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
     }
 
     if (!favicon.IsEmpty())
-      return favicon.AsImageSkia();
+      return model_->client()->GetSizedIcon(favicon).AsImageSkia();
     // If the client returns an empty favicon, fall through to provide the
     // generic vector icon. |on_icon_fetched| may or may not be called later.
     // If it's never called, the vector icon we provide below should remain.
