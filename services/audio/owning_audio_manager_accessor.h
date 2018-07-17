@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
-#include "media/audio/fake_audio_log_factory.h"
 #include "services/audio/service.h"
 
 #if defined(OS_WIN)
@@ -40,6 +39,7 @@ class OwningAudioManagerAccessor : public Service::AudioManagerAccessor {
   ~OwningAudioManagerAccessor() override;
 
   media::AudioManager* GetAudioManager() final;
+  void SetAudioLogFactory(media::AudioLogFactory* factory) final;
   void Shutdown() final;
 
  private:
@@ -49,10 +49,7 @@ class OwningAudioManagerAccessor : public Service::AudioManagerAccessor {
 #endif
   AudioManagerFactoryCallback audio_manager_factory_cb_;
   std::unique_ptr<media::AudioManager> audio_manager_;
-
-  // TODO(http://crbug/812557): Use a real AudioLogFactory (needed for output
-  // streams).
-  media::FakeAudioLogFactory log_factory_;
+  media::AudioLogFactory* log_factory_ = nullptr;  // not owned.
 
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(OwningAudioManagerAccessor);

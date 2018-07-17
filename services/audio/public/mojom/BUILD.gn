@@ -9,6 +9,7 @@ mojom("mojom") {
     "audio_device_description.mojom",
     "debug_recording.mojom",
     "device_notifications.mojom",
+    "log_factory_manager.mojom",
     "stream_factory.mojom",
     "system_info.mojom",
     "testing_api.mojom",

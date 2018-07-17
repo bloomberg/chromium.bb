@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
 #include "services/audio/public/mojom/device_notifications.mojom.h"
+#include "services/audio/public/mojom/log_factory_manager.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/audio/public/mojom/system_info.mojom.h"
 #include "services/audio/stream_factory.h"
@@ -29,6 +30,7 @@ class SystemMonitor;
 namespace media {
 class AudioDeviceListenerMac;
 class AudioManager;
+class AudioLogFactory;
 }  // namespace media
 
 namespace service_manager {
@@ -38,6 +40,7 @@ class ServiceContextRefFactory;
 namespace audio {
 class DebugRecording;
 class DeviceNotifier;
+class LogFactoryManager;
 class ServiceMetrics;
 class SystemInfo;
 
@@ -55,16 +58,22 @@ class Service : public service_manager::Service {
 
     // Returns a pointer to AudioManager.
     virtual media::AudioManager* GetAudioManager() = 0;
+
+    // Attempts to associate |factory| with the audio manager.
+    // |factory| must outlive the audio manager.
+    // It only makes sense to call this method before GetAudioManager().
+    virtual void SetAudioLogFactory(media::AudioLogFactory* factory) = 0;
   };
 
   // Service will attempt to quit if there are no connections to it within
   // |quit_timeout| interval. If |quit_timeout| is base::TimeDelta() the
-  // service never quits. If |device_notifier_enabled| is true, the service
+  // service never quits. If |enable_remote_client_support| is true, the service
   // will make available a DeviceNotifier object that allows clients to
-  // subscribe to notifications about device changes.
+  // subscribe to notifications about device changes and a LogFactoryManager
+  // object that allows clients to set a factory for audio logs.
   Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
           base::TimeDelta quit_timeout,
-          bool device_notifier_enabled,
+          bool enable_remote_client_support,
           std::unique_ptr<service_manager::BinderRegistry> registry);
   ~Service() final;
 
@@ -82,6 +91,7 @@ class Service : public service_manager::Service {
   void BindDebugRecordingRequest(mojom::DebugRecordingRequest request);
   void BindStreamFactoryRequest(mojom::StreamFactoryRequest request);
   void BindDeviceNotifierRequest(mojom::DeviceNotifierRequest request);
+  void BindLogFactoryManagerRequest(mojom::LogFactoryManagerRequest request);
 
   void MaybeRequestQuitDelayed();
   void MaybeRequestQuit();
@@ -103,7 +113,7 @@ class Service : public service_manager::Service {
   base::OneShotTimer quit_timer_;
 
   std::unique_ptr<AudioManagerAccessor> audio_manager_accessor_;
-  const bool device_notifier_enabled_;
+  const bool enable_remote_client_support_;
   std::unique_ptr<base::SystemMonitor> system_monitor_;
 #if defined(OS_MACOSX)
   std::unique_ptr<media::AudioDeviceListenerMac> audio_device_listener_mac_;
@@ -112,6 +122,7 @@ class Service : public service_manager::Service {
   std::unique_ptr<DebugRecording> debug_recording_;
   base::Optional<StreamFactory> stream_factory_;
   std::unique_ptr<DeviceNotifier> device_notifier_;
+  std::unique_ptr<LogFactoryManager> log_factory_manager_;
   std::unique_ptr<ServiceMetrics> metrics_;
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;

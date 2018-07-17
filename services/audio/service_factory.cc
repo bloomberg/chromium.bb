@@ -69,7 +69,7 @@ std::unique_ptr<service_manager::Service> CreateStandaloneService(
   return std::make_unique<Service>(
       std::make_unique<audio::OwningAudioManagerAccessor>(
           base::BindOnce(&media::AudioManager::Create)),
-      GetQuitTimeout(), true /* enable_device_notifications */,
+      GetQuitTimeout(), true /* enable_remote_client_support */,
       std::move(registry));
 }
 

@@ -81,6 +81,7 @@
           "info",
           "debug_recording",
           "device_notifier",
+          "log_factory_manager",
           "stream_factory",
           "testing_api"
         ],

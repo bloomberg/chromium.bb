@@ -90,18 +90,21 @@ media::AudioManager* OwningAudioManagerAccessor::GetAudioManager() {
   if (!audio_manager_) {
     TRACE_EVENT0("audio", "AudioManager creation");
     DCHECK(audio_manager_factory_cb_);
+    DCHECK(log_factory_);
     base::TimeTicks creation_start_time = base::TimeTicks::Now();
-
-    // TODO(http://crbug/812557): pass AudioLogFactory (needed for output
-    // streams).
     audio_manager_ = std::move(audio_manager_factory_cb_)
-                         .Run(std::make_unique<MainThread>(), &log_factory_);
+                         .Run(std::make_unique<MainThread>(), log_factory_);
     DCHECK(audio_manager_);
     UMA_HISTOGRAM_TIMES("Media.AudioService.AudioManagerStartupTime",
                         base::TimeTicks::Now() - creation_start_time);
   }
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   return audio_manager_.get();
+}
+
+void OwningAudioManagerAccessor::SetAudioLogFactory(
+    media::AudioLogFactory* log_factory) {
+  log_factory_ = log_factory;
 }
 
 void OwningAudioManagerAccessor::Shutdown() {
