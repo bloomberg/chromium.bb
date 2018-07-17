@@ -9,7 +9,6 @@ set(plugin_sources
   CheckFinalizerVisitor.cpp
   CheckGCRootsVisitor.cpp
   CheckTraceVisitor.cpp
-  CheckTraceWrappersVisitor.cpp
   CollectVisitor.cpp
   Config.cpp
   DiagnosticsReporter.cpp

@@ -19,10 +19,6 @@ CollectVisitor::MethodVector& CollectVisitor::trace_decls() {
   return trace_decls_;
 }
 
-CollectVisitor::MethodVector& CollectVisitor::trace_wrapper_decls() {
-  return trace_wrapper_decls_;
-}
-
 bool CollectVisitor::VisitCXXRecordDecl(CXXRecordDecl* record) {
   if (record->hasDefinition() && record->isCompleteDefinition())
     record_decls_.push_back(record);
@@ -34,8 +30,6 @@ bool CollectVisitor::VisitCXXMethodDecl(CXXMethodDecl* method) {
     if (Config::IsTraceMethod(method)) {
       trace_decls_.push_back(method);
     }
-    if (Config::IsTraceWrappersMethod(method))
-      trace_wrapper_decls_.push_back(method);
   }
   return true;
 }

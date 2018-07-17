@@ -23,35 +23,24 @@ class RecordCache;
 // A potentially tracable and/or lifetime affecting point in the object graph.
 class GraphPoint {
  public:
-  GraphPoint() : traced_(false), wrapper_traced_(false) {}
+  GraphPoint() : traced_(false) {}
   virtual ~GraphPoint() {}
   void MarkTraced() { traced_ = true; }
-  void MarkWrapperTraced() { wrapper_traced_ = true; }
   bool IsProperlyTraced() { return traced_ || !NeedsTracing().IsNeeded(); }
   bool IsInproperlyTraced() { return traced_ && NeedsTracing().IsIllegal(); }
-  bool IsProperlyWrapperTraced() {
-    return wrapper_traced_ || !NeedsWrapperTracing().IsNeeded();
-  }
   virtual const TracingStatus NeedsTracing() = 0;
-  virtual const TracingStatus NeedsWrapperTracing() = 0;
 
  private:
   bool traced_;
-  bool wrapper_traced_;
 };
 
 class BasePoint : public GraphPoint {
  public:
   BasePoint(const clang::CXXBaseSpecifier& spec,
             RecordInfo* info,
-            const TracingStatus& status,
-            const TracingStatus& wrapper_status)
-      : spec_(spec),
-        info_(info),
-        status_(status),
-        wrapper_status_(wrapper_status) {}
+            const TracingStatus& status)
+      : spec_(spec), info_(info), status_(status) {}
   const TracingStatus NeedsTracing() { return status_; }
-  const TracingStatus NeedsWrapperTracing() { return wrapper_status_; }
   const clang::CXXBaseSpecifier& spec() { return spec_; }
   RecordInfo* info() { return info_; }
 
@@ -59,7 +48,6 @@ class BasePoint : public GraphPoint {
   const clang::CXXBaseSpecifier& spec_;
   RecordInfo* info_;
   TracingStatus status_;
-  TracingStatus wrapper_status_;
 };
 
 class FieldPoint : public GraphPoint {
@@ -69,7 +57,6 @@ class FieldPoint : public GraphPoint {
   const TracingStatus NeedsTracing() {
     return edge_->NeedsTracing(Edge::kRecursive);
   }
-  const TracingStatus NeedsWrapperTracing() { return TracingStatus::Illegal(); }
   clang::FieldDecl* field() { return field_; }
   Edge* edge() { return edge_; }
 
@@ -113,7 +100,6 @@ class RecordInfo {
   bool IsGCAllocated();
   bool IsGCFinalized();
   bool IsGCMixin();
-  bool IsTraceWrapperBase();
   bool IsStackAllocated();
   bool IsNonNewable();
   bool IsOnlyPlacementNewable();
@@ -125,11 +111,9 @@ class RecordInfo {
 
   bool RequiresTraceMethod();
   bool NeedsFinalization();
-  bool RequiresTraceWrappersMethod();
   bool DeclaresGCMixinMethods();
   bool DeclaresLocalTraceMethod();
   TracingStatus NeedsTracing(Edge::NeedsTracingOption);
-  TracingStatus NeedsWrapperTracing();
   clang::CXXMethodDecl* InheritsNonVirtualTrace();
   bool IsConsideredAbstract();
 
@@ -143,9 +127,7 @@ class RecordInfo {
   Fields* CollectFields();
   Bases* CollectBases();
   void DetermineTracingMethods();
-  void DetermineWrapperTracingMethods();
   bool InheritsTrace();
-  bool InheritsTraceWrappers();
 
   Edge* CreateEdge(const clang::Type* type);
   Edge* CreateEdgeFromOriginalType(const clang::Type* type);
@@ -169,9 +151,7 @@ class RecordInfo {
   CachedBool is_eagerly_finalized_;
 
   bool determined_trace_methods_;
-  bool determined_wrapper_trace_methods_;
   clang::CXXMethodDecl* trace_method_;
-  clang::CXXMethodDecl* trace_wrappers_method_;
   clang::CXXMethodDecl* trace_dispatch_method_;
   clang::CXXMethodDecl* finalize_dispatch_method_;
 
