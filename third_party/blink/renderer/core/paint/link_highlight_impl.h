@@ -50,14 +50,13 @@ namespace blink {
 class GraphicsLayer;
 class LayoutBoxModelObject;
 class Node;
-class WebViewImpl;
 
 class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
                                             public cc::ContentLayerClient,
                                             public CompositorAnimationDelegate,
                                             public CompositorAnimationClient {
  public:
-  static std::unique_ptr<LinkHighlightImpl> Create(Node*, WebViewImpl*);
+  static std::unique_ptr<LinkHighlightImpl> Create(Node*);
   ~LinkHighlightImpl() override;
 
   void StartHighlightAnimationIfNeeded();
@@ -88,7 +87,7 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   }
 
  private:
-  LinkHighlightImpl(Node*, WebViewImpl*);
+  LinkHighlightImpl(Node*);
 
   void ReleaseResources();
   void ComputeQuads(const Node&, Vector<FloatQuad>&) const;
@@ -104,7 +103,6 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   Path path_;
 
   Persistent<Node> node_;
-  WebViewImpl* owning_web_view_;
   GraphicsLayer* current_graphics_layer_;
   bool is_scrolling_graphics_layer_;
   std::unique_ptr<CompositorAnimation> compositor_animation_;

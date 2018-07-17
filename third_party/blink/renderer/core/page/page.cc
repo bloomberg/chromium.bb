@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/link_highlights.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints.h"
@@ -162,6 +163,7 @@ Page::Page(PageClients& page_clients)
       visual_viewport_(VisualViewport::Create(*this)),
       overscroll_controller_(
           OverscrollController::Create(GetVisualViewport(), GetChromeClient())),
+      link_highlights_(LinkHighlights::Create(*this)),
       plugin_data_(nullptr),
       opened_by_dom_(false),
       tab_key_cycles_through_elements_(true),
@@ -260,6 +262,10 @@ OverscrollController& Page::GetOverscrollController() {
 
 const OverscrollController& Page::GetOverscrollController() const {
   return *overscroll_controller_;
+}
+
+LinkHighlights& Page::GetLinkHighlights() {
+  return *link_highlights_;
 }
 
 DOMRectList* Page::NonFastScrollableRectsForTesting(const LocalFrame* frame) {
@@ -725,6 +731,7 @@ void Page::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_root_scroller_controller_);
   visitor->Trace(visual_viewport_);
   visitor->Trace(overscroll_controller_);
+  visitor->Trace(link_highlights_);
   visitor->Trace(main_frame_);
   visitor->Trace(plugin_data_);
   visitor->Trace(validation_message_client_);
@@ -739,12 +746,14 @@ void Page::LayerTreeViewInitialized(WebLayerTreeView& layer_tree_view,
                                     LocalFrameView* view) {
   if (GetScrollingCoordinator())
     GetScrollingCoordinator()->LayerTreeViewInitialized(layer_tree_view, view);
+  GetLinkHighlights().LayerTreeViewInitialized(layer_tree_view);
 }
 
 void Page::WillCloseLayerTreeView(WebLayerTreeView& layer_tree_view,
                                   LocalFrameView* view) {
   if (scrolling_coordinator_)
     scrolling_coordinator_->WillCloseLayerTreeView(layer_tree_view, view);
+  GetLinkHighlights().WillCloseLayerTreeView(layer_tree_view);
 }
 
 void Page::WillBeDestroyed() {
