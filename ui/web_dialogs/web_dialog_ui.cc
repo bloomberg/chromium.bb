@@ -120,4 +120,15 @@ void WebDialogUI::RenderFrameCreated(RenderFrameHost* render_frame_host) {
   HandleRenderFrameCreated(render_frame_host);
 }
 
+MojoWebDialogUI::MojoWebDialogUI(content::WebUI* web_ui)
+    : WebDialogUIBase(web_ui), MojoWebUIController(web_ui) {}
+
+MojoWebDialogUI::~MojoWebDialogUI() = default;
+
+void MojoWebDialogUI::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  content::WebUIController::RenderFrameCreated(render_frame_host);
+  HandleRenderFrameCreated(render_frame_host);
+}
+
 }  // namespace ui
