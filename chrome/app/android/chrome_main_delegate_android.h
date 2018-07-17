@@ -18,10 +18,8 @@ class SafeBrowsingApiHandler;
 // Android override of ChromeMainDelegate
 class ChromeMainDelegateAndroid : public ChromeMainDelegate {
  public:
-  static ChromeMainDelegateAndroid* Create();
   static void SecureDataDirectory();  // visible for testing
 
- protected:
   ChromeMainDelegateAndroid();
   ~ChromeMainDelegateAndroid() override;
 
