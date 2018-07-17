@@ -249,6 +249,12 @@ void AudioContext::getOutputTimestamp(ScriptState* script_state,
 
   AudioIOPosition position = OutputPosition();
 
+  // The timestamp of what is currently being played (contextTime) cannot be
+  // later than what is being rendered. (currentTime)
+  if (position.position > currentTime()) {
+    position.position = currentTime();
+  }
+
   double performance_time = performance->MonotonicTimeToDOMHighResTimeStamp(
       TimeTicksFromSeconds(position.timestamp));
   if (performance_time < 0.0)
