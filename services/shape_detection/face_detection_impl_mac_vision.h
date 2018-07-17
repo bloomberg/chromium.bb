@@ -9,11 +9,11 @@
 #include <utility>
 
 #include "base/mac/availability.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/shape_detection/detection_utils_mac.h"
 #include "services/shape_detection/public/mojom/facedetection.mojom.h"
 
 class SkBitmap;
@@ -36,7 +36,6 @@ class API_AVAILABLE(macos(10.13)) FaceDetectionImplMacVision
   }
 
  private:
-  class VisionAPIAsyncRequestMac;
   void OnFacesDetected(VNRequest* request, NSError* error);
 
   CGSize image_size_;
