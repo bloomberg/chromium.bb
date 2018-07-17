@@ -48,19 +48,6 @@ BluetoothRemoteGattService* BluetoothRemoteGattCharacteristicWinrt::GetService()
   return nullptr;
 }
 
-std::vector<BluetoothRemoteGattDescriptor*>
-BluetoothRemoteGattCharacteristicWinrt::GetDescriptors() const {
-  NOTIMPLEMENTED();
-  return {};
-}
-
-BluetoothRemoteGattDescriptor*
-BluetoothRemoteGattCharacteristicWinrt::GetDescriptor(
-    const std::string& identifier) const {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 void BluetoothRemoteGattCharacteristicWinrt::ReadRemoteCharacteristic(
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {

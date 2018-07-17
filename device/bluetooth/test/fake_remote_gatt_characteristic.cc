@@ -47,30 +47,20 @@ FakeRemoteGattCharacteristic::~FakeRemoteGattCharacteristic() = default;
 
 std::string FakeRemoteGattCharacteristic::AddFakeDescriptor(
     const device::BluetoothUUID& descriptor_uuid) {
-  FakeDescriptorMap::iterator it;
-  bool inserted;
-
   // Attribute instance Ids need to be unique.
   std::string new_descriptor_id = base::StringPrintf(
       "%s_%zu", GetIdentifier().c_str(), ++last_descriptor_id_);
 
-  std::tie(it, inserted) = fake_descriptors_.emplace(
-      new_descriptor_id, std::make_unique<FakeRemoteGattDescriptor>(
-                             new_descriptor_id, descriptor_uuid, this));
+  bool result = AddDescriptor(std::make_unique<FakeRemoteGattDescriptor>(
+      new_descriptor_id, descriptor_uuid, this));
 
-  DCHECK(inserted);
-  return it->second->GetIdentifier();
+  DCHECK(result);
+  return new_descriptor_id;
 }
 
 bool FakeRemoteGattCharacteristic::RemoveFakeDescriptor(
     const std::string& identifier) {
-  auto it = fake_descriptors_.find(identifier);
-  if (it == fake_descriptors_.end()) {
-    return false;
-  }
-
-  fake_descriptors_.erase(it);
-  return true;
+  return descriptors_.erase(identifier) != 0u;
 }
 
 void FakeRemoteGattCharacteristic::SetNextReadResponse(
@@ -103,8 +93,10 @@ bool FakeRemoteGattCharacteristic::AllResponsesConsumed() {
   return !next_read_response_ && !next_write_response_ &&
          !next_subscribe_to_notifications_response_ &&
          std::all_of(
-             fake_descriptors_.begin(), fake_descriptors_.end(),
-             [](const auto& e) { return e.second->AllResponsesConsumed(); });
+             descriptors_.begin(), descriptors_.end(), [](const auto& e) {
+               return static_cast<FakeRemoteGattDescriptor*>(e.second.get())
+                   ->AllResponsesConsumed();
+             });
 }
 
 std::string FakeRemoteGattCharacteristic::GetIdentifier() const {
@@ -134,24 +126,6 @@ const std::vector<uint8_t>& FakeRemoteGattCharacteristic::GetValue() const {
 device::BluetoothRemoteGattService* FakeRemoteGattCharacteristic::GetService()
     const {
   return service_;
-}
-
-std::vector<device::BluetoothRemoteGattDescriptor*>
-FakeRemoteGattCharacteristic::GetDescriptors() const {
-  std::vector<device::BluetoothRemoteGattDescriptor*> descriptors;
-  for (const auto& it : fake_descriptors_)
-    descriptors.push_back(it.second.get());
-  return descriptors;
-}
-
-device::BluetoothRemoteGattDescriptor*
-FakeRemoteGattCharacteristic::GetDescriptor(
-    const std::string& identifier) const {
-  const auto& it = fake_descriptors_.find(identifier);
-  if (it == fake_descriptors_.end())
-    return nullptr;
-
-  return it->second.get();
 }
 
 void FakeRemoteGattCharacteristic::ReadRemoteCharacteristic(

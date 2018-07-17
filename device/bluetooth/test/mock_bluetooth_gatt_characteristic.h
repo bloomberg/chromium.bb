@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -47,7 +48,6 @@ class MockBluetoothGattCharacteristic
                      std::vector<BluetoothRemoteGattDescriptor*>());
   MOCK_CONST_METHOD1(GetDescriptor,
                      BluetoothRemoteGattDescriptor*(const std::string&));
-  MOCK_METHOD1(AddDescriptor, bool(BluetoothRemoteGattDescriptor*));
   MOCK_METHOD1(UpdateValue, bool(const std::vector<uint8_t>&));
 #if defined(OS_CHROMEOS)
   MOCK_METHOD3(StartNotifySession,
@@ -74,9 +74,6 @@ class MockBluetoothGattCharacteristic
 
   void AddMockDescriptor(
       std::unique_ptr<MockBluetoothGattDescriptor> mock_descriptor);
-  std::vector<BluetoothRemoteGattDescriptor*> GetMockDescriptors() const;
-  BluetoothRemoteGattDescriptor* GetMockDescriptor(
-      const std::string& identifier) const;
 
  protected:
 #if defined(OS_CHROMEOS)
@@ -97,8 +94,6 @@ class MockBluetoothGattCharacteristic
                     const ErrorCallback&));
 
  private:
-  std::vector<std::unique_ptr<MockBluetoothGattDescriptor>> mock_descriptors_;
-
   DISALLOW_COPY_AND_ASSIGN(MockBluetoothGattCharacteristic);
 };
 

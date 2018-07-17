@@ -29,6 +29,8 @@ class BluetoothRemoteGattCharacteristic;
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptor
     : public virtual BluetoothGattDescriptor {
  public:
+  ~BluetoothRemoteGattDescriptor() override;
+
   // The ValueCallback is used to return the value of a remote characteristic
   // descriptor upon a read request.
   typedef base::Callback<void(const std::vector<uint8_t>&)> ValueCallback;
@@ -60,7 +62,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptor
 
  protected:
   BluetoothRemoteGattDescriptor();
-  ~BluetoothRemoteGattDescriptor() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattDescriptor);

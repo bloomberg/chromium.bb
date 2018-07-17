@@ -20,10 +20,10 @@ namespace device {
 BluetoothRemoteGattCharacteristicWin::BluetoothRemoteGattCharacteristicWin(
     BluetoothRemoteGattServiceWin* parent_service,
     BTH_LE_GATT_CHARACTERISTIC* characteristic_info,
-    scoped_refptr<base::SequencedTaskRunner>& ui_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> ui_task_runner)
     : parent_service_(parent_service),
       characteristic_info_(characteristic_info),
-      ui_task_runner_(ui_task_runner),
+      ui_task_runner_(std::move(ui_task_runner)),
       characteristic_added_notified_(false),
       characteristic_value_read_or_write_in_progress_(false),
       gatt_event_handle_(nullptr),
@@ -133,23 +133,6 @@ BluetoothRemoteGattCharacteristicWin::GetPermissions() const {
 
 bool BluetoothRemoteGattCharacteristicWin::IsNotifying() const {
   return gatt_event_handle_ != nullptr;
-}
-
-std::vector<BluetoothRemoteGattDescriptor*>
-BluetoothRemoteGattCharacteristicWin::GetDescriptors() const {
-  std::vector<BluetoothRemoteGattDescriptor*> descriptors;
-  for (const auto& descriptor : included_descriptors_)
-    descriptors.push_back(descriptor.second.get());
-  return descriptors;
-}
-
-BluetoothRemoteGattDescriptor*
-BluetoothRemoteGattCharacteristicWin::GetDescriptor(
-    const std::string& identifier) const {
-  GattDescriptorMap::const_iterator it = included_descriptors_.find(identifier);
-  if (it != included_descriptors_.end())
-    return it->second.get();
-  return nullptr;
 }
 
 void BluetoothRemoteGattCharacteristicWin::ReadRemoteCharacteristic(
@@ -264,23 +247,26 @@ void BluetoothRemoteGattCharacteristicWin::UpdateIncludedDescriptors(
     PBTH_LE_GATT_DESCRIPTOR descriptors,
     uint16_t num) {
   if (num == 0) {
-    included_descriptors_.clear();
+    descriptors_.clear();
     return;
   }
 
   // First, remove descriptors that no longer exist.
   std::vector<std::string> to_be_removed;
-  for (const auto& d : included_descriptors_) {
-    if (!DoesDescriptorExist(descriptors, num, d.second.get()))
+  for (const auto& d : descriptors_) {
+    if (!DoesDescriptorExist(
+            descriptors, num,
+            static_cast<BluetoothRemoteGattDescriptorWin*>(d.second.get())))
       to_be_removed.push_back(d.second->GetIdentifier());
   }
-  for (auto id : to_be_removed) {
-    included_descriptors_[id].reset();
-    included_descriptors_.erase(id);
+  for (const auto& id : to_be_removed) {
+    auto iter = descriptors_.find(id);
+    auto pair = std::move(*iter);
+    descriptors_.erase(iter);
   }
 
   // Return if no new descriptors have been added.
-  if (included_descriptors_.size() == num)
+  if (descriptors_.size() == num)
     return;
 
   // Add new descriptors.
@@ -293,20 +279,21 @@ void BluetoothRemoteGattCharacteristicWin::UpdateIncludedDescriptors(
       BluetoothRemoteGattDescriptorWin* descriptor =
           new BluetoothRemoteGattDescriptorWin(this, win_descriptor_info,
                                                ui_task_runner_);
-      included_descriptors_[descriptor->GetIdentifier()] =
-          base::WrapUnique(descriptor);
+      AddDescriptor(base::WrapUnique(descriptor));
     }
   }
 }
 
 bool BluetoothRemoteGattCharacteristicWin::IsDescriptorDiscovered(
-    BTH_LE_UUID& uuid,
+    const BTH_LE_UUID& uuid,
     uint16_t attribute_handle) {
   BluetoothUUID bt_uuid =
       BluetoothTaskManagerWin::BluetoothLowEnergyUuidToBluetoothUuid(uuid);
-  for (const auto& d : included_descriptors_) {
+  for (const auto& d : descriptors_) {
     if (bt_uuid == d.second->GetUUID() &&
-        attribute_handle == d.second->GetAttributeHandle()) {
+        attribute_handle ==
+            static_cast<BluetoothRemoteGattDescriptorWin*>(d.second.get())
+                ->GetAttributeHandle()) {
       return true;
     }
   }
@@ -409,9 +396,7 @@ void BluetoothRemoteGattCharacteristicWin::GattEventRegistrationCallback(
 void BluetoothRemoteGattCharacteristicWin::ClearIncludedDescriptors() {
   // Explicitly reset to null to ensure that calling GetDescriptor() on the
   // removed descriptor in GattDescriptorRemoved() returns null.
-  for (auto& entry : included_descriptors_)
-    entry.second.reset();
-  included_descriptors_.clear();
+  std::exchange(descriptors_, {});
 }
 
 }  // namespace device.

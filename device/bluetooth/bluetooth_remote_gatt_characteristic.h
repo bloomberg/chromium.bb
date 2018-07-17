@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
@@ -62,18 +63,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
 
   // Returns the list of GATT characteristic descriptors that provide more
   // information about this characteristic.
-  virtual std::vector<BluetoothRemoteGattDescriptor*> GetDescriptors()
-      const = 0;
+  virtual std::vector<BluetoothRemoteGattDescriptor*> GetDescriptors() const;
 
   // Returns the GATT characteristic descriptor with identifier |identifier| if
   // it belongs to this GATT characteristic.
   virtual BluetoothRemoteGattDescriptor* GetDescriptor(
-      const std::string& identifier) const = 0;
+      const std::string& identifier) const;
 
   // Returns the GATT characteristic descriptors that match |uuid|. There may be
   // multiple, as illustrated by Core Bluetooth Specification [V4.2 Vol 3 Part G
   // 3.3.3.5 Characteristic Presentation Format].
-  std::vector<BluetoothRemoteGattDescriptor*> GetDescriptorsByUUID(
+  virtual std::vector<BluetoothRemoteGattDescriptor*> GetDescriptorsByUUID(
       const BluetoothUUID& uuid) const;
 
   // Get a weak pointer to the characteristic.
@@ -200,6 +200,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
       BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
+
+  // Utility function to add a |descriptor| to the map of |descriptors_|.
+  bool AddDescriptor(std::unique_ptr<BluetoothRemoteGattDescriptor> descriptor);
+
+  // Descriptors owned by the chracteristic. The descriptors' identifiers serve
+  // as keys.
+  base::flat_map<std::string, std::unique_ptr<BluetoothRemoteGattDescriptor>>
+      descriptors_;
 
  private:
   friend class BluetoothGattNotifySession;

@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -23,14 +25,29 @@ BluetoothRemoteGattCharacteristic::~BluetoothRemoteGattCharacteristic() {
 }
 
 std::vector<BluetoothRemoteGattDescriptor*>
+BluetoothRemoteGattCharacteristic::GetDescriptors() const {
+  std::vector<BluetoothRemoteGattDescriptor*> descriptors;
+  descriptors.reserve(descriptors_.size());
+  for (const auto& pair : descriptors_)
+    descriptors.push_back(pair.second.get());
+  return descriptors;
+}
+
+BluetoothRemoteGattDescriptor* BluetoothRemoteGattCharacteristic::GetDescriptor(
+    const std::string& identifier) const {
+  auto iter = descriptors_.find(identifier);
+  return iter != descriptors_.end() ? iter->second.get() : nullptr;
+}
+
+std::vector<BluetoothRemoteGattDescriptor*>
 BluetoothRemoteGattCharacteristic::GetDescriptorsByUUID(
     const BluetoothUUID& uuid) const {
   std::vector<BluetoothRemoteGattDescriptor*> descriptors;
-  for (BluetoothRemoteGattDescriptor* descriptor : GetDescriptors()) {
-    if (descriptor->GetUUID() == uuid) {
-      descriptors.push_back(descriptor);
-    }
+  for (const auto& pair : descriptors_) {
+    if (pair.second->GetUUID() == uuid)
+      descriptors.push_back(pair.second.get());
   }
+
   return descriptors;
 }
 
@@ -87,6 +104,17 @@ bool BluetoothRemoteGattCharacteristic::WriteWithoutResponse(
     base::span<const uint8_t> value) {
   NOTIMPLEMENTED();
   return false;
+}
+
+bool BluetoothRemoteGattCharacteristic::AddDescriptor(
+    std::unique_ptr<BluetoothRemoteGattDescriptor> descriptor) {
+  if (!descriptor)
+    return false;
+
+  auto* descriptor_raw = descriptor.get();
+  return descriptors_
+      .try_emplace(descriptor_raw->GetIdentifier(), std::move(descriptor))
+      .second;
 }
 
 void BluetoothRemoteGattCharacteristic::StartNotifySessionInternal(
