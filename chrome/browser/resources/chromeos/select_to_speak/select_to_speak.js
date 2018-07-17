@@ -5,7 +5,6 @@
 var AutomationEvent = chrome.automation.AutomationEvent;
 var EventType = chrome.automation.EventType;
 var RoleType = chrome.automation.RoleType;
-var SelectToSpeakState = chrome.accessibilityPrivate.SelectToSpeakState;
 
 /**
  * CrosSelectToSpeakStartSpeechMethod enums.
@@ -56,15 +55,6 @@ const STATE_CHANGE_EVENT_METRIC_NAME =
 const SELECT_TO_SPEAK_TRAY_CLASS_NAME =
     'tray/TrayBackgroundView/SelectToSpeakTray';
 
-// Number of milliseconds to wait after requesting a clipboard read
-// before clipboard change and paste events are ignored.
-const CLIPBOARD_READ_MAX_DELAY_MS = 1000;
-
-// Number of milliseconds to wait after requesting a clipboard copy
-// before clipboard copy events are ignored, used to clear the clipboard
-// after reading data in a paste event.
-const CLIPBOARD_CLEAR_MAX_DELAY_MS = 500;
-
 // Matches one of the known Drive apps which need the clipboard to find and read
 // selected text. Includes sandbox and non-sandbox versions.
 const DRIVE_APP_REGEXP =
@@ -92,37 +82,16 @@ function getDriveAppRoot(node) {
 /**
  * @constructor
  */
-var SelectToSpeak = function() {
+let SelectToSpeak = function() {
   /**
    * The current state of the SelectToSpeak extension, from
    * SelectToSpeakState.
-   * @private {!SelectToSpeakState}
+   * @private {!chrome.accessibilityPrivate.SelectToSpeakState}
    */
   this.state_ = SelectToSpeakState.INACTIVE;
 
-  /** @private {boolean} */
-  this.trackingMouse_ = false;
-
-  /** @private {boolean} */
-  this.didTrackMouse_ = false;
-
-  /** @private {boolean} */
-  this.isSearchKeyDown_ = false;
-
-  /** @private {boolean} */
-  this.isSelectionKeyDown_ = false;
-
-  /** @private {!Set<number>} */
-  this.keysCurrentlyDown_ = new Set();
-
-  /** @private {!Set<number>} */
-  this.keysPressedTogether_ = new Set();
-
-  /** @private {{x: number, y: number}} */
-  this.mouseStart_ = {x: 0, y: 0};
-
-  /** @private {{x: number, y: number}} */
-  this.mouseEnd_ = {x: 0, y: 0};
+  /** @type {InputHandler} */
+  this.inputHandler_ = null;
 
   chrome.automation.getDesktop(function(desktop) {
     this.desktop_ = desktop;
@@ -223,124 +192,7 @@ SelectToSpeak.READ_SELECTION_KEY_CODE = 83;
 SelectToSpeak.NODE_STATE_TEST_INTERVAL_MS = 1000;
 
 SelectToSpeak.prototype = {
-  /**
-   * Called when the mouse is pressed and the user is in a mode where
-   * select-to-speak is capturing mouse events (for example holding down
-   * Search).
-   *
-   * @param {!Event} evt The DOM event
-   * @return {boolean} True if the default action should be performed;
-   *    we always return false because we don't want any other event
-   *    handlers to run.
-   */
-  onMouseDown_: function(evt) {
-    // If the user hasn't clicked 'search', or if they are currently
-    // trying to highlight a selection, don't track the mouse.
-    if (this.state_ != SelectToSpeakState.SELECTING &&
-        (!this.isSearchKeyDown_ || this.isSelectionKeyDown_))
-      return false;
 
-    this.onStateChanged_(SelectToSpeakState.SELECTING);
-
-    this.trackingMouse_ = true;
-    this.didTrackMouse_ = true;
-    this.mouseStart_ = {x: evt.screenX, y: evt.screenY};
-    this.cancelIfSpeaking_(false /* don't clear the focus ring */);
-
-    // Fire a hit test event on click to warm up the cache.
-    this.desktop_.hitTest(evt.screenX, evt.screenY, EventType.MOUSE_PRESSED);
-
-    this.onMouseMove_(evt);
-    return false;
-  },
-
-  /**
-   * Called when the mouse is moved or dragged and the user is in a
-   * mode where select-to-speak is capturing mouse events (for example
-   * holding down Search).
-   *
-   * @param {!Event} evt The DOM event
-   * @return {boolean} True if the default action should be performed.
-   */
-  onMouseMove_: function(evt) {
-    if (!this.trackingMouse_)
-      return false;
-
-    var rect = rectFromPoints(
-        this.mouseStart_.x, this.mouseStart_.y, evt.screenX, evt.screenY);
-    chrome.accessibilityPrivate.setFocusRing([rect], this.color_);
-    return false;
-  },
-
-  /**
-   * Called when the mouse is released and the user is in a
-   * mode where select-to-speak is capturing mouse events (for example
-   * holding down Search).
-   *
-   * @param {!Event} evt
-   * @return {boolean} True if the default action should be performed.
-   */
-  onMouseUp_: function(evt) {
-    if (!this.trackingMouse_)
-      return false;
-    this.onMouseMove_(evt);
-    this.trackingMouse_ = false;
-    if (!this.keysCurrentlyDown_.has(SelectToSpeak.SEARCH_KEY_CODE)) {
-      // This is only needed to cancel something started with the search key.
-      this.didTrackMouse_ = false;
-    }
-
-    this.onStateChanged_(SelectToSpeakState.INACTIVE);
-
-    this.mouseEnd_ = {x: evt.screenX, y: evt.screenY};
-    var ctrX = Math.floor((this.mouseStart_.x + this.mouseEnd_.x) / 2);
-    var ctrY = Math.floor((this.mouseStart_.y + this.mouseEnd_.y) / 2);
-
-    // Do a hit test at the center of the area the user dragged over.
-    // This will give us some context when searching the accessibility tree.
-    // The hit test will result in a EventType.MOUSE_RELEASED event being
-    // fired on the result of that hit test, which will trigger
-    // onAutomationHitTest_.
-    this.desktop_.hitTest(ctrX, ctrY, EventType.MOUSE_RELEASED);
-    return false;
-  },
-
-  onClipboardDataChanged_: function() {
-    if (Date.now() - this.readClipboardDataTimeMs_ <
-        CLIPBOARD_READ_MAX_DELAY_MS) {
-      // The data has changed, and we are ready to read it.
-      // Get it using a paste.
-      document.execCommand('paste');
-    }
-  },
-
-  onClipboardPaste_: function(evt) {
-    if (Date.now() - this.readClipboardDataTimeMs_ <
-        CLIPBOARD_READ_MAX_DELAY_MS) {
-      // Read the current clipboard data.
-      evt.preventDefault();
-      this.startSpeech_(evt.clipboardData.getData('text/plain'));
-      this.readClipboardDataTimeMs_ = -1;
-      // Clear the clipboard data by copying nothing (the current document).
-      // Do this in a timeout to avoid a recursive warning per
-      // https://crbug.com/363288.
-      setTimeout(() => {
-        this.clearClipboardDataTimeMs_ = Date.now();
-        document.execCommand('copy');
-      }, 0);
-    }
-  },
-
-  onClipboardCopy_: function(evt) {
-    if (Date.now() - this.clearClipboardDataTimeMs_ <
-        CLIPBOARD_CLEAR_MAX_DELAY_MS) {
-      // onClipboardPaste has just completed reading the clipboard for speech.
-      // This is used to clear the clipboard.
-      evt.clipboardData.setData('text/plain', '');
-      evt.preventDefault();
-      this.clearClipboardDataTimeMs_ = -1;
-    }
-  },
 
   /**
    * Called in response to our hit test after the mouse is released,
@@ -364,9 +216,7 @@ SelectToSpeak.prototype = {
       root = root.parent;
     }
 
-    var rect = rectFromPoints(
-        this.mouseStart_.x, this.mouseStart_.y, this.mouseEnd_.x,
-        this.mouseEnd_.y);
+    var rect = this.inputHandler_.getMouseRect();
     var nodes = [];
     chrome.automation.getFocus(function(focusedNode) {
       // In some cases, e.g. ARC++, the window received in the hit test request,
@@ -389,68 +239,6 @@ SelectToSpeak.prototype = {
       this.startSpeechQueue_(nodes);
       this.recordStartEvent_(StartSpeechMethod.MOUSE);
     }.bind(this));
-  },
-
-  /**
-   * @param {!Event} evt
-   */
-  onKeyDown_: function(evt) {
-    if (this.keysPressedTogether_.size == 0 &&
-        evt.keyCode == SelectToSpeak.SEARCH_KEY_CODE) {
-      this.isSearchKeyDown_ = true;
-    } else if (
-        this.keysCurrentlyDown_.size == 1 &&
-        evt.keyCode == SelectToSpeak.READ_SELECTION_KEY_CODE &&
-        !this.trackingMouse_) {
-      // Only go into selection mode if we aren't already tracking the mouse.
-      this.isSelectionKeyDown_ = true;
-    } else if (!this.trackingMouse_) {
-      // Some other key was pressed.
-      this.isSearchKeyDown_ = false;
-    }
-
-    this.keysCurrentlyDown_.add(evt.keyCode);
-    this.keysPressedTogether_.add(evt.keyCode);
-  },
-
-  /**
-   * @param {!Event} evt
-   */
-  onKeyUp_: function(evt) {
-    if (evt.keyCode == SelectToSpeak.READ_SELECTION_KEY_CODE) {
-      if (this.isSelectionKeyDown_ && this.keysPressedTogether_.size == 2 &&
-          this.keysPressedTogether_.has(evt.keyCode) &&
-          this.keysPressedTogether_.has(SelectToSpeak.SEARCH_KEY_CODE)) {
-        this.cancelIfSpeaking_(true /* clear the focus ring */);
-        chrome.automation.getFocus(this.requestSpeakSelectedText_.bind(this));
-      }
-      this.isSelectionKeyDown_ = false;
-    } else if (evt.keyCode == SelectToSpeak.SEARCH_KEY_CODE) {
-      this.isSearchKeyDown_ = false;
-
-      // If we were in the middle of tracking the mouse, cancel it.
-      if (this.trackingMouse_) {
-        this.trackingMouse_ = false;
-        this.stopAll_();
-      }
-    }
-
-    // Stop speech when the user taps and releases Control or Search
-    // without using the mouse or pressing any other keys along the way.
-    if (!this.didTrackMouse_ &&
-        (evt.keyCode == SelectToSpeak.SEARCH_KEY_CODE ||
-         evt.keyCode == SelectToSpeak.CONTROL_KEY_CODE) &&
-        this.keysPressedTogether_.has(evt.keyCode) &&
-        this.keysPressedTogether_.size == 1) {
-      this.trackingMouse_ = false;
-      this.cancelIfSpeaking_(true /* clear the focus ring */);
-    }
-
-    this.keysCurrentlyDown_.delete(evt.keyCode);
-    if (this.keysCurrentlyDown_.size == 0) {
-      this.keysPressedTogether_.clear();
-      this.didTrackMouse_ = false;
-    }
   },
 
   /**
@@ -673,23 +461,51 @@ SelectToSpeak.prototype = {
   },
 
   /**
-   * Set up event listeners for mouse and keyboard events. These are
-   * forwarded to us from the SelectToSpeakEventHandler so they should
-   * be interpreted as global events on the whole screen, not local to
-   * any particular window.
+   * Set up event listeners user input.
    */
   setUpEventListeners_: function() {
-    document.addEventListener('keydown', this.onKeyDown_.bind(this));
-    document.addEventListener('keyup', this.onKeyUp_.bind(this));
-    document.addEventListener('mousedown', this.onMouseDown_.bind(this));
-    document.addEventListener('mousemove', this.onMouseMove_.bind(this));
-    document.addEventListener('mouseup', this.onMouseUp_.bind(this));
-    chrome.clipboard.onClipboardDataChanged.addListener(
-        this.onClipboardDataChanged_.bind(this));
-    document.addEventListener('paste', this.onClipboardPaste_.bind(this));
+    this.inputHandler_ = new InputHandler({
+      // canStartSelecting: Whether mouse selection can begin.
+      canStartSelecting: () => {
+        return this.state_ != SelectToSpeakState.SELECTING;
+      },
+      // onSelectingStateChanged: Started or stopped mouse selection.
+      onSelectingStateChanged: (isSelecting, x, y) => {
+        if (isSelecting) {
+          this.onStateChanged_(SelectToSpeakState.SELECTING);
+          // Fire a hit test event on click to warm up the cache, and cancel
+          // if speaking.
+          this.cancelIfSpeaking_(false /* don't clear the focus ring */);
+          this.desktop_.hitTest(x, y, EventType.MOUSE_PRESSED);
+        } else {
+          this.onStateChanged_(SelectToSpeakState.INACTIVE);
+          // Do a hit test at the center of the area the user dragged over.
+          // This will give us some context when searching the accessibility
+          // tree. The hit test will result in a EventType.MOUSE_RELEASED
+          // event being fired on the result of that hit test, which will
+          // trigger onAutomationHitTest_.
+          this.desktop_.hitTest(x, y, EventType.MOUSE_RELEASED);
+        }
+      },
+      // onSelectionChanged: Mouse selection rect changed.
+      onSelectionChanged: rect => {
+        chrome.accessibilityPrivate.setFocusRing([rect], this.color_);
+      },
+      // onKeystrokeSelection: Keys pressed for reading highlighted text.
+      onKeystrokeSelection: () => {
+        this.cancelIfSpeaking_(true /* clear the focus ring */);
+        chrome.automation.getFocus(this.requestSpeakSelectedText_.bind(this));
+      },
+      // onRequestCancel: User requested canceling input/speech.
+      onRequestCancel: () => {
+        this.cancelIfSpeaking_(true /* clear the focus ring */);
+      },
+      // onTextReceived: Text received from a 'paste' event to read aloud.
+      onTextReceived: this.startSpeech_.bind(this)
+    });
+    this.inputHandler_.setUpEventListeners();
     chrome.accessibilityPrivate.onSelectToSpeakStateChangeRequested.addListener(
         this.onStateChangeRequested_.bind(this));
-    document.addEventListener('copy', this.onClipboardCopy_.bind(this));
     // Initialize the state to SelectToSpeakState.INACTIVE.
     chrome.accessibilityPrivate.onSelectToSpeakStateChanged(this.state_);
   },
@@ -705,7 +521,7 @@ SelectToSpeak.prototype = {
     switch (this.state_) {
       case SelectToSpeakState.INACTIVE:
         // Start selection.
-        this.trackingMouse_ = true;
+        this.inputHandler_.setTrackingMouse(true);
         this.onStateChanged_(SelectToSpeakState.SELECTING);
         this.recordSelectToSpeakStateChangeEvent_(
             StateChangeEvent.START_SELECTION);
@@ -718,7 +534,7 @@ SelectToSpeak.prototype = {
         break;
       case SelectToSpeakState.SELECTING:
         // Cancelled selection.
-        this.trackingMouse_ = false;
+        this.inputHandler_.setTrackingMouse(false);
         this.onStateChanged_(SelectToSpeakState.INACTIVE);
         this.recordSelectToSpeakStateChangeEvent_(
             StateChangeEvent.CANCEL_SELECTION);
@@ -883,7 +699,7 @@ SelectToSpeak.prototype = {
 
   /**
    * Updates the state.
-   * @param {!SelectToSpeakState} state
+   * @param {!chrome.accessibilityPrivate.SelectToSpeakState} state
    */
   onStateChanged_: function(state) {
     if (this.state_ != state) {
@@ -1310,7 +1126,7 @@ SelectToSpeak.prototype = {
    * must contain at minimum a keyCode.
    */
   fireMockKeyDownEvent: function(event) {
-    this.onKeyDown_(event);
+    this.inputHandler_.onKeyDown_(event);
   },
 
   /**
@@ -1319,7 +1135,7 @@ SelectToSpeak.prototype = {
    * must contain at minimum a keyCode.
    */
   fireMockKeyUpEvent: function(event) {
-    this.onKeyUp_(event);
+    this.inputHandler_.onKeyUp_(event);
   },
 
   /**
@@ -1328,7 +1144,7 @@ SelectToSpeak.prototype = {
    * must contain at minimum a screenX and a screenY.
    */
   fireMockMouseDownEvent: function(event) {
-    this.onMouseDown_(event);
+    this.inputHandler_.onMouseDown_(event);
   },
 
   /**
@@ -1337,7 +1153,7 @@ SelectToSpeak.prototype = {
    * must contain at minimum a screenX and a screenY.
    */
   fireMockMouseUpEvent: function(event) {
-    this.onMouseUp_(event);
+    this.inputHandler_.onMouseUp_(event);
   },
 
   /**
