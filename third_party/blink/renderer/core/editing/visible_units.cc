@@ -811,6 +811,22 @@ PositionInFlatTree MostBackwardCaretPosition(const PositionInFlatTree& position,
   return MostBackwardCaretPosition<EditingInFlatTreeStrategy>(position, rule);
 }
 
+namespace {
+bool HasInvisibleFirstLetter(const Node* node) {
+  if (!node || !node->IsTextNode())
+    return false;
+  const LayoutTextFragment* remaining_text =
+      ToLayoutTextFragmentOrNull(node->GetLayoutObject());
+  if (!remaining_text || !remaining_text->IsRemainingTextLayoutObject())
+    return false;
+  const LayoutTextFragment* first_letter =
+      ToLayoutTextFragmentOrNull(AssociatedLayoutObjectOf(*node, 0));
+  if (!first_letter || first_letter == remaining_text)
+    return false;
+  return first_letter->StyleRef().Visibility() != EVisibility::kVisible;
+}
+}  // namespace
+
 template <typename Strategy>
 PositionTemplate<Strategy> MostForwardCaretPosition(
     const PositionTemplate<Strategy>& position,
@@ -903,7 +919,8 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
       continue;
     const unsigned text_start_offset = text_layout_object->TextStartOffset();
     if (current_node != start_node) {
-      DCHECK(current_pos.AtStartOfNode());
+      DCHECK(current_pos.AtStartOfNode() ||
+             HasInvisibleFirstLetter(current_node));
       return PositionTemplate<Strategy>(
           current_node, layout_object->CaretMinOffset() + text_start_offset);
     }

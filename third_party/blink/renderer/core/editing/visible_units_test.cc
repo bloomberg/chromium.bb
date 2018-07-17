@@ -761,5 +761,13 @@ TEST_F(VisibleUnitsTest,
   EXPECT_EQ(Position(text, 2), start);
 }
 
+TEST_F(VisibleUnitsTest, MostForwardCaretPositionWithInvisibleFirstLetter) {
+  InsertStyleElement("div::first-letter{visibility:hidden}");
+  // Use special syntax to set input position DIV@0
+  const Position position = SetCaretTextToBody("<div><!--|-->foo</div>");
+  const Node* foo = GetDocument().QuerySelector("div")->firstChild();
+  EXPECT_EQ(Position(foo, 1), MostForwardCaretPosition(position));
+}
+
 }  // namespace visible_units_test
 }  // namespace blink
