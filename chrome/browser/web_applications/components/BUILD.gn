@@ -12,3 +12,17 @@ source_set("components") {
     "//base",
   ]
 }
+
+source_set("components_unit_tests") {
+  testonly = true
+
+  sources = [
+    "web_app_helpers_unittest.cc",
+  ]
+
+  deps = [
+    ":components",
+    "//testing/gtest",
+    "//url",
+  ]
+}

@@ -60,5 +60,6 @@ source_set("unit_tests") {
   deps = [
     ":web_applications_unit_tests",
     "//chrome/browser/web_applications/bookmark_apps:unit_tests",
+    "//chrome/browser/web_applications/components:components_unit_tests",
   ]
 }
