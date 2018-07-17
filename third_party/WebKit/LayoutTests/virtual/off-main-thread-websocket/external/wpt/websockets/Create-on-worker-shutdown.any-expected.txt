@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS WebSocket created after a worker self.close()
+Harness: the test ran to completion.
+
