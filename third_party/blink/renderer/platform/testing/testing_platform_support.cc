@@ -63,6 +63,11 @@ class TestingPlatformSupport::TestingInterfaceProvider
 
   void GetInterface(const char* name,
                     mojo::ScopedMessagePipeHandle handle) override {
+    auto& override_callback = GetOverrideCallback();
+    if (!override_callback.is_null()) {
+      override_callback.Run(name, std::move(handle));
+      return;
+    }
     if (std::string(name) == mojom::blink::MimeRegistry::Name_) {
       mojo::MakeStrongBinding(
           std::make_unique<MockMimeRegistry>(),
@@ -70,7 +75,22 @@ class TestingPlatformSupport::TestingInterfaceProvider
       return;
     }
   }
+
+  static ScopedOverrideMojoInterface::GetInterfaceCallback&
+  GetOverrideCallback() {
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        ScopedOverrideMojoInterface::GetInterfaceCallback, callback, ());
+    return callback;
+  }
 };
+
+TestingPlatformSupport::ScopedOverrideMojoInterface::
+    ScopedOverrideMojoInterface(GetInterfaceCallback callback)
+    : auto_reset_(&TestingInterfaceProvider::GetOverrideCallback(),
+                  std::move(callback)) {}
+
+TestingPlatformSupport::ScopedOverrideMojoInterface::
+    ~ScopedOverrideMojoInterface() = default;
 
 namespace {
 
