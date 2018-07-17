@@ -6,12 +6,13 @@
 #define CONTENT_COMMON_NET_URL_REQUEST_USER_DATA_H_
 
 #include "base/supports_user_data.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
 // Used to annotate all URLRequests for which the request can be associated
 // with a given RenderFrame.
-class URLRequestUserData : public base::SupportsUserData::Data {
+class CONTENT_EXPORT URLRequestUserData : public base::SupportsUserData::Data {
  public:
   URLRequestUserData(int render_process_id,
                      int render_frame_id);
