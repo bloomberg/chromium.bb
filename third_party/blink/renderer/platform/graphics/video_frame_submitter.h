@@ -5,14 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_VIDEO_FRAME_SUBMITTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_VIDEO_FRAME_SUBMITTER_H_
 
-#include <memory>
-#include <utility>
-
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/client/shared_bitmap_reporter.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/shared_bitmap.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
@@ -39,7 +37,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
   ~VideoFrameSubmitter() override;
 
-  bool Rendering() { return is_rendering_; }
+  bool Rendering() { return is_rendering_; };
   cc::VideoFrameProvider* Provider() { return provider_; }
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient>* Binding() {
     return &binding_;
@@ -47,7 +45,6 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   void SetSink(viz::mojom::blink::CompositorFrameSinkPtr* sink) {
     compositor_frame_sink_ = std::move(*sink);
   }
-  void SetSurfaceId(viz::SurfaceId id) { surface_id_ = id; }
 
   void OnReceivedContextProvider(
       bool,
@@ -62,8 +59,8 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // WebVideoFrameSubmitter implementation.
   void Initialize(cc::VideoFrameProvider*) override;
   void SetRotation(media::VideoRotation) override;
-  void EnableSubmission(viz::SurfaceId, WebFrameSinkDestroyedCallback) override;
-  void UpdateSubmissionState(bool) override;
+  void EnableSubmission(viz::FrameSinkId,
+                        WebFrameSinkDestroyedCallback) override;
 
   // viz::ContextLostObserver implementation.
   void OnContextLost() override;
@@ -86,11 +83,8 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest, ContextLostDuringSubmit);
-  FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest,
-                           ShouldSubmitPreventsSubmission);
 
   void StartSubmitting();
-  void UpdateSubmissionStateInternal();
   void SubmitFrame(const viz::BeginFrameAck&, scoped_refptr<media::VideoFrame>);
 
   // Pulls frame and submits it to compositor.
@@ -103,16 +97,16 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   scoped_refptr<ui::ContextProviderCommandBuffer> context_provider_;
   viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   WebContextProviderCallback context_provider_callback_;
   std::unique_ptr<VideoFrameResourceProvider> resource_provider_;
   WebFrameSinkDestroyedCallback frame_sink_destroyed_callback_;
-  viz::SurfaceId surface_id_;
+  viz::FrameSinkId frame_sink_id_;
   bool waiting_for_compositor_ack_ = false;
 
   bool is_rendering_;
-  // If we are not on screen, we should not submit.
-  bool should_submit_ = false;
   media::VideoRotation rotation_;
+  gfx::Size current_size_in_pixels_;
 
   THREAD_CHECKER(media_thread_checker_);
 

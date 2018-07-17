@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/platform/graphics/surface_layer_bridge.h"
 
-#include <utility>
-
 #include "base/feature_list.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
@@ -23,13 +21,9 @@
 
 namespace blink {
 
-SurfaceLayerBridge::SurfaceLayerBridge(
-    WebLayerTreeView* layer_tree_view,
-    WebSurfaceLayerBridgeObserver* observer,
-    cc::UpdateSubmissionStateCB update_submission_state_callback)
+SurfaceLayerBridge::SurfaceLayerBridge(WebLayerTreeView* layer_tree_view,
+                                       WebSurfaceLayerBridgeObserver* observer)
     : observer_(observer),
-      update_submission_state_callback_(
-          std::move(update_submission_state_callback)),
       binding_(this),
       frame_sink_id_(Platform::Current()->GenerateFrameSinkId()),
       parent_frame_sink_id_(layer_tree_view ? layer_tree_view->GetFrameSinkId()
@@ -124,7 +118,7 @@ void SurfaceLayerBridge::SetContentsOpaque(bool opaque) {
 }
 
 void SurfaceLayerBridge::CreateSurfaceLayer() {
-  surface_layer_ = cc::SurfaceLayer::Create(update_submission_state_callback_);
+  surface_layer_ = cc::SurfaceLayer::Create();
 
   // This surface_id is essentially just a placeholder for the real one we will
   // get in OnFirstSurfaceActivation. We need it so that we properly get a
@@ -133,12 +127,8 @@ void SurfaceLayerBridge::CreateSurfaceLayer() {
       frame_sink_id_,
       parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId());
 
-  surface_layer_->SetPrimarySurfaceId(current_surface_id_,
-                                      cc::DeadlinePolicy::UseDefaultDeadline());
-
   surface_layer_->SetStretchContentToFillBounds(true);
   surface_layer_->SetIsDrawable(true);
-  surface_layer_->SetMayContainVideo(true);
 
   if (observer_) {
     observer_->RegisterContentsLayer(surface_layer_.get());
@@ -146,6 +136,10 @@ void SurfaceLayerBridge::CreateSurfaceLayer() {
   // We ignore our opacity until we are sure that we have something to show,
   // as indicated by getting an OnFirstSurfaceActivation call.
   surface_layer_->SetContentsOpaque(false);
+}
+
+const viz::SurfaceId& SurfaceLayerBridge::GetSurfaceId() const {
+  return current_surface_id_;
 }
 
 }  // namespace blink

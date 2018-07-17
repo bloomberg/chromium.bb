@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "cc/layers/surface_layer.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "media/base/media_log.h"
 #include "media/base/media_observer.h"
@@ -82,8 +81,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       bool embedded_media_experience_enabled,
       mojom::MediaMetricsProviderPtr metrics_provider,
       base::OnceCallback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
-          blink::WebSurfaceLayerBridgeObserver*,
-          cc::UpdateSubmissionStateCB)> bridge_callback,
+          blink::WebSurfaceLayerBridgeObserver*)> bridge_callback,
       scoped_refptr<viz::ContextProvider> context_provider,
       bool use_surface_layer_for_video);
 
@@ -154,8 +152,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   }
 
   base::OnceCallback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
-      blink::WebSurfaceLayerBridgeObserver*,
-      cc::UpdateSubmissionStateCB)>
+      blink::WebSurfaceLayerBridgeObserver*)>
   create_bridge_callback() {
     return std::move(create_bridge_callback_);
   }
@@ -188,8 +185,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   const bool embedded_media_experience_enabled_;
   mojom::MediaMetricsProviderPtr metrics_provider_;
   base::OnceCallback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
-      blink::WebSurfaceLayerBridgeObserver*,
-      cc::UpdateSubmissionStateCB)>
+      blink::WebSurfaceLayerBridgeObserver*)>
       create_bridge_callback_;
   scoped_refptr<viz::ContextProvider> context_provider_;
   bool use_surface_layer_for_video_;

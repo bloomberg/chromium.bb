@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/cc_export.h"
@@ -18,25 +17,12 @@
 
 namespace cc {
 
-// This must match SurfaceLayer::UpdateSubmissionStateCB.
-using UpdateSubmissionStateCB = base::RepeatingCallback<void(bool)>;
-
 class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
  public:
-  static std::unique_ptr<SurfaceLayerImpl> Create(
-      LayerTreeImpl* tree_impl,
-      int id,
-      UpdateSubmissionStateCB update_submission_state_callback) {
-    return base::WrapUnique(new SurfaceLayerImpl(
-        tree_impl, id, std::move(update_submission_state_callback)));
-  }
-
   static std::unique_ptr<SurfaceLayerImpl> Create(LayerTreeImpl* tree_impl,
                                                   int id) {
-    return base::WrapUnique(
-        new SurfaceLayerImpl(tree_impl, id, base::BindRepeating([](bool) {})));
+    return base::WrapUnique(new SurfaceLayerImpl(tree_impl, id));
   }
-
   ~SurfaceLayerImpl() override;
 
   void SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
@@ -70,14 +56,12 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   // LayerImpl overrides.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void PushPropertiesTo(LayerImpl* layer) override;
-  bool WillDraw(DrawMode draw_mode,
-                viz::ClientResourceProvider* resource_provider) override;
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
   bool is_surface_layer() const override;
 
  protected:
-  SurfaceLayerImpl(LayerTreeImpl* tree_impl, int id, UpdateSubmissionStateCB);
+  SurfaceLayerImpl(LayerTreeImpl* tree_impl, int id);
 
  private:
   viz::SurfaceDrawQuad* CreateSurfaceDrawQuad(
@@ -90,14 +74,12 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
   const char* LayerTypeAsString() const override;
 
-  UpdateSubmissionStateCB update_submission_state_callback_;
   viz::SurfaceId primary_surface_id_;
   viz::SurfaceId fallback_surface_id_;
   base::Optional<uint32_t> deadline_in_frames_;
 
   bool stretch_content_to_fill_bounds_ = false;
   bool surface_hit_testable_ = false;
-  bool will_draw_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayerImpl);
 };

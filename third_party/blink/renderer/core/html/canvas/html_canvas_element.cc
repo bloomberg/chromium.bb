@@ -29,9 +29,7 @@
 
 #include <math.h>
 
-#include <limits>
 #include <memory>
-#include <utility>
 
 #include "base/location.h"
 #include "base/numerics/checked_math.h"
@@ -1429,8 +1427,8 @@ void HTMLCanvasElement::CreateLayer() {
   if (frame) {
     layer_tree_view =
         frame->GetPage()->GetChromeClient().GetWebLayerTreeView(frame);
-    surface_layer_bridge_ = std::make_unique<::blink::SurfaceLayerBridge>(
-        layer_tree_view, this, base::DoNothing());
+    surface_layer_bridge_ =
+        std::make_unique<::blink::SurfaceLayerBridge>(layer_tree_view, this);
     // Creates a placeholder layer first before Surface is created.
     surface_layer_bridge_->CreateSolidColorLayer();
   }

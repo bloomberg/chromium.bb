@@ -4638,12 +4638,10 @@ class DidDrawCheckLayer : public LayerImpl {
 
   bool WillDraw(DrawMode draw_mode,
                 viz::ClientResourceProvider* provider) override {
-    if (!LayerImpl::WillDraw(draw_mode, provider))
-      return false;
+    will_draw_called_ = true;
     if (will_draw_returns_false_)
       return false;
-    will_draw_returned_true_ = true;
-    return true;
+    return LayerImpl::WillDraw(draw_mode, provider);
   }
 
   void AppendQuads(viz::RenderPass* render_pass,
@@ -4657,14 +4655,14 @@ class DidDrawCheckLayer : public LayerImpl {
     LayerImpl::DidDraw(provider);
   }
 
-  bool will_draw_returned_true() const { return will_draw_returned_true_; }
+  bool will_draw_called() const { return will_draw_called_; }
   bool append_quads_called() const { return append_quads_called_; }
   bool did_draw_called() const { return did_draw_called_; }
 
   void set_will_draw_returns_false() { will_draw_returns_false_ = true; }
 
   void ClearDidDrawCheck() {
-    will_draw_returned_true_ = false;
+    will_draw_called_ = false;
     append_quads_called_ = false;
     did_draw_called_ = false;
   }
@@ -4678,7 +4676,7 @@ class DidDrawCheckLayer : public LayerImpl {
   DidDrawCheckLayer(LayerTreeImpl* tree_impl, int id)
       : LayerImpl(tree_impl, id),
         will_draw_returns_false_(false),
-        will_draw_returned_true_(false),
+        will_draw_called_(false),
         append_quads_called_(false),
         did_draw_called_(false) {
     SetBounds(gfx::Size(10, 10));
@@ -4688,7 +4686,7 @@ class DidDrawCheckLayer : public LayerImpl {
 
  private:
   bool will_draw_returns_false_;
-  bool will_draw_returned_true_;
+  bool will_draw_called_;
   bool append_quads_called_;
   bool did_draw_called_;
 };
@@ -4788,7 +4786,7 @@ TEST_F(LayerTreeHostImplTest, WillDrawReturningFalseDoesNotCall) {
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);
 
-    EXPECT_TRUE(layer->will_draw_returned_true());
+    EXPECT_TRUE(layer->will_draw_called());
     EXPECT_TRUE(layer->append_quads_called());
     EXPECT_TRUE(layer->did_draw_called());
   }
@@ -4805,7 +4803,7 @@ TEST_F(LayerTreeHostImplTest, WillDrawReturningFalseDoesNotCall) {
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);
 
-    EXPECT_FALSE(layer->will_draw_returned_true());
+    EXPECT_TRUE(layer->will_draw_called());
     EXPECT_FALSE(layer->append_quads_called());
     EXPECT_FALSE(layer->did_draw_called());
   }
@@ -4831,14 +4829,14 @@ TEST_F(LayerTreeHostImplTest, DidDrawNotCalledOnHiddenLayer) {
 
   TestFrameData frame;
 
-  EXPECT_FALSE(layer->will_draw_returned_true());
+  EXPECT_FALSE(layer->will_draw_called());
   EXPECT_FALSE(layer->did_draw_called());
 
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
 
-  EXPECT_FALSE(layer->will_draw_returned_true());
+  EXPECT_FALSE(layer->will_draw_called());
   EXPECT_FALSE(layer->did_draw_called());
 
   EXPECT_TRUE(layer->visible_layer_rect().IsEmpty());
@@ -4848,14 +4846,14 @@ TEST_F(LayerTreeHostImplTest, DidDrawNotCalledOnHiddenLayer) {
   layer->NoteLayerPropertyChanged();
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  EXPECT_FALSE(layer->will_draw_returned_true());
+  EXPECT_FALSE(layer->will_draw_called());
   EXPECT_FALSE(layer->did_draw_called());
 
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
 
-  EXPECT_TRUE(layer->will_draw_returned_true());
+  EXPECT_TRUE(layer->will_draw_called());
   EXPECT_TRUE(layer->did_draw_called());
 
   EXPECT_FALSE(layer->visible_layer_rect().IsEmpty());
@@ -4888,18 +4886,18 @@ TEST_F(LayerTreeHostImplTest, WillDrawNotCalledOnOccludedLayer) {
 
   TestFrameData frame;
 
-  EXPECT_FALSE(occluded_layer->will_draw_returned_true());
+  EXPECT_FALSE(occluded_layer->will_draw_called());
   EXPECT_FALSE(occluded_layer->did_draw_called());
-  EXPECT_FALSE(top_layer->will_draw_returned_true());
+  EXPECT_FALSE(top_layer->will_draw_called());
   EXPECT_FALSE(top_layer->did_draw_called());
 
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
 
-  EXPECT_FALSE(occluded_layer->will_draw_returned_true());
+  EXPECT_FALSE(occluded_layer->will_draw_called());
   EXPECT_FALSE(occluded_layer->did_draw_called());
-  EXPECT_TRUE(top_layer->will_draw_returned_true());
+  EXPECT_TRUE(top_layer->will_draw_called());
   EXPECT_TRUE(top_layer->did_draw_called());
 }
 

@@ -133,7 +133,9 @@ class CC_EXPORT LayerImpl {
   // WillDraw must be called before AppendQuads. If WillDraw returns false,
   // AppendQuads and DidDraw will not be called. If WillDraw returns true,
   // DidDraw is guaranteed to be called before another WillDraw or before
-  // the layer is destroyed.
+  // the layer is destroyed. To enforce this, any class that overrides
+  // WillDraw/DidDraw must call the base class version only if WillDraw
+  // returns true.
   virtual bool WillDraw(DrawMode draw_mode,
                         viz::ClientResourceProvider* resource_provider);
   virtual void AppendQuads(viz::RenderPass* render_pass,

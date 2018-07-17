@@ -15,7 +15,6 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "cc/layers/surface_layer.h"
 #include "cc/layers/video_frame_provider.h"
 #include "media/base/video_renderer_sink.h"
 #include "media/blink/media_blink_export.h"
@@ -30,7 +29,7 @@ class AutoOpenCloseEvent;
 }
 
 namespace viz {
-class SurfaceId;
+class FrameSinkId;
 }
 
 namespace media {
@@ -77,13 +76,10 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // called before destruction starts.
   ~VideoFrameCompositor() override;
 
-  // Can be called from any thread.
-  cc::UpdateSubmissionStateCB GetUpdateSubmissionStateCallback();
-
   // Signals the VideoFrameSubmitter to prepare to receive BeginFrames and
   // submit video frames given by VideoFrameCompositor.
   virtual void EnableSubmission(
-      const viz::SurfaceId& id,
+      const viz::FrameSinkId& id,
       media::VideoRotation rotation,
       blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback);
 
@@ -154,10 +150,9 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // Ran on the |task_runner_| to initalize |submitter_|;
   void InitializeSubmitter();
 
-  // Signals the VideoFrameSubmitter to stop submitting frames.
-  void UpdateSubmissionState(bool);
-
   // Indicates whether the endpoint for the VideoFrame exists.
+  // TODO(lethalantidote): Update this function to read creation/destruction
+  // signals of the SurfaceLayerImpl.
   bool IsClientSinkAvailable();
 
   // Called on the compositor thread in response to Start() or Stop() calls;
@@ -206,7 +201,6 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   base::TimeDelta last_interval_;
   base::TimeTicks last_background_render_;
   OnNewProcessedFrameCB new_processed_frame_cb_;
-  cc::UpdateSubmissionStateCB update_submission_state_callback_;
 
   // Set on the compositor thread, but also read on the media thread.
   base::Lock current_frame_lock_;
