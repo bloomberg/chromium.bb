@@ -71,10 +71,8 @@ constexpr SkColor kDefaultColorNTPText = SK_ColorBLACK;
 const SkColor kDefaultColorNTPLink = SkColorSetRGB(0x06, 0x37, 0x74);
 #endif  // OS_WIN
 
-// Then new MD Incognito NTP uses a slightly different shade of black.
-// TODO(msramek): Remove the old entry when the new NTP fully launches.
 const SkColor kDefaultColorNTPBackgroundIncognito =
-    SkColorSetRGB(0x30, 0x30, 0x30);
+    SkColorSetRGB(0x32, 0x36, 0x39);
 
 const SkColor kDefaultColorNTPHeader = SkColorSetRGB(0x96, 0x96, 0x96);
 constexpr SkColor kDefaultColorButtonBackground = SK_ColorTRANSPARENT;
