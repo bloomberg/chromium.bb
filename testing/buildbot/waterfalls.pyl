@@ -2213,9 +2213,7 @@
           ],
         },
       },
-      # TODO(crbug.com/863070): We no longer have 10.12 Retina bots, so we are
-      # moving the jobs to 10.13. This bot needs to be renamed to 10.13 later.
-      'mac10.12_retina-blink-rel-dummy': {
+      'mac10.13_retina-blink-rel-dummy': {
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
@@ -3057,9 +3055,7 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
-      # TODO(crbug.com/863070): We no longer have 10.12 Retina bots, so we are
-      # moving the jobs to 10.13. This bot needs to be renamed to 10.13 later.
-      'WebKit Mac10.12 (retina)': {
+      'WebKit Mac10.13 (retina)': {
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },

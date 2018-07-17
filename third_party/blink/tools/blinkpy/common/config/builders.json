@@ -31,7 +31,7 @@
         "port_name": "mac-mac10.11",
         "specifiers": ["Mac10.13", "Debug"]
     },
-    "WebKit Mac10.12 (retina)": {
+    "WebKit Mac10.13 (retina)": {
         "port_name": "mac-retina",
         "specifiers": ["Retina", "Release"]
     },
@@ -71,14 +71,14 @@
         "specifiers": ["Mac10.12", "Release"],
         "is_try_builder": true
     },
-    "mac10.12_retina-blink-rel": {
-        "port_name": "mac-retina",
-        "specifiers": ["Retina", "Release"],
-        "is_try_builder": true
-    },
     "mac10.13-blink-rel": {
         "port_name": "mac-mac10.13",
         "specifiers": ["Mac10.13", "Release"],
+        "is_try_builder": true
+    },
+    "mac10.13_retina-blink-rel": {
+        "port_name": "mac-retina",
+        "specifiers": ["Retina", "Release"],
         "is_try_builder": true
     },
     "win7-blink-rel": {

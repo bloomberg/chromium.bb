@@ -740,7 +740,7 @@ class BBJSONGenerator(object):
       'mac10.10-blink-rel-dummy',
       'mac10.11-blink-rel-dummy',
       'mac10.12-blink-rel-dummy',
-      'mac10.12_retina-blink-rel-dummy',
+      'mac10.13_retina-blink-rel-dummy',
       'mac10.13-blink-rel-dummy',
       'win7-blink-rel-dummy',
       'win10-blink-rel-dummy',
