@@ -95,11 +95,18 @@ void PluginData::UpdatePluginList(const SecurityOrigin* main_frame_origin) {
   ResetPluginData();
   main_frame_origin_ = main_frame_origin;
 
+  // TODO(jbroman): Remove this. It is intended only as a minimal fix to restore
+  // previous behavior about origins that url::Origin rejects. This triggers the
+  // code which maps such origins to url::Origin(), a unique origin.
+  // https://crbug.com/862282
+  scoped_refptr<const SecurityOrigin> legacy_origin =
+      SecurityOrigin::CreateFromUrlOrigin(main_frame_origin->ToUrlOrigin());
+
   mojom::blink::PluginRegistryPtr registry;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&registry));
   Vector<mojom::blink::PluginInfoPtr> plugins;
-  registry->GetPlugins(false, main_frame_origin_, &plugins);
+  registry->GetPlugins(false, legacy_origin, &plugins);
   for (const auto& plugin : plugins) {
     auto* plugin_info =
         new PluginInfo(plugin->name, FilePathToWebString(plugin->filename),

@@ -1835,6 +1835,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "mojo/kurl_security_origin_test.cc",
     "mojo/notification_struct_traits_test.cc",
     "mojo/string16_mojom_traits_test.cc",
+    "plugins/plugin_data_test.cc",
     "pod_arena_test.cc",
     "pod_free_list_arena_test.cc",
     "pod_interval_tree_test.cc",

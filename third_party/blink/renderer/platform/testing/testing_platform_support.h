@@ -34,6 +34,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/auto_reset.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -68,6 +70,20 @@ class TestingPlatformSupport : public Platform {
   InterfaceProvider* GetInterfaceProvider() override;
 
   virtual void RunUntilIdle();
+
+  // Overrides the handling of GetInterface on the platform's associated
+  // interface provider.
+  class ScopedOverrideMojoInterface {
+   public:
+    using GetInterfaceCallback =
+        base::RepeatingCallback<void(const char*,
+                                     mojo::ScopedMessagePipeHandle)>;
+    explicit ScopedOverrideMojoInterface(GetInterfaceCallback);
+    ~ScopedOverrideMojoInterface();
+
+   private:
+    base::AutoReset<GetInterfaceCallback> auto_reset_;
+  };
 
  protected:
   class TestingInterfaceProvider;

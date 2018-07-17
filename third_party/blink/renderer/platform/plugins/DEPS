@@ -12,3 +12,9 @@ include_rules = [
     "+third_party/blink/renderer/platform/weborigin",
     "+third_party/blink/renderer/platform/wtf",
 ]
+
+specific_include_rules = {
+  ".*_test\.cc": [
+    "+third_party/blink/renderer/platform/testing",
+  ],
+}
