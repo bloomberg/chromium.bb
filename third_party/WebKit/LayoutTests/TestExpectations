@@ -2655,6 +2655,7 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-002.html [ Failure ]
 crbug.com/626703 external/wpt/content-security-policy/securitypolicyviolation/targeting.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/white-space/break-spaces-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/textarea-break-spaces-001.html [ Failure ]
