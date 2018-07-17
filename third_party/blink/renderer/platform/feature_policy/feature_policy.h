@@ -58,6 +58,38 @@ ParseFeaturePolicy(const String& policy,
                    Vector<String>* messages,
                    const FeatureNameMap& feature_names);
 
+// Returns true iff any declaration in the policy is for the given feature.
+PLATFORM_EXPORT bool IsFeatureDeclared(mojom::FeaturePolicyFeature,
+                                       const ParsedFeaturePolicy&);
+
+// Removes any declaration in the policy for the given feature. Returns true if
+// the policy was modified.
+PLATFORM_EXPORT bool RemoveFeatureIfPresent(mojom::FeaturePolicyFeature,
+                                            ParsedFeaturePolicy&);
+
+// If no declaration in the policy exists already for the feature, adds a
+// declaration which disallows the feature in all origins. Returns true if the
+// policy was modified.
+PLATFORM_EXPORT bool DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature,
+                                                 ParsedFeaturePolicy&);
+
+// If no declaration in the policy exists already for the feature, adds a
+// declaration which allows the feature in all origins. Returns true if the
+// policy was modified.
+PLATFORM_EXPORT bool AllowFeatureEverywhereIfNotPresent(
+    mojom::FeaturePolicyFeature,
+    ParsedFeaturePolicy&);
+
+// Replaces any existing declarations in the policy for the given feature with
+// a declaration which disallows the feature in all origins.
+PLATFORM_EXPORT void DisallowFeature(mojom::FeaturePolicyFeature,
+                                     ParsedFeaturePolicy&);
+
+// Replaces any existing declarations in the policy for the given feature with
+// a declaration which allows the feature in all origins.
+PLATFORM_EXPORT void AllowFeatureEverywhere(mojom::FeaturePolicyFeature,
+                                            ParsedFeaturePolicy&);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FEATURE_POLICY_FEATURE_POLICY_H_
