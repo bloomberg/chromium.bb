@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
@@ -53,7 +54,10 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
 
   size_t TotalCacheSize() const;
 
-  void set_cache_limit_for_testing(size_t limit) { total_cache_limit_ = limit; }
+  void set_cache_limit_for_testing(size_t limit) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    total_cache_limit_ = limit;
+  }
 
  private:
   void ClearAreasIfNeeded();
@@ -62,6 +66,8 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
       const std::string& namespace_id,
       const url::Origin& origin,
       blink::scheduler::WebThreadScheduler* scheduler);
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   blink::mojom::StoragePartitionService* const storage_partition_service_;
 
