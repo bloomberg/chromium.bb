@@ -836,5 +836,13 @@
              file="../../../third_party/web-animations-js/sources/web-animations-next-lite.min.js"
              type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_POLYMER_1_0_POLYMER2_POLYMER_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/polymer2/polymer.html"
+             type="chrome_html"
+             compress="gzip" />
+  <structure name="IDR_POLYMER_1_0_POLYMER2_POLYMER_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/polymer2/polymer-extracted.js"
+             type="chrome_html"
+             compress="gzip" />
 </grit-part>
 

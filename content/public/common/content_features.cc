@@ -626,6 +626,14 @@ const char kWebXrRenderPathParamValueGpuFence[] = "GpuFence";
 const char kWebXrRenderPathParamValueSharedBuffer[] = "SharedBuffer";
 #endif  // defined(OS_ANDROID)
 
+#if !defined(OS_ANDROID)
+// Makes all WebUI that uses Polymer use 2.x version.
+// TODO(dpapad): Remove this once Polymer 2 migration is done,
+// https://crbug.com/738611.
+const base::Feature kWebUIPolymer2{"WebUIPolymer2",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_MACOSX)
 // Enables caching of media devices for the purpose of enumerating them.
 const base::Feature kDeviceMonitorMac{"DeviceMonitorMac",
