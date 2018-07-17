@@ -1599,18 +1599,26 @@ LRESULT HWNDMessageHandler::OnDpiChanged(UINT msg,
   if (LOWORD(w_param) != HIWORD(w_param))
     NOTIMPLEMENTED() << "Received non-square scaling factors";
 
+  int dpi;
+  float scaling_factor;
+  if (display::Display::HasForceDeviceScaleFactor()) {
+    scaling_factor = display::Display::GetForcedDeviceScaleFactor();
+    dpi = display::win::GetDPIFromScalingFactor(scaling_factor);
+  } else {
+    dpi = LOWORD(w_param);
+    scaling_factor = display::win::GetScalingFactorFromDPI(dpi_);
+  }
+
   // The first WM_DPICHANGED originates from EnableChildWindowDpiMessage during
   // initialization. We don't want to propagate this as the client is already
   // set at the current scale factor and may cause the window to display too
   // soon. See http://crbug.com/625076.
-  int dpi = LOWORD(w_param);
   if (dpi_ == dpi)
     return 0;
 
   dpi_ = dpi;
   SetBoundsInternal(gfx::Rect(*reinterpret_cast<RECT*>(l_param)), false);
-  delegate_->HandleWindowScaleFactorChanged(
-      display::win::GetScalingFactorFromDPI(dpi_));
+  delegate_->HandleWindowScaleFactorChanged(scaling_factor);
   return 0;
 }
 
