@@ -31,10 +31,8 @@ class BrowserXrDevice;
 // APIs like poses and presentation.
 class VRDisplayHost : public device::mojom::VRDisplayHost {
  public:
-  VRDisplayHost(BrowserXrDevice* device,
-                content::RenderFrameHost* render_frame_host,
-                device::mojom::VRServiceClient* service_client,
-                device::mojom::VRDisplayInfoPtr display_info);
+  VRDisplayHost(content::RenderFrameHost* render_frame_host,
+                device::mojom::VRServiceClient* service_client);
   ~VRDisplayHost() override;
 
   // device::mojom::VRDisplayHost
@@ -49,8 +47,12 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   void SetListeningForActivate(bool listening);
   void SetInFocusedFrame(bool in_focused_frame);
 
+  // Notifications when devices are added/removed.
+  void OnDeviceRemoved(BrowserXrDevice* device);
+  void OnDeviceAdded(BrowserXrDevice* device);
+
   // Notifications/calls from BrowserXrDevice:
-  void OnChanged(device::mojom::VRDisplayInfoPtr vr_device_info);
+  void OnChanged();
   void OnExitPresent();
   void OnBlur();
   void OnFocus();
@@ -59,6 +61,10 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   void OnDeactivate(device::mojom::VRDisplayEventReason reason);
   bool ListeningForActivate() { return listening_for_activate_; }
   bool InFocusedFrame() { return in_focused_frame_; }
+
+  base::WeakPtr<VRDisplayHost> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
  private:
   void ReportRequestPresent();
@@ -70,6 +76,7 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
       device::mojom::VRMagicWindowProviderPtr session,
       device::mojom::XRSessionControllerPtr controller);
   void OnARSessionCreated(
+      vr::BrowserXrDevice* device,
       device::mojom::VRDisplayHost::RequestSessionCallback callback,
       device::mojom::XRSessionPtr session);
 
@@ -77,7 +84,8 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   // object.
   bool IsSecureContextRequirementSatisfied();
 
-  BrowserXrDevice* browser_device_ = nullptr;
+  device::mojom::VRDisplayInfoPtr GetCurrentVRDisplayInfo();
+
   bool in_focused_frame_ = false;
   bool listening_for_activate_ = false;
 
@@ -88,6 +96,12 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   mojo::InterfacePtrSet<device::mojom::XRSessionController>
       magic_window_controllers_;
   int next_key_ = 0;
+
+  // If we start an immersive session, or are listening to immersive activation,
+  // notify this device if we are destroyed.
+  BrowserXrDevice* immersive_device_ = nullptr;
+  BrowserXrDevice* magic_window_device_ = nullptr;
+  BrowserXrDevice* ar_device_ = nullptr;
 
   base::WeakPtrFactory<VRDisplayHost> weak_ptr_factory_;
 

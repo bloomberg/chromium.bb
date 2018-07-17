@@ -52,8 +52,6 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
   // Constructor for tests.
   VRServiceImpl();
 
-  int NumberOfConnectedDisplayHosts() { return displays_.size(); }
-
  private:
   void SetBinding(mojo::StrongBindingPtr<VRService> binding);
 
@@ -67,7 +65,7 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
 
   void OnWebContentsFocusChanged(content::RenderWidgetHost* host, bool focused);
 
-  std::map<BrowserXrDevice*, std::unique_ptr<VRDisplayHost>> displays_;
+  std::unique_ptr<VRDisplayHost> display_;
   SetClientCallback set_client_callback_;
   device::mojom::VRServiceClientPtr client_;
   content::RenderFrameHost* render_frame_host_;

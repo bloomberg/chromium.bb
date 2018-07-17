@@ -25,9 +25,8 @@ namespace {
 
 class VRDeviceManagerForTesting : public VRDeviceManager {
  public:
-  explicit VRDeviceManagerForTesting(ProviderList providers,
-                                     ProviderList fallback_providers)
-      : VRDeviceManager(std::move(providers), std::move(fallback_providers)) {}
+  explicit VRDeviceManagerForTesting(ProviderList providers)
+      : VRDeviceManager(std::move(providers)) {}
   ~VRDeviceManagerForTesting() override = default;
 
   size_t NumberOfConnectedServices() {
@@ -42,10 +41,6 @@ class VRServiceImplForTesting : public VRServiceImpl {
  public:
   VRServiceImplForTesting() : VRServiceImpl() {}
   ~VRServiceImplForTesting() override = default;
-
-  int GetNumberOfConnectedDisplayHosts() {
-    return NumberOfConnectedDisplayHosts();
-  }
 };
 
 }  // namespace
@@ -63,9 +58,7 @@ class VRDeviceManagerTest : public testing::Test {
     provider_ = new device::FakeVRDeviceProvider();
     providers.emplace_back(
         std::unique_ptr<device::FakeVRDeviceProvider>(provider_));
-    std::vector<std::unique_ptr<device::VRDeviceProvider>> fallback_providers;
-    new VRDeviceManagerForTesting(std::move(providers),
-                                  std::move(fallback_providers));
+    new VRDeviceManagerForTesting(std::move(providers));
   }
 
   void TearDown() override { EXPECT_FALSE(VRDeviceManager::HasInstance()); }
@@ -136,17 +129,21 @@ TEST_F(VRDeviceManagerTest, DeviceManagerRegistration) {
   EXPECT_FALSE(VRDeviceManager::HasInstance());
 }
 
-// Ensure that devices added and removed are propagated to the service after
-// initialization.
+// Ensure that devices added and removed are reflected in calls to request
+// sessions.
 TEST_F(VRDeviceManagerTest, AddRemoveDevices) {
   auto service = BindService();
   EXPECT_EQ(1u, ServiceCount());
   EXPECT_TRUE(Provider()->Initialized());
-  device::FakeVRDevice* device = new device::FakeVRDevice(1);
+  device::FakeVRDevice* device = new device::FakeVRDevice(
+      static_cast<int>(device::VRDeviceId::ARCORE_DEVICE_ID));
   Provider()->AddDevice(base::WrapUnique(device));
-  EXPECT_EQ(1, service->GetNumberOfConnectedDisplayHosts());
+
+  device::mojom::XRSessionOptions options = {};
+  options.provide_passthrough_camera = true;
+  EXPECT_TRUE(DeviceManager()->GetDeviceForOptions(&options));
   Provider()->RemoveDevice(device->GetId());
-  EXPECT_EQ(0, service->GetNumberOfConnectedDisplayHosts());
+  EXPECT_TRUE(!DeviceManager()->GetDeviceForOptions(&options));
 }
 
 }  // namespace vr

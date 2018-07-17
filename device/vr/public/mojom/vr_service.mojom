@@ -30,6 +30,7 @@ enum XRTargetRayMode {
 
 struct XRSessionOptions {
   bool immersive;
+  bool provide_passthrough_camera;
 
   // A flag to indicate if there has been a user activation when the request
   // session is made.
@@ -110,7 +111,7 @@ struct VRPose {
 
   // Indicates that a reset pose event was triggered, either by device specific
   // UI or by some other method, and handled on the browser side, and the
-  // renderer should now bubble up an event to the WebXRDevice API.
+  // renderer should now bubble up an event to the WebXR Device API.
   bool pose_reset;
 };
 
