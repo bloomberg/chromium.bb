@@ -14,7 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_handshake_request_info.h"
@@ -223,7 +223,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
   // set correctly. If the reserved header bits are set incorrectly, it is okay
   // to leave it to the caller to report the error.
   virtual int ReadFrames(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
-                         const CompletionCallback& callback) = 0;
+                         CompletionOnceCallback callback) = 0;
 
   // Writes WebSocket frame data.
   //
@@ -240,7 +240,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
   // this. This generally means returning to the event loop immediately after
   // calling the callback.
   virtual int WriteFrames(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
-                          const CompletionCallback& callback) = 0;
+                          CompletionOnceCallback callback) = 0;
 
   // Closes the stream. All pending I/O operations (if any) are cancelled
   // at this point, so |frames| can be freed.

@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/websockets/websocket_deflater.h"
 #include "net/websockets/websocket_frame.h"
@@ -47,9 +47,9 @@ class NET_EXPORT_PRIVATE WebSocketDeflateStream : public WebSocketStream {
 
   // WebSocketStream functions.
   int ReadFrames(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
-                 const CompletionCallback& callback) override;
+                 CompletionOnceCallback callback) override;
   int WriteFrames(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
-                  const CompletionCallback& callback) override;
+                  CompletionOnceCallback callback) override;
   void Close() override;
   std::string GetSubProtocol() const override;
   std::string GetExtensions() const override;
@@ -70,7 +70,6 @@ class NET_EXPORT_PRIVATE WebSocketDeflateStream : public WebSocketStream {
 
   // Handles asynchronous completion of ReadFrames() call on |stream_|.
   void OnReadComplete(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
-                      const CompletionCallback& callback,
                       int result);
 
   // This function deflates |frames| and stores the result to |frames| itself.
@@ -89,8 +88,7 @@ class NET_EXPORT_PRIVATE WebSocketDeflateStream : public WebSocketStream {
   int Inflate(std::vector<std::unique_ptr<WebSocketFrame>>* frames);
 
   int InflateAndReadIfNecessary(
-      std::vector<std::unique_ptr<WebSocketFrame>>* frames,
-      const CompletionCallback& callback);
+      std::vector<std::unique_ptr<WebSocketFrame>>* frames);
 
   const std::unique_ptr<WebSocketStream> stream_;
   WebSocketDeflater deflater_;
@@ -100,6 +98,9 @@ class NET_EXPORT_PRIVATE WebSocketDeflateStream : public WebSocketStream {
   WebSocketFrameHeader::OpCode current_reading_opcode_;
   WebSocketFrameHeader::OpCode current_writing_opcode_;
   std::unique_ptr<WebSocketDeflatePredictor> predictor_;
+
+  // User callback saved for asynchronous reads.
+  CompletionOnceCallback read_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketDeflateStream);
 };
