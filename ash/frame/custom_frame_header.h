@@ -20,6 +20,7 @@ class ASH_EXPORT CustomFrameHeader : public FrameHeader {
   class AppearanceProvider {
    public:
     virtual ~AppearanceProvider() = default;
+    virtual SkColor GetTitleColor() = 0;
     virtual SkColor GetFrameHeaderColor(bool active) = 0;
     virtual gfx::ImageSkia GetFrameHeaderImage(bool active) = 0;
     virtual gfx::ImageSkia GetFrameHeaderOverlayImage(bool active) = 0;
@@ -33,7 +34,6 @@ class ASH_EXPORT CustomFrameHeader : public FrameHeader {
   CustomFrameHeader(views::Widget* target_widget,
                     views::View* view,
                     AppearanceProvider* appearance_provider,
-                    bool incognito,
                     FrameCaptionButtonContainerView* caption_button_container);
   ~CustomFrameHeader() override;
 
@@ -52,9 +52,6 @@ class ASH_EXPORT CustomFrameHeader : public FrameHeader {
   void PaintFrameImages(gfx::Canvas* canvas, bool active);
 
   AppearanceProvider* appearance_provider_ = nullptr;
-
-  // Whether the header is for an incognito browser window.
-  bool is_incognito_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameHeader);
 };

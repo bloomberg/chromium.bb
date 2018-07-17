@@ -26,10 +26,6 @@ namespace ash {
 
 namespace {
 
-// Color for the window title text.
-const SkColor kNormalWindowTitleTextColor = SkColorSetRGB(40, 40, 40);
-const SkColor kIncognitoWindowTitleTextColor = SK_ColorWHITE;
-
 // Creates a path with rounded top corners.
 SkPath MakeRoundRectPath(const gfx::Rect& bounds,
                          int top_left_corner_radius,
@@ -125,13 +121,11 @@ CustomFrameHeader::CustomFrameHeader(
     views::Widget* target_widget,
     views::View* view,
     AppearanceProvider* appearance_provider,
-    bool incognito,
     FrameCaptionButtonContainerView* caption_button_container)
     : FrameHeader(target_widget, view) {
   DCHECK(appearance_provider);
   DCHECK(caption_button_container);
   appearance_provider_ = appearance_provider;
-  is_incognito_ = incognito;
 
   SetCaptionButtonContainer(caption_button_container);
 }
@@ -155,8 +149,7 @@ AshLayoutSize CustomFrameHeader::GetButtonLayoutSize() const {
 }
 
 SkColor CustomFrameHeader::GetTitleColor() const {
-  return is_incognito_ ? kIncognitoWindowTitleTextColor
-                       : kNormalWindowTitleTextColor;
+  return appearance_provider_->GetTitleColor();
 }
 
 SkColor CustomFrameHeader::GetCurrentFrameColor() const {

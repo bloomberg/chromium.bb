@@ -36,6 +36,10 @@ class WindowPropertyAppearanceProvider
       : window_(window) {}
   ~WindowPropertyAppearanceProvider() override = default;
 
+  SkColor GetTitleColor() override {
+    return window_->GetProperty(kFrameTextColorKey);
+  }
+
   SkColor GetFrameHeaderColor(bool active) override {
     return window_->GetProperty(active ? kFrameActiveColorKey
                                        : kFrameInactiveColorKey);
@@ -127,9 +131,8 @@ HeaderView::HeaderView(views::Widget* target_widget,
     DCHECK(!::features::IsAshInBrowserProcess());
     appearance_provider_ = std::make_unique<WindowPropertyAppearanceProvider>(
         target_widget_->GetNativeWindow());
-    // TODO(estade): pass correct value for |incognito|.
     auto frame_header = std::make_unique<CustomFrameHeader>(
-        target_widget, this, appearance_provider_.get(), false,
+        target_widget, this, appearance_provider_.get(),
         caption_button_container_);
     frame_header_ = std::move(frame_header);
   }
@@ -213,10 +216,6 @@ void HeaderView::SetWidthInPixels(int width_in_pixels) {
           : views::PaintInfo::ScaleType::kScaleWithEdgeSnapping);
 }
 
-void HeaderView::OnShowStateChanged(ui::WindowShowState show_state) {
-  frame_header_->OnShowStateChanged(show_state);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // HeaderView, views::View overrides:
 
@@ -267,6 +266,9 @@ void HeaderView::OnWindowPropertyChanged(aura::Window* window,
                                   window->GetProperty(kFrameInactiveColorKey));
   } else if (key == kFrameBackButtonStateKey) {
     UpdateCaptionButtons();
+  } else if (key == aura::client::kShowStateKey) {
+    frame_header_->OnShowStateChanged(
+        window->GetProperty(aura::client::kShowStateKey));
   }
 }
 

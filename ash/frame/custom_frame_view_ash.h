@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/aura/window_observer.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {
@@ -38,8 +37,7 @@ class ImmersiveFullscreenControllerDelegate;
 // BrowserNonClientFrameViewAsh.
 class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
                                       public ShellObserver,
-                                      public SplitViewController::Observer,
-                                      public aura::WindowObserver {
+                                      public SplitViewController::Observer {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -103,12 +101,6 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   gfx::Size GetMaximumSize() const override;
   void SchedulePaintInRect(const gfx::Rect& r) override;
   void SetVisible(bool visible) override;
-
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override;
 
   // If |paint| is false, we should not paint the header. Used for overview mode
   // with OnOverviewModeStarting() and OnOverviewModeEnded() to hide/show the

@@ -90,6 +90,9 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
   } else if (key == kFrameIsThemedByHostedAppKey) {
     root_window->SetProperty(kFrameIsThemedByHostedAppKey,
                              window->GetProperty(kFrameIsThemedByHostedAppKey));
+  } else if (key == kFrameTextColorKey) {
+    root_window->SetProperty(kFrameTextColorKey,
+                             window->GetProperty(kFrameTextColorKey));
   }
 }
 

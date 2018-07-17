@@ -92,6 +92,7 @@ class BrowserNonClientFrameViewAsh
   void ChildPreferredSizeChanged(views::View* child) override;
 
   // ash::CustomFrameHeader::AppearanceProvider:
+  SkColor GetTitleColor() override;
   SkColor GetFrameHeaderColor(bool active) override;
   gfx::ImageSkia GetFrameHeaderImage(bool active) override;
   gfx::ImageSkia GetFrameHeaderOverlayImage(bool active) override;
