@@ -12,6 +12,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
@@ -24,6 +25,7 @@ struct WebFloatRect;
 
 class CORE_EXPORT FindInPage final
     : public GarbageCollectedFinalized<FindInPage>,
+      public ContextLifecycleObserver,
       public mojom::blink::FindInPage {
   USING_PRE_FINALIZER(FindInPage, Dispose);
 
@@ -88,19 +90,16 @@ class CORE_EXPORT FindInPage final
 
   void Dispose();
 
-  void Trace(blink::Visitor* visitor) {
+  void ContextDestroyed(ExecutionContext*) override;
+
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(text_finder_);
     visitor->Trace(frame_);
+    ContextLifecycleObserver::Trace(visitor);
   }
 
  private:
-  FindInPage(WebLocalFrameImpl& frame, InterfaceRegistry* interface_registry)
-      : frame_(&frame), binding_(this) {
-    if (!interface_registry)
-      return;
-    interface_registry->AddAssociatedInterface(WTF::BindRepeating(
-        &FindInPage::BindToRequest, WrapWeakPersistent(this)));
-  }
+  FindInPage(WebLocalFrameImpl& frame, InterfaceRegistry* interface_registry);
 
   // Will be initialized after first call to ensureTextFinder().
   Member<TextFinder> text_finder_;
