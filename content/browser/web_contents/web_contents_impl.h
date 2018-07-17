@@ -1346,7 +1346,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // |delegate_|.
   void OnPreferredSizeChanged(const gfx::Size& old_size);
 
-  void OnUserInteraction(const blink::WebInputEvent::Type type);
+  void SendUserGestureForResourceDispatchHost();
 
   // Internal helper to create WebUI objects associated with |this|. |url| is
   // used to determine which WebUI should be created (if any).

@@ -196,6 +196,15 @@ class TabStatsTracker::WebContentsUsageObserver
         tab_stats_tracker_(tab_stats_tracker) {}
 
   // content::WebContentsObserver:
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    // Treat browser-initiated navigations as user interactions.
+    if (!navigation_handle->IsRendererInitiated()) {
+      tab_stats_tracker_->tab_stats_data_store()->OnTabInteraction(
+          web_contents());
+    }
+  }
+
   void DidGetUserInteraction(const blink::WebInputEvent::Type type) override {
     tab_stats_tracker_->tab_stats_data_store()->OnTabInteraction(
         web_contents());

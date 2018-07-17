@@ -75,12 +75,19 @@ class CONTENT_EXPORT NavigationHandle {
   // of the main frame. This remains constant over the navigation lifetime.
   virtual bool IsParentMainFrame() = 0;
 
-  // Whether the navigation was initated by the renderer process. Examples of
+  // Whether the navigation was initiated by the renderer process. Examples of
   // renderer-initiated navigations include:
   //  * <a> link click
   //  * changing window.location.href
   //  * redirect via the <meta http-equiv="refresh"> tag
   //  * using window.history.pushState
+  //
+  // This method returns false for browser-initiated navigations, including:
+  //  * any navigation initiated from the omnibox
+  //  * navigations via suggestions in browser UI
+  //  * navigations via browser UI: Ctrl-R, refresh/forward/back/home buttons
+  //  * using window.history.forward() or window.history.back()
+  //  * any other "explicit" URL navigations, e.g. bookmarks
   virtual bool IsRendererInitiated() = 0;
 
   // Returns the FrameTreeNode ID for the frame in which the navigation is

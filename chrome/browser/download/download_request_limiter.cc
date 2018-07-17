@@ -174,6 +174,14 @@ void DownloadRequestLimiter::TabDownloadState::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
+  // Treat browser-initiated navigations as user interactions as long as the
+  // navigation isn't restricted.
+  if (!navigation_handle->IsRendererInitiated() &&
+      !IsNavigationRestricted(navigation_handle)) {
+    OnUserInteraction();
+    return;
+  }
+
   // When the status is ALLOW_ALL_DOWNLOADS or DOWNLOADS_NOT_ALLOWED, don't drop
   // this information. The user has explicitly said that they do/don't want
   // downloads from this host. If they accidentally Accepted or Canceled, they
@@ -181,11 +189,8 @@ void DownloadRequestLimiter::TabDownloadState::DidFinishNavigation(
   // settings. Alternatively, they can copy the URL into a new tab, which will
   // make a new DownloadRequestLimiter. See also the initial_page_host_ logic in
   // DidStartNavigation.
-  if (status_ == ALLOW_ONE_DOWNLOAD ||
-      (status_ == PROMPT_BEFORE_DOWNLOAD &&
-       !navigation_handle->IsRendererInitiated() &&
-       !IsNavigationRestricted(navigation_handle))) {
-    // When the user reloads the page without responding to the infobar,
+  if (status_ == ALLOW_ONE_DOWNLOAD) {
+    // When the user reloads the page without responding to the prompt,
     // they are expecting DownloadRequestLimiter to behave as if they had
     // just initially navigated to this page. See http://crbug.com/171372.
     // However, explicitly leave the limiter in place if the navigation was
@@ -204,18 +209,7 @@ void DownloadRequestLimiter::TabDownloadState::DidGetUserInteraction(
     return;
   }
 
-  bool promptable =
-      PermissionRequestManager::FromWebContents(web_contents()) != nullptr;
-
-  // See PromptUserForDownload(): if there's no PermissionRequestManager, then
-  // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
-  if ((status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS) &&
-      (!promptable ||
-       (status_ != DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED))) {
-    // Revert to default status.
-    host_->Remove(this, web_contents());
-    // WARNING: We've been deleted.
-  }
+  OnUserInteraction();
 }
 
 void DownloadRequestLimiter::TabDownloadState::WebContentsDestroyed() {
@@ -298,6 +292,21 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState()
 
 bool DownloadRequestLimiter::TabDownloadState::is_showing_prompt() const {
   return factory_.HasWeakPtrs();
+}
+
+void DownloadRequestLimiter::TabDownloadState::OnUserInteraction() {
+  bool promptable =
+      PermissionRequestManager::FromWebContents(web_contents()) != nullptr;
+
+  // See PromptUserForDownload(): if there's no PermissionRequestManager, then
+  // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
+  if ((status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS) &&
+      (!promptable ||
+       (status_ != DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED))) {
+    // Revert to default status.
+    host_->Remove(this, web_contents());
+    // WARNING: We've been deleted.
+  }
 }
 
 void DownloadRequestLimiter::TabDownloadState::OnContentSettingChanged(
