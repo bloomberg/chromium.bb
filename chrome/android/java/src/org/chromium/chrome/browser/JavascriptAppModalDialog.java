@@ -22,7 +22,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.jsdialog.JavascriptModalDialogView;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -98,7 +98,7 @@ public class JavascriptAppModalDialog
         // Cache the native dialog pointer so that we can use it to return the response.
         mNativeDialogPointer = nativeDialogPointer;
 
-        if (VrShellDelegate.isInVr()) {
+        if (VrModuleProvider.getDelegate().isInVr()) {
             // Use JavascriptModalDialogView while in VR.
             ChromeActivity activity = (ChromeActivity) window.getActivity().get();
             mModalDialogManager = activity.getModalDialogManager();

@@ -41,7 +41,8 @@ import org.chromium.chrome.browser.toolbar.ActionModeController;
 import org.chromium.chrome.browser.toolbar.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrModeObserver;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.NumberRollView;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
@@ -64,7 +65,7 @@ import javax.annotation.Nullable;
  */
 public class SelectableListToolbar<E>
         extends Toolbar implements SelectionObserver<E>, OnClickListener, OnEditorActionListener,
-                                   DisplayStyleObserver, VrShellDelegate.VrModeObserver {
+                                   DisplayStyleObserver, VrModeObserver {
     /**
      * A delegate that handles searching the list of selectable items associated with this toolbar.
      */
@@ -154,7 +155,7 @@ public class SelectableListToolbar<E>
         mIsDestroyed = true;
         if (mSelectionDelegate != null) mSelectionDelegate.removeObserver(this);
         UiUtils.hideKeyboard(mSearchEditText);
-        VrShellDelegate.unregisterVrModeObserver(this);
+        VrModuleProvider.unregisterVrModeObserver(this);
     }
 
     /**
@@ -229,8 +230,8 @@ public class SelectableListToolbar<E>
             setTitleTextAppearance(getContext(), R.style.BlackHeadline2);
         }
 
-        VrShellDelegate.registerVrModeObserver(this);
-        if (VrShellDelegate.isInVr()) onEnterVr();
+        VrModuleProvider.registerVrModeObserver(this);
+        if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
 
         mShowInfoIcon = true;
         mShowInfoStringId = R.string.show_info;
@@ -724,7 +725,7 @@ public class SelectableListToolbar<E>
                 infoMenuItem.setIcon(iconDrawable);
             }
 
-            if (VrShellDelegate.isInVr()) {
+            if (VrModuleProvider.getDelegate().isInVr()) {
                 // There seems to be a bug with the support library, only on Android N, where the
                 // toast showing the title shows up every time the info menu item is clicked or
                 // scrolled on, even if its long press handler is overridden. VR on N doesn't

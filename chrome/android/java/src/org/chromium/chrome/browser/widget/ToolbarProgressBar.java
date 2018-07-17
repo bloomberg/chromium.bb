@@ -26,7 +26,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -472,7 +472,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     @Override
     public void setVisibility(int visibility) {
         // The progress bar should never show up while in VR.
-        if (VrShellDelegate.isInVr()) visibility = GONE;
+        if (VrModuleProvider.getDelegate().isInVr()) visibility = GONE;
         super.setVisibility(visibility);
         if (mAnimatingView != null) mAnimatingView.setVisibility(visibility);
     }

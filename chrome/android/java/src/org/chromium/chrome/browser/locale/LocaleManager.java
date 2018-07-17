@@ -32,8 +32,7 @@ import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
-import org.chromium.chrome.browser.vr.VrIntentUtils;
-import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.PromoDialog;
 import org.chromium.ui.base.PageTransition;
 
@@ -307,8 +306,8 @@ public class LocaleManager {
             return;
         }
 
-        if (VrIntentUtils.isLaunchingIntoVr(activity, activity.getIntent())
-                || VrShellDelegate.isInVr()) {
+        if (VrModuleProvider.getIntentDelegate().isLaunchingIntoVr(activity, activity.getIntent())
+                || VrModuleProvider.getDelegate().isInVr()) {
             showPromoDialogForVr(dialogCreator, activity);
         } else {
             showPromoDialog(dialogCreator);
@@ -317,20 +316,22 @@ public class LocaleManager {
     }
 
     private void showPromoDialogForVr(Callable<PromoDialog> dialogCreator, Activity activity) {
-        VrShellDelegate.requestToExitVrForSearchEnginePromoDialog(new OnExitVrRequestListener() {
-            @Override
-            public void onSucceeded() {
-                showPromoDialog(dialogCreator);
-            }
+        VrModuleProvider.getDelegate().requestToExitVrForSearchEnginePromoDialog(
+                new OnExitVrRequestListener() {
+                    @Override
+                    public void onSucceeded() {
+                        showPromoDialog(dialogCreator);
+                    }
 
-            @Override
-            public void onDenied() {
-                // We need to make sure that the dialog shows up even if user denied to
-                // leave VR.
-                VrShellDelegate.forceExitVrImmediately();
-                showPromoDialog(dialogCreator);
-            }
-        }, activity);
+                    @Override
+                    public void onDenied() {
+                        // We need to make sure that the dialog shows up even if user denied to
+                        // leave VR.
+                        VrModuleProvider.getDelegate().forceExitVrImmediately();
+                        showPromoDialog(dialogCreator);
+                    }
+                },
+                activity);
     }
 
     private void showPromoDialog(Callable<PromoDialog> dialogCreator) {

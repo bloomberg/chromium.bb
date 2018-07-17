@@ -16,7 +16,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.ui.widget.UiWidgetFactory;
 
 /**
@@ -74,7 +74,7 @@ public class RepostFormWarningDialog extends DialogFragment {
             mTab.getWebContents().getNavigationController().continuePendingReload();
         };
         Dialog dialog;
-        if (VrShellDelegate.isInVr()) {
+        if (VrModuleProvider.getDelegate().isInVr()) {
             android.app.AlertDialog alertDialog =
                     UiWidgetFactory.getInstance().createAlertDialog(getActivity());
             alertDialog.setMessage(alertDialog.getContext().getString(R.string.http_post_warning));

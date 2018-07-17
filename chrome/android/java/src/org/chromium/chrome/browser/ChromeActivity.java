@@ -137,8 +137,7 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.chrome.browser.vr.VrIntentUtils;
-import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.AddToHomescreenManager;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -324,8 +323,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         // We need to explicitly enable VR mode here so that the system doesn't kick us out of VR,
         // or drop us into the 2D-in-VR rendering mode, while we prepare for VR rendering.
-        if (VrIntentUtils.isLaunchingIntoVr(this, getIntent())) {
-            VrShellDelegate.setVrModeEnabled(this, true);
+        if (VrModuleProvider.getIntentDelegate().isLaunchingIntoVr(this, getIntent())) {
+            VrModuleProvider.getDelegate().setVrModeEnabled(this, true);
         }
 
         // Force a partner customizations refresh if it has yet to be initialized.  This can happen
@@ -349,7 +348,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
             Intent intent = getIntent();
             if (intent != null && getSavedInstanceState() == null) {
-                VrShellDelegate.maybeHandleVrIntentPreNative(this, intent);
+                VrModuleProvider.getDelegate().maybeHandleVrIntentPreNative(this, intent);
             }
 
             mSnackbarManager = new SnackbarManager(this, null);
@@ -857,11 +856,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         Tab tab = getActivityTab();
         if (hasFocus) {
             if (tab != null) tab.onActivityShown();
-            VrShellDelegate.onActivityShown(this);
+            VrModuleProvider.getDelegate().onActivityShown(this);
         } else {
             boolean stopped = ApplicationStatus.getStateForActivity(this) == ActivityState.STOPPED;
             if (stopped) {
-                VrShellDelegate.onActivityHidden(this);
+                VrModuleProvider.getDelegate().onActivityHidden(this);
                 if (tab != null) tab.onActivityHidden();
             }
         }
@@ -964,7 +963,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (mPictureInPictureController != null) {
             mPictureInPictureController.cleanup(this);
         }
-        VrShellDelegate.maybeRegisterVrEntryHook(this);
+        VrModuleProvider.getDelegate().maybeRegisterVrEntryHook(this);
 
         OfflineIndicatorController.onUpdate();
     }
@@ -985,7 +984,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         Tab tab = getActivityTab();
         if (tab != null) getTabContentManager().cacheTabThumbnail(tab);
 
-        VrShellDelegate.maybeUnregisterVrEntryHook();
+        VrModuleProvider.getDelegate().maybeUnregisterVrEntryHook();
         markSessionEnd();
         super.onPauseWithNative();
     }
@@ -994,7 +993,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void onStopWithNative() {
         Tab tab = getActivityTab();
         if (!hasWindowFocus()) {
-            VrShellDelegate.onActivityHidden(this);
+            VrModuleProvider.getDelegate().onActivityHidden(this);
             if (tab != null) tab.onActivityHidden();
         }
         if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
@@ -1018,7 +1017,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     protected void onNewIntent(Intent intent) {
         // This should be called before the call to super so that the needed VR flags are set as
         // soon as the VR intent is received.
-        VrShellDelegate.maybeHandleVrIntentPreNative(this, intent);
+        VrModuleProvider.getDelegate().maybeHandleVrIntentPreNative(this, intent);
         super.onNewIntent(intent);
     }
 
@@ -1033,7 +1032,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         // We send this intent so that we can enter WebVr presentation mode if needed. This
         // call doesn't consume the intent because it also has the url that we need to load.
-        VrShellDelegate.onNewIntentWithNative(this, intent);
+        VrModuleProvider.getDelegate().onNewIntentWithNative(this, intent);
         mIntentHandler.onNewIntent(intent);
     }
 
@@ -1391,9 +1390,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         DownloadManagerService.getDownloadManagerService().onActivityLaunched();
 
         if (getSavedInstanceState() == null && getIntent() != null) {
-            VrShellDelegate.onNewIntentWithNative(this, getIntent());
+            VrModuleProvider.getDelegate().onNewIntentWithNative(this, getIntent());
         }
-        VrShellDelegate.onNativeLibraryAvailable();
+        VrModuleProvider.getDelegate().onNativeLibraryAvailable();
         super.finishNativeInitialization();
 
         ViewGroup coordinator = findViewById(R.id.coordinator);
@@ -1856,7 +1855,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             if (newConfig.densityDpi != mDensityDpi) {
-                if (!VrShellDelegate.onDensityChanged(mDensityDpi, newConfig.densityDpi)) {
+                if (!VrModuleProvider.getDelegate().onDensityChanged(
+                            mDensityDpi, newConfig.densityDpi)) {
                     recreate();
                     return;
                 }
@@ -1927,7 +1927,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             }
         }
 
-        VrShellDelegate.onMultiWindowModeChanged(isInMultiWindowMode);
+        VrModuleProvider.getDelegate().onMultiWindowModeChanged(isInMultiWindowMode);
 
         super.onMultiWindowModeChanged(isInMultiWindowMode);
     }
@@ -1949,7 +1949,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (mNativeInitialized) RecordUserAction.record("SystemBack");
 
         TextBubble.dismissBubbles();
-        if (VrShellDelegate.onBackPressed()) return;
+        if (VrModuleProvider.getDelegate().onBackPressed()) return;
         if (mCompositorViewHolder != null) {
             LayoutManager layoutManager = mCompositorViewHolder.getLayoutManager();
             if (layoutManager != null && layoutManager.onBackPressed()) return;
@@ -2393,7 +2393,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public boolean onActivityResultWithNative(int requestCode, int resultCode, Intent intent) {
         if (super.onActivityResultWithNative(requestCode, resultCode, intent)) return true;
-        if (VrShellDelegate.onActivityResultWithNative(requestCode, resultCode)) return true;
+        if (VrModuleProvider.getDelegate().onActivityResultWithNative(requestCode, resultCode))
+            return true;
         return false;
     }
 
@@ -2455,12 +2456,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public void startActivity(Intent intent, Bundle options) {
-        if (VrShellDelegate.canLaunch2DIntents() || VrIntentUtils.isVrIntent(intent)) {
+        if (VrModuleProvider.getDelegate().canLaunch2DIntents()
+                || VrModuleProvider.getIntentDelegate().isVrIntent(intent)) {
             super.startActivity(intent, options);
             return;
         }
-        VrShellDelegate.requestToExitVrAndRunOnSuccess(() -> {
-            if (!VrShellDelegate.canLaunch2DIntents()) {
+        VrModuleProvider.getDelegate().requestToExitVrAndRunOnSuccess(() -> {
+            if (!VrModuleProvider.getDelegate().canLaunch2DIntents()) {
                 throw new IllegalStateException("Still in VR after having exited VR.");
             }
             super.startActivity(intent, options);
@@ -2474,12 +2476,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public void startActivityForResult(Intent intent, int requestCode, Bundle options) {
-        if (VrShellDelegate.canLaunch2DIntents() || VrIntentUtils.isVrIntent(intent)) {
+        if (VrModuleProvider.getDelegate().canLaunch2DIntents()
+                || VrModuleProvider.getIntentDelegate().isVrIntent(intent)) {
             super.startActivityForResult(intent, requestCode, options);
             return;
         }
-        VrShellDelegate.requestToExitVrAndRunOnSuccess(() -> {
-            if (!VrShellDelegate.canLaunch2DIntents()) {
+        VrModuleProvider.getDelegate().requestToExitVrAndRunOnSuccess(() -> {
+            if (!VrModuleProvider.getDelegate().canLaunch2DIntents()) {
                 throw new IllegalStateException("Still in VR after having exited VR.");
             }
             super.startActivityForResult(intent, requestCode, options);
@@ -2494,7 +2497,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public boolean startActivityIfNeeded(Intent intent, int requestCode, Bundle options) {
         // Avoid starting Activities when possible while in VR.
-        if (VrShellDelegate.isInVr() && !VrIntentUtils.isVrIntent(intent)) return false;
+        if (VrModuleProvider.getDelegate().isInVr()
+                && !VrModuleProvider.getIntentDelegate().isVrIntent(intent))
+            return false;
         return super.startActivityIfNeeded(intent, requestCode, options);
     }
 

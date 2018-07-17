@@ -30,7 +30,7 @@ import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView.ButtonType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.vr.UiUnsupportedMode;
-import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 
@@ -211,16 +211,17 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogView.Con
                 // ignore this request.
                 return;
             }
-            if (VrShellDelegate.isInVr()) {
-                VrShellDelegate.requestToExitVrAndRunOnSuccess(() -> {
+            if (VrModuleProvider.getDelegate().isInVr()) {
+                VrModuleProvider.getDelegate().requestToExitVrAndRunOnSuccess(() -> {
                     mCertificateViewer.showCertificateChain(certChain);
                 }, UiUnsupportedMode.UNHANDLED_CERTIFICATE_INFO);
                 return;
             }
             mCertificateViewer.showCertificateChain(certChain);
         } else if (mMoreInfoLink == v) {
-            if (VrShellDelegate.isInVr()) {
-                VrShellDelegate.requestToExitVrAndRunOnSuccess(this ::showConnectionSecurityInfo,
+            if (VrModuleProvider.getDelegate().isInVr()) {
+                VrModuleProvider.getDelegate().requestToExitVrAndRunOnSuccess(
+                        this ::showConnectionSecurityInfo,
                         UiUnsupportedMode.UNHANDLED_CONNECTION_SECURITY_INFO);
                 return;
             }

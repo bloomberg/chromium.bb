@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareT
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPageView.IncognitoNewTabPageManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 
 /**
  * Provides functionality when the user interacts with the Incognito NTP.
@@ -62,8 +62,8 @@ public class IncognitoNewTabPage
                 // Incognito 'Learn More' either opens a new activity or a new non-incognito tab.
                 // Both is not supported in VR. Request to exit VR and if we succeed show the 'Learn
                 // More' page in 2D.
-                if (VrShellDelegate.isInVr()) {
-                    VrShellDelegate.requestToExitVrAndRunOnSuccess(
+                if (VrModuleProvider.getDelegate().isInVr()) {
+                    VrModuleProvider.getDelegate().requestToExitVrAndRunOnSuccess(
                             IncognitoNewTabPage.this ::showIncognitoLearnMore);
                     return;
                 }

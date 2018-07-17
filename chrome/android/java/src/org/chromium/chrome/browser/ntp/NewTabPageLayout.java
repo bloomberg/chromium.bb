@@ -48,7 +48,8 @@ import org.chromium.chrome.browser.suggestions.TileView;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
-import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrModeObserver;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -56,8 +57,7 @@ import org.chromium.ui.base.DeviceFormFactor;
  * Layout for the new tab page. This positions the page elements in the correct vertical positions.
  * There are no separate phone and tablet UIs; this layout adapts based on the available space.
  */
-public class NewTabPageLayout
-        extends LinearLayout implements TileGroup.Observer, VrShellDelegate.VrModeObserver {
+public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer, VrModeObserver {
     private static final String TAG = "NewTabPageLayout";
 
     /**
@@ -255,8 +255,8 @@ public class NewTabPageLayout
 
         mTileGroup.startObserving(getMaxTileRows() * getMaxTileColumns());
 
-        VrShellDelegate.registerVrModeObserver(this);
-        if (VrShellDelegate.isInVr()) onEnterVr();
+        VrModuleProvider.registerVrModeObserver(this);
+        if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
 
         manager.addDestructionObserver(NewTabPageLayout.this ::onDestroy);
 
@@ -865,7 +865,7 @@ public class NewTabPageLayout
     }
 
     private void onDestroy() {
-        VrShellDelegate.unregisterVrModeObserver(this);
+        VrModuleProvider.unregisterVrModeObserver(this);
     }
 
     private void initializeShortcuts() {
