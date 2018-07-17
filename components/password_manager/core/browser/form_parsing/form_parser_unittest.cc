@@ -79,6 +79,7 @@ struct FormParsingTestCase {
   int number_of_all_possible_passwords = -1;
   // null means no checking
   const autofill::ValueElementVector* all_possible_passwords = nullptr;
+  bool username_may_use_prefilled_placeholder = false;
 };
 
 // Returns numbers which are distinct from each other within the scope of one
@@ -311,6 +312,8 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
         EXPECT_FALSE(parsed_form->blacklisted_by_user);
         EXPECT_EQ(PasswordForm::TYPE_MANUAL, parsed_form->type);
         EXPECT_TRUE(parsed_form->has_renderer_ids);
+        EXPECT_EQ(test_case.username_may_use_prefilled_placeholder,
+                  parsed_form->username_may_use_prefilled_placeholder);
         CheckPasswordFormFields(*parsed_form, form_data, expected_ids);
         CheckAllValuesUnique(parsed_form->all_possible_passwords);
         if (test_case.number_of_all_possible_passwords >= 0) {
@@ -918,7 +921,8 @@ TEST(FormParserTest, ServerHints) {
           "Username-only predictions are ignored",
           {
               {.form_control_type = "text",
-               .prediction = {.type = autofill::USERNAME}},
+               .prediction = {.type = autofill::USERNAME,
+                              .may_use_prefilled_placeholder = true}},
               {.role = ElementRole::USERNAME, .form_control_type = "text"},
               {.role = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password"},
@@ -929,13 +933,16 @@ TEST(FormParserTest, ServerHints) {
           {
               {.role = ElementRole::USERNAME,
                .form_control_type = "text",
-               .prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS}},
+               .prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS,
+                              .may_use_prefilled_placeholder = true}},
               {.form_control_type = "text"},
               {.form_control_type = "password"},
               {.role = ElementRole::CURRENT_PASSWORD,
-               .prediction = {.type = autofill::PASSWORD},
+               .prediction = {.type = autofill::PASSWORD,
+                              .may_use_prefilled_placeholder = true},
                .form_control_type = "password"},
           },
+          .username_may_use_prefilled_placeholder = true,
       },
       {
           .description_for_logging = "Longer predictions work",

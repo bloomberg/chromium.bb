@@ -249,6 +249,7 @@ TEST(PasswordFormFillDataTest, RendererIDs) {
   form_on_page.action = GURL("https://foo.com/login");
   form_on_page.username_element = ASCIIToUTF16("username");
   form_on_page.password_element = ASCIIToUTF16("password");
+  form_on_page.username_may_use_prefilled_placeholder = true;
 
   // Create an exact match in the database.
   PasswordForm preferred_match = form_on_page;
@@ -277,6 +278,7 @@ TEST(PasswordFormFillDataTest, RendererIDs) {
             result.username_field.unique_renderer_id);
   EXPECT_EQ(form_on_page.password_element_renderer_id,
             result.password_field.unique_renderer_id);
+  EXPECT_TRUE(result.username_may_use_prefilled_placeholder);
 }
 
 }  // namespace autofill

@@ -27,6 +27,9 @@ using autofill::USERNAME;
 using autofill::USERNAME_AND_EMAIL_ADDRESS;
 using base::ASCIIToUTF16;
 
+using FieldPrediction =
+    autofill::AutofillQueryResponseContents::Field::FieldPrediction;
+
 namespace password_manager {
 
 namespace {
@@ -37,14 +40,15 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
     std::string form_control_type;
     ServerFieldType input_type;
     ServerFieldType expected_type;
+    bool may_use_prefilled_placeholder;
   } test_fields[] = {
-      {"full_name", "text", UNKNOWN_TYPE, UNKNOWN_TYPE},
+      {"full_name", "text", UNKNOWN_TYPE, UNKNOWN_TYPE, false},
       // Password Manager is interested only in credential related types.
-      {"Email", "email", EMAIL_ADDRESS, UNKNOWN_TYPE},
-      {"username", "text", USERNAME, USERNAME},
-      {"Password", "password", PASSWORD, PASSWORD},
+      {"Email", "email", EMAIL_ADDRESS, UNKNOWN_TYPE, false},
+      {"username", "text", USERNAME, USERNAME, true},
+      {"Password", "password", PASSWORD, PASSWORD, false},
       {"confirm_password", "password", CONFIRMATION_PASSWORD,
-       CONFIRMATION_PASSWORD}};
+       CONFIRMATION_PASSWORD, true}};
 
   FormData form_data;
   for (size_t i = 0; i < base::size(test_fields); ++i) {
@@ -57,11 +61,17 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
 
   FormStructure form_structure(form_data);
   size_t expected_predictions = 0;
-  // Set server predictions and create expectected votes.
+  // Set server predictions and create expected votes.
   for (size_t i = 0; i < base::size(test_fields); ++i) {
     AutofillField* field = form_structure.field(i);
     field->set_server_type(test_fields[i].input_type);
     ServerFieldType expected_type = test_fields[i].expected_type;
+
+    FieldPrediction prediction;
+    prediction.set_may_use_prefilled_placeholder(
+        test_fields[i].may_use_prefilled_placeholder);
+    field->set_server_predictions({prediction});
+
     if (expected_type != UNKNOWN_TYPE)
       ++expected_predictions;
   }
@@ -79,6 +89,8 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
     } else {
       ASSERT_NE(actual_predictions.end(), it);
       EXPECT_EQ(test_fields[i].expected_type, it->second.type);
+      EXPECT_EQ(test_fields[i].may_use_prefilled_placeholder,
+                it->second.may_use_prefilled_placeholder);
     }
   }
 }

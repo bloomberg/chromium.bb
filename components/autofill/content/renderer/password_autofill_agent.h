@@ -307,12 +307,14 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // will only have the suggestedValue set. If a match is found, return true and
   // |field_value_and_properties_map| will be modified with the autofilled
   // credentials and |FieldPropertiesFlags::AUTOFILLED| flag.
+  // If |username_may_use_prefilled_placeholder| then this function may
+  // overwrite the value of username field.
   bool FillUserNameAndPassword(
       blink::WebInputElement* username_element,
       blink::WebInputElement* password_element,
       const PasswordFormFillData& fill_data,
       bool exact_username_match,
-      bool set_selection,
+      bool username_may_use_prefilled_placeholder,
       FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
       RendererSavePasswordProgressLogger* logger);
 
