@@ -643,17 +643,18 @@ void ExtensionDownloader::HandleManifestResults(
     VLOG(2) << "parsing manifest succeeded (" << fetch_data->full_url() << ")";
   }
 
+  std::vector<UpdateManifestResult*> to_update;
+  std::set<std::string> no_updates;
+  std::set<std::string> errors;
+
   // Examine the parsed manifest and kick off fetches of any new crx files.
-  std::vector<int> updates;
-  DetermineUpdates(*fetch_data, *results, &updates);
-  for (size_t i = 0; i < updates.size(); i++) {
-    const UpdateManifestResult* update = &(results->list.at(updates[i]));
-    const std::string& id = update->extension_id;
-    not_updated.erase(id);
+  DetermineUpdates(*fetch_data, *results, &to_update, &no_updates, &errors);
+  for (const UpdateManifestResult* update : to_update) {
+    const std::string& extension_id = update->extension_id;
 
     GURL crx_url = update->crx_url;
-    if (id != kBlacklistAppID) {
-      NotifyUpdateFound(update->extension_id, update->version);
+    if (extension_id != kBlacklistAppID) {
+      NotifyUpdateFound(extension_id, update->version);
     } else {
       // The URL of the blacklist file is returned by the server and we need to
       // be sure that we continue to be able to reliably detect whether a URL
@@ -669,10 +670,9 @@ void ExtensionDownloader::HandleManifestResults(
         crx_url = crx_url.ReplaceComponents(replacements);
       }
     }
-    std::unique_ptr<ExtensionFetch> fetch(
-        new ExtensionFetch(update->extension_id, crx_url, update->package_hash,
-                           update->version, fetch_data->request_ids()));
-    FetchUpdatedExtension(std::move(fetch));
+    FetchUpdatedExtension(std::make_unique<ExtensionFetch>(
+        update->extension_id, crx_url, update->package_hash, update->version,
+        fetch_data->request_ids()));
   }
 
   // If the manifest response included a <daystart> element, we want to save
@@ -682,10 +682,7 @@ void ExtensionDownloader::HandleManifestResults(
     Time day_start =
         Time::Now() - TimeDelta::FromSeconds(results->daystart_elapsed_seconds);
 
-    const std::set<std::string>& extension_ids = fetch_data->extension_ids();
-    std::set<std::string>::const_iterator i;
-    for (i = extension_ids.begin(); i != extension_ids.end(); i++) {
-      const std::string& id = *i;
+    for (const std::string& id : fetch_data->extension_ids()) {
       ExtensionDownloaderDelegate::PingResult& result = ping_results_[id];
       result.did_ping = fetch_data->DidPing(id, ManifestFetchData::ROLLCALL);
       result.day_start = day_start;
@@ -693,47 +690,65 @@ void ExtensionDownloader::HandleManifestResults(
   }
 
   NotifyExtensionsDownloadFailed(
-      not_updated, fetch_data->request_ids(),
+      no_updates, fetch_data->request_ids(),
       ExtensionDownloaderDelegate::NO_UPDATE_AVAILABLE);
+  NotifyExtensionsDownloadFailed(
+      errors, fetch_data->request_ids(),
+      ExtensionDownloaderDelegate::MANIFEST_FETCH_FAILED);
 }
 
-void ExtensionDownloader::DetermineUpdates(
-    const ManifestFetchData& fetch_data,
-    const UpdateManifestResults& possible_updates,
-    std::vector<int>* result) {
-  for (size_t i = 0; i < possible_updates.list.size(); i++) {
-    const UpdateManifestResult* update = &possible_updates.list[i];
-    const std::string& id = update->extension_id;
-
-    if (!fetch_data.Includes(id)) {
-      VLOG(2) << "Ignoring " << id << " from this manifest";
-      continue;
+ExtensionDownloader::UpdateAvailability
+ExtensionDownloader::GetUpdateAvailability(
+    const std::string& extension_id,
+    const std::vector<const UpdateManifestResult*>& possible_candidates,
+    UpdateManifestResult** update_result_out) const {
+  const bool is_extension_pending = delegate_->IsExtensionPending(extension_id);
+  std::string extension_version;
+  if (!is_extension_pending) {
+    // If we're not installing pending extension, we can only update
+    // extensions that have already existed in the system.
+    if (!delegate_->GetExtensionExistingVersion(extension_id,
+                                                &extension_version)) {
+      VLOG(2) << extension_id << " is not installed";
+      return UpdateAvailability::kBadUpdateSpecification;
     }
+    VLOG(2) << extension_id << " is at '" << extension_version << "'";
+  }
 
+  bool has_noupdate = false;
+  for (const UpdateManifestResult* update : possible_candidates) {
+    const std::string& update_version_str = update->version;
     if (VLOG_IS_ON(2)) {
-      if (update->version.empty())
-        VLOG(2) << "manifest indicates " << id << " has no update";
+      if (update_version_str.empty())
+        VLOG(2) << "Manifest indicates " << extension_id << " has no update";
       else
-        VLOG(2) << "manifest indicates " << id << " latest version is '"
-                << update->version << "'";
+        VLOG(2) << "Manifest indicates " << extension_id
+                << " latest version is '" << update_version_str << "'";
     }
 
-    if (!delegate_->IsExtensionPending(id)) {
+    if (!is_extension_pending) {
       // If we're not installing pending extension, and the update
       // version is the same or older than what's already installed,
       // we don't want it.
-      std::string version;
-      if (!delegate_->GetExtensionExistingVersion(id, &version)) {
-        VLOG(2) << id << " is not installed";
+      if (update_version_str.empty()) {
+        // If update manifest doesn't have version number => no update.
+        VLOG(2) << extension_id << " has empty version";
+        has_noupdate = true;
         continue;
       }
 
-      VLOG(2) << id << " is at '" << version << "'";
+      const base::Version update_version(update_version_str);
+      if (!update_version.IsValid()) {
+        VLOG(2) << extension_id << " has invalid version '"
+                << update_version_str << "'";
+        continue;
+      }
 
-      base::Version existing_version(version);
-      base::Version update_version(update->version);
-      if (!update_version.IsValid() ||
-          update_version.CompareTo(existing_version) <= 0) {
+      const base::Version existing_version(extension_version);
+      if (update_version.CompareTo(existing_version) <= 0) {
+        VLOG(2) << extension_id << " version is not older than '"
+                << update_version_str << "'";
+        has_noupdate = true;
         continue;
       }
     }
@@ -744,13 +759,75 @@ void ExtensionDownloader::DetermineUpdates(
             update->browser_min_version)) {
       // TODO(asargent) - We may want this to show up in the extensions UI
       // eventually. (http://crbug.com/12547).
-      DLOG(WARNING) << "Updated version of extension " << id
+      DLOG(WARNING) << "Updated version of extension " << extension_id
                     << " available, but requires chrome version "
                     << update->browser_min_version;
+      has_noupdate = true;
       continue;
     }
-    VLOG(2) << "will try to update " << id;
-    result->push_back(i);
+
+    // Stop checking as soon as an update for |extension_id| is found.
+    VLOG(2) << "Will try to update " << extension_id;
+    *update_result_out = const_cast<UpdateManifestResult*>(update);
+    return UpdateAvailability::kAvailable;
+  }
+
+  return has_noupdate ? UpdateAvailability::kNoUpdate
+                      : UpdateAvailability::kBadUpdateSpecification;
+}
+
+void ExtensionDownloader::DetermineUpdates(
+    const ManifestFetchData& fetch_data,
+    const UpdateManifestResults& possible_updates,
+    std::vector<UpdateManifestResult*>* to_update,
+    std::set<std::string>* no_updates,
+    std::set<std::string>* errors) {
+  DCHECK_NE(nullptr, to_update);
+  DCHECK_NE(nullptr, no_updates);
+  DCHECK_NE(nullptr, errors);
+
+  // Group possible updates by extension IDs.
+  const std::map<std::string, std::vector<const UpdateManifestResult*>>
+      update_groups = possible_updates.GroupByID();
+
+  // For each extensions in the current batch, greedily find an update from
+  // |possible_updates|.
+  for (const std::string& extension_id : fetch_data.extension_ids()) {
+    const auto it = update_groups.find(extension_id);
+    if (it == update_groups.end()) {
+      UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateManifestDuplicateEntryCount",
+                               0);
+      VLOG(2) << "Manifest doesn't have an update entry for " << extension_id;
+      errors->insert(extension_id);
+      continue;
+    }
+
+    const std::vector<const UpdateManifestResult*>& possible_candidates =
+        it->second;
+    DCHECK(!possible_candidates.empty());
+
+    UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateManifestDuplicateEntryCount",
+                             possible_candidates.size());
+
+    VLOG(2) << "Manifest has " << possible_candidates.size()
+            << " update entries for " << extension_id;
+
+    UpdateManifestResult* update_result = nullptr;
+    UpdateAvailability update_availability = GetUpdateAvailability(
+        extension_id, possible_candidates, &update_result);
+
+    switch (update_availability) {
+      case UpdateAvailability::kAvailable:
+        DCHECK_NE(nullptr, update_result);
+        to_update->push_back(update_result);
+        break;
+      case UpdateAvailability::kNoUpdate:
+        no_updates->insert(extension_id);
+        break;
+      case UpdateAvailability::kBadUpdateSpecification:
+        errors->insert(extension_id);
+        break;
+    }
   }
 }
 

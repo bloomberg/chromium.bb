@@ -238,4 +238,79 @@ TEST_F(ExtensionUpdateManifestTest, TwoAppsOneError) {
   EXPECT_EQ(first_result.extension_id, "bbbbbbbb");
 }
 
+TEST_F(ExtensionUpdateManifestTest, Duplicates) {
+  TestParseUpdateManifest(
+      "<?xml version='1.0' encoding='UTF-8'?>"
+      "<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
+      " <app appid='aaaaaaaa'>"
+      "  <updatecheck status='noupdate' />"
+      " </app>"
+      " <app appid='bbbbbbbb'>"
+      "  <updatecheck codebase='http://example.com/b_3.1.crx' version='3.1'/>"
+      " </app>"
+      " <app appid='aaaaaaaa'>"
+      "  <updatecheck status='noupdate' />"
+      " </app>"
+      " <app appid='aaaaaaaa'>"
+      "  <updatecheck codebase='http://example.com/a_2.0.crx' version='2.0'/>"
+      " </app>"
+      "</gupdate>");
+
+  ExpectNoError();
+  ASSERT_TRUE(results());
+
+  const auto& list = results()->list;
+  ASSERT_EQ(4u, list.size());
+
+  EXPECT_EQ("aaaaaaaa", list[0].extension_id);
+  EXPECT_TRUE(list[0].version.empty());
+
+  EXPECT_EQ("bbbbbbbb", list[1].extension_id);
+  EXPECT_EQ("3.1", list[1].version);
+  EXPECT_EQ(GURL("http://example.com/b_3.1.crx"), list[1].crx_url);
+
+  EXPECT_EQ("aaaaaaaa", list[2].extension_id);
+  EXPECT_TRUE(list[2].version.empty());
+
+  EXPECT_EQ("aaaaaaaa", list[3].extension_id);
+  EXPECT_EQ("2.0", list[3].version);
+  EXPECT_EQ(GURL("http://example.com/a_2.0.crx"), list[3].crx_url);
+}
+
+TEST_F(ExtensionUpdateManifestTest, GroupByID) {
+  TestParseUpdateManifest(
+      "<?xml version='1.0' encoding='UTF-8'?>"
+      "<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>"
+      " <app appid='aaaaaaaa'>"
+      "  <updatecheck status='noupdate' />"
+      " </app>"
+      " <app appid='bbbbbbbb'>"
+      "  <updatecheck status='noupdate' />"
+      " </app>"
+      " <app appid='aaaaaaaa'>"
+      "  <updatecheck status='noupdate' />"
+      " </app>"
+      " <app appid='bbbbbbbb'>"
+      "  <updatecheck status='noupdate' />"
+      " </app>"
+      " <app appid='cccccccc'>"
+      "  <updatecheck status='noupdate' />"
+      " </app>"
+      " <app appid='aaaaaaaa'>"
+      "  <updatecheck status='noupdate' />"
+      " </app>"
+      "</gupdate>");
+
+  ExpectNoError();
+  ASSERT_TRUE(results());
+  ASSERT_EQ(6u, results()->list.size());
+
+  const auto groups = results()->GroupByID();
+
+  ASSERT_EQ(3u, groups.size());
+  EXPECT_EQ(3u, groups.at("aaaaaaaa").size());
+  EXPECT_EQ(2u, groups.at("bbbbbbbb").size());
+  EXPECT_EQ(1u, groups.at("cccccccc").size());
+}
+
 }  // namespace extensions
