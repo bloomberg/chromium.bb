@@ -127,8 +127,8 @@ void av1_loop_filter_frame_init(struct AV1Common *cm, int plane_start,
 
 #if LOOP_FILTER_BITMASK
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
-                           struct macroblockd *mbd, int plane_start,
-                           int plane_end, int partial_frame);
+                           struct macroblockd *mbd, int is_decoding,
+                           int plane_start, int plane_end, int partial_frame);
 #else
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                            struct macroblockd *mbd, int plane_start,
