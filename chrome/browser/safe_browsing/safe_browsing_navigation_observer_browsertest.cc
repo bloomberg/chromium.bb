@@ -463,7 +463,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
                                            const GURL& target_url) {
     NavigationEvent* nav_event =
         observer_manager_->navigation_event_list()->FindNavigationEvent(
-            target_url, GURL(), SessionID::InvalidValue());
+            base::Time::Now(), target_url, GURL(), SessionID::InvalidValue());
     if (nav_event) {
       observer_manager_->AddToReferrerChain(referrer_chain, nav_event, GURL(),
                                             ReferrerChainEntry::EVENT_URL);
