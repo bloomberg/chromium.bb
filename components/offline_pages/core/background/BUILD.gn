@@ -90,6 +90,7 @@ static_library("test_support") {
   deps = [
     ":background_offliner",
     "//base",
+    "//components/offline_items_collection/core/test_support",
     "//components/offline_pages/core",
     "//net",
   ]

@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/test/bind_test_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_items_collection/core/offline_item.h"
@@ -117,7 +118,6 @@ TEST_F(OfflineContentAggregatorTest, QueryingItemsWith2Providers) {
   ScopedMockOfflineContentProvider provider1("1", &aggregator_);
   ScopedMockOfflineContentProvider provider2("2", &aggregator_);
 
-  OfflineContentProvider::OfflineItemList empty;
   OfflineContentProvider::OfflineItemList items1;
   items1.push_back(OfflineItem(ContentId("1", "A")));
   items1.push_back(OfflineItem(ContentId("1", "B")));
