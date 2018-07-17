@@ -6,33 +6,14 @@ import("//ios/web/js_compile.gni")
 
 source_set("manualfill") {
   sources = [
-    "input_assistant_manualfill_view_controller.h",
-    "input_assistant_manualfill_view_controller.mm",
-    "manualfill_keyboard_view_controller.h",
-    "manualfill_keyboard_view_controller.mm",
-    "manualfill_view_controller.h",
-    "manualfill_view_controller.mm",
-    "password_picker_view_controller.h",
-    "password_picker_view_controller.mm",
+    "accessory_provider.h",
+    "accessory_provider.mm",
   ]
   deps = [
-    ":injected_js",
     "//base",
-    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/ui/autofill/manualfill",
-    "//ios/web/public:public",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-js_compile_checked("injected_js") {
-  visibility = [ ":manualfill" ]
-  sources = [
-    "resources/manualfill_controller.js",
-  ]
-  js_modules = [
-    "//components/autofill/ios/fill/resources/form.js",
-    "//components/autofill/ios/fill/resources/fill.js",
-  ]
 }
