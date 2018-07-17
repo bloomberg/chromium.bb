@@ -16,4 +16,4 @@ const CGFloat kTableViewCellSelectionAnimationDuration = 0.15;
 const CGFloat kTableViewHighlightedCellColor = 0xA6A6A6;
 const CGFloat kTableViewHighlightedCellColorAlpha = 0.5;
 const CGFloat kUseDefaultFontSize = 0.0;
-const CGFloat kTableViewLabelVerticalSpacing = 4.0;
+const CGFloat kTableViewLabelVerticalTopSpacing = 13.0;

@@ -85,10 +85,10 @@ const CGFloat kTextCellLinkColor = 0x1A73E8;
                          constant:kTableViewHorizontalSpacing],
       [_textLabel.topAnchor
           constraintEqualToAnchor:self.contentView.topAnchor
-                         constant:kTableViewLabelVerticalSpacing],
+                         constant:kTableViewLabelVerticalTopSpacing],
       [_textLabel.bottomAnchor
           constraintEqualToAnchor:self.contentView.bottomAnchor
-                         constant:-kTableViewLabelVerticalSpacing],
+                         constant:0],
       [_textLabel.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
                          constant:-kTableViewHorizontalSpacing]
