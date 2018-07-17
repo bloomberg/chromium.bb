@@ -677,11 +677,12 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
                                                  line_block_size, block_delta);
 
     NGLineInfo line_info;
-    NGLineBreaker line_breaker(
-        Node(), NGLineBreakerMode::kContent, constraint_space_,
-        &positioned_floats, &unpositioned_floats_, &container_builder_,
-        exclusion_space.get(), handled_item_index, break_token);
-    line_breaker.NextLine(line_opportunity, &line_info);
+    NGLineBreaker line_breaker(Node(), NGLineBreakerMode::kContent,
+                               constraint_space_, &positioned_floats,
+                               &unpositioned_floats_, &container_builder_,
+                               exclusion_space.get(), handled_item_index,
+                               line_opportunity, break_token);
+    line_breaker.NextLine(&line_info);
 
     // If this fragment will be larger than the inline-size of the opportunity,
     // *and* the opportunity is smaller than the available inline-size, and the
