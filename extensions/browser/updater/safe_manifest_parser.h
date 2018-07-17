@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_UPDATER_SAFE_MANIFEST_PARSER_H_
 #define EXTENSIONS_BROWSER_UPDATER_SAFE_MANIFEST_PARSER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -46,6 +47,10 @@ struct UpdateManifestResults {
   UpdateManifestResults(const UpdateManifestResults& other);
   UpdateManifestResults& operator=(const UpdateManifestResults& other);
   ~UpdateManifestResults();
+
+  // Group |list| by |extension_id|.
+  std::map<std::string, std::vector<const UpdateManifestResult*>> GroupByID()
+      const;
 
   std::vector<UpdateManifestResult> list;
   // This will be >= 0, or kNoDaystart if the <daystart> tag was not present.

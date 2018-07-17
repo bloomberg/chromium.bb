@@ -27,6 +27,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
@@ -936,9 +937,14 @@ class ExtensionUpdaterTest : public testing::Test {
     std::unique_ptr<ManifestFetchData> fetch_data(
         CreateManifestFetchData(GURL("http://localhost/foo")));
     UpdateManifestResults updates;
-    std::vector<int> updateable;
-    downloader.DetermineUpdates(*fetch_data, updates, &updateable);
+    std::vector<UpdateManifestResult*> updateable;
+    std::set<std::string> not_updateable;
+    std::set<std::string> errors;
+    downloader.DetermineUpdates(*fetch_data, updates, &updateable,
+                                &not_updateable, &errors);
     EXPECT_TRUE(updateable.empty());
+    EXPECT_TRUE(not_updateable.empty());
+    EXPECT_TRUE(errors.empty());
 
     // Create two updates - expect that DetermineUpdates will return the first
     // one (v1.0 installed, v1.1 available) but not the second one (both
@@ -962,9 +968,94 @@ class ExtensionUpdaterTest : public testing::Test {
         .WillOnce(DoAll(SetArgPointee<1>("2.0.0.0"),
                         Return(true)));
 
-    downloader.DetermineUpdates(*fetch_data, updates, &updateable);
-    EXPECT_EQ(1u, updateable.size());
-    EXPECT_EQ(0, updateable[0]);
+    updateable.clear();
+    not_updateable.clear();
+    errors.clear();
+    downloader.DetermineUpdates(*fetch_data, updates, &updateable,
+                                &not_updateable, &errors);
+    EXPECT_TRUE(errors.empty());
+    EXPECT_THAT(not_updateable, testing::ElementsAre(id2));
+    ASSERT_EQ(1u, updateable.size());
+    EXPECT_EQ("1.1", updateable[0]->version);
+  }
+
+  void TestDetermineUpdatesError() {
+    TestingProfile profile;
+    MockExtensionDownloaderDelegate delegate;
+    ExtensionDownloader downloader(&delegate, profile.GetRequestContext(),
+                                   data_decoder_service_connector());
+
+    std::unique_ptr<ManifestFetchData> fetch_data(
+        CreateManifestFetchData(GURL("http://localhost/foo")));
+    UpdateManifestResults updates;
+
+    // id1 => updatable (current version (1.1) is older than update version).
+    // id2 => non_updateable (current version (2.0.0.0) is the same as update
+    //        version).
+    // id3 => non_updateable (manifest update version is empty).
+    // id4 => errors (|updates| doesn't contain id4).
+    // id5 => errors (the extension is not currently installed).
+    // id6 => errors (manifest update version is invalid).
+    const std::string id1 = crx_file::id_util::GenerateId("1");
+    const std::string id2 = crx_file::id_util::GenerateId("2");
+    const std::string id3 = crx_file::id_util::GenerateId("3");
+    const std::string id4 = crx_file::id_util::GenerateId("4");
+    const std::string id5 = crx_file::id_util::GenerateId("5");
+    const std::string id6 = crx_file::id_util::GenerateId("6");
+
+    fetch_data->AddExtension(id1, "1.0.0.0", &kNeverPingedData,
+                             kEmptyUpdateUrlData, std::string(), std::string(),
+                             ManifestFetchData::FetchPriority::BACKGROUND);
+    AddParseResult(id1, "1.1", "http://localhost/e1_1.1.crx", &updates);
+
+    fetch_data->AddExtension(id2, "2.0.0.0", &kNeverPingedData,
+                             kEmptyUpdateUrlData, std::string(), std::string(),
+                             ManifestFetchData::FetchPriority::BACKGROUND);
+    AddParseResult(id2, "2.0.0.0", "http://localhost/e2_2.0.crx", &updates);
+
+    fetch_data->AddExtension(id3, "0.0.0.0", &kNeverPingedData,
+                             kEmptyUpdateUrlData, std::string(), std::string(),
+                             ManifestFetchData::FetchPriority::BACKGROUND);
+    // Empty update version in manifest.
+    AddParseResult(id3, "", "http://localhost/e3_3.0.crx", &updates);
+
+    fetch_data->AddExtension(id4, "0.0.0.0", &kNeverPingedData,
+                             kEmptyUpdateUrlData, std::string(), std::string(),
+                             ManifestFetchData::FetchPriority::BACKGROUND);
+
+    fetch_data->AddExtension(id5, "0.0.0.0", &kNeverPingedData,
+                             kEmptyUpdateUrlData, std::string(), std::string(),
+                             ManifestFetchData::FetchPriority::BACKGROUND);
+    AddParseResult(id5, "5.0.0.0", "http://localhost/e5_5.0.crx", &updates);
+
+    fetch_data->AddExtension(id6, "0.0.0.0", &kNeverPingedData,
+                             kEmptyUpdateUrlData, std::string(), std::string(),
+                             ManifestFetchData::FetchPriority::BACKGROUND);
+    // Invalid update version in manifest.
+    AddParseResult(id6, "invalid_version", "http://localhost/e6_6.0.crx",
+                   &updates);
+
+    EXPECT_CALL(delegate, IsExtensionPending(_)).WillRepeatedly(Return(false));
+    EXPECT_CALL(delegate, GetExtensionExistingVersion(id1, _))
+        .WillOnce(DoAll(SetArgPointee<1>("1.0.0.0"), Return(true)));
+    EXPECT_CALL(delegate, GetExtensionExistingVersion(id2, _))
+        .WillOnce(DoAll(SetArgPointee<1>("2.0.0.0"), Return(true)));
+    EXPECT_CALL(delegate, GetExtensionExistingVersion(id3, _))
+        .WillOnce(DoAll(SetArgPointee<1>("0.0.0.0"), Return(true)));
+    EXPECT_CALL(delegate, GetExtensionExistingVersion(id5, _))
+        .WillOnce(DoAll(SetArgPointee<1>("0.0.0.0"), Return(false)));
+    EXPECT_CALL(delegate, GetExtensionExistingVersion(id6, _))
+        .WillOnce(DoAll(SetArgPointee<1>("0.0.0.0"), Return(true)));
+
+    std::vector<UpdateManifestResult*> updateable;
+    std::set<std::string> not_updateable;
+    std::set<std::string> errors;
+    downloader.DetermineUpdates(*fetch_data, updates, &updateable,
+                                &not_updateable, &errors);
+    EXPECT_THAT(not_updateable, testing::UnorderedElementsAre(id2, id3));
+    EXPECT_THAT(errors, testing::UnorderedElementsAre(id4, id5, id6));
+    ASSERT_EQ(1u, updateable.size());
+    EXPECT_EQ("1.1", updateable[0]->version);
   }
 
   void TestDetermineUpdatesPending() {
@@ -987,26 +1078,108 @@ class ExtensionUpdaterTest : public testing::Test {
     pending_extension_manager->GetPendingIdsForUpdateCheck(
         &ids_for_update_check);
 
-    std::list<std::string>::const_iterator it;
-    for (it = ids_for_update_check.begin();
-         it != ids_for_update_check.end(); ++it) {
+    for (const std::string& id : ids_for_update_check) {
       fetch_data->AddExtension(
-          *it, "1.0.0.0", &kNeverPingedData, kEmptyUpdateUrlData, std::string(),
+          id, "1.0.0.0", &kNeverPingedData, kEmptyUpdateUrlData, std::string(),
           std::string(), ManifestFetchData::FetchPriority::BACKGROUND);
-      AddParseResult(*it, "1.1", "http://localhost/e1_1.1.crx", &updates);
+      AddParseResult(id, "1.1", "http://localhost/e1_1.1.crx", &updates);
     }
 
     // The delegate will tell the downloader that all the extensions are
     // pending.
     EXPECT_CALL(delegate, IsExtensionPending(_)).WillRepeatedly(Return(true));
 
-    std::vector<int> updateable;
-    downloader.DetermineUpdates(*fetch_data, updates, &updateable);
+    std::vector<UpdateManifestResult*> updateable;
+    std::set<std::string> not_updateable;
+    std::set<std::string> errors;
+    downloader.DetermineUpdates(*fetch_data, updates, &updateable,
+                                &not_updateable, &errors);
     // All the apps should be updateable.
     EXPECT_EQ(3u, updateable.size());
-    for (std::vector<int>::size_type i = 0; i < updateable.size(); ++i) {
-      EXPECT_EQ(static_cast<int>(i), updateable[i]);
-    }
+    EXPECT_TRUE(not_updateable.empty());
+    EXPECT_TRUE(errors.empty());
+  }
+
+  void TestDetermineUpdatesDuplicates() {
+    base::HistogramTester histogram_tester;
+    TestingProfile profile;
+    MockExtensionDownloaderDelegate delegate;
+    ExtensionDownloader downloader(&delegate, profile.GetRequestContext(),
+                                   data_decoder_service_connector());
+
+    const std::string id1 = crx_file::id_util::GenerateId("1");
+    const std::string id2 = crx_file::id_util::GenerateId("2");
+    const std::string id3 = crx_file::id_util::GenerateId("3");
+    const std::string id4 = crx_file::id_util::GenerateId("4");
+    const std::string id5 = crx_file::id_util::GenerateId("5");
+    const std::string id6 = crx_file::id_util::GenerateId("6");
+    const std::string id7 = crx_file::id_util::GenerateId("7");
+
+    std::unique_ptr<ManifestFetchData> fetch_data(
+        CreateManifestFetchData(GURL("http://localhost/foo")));
+    fetch_data->AddExtension(id1, "1.1.0.0", &kNeverPingedData,
+                             kEmptyUpdateUrlData, std::string(), std::string(),
+                             ManifestFetchData::FetchPriority::BACKGROUND);
+    fetch_data->AddExtension(id2, "1.2.0.0", &kNeverPingedData,
+                             kEmptyUpdateUrlData, std::string(), std::string(),
+                             ManifestFetchData::FetchPriority::BACKGROUND);
+    fetch_data->AddExtension(id3, "1.3.0.0", &kNeverPingedData,
+                             kEmptyUpdateUrlData, std::string(), std::string(),
+                             ManifestFetchData::FetchPriority::BACKGROUND);
+    fetch_data->AddExtension(id4, "1.4.0.0", &kNeverPingedData,
+                             kEmptyUpdateUrlData, std::string(), std::string(),
+                             ManifestFetchData::FetchPriority::BACKGROUND);
+    fetch_data->AddExtension(id5, "1.5.0.0", &kNeverPingedData,
+                             kEmptyUpdateUrlData, std::string(), std::string(),
+                             ManifestFetchData::FetchPriority::BACKGROUND);
+    fetch_data->AddExtension(id6, "1.6.0.0", &kNeverPingedData,
+                             kEmptyUpdateUrlData, std::string(), std::string(),
+                             ManifestFetchData::FetchPriority::BACKGROUND);
+    fetch_data->AddExtension(id7, "1.7.0.0", &kNeverPingedData,
+                             kEmptyUpdateUrlData, std::string(), std::string(),
+                             ManifestFetchData::FetchPriority::BACKGROUND);
+
+    UpdateManifestResults updates;
+    AddParseResult(id1, "1.1.0.0", "http://localhost/e1_1.1.crx", &updates);
+    AddParseResult(id2, "1.2.0.a", "http://localhost/e2_1.1.crx", &updates);
+    AddParseResult(id3, "1.3.1.0", "http://localhost/e3_1.1.crx", &updates);
+    AddParseResult(id4, "1.4.0.0", "http://localhost/e4_1.1.crx", &updates);
+    AddParseResult(id4, "1.4.0.a", "http://localhost/e4_1.1.crx", &updates);
+    AddParseResult(id5, "1.5.0.a", "http://localhost/e5_1.1.crx", &updates);
+    AddParseResult(id5, "1.5.0.b", "http://localhost/e5_1.1.crx", &updates);
+    AddParseResult(id6, "1.6.0.a", "http://localhost/e6_1.1.crx", &updates);
+    AddParseResult(id6, "1.6.0.0", "http://localhost/e6_1.1.crx", &updates);
+    AddParseResult(id6, "1.6.1.0", "http://localhost/e6_1.1.crx", &updates);
+    AddParseResult(id6, "1.6.2.0", "http://localhost/e6_1.1.crx", &updates);
+
+    EXPECT_CALL(delegate, IsExtensionPending(_)).WillRepeatedly(Return(false));
+    EXPECT_CALL(delegate, GetExtensionExistingVersion(id1, _))
+        .WillOnce(DoAll(SetArgPointee<1>("1.1.0.0"), Return(true)));
+    EXPECT_CALL(delegate, GetExtensionExistingVersion(id2, _))
+        .WillOnce(DoAll(SetArgPointee<1>("1.2.0.0"), Return(true)));
+    EXPECT_CALL(delegate, GetExtensionExistingVersion(id3, _))
+        .WillOnce(DoAll(SetArgPointee<1>("1.3.0.0"), Return(true)));
+    EXPECT_CALL(delegate, GetExtensionExistingVersion(id4, _))
+        .WillOnce(DoAll(SetArgPointee<1>("1.4.0.0"), Return(true)));
+    EXPECT_CALL(delegate, GetExtensionExistingVersion(id5, _))
+        .WillOnce(DoAll(SetArgPointee<1>("1.5.0.0"), Return(true)));
+    EXPECT_CALL(delegate, GetExtensionExistingVersion(id6, _))
+        .WillOnce(DoAll(SetArgPointee<1>("1.6.0.0"), Return(true)));
+
+    std::vector<UpdateManifestResult*> updateable;
+    std::set<std::string> not_updateable;
+    std::set<std::string> errors;
+    downloader.DetermineUpdates(*fetch_data, updates, &updateable,
+                                &not_updateable, &errors);
+    EXPECT_THAT(not_updateable, testing::UnorderedElementsAre(id1, id4));
+    EXPECT_THAT(errors, testing::UnorderedElementsAre(id2, id5, id7));
+    EXPECT_THAT(histogram_tester.GetAllSamples(
+                    "Extensions.UpdateManifestDuplicateEntryCount"),
+                testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 3),
+                                     base::Bucket(2, 2), base::Bucket(4, 1)));
+    ASSERT_EQ(2u, updateable.size());
+    EXPECT_EQ("1.3.1.0", updateable[0]->version);
+    EXPECT_EQ("1.6.1.0", updateable[1]->version);
   }
 
   void TestMultipleManifestDownloading() {
@@ -2082,6 +2255,14 @@ TEST_F(ExtensionUpdaterTest, TestDetermineUpdates) {
 
 TEST_F(ExtensionUpdaterTest, TestDetermineUpdatesPending) {
   TestDetermineUpdatesPending();
+}
+
+TEST_F(ExtensionUpdaterTest, TestDetermineUpdatesDuplicates) {
+  TestDetermineUpdatesDuplicates();
+}
+
+TEST_F(ExtensionUpdaterTest, TestDetermineUpdatesError) {
+  TestDetermineUpdatesError();
 }
 
 TEST_F(ExtensionUpdaterTest, TestMultipleManifestDownloading) {

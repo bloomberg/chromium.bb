@@ -223,6 +223,15 @@ UpdateManifestResults::UpdateManifestResults(
 
 UpdateManifestResults::~UpdateManifestResults() = default;
 
+std::map<std::string, std::vector<const UpdateManifestResult*>>
+UpdateManifestResults::GroupByID() const {
+  std::map<std::string, std::vector<const UpdateManifestResult*>> groups;
+  for (const UpdateManifestResult& update_result : list) {
+    groups[update_result.extension_id].push_back(&update_result);
+  }
+  return groups;
+}
+
 void ParseUpdateManifest(service_manager::Connector* connector,
                          const std::string& xml,
                          ParseUpdateManifestCallback callback) {

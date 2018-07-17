@@ -217,6 +217,12 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
     ExtraParams();
   };
 
+  enum class UpdateAvailability {
+    kAvailable,
+    kNoUpdate,
+    kBadUpdateSpecification,
+  };
+
   // Helper for AddExtension() and AddPendingExtension().
   bool AddExtensionData(const std::string& id,
                         const base::Version& version,
@@ -252,11 +258,19 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
                              std::unique_ptr<UpdateManifestResults> results,
                              const base::Optional<std::string>& error);
 
-  // Given a list of potential updates, returns the indices of the ones that are
-  // applicable (are actually a new version, etc.) in |result|.
+  // This function partition extension IDs stored in |fetch_data| into 3 sets:
+  // update/no update/error using the update infromation from
+  // |possible_updates| and the extension system. When the function returns:
+  // - |to_update| stores entries from |possible_updates| that will be updated.
+  // - |no_updates| stores the set of extension IDs that will not be updated.
+  // - |errors| stores the set of extension IDs that have error in the process
+  //   determining updates. For example, a common error is |possible_updates|
+  //   doesn't have any update information for some extensions in |fetch_data|.
   void DetermineUpdates(const ManifestFetchData& fetch_data,
                         const UpdateManifestResults& possible_updates,
-                        std::vector<int>* result);
+                        std::vector<UpdateManifestResult*>* to_update,
+                        std::set<std::string>* no_updates,
+                        std::set<std::string>* errors);
 
   // Begins (or queues up) download of an updated extension.
   void FetchUpdatedExtension(std::unique_ptr<ExtensionFetch> fetch_data);
@@ -315,6 +329,16 @@ class ExtensionDownloader : public net::URLFetcherDelegate,
       const GURL& update_url,
       int request_id,
       ManifestFetchData::FetchPriority fetch_priority);
+
+  // This function helps obtain an update (if any) from |possible_updates|.
+  // |possible_indices| is an array of indices of |possible_updates| which
+  // the function would check to find an update.
+  // If the return value is |kAvailable|, |update_index_out| will store the
+  // index of the update in |possible_updates|.
+  UpdateAvailability GetUpdateAvailability(
+      const std::string& extension_id,
+      const std::vector<const UpdateManifestResult*>& possible_candidates,
+      UpdateManifestResult** update_result_out) const;
 
   // The delegate that receives the crx files downloaded by the
   // ExtensionDownloader, and that fills in optional ping and update url data.
