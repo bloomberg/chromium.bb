@@ -562,9 +562,9 @@ void AssistantManagerServiceImpl::OnStartFinished() {
 
 void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread(
     bool is_mic_open) {
-  // TODO(dmblack): Pipe |is_mic_open| through the OnInteractionStarted event.
-  interaction_subscribers_.ForAllPtrs(
-      [](auto* ptr) { ptr->OnInteractionStarted(); });
+  interaction_subscribers_.ForAllPtrs([is_mic_open](auto* ptr) {
+    ptr->OnInteractionStarted(/*is_voice_interaction=*/is_mic_open);
+  });
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
