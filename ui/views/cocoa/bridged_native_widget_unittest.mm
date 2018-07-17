@@ -10,6 +10,7 @@
 
 #import "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
+#import "base/mac/scoped_objc_class_swizzler.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -28,6 +29,7 @@
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/textfield/textfield_model.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/view.h"
@@ -197,7 +199,53 @@ bool IsRTLSelectBuggy(SEL sel) {
          sel == @selector(moveLeftAndModifySelection:);
 }
 
+// Used by InterpretKeyEventsDonorForNSView to simulate IME behavior.
+using InterpretKeyEventsCallback = base::RepeatingCallback<void(id)>;
+InterpretKeyEventsCallback* g_fake_interpret_key_events = nullptr;
+
+// Used by UpdateWindowsDonorForNSApp to hook -[NSApp updateWindows].
+base::RepeatingClosure* g_update_windows_closure = nullptr;
+
+// Used to provide a return value for +[NSTextInputContext currentInputContext].
+NSTextInputContext* g_fake_current_input_context = nullptr;
+
 }  // namespace
+
+// Class to hook [NSView interpretKeyEvents:] to simulate it interacting with an
+// IME window.
+@interface InterpretKeyEventsDonorForNSView : NSView
+@end
+
+@implementation InterpretKeyEventsDonorForNSView
+
+- (void)interpretKeyEvents:(NSArray<NSEvent*>*)eventArray {
+  ASSERT_TRUE(g_fake_interpret_key_events);
+  g_fake_interpret_key_events->Run(self);
+}
+
+@end
+
+@interface UpdateWindowsDonorForNSApp : NSApplication
+@end
+
+@implementation UpdateWindowsDonorForNSApp
+
+- (void)updateWindows {
+  ASSERT_TRUE(g_update_windows_closure);
+  g_update_windows_closure->Run();
+}
+
+@end
+@interface CurrentInputContextDonorForNSTextInputContext : NSTextInputContext
+@end
+
+@implementation CurrentInputContextDonorForNSTextInputContext
+
++ (NSTextInputContext*)currentInputContext {
+  return g_fake_current_input_context;
+}
+
+@end
 
 // Class to override -[NSWindow toggleFullScreen:] to a no-op. This simulates
 // NSWindow's behavior when attempting to toggle fullscreen state again, when
@@ -326,22 +374,21 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetTestBase);
 };
 
-class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
+class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase,
+                                public TextfieldController {
  public:
+  using HandleKeyEventCallback =
+      base::RepeatingCallback<bool(Textfield*, const ui::KeyEvent& key_event)>;
+
   BridgedNativeWidgetTest();
   ~BridgedNativeWidgetTest() override;
 
   // Install a textfield with input type |text_input_type| in the view hierarchy
   // and make it the text input client. Also initializes |dummy_text_view_|.
-  void InstallTextField(const base::string16& text,
-                        ui::TextInputType text_input_type);
-
-  // Install a textfield with input type ui::TEXT_INPUT_TYPE_TEXT in the view
-  // hierarchy and make it the text input client. Also initializes
-  // |dummy_text_view_|.
-  void InstallTextField(const base::string16& text);
-
-  void InstallTextField(const std::string& text);
+  Textfield* InstallTextField(
+      const base::string16& text,
+      ui::TextInputType text_input_type = ui::TEXT_INPUT_TYPE_TEXT);
+  Textfield* InstallTextField(const std::string& text);
 
   // Returns the actual current text for |ns_view_|, or the selected substring.
   NSString* GetActualText();
@@ -372,9 +419,16 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
   // Helper method to set the private |keyDownEvent_| field on |ns_view_|.
   void SetKeyDownEvent(NSEvent* event);
 
+  // Sets a callback to run on the next HandleKeyEvent().
+  void SetHandleKeyEventCallback(HandleKeyEventCallback callback);
+
   // testing::Test:
   void SetUp() override;
   void TearDown() override;
+
+  // TextfieldController:
+  bool HandleKeyEvent(Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
 
  protected:
   // Test delete to beginning of line or paragraph based on |sel|. |sel| can be
@@ -402,6 +456,8 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
   // An NSTextView which helps set the expectations for our tests.
   base::scoped_nsobject<NSTextView> dummy_text_view_;
 
+  HandleKeyEventCallback handle_key_event_callback_;
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
@@ -415,12 +471,13 @@ BridgedNativeWidgetTest::BridgedNativeWidgetTest()
 BridgedNativeWidgetTest::~BridgedNativeWidgetTest() {
 }
 
-void BridgedNativeWidgetTest::InstallTextField(
+Textfield* BridgedNativeWidgetTest::InstallTextField(
     const base::string16& text,
     ui::TextInputType text_input_type) {
   Textfield* textfield = new Textfield();
   textfield->SetText(text);
   textfield->SetTextInputType(text_input_type);
+  textfield->set_controller(this);
   view_->RemoveAllChildViews(true);
   view_->AddChildView(textfield);
   textfield->SetBoundsRect(init_params_.bounds);
@@ -437,14 +494,11 @@ void BridgedNativeWidgetTest::InstallTextField(
   dummy_text_view_.reset(
       [[NSTextView alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)]);
   [dummy_text_view_ setString:SysUTF16ToNSString(text)];
+  return textfield;
 }
 
-void BridgedNativeWidgetTest::InstallTextField(const base::string16& text) {
-  InstallTextField(text, ui::TEXT_INPUT_TYPE_TEXT);
-}
-
-void BridgedNativeWidgetTest::InstallTextField(const std::string& text) {
-  InstallTextField(base::ASCIIToUTF16(text), ui::TEXT_INPUT_TYPE_TEXT);
+Textfield* BridgedNativeWidgetTest::InstallTextField(const std::string& text) {
+  return InstallTextField(base::ASCIIToUTF16(text));
 }
 
 NSString* BridgedNativeWidgetTest::GetActualText() {
@@ -502,6 +556,11 @@ void BridgedNativeWidgetTest::SetKeyDownEvent(NSEvent* event) {
   [ns_view_ setValue:event forKey:@"keyDownEvent_"];
 }
 
+void BridgedNativeWidgetTest::SetHandleKeyEventCallback(
+    HandleKeyEventCallback callback) {
+  handle_key_event_callback_ = std::move(callback);
+}
+
 void BridgedNativeWidgetTest::SetUp() {
   BridgedNativeWidgetTestBase::SetUp();
 
@@ -532,6 +591,13 @@ void BridgedNativeWidgetTest::TearDown() {
     bridge()->SetRootView(nullptr);
   view_.reset();
   BridgedNativeWidgetTestBase::TearDown();
+}
+
+bool BridgedNativeWidgetTest::HandleKeyEvent(Textfield* sender,
+                                             const ui::KeyEvent& key_event) {
+  if (handle_key_event_callback_)
+    return handle_key_event_callback_.Run(sender, key_event);
+  return false;
 }
 
 void BridgedNativeWidgetTest::TestDeleteBeginning(SEL sel) {
@@ -1323,6 +1389,187 @@ TEST_F(BridgedNativeWidgetTest, TextInput_FirstRectForCharacterRange) {
   EXPECT_EQ(GetExpectedBoundsForRange(client, test_string, query_range),
             gfx::ScreenRectFromNSRect(rect));
   EXPECT_EQ_RANGE(query_range, actual_range);
+}
+
+// Test simulated codepaths for IMEs that do not always "mark" text. E.g.
+// phonetic languages such as Korean and Vietnamese.
+TEST_F(BridgedNativeWidgetTest, TextInput_SimulatePhoneticIme) {
+  Textfield* textfield = InstallTextField("");
+  EXPECT_TRUE([ns_view_ textInputClient]);
+
+  base::mac::ScopedObjCClassSwizzler interpret_key_events_swizzler(
+      [NSView class], [InterpretKeyEventsDonorForNSView class],
+      @selector(interpretKeyEvents:));
+
+  // Sequence of calls (and corresponding keyDown events) obtained via tracing
+  // with 2-Set Korean IME and pressing q, o, then Enter on the keyboard.
+  NSEvent* q_in_ime = cocoa_test_event_utils::KeyEventWithKeyCode(
+      12, [@"ㅂ" characterAtIndex:0], NSKeyDown, 0);
+  InterpretKeyEventsCallback handle_q_in_ime = base::BindRepeating([](id view) {
+    [view insertText:@"ㅂ" replacementRange:NSMakeRange(NSNotFound, 0)];
+  });
+
+  NSEvent* o_in_ime = cocoa_test_event_utils::KeyEventWithKeyCode(
+      31, [@"ㅐ" characterAtIndex:0], NSKeyDown, 0);
+  InterpretKeyEventsCallback handle_o_in_ime = base::BindRepeating([](id view) {
+    [view insertText:@"배" replacementRange:NSMakeRange(0, 1)];
+  });
+
+  NSEvent* return_in_ime = cocoa_test_event_utils::SynthesizeKeyEvent(
+      widget_->GetNativeWindow(), true, ui::VKEY_RETURN, 0);
+  InterpretKeyEventsCallback handle_return_in_ime =
+      base::BindRepeating([](id view) {
+        // When confirming the composition, AppKit repeats itself.
+        [view insertText:@"배" replacementRange:NSMakeRange(0, 1)];
+        [view insertText:@"배" replacementRange:NSMakeRange(0, 1)];
+        // Note: there is no insertText:@"\r", which we would normally see when
+        // not in an IME context for VKEY_RETURN.
+      });
+
+  // Add a hook for the KeyEvent being received by the TextfieldController. E.g.
+  // this is where the Omnibox would start to search when Return is pressed.
+  bool saw_vkey_return = false;
+  SetHandleKeyEventCallback(base::BindRepeating(
+      [](bool* saw_return, Textfield* textfield, const ui::KeyEvent& event) {
+        if (event.key_code() == ui::VKEY_RETURN) {
+          EXPECT_FALSE(*saw_return);
+          *saw_return = true;
+          EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->text());
+        }
+        return false;
+      },
+      &saw_vkey_return));
+
+  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->text());
+
+  g_fake_interpret_key_events = &handle_q_in_ime;
+  [ns_view_ keyDown:q_in_ime];
+  EXPECT_EQ(base::SysNSStringToUTF16(@"ㅂ"), textfield->text());
+  EXPECT_FALSE(saw_vkey_return);
+
+  g_fake_interpret_key_events = &handle_o_in_ime;
+  [ns_view_ keyDown:o_in_ime];
+  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->text());
+  EXPECT_FALSE(saw_vkey_return);
+
+  // Note the "Enter" should not replace the replacement range, even though a
+  // replacement range was set.
+  g_fake_interpret_key_events = &handle_return_in_ime;
+  [ns_view_ keyDown:return_in_ime];
+  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->text());
+
+  // VKEY_RETURN should be seen by via the unhandled key event handler (but not
+  // via -insertText:.
+  EXPECT_TRUE(saw_vkey_return);
+
+  g_fake_interpret_key_events = nullptr;
+}
+
+// Test a codepath that could hypothetically cause [NSApp updateWindows] to be
+// called recursively due to IME dismissal during teardown triggering a focus
+// change. Twice.
+TEST_F(BridgedNativeWidgetTest, TextInput_RecursiveUpdateWindows) {
+  Textfield* textfield = InstallTextField("");
+  EXPECT_TRUE([ns_view_ textInputClient]);
+
+  base::mac::ScopedObjCClassSwizzler interpret_key_events_swizzler(
+      [NSView class], [InterpretKeyEventsDonorForNSView class],
+      @selector(interpretKeyEvents:));
+  base::mac::ScopedObjCClassSwizzler update_windows_swizzler(
+      [NSApplication class], [UpdateWindowsDonorForNSApp class],
+      @selector(updateWindows));
+  base::mac::ScopedObjCClassSwizzler current_input_context_swizzler(
+      [NSTextInputContext class],
+      [CurrentInputContextDonorForNSTextInputContext class],
+      @selector(currentInputContext));
+
+  int vkey_return_count = 0;
+
+  // Everything happens with this one event.
+  NSEvent* return_with_fake_ime = cocoa_test_event_utils::SynthesizeKeyEvent(
+      widget_->GetNativeWindow(), true, ui::VKEY_RETURN, 0);
+
+  InterpretKeyEventsCallback generate_return_and_fake_ime = base::BindRepeating(
+      [](int* saw_return_count, id view) {
+        EXPECT_EQ(0, *saw_return_count);
+        // First generate the return to simulate an input context change.
+        [view insertText:@"\r" replacementRange:NSMakeRange(NSNotFound, 0)];
+
+        EXPECT_EQ(1, *saw_return_count);
+      },
+      &vkey_return_count);
+
+  bool saw_update_windows = false;
+  base::RepeatingClosure update_windows_closure = base::BindRepeating(
+      [](bool* saw_update_windows, BridgedContentView* view,
+         Textfield* textfield) {
+        // Ensure updateWindows is not invoked recursively.
+        EXPECT_FALSE(*saw_update_windows);
+        *saw_update_windows = true;
+
+        // Inside updateWindows, assume the IME got dismissed and wants to
+        // insert its last bit of text for the old input context.
+        [view insertText:@"배" replacementRange:NSMakeRange(0, 1)];
+
+        // This is triggered by the setTextInputClient:nullptr in
+        // SetHandleKeyEventCallback(), so -inputContext should also be nil.
+        EXPECT_FALSE([view inputContext]);
+
+        // Ensure we can't recursively call updateWindows. A TextInputClient
+        // reacting to InsertChar could theoretically do this, but toolkit-views
+        // DCHECKs if there is recursive event dispatch, so call
+        // setTextInputClient directly.
+        [view setTextInputClient:textfield];
+
+        // Finally simulate what -[NSApp updateWindows] should _actually_ do,
+        // which is to update the input context (from the first responder).
+        g_fake_current_input_context = [view inputContext];
+
+        // Now, the |textfield| set above should have been set again.
+        EXPECT_TRUE(g_fake_current_input_context);
+      },
+      &saw_update_windows, ns_view_, textfield);
+
+  SetHandleKeyEventCallback(base::BindRepeating(
+      [](int* saw_return_count, BridgedContentView* view, Textfield* textfield,
+         const ui::KeyEvent& event) {
+        if (event.key_code() == ui::VKEY_RETURN) {
+          *saw_return_count += 1;
+          // Simulate Textfield::OnBlur() by clearing the input method.
+          // Textfield needs to be in a Widget to do this normally.
+          [view setTextInputClient:nullptr];
+        }
+        return false;
+      },
+      &vkey_return_count, ns_view_));
+
+  // Starting text (just insert it).
+  [ns_view_ insertText:@"ㅂ" replacementRange:NSMakeRange(NSNotFound, 0)];
+
+  EXPECT_EQ(base::SysNSStringToUTF16(@"ㅂ"), textfield->text());
+
+  g_fake_interpret_key_events = &generate_return_and_fake_ime;
+  g_update_windows_closure = &update_windows_closure;
+  g_fake_current_input_context = [ns_view_ inputContext];
+  EXPECT_TRUE(g_fake_current_input_context);
+  [ns_view_ keyDown:return_with_fake_ime];
+
+  // We should see one VKEY_RETURNs and one updateWindows. In particular, note
+  // that there is not a second VKEY_RETURN seen generated by keyDown: thinking
+  // the event has been unhandled. This is because it was handled when the fake
+  // IME sent \r.
+  EXPECT_TRUE(saw_update_windows);
+  EXPECT_EQ(1, vkey_return_count);
+
+  // The text inserted during updateWindows should have been inserted, even
+  // though we were trying to change the input context.
+  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->text());
+
+  EXPECT_TRUE(g_fake_current_input_context);
+
+  g_fake_current_input_context = nullptr;
+  g_fake_interpret_key_events = nullptr;
+  g_update_windows_closure = nullptr;
 }
 
 typedef BridgedNativeWidgetTestBase BridgedNativeWidgetSimulateFullscreenTest;
