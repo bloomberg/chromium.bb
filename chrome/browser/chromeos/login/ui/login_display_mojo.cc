@@ -47,25 +47,30 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
                             bool show_users,
                             bool show_new_user) {
   host_->SetUsers(filtered_users);
-
-  // Load the login screen.
   auto* client = LoginScreenClient::Get();
-  client->SetDelegate(host_);
-  client->login_screen()->ShowLoginScreen(base::BindOnce([](bool did_show) {
-    CHECK(did_show);
 
-    // Some auto-tests depend on login-prompt-visible, like
-    // login_SameSessionTwice.
-    VLOG(1) << "Emitting login-prompt-visible";
-    chromeos::DBusThreadManager::Get()
-        ->GetSessionManagerClient()
-        ->EmitLoginPromptVisible();
+  // ExistingUserController::DeviceSettingsChanged and others may initialize the
+  // login screen multiple times. Views-login only supports initialization once.
+  if (!initialized_) {
+    // Load the login screen.
+    client->SetDelegate(host_);
+    client->login_screen()->ShowLoginScreen(base::BindOnce([](bool did_show) {
+      CHECK(did_show);
 
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
-  }));
+      // login-prompt-visible is recorded and tracked to verify boot performance
+      // does not regress. Autotests may also depend on it (ie,
+      // login_SameSessionTwice).
+      VLOG(1) << "Emitting login-prompt-visible";
+      chromeos::DBusThreadManager::Get()
+          ->GetSessionManagerClient()
+          ->EmitLoginPromptVisible();
+
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+          content::NotificationService::AllSources(),
+          content::NotificationService::NoDetails());
+    }));
+  }
 
   UserSelectionScreen* user_selection_screen = host_->user_selection_screen();
   user_selection_screen->Init(filtered_users);
@@ -79,6 +84,8 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
       UpdatePinKeyboardState(user->GetAccountId());
     }
   }
+
+  initialized_ = true;
 }
 
 void LoginDisplayMojo::OnPreferencesChanged() {
