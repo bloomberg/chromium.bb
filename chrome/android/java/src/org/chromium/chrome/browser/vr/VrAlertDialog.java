@@ -16,15 +16,19 @@ import org.chromium.chrome.browser.modaldialog.ModalDialogView;
  * This class implements a VrAlertDialog which is similar to Android AlertDialog in VR.
  */
 public class VrAlertDialog extends AlertDialog {
+    private VrDialogManager mVrDialogManager;
     private ModalDialogManager mModalDialogManager;
     private ModalDialogView mModalDialogView;
+    private boolean mIsShowing;
     private CharSequence mMessage;
     private DialogButton mButtonPositive;
     private DialogButton mButtonNegative;
     protected View mView;
 
-    public VrAlertDialog(Context context, ModalDialogManager modalDialogManager) {
+    public VrAlertDialog(Context context, VrDialogManager vrDialogManager,
+            ModalDialogManager modalDialogManager) {
         super(context);
+        mVrDialogManager = vrDialogManager;
         mModalDialogManager = modalDialogManager;
     }
 
@@ -56,6 +60,7 @@ public class VrAlertDialog extends AlertDialog {
     public void show() {
         mModalDialogView = createView();
         mModalDialogManager.showDialog(mModalDialogView, ModalDialogManager.APP_MODAL);
+        mIsShowing = true;
     }
 
     /**
@@ -98,6 +103,7 @@ public class VrAlertDialog extends AlertDialog {
      */
     @Override
     public void dismiss() {
+        mIsShowing = false;
         mModalDialogManager.cancelDialog(mModalDialogView);
     }
 
