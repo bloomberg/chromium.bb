@@ -7,13 +7,16 @@
 #include <stddef.h>
 
 #include "base/containers/hash_tables.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/js/grit/mojo_bindings_resources.h"
 #include "mojo/public/js/grit/mojo_bindings_resources_map.h"
@@ -36,16 +39,50 @@ struct IdrGzipped {
 };
 using ResourcesMap = base::hash_map<std::string, IdrGzipped>;
 
-// TODO(rkc): Once we have a separate source for apps, remove '*/apps/' aliases.
-const char* const kPathAliases[][2] = {
-    {"../../../third_party/polymer/v1_0/components-chromium/", "polymer/v1_0/"},
-    {"../../../third_party/web-animations-js/sources/",
-     "polymer/v1_0/web-animations-js/"},
-    {"../../views/resources/default_100_percent/common/", "images/apps/"},
-    {"../../views/resources/default_200_percent/common/", "images/2x/apps/"},
-    {"../../webui/resources/cr_components/", "cr_components/"},
-    {"../../webui/resources/cr_elements/", "cr_elements/"},
-};
+const std::map<std::string, std::string> CreateAliasesMap() {
+  // TODO(rkc): Once we have a separate source for apps, remove '*/apps/'
+  // aliases.
+  std::map<std::string, std::string> aliases = {
+      {"../../../third_party/polymer/v1_0/components-chromium/",
+       "polymer/v1_0/"},
+      {"../../../third_party/web-animations-js/sources/",
+       "polymer/v1_0/web-animations-js/"},
+      {"../../views/resources/default_100_percent/common/", "images/apps/"},
+      {"../../views/resources/default_200_percent/common/", "images/2x/apps/"},
+      {"../../webui/resources/cr_components/", "cr_components/"},
+      {"../../webui/resources/cr_elements/", "cr_elements/"},
+  };
+
+#if !defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kWebUIPolymer2)) {
+    aliases["../../../third_party/polymer/v1_0/components-chromium/polymer2/"] =
+        "polymer/v1_0/polymer/";
+  }
+#endif  // !defined(OS_ANDROID)
+  return aliases;
+}
+
+#if !defined(OS_ANDROID)
+bool ShouldIgnore(std::string resource) {
+  if (base::FeatureList::IsEnabled(features::kWebUIPolymer2) &&
+      base::StartsWith(
+          resource,
+          "../../../third_party/polymer/v1_0/components-chromium/polymer/",
+          base::CompareCase::SENSITIVE)) {
+    return true;
+  }
+
+  if (!base::FeatureList::IsEnabled(features::kWebUIPolymer2) &&
+      base::StartsWith(
+          resource,
+          "../../../third_party/polymer/v1_0/components-chromium/polymer2/",
+          base::CompareCase::SENSITIVE)) {
+    return true;
+  }
+
+  return false;
+}
+#endif  // !defined(OS_ANDROID)
 
 void AddResource(const std::string& path,
                  int resource_id,
@@ -57,15 +94,24 @@ void AddResource(const std::string& path,
 }
 
 const ResourcesMap* CreateResourcesMap() {
+  std::map<std::string, std::string> aliases = CreateAliasesMap();
+
   ResourcesMap* result = new ResourcesMap();
   for (size_t i = 0; i < kWebuiResourcesSize; ++i) {
     const auto& resource = kWebuiResources[i];
+
+#if !defined(OS_ANDROID)
+    if (ShouldIgnore(resource.name))
+      continue;
+#endif  // !defined(OS_ANDROID)
+
     AddResource(resource.name, resource.value, resource.gzipped, result);
-    for (const char* const (&alias)[2] : kPathAliases) {
-      if (base::StartsWith(resource.name, alias[0],
+
+    for (auto it = aliases.begin(); it != aliases.end(); ++it) {
+      if (base::StartsWith(resource.name, it->first,
                            base::CompareCase::SENSITIVE)) {
         std::string resource_name(resource.name);
-        AddResource(alias[1] + resource_name.substr(strlen(alias[0])),
+        AddResource(it->second + resource_name.substr(it->first.length()),
                     resource.value, resource.gzipped, result);
       }
     }

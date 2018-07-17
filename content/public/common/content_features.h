@@ -149,6 +149,10 @@ CONTENT_EXPORT extern const char kWebXrRenderPathParamValueGpuFence[];
 CONTENT_EXPORT extern const char kWebXrRenderPathParamValueSharedBuffer[];
 #endif  // defined(OS_ANDROID)
 
+#if !defined(OS_ANDROID)
+CONTENT_EXPORT extern const base::Feature kWebUIPolymer2;
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_MACOSX)
 CONTENT_EXPORT extern const base::Feature kDeviceMonitorMac;
 CONTENT_EXPORT extern const base::Feature kIOSurfaceCapturer;
