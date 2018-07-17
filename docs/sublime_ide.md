@@ -553,6 +553,36 @@ shortcut to run it after building:
   ]
 ```
 
+### More detailed stack traces
+
+Chrome's default stack traces don't have full file paths so Sublime can't
+parse them. You can enable more detailed stack traces and use F4 to step right
+to the crashing line of code.
+
+First, add `print_unsymbolized_stack_traces = true` to your gn args, and make
+sure you have debug symbols enabled too (`symbol_level = 2`). Then, pipe
+Chrome's stderr through the asan_symbolize.py script. Here's a suitable build
+variant for Linux (with tweaked file_regex):
+
+```json
+{
+  "name": "Build and run with asan_symbolize",
+  "cmd": "ninja -j 1000 -C out/Debug chrome && out/Debug/chrome 2>&1 | ./tools/valgrind/asan/asan_symbolize.py",
+  "shell": true,
+  "file_regex": "(?:^|[)] )[.\\\\/]*([a-z]?:?[\\w.\\\\/]+)[(:]([0-9]+)[,:]?([0-9]+)?[)]?:?(.*)$"
+}
+```
+
+You can test it by visiting chrome://crash. You should be able to step through
+each line in the resulting stacktrace with F4. You can also get a stack trace
+without crashing like so:
+
+```c++
+#include "base/debug/stack_trace.h"
+[...]
+base::debug::StackTrace().Print();
+```
+
 ### Assigning builds to keyboard shortcuts
 
 To assign a build to a keyboard shortcut, select `Preferences > Key Bindings -
