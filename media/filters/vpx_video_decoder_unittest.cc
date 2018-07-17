@@ -332,6 +332,7 @@ TEST_F(VpxVideoDecoderTest, MemoryPoolAllowsMultipleDisplay) {
 #if !defined(OS_ANDROID)
   // Android doesn't seem to expose this bug, but the rest of the test is still
   // reasonable to complete even on Android.
+  ASSERT_EQ(output_frames_.size(), 26u);
   EXPECT_EQ(last_frame->data(VideoFrame::kYPlane),
             dupe_frame->data(VideoFrame::kYPlane));
   EXPECT_EQ(last_frame->data(VideoFrame::kUPlane),
