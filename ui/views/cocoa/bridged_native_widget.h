@@ -212,8 +212,8 @@ class VIEWS_EXPORT BridgedNativeWidget
   bool window_visible() const { return window_visible_; }
   bool wants_to_be_visible() const { return wants_to_be_visible_; }
 
-  bool animate() const { return animate_; }
-  void set_animate(bool animate) { animate_ = animate; }
+  bool GetAnimate() const;
+  void SetAnimate(bool animate);
 
   // ui::CATransactionCoordinator::PreCommitObserver implementation
   bool ShouldWaitInPreCommit() override;
@@ -333,9 +333,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   // If true, the window is either visible, or wants to be visible but is
   // currently hidden due to having a hidden parent.
   bool wants_to_be_visible_;
-
-  // Whether to animate the window (when it is appropriate to do so).
-  bool animate_ = true;
 
   // If true, then ignore interactions with CATransactionCoordinator until the
   // first frame arrives.
