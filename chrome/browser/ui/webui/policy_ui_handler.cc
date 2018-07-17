@@ -735,12 +735,11 @@ void PolicyUIHandler::SendPolicyNames() const {
 }
 
 void PolicyUIHandler::SendPolicyValues() const {
-  std::unique_ptr<base::DictionaryValue> all_policies =
-      policy::GetAllPolicyValuesAsDictionary(
-          web_ui()->GetWebContents()->GetBrowserContext(),
-          true /* with_user_policies */, true /* convert_values */);
+  base::Value all_policies = policy::GetAllPolicyValuesAsDictionary(
+      web_ui()->GetWebContents()->GetBrowserContext(),
+      true /* with_user_policies */, true /* convert_values */);
   web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setPolicyValues",
-                                         *all_policies);
+                                         all_policies);
 }
 
 void PolicyUIHandler::SendStatus() const {
