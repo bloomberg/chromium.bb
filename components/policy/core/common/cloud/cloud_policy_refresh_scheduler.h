@@ -27,7 +27,7 @@ namespace policy {
 class POLICY_EXPORT CloudPolicyRefreshScheduler
     : public CloudPolicyClient::Observer,
       public CloudPolicyStore::Observer,
-      public net::NetworkChangeNotifier::IPAddressObserver {
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Refresh constants.
   static const int64_t kDefaultRefreshDelayMs;
@@ -82,9 +82,10 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   void OnStoreLoaded(CloudPolicyStore* store) override;
   void OnStoreError(CloudPolicyStore* store) override;
 
-  // net::NetworkChangeNotifier::IPAddressObserver:
+  // net::NetworkChangeNotifier::NetworkChangeObserver:
   // Triggered also when the device wakes up.
-  void OnIPAddressChanged() override;
+  void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   void set_last_refresh_for_testing(base::Time last_refresh);
 

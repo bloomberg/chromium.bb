@@ -65,8 +65,9 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
     return scheduler;
   }
 
-  void NotifyIPAddressChanged() {
-    net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+  void NotifyNetworkChanged() {
+    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+        net::NetworkChangeNotifier::CONNECTION_WIFI);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -374,7 +375,7 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsDisconnected) {
   CheckTiming(kPolicyRefreshRate);
 }
 
-TEST_F(CloudPolicyRefreshSchedulerTest, OnIPAddressChangedUnregistered) {
+TEST_F(CloudPolicyRefreshSchedulerTest, OnNetworkChangedUnregistered) {
   client_.SetDMToken(std::string());
   std::unique_ptr<CloudPolicyRefreshScheduler> scheduler(
       CreateRefreshScheduler());
@@ -383,14 +384,14 @@ TEST_F(CloudPolicyRefreshSchedulerTest, OnIPAddressChangedUnregistered) {
   EXPECT_FALSE(task_runner_->HasPendingTask());
 
   EmulateSleepThroughLastRefreshTime(scheduler.get());
-  scheduler->OnIPAddressChanged();
+  scheduler->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_FALSE(task_runner_->HasPendingTask());
 }
 // TODO(igorcov): Before sleep in normal flow there's a task pending. When the
-// device wakes up, OnIPAddressChanged is called which should cancel the
+// device wakes up, OnNetworkChanged is called which should cancel the
 // pending task and queue a new task to run earlier. It is desirable to
 // simulate that flow here.
-TEST_F(CloudPolicyRefreshSchedulerTest, OnIPAddressChangedAfterSleep) {
+TEST_F(CloudPolicyRefreshSchedulerTest, OnNetworkChangedAfterSleep) {
   std::unique_ptr<CloudPolicyRefreshScheduler> scheduler(
       CreateRefreshScheduler());
 
@@ -400,7 +401,7 @@ TEST_F(CloudPolicyRefreshSchedulerTest, OnIPAddressChangedAfterSleep) {
   EXPECT_FALSE(task_runner_->HasPendingTask());
 
   EmulateSleepThroughLastRefreshTime(scheduler.get());
-  scheduler->OnIPAddressChanged();
+  scheduler->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_TRUE(task_runner_->HasPendingTask());
   task_runner_->ClearPendingTasks();
 }
@@ -463,9 +464,9 @@ TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, RefreshDelayChange) {
   CheckTiming(CloudPolicyRefreshScheduler::kRefreshDelayMaxMs);
 }
 
-TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, OnIPAddressChanged) {
+TEST_F(CloudPolicyRefreshSchedulerSteadyStateTest, OnNetworkChanged) {
   client_.SetStatus(DM_STATUS_REQUEST_FAILED);
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   EXPECT_EQ(GetLastDelay(), base::TimeDelta());
 }
 
