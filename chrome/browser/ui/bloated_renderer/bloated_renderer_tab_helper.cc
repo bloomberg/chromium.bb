@@ -76,10 +76,12 @@ void BloatedRendererTabHelper::ShowInfoBar(InfoBarService* infobar_service) {
     // No infobar service in unit-tests.
     return;
   }
+  const bool auto_expire_on_navigation = true;
   SimpleAlertInfoBarDelegate::Create(
       infobar_service,
       infobars::InfoBarDelegate::BLOATED_RENDERER_INFOBAR_DELEGATE, nullptr,
-      l10n_util::GetStringUTF16(IDS_BROWSER_BLOATED_RENDERER_INFOBAR), false);
+      l10n_util::GetStringUTF16(IDS_BROWSER_BLOATED_RENDERER_INFOBAR),
+      auto_expire_on_navigation);
 }
 
 bool BloatedRendererTabHelper::CanReloadBloatedTab() {
