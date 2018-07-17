@@ -90,10 +90,10 @@ Memory map
  .text.unlikely.foo_bar
                 0x0028f1e0       0x10e00 ./obj/third_party/icu/../icu/icuuc/ucnv_ext.o
  .text._ZN5blink23ContiguousContainerBase11shrinkToFitEv
-                0x002a0000       0x10 obj/third_party/WebKit.a(sub/PaintChunker.o)
+                0x002a0000       0x10 obj/third_party/WebKit.a(./../third_party/sub/PaintChunker.o)
                 0x002a0001                blink::ContiguousContainerBase::shrinkToFit()
  .text.hot._ZN5blink23ContiguousContainerBase11shrinkToFitEv2.part.1234.isra.2
-                0x002a0010       0xc obj/third_party/WebKit.a(sub/PaintChunker.o)
+                0x002a0010       0xc obj/third_party/WebKit.a(./../third_party/sub/PaintChunker.o)
                 0x002a0011                blink::ContiguousContainerBase::shrinkToFit()
  .text._ZN5blink23ContiguousContainerBaseC2EOS0_
                 0xffffffffffffffff       0x18 obj/third_party/WebKit.a(sub/ContiguousContainer.o)
@@ -126,9 +126,9 @@ Memory map
                 0x0284e398       0x20 obj/third_party/WebKit.a(sub/ContiguousContainer.o)
                 0x0284e398                chrome::mojom::FilePatcher::Name_
  .rodata._ZN12_GLOBAL__N_1L37kAnimationFrameTimeHistogramClassPathE
-                0x028f3450       0x30 obj/third_party/WebKit.a(sub/PaintChunker.o)
+                0x028f3450       0x30 obj/third_party/WebKit.a(./../third_party/sub/PaintChunker.o)
  .rodata._ZZN10_GLOBAL__N5blink20CSSValueKeywordsHash13findValueImplEPKcjE15value_word_list
-                0x028f3480       0x4 obj/third_party/WebKit.a(sub/PaintChunker.o)
+                0x028f3480       0x4 obj/third_party/WebKit.a(./../third_party/sub/PaintChunker.o)
                 0x028f3480                blink::(anonymous namespace)::CSSValueKeywordsHash::findValueImpl(char const*, unsigned int)::value_word_list
 
 .data.rel.ro.local
@@ -149,7 +149,7 @@ Memory map
 
 .data.rel.ro    0x02cd8500   0x104108
  .data.rel.ro._ZTV25ChromeMainDelegateAndroid
-                0x02cd8500       0x38 obj/third_party/WebKit.a(sub/PaintChunker.o)
+                0x02cd8500       0x38 obj/third_party/WebKit.a(./../third_party/sub/PaintChunker.o)
                 0x02cd8500                vtable for ChromeMainDelegateAndroid
  .data.rel.ro._ZTVN4mojo15MessageReceiverE
                 0x02cd8538       0x18 obj/base/base/page_allocator.o
