@@ -1416,9 +1416,10 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   }
 }
 
+// crbug.com/864467
 // If swiping up on shelf ends with fling event, the app list state should
 // depends on the fling velocity.
-TEST_F(ShelfLayoutManagerTest, FlingUpOnShelfForFullscreenAppList) {
+TEST_F(ShelfLayoutManagerTest, DISABLED_FlingUpOnShelfForFullscreenAppList) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
