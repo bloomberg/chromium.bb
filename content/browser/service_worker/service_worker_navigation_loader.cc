@@ -114,11 +114,10 @@ ServiceWorkerNavigationLoader::~ServiceWorkerNavigationLoader() {
 };
 
 void ServiceWorkerNavigationLoader::FallbackToNetwork() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerNavigationLoader::FallbackToNetwork", this,
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  // Temporary CHECK for https://crbug.com/857005.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   response_type_ = ResponseType::FALLBACK_TO_NETWORK;
   status_ = Status::kCompleted;
@@ -241,14 +240,13 @@ void ServiceWorkerNavigationLoader::CommitCompleted(int error_code) {
 }
 
 void ServiceWorkerNavigationLoader::ReturnNetworkError() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerNavigationLoader::ReturnNetworkError",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   DCHECK(!url_loader_client_.is_bound());
-  // Temporary CHECKs for https://crbug.com/857005.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  CHECK(loader_callback_);
+  DCHECK(loader_callback_);
   std::move(loader_callback_)
       .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartErrorResponse,
                           weak_factory_.GetWeakPtr()));
@@ -283,8 +281,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob,
     scoped_refptr<ServiceWorkerVersion> version) {
-  // Temporary CHECK for https://crbug.com/857005.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   TRACE_EVENT_WITH_FLOW2(
       "ServiceWorker", "ServiceWorkerNavigationLoader::DidDispatchFetchEvent",

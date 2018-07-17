@@ -264,14 +264,6 @@ void LogBackForwardNavigationFlagsHistogram(int load_flags) {
     RecordCacheFlags(HISTOGRAM_DISABLE_CACHE);
 }
 
-// https://crbug.com/857005.
-void CrashOnNoAppCacheHost(const GURL& url,
-                           AppCacheNavigationHandleCore* core) {
-  DEBUG_ALIAS_FOR_GURL(debug_url, url);
-  DEBUG_ALIAS_FOR_CSTR(debug_log, core->GetDebugLog().c_str(), 1024);
-  CHECK(false);
-}
-
 }  // namespace
 
 class ResourceDispatcherHostImpl::ScheduledResourceRequestAdapter final
@@ -1651,11 +1643,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   // Have the appcache associate its extra info with the request.
   if (appcache_handle_core) {
-    appcache_handle_core->AddRequestToDebugLog(new_request->url());
-    if (!appcache_handle_core->host()) {
-      CrashOnNoAppCacheHost(new_request->url(), appcache_handle_core);
-      return;
-    }
     AppCacheInterceptor::SetExtraRequestInfoForHost(
         new_request.get(), appcache_handle_core->host(), resource_type, false);
   }
