@@ -151,8 +151,8 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
      *                              of the menu.  Can be 0 if no such view is required.  The footer
      *                              is always visible and overlays other app menu items if
      *                              necessary.
-     * @param headerView            The {@link View} to add as the first item in menu list.  Can be
-     *                              null if no such view is required. See
+     * @param headerResourceId      The resource id for a view to add as the first item in menu
+     *                              list. Can be null if no such view is required. See
      *                              {@link ListView#addHeaderView(View)}.
      * @param highlightedItemId     The resource id of the menu item that should be highlighted.
      *                              Can be {@code null} if no item should be highlighted.  Note that
@@ -162,7 +162,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
      */
     void show(Context context, final View anchorView, boolean isByPermanentButton,
             int screenRotation, Rect visibleDisplayFrame, int screenHeight,
-            @IdRes int footerResourceId, View headerView, Integer highlightedItemId,
+            @IdRes int footerResourceId, @IdRes int headerResourceId, Integer highlightedItemId,
             boolean showFromBottom) {
         mPopup = new PopupWindow(context);
         mPopup.setFocusable(true);
@@ -247,7 +247,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
 
         int footerHeight =
                 inflateFooter(footerResourceId, contentView, menuWidth, highlightedItemId);
-        int headerHeight = addHeaderView(headerView, menuWidth);
+        int headerHeight = inflateHeader(headerResourceId, contentView, menuWidth);
 
         // Set the adapter after the header is added to avoid crashes on JellyBean.
         // See crbug.com/761726.
@@ -529,19 +529,23 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             ViewHighlighter.turnOnHighlight(viewToHighlight, viewToHighlight != mFooterView);
         }
 
-        if (mHandler != null) mHandler.onFooterInflated(mFooterView);
+        if (mHandler != null) mHandler.onFooterViewInflated(mFooterView);
 
         return mFooterView.getMeasuredHeight();
     }
 
-    private int addHeaderView(View headerView, int menuWidth) {
-        if (headerView == null) return 0;
+    private int inflateHeader(int headerResourceId, View contentView, int menuWidth) {
+        if (headerResourceId == 0) return 0;
+
+        View headerView = LayoutInflater.from(contentView.getContext())
+                                  .inflate(headerResourceId, mListView, false);
+        mListView.addHeaderView(headerView);
 
         int widthMeasureSpec = MeasureSpec.makeMeasureSpec(menuWidth, MeasureSpec.EXACTLY);
         int heightMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         headerView.measure(widthMeasureSpec, heightMeasureSpec);
 
-        mListView.addHeaderView(headerView);
+        if (mHandler != null) mHandler.onHeaderViewInflated(headerView);
 
         return headerView.getMeasuredHeight();
     }

@@ -103,6 +103,7 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionMainMenuItem;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
@@ -1507,7 +1508,7 @@ public class ChromeTabbedActivity
     @Override
     protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new AppMenuPropertiesDelegate(this) {
-            private boolean showDataSaverFooter() {
+            private boolean shouldShowDataSaverMenuItem() {
                 return DataReductionProxySettings.getInstance()
                         .shouldUseDataReductionMainMenuItem();
             }
@@ -1517,7 +1518,7 @@ public class ChromeTabbedActivity
                 if (FeatureUtilities.isBottomToolbarEnabled()) {
                     return this.shouldShowPageMenu() ? R.layout.icon_row_menu_footer : 0;
                 }
-                return showDataSaverFooter() ? R.layout.data_reduction_main_menu_item : 0;
+                return shouldShowDataSaverMenuItem() ? R.layout.data_reduction_main_menu_item : 0;
             }
 
             @Override
@@ -1529,14 +1530,25 @@ public class ChromeTabbedActivity
             }
 
             @Override
-            public View getHeaderView() {
-                return null;
+            public int getHeaderResourceId() {
+                if (FeatureUtilities.isBottomToolbarEnabled()) {
+                    return shouldShowDataSaverMenuItem() ? R.layout.data_reduction_main_menu_item
+                                                         : 0;
+                }
+                return 0;
+            }
+
+            @Override
+            public void onHeaderViewInflated(AppMenu menu, View view) {
+                if (view instanceof DataReductionMainMenuItem) {
+                    view.findViewById(R.id.data_reduction_menu_divider).setVisibility(View.GONE);
+                }
             }
 
             @Override
             public boolean shouldShowFooter(int maxMenuHeight) {
                 if (FeatureUtilities.isBottomToolbarEnabled()) return true;
-                if (showDataSaverFooter()) {
+                if (shouldShowDataSaverMenuItem()) {
                     return canShowDataReductionItem(maxMenuHeight);
                 }
                 return super.shouldShowFooter(maxMenuHeight);
@@ -1544,7 +1556,9 @@ public class ChromeTabbedActivity
 
             @Override
             public boolean shouldShowHeader(int maxMenuHeight) {
-                if (getBottomSheet() == null) return super.shouldShowHeader(maxMenuHeight);
+                if (!FeatureUtilities.isBottomToolbarEnabled()) {
+                    return super.shouldShowHeader(maxMenuHeight);
+                }
 
                 if (DataReductionProxySettings.getInstance().shouldUseDataReductionMainMenuItem()) {
                     return canShowDataReductionItem(maxMenuHeight);

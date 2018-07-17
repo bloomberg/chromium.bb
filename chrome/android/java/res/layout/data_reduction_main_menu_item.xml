@@ -10,7 +10,9 @@
     android:layout_height="wrap_content"
     android:orientation="vertical" >
 
-    <View style="@style/Divider" />
+    <View
+        android:id="@+id/data_reduction_menu_divider"
+        style="@style/Divider" />
 
     <FrameLayout
         android:layout_width="match_parent"
