@@ -189,7 +189,7 @@ Scroller::Scroller(const Config& config)
       distance_(0),
       fling_friction_(config.fling_friction),
       deceleration_(ComputeDeceleration(fling_friction_)),
-      tuning_coeff_(ComputeDeceleration(0.8f)) {
+      tuning_coeff_(ComputeDeceleration(0.9f)) {
 }
 
 Scroller::~Scroller() {
