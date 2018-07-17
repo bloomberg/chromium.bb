@@ -376,9 +376,7 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
     // Start and end offsets in |str|, i.e., str[start..end - 1] should be
     // emitted (after handling whitespace collapsing).
     DCHECK_GE(offset_, text_start_offset);
-    // TODO(editing-dev): Add the DCHECK below after fixing
-    // accessibility/inline-text-word-boundary-causes-crash.html
-    // DCHECK_GE(end_offset_, text_start_offset);
+    DCHECK_GE(end_offset_, text_start_offset);
     const unsigned start = offset_ - text_start_offset;
     const unsigned end = end_offset_ - text_start_offset;
     while (text_box_) {
@@ -487,13 +485,12 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
           ++sorted_text_boxes_position_;
         return;
       }
-      // Advance and continue
-      if (run_start == run_end && run_end == end) {
-        // "<p>^ |(1) foo</p>" with ::first-letter reaches here.
-        // Where "^" is start of range and "|" is end of range.
+      // All remaining text boxes are after range end. Nothing left to emit.
+      if (text_box_start >= end) {
         offset_ = end_offset_;
         return;
       }
+      // Advance and continue
       text_box_ = next_text_box;
       if (layout_object->ContainsReversedText())
         ++sorted_text_boxes_position_;
