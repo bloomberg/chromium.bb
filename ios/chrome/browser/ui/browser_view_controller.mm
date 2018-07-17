@@ -3204,10 +3204,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)createRecentTabsCoordinator {
   if (experimental_flags::IsRecentTabsUIRebootEnabled()) {
-    // New RecentTabs UIReboot coordinator.
-    RecentTabsCoordinator* recentTabsCoordinator = [
-        [RecentTabsCoordinator alloc] initWithBaseViewController:self
-                                                    browserState:_browserState];
+    // New RecentTabs UIReboot coordinator. Always use the regular BrowserState
+    // since the incognito one doesn't have a SignIn manager.
+    RecentTabsCoordinator* recentTabsCoordinator =
+        [[RecentTabsCoordinator alloc]
+            initWithBaseViewController:self
+                          browserState:_browserState
+                                           ->GetOriginalChromeBrowserState()];
     recentTabsCoordinator.loader = self;
     recentTabsCoordinator.dispatcher = self.dispatcher;
     self.recentTabsCoordinator = recentTabsCoordinator;
