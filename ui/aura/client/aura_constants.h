@@ -148,9 +148,6 @@ AURA_EXPORT extern const WindowProperty<bool>* const kTitleShownKey;
 // the web contents for app windows and varies for fullscreen windows.
 AURA_EXPORT extern const WindowProperty<int>* const kTopViewInset;
 
-// The color of the window header.
-AURA_EXPORT extern const WindowProperty<SkColor>* const kTopViewColor;
-
 // A property key to store the window icon, typically 16x16 for title bars.
 AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kWindowIconKey;
 

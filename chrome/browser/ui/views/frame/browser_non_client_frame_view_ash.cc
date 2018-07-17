@@ -243,6 +243,8 @@ void BrowserNonClientFrameViewAsh::Init() {
   frame()->GetNativeWindow()->AddObserver(this);
 
   browser_view()->immersive_mode_controller()->AddObserver(this);
+
+  UpdateFrameColors();
 }
 
 ash::mojom::SplitViewObserverPtr
@@ -648,8 +650,10 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() const {
 }
 
 void BrowserNonClientFrameViewAsh::OnThemeChanged() {
-  if (!IsMash())
+  if (!IsMash()) {
+    UpdateFrameColors();
     return;
+  }
 
   aura::Window* window = frame()->GetNativeWindow();
   auto update_window_image = [&window](auto property_key,
@@ -677,6 +681,7 @@ void BrowserNonClientFrameViewAsh::OnThemeChanged() {
       ash::kFrameImageOverlayInactiveKey, GetFrameOverlayImage(false));
 
   UpdateFrameColors();
+
   BrowserNonClientFrameView::OnThemeChanged();
 }
 
@@ -736,8 +741,6 @@ void BrowserNonClientFrameViewAsh::OnOverviewModeStarting() {
     frame()->UpdateWindowIcon();
   }
 
-  frame()->GetNativeWindow()->SetProperty(aura::client::kTopViewColor,
-                                          GetFrameColor());
   OnOverviewOrSplitviewModeChanged();
 }
 
@@ -1078,8 +1081,6 @@ void BrowserNonClientFrameViewAsh::StartHostedAppAnimation() {
 }
 
 void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
-  DCHECK(IsMash());
-
   aura::Window* window = frame()->GetNativeWindow();
   base::Optional<SkColor> active_color, inactive_color;
   if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {

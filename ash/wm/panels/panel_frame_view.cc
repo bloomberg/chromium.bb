@@ -37,13 +37,6 @@ PanelFrameView::~PanelFrameView() {
   Shell::Get()->RemoveShellObserver(this);
 }
 
-void PanelFrameView::SetFrameColors(SkColor active_frame_color,
-                                    SkColor inactive_frame_color) {
-  frame_header_->SetFrameColors(active_frame_color, inactive_frame_color);
-  GetWidgetWindow()->SetProperty(aura::client::kTopViewColor,
-                                 inactive_frame_color);
-}
-
 const char* PanelFrameView::GetClassName() const {
   return kViewClassName;
 }
@@ -54,8 +47,6 @@ void PanelFrameView::InitFrameHeader() {
 
   frame_header_ = std::make_unique<DefaultFrameHeader>(
       frame_, this, caption_button_container_);
-  GetWidgetWindow()->SetProperty(aura::client::kTopViewColor,
-                                 kDefaultFrameColor);
 
   if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
     window_icon_ = new views::ImageView();
