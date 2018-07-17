@@ -3189,17 +3189,19 @@
       typedom_types: ["Keyword"],
       default_value: "none",
     },
-    // FIXME: Implement support for 'under left' and 'under right' values.
     {
       name: "text-underline-position",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
-      field_template: "keyword",
-      keywords: ["auto", "under"],
-      default_value: "auto",
-      type_name: "TextUnderlinePosition",
-      typedom_types: ["Keyword"]
+      field_size: 3,
+      field_template: "primitive",
+      default_value: "kTextUnderlinePositionAuto",
+      name_for_methods: "TextUnderlinePosition",
+      type_name: "unsigned",
+      converter: "ConvertTextUnderlinePosition",
+      keywords: ["auto", "under", "left", "right"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "top",

@@ -288,13 +288,11 @@ static ResolvedUnderlinePosition ResolveUnderlinePosition(
   // vertical text.
   switch (baseline_type) {
     case kAlphabeticBaseline:
-      switch (style.GetTextUnderlinePosition()) {
-        case TextUnderlinePosition::kAuto:
-          return ResolvedUnderlinePosition::kRoman;
-        case TextUnderlinePosition::kUnder:
-          return ResolvedUnderlinePosition::kUnder;
+      if (style.TextUnderlinePosition() == kTextUnderlinePositionAuto) {
+        return ResolvedUnderlinePosition::kRoman;
       }
-      break;
+      // TODO(https://crbug.com/313888) Support left, right.
+      return ResolvedUnderlinePosition::kUnder;
     case kIdeographicBaseline:
       // Compute language-appropriate default underline position.
       // https://drafts.csswg.org/css-text-decor-3/#default-stylesheet

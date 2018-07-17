@@ -1229,6 +1229,10 @@
       status: "test",
     },
     {
+      name: "TextUnderlinePositionLeftRight",
+      status: "experimental",
+    },
+    {
       name: "TimerThrottlingForBackgroundTabs",
       status: "stable",
     },

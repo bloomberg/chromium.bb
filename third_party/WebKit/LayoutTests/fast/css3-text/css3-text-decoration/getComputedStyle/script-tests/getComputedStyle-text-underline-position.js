@@ -36,6 +36,18 @@ test("auto", "auto", "auto");
 debug("Value 'under':");
 test("under", "under", "under");
 
+debug("Value 'left':");
+test("left", "left", "left");
+
+debug("Value 'right':");
+test("right", "right", "right");
+
+debug("Value 'under left':");
+test("under left", "under left", "under left");
+
+debug("Value 'right under':");
+test("right under", "under right", "under right");
+
 testContainer.innerHTML = '<div id="test-parent" style="text-underline-position: under;">hello <span id="test-ancestor">world</span></div>';
 debug("Ancestor inherits values from parent:");
 e = document.getElementById('test-ancestor');
@@ -44,8 +56,17 @@ test(null, "", "under");
 debug("Value 'auto under':");
 test("auto under", "", "under");
 
+debug("Value 'auto left':");
+test("auto left", "", "under");
+
+debug("Value 'right auto':");
+test("right auto", "", "under");
+
 debug("Value 'under under':");
 test("under under", "", "under");
+
+debug("Value 'left right':");
+test("left right", "", "under");
 
 debug("Value 'auto alphabetic under':");
 test("auto alphabetic under", "", "under");
