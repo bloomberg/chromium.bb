@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -28,7 +28,7 @@ enum class ModuleScriptCustomFetchType;
 // A ModuleMap implements "module map" spec.
 // https://html.spec.whatwg.org/multipage/webappapis.html#module-map
 class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
-                                    public TraceWrapperBase {
+                                    public NameClient {
   class Entry;
 
  public:

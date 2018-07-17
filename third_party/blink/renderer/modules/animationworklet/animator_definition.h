@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATOR_DEFINITION_H_
 
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "v8/include/v8.h"
@@ -20,7 +20,7 @@ namespace blink {
 // Javascript class before completing the registration.
 class MODULES_EXPORT AnimatorDefinition final
     : public GarbageCollectedFinalized<AnimatorDefinition>,
-      public TraceWrapperBase {
+      public NameClient {
  public:
   AnimatorDefinition(v8::Isolate*,
                      v8::Local<v8::Function> constructor,

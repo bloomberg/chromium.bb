@@ -27,7 +27,7 @@ class CORE_EXPORT V8VoidCallbackFunctionEnumArg final : public CallbackFunctionB
 
   ~V8VoidCallbackFunctionEnumArg() override = default;
 
-  // TraceWrapperBase overrides:
+  // NameClient overrides:
   const char* NameInHeapSnapshot() const override;
 
   // Performs "invoke".

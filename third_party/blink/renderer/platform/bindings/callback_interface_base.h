@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_CALLBACK_INTERFACE_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_CALLBACK_INTERFACE_BASE_H_
 
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_base.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -24,7 +24,7 @@ class V8PersistentCallbackInterfaceBase;
 // not implement any operation. Subclasses will implement it.
 class PLATFORM_EXPORT CallbackInterfaceBase
     : public GarbageCollectedFinalized<CallbackInterfaceBase>,
-      public TraceWrapperBase {
+      public NameClient {
  public:
   // Whether the callback interface is a "single operation callback interface"
   // or not.

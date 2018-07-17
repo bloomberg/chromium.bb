@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_V8_STRING_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_V8_STRING_H_
 
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_base.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "v8/include/v8.h"
@@ -16,7 +16,7 @@ namespace blink {
 // utility methods. Internally, v8::String is represented as string
 // rope.
 class GC_PLUGIN_IGNORE("crbug.com/841830")
-    PLATFORM_EXPORT TraceWrapperV8String final : public TraceWrapperBase {
+    PLATFORM_EXPORT TraceWrapperV8String final : public NameClient {
   DISALLOW_COPY_AND_ASSIGN(TraceWrapperV8String);
   DISALLOW_NEW();
 

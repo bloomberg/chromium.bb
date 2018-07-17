@@ -27,7 +27,7 @@ class CORE_EXPORT V8LongCallbackFunction final : public CallbackFunctionBase {
 
   ~V8LongCallbackFunction() override = default;
 
-  // TraceWrapperBase overrides:
+  // NameClient overrides:
   const char* NameInHeapSnapshot() const override;
 
   // Performs "invoke".

@@ -27,7 +27,7 @@ class CORE_EXPORT V8VoidCallbackFunctionTypedef final : public CallbackFunctionB
 
   ~V8VoidCallbackFunctionTypedef() override = default;
 
-  // TraceWrapperBase overrides:
+  // NameClient overrides:
   const char* NameInHeapSnapshot() const override;
 
   // Performs "invoke".

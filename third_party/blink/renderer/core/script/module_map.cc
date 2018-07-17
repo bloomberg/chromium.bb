@@ -10,13 +10,14 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 
 namespace blink {
 
 // Entry struct represents a value in "module map" spec object.
 // https://html.spec.whatwg.org/multipage/webappapis.html#module-map
 class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
-                               public TraceWrapperBase,
+                               public NameClient,
                                public ModuleScriptLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(ModuleMap::Entry);
 

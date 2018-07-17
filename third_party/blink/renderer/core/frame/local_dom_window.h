@@ -364,8 +364,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // This is wrong, as Modulator is per-context, where as LocalDOMWindow is
   // shared among context. However, this *works* as Modulator is currently only
   // enabled in the main world,
-  // TODO(kouhei): Remove this workaround once V8PerContextData::Data is
-  // TraceWrapperBase.
   TraceWrapperMember<Modulator> modulator_;
   Member<External> external_;
 

@@ -33,7 +33,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -46,7 +46,7 @@ class QualifiedName;
 
 class CORE_EXPORT MutationObserverRegistration final
     : public GarbageCollectedFinalized<MutationObserverRegistration>,
-      public TraceWrapperBase {
+      public NameClient {
  public:
   static MutationObserverRegistration* Create(
       MutationObserver&,

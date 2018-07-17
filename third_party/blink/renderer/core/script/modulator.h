@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_module.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/module_import_meta.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -37,7 +38,7 @@ class ScriptValue;
 // module map.
 class CORE_EXPORT SingleModuleClient
     : public GarbageCollectedFinalized<SingleModuleClient>,
-      public TraceWrapperBase {
+      public NameClient {
  public:
   virtual ~SingleModuleClient() = default;
   virtual void Trace(blink::Visitor* visitor) {}
@@ -52,7 +53,7 @@ class CORE_EXPORT SingleModuleClient
 // tree load is complete.
 class CORE_EXPORT ModuleTreeClient
     : public GarbageCollectedFinalized<ModuleTreeClient>,
-      public TraceWrapperBase {
+      public NameClient {
  public:
   virtual ~ModuleTreeClient() = default;
   virtual void Trace(blink::Visitor* visitor) {}
@@ -89,7 +90,7 @@ enum class ModuleScriptCustomFetchType {
 // A Modulator also serves as an entry point for various module spec algorithms.
 class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
                               public V8PerContextData::Data,
-                              public TraceWrapperBase {
+                              public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(Modulator);
 
  public:

@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/script.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -23,7 +23,7 @@ namespace blink {
 
 // ModuleScript is a model object for the "module script" spec concept.
 // https://html.spec.whatwg.org/multipage/webappapis.html#module-script
-class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
+class CORE_EXPORT ModuleScript final : public Script, public NameClient {
  public:
   // https://html.spec.whatwg.org/multipage/webappapis.html#creating-a-module-script
   static ModuleScript* Create(
@@ -117,7 +117,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   //   Document -> ScriptRunner -> ScriptLoader -> ModulePendingScript
   //   -> ModulePendingScriptTreeClient -> ModuleScript.
   // All the classes/references on the graphs above should be
-  // TraceWrapperBase/TraceWrapperMember<>/etc.,
+  // TraceWrapperMember<>/etc.,
   //
   // A parse error and an error to rethrow belong to a script, not to a
   // |parse_error_| and |error_to_rethrow_| should belong to a script (i.e.

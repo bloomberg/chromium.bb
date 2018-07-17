@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/workers/worker_navigator.h"
 #include "third_party/blink/renderer/modules/locks/lock_manager.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -18,7 +19,7 @@ namespace {
 template <typename T>
 class NavigatorLocksImpl final : public GarbageCollected<NavigatorLocksImpl<T>>,
                                  public Supplement<T>,
-                                 public TraceWrapperBase {
+                                 public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorLocksImpl);
 
  public:

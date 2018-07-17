@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/core/testing/death_aware_script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -241,8 +242,7 @@ TEST(ScriptWrappableMarkingVisitorTest,
 namespace {
 
 class HandleContainer
-    : public blink::GarbageCollectedFinalized<HandleContainer>,
-      public blink::TraceWrapperBase {
+    : public blink::GarbageCollectedFinalized<HandleContainer> {
  public:
   static HandleContainer* Create() { return new HandleContainer(); }
   virtual ~HandleContainer() = default;
@@ -250,7 +250,6 @@ class HandleContainer
   void Trace(blink::Visitor* visitor) {
     visitor->Trace(handle_.Cast<v8::Value>());
   }
-  const char* NameInHeapSnapshot() const override { return "HandleContainer"; }
 
   void SetValue(v8::Isolate* isolate, v8::Local<v8::String> string) {
     handle_.Set(isolate, string);
@@ -462,7 +461,7 @@ class ClassWithField {
 };
 
 class Base : public blink::GarbageCollected<Base>,
-             public blink::TraceWrapperBase,
+             public NameClient,  // Force vtable on Base.
              public ClassWithField,
              public Mixin {
   USING_GARBAGE_COLLECTED_MIXIN(Base);

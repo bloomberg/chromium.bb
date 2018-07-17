@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -62,7 +63,7 @@ class ImageBitmapFactories final
     : public GarbageCollectedFinalized<ImageBitmapFactories>,
       public Supplement<LocalDOMWindow>,
       public Supplement<WorkerGlobalScope>,
-      public TraceWrapperBase {
+      public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
 
  public:

@@ -35,7 +35,7 @@ class CORE_EXPORT V8TestLegacyCallbackInterface final : public CallbackInterface
 
   ~V8TestLegacyCallbackInterface() override = default;
 
-  // TraceWrapperBase overrides:
+  // NameClient overrides:
   const char* NameInHeapSnapshot() const override;
 
   // Performs "call a user object's operation".

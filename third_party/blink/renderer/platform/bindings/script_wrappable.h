@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_WRAPPABLE_H_
 
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_base.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -51,7 +51,7 @@ namespace blink {
 // objects for other worlds are stored in DOMWrapperMap.
 class PLATFORM_EXPORT ScriptWrappable
     : public GarbageCollectedFinalized<ScriptWrappable>,
-      public TraceWrapperBase {
+      public NameClient {
   WTF_MAKE_NONCOPYABLE(ScriptWrappable);
 
  public:

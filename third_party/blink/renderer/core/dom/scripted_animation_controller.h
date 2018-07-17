@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -43,7 +44,7 @@ class MediaQueryListListener;
 
 class CORE_EXPORT ScriptedAnimationController
     : public GarbageCollectedFinalized<ScriptedAnimationController>,
-      public TraceWrapperBase {
+      public NameClient {
  public:
   static ScriptedAnimationController* Create(Document* document) {
     return new ScriptedAnimationController(document);

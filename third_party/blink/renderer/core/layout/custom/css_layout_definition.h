@@ -7,8 +7,8 @@
 
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -26,7 +26,7 @@ class SerializedScriptValue;
 // https://drafts.css-houdini.org/css-layout-api/#layout-definition
 class CSSLayoutDefinition final
     : public GarbageCollectedFinalized<CSSLayoutDefinition>,
-      public TraceWrapperBase {
+      public NameClient {
  public:
   CSSLayoutDefinition(
       ScriptState*,

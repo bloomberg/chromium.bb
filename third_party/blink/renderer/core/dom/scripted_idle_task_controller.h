@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_callback.h"
 #include "third_party/blink/renderer/core/dom/idle_deadline.h"
 #include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -25,7 +26,7 @@ class ThreadScheduler;
 class CORE_EXPORT ScriptedIdleTaskController
     : public GarbageCollectedFinalized<ScriptedIdleTaskController>,
       public PausableObject,
-      public TraceWrapperBase {
+      public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptedIdleTaskController);
 
  public:
@@ -44,7 +45,7 @@ class CORE_EXPORT ScriptedIdleTaskController
   // |IdleTask| is an interface type which generalizes tasks which are invoked
   // on idle. The tasks need to define what to do on idle in |invoke|.
   class IdleTask : public GarbageCollectedFinalized<IdleTask>,
-                   public TraceWrapperBase {
+                   public NameClient {
    public:
     virtual void Trace(blink::Visitor* visitor) {}
     const char* NameInHeapSnapshot() const override { return "IdleTask"; }

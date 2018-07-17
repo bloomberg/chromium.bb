@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
@@ -22,7 +22,7 @@ class V8RemotePlaybackAvailabilityCallback;
 // to be kept in the RemotePlayback's |availability_callbacks_| map.
 class AvailabilityCallbackWrapper final
     : public GarbageCollectedFinalized<AvailabilityCallbackWrapper>,
-      public TraceWrapperBase {
+      public NameClient {
   WTF_MAKE_NONCOPYABLE(AvailabilityCallbackWrapper);
 
  public:
