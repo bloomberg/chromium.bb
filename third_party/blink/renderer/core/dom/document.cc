@@ -1117,6 +1117,26 @@ Element* Document::CreateElement(const QualifiedName& q_name,
                                                              flags, is);
 }
 
+ScriptPromise Document::createCSSStyleSheet(ScriptState* script_state,
+                                            const String& text,
+                                            ExceptionState& exception_state) {
+  return Document::createCSSStyleSheet(script_state, text, CSSStyleSheetInit(),
+                                       exception_state);
+}
+
+ScriptPromise Document::createCSSStyleSheet(ScriptState* script_state,
+                                            const String& text,
+                                            const CSSStyleSheetInit& options,
+                                            ExceptionState& exception_state) {
+  // Even though this function returns a Promise, it actually does all the work
+  // at once here because CSS parsing is done synchronously on the main thread.
+  // TODO(rakina): Find a way to improve this.
+  CSSStyleSheet* sheet = CSSStyleSheet::Create(*this, options, exception_state);
+  sheet->SetText(text);
+  return ScriptPromise::Cast(script_state,
+                             ScriptValue::From(script_state, sheet));
+}
+
 ScriptValue Document::registerElement(ScriptState* script_state,
                                       const AtomicString& name,
                                       const ElementRegistrationOptions& options,
