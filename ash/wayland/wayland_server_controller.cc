@@ -71,7 +71,7 @@ WaylandServerController::WaylandServerController(
   wm_helper_ = std::make_unique<exo::WMHelper>();
   exo::WMHelper::SetInstance(wm_helper_.get());
   display_ = std::make_unique<exo::Display>(
-      arc_notification_surface_manager_.get(), std::move(file_helper));
+      arc_notification_surface_manager_.get(), nullptr, std::move(file_helper));
   wayland_server_ = exo::wayland::Server::Create(display_.get());
   // Wayland server creation can fail if XDG_RUNTIME_DIR is not set correctly.
   if (wayland_server_)

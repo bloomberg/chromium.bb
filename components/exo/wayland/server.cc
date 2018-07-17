@@ -71,6 +71,7 @@
 #include "components/exo/gamepad_delegate.h"
 #include "components/exo/gaming_seat.h"
 #include "components/exo/gaming_seat_delegate.h"
+#include "components/exo/input_method_surface.h"
 #include "components/exo/keyboard.h"
 #include "components/exo/keyboard_delegate.h"
 #include "components/exo/keyboard_device_configuration_delegate.h"
@@ -2496,6 +2497,16 @@ const struct zcr_notification_surface_v1_interface
                                            notification_surface_set_app_id};
 
 ////////////////////////////////////////////////////////////////////////////////
+// input_method_surface_interface:
+
+void input_method_surface_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct zcr_input_method_surface_v1_interface
+    input_method_surface_implementation = {input_method_surface_destroy};
+
+////////////////////////////////////////////////////////////////////////////////
 // remote_shell_interface:
 
 // Implements remote shell interface and monitors workspace state needed
@@ -2553,6 +2564,13 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
       Surface* surface,
       const std::string& notification_key) {
     return display_->CreateNotificationSurface(surface, notification_key);
+  }
+
+  std::unique_ptr<InputMethodSurface> CreateInputMethodSurface(
+      Surface* surface,
+      double default_device_scale_factor) {
+    return display_->CreateInputMethodSurface(surface,
+                                              default_device_scale_factor);
   }
 
   // Overridden from display::DisplayObserver:
@@ -2914,11 +2932,39 @@ void remote_shell_get_notification_surface(wl_client* client,
                     std::move(notification_surface));
 }
 
+void remote_shell_get_input_method_surface(wl_client* client,
+                                           wl_resource* resource,
+                                           uint32_t id,
+                                           wl_resource* surface) {
+  if (GetUserDataAs<Surface>(surface)->HasSurfaceDelegate()) {
+    wl_resource_post_error(resource, ZCR_REMOTE_SHELL_V1_ERROR_ROLE,
+                           "surface has already been assigned a role");
+    return;
+  }
+
+  std::unique_ptr<ClientControlledShellSurface> input_method_surface =
+      GetUserDataAs<WaylandRemoteShell>(resource)->CreateInputMethodSurface(
+          GetUserDataAs<Surface>(surface), GetDefaultDeviceScaleFactor());
+  if (!input_method_surface) {
+    wl_resource_post_error(resource, ZCR_REMOTE_SHELL_V1_ERROR_ROLE,
+                           "Cannot create an IME surface");
+    return;
+  }
+
+  wl_resource* input_method_surface_resource =
+      wl_resource_create(client, &zcr_input_method_surface_v1_interface,
+                         wl_resource_get_version(resource), id);
+  SetImplementation(input_method_surface_resource,
+                    &input_method_surface_implementation,
+                    std::move(input_method_surface));
+}
+
 const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
-    remote_shell_get_notification_surface};
+    remote_shell_get_notification_surface,
+    remote_shell_get_input_method_surface};
 
-const uint32_t remote_shell_version = 16;
+const uint32_t remote_shell_version = 17;
 
 void bind_remote_shell(wl_client* client,
                        void* data,
