@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/html_table_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
@@ -150,6 +151,12 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreElement(const Element& element) {
     return true;
   if (web_delegate_.RemovePopupOverlay() &&
       ShouldIgnorePopupOverlayElement(element)) {
+    return true;
+  }
+  // Remove <link> for stylesheets that do not load.
+  if (IsHTMLLinkElement(element) &&
+      ToHTMLLinkElement(element).RelAttribute().IsStyleSheet() &&
+      !ToHTMLLinkElement(element).sheet()) {
     return true;
   }
   return false;
@@ -257,6 +264,12 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreAttribute(
   String new_link_for_the_element;
   if (is_src_doc_attribute && RewriteLink(element, new_link_for_the_element))
     return false;
+
+  //  Drop integrity attribute for those links with subresource loaded.
+  if (attribute.LocalName() == HTMLNames::integrityAttr &&
+      IsHTMLLinkElement(element) && ToHTMLLinkElement(element).sheet()) {
+    return true;
+  }
 
   // Do not include attributes that contain javascript. This is because the
   // script will not be executed when a MHTML page is being loaded.
