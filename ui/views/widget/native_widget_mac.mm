@@ -402,7 +402,7 @@ void NativeWidgetMac::Close() {
   }
 
   // For other modal types, animate the close.
-  if (bridge_->animate() && AreModalAnimationsEnabled() &&
+  if (bridge_->GetAnimate() && AreModalAnimationsEnabled() &&
       delegate_->IsModal()) {
     [ViewsNSWindowCloseAnimator closeWindowWithAnimation:window];
     return;
@@ -634,7 +634,7 @@ void NativeWidgetMac::EndMoveLoop() {
 
 void NativeWidgetMac::SetVisibilityChangedAnimationsEnabled(bool value) {
   if (bridge_)
-    bridge_->set_animate(value);
+    bridge_->SetAnimate(value);
 }
 
 void NativeWidgetMac::SetVisibilityAnimationDuration(

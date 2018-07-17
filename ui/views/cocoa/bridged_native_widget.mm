@@ -527,7 +527,7 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
 
   // For non-sheet modal types, use the constrained window animations to make
   // the window appear.
-  if (animate_ && native_widget_mac_->GetWidget()->IsModal()) {
+  if (GetAnimate() && native_widget_mac_->GetWidget()->IsModal()) {
     show_animation_.reset(
         [[ModalShowAnimationWithLayer alloc] initWithBridgedNativeWidget:this]);
 
@@ -977,6 +977,16 @@ void BridgedNativeWidget::ReparentNativeView(NSView* native_view,
       [window_ setIgnoresMouseEvents:YES];
     }
   }
+}
+
+bool BridgedNativeWidget::GetAnimate() const {
+  return [window_ animationBehavior] != NSWindowAnimationBehaviorNone;
+}
+
+void BridgedNativeWidget::SetAnimate(bool animate) {
+  [window_
+      setAnimationBehavior:(animate ? NSWindowAnimationBehaviorDocumentWindow
+                                    : NSWindowAnimationBehaviorNone)];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
