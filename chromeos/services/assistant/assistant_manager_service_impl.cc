@@ -208,7 +208,14 @@ void AssistantManagerServiceImpl::StopActiveInteraction() {
 }
 
 void AssistantManagerServiceImpl::SendTextQuery(const std::string& query) {
-  assistant_manager_internal_->SendTextQuery(query);
+  assistant_client::VoicelessOptions options;
+  options.is_user_initiated = true;
+  options.modality =
+      assistant_client::VoicelessOptions::Modality::TYPING_MODALITY;
+
+  std::string interaction = CreateTextQueryInteraction(query);
+  assistant_manager_internal_->SendVoicelessInteraction(
+      interaction, /*description=*/"text_query", options, [](auto) {});
 }
 
 void AssistantManagerServiceImpl::AddAssistantInteractionSubscriber(
