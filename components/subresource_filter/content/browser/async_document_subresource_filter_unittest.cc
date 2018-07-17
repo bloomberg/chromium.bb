@@ -319,7 +319,7 @@ class SubresourceFilterComputeActivationStateTest : public ::testing::Test {
     testing::TestRulesetPair test_ruleset_pair;
     ASSERT_NO_FATAL_FAILURE(test_ruleset_creator_.CreateRulesetWithRules(
         rules, &test_ruleset_pair));
-    ruleset_ = new MemoryMappedRuleset(
+    ruleset_ = MemoryMappedRuleset::CreateAndInitialize(
         testing::TestRuleset::Open(test_ruleset_pair.indexed));
   }
 

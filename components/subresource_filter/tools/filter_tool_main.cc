@@ -103,8 +103,9 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  auto ruleset = base::MakeRefCounted<subresource_filter::MemoryMappedRuleset>(
+  auto ruleset = subresource_filter::MemoryMappedRuleset::CreateAndInitialize(
       std::move(rules_file));
+  LOG_IF(FATAL, ruleset == nullptr) << "mmap failure";
 
   LOG_IF(FATAL, ruleset->length() == 0u) << "Empty ruleset file";
 
