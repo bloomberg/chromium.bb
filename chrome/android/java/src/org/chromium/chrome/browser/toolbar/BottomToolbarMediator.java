@@ -32,7 +32,8 @@ import javax.annotation.Nullable;
  * the model accordingly.
  */
 class BottomToolbarMediator implements ContextualSearchObserver, FullscreenListener,
-                                       KeyboardVisibilityListener, OverviewModeObserver {
+                                       KeyboardVisibilityListener, OverviewModeObserver,
+                                       SceneChangeObserver {
     /** The model for the bottom toolbar that holds all of its state. */
     private BottomToolbarModel mModel;
 
@@ -50,6 +51,9 @@ class BottomToolbarMediator implements ContextualSearchObserver, FullscreenListe
 
     /** The previous height of the bottom toolbar. */
     private int mBottomToolbarHeightBeforeHide;
+
+    /** Whether the swipe layout is currently active. */
+    private boolean mIsInSwipeLayout;
 
     /**
      * Build a new mediator that handles events from outside the bottom toolbar.
@@ -85,6 +89,9 @@ class BottomToolbarMediator implements ContextualSearchObserver, FullscreenListe
         if (mContextualSearchManger != null) mContextualSearchManger.removeObserver(this);
         if (mOverviewModeBehavior != null) mOverviewModeBehavior.removeOverviewModeObserver(this);
         if (mWindowAndroid != null) mWindowAndroid.removeKeyboardVisibilityListener(this);
+        if (mModel.getValue(BottomToolbarModel.LAYOUT_MANAGER) != null) {
+            mModel.getValue(BottomToolbarModel.LAYOUT_MANAGER).removeSceneChangeObserver(this);
+        }
     }
 
     @Override
@@ -159,26 +166,22 @@ class BottomToolbarMediator implements ContextualSearchObserver, FullscreenListe
 
     void setLayoutManager(LayoutManager layoutManager) {
         mModel.setValue(BottomToolbarModel.LAYOUT_MANAGER, layoutManager);
+        layoutManager.addSceneChangeObserver(this);
+    }
 
-        layoutManager.addSceneChangeObserver(new SceneChangeObserver() {
-            /** Whether the swipe layout is currently active. */
-            private boolean mIsInSwipeLayout;
+    @Override
+    public void onTabSelectionHinted(int tabId) {}
 
-            @Override
-            public void onTabSelectionHinted(int tabId) {}
-
-            @Override
-            public void onSceneChange(Layout layout) {
-                if (layout instanceof ToolbarSwipeLayout) {
-                    mIsInSwipeLayout = true;
-                    mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
-                } else if (mIsInSwipeLayout) {
-                    // Only change to visible if leaving the swipe layout.
-                    mIsInSwipeLayout = false;
-                    mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
-                }
-            }
-        });
+    @Override
+    public void onSceneChange(Layout layout) {
+        if (layout instanceof ToolbarSwipeLayout) {
+            mIsInSwipeLayout = true;
+            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
+        } else if (mIsInSwipeLayout) {
+            // Only change to visible if leaving the swipe layout.
+            mIsInSwipeLayout = false;
+            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
+        }
     }
 
     void setResourceManager(ResourceManager resourceManager) {
