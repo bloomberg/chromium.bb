@@ -53,9 +53,6 @@ class EnterpriseReportingPrivateUploadChromeDesktopReportFunction
 
   ~EnterpriseReportingPrivateUploadChromeDesktopReportFunction() override;
 
-  // ExtensionFunction
-  void OnResponded() override;
-
   // Callback once Chrome get the response from the DM Server.
   void OnReportUploaded(bool status);
 
