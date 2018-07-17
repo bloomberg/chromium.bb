@@ -17,7 +17,7 @@ namespace ui {
 class COMPOSITOR_EXPORT ClosureAnimationObserver
     : public ImplicitAnimationObserver {
  public:
-  explicit ClosureAnimationObserver(const base::Closure& closure);
+  explicit ClosureAnimationObserver(base::OnceClosure closure);
 
  private:
   ~ClosureAnimationObserver() override;
@@ -25,7 +25,7 @@ class COMPOSITOR_EXPORT ClosureAnimationObserver
   // ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
 
-  const base::Closure closure_;
+  base::OnceClosure closure_;
 
   DISALLOW_COPY_AND_ASSIGN(ClosureAnimationObserver);
 };
