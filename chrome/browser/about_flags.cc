@@ -3001,10 +3001,12 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kEnableFileManagerTouchMode,
          chromeos::switches::kDisableFileManagerTouchMode)},
-    {"show-android-files-in-files-app",
+    {"android-files-in-files-app",
      flag_descriptions::kShowAndroidFilesInFilesAppName,
      flag_descriptions::kShowAndroidFilesInFilesAppDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kShowAndroidFilesInFilesApp)},
+     ENABLE_DISABLE_VALUE_TYPE(
+         chromeos::switches::kShowAndroidFilesInFilesApp,
+         chromeos::switches::kHideAndroidFilesInFilesApp)},
     {"disable-my-files-navigation",
      flag_descriptions::kFilesAppDisableMyFilesNavigationName,
      flag_descriptions::kFilesAppDisableMyFilesNavigationDescription, kOsCrOS,

@@ -573,6 +573,9 @@ const char kShillStub[] = "shill-stub";
 // If true, files in Android internal storage will be shown in Files app.
 const char kShowAndroidFilesInFilesApp[] = "show-android-files-in-files-app";
 
+// If true, files in Android internal storage will be hidden in Files app.
+const char kHideAndroidFilesInFilesApp[] = "hide-android-files-in-files-app";
+
 // If true, Files app navigation is NOT displayed with "My Files". Items are NOT
 // re-ordered and "Downloads" is NOT displayed inside section "My Files".
 const char kFilesAppDisableMyFilesNavigation[] = "disable-my-files-navigation";

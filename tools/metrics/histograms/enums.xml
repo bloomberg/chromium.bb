@@ -28269,6 +28269,7 @@ from previous Chrome versions.
       label="CrossOriginMediaPlaybackRequiresUserGesture:disabled"/>
   <int value="-290672626" label="enable-asm-wasm"/>
   <int value="-288316828" label="enable-delegated-renderer"/>
+  <int value="-286603268" label="hide-android-files-in-files-app"/>
   <int value="-284547865" label="UnifiedConsent:enabled"/>
   <int value="-283388027" label="ManualFallbacksFilling:disabled"/>
   <int value="-281844827" label="AutofillCreditCardAblationExperiment:enabled"/>
