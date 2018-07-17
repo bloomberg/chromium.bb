@@ -33,6 +33,11 @@ class View;
   // hierarchy rooted at |hostedView_|. Owned by the focused View.
   ui::TextInputClient* textInputClient_;
 
+  // The TextInputClient about to be set. Requests for a new -inputContext will
+  // use this, but while the input is changing, |self| still needs to service
+  // IME requests using the old |textInputClient_|.
+  ui::TextInputClient* pendingTextInputClient_;
+
   // A tracking area installed to enable mouseMoved events.
   ui::ScopedCrTrackingArea cursorTrackingArea_;
 
