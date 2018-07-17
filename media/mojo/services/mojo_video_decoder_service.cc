@@ -136,9 +136,11 @@ void MojoVideoDecoderService::Construct(
 
   client_.Bind(std::move(client));
 
-  media_log_ = std::make_unique<MojoMediaLog>(
-      mojom::ThreadSafeMediaLogAssociatedPtr::Create(
-          std::move(media_log), base::ThreadTaskRunnerHandle::Get()));
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      base::ThreadTaskRunnerHandle::Get();
+
+  media_log_ =
+      std::make_unique<MojoMediaLog>(std::move(media_log), task_runner);
 
   video_frame_handle_releaser_ =
       mojo::MakeStrongBinding(std::make_unique<VideoFrameHandleReleaserImpl>(),
@@ -148,8 +150,7 @@ void MojoVideoDecoderService::Construct(
       new MojoDecoderBufferReader(std::move(decoder_buffer_pipe)));
 
   decoder_ = mojo_media_client_->CreateVideoDecoder(
-      base::ThreadTaskRunnerHandle::Get(), media_log_.get(),
-      std::move(command_buffer_id),
+      task_runner, media_log_.get(), std::move(command_buffer_id),
       base::Bind(&MojoVideoDecoderService::OnDecoderRequestedOverlayInfo,
                  weak_this_),
       target_color_space);
