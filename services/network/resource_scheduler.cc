@@ -45,12 +45,6 @@ namespace {
 const base::Feature kPrioritySupportedRequestsDelayable{
     "PrioritySupportedRequestsDelayable", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When kSpdyProxiesRequestsDelayable is enabled, HTTP requests fetched from
-// a SPDY/QUIC/H2 proxies can be delayed by the ResourceScheduler just as
-// HTTP/1.1 resources are.
-const base::Feature kSpdyProxiesRequestsDelayable{
-    "SpdyProxiesRequestsDelayable", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When enabled, low-priority H2 and QUIC requests are throttled, but only
 // when the parser is in head.
 const base::Feature kHeadPrioritySupportedRequestsDelayable{
@@ -385,10 +379,7 @@ class ResourceScheduler::Client {
  public:
   Client(const net::NetworkQualityEstimator* const network_quality_estimator,
          ResourceScheduler* resource_scheduler)
-      : spdy_proxy_requests_delayble_(
-            base::FeatureList::IsEnabled(kSpdyProxiesRequestsDelayable)),
-        deprecated_is_loaded_(false),
-        using_spdy_proxy_(false),
+      : deprecated_is_loaded_(false),
         in_flight_delayable_count_(0),
         total_layout_blocking_count_(0),
         num_skipped_scans_due_to_scheduled_start_(0),
@@ -470,18 +461,6 @@ class ResourceScheduler::Client {
   void DeprecatedOnNavigate() {
     deprecated_is_loaded_ = false;
     UpdateParamsForNetworkQuality();
-  }
-
-  void OnReceivedSpdyProxiedHttpResponse() {
-    // If the requests to SPDY/H2/QUIC proxies are delayable, then return
-    // immediately.
-    if (spdy_proxy_requests_delayble_)
-      return;
-
-    if (!using_spdy_proxy_) {
-      using_spdy_proxy_ = true;
-      LoadAnyStartablePendingRequests(RequestStartTrigger::SPDY_PROXY_DETECTED);
-    }
   }
 
   void ReprioritizeRequest(ScheduledResourceRequestImpl* request,
@@ -805,9 +784,6 @@ class ResourceScheduler::Client {
                                  ->SupportsRequestPriority(scheme_host_port);
 
     if (!priority_delayable) {
-      if (using_spdy_proxy_ && url_request.url().SchemeIs(url::kHttpScheme))
-        return ShouldStartOrYieldRequest(request);
-
       // TODO(willchan): We should really improve this algorithm as described in
       // https://crbug.com/164101. Also, theoretically we should not count a
       // request-priority capable request against the delayable requests limit.
@@ -955,16 +931,11 @@ class ResourceScheduler::Client {
     }
   }
 
-  // True if requests to SPDY/H2/QUIC proxies can be delayed by the
-  // ResourceScheduler just as HTTP/1.1 resources are.
-  const bool spdy_proxy_requests_delayble_;
-
   bool deprecated_is_loaded_;
   // Tracks if the main HTML parser has reached the body which marks the end of
   // layout-blocking resources.
   // This is disabled and the is always true when kRendererSideResourceScheduler
   // is enabled.
-  bool using_spdy_proxy_;
   RequestQueue pending_requests_;
   RequestSet in_flight_requests_;
   // The number of delayable in-flight requests.
@@ -1122,19 +1093,6 @@ void ResourceScheduler::DeprecatedOnNavigate(int child_id, int route_id) {
 
   Client* client = it->second.get();
   client->DeprecatedOnNavigate();
-}
-
-void ResourceScheduler::OnReceivedSpdyProxiedHttpResponse(int child_id,
-                                                          int route_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ClientId client_id = MakeClientId(child_id, route_id);
-
-  ClientMap::iterator client_it = client_map_.find(client_id);
-  if (client_it == client_map_.end())
-    return;
-
-  Client* client = client_it->second.get();
-  client->OnReceivedSpdyProxiedHttpResponse();
 }
 
 bool ResourceScheduler::DeprecatedHasLoadingClients() const {

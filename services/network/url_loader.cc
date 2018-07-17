@@ -644,12 +644,6 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   // Do not account header bytes when reporting received body bytes to client.
   reported_total_encoded_bytes_ = url_request_->GetTotalReceivedBytes();
 
-  if (resource_scheduler_client_ && url_request->was_fetched_via_proxy() &&
-      url_request->was_fetched_via_spdy() &&
-      url_request->url().SchemeIs(url::kHttpScheme)) {
-    resource_scheduler_client_->OnReceivedSpdyProxiedHttpResponse();
-  }
-
   if (upload_progress_tracker_) {
     upload_progress_tracker_->OnUploadCompleted();
     upload_progress_tracker_ = nullptr;

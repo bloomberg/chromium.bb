@@ -38,8 +38,5 @@ void ResourceSchedulerClient::ReprioritizeRequest(
   resource_scheduler_->ReprioritizeRequest(request, new_priority,
                                            intra_priority_value);
 }
-void ResourceSchedulerClient::OnReceivedSpdyProxiedHttpResponse() {
-  resource_scheduler_->OnReceivedSpdyProxiedHttpResponse(child_id_, route_id_);
-}
 
 }  // namespace network

@@ -119,10 +119,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
 
   // Signals from the IO thread:
 
-  // Called when we received a response to a http request that was served
-  // from a proxy using SPDY.
-  void OnReceivedSpdyProxiedHttpResponse(int child_id, int route_id);
-
   // Client functions:
 
   // Returns true if at least one client is currently loading.

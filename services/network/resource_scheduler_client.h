@@ -38,7 +38,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerClient final
   void ReprioritizeRequest(net::URLRequest* request,
                            net::RequestPriority new_priority,
                            int intra_priority_value);
-  void OnReceivedSpdyProxiedHttpResponse();
 
  private:
   friend class base::RefCounted<ResourceSchedulerClient>;
