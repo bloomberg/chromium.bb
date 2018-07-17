@@ -556,11 +556,16 @@ void SupervisedUserURLFilter::InitAsyncURLChecker(
           policy_exception_justification: "Not implemented."
         })");
 
+  // Prefer using the permanent stored country, which may be unavailable during
+  // the first run. In that case, try to use the latest country instead.
   std::string country;
   variations::VariationsService* variations_service =
       g_browser_process->variations_service();
-  if (variations_service)
-    country = variations_service->GetLatestCountry();
+  if (variations_service) {
+    country = variations_service->GetStoredPermanentCountry();
+    if (country.empty())
+      country = variations_service->GetLatestCountry();
+  }
   async_url_checker_ = std::make_unique<safe_search_api::URLChecker>(
       std::move(url_loader_factory), traffic_annotation, country);
 }
