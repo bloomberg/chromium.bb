@@ -2655,6 +2655,15 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/editing/manual/insertlinebreak-manual.html [ Skip ]
+crbug.com/626703 external/wpt/html/editing/dnd/canvas/cross-domain/001-manual.xhtml [ Skip ]
+crbug.com/626703 external/wpt/html/editing/dnd/images/cross-domain/001-manual.xhtml [ Skip ]
+crbug.com/626703 external/wpt/editing/manual/insertparagraph-manual.html [ Skip ]
+crbug.com/626703 external/wpt/editing/manual/inserttext-manual.html [ Skip ]
+crbug.com/626703 external/wpt/html/editing/dnd/cross-document/002-manual.html [ Skip ]
+crbug.com/626703 external/wpt/editing/manual/forwarddelete-manual.html [ Skip ]
+crbug.com/626703 external/wpt/editing/manual/delete-manual.html [ Skip ]
+crbug.com/626703 external/wpt/editing/manual/inserttext2-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-002.html [ Failure ]
 crbug.com/626703 external/wpt/content-security-policy/securitypolicyviolation/targeting.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/white-space/break-spaces-003.html [ Failure ]
