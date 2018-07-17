@@ -152,9 +152,10 @@ base::Optional<SkColor> MaybeGetDefaultColorForNewerMaterialUi(int id,
 
   switch (id) {
     case ThemeProperties::COLOR_FRAME:
-    case ThemeProperties::COLOR_FRAME_INACTIVE:
     case ThemeProperties::COLOR_BACKGROUND_TAB:
       return incognito ? gfx::kGoogleGrey900 : SkColorSetRGB(0xDE, 0xE1, 0xE6);
+    case ThemeProperties::COLOR_FRAME_INACTIVE:
+      return incognito ? gfx::kGoogleGrey800 : SkColorSetRGB(0xE7, 0xEA, 0xED);
     case ThemeProperties::COLOR_TOOLBAR:
       return incognito ? SkColorSetRGB(0x32, 0x36, 0x39) : SK_ColorWHITE;
 
