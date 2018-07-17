@@ -23,6 +23,7 @@ class BoxLayout;
 namespace autofill {
 
 class AutofillPopupController;
+class AutofillPopupViewNativeViews;
 
 // Child view representing one row in the Autofill Popup. This could represent
 // a UI control (e.g., a suggestion which can be autofilled), or decoration like
@@ -40,7 +41,8 @@ class AutofillPopupRowView : public views::View {
   bool OnMousePressed(const ui::MouseEvent& event) override;
 
  protected:
-  AutofillPopupRowView(AutofillPopupController* controller, int line_number);
+  AutofillPopupRowView(AutofillPopupViewNativeViews* popup_view,
+                       int line_number);
 
   // Init handles initialization tasks which require virtual methods. Subclasses
   // should have private/protected constructors and implement a static Create
@@ -51,7 +53,7 @@ class AutofillPopupRowView : public views::View {
   virtual void RefreshStyle() = 0;
   virtual std::unique_ptr<views::Background> CreateBackground() = 0;
 
-  AutofillPopupController* controller_;
+  AutofillPopupViewNativeViews* popup_view_;
   const int line_number_;
   bool is_selected_ = false;
 };
@@ -83,6 +85,8 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   // methods in AutofillPopupBaseView once deprecation of
   // AutofillPopupViewViews is complete.
   void OnMouseMoved(const ui::MouseEvent& event) override {}
+
+  AutofillPopupController* controller() { return controller_; }
 
  private:
   // views::View:
