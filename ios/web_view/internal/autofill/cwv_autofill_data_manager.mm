@@ -144,6 +144,10 @@ class WebViewPersonalDataManagerObserverBridge
   _personalDataManager->RemoveByGUID(creditCard.internalCard->guid());
 }
 
+- (void)clearAllLocalData {
+  _personalDataManager->ClearAllLocalData();
+}
+
 #pragma mark - Private Methods
 
 - (void)personalDataDidChange {

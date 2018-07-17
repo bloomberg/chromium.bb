@@ -209,6 +209,11 @@ std::string TestPersonalDataManager::CountryCodeForCurrentTimezone()
   return timezone_country_code_;
 }
 
+void TestPersonalDataManager::ClearAllLocalData() {
+  web_profiles_.clear();
+  local_credit_cards_.clear();
+}
+
 bool TestPersonalDataManager::IsDataLoaded() const {
   return true;
 }
