@@ -7,6 +7,12 @@
 namespace blink {
 namespace features {
 
+// Enable eagerly setting up a CacheStorage interface pointer and
+// passing it to service workers on startup as an optimization.
+const base::Feature kEagerCacheStorageSetupForServiceWorkers{
+    "EagerCacheStorageSetupForServiceWorkers",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_DISABLED_BY_DEFAULT};
 

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
@@ -30,6 +31,7 @@
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/web/web_console_message.h"
@@ -138,7 +140,9 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   // as most of those workers will have byte-to-byte equality and abort instead
   // of running.
   blink::mojom::CacheStoragePtr cache_storage;
-  if (!params->pause_after_download) {
+  if (base::FeatureList::IsEnabled(
+          blink::features::kEagerCacheStorageSetupForServiceWorkers) &&
+      !params->pause_after_download) {
     rph->BindCacheStorage(mojo::MakeRequest(&cache_storage),
                           url::Origin::Create(params->script_url));
   }
