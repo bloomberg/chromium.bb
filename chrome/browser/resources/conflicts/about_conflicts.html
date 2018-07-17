@@ -1,5 +1,5 @@
 <!doctype html>
-<html dir="$i18n{textdirection}" lang="$i18n{language}">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
@@ -16,7 +16,7 @@ a {
 
 #header {
   -webkit-padding-start: 0;
-  background: url(../../../ui/webui/resources/images/warning.svg)
+  background: url(../../../../ui/webui/resources/images/warning.svg)
       left center / 48px no-repeat;
   box-sizing: border-box;
   margin-bottom: 1.05em;
@@ -42,6 +42,10 @@ h1 {
 
 #blurb-container {
   font-size: 120%;
+  padding-bottom: 1.5em;
+}
+
+#third-party-conflicts-status {
   padding-bottom: 1.5em;
 }
 
@@ -139,37 +143,44 @@ html[dir=rtl] .clearing {
 </style>
 </head>
 <body>
-<div id="loading-message">$i18n{loadingMessage}</div>
+<div id="loading-message">Loading…</div>
 
 <div id="body-container" style="visibility:hidden">
 
-  <div id="header"><h1>$i18n{modulesLongTitle}</h1></div>
+  <div id="header"><h1>Modules loaded</h1></div>
 
   <div id="blurb-container">
-    <span>$i18n{modulesBlurb}</span>
+    <span>This page lists all modules loaded into the browser and renderer processes and modules registered to load at a later point.</span>
   </div>
 
   <div id="modulesTemplate">
 
-    <div id="container" class="vbox-container">
-    <div id="top" class="wbox">
-
-      <div class="section-header">
-        <table cellpadding="0" cellspacing="0"><tr valign="center">
-          <td>
-            <span class="section-header-title"
-                  jscontent="modulesTableTitle">TITLE</span>
-          </td>
-        </tr></table>
+    <div id="third-party-conflicts-status">
+      Third-Party Module Features Status
+      <div>
+        <span jscontent="thirdPartyFeatureStatus">STATUS</span>
       </div>
-
     </div>
+
+    <div id="container" class="vbox-container">
+      <div id="top" class="wbox">
+
+        <div class="section-header">
+          <table cellpadding="0" cellspacing="0"><tr valign="center">
+            <td>
+              <span class="section-header-title"
+                    jscontent="moduleCount">COUNT</span> modules
+            </td>
+          </tr></table>
+        </div>
+
+      </div>
     </div>
 
     <div class="content">
       <div class="module-name no-modules"
            jsdisplay="moduleList.length === 0">
-        <div>$i18n{modulesNoneLoaded}</div>
+        <div>Unable to detect any modules loaded.</div>
       </div>
 
       <div jsdisplay="moduleList.length &gt; 0">
@@ -179,16 +190,19 @@ html[dir=rtl] .clearing {
         <table cellpadding="2" cellspacing="0" border="0">
           <tr>
             <td class="datacell">
-              <span dir="ltr">$i18n{headerSoftware}</span>
+              <span dir="ltr">Software</span>
             </td>
             <td class="datacell">
-              <span dir="ltr">$i18n{headerSignedBy}</span>
+              <span dir="ltr">Signed by</span>
             </td>
             <td class="datacell">
-              <span dir="ltr">$i18n{headerVersion}</span>
+              <span dir="ltr">Version</span>
             </td>
             <td class="datacell">
-              <span dir="ltr">$i18n{headerLocation}</span>
+              <span dir="ltr">Location</span>
+            </td>
+            <td jsdisplay="thirdPartyFeatureEnabled" class="datacell">
+              <span dir="ltr">Conflicts Status</span>
             </td>
           </tr>
           <tr jsselect="moduleList">
@@ -196,42 +210,37 @@ html[dir=rtl] .clearing {
               <span dir="ltr"
                     jsvalues=".innerHTML:description"
                     class="clearing nowrap"></span>
-              <div jsdisplay="status == 2 || status == 3"
-                   class="extra-info-text">
-                <span class="clearing">
-                  <span jsdisplay="status == 2"
-                        class="suspected-bad">$i18n{moduleSuspectedBad}</span>
-                  <span jsdisplay="status == 3"
-                        class="confirmed-bad">$i18n{moduleConfirmedBad}</span>
-                </span>
-                <span class="clearing">
-                  <span jsdisplay="possibleResolution.length &gt; 0">
-                    <span jscontent="possibleResolution"
-                        >POSSIBLE_RESOLUTION</span>
-                  </span>
-                  <a jsdisplay="help_url.length &gt; 0"
-                     jsvalues=".href:help_url">$i18n{helpCenterLink}</a>
-                </span>
-              </div>
             </td>
-            <td valign="top" class="datacell"><span dir="ltr"
-                                                    jscontent="digital_signer"
-                                   class="nowrap">SIGNER</span></td>
-            <td valign="top" class="datacell"><span dir="ltr"
-                                                    jscontent="version"
-                                                    class="nowrap">VERSION</span
-            ></td>
             <td valign="top" class="datacell">
-              <span class="nowrap">
-                <span dir="ltr" jscontent="location">LOCATION</span><strong
-                    ><span dir="ltr" jscontent="name">NAME</span></strong>
-                <span dir="ltr"
-                      jsdisplay="type_description.length &gt; 0"
-                    >(<span dir="ltr"
-                            jscontent="type_description">MODULE_TYPE</span
-                    >)</span>
+              <span dir="ltr" jscontent="digital_signer" class="nowrap">
+                SIGNER
               </span>
             </td>
+            <td valign="top" class="datacell">
+              <span dir="ltr" jscontent="version" class="nowrap">VERSION</span>
+            </td>
+            <td valign="top" class="datacell">
+              <span class="nowrap">
+                <span dir="ltr" jscontent="location">LOCATION</span>
+                <strong>
+                  <span dir="ltr" jscontent="name">NAME</span>
+                </strong>
+                <span dir="ltr" jsdisplay="type_description.length &gt; 0">
+                    (
+                    <span dir="ltr" jscontent="type_description">
+                      MODULE_TYPE
+                    </span>
+                    )
+                </span>
+              </span>
+            </td>
+            <span jsdisplay="third_party_module_status.length &gt; 0">
+              <td valign="top" class="datacell nowrap">
+                <span jscontent="third_party_module_status">
+                  THIRD_PARTY_MODULE_STATUS
+                </span>
+              </td>
+            </span>
           </tr>
         </table>
       </td>

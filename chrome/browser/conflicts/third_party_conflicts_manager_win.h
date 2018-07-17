@@ -105,6 +105,18 @@ class ThirdPartyConflictsManager
   // ComponentUpdateService::Observer:
   void OnEvent(Events event, const std::string& component_id) override;
 
+  // Returns the IncompatibleApplicationsUpdater instance. Returns null if the
+  // corresponding feature is disabled (IncompatibleApplicationsWarning).
+  IncompatibleApplicationsUpdater* incompatible_applications_updater() {
+    return incompatible_applications_updater_.get();
+  }
+
+  // Returns the ModuleBlacklistCacheUpdater instance. Returns null if the
+  // corresponding feature is disabled (ThirdPartyModulesBlocking).
+  ModuleBlacklistCacheUpdater* module_blacklist_cache_updater() {
+    return module_blacklist_cache_updater_.get();
+  }
+
  private:
   // Called when |exe_certificate_info_| finishes its initialization.
   void OnExeCertificateCreated(

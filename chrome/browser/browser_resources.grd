@@ -75,8 +75,8 @@
         <include name="IDR_ABOUT_DISCARDS_LIFECYCLE_UNIT_STATE_MOJO_JS" file="${root_gen_dir}\chrome\browser\resource_coordinator\lifecycle_unit_state.mojom.js" use_base_dir="false" type="BINDATA" />
       </if>
       <if expr="is_win">
-        <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\about_conflicts.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_ABOUT_CONFLICTS_JS" file="resources\about_conflicts.js" type="BINDATA" />
+        <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\conflicts\about_conflicts.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_ABOUT_CONFLICTS_JS" file="resources\conflicts\about_conflicts.js" type="BINDATA" />
       </if>
       <if expr="enable_plugins">
         <include name="IDR_ABOUT_FLASH_HTML" file="resources\about_flash.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

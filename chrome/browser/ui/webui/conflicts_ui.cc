@@ -26,25 +26,6 @@ content::WebUIDataSource* CreateConflictsUIHTMLSource() {
   source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources 'self' 'unsafe-eval';");
 
-  source->AddLocalizedString("loadingMessage", IDS_CONFLICTS_LOADING_MESSAGE);
-  source->AddLocalizedString("modulesLongTitle",
-                             IDS_CONFLICTS_CHECK_PAGE_TITLE_LONG);
-  source->AddLocalizedString("modulesBlurb", IDS_CONFLICTS_EXPLANATION_TEXT);
-  source->AddLocalizedString("moduleSuspectedBad",
-                             IDS_CONFLICTS_CHECK_WARNING_SUSPECTED);
-  source->AddLocalizedString("moduleConfirmedBad",
-                     IDS_CONFLICTS_CHECK_WARNING_CONFIRMED);
-  source->AddLocalizedString("helpCenterLink", IDS_LEARN_MORE);
-  source->AddLocalizedString("investigatingText",
-                             IDS_CONFLICTS_CHECK_INVESTIGATING);
-  source->AddLocalizedString("modulesNoneLoaded",
-                             IDS_CONFLICTS_NO_MODULES_LOADED);
-  source->AddLocalizedString("headerSoftware", IDS_CONFLICTS_HEADER_SOFTWARE);
-  source->AddLocalizedString("headerSignedBy", IDS_CONFLICTS_HEADER_SIGNED_BY);
-  source->AddLocalizedString("headerLocation", IDS_CONFLICTS_HEADER_LOCATION);
-  source->AddLocalizedString("headerVersion", IDS_CONFLICTS_HEADER_VERSION);
-  source->AddLocalizedString("headerHelpTip", IDS_CONFLICTS_HEADER_HELP_TIP);
-  source->SetJsonPath("strings.js");
   source->AddResourcePath("conflicts.js", IDR_ABOUT_CONFLICTS_JS);
   source->SetDefaultResource(IDR_ABOUT_CONFLICTS_HTML);
   return source;
