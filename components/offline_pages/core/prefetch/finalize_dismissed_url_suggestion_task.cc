@@ -18,9 +18,6 @@ namespace {
 
 bool DeletePageByClientIdIfNotDownloadedSync(const ClientId& client_id,
                                              sql::Connection* db) {
-  if (!db)
-    return false;
-
   static const std::array<PrefetchItemState, 6>& finalizable_states =
       FinalizeDismissedUrlSuggestionTask::kFinalizableStates;
 
@@ -57,10 +54,11 @@ FinalizeDismissedUrlSuggestionTask::FinalizeDismissedUrlSuggestionTask(
 FinalizeDismissedUrlSuggestionTask::~FinalizeDismissedUrlSuggestionTask() {}
 
 void FinalizeDismissedUrlSuggestionTask::Run() {
-  prefetch_store_->Execute<bool>(
+  prefetch_store_->Execute(
       base::BindOnce(&DeletePageByClientIdIfNotDownloadedSync, client_id_),
       base::BindOnce(&FinalizeDismissedUrlSuggestionTask::OnComplete,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      false);
 }
 
 void FinalizeDismissedUrlSuggestionTask::OnComplete(bool result) {

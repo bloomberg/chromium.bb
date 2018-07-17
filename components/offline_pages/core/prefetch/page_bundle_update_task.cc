@@ -136,9 +136,6 @@ PageBundleUpdateResult UpdateWithOperationResultsSync(
     const std::string operation_name,
     const std::vector<RenderPageInfo>& pages,
     sql::Connection* db) {
-  if (!db)
-    return false;
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
@@ -194,7 +191,8 @@ void PageBundleUpdateTask::Run() {
   store_->Execute(
       base::BindOnce(&UpdateWithOperationResultsSync, operation_name_, pages_),
       base::BindOnce(&PageBundleUpdateTask::FinishedWork,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr()),
+      false);
 }
 
 void PageBundleUpdateTask::FinishedWork(

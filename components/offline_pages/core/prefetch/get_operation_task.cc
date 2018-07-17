@@ -57,9 +57,6 @@ std::unique_ptr<std::vector<std::string>> AvailableOperationsSync(
 
 GetOperationTask::OperationResultList SelectOperationsToFetch(
     sql::Connection* db) {
-  if (!db)
-    return MakeError();
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return MakeError();
@@ -96,7 +93,8 @@ void GetOperationTask::Run() {
   prefetch_store_->Execute(
       base::BindOnce(&SelectOperationsToFetch),
       base::BindOnce(&GetOperationTask::StartGetOperationRequests,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr()),
+      MakeError());
 }
 
 void GetOperationTask::StartGetOperationRequests(

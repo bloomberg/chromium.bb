@@ -51,9 +51,6 @@ bool ExpireImportSync(int64_t offline_id, sql::Connection* db) {
 
 bool CleanupImportsSync(const std::set<int64_t>& outstanding_import_offline_ids,
                         sql::Connection* db) {
-  if (!db)
-    return false;
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
@@ -93,7 +90,8 @@ void ImportCleanupTask::Run() {
   prefetch_store_->Execute(
       base::BindOnce(&CleanupImportsSync, outstanding_import_offline_ids),
       base::BindOnce(&ImportCleanupTask::OnPrefetchItemUpdated,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      false);
 }
 
 void ImportCleanupTask::OnPrefetchItemUpdated(bool success) {

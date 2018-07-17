@@ -73,9 +73,6 @@ bool CleanupOperationsSync(
     std::unique_ptr<std::set<std::string>> ongoing_operation_names,
     int max_attempts,
     sql::Connection* db) {
-  if (!db)
-    return false;
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
@@ -121,7 +118,8 @@ void SentGetOperationCleanupTask::Run() {
       base::BindOnce(&CleanupOperationsSync, std::move(ongoing_operation_names),
                      kMaxGetOperationAttempts),
       base::BindOnce(&SentGetOperationCleanupTask::OnFinished,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()),
+      false);
 }
 
 void SentGetOperationCleanupTask::OnFinished(bool success) {

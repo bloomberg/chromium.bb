@@ -217,7 +217,7 @@ bool PrefetchStoreTestUtil::InsertPrefetchItem(const PrefetchItem& item) {
   bool success = false;
   store_->Execute(
       base::BindOnce(&InsertPrefetchItemSync, item),
-      base::BindOnce([](bool* alias, bool s) { *alias = s; }, &success));
+      base::BindOnce([](bool* alias, bool s) { *alias = s; }, &success), false);
   RunUntilIdle();
   return success;
 }
@@ -226,7 +226,8 @@ int PrefetchStoreTestUtil::CountPrefetchItems() {
   int count = 0;
   store_->Execute(
       base::BindOnce(&CountPrefetchItemsSync),
-      base::BindOnce([](int* alias, int result) { *alias = result; }, &count));
+      base::BindOnce([](int* alias, int result) { *alias = result; }, &count),
+      kPrefetchStoreCommandFailed);
   RunUntilIdle();
   return count;
 }
@@ -240,7 +241,8 @@ std::unique_ptr<PrefetchItem> PrefetchStoreTestUtil::GetPrefetchItem(
                          std::unique_ptr<PrefetchItem> result) {
                         *alias = std::move(result);
                       },
-                      &item));
+                      &item),
+                  std::unique_ptr<PrefetchItem>());
   RunUntilIdle();
   return item;
 }
@@ -260,7 +262,8 @@ std::set<PrefetchItem> PrefetchStoreTestUtil::GetAllItems() {
           [](std::set<PrefetchItem>* alias, std::set<PrefetchItem> result) {
             *alias = std::move(result);
           },
-          &items));
+          &items),
+      std::set<PrefetchItem>());
   RunUntilIdle();
   return items;
 }
@@ -283,7 +286,8 @@ int PrefetchStoreTestUtil::ZombifyPrefetchItems(const std::string& name_space,
   store_->Execute(
       base::BindOnce(&UpdateItemsStateSync, name_space, url.spec(),
                      PrefetchItemState::ZOMBIE),
-      base::BindOnce([](int* alias, int result) { *alias = result; }, &count));
+      base::BindOnce([](int* alias, int result) { *alias = result; }, &count),
+      kPrefetchStoreCommandFailed);
   RunUntilIdle();
   return count;
 }
@@ -298,7 +302,8 @@ int PrefetchStoreTestUtil::LastCommandChangeCount() {
       base::BindOnce([](sql::Connection* connection) {
         return connection->GetLastChangeCount();
       }),
-      base::BindOnce([](int* result, int count) { *result = count; }, &count));
+      base::BindOnce([](int* result, int count) { *result = count; }, &count),
+      0);
   RunUntilIdle();
   return count;
 }
@@ -308,7 +313,8 @@ int64_t PrefetchStoreTestUtil::GetPrefetchQuota() {
   store_->Execute(
       base::BindOnce(&GetPrefetchQuotaSync, clock()),
       base::BindOnce([](int64_t* result, int64_t quota) { *result = quota; },
-                     &result));
+                     &result),
+      int64_t());
   RunUntilIdle();
   return result;
 }
@@ -318,7 +324,8 @@ bool PrefetchStoreTestUtil::SetPrefetchQuota(int64_t available_quota) {
   store_->Execute(
       base::BindOnce(&SetPrefetchQuotaSync, available_quota, clock()),
       base::BindOnce([](bool* result, bool success) { *result = success; },
-                     &result));
+                     &result),
+      false);
   RunUntilIdle();
   return result;
 }

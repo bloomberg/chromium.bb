@@ -202,9 +202,6 @@ void ReportMetricsFor(const PrefetchItemStats& url, const base::Time now) {
 }
 
 bool ReportMetricsAndFinalizeSync(sql::Connection* db) {
-  if (!db)
-    return false;
-
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return false;
@@ -249,7 +246,8 @@ void MetricsFinalizationTask::Run() {
   prefetch_store_->Execute(
       base::BindOnce(&ReportMetricsAndFinalizeSync),
       base::BindOnce(&MetricsFinalizationTask::MetricsFinalized,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr()),
+      false);
 }
 
 void MetricsFinalizationTask::MetricsFinalized(bool result) {
