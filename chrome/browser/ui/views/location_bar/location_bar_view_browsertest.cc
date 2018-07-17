@@ -262,10 +262,10 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
   const std::string kDefaultVariation = std::string();
   const std::string kEvToSecureVariation(
       toolbar::features::kSimplifyHttpsIndicatorParameterEvToSecure);
-  const std::string kSecureToLockVariation(
-      toolbar::features::kSimplifyHttpsIndicatorParameterSecureToLock);
   const std::string kBothToLockVariation(
       toolbar::features::kSimplifyHttpsIndicatorParameterBothToLock);
+  const std::string kKeepSecureChipVariation(
+      toolbar::features::kSimplifyHttpsIndicatorParameterKeepSecureChip);
 
   const struct {
     std::string feature_param;
@@ -277,24 +277,24 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
   } cases[]{// Default
             {kDefaultVariation, kMockSecureURL, net::CERT_STATUS_IS_EV,
              security_state::EV_SECURE, true, kEvString},
-            {kDefaultVariation, kMockSecureURL, 0, security_state::SECURE, true,
-             kSecureString},
+            {kDefaultVariation, kMockSecureURL, 0, security_state::SECURE,
+             false, kEmptyString},
             {kDefaultVariation, kMockNonsecureURL, 0, security_state::NONE,
              false, kEmptyString},
             // Variation: EV To Secure
             {kEvToSecureVariation, kMockSecureURL, net::CERT_STATUS_IS_EV,
              security_state::EV_SECURE, true, kSecureString},
             {kEvToSecureVariation, kMockSecureURL, 0, security_state::SECURE,
-             true, kSecureString},
+             false, kEmptyString},
             {kEvToSecureVariation, kMockNonsecureURL, 0, security_state::NONE,
              false, kEmptyString},
-            // Variation: Secure to Lock
-            {kSecureToLockVariation, kMockSecureURL, net::CERT_STATUS_IS_EV,
+            // Variation: Keep Secure chip
+            {kKeepSecureChipVariation, kMockSecureURL, net::CERT_STATUS_IS_EV,
              security_state::EV_SECURE, true, kEvString},
-            {kSecureToLockVariation, kMockSecureURL, 0, security_state::SECURE,
-             false, kEmptyString},
-            {kSecureToLockVariation, kMockNonsecureURL, 0, security_state::NONE,
-             false, kEmptyString},
+            {kKeepSecureChipVariation, kMockSecureURL, 0,
+             security_state::SECURE, true, kSecureString},
+            {kKeepSecureChipVariation, kMockNonsecureURL, 0,
+             security_state::NONE, false, kEmptyString},
             // Variation: Both to Lock
             {kBothToLockVariation, kMockSecureURL, net::CERT_STATUS_IS_EV,
              security_state::EV_SECURE, false, kEmptyString},

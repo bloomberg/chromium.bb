@@ -950,10 +950,6 @@ bool LocationBarView::ShouldShowLocationIconText() const {
        GetToolbarModel()->GetURL().SchemeIs(extensions::kExtensionScheme)))
     return true;
 
-  if (GetToolbarModel()->GetSecurityLevel(false) == security_state::SECURE &&
-      base::FeatureList::IsEnabled(features::kExperimentalUi))
-    return false;
-
   return !GetToolbarModel()->GetSecureVerboseText().empty();
 }
 

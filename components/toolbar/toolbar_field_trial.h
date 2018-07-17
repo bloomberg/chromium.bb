@@ -16,6 +16,8 @@ namespace features {
 // - 'ev-to-secure': Show the "Secure" chip for pages with an EV certificate.
 // - 'secure-to-lock': Show only the lock icon for non-EV https:// pages.
 // - 'both-to-lock': Show only the lock icon for all https:// pages.
+// - 'keep-secure-chip': Show the old "Secure" chip for non-EV https:// pages.
+// The default behavior is the same as 'secure-to-lock'.
 extern const base::Feature kSimplifyHttpsIndicator;
 
 // The parameter name which controls the UI treatment.
@@ -25,6 +27,7 @@ extern const char kSimplifyHttpsIndicatorParameterName[];
 extern const char kSimplifyHttpsIndicatorParameterEvToSecure[];
 extern const char kSimplifyHttpsIndicatorParameterSecureToLock[];
 extern const char kSimplifyHttpsIndicatorParameterBothToLock[];
+extern const char kSimplifyHttpsIndicatorParameterKeepSecureChip[];
 
 }  // namespace features
 }  // namespace toolbar
