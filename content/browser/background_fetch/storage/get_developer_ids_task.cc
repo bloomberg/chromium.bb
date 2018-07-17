@@ -38,23 +38,24 @@ void GetDeveloperIdsTask::DidGetUniqueIds(
     blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kNotFound:
-      std::move(callback_).Run(blink::mojom::BackgroundFetchError::NONE,
-                               {} /* No results */);
+      FinishWithError(blink::mojom::BackgroundFetchError::NONE);
       break;
     case DatabaseStatus::kOk: {
-      auto ids = std::vector<std::string>();
-      ids.reserve(data_map.size());
+      developer_ids_.reserve(data_map.size());
       for (const auto& pair : data_map)
-        ids.push_back(pair.first);
-      std::move(callback_).Run(blink::mojom::BackgroundFetchError::NONE, ids);
+        developer_ids_.push_back(pair.first);
+      FinishWithError(blink::mojom::BackgroundFetchError::NONE);
       break;
     }
     case DatabaseStatus::kFailed:
-      std::move(callback_).Run(
-          blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-          {} /* No results */);
+      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
       break;
   }
+}
+
+void GetDeveloperIdsTask::FinishWithError(
+    blink::mojom::BackgroundFetchError error) {
+  std::move(callback_).Run(error, std::move(developer_ids_));
   Finished();  // Destroys |this|.
 }
 

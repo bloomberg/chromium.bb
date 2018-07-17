@@ -38,7 +38,7 @@ void CleanupTask::DidGetRegistrations(
     blink::ServiceWorkerStatusCode status) {
   if (ToDatabaseStatus(status) != DatabaseStatus::kOk ||
       registration_data.empty()) {
-    Finished();  // Destroys |this|.
+    FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
     return;
   }
 
@@ -57,7 +57,7 @@ void CleanupTask::DidGetActiveUniqueIds(
     case DatabaseStatus::kNotFound:
       break;
     case DatabaseStatus::kFailed:
-      Finished();  // Destroys |this|.
+      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
       return;
   }
 
@@ -88,8 +88,12 @@ void CleanupTask::DidGetActiveUniqueIds(
     }
   }
 
-  Finished();  // Destroys |this|.
+  FinishWithError(blink::mojom::BackgroundFetchError::NONE);
   return;
+}
+
+void CleanupTask::FinishWithError(blink::mojom::BackgroundFetchError error) {
+  Finished();  // Destroys |this|.
 }
 
 }  // namespace background_fetch

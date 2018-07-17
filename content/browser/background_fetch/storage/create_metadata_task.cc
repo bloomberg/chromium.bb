@@ -72,31 +72,26 @@ void CreateMetadataTask::DidGetUniqueId(const std::vector<std::string>& data,
       // Can't create a registration since there is already an active
       // registration with the same |developer_id|. It must be deactivated
       // (completed/failed/aborted) first.
-      std::move(callback_).Run(
-          blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID,
-          nullptr /* metadata */);
-      Finished();  // Destroys |this|.
+      FinishWithError(
+          blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID);
       return;
     case DatabaseStatus::kFailed:
-      std::move(callback_).Run(
-          blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-          nullptr /* metadata */);
-      Finished();  // Destroys |this|.
+      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
       return;
   }
 }
 
 void CreateMetadataTask::InitializeMetadataProto() {
-  auto metadata_proto = std::make_unique<proto::BackgroundFetchMetadata>();
+  metadata_proto_ = std::make_unique<proto::BackgroundFetchMetadata>();
 
   // Set BackgroundFetchRegistration fields.
-  auto* registration_proto = metadata_proto->mutable_registration();
+  auto* registration_proto = metadata_proto_->mutable_registration();
   registration_proto->set_unique_id(registration_id_.unique_id());
   registration_proto->set_developer_id(registration_id_.developer_id());
   registration_proto->set_download_total(options_.download_total);
 
   // Set Options fields.
-  auto* options_proto = metadata_proto->mutable_options();
+  auto* options_proto = metadata_proto_->mutable_options();
   options_proto->set_title(options_.title);
   options_proto->set_download_total(options_.download_total);
   for (const auto& icon : options_.icons) {
@@ -127,14 +122,14 @@ void CreateMetadataTask::InitializeMetadataProto() {
   }
 
   // Set other metadata fields.
-  metadata_proto->set_origin(registration_id_.origin().Serialize());
-  metadata_proto->set_creation_microseconds_since_unix_epoch(
+  metadata_proto_->set_origin(registration_id_.origin().Serialize());
+  metadata_proto_->set_creation_microseconds_since_unix_epoch(
       (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds());
-  metadata_proto->set_num_fetches(requests_.size());
+  metadata_proto_->set_num_fetches(requests_.size());
 
   // Check if |icon_| should be persisted.
   if (icon_.height() * icon_.width() > kMaxIconResolution) {
-    StoreMetadata(std::move(metadata_proto));
+    StoreMetadata();
     return;
   }
 
@@ -146,30 +141,25 @@ void CreateMetadataTask::InitializeMetadataProto() {
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
        base::TaskPriority::BACKGROUND},
       base::BindOnce(&ConvertAndSerializeIcon, icon_),
-      base::BindOnce(&CreateMetadataTask::StoreIcon, weak_factory_.GetWeakPtr(),
-                     std::move(metadata_proto)));
+      base::BindOnce(&CreateMetadataTask::StoreIcon,
+                     weak_factory_.GetWeakPtr()));
 }
 
-void CreateMetadataTask::StoreIcon(
-    std::unique_ptr<proto::BackgroundFetchMetadata> metadata_proto,
-    std::string serialized_icon) {
-  DCHECK(metadata_proto);
-  metadata_proto->set_icon(std::move(serialized_icon));
-  StoreMetadata(std::move(metadata_proto));
+void CreateMetadataTask::StoreIcon(std::string serialized_icon) {
+  DCHECK(metadata_proto_);
+  metadata_proto_->set_icon(std::move(serialized_icon));
+  StoreMetadata();
 }
 
-void CreateMetadataTask::StoreMetadata(
-    std::unique_ptr<proto::BackgroundFetchMetadata> metadata_proto) {
+void CreateMetadataTask::StoreMetadata() {
+  DCHECK(metadata_proto_);
   std::vector<std::pair<std::string, std::string>> entries;
   entries.reserve(requests_.size() * 2 + 1);
 
   std::string serialized_metadata_proto;
 
-  if (!metadata_proto->SerializeToString(&serialized_metadata_proto)) {
-    // TODO(crbug.com/780025): Log failures to UMA.
-    std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-                             nullptr /* metadata */);
-    Finished();  // Destroys |this|.
+  if (!metadata_proto_->SerializeToString(&serialized_metadata_proto)) {
+    FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
     return;
   }
 
@@ -194,30 +184,31 @@ void CreateMetadataTask::StoreMetadata(
       registration_id_.service_worker_registration_id(),
       registration_id_.origin().GetURL(), entries,
       base::BindOnce(&CreateMetadataTask::DidStoreMetadata,
-                     weak_factory_.GetWeakPtr(), std::move(metadata_proto)));
+                     weak_factory_.GetWeakPtr()));
 }
 
 void CreateMetadataTask::DidStoreMetadata(
-    std::unique_ptr<proto::BackgroundFetchMetadata> metadata_proto,
     blink::ServiceWorkerStatusCode status) {
-  DCHECK(metadata_proto);
-
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
       break;
     case DatabaseStatus::kFailed:
     case DatabaseStatus::kNotFound:
-      std::move(callback_).Run(
-          blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-          nullptr /* metadata */);
-      Finished();  // Destroys |this|.
+      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
       return;
   }
 
-  std::move(callback_).Run(blink::mojom::BackgroundFetchError::NONE,
-                           std::move(metadata_proto));
+  FinishWithError(blink::mojom::BackgroundFetchError::NONE);
+}
+
+void CreateMetadataTask::FinishWithError(
+    blink::mojom::BackgroundFetchError error) {
+  if (error != blink::mojom::BackgroundFetchError::NONE)
+    metadata_proto_.reset();
+  std::move(callback_).Run(error, std::move(metadata_proto_));
   Finished();  // Destroys |this|.
 }
+
 }  // namespace background_fetch
 
 }  // namespace content

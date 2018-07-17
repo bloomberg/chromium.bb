@@ -57,8 +57,12 @@ DeleteRegistrationTask::~DeleteRegistrationTask() = default;
 
 void DeleteRegistrationTask::Start() {
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
-      2u, base::BindOnce(&DeleteRegistrationTask::FinishTask,
-                         weak_factory_.GetWeakPtr()));
+      2u, base::BindOnce(
+              [](base::WeakPtr<DeleteRegistrationTask> task) {
+                if (task)
+                  task->FinishWithError(task->error_);
+              },
+              weak_factory_.GetWeakPtr()));
 
 #if DCHECK_IS_ON()
   // Get the registration |developer_id| to check it was deactivated.
@@ -137,8 +141,9 @@ void DeleteRegistrationTask::DidDeleteCache(
   std::move(done_closure).Run();
 }
 
-void DeleteRegistrationTask::FinishTask() {
-  std::move(callback_).Run(error_);
+void DeleteRegistrationTask::FinishWithError(
+    blink::mojom::BackgroundFetchError error) {
+  std::move(callback_).Run(error);
   Finished();  // Destroys |this|.
 }
 

@@ -40,9 +40,7 @@ void GetMetadataTask::DidGetUniqueId(const std::vector<std::string>& data,
                                      blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kNotFound:
-      std::move(callback_).Run(blink::mojom::BackgroundFetchError::INVALID_ID,
-                               nullptr /* metadata */);
-      Finished();  // Destroys |this|.
+      FinishWithError(blink::mojom::BackgroundFetchError::INVALID_ID);
       return;
     case DatabaseStatus::kOk:
       DCHECK_EQ(1u, data.size());
@@ -52,10 +50,7 @@ void GetMetadataTask::DidGetUniqueId(const std::vector<std::string>& data,
                          weak_factory_.GetWeakPtr()));
       return;
     case DatabaseStatus::kFailed:
-      std::move(callback_).Run(
-          blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-          nullptr /* metadata */);
-      Finished();  // Destroys |this|.
+      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
       return;
   }
 }
@@ -66,20 +61,14 @@ void GetMetadataTask::DidGetMetadata(const std::vector<std::string>& data,
     case DatabaseStatus::kNotFound:
       // The database is corrupt as there's no registration data despite there
       // being an active developer_id pointing to it.
-      std::move(callback_).Run(
-          blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-          nullptr /* metadata */);
-      Finished();  // Destroys |this|.
+      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
       return;
     case DatabaseStatus::kOk:
       DCHECK_EQ(1u, data.size());
       ProcessMetadata(data[0]);
       return;
     case DatabaseStatus::kFailed:
-      std::move(callback_).Run(
-          blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-          nullptr /* metadata */);
-      Finished();  // Destroys |this|.
+      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
       return;
   }
 }
@@ -87,9 +76,7 @@ void GetMetadataTask::DidGetMetadata(const std::vector<std::string>& data,
 void GetMetadataTask::ProcessMetadata(const std::string& metadata) {
   metadata_proto_ = std::make_unique<proto::BackgroundFetchMetadata>();
   if (!metadata_proto_->ParseFromString(metadata)) {
-    std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-                             nullptr /* metadata */);
-    Finished();
+    FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
     return;
   }
 
@@ -97,14 +84,20 @@ void GetMetadataTask::ProcessMetadata(const std::string& metadata) {
   if (registration_proto.developer_id() != developer_id_ ||
       !origin_.IsSameOriginWith(
           url::Origin::Create(GURL(metadata_proto_->origin())))) {
-    std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-                             nullptr /* metadata */);
-    Finished();
+    FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
     return;
   }
 
-  std::move(callback_).Run(blink::mojom::BackgroundFetchError::NONE,
-                           std::move(metadata_proto_));
+  FinishWithError(blink::mojom::BackgroundFetchError::NONE);
+}
+
+void GetMetadataTask::FinishWithError(
+    blink::mojom::BackgroundFetchError error) {
+  // We want to return a nullptr instead of an empty proto in case of an error.
+  if (error != blink::mojom::BackgroundFetchError::NONE)
+    metadata_proto_.reset();
+
+  std::move(callback_).Run(error, std::move(metadata_proto_));
   Finished();
 }
 

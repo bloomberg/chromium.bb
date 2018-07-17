@@ -35,6 +35,8 @@ class UpdateRegistrationUITask : public DatabaseTask {
  private:
   void DidUpdateTitle(blink::ServiceWorkerStatusCode status);
 
+  void FinishWithError(blink::mojom::BackgroundFetchError error) override;
+
   BackgroundFetchRegistrationId registration_id_;
   std::string updated_title_;
 

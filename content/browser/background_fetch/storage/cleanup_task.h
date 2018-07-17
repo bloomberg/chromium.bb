@@ -31,11 +31,12 @@ class CleanupTask : public background_fetch::DatabaseTask {
       const std::vector<std::pair<int64_t, std::string>>& registration_data,
       blink::ServiceWorkerStatusCode status);
 
- private:
   void DidGetActiveUniqueIds(
       const std::vector<std::pair<int64_t, std::string>>& registration_data,
       const std::vector<std::pair<int64_t, std::string>>& active_unique_id_data,
       blink::ServiceWorkerStatusCode status);
+
+  void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
   base::WeakPtrFactory<CleanupTask> weak_factory_;  // Keep as last.
 

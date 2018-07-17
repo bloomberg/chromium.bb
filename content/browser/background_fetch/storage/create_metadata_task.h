@@ -41,23 +41,24 @@ class CreateMetadataTask : public DatabaseTask {
   void DidGetUniqueId(const std::vector<std::string>& data,
                       blink::ServiceWorkerStatusCode status);
 
-  void StoreIcon(std::unique_ptr<proto::BackgroundFetchMetadata> metadata_proto,
-                 std::string serialized_icon);
+  void StoreIcon(std::string serialized_icon);
 
-  void StoreMetadata(
-      std::unique_ptr<proto::BackgroundFetchMetadata> metadata_proto);
+  void StoreMetadata();
 
   void DidStoreMetadata(
-      std::unique_ptr<proto::BackgroundFetchMetadata> metadata_proto,
       blink::ServiceWorkerStatusCode status);
 
   void InitializeMetadataProto();
+
+  void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
   BackgroundFetchRegistrationId registration_id_;
   std::vector<ServiceWorkerFetchRequest> requests_;
   BackgroundFetchOptions options_;
   SkBitmap icon_;
   CreateMetadataCallback callback_;
+
+  std::unique_ptr<proto::BackgroundFetchMetadata> metadata_proto_;
 
   base::WeakPtrFactory<CreateMetadataTask> weak_factory_;  // Keep as last.
 

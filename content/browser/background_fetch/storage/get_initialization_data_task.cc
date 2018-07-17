@@ -52,7 +52,9 @@ class InitializationSubTask : public DatabaseTask {
   ~InitializationSubTask() override = default;
 
  protected:
-  void FinishTask() {
+  void FinishWithError(blink::mojom::BackgroundFetchError error) override {
+    if (error != blink::mojom::BackgroundFetchError::NONE)
+      *sub_task_init_.error = error;
     std::move(done_closure_).Run();
     Finished();  // Destroys |this|.
   }
@@ -89,9 +91,7 @@ class GetTitleTask : public InitializationSubTask {
                    blink::ServiceWorkerStatusCode status) {
     switch (ToDatabaseStatus(status)) {
       case DatabaseStatus::kFailed:
-        *sub_task_init().error =
-            blink::mojom::BackgroundFetchError::STORAGE_ERROR;
-        FinishTask();
+        FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
         return;
       case DatabaseStatus::kNotFound:
       case DatabaseStatus::kOk:
@@ -100,7 +100,7 @@ class GetTitleTask : public InitializationSubTask {
 
     if (!data.empty())
       sub_task_init().initialization_data->ui_title = data.front();
-    FinishTask();
+    FinishWithError(blink::mojom::BackgroundFetchError::NONE);
   }
 
   base::WeakPtrFactory<GetTitleTask> weak_factory_;  // Keep as last.
@@ -131,9 +131,7 @@ class GetCompletedRequestsTask : public InitializationSubTask {
                                blink::ServiceWorkerStatusCode status) {
     switch (ToDatabaseStatus(status)) {
       case DatabaseStatus::kFailed:
-        *sub_task_init().error =
-            blink::mojom::BackgroundFetchError::STORAGE_ERROR;
-        FinishTask();
+        FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
         return;
       case DatabaseStatus::kNotFound:
       case DatabaseStatus::kOk:
@@ -141,7 +139,7 @@ class GetCompletedRequestsTask : public InitializationSubTask {
     }
 
     sub_task_init().initialization_data->num_completed_requests = data.size();
-    FinishTask();
+    FinishWithError(blink::mojom::BackgroundFetchError::NONE);
   }
 
   base::WeakPtrFactory<GetCompletedRequestsTask>
@@ -173,9 +171,7 @@ class GetActiveRequestsTask : public InitializationSubTask {
                             blink::ServiceWorkerStatusCode status) {
     switch (ToDatabaseStatus(status)) {
       case DatabaseStatus::kFailed:
-        *sub_task_init().error =
-            blink::mojom::BackgroundFetchError::STORAGE_ERROR;
-        FinishTask();
+        FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
         return;
       case DatabaseStatus::kNotFound:
       case DatabaseStatus::kOk:
@@ -194,7 +190,7 @@ class GetActiveRequestsTask : public InitializationSubTask {
           active_request.download_guid());
     }
 
-    FinishTask();
+    FinishWithError(blink::mojom::BackgroundFetchError::NONE);
   }
 
   base::WeakPtrFactory<GetActiveRequestsTask> weak_factory_;  // Keep as last.
@@ -236,7 +232,7 @@ class DeserializeIconTask : public InitializationSubTask {
 
   void StoreIcon(SkBitmap icon) {
     sub_task_init().initialization_data->icon = std::move(icon);
-    FinishTask();
+    FinishWithError(blink::mojom::BackgroundFetchError::NONE);
   }
 
   std::unique_ptr<std::string> serialized_icon_;
@@ -270,33 +266,25 @@ class FillFromMetadataTask : public InitializationSubTask {
     switch (ToDatabaseStatus(status)) {
       case DatabaseStatus::kFailed:
       case DatabaseStatus::kNotFound:
-        *sub_task_init().error =
-            blink::mojom::BackgroundFetchError::STORAGE_ERROR;
-        FinishTask();
+        FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
         return;
       case DatabaseStatus::kOk:
         break;
     }
 
     if (data.size() != 1u) {
-      *sub_task_init().error =
-          blink::mojom::BackgroundFetchError::STORAGE_ERROR;
-      FinishTask();
+      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
       return;
     }
 
     proto::BackgroundFetchMetadata metadata;
     if (!metadata.ParseFromString(data[0])) {
-      *sub_task_init().error =
-          blink::mojom::BackgroundFetchError::STORAGE_ERROR;
-      FinishTask();
+      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
       return;
     }
 
     if (sub_task_init().unique_id != metadata.registration().unique_id()) {
-      *sub_task_init().error =
-          blink::mojom::BackgroundFetchError::STORAGE_ERROR;
-      FinishTask();
+      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
       return;
     }
 
@@ -353,12 +341,13 @@ class FillFromMetadataTask : public InitializationSubTask {
       // Start an icon deserialization SubTask on another thread, then finish.
       AddSubTask(std::make_unique<DeserializeIconTask>(
           this, sub_task_init(),
-          base::BindOnce(&FillFromMetadataTask::FinishTask,
-                         weak_factory_.GetWeakPtr()),
+          base::BindOnce(&FillFromMetadataTask::FinishWithError,
+                         weak_factory_.GetWeakPtr(),
+                         blink::mojom::BackgroundFetchError::NONE),
           metadata.release_icon()));
     } else {
       // Immediately finish.
-      FinishTask();
+      FinishWithError(blink::mojom::BackgroundFetchError::NONE);
     }
   }
 
@@ -388,8 +377,13 @@ class FillBackgroundFetchInitializationDataTask : public InitializationSubTask {
     // 4. UI Title
     base::RepeatingClosure barrier_closure = base::BarrierClosure(
         4u,
-        base::BindOnce(&FillBackgroundFetchInitializationDataTask::FinishTask,
-                       weak_factory_.GetWeakPtr()));
+        base::BindOnce(
+            [](base::WeakPtr<FillBackgroundFetchInitializationDataTask> task) {
+              if (task)
+                task->FinishWithError(*task->sub_task_init().error);
+            },
+            weak_factory_.GetWeakPtr()));
+
     AddSubTask(std::make_unique<FillFromMetadataTask>(this, sub_task_init(),
                                                       barrier_closure));
     AddSubTask(std::make_unique<GetCompletedRequestsTask>(this, sub_task_init(),
@@ -437,8 +431,7 @@ void GetInitializationDataTask::DidGetRegistrations(
     blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kFailed:
-      error_ = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
-      FinishTask();
+      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
       return;
     case DatabaseStatus::kNotFound:
     case DatabaseStatus::kOk:
@@ -446,13 +439,18 @@ void GetInitializationDataTask::DidGetRegistrations(
   }
 
   if (user_data.empty()) {
-    FinishTask();
+    FinishWithError(blink::mojom::BackgroundFetchError::NONE);
     return;
   }
 
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
-      user_data.size(), base::BindOnce(&GetInitializationDataTask::FinishTask,
-                                       weak_factory_.GetWeakPtr()));
+      user_data.size(), base::BindOnce(
+                            [](base::WeakPtr<GetInitializationDataTask> task) {
+                              if (task)
+                                task->FinishWithError(task->error_);
+                            },
+                            weak_factory_.GetWeakPtr()));
+
   for (const auto& ud : user_data) {
     auto insertion_result = initialization_data_map_.emplace(
         ud.second, BackgroundFetchInitializationData());
@@ -466,13 +464,14 @@ void GetInitializationDataTask::DidGetRegistrations(
         barrier_closure));
   }
 }
-void GetInitializationDataTask::FinishTask() {
+void GetInitializationDataTask::FinishWithError(
+    blink::mojom::BackgroundFetchError error) {
   std::vector<BackgroundFetchInitializationData> results;
   results.reserve(initialization_data_map_.size());
   for (auto& id : initialization_data_map_)
     results.emplace_back(std::move(id.second));
 
-  std::move(callback_).Run(error_, std::move(results));
+  std::move(callback_).Run(error, std::move(results));
   Finished();  // Destroys |this|.
 }
 

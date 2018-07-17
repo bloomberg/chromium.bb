@@ -43,18 +43,19 @@ void UpdateRegistrationUITask::DidUpdateTitle(
       break;
     case DatabaseStatus::kFailed:
     case DatabaseStatus::kNotFound:
-      // TODO(crbug.com/780025): Log failures to UMA.
-      std::move(callback_).Run(
-          blink::mojom::BackgroundFetchError::STORAGE_ERROR);
-      Finished();  // Destroys |this|.
+      FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
       return;
   }
 
   for (auto& observer : data_manager()->observers())
     observer.OnUpdatedUI(registration_id_, updated_title_);
 
-  std::move(callback_).Run(blink::mojom::BackgroundFetchError::NONE);
+  FinishWithError(blink::mojom::BackgroundFetchError::NONE);
+}
 
+void UpdateRegistrationUITask::FinishWithError(
+    blink::mojom::BackgroundFetchError error) {
+  std::move(callback_).Run(error);
   Finished();  // Destroys |this|.
 }
 

@@ -46,6 +46,8 @@ class GetMetadataTask : public DatabaseTask {
 
   void ProcessMetadata(const std::string& metadata);
 
+  void FinishWithError(blink::mojom::BackgroundFetchError error) override;
+
   int64_t service_worker_registration_id_;
   url::Origin origin_;
   std::string developer_id_;

@@ -56,7 +56,7 @@ class GetSettledFetchesTask : public DatabaseTask {
                        blink::mojom::CacheStorageError error,
                        std::unique_ptr<ServiceWorkerResponse> cache_response);
 
-  void FinishTaskWithErrorCode(blink::mojom::BackgroundFetchError error);
+  void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
   BackgroundFetchRegistrationId registration_id_;
   SettledFetchesCallback settled_fetches_callback_;

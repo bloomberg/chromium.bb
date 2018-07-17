@@ -35,6 +35,8 @@ class MarkRegistrationForDeletionTask : public background_fetch::DatabaseTask {
 
   void DidDeactivate(blink::ServiceWorkerStatusCode status);
 
+  void FinishWithError(blink::mojom::BackgroundFetchError error) override;
+
   BackgroundFetchRegistrationId registration_id_;
   HandleBackgroundFetchErrorCallback callback_;
 
