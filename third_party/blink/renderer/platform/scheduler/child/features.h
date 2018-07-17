@@ -95,6 +95,11 @@ const base::Feature kBestEffortPriorityForAdFrame{
     "BlinkSchedulerBestEffortPriorityForAdFrame",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables using a resource's fetch priority to determine the priority of the
+// resource's loading tasks posted to blink's scheduler.
+const base::Feature kUseResourceFetchPriority{
+    "BlinkSchedulerResourceFetchPriority", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables a chosen experiments only during the load use case.
 const base::Feature kExperimentOnlyWhenLoading{
     "BlinkSchedulerExperimentOnlyWhenLoading",

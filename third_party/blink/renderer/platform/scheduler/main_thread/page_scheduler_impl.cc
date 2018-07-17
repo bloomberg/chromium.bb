@@ -544,7 +544,6 @@ void PageSchedulerImpl::UpdateBackgroundBudgetPoolSchedulingLifecycleState() {
 void PageSchedulerImpl::NotifyFrames() {
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     frame_scheduler->UpdatePolicy();
-    frame_scheduler->UpdateQueuePriorities();
   }
 }
 

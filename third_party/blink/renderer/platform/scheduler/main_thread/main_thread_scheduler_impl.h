@@ -94,15 +94,19 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     bool low_priority_background_page;
     bool best_effort_background_page;
 
-    // Task and subframe priority experiment (crbug.com/852380)
+    // Task and subframe priority experiment (crbug.com/852380).
     bool low_priority_subframe;
     bool low_priority_throttleable;
     bool low_priority_subframe_throttleable;
     bool low_priority_hidden_frame;
 
-    // Ads priority experiment (crbug.com/856150)
+    // Ads priority experiment (crbug.com/856150).
     bool low_priority_ad_frame;
     bool best_effort_ad_frame;
+
+    // Use resource fetch priority for resource loading tasks
+    // (crbug.com/860545).
+    bool use_resource_fetch_priority;
 
     // Turn on relevant experiments during the loading phase.
     bool experiment_only_when_loading;

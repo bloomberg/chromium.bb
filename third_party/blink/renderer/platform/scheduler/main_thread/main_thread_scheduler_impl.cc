@@ -126,6 +126,8 @@ const char* TaskTypeToString(TaskType task_type) {
       return "UserInteraction";
     case TaskType::kNetworking:
       return "Networking";
+    case TaskType::kNetworkingWithURLLoaderAnnotation:
+      return "NetworkingWithURLLoaderAnnotation";
     case TaskType::kNetworkingControl:
       return "NetworkingControl";
     case TaskType::kHistoryTraversal:
@@ -658,6 +660,9 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
   low_priority_ad_frame = base::FeatureList::IsEnabled(kLowPriorityForAdFrame);
   best_effort_ad_frame =
       base::FeatureList::IsEnabled(kBestEffortPriorityForAdFrame);
+
+  use_resource_fetch_priority =
+      base::FeatureList::IsEnabled(kUseResourceFetchPriority);
 
   experiment_only_when_loading =
       base::FeatureList::IsEnabled(kExperimentOnlyWhenLoading);

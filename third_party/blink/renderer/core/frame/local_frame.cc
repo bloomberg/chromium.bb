@@ -36,6 +36,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/interface_registry.h"
+#include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/CoreProbeSink.h"
@@ -150,6 +151,12 @@ class EmptyFrameScheduler final : public FrameScheduler {
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       TaskType type) override {
     return Platform::Current()->MainThread()->GetTaskRunner();
+  }
+
+  std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
+  CreateResourceLoadingTaskRunnerHandle() override {
+    return scheduler::WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
+        GetTaskRunner(TaskType::kNetworkingWithURLLoaderAnnotation));
   }
 
   void SetFrameVisible(bool) override {}
