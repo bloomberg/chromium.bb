@@ -341,6 +341,8 @@ actionSheetCoordinatorWithDataTypesToRemove:
         l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON);
     tableViewClearButtonItem.buttonBackgroundColor =
         UIColorFromRGB(kTableViewButtonBackgroundColor);
+    tableViewClearButtonItem.buttonAccessibilityIdentifier =
+        kClearBrowsingDataButtonIdentifier;
     clearButtonItem = tableViewClearButtonItem;
   }
   return clearButtonItem;

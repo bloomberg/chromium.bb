@@ -19,6 +19,9 @@
 // Button background color. Default is custom blue color.
 @property(nonatomic, strong) UIColor* buttonBackgroundColor;
 
+// Accessibility identifier that will assigned to the button.
+@property(nonatomic, strong) NSString* buttonAccessibilityIdentifier;
+
 @end
 
 // TableViewTextButtonCell contains a textLabel and a UIbutton
