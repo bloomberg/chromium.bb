@@ -178,6 +178,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowVoiceInteractionValuePropScreen();
   void ShowWaitForContainerReadyScreen();
   void ShowUpdateRequiredScreen();
+  void ShowDiscoverScreen();
 
   // Shows images login screen.
   void ShowLoginScreen(const LoginScreenContext& context);

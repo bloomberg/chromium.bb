@@ -1,0 +1,35 @@
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+
+<!--
+  Discover App object. Manages all Discover UI behavior.
+
+  Fires |discover-done| event when user triggers exit.
+
+  This object manages "discover modules", implementing separate features.
+
+  Each module should have a "card" that implements "launch button" for this
+  module, and will be displayed on the first Discover "Welcome" screen.
+
+  - All modules must have class "module" and on-click event handler:
+
+      <discover-module1 class="module" module="module1" hidden
+          on-click="onCardClick_">
+      </discover-module1>
+
+  - All cards must have class "card" and slot "cards":
+
+      <discover-module1-card class="card" slot="cards" module="module1">
+      </discover-module1-card>
+
+  - All modules and cards must have correct attribute |module| with value
+  equal to the module name (used by both JS and C++ parts to identify modules).
+-->
+<dom-module id="discover-ui">
+  <template>
+    <discover-welcome id="discoverWelcome"
+        on-module-continue="startLinearFlow_" on-module-skip="end_">
+      <!-- TODO (alemate): add module cards here -->
+    </discover-welcome>
+      <!-- TODO (alemate): add modules -->
+  </template>
+</dom-module>

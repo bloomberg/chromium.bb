@@ -88,6 +88,8 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "APP_DOWNLOADING_FINISHED";
     case ScreenExitCode::ARC_TERMS_OF_SERVICE_BACK:
       return "ARC_TERMS_OF_SERVICE_BACK";
+    case ScreenExitCode::DISCOVER_FINISHED:
+      return "DISCOVER_FINISHED";
     case ScreenExitCode::EXIT_CODES_COUNT:
     default:
       NOTREACHED();

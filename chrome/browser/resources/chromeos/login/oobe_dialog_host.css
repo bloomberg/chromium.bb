@@ -5,12 +5,14 @@
 /* Some elements may be used both as dialogs or not as dialogs.
  * |not-a-dialog| attribute is used to switch element "oobe-dialog-like" look.
  */
+:host(:not([not-a-dialog]):not([hidden])) {
+  display: flex;
+}
 
 :host(:not([not-a-dialog])) {
   background-color: white;
   border-radius: unset;
   box-shadow: unset;
-  display: flex;
   flex-direction: column;
   min-height: 640px;
   min-width: 768px;

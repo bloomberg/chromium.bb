@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
+#include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/account_manager/account_manager_factory.h"
@@ -166,6 +167,13 @@ chromeos::TimeZoneResolver* BrowserProcessPlatformPart::GetTimezoneResolver() {
         g_browser_process->local_state()));
   }
   return timezone_resolver_.get();
+}
+
+chromeos::DiscoverManager* BrowserProcessPlatformPart::GetDiscoverManager() {
+  if (!discover_manager_.get())
+    discover_manager_ = std::make_unique<chromeos::DiscoverManager>();
+
+  return discover_manager_.get();
 }
 
 void BrowserProcessPlatformPart::StartTearDown() {

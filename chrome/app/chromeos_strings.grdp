@@ -1936,6 +1936,18 @@
   <message name="IDS_DISABLED_ADD_USER_TOOLTIP_ENTERPRISE" desc="Tooltip over disabled Add user button">
     The administrator of this device has disabled new users from being added
   </message>
+  <message name="IDS_DISCOVER_WELCOME_GET_STARTED" desc="Label on a button that starts a long device setup process.">
+    Get started
+  </message>
+  <message name="IDS_DISCOVER_WELCOME_LATER" desc="Label on a button that closes a device setup dialog, suggesting that user can get back to it later.">
+    Later
+  </message>
+  <message name="IDS_DISCOVER_WELCOME_TITLE" desc="A title of the dialog that starts initial device setup process.">
+    Let's get your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> ready for you
+  </message>
+  <message name="IDS_DISCOVER_WELCOME_SUBTITLE" desc="A subtitle title of the dialog that starts initial device setup process, explaining the benefits of going throug this process.">
+    Set up your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> just as you want it and discover all the amazing capabilities at your fingertips.
+  </message>
   <message name="IDS_APP_START_NETWORK_WAIT_MESSAGE" desc="Message displayed while installing and/or launching web application in kiosk mode.">
     Waiting for network connection...
   </message>
