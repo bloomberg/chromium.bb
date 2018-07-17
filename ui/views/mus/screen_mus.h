@@ -25,7 +25,13 @@ class VIEWS_MUS_EXPORT ScreenMus : public display::ScreenBase,
   explicit ScreenMus(ScreenMusDelegate* delegate);
   ~ScreenMus() override;
 
-  void Init(service_manager::Connector* connector);
+  // TODO(sky): not used with ws2. Remove. https://crbug.com/842365.
+  void InitDeprecated(service_manager::Connector* connector);
+
+  // ui::mojom::ScreenProviderObserver:
+  void OnDisplaysChanged(std::vector<ui::mojom::WsDisplayPtr> ws_displays,
+                         int64_t primary_display_id,
+                         int64_t internal_display_id) override;
 
  private:
   friend class ScreenMusTestApi;
@@ -36,11 +42,6 @@ class VIEWS_MUS_EXPORT ScreenMus : public display::ScreenBase,
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   aura::Window* GetWindowAtScreenPoint(const gfx::Point& point) override;
-
-  // ui::mojom::ScreenProvider:
-  void OnDisplaysChanged(std::vector<ui::mojom::WsDisplayPtr> ws_displays,
-                         int64_t primary_display_id,
-                         int64_t internal_display_id) override;
 
   ScreenMusDelegate* delegate_;
   ui::mojom::ScreenProviderPtr screen_provider_;

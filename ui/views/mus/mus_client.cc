@@ -130,7 +130,10 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
     input_device_client_->Connect(std::move(input_device_server));
 
     screen_ = std::make_unique<ScreenMus>(this);
-    screen_->Init(connector);
+    if (params.wtc_config == aura::WindowTreeClient::Config::kMashDeprecated)
+      screen_->InitDeprecated(connector);
+    else
+      window_tree_client_->WaitForDisplays();
 
     ui::mojom::ClipboardHostPtr clipboard_host_ptr;
     connector->BindInterface(ui::mojom::kServiceName, &clipboard_host_ptr);
@@ -371,6 +374,14 @@ void MusClient::OnPointerEventObserved(const ui::PointerEvent& event,
                                        aura::Window* target) {
   pointer_watcher_event_router_->OnPointerEventObserved(event, display_id,
                                                         target);
+}
+
+void MusClient::OnDisplaysChanged(
+    std::vector<ui::mojom::WsDisplayPtr> ws_displays,
+    int64_t primary_display_id,
+    int64_t internal_display_id) {
+  screen_->OnDisplaysChanged(std::move(ws_displays), primary_display_id,
+                             internal_display_id);
 }
 
 void MusClient::OnWindowManagerFrameValuesChanged() {

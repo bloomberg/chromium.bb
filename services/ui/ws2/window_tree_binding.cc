@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "services/ui/ws2/screen_provider.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_tree.h"
 #include "ui/aura/window.h"
@@ -16,7 +17,12 @@ namespace ws2 {
 
 WindowTreeBinding::WindowTreeBinding() = default;
 
-WindowTreeBinding::~WindowTreeBinding() = default;
+WindowTreeBinding::~WindowTreeBinding() {
+  if (window_tree_client_) {
+    window_service_->screen_provider()->RemoveObserver(
+        screen_provider_observer_.get());
+  }
+}
 
 void WindowTreeBinding::InitForEmbed(
     WindowService* window_service,
@@ -24,6 +30,7 @@ void WindowTreeBinding::InitForEmbed(
     mojom::WindowTreeClient* window_tree_client,
     aura::Window* initial_root,
     base::OnceClosure connection_lost_callback) {
+  window_service_ = window_service;
   window_tree_client_ = std::move(window_tree_client_ptr);
   window_tree_ = window_service->CreateWindowTree(window_tree_client);
   mojom::WindowTreePtr window_tree_ptr;
@@ -40,6 +47,7 @@ void WindowTreeBinding::InitFromFactory(
     mojom::WindowTreeRequest window_tree_request,
     mojom::WindowTreeClientPtr window_tree_client,
     base::OnceClosure connection_lost_callback) {
+  window_service_ = window_service;
   window_tree_client_ = std::move(window_tree_client);
   window_tree_ = window_service->CreateWindowTree(window_tree_client_.get());
   CreateBinding(std::move(window_tree_request),
@@ -53,6 +61,10 @@ void WindowTreeBinding::CreateBinding(
   binding_ = std::make_unique<mojo::Binding<mojom::WindowTree>>(
       window_tree_.get(), std::move(window_tree_request));
   binding_->set_connection_error_handler(std::move(connection_lost_callback));
+  window_tree_client_->GetScreenProviderObserver(
+      MakeRequest(&screen_provider_observer_));
+  window_service_->screen_provider()->AddObserver(
+      screen_provider_observer_.get());
 }
 
 }  // namespace ws2

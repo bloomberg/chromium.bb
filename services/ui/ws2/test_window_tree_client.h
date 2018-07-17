@@ -11,8 +11,10 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/test_change_tracker.h"
+#include "services/ui/ws2/test_screen_provider_observer.h"
 
 namespace ui {
 namespace ws2 {
@@ -84,6 +86,10 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   // Acks the first InputEvent that was received, and removes it. Returns true
   // if there was an event.
   bool AckFirstEvent(WindowTree* tree, mojom::EventResult result);
+
+  TestScreenProviderObserver* screen_provider_observer() {
+    return &screen_provider_observer_;
+  }
 
   // TestChangeTracker::Delegate:
   void OnChangeAdded() override;
@@ -186,6 +192,8 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void RequestClose(Id window_id) override;
   void GetWindowManager(
       mojo::AssociatedInterfaceRequest<mojom::WindowManager> internal) override;
+  void GetScreenProviderObserver(
+      mojom::ScreenProviderObserverAssociatedRequest observer) override;
 
  protected:
   TestChangeTracker tracker_;
@@ -194,6 +202,9 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   bool track_root_bounds_changes_ = false;
   std::queue<InputEvent> input_events_;
   std::queue<ObservedPointerEvent> observed_pointer_events_;
+  TestScreenProviderObserver screen_provider_observer_;
+  mojo::AssociatedBinding<ui::mojom::ScreenProviderObserver>
+      screen_provider_observer_binding_{&screen_provider_observer_};
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient);
 };
