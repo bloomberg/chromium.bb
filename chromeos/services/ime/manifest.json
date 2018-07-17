@@ -1,0 +1,14 @@
+{
+  "name": "ime",
+  "display_name": "IME",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "input_engine" : [ "chromeos.ime.mojom.InputEngine" ]
+      },
+      "requires": {
+        "service_manager": [ "service_manager:all_users" ]
+      }
+    }
+  }
+}

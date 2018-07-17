@@ -1,0 +1,11 @@
+{
+  "name": "ime_unittests",
+  "display_name": "IME Unittests",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "requires": {
+        "ime": [ "input_engine" ]
+      }
+    }
+  }
+}
