@@ -54,6 +54,7 @@ public class OmniboxStartupMetrics {
     private long mUrlBarFirstFocusedTime = -1;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private PageLoadMetrics.Observer mPageLoadMetricsObserver;
+    private boolean mHistogramsRecorded;
 
     public OmniboxStartupMetrics(ChromeActivity activity) {
         mActivity = activity;
@@ -134,8 +135,9 @@ public class OmniboxStartupMetrics {
     /**
      * Called outside the critical path to record the actual UMA histogram.
      */
-    public void recordHistogram() {
-        if (mUrlBarFirstFocusedTime != -1) {
+    public void maybeRecordHistograms() {
+        if (mUrlBarFirstFocusedTime != -1 && !mHistogramsRecorded) {
+            mHistogramsRecorded = true;
             String activityName = mActivity.getClass().getSimpleName();
             RecordHistogram.recordEnumeratedHistogram(
                     "MobileStartup.ToolbarFirstFocusStartupState." + activityName,
