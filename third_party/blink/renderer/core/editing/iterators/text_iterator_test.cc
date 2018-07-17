@@ -526,6 +526,18 @@ TEST_P(ParameterizedTextIteratorTest, RangeLengthWithFirstLetter) {
   EXPECT_EQ(11, TestRangeLength("<p>^ (1) abc def|</p>"));
 }
 
+TEST_P(ParameterizedTextIteratorTest,
+       RangeLengthWithFirstLetterMultipleLeadingSpaces) {
+  InsertStyleElement("p::first-letter {font-size:200%;}");
+  EXPECT_EQ(0, TestRangeLength("<p>^|   foo</p>"));
+  EXPECT_EQ(0, TestRangeLength("<p>^ |  foo</p>"));
+  EXPECT_EQ(0, TestRangeLength("<p>^  | foo</p>"));
+  EXPECT_EQ(0, TestRangeLength("<p>^   |foo</p>"));
+  EXPECT_EQ(1, TestRangeLength("<p>^   f|oo</p>"));
+  EXPECT_EQ(2, TestRangeLength("<p>^   fo|o</p>"));
+  EXPECT_EQ(3, TestRangeLength("<p>^   foo|</p>"));
+}
+
 TEST_F(TextIteratorTest, WhitespaceCollapseForReplacedElements) {
   static const char* body_content =
       "<span>Some text </span> <input type='button' value='Button "
