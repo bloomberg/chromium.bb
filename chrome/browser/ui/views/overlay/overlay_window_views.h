@@ -48,6 +48,7 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   // views::internal::NativeWidgetDelegate:
   void OnNativeFocus() override;
   void OnNativeBlur() override;
+  void OnNativeWidgetMove() override;
   void OnNativeWidgetSizeChanged(const gfx::Size& new_size) override;
 
   // Gets the bounds of the controls.
