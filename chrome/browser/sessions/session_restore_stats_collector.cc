@@ -350,6 +350,12 @@ void SessionRestoreStatsCollector::RemoveTab(NavigationController* tab) {
         content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
         content::NotificationService::AllSources());
   }
+
+  // Ditto for first load. In this case it no longer needs to be tracked.
+  if (tabs_tracked_.size() == deferred_tab_count_ &&
+      !got_first_foreground_load_) {
+    got_first_foreground_load_ = true;
+  }
 }
 
 SessionRestoreStatsCollector::TabState*
@@ -445,6 +451,7 @@ void SessionRestoreStatsCollector::ReleaseIfDoneTracking() {
   // statistics.
   if (!done_tracking_non_deferred_tabs_ && got_first_paint_ &&
       waiting_for_load_tab_count_ == 0) {
+    DCHECK(got_first_foreground_load_);
     done_tracking_non_deferred_tabs_ = true;
     reporting_delegate_->ReportTabLoaderStats(tab_loader_stats_);
   }
