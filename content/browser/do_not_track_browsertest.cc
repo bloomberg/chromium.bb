@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/test/browser_test_utils.h"
@@ -13,9 +15,22 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
+#if defined(OS_ANDROID)
+#include "base/sys_info.h"
+#endif
+
 namespace content {
 
 namespace {
+
+class MockContentBrowserClient final : public ContentBrowserClient {
+ public:
+  void UpdateRendererPreferencesForWorker(BrowserContext*,
+                                          RendererPreferences* prefs) override {
+    prefs->enable_do_not_track = true;
+    prefs->enable_referrers = true;
+  }
+};
 
 class DoNotTrackTest : public ContentBrowserTest {
  protected:
@@ -193,8 +208,20 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_FetchFromSharedWorker) {
 }
 
 // Checks that the DNT header is preserved when fetching from a service worker.
-// Disabled due to crbug.com/853085.
-IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_FetchFromServiceWorker) {
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest, FetchFromServiceWorker) {
+#if defined(OS_ANDROID)
+  // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
+  // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
+  // this test available on KitKat.
+  int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
+                                               &bugfix_version);
+  if (major_version < 5)
+    return;
+#endif
+  MockContentBrowserClient client;
+  ContentBrowserClient* original_client = SetBrowserClientForTesting(&client);
+
   ASSERT_TRUE(embedded_test_server()->Start());
   EnableDoNotTrack();
   const GURL fetch_url = embedded_test_server()->GetURL("/echoheader?DNT");
@@ -208,6 +235,7 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, DISABLED_FetchFromServiceWorker) {
   EXPECT_EQ(title, watcher.WaitAndGetTitle());
 
   ExpectPageTextEq("1");
+  SetBrowserClientForTesting(original_client);
 }
 
 }  // namespace

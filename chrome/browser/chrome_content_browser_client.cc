@@ -90,6 +90,7 @@
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
+#include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/resource_coordinator/chrome_browser_main_extra_parts_resource_coordinator.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
@@ -240,6 +241,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -2187,6 +2189,15 @@ bool ChromeContentBrowserClient::IsDataSaverEnabled(
     return false;
   PrefService* prefs = profile->GetPrefs();
   return prefs && prefs->GetBoolean(prefs::kDataSaverEnabled);
+}
+
+void ChromeContentBrowserClient::UpdateRendererPreferencesForWorker(
+    content::BrowserContext* browser_context,
+    content::RendererPreferences* out_prefs) {
+  DCHECK(browser_context);
+  DCHECK(out_prefs);
+  renderer_preferences_util::UpdateFromSystemSettings(
+      out_prefs, Profile::FromBrowserContext(browser_context));
 }
 
 void ChromeContentBrowserClient::NavigationRequestStarted(

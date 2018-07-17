@@ -200,7 +200,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   GURL origin_url_;
   int appcache_host_id_ = blink::WebApplicationCacheHost::kAppCacheNoHostId;
 
-  // TODO(shimazu): Propagate preference changes from the browser process.
+  // TODO(crbug.com/862854): Propagate preference changes from the browser
+  // process.
   RendererPreferences renderer_preferences_;
 
   // This is owned by ThreadedMessagingProxyBase on the main thread.

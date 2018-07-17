@@ -697,6 +697,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     const GURL& service_worker_scope,
     const GURL& script_url,
     bool is_starting_installed_worker,
+    RendererPreferences renderer_preferences,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     mojom::ControllerServiceWorkerRequest controller_request,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
@@ -709,6 +710,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
       is_starting_installed_worker_(is_starting_installed_worker),
+      renderer_preferences_(std::move(renderer_preferences)),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
       proxy_(nullptr),
       pending_dispatcher_request_(std::move(dispatcher_request)),
@@ -1339,7 +1341,7 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext(
   }
 
   return std::make_unique<ServiceWorkerFetchContextImpl>(
-      script_url_, url_loader_factory_bundle->Clone(),
+      renderer_preferences_, script_url_, url_loader_factory_bundle->Clone(),
       std::move(script_loader_factory_info), provider_context_->provider_id(),
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker),

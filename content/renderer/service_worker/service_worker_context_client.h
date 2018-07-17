@@ -92,6 +92,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       const GURL& service_worker_scope,
       const GURL& script_url,
       bool is_starting_installed_worker,
+      RendererPreferences renderer_preferences,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
@@ -409,6 +410,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // True if this service worker was already installed at worker
   // startup time.
   const bool is_starting_installed_worker_;
+
+  RendererPreferences renderer_preferences_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;

@@ -68,6 +68,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       params->embedded_worker_id, params->service_worker_version_id,
       params->scope, params->script_url,
       !params->installed_scripts_info.is_null(),
+      std::move(params->renderer_preferences),
       std::move(params->dispatcher_request),
       std::move(params->controller_request), std::move(params->instance_host),
       std::move(params->provider_info), std::move(temporal_self_),

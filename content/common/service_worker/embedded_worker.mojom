@@ -48,6 +48,8 @@ struct EmbeddedWorkerStartParams {
   bool is_installed;
   // Determines how eagerly V8 creates the code cache.
   V8CacheOptions v8_cache_options;
+  // Used to set up fetch requests.
+  RendererPreferences renderer_preferences;
 
   // Used to dispatch events from (via) the browser process.
   ServiceWorkerEventDispatcher& dispatcher_request;
