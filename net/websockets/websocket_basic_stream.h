@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
-#include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -68,10 +67,10 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
 
   // WebSocketStream implementation.
   int ReadFrames(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
-                 const CompletionCallback& callback) override;
+                 CompletionOnceCallback callback) override;
 
   int WriteFrames(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
-                  const CompletionCallback& callback) override;
+                  CompletionOnceCallback callback) override;
 
   void Close() override;
 
@@ -91,14 +90,24 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
       WebSocketMaskingKeyGeneratorFunction key_generator_function);
 
  private:
-  // Returns OK or calls |callback| when the |buffer| is fully drained or
-  // something has failed.
-  int WriteEverything(const scoped_refptr<DrainableIOBuffer>& buffer,
-                      const CompletionCallback& callback);
+  // Reads until socket read returns asynchronously or returns error.
+  // If returns ERR_IO_PENDING, then |read_callback_| will be called with result
+  // later.
+  int ReadEverything(std::vector<std::unique_ptr<WebSocketFrame>>* frames);
 
-  // Wraps the |callback| to continue writing until everything has been written.
+  // Called when a read completes. Parses the result, tries to read more.
+  // Might call |read_callback_|.
+  void OnReadComplete(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
+                      int result);
+
+  // Writes until |buffer| is fully drained (in which case returns OK) or a
+  // socket write returns asynchronously or returns an error.  If returns
+  // ERR_IO_PENDING, then |write_callback_| will be called with result later.
+  int WriteEverything(const scoped_refptr<DrainableIOBuffer>& buffer);
+
+  // Called when a write completes.  Tries to write more.
+  // Might call |write_callback_|.
   void OnWriteComplete(const scoped_refptr<DrainableIOBuffer>& buffer,
-                       const CompletionCallback& callback,
                        int result);
 
   // Attempts to parse the output of a read as WebSocket frames. On success,
@@ -137,12 +146,6 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
   // bounds checks.
   void AddToIncompleteControlFrameBody(
       const scoped_refptr<IOBufferWithSize>& data_buffer);
-
-  // Called when a read completes. Parses the result and (unless no complete
-  // header has been received) calls |callback|.
-  void OnReadComplete(std::vector<std::unique_ptr<WebSocketFrame>>* frames,
-                      const CompletionCallback& callback,
-                      int result);
 
   // Storage for pending reads. All active WebSockets spend all the time with a
   // call to ReadFrames() pending, so there is no benefit in trying to share
@@ -185,6 +188,10 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
   // use a Callback here because a function pointer is faster and good enough
   // for our purposes.
   WebSocketMaskingKeyGeneratorFunction generate_websocket_masking_key_;
+
+  // User callback saved for asynchronous writes and reads.
+  CompletionOnceCallback write_callback_;
+  CompletionOnceCallback read_callback_;
 };
 
 }  // namespace net
