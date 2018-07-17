@@ -345,19 +345,20 @@ static void setup_frame(AV1_COMP *cpi) {
 
 static void enc_setup_mi(AV1_COMMON *cm) {
   int i;
+  int mi_rows_sb_aligned = calc_mi_size(cm->mi_rows);
   cm->mi = cm->mip;
-  memset(cm->mip, 0, cm->mi_stride * cm->mi_rows * sizeof(*cm->mip));
+  memset(cm->mip, 0, cm->mi_stride * mi_rows_sb_aligned * sizeof(*cm->mip));
   cm->prev_mi = cm->prev_mip;
   // Clear top border row
   memset(cm->prev_mip, 0, sizeof(*cm->prev_mip) * cm->mi_stride);
   // Clear left border column
-  for (i = 0; i < cm->mi_rows; ++i)
+  for (i = 0; i < mi_rows_sb_aligned; ++i)
     memset(&cm->prev_mip[i * cm->mi_stride], 0, sizeof(*cm->prev_mip));
   cm->mi_grid_visible = cm->mi_grid_base;
   cm->prev_mi_grid_visible = cm->prev_mi_grid_base;
 
   memset(cm->mi_grid_base, 0,
-         cm->mi_stride * cm->mi_rows * sizeof(*cm->mi_grid_base));
+         cm->mi_stride * mi_rows_sb_aligned * sizeof(*cm->mi_grid_base));
 }
 
 static int enc_alloc_mi(AV1_COMMON *cm, int mi_size) {
