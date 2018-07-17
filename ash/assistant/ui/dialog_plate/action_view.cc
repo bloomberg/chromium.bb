@@ -26,10 +26,7 @@ constexpr int kPreferredSizeDip = 26;
 
 ActionView::ActionView(AssistantController* assistant_controller,
                        ActionViewListener* listener)
-    : assistant_controller_(assistant_controller),
-      listener_(listener),
-      keyboard_action_view_(new views::ImageView()),
-      voice_action_view_(BaseLogoView::Create()) {
+    : assistant_controller_(assistant_controller), listener_(listener) {
   InitLayout();
   UpdateState(/*animate=*/false);
 
@@ -49,17 +46,10 @@ gfx::Size ActionView::CalculatePreferredSize() const {
 void ActionView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  gfx::Size size = gfx::Size(kPreferredSizeDip, kPreferredSizeDip);
-
-  // Keyboard action.
-  keyboard_action_view_->SetImage(
-      gfx::CreateVectorIcon(kSendIcon, kPreferredSizeDip, gfx::kGoogleBlue500));
-  keyboard_action_view_->SetImageSize(size);
-  keyboard_action_view_->SetPreferredSize(size);
-  AddChildView(keyboard_action_view_);
-
   // Voice action.
-  voice_action_view_->SetPreferredSize(size);
+  voice_action_view_ = BaseLogoView::Create();
+  voice_action_view_->SetPreferredSize(
+      gfx::Size(kPreferredSizeDip, kPreferredSizeDip));
   AddChildView(voice_action_view_);
 }
 
@@ -77,10 +67,6 @@ bool ActionView::OnMousePressed(const ui::MouseEvent& event) {
   if (listener_)
     listener_->OnActionPressed();
   return true;
-}
-
-void ActionView::OnInputModalityChanged(InputModality input_modality) {
-  UpdateState(/*animate=*/false);
 }
 
 void ActionView::OnMicStateChanged(MicState mic_state) {
@@ -105,18 +91,6 @@ void ActionView::UpdateState(bool animate) {
   const AssistantInteractionModel* interaction_model =
       assistant_controller_->interaction_controller()->model();
 
-  InputModality input_modality = interaction_model->input_modality();
-
-  // We don't need to handle stylus input modality.
-  if (input_modality == InputModality::kStylus)
-    return;
-
-  if (input_modality == InputModality::kKeyboard) {
-    voice_action_view_->SetVisible(false);
-    keyboard_action_view_->SetVisible(true);
-    return;
-  }
-
   BaseLogoView::State mic_state;
   switch (interaction_model->mic_state()) {
     case MicState::kClosed:
@@ -128,9 +102,6 @@ void ActionView::UpdateState(bool animate) {
       break;
   }
   voice_action_view_->SetState(mic_state, animate);
-
-  keyboard_action_view_->SetVisible(false);
-  voice_action_view_->SetVisible(true);
 }
 
 }  // namespace ash

@@ -9,10 +9,6 @@
 #include "base/macros.h"
 #include "ui/views/view.h"
 
-namespace views {
-class ImageView;
-}  // namespace views
-
 namespace ash {
 
 class ActionView;
@@ -44,7 +40,6 @@ class ActionView : public views::View,
   bool OnMousePressed(const ui::MouseEvent& event) override;
 
   // AssistantInteractionModelObserver:
-  void OnInputModalityChanged(InputModality input_modality) override;
   void OnMicStateChanged(MicState mic_state) override;
   void OnSpeechLevelChanged(float speech_level_db) override;
 
@@ -58,7 +53,6 @@ class ActionView : public views::View,
   AssistantController* const assistant_controller_;  // Owned by Shell.
   ActionViewListener* listener_;
 
-  views::ImageView* keyboard_action_view_;  // Owned by view hierarchy.
   BaseLogoView* voice_action_view_;         // Owned by view hierarchy.
 
   // True when speech level goes above a threshold and sets LogoView in
