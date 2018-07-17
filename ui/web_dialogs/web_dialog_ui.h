@@ -83,23 +83,17 @@ class WEB_DIALOGS_EXPORT WebDialogUI : public WebDialogUIBase,
 
 // Displays file URL contents inside a modal web dialog while also enabling
 // Mojo calls to be made from within the dialog.
-template <typename Interface>
 class WEB_DIALOGS_EXPORT MojoWebDialogUI : public WebDialogUIBase,
                                            public MojoWebUIController {
  public:
   // When created, the delegate should already be set as user data on the
   // WebContents.
-  explicit MojoWebDialogUI(content::WebUI* web_ui)
-      : WebDialogUIBase(web_ui), MojoWebUIController(web_ui) {}
-  ~MojoWebDialogUI() override {}
+  explicit MojoWebDialogUI(content::WebUI* web_ui);
+  ~MojoWebDialogUI() override;
 
  private:
   // content::WebUIController:
-  void RenderFrameCreated(
-      content::RenderFrameHost* render_frame_host) override {
-    content::WebUIController::RenderFrameCreated(render_frame_host);
-    HandleRenderFrameCreated(render_frame_host);
-  }
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
 
   DISALLOW_COPY_AND_ASSIGN(MojoWebDialogUI);
 };
