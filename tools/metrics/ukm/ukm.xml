@@ -1309,6 +1309,53 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Layout.DisplayCutout.StateChanged">
+  <owner>beccahughes@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Recorded every time the ViewportFit that is supplied by a frame changes or
+    the fullscreen state of a frame or its parent WebContents changes.
+  </summary>
+  <metric name="IsMainFrame">
+    <summary>
+      Records '1' if the frame that triggered this event is the main frame.
+    </summary>
+  </metric>
+  <metric name="SafeAreasPresent">
+    <summary>
+      Records whether each safe area was present. It will contain the first flag
+      (1) if the top safe area is present. Likewise the second for the left, the
+      third for the bottom and the forth for the right. If the safe area is
+      updated whilst we are allowed to extend into the cutout then we will use
+      the newest safe area values.
+    </summary>
+  </metric>
+  <metric name="ViewportFit.Applied">
+    <summary>
+      Contains the ViewportFit value that was applied by the WebContents. The
+      frame that is fullscreen will always propagate it's ViewportFit value.
+      This is stored as a ViewportFit enum (see display_cutout.mojom).
+    </summary>
+  </metric>
+  <metric name="ViewportFit.IgnoredReason">
+    <summary>
+      Records the reason why the ViewportFit value of this frame was not the
+      applied value. It will be '0' if the value was allowed. It will be '1' if
+      the ViewportFit value from the frame was blocked because the WebContents
+      was not fullscreen. It will be '2' flag if the ViewportFit value from the
+      frame was blocked because another frame is fullscreen.
+    </summary>
+  </metric>
+  <metric name="ViewportFit.Supplied">
+    <summary>
+      Contains the ViewportFit value that was supplied by the frame that
+      triggered the event. This is stored as a ViewportFit enum (see
+      display_cutout.mojom). It can never be kAuto as we ignore events when the
+      page is not trying to use the viewport fit API.
+    </summary>
+  </metric>
+</event>
+
 <event name="LocalNetworkRequests">
   <owner>uthakore@chromium.org</owner>
   <owner>invernizzi@chromium.org</owner>

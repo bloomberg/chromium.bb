@@ -42,6 +42,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/display_cutout/display_cutout_constants.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/download/mhtml_generation_manager.h"
@@ -134,6 +135,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/constants.mojom.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -423,6 +425,8 @@ class WebContentsImpl::DisplayCutoutHostImpl
     // WebContentsObservers about the new value.
     if (current_rfh_ == rfh)
       NotifyObservers(value);
+
+    MaybeQueueUKMEvent(rfh);
   }
 
   // WebContentsObserver override.
@@ -478,9 +482,44 @@ class WebContentsImpl::DisplayCutoutHostImpl
 
     if (current_rfh_)
       SendSafeAreaToFrame(current_rfh_, insets);
+
+    // If we have a pending UKM event on the top of the stack that is |kAllowed|
+    // and we have a |current_rfh_| then we should update that UKM event as it
+    // was recorded before we received the safe area.
+    if (!pending_ukm_events_.empty() && current_rfh_) {
+      PendingUKMEvent& last_entry = pending_ukm_events_.back();
+      if (last_entry.ignored_reason == DisplayCutoutIgnoredReason::kAllowed)
+        last_entry.safe_areas_present = GetSafeAreasPresentUKMValue();
+    }
+  }
+
+  // Record any pending UKM events when we start a main frame navigation.
+  void DidStartNavigation(NavigationHandle* navigation_handle) override {
+    // If the navigation is not in the main frame or if we are a same document
+    // navigation then we should stop now.
+    if (!navigation_handle->IsInMainFrame() ||
+        navigation_handle->IsSameDocument()) {
+      return;
+    }
+
+    RecordPendingUKMEvents();
+  }
+
+  void WebContentsDestroyed() override {
+    // Record any pending UKM events that we are waiting to record.
+    RecordPendingUKMEvents();
   }
 
  private:
+  // Stores the data for a pending UKM event.
+  struct PendingUKMEvent {
+    bool is_main_frame;
+    blink::mojom::ViewportFit applied_value;
+    blink::mojom::ViewportFit supplied_value;
+    int ignored_reason;
+    int safe_areas_present = 0;
+  };
+
   // Set the current |RenderFrameHost| that should have control over the
   // viewport fit value and we should set safe area insets on.
   void SetCurrentRenderFrameHost(RenderFrameHost* rfh) {
@@ -491,13 +530,18 @@ class WebContentsImpl::DisplayCutoutHostImpl
     if (current_rfh_)
       SendSafeAreaToFrame(current_rfh_, gfx::Insets());
 
+    // Update the |current_rfh_| with the new frame.
+    current_rfh_ = rfh;
+
     // If the new RenderFrameHost is nullptr we should stop here and notify
     // observers that the new viewport fit is kAuto (the default).
-    current_rfh_ = rfh;
     if (!rfh) {
       NotifyObservers(blink::mojom::ViewportFit::kAuto);
       return;
     }
+
+    // Record a UKM event for the new frame.
+    MaybeQueueUKMEvent(current_rfh_);
 
     // Send the current safe area to the new frame.
     SendSafeAreaToFrame(rfh, insets_);
@@ -537,6 +581,68 @@ class WebContentsImpl::DisplayCutoutHostImpl
   WebContentsImpl* web_contents_impl() {
     return static_cast<WebContentsImpl*>(web_contents());
   }
+
+  // Builds and records a Layout.DisplayCutout.StateChanged UKM event for the
+  // provided |frame|. The event will be added to the list of pending events.
+  void MaybeQueueUKMEvent(RenderFrameHost* frame) {
+    if (!frame)
+      return;
+
+    // Get the current applied ViewportFit and the ViewportFit value supplied by
+    // |frame|. If the |supplied_value| is kAuto then we will not record the
+    // event since it is the default.
+    blink::mojom::ViewportFit supplied_value = GetValueOrDefault(frame);
+    if (supplied_value == blink::mojom::ViewportFit::kAuto)
+      return;
+    blink::mojom::ViewportFit applied_value = GetValueOrDefault(current_rfh_);
+
+    // Set the reason why this frame is not the current frame.
+    int ignored_reason = DisplayCutoutIgnoredReason::kAllowed;
+    if (current_rfh_ != frame) {
+      ignored_reason =
+          current_rfh_ == nullptr
+              ? DisplayCutoutIgnoredReason::kWebContentsNotFullscreen
+              : DisplayCutoutIgnoredReason::kFrameNotCurrentFullscreen;
+    }
+
+    // Adds the UKM event to the list of pending events.
+    PendingUKMEvent pending_event;
+    pending_event.is_main_frame = !frame->GetParent();
+    pending_event.applied_value = applied_value;
+    pending_event.supplied_value = supplied_value;
+    pending_event.ignored_reason = ignored_reason;
+    if (ignored_reason == DisplayCutoutIgnoredReason::kAllowed)
+      pending_event.safe_areas_present = GetSafeAreasPresentUKMValue();
+    pending_ukm_events_.push_back(pending_event);
+  }
+
+  // Records any UKM events that we have not recorded yet.
+  void RecordPendingUKMEvents() {
+    for (const auto& event : pending_ukm_events_) {
+      ukm::builders::Layout_DisplayCutout_StateChanged builder(
+          web_contents_impl()->GetUkmSourceIdForLastCommittedSource());
+      builder.SetIsMainFrame(event.is_main_frame);
+      builder.SetViewportFit_Applied(static_cast<int>(event.applied_value));
+      builder.SetViewportFit_Supplied(static_cast<int>(event.supplied_value));
+      builder.SetViewportFit_IgnoredReason(event.ignored_reason);
+      builder.SetSafeAreasPresent(event.safe_areas_present);
+      builder.Record(ukm::UkmRecorder::Get());
+    }
+
+    pending_ukm_events_.clear();
+  }
+
+  int GetSafeAreasPresentUKMValue() const {
+    int flags = 0;
+    flags |= insets_.top() ? DisplayCutoutSafeArea::kTop : 0;
+    flags |= insets_.left() ? DisplayCutoutSafeArea::kLeft : 0;
+    flags |= insets_.bottom() ? DisplayCutoutSafeArea::kBottom : 0;
+    flags |= insets_.right() ? DisplayCutoutSafeArea::kRight : 0;
+    return flags;
+  }
+
+  // Stores pending UKM events.
+  std::list<PendingUKMEvent> pending_ukm_events_;
 
   // Stores the current safe area insets.
   gfx::Insets insets_ = gfx::Insets();

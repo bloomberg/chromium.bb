@@ -693,6 +693,7 @@ jumbo_source_set("browser") {
     "devtools/target_registry.cc",
     "devtools/target_registry.h",
     "discardable_shared_memory_manager.cc",
+    "display_cutout/display_cutout_constants.h",
     "dom_storage/dom_storage_area.cc",
     "dom_storage/dom_storage_area.h",
     "dom_storage/dom_storage_context_impl.cc",
