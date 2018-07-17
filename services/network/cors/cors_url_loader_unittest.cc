@@ -279,6 +279,35 @@ TEST_F(CORSURLLoaderTest, CrossOriginRequestWithNoCORSMode) {
   EXPECT_TRUE(client().has_received_response());
   EXPECT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::OK, client().completion_status().error_code);
+  EXPECT_FALSE(
+      GetRequest().headers.HasHeader(net::HttpRequestHeaders::kOrigin));
+}
+
+TEST_F(CORSURLLoaderTest, CrossOriginRequestWithNoCORSModeAndPatchMethod) {
+  const GURL origin("http://example.com");
+  const GURL url("http://other.com/foo.png");
+  ResourceRequest request;
+  request.fetch_request_mode = mojom::FetchRequestMode::kNoCORS;
+  request.fetch_credentials_mode = mojom::FetchCredentialsMode::kOmit;
+  request.method = "PATCH";
+  request.url = url;
+  request.request_initiator = url::Origin::Create(origin);
+  CreateLoaderAndStart(request);
+
+  NotifyLoaderClientOnReceiveResponse();
+  NotifyLoaderClientOnComplete(net::OK);
+
+  RunUntilComplete();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_TRUE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::OK, client().completion_status().error_code);
+  std::string origin_header;
+  EXPECT_TRUE(GetRequest().headers.GetHeader(net::HttpRequestHeaders::kOrigin,
+                                             &origin_header));
+  EXPECT_EQ(origin_header, "http://example.com");
 }
 
 TEST_F(CORSURLLoaderTest, CrossOriginRequestFetchRequestModeSameOrigin) {
@@ -310,6 +339,10 @@ TEST_F(CORSURLLoaderTest, CrossOriginRequestWithCORSModeButMissingCORSHeader) {
   RunUntilComplete();
 
   EXPECT_TRUE(IsNetworkLoaderStarted());
+  std::string origin_header;
+  EXPECT_TRUE(GetRequest().headers.GetHeader(net::HttpRequestHeaders::kOrigin,
+                                             &origin_header));
+  EXPECT_EQ(origin_header, "http://example.com");
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_FALSE(client().has_received_response());
   EXPECT_EQ(net::ERR_FAILED, client().completion_status().error_code);
