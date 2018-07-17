@@ -17,8 +17,10 @@ namespace cors {
 namespace {
 
 bool CalculateCORSFlag(const ResourceRequest& request) {
-  if (request.fetch_request_mode == mojom::FetchRequestMode::kNavigate)
+  if (request.fetch_request_mode == mojom::FetchRequestMode::kNavigate ||
+      request.fetch_request_mode == mojom::FetchRequestMode::kNoCORS) {
     return false;
+  }
   url::Origin url_origin = url::Origin::Create(request.url);
   if (!request.request_initiator.has_value())
     return true;
@@ -335,7 +337,12 @@ void CORSURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
 }
 
 void CORSURLLoader::StartRequest() {
-  if (fetch_cors_flag_) {
+  // If the CORS flag is set, |httpRequest|’s method is neither `GET` nor
+  // `HEAD`, or |httpRequest|’s mode is "websocket", then append
+  // `Origin`/the result of serializing a request origin with |httpRequest|, to
+  // |httpRequest|’s header list.
+  if (fetch_cors_flag_ ||
+      (request_.method != "GET" && request_.method != "HEAD")) {
     request_.headers.SetHeader(
         net::HttpRequestHeaders::kOrigin,
         (tainted_ ? url::Origin() : *request_.request_initiator).Serialize());
