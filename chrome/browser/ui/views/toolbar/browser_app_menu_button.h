@@ -46,6 +46,7 @@ class BrowserAppMenuButton : public AppMenuButton,
   void SetIsProminent(bool is_prominent);
 
   // views::MenuButton:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   void OnThemeChanged() override;

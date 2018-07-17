@@ -54,6 +54,24 @@ gfx::Insets GetInkDropInsets(BaseInkDropHostView* host_view,
   return inkdrop_insets;
 }
 
+// Create a SkPath matching the toolbar inkdrops to be used for the focus ring.
+// TODO(pbos): Consolidate inkdrop effects, highlights and ripples along with
+// focus rings so that they are derived  from the same actual SkPath or other
+// shared primitive. That way they would be significantly easier to keep in
+// sync. This method at least reuses GetInkDropInsets.
+template <class BaseInkDropHostView>
+SkPath CreateToolbarFocusRingPath(BaseInkDropHostView* host_view,
+                                  const gfx::Insets& margin_insets) {
+  gfx::Rect rect(host_view->size());
+  rect.Inset(GetInkDropInsets(host_view, margin_insets));
+
+  SkPath path;
+  path.addRoundRect(gfx::RectToSkRect(rect),
+                    host_view->ink_drop_large_corner_radius(),
+                    host_view->ink_drop_large_corner_radius());
+  return path;
+}
+
 // Creates the appropriate ink drop for the calling button. When the newer
 // material UI is not enabled, it uses the default implementation of the
 // calling button's base class (the template argument BaseInkDropHostView).

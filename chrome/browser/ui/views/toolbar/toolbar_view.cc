@@ -600,9 +600,11 @@ void ToolbarView::Layout() {
   if (maximized)
     app_menu_width += end_padding;
 
+  // Set trailing margin before updating the bounds so OnBoundsChange can use
+  // the trailing margin.
+  app_menu_button_->SetTrailingMargin(maximized ? end_padding : 0);
   app_menu_button_->SetBounds(next_element_x, toolbar_button_y, app_menu_width,
                               toolbar_button_height);
-  app_menu_button_->SetTrailingMargin(maximized ? end_padding : 0);
 }
 
 void ToolbarView::OnPaintBackground(gfx::Canvas* canvas) {
