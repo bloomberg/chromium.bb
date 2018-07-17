@@ -481,6 +481,13 @@ void ChromeKeyboardUI::AddBoundsChangedObserver(aura::Window* window) {
 }
 
 void ChromeKeyboardUI::SetShadowAroundKeyboard() {
+  // In the new keyboard UI, the shadows are drawn by the extension.
+  // TODO(https://crbug.com/856195): Remove this method when we switch
+  // completely to the new UI. The default extension may need to draw its own
+  // shadows too.
+  if (keyboard::IsVirtualKeyboardMdUiEnabled())
+    return;
+
   aura::Window* contents_window = keyboard_contents_->GetNativeView();
   if (!shadow_) {
     shadow_ = std::make_unique<ui::Shadow>();
