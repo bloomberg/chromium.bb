@@ -106,20 +106,21 @@ BluetoothRemoteGattCharacteristicAndroid::GetPermissions() const {
 std::vector<BluetoothRemoteGattDescriptor*>
 BluetoothRemoteGattCharacteristicAndroid::GetDescriptors() const {
   EnsureDescriptorsCreated();
-  std::vector<BluetoothRemoteGattDescriptor*> descriptors;
-  for (const auto& map_iter : descriptors_)
-    descriptors.push_back(map_iter.second.get());
-  return descriptors;
+  return BluetoothRemoteGattCharacteristic::GetDescriptors();
 }
 
 BluetoothRemoteGattDescriptor*
 BluetoothRemoteGattCharacteristicAndroid::GetDescriptor(
     const std::string& identifier) const {
   EnsureDescriptorsCreated();
-  const auto& iter = descriptors_.find(identifier);
-  if (iter == descriptors_.end())
-    return nullptr;
-  return iter->second.get();
+  return BluetoothRemoteGattCharacteristic::GetDescriptor(identifier);
+}
+
+std::vector<BluetoothRemoteGattDescriptor*>
+BluetoothRemoteGattCharacteristicAndroid::GetDescriptorsByUUID(
+    const BluetoothUUID& uuid) const {
+  EnsureDescriptorsCreated();
+  return BluetoothRemoteGattCharacteristic::GetDescriptorsByUUID(uuid);
 }
 
 void BluetoothRemoteGattCharacteristicAndroid::ReadRemoteCharacteristic(
@@ -236,10 +237,9 @@ void BluetoothRemoteGattCharacteristicAndroid::CreateGattRemoteDescriptor(
       base::android::ConvertJavaStringToUTF8(env, instanceId);
 
   DCHECK(!base::ContainsKey(descriptors_, instanceIdString));
-
-  descriptors_[instanceIdString] = BluetoothRemoteGattDescriptorAndroid::Create(
+  AddDescriptor(BluetoothRemoteGattDescriptorAndroid::Create(
       instanceIdString, bluetooth_gatt_descriptor_wrapper,
-      chrome_bluetooth_device);
+      chrome_bluetooth_device));
 }
 
 void BluetoothRemoteGattCharacteristicAndroid::SubscribeToNotifications(

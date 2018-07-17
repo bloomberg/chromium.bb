@@ -9,6 +9,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -24,7 +25,6 @@ class RemoteCharacteristic;
 
 namespace device {
 
-class BluetoothRemoteGattDescriptorCast;
 class BluetoothRemoteGattServiceCast;
 
 class BluetoothRemoteGattCharacteristicCast
@@ -45,9 +45,6 @@ class BluetoothRemoteGattCharacteristicCast
   // BluetoothRemoteGattCharacteristic implementation:
   const std::vector<uint8_t>& GetValue() const override;
   BluetoothRemoteGattService* GetService() const override;
-  std::vector<BluetoothRemoteGattDescriptor*> GetDescriptors() const override;
-  BluetoothRemoteGattDescriptor* GetDescriptor(
-      const std::string& identifier) const override;
   void ReadRemoteCharacteristic(const ValueCallback& callback,
                                 const ErrorCallback& error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
@@ -92,7 +89,6 @@ class BluetoothRemoteGattCharacteristicCast
       remote_characteristic_;
   std::vector<uint8_t> value_;
 
-  std::vector<std::unique_ptr<BluetoothRemoteGattDescriptorCast>> descriptors_;
   base::WeakPtrFactory<BluetoothRemoteGattCharacteristicCast> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicCast);

@@ -8,7 +8,9 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 
 #import <CoreBluetooth/CoreBluetooth.h>
-#include <unordered_map>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
@@ -39,17 +41,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   const std::vector<uint8_t>& GetValue() const override;
   BluetoothRemoteGattService* GetService() const override;
   bool IsNotifying() const override;
-  std::vector<BluetoothRemoteGattDescriptor*> GetDescriptors() const override;
-  BluetoothRemoteGattDescriptor* GetDescriptor(
-      const std::string& identifier) const override;
   void ReadRemoteCharacteristic(const ValueCallback& callback,
                                 const ErrorCallback& error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
                                  const base::Closure& callback,
                                  const ErrorCallback& error_callback) override;
   bool WriteWithoutResponse(base::span<const uint8_t> value) override;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicMac);
 
  protected:
   void SubscribeToNotifications(BluetoothRemoteGattDescriptor* ccc_descriptor,
@@ -104,10 +101,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
       CBDescriptor* cb_descriptor) const;
   bool HasPendingRead() const {
     return !read_characteristic_value_callbacks_.first.is_null();
-  };
+  }
   bool HasPendingWrite() const {
     return !write_characteristic_value_callbacks_.first.is_null();
-  };
+  }
   // Is true if the characteristic has been discovered with all its descriptors
   // and discovery_pending_count_ is 0.
   bool is_discovery_complete_;
@@ -135,12 +132,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   PendingNotifyCallbacks subscribe_to_notification_callbacks_;
   // Stores UnsubscribeFromNotifications request callbacks.
   PendingNotifyCallbacks unsubscribe_from_notification_callbacks_;
-  // Map of descriptors, keyed by descriptor identifier.
-  std::unordered_map<std::string,
-                     std::unique_ptr<BluetoothRemoteGattDescriptorMac>>
-      gatt_descriptor_macs_;
 
   base::WeakPtrFactory<BluetoothRemoteGattCharacteristicMac> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicMac);
 };
 
 // Stream operator for logging.

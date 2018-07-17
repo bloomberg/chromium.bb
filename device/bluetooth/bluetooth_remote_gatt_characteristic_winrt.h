@@ -36,9 +36,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicWinrt
   // BluetoothRemoteGattCharacteristic:
   const std::vector<uint8_t>& GetValue() const override;
   BluetoothRemoteGattService* GetService() const override;
-  std::vector<BluetoothRemoteGattDescriptor*> GetDescriptors() const override;
-  BluetoothRemoteGattDescriptor* GetDescriptor(
-      const std::string& identifier) const override;
   void ReadRemoteCharacteristic(const ValueCallback& callback,
                                 const ErrorCallback& error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,

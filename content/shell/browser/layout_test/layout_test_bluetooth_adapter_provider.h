@@ -7,6 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <string>
+
 #include "base/callback.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"

@@ -4,7 +4,9 @@
 
 #include "content/shell/browser/layout_test/layout_test_bluetooth_adapter_provider.h"
 
+#include <set>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -595,7 +597,7 @@ LayoutTestBluetoothAdapterProvider::GetDelayedServicesDiscoveryAdapter() {
               base::BindOnce(&NotifyServicesDiscovered,
                              base::RetainedRef(adapter_ptr), device_ptr));
 
-          DCHECK(services.size() == 0);
+          DCHECK(services.empty());
           return false;
         }
 
@@ -903,7 +905,7 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
                 base::BindOnce(&NotifyDeviceChanged,
                                base::RetainedRef(adapter_ptr), device_ptr));
           }
-          DCHECK(services.size() == 0);
+          DCHECK(services.empty());
           return false;
         }
 
@@ -1126,7 +1128,6 @@ scoped_refptr<NiceMockBluetoothAdapter> LayoutTestBluetoothAdapterProvider::
             ON_CALL(*notify_session, Stop(_))
                 .WillByDefault(Invoke([adapter_ptr, device_ptr, disconnect](
                     const base::Closure& callback) {
-
                   device_ptr->PushPendingCallback(callback);
 
                   if (disconnect) {
@@ -1594,16 +1595,6 @@ LayoutTestBluetoothAdapterProvider::GetBaseGATTCharacteristic(
   ON_CALL(*characteristic, StartNotifySession(_, _))
       .WillByDefault(
           RunCallback<1>(BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
-
-  ON_CALL(*characteristic, GetDescriptors())
-      .WillByDefault(
-          Invoke(characteristic.get(),
-                 &MockBluetoothGattCharacteristic::GetMockDescriptors));
-
-  ON_CALL(*characteristic, GetDescriptor(_))
-      .WillByDefault(
-          Invoke(characteristic.get(),
-                 &MockBluetoothGattCharacteristic::GetMockDescriptor));
 
   return characteristic;
 }

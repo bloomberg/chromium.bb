@@ -83,10 +83,6 @@ class FakeRemoteGattCharacteristic
   // device::BluetoothRemoteGattCharacteristic overrides:
   const std::vector<uint8_t>& GetValue() const override;
   device::BluetoothRemoteGattService* GetService() const override;
-  std::vector<device::BluetoothRemoteGattDescriptor*> GetDescriptors()
-      const override;
-  device::BluetoothRemoteGattDescriptor* GetDescriptor(
-      const std::string& identifier) const override;
   void ReadRemoteCharacteristic(const ValueCallback& callback,
                                 const ErrorCallback& error_callback) override;
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
@@ -159,10 +155,6 @@ class FakeRemoteGattCharacteristic
   base::Optional<uint16_t> next_unsubscribe_from_notifications_response_;
 
   size_t last_descriptor_id_;
-
-  using FakeDescriptorMap =
-      std::map<std::string, std::unique_ptr<FakeRemoteGattDescriptor>>;
-  FakeDescriptorMap fake_descriptors_;
 
   base::WeakPtrFactory<FakeRemoteGattCharacteristic> weak_ptr_factory_;
 };
