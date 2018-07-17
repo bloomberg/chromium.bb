@@ -3532,6 +3532,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kDownloadProgressInfoBar)},
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+    {"download-home-v2", flag_descriptions::kDownloadHomeV2Name,
+     flag_descriptions::kDownloadHomeV2Description, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kDownloadHomeV2)},
+#endif
     {"enable-block-tab-unders", flag_descriptions::kBlockTabUndersName,
      flag_descriptions::kBlockTabUndersDescription, kOsAll,
      FEATURE_VALUE_TYPE(TabUnderNavigationThrottle::kBlockTabUnders)},

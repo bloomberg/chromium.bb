@@ -7,15 +7,13 @@ package org.chromium.chrome.browser.download.home;
 import android.app.Activity;
 import android.content.ComponentName;
 
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 
 /** A helper class to build and return an {@link DownloadManagerCoordinator}. */
 public class DownloadManagerCoordinatorFactory {
-    // TODO(850603): Add feature flag to enable new downloads home.
-    private static boolean sEnableDownloadsHomeV2 = false;
-
     /**
      * Returns an instance of a {@link DownloadManagerCoordinator} to be used in the UI.
      * @param activity           The parent {@link Activity}.
@@ -29,7 +27,7 @@ public class DownloadManagerCoordinatorFactory {
     public static DownloadManagerCoordinator create(Activity activity, boolean isOffTheRecord,
             SnackbarManager snackbarManager, ComponentName parentComponent,
             boolean isSeparateActivity) {
-        if (sEnableDownloadsHomeV2) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_HOME_V2)) {
             return new DownloadManagerCoordinatorImpl(
                     Profile.getLastUsedProfile(), activity, isOffTheRecord, snackbarManager);
         } else {

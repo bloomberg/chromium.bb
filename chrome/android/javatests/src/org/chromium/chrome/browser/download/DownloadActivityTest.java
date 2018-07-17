@@ -125,6 +125,7 @@ public class DownloadActivityTest {
         HashMap<String, Boolean> features = new HashMap<String, Boolean>();
         features.put(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE, false);
         features.put(ChromeFeatureList.DOWNLOAD_HOME_SHOW_STORAGE_INFO, false);
+        features.put(ChromeFeatureList.DOWNLOAD_HOME_V2, false);
         ChromeFeatureList.setTestFeatures(features);
 
         mStubbedProvider = new StubbedProvider();

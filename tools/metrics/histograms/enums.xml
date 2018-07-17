@@ -27555,6 +27555,7 @@ from previous Chrome versions.
   <int value="-1772172557" label="enable-osk-overscroll"/>
   <int value="-1768672408" label="ChromeDuplex:disabled"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
+  <int value="-1758468685" label="DownloadHomeV2:disabled"/>
   <int value="-1755301960" label="ClearOldBrowsingData:enabled"/>
   <int value="-1751928267" label="disable-icon-ntp"/>
   <int value="-1749176684" label="PauseBackgroundTabs:disabled"/>
@@ -29133,6 +29134,7 @@ from previous Chrome versions.
   <int value="1530177325" label="LanguagesPreference:disabled"/>
   <int value="1534222388" label="EnableEphemeralFlashPermission:enabled"/>
   <int value="1536921097" label="NavigationMojoResponse:disabled"/>
+  <int value="1538685213" label="DownloadHomeV2:enabled"/>
   <int value="1538690515" label="OneGoogleBarOnLocalNtp:enabled"/>
   <int value="1541723759" label="ServiceWorkerNavigationPreload:disabled"/>
   <int value="1543027970" label="EnableDisplayZoomSetting:disabled"/>
