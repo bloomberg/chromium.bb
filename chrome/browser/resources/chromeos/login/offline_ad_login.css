@@ -1,0 +1,21 @@
+/* Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* Offline AD login page mostly uses styles from offline_gaia.css.
+ * Only changes to offline gaia style are defined here.
+ */
+
+.advanced-option-subtitle {
+  color: rgba(0, 0, 0, 0.54);
+  font: 13px Roboto, sans-serif;
+}
+
+iron-icon[icon='warning'] {
+  -webkit-margin-end: 15px;
+  -webkit-margin-start: 0;
+  color: var(--google-yellow-500);
+  margin-bottom: 0;
+  margin-top: 0;
+}

@@ -18,14 +18,8 @@ Polymer((function() {
         value: false,
       },
 
-      showEnterpriseMessage: {
-        type: Boolean,
-        value: false,
-      },
-
       domain: {
         type: String,
-        observer: 'onDomainChanged_',
       },
 
       emailDomain: String,
@@ -36,14 +30,6 @@ Polymer((function() {
       },
 
       animationInProgress: Boolean,
-
-      /**
-       * Controls GLIF MM mode.
-       */
-      glifMode: {
-        type: Boolean,
-        value: false,
-      },
     },
 
     attached: function() {
@@ -62,12 +48,6 @@ Polymer((function() {
       this.switchToEmailCard(true /* animated */);
     },
 
-    onDomainChanged_: function() {
-      this.$$('#managedBy').textContent =
-          loadTimeData.getStringF('enterpriseInfoMessage', this.domain);
-      this.showEnterpriseMessage = !!this.domain.length;
-    },
-
     onAnimationFinish_: function() {
       this.fire('backButton', !this.isEmailSectionActive_());
       this.focus();
@@ -77,7 +57,6 @@ Polymer((function() {
       this.disabled = true;
       this.fire('dialogShown');
       this.$$('#forgotPasswordDlg').showModal();
-      this.$$('#passwordCard').classList.add('full-disabled');
     },
 
     onForgotPasswordCloseTap_: function() {
@@ -87,7 +66,6 @@ Polymer((function() {
     onDialogOverlayClosed_: function() {
       this.fire('dialogHidden');
       this.disabled = false;
-      this.$$('#passwordCard').classList.remove('full-disabled');
     },
 
     setEmail: function(email) {

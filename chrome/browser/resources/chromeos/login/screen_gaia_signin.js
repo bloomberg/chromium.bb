@@ -716,14 +716,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         $('signin-frame-container-v2').appendChild($('signin-frame'));
         $('gaia-signin')
             .insertBefore($('offline-gaia'), $('gaia-step-contents'));
-        $('offline-gaia').glifMode = true;
         $('offline-gaia').removeAttribute('not-a-dialog');
         $('offline-gaia').classList.toggle('fit', false);
       } else {
         $('gaia-signin-form-container').appendChild($('signin-frame'));
         $('gaia-signin-form-container')
             .appendChild($('offline-gaia'), $('gaia-step-contents'));
-        $('offline-gaia').glifMode = false;
         $('offline-gaia').setAttribute('not-a-dialog', true);
         $('offline-gaia').classList.toggle('fit', true);
       }
