@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/bubble_anchor_helper.h"
-#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_cocoa.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/permission_bubble/permission_bubble_browser_test_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
   faker.FinishTransition();
   EXPECT_TRUE(access_manager->context()->IsFullscreen());
 
-  FullscreenToolbarController* toolbar_controller =
+  FullscreenToolbarControllerCocoa* toolbar_controller =
       [browser_controller fullscreenToolbarController];
   EXPECT_TRUE(toolbar_controller);
 

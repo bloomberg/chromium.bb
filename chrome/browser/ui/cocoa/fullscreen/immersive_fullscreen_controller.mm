@@ -6,7 +6,7 @@
 
 #import "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 #import "ui/base/cocoa/tracking_area.h"
 
 namespace {
@@ -21,7 +21,7 @@ const CGFloat kMenubarHideZoneHeight = 28;
 }  // namespace
 
 @interface ImmersiveFullscreenController () {
-  BrowserWindowController* browserController_;  // weak
+  id<FullscreenToolbarContextDelegate> delegate_;  // weak
 
   // Used to track the mouse movements to show/hide the menu.
   base::scoped_nsobject<CrTrackingArea> trackingArea_;
@@ -61,18 +61,19 @@ const CGFloat kMenubarHideZoneHeight = 28;
 
 @implementation ImmersiveFullscreenController
 
-- (instancetype)initWithBrowserController:(BrowserWindowController*)bwc {
+- (instancetype)initWithDelegate:
+    (id<FullscreenToolbarContextDelegate>)delegate {
   if ((self = [super init])) {
-    browserController_ = bwc;
+    delegate_ = delegate;
     systemFullscreenMode_ = base::mac::kFullScreenModeNormal;
 
-    contentView_ = [[bwc window] contentView];
+    contentView_ = [[delegate_ window] contentView];
     DCHECK(contentView_);
 
     isMenubarVisible_ = NO;
 
     NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    NSWindow* window = [browserController_ window];
+    NSWindow* window = [delegate_ window];
 
     [nc addObserver:self
            selector:@selector(windowDidBecomeMain:)
@@ -100,11 +101,10 @@ const CGFloat kMenubarHideZoneHeight = 28;
 }
 
 - (void)updateMenuBarAndDockVisibility {
-  BOOL isMouseOnScreen =
-      NSMouseInRect([NSEvent mouseLocation],
-                    [[browserController_ window] screen].frame, false);
+  BOOL isMouseOnScreen = NSMouseInRect(
+      [NSEvent mouseLocation], [[delegate_ window] screen].frame, false);
 
-  if (!isMouseOnScreen || ![browserController_ isInImmersiveFullscreen])
+  if (!isMouseOnScreen || ![delegate_ isInImmersiveFullscreen])
     [self setSystemFullscreenModeTo:base::mac::kFullScreenModeNormal];
   else if ([self shouldShowMenubar])
     [self setSystemFullscreenModeTo:base::mac::kFullScreenModeHideDock];
@@ -125,7 +125,7 @@ const CGFloat kMenubarHideZoneHeight = 28;
 }
 
 - (BOOL)doesScreenHaveMenubar {
-  NSScreen* screen = [[browserController_ window] screen];
+  NSScreen* screen = [[delegate_ window] screen];
   NSScreen* primaryScreen = [[NSScreen screens] firstObject];
   BOOL isWindowOnPrimaryScreen = [screen isEqual:primaryScreen];
 

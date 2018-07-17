@@ -10,7 +10,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_menubar_tracker.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_animation_controller.h"
-#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_cocoa.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_mouse_tracker.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_visibility_lock_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,8 +82,8 @@ class FullscreenToolbarControllerTest : public testing::Test {
     [[[bwc_ stub] andReturnValue:OCMOCK_VALUE(menubarHeight)] menubarHeight];
     [[bwc_ stub] layoutSubviews];
 
-    controller_.reset(
-        [[FullscreenToolbarController alloc] initWithBrowserController:bwc_]);
+    controller_.reset([[FullscreenToolbarControllerCocoa alloc]
+        initWithBrowserController:bwc_]);
     SetToolbarStyle(FullscreenToolbarStyle::TOOLBAR_HIDDEN);
 
     menubar_tracker_.reset([[MockFullscreenMenubarTracker alloc]
@@ -115,7 +115,7 @@ class FullscreenToolbarControllerTest : public testing::Test {
   id mouse_tracker_;
 
   // The FullscreenToolbarController object being tested.
-  base::scoped_nsobject<FullscreenToolbarController> controller_;
+  base::scoped_nsobject<FullscreenToolbarControllerCocoa> controller_;
 
   // Mocks the state of the menubar.
   base::scoped_nsobject<MockFullscreenMenubarTracker> menubar_tracker_;

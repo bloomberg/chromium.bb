@@ -34,8 +34,7 @@ const CGFloat kTrackingAreaAdditionalThreshold = 50;
   // The content view for the window.
   NSView* contentView_;  // weak
 
-  // The owner of this class.
-  FullscreenToolbarController* owner_;  // weak
+  FullscreenToolbarController* controller_;  // weak
 }
 
 @end
@@ -43,9 +42,9 @@ const CGFloat kTrackingAreaAdditionalThreshold = 50;
 @implementation FullscreenToolbarMouseTracker
 
 - (instancetype)initWithFullscreenToolbarController:
-    (FullscreenToolbarController*)owner {
+    (FullscreenToolbarController*)controller {
   if ((self = [super init])) {
-    owner_ = owner;
+    controller_ = controller;
   }
 
   return self;
@@ -58,7 +57,7 @@ const CGFloat kTrackingAreaAdditionalThreshold = 50;
 
 - (void)updateTrackingArea {
   // Remove the tracking area if the toolbar and menu bar aren't both visible.
-  if ([owner_ toolbarFraction] == 0 || ![NSMenu menuBarVisible]) {
+  if ([controller_ toolbarFraction] == 0 || ![NSMenu menuBarVisible]) {
     [self removeTrackingArea];
     menuBarLock_.reset();
     return;
@@ -72,8 +71,7 @@ const CGFloat kTrackingAreaAdditionalThreshold = 50;
     [self removeTrackingArea];
   }
 
-  BrowserWindowController* bwc = [owner_ browserWindowController];
-  contentView_ = [[bwc window] contentView];
+  contentView_ = [[[controller_ delegate] window] contentView];
 
   trackingArea_.reset([[CrTrackingArea alloc]
       initWithRect:trackingAreaFrame_
@@ -85,8 +83,7 @@ const CGFloat kTrackingAreaAdditionalThreshold = 50;
 }
 
 - (void)updateToolbarFrame:(NSRect)frame {
-  NSRect contentBounds =
-      [[[[owner_ browserWindowController] window] contentView] bounds];
+  NSRect contentBounds = [[[[controller_ delegate] window] contentView] bounds];
   trackingAreaFrame_ = frame;
   trackingAreaFrame_.origin.y -= kTrackingAreaAdditionalThreshold;
   trackingAreaFrame_.size.height =

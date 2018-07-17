@@ -30,7 +30,7 @@
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/floating_bar_backing_view.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
-#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_cocoa.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
@@ -763,8 +763,8 @@ willPositionSheet:(NSWindow*)sheet
 - (void)adjustUIForEnteringFullscreen {
   DCHECK([self isInAnyFullscreenMode]);
   if (!fullscreenToolbarController_) {
-    fullscreenToolbarController_.reset(
-        [[FullscreenToolbarController alloc] initWithBrowserController:self]);
+    fullscreenToolbarController_.reset([[FullscreenToolbarControllerCocoa alloc]
+        initWithBrowserController:self]);
   }
 
   [fullscreenToolbarController_ enterFullscreenMode];

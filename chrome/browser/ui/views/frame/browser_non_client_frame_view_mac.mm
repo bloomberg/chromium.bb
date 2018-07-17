@@ -6,8 +6,11 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/cocoa/fullscreen/fullscreen_menubar_tracker.h"
+#include "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_views.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
@@ -31,6 +34,9 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
     BrowserFrame* frame,
     BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view) {
+  fullscreen_toolbar_controller_.reset([[FullscreenToolbarControllerViews alloc]
+      initWithBrowserView:browser_view]);
+
   pref_registrar_.Init(browser_view->GetProfile()->GetPrefs());
   pref_registrar_.Add(
       prefs::kShowFullscreenToolbar,
@@ -39,10 +45,21 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
 }
 
 BrowserNonClientFrameViewMac::~BrowserNonClientFrameViewMac() {
+  if ([fullscreen_toolbar_controller_ isInFullscreen])
+    [fullscreen_toolbar_controller_ exitFullscreenMode];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewMac, BrowserNonClientFrameView implementation:
+
+void BrowserNonClientFrameViewMac::OnFullscreenStateChanged() {
+  if (browser_view()->IsFullscreen()) {
+    [fullscreen_toolbar_controller_ enterFullscreenMode];
+  } else {
+    [fullscreen_toolbar_controller_ exitFullscreenMode];
+  }
+  browser_view()->Layout();
+}
 
 bool BrowserNonClientFrameViewMac::CaptionButtonsOnLeadingEdge() const {
   return true;
@@ -50,10 +67,32 @@ bool BrowserNonClientFrameViewMac::CaptionButtonsOnLeadingEdge() const {
 
 gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
     views::View* tabstrip) const {
+  // TODO(weili): In the future, we should hide the title bar, and show the
+  // tab strip directly under the menu bar. For now, just lay our content
+  // under the native title bar. Use the default title bar height to avoid
+  // calling through private APIs.
   DCHECK(tabstrip);
 
-  gfx::Rect bounds = gfx::Rect(0, kTabstripTopInset, width(),
-                               tabstrip->GetPreferredSize().height());
+  // Calculate the y offset for the tab strip because in fullscreen mode the tab
+  // strip may need to move under the slide down menu bar.
+  CGFloat y_offset = kTabstripTopInset;
+  if (browser_view()->IsFullscreen()) {
+    CGFloat menu_bar_height =
+        [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
+    CGFloat title_bar_height =
+        NSHeight([NSWindow frameRectForContentRect:NSZeroRect
+                                         styleMask:NSWindowStyleMaskTitled]);
+    y_offset +=
+        [[fullscreen_toolbar_controller_ menubarTracker] menubarFraction] *
+        (menu_bar_height + title_bar_height);
+    CGFloat backing_bar_height = FullscreenBackingBarHeight();
+    y_offset +=
+        std::floor((1 - [fullscreen_toolbar_controller_ toolbarFraction]) *
+                   backing_bar_height);
+  }
+
+  gfx::Rect bounds =
+      gfx::Rect(0, y_offset, width(), tabstrip->GetPreferredSize().height());
   bounds.Inset(GetTabStripLeftInset(), 0,
                GetAfterTabstripItemWidth() + GetTabstripPadding(), 0);
   return bounds;
@@ -81,23 +120,26 @@ int BrowserNonClientFrameViewMac::GetThemeBackgroundXInset() const {
 
 void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI(
     bool is_exiting_fullscreen) {
-  FullscreenToolbarStyle old_style = toolbar_style_;
+  FullscreenToolbarStyle old_style =
+      [fullscreen_toolbar_controller_ toolbarStyle];
 
   // Update to the new toolbar style if needed.
+  FullscreenToolbarStyle new_style;
   FullscreenController* controller =
       browser_view()->GetExclusiveAccessManager()->fullscreen_controller();
   if ((controller->IsWindowFullscreenForTabOrPending() ||
        controller->IsExtensionFullscreenOrPending()) &&
       !is_exiting_fullscreen) {
-    toolbar_style_ = FullscreenToolbarStyle::kToolbarNone;
+    new_style = FullscreenToolbarStyle::TOOLBAR_NONE;
   } else {
     PrefService* prefs = browser_view()->GetProfile()->GetPrefs();
-    toolbar_style_ = prefs->GetBoolean(prefs::kShowFullscreenToolbar)
-                         ? FullscreenToolbarStyle::kToolbarPresent
-                         : FullscreenToolbarStyle::kToolbarHidden;
+    new_style = prefs->GetBoolean(prefs::kShowFullscreenToolbar)
+                    ? FullscreenToolbarStyle::TOOLBAR_PRESENT
+                    : FullscreenToolbarStyle::TOOLBAR_HIDDEN;
   }
+  [fullscreen_toolbar_controller_ setToolbarStyle:new_style];
 
-  if (old_style != toolbar_style_) {
+  if (old_style != new_style) {
     // Notify browser that top ui state has been changed so that we can update
     // the bookmark bar state as well.
     browser_view()->browser()->FullscreenTopUIStateChanged();
@@ -106,16 +148,16 @@ void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI(
     if (frame()->IsFullscreen())
       browser_view()->Layout();
 
-    UMA_HISTOGRAM_ENUMERATION(
-        "OSX.Fullscreen.ToolbarStyle", toolbar_style_,
-        static_cast<int>(FullscreenToolbarStyle::kToolbarLast) + 1);
+    [FullscreenToolbarController recordToolbarStyle:new_style];
   }
 }
 
 bool BrowserNonClientFrameViewMac::ShouldHideTopUIForFullscreen() const {
-  return frame()->IsFullscreen()
-             ? toolbar_style_ != FullscreenToolbarStyle::kToolbarPresent
-             : false;
+  if (frame()->IsFullscreen()) {
+    return [fullscreen_toolbar_controller_ toolbarStyle] !=
+           FullscreenToolbarStyle::TOOLBAR_PRESENT;
+  }
+  return false;
 }
 
 void BrowserNonClientFrameViewMac::UpdateThrobber(bool running) {
@@ -123,7 +165,11 @@ void BrowserNonClientFrameViewMac::UpdateThrobber(bool running) {
 
 int BrowserNonClientFrameViewMac::GetTabStripLeftInset() const {
   constexpr int kTabstripLeftInset = 70;  // Make room for caption buttons.
-  return kTabstripLeftInset;
+
+  if (frame()->IsFullscreen())
+    return 0;  // Do not draw caption buttons on fullscreen.
+  else
+    return kTabstripLeftInset;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -244,4 +290,25 @@ void BrowserNonClientFrameViewMac::PaintThemedFrame(gfx::Canvas* canvas) {
   canvas->TileImageInt(image, 0, 0, width(), image.height());
   gfx::ImageSkia overlay = GetFrameOverlayImage();
   canvas->DrawImageInt(overlay, 0, 0);
+}
+
+CGFloat BrowserNonClientFrameViewMac::FullscreenBackingBarHeight() const {
+  BrowserView* browser_view = this->browser_view();
+  DCHECK(browser_view->IsFullscreen());
+
+  CGFloat total_height = 0;
+  if (browser_view->IsTabStripVisible())
+    total_height += browser_view->GetTabStripHeight();
+
+  if (browser_view->IsToolbarVisible())
+    total_height += browser_view->GetToolbarBounds().height();
+
+  if (browser_view->IsBookmarkBarVisible() &&
+      browser_view->GetBookmarkBarView()->IsDetached()) {
+    // Only when the bookmark bar is shown and not in 'detached' mode, it will
+    // show up along with slide down panel.
+    total_height += browser_view->GetBookmarkBarView()->height();
+  }
+
+  return total_height;
 }
