@@ -459,8 +459,11 @@ class MapFileParser(object):
       inner_parser = MapFileParserGold()
     else:
       raise Exception('.map file is from a unsupported linker.')
+
     section_sizes, syms = inner_parser.Parse(lines)
     for sym in syms:
-      if sym.object_path:  # Don't want '' to become '.'.
+      if sym.object_path and not sym.object_path.endswith(')'):
+        # Don't want '' to become '.'.
+        # Thin archives' paths will get fixed in |ar.CreateThinObjectPath|.
         sym.object_path = os.path.normpath(sym.object_path)
     return (section_sizes, syms)
