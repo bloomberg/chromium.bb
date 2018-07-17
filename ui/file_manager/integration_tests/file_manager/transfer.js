@@ -78,6 +78,11 @@ function copyBetweenVolumes(targetFile, src, dst, opt_dstExpectedDialogText) {
                               entry.teamDriveName === ''))
                       .sort();
   }
+  const myDriveContent = TestEntryInfo
+                             .getExpectedRows(src.initialEntries.filter(
+                                 entry => entry.type !== EntryType.TEAM_DRIVE &&
+                                     entry.teamDriveName === ''))
+                             .sort();
 
   let dstContents;
   if (dst.isTeamDrive) {
@@ -100,9 +105,30 @@ function copyBetweenVolumes(targetFile, src, dst, opt_dstExpectedDialogText) {
       setupAndWaitUntilReady(
           null, RootPath.DOWNLOADS, this.next, localFiles, driveFiles);
     },
-    // Select the source volume.
+    // Expand Drive root if either src or dst is within Drive.
     function(results) {
       appId = results.windowId;
+      if (src.isTeamDrive || dst.isTeamDrive) {
+        // Select + expand + wait for its content.
+        remoteCall
+            .callRemoteTestUtil('selectFolderInTree', appId, ['Google Drive'])
+            .then(result => {
+              chrome.test.assertTrue(result);
+              return remoteCall.callRemoteTestUtil(
+                  'expandSelectedFolderInTree', appId, []);
+            })
+            .then(result => {
+              chrome.test.assertTrue(result);
+              return remoteCall.waitForFiles(appId, myDriveContent);
+            })
+            .then(this.next);
+      } else {
+        // If isn't drive source, just move on.
+        this.next();
+      }
+    },
+    // Select the source volume.
+    function() {
       remoteCall.callRemoteTestUtil(
           src.isTeamDrive ? 'selectTeamDrive' : 'selectVolume', appId,
           [src.volumeName], this.next);
