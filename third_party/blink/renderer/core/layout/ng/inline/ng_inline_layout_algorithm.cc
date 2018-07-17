@@ -188,6 +188,12 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   NGInlineBoxState* box =
       box_states_->OnBeginPlaceItems(&line_style, baseline_type_, quirks_mode_);
 
+  // In order to match other browsers when list-style-type: none, pretend
+  // there's an invisible marker here.
+  if (line_style.Display() == EDisplay::kListItem &&
+      line_style.ListStyleType() == EListStyleType::kNone)
+    box->ComputeTextMetrics(line_style, baseline_type_);
+
   for (NGInlineItemResult& item_result : *line_items) {
     DCHECK(item_result.item);
     const NGInlineItem& item = *item_result.item;
