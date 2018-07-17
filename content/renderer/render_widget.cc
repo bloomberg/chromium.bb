@@ -539,8 +539,12 @@ RenderWidget* RenderWidget::CreateForFrame(
   if (!frame->Parent()) {
     RenderViewImpl* view =
         static_cast<RenderViewImpl*>(render_frame->GetRenderView());
+    // Use the WidgetClient() from the RenderViewImpl, rather than getting its
+    // RenderWidget directly. Layout tests may inject a different
+    // WebWidgetClient on the RenderViewImpl that intercepts calls before they
+    // get to the RenderWidget.
     view->AttachWebFrameWidget(
-        RenderWidget::CreateWebFrameWidget(view->GetWidget(), frame));
+        RenderWidget::CreateWebFrameWidget(view->WidgetClient(), frame));
     view->GetWidget()->UpdateWebViewWithDeviceScaleFactor();
     return view->GetWidget();
   }
@@ -568,9 +572,9 @@ RenderWidget* RenderWidget::CreateForFrame(
 
 // static
 blink::WebFrameWidget* RenderWidget::CreateWebFrameWidget(
-    RenderWidget* render_widget,
+    blink::WebWidgetClient* widget_client,
     blink::WebLocalFrame* frame) {
-  return blink::WebFrameWidget::Create(render_widget, frame);
+  return blink::WebFrameWidget::Create(widget_client, frame);
 }
 
 // static

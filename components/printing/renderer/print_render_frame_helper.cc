@@ -61,6 +61,7 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_view_client.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -609,8 +610,9 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
                                page_layout.content_height);
 
   blink::WebView* web_view = blink::WebView::Create(
-      /* client = */ nullptr, blink::mojom::PageVisibilityState::kVisible,
-      /* opener = */ nullptr);
+      /*client=*/nullptr, /*widget_client=*/nullptr,
+      blink::mojom::PageVisibilityState::kVisible,
+      /*opener=*/nullptr);
   web_view->GetSettings()->SetJavaScriptEnabled(true);
 
   class HeaderAndFooterClient final : public blink::WebLocalFrameClient {
@@ -680,6 +682,7 @@ float PrintRenderFrameHelper::RenderPageContent(blink::WebLocalFrame* frame,
 // Class that calls the Begin and End print functions on the frame and changes
 // the size of the view temporarily to support full page printing..
 class PrepareFrameAndViewForPrint : public blink::WebViewClient,
+                                    public blink::WebWidgetClient,
                                     public blink::WebLocalFrameClient {
  public:
   PrepareFrameAndViewForPrint(const PrintMsg_Print_Params& params,
@@ -715,6 +718,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   // TODO(ojan): Remove this override and have this class use a non-null
   // layerTreeView.
   bool AllowsBrokenNullLayerTreeView() const override;
+  WebWidgetClient* WidgetClient() override { return this; }
 
   // blink::WebLocalFrameClient:
   blink::WebLocalFrame* CreateChildFrame(
@@ -853,8 +857,9 @@ void PrepareFrameAndViewForPrint::CopySelection(
   prefs.javascript_enabled = false;
 
   blink::WebView* web_view = blink::WebView::Create(
-      /* client = */ this, blink::mojom::PageVisibilityState::kVisible,
-      /* opener = */ nullptr);
+      /*client=*/this, /*widget_client=*/this,
+      blink::mojom::PageVisibilityState::kVisible,
+      /*opener=*/nullptr);
   owns_web_view_ = true;
   content::RenderView::ApplyWebPreferences(prefs, web_view);
   blink::WebLocalFrame* main_frame =

@@ -573,7 +573,8 @@ void WebDevToolsAgentImpl::InspectElement(const WebPoint& point_in_local_root) {
   if (web_local_frame_impl_->ViewImpl() &&
       web_local_frame_impl_->ViewImpl()->Client()) {
     WebFloatRect rect(point.x, point.y, 0, 0);
-    web_local_frame_impl_->ViewImpl()->Client()->ConvertWindowToViewport(&rect);
+    web_local_frame_impl_->ViewImpl()->WidgetClient()->ConvertWindowToViewport(
+        &rect);
     point = WebPoint(rect.x, rect.y);
   }
 

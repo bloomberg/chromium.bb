@@ -95,6 +95,9 @@ class WebWidgetTestProxy : public Base, public WebWidgetTestProxyBase {
   explicit WebWidgetTestProxy(Args... args) : Base(args...) {}
 
   // WebWidgetClient implementation.
+  blink::WebLayerTreeView* InitializeLayerTreeView() override {
+    return Base::InitializeLayerTreeView();
+  }
   blink::WebScreenInfo GetScreenInfo() override {
     blink::WebScreenInfo info = Base::GetScreenInfo();
     blink::WebScreenInfo test_info = widget_test_client()->GetScreenInfo();

@@ -20,6 +20,7 @@ WorkerShadowPage::WorkerShadowPage(
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : client_(client),
       web_view_(WebViewImpl::Create(nullptr,
+                                    nullptr,
                                     mojom::PageVisibilityState::kVisible,
                                     nullptr)),
       main_frame_(

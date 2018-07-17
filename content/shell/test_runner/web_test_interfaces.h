@@ -81,7 +81,8 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   // the returned pointer won't be used beyond the lifetime of WebTestInterfaces
   // and/or the lifetime of |web_view_test_proxy_base|.
   std::unique_ptr<WebViewTestClient> CreateWebViewTestClient(
-      WebViewTestProxyBase* web_view_test_proxy_base);
+      WebViewTestProxyBase* web_view_test_proxy_base,
+      std::unique_ptr<WebWidgetTestClient> web_widget_test_client);
 
   // Creates a WebWidgetClient implementation providing test behavior (i.e.
   // providing a mocked screen orientation).  The caller should guarantee that

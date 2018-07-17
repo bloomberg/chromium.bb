@@ -887,7 +887,7 @@ float GpuBenchmarking::VisualViewportY() {
     return 0.0;
   float y = context.web_view()->VisualViewportOffset().y;
   blink::WebRect rect(0, y, 0, 0);
-  context.render_view_impl()->ConvertViewportToWindow(&rect);
+  context.render_view_impl()->WidgetClient()->ConvertViewportToWindow(&rect);
   return rect.y;
 }
 
@@ -897,7 +897,7 @@ float GpuBenchmarking::VisualViewportX() {
     return 0.0;
   float x = context.web_view()->VisualViewportOffset().x;
   blink::WebRect rect(x, 0, 0, 0);
-  context.render_view_impl()->ConvertViewportToWindow(&rect);
+  context.render_view_impl()->WidgetClient()->ConvertViewportToWindow(&rect);
   return rect.x;
 }
 
@@ -907,7 +907,7 @@ float GpuBenchmarking::VisualViewportHeight() {
     return 0.0;
   float height = context.web_view()->VisualViewportSize().height;
   blink::WebRect rect(0, 0, 0, height);
-  context.render_view_impl()->ConvertViewportToWindow(&rect);
+  context.render_view_impl()->WidgetClient()->ConvertViewportToWindow(&rect);
   return rect.height;
 }
 
@@ -917,7 +917,7 @@ float GpuBenchmarking::VisualViewportWidth() {
     return 0.0;
   float width = context.web_view()->VisualViewportSize().width;
   blink::WebRect rect(0, 0, width, 0);
-  context.render_view_impl()->ConvertViewportToWindow(&rect);
+  context.render_view_impl()->WidgetClient()->ConvertViewportToWindow(&rect);
   return rect.width;
 }
 

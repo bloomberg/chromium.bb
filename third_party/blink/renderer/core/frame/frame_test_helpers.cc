@@ -380,8 +380,9 @@ void WebViewHelper::Resize(WebSize size) {
 void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
                                       class WebView* opener) {
   owned_test_web_view_client_ = CreateDefaultClientIfNeeded(web_view_client);
-  web_view_ = static_cast<WebViewImpl*>(WebView::Create(
-      web_view_client, mojom::PageVisibilityState::kVisible, opener));
+  web_view_ = static_cast<WebViewImpl*>(
+      WebView::Create(web_view_client, web_view_client,
+                      mojom::PageVisibilityState::kVisible, opener));
   web_view_->GetSettings()->SetJavaScriptEnabled(true);
   web_view_->GetSettings()->SetPluginsEnabled(true);
   // Enable (mocked) network loads of image URLs, as this simplifies

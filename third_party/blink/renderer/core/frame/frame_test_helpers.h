@@ -189,19 +189,23 @@ class TestWebWidgetClient : public WebWidgetClient {
   LayerTreeViewFactory layer_tree_view_factory_;
 };
 
-class TestWebViewClient : public WebViewClient {
+class TestWebViewClient : public WebViewClient, public WebWidgetClient {
  public:
   ~TestWebViewClient() override = default;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
 
-  // WebViewClient:
+  // WebWidgetClient:
   WebLayerTreeView* InitializeLayerTreeView() override;
   void ScheduleAnimation() override { animation_scheduled_ = true; }
-  bool AnimationScheduled() { return animation_scheduled_; }
-  void ClearAnimationScheduled() { animation_scheduled_ = false; }
+
+  // WebViewClient:
   bool CanHandleGestureEvent() override { return true; }
   bool CanUpdateLayout() override { return true; }
+  WebWidgetClient* WidgetClient() override { return this; }
+
+  bool AnimationScheduled() { return animation_scheduled_; }
+  void ClearAnimationScheduled() { animation_scheduled_ = false; }
 
  private:
   content::LayerTreeView* layer_tree_view_ = nullptr;

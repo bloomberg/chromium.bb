@@ -132,7 +132,7 @@ struct VisualProperties;
 class CONTENT_EXPORT RenderWidget
     : public IPC::Listener,
       public IPC::Sender,
-      virtual public blink::WebWidgetClient,
+      public blink::WebWidgetClient,
       public mojom::Widget,
       public LayerTreeViewDelegate,
       public RenderWidgetInputHandlerDelegate,
@@ -538,7 +538,7 @@ class CONTENT_EXPORT RenderWidget
   ~RenderWidget() override;
 
   static blink::WebFrameWidget* CreateWebFrameWidget(
-      RenderWidget* render_widget,
+      blink::WebWidgetClient* widget_client,
       blink::WebLocalFrame* frame);
 
   // Creates a WebWidget based on the popup type.
