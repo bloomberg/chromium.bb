@@ -1982,6 +1982,43 @@ inline Containment CSSIdentifierValue::ConvertTo() const {
   return kContainsNone;
 }
 
+template <>
+inline CSSIdentifierValue::CSSIdentifierValue(TextUnderlinePosition position)
+    : CSSValue(kIdentifierClass) {
+  switch (position) {
+    case kTextUnderlinePositionAuto:
+      value_id_ = CSSValueAuto;
+      break;
+    case kTextUnderlinePositionUnder:
+      value_id_ = CSSValueUnder;
+      break;
+    case kTextUnderlinePositionLeft:
+      value_id_ = CSSValueLeft;
+      break;
+    case kTextUnderlinePositionRight:
+      value_id_ = CSSValueRight;
+      break;
+  }
+}
+
+template <>
+inline TextUnderlinePosition CSSIdentifierValue::ConvertTo() const {
+  switch (GetValueID()) {
+    case CSSValueAuto:
+      return kTextUnderlinePositionAuto;
+    case CSSValueUnder:
+      return kTextUnderlinePositionUnder;
+    case CSSValueLeft:
+      return kTextUnderlinePositionLeft;
+    case CSSValueRight:
+      return kTextUnderlinePositionRight;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return kTextUnderlinePositionAuto;
+}
+
 }  // namespace blink
 
 #endif

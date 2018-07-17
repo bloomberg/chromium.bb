@@ -63,6 +63,22 @@ el.style.setProperty('text-justify', 'distribute')
 el.style.getPropertyValue('text-justify') is distribute
 getComputedStyle(el).getPropertyValue('text-justify') is distribute
 
+el.style.setProperty('text-underline-position', 'left')
+el.style.getPropertyValue('text-underline-position') is left
+getComputedStyle(el).getPropertyValue('text-underline-position') is left
+
+el.style.setProperty('text-underline-position', 'right')
+el.style.getPropertyValue('text-underline-position') is right
+getComputedStyle(el).getPropertyValue('text-underline-position') is right
+
+el.style.setProperty('text-underline-position', 'under left')
+el.style.getPropertyValue('text-underline-position') is under left
+getComputedStyle(el).getPropertyValue('text-underline-position') is under left
+
+el.style.setProperty('text-underline-position', 'right under')
+el.style.getPropertyValue('text-underline-position') is under right
+getComputedStyle(el).getPropertyValue('text-underline-position') is under right
+
 PASS successfullyParsed is true
 
 TEST COMPLETE

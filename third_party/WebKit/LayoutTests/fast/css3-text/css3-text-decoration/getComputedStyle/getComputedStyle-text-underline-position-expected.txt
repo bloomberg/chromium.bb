@@ -23,6 +23,22 @@ Value 'under':
 PASS e.style.textUnderlinePosition is "under"
 PASS computedStyle.textUnderlinePosition is "under"
 
+Value 'left':
+PASS e.style.textUnderlinePosition is "left"
+PASS computedStyle.textUnderlinePosition is "left"
+
+Value 'right':
+PASS e.style.textUnderlinePosition is "right"
+PASS computedStyle.textUnderlinePosition is "right"
+
+Value 'under left':
+PASS e.style.textUnderlinePosition is "under left"
+PASS computedStyle.textUnderlinePosition is "under left"
+
+Value 'right under':
+PASS e.style.textUnderlinePosition is "under right"
+PASS computedStyle.textUnderlinePosition is "under right"
+
 Ancestor inherits values from parent:
 PASS e.style.textUnderlinePosition is ""
 PASS computedStyle.textUnderlinePosition is "under"
@@ -31,7 +47,19 @@ Value 'auto under':
 PASS e.style.textUnderlinePosition is ""
 PASS computedStyle.textUnderlinePosition is "under"
 
+Value 'auto left':
+PASS e.style.textUnderlinePosition is ""
+PASS computedStyle.textUnderlinePosition is "under"
+
+Value 'right auto':
+PASS e.style.textUnderlinePosition is ""
+PASS computedStyle.textUnderlinePosition is "under"
+
 Value 'under under':
+PASS e.style.textUnderlinePosition is ""
+PASS computedStyle.textUnderlinePosition is "under"
+
+Value 'left right':
 PASS e.style.textUnderlinePosition is ""
 PASS computedStyle.textUnderlinePosition is "under"
 

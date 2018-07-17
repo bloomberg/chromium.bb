@@ -204,6 +204,9 @@ class StyleBuilderConverter {
   static float ConvertTextStrokeWidth(StyleResolverState&, const CSSValue&);
   static TextSizeAdjust ConvertTextSizeAdjust(StyleResolverState&,
                                               const CSSValue&);
+  static TextUnderlinePosition ConvertTextUnderlinePosition(
+      StyleResolverState& state,
+      const CSSValue& value);
   static TransformOperations ConvertTransformOperations(StyleResolverState&,
                                                         const CSSValue&);
   static TransformOrigin ConvertTransformOrigin(StyleResolverState&,

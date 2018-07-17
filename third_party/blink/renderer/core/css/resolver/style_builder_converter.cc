@@ -1478,6 +1478,26 @@ TextSizeAdjust StyleBuilderConverter::ConvertTextSizeAdjust(
   return TextSizeAdjust(primitive_value.GetFloatValue() / 100.0f);
 }
 
+TextUnderlinePosition StyleBuilderConverter::ConvertTextUnderlinePosition(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  TextUnderlinePosition flags = kTextUnderlinePositionAuto;
+
+  auto process = [&flags](const CSSValue& identifier) {
+    flags |=
+        ToCSSIdentifierValue(identifier).ConvertTo<TextUnderlinePosition>();
+  };
+
+  if (value.IsValueList()) {
+    for (auto& entry : ToCSSValueList(value)) {
+      process(*entry);
+    }
+  } else {
+    process(value);
+  }
+  return flags;
+}
+
 TransformOperations StyleBuilderConverter::ConvertTransformOperations(
     StyleResolverState& state,
     const CSSValue& value) {
