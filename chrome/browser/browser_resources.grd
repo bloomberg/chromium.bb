@@ -38,6 +38,8 @@
         <structure name="IDR_OOBE_ENROLLMENT_CSS" file="resources\chromeos\login\oobe_screen_oauth_enrollment.css" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_OOBE_ENROLLMENT_JS" file="resources\chromeos\login\oobe_screen_oauth_enrollment.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_KEYBOARD_UTILS_JS" file="resources\chromeos\keyboard\keyboard_utils.js" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_CHROMEOS_DISCOVER_HTML" file="resources\chromeos\login\discover\discover_app.html" flattenhtml="true" type="chrome_html"/>
+        <structure name="IDR_CHROMEOS_DISCOVER_JS" file="resources\chromeos\login\discover\discover_app.js" flattenhtml="true" type="chrome_html"/>
         <structure name="IDR_CUSTOM_ELEMENTS_OOBE_HTML" file="resources\chromeos\login\custom_elements_oobe.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_OOBE_JS" file="resources\chromeos\login\custom_elements_oobe.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_LOCK_HTML" file="resources\chromeos\login\custom_elements_lock.html" flattenhtml="true" type="chrome_html" />

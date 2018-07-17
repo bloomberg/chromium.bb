@@ -2432,7 +2432,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
 // TODO(alemate): Add tests for Sync Consent UI.
 
 // TODO(rsgingerrs): Add tests for Recommend Apps UI.
-static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 41,
+
+// TODO(alemate): Add tests for Discover UI.
+static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 42,
               "tests for new control flow are missing");
 
 }  // namespace chromeos

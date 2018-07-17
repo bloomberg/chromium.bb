@@ -22,16 +22,31 @@ var OobeDialogHostBehavior = {
   },
 
   /**
-   * Pass down fullScreenDialog attribute.
+   * Triggers onBeforeShow for elements matched by |selector|.
+   * and sets |fullScreenDialog| attribute on them.
+   * @param {string} selector CSS selector.
    */
-  onBeforeShow: function() {
-    var screens = Polymer.dom(this.root).querySelectorAll('oobe-dialog');
+  propagateFullScreenMode: function(selector) {
+    if (!selector)
+      selector = 'oobe-dialog';
+
+    var screens = Polymer.dom(this.root).querySelectorAll(selector);
     for (var i = 0; i < screens.length; ++i) {
       if (this.fullScreenDialog)
         screens[i].fullScreenDialog = true;
 
       screens[i].onBeforeShow();
     }
+  },
+
+  /**
+   * Pass down fullScreenDialog attribute.
+   */
+  onBeforeShow: function() {
+    if (document.documentElement.getAttribute('full-screen-dialog'))
+      this.fullScreenDialog = true;
+
+    this.propagateFullScreenMode();
   },
 };
 

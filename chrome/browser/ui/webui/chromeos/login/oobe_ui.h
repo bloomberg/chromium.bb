@@ -39,6 +39,7 @@ class EncryptionMigrationScreenView;
 class EnrollmentScreenView;
 class EulaView;
 class ErrorScreen;
+class DiscoverScreenView;
 class GaiaView;
 class HIDDetectionView;
 class HostPairingScreenView;
@@ -133,6 +134,7 @@ class OobeUI : public content::WebUIController,
   UpdateRequiredView* GetUpdateRequiredScreenView();
   GaiaView* GetGaiaScreenView();
   UserBoardView* GetUserBoardView();
+  DiscoverScreenView* GetDiscoverScreenView();
 
   // ShutdownPolicyHandler::Delegate
   void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;

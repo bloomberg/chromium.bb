@@ -42,6 +42,7 @@
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
+#include "chrome/browser/chromeos/login/screens/discover_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
@@ -134,7 +135,8 @@ const chromeos::OobeScreen kResumableScreens[] = {
     chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
     chromeos::OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
     chromeos::OobeScreen::SCREEN_RECOMMEND_APPS,
-    chromeos::OobeScreen::SCREEN_APP_DOWNLOADING};
+    chromeos::OobeScreen::SCREEN_APP_DOWNLOADING,
+    chromeos::OobeScreen::SCREEN_DISCOVER};
 
 // Checks if device is in tablet mode, and that HID-detection screen is not
 // disabled by flag.
@@ -487,6 +489,9 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_UPDATE_REQUIRED) {
     return std::make_unique<UpdateRequiredScreen>(
         this, oobe_ui->GetUpdateRequiredScreenView());
+  } else if (screen == OobeScreen::SCREEN_DISCOVER) {
+    return std::make_unique<DiscoverScreen>(this,
+                                            oobe_ui->GetDiscoverScreenView());
   }
   return nullptr;
 }
@@ -756,6 +761,12 @@ void WizardController::ShowWaitForContainerReadyScreen() {
 
 void WizardController::ShowUpdateRequiredScreen() {
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_UPDATE_REQUIRED));
+}
+
+void WizardController::ShowDiscoverScreen() {
+  VLOG(1) << "Showing Discover screen.";
+  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_DISCOVER);
+  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_DISCOVER));
 }
 
 void WizardController::SkipToLoginForTesting(
@@ -1337,9 +1348,12 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowWaitForContainerReadyScreen();
   } else if (screen == OobeScreen::SCREEN_UPDATE_REQUIRED) {
     ShowUpdateRequiredScreen();
+  } else if (screen == OobeScreen::SCREEN_DISCOVER) {
+    ShowDiscoverScreen();
   } else if (screen != OobeScreen::SCREEN_TEST_NO_WINDOW) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();
+
       if (IsRemoraPairingOobe() || IsControllerDetected()) {
         ShowHostPairingScreen();
       } else if (CanShowHIDDetectionScreen()) {
@@ -1495,6 +1509,9 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       break;
     case ScreenExitCode::DEMO_MODE_PREFERENCES_CANCELED:
       OnDemoPreferencesCanceled();
+      break;
+    case ScreenExitCode::DISCOVER_FINISHED:
+      OnOobeFlowFinished();
       break;
     default:
       NOTREACHED();
@@ -1682,7 +1699,8 @@ void WizardController::SkipPostLoginScreensForTesting() {
   if (current_screen_id == OobeScreen::SCREEN_TERMS_OF_SERVICE ||
       current_screen_id == OobeScreen::SCREEN_SYNC_CONSENT ||
       current_screen_id == OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE ||
-      current_screen_id == OobeScreen::SCREEN_USER_IMAGE_PICKER) {
+      current_screen_id == OobeScreen::SCREEN_USER_IMAGE_PICKER ||
+      current_screen_id == OobeScreen::SCREEN_DISCOVER) {
     default_controller()->OnOobeFlowFinished();
   } else {
     LOG(WARNING) << "SkipPostLoginScreensForTesting(): Ignore screen "

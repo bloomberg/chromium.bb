@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/discover_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
@@ -319,6 +320,8 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   AddScreenHandler(std::make_unique<DemoPreferencesScreenHandler>());
 
+  AddScreenHandler(std::make_unique<DiscoverScreenHandler>());
+
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   ActiveDirectoryPasswordChangeScreenHandler*
@@ -540,6 +543,10 @@ AppLaunchSplashScreenView* OobeUI::GetAppLaunchSplashScreenView() {
 
 ArcKioskSplashScreenView* OobeUI::GetArcKioskSplashScreenView() {
   return GetView<ArcKioskSplashScreenHandler>();
+}
+
+DiscoverScreenView* OobeUI::GetDiscoverScreenView() {
+  return GetView<DiscoverScreenHandler>();
 }
 
 void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {

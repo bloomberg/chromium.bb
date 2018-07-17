@@ -16,6 +16,7 @@
 namespace chromeos {
 class ChromeSessionManager;
 class ChromeUserManager;
+class DiscoverManager;
 class ProfileHelper;
 class TimeZoneResolver;
 }  // namespace chromeos
@@ -104,6 +105,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   chromeos::TimeZoneResolver* GetTimezoneResolver();
 
+  chromeos::DiscoverManager* GetDiscoverManager();
+
   // Overridden from BrowserProcessPlatformPartBase:
   void StartTearDown() override;
   std::unique_ptr<policy::ChromeBrowserPolicyConnector>
@@ -154,6 +157,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   std::unique_ptr<ui::InputDeviceControllerClient>
       input_device_controller_client_;
 #endif
+
+  std::unique_ptr<chromeos::DiscoverManager> discover_manager_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

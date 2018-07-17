@@ -59,6 +59,7 @@ cr.define('cr.ui.Oobe', function() {
       login.WaitForContainerReadyScreen.register();
       login.UpdateRequiredScreen.register();
       login.DemoSetupScreen.register();
+      login.DiscoverScreen.register();
 
       cr.ui.Bubble.decorate($('bubble'));
       login.HeaderBar.decorate($('login-header-bar'));

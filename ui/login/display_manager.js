@@ -43,6 +43,7 @@
 /** @const */ var SCREEN_SYNC_CONSENT = 'sync-consent';
 /** @const */ var SCREEN_RECOMMEND_APPS = 'recommend-apps';
 /** @const */ var SCREEN_APP_DOWNLOADING = 'app-downloading';
+/** @const */ var SCREEN_DISCOVER = 'discover';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -166,7 +167,8 @@ cr.define('cr.ui.login', function() {
     SCREEN_FATAL_ERROR,
     SCREEN_SYNC_CONSENT,
     SCREEN_RECOMMEND_APPS,
-    SCREEN_APP_DOWNLOADING
+    SCREEN_APP_DOWNLOADING,
+    SCREEN_DISCOVER,
   ];
 
   /**
