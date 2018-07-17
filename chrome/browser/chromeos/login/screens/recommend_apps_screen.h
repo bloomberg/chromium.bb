@@ -51,6 +51,10 @@ class RecommendAppsScreen : public BaseScreen,
   // Callback function called when SimpleURLLoader completes.
   void OnDownloaded(std::unique_ptr<std::string> response_body);
 
+  // If the response is not a valid JSON, return false.
+  // If the response contains no app, return false;
+  bool ParseResponse(const std::string& response, base::Value* output);
+
   RecommendAppsScreenView* view_;
 
   std::unique_ptr<network::SimpleURLLoader> app_list_loader_;

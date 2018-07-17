@@ -8,7 +8,8 @@
 
 login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
   return {
-    EXTERNAL_API: ['loadAppList', 'setWebview', 'showError'],
+    EXTERNAL_API:
+        ['loadAppList', 'setThrobberVisible', 'setWebview', 'showError'],
 
     /**
      * Returns the control which should receive initial focus.
@@ -66,6 +67,8 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
     showError: function() {
       this.ensureInitialized_();
 
+      // Hide the loading throbber and show the error message.
+      this.setThrobberVisible(false);
       this.removeClass_('recommend-apps-loading');
       this.removeClass_('recommend-apps-loaded');
       this.addClass_('error');
@@ -81,24 +84,26 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
     /**
      * Generate the contents in the webview.
      */
-    loadAppList: function() {
+    loadAppList: function(appList) {
       this.ensureInitialized_();
+
+      // Hide the loading throbber and show the recommend app list.
+      this.setThrobberVisible(false);
 
       var appListView = this.getElement_('app-list-view');
       var subtitle = this.getElement_('subtitle');
       subtitle.innerText = loadTimeData.getStringF(
-          'recommendAppsScreenDescription',
-          $('recommend-apps-screen').apps.length);
+          'recommendAppsScreenDescription', appList.length);
       appListView.addEventListener('contentload', () => {
         appListView.executeScript({file: 'recommend_app_list_view.js'}, () => {
-          $('recommend-apps-screen').apps.forEach(function(app, index) {
+          appList.forEach(function(app, index) {
             var generateItemScript = 'generateContents("' + app.icon + '", "' +
                 app.name + '", "' + app.package_name + '");';
             var generateContents = {code: generateItemScript};
             appListView.executeScript(generateContents);
           });
 
-          this.onGenerateContents.call(this);
+          this.onGenerateContents();
         });
       });
     },
@@ -135,11 +140,21 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
      * Handles Retry button click.
      */
     onRetry: function() {
+      this.setThrobberVisible(true);
       this.removeClass_('recommend-apps-loaded');
       this.removeClass_('error');
       this.addClass_('recommend-apps-loading');
 
       chrome.send('recommendAppsRetry');
+    },
+
+    /**
+     * This is called to show/hide the loading UI.
+     * @param {boolean} visible whether to show loading UI.
+     */
+    setThrobberVisible: function(visible) {
+      $('recommend-apps-loading').hidden = !visible;
+      $('recommend-apps-screen').hidden = visible;
     },
   };
 });
