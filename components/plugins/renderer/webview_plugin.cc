@@ -254,9 +254,10 @@ void WebViewPlugin::DidFailLoading(const WebURLError& error) {
 WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
                                             const WebPreferences& preferences)
     : plugin_(plugin) {
-  web_view_ = WebView::Create(/* client = */ this,
+  web_view_ = WebView::Create(/*client=*/this,
+                              /*widget_client=*/this,
                               blink::mojom::PageVisibilityState::kVisible,
-                              /* opener = */ nullptr);
+                              /*opener=*/nullptr);
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
@@ -286,6 +287,10 @@ bool WebViewPlugin::WebViewHelper::CanHandleGestureEvent() {
 
 bool WebViewPlugin::WebViewHelper::CanUpdateLayout() {
   return true;
+}
+
+blink::WebWidgetClient* WebViewPlugin::WebViewHelper::WidgetClient() {
+  return this;
 }
 
 void WebViewPlugin::WebViewHelper::SetToolTipText(

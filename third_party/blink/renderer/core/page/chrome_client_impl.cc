@@ -286,17 +286,17 @@ void ChromeClientImpl::DidOverscroll(const FloatSize& overscroll_delta,
                                      const FloatPoint& position_in_viewport,
                                      const FloatSize& velocity_in_viewport,
                                      const cc::OverscrollBehavior& behavior) {
-  if (!web_view_->Client())
+  if (!web_view_->WidgetClient())
     return;
 
-  web_view_->Client()->DidOverscroll(overscroll_delta, accumulated_overscroll,
-                                     position_in_viewport, velocity_in_viewport,
-                                     behavior);
+  web_view_->WidgetClient()->DidOverscroll(
+      overscroll_delta, accumulated_overscroll, position_in_viewport,
+      velocity_in_viewport, behavior);
 }
 
 void ChromeClientImpl::Show(NavigationPolicy navigation_policy) {
-  if (web_view_->Client()) {
-    web_view_->Client()->Show(
+  if (web_view_->WidgetClient()) {
+    web_view_->WidgetClient()->Show(
         static_cast<WebNavigationPolicy>(navigation_policy));
   }
 }
@@ -339,8 +339,8 @@ bool ChromeClientImpl::OpenBeforeUnloadConfirmPanelDelegate(LocalFrame* frame,
 }
 
 void ChromeClientImpl::CloseWindowSoon() {
-  if (web_view_->Client())
-    web_view_->Client()->CloseWidgetSoon();
+  if (web_view_->WidgetClient())
+    web_view_->WidgetClient()->CloseWidgetSoon();
 }
 
 // Although a LocalFrame is passed in, we don't actually use it, since we
@@ -435,16 +435,17 @@ IntRect ChromeClientImpl::ViewportToScreen(
 }
 
 float ChromeClientImpl::WindowToViewportScalar(const float scalar_value) const {
-  if (!web_view_->Client())
+  if (!web_view_->WidgetClient())
     return scalar_value;
   WebFloatRect viewport_rect(0, 0, scalar_value, 0);
-  web_view_->Client()->ConvertWindowToViewport(&viewport_rect);
+  web_view_->WidgetClient()->ConvertWindowToViewport(&viewport_rect);
   return viewport_rect.width;
 }
 
 WebScreenInfo ChromeClientImpl::GetScreenInfo() const {
-  return web_view_->Client() ? web_view_->Client()->GetScreenInfo()
-                             : WebScreenInfo();
+  if (!web_view_->WidgetClient())
+    return {};
+  return web_view_->WidgetClient()->GetScreenInfo();
 }
 
 base::Optional<IntRect> ChromeClientImpl::VisibleContentRectForPainting()

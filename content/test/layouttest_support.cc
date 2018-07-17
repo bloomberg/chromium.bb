@@ -194,9 +194,8 @@ test_runner::WebWidgetTestProxyBase* GetWebWidgetTestProxyBase(
   if (local_root->IsMainFrame()) {
     test_runner::WebViewTestProxyBase* web_view_test_proxy_base =
         GetWebViewTestProxyBase(local_root->GetRenderView());
-    auto* web_widget_test_proxy_base =
-        static_cast<test_runner::WebWidgetTestProxyBase*>(
-            web_view_test_proxy_base);
+    test_runner::WebWidgetTestProxyBase* web_widget_test_proxy_base =
+        web_view_test_proxy_base->web_widget_test_proxy_base();
     DCHECK(web_widget_test_proxy_base->web_widget()->IsWebView());
     return web_widget_test_proxy_base;
   } else {
@@ -219,8 +218,10 @@ RenderWidget* GetRenderWidget(
   blink::WebWidget* widget = web_widget_test_proxy_base->web_widget();
   // TODO(lfg): Simplify once RenderView no longer inherits from RenderWidget.
   if (widget->IsWebView()) {
+    test_runner::WebViewTestProxyBase* render_view_proxy_base =
+        web_widget_test_proxy_base->web_view_test_proxy_base();
     WebViewTestProxyType* render_view_proxy =
-        static_cast<WebViewTestProxyType*>(web_widget_test_proxy_base);
+        static_cast<WebViewTestProxyType*>(render_view_proxy_base);
     RenderViewImpl* render_view_impl =
         static_cast<RenderViewImpl*>(render_view_proxy);
     return render_view_impl->GetWidget();

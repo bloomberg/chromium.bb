@@ -79,8 +79,10 @@ std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(
 }
 
 std::unique_ptr<WebViewTestClient> WebTestInterfaces::CreateWebViewTestClient(
-    WebViewTestProxyBase* web_view_test_proxy_base) {
-  return std::make_unique<WebViewTestClient>(web_view_test_proxy_base);
+    WebViewTestProxyBase* web_view_test_proxy_base,
+    std::unique_ptr<WebWidgetTestClient> web_widget_test_client) {
+  return std::make_unique<WebViewTestClient>(web_view_test_proxy_base,
+                                             std::move(web_widget_test_client));
 }
 
 std::unique_ptr<WebWidgetTestClient>

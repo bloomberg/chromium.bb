@@ -52,6 +52,7 @@ class WebRemoteFrame;
 class WebSettings;
 class WebString;
 class WebViewClient;
+class WebWidgetClient;
 struct WebDeviceEmulationParams;
 struct WebFloatPoint;
 struct WebPluginAction;
@@ -111,6 +112,7 @@ class WebView : protected WebWidget {
   // client may be null, while PageVisibilityState defines the initial
   // visibility of the page.
   BLINK_EXPORT static WebView* Create(WebViewClient*,
+                                      WebWidgetClient*,
                                       mojom::PageVisibilityState,
                                       WebView* opener);
 

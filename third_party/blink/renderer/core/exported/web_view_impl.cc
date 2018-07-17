@@ -63,6 +63,7 @@
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "third_party/blink/public/web/web_view_client.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
@@ -285,18 +286,20 @@ class ColorOverlay final : public PageOverlay::Delegate {
 // WebView ----------------------------------------------------------------
 
 WebView* WebView::Create(WebViewClient* client,
+                         WebWidgetClient* widget_client,
                          mojom::PageVisibilityState visibility_state,
                          WebView* opener) {
-  return WebViewImpl::Create(client, visibility_state,
+  return WebViewImpl::Create(client, widget_client, visibility_state,
                              static_cast<WebViewImpl*>(opener));
 }
 
 WebViewImpl* WebViewImpl::Create(WebViewClient* client,
+                                 WebWidgetClient* widget_client,
                                  mojom::PageVisibilityState visibility_state,
                                  WebViewImpl* opener) {
   // Pass the WebViewImpl's self-reference to the caller.
-  auto web_view =
-      base::AdoptRef(new WebViewImpl(client, visibility_state, opener));
+  auto web_view = base::AdoptRef(
+      new WebViewImpl(client, widget_client, visibility_state, opener));
   web_view->AddRef();
   return web_view.get();
 }
@@ -317,9 +320,11 @@ void WebViewImpl::SetPrerendererClient(
 }
 
 WebViewImpl::WebViewImpl(WebViewClient* client,
+                         WebWidgetClient* widget_client,
                          mojom::PageVisibilityState visibility_state,
                          WebViewImpl* opener)
     : client_(client),
+      widget_client_(widget_client),
       chrome_client_(ChromeClientImpl::Create(this)),
       should_auto_resize_(false),
       zoom_level_(0),
@@ -356,6 +361,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       elastic_overscroll_(FloatSize()),
       mutator_(nullptr),
       override_compositor_visibility_(false) {
+  DCHECK_EQ(!!client_, !!widget_client_);
   Page::PageClients page_clients;
   page_clients.chrome_client = chrome_client_.Get();
 
@@ -532,7 +538,7 @@ WebInputEventResult WebViewImpl::HandleMouseWheel(
 
 WebInputEventResult WebViewImpl::HandleGestureEvent(
     const WebGestureEvent& event) {
-  if (!client_ || !client_->CanHandleGestureEvent()) {
+  if (!client_ || !WidgetClient() || !client_->CanHandleGestureEvent()) {
     return WebInputEventResult::kNotHandled;
   }
 
@@ -559,7 +565,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
       // WebCore, GestureTap with tap count = 2 is used instead. So we drop
       // GestureDoubleTap here.
       event_result = WebInputEventResult::kHandledSystem;
-      client_->DidHandleGestureEvent(event, event_cancelled);
+      WidgetClient()->DidHandleGestureEvent(event, event_cancelled);
       return event_result;
     case WebInputEvent::kGestureScrollBegin:
     case WebInputEvent::kGestureScrollEnd:
@@ -573,7 +579,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
                          ->GetFrame()
                          ->GetEventHandler()
                          .HandleGestureScrollEvent(scaled_event);
-      client_->DidHandleGestureEvent(event, event_cancelled);
+      WidgetClient()->DidHandleGestureEvent(event, event_cancelled);
       return event_result;
     default:
       break;
@@ -719,7 +725,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
     }
     default: { NOTREACHED(); }
   }
-  client_->DidHandleGestureEvent(event, event_cancelled);
+  WidgetClient()->DidHandleGestureEvent(event, event_cancelled);
   return event_result;
 }
 
@@ -3410,8 +3416,8 @@ void WebViewImpl::ScheduleAnimationForWidget() {
 }
 
 void WebViewImpl::InitializeLayerTreeView() {
-  if (client_) {
-    layer_tree_view_ = client_->InitializeLayerTreeView();
+  if (WidgetClient()) {
+    layer_tree_view_ = WidgetClient()->InitializeLayerTreeView();
     // TODO(dcheng): All WebViewImpls should have an associated LayerTreeView,
     // but for various reasons, that's not the case...
     page_->GetSettings().SetAcceleratedCompositingEnabled(layer_tree_view_);

@@ -29,8 +29,10 @@
 namespace test_runner {
 
 WebViewTestClient::WebViewTestClient(
-    WebViewTestProxyBase* web_view_test_proxy_base)
-    : web_view_test_proxy_base_(web_view_test_proxy_base) {
+    WebViewTestProxyBase* web_view_test_proxy_base,
+    std::unique_ptr<blink::WebWidgetClient> web_widget_client)
+    : web_view_test_proxy_base_(web_view_test_proxy_base),
+      web_widget_client_(std::move(web_widget_client)) {
   DCHECK(web_view_test_proxy_base);
 }
 
@@ -98,6 +100,10 @@ bool WebViewTestClient::CanHandleGestureEvent() {
 
 bool WebViewTestClient::CanUpdateLayout() {
   return true;
+}
+
+blink::WebWidgetClient* WebViewTestClient::WidgetClient() {
+  return web_widget_client_.get();
 }
 
 }  // namespace test_runner

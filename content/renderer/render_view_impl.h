@@ -52,6 +52,7 @@
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_view_client.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -59,13 +60,6 @@
 
 #if defined(OS_ANDROID)
 #include "content/renderer/android/renderer_date_time_picker.h"
-#endif
-
-#if defined(COMPILER_MSVC)
-// RenderViewImpl is a diamond-shaped hierarchy, with WebWidgetClient at the
-// root. VS warns when we inherit the WebWidgetClient method implementations
-// from RenderWidget.  It's safe to ignore that warning.
-#pragma warning(disable: 4250)
 #endif
 
 namespace blink {
@@ -241,34 +235,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
 
   bool OnMessageReceived(const IPC::Message& msg) override;
 
-  // blink::WebWidgetClient implementation ------------------------------------
-
-  // Most methods are handled by RenderWidget.
-  void Show(blink::WebNavigationPolicy policy) override;
-  void DidHandleGestureEvent(const blink::WebGestureEvent& event,
-                             bool event_cancelled) override;
-  blink::WebLayerTreeView* InitializeLayerTreeView() override;
-
-  bool CanHandleGestureEvent() override;
-  bool CanUpdateLayout() override;
-
-  // TODO(lfg): Remove once WebViewClient no longer inherits from
-  // WebWidgetClient.
-  void CloseWidgetSoon() override;
-  void ConvertViewportToWindow(blink::WebRect* rect) override;
-  void ConvertWindowToViewport(blink::WebFloatRect* rect) override;
-  void DidOverscroll(const blink::WebFloatSize& overscrollDelta,
-                     const blink::WebFloatSize& accumulatedOverscroll,
-                     const blink::WebFloatPoint& positionInViewport,
-                     const blink::WebFloatSize& velocityInViewport,
-                     const cc::OverscrollBehavior& behavior) override;
-  void HasTouchEventHandlers(bool has_handlers) override;
-  blink::WebScreenInfo GetScreenInfo() override;
-  void SetToolTipText(const blink::WebString&,
-                      blink::WebTextDirection hint) override;
-  void SetTouchAction(cc::TouchAction touchAction) override;
-  blink::WebWidgetClient* WidgetClient() override;
-
   // blink::WebViewClient implementation --------------------------------------
 
   blink::WebView* CreateView(blink::WebLocalFrame* creator,
@@ -296,6 +262,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void FocusPrevious() override;
   void FocusedNodeChanged(const blink::WebNode& fromNode,
                           const blink::WebNode& toNode) override;
+  bool CanUpdateLayout() override;
   void DidUpdateLayout() override;
 #if defined(OS_ANDROID)
   // |touch_rect| is in physical pixels if --use-zoom-for-dsf is enabled.
@@ -317,6 +284,8 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void DidAutoResize(const blink::WebSize& newSize) override;
   blink::WebRect RootWindowRect() override;
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
+  bool CanHandleGestureEvent() override;
+  WebWidgetClient* WidgetClient() override;
 
 #if defined(OS_ANDROID)
   // Only used on Android since all other platforms implement
@@ -380,6 +349,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
   void ResizeWebWidget() override;
+  void RequestScheduleAnimation() override;
 
   RenderViewImpl(CompositorDependencies* compositor_deps,
                  const mojom::CreateViewParams& params,
@@ -494,6 +464,12 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
 
   void ApplyWebPreferencesInternal(const WebPreferences& prefs,
                                    blink::WebView* web_view);
+
+  // blink::WebWidgetClient overrides from RenderWidget ------------------------
+
+  void Show(blink::WebNavigationPolicy policy) override;
+  void DidHandleGestureEvent(const blink::WebGestureEvent& event,
+                             bool event_cancelled) override;
 
   // IPC message handlers ------------------------------------------------------
   //

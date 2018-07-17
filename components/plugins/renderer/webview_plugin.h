@@ -18,6 +18,7 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_view_client.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 
 namespace blink {
 class WebLocalFrame;
@@ -147,6 +148,7 @@ class WebViewPlugin : public blink::WebPlugin,
 
   // A helper that handles interaction from WebViewPlugin's internal WebView.
   class WebViewHelper : public blink::WebViewClient,
+                        public blink::WebWidgetClient,
                         public blink::WebLocalFrameClient {
    public:
     WebViewHelper(WebViewPlugin* plugin,
@@ -160,6 +162,7 @@ class WebViewPlugin : public blink::WebPlugin,
     bool AcceptsLoadDrops() override;
     bool CanHandleGestureEvent() override;
     bool CanUpdateLayout() override;
+    blink::WebWidgetClient* WidgetClient() override;
 
     // WebWidgetClient methods:
     void SetToolTipText(const blink::WebString&,

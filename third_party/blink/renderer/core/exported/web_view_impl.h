@@ -91,12 +91,15 @@ class WebLocalFrameImpl;
 class CompositorMutatorImpl;
 class WebRemoteFrame;
 class WebSettingsImpl;
+class WebViewClient;
+class WebWidgetClient;
 
 class CORE_EXPORT WebViewImpl final : public WebView,
                                       public RefCounted<WebViewImpl>,
                                       public PageWidgetEventHandler {
  public:
   static WebViewImpl* Create(WebViewClient*,
+                             WebWidgetClient*,
                              mojom::PageVisibilityState,
                              WebViewImpl* opener);
   static HashSet<WebViewImpl*>& AllInstances();
@@ -266,6 +269,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   Element* FocusedElement() const;
 
   WebViewClient* Client() { return client_; }
+  // TODO(dcheng): This client should be acquirable from the MainFrameImpl
+  // in some cases? We need to know how to get it in all cases.
+  WebWidgetClient* WidgetClient() { return widget_client_; }
 
   // Returns the page object associated with this view. This may be null when
   // the page is shutting down, but will be valid at all other times.
@@ -484,7 +490,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   friend class WebViewFrameWidget;
   friend class WTF::RefCounted<WebViewImpl>;
 
-  WebViewImpl(WebViewClient*, mojom::PageVisibilityState, WebViewImpl* opener);
+  WebViewImpl(WebViewClient*,
+              WebWidgetClient*,
+              mojom::PageVisibilityState,
+              WebViewImpl* opener);
   ~WebViewImpl() override;
 
   void HideSelectPopup();
@@ -553,7 +562,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       IntPoint& scroll,
       bool& need_animation);
 
-  WebViewClient* client_;  // Can be 0 (e.g. unittests, shared workers, etc.)
+  WebViewClient* client_;  // Can be null (e.g. unittests, shared workers, etc.)
+  WebWidgetClient* widget_client_;  // Can also be null.
 
   Persistent<ChromeClient> chrome_client_;
 

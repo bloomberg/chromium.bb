@@ -79,16 +79,21 @@ void WebViewTestProxyCreated(RenderView* render_view,
     interfaces->SetDelegate(test_runner);
   }
 
+  auto* test_interfaces =
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+
   proxy->set_delegate(test_runner);
-  proxy->set_view_test_client(LayoutTestRenderThreadObserver::GetInstance()
-                                  ->test_interfaces()
-                                  ->CreateWebViewTestClient(proxy));
+
+  std::unique_ptr<test_runner::WebViewTestClient> view_test_client =
+      test_interfaces->CreateWebViewTestClient(proxy, nullptr);
+  proxy->set_view_test_client(std::move(view_test_client));
   std::unique_ptr<test_runner::WebWidgetTestClient> widget_test_client =
-      LayoutTestRenderThreadObserver::GetInstance()
-          ->test_interfaces()
-          ->CreateWebWidgetTestClient(proxy);
-  proxy->set_widget_test_client(std::move(widget_test_client));
+      test_interfaces->CreateWebWidgetTestClient(
+          proxy->web_widget_test_proxy_base());
+  proxy->web_widget_test_proxy_base()->set_widget_test_client(
+      std::move(widget_test_client));
   proxy->SetInterfaces(interfaces);
+  proxy->SetUpWidgetClient();
 }
 
 void WebWidgetTestProxyCreated(blink::WebWidget* web_widget,
@@ -154,7 +159,8 @@ void LayoutTestContentRendererClient::RenderViewCreated(
   // TODO(lfg): We should fix the TestProxy to track the WebWidgets on every
   // local root in WebFrameTestProxy instead of having only the WebWidget for
   // the main frame in WebViewTestProxy.
-  proxy->set_web_widget(render_view->GetWebView()->GetWidget());
+  proxy->web_widget_test_proxy_base()->set_web_widget(
+      render_view->GetWebView()->GetWidget());
   proxy->Reset();
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);

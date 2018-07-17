@@ -55,12 +55,9 @@ struct WebRect;
 struct WebSize;
 struct WebWindowFeatures;
 
-// Since a WebView is a WebWidget, a WebViewClient is a WebWidgetClient.
-// Virtual inheritance allows an implementation of WebWidgetClient to be
-// easily reused as part of an implementation of WebViewClient.
-class WebViewClient : protected WebWidgetClient {
+class WebViewClient {
  public:
-  ~WebViewClient() override = default;
+  virtual ~WebViewClient() = default;
   // Factory methods -----------------------------------------------------
 
   // Create a new related WebView.  This method must clone its session storage
@@ -209,27 +206,7 @@ class WebViewClient : protected WebWidgetClient {
 
   virtual bool CanHandleGestureEvent() { return false; }
 
-  // TODO(lfg): These methods are only exposed through WebViewClient while we
-  // refactor WebView to not inherit from WebWidget.
-  // WebWidgetClient overrides.
-  void CloseWidgetSoon() override {}
-  void ConvertViewportToWindow(WebRect* rect) override {}
-  void ConvertWindowToViewport(WebFloatRect* rect) override {}
-  void DidHandleGestureEvent(const WebGestureEvent& event,
-                             bool event_cancelled) override {}
-  void DidOverscroll(const WebFloatSize& overscroll_delta,
-                     const WebFloatSize& accumulated_overscroll,
-                     const WebFloatPoint& position_in_viewport,
-                     const WebFloatSize& velocity_in_viewport,
-                     const cc::OverscrollBehavior& behavior) override {}
-  void HasTouchEventHandlers(bool) override {}
-  WebLayerTreeView* InitializeLayerTreeView() override { return nullptr; }
-  WebScreenInfo GetScreenInfo() override { return WebScreenInfo(); }
-  void SetTouchAction(WebTouchAction touch_action) override {}
-  void Show(WebNavigationPolicy) override {}
-  virtual WebWidgetClient* WidgetClient() { return this; }
-
- protected:
+  virtual WebWidgetClient* WidgetClient() = 0;
 };
 
 }  // namespace blink
