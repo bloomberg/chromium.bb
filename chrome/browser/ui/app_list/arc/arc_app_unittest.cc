@@ -1209,6 +1209,49 @@ TEST_P(ArcAppModelBuilderTest, LastLaunchTime) {
   EXPECT_GE(app_info->last_launch_time, time_before);
 }
 
+// Makes sure that install time is set.
+TEST_P(ArcAppModelBuilderTest, InstallTime) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+
+  ASSERT_TRUE(fake_apps().size());
+
+  const std::string app_id = ArcAppTest::GetAppId(fake_apps()[0]);
+  EXPECT_FALSE(prefs->GetApp(app_id));
+
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(fake_apps());
+
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+  ASSERT_TRUE(app_info);
+  EXPECT_NE(base::Time(), app_info->install_time);
+  EXPECT_LE(app_info->install_time, base::Time::Now());
+}
+
+// Makes sure that install time is not set when installed by policy.
+TEST_P(ArcAppModelBuilderTest, InstallTimeForPolicyApps) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+
+  ASSERT_TRUE(fake_apps().size());
+
+  const std::string app_id = ArcAppTest::GetAppId(fake_apps()[0]);
+  EXPECT_FALSE(prefs->GetApp(app_id));
+
+  const std::string policy = base::StringPrintf(
+      "{\"applications\":[{\"installType\":\"FORCE_INSTALLED\",\"packageName\":"
+      "\"%s\"}]}",
+      fake_apps()[0].package_name.c_str());
+  prefs->OnPolicySent(policy);
+
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(fake_apps());
+
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+  ASSERT_TRUE(app_info);
+  EXPECT_EQ(base::Time(), app_info->install_time);
+}
+
 // Validate that arc model contains expected elements on restart.
 TEST_P(ArcAppModelBuilderRecreate, AppModelRestart) {
   // No apps on initial start.
@@ -2002,6 +2045,12 @@ TEST_P(ArcDefaulAppTest, DefaultApps) {
     package_apps.push_back(default_app);
     app_instance()->SendPackageAppListRefreshed(default_app.package_name,
                                                 package_apps);
+
+    // Install time is not set for installed default apps.
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        prefs->GetApp(ArcAppTest::GetAppId(default_app));
+    ASSERT_TRUE(app_info);
+    EXPECT_EQ(base::Time(), app_info->install_time);
   }
 
   // And now default apps are ready.

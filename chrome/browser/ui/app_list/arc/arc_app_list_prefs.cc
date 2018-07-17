@@ -299,6 +299,12 @@ ArcAppListPrefs::ArcAppListPrefs(
   const std::vector<std::string> existing_app_ids = GetAppIds();
   tracked_apps_.insert(existing_app_ids.begin(), existing_app_ids.end());
   // Once default apps are ready OnDefaultAppsReady is called.
+
+  // Not always set in unit_tests
+  arc::ArcPolicyBridge* policy_bridge =
+      arc::ArcPolicyBridge::GetForBrowserContext(profile_);
+  if (policy_bridge)
+    policy_bridge->AddObserver(this);
 }
 
 ArcAppListPrefs::~ArcAppListPrefs() {
@@ -776,6 +782,19 @@ void ArcAppListPrefs::OnDefaultAppsReady() {
   StartPrefs();
 }
 
+void ArcAppListPrefs::OnPolicySent(const std::string& policy) {
+  // Update set of packages installed by policy.
+  packages_by_policy_ =
+      arc::policy_util::GetRequestedPackagesFromArcPolicy(policy);
+}
+
+void ArcAppListPrefs::Shutdown() {
+  arc::ArcPolicyBridge* policy_bridge =
+      arc::ArcPolicyBridge::GetForBrowserContext(profile_);
+  if (policy_bridge)
+    policy_bridge->RemoveObserver(this);
+}
+
 void ArcAppListPrefs::RegisterDefaultApps() {
   // Report default apps first, note, app_map includes uninstalled and filtered
   // out apps as well.
@@ -935,7 +954,7 @@ void ArcAppListPrefs::AddAppAndShortcut(bool app_ready,
 
   // Note the install time is the first time the Chrome OS sees the app, not the
   // actual install time in Android side.
-  if (GetInstallTime(app_id).is_null()) {
+  if (GetInstallTime(app_id).is_null() && NeedSetInstallTime(package_name)) {
     std::string install_time_str =
         base::Int64ToString(base::Time::Now().ToInternalValue());
     app_dict->SetString(kInstallTime, install_time_str);
@@ -1183,6 +1202,24 @@ void ArcAppListPrefs::InvalidateAppIcons(const std::string& app_id) {
 void ArcAppListPrefs::InvalidatePackageIcons(const std::string& package_name) {
   for (const std::string& app_id : GetAppsForPackage(package_name))
     InvalidateAppIcons(app_id);
+}
+
+bool ArcAppListPrefs::NeedSetInstallTime(
+    const std::string& package_name) const {
+  // If checked package is in active default list that means it is installed by
+  // PAI and install time should not be recorded. Once package is not in active
+  // default list then this package was removed from default and user installs
+  // it manually. In last case we have to record install time.
+  if (default_apps_.GetActivePackages().count(package_name))
+    return false;
+
+  // Check if package is installed by policy. In this case don't set install
+  // time.
+  if (packages_by_policy_.count(package_name))
+    return false;
+
+  // TODO(b/34248841) - Handle apps, installed by sync.
+  return true;
 }
 
 void ArcAppListPrefs::OnPackageAppListRefreshed(
