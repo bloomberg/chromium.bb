@@ -11,6 +11,8 @@
 namespace blink {
 namespace features {
 
+BLINK_COMMON_EXPORT extern const base::Feature
+    kEagerCacheStorageSetupForServiceWorkers;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
 BLINK_COMMON_EXPORT extern const base::Feature kMojoBlobURLs;
 BLINK_COMMON_EXPORT extern const base::Feature kServiceWorkerServicification;

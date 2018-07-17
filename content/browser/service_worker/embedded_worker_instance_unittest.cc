@@ -989,6 +989,64 @@ TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
   }
 }
 
+// Test that the worker is not given a CacheStoragePtr during startup when
+// the feature is disabled.
+TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimizationIsDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      blink::features::kEagerCacheStorageSetupForServiceWorkers);
+
+  const GURL scope("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+  auto helper = std::make_unique<RecordCacheStorageHelper>();
+  auto* helper_rawptr = helper.get();
+  helper_ = std::move(helper);
+
+  RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
+  const int64_t version_id = pair.second->version_id();
+  std::unique_ptr<EmbeddedWorkerInstance> worker =
+      embedded_worker_registry()->CreateWorker(pair.second.get());
+
+  // First, test a worker without pause after download.
+  {
+    // Start the worker.
+    mojom::EmbeddedWorkerStartParamsPtr params =
+        CreateStartParams(version_id, scope, url);
+    StartWorker(worker.get(), std::move(params));
+
+    // Cache storage should not have been sent.
+    EXPECT_FALSE(helper_rawptr->had_cache_storage());
+
+    // Stop the worker.
+    worker->Stop();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  // Second, test a worker with pause after download.
+  {
+    // Start the worker until paused.
+    mojom::EmbeddedWorkerStartParamsPtr params =
+        CreateStartParams(version_id, scope, url);
+    params->pause_after_download = true;
+    worker->Start(std::move(params), CreateProviderInfoGetter(),
+                  base::DoNothing());
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(EmbeddedWorkerStatus::STARTING, worker->status());
+
+    // Finish starting.
+    worker->ResumeAfterDownload();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
+
+    // Cache storage should not have been sent.
+    EXPECT_FALSE(helper_rawptr->had_cache_storage());
+
+    // Stop the worker.
+    worker->Stop();
+    base::RunLoop().RunUntilIdle();
+  }
+}
+
 // Starts the worker with kAbruptCompletion status.
 class AbruptCompletionHelper : public EmbeddedWorkerTestHelper {
  public:

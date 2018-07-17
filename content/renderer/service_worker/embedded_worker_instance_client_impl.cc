@@ -14,6 +14,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "content/renderer/service_worker/web_service_worker_installed_scripts_manager_impl.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_installed_scripts_manager.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -55,6 +56,9 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
   auto start_timing = mojom::EmbeddedWorkerStartTiming::New();
   start_timing->start_worker_received_time = base::TimeTicks::Now();
+  DCHECK(!params->provider_info->cache_storage ||
+         base::FeatureList::IsEnabled(
+             blink::features::kEagerCacheStorageSetupForServiceWorkers));
   blink::mojom::CacheStoragePtrInfo cache_storage =
       std::move(params->provider_info->cache_storage);
   service_manager::mojom::InterfaceProviderPtrInfo interface_provider =
