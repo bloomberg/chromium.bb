@@ -29,6 +29,9 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
   // is called.
   bool IsContainerShutdownSignalConnected() override;
 
+  // This should be true prior to calling InstallLinuxPackage.
+  bool IsInstallLinuxPackageProgressSignalConnected() override;
+
   // Fake version of the method that launches an application inside a running
   // Container. |callback| is called after the method call finishes.
   void LaunchContainerApplication(
@@ -42,6 +45,14 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
       const vm_tools::cicerone::ContainerAppIconRequest& request,
       DBusMethodCallback<vm_tools::cicerone::ContainerAppIconResponse> callback)
       override;
+
+  // Fake version of the method that installs an application inside a running
+  // Container. |callback| is called after the method call finishes. This does
+  // not cause progress events to be fired.
+  void InstallLinuxPackage(
+      const vm_tools::cicerone::InstallLinuxPackageRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
+          callback) override;
 
   // Fake version of the method that waits for the Cicerone service to be
   // availble.  |callback| is called after the method call finishes.
@@ -58,16 +69,28 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
     is_container_shutdown_signal_connected_ = connected;
   }
 
+  // Set InstallLinuxPackageProgressSignalConnected state
+  void set_install_linux_package_progress_signal_connected(bool connected) {
+    is_install_linux_package_progress_signal_connected = connected;
+  }
+
   void set_launch_container_application_response(
       const vm_tools::cicerone::LaunchContainerApplicationResponse&
           launch_container_application_response) {
     launch_container_application_response_ =
         launch_container_application_response;
   }
+
   void set_container_app_icon_response(
       const vm_tools::cicerone::ContainerAppIconResponse&
           container_app_icon_response) {
     container_app_icon_response_ = container_app_icon_response;
+  }
+
+  void set_install_linux_package_response(
+      const vm_tools::cicerone::InstallLinuxPackageResponse&
+          install_linux_package_response) {
+    install_linux_package_response_ = install_linux_package_response;
   }
 
  protected:
@@ -76,10 +99,13 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
  private:
   bool is_container_started_signal_connected_ = true;
   bool is_container_shutdown_signal_connected_ = true;
+  bool is_install_linux_package_progress_signal_connected = true;
 
   vm_tools::cicerone::LaunchContainerApplicationResponse
       launch_container_application_response_;
   vm_tools::cicerone::ContainerAppIconResponse container_app_icon_response_;
+  vm_tools::cicerone::InstallLinuxPackageResponse
+      install_linux_package_response_;
   base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCiceroneClient);

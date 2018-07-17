@@ -30,6 +30,12 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
     virtual void OnContainerShutdown(
         const vm_tools::cicerone::ContainerShutdownSignal& signal) = 0;
 
+    // This is signaled from the container while a package is being installed
+    // via InstallLinuxPackage.
+    virtual void OnInstallLinuxPackageProgress(
+        const vm_tools::cicerone::InstallLinuxPackageProgressSignal&
+            signal) = 0;
+
    protected:
     virtual ~Observer() = default;
   };
@@ -50,6 +56,9 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
   // is called.
   virtual bool IsContainerShutdownSignalConnected() = 0;
 
+  // This should be true prior to calling InstallLinuxPackage.
+  virtual bool IsInstallLinuxPackageProgressSignalConnected() = 0;
+
   // Launches an application inside a running Container.
   // |callback| is called after the method call finishes.
   virtual void LaunchContainerApplication(
@@ -62,6 +71,13 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
   virtual void GetContainerAppIcons(
       const vm_tools::cicerone::ContainerAppIconRequest& request,
       DBusMethodCallback<vm_tools::cicerone::ContainerAppIconResponse>
+          callback) = 0;
+
+  // Installs a package inside the container.
+  // |callback| is called after the method call finishes.
+  virtual void InstallLinuxPackage(
+      const vm_tools::cicerone::InstallLinuxPackageRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
           callback) = 0;
 
   // Registers |callback| to run when the Cicerone service becomes available.

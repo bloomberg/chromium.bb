@@ -773,6 +773,34 @@ void CrostiniManager::GetContainerAppIcons(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void CrostiniManager::InstallLinuxPackage(
+    Profile* profile,
+    std::string vm_name,
+    std::string container_name,
+    std::string package_path,
+    InstallLinuxPackageCallback callback) {
+  if (!GetCiceroneClient()->IsInstallLinuxPackageProgressSignalConnected()) {
+    // Technically we could still start the install, but we wouldn't be able to
+    // detect when the install completes, successfully or otherwise.
+    LOG(ERROR)
+        << "Attempted to install package when progress signal not connected.";
+    std::move(callback).Run(ConciergeClientResult::INSTALL_LINUX_PACKAGE_FAILED,
+                            std::string());
+    return;
+  }
+
+  vm_tools::cicerone::InstallLinuxPackageRequest request;
+  request.set_owner_id(CryptohomeIdForProfile(profile));
+  request.set_vm_name(std::move(vm_name));
+  request.set_container_name(std::move(container_name));
+  request.set_file_path(std::move(package_path));
+
+  GetCiceroneClient()->InstallLinuxPackage(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnInstallLinuxPackage,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void CrostiniManager::GetContainerSshKeys(
     std::string vm_name,
     std::string container_name,
@@ -878,6 +906,28 @@ void CrostiniManager::AddShutdownContainerCallback(
   shutdown_container_callbacks_.emplace(
       std::make_tuple(CryptohomeIdForProfile(profile), vm_name, container_name),
       std::move(shutdown_callback));
+}
+
+void CrostiniManager::AddInstallLinuxPackageProgressObserver(
+    Profile* profile,
+    InstallLinuxPackageProgressObserver* observer) {
+  install_linux_package_progress_observers_.emplace(
+      CryptohomeIdForProfile(profile), observer);
+}
+
+void CrostiniManager::RemoveInstallLinuxPackageProgressObserver(
+    Profile* profile,
+    InstallLinuxPackageProgressObserver* observer) {
+  auto range = install_linux_package_progress_observers_.equal_range(
+      CryptohomeIdForProfile(profile));
+  for (auto it = range.first; it != range.second; ++it) {
+    if (it->second != observer) {
+      install_linux_package_progress_observers_.erase(it);
+      return;
+    }
+  }
+
+  NOTREACHED();
 }
 
 void CrostiniManager::OnCreateDiskImage(
@@ -1061,6 +1111,41 @@ void CrostiniManager::OnContainerShutdown(
   shutdown_container_callbacks_.erase(range.first, range.second);
 }
 
+void CrostiniManager::OnInstallLinuxPackageProgress(
+    const vm_tools::cicerone::InstallLinuxPackageProgressSignal& signal) {
+  if (signal.progress_percent() < 0 || signal.progress_percent() > 100) {
+    LOG(ERROR) << "Received install progress with invalid progress of "
+               << signal.progress_percent() << "%.";
+    return;
+  }
+
+  InstallLinuxPackageProgressStatus status;
+  switch (signal.status()) {
+    case vm_tools::cicerone::InstallLinuxPackageProgressSignal::SUCCEEDED:
+      status = InstallLinuxPackageProgressStatus::SUCCEEDED;
+      break;
+    case vm_tools::cicerone::InstallLinuxPackageProgressSignal::FAILED:
+      status = InstallLinuxPackageProgressStatus::FAILED;
+      break;
+    case vm_tools::cicerone::InstallLinuxPackageProgressSignal::DOWNLOADING:
+      status = InstallLinuxPackageProgressStatus::DOWNLOADING;
+      break;
+    case vm_tools::cicerone::InstallLinuxPackageProgressSignal::INSTALLING:
+      status = InstallLinuxPackageProgressStatus::INSTALLING;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  auto range =
+      install_linux_package_progress_observers_.equal_range(signal.owner_id());
+  for (auto it = range.first; it != range.second; ++it) {
+    it->second->OnInstallLinuxPackageProgress(
+        signal.vm_name(), signal.container_name(), status,
+        signal.progress_percent(), signal.failure_details());
+  }
+}
+
 void CrostiniManager::OnLaunchContainerApplication(
     LaunchContainerApplicationCallback callback,
     base::Optional<vm_tools::cicerone::LaunchContainerApplicationResponse>
@@ -1099,6 +1184,39 @@ void CrostiniManager::OnGetContainerAppIcons(
              .content = std::move(*icon.mutable_icon())});
   }
   std::move(callback).Run(ConciergeClientResult::SUCCESS, icons);
+}
+
+void CrostiniManager::OnInstallLinuxPackage(
+    InstallLinuxPackageCallback callback,
+    base::Optional<vm_tools::cicerone::InstallLinuxPackageResponse> reply) {
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to install Linux package. Empty response.";
+    std::move(callback).Run(
+        ConciergeClientResult::LAUNCH_CONTAINER_APPLICATION_FAILED,
+        std::string());
+    return;
+  }
+  vm_tools::cicerone::InstallLinuxPackageResponse response = reply.value();
+
+  if (response.status() ==
+      vm_tools::cicerone::InstallLinuxPackageResponse::FAILED) {
+    LOG(ERROR) << "Failed to install Linux package: "
+               << response.failure_reason();
+    std::move(callback).Run(ConciergeClientResult::INSTALL_LINUX_PACKAGE_FAILED,
+                            response.failure_reason());
+    return;
+  }
+
+  if (response.status() ==
+      vm_tools::cicerone::InstallLinuxPackageResponse::INSTALL_ALREADY_ACTIVE) {
+    LOG(WARNING) << "Failed to install Linux package, install already active.";
+    std::move(callback).Run(
+        ConciergeClientResult::INSTALL_LINUX_PACKAGE_ALREADY_ACTIVE,
+        std::string());
+    return;
+  }
+
+  std::move(callback).Run(ConciergeClientResult::SUCCESS, std::string());
 }
 
 void CrostiniManager::OnGetContainerSshKeys(

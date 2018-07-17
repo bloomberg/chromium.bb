@@ -36,6 +36,10 @@ class CiceroneClientImpl : public CiceroneClient {
     return is_container_shutdown_signal_connected_;
   }
 
+  bool IsInstallLinuxPackageProgressSignalConnected() override {
+    return is_install_linux_package_progress_signal_connected_;
+  }
+
   void LaunchContainerApplication(
       const vm_tools::cicerone::LaunchContainerApplicationRequest& request,
       DBusMethodCallback<vm_tools::cicerone::LaunchContainerApplicationResponse>
@@ -53,7 +57,7 @@ class CiceroneClientImpl : public CiceroneClient {
     }
 
     cicerone_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_INFINITE,
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(
             &CiceroneClientImpl::OnDBusProtoResponse<
                 vm_tools::cicerone::LaunchContainerApplicationResponse>,
@@ -76,9 +80,31 @@ class CiceroneClientImpl : public CiceroneClient {
     }
 
     cicerone_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_INFINITE,
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
                            vm_tools::cicerone::ContainerAppIconResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void InstallLinuxPackage(
+      const vm_tools::cicerone::InstallLinuxPackageRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
+          callback) override {
+    dbus::MethodCall method_call(
+        vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kInstallLinuxPackageMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode InstallLinuxPackageRequest protobuf";
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    cicerone_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
+                           vm_tools::cicerone::InstallLinuxPackageResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -109,6 +135,14 @@ class CiceroneClientImpl : public CiceroneClient {
         vm_tools::cicerone::kContainerShutdownSignal,
         base::BindRepeating(&CiceroneClientImpl::OnContainerShutdownSignal,
                             weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&CiceroneClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
+    cicerone_proxy_->ConnectToSignal(
+        vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kInstallLinuxPackageProgressSignal,
+        base::BindRepeating(
+            &CiceroneClientImpl::OnInstallLinuxPackageProgressSignal,
+            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&CiceroneClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -155,6 +189,18 @@ class CiceroneClientImpl : public CiceroneClient {
     }
   }
 
+  void OnInstallLinuxPackageProgressSignal(dbus::Signal* signal) {
+    vm_tools::cicerone::InstallLinuxPackageProgressSignal proto;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Signal";
+      return;
+    }
+    for (auto& observer : observer_list_) {
+      observer.OnInstallLinuxPackageProgress(proto);
+    }
+  }
+
   void OnSignalConnected(const std::string& interface_name,
                          const std::string& signal_name,
                          bool is_connected) {
@@ -167,6 +213,9 @@ class CiceroneClientImpl : public CiceroneClient {
       is_container_started_signal_connected_ = is_connected;
     } else if (signal_name == vm_tools::cicerone::kContainerShutdownSignal) {
       is_container_shutdown_signal_connected_ = is_connected;
+    } else if (signal_name ==
+               vm_tools::cicerone::kInstallLinuxPackageProgressSignal) {
+      is_install_linux_package_progress_signal_connected_ = is_connected;
     } else {
       NOTREACHED();
     }
@@ -178,6 +227,7 @@ class CiceroneClientImpl : public CiceroneClient {
 
   bool is_container_started_signal_connected_ = false;
   bool is_container_shutdown_signal_connected_ = false;
+  bool is_install_linux_package_progress_signal_connected_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
