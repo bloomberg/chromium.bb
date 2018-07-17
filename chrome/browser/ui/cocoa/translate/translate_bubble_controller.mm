@@ -840,7 +840,7 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
   model_->Translate();
 }
 
-- (IBAction)handleAlwaysTranslateCheckboxPressed:(id)sender {
+- (IBAction)handleAlwaysTranslateCheckboxPressed:(NSButton*)sender {
   shouldAlwaysTranslate_ = [sender state] == NSOnState;
   translate::ReportUiAction(shouldAlwaysTranslate_
                                 ? translate::ALWAYS_TRANSLATE_CHECKED

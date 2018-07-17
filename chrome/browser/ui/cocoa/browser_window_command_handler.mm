@@ -28,20 +28,26 @@
 namespace {
 
 void SetToggleState(bool toggled, id item) {
-  DCHECK([item respondsToSelector:@selector(state)] &&
-         [item respondsToSelector:@selector(setState:)]);
-
-  NSInteger old_state = [item state];
-  NSInteger new_state = toggled ? NSOnState : NSOffState;
-  if (old_state != new_state)
-    [item setState:new_state];
+  NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
+  NSButton* buttonItem = base::mac::ObjCCast<NSButton>(item);
+  if (menuItem) {
+    NSInteger old_state = [menuItem state];
+    NSInteger new_state = toggled ? NSOnState : NSOffState;
+    if (old_state != new_state)
+      [menuItem setState:new_state];
+  } else if (buttonItem) {
+    NSInteger old_state = [buttonItem state];
+    NSInteger new_state = toggled ? NSOnState : NSOffState;
+    if (old_state != new_state)
+      [buttonItem setState:new_state];
+  }
 }
 
 // Update a toggle state for an item if modified. The item may be an NSMenuItem
 // or NSButton. Called by -validateUserInterfaceItem:.
 void UpdateToggleStateWithTag(NSInteger tag, id item, NSWindow* window) {
-  if (![item respondsToSelector:@selector(state)] ||
-      ![item respondsToSelector:@selector(setState:)])
+  if (!base::mac::ObjCCast<NSMenuItem>(item) &&
+      !base::mac::ObjCCast<NSButton>(item))
     return;
 
   Browser* browser = chrome::FindBrowserWithWindow(window);
