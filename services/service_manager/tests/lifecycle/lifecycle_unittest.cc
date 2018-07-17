@@ -408,7 +408,6 @@ TEST_F(LifecycleTest, Exe_TerminateProcess) {
   base::RunLoop loop;
   lifecycle.set_connection_error_handler(loop.QuitClosure());
   process.Terminate(9, true);
-  LOG(ERROR) << "RUN";
   loop.Run();
 
   instances()->WaitForInstanceDestruction();
