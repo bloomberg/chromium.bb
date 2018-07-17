@@ -347,6 +347,23 @@ TEST_F(WebFrameSerializerSanitizationTest, KeepPopupOverlayIfNotRequested) {
       "PageSerialization.MhtmlGeneration.PopupOverlaySkipped", 0);
 }
 
+TEST_F(WebFrameSerializerSanitizationTest, LinkIntegrity) {
+  RegisterMockedFileURLLoad(KURL("http://www.test.com/beautifull.css"),
+                            "frameserialization/beautifull.css", "text/css");
+  RegisterMockedFileURLLoad(KURL("http://www.test.com/integrityfail.css"),
+                            "frameserialization/integrityfail.css", "text/css");
+  String mhtml =
+      GenerateMHTMLFromHtml("http://www.test.com", "link_integrity.html");
+  SCOPED_TRACE(testing::Message() << "mhtml:\n" << mhtml);
+
+  // beautifull.css remains, without 'integrity'. integrityfail.css is removed.
+  EXPECT_TRUE(
+      mhtml.Contains("<link rel=3D\"stylesheet\" "
+                     "href=3D\"http://www.test.com/beautifull.css\">"));
+  EXPECT_EQ(WTF::kNotFound,
+            mhtml.Find("http://www.test.com/integrityfail.css"));
+}
+
 TEST_F(WebFrameSerializerSanitizationTest, RemoveElements) {
   String mhtml =
       GenerateMHTMLFromHtml("http://www.test.com", "remove_elements.html");
