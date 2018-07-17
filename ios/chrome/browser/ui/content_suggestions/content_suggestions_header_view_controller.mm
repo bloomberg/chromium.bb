@@ -357,18 +357,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 - (void)addFakeTapView {
   UIButton* fakeTapButton = [[UIButton alloc] init];
   fakeTapButton.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.headerView addSubview:fakeTapButton];
-  id<LayoutGuideProvider> layoutGuide =
-      SafeAreaLayoutGuideForView(self.headerView);
-  [NSLayoutConstraint activateConstraints:@[
-    [fakeTapButton.leadingAnchor
-        constraintEqualToAnchor:self.headerView.leadingAnchor],
-    [fakeTapButton.topAnchor constraintEqualToAnchor:layoutGuide.topAnchor],
-    [fakeTapButton.heightAnchor
-        constraintEqualToConstant:ntp_header::ToolbarHeight()],
-    [fakeTapButton.trailingAnchor
-        constraintEqualToAnchor:self.headerView.trailingAnchor]
-  ]];
+  [self.headerView addToolbarView:fakeTapButton];
   [fakeTapButton addTarget:self
                     action:@selector(fakeOmniboxTapped:)
           forControlEvents:UIControlEventTouchUpInside];
