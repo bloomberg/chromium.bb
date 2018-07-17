@@ -707,6 +707,15 @@
         <item name="android:text">@string/prefetch_badge_new</item>
     </style>
 
+    <!-- Download Home V2 -->
+    <style name="DownloadItemText">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
     <!-- Data Reduction -->
     <style name="DataUsageBreakdownColumnLabel">
         <item name="android:layout_height">wrap_content</item>

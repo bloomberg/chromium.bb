@@ -47,7 +47,11 @@ class ListUtils {
                 OfflineItemListItem offlineItem = (OfflineItemListItem) item;
 
                 if (offlineItem.item.isSuggested) return ViewType.PREFETCH;
-                if (offlineItem.item.state == OfflineItemState.IN_PROGRESS) {
+                if (offlineItem.item.state == OfflineItemState.IN_PROGRESS
+                        || offlineItem.item.state == OfflineItemState.PAUSED
+                        || offlineItem.item.state == OfflineItemState.INTERRUPTED
+                        || offlineItem.item.state == OfflineItemState.PENDING
+                        || offlineItem.item.state == OfflineItemState.FAILED) {
                     return ViewType.IN_PROGRESS;
                 }
 
