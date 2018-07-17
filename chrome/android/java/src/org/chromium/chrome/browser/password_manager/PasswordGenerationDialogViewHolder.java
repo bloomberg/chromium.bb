@@ -66,6 +66,7 @@ public class PasswordGenerationDialogViewHolder {
                 Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
         mSaveExplantaionTextView.setText(explanationSpan);
         mSaveExplantaionTextView.setMovementMethod(LinkMovementMethod.getInstance());
+
         mView = new ModalDialogView(mController, params);
     }
 

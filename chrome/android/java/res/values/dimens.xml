@@ -136,6 +136,9 @@
     <dimen name="password_generation_horizontal_margin">10dp</dimen>
     <dimen name="password_generation_text_vertical_margin">12dp</dimen>
 
+    <!-- Password generation dialog dimensions -->
+    <dimen name="password_generation_dialog_padding">24dp</dimen>
+
     <!-- Minimum height/width for a touchable item -->
     <dimen name="min_touch_target_size">48dp</dimen>
 
