@@ -6,6 +6,8 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("nearby") {
   sources = [
+    "count_down_latch_impl.cc",
+    "count_down_latch_impl.h",
     "hash_utils_impl.cc",
     "hash_utils_impl.h",
   ]
@@ -21,12 +23,14 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "count_down_latch_impl_unittests.cc",
     "hash_utils_impl_unittests.cc",
   ]
 
   deps = [
     ":nearby",
     "//base",
+    "//base/test:test_support",
     "//chromeos/components/nearby/library",
     "//crypto",
     "//testing/gtest",
