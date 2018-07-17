@@ -45,7 +45,8 @@ const CGFloat kFaviconLeftInset = 23.5;
 const CGFloat kFaviconVerticalOffset = 2.0;
 const CGFloat kTabStripLineMargin = 2.5;
 const CGFloat kTabStripLineHeight = 0.5;
-const CGFloat kCloseButtonHorizontalShift = 15;
+const CGFloat kCloseButtonHorizontalShift = 19;
+const CGFloat kCloseButtonHorizontalShiftLegacy = 15;
 const CGFloat kCloseButtonVerticalShift = 4.0;
 const CGFloat kTitleLeftMargin = 8.0;
 const CGFloat kTitleRightMargin = 0.0;
@@ -352,7 +353,9 @@ const CGFloat kFaviconSize = 16.0;
     @"V:[title(==titleHeight)]",
   ];
 
-  CGFloat closeButtonHorizontalShift = kCloseButtonHorizontalShift;
+  CGFloat closeButtonHorizontalShift = IsUIRefreshPhase1Enabled()
+                                           ? kCloseButtonHorizontalShift
+                                           : kCloseButtonHorizontalShiftLegacy;
   CGFloat faviconLeftInset = kFaviconLeftInset;
   CGFloat faviconVerticalOffset = kFaviconVerticalOffset;
   CGFloat closeButtonVerticalShift = kCloseButtonVerticalShift;
