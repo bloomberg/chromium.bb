@@ -125,6 +125,9 @@ class CHROMEOS_EXPORT AccountManager {
   // not in the list of known observers.
   void RemoveObserver(Observer* observer);
 
+  // Gets AccountManager's URL Loader Factory.
+  scoped_refptr<network::SharedURLLoaderFactory> GetUrlLoaderFactory();
+
   // Creates and returns an |OAuth2AccessTokenFetcher| using the refresh token
   // stored for |account_key|. |IsTokenAvailable| should be |true| for
   // |account_key|, otherwise a |nullptr| is returned.

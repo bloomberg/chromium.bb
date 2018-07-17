@@ -46,6 +46,8 @@ class ChromeOSOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate,
   void LoadCredentials(const std::string& primary_account_id) override;
   void UpdateCredentials(const std::string& account_id,
                          const std::string& refresh_token) override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      const override;
   LoadCredentialsState GetLoadCredentialsState() const override;
   void RevokeCredentials(const std::string& account_id) override;
   void RevokeAllCredentials() override;

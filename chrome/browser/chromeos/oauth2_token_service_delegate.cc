@@ -138,6 +138,11 @@ void ChromeOSOAuth2TokenServiceDelegate::UpdateCredentials(
   account_manager_->UpsertToken(account_key, refresh_token);
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>
+ChromeOSOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
+  return account_manager_->GetUrlLoaderFactory();
+}
+
 OAuth2TokenServiceDelegate::LoadCredentialsState
 ChromeOSOAuth2TokenServiceDelegate::GetLoadCredentialsState() const {
   return load_credentials_state_;
