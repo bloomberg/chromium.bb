@@ -1860,10 +1860,18 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
 }
 
+#if defined(OS_CHROMEOS)
+// Flaky on Chrome OS. crbug.com/833380
+#define MAYBE_AsynchronousHitTestChildTimeout \
+  DISABLED_AsynchronousHitTestChildTimeout
+#else
+#define MAYBE_AsynchronousHitTestChildTimeout AsynchronousHitTestChildTimeout
+#endif
+
 // Verify that an event is properly retargeted to the main frame when an
 // asynchronous hit test to the child frame times out.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       AsynchronousHitTestChildTimeout) {
+                       MAYBE_AsynchronousHitTestChildTimeout) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_busy_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
