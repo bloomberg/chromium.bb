@@ -61,9 +61,9 @@ message FoilUwSData {
     // a removal to the user when they are present. This affects both the
     // reporter and the removal tool.
     FLAGS_INHIBIT_REMOVAL = 16;
-    // The UwS malicious behavior has been confirmed/observed and the UwS is
+    // The UwS behavior has been confirmed/observed and the UwS is
     // breaking our UwS policies.
-    FLAGS_STATE_CONFIRMED_MALICIOUS = 32;
+    FLAGS_STATE_CONFIRMED_UWS = 32;
     // The following values have been deprecated.
     DEPRECATED_FLAGS_CATEGORY_MALWARE = 64;
     DEPRECATED_FLAGS_CATEGORY_BROWSER_HIJACKER = 128;
