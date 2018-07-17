@@ -360,7 +360,8 @@ id<GREYMatcher> SettingsSyncManageSyncedDataButton() {
 }
 
 id<GREYMatcher> AccountsSyncButton() {
-  return grey_accessibilityID(kSettingsAccountsSyncCellId);
+  return grey_allOf(grey_accessibilityID(kSettingsAccountsSyncCellId),
+                    grey_sufficientlyVisible(), nil);
 }
 
 id<GREYMatcher> ContentSettingsButton() {

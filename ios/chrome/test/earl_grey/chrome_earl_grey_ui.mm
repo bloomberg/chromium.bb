@@ -25,13 +25,10 @@
 #endif
 
 using chrome_test_util::AccountConsistencyConfirmationOkButton;
-using chrome_test_util::AccountConsistencySetupSigninButton;
-using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ClearBrowsingDataCollectionView;
 using chrome_test_util::SettingsMenuButton;
 using chrome_test_util::ToolsMenuView;
 using base::test::ios::WaitUntilConditionOrTimeout;
-using base::test::ios::kWaitForPageLoadTimeout;
 
 namespace {
 
@@ -169,14 +166,6 @@ id<GREYAction> ScrollDown() {
   GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
                  kWaitForToolbarAnimationTimeout, condition),
              errorMessage);
-}
-
-+ (void)signInToIdentityByEmail:(NSString*)userEmail {
-  // Sign in to |userEmail|.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(userEmail)]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
-      performAction:grey_tap()];
 }
 
 + (void)confirmSigninConfirmationDialog {

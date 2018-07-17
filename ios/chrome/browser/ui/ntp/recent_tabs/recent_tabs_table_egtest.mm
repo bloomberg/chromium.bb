@@ -10,6 +10,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_constants.h"
@@ -175,16 +176,14 @@ id<GREYMatcher> TitleOfTestPage() {
 - (void)testRecentTabSigninPromoReloaded {
   OpenRecentTabsPanel();
   // Sign-in promo should be visible with cold state.
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState
-                          closeButton:NO];
+  [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState
+                                        closeButton:NO];
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
   // Sign-in promo should be visible with warm state.
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
-                          closeButton:NO];
+  [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
+                                        closeButton:NO];
   [self closeRecentTabs];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->RemoveIdentity(identity);
@@ -194,9 +193,8 @@ id<GREYMatcher> TitleOfTestPage() {
 // crbug.com/776939
 - (void)testRecentTabSigninPromoReloadedWhileHidden {
   OpenRecentTabsPanel();
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState
-                          closeButton:NO];
+  [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState
+                                        closeButton:NO];
 
   // Tap on "Other Devices", to hide the sign-in promo.
   NSString* otherDevicesLabel =
@@ -208,7 +206,7 @@ id<GREYMatcher> TitleOfTestPage() {
           : chrome_test_util::ButtonWithAccessibilityLabel(otherDevicesLabel);
   [[EarlGrey selectElementWithMatcher:otherDevicesMatcher]
       performAction:grey_tap()];
-  [SigninEarlGreyUtils checkSigninPromoNotVisible];
+  [SigninEarlGreyUI checkSigninPromoNotVisible];
 
   // Add an account.
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
@@ -218,9 +216,8 @@ id<GREYMatcher> TitleOfTestPage() {
   // Tap on "Other Devices", to show the sign-in promo.
   [[EarlGrey selectElementWithMatcher:otherDevicesMatcher]
       performAction:grey_tap()];
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
-                          closeButton:NO];
+  [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
+                                        closeButton:NO];
   [self closeRecentTabs];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->RemoveIdentity(identity);
