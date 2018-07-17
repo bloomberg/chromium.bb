@@ -472,6 +472,23 @@ const char* ProtoEnumToString(
   return "";
 }
 
+const char* ProtoEnumToString(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
+                                  PasswordCaptured::EventTrigger trigger) {
+  ASSERT_ENUM_BOUNDS(
+      sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordCaptured,
+      EventTrigger, UNSPECIFIED, EXPIRED_28D_TIMER);
+  switch (trigger) {
+    ENUM_CASE(sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordCaptured,
+              UNSPECIFIED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordCaptured,
+              USER_LOGGED_IN);
+    ENUM_CASE(sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordCaptured,
+              EXPIRED_28D_TIMER);
+  }
+  NOTREACHED();
+  return "";
+}
+
 const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardClass wallet_card_class) {
   ASSERT_ENUM_BOUNDS(sync_pb::WalletMaskedCreditCard, WalletCardClass,
