@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 
 namespace ash {
 
@@ -48,8 +49,7 @@ class ASH_EXPORT AssistantNotificationController
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
 
-  // Save the latest notification for future retrieval or dismiss operations.
-  AssistantNotificationPtr notification_;
+  const message_center::NotifierId notifier_id_;
 
   base::WeakPtrFactory<AssistantNotificationController> weak_factory_;
 
