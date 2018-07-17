@@ -28,10 +28,6 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
       layout_svg_container_.VisualRectInLocalSVGCoordinates();
   // LayoutSVGHiddenContainer's visual rect is always empty but we need to
   // paint its descendants.
-  if (!layout_svg_container_.IsSVGHiddenContainer() &&
-      !paint_info.GetCullRect().IntersectsCullRect(
-          layout_svg_container_.LocalToSVGParentTransform(), bounding_box))
-    return;
 
   // Spec: An empty viewBox on the <svg> element disables rendering.
   DCHECK(layout_svg_container_.GetElement());
@@ -40,8 +36,22 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
     return;
 
   PaintInfo paint_info_before_filtering(paint_info);
-  paint_info_before_filtering.UpdateCullRect(
-      layout_svg_container_.LocalToSVGParentTransform());
+
+  // Content underneath transforms applies an infinite cull rect. This is
+  // to simplify invalidation of clip property node changes across transform
+  // boundaries.
+  if (layout_svg_container_.StyleRef().HasTransform()) {
+    paint_info_before_filtering.ApplyInfiniteCullRect();
+  } else {
+    if (!layout_svg_container_.IsSVGHiddenContainer() &&
+        !paint_info.GetCullRect().IntersectsCullRect(
+            layout_svg_container_.LocalToSVGParentTransform(), bounding_box))
+      return;
+
+    paint_info_before_filtering.UpdateCullRect(
+        layout_svg_container_.LocalToSVGParentTransform());
+  }
+
   SVGTransformContext transform_context(
       paint_info_before_filtering, layout_svg_container_,
       layout_svg_container_.LocalToSVGParentTransform());

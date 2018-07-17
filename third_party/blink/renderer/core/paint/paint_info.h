@@ -128,6 +128,10 @@ struct CORE_EXPORT PaintInfo {
 
   const CullRect& GetCullRect() const { return cull_rect_; }
 
+  void ApplyInfiniteCullRect() {
+    cull_rect_ = CullRect(LayoutRect::InfiniteIntRect());
+  }
+
   void UpdateCullRect(const AffineTransform& local_to_parent_transform) {
     cull_rect_.UpdateCullRect(local_to_parent_transform);
   }
