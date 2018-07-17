@@ -143,7 +143,8 @@ class PLATFORM_EXPORT Font {
 
   int OffsetForPosition(const TextRun&,
                         float position,
-                        bool include_partial_glyphs) const;
+                        IncludePartialGlyphsOption,
+                        BreakGlyphsOption) const;
   FloatRect SelectionRectForText(const TextRun&,
                                  const FloatPoint&,
                                  int h,
