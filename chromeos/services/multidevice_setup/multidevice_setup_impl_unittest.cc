@@ -136,10 +136,11 @@ class FakeHostVerifierFactory : public HostVerifierImpl::Factory {
   FakeHostVerifierFactory(
       FakeHostBackendDelegateFactory* fake_host_backend_delegate_factory,
       device_sync::FakeDeviceSyncClient* expected_device_sync_client,
-      secure_channel::FakeSecureChannelClient* expected_secure_channel_client)
+      sync_preferences::TestingPrefServiceSyncable*
+          expected_testing_pref_service)
       : fake_host_backend_delegate_factory_(fake_host_backend_delegate_factory),
         expected_device_sync_client_(expected_device_sync_client),
-        expected_secure_channel_client_(expected_secure_channel_client) {}
+        expected_testing_pref_service_(expected_testing_pref_service) {}
 
   ~FakeHostVerifierFactory() override = default;
 
@@ -150,12 +151,14 @@ class FakeHostVerifierFactory : public HostVerifierImpl::Factory {
   std::unique_ptr<HostVerifier> BuildInstance(
       HostBackendDelegate* host_backend_delegate,
       device_sync::DeviceSyncClient* device_sync_client,
-      secure_channel::SecureChannelClient* secure_channel_client) override {
+      PrefService* pref_service,
+      base::Clock* clock,
+      std::unique_ptr<base::OneShotTimer> timer) override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(fake_host_backend_delegate_factory_->instance(),
               host_backend_delegate);
     EXPECT_EQ(expected_device_sync_client_, device_sync_client);
-    EXPECT_EQ(expected_secure_channel_client_, secure_channel_client);
+    EXPECT_EQ(expected_testing_pref_service_, pref_service);
 
     auto instance = std::make_unique<FakeHostVerifier>();
     instance_ = instance.get();
@@ -164,7 +167,7 @@ class FakeHostVerifierFactory : public HostVerifierImpl::Factory {
 
   FakeHostBackendDelegateFactory* fake_host_backend_delegate_factory_;
   device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
-  secure_channel::FakeSecureChannelClient* expected_secure_channel_client_;
+  sync_preferences::TestingPrefServiceSyncable* expected_testing_pref_service_;
 
   FakeHostVerifier* instance_ = nullptr;
 
@@ -330,7 +333,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
 
     fake_host_verifier_factory_ = std::make_unique<FakeHostVerifierFactory>(
         fake_host_backend_delegate_factory_.get(),
-        fake_device_sync_client_.get(), fake_secure_channel_client_.get());
+        fake_device_sync_client_.get(), test_pref_service_.get());
     HostVerifierImpl::Factory::SetFactoryForTesting(
         fake_host_verifier_factory_.get());
 

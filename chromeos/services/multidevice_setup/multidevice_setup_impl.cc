@@ -64,7 +64,7 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
       host_verifier_(HostVerifierImpl::Factory::Get()->BuildInstance(
           host_backend_delegate_.get(),
           device_sync_client,
-          secure_channel_client)),
+          pref_service)),
       host_status_provider_(
           HostStatusProviderImpl::Factory::Get()->BuildInstance(
               eligible_host_devices_provider_.get(),
