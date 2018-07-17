@@ -16,12 +16,8 @@ namespace chromeos {
 namespace assistant {
 
 SystemProviderImpl::SystemProviderImpl(
-    device::mojom::BatteryMonitorPtr battery_monitor,
-    bool muted)
-    : battery_monitor_(std::move(battery_monitor)),
-      mic_mute_state_(
-          muted ? assistant_client::MicMuteState::MICROPHONE_OFF
-                : assistant_client::MicMuteState::MICROPHONE_ENABLED) {
+    device::mojom::BatteryMonitorPtr battery_monitor)
+    : battery_monitor_(std::move(battery_monitor)) {
   battery_monitor_->QueryNextStatus(base::BindOnce(
       &SystemProviderImpl::OnBatteryStatus, base::Unretained(this)));
 }
@@ -29,7 +25,8 @@ SystemProviderImpl::SystemProviderImpl(
 SystemProviderImpl::~SystemProviderImpl() = default;
 
 assistant_client::MicMuteState SystemProviderImpl::GetMicMuteState() {
-  return mic_mute_state_;
+  // CRAS input is never muted.
+  return assistant_client::MicMuteState::MICROPHONE_ENABLED;
 }
 
 void SystemProviderImpl::RegisterMicMuteChangeCallback(
