@@ -13,6 +13,7 @@ source_set("inttests") {
     "web_view_autofill_inttest.mm",
     "web_view_int_test.h",
     "web_view_int_test.mm",
+    "web_view_inttest.mm",
     "web_view_kvo_inttest.mm",
     "web_view_restorable_state_inttest.mm",
     "web_view_script_command_inttest.mm",

@@ -105,11 +105,6 @@ WebViewIntTest::WebViewIntTest()
 
 WebViewIntTest::~WebViewIntTest() = default;
 
-void WebViewIntTest::SetUp() {
-  PlatformTest::SetUp();
-  ASSERT_TRUE(test_server_->Start());
-}
-
 GURL WebViewIntTest::GetUrlForPageWithTitle(const std::string& title) {
   return GetUrlForPageWithTitleAndBody(title, std::string());
 }

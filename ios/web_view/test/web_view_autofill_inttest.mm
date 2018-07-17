@@ -11,6 +11,7 @@
 #import "ios/web_view/test/web_view_int_test.h"
 #import "ios/web_view/test/web_view_test_util.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "url/gurl.h"
@@ -97,6 +98,7 @@ class WebViewAutofillTest : public WebViewIntTest {
 
 // Tests that CWVAutofillControllerDelegate receives callbacks.
 TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
+  ASSERT_TRUE(test_server_->Start());
   ASSERT_TRUE(LoadTestPage());
   ASSERT_TRUE(SetFormFieldValue(kTestFieldValue));
 
@@ -166,6 +168,7 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
 
 // Tests that CWVAutofillController can fetch, fill, and clear suggestions.
 TEST_F(WebViewAutofillTest, TestSuggestionFetchFillClear) {
+  ASSERT_TRUE(test_server_->Start());
   ASSERT_TRUE(LoadTestPage());
   ASSERT_TRUE(SetFormFieldValue(kTestFieldValue));
   ASSERT_TRUE(SubmitForm());
@@ -218,6 +221,7 @@ TEST_F(WebViewAutofillTest, TestSuggestionFetchFillClear) {
 
 // Tests that CWVAutofillController can remove a suggestion.
 TEST_F(WebViewAutofillTest, TestSuggestionFetchRemoveFetch) {
+  ASSERT_TRUE(test_server_->Start());
   ASSERT_TRUE(LoadTestPage());
   ASSERT_TRUE(SetFormFieldValue(kTestFieldValue));
   ASSERT_TRUE(SubmitForm());
