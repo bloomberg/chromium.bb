@@ -132,6 +132,7 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
   NetworkErrorLoggingService::RequestDetails MakeRequestDetails(
       GURL url,
       Error error_type,
+      std::string method = "GET",
       int status_code = 0,
       IPAddress server_ip = IPAddress()) {
     NetworkErrorLoggingService::RequestDetails details;
@@ -139,6 +140,7 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
     details.uri = url;
     details.referrer = kReferrer_;
     details.server_ip = server_ip.IsValid() ? server_ip : kServerIP_;
+    details.method = std::move(method);
     details.status_code = status_code;
     details.elapsed_time = base::TimeDelta::FromSeconds(1);
     details.type = error_type;
@@ -269,6 +271,8 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessReportQueued) {
                               NetworkErrorLoggingService::kServerIpKey);
   base::ExpectDictStringValue("", *body,
                               NetworkErrorLoggingService::kProtocolKey);
+  base::ExpectDictStringValue("GET", *body,
+                              NetworkErrorLoggingService::kMethodKey);
   base::ExpectDictIntegerValue(0, *body,
                                NetworkErrorLoggingService::kStatusCodeKey);
   base::ExpectDictIntegerValue(1000, *body,
@@ -305,6 +309,8 @@ TEST_F(NetworkErrorLoggingServiceTest, FailureReportQueued) {
                               NetworkErrorLoggingService::kServerIpKey);
   base::ExpectDictStringValue("", *body,
                               NetworkErrorLoggingService::kProtocolKey);
+  base::ExpectDictStringValue("GET", *body,
+                              NetworkErrorLoggingService::kMethodKey);
   base::ExpectDictIntegerValue(0, *body,
                                NetworkErrorLoggingService::kStatusCodeKey);
   base::ExpectDictIntegerValue(1000, *body,
@@ -320,7 +326,7 @@ TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportQueued) {
       "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":1.0}";
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderFailureFraction1);
 
-  service()->OnRequest(MakeRequestDetails(kUrl_, OK, 504));
+  service()->OnRequest(MakeRequestDetails(kUrl_, OK, "GET", 504));
 
   ASSERT_EQ(1u, reports().size());
   EXPECT_EQ(kUrl_, reports()[0].url);
@@ -341,6 +347,8 @@ TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportQueued) {
                               NetworkErrorLoggingService::kServerIpKey);
   base::ExpectDictStringValue("", *body,
                               NetworkErrorLoggingService::kProtocolKey);
+  base::ExpectDictStringValue("GET", *body,
+                              NetworkErrorLoggingService::kMethodKey);
   base::ExpectDictIntegerValue(504, *body,
                                NetworkErrorLoggingService::kStatusCodeKey);
   base::ExpectDictIntegerValue(1000, *body,
@@ -356,7 +364,8 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessReportDowngraded) {
       "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1);
 
-  service()->OnRequest(MakeRequestDetails(kUrl_, OK, 200, kOtherServerIP_));
+  service()->OnRequest(
+      MakeRequestDetails(kUrl_, OK, "GET", 200, kOtherServerIP_));
 
   ASSERT_EQ(1u, reports().size());
   EXPECT_EQ(kUrl_, reports()[0].url);
@@ -376,6 +385,8 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessReportDowngraded) {
                               NetworkErrorLoggingService::kServerIpKey);
   base::ExpectDictStringValue("", *body,
                               NetworkErrorLoggingService::kProtocolKey);
+  base::ExpectDictStringValue("GET", *body,
+                              NetworkErrorLoggingService::kMethodKey);
   base::ExpectDictIntegerValue(0, *body,
                                NetworkErrorLoggingService::kStatusCodeKey);
   base::ExpectDictIntegerValue(0, *body,
@@ -391,8 +402,8 @@ TEST_F(NetworkErrorLoggingServiceTest, FailureReportDowngraded) {
       "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1);
 
-  service()->OnRequest(
-      MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED, 200, kOtherServerIP_));
+  service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED, "GET",
+                                          200, kOtherServerIP_));
 
   ASSERT_EQ(1u, reports().size());
   EXPECT_EQ(kUrl_, reports()[0].url);
@@ -412,6 +423,8 @@ TEST_F(NetworkErrorLoggingServiceTest, FailureReportDowngraded) {
                               NetworkErrorLoggingService::kServerIpKey);
   base::ExpectDictStringValue("", *body,
                               NetworkErrorLoggingService::kProtocolKey);
+  base::ExpectDictStringValue("GET", *body,
+                              NetworkErrorLoggingService::kMethodKey);
   base::ExpectDictIntegerValue(0, *body,
                                NetworkErrorLoggingService::kStatusCodeKey);
   base::ExpectDictIntegerValue(0, *body,
@@ -427,7 +440,8 @@ TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportDowngraded) {
       "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1);
 
-  service()->OnRequest(MakeRequestDetails(kUrl_, OK, 504, kOtherServerIP_));
+  service()->OnRequest(
+      MakeRequestDetails(kUrl_, OK, "GET", 504, kOtherServerIP_));
 
   ASSERT_EQ(1u, reports().size());
   EXPECT_EQ(kUrl_, reports()[0].url);
@@ -447,6 +461,8 @@ TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportDowngraded) {
                               NetworkErrorLoggingService::kServerIpKey);
   base::ExpectDictStringValue("", *body,
                               NetworkErrorLoggingService::kProtocolKey);
+  base::ExpectDictStringValue("GET", *body,
+                              NetworkErrorLoggingService::kMethodKey);
   base::ExpectDictIntegerValue(0, *body,
                                NetworkErrorLoggingService::kStatusCodeKey);
   base::ExpectDictIntegerValue(0, *body,
@@ -462,8 +478,8 @@ TEST_F(NetworkErrorLoggingServiceTest, DNSFailureReportNotDowngraded) {
       "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1);
 
-  service()->OnRequest(
-      MakeRequestDetails(kUrl_, ERR_NAME_NOT_RESOLVED, 0, kOtherServerIP_));
+  service()->OnRequest(MakeRequestDetails(kUrl_, ERR_NAME_NOT_RESOLVED, "GET",
+                                          0, kOtherServerIP_));
 
   ASSERT_EQ(1u, reports().size());
   EXPECT_EQ(kUrl_, reports()[0].url);
@@ -483,6 +499,8 @@ TEST_F(NetworkErrorLoggingServiceTest, DNSFailureReportNotDowngraded) {
                               NetworkErrorLoggingService::kServerIpKey);
   base::ExpectDictStringValue("", *body,
                               NetworkErrorLoggingService::kProtocolKey);
+  base::ExpectDictStringValue("GET", *body,
+                              NetworkErrorLoggingService::kMethodKey);
   base::ExpectDictIntegerValue(0, *body,
                                NetworkErrorLoggingService::kStatusCodeKey);
   base::ExpectDictIntegerValue(1000, *body,
@@ -490,6 +508,39 @@ TEST_F(NetworkErrorLoggingServiceTest, DNSFailureReportNotDowngraded) {
   base::ExpectDictStringValue("dns", *body,
                               NetworkErrorLoggingService::kPhaseKey);
   base::ExpectDictStringValue("dns.name_not_resolved", *body,
+                              NetworkErrorLoggingService::kTypeKey);
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, SuccessPOSTReportQueued) {
+  static const std::string kHeaderSuccessFraction1 =
+      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1);
+
+  service()->OnRequest(MakeRequestDetails(kUrl_, OK, "POST"));
+
+  ASSERT_EQ(1u, reports().size());
+  EXPECT_EQ(kUrl_, reports()[0].url);
+  EXPECT_EQ(kGroup_, reports()[0].group);
+  EXPECT_EQ(kType_, reports()[0].type);
+  EXPECT_EQ(0, reports()[0].depth);
+
+  const base::DictionaryValue* body;
+  ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
+  base::ExpectDictStringValue(kUrl_.spec(), *body,
+                              NetworkErrorLoggingService::kUriKey);
+  base::ExpectDictStringValue(kReferrer_.spec(), *body,
+                              NetworkErrorLoggingService::kReferrerKey);
+  ExpectDictDoubleValue(1.0, *body,
+                        NetworkErrorLoggingService::kSamplingFractionKey);
+  base::ExpectDictStringValue(kServerIP_.ToString(), *body,
+                              NetworkErrorLoggingService::kServerIpKey);
+  base::ExpectDictStringValue("", *body,
+                              NetworkErrorLoggingService::kProtocolKey);
+  base::ExpectDictStringValue("POST", *body,
+                              NetworkErrorLoggingService::kMethodKey);
+  base::ExpectDictStringValue("application", *body,
+                              NetworkErrorLoggingService::kPhaseKey);
+  base::ExpectDictStringValue("ok", *body,
                               NetworkErrorLoggingService::kTypeKey);
 }
 

@@ -55,6 +55,7 @@ class NET_EXPORT NetworkErrorLoggingService {
     GURL referrer;
     IPAddress server_ip;
     std::string protocol;
+    std::string method;
     int status_code;
     base::TimeDelta elapsed_time;
     Error type;
@@ -82,6 +83,7 @@ class NET_EXPORT NetworkErrorLoggingService {
   static const char kSamplingFractionKey[];
   static const char kServerIpKey[];
   static const char kProtocolKey[];
+  static const char kMethodKey[];
   static const char kStatusCodeKey[];
   static const char kElapsedTimeKey[];
   static const char kPhaseKey[];

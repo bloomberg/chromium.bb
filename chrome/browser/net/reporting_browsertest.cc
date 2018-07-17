@@ -148,6 +148,7 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, TestReportingHeadersProcessed) {
               "referrer": "",
               "sampling_fraction": 1.0,
               "server_ip": "127.0.0.1",
+              "method": "GET",
               "status_code": 204,
               "phase": "application",
               "type": "ok",
