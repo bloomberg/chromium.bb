@@ -185,8 +185,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   class Observer;
   friend class Observer;
-  class WebRtcSetRemoteDescriptionObserverImpl;
-  friend class WebRtcSetRemoteDescriptionObserverImpl;
+  class WebRtcSetDescriptionObserverImpl;
+  friend class WebRtcSetDescriptionObserverImpl;
   class SetLocalDescriptionRequest;
   friend class SetLocalDescriptionRequest;
 
