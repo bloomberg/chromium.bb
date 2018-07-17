@@ -273,19 +273,22 @@ void AutofillWalletSyncableService::PopulateWalletCardsAndAddresses(
     DCHECK_EQ(syncer::AUTOFILL_WALLET_DATA, data.GetDataType());
     const sync_pb::AutofillWalletSpecifics& autofill_specifics =
         data.GetSpecifics().autofill_wallet();
-    if (autofill_specifics.type() ==
-        sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD) {
-      wallet_cards->push_back(
-          CardFromSpecifics(autofill_specifics.masked_card()));
-    } else {
-      DCHECK_EQ(sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS,
-                autofill_specifics.type());
-      wallet_addresses->push_back(
-          ProfileFromSpecifics(autofill_specifics.address()));
+    switch (autofill_specifics.type()) {
+      case sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD:
+        wallet_cards->push_back(
+            CardFromSpecifics(autofill_specifics.masked_card()));
+        break;
+      case sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS:
+        wallet_addresses->push_back(
+            ProfileFromSpecifics(autofill_specifics.address()));
 
-      // Map the sync billing address id to the profile's id.
-      ids[autofill_specifics.address().id()] =
-          wallet_addresses->back().server_id();
+        // Map the sync billing address id to the profile's id.
+        ids[autofill_specifics.address().id()] =
+            wallet_addresses->back().server_id();
+        break;
+      case sync_pb::AutofillWalletSpecifics::UNKNOWN:
+        // Just ignore new entry types that the client doesn't know about.
+        break;
     }
   }
 
