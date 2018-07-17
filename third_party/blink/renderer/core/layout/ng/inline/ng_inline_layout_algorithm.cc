@@ -164,7 +164,8 @@ void NGInlineLayoutAlgorithm::PrepareBoxStates(
 
 void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
                                          NGExclusionSpace* exclusion_space) {
-  NGInlineItemResults* line_items = &line_info->Results();
+  // Needs MutableResults to move ShapeResult out of the NGLineInfo.
+  NGInlineItemResults* line_items = line_info->MutableResults();
   line_box_.clear();
 
   // Apply justification before placing items, because it affects size/position
@@ -516,7 +517,7 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
   if (!spacing.HasExpansion())
     return false;  // no expansion opportunities exist.
 
-  for (NGInlineItemResult& item_result : line_info->Results()) {
+  for (NGInlineItemResult& item_result : *line_info->MutableResults()) {
     if (item_result.has_only_trailing_spaces)
       break;
     if (item_result.shape_result) {

@@ -158,7 +158,7 @@ class CORE_EXPORT NGLineInfo {
   void SetIsEmptyLine() { is_empty_line_ = true; }
 
   // NGInlineItemResults for this line.
-  NGInlineItemResults& Results() { return results_; }
+  NGInlineItemResults* MutableResults() { return &results_; }
   const NGInlineItemResults& Results() const { return results_; }
 
   LayoutUnit TextIndent() const { return text_indent_; }
