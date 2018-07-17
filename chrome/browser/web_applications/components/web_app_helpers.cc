@@ -4,16 +4,13 @@
 
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
+#include "base/strings/strcat.h"
 #include "url/gurl.h"
 
 namespace web_app {
 
 std::string GenerateApplicationNameFromURL(const GURL& url) {
-  std::string t;
-  t.append(url.host());
-  t.append("_");
-  t.append(url.path());
-  return t;
+  return base::StrCat({url.host_piece(), "_", url.path_piece()});
 }
 
 }  // namespace web_app
