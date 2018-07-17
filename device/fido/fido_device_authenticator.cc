@@ -6,7 +6,8 @@
 
 #include <utility>
 
-#include "device/fido/authenticator_selection_criteria.h"
+#include "base/logging.h"
+#include "device/fido/authenticator_supported_options.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_device.h"
@@ -16,19 +17,18 @@
 namespace device {
 
 FidoDeviceAuthenticator::FidoDeviceAuthenticator(FidoDevice* device)
-    : device_(device) {}
+    : device_(device) {
+  DCHECK(device_->SupportedProtocolIsInitialized());
+}
 FidoDeviceAuthenticator::~FidoDeviceAuthenticator() = default;
 
-void FidoDeviceAuthenticator::MakeCredential(
-    AuthenticatorSelectionCriteria authenticator_selection_criteria,
-    CtapMakeCredentialRequest request,
-    MakeCredentialCallback callback) {
+void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
+                                             MakeCredentialCallback callback) {
   DCHECK(!task_);
   // TODO(martinkr): Change FidoTasks to take all request parameters by const
   // reference, so we can avoid copying these from the RequestHandler.
-  task_ = std::make_unique<MakeCredentialTask>(
-      device_, std::move(request), std::move(authenticator_selection_criteria),
-      std::move(callback));
+  task_ = std::make_unique<MakeCredentialTask>(device_, std::move(request),
+                                               std::move(callback));
 }
 
 void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
@@ -46,6 +46,21 @@ void FidoDeviceAuthenticator::Cancel() {
 
 std::string FidoDeviceAuthenticator::GetId() const {
   return device_->GetId();
+}
+
+const AuthenticatorSupportedOptions& FidoDeviceAuthenticator::Options() const {
+  static const AuthenticatorSupportedOptions default_options;
+  switch (device_->supported_protocol()) {
+    case ProtocolVersion::kU2f:
+      return default_options;
+    case ProtocolVersion::kCtap:
+      DCHECK(device_->device_info()) << "uninitialized device";
+      return device_->device_info()->options();
+    case ProtocolVersion::kUnknown:
+      NOTREACHED() << "uninitialized device";
+  }
+  NOTREACHED();
+  return default_options;
 }
 
 void FidoDeviceAuthenticator::SetTaskForTesting(

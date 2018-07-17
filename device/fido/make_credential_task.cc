@@ -19,12 +19,9 @@ namespace device {
 MakeCredentialTask::MakeCredentialTask(
     FidoDevice* device,
     CtapMakeCredentialRequest request_parameter,
-    AuthenticatorSelectionCriteria authenticator_selection_criteria,
     MakeCredentialTaskCallback callback)
     : FidoTask(device),
       request_parameter_(std::move(request_parameter)),
-      authenticator_selection_criteria_(
-          std::move(authenticator_selection_criteria)),
       callback_(std::move(callback)),
       weak_factory_(this) {}
 
@@ -40,12 +37,6 @@ void MakeCredentialTask::StartTask() {
 }
 
 void MakeCredentialTask::MakeCredential() {
-  if (!CheckIfAuthenticatorSelectionCriteriaAreSatisfied()) {
-    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
-                             base::nullopt);
-    return;
-  }
-
   register_operation_ = std::make_unique<Ctap2DeviceOperation<
       CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
       device(), request_parameter_,
@@ -56,10 +47,7 @@ void MakeCredentialTask::MakeCredential() {
 }
 
 void MakeCredentialTask::U2fRegister() {
-  device()->set_supported_protocol(ProtocolVersion::kU2f);
-
-  if (!CheckIfAuthenticatorSelectionCriteriaAreSatisfied() ||
-      !IsConvertibleToU2fRegisterCommand(request_parameter_)) {
+  if (!IsConvertibleToU2fRegisterCommand(request_parameter_)) {
     std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
                              base::nullopt);
     return;
@@ -80,6 +68,8 @@ void MakeCredentialTask::OnCtapMakeCredentialResponseReceived(
     return;
   }
 
+  // TODO(martinkr): CheckRpIdHash invocation needs to move into the Request
+  // handler. See https://crbug.com/863988.
   if (!response_data ||
       !response_data->CheckRpIdHash(request_parameter_.rp().rp_id())) {
     std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
@@ -88,50 +78,6 @@ void MakeCredentialTask::OnCtapMakeCredentialResponseReceived(
   }
 
   std::move(callback_).Run(return_code, std::move(response_data));
-}
-
-bool MakeCredentialTask::CheckIfAuthenticatorSelectionCriteriaAreSatisfied() {
-  using AuthenticatorAttachment =
-      AuthenticatorSelectionCriteria::AuthenticatorAttachment;
-  using UvAvailability =
-      AuthenticatorSupportedOptions::UserVerificationAvailability;
-
-  // U2F authenticators are non-platform devices that do not support resident
-  // key or user verification.
-  const auto& device_info = device()->device_info();
-  if (!device_info) {
-    return !authenticator_selection_criteria_.require_resident_key() &&
-           authenticator_selection_criteria_.user_verification_requirement() !=
-               UserVerificationRequirement::kRequired &&
-           authenticator_selection_criteria_.authenticator_attachement() !=
-               AuthenticatorAttachment::kPlatform;
-  }
-
-  const auto& options = device_info->options();
-  if ((authenticator_selection_criteria_.authenticator_attachement() ==
-           AuthenticatorAttachment::kPlatform &&
-       !options.is_platform_device()) ||
-      (authenticator_selection_criteria_.authenticator_attachement() ==
-           AuthenticatorAttachment::kCrossPlatform &&
-       options.is_platform_device())) {
-    return false;
-  }
-
-  if (authenticator_selection_criteria_.require_resident_key() &&
-      !options.supports_resident_key()) {
-    return false;
-  }
-
-  const auto user_verification_requirement =
-      authenticator_selection_criteria_.user_verification_requirement();
-  if (user_verification_requirement == UserVerificationRequirement::kRequired) {
-    request_parameter_.SetUserVerificationRequired(true);
-  }
-
-  return user_verification_requirement !=
-             UserVerificationRequirement::kRequired ||
-         options.user_verification_availability() ==
-             UvAvailability::kSupportedAndConfigured;
 }
 
 }  // namespace device

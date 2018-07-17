@@ -47,10 +47,58 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
 
 MakeCredentialRequestHandler::~MakeCredentialRequestHandler() = default;
 
+namespace {
+
+bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
+    FidoAuthenticator* authenticator,
+    const AuthenticatorSelectionCriteria& authenticator_selection_criteria,
+    CtapMakeCredentialRequest* request) {
+  using AuthenticatorAttachment =
+      AuthenticatorSelectionCriteria::AuthenticatorAttachment;
+  using UvAvailability =
+      AuthenticatorSupportedOptions::UserVerificationAvailability;
+
+  const auto& options = authenticator->Options();
+  if ((authenticator_selection_criteria.authenticator_attachement() ==
+           AuthenticatorAttachment::kPlatform &&
+       !options.is_platform_device()) ||
+      (authenticator_selection_criteria.authenticator_attachement() ==
+           AuthenticatorAttachment::kCrossPlatform &&
+       options.is_platform_device())) {
+    return false;
+  }
+
+  if (authenticator_selection_criteria.require_resident_key() &&
+      !options.supports_resident_key()) {
+    return false;
+  }
+
+  const auto& user_verification_requirement =
+      authenticator_selection_criteria.user_verification_requirement();
+  if (user_verification_requirement == UserVerificationRequirement::kRequired) {
+    request->SetUserVerificationRequired(true);
+  }
+
+  return user_verification_requirement !=
+             UserVerificationRequirement::kRequired ||
+         options.user_verification_availability() ==
+             UvAvailability::kSupportedAndConfigured;
+}
+
+}  // namespace
+
 void MakeCredentialRequestHandler::DispatchRequest(
     FidoAuthenticator* authenticator) {
-  return authenticator->MakeCredential(
-      authenticator_selection_criteria_, request_parameter_,
+  // The user verification field of the request may be adjusted to the
+  // authenticator, so we need to make a copy.
+  CtapMakeCredentialRequest request_copy = request_parameter_;
+  if (!CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
+          authenticator, authenticator_selection_criteria_, &request_copy)) {
+    return;
+  }
+
+  authenticator->MakeCredential(
+      std::move(request_copy),
       base::BindOnce(&MakeCredentialRequestHandler::OnAuthenticatorResponse,
                      weak_factory_.GetWeakPtr(), authenticator));
 }

@@ -7,11 +7,12 @@
 #import <LocalAuthentication/LocalAuthentication.h>
 
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "device/base/features.h"
-#include "device/fido/authenticator_selection_criteria.h"
+#include "device/fido/authenticator_supported_options.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
@@ -57,10 +58,8 @@ std::unique_ptr<TouchIdAuthenticator> TouchIdAuthenticator::CreateForTesting(
 
 TouchIdAuthenticator::~TouchIdAuthenticator() = default;
 
-void TouchIdAuthenticator::MakeCredential(
-    AuthenticatorSelectionCriteria authenticator_selection_criteria,
-    CtapMakeCredentialRequest request,
-    MakeCredentialCallback callback) {
+void TouchIdAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
+                                          MakeCredentialCallback callback) {
   if (__builtin_available(macOS 10.12.2, *)) {
     DCHECK(!operation_);
     operation_ = std::make_unique<MakeCredentialOperation>(
@@ -95,6 +94,27 @@ void TouchIdAuthenticator::Cancel() {
 
 std::string TouchIdAuthenticator::GetId() const {
   return "TouchIdAuthenticator";
+}
+
+namespace {
+
+AuthenticatorSupportedOptions TouchIdAuthenticatorOptions() {
+  AuthenticatorSupportedOptions options;
+  options.SetIsPlatformDevice(true);
+  options.SetSupportsResidentKey(true);
+  options.SetUserVerificationAvailability(
+      AuthenticatorSupportedOptions::UserVerificationAvailability::
+          kSupportedAndConfigured);
+  options.SetUserPresenceRequired(true);
+  return options;
+}
+
+}  // namespace
+
+const AuthenticatorSupportedOptions& TouchIdAuthenticator::Options() const {
+  static const AuthenticatorSupportedOptions options =
+      TouchIdAuthenticatorOptions();
+  return options;
 }
 
 TouchIdAuthenticator::TouchIdAuthenticator(std::string keychain_access_group,

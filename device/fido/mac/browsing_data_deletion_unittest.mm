@@ -14,7 +14,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/base/features.h"
-#include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/mac/authenticator.h"
@@ -141,8 +140,7 @@ class BrowsingDataDeletionTest : public testing::Test {
     TestCallbackReceiver<CtapDeviceResponseCode,
                          base::Optional<AuthenticatorMakeCredentialResponse>>
         callback_receiver;
-    authenticator->MakeCredential(AuthenticatorSelectionCriteria(),
-                                  MakeRequest(), callback_receiver.callback());
+    authenticator->MakeCredential(MakeRequest(), callback_receiver.callback());
     callback_receiver.WaitForCallback();
     auto result = callback_receiver.TakeResult();
     return std::get<0>(result) == CtapDeviceResponseCode::kSuccess;

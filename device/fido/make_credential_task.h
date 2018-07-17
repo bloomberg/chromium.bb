@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "device/fido/authenticator_make_credential_response.h"
-#include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/device_operation.h"
 #include "device/fido/fido_constants.h"
@@ -37,7 +36,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
 
   MakeCredentialTask(FidoDevice* device,
                      CtapMakeCredentialRequest request_parameter,
-                     AuthenticatorSelectionCriteria authenticator_criteria,
                      MakeCredentialTaskCallback callback);
   ~MakeCredentialTask() override;
 
@@ -51,14 +49,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
       CtapDeviceResponseCode return_code,
       base::Optional<AuthenticatorMakeCredentialResponse> response_data);
 
-  // Invoked after retrieving response to AuthenticatorGetInfo request. Filters
-  // out authenticators based on |authenticator_selection_criteria_| constraints
-  // provided by the relying party. If |device_| does not satisfy the
-  // constraints, then this request is silently dropped.
-  bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied();
-
   CtapMakeCredentialRequest request_parameter_;
-  AuthenticatorSelectionCriteria authenticator_selection_criteria_;
   std::unique_ptr<RegisterOperation> register_operation_;
   MakeCredentialTaskCallback callback_;
   base::WeakPtrFactory<MakeCredentialTask> weak_factory_;
