@@ -81,6 +81,19 @@ const CGFloat kBackgroundLandscapeInset = 169;
 
 #pragma mark - NTPHeaderViewAdapter
 
+- (void)addToolbarView:(UIView*)toolbarView {
+  _toolBarView = toolbarView;
+  [self addSubview:toolbarView];
+  id<LayoutGuideProvider> layoutGuide = SafeAreaLayoutGuideForView(self);
+  [NSLayoutConstraint activateConstraints:@[
+    [toolbarView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [toolbarView.topAnchor constraintEqualToAnchor:layoutGuide.topAnchor],
+    [toolbarView.heightAnchor
+        constraintEqualToConstant:ntp_header::ToolbarHeight()],
+    [toolbarView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor]
+  ]];
+}
+
 - (void)addViewsToSearchField:(UIView*)searchField {
   ToolbarButtonFactory* buttonFactory =
       [[ToolbarButtonFactory alloc] initWithStyle:NORMAL];
