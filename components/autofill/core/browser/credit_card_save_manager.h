@@ -212,6 +212,10 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
 
   base::WeakPtrFactory<CreditCardSaveManager> weak_ptr_factory_;
 
+  FRIEND_TEST_ALL_PREFIXES(
+      CreditCardSaveManagerTest,
+      UploadCreditCard_ShouldRequestCardholderName_ResetBetweenConsecutiveSaves);
+
   DISALLOW_COPY_AND_ASSIGN(CreditCardSaveManager);
 };
 

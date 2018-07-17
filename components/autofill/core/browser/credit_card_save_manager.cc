@@ -169,6 +169,7 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   // If the user must provide cardholder name, log it and set
   // |should_request_name_from_user_| so the offer-to-save dialog know to ask
   // for it.
+  should_request_name_from_user_ = false;
   if (detected_values & DetectedValue::USER_PROVIDED_NAME) {
     upload_decision_metrics_ |=
         AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME;

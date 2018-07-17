@@ -2205,6 +2205,59 @@ TEST_F(
                CreditCardSaveManager::DetectedValue::USER_PROVIDED_NAME);
 }
 
+// This test ensures |should_request_name_from_user_| is reset between offers to
+// save.
+TEST_F(
+    CreditCardSaveManagerTest,
+    UploadCreditCard_ShouldRequestCardholderName_ResetBetweenConsecutiveSaves) {
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamEditableCardholderName);
+  personal_data_.ClearProfiles();
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  // But omit the name:
+  ManuallyFillAddressForm("", "", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, but don't include a name, and submit.
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  // With the offer-to-save decision deferred to Google Payments, Payments can
+  // still decide to allow saving despite the missing name.
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
+
+  // Verify the |credit_card_save_manager_| is requesting cardholder name.
+  EXPECT_TRUE(credit_card_save_manager_->should_request_name_from_user_);
+
+  // Simulate a Chrome/Payments sync where billing_customer_number was newly
+  // set.
+  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
+                                         12345);
+  // Run through the form submit in exactly the same way (but now Chrome knows
+  // that the user is a Google Payments customer).
+  personal_data_.ClearCreditCards();
+  personal_data_.ClearProfiles();
+  FormSubmitted(credit_card_form);
+
+  // Verify the |credit_card_save_manager_| is NOT requesting cardholder name.
+  EXPECT_FALSE(credit_card_save_manager_->should_request_name_from_user_);
+}
+
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_RequestCardholderNameIfTestingExperimentOn) {
   scoped_feature_list_.InitAndEnableFeature(
