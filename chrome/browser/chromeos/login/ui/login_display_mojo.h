@@ -77,6 +77,8 @@ class LoginDisplayMojo : public LoginDisplay,
  private:
   void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);
 
+  bool initialized_ = false;
+
   LoginDisplayHostMojo* const host_ = nullptr;  // Unowned.
   LoginDisplayWebUIHandler* webui_handler_ = nullptr;
 
