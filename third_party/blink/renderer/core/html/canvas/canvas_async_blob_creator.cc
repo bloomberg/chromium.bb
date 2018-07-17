@@ -226,8 +226,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
   // covnert to the requested color space and pixel format.
   if (function_type_ != kHTMLCanvasConvertToBlobPromise) {
     if (skia_image->colorSpace()) {
-      image_ = image_->ConvertToColorSpace(SkColorSpace::MakeSRGB(),
-                                           SkTransferFunctionBehavior::kIgnore);
+      image_ = image_->ConvertToColorSpace(SkColorSpace::MakeSRGB());
       skia_image = image_->PaintImageForCurrentFrame().GetSkImage();
     }
 
@@ -248,8 +247,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
         skia_image = SkImage::MakeFromRaster(src_data_, nullptr, nullptr);
       }
       DCHECK(skia_image->colorSpace());
-      skia_image = skia_image->makeColorSpace(
-          blob_color_space, SkTransferFunctionBehavior::kIgnore);
+      skia_image = skia_image->makeColorSpace(blob_color_space);
       image_ = StaticBitmapImage::Create(skia_image);
     }
 
@@ -330,12 +328,7 @@ bool CanvasAsyncBlobCreator::EncodeImage(const double& quality) {
   std::unique_ptr<ImageDataBuffer> buffer = ImageDataBuffer::Create(src_data_);
   if (!buffer)
     return false;
-  SkTransferFunctionBehavior transfer_fn_behavior =
-      SkTransferFunctionBehavior::kIgnore;
-  if (function_type_ == kHTMLCanvasConvertToBlobPromise)
-    transfer_fn_behavior = SkTransferFunctionBehavior::kIgnore;
-  return buffer->EncodeImage("image/webp", quality, &encoded_image_,
-                             transfer_fn_behavior);
+  return buffer->EncodeImage("image/webp", quality, &encoded_image_);
 }
 
 void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
@@ -545,7 +538,6 @@ bool CanvasAsyncBlobCreator::InitializeEncoder(double quality) {
     SkJpegEncoder::Options options;
     options.fQuality = ImageEncoder::ComputeJpegQuality(quality);
     options.fAlphaOption = SkJpegEncoder::AlphaOption::kBlendOnBlack;
-    options.fBlendBehavior = SkTransferFunctionBehavior::kIgnore;
     if (options.fQuality == 100) {
       options.fDownsample = SkJpegEncoder::Downsample::k444;
     }
@@ -560,7 +552,6 @@ bool CanvasAsyncBlobCreator::InitializeEncoder(double quality) {
     SkPngEncoder::Options options;
     options.fFilterFlags = SkPngEncoder::FilterFlag::kSub;
     options.fZLibLevel = 3;
-    options.fUnpremulBehavior = SkTransferFunctionBehavior::kIgnore;
     encoder_ = ImageEncoder::Create(&encoded_image_, src_data_, options);
   }
 
@@ -655,8 +646,7 @@ bool CanvasAsyncBlobCreator::EncodeImageForConvertToBlobTest() {
   if (!buffer)
     return false;
   return buffer->EncodeImage(encode_options_.type(), encode_options_.quality(),
-                             &encoded_image_,
-                             SkTransferFunctionBehavior::kIgnore);
+                             &encoded_image_);
 }
 
 }  // namespace blink

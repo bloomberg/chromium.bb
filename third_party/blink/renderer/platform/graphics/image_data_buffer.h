@@ -50,8 +50,7 @@ class PLATFORM_EXPORT ImageDataBuffer {
   String ToDataURL(const String& mime_type, const double& quality) const;
   bool EncodeImage(const String& mime_type,
                    const double& quality,
-                   Vector<unsigned char>* encoded_image,
-                   SkTransferFunctionBehavior transfer_fn_behavior) const;
+                   Vector<unsigned char>* encoded_image) const;
 
   const unsigned char* Pixels() const;
   const IntSize& size() const { return size_; }
@@ -67,12 +66,10 @@ class PLATFORM_EXPORT ImageDataBuffer {
 
   bool IsValid() { return is_valid_; }  // Only used by Create()
 
-  bool EncodeImageInternal(
-      const String& mime_type,
-      const double& quality,
-      Vector<unsigned char>* encoded_image,
-      const SkPixmap& pixmap,
-      SkTransferFunctionBehavior transfer_fn_behavior) const;
+  bool EncodeImageInternal(const String& mime_type,
+                           const double& quality,
+                           Vector<unsigned char>* encoded_image,
+                           const SkPixmap& pixmap) const;
 
   sk_sp<SkImage> retained_image_;
   SkPixmap pixmap_;

@@ -123,7 +123,6 @@ Vector<char> PictureSnapshot::Replay(unsigned from_step,
   SkPngEncoder::Options options;
   options.fFilterFlags = SkPngEncoder::FilterFlag::kSub;
   options.fZLibLevel = 3;
-  options.fUnpremulBehavior = SkTransferFunctionBehavior::kIgnore;
   if (!ImageEncoder::Encode(
           reinterpret_cast<Vector<unsigned char>*>(&encoded_image), src,
           options)) {

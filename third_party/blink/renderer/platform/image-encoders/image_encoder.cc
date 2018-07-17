@@ -87,11 +87,8 @@ int ImageEncoder::ComputeJpegQuality(double quality) {
   return compression_quality;
 }
 
-SkWebpEncoder::Options ImageEncoder::ComputeWebpOptions(
-    double quality,
-    SkTransferFunctionBehavior unpremulBehavior) {
+SkWebpEncoder::Options ImageEncoder::ComputeWebpOptions(double quality) {
   SkWebpEncoder::Options options;
-  options.fUnpremulBehavior = unpremulBehavior;
 
   if (quality == 1.0) {
     // Choose a lossless encode.  When performing a lossless encode, higher

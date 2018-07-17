@@ -117,28 +117,22 @@ const unsigned char* ImageDataBuffer::Pixels() const {
   return static_cast<const unsigned char*>(pixmap_.addr());
 }
 
-bool ImageDataBuffer::EncodeImage(
-    const String& mime_type,
-    const double& quality,
-    Vector<unsigned char>* encoded_image,
-    SkTransferFunctionBehavior transfer_fn_behavior) const {
-  return EncodeImageInternal(mime_type, quality, encoded_image, pixmap_,
-                             transfer_fn_behavior);
+bool ImageDataBuffer::EncodeImage(const String& mime_type,
+                                  const double& quality,
+                                  Vector<unsigned char>* encoded_image) const {
+  return EncodeImageInternal(mime_type, quality, encoded_image, pixmap_);
 }
 
-bool ImageDataBuffer::EncodeImageInternal(
-    const String& mime_type,
-    const double& quality,
-    Vector<unsigned char>* encoded_image,
-    const SkPixmap& pixmap,
-    SkTransferFunctionBehavior transfer_fn_behavior) const {
+bool ImageDataBuffer::EncodeImageInternal(const String& mime_type,
+                                          const double& quality,
+                                          Vector<unsigned char>* encoded_image,
+                                          const SkPixmap& pixmap) const {
   DCHECK(is_valid_);
 
   if (mime_type == "image/jpeg") {
     SkJpegEncoder::Options options;
     options.fQuality = ImageEncoder::ComputeJpegQuality(quality);
     options.fAlphaOption = SkJpegEncoder::AlphaOption::kBlendOnBlack;
-    options.fBlendBehavior = transfer_fn_behavior;
     if (options.fQuality == 100) {
       options.fDownsample = SkJpegEncoder::Downsample::k444;
     }
@@ -146,8 +140,7 @@ bool ImageDataBuffer::EncodeImageInternal(
   }
 
   if (mime_type == "image/webp") {
-    SkWebpEncoder::Options options =
-        ImageEncoder::ComputeWebpOptions(quality, transfer_fn_behavior);
+    SkWebpEncoder::Options options = ImageEncoder::ComputeWebpOptions(quality);
     return ImageEncoder::Encode(encoded_image, pixmap, options);
   }
 
@@ -155,7 +148,6 @@ bool ImageDataBuffer::EncodeImageInternal(
   SkPngEncoder::Options options;
   options.fFilterFlags = SkPngEncoder::FilterFlag::kSub;
   options.fZLibLevel = 3;
-  options.fUnpremulBehavior = transfer_fn_behavior;
   return ImageEncoder::Encode(encoded_image, pixmap, options);
 }
 
@@ -171,16 +163,14 @@ String ImageDataBuffer::ToDataURL(const String& mime_type,
   if (pixmap.colorSpace()) {
     if (!pixmap.colorSpace()->isSRGB()) {
       skia_image = SkImage::MakeFromRaster(pixmap, nullptr, nullptr);
-      skia_image = skia_image->makeColorSpace(
-          SkColorSpace::MakeSRGB(), SkTransferFunctionBehavior::kIgnore);
+      skia_image = skia_image->makeColorSpace(SkColorSpace::MakeSRGB());
       skia_image->peekPixels(&pixmap);
     }
     pixmap.setColorSpace(nullptr);
   }
 
   Vector<unsigned char> result;
-  if (!EncodeImageInternal(mime_type, quality, &result, pixmap,
-                           SkTransferFunctionBehavior::kIgnore))
+  if (!EncodeImageInternal(mime_type, quality, &result, pixmap))
     return "data:,";
 
   return "data:" + mime_type + ";base64," + Base64Encode(result);

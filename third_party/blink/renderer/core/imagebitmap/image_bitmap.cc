@@ -447,20 +447,8 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
 scoped_refptr<StaticBitmapImage> ApplyColorSpaceConversion(
     scoped_refptr<StaticBitmapImage>&& image,
     ImageBitmap::ParsedOptions& options) {
-  SkTransferFunctionBehavior transfer_function_behavior =
-      SkTransferFunctionBehavior::kIgnore;
-  // We normally expect to respect transfer function. However, in two scenarios
-  // we have to ignore the transfer function. First, when the source image is
-  // unpremul. Second, when the source image is drawn using a
-  // SkColorSpaceXformCanvas.
-  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
-  if (!skia_image->colorSpace() ||
-      skia_image->alphaType() == kUnpremul_SkAlphaType)
-    transfer_function_behavior = SkTransferFunctionBehavior::kIgnore;
-
   return image->ConvertToColorSpace(
-      options.color_params.GetSkColorSpaceForSkSurfaces(),
-      transfer_function_behavior);
+      options.color_params.GetSkColorSpaceForSkSurfaces());
 }
 
 scoped_refptr<StaticBitmapImage> MakeBlankImage(

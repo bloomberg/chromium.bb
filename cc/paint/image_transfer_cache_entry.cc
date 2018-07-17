@@ -36,8 +36,7 @@ sk_sp<SkImage> MakeTextureImage(GrContext* context,
     // TODO(ericrk): consider adding in the DeleteSkImageAndPreventCaching
     // optimization from GpuImageDecodeCache where we forcefully remove the
     // intermediate from Skia's cache.
-    uploaded_image = uploaded_image->makeColorSpace(
-        target_color_space, SkTransferFunctionBehavior::kIgnore);
+    uploaded_image = uploaded_image->makeColorSpace(target_color_space);
   }
 
   // Step 3: If we had a colorspace conversion, we couldn't mipmap in step 1, so
@@ -203,8 +202,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
     if (!original)
       return false;
     if (target_color_space) {
-      image_ = original->makeColorSpace(target_color_space,
-                                        SkTransferFunctionBehavior::kIgnore);
+      image_ = original->makeColorSpace(target_color_space);
       // If color space conversion is a noop, use original data.
       if (image_ == original)
         image_ = SkImage::MakeRasterCopy(pixmap);

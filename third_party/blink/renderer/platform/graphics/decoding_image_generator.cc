@@ -160,10 +160,7 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
     TRACE_EVENT0("blink", "DecodingImageGenerator::getPixels - apply xform");
     SkPixmap src(decode_info, pixels, row_bytes);
 
-    // kIgnore ensures that we perform the premultiply (if necessary) in the dst
-    // space.
-    const bool converted = src.readPixels(dst_info, pixels, row_bytes, 0, 0,
-                                          SkTransferFunctionBehavior::kIgnore);
+    const bool converted = src.readPixels(dst_info, pixels, row_bytes);
     DCHECK(converted);
   }
 

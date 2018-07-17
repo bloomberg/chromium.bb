@@ -228,8 +228,7 @@ bool PaintImage::DecodeFromSkImage(void* memory,
   auto image = GetSkImageForFrame(frame_index);
   DCHECK(image);
   if (color_space) {
-    image =
-        image->makeColorSpace(color_space, SkTransferFunctionBehavior::kIgnore);
+    image = image->makeColorSpace(color_space);
     if (!image)
       return false;
   }

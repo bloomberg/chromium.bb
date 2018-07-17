@@ -26,8 +26,7 @@ scoped_refptr<blink::StaticBitmapImage> ToStaticBitmapImage(
 
   SkImageInfo info = sk_bitmap.info();
   if (!sk_bitmap.readPixels(info, array_buffer_contents.Data(),
-                            info.minRowBytes(), 0, 0,
-                            SkTransferFunctionBehavior::kIgnore))
+                            info.minRowBytes(), 0, 0))
     return nullptr;
 
   return blink::StaticBitmapImage::Create(array_buffer_contents, info);

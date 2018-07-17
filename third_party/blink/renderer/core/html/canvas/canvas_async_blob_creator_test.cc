@@ -301,8 +301,7 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
 
           sk_sp<SkImage> ref_image = source_image->makeColorSpace(
               CanvasAsyncBlobCreator::BlobColorSpaceToSkColorSpace(
-                  blob_color_space),
-              SkTransferFunctionBehavior::kIgnore);
+                  blob_color_space));
 
           // Jpeg does not support transparent images.
           bool compare_alpha = (blob_mime_type != "image/jpeg");
