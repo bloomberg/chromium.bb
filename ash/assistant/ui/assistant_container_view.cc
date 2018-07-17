@@ -103,6 +103,7 @@ void AssistantContainerView::Init() {
   // Mini view.
   assistant_mini_view_ =
       std::make_unique<AssistantMiniView>(assistant_controller_);
+  assistant_mini_view_->set_delegate(assistant_controller_->ui_controller());
   assistant_mini_view_->set_owned_by_client();
 
   // Web view.

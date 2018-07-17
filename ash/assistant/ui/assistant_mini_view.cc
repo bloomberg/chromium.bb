@@ -30,7 +30,9 @@ constexpr int kPreferredHeightDip = 48;
 }  // namespace
 
 AssistantMiniView::AssistantMiniView(AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller), label_(new views::Label()) {
+    : views::Button(this),
+      assistant_controller_(assistant_controller),
+      label_(new views::Label()) {
   InitLayout();
 
   // AssistantController indirectly owns the view hierarchy to which
@@ -83,6 +85,12 @@ void AssistantMiniView::InitLayout() {
   OnInputModalityChanged(assistant_controller_->interaction_controller()
                              ->model()
                              ->input_modality());
+}
+
+void AssistantMiniView::ButtonPressed(views::Button* sender,
+                                      const ui::Event& event) {
+  if (delegate_)
+    delegate_->OnAssistantMiniViewPressed();
 }
 
 void AssistantMiniView::OnInputModalityChanged(InputModality input_modality) {
