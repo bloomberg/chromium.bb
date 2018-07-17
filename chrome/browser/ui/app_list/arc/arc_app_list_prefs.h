@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/connection_observer.h"
@@ -54,7 +55,8 @@ class ArcAppListPrefs : public KeyedService,
                         public arc::mojom::AppHost,
                         public arc::ConnectionObserver<arc::mojom::AppInstance>,
                         public arc::ArcSessionManager::Observer,
-                        public ArcDefaultAppList::Delegate {
+                        public ArcDefaultAppList::Delegate,
+                        public arc::ArcPolicyBridge::Observer {
  public:
   struct AppInfo {
     AppInfo(const std::string& name,
@@ -254,6 +256,12 @@ class ArcAppListPrefs : public KeyedService,
   // ArcDefaultAppList::Delegate:
   void OnDefaultAppsReady() override;
 
+  // arc::ArcPolicyBridge::Observer:
+  void OnPolicySent(const std::string& policy) override;
+
+  // KeyedService:
+  void Shutdown() override;
+
   // Removes app with the given app_id.
   void RemoveApp(const std::string& app_id);
 
@@ -432,6 +440,12 @@ class ArcAppListPrefs : public KeyedService,
   // Marks package icons as invalidated and request icons updated.
   void InvalidatePackageIcons(const std::string& package_name);
 
+  // Returns true if install time has to be set to current time for the newly
+  // installed app from the |package_name|. App launcher uses install time to
+  // rank apps. Do not set install time for apps, installed by default or by
+  // policy.
+  bool NeedSetInstallTime(const std::string& package_name) const;
+
   Profile* const profile_;
 
   // Owned by the BrowserContext.
@@ -483,6 +497,8 @@ class ArcAppListPrefs : public KeyedService,
   bool default_apps_ready_ = false;
   ArcDefaultAppList default_apps_;
   base::Closure default_apps_ready_callback_;
+  // Set of packages installed by policy in case of managed user.
+  std::set<std::string> packages_by_policy_;
 
   // TODO (b/70566216): Remove this once fixed.
   base::OnceClosure app_list_refreshed_callback_;

@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
@@ -19,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,43 +39,6 @@ namespace {
 
 constexpr int kNonComplianceReasonAppNotInstalled = 5;
 
-std::set<std::string> GetRequestedPackagesFromArcPolicy(
-    const std::string& arc_policy) {
-  std::unique_ptr<base::Value> dict = base::JSONReader::Read(arc_policy);
-  if (!dict || !dict->is_dict()) {
-    return {};
-  }
-
-  const base::Value* const packages =
-      dict->FindKeyOfType("applications", base::Value::Type::LIST);
-  if (!packages) {
-    return {};
-  }
-
-  std::set<std::string> requested_packages;
-  for (const auto& package : packages->GetList()) {
-    if (!package.is_dict()) {
-      continue;
-    }
-    const base::Value* const install_type =
-        package.FindKeyOfType("installType", base::Value::Type::STRING);
-    if (!install_type) {
-      continue;
-    }
-    if (install_type->GetString() != "REQUIRED" &&
-        install_type->GetString() != "FORCE_INSTALLED") {
-      continue;
-    }
-    const base::Value* const package_name =
-        package.FindKeyOfType("packageName", base::Value::Type::STRING);
-    if (!package_name || package_name->GetString().empty()) {
-      continue;
-    }
-    requested_packages.insert(package_name->GetString());
-  }
-  return requested_packages;
-}
-
 std::set<std::string> GetRequestedPackagesFromPolicy(
     const policy::PolicyMap& policy) {
   const base::Value* const arc_enabled = policy.GetValue(key::kArcEnabled);
@@ -88,7 +51,8 @@ std::set<std::string> GetRequestedPackagesFromPolicy(
     return {};
   }
 
-  return GetRequestedPackagesFromArcPolicy(arc_policy->GetString());
+  return arc::policy_util::GetRequestedPackagesFromArcPolicy(
+      arc_policy->GetString());
 }
 
 // Return all elements that are members of |first| but not |second|.
@@ -218,7 +182,8 @@ void AppInstallEventLogger::OnPolicyUpdated(const policy::PolicyNamespace& ns,
 }
 
 void AppInstallEventLogger::OnPolicySent(const std::string& policy) {
-  requested_in_arc_ = GetRequestedPackagesFromArcPolicy(policy);
+  requested_in_arc_ =
+      arc::policy_util::GetRequestedPackagesFromArcPolicy(policy);
 }
 
 void AppInstallEventLogger::OnComplianceReportReceived(

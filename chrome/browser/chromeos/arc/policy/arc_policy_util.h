@@ -8,6 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <set>
+#include <string>
+
 class Profile;
 
 namespace arc {
@@ -48,6 +51,12 @@ bool IsArcDisabledForEnterprise();
 // are assumed to be enterprise users.
 EcryptfsMigrationAction GetDefaultEcryptfsMigrationActionForManagedUser(
     bool active_directory_user);
+
+// Returns set of packages requested to install from |arc_policy|. |arc_policy|
+// has JSON blob format, see
+// https://www.chromium.org/administrators/policy-list-3#ArcPolicy
+std::set<std::string> GetRequestedPackagesFromArcPolicy(
+    const std::string& arc_policy);
 
 }  // namespace policy_util
 }  // namespace arc
