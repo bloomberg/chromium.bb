@@ -73,7 +73,7 @@ const char kCSSBackgroundColorFormat[] = "rgba(%d,%d,%d,%s)";
 const char kCSSBackgroundPositionCenter[] = "center";
 const char kCSSBackgroundPositionLeft[] = "left";
 const char kCSSBackgroundPositionTop[] = "top";
-const char kCSSBackgroundPositionTopCover[] = "top/cover";
+const char kCSSBackgroundPositionCenterCover[] = "center/cover";
 const char kCSSBackgroundPositionRight[] = "right";
 const char kCSSBackgroundPositionBottom[] = "bottom";
 
@@ -344,7 +344,7 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     builder.Set("imageHorizontalAlignment",
                 std::string(kCSSBackgroundPositionCenter));
     builder.Set("imageVerticalAlignment",
-                std::string(kCSSBackgroundPositionTopCover));
+                std::string(kCSSBackgroundPositionCenterCover));
   }
 
   return builder.Build();
