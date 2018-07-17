@@ -7,15 +7,6 @@
   "tests": [
     {
       "app": "ios_net_unittests"
-    },
-    {
-      "app": "ios_web_inttests"
-    },
-    {
-      "app": "ios_web_unittests"
-    },
-    {
-      "app": "ios_web_view_inttests"
     }
   ]
 }
