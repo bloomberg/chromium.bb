@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -191,6 +192,27 @@ class MediaDevicesManagerTest : public ::testing::Test {
     run_loop->Quit();
   }
 
+  void EnumerateWithCapabilitiesCallback(
+      const std::vector<media::FakeVideoCaptureDeviceSettings>&
+          expected_video_capture_device_settings,
+      base::RunLoop* run_loop,
+      const std::vector<MediaDeviceInfoArray>& devices,
+      std::vector<VideoInputDeviceCapabilitiesPtr> capabilities) {
+    EXPECT_EQ(capabilities.size(),
+              expected_video_capture_device_settings.size());
+    for (size_t i = 0; i < capabilities.size(); ++i) {
+      EXPECT_EQ(
+          capabilities[i]->formats.size(),
+          expected_video_capture_device_settings[i].supported_formats.size());
+      for (size_t j = 0; j < capabilities[i]->formats.size(); ++j) {
+        EXPECT_EQ(
+            capabilities[i]->formats[j],
+            expected_video_capture_device_settings[i].supported_formats[j]);
+      }
+    }
+    run_loop->Quit();
+  }
+
  protected:
   void SetUp() override {
     audio_manager_ = std::make_unique<MockAudioManager>();
@@ -217,6 +239,8 @@ class MediaDevicesManagerTest : public ::testing::Test {
             base::Unretained(&media_devices_manager_client_))));
     media_devices_manager_->set_salt_and_origin_callback_for_testing(
         base::BindRepeating(&GetSaltAndOrigin));
+    media_devices_manager_->SetPermissionChecker(
+        std::make_unique<MediaDevicesPermissionChecker>(true));
   }
 
   void EnableCache(MediaDeviceType type) {
@@ -762,6 +786,49 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
   VerifyDeviceAndGroupID({notification_all_audio_input,
                           notification_all_video_input,
                           notification_all_audio_output});
+}
+
+TEST_F(MediaDevicesManagerTest, EnumerateDevicesWithCapabilities) {
+  // Audio is enumerated due to heuristics to compute video group IDs.
+  EXPECT_CALL(*audio_manager_, MockGetAudioInputDeviceNames(_));
+  EXPECT_CALL(media_devices_manager_client_,
+              InputDevicesChangedUI(MEDIA_DEVICE_TYPE_AUDIO_INPUT, _));
+  EXPECT_CALL(*video_capture_device_factory_, MockGetDeviceDescriptors());
+  EXPECT_CALL(media_devices_manager_client_,
+              InputDevicesChangedUI(MEDIA_DEVICE_TYPE_VIDEO_INPUT, _));
+  // Configure fake devices with video formats different from the fallback
+  // formats to make sure that expected capabilities are what devices actually
+  // report.
+  media::FakeVideoCaptureDeviceSettings fake_device1;
+  fake_device1.device_id = "fake_id_1";
+  fake_device1.delivery_mode =
+      media::FakeVideoCaptureDevice::DeliveryMode::USE_DEVICE_INTERNAL_BUFFERS;
+  fake_device1.supported_formats = {
+      {{1000, 1000}, 60.0, media::PIXEL_FORMAT_I420},
+      {{2000, 2000}, 120.0, media::PIXEL_FORMAT_I420}};
+
+  media::FakeVideoCaptureDeviceSettings fake_device2;
+  fake_device2.device_id = "fake_id_2";
+  fake_device2.delivery_mode =
+      media::FakeVideoCaptureDevice::DeliveryMode::USE_DEVICE_INTERNAL_BUFFERS;
+  fake_device2.supported_formats = {
+      {{100, 100}, 6.0, media::PIXEL_FORMAT_I420},
+      {{200, 200}, 12.0, media::PIXEL_FORMAT_I420}};
+
+  std::vector<media::FakeVideoCaptureDeviceSettings>
+      fake_capture_device_settings = {fake_device1, fake_device2};
+  video_capture_device_factory_->SetToCustomDevicesConfig(
+      fake_capture_device_settings);
+
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  base::RunLoop run_loop;
+  media_devices_manager_->EnumerateDevices(
+      -1, -1, devices_to_enumerate, true,
+      base::BindOnce(
+          &MediaDevicesManagerTest::EnumerateWithCapabilitiesCallback,
+          base::Unretained(this), fake_capture_device_settings, &run_loop));
+  run_loop.Run();
 }
 
 TEST_F(MediaDevicesManagerTest, GuessVideoGroupID) {

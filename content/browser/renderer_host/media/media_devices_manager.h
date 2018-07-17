@@ -207,7 +207,8 @@ class CONTENT_EXPORT MediaDevicesManager
       const MediaDeviceEnumeration& enumeration);
 
   std::vector<VideoInputDeviceCapabilitiesPtr> ComputeVideoInputCapabilities(
-      const MediaDeviceInfoArray& device_infos);
+      const MediaDeviceInfoArray& raw_device_infos,
+      const MediaDeviceInfoArray& translated_device_infos);
 
   // Helpers to issue low-level device enumerations.
   void DoEnumerateDevices(MediaDeviceType type);

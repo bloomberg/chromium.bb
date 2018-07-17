@@ -693,24 +693,27 @@ void MediaDevicesManager::OnDevicesEnumerated(
     }
   }
 
-  std::move(callback).Run(
-      std::move(result),
-      video_input_capabilities_requested
-          ? ComputeVideoInputCapabilities(result[MEDIA_DEVICE_TYPE_VIDEO_INPUT])
-          : std::vector<VideoInputDeviceCapabilitiesPtr>());
+  std::move(callback).Run(std::move(result),
+                          video_input_capabilities_requested
+                              ? ComputeVideoInputCapabilities(
+                                    enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT],
+                                    result[MEDIA_DEVICE_TYPE_VIDEO_INPUT])
+                              : std::vector<VideoInputDeviceCapabilitiesPtr>());
 }
 
 std::vector<VideoInputDeviceCapabilitiesPtr>
 MediaDevicesManager::ComputeVideoInputCapabilities(
-    const MediaDeviceInfoArray& device_infos) {
+    const MediaDeviceInfoArray& raw_device_infos,
+    const MediaDeviceInfoArray& translated_device_infos) {
+  DCHECK_EQ(raw_device_infos.size(), translated_device_infos.size());
   std::vector<VideoInputDeviceCapabilitiesPtr> video_input_capabilities;
-  for (const auto& device_info : device_infos) {
+  for (size_t i = 0; i < raw_device_infos.size(); ++i) {
     VideoInputDeviceCapabilitiesPtr capabilities =
         blink::mojom::VideoInputDeviceCapabilities::New();
-    capabilities->device_id = device_info.device_id;
-    capabilities->formats = GetVideoInputFormats(device_info.device_id,
+    capabilities->device_id = translated_device_infos[i].device_id;
+    capabilities->formats = GetVideoInputFormats(raw_device_infos[i].device_id,
                                                  false /* try_in_use_first */);
-    capabilities->facing_mode = device_info.video_facing;
+    capabilities->facing_mode = translated_device_infos[i].video_facing;
     video_input_capabilities.push_back(std::move(capabilities));
   }
   return video_input_capabilities;
