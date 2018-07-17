@@ -37,15 +37,6 @@ constexpr SkColor kSplitviewLabelBackgroundColor =
 
 constexpr int kSplitviewAnimationDurationMs = 250;
 
-// The threshold to compute the minimum vertical distance to start showing the
-// drag indicators and preview window when dragging a window into splitscreen in
-// tablet mode.
-constexpr float kIndicatorsThresholdRatio = 0.1;
-
-// The threshold to compute the vertical distance to hide the drag indicators
-// and maximize the dragged window after the drag ends.
-constexpr float kMaximizeThresholdRatio = 0.4;
-
 }  // namespace ash
 
 #endif  // ASH_WM_SPLITVIEW_SPLIT_VIEW_CONSTANTS_H_
