@@ -72,7 +72,11 @@ const NSTimeInterval kDragAndDropLongPressDuration = 0.4;
 const CGFloat kTabOverlap = 26.0;
 const CGFloat kTabOverlapForCompactLayout = 30.0;
 
-const CGFloat kNewTabOverlap = 8.0;
+const CGFloat kNewTabOverlap = 13.0;
+const CGFloat kNewTabOverlapLegacy = 8.0;
+CGFloat NewTabOverlap() {
+  return IsUIRefreshPhase1Enabled() ? kNewTabOverlap : kNewTabOverlapLegacy;
+}
 const CGFloat kMaxTabWidth = 265.0;
 const CGFloat kMaxTabWidthForCompactLayout = 225.0;
 
@@ -1100,7 +1104,7 @@ NSString* StringForItemCount(long count) {
 - (CGFloat)tabStripVisibleSpace {
   CGFloat availableSpace = CGRectGetWidth([_tabStripView bounds]) -
                            CGRectGetWidth([_buttonNewTab frame]) +
-                           kNewTabOverlap;
+                           NewTabOverlap();
   return availableSpace;
 }
 
@@ -1214,7 +1218,7 @@ NSString* StringForItemCount(long count) {
   // desired width, with the standard overlap, plus the new tab button.
   CGSize contentSize = CGSizeMake(
       _currentTabWidth * tabCount - ([self tabOverlap] * (tabCount - 1)) +
-          CGRectGetWidth([_buttonNewTab frame]) - kNewTabOverlap,
+          CGRectGetWidth([_buttonNewTab frame]) - NewTabOverlap(),
       tabHeight);
   if (CGSizeEqualToSize([_tabStripView contentSize], contentSize))
     return;
@@ -1631,7 +1635,7 @@ NSString* StringForItemCount(long count) {
   CGRect newTabFrame = [_buttonNewTab frame];
   BOOL moveNewTab =
       (newTabFrame.origin.x != virtualMaxX) && !_buttonNewTab.hidden;
-  newTabFrame.origin = CGPointMake(virtualMaxX - kNewTabOverlap, 0);
+  newTabFrame.origin = CGPointMake(virtualMaxX - NewTabOverlap(), 0);
   if (!animate && moveNewTab)
     [_buttonNewTab setFrame:newTabFrame];
 
