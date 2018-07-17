@@ -193,6 +193,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
       updateMostVisitedForSize:self.collectionView.bounds.size];
   [self.headerSynchronizer
       updateFakeOmniboxOnNewWidth:self.collectionView.bounds.size.width];
+  [self.headerSynchronizer updateConstraints];
   [self.collectionView reloadData];
   if (ShouldCellsBeFullWidth(
           [UIApplication sharedApplication].keyWindow.traitCollection)) {

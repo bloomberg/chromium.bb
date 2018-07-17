@@ -207,6 +207,10 @@ initWithCollectionController:
   }
 }
 
+- (void)updateConstraints {
+  [self.headerController updateConstraints];
+}
+
 - (void)unfocusOmnibox {
   [self.headerController unfocusOmnibox];
 }
