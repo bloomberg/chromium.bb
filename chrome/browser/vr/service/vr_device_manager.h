@@ -49,12 +49,15 @@ class VR_EXPORT VRDeviceManager {
   void AddService(VRServiceImpl* service);
   void RemoveService(VRServiceImpl* service);
 
+  BrowserXrDevice* GetDeviceForOptions(
+      device::mojom::XRSessionOptions* options);
+  BrowserXrDevice* GetImmersiveDevice();
+
  protected:
   using ProviderList = std::vector<std::unique_ptr<device::VRDeviceProvider>>;
 
   // Used by tests to supply providers.
-  explicit VRDeviceManager(ProviderList providers,
-                           ProviderList fallback_providers);
+  explicit VRDeviceManager(ProviderList providers);
 
   // Used by tests to check on device state.
   device::mojom::XRRuntime* GetRuntime(unsigned int id);
@@ -66,14 +69,14 @@ class VR_EXPORT VRDeviceManager {
   void OnProviderInitialized();
   bool AreAllProvidersInitialized();
 
-  void AddDevice(bool is_fallback,
-                 unsigned int id,
+  void AddDevice(unsigned int id,
                  device::mojom::VRDisplayInfoPtr info,
                  device::mojom::XRRuntimePtr runtime);
   void RemoveDevice(unsigned int id);
 
+  BrowserXrDevice* GetDevice(device::VRDeviceId id);
+
   ProviderList providers_;
-  ProviderList fallback_providers_;
 
   // VRDevices are owned by their providers, each correspond to a
   // BrowserXrDevice that is owned by VRDeviceManager.

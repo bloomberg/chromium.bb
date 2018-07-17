@@ -45,18 +45,15 @@ VRDeviceManager* VRDeviceManager::GetInstance() {
   if (!g_vr_device_manager) {
     // Register VRDeviceProviders for the current platform
     ProviderList providers;
-    ProviderList fallback_providers;
 
 #if defined(OS_ANDROID)
-    // TODO(https://crbug.com/828321): when we support multiple devices and
-    // choosing based on session parameters, add both.
-    if (base::FeatureList::IsEnabled(features::kWebXrHitTest)) {
 #if BUILDFLAG(ENABLE_ARCORE)
+    if (base::FeatureList::IsEnabled(features::kWebXrHitTest)) {
       providers.emplace_back(device::ARCoreDeviceProviderFactory::Create());
-#endif
-    } else {
-      providers.emplace_back(std::make_unique<device::GvrDeviceProvider>());
     }
+#endif
+
+    providers.emplace_back(std::make_unique<device::GvrDeviceProvider>());
 #endif
 
 #if BUILDFLAG(ENABLE_OPENVR)
@@ -78,25 +75,77 @@ VRDeviceManager* VRDeviceManager::GetInstance() {
       content::ServiceManagerConnection* connection =
           content::ServiceManagerConnection::GetForProcess();
       if (connection) {
-        fallback_providers.emplace_back(
+        providers.emplace_back(
             std::make_unique<device::VROrientationDeviceProvider>(
                 connection->GetConnector()));
       }
     }
 
-    new VRDeviceManager(std::move(providers), std::move(fallback_providers));
+    // The constructor sets g_vr_device_manager, which is cleaned up when
+    // RemoveService is called, when the last active VRServiceImpl is destroyed.
+    new VRDeviceManager(std::move(providers));
   }
   return g_vr_device_manager;
+}
+
+BrowserXrDevice* VRDeviceManager::GetImmersiveDevice() {
+#if defined(OS_ANDROID)
+  auto* gvr = GetDevice(device::VRDeviceId::GVR_DEVICE_ID);
+  if (gvr)
+    return gvr;
+#endif
+
+#if BUILDFLAG(ENABLE_OPENVR)
+  auto* openvr = GetDevice(device::VRDeviceId::OPENVR_DEVICE_ID);
+  if (openvr)
+    return openvr;
+#endif
+
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+  auto* oculus = GetDevice(device::VRDeviceId::OCULUS_DEVICE_ID);
+  if (oculus)
+    return oculus;
+#endif
+
+  return nullptr;
+}
+
+BrowserXrDevice* VRDeviceManager::GetDevice(device::VRDeviceId id) {
+  auto it = devices_.find(static_cast<unsigned int>(id));
+  if (it == devices_.end())
+    return nullptr;
+
+  return it->second.get();
+}
+
+BrowserXrDevice* VRDeviceManager::GetDeviceForOptions(
+    device::mojom::XRSessionOptions* options) {
+  // Examine options to determine which device provider we should use.
+  if (options->immersive && !options->provide_passthrough_camera) {
+    return GetImmersiveDevice();
+  } else if (options->provide_passthrough_camera && !options->immersive) {
+    return GetDevice(device::VRDeviceId::ARCORE_DEVICE_ID);
+  } else if (!options->provide_passthrough_camera && !options->immersive) {
+    // Magic window session.
+    // Try the orientation provider if it exists.
+    auto* orientation_device =
+        GetDevice(device::VRDeviceId::ORIENTATION_DEVICE_ID);
+    if (orientation_device) {
+      return orientation_device;
+    }
+
+    // Otherwise fall back to immersive providers.
+    return GetImmersiveDevice();
+  }
+  return nullptr;
 }
 
 bool VRDeviceManager::HasInstance() {
   return g_vr_device_manager != nullptr;
 }
 
-VRDeviceManager::VRDeviceManager(ProviderList providers,
-                                 ProviderList fallback_providers)
-    : providers_(std::move(providers)),
-      fallback_providers_(std::move(fallback_providers)) {
+VRDeviceManager::VRDeviceManager(ProviderList providers)
+    : providers_(std::move(providers)) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   CHECK(!g_vr_device_manager);
   g_vr_device_manager = this;
@@ -115,11 +164,6 @@ void VRDeviceManager::AddService(VRServiceImpl* service) {
   // when they are created.
   InitializeProviders();
 
-  for (const DeviceMap::value_type& map_entry : devices_) {
-    if (!map_entry.second->IsFallbackDevice() || devices_.size() == 1)
-      service->ConnectDevice(map_entry.second.get());
-  }
-
   if (AreAllProvidersInitialized())
     service->InitializationComplete();
 
@@ -136,30 +180,16 @@ void VRDeviceManager::RemoveService(VRServiceImpl* service) {
   }
 }
 
-void VRDeviceManager::AddDevice(bool is_fallback,
-                                unsigned int id,
+void VRDeviceManager::AddDevice(unsigned int id,
                                 device::mojom::VRDisplayInfoPtr info,
                                 device::mojom::XRRuntimePtr runtime) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(devices_.find(id) == devices_.end());
 
-  // If we were previously using a fallback device, remove it.
-  // TODO(offenwanger): This has the potential to cause device change events to
-  // fire in rapid succession. This should be discussed and resolved when we
-  // start to actually add and remove devices.
-  if (devices_.size() == 1 && devices_.begin()->second->IsFallbackDevice()) {
-    BrowserXrDevice* device = devices_.begin()->second.get();
-    for (VRServiceImpl* service : services_)
-      service->RemoveDevice(device);
-  }
-
-  devices_[id] = std::make_unique<BrowserXrDevice>(
-      std::move(runtime), std::move(info), is_fallback);
-  if (!is_fallback || devices_.size() == 1) {
-    BrowserXrDevice* device_to_add = devices_[id].get();
-    for (VRServiceImpl* service : services_)
-      service->ConnectDevice(device_to_add);
-  }
+  devices_[id] =
+      std::make_unique<BrowserXrDevice>(std::move(runtime), std::move(info));
+  for (VRServiceImpl* service : services_)
+    service->ConnectDevice(devices_[id].get());
 }
 
 void VRDeviceManager::RemoveDevice(unsigned int id) {
@@ -167,16 +197,13 @@ void VRDeviceManager::RemoveDevice(unsigned int id) {
   auto it = devices_.find(id);
   DCHECK(it != devices_.end());
 
-  for (VRServiceImpl* service : services_)
-    service->RemoveDevice(it->second.get());
-
+  // Remove the device from devices_ before notifying services that it was
+  // removed, since they will query for devices in RemoveDevice.
+  std::unique_ptr<BrowserXrDevice> removed_device = std::move(it->second);
   devices_.erase(it);
 
-  if (devices_.size() == 1 && devices_.begin()->second->IsFallbackDevice()) {
-    BrowserXrDevice* device = devices_.begin()->second.get();
-    for (VRServiceImpl* service : services_)
-      service->ConnectDevice(device);
-  }
+  for (VRServiceImpl* service : services_)
+    service->RemoveDevice(removed_device.get());
 }
 
 void VRDeviceManager::RecordVrStartupHistograms() {
@@ -203,23 +230,12 @@ void VRDeviceManager::InitializeProviders() {
     return;
 
   for (const auto& provider : providers_) {
-    provider->Initialize(
-        base::BindRepeating(&VRDeviceManager::AddDevice, base::Unretained(this),
-                            false /* is_fallback */),
-        base::BindRepeating(&VRDeviceManager::RemoveDevice,
-                            base::Unretained(this)),
-        base::BindOnce(&VRDeviceManager::OnProviderInitialized,
-                       base::Unretained(this)));
-  }
-
-  for (const auto& provider : fallback_providers_) {
-    provider->Initialize(
-        base::BindRepeating(&VRDeviceManager::AddDevice, base::Unretained(this),
-                            true /* is_fallback */),
-        base::BindRepeating(&VRDeviceManager::RemoveDevice,
-                            base::Unretained(this)),
-        base::BindOnce(&VRDeviceManager::OnProviderInitialized,
-                       base::Unretained(this)));
+    provider->Initialize(base::BindRepeating(&VRDeviceManager::AddDevice,
+                                             base::Unretained(this)),
+                         base::BindRepeating(&VRDeviceManager::RemoveDevice,
+                                             base::Unretained(this)),
+                         base::BindOnce(&VRDeviceManager::OnProviderInitialized,
+                                        base::Unretained(this)));
   }
 
   providers_initialized_ = true;
@@ -236,8 +252,7 @@ void VRDeviceManager::OnProviderInitialized() {
 
 bool VRDeviceManager::AreAllProvidersInitialized() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return num_initialized_providers_ ==
-         providers_.size() + fallback_providers_.size();
+  return num_initialized_providers_ == providers_.size();
 }
 
 size_t VRDeviceManager::NumberOfConnectedServices() {

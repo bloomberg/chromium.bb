@@ -65,11 +65,13 @@ const char* XRDevice::checkSessionSupport(
     if (!supports_ar_) {
       return kSessionNotSupported;
     }
-    // TODO(https://crbug.com/828321): Expose information necessary to check
-    // combinations.
-    // For now, immersive AR is not supported.
+
+    // Exclusive AR sessions aren't supported, but we could do exclusive without
+    // AR.  Since is_ar isn't based on options, assume for now that non-ar was
+    // desired.
+    // TODO(https://crbug.com/828321): Actually use options to check for AR.
     if (options.immersive()) {
-      return kSessionNotSupported;
+      return nullptr;
     }
   } else {
     // TODO(https://crbug.com/828321): Remove this check when properly
@@ -191,6 +193,9 @@ ScriptPromise XRDevice::requestSession(
   device::mojom::blink::XRSessionOptionsPtr session_options =
       device::mojom::blink::XRSessionOptions::New();
   session_options->immersive = options.immersive();
+  session_options->provide_passthrough_camera =
+      RuntimeEnabledFeatures::WebXRHitTestEnabled() &&
+      !session_options->immersive;
   session_options->has_user_activation = has_user_activation;
 
   // TODO(offenwanger): Once device activation is sorted out for WebXR, either

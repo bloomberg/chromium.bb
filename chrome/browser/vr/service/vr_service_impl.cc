@@ -37,10 +37,10 @@ void VRServiceImpl::SetBinding(mojo::StrongBindingPtr<VRService> binding) {
 }
 
 VRServiceImpl::~VRServiceImpl() {
-  // Destroy VRDisplay before calling RemoveService below. RemoveService might
-  // implicitly trigger destory VRDevice which VRDisplay needs to access in its
-  // dtor.
-  displays_.clear();
+  // Destroy VRDisplayHost before calling RemoveService below. RemoveService
+  // might implicitly destory the VRDeviceManager, and therefore the
+  // BrowserXrDevice that VRDisplayHost needs to access in its dtor.
+  display_ = nullptr;
   VRDeviceManager::GetInstance()->RemoveService(this);
 }
 
@@ -67,33 +67,32 @@ void VRServiceImpl::SetClient(device::mojom::VRServiceClientPtr service_client,
 }
 
 void VRServiceImpl::InitializationComplete() {
+  // display_ is added after all providers have initialized.  This means that we
+  // can correctly answer SupportsSession, and can provide correct display
+  // capabilities.
+  display_ = std::make_unique<VRDisplayHost>(render_frame_host_, client_.get());
   base::ResetAndReturn(&set_client_callback_).Run();
 }
 
-// Creates a VRDisplayImpl unique to this service so that the associated page
-// can communicate with the VRDevice.
 void VRServiceImpl::ConnectDevice(BrowserXrDevice* device) {
-  // Client should always be set as this is called through SetClient.
-  DCHECK(client_);
-  DCHECK(displays_.find(device) == displays_.end());
-  device::mojom::VRDisplayInfoPtr display_info = device->GetVRDisplayInfo();
-  DCHECK(display_info);
-  if (!display_info)
-    return;
-  displays_[device] = std::make_unique<VRDisplayHost>(
-      device, render_frame_host_, client_.get(), std::move(display_info));
+  // display_ is initialized on IntializationComplete.  Devices may be added
+  // before that, but they'll be picked up during display_'s constructor.
+  // We just need to notify display_ when new capabilities were added after
+  // initialization.
+  if (display_) {
+    display_->OnDeviceAdded(device);
+  }
 }
 
 void VRServiceImpl::RemoveDevice(BrowserXrDevice* device) {
-  DCHECK(client_);
-  auto it = displays_.find(device);
-  DCHECK(it != displays_.end());
-  displays_.erase(it);
+  if (display_) {
+    display_->OnDeviceRemoved(device);
+  }
 }
 
 void VRServiceImpl::SetListeningForActivate(bool listening) {
-  for (const auto& display : displays_)
-    display.second->SetListeningForActivate(listening);
+  if (display_)
+    display_->SetListeningForActivate(listening);
 }
 
 void VRServiceImpl::OnWebContentsFocused(content::RenderWidgetHost* host) {
@@ -121,8 +120,8 @@ void VRServiceImpl::OnWebContentsFocusChanged(content::RenderWidgetHost* host,
       render_frame_host_->GetView()->GetRenderWidgetHost() != host) {
     return;
   }
-  for (const auto& display : displays_)
-    display.second->SetInFocusedFrame(focused);
+  if (display_)
+    display_->SetInFocusedFrame(focused);
 }
 
 }  // namespace vr
