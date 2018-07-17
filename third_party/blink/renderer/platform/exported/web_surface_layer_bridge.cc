@@ -11,10 +11,8 @@ namespace blink {
 
 std::unique_ptr<WebSurfaceLayerBridge> WebSurfaceLayerBridge::Create(
     WebLayerTreeView* layer_tree_view,
-    WebSurfaceLayerBridgeObserver* observer,
-    cc::UpdateSubmissionStateCB update_submission_state_callback) {
-  return std::make_unique<SurfaceLayerBridge>(
-      layer_tree_view, observer, std::move(update_submission_state_callback));
+    WebSurfaceLayerBridgeObserver* observer) {
+  return std::make_unique<SurfaceLayerBridge>(layer_tree_view, observer);
 }
 
 WebSurfaceLayerBridge::~WebSurfaceLayerBridge() = default;

@@ -16,16 +16,11 @@
 
 namespace cc {
 
-// If given true, we should submit frames, as we are unoccluded on screen.
-// If given false, we should not submit compositor frames.
-using UpdateSubmissionStateCB = base::RepeatingCallback<void(bool)>;
-
 // A layer that renders a surface referencing the output of another compositor
 // instance or client.
 class CC_EXPORT SurfaceLayer : public Layer {
  public:
   static scoped_refptr<SurfaceLayer> Create();
-  static scoped_refptr<SurfaceLayer> Create(UpdateSubmissionStateCB);
 
   void SetPrimarySurfaceId(const viz::SurfaceId& surface_id,
                            const DeadlinePolicy& deadline_policy);
@@ -40,8 +35,6 @@ class CC_EXPORT SurfaceLayer : public Layer {
 
   void SetSurfaceHitTestable(bool surface_hit_testable);
   bool surface_hit_testable() const { return surface_hit_testable_; }
-
-  void SetMayContainVideo(bool);
 
   // Layer overrides.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -62,7 +55,6 @@ class CC_EXPORT SurfaceLayer : public Layer {
 
  protected:
   SurfaceLayer();
-  explicit SurfaceLayer(UpdateSubmissionStateCB);
   bool HasDrawableContent() const override;
 
  private:
@@ -71,9 +63,6 @@ class CC_EXPORT SurfaceLayer : public Layer {
   // Returns a SurfaceRange corresponding to the surface layer.
   viz::SurfaceRange GetSurfaceRange() const;
 
-  UpdateSubmissionStateCB update_submission_state_callback_;
-
-  bool may_contain_video_ = false;
   viz::SurfaceId primary_surface_id_;
   viz::SurfaceId fallback_surface_id_;
   base::Optional<uint32_t> deadline_in_frames_ = 0u;

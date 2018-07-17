@@ -82,9 +82,6 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
     return false;
 
-  if (!LayerImpl::WillDraw(draw_mode, resource_provider))
-    return false;
-
   // Explicitly acquire and release the provider mutex so it can be held from
   // WillDraw to DidDraw. Since the compositor thread is in the middle of
   // drawing, the layer will not be destroyed before DidDraw is called.
@@ -101,6 +98,9 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
     provider_client_impl_->ReleaseLock();
     return false;
   }
+
+  if (!LayerImpl::WillDraw(draw_mode, resource_provider))
+    return false;
 
   if (!updater_) {
     const LayerTreeSettings& settings = layer_tree_impl()->settings();

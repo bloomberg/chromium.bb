@@ -294,10 +294,10 @@ class MockSurfaceLayerBridge : public blink::WebSurfaceLayerBridge {
  public:
   MOCK_CONST_METHOD0(GetCcLayer, cc::Layer*());
   MOCK_CONST_METHOD0(GetFrameSinkId, const viz::FrameSinkId&());
-  MOCK_CONST_METHOD0(GetSurfaceId, const viz::SurfaceId&());
   MOCK_METHOD0(ClearSurfaceId, void());
   MOCK_METHOD1(SetContentsOpaque, void(bool));
   MOCK_METHOD0(CreateSurfaceLayer, void());
+  MOCK_CONST_METHOD0(GetSurfaceId, const viz::SurfaceId&());
 };
 
 class MockVideoFrameCompositor : public VideoFrameCompositor {
@@ -311,7 +311,7 @@ class MockVideoFrameCompositor : public VideoFrameCompositor {
   void SetOnNewProcessedFrameCallback(OnNewProcessedFrameCB cb) override {}
   MOCK_METHOD0(GetCurrentFrameAndUpdateIfStale, scoped_refptr<VideoFrame>());
   MOCK_METHOD3(EnableSubmission,
-               void(const viz::SurfaceId&,
+               void(const viz::FrameSinkId&,
                     media::VideoRotation,
                     blink::WebFrameSinkDestroyedCallback));
 };
@@ -379,8 +379,9 @@ class WebMediaPlayerImplTest : public testing::Test {
         kMaxKeyframeDistanceToDisableBackgroundVideo,
         kMaxKeyframeDistanceToDisableBackgroundVideoMSE, false, false,
         std::move(provider),
-        base::BindOnce(&WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
-                       base::Unretained(this)),
+        base::BindRepeating(
+            &WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
+            base::Unretained(this)),
         viz::TestContextProvider::Create(),
         base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo));
 
@@ -415,8 +416,7 @@ class WebMediaPlayerImplTest : public testing::Test {
 
  protected:
   std::unique_ptr<blink::WebSurfaceLayerBridge> CreateMockSurfaceLayerBridge(
-      blink::WebSurfaceLayerBridgeObserver*,
-      cc::UpdateSubmissionStateCB) {
+      blink::WebSurfaceLayerBridgeObserver*) {
     return std::move(surface_layer_bridge_);
   }
 
@@ -768,8 +768,8 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
     EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+        .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   }
@@ -1166,7 +1166,7 @@ TEST_F(WebMediaPlayerImplTest, NoStreams) {
 
   if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer()).Times(0);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId()).Times(0);
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId()).Times(0);
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _)).Times(0);
   }
 
@@ -1184,8 +1184,8 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
     EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+        .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
@@ -1211,8 +1211,8 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
     EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+        .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
@@ -1239,8 +1239,8 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
     EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+        .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
@@ -1315,8 +1315,8 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
     EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-        .WillOnce(ReturnRef(surface_id_));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+        .WillOnce(ReturnRef(frame_sink_id_));
     EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
@@ -1353,8 +1353,8 @@ TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
 
   EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
   EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-  EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-      .WillOnce(ReturnRef(surface_id_));
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+      .WillOnce(ReturnRef(frame_sink_id_));
   EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
 
@@ -1392,8 +1392,10 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   InitializeWebMediaPlayerImpl();
 
   EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+      .WillOnce(ReturnRef(frame_sink_id_));
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-      .WillRepeatedly(ReturnRef(surface_id_));
+      .WillOnce(ReturnRef(surface_id_));
   EXPECT_CALL(*compositor_, EnableSubmission(_, _, _));
   EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
 

@@ -24,7 +24,6 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "cc/layers/surface_layer.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "media/base/media_observer.h"
 #include "media/base/media_tracks.h"
@@ -867,8 +866,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool surface_layer_for_video_enabled_ = false;
 
   base::OnceCallback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
-      blink::WebSurfaceLayerBridgeObserver*,
-      cc::UpdateSubmissionStateCB)>
+      blink::WebSurfaceLayerBridgeObserver*)>
       create_bridge_callback_;
 
   base::CancelableOnceCallback<void(base::TimeTicks)> frame_time_report_cb_;
