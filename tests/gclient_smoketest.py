@@ -1801,6 +1801,8 @@ class GClientSmokeCipd(GClientSmokeBase):
       contents = f.read()
 
     self.assertEqual([
+        '$ParanoidMode CheckPresence',
+        '',
         '@Subdir src/another_cipd_dep',
         'package1 1.1-cr0',
         'package2 1.13',

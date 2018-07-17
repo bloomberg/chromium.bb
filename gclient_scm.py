@@ -1343,6 +1343,7 @@ class CipdRoot(object):
       ensure_file = None
       with tempfile.NamedTemporaryFile(
           suffix='.ensure', delete=False) as ensure_file:
+        ensure_file.write('$ParanoidMode CheckPresence\n\n')
         for subdir, packages in sorted(self._packages_by_subdir.iteritems()):
           ensure_file.write('@Subdir %s\n' % subdir)
           for package in sorted(packages, key=lambda p: p.name):
