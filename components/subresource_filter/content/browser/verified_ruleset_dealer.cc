@@ -62,7 +62,8 @@ scoped_refptr<const MemoryMappedRuleset> VerifiedRulesetDealer::GetRuleset() {
     }
     case RulesetVerificationStatus::INTACT: {
       auto ruleset = RulesetDealer::GetRuleset();
-      DCHECK(ruleset);
+      // Note, |ruleset| can still be nullptr here if mmap fails, despite the
+      // fact that it must have succeeded previously.
       return ruleset;
     }
     case RulesetVerificationStatus::CORRUPT:

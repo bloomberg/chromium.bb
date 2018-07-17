@@ -164,6 +164,30 @@ TEST_F(SubresourceFilterVerifiedRulesetDealerTest,
   EXPECT_EQ(RulesetVerificationStatus::CORRUPT, ruleset_dealer()->status());
 }
 
+// This is a duplicated test from RulesetDealer, to ensure that verification
+// doesn't introduce any bad assumptions about mmap failures.
+TEST_F(SubresourceFilterVerifiedRulesetDealerTest, MmapFailure) {
+  ruleset_dealer()->SetRulesetFile(
+      testing::TestRuleset::Open(rulesets().indexed_1()));
+  {
+    scoped_refptr<const MemoryMappedRuleset> ref_to_ruleset =
+        ruleset_dealer()->GetRuleset();
+    EXPECT_TRUE(!!ref_to_ruleset);
+
+    // Simulate subsequent mmap failures
+    MemoryMappedRuleset::SetMemoryMapFailuresForTesting(true);
+
+    // Calls to GetRuleset should succeed as long as the strong ref
+    // is still around.
+    EXPECT_TRUE(ruleset_dealer()->has_cached_ruleset());
+    EXPECT_TRUE(!!ruleset_dealer()->GetRuleset());
+  }
+  EXPECT_FALSE(ruleset_dealer()->has_cached_ruleset());
+  EXPECT_FALSE(!!ruleset_dealer()->GetRuleset());
+  MemoryMappedRuleset::SetMemoryMapFailuresForTesting(false);
+  EXPECT_TRUE(!!ruleset_dealer()->GetRuleset());
+}
+
 TEST_F(SubresourceFilterVerifiedRulesetDealerTest,
        TruncatingFileMakesRulesetInvalid) {
   testing::TestRuleset::CorruptByTruncating(rulesets().indexed_1(), 4096);

@@ -216,10 +216,7 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
 
   scoped_refptr<const MemoryMappedRuleset> ruleset =
       ruleset_dealer_->GetRuleset();
-  DCHECK(ruleset);
-  // Data can be null even if the original file is valid, if there is a
-  // memory mapping issue.
-  if (!ruleset->data())
+  if (!ruleset)
     return;
 
   base::OnceClosure first_disallowed_load_callback(base::BindOnce(
