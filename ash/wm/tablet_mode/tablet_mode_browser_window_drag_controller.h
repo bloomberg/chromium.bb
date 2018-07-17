@@ -12,10 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
-namespace views {
-class Widget;
-}  // namespace views
-
 namespace ash {
 class TabletModeWindowDragDelegate;
 
@@ -44,31 +40,13 @@ class TabletModeBrowserWindowDragController : public WindowResizer {
   }
 
  private:
-  void EndDragImpl(wm::WmToplevelWindowEventHandler::DragResult result);
+  // The drag delegate that does the real work: shows/hides the drag indicators,
+  // preview windows, blurred background, etc, during dragging.
+  std::unique_ptr<TabletModeWindowDragDelegate> drag_delegate_;
 
-  // Scales down the source window if the dragged window is dragged past the
-  // |kIndicatorThresholdRatio| threshold and restores it if the dragged window
-  // is dragged back toward the top of the screen. |location_in_screen| is the
-  // current drag location for the dragged window.
-  void UpdateSourceWindow(const gfx::Point& location_in_screen);
-
-  // Shows/Hides/Destroies the scrim widget |scrim_| based on the current
-  // location |location_in_screen|.
-  void UpdateScrim(const gfx::Point& location_in_screen);
-
-  // Shows the scrim with the specified opacity, blur and expected bounds.
-  void ShowScrim(float opacity, float blur, const gfx::Rect& bounds_in_screen);
-
-  // A widget placed below the current dragged window to show the blurred or
-  // transparent background and to prevent the dragged window merge into any
-  // browser window beneath it during dragging.
-  std::unique_ptr<views::Widget> scrim_;
-
-  gfx::Point previous_location_in_parent_;
+  gfx::Point previous_location_in_screen_;
 
   bool did_lock_cursor_ = false;
-
-  std::unique_ptr<TabletModeWindowDragDelegate> drag_delegate_;
 
   // Used to determine if this has been deleted during a drag such as when a tab
   // gets dragged into another browser window.

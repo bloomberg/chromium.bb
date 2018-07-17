@@ -35,12 +35,12 @@ class ASH_EXPORT TabletModeAppWindowDragController {
   void EndWindowDrag(ui::GestureEvent* event,
                      wm::WmToplevelWindowEventHandler::DragResult result);
 
+  // Apply transform to the dragged window during dragging.
+  void UpdateDraggedWindow(const gfx::Point& location_in_screen);
+
   std::unique_ptr<TabletModeWindowDragDelegate> drag_delegate_;
 
   gfx::Point initial_location_in_screen_;
-
-  // Tracks the amount of the drag. Only valid if window is being dragged.
-  gfx::PointF gesture_drag_amount_;
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeAppWindowDragController);
 };

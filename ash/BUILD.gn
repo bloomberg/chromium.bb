@@ -1215,6 +1215,8 @@ component("ash") {
     "wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h",
     "wm/tablet_mode/tablet_mode_browser_window_drag_controller.cc",
     "wm/tablet_mode/tablet_mode_browser_window_drag_controller.h",
+    "wm/tablet_mode/tablet_mode_browser_window_drag_delegate.cc",
+    "wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h",
     "wm/tablet_mode/tablet_mode_controller.cc",
     "wm/tablet_mode/tablet_mode_controller.h",
     "wm/tablet_mode/tablet_mode_event_handler.cc",
