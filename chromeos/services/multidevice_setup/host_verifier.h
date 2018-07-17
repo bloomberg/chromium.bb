@@ -13,9 +13,14 @@ namespace chromeos {
 namespace multidevice_setup {
 
 // Verifies that this device can connect to the currently-set MultiDevice host.
-// The verification process consists of creating a Bluetooth connection to the
-// device, performing an authentication handshake, and enabling the per-device
-// features which are supported.
+// In order for a host device to be considered set, its BETTER_TOGETHER_HOST
+// software feature must be enabled, and in order for a host device to be
+// considered verified, at least one of its other host software features must be
+// enabled.
+//
+// HostVerifier waits for that situation to occur and has the ability (via its
+// AttemptVerificationNow() function) to send a tickle message to the phone to
+// ask it to enable its software features.
 class HostVerifier {
  public:
   class Observer {
@@ -26,9 +31,9 @@ class HostVerifier {
 
   virtual ~HostVerifier();
 
-  // Returns whether the host has completed verification; note that if
-  // verification is still in the process of being completed but has not
-  // finished, this function still returns false.
+  // Returns whether verification for the current MultiDevice host device has
+  // completed (see description above). If no MultiDevice host is set at all,
+  // false is returned.
   virtual bool IsHostVerified() = 0;
 
   // Attempts the verification flow; successful completion of the flow is
