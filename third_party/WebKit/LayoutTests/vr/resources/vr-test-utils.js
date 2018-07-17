@@ -1,5 +1,11 @@
 'use strict';
 
+function vr_test(func, vrDisplays, name, properties) {
+  setFakeDevices(vrDisplays);
+  let t = async_test(name, properties);
+  func(t, mockVRService);
+}
+
 function fakeVRDisplays(){
   let generic_left_fov = {
     upDegrees : 45,
