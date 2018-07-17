@@ -38,13 +38,10 @@ const double kMaxVolume = 1.0;
 constexpr base::TimeDelta kOnMuteWaitTimeout =
     base::TimeDelta::FromMilliseconds(1500);
 
-// Posts base::RunLoop::QuitCurrentWhenIdleClosureDeprecated() on specified
-// message loop after a certain number of calls given by |limit|.
-ACTION_P3(CheckCountAndPostQuitTask, count, limit, loop_or_proxy) {
-  if (++*count >= limit) {
-    loop_or_proxy->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
-  }
+// Runs |quit_closure| after the |count| of calls reaches |limit|.
+ACTION_P3(CheckCountAndPostQuitTask, count, limit, quit_closure) {
+  if (++*count >= limit)
+    quit_closure.Run();
 }
 
 void RunLoopWithTimeout(base::RunLoop* run_loop, base::TimeDelta timeout) {
@@ -141,8 +138,9 @@ class AudioInputControllerTest : public testing::TestWithParam<bool> {
       return;
     }
 
-    controller_->Close(base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
-    base::RunLoop().Run();
+    base::RunLoop run_loop;
+    controller_->Close(run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   base::MessageLoop message_loop_;
@@ -182,15 +180,16 @@ TEST_P(AudioInputControllerTest, CreateRecordAndClose) {
   ASSERT_TRUE(controller_.get());
 
   // Write() should be called ten times.
+  base::RunLoop run_loop;
   EXPECT_CALL(sync_writer_, Write(NotNull(), _, _, _))
       .Times(AtLeast(10))
       .WillRepeatedly(
-          CheckCountAndPostQuitTask(&count, 10, message_loop_.task_runner()));
+          CheckCountAndPostQuitTask(&count, 10, run_loop.QuitClosure()));
   EXPECT_CALL(user_input_monitor_, EnableKeyPressMonitoring());
   controller_->Record();
 
   // Record and wait until ten Write() callbacks are received.
-  base::RunLoop().Run();
+  run_loop.Run();
 
   EXPECT_CALL(user_input_monitor_, DisableKeyPressMonitoring());
   EXPECT_CALL(sync_writer_, Close());
