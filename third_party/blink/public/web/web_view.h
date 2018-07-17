@@ -78,8 +78,8 @@ class WebView : protected WebWidget {
   using WebWidget::DidExitFullscreen;
   using WebWidget::BeginFrame;
   using WebWidget::UpdateAllLifecyclePhases;
-  using WebWidget::Paint;
-  using WebWidget::PaintIgnoringCompositing;
+  using WebWidget::PaintContent;
+  using WebWidget::PaintContentIgnoringCompositing;
   using WebWidget::LayoutAndPaintAsync;
   using WebWidget::CompositeAndReadbackAsync;
   using WebWidget::ThemeChanged;

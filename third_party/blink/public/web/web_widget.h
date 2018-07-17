@@ -109,21 +109,24 @@ class WebWidget {
   // Called to paint the rectangular region within the WebWidget
   // onto the specified canvas at (viewPort.x,viewPort.y).
   //
-  // Before calling Paint(), you must call
-  // UpdateLifecycle(LifecycleUpdate::All): this method assumes the lifecycle is
-  // clean. It is okay to call paint multiple times once the lifecycle is
+  // Before calling PaintContent(), you must call
+  // UpdateLifecycle(LifecycleUpdate::All): this method assumes the lifecycle
+  // is clean. It is okay to call paint multiple times once the lifecycle is
   // updated, assuming no other changes are made to the WebWidget (e.g., once
   // events are processed, it should be assumed that another call to
-  // UpdateLifecycle is warranted before painting again).
-  virtual void Paint(cc::PaintCanvas*, const WebRect& view_port) {}
+  // UpdateLifecycle is warranted before painting again). Paints starting from
+  // the main LayoutView's property tree state, thus ignoring any transient
+  // transormations (e.g. pinch-zoom, dev tools emulation, etc.).
+  virtual void PaintContent(cc::PaintCanvas*, const WebRect& view_port) {}
 
-  // Similar to paint() but ignores compositing decisions, squashing all
+  // Similar to PaintContent() but ignores compositing decisions, squashing all
   // contents of the WebWidget into the output given to the cc::PaintCanvas.
   //
-  // Before calling PaintIgnoringCompositing(), you must call
+  // Before calling PaintContentIgnoringCompositing(), you must call
   // UpdateLifecycle(LifecycleUpdate::All): this method assumes the lifecycle is
   // clean.
-  virtual void PaintIgnoringCompositing(cc::PaintCanvas*, const WebRect&) {}
+  virtual void PaintContentIgnoringCompositing(cc::PaintCanvas*,
+                                               const WebRect&) {}
 
   // Run layout and paint of all pending document changes asynchronously.
   virtual void LayoutAndPaintAsync(base::OnceClosure callback) {}

@@ -431,10 +431,11 @@ void WebPagePopupImpl::CompositeWithRasterForTesting() {
     layer_tree_view_->CompositeWithRasterForTesting();
 }
 
-void WebPagePopupImpl::Paint(cc::PaintCanvas* canvas, const WebRect& rect) {
+void WebPagePopupImpl::PaintContent(cc::PaintCanvas* canvas,
+                                    const WebRect& rect) {
   if (!closing_) {
-    PageWidgetDelegate::Paint(*page_, canvas, rect,
-                              *page_->DeprecatedLocalMainFrame());
+    PageWidgetDelegate::PaintContent(*page_, canvas, rect,
+                                     *page_->DeprecatedLocalMainFrame());
   }
 }
 

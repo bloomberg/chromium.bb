@@ -2234,7 +2234,7 @@ bool RenderViewImpl::DidTapMultipleTargets(
 
         DCHECK(webview_->IsAcceleratedCompositingActive());
         webview_->UpdateAllLifecyclePhases();
-        webview_->PaintIgnoringCompositing(&canvas, zoom_rect);
+        webview_->PaintContentIgnoringCompositing(&canvas, zoom_rect);
       }
 
       gfx::Rect zoom_rect_in_screen =

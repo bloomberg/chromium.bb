@@ -68,11 +68,11 @@ void PageWidgetDelegate::UpdateLifecycle(
   }
 }
 
-static void PaintInternal(Page& page,
-                          cc::PaintCanvas* canvas,
-                          const WebRect& rect,
-                          LocalFrame& root,
-                          const GlobalPaintFlags global_paint_flags) {
+static void PaintContentInternal(Page& page,
+                                 cc::PaintCanvas* canvas,
+                                 const WebRect& rect,
+                                 LocalFrame& root,
+                                 const GlobalPaintFlags global_paint_flags) {
   if (rect.IsEmpty())
     return;
 
@@ -93,7 +93,9 @@ static void PaintInternal(Page& page,
     builder.Context().SetDeviceScaleFactor(scale_factor);
     view->PaintWithLifecycleUpdate(builder.Context(), global_paint_flags,
                                    CullRect(dirty_rect));
-    builder.EndRecording(*canvas);
+    builder.EndRecording(
+        *canvas,
+        view->GetLayoutView()->FirstFragment().LocalBorderBoxProperties());
   } else {
     PaintFlags flags;
     flags.setColor(SK_ColorWHITE);
@@ -103,18 +105,20 @@ static void PaintInternal(Page& page,
   canvas->restore();
 }
 
-void PageWidgetDelegate::Paint(Page& page,
-                               cc::PaintCanvas* canvas,
-                               const WebRect& rect,
-                               LocalFrame& root) {
-  PaintInternal(page, canvas, rect, root, kGlobalPaintNormalPhase);
+void PageWidgetDelegate::PaintContent(Page& page,
+                                      cc::PaintCanvas* canvas,
+                                      const WebRect& rect,
+                                      LocalFrame& root) {
+  PaintContentInternal(page, canvas, rect, root, kGlobalPaintNormalPhase);
 }
 
-void PageWidgetDelegate::PaintIgnoringCompositing(Page& page,
-                                                  cc::PaintCanvas* canvas,
-                                                  const WebRect& rect,
-                                                  LocalFrame& root) {
-  PaintInternal(page, canvas, rect, root, kGlobalPaintFlattenCompositingLayers);
+void PageWidgetDelegate::PaintContentIgnoringCompositing(
+    Page& page,
+    cc::PaintCanvas* canvas,
+    const WebRect& rect,
+    LocalFrame& root) {
+  PaintContentInternal(page, canvas, rect, root,
+                       kGlobalPaintFlattenCompositingLayers);
 }
 
 WebInputEventResult PageWidgetDelegate::HandleInputEvent(

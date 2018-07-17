@@ -70,9 +70,9 @@ void WebViewFrameWidget::UpdateAllLifecyclePhasesAndCompositeForTesting() {
   web_view_->UpdateAllLifecyclePhasesAndCompositeForTesting();
 }
 
-void WebViewFrameWidget::Paint(cc::PaintCanvas* canvas,
-                               const WebRect& view_port) {
-  return web_view_->Paint(canvas, view_port);
+void WebViewFrameWidget::PaintContent(cc::PaintCanvas* canvas,
+                                      const WebRect& view_port) {
+  return web_view_->PaintContent(canvas, view_port);
 }
 
 void WebViewFrameWidget::LayoutAndPaintAsync(base::OnceClosure callback) {

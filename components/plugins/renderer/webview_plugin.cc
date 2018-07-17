@@ -171,7 +171,7 @@ void WebViewPlugin::Paint(cc::PaintCanvas* canvas, const WebRect& rect) {
       SkFloatToScalar(1.0 / container_->DeviceScaleFactor());
   canvas->scale(inverse_scale, inverse_scale);
 
-  web_view()->Paint(canvas, paint_rect);
+  web_view()->PaintContent(canvas, paint_rect);
 
   canvas->restore();
 }
