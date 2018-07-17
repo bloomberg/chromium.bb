@@ -28,12 +28,22 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace autofill {
 
 namespace {
+
+// The minimum vertical space between the bottom of the autofill popup and the
+// bottom of the Chrome frame.
+// TODO(crbug.com/739978): Investigate if we should compute this distance
+// programmatically. 10dp may not be enough for windows with thick borders.
+const int kPopupBottomMargin = 10;
+
+// The thickness of the border for the autofill popup in dp.
+const int kPopupBorderThicknessDp = 1;
 
 // Child view only for triggering accessibility events. Rendering is handled
 // by |AutofillPopupViewViews|.
@@ -152,6 +162,57 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
       DrawAutofillEntry(canvas, i, line_rect);
     }
   }
+}
+
+void AutofillPopupViewViews::AddExtraInitParams(
+    views::Widget::InitParams* params) {}
+
+std::unique_ptr<views::View> AutofillPopupViewViews::CreateWrapperView() {
+  auto wrapper_view = std::make_unique<views::ScrollView>();
+  scroll_view_ = wrapper_view.get();
+  scroll_view_->set_hide_horizontal_scrollbar(true);
+  scroll_view_->SetContents(this);
+  return wrapper_view;
+}
+
+std::unique_ptr<views::Border> AutofillPopupViewViews::CreateBorder() {
+  return views::CreateSolidBorder(
+      kPopupBorderThicknessDp,
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_UnfocusedBorderColor));
+}
+
+void AutofillPopupViewViews::SetClipPath() {}
+
+// The method differs from the implementation in AutofillPopupBaseView due to
+// |scroll_view_|. The base class doesn't support scrolling when there is not
+// enough vertical space.
+void AutofillPopupViewViews::DoUpdateBoundsAndRedrawPopup() {
+  gfx::Rect bounds = delegate()->popup_bounds();
+
+  SetSize(bounds.size());
+
+  gfx::Rect clipping_bounds = CalculateClippingBounds();
+
+  int available_vertical_space = clipping_bounds.height() -
+                                 (bounds.y() - clipping_bounds.y()) -
+                                 kPopupBottomMargin;
+
+  if (available_vertical_space < bounds.height()) {
+    // The available space is not enough for the full popup so clamp the widget
+    // to what's available. Since the scroll view will show a scroll bar,
+    // increase the width so that the content isn't partially hidden.
+    const int extra_width =
+        scroll_view_ ? scroll_view_->GetScrollBarLayoutWidth() : 0;
+    bounds.set_width(bounds.width() + extra_width);
+    bounds.set_height(available_vertical_space);
+  }
+
+  // Account for the scroll view's border so that the content has enough space.
+  bounds.Inset(-GetWidget()->GetRootView()->border()->GetInsets());
+  GetWidget()->SetBounds(bounds);
+
+  SchedulePaint();
 }
 
 AutofillPopupChildView* AutofillPopupViewViews::GetChildRow(

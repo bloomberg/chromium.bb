@@ -59,11 +59,6 @@ const SkColor kAutofillPopupWarningColor = gfx::kGoogleRed600;
 // border doesn't look too close to the element.
 constexpr int kElementBorderPadding = 1;
 
-int GetCornerRadius() {
-  return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MEDIUM);
-}
-
 int GetContentsVerticalPadding() {
   return ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
@@ -71,7 +66,7 @@ int GetContentsVerticalPadding() {
 
 int GetHorizontalMargin() {
   return views::MenuConfig::instance().item_horizontal_padding +
-         GetCornerRadius();
+         autofill::AutofillPopupBaseView::GetCornerRadius();
 }
 
 }  // namespace
@@ -389,7 +384,7 @@ int AutofillPopupFooterView::GetPrimaryTextStyle() {
 AutofillPopupFooterView::AutofillPopupFooterView(
     AutofillPopupController* controller,
     int line_number)
-    : AutofillPopupItemView(controller, line_number, GetCornerRadius()) {
+    : AutofillPopupItemView(controller, line_number) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
@@ -459,7 +454,7 @@ void AutofillPopupWarningView::GetAccessibleNodeData(
 
 void AutofillPopupWarningView::CreateContent() {
   int horizontal_margin = GetHorizontalMargin();
-  int vertical_margin = GetCornerRadius();
+  int vertical_margin = AutofillPopupBaseView::GetCornerRadius();
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(
@@ -692,35 +687,6 @@ int AutofillPopupViewNativeViews::AdjustWidth(int width) const {
   return width;
 }
 
-void AutofillPopupViewNativeViews::AddExtraInitParams(
-    views::Widget::InitParams* params) {
-  // Ensure the bubble border is not painted on an opaque background.
-  params->opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
-}
-
-std::unique_ptr<views::View> AutofillPopupViewNativeViews::CreateWrapperView() {
-  // Create a wrapper view that contains the current view and will receive the
-  // bubble border. This is needed so that a clipping path can be later applied
-  // on the contents only and not affect the border.
-  auto wrapper_view = std::make_unique<views::View>();
-  wrapper_view->SetLayoutManager(std::make_unique<views::FillLayout>());
-  wrapper_view->AddChildView(this);
-  return wrapper_view;
-}
-
-std::unique_ptr<views::Border> AutofillPopupViewNativeViews::CreateBorder() {
-  auto border = std::make_unique<views::BubbleBorder>(
-      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
-      SK_ColorWHITE);
-  border->SetCornerRadius(GetCornerRadius());
-  border->set_md_shadow_elevation(
-      ChromeLayoutProvider::Get()->GetShadowElevationMetric(
-          views::EMPHASIS_MEDIUM));
-  bubble_border_ = border.get();
-  return border;
-}
-
 void AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
   gfx::Size size = CalculatePreferredSize();
   gfx::Rect popup_bounds;
@@ -758,17 +724,9 @@ void AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
 
   SetSize(size);
 
-  popup_bounds.Inset(-bubble_border_->GetInsets());
-
+  popup_bounds.Inset(-GetWidget()->GetRootView()->border()->GetInsets());
   GetWidget()->SetBounds(popup_bounds);
-
-  // Ensure the child views are not rendered beyond the bubble border
-  // boundaries.
-  SkRect local_bounds = gfx::RectToSkRect(GetLocalBounds());
-  SkScalar radius = SkIntToScalar(bubble_border_->GetBorderCornerRadius());
-  gfx::Path clip_path;
-  clip_path.addRoundRect(local_bounds, radius, radius);
-  set_clip_path(clip_path);
+  SetClipPath();
 
   SchedulePaint();
 }

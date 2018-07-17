@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
+#include "ui/views/controls/scroll_view.h"
 
 namespace autofill {
 
@@ -42,6 +43,13 @@ class AutofillPopupViewViews : public AutofillPopupBaseView,
   // views::Views implementation
   void OnPaint(gfx::Canvas* canvas) override;
 
+  // AutofillPopupBaseView implementation
+  void AddExtraInitParams(views::Widget::InitParams* params) override;
+  std::unique_ptr<views::View> CreateWrapperView() override;
+  std::unique_ptr<views::Border> CreateBorder() override;
+  void SetClipPath() override;
+  void DoUpdateBoundsAndRedrawPopup() override;
+
   // Draw the given autofill entry in |entry_rect|.
   void DrawAutofillEntry(gfx::Canvas* canvas,
                          int index,
@@ -55,6 +63,8 @@ class AutofillPopupViewViews : public AutofillPopupBaseView,
   AutofillPopupChildView* GetChildRow(size_t child_index) const;
 
   AutofillPopupController* controller_;  // Weak reference.
+
+  views::ScrollView* scroll_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupViewViews);
 };
