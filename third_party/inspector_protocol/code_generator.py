@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -604,7 +605,6 @@ def main():
         # Note these should be sorted in the right order.
         # TODO(dgozman): sort them programmatically based on commented includes.
         lib_h_templates = [
-            "Collections_h.template",
             "ErrorSupport_h.template",
             "Values_h.template",
             "Object_h.template",
