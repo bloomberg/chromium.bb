@@ -2,6 +2,13 @@ html {
   height: 100%;  /* Required for printing. */
 }
 
+*:focus {
+  /* Make buttons have the same focus-outline style. */
+  outline: none;
+  /* TODO(yuli): Find a better fix instead of using up box-shadow. */
+  box-shadow: 0 0 2px 3px rgba(37, 129, 223, 0.8);
+}
+
 body {
   background: black;
   bottom: 0;
@@ -88,37 +95,6 @@ body {
 #toolbar-stripe {
   margin: 8px 0;
   position: relative;
-}
-
-.one-button #gallery-enter {
-  /* TODO(yuli): Make a circle button. */
-  position: absolute;
-  right: 24px;
-  bottom: 32px;
-  width: 48px;
-  height: 48px;
-  overflow: hidden;
-}
-
-.one-button #gallery-enter img {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  -webkit-transform: translate(-50%, -50%);
-}
-
-.one-button #gallery-enter.flash {
-  /* TODO(yuli): Improve animation. */
-  -webkit-animation: flashButton 300ms linear 0.5s;
-}
-
-@-webkit-keyframes flashButton {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 .buttons {
@@ -286,12 +262,33 @@ body.mirror #main-preview {
   pointer-events: none;
 }
 
+.one-button.circle button {
+  border-radius: 50%;
+}
+
+.one-button #gallery-enter {
+  position: absolute;
+  right: 24px;
+  bottom: 32px;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+}
+
+.one-button #gallery-enter img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+}
+
 .one-button #take-picture {
   background-image: -webkit-image-set(
       url(../images/camera_button_picture.png) 1x,
       url(../images/2x/camera_button_picture.png) 2x);
   height: 37px;
   width: 73px;
+  border-radius: 20px;
 }
 
 .one-button #take-picture.motion-picture {
@@ -310,23 +307,6 @@ body.mirror #main-preview {
 
 .one-button #take-picture[disabled] {
   background-position: 0 -111px;
-}
-
-.one-button #take-picture:focus {
-  outline: none;
-  position: relative;
-}
-
-.one-button #take-picture:focus::after {
-  border: 2px solid rgba(229, 151, 0, 0.5);
-  border-radius: 20px;
-  bottom: -2px;
-  content: '';
-  display: block;
-  left: -2px;
-  position: absolute;
-  right: -2px;
-  top: -2px;
 }
 
 .one-button #take-picture.flash {
@@ -399,7 +379,6 @@ body.mirror #main-preview {
 #browser {
   bottom: 0;
   left: 0;
-  outline: none;
   opacity: 0;
   overflow: auto;
   position: absolute;
@@ -494,7 +473,6 @@ body.browser #browser {
 }
 
 #browser div.media-wrapper {
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   align-items: center;
   justify-content: center;
   display: flex;
@@ -637,7 +615,6 @@ body:not(.dialog) #dialog {
 #dialog #dialog-popup {
   -webkit-transform: translateY(20px);
   background: white;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   padding: 20px;
@@ -652,7 +629,6 @@ body.dialog #dialog #dialog-popup {
   background: -webkit-image-set(
       url(../images/dialog_button_close.png) 1x,
       url(../images/2x/dialog_button_close.png) 2x) no-repeat;
-  outline: none;
   height: 14px;
   position: absolute;
   right: 7px;

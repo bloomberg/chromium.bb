@@ -105,7 +105,6 @@ camera.views.camera.GalleryButton.prototype.updateButton_ = function() {
     } else {
       button.appendChild(img);
     }
-    camera.util.setAnimationClass(button, button, 'flash');
   });
 };
 
