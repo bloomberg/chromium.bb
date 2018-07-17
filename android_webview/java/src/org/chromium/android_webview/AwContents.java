@@ -135,6 +135,9 @@ public class AwContents implements SmartClipProvider {
     private static final String SAMSUNG_WORKAROUND_BASE_URL = "email://";
     private static final int SAMSUNG_WORKAROUND_DELAY = 200;
 
+    public static final String DATA_URI_HISTOGRAM_NAME =
+            "Android.WebView.LoadUrl.DataUriHasOctothorpe";
+
     private static class ForceAuxiliaryBitmapRendering {
         private static final boolean sResult = lazyCheck();
         private static boolean lazyCheck() {
@@ -1591,6 +1594,12 @@ public class AwContents implements SmartClipProvider {
         if (additionalHttpHeaders != null) {
             params.setExtraHeaders(new HashMap<String, String>(additionalHttpHeaders));
         }
+
+        final String dataScheme = "data:";
+        if (url != null && url.startsWith(dataScheme) && url.contains("#")) {
+            RecordHistogram.recordBooleanHistogram(DATA_URI_HISTOGRAM_NAME, true);
+        }
+
         loadUrl(params);
     }
 
@@ -1651,6 +1660,9 @@ public class AwContents implements SmartClipProvider {
     public void loadData(String data, String mimeType, String encoding) {
         if (TRACE) Log.i(TAG, "%s loadData", this);
         if (isDestroyedOrNoOperation(WARN)) return;
+        if (data != null && data.contains("#")) {
+            RecordHistogram.recordBooleanHistogram(DATA_URI_HISTOGRAM_NAME, true);
+        }
         loadUrl(LoadUrlParams.createLoadDataParams(
                 fixupData(data), fixupMimeType(mimeType), isBase64Encoded(encoding)));
     }
@@ -1662,6 +1674,9 @@ public class AwContents implements SmartClipProvider {
             String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
         if (TRACE) Log.i(TAG, "%s loadDataWithBaseURL=%s", this, baseUrl);
         if (isDestroyedOrNoOperation(WARN)) return;
+        if (data != null && data.contains("#")) {
+            RecordHistogram.recordBooleanHistogram(DATA_URI_HISTOGRAM_NAME, true);
+        }
 
         data = fixupData(data);
         mimeType = fixupMimeType(mimeType);
