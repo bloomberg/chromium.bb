@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.ListMenuButton;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -71,6 +72,7 @@ class ContextualSuggestionsMediator
     private @Nullable TextBubble mHelpBubble;
     private @Nullable WebContents mCurrentWebContents;
 
+    private boolean mSuggestionsSetOnBottomSheet;
     private boolean mDidSuggestionsShowForTab;
     private boolean mHasRecordedPeekEventForTab;
     private boolean mHasRecordedButtonShownForTab;
@@ -276,6 +278,8 @@ class ContextualSuggestionsMediator
     }
 
     private void onToolbarButtonClicked() {
+        if (mSuggestionsSetOnBottomSheet) return;
+
         maybeShowContentInSheet();
         mCoordinator.showSuggestions(mSuggestionsSource);
         mCoordinator.expandBottomSheet();
@@ -365,6 +369,25 @@ class ContextualSuggestionsMediator
         }
     }
 
+    private void removeSuggestionsFromSheet() {
+        if (mSheetObserver != null) {
+            mCoordinator.removeBottomSheetObserver(mSheetObserver);
+            mSheetObserver = null;
+        }
+        mCoordinator.removeSuggestions();
+
+        // Wait until suggestions are fully removed to reset {@code mSuggestionsSetOnBottomSheet}.
+        mCoordinator.addBottomSheetObserver(new EmptyBottomSheetObserver() {
+            @Override
+            public void onSheetContentChanged(@Nullable BottomSheet.BottomSheetContent newContent) {
+                if (!(newContent instanceof ContextualSuggestionsBottomSheetContent)) {
+                    mSuggestionsSetOnBottomSheet = false;
+                    mCoordinator.removeBottomSheetObserver(this);
+                }
+            }
+        });
+    }
+
     /**
      * Called when suggestions are cleared either due to the user explicitly dismissing
      * suggestions via the close button or due to the FetchHelper signaling state should
@@ -373,13 +396,9 @@ class ContextualSuggestionsMediator
     private void clearSuggestions() {
         // TODO(twellington): Does this signal need to go back to FetchHelper?
 
-        // Call remove suggestions before clearing model state so that views don't respond to model
+        // Remove suggestions before clearing model state so that views don't respond to model
         // changes while suggestions are hiding. See https://crbug.com/840579.
-        if (mSheetObserver != null) {
-            mCoordinator.removeBottomSheetObserver(mSheetObserver);
-            mSheetObserver = null;
-        }
-        mCoordinator.removeSuggestions();
+        removeSuggestionsFromSheet();
 
         if (mToolbarButtonEnabled) {
             mToolbarManager.disableExperimentalButton();
@@ -432,7 +451,7 @@ class ContextualSuggestionsMediator
                                         : ContextualSuggestionsEvent.UI_DISMISSED_WITHOUT_OPEN;
             reportEvent(openedEvent);
             if (mToolbarButtonEnabled) {
-                mCoordinator.removeSuggestions();
+                removeSuggestionsFromSheet();
             } else {
                 clearSuggestions();
 
@@ -465,6 +484,7 @@ class ContextualSuggestionsMediator
             return;
         }
 
+        mSuggestionsSetOnBottomSheet = true;
         mDidSuggestionsShowForTab = true;
         mUpdateRemainingCountOnNextPeek = true;
 
@@ -522,7 +542,7 @@ class ContextualSuggestionsMediator
             @Override
             public void onSheetClosed(int reason) {
                 mModel.setMenuButtonVisibility(false);
-                if (mToolbarButtonEnabled) mCoordinator.removeSuggestions();
+                if (mToolbarButtonEnabled) removeSuggestionsFromSheet();
             }
 
             @Override

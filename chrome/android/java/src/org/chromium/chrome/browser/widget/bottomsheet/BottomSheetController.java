@@ -165,7 +165,10 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             public void onScrimClick() {
                 if (!mBottomSheet.isSheetOpen()) return;
                 mBottomSheet.setSheetState(
-                        BottomSheet.SHEET_STATE_PEEK, true, StateChangeReason.TAP_SCRIM);
+                        mBottomSheet.getCurrentSheetContent().isPeekStateEnabled()
+                                ? BottomSheet.SHEET_STATE_PEEK
+                                : BottomSheet.SHEET_STATE_HIDDEN,
+                        true, StateChangeReason.TAP_SCRIM);
             }
 
             @Override
