@@ -368,14 +368,17 @@ cr.define('discards', function() {
     let discardLink = row.querySelector('.discard-link');
     let discardUrgentLink = row.querySelector('.discard-urgent-link');
 
-    // Determine which action links should be enabled/disabled.
+    // Determine which action links should be enabled/disabled. By default
+    // everything is disabled and links are selectively enabled depending on the
+    // tab state.
     let loadEnabled = false;
     let freezeEnabled = false;
     let discardEnabled = false;
     let discardUrgentEnabled = false;
     if (info.loadingState == mojom.LifecycleUnitLoadingState.UNLOADED) {
       loadEnabled = true;
-    } else {
+    } else if (info.visibility == 0) {
+      // Only tabs that aren't visible can be frozen or discarded for now.
       freezeEnabled = true;
       discardEnabled = true;
       discardUrgentEnabled = true;
