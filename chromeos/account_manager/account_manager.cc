@@ -341,6 +341,12 @@ void AccountManager::RemoveObserver(AccountManager::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>
+AccountManager::GetUrlLoaderFactory() {
+  DCHECK(url_loader_factory_);
+  return url_loader_factory_;
+}
+
 std::unique_ptr<OAuth2AccessTokenFetcher>
 AccountManager::CreateAccessTokenFetcher(
     const AccountKey& account_key,
@@ -388,7 +394,7 @@ void AccountManager::RevokeGaiaTokenOnServer(const std::string& refresh_token) {
 
   pending_token_revocation_requests_.emplace_back(
       std::make_unique<GaiaTokenRevocationRequest>(
-          url_loader_factory_, delay_network_call_runner_, refresh_token,
+          GetUrlLoaderFactory(), delay_network_call_runner_, refresh_token,
           weak_factory_.GetWeakPtr()));
 }
 

@@ -11,7 +11,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
@@ -130,10 +129,6 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const base::ListValue* args) {
   const std::string& email = auth_data->FindKey("email")->GetString();
   CHECK(!email.empty());
 
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
-      g_browser_process->system_network_context_manager()
-          ->GetSharedURLLoaderFactory();
-
   // TODO(sinhak): Do not depend on Profile unnecessarily.
   Profile* profile = Profile::FromWebUI(web_ui());
 
@@ -147,7 +142,8 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const base::ListValue* args) {
 
   // SigninHelper deletes itself after its work is done.
   new SigninHelper(profile, account_manager, close_dialog_closure_,
-                   url_loader_factory, gaia_id, email, auth_code);
+                   account_manager->GetUrlLoaderFactory(), gaia_id, email,
+                   auth_code);
 }
 
 }  // namespace chromeos
