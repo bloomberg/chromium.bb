@@ -35,6 +35,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -132,7 +133,7 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
         [&](const network::ResourceRequest& request) {
           intercepted_url_ = request.url;
           intercepted_headers_ = request.headers;
-          intercepted_body_ = GetBodyFromRequest(request);
+          intercepted_body_ = network::GetUploadData(request);
           ++num_network_requests_;
         }));
     test_shared_loader_factory_ =
@@ -235,17 +236,6 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
   std::string upload_data() { return intercepted_body_; }
 
   int num_network_requests() { return num_network_requests_; }
-
-  std::string GetBodyFromRequest(const network::ResourceRequest& request) {
-    auto body = request.request_body;
-    if (!body)
-      return std::string();
-
-    CHECK_EQ(1u, body->elements()->size());
-    auto& element = body->elements()->at(0);
-    CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
-    return std::string(element.bytes(), element.length());
-  }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
