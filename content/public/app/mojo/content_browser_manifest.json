@@ -86,6 +86,7 @@
           "testing_api"
         ],
         "cdm": [ "media:cdm" ],
+        "chromecast": [ "multizone" ],
         "content": [ "navigation" ],
         "content_gpu": [ "browser" ],
         "content_plugin": [ "browser" ],
