@@ -61,7 +61,8 @@ class PageCappingPageLoadMetricsObserver
 
   // Virtual for testing.
   // Gets the page load capping blacklist from the page load capping service.
-  // Returns null for incognito profiles.
+  // Returns null for incognito profiles or profiles that have Data Saver
+  // disabled.
   virtual PageLoadCappingBlacklist* GetPageLoadCappingBlacklist() const;
 
  private:
@@ -140,7 +141,8 @@ class PageCappingPageLoadMetricsObserver
 
   // Empty until the blacklist is queried and UMA is recorded about blacklist
   // reason. Once populated, whether the feature is blacklisted or not for the
-  // user on the URL of this page.
+  // user on the URL of this page. Incognito Profiles or Profiles with Data
+  // Saver disabled will cause this to be false once populated.
   base::Optional<bool> blacklisted_;
 
   // If non-empty, a group of handles that are pausing subresource loads in the
