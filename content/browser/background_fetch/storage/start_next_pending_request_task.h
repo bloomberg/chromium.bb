@@ -50,6 +50,8 @@ class StartNextPendingRequestTask : public DatabaseTask {
 
   void DidDeletePendingRequest(blink::ServiceWorkerStatusCode status);
 
+  void FinishWithError(blink::mojom::BackgroundFetchError error) override;
+
   int64_t service_worker_registration_id_;
   std::unique_ptr<proto::BackgroundFetchMetadata> metadata_;
   NextRequestCallback callback_;

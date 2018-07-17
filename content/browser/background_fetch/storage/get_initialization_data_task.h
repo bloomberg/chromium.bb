@@ -76,7 +76,7 @@ class GetInitializationDataTask : public DatabaseTask {
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       blink::ServiceWorkerStatusCode status);
 
-  void FinishTask();
+  void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
   GetInitializationDataCallback callback_;
 

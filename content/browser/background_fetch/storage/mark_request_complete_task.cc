@@ -50,8 +50,9 @@ MarkRequestCompleteTask::~MarkRequestCompleteTask() = default;
 
 void MarkRequestCompleteTask::Start() {
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
-      2u, base::BindOnce(&MarkRequestCompleteTask::CheckAndCallFinished,
-                         weak_factory_.GetWeakPtr()));
+      2u, base::BindOnce(&MarkRequestCompleteTask::FinishWithError,
+                         weak_factory_.GetWeakPtr(),
+                         blink::mojom::BackgroundFetchError::NONE));
 
   StoreResponse(barrier_closure);
   UpdateMetadata(barrier_closure);
@@ -249,7 +250,8 @@ void MarkRequestCompleteTask::DidStoreMetadata(
   std::move(done_closure).Run();
 }
 
-void MarkRequestCompleteTask::CheckAndCallFinished() {
+void MarkRequestCompleteTask::FinishWithError(
+    blink::mojom::BackgroundFetchError error) {
   std::move(callback_).Run();
   Finished();
 }

@@ -65,7 +65,7 @@ class MarkRequestCompleteTask : public DatabaseTask {
   void DidStoreMetadata(base::OnceClosure done_closure,
                         blink::ServiceWorkerStatusCode status);
 
-  void CheckAndCallFinished();
+  void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
   BackgroundFetchRegistrationId registration_id_;
   scoped_refptr<BackgroundFetchRequestInfo> request_info_;

@@ -93,17 +93,17 @@ void GetSettledFetchesTask::DidGetCompletedRequests(
 
 void GetSettledFetchesTask::GetResponses() {
   if (error_ != blink::mojom::BackgroundFetchError::NONE) {
-    FinishTaskWithErrorCode(error_);
+    FinishWithError(error_);
     return;
   }
   if (completed_requests_.empty()) {
-    FinishTaskWithErrorCode(blink::mojom::BackgroundFetchError::NONE);
+    FinishWithError(blink::mojom::BackgroundFetchError::NONE);
     return;
   }
 
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
       completed_requests_.size(),
-      base::BindOnce(&GetSettledFetchesTask::FinishTaskWithErrorCode,
+      base::BindOnce(&GetSettledFetchesTask::FinishWithError,
                      weak_factory_.GetWeakPtr(),
                      blink::mojom::BackgroundFetchError::NONE));
 
@@ -159,7 +159,7 @@ void GetSettledFetchesTask::FillUncachedResponse(
   std::move(callback).Run();
 }
 
-void GetSettledFetchesTask::FinishTaskWithErrorCode(
+void GetSettledFetchesTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
   std::move(settled_fetches_callback_)
       .Run(error, background_fetch_succeeded_, std::move(settled_fetches_),

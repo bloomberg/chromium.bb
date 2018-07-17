@@ -38,10 +38,14 @@ class GetDeveloperIdsTask : public DatabaseTask {
   void DidGetUniqueIds(const base::flat_map<std::string, std::string>& data_map,
                        blink::ServiceWorkerStatusCode status);
 
+  void FinishWithError(blink::mojom::BackgroundFetchError error) override;
+
   int64_t service_worker_registration_id_;
   url::Origin origin_;
 
   blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback_;
+
+  std::vector<std::string> developer_ids_;
 
   base::WeakPtrFactory<GetDeveloperIdsTask> weak_factory_;  // Keep as last.
 
