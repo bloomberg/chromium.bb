@@ -382,7 +382,6 @@ static int32_t read_tile_group_header(AV1Decoder *pbi,
     aom_internal_error(
         &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
         "For OBU_FRAME type obu tile_start_and_end_present_flag must be 0");
-    cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
     return -1;
   }
   *start_tile =
