@@ -3986,7 +3986,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (CGFloat)nativeContentHeaderHeightForWebState:(web::WebState*)webState {
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   if (IsUIRefreshPhase1Enabled() && tab &&
-      tab.webState->GetVisibleURL() == kChromeUINewTabURL &&
+      tab.webState->GetVisibleURL().GetOrigin() == kChromeUINewTabURL &&
       ![self canShowTabStrip]) {
     if (self.usesFullscreenContainer)
       return 0;
