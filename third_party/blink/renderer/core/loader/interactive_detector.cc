@@ -22,6 +22,10 @@ constexpr auto kTimeToInteractiveWindow = TimeDelta::FromSeconds(5);
 // requests for this duration of time.
 constexpr int kNetworkQuietMaximumConnections = 2;
 
+const char kHistogramInputDelay[] = "PageLoad.InteractiveTiming.InputDelay";
+const char kHistogramInputTimestamp[] =
+    "PageLoad.InteractiveTiming.InputTimestamp";
+
 // static
 const char InteractiveDetector::kSupplementName[] = "InteractiveDetector";
 
@@ -222,6 +226,14 @@ void InteractiveDetector::HandleForInputDelay(const WebInputEvent& event) {
     page_event_times_.first_input_timestamp = event_timestamp;
     input_delay_metrics_changed = true;
   }
+
+  UMA_HISTOGRAM_CUSTOM_TIMES(kHistogramInputDelay, delay,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromSeconds(60), 50);
+  UMA_HISTOGRAM_CUSTOM_TIMES(kHistogramInputTimestamp,
+                             event_timestamp - page_event_times_.nav_start,
+                             base::TimeDelta::FromMilliseconds(10),
+                             base::TimeDelta::FromMinutes(10), 100);
 
   // Only update longest input delay if page was not backgrounded while the
   // input was queued.

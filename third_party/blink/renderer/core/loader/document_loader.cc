@@ -1218,7 +1218,7 @@ void DocumentLoader::UpdateNavigationTimings(
     base::TimeTicks fetch_start_time) {
   // If we don't have any navigation timings yet, just start the navigation.
   if (navigation_start_time.is_null()) {
-    GetTiming().SetNavigationStart(base::TimeTicks::Now());
+    GetTiming().SetNavigationStart(CurrentTimeTicks());
     return;
   }
 

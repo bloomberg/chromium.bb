@@ -5505,7 +5505,7 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOM) {
 
 struct FakeTimerSetter {
   FakeTimerSetter() {
-    time_elapsed_ = 0.0;
+    time_elapsed_ = 1.0;
     original_time_function_ = SetTimeFunctionsForTesting(ReturnMockTime);
   }
 
