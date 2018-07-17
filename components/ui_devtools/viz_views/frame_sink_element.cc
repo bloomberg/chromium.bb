@@ -4,6 +4,7 @@
 
 #include "components/ui_devtools/viz_views/frame_sink_element.h"
 
+#include "base/strings/string_piece.h"
 #include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/ui_element_delegate.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -92,7 +93,7 @@ std::unique_ptr<protocol::Array<std::string>> FrameSinkElement::GetAttributes()
   attributes->addItem(frame_sink_id_.ToString());
   attributes->addItem("Title");
   attributes->addItem(
-      frame_sink_manager_->GetFrameSinkDebugLabel(frame_sink_id_));
+      (frame_sink_manager_->GetFrameSinkDebugLabel(frame_sink_id_)).data());
   return attributes;
 }
 
