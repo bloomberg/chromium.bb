@@ -13,6 +13,7 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tree_host_observer.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace aura {
@@ -36,6 +37,7 @@ class WindowTree;
 // of any changes to the root Window.
 class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
     : public aura::WindowObserver,
+      public aura::WindowTreeHostObserver,
       public viz::HostFrameSinkClient {
  public:
   ClientRoot(WindowTree* window_tree, aura::Window* window, bool is_top_level);
@@ -58,6 +60,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   // If necessary, this updates the LocalSurfaceId.
   void UpdateLocalSurfaceIdIfNecessary();
 
+  // Calls HandleBoundsOrScaleFactorChange() it the scale factor has changed.
+  void CheckForScaleFactorChange();
+
+  // Called when the bounds or scale factor changes. |old_bounds| is the
+  // previous bounds, which may not have changed if the scale factor changes.
+  void HandleBoundsOrScaleFactorChange(const gfx::Rect& old_bounds);
+
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
@@ -66,6 +75,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
+  void OnWindowAddedToRootWindow(aura::Window* window) override;
+  void OnWindowRemovingFromRootWindow(aura::Window* window,
+                                      aura::Window* new_root) override;
+
+  // aura::WindowTreeHostObserver:
+  void OnHostResized(aura::WindowTreeHost* host) override;
 
   // viz::HostFrameSinkClient:
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;

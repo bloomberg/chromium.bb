@@ -4,6 +4,7 @@
 
 #include "services/ui/ws2/screen_provider.h"
 
+#include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
 
 using display::Display;
@@ -32,8 +33,13 @@ ScreenProvider::~ScreenProvider() {
   Screen::GetScreen()->RemoveObserver(this);
 }
 
-void ScreenProvider::AddBinding(mojom::ScreenProviderRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void ScreenProvider::AddObserver(mojom::ScreenProviderObserver* observer) {
+  observers_.AddObserver(observer);
+  NotifyObserver(observer);
+}
+
+void ScreenProvider::RemoveObserver(mojom::ScreenProviderObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void ScreenProvider::SetFrameDecorationValues(
@@ -43,10 +49,12 @@ void ScreenProvider::SetFrameDecorationValues(
   max_title_bar_button_width_ = max_title_bar_button_width;
 }
 
-void ScreenProvider::AddObserver(mojom::ScreenProviderObserverPtr observer) {
-  mojom::ScreenProviderObserver* observer_impl = observer.get();
-  observers_.AddPtr(std::move(observer));
-  NotifyObserver(observer_impl);
+void ScreenProvider::DisplayMetricsChanged(const display::Display& display,
+                                           uint32_t changed_metrics) {
+  if ((changed_metrics &
+       display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR) != 0) {
+    NotifyAllObservers();
+  }
 }
 
 void ScreenProvider::OnDidProcessDisplayChanges() {
@@ -56,9 +64,8 @@ void ScreenProvider::OnDidProcessDisplayChanges() {
 }
 
 void ScreenProvider::NotifyAllObservers() {
-  observers_.ForAllPtrs([this](mojom::ScreenProviderObserver* observer) {
-    NotifyObserver(observer);
-  });
+  for (mojom::ScreenProviderObserver& observer : observers_)
+    NotifyObserver(&observer);
 }
 
 void ScreenProvider::NotifyObserver(mojom::ScreenProviderObserver* observer) {

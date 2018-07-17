@@ -393,4 +393,7 @@ void RendererWindowTreeClient::GetWindowManager(
   NOTREACHED();
 }
 
+void RendererWindowTreeClient::GetScreenProviderObserver(
+    ui::mojom::ScreenProviderObserverAssociatedRequest observer) {}
+
 }  // namespace content
