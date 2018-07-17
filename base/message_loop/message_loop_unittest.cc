@@ -1629,6 +1629,8 @@ TEST_P(MessageLoopTypedTest, RunLoopQuitOrderAfter) {
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                           BindOnce(&FuncThatQuitsNow));
 
+  run_loop.allow_quit_current_deprecated_ = true;
+
   RunLoop outer_run_loop;
   outer_run_loop.Run();
 
