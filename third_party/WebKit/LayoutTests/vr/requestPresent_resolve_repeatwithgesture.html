@@ -2,10 +2,11 @@
 <!-- Specific regression test for crbug.com/654909 -->
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="resources/fake-vr-displays.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="resources/mock-vr-service.js"></script>
+<script src="../xr/resources/xr-device-mocking.js"></script>
+<script src="resources/vr-test-utils.js "></script>
+
 <canvas id="webgl-canvas"></canvas>
 <script src="resources/presentation-setup.js"></script>
 <script>
