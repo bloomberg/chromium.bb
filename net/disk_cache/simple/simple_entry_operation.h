@@ -55,8 +55,7 @@ class SimpleEntryOperation {
                                             int offset,
                                             int length,
                                             net::IOBuffer* buf,
-                                            CompletionOnceCallback callback,
-                                            bool alone_in_queue);
+                                            CompletionOnceCallback callback);
   static SimpleEntryOperation WriteOperation(SimpleEntryImpl* entry,
                                              int index,
                                              int offset,
@@ -86,11 +85,6 @@ class SimpleEntryOperation {
   static SimpleEntryOperation DoomOperation(SimpleEntryImpl* entry,
                                             CompletionOnceCallback callback);
 
-  bool ConflictsWith(const SimpleEntryOperation& other_op) const;
-  // Releases all references. After calling this operation, SimpleEntryOperation
-  // will only hold POD members.
-  void ReleaseReferences();
-
   EntryOperationType type() const {
     return static_cast<EntryOperationType>(type_);
   }
@@ -106,7 +100,6 @@ class SimpleEntryOperation {
   net::IOBuffer* buf() { return buf_.get(); }
   bool truncate() const { return truncate_; }
   bool optimistic() const { return optimistic_; }
-  bool alone_in_queue() const { return alone_in_queue_; }
 
  private:
   SimpleEntryOperation(SimpleEntryImpl* entry,
@@ -121,8 +114,7 @@ class SimpleEntryOperation {
                        bool have_index,
                        int index,
                        bool truncate,
-                       bool optimistic,
-                       bool alone_in_queue);
+                       bool optimistic);
 
   // This ensures entry will not be deleted until the operation has ran.
   scoped_refptr<SimpleEntryImpl> entry_;
@@ -148,8 +140,6 @@ class SimpleEntryOperation {
   // Used only in write operations.
   const bool truncate_;
   const bool optimistic_;
-  // Used only in SimpleCache.ReadIsParallelizable histogram.
-  const bool alone_in_queue_;
 };
 
 }  // namespace disk_cache

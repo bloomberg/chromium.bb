@@ -391,8 +391,10 @@ int SimpleEntryImpl::ReadData(int stream_index,
     return net::ERR_INVALID_ARGUMENT;
   }
 
-  // TODO(felipeg): Optimization: Add support for truly parallel read
-  // operations.
+  // If this is the only operation, bypass the queue, and also see if there is
+  // in-memory data to handle it synchronously. In principle, multiple reads can
+  // be parallelized, but past studies have shown that parallelizable ones
+  // happen <1% of the time, so it's probably not worth the effort.
   bool alone_in_queue =
       pending_operations_.size() == 0 && state_ == STATE_READY;
 
@@ -402,8 +404,7 @@ int SimpleEntryImpl::ReadData(int stream_index,
   }
 
   pending_operations_.push(SimpleEntryOperation::ReadOperation(
-      this, stream_index, offset, buf_len, buf, std::move(callback),
-      alone_in_queue));
+      this, stream_index, offset, buf_len, buf, std::move(callback)));
   RunNextOperationIfNeeded();
   return net::ERR_IO_PENDING;
 }
@@ -453,7 +454,8 @@ int SimpleEntryImpl::WriteData(int stream_index,
   // actually run the write operation that sets the stream size. It also
   // prevents from previous possibly-conflicting writes that could be stacked
   // in the |pending_operations_|. We could optimize this for when we have
-  // only read operations enqueued.
+  // only read operations enqueued, but past studies have shown that that such
+  // parallelizable cases are very rare.
   const bool optimistic =
       (use_optimistic_operations_ && state_ == STATE_READY &&
        pending_operations_.size() == 0);
@@ -567,7 +569,6 @@ size_t SimpleEntryImpl::EstimateMemoryUsage() const {
   // measured, but the ownership of SimpleSynchronousEntry isn't straightforward
   return sizeof(SimpleSynchronousEntry) +
          base::trace_event::EstimateMemoryUsage(pending_operations_) +
-         base::trace_event::EstimateMemoryUsage(executing_operation_) +
          (stream_0_data_ ? stream_0_data_->capacity() : 0) +
          (stream_1_prefetch_data_ ? stream_1_prefetch_data_->capacity() : 0);
 }
@@ -665,13 +666,11 @@ void SimpleEntryImpl::RunNextOperationIfNeeded() {
         CloseInternal();
         break;
       case SimpleEntryOperation::TYPE_READ:
-        RecordReadIsParallelizable(*operation);
         ReadDataInternal(/* sync_possible= */ false, operation->index(),
                          operation->offset(), operation->buf(),
                          operation->length(), operation->ReleaseCallback());
         break;
       case SimpleEntryOperation::TYPE_WRITE:
-        RecordWriteDependencyType(*operation);
         WriteDataInternal(operation->index(), operation->offset(),
                           operation->buf(), operation->length(),
                           operation->ReleaseCallback(), operation->truncate());
@@ -697,10 +696,6 @@ void SimpleEntryImpl::RunNextOperationIfNeeded() {
       default:
         NOTREACHED();
     }
-    // The operation is kept for histograms. Makes sure it does not leak
-    // resources.
-    executing_operation_.swap(operation);
-    executing_operation_->ReleaseReferences();
     // |this| may have been deleted.
   }
 }
@@ -1536,77 +1531,6 @@ int64_t SimpleEntryImpl::GetDiskUsage() const {
   }
   file_size += sparse_data_size_;
   return file_size;
-}
-
-void SimpleEntryImpl::RecordReadIsParallelizable(
-    const SimpleEntryOperation& operation) const {
-  if (!executing_operation_)
-    return;
-  // Used in histograms, please only add entries at the end.
-  enum ReadDependencyType {
-    // READ_STANDALONE = 0, Deprecated.
-    READ_FOLLOWS_READ = 1,
-    READ_FOLLOWS_CONFLICTING_WRITE = 2,
-    READ_FOLLOWS_NON_CONFLICTING_WRITE = 3,
-    READ_FOLLOWS_OTHER = 4,
-    READ_ALONE_IN_QUEUE = 5,
-    READ_DEPENDENCY_TYPE_MAX = 6,
-  };
-
-  ReadDependencyType type = READ_FOLLOWS_OTHER;
-  if (operation.alone_in_queue()) {
-    type = READ_ALONE_IN_QUEUE;
-  } else if (executing_operation_->type() == SimpleEntryOperation::TYPE_READ) {
-    type = READ_FOLLOWS_READ;
-  } else if (executing_operation_->type() == SimpleEntryOperation::TYPE_WRITE) {
-    if (executing_operation_->ConflictsWith(operation))
-      type = READ_FOLLOWS_CONFLICTING_WRITE;
-    else
-      type = READ_FOLLOWS_NON_CONFLICTING_WRITE;
-  }
-  SIMPLE_CACHE_UMA(ENUMERATION,
-                   "ReadIsParallelizable", cache_type_,
-                   type, READ_DEPENDENCY_TYPE_MAX);
-}
-
-void SimpleEntryImpl::RecordWriteDependencyType(
-    const SimpleEntryOperation& operation) const {
-  if (!executing_operation_)
-    return;
-  // Used in histograms, please only add entries at the end.
-  enum WriteDependencyType {
-    WRITE_OPTIMISTIC = 0,
-    WRITE_FOLLOWS_CONFLICTING_OPTIMISTIC = 1,
-    WRITE_FOLLOWS_NON_CONFLICTING_OPTIMISTIC = 2,
-    WRITE_FOLLOWS_CONFLICTING_WRITE = 3,
-    WRITE_FOLLOWS_NON_CONFLICTING_WRITE = 4,
-    WRITE_FOLLOWS_CONFLICTING_READ = 5,
-    WRITE_FOLLOWS_NON_CONFLICTING_READ = 6,
-    WRITE_FOLLOWS_OTHER = 7,
-    WRITE_DEPENDENCY_TYPE_MAX = 8,
-  };
-
-  WriteDependencyType type = WRITE_FOLLOWS_OTHER;
-  if (operation.optimistic()) {
-    type = WRITE_OPTIMISTIC;
-  } else if (executing_operation_->type() == SimpleEntryOperation::TYPE_READ ||
-             executing_operation_->type() == SimpleEntryOperation::TYPE_WRITE) {
-    bool conflicting = executing_operation_->ConflictsWith(operation);
-
-    if (executing_operation_->type() == SimpleEntryOperation::TYPE_READ) {
-      type = conflicting ? WRITE_FOLLOWS_CONFLICTING_READ
-                         : WRITE_FOLLOWS_NON_CONFLICTING_READ;
-    } else if (executing_operation_->optimistic()) {
-      type = conflicting ? WRITE_FOLLOWS_CONFLICTING_OPTIMISTIC
-                         : WRITE_FOLLOWS_NON_CONFLICTING_OPTIMISTIC;
-    } else {
-      type = conflicting ? WRITE_FOLLOWS_CONFLICTING_WRITE
-                         : WRITE_FOLLOWS_NON_CONFLICTING_WRITE;
-    }
-  }
-  SIMPLE_CACHE_UMA(ENUMERATION,
-                   "WriteDependencyType", cache_type_,
-                   type, WRITE_DEPENDENCY_TYPE_MAX);
 }
 
 int SimpleEntryImpl::ReadFromBuffer(net::GrowableIOBuffer* in_buf,
