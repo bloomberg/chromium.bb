@@ -27,6 +27,8 @@ constexpr char kExtensionUrl2[] = "url2";
 
 constexpr char kLoadTimeStats[] = "Extensions.ForceInstalledLoadTime";
 constexpr char kTimedOutStats[] = "Extensions.ForceInstalledTimedOutCount";
+constexpr char kTimedOutNotInstalledStats[] =
+    "Extensions.ForceInstalledTimedOutAndNotInstalledCount";
 }  // namespace
 
 namespace extensions {
@@ -74,15 +76,19 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsInstalled) {
   tracker_->OnExtensionLoaded(&profile_, ext2.get());
   histogram_tester_.ExpectTotalCount(kLoadTimeStats, 1);
   histogram_tester_.ExpectTotalCount(kTimedOutStats, 0);
+  histogram_tester_.ExpectTotalCount(kTimedOutNotInstalledStats, 0);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest,
        ExtensionsInstallationTimedOut) {
   SetupForceList();
+  auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  registry_->AddEnabled(ext1.get());
   EXPECT_TRUE(fake_timer_->IsRunning());
   fake_timer_->Fire();
   histogram_tester_.ExpectTotalCount(kLoadTimeStats, 0);
   histogram_tester_.ExpectUniqueSample(kTimedOutStats, 2, 1);
+  histogram_tester_.ExpectUniqueSample(kTimedOutNotInstalledStats, 1, 1);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest, NoExtensionsConfigured) {
@@ -90,6 +96,7 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, NoExtensionsConfigured) {
   fake_timer_->Fire();
   histogram_tester_.ExpectTotalCount(kLoadTimeStats, 0);
   histogram_tester_.ExpectTotalCount(kTimedOutStats, 0);
+  histogram_tester_.ExpectTotalCount(kTimedOutNotInstalledStats, 0);
 }
 
 }  // namespace extensions
