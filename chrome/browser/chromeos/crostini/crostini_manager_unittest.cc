@@ -108,6 +108,16 @@ class CrostiniManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
+  void InstallLinuxPackageCallback(base::OnceClosure closure,
+                                   ConciergeClientResult expected_result,
+                                   const std::string& expected_failure_reason,
+                                   ConciergeClientResult result,
+                                   const std::string& failure_reason) {
+    EXPECT_EQ(expected_result, result);
+    EXPECT_EQ(expected_failure_reason, failure_reason);
+    std::move(closure).Run();
+  }
+
   CrostiniManagerTest()
       : fake_cicerone_client_(new chromeos::FakeCiceroneClient()),
         fake_concierge_client_(new chromeos::FakeConciergeClient()),
@@ -364,6 +374,45 @@ TEST_F(CrostiniManagerTest, StartContainerSuccess) {
       kVmName, kContainerName, kContainerUserName, kCryptohomeId,
       base::BindOnce(&CrostiniManagerTest::StartContainerSuccessCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalNotConnectedError) {
+  fake_cicerone_client_->set_install_linux_package_progress_signal_connected(
+      false);
+  CrostiniManager::GetInstance()->InstallLinuxPackage(
+      profile(), kVmName, kContainerName, "/tmp/package.deb",
+      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     ConciergeClientResult::INSTALL_LINUX_PACKAGE_FAILED,
+                     std::string()));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalSuccess) {
+  vm_tools::cicerone::InstallLinuxPackageResponse response;
+  response.set_status(vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
+  fake_cicerone_client_->set_install_linux_package_response(response);
+  CrostiniManager::GetInstance()->InstallLinuxPackage(
+      profile(), kVmName, kContainerName, "/tmp/package.deb",
+      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     ConciergeClientResult::SUCCESS, std::string()));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalFailure) {
+  vm_tools::cicerone::InstallLinuxPackageResponse response;
+  std::string failure_reason = "Unit tests can't install Linux packages!";
+  response.set_status(vm_tools::cicerone::InstallLinuxPackageResponse::FAILED);
+  response.set_failure_reason(failure_reason);
+  fake_cicerone_client_->set_install_linux_package_response(response);
+  CrostiniManager::GetInstance()->InstallLinuxPackage(
+      profile(), kVmName, kContainerName, "/tmp/package.deb",
+      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     ConciergeClientResult::INSTALL_LINUX_PACKAGE_FAILED,
+                     failure_reason));
   run_loop()->Run();
 }
 

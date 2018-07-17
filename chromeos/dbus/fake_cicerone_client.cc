@@ -13,6 +13,10 @@ FakeCiceroneClient::FakeCiceroneClient() {
   launch_container_application_response_.set_success(true);
 
   container_app_icon_response_.Clear();
+
+  install_linux_package_response_.Clear();
+  install_linux_package_response_.set_status(
+      vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
 }
 FakeCiceroneClient::~FakeCiceroneClient() = default;
 
@@ -32,6 +36,10 @@ bool FakeCiceroneClient::IsContainerShutdownSignalConnected() {
   return is_container_shutdown_signal_connected_;
 }
 
+bool FakeCiceroneClient::IsInstallLinuxPackageProgressSignalConnected() {
+  return is_install_linux_package_progress_signal_connected;
+}
+
 void FakeCiceroneClient::LaunchContainerApplication(
     const vm_tools::cicerone::LaunchContainerApplicationRequest& request,
     DBusMethodCallback<vm_tools::cicerone::LaunchContainerApplicationResponse>
@@ -47,6 +55,15 @@ void FakeCiceroneClient::GetContainerAppIcons(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), container_app_icon_response_));
+}
+
+void FakeCiceroneClient::InstallLinuxPackage(
+    const vm_tools::cicerone::InstallLinuxPackageRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), install_linux_package_response_));
 }
 
 void FakeCiceroneClient::WaitForServiceToBeAvailable(
