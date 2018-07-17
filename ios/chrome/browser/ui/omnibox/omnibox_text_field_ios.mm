@@ -360,6 +360,27 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   }];
 }
 
+#pragma mark - UI Refresh animation public helpers
+
+- (CGFloat)offsetForString:(NSString*)string {
+  // Sometimes |string| is not contained in self.text, for example for
+  // https://en.m.wikipedia.org/foo the |string| might be "en.wikipedia.org" if
+  // the scheme and the "m." trivial subdomain are stripped. In this case,
+  // default to a reasonable prefix string to give a plausible offset.
+  NSString* prefixString = @"https://";
+
+  if ([self.text containsString:string]) {
+    NSRange range = [self.text rangeOfString:string];
+    NSRange prefixRange = NSMakeRange(0, range.location);
+    prefixString = [self.text substringWithRange:prefixRange];
+  }
+
+  return [prefixString
+             sizeWithAttributes:@{NSFontAttributeName : self.currentFont}]
+             .width +
+         self.preEditStaticLabel.frame.origin.x;
+}
+
 #pragma mark pre-edit
 
 // Creates a UILabel based on the current dimension of the text field and

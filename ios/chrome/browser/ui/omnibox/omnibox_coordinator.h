@@ -14,6 +14,7 @@ class WebOmniboxEditController;
 @class CommandDispatcher;
 @class OmniboxPopupCoordinator;
 @class OmniboxTextFieldIOS;
+@protocol LocationBarOffsetProvider;
 @protocol OmniboxPopupPositioner;
 
 // The coordinator for the omnibox.
@@ -29,6 +30,9 @@ class WebOmniboxEditController;
 // The view controller managed by this coordinator. The parent of this
 // coordinator is expected to add it to the responder chain.
 - (UIViewController*)managedViewController;
+
+// Offset provider for location bar animations.
+- (id<LocationBarOffsetProvider>)offsetProvider;
 
 // Start this coordinator. When it starts, it expects to have |textField| and
 // |editController|.

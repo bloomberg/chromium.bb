@@ -9,9 +9,11 @@
 
 #import "ios/chrome/browser/ui/omnibox/omnibox_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
+#import "ios/chrome/browser/ui/orchestrator/location_bar_offset_provider.h"
 
 // The view controller managing the omnibox textfield and its container view.
-@interface OmniboxViewController : UIViewController<OmniboxConsumer>
+@interface OmniboxViewController
+    : UIViewController<LocationBarOffsetProvider, OmniboxConsumer>
 
 // The textfield used by this view controller.
 @property(nonatomic, readonly, strong) OmniboxTextFieldIOS* textField;

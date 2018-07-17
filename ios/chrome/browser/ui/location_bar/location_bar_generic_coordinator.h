@@ -18,6 +18,7 @@ class WebStateList;
 @class CommandDispatcher;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol LocationBarAnimatee;
 @protocol OmniboxPopupPositioner;
 @protocol ToolbarCoordinatorDelegate;
 @protocol UrlLoader;
@@ -57,6 +58,13 @@ class WebStateList;
 
 // Indicates when the omnibox is the first responder.
 - (BOOL)isOmniboxFirstResponder;
+
+// TODO(crbug.com/831506): Once legacy location bar is deleted, remove the
+// @optional label and matching respondsToSelector: calls.
+@optional
+
+// Returns the animatee.
+- (id<LocationBarAnimatee>)locationBarAnimatee;
 
 @end
 

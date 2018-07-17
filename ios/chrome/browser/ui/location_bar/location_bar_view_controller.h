@@ -9,11 +9,13 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
+#import "ios/chrome/browser/ui/orchestrator/location_bar_animatee.h"
 
 @class OmniboxTextFieldIOS;
 @protocol ActivityServiceCommands;
-@protocol BrowserCommands;
 @protocol ApplicationCommands;
+@protocol BrowserCommands;
+@protocol LocationBarOffsetProvider;
 @protocol LoadQueryCommands;
 
 @protocol LocationBarViewControllerDelegate<NSObject>
@@ -30,7 +32,8 @@
 // the omnibox - the editing and the non-editing states. In the editing state,
 // the omnibox textfield is displayed; in the non-editing state, the current
 // location is displayed.
-@interface LocationBarViewController : UIViewController<FullscreenUIElement>
+@interface LocationBarViewController
+    : UIViewController<FullscreenUIElement, LocationBarAnimatee>
 
 // Sets the edit view to use in the editing state. This must be set before the
 // view of this view controller is initialized. This must only be called once.
@@ -47,6 +50,9 @@
 
 // Delegate for this location bar view controller.
 @property(nonatomic, weak) id<LocationBarViewControllerDelegate> delegate;
+
+// The offset provider for the edit/steady transition animation.
+@property(nonatomic, weak) id<LocationBarOffsetProvider> offsetProvider;
 
 // Switches between the two states of the location bar:
 // - editing state, with the textfield;
