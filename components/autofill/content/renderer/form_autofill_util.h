@@ -60,22 +60,6 @@ enum ExtractMask {
 // Copied to components/autofill/ios/browser/resources/autofill_controller.js.
 extern const size_t kMaxParseableFields;
 
-// Create an instance of ScopedLayoutPreventer to stop form_util code from
-// triggering layout as a side-effect. For example, when creating a
-// FormFieldData, a call to WebNode::isFocusable is normally made, which may
-// trigger a layout computation. When an instance of ScopedLayoutPreventer is
-// alive, that call will not be made. On destruction, this class allows
-// layout-triggering calls again. It is not thread safe and multiple instances
-// should not be created at the same time in the same process.
-class ScopedLayoutPreventer {
- public:
-  ScopedLayoutPreventer();
-  ~ScopedLayoutPreventer();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedLayoutPreventer);
-};
-
 // Helper function that strips any authentication data, as well as query and
 // ref portions of URL
 GURL StripAuthAndParams(const GURL& gurl);
