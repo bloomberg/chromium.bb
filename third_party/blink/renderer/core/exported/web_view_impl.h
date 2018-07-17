@@ -118,10 +118,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void UpdateLifecycle(LifecycleUpdate requested_update) override;
   void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
   void CompositeWithRasterForTesting() override;
-  void Paint(cc::PaintCanvas*, const WebRect&) override;
-#if defined(OS_ANDROID)
-  void PaintIgnoringCompositing(cc::PaintCanvas*, const WebRect&) override;
-#endif
+  void PaintContent(cc::PaintCanvas*, const WebRect&) override;
+  void PaintContentIgnoringCompositing(cc::PaintCanvas*,
+                                       const WebRect&) override;
   void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) override;

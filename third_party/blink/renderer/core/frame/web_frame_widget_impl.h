@@ -88,7 +88,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void BeginFrame(base::TimeTicks last_frame_time) override;
   void UpdateLifecycle(LifecycleUpdate requested_update) override;
   void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
-  void Paint(cc::PaintCanvas*, const WebRect&) override;
+  void PaintContent(cc::PaintCanvas*, const WebRect&) override;
   void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) override;

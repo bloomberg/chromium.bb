@@ -1774,24 +1774,22 @@ void WebViewImpl::CompositeWithRasterForTesting() {
   NOTREACHED();
 }
 
-void WebViewImpl::Paint(cc::PaintCanvas* canvas, const WebRect& rect) {
+void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const WebRect& rect) {
   // This should only be used when compositing is not being used for this
   // WebView, and it is painting into the recording of its parent.
   DCHECK(!IsAcceleratedCompositingActive());
-  PageWidgetDelegate::Paint(*page_, canvas, rect,
-                            *page_->DeprecatedLocalMainFrame());
+  PageWidgetDelegate::PaintContent(*page_, canvas, rect,
+                                   *page_->DeprecatedLocalMainFrame());
 }
 
-#if defined(OS_ANDROID)
-void WebViewImpl::PaintIgnoringCompositing(cc::PaintCanvas* canvas,
-                                           const WebRect& rect) {
+void WebViewImpl::PaintContentIgnoringCompositing(cc::PaintCanvas* canvas,
+                                                  const WebRect& rect) {
   // This is called on a composited WebViewImpl, but we will ignore it,
   // producing all possible content of the WebViewImpl into the PaintCanvas.
   DCHECK(IsAcceleratedCompositingActive());
-  PageWidgetDelegate::PaintIgnoringCompositing(
+  PageWidgetDelegate::PaintContentIgnoringCompositing(
       *page_, canvas, rect, *page_->DeprecatedLocalMainFrame());
 }
-#endif
 
 void WebViewImpl::LayoutAndPaintAsync(base::OnceClosure callback) {
   if (layer_tree_view_)

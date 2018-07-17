@@ -50,7 +50,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void BeginFrame(base::TimeTicks last_frame_time) override;
   void UpdateLifecycle(LifecycleUpdate requested_update) override;
   void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
-  void Paint(cc::PaintCanvas*, const WebRect& view_port) override;
+  void PaintContent(cc::PaintCanvas*, const WebRect& view_port) override;
   void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)>) override;

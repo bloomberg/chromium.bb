@@ -11599,7 +11599,20 @@ TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
       document->GetFrame()->GetChromeClient().LastSetTooltipNodeForTesting());
 }
 
-class WebFrameSimTest : public SimTest {};
+class WebFrameSimTest : public SimTest {
+ public:
+  void UseAndroidSettings() {
+    WebView().GetPage()->GetSettings().SetViewportMetaEnabled(true);
+    WebView().GetPage()->GetSettings().SetViewportEnabled(true);
+    WebView().GetPage()->GetSettings().SetMainFrameResizesAreOrientationChanges(
+        true);
+    WebView().GetPage()->GetSettings().SetViewportStyle(
+        WebViewportStyle::kMobile);
+    WebView().GetSettings()->SetAutoZoomFocusedNodeToLegibleScale(true);
+    WebView().GetSettings()->SetShrinksViewportContentToFit(true);
+    WebView().SetDefaultPageScaleLimits(0.25f, 5);
+  }
+};
 
 TEST_F(WebFrameSimTest, HitTestWithIgnoreClippingAtNegativeOffset) {
   WebView().Resize(WebSize(500, 300));
@@ -11779,6 +11792,68 @@ TEST_F(WebFrameSimTest, FindInPageSelectNextMatch) {
       << visual_viewport.VisibleRectInDocument().ToString() << "]";
 }
 
+// Basic smoke test of the paint path used by the Android disambiguation popup.
+TEST_F(WebFrameSimTest, DisambiguationPopupPixelTest) {
+  WebView().Resize(WebSize(400, 600));
+  WebView().GetPage()->GetSettings().SetTextAutosizingEnabled(false);
+  UseAndroidSettings();
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        body, html {
+          width: 4000px;
+          height: 4000px;
+          margin: 0;
+        }
+        #box {
+          position: absolute;
+          left: 200px;
+          top: 300px;
+          width: 100px;
+          height: 100px;
+          background-color: red;
+        }
+      </style>
+      <div id="box"></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  ASSERT_EQ(0.25f, WebView().PageScaleFactor());
+
+  // Pick exactly the rect covered by the red <div> on the page. Paint it at 4x
+  // magnification.
+  float scale = 4.f;
+  WebRect zoom_rect(200, 300, 100, 100);
+  gfx::Size canvas_size(zoom_rect.width * scale, zoom_rect.height * scale);
+
+  SkImageInfo info =
+      SkImageInfo::MakeN32Premul(canvas_size.width(), canvas_size.height());
+
+  size_t size = info.computeMinByteSize();
+  auto buffer = std::make_unique<uint8_t[]>(size);
+
+  SkBitmap bitmap;
+  bitmap.installPixels(info, buffer.get(), info.minRowBytes());
+  cc::SkiaPaintCanvas canvas(bitmap);
+  canvas.scale(scale, scale);
+  canvas.translate(-zoom_rect.x, -zoom_rect.y);
+
+  WebView().UpdateAllLifecyclePhases();
+  WebView().PaintContentIgnoringCompositing(&canvas, zoom_rect);
+
+  // All the pixels in the canvas should be the <div> color.
+  for (int x = 0; x < canvas_size.width(); ++x) {
+    for (int y = 0; y < canvas_size.height(); ++y) {
+      ASSERT_EQ(bitmap.getColor(x, y), SK_ColorRED)
+          << "Mismatching pixel at (" << x << ", " << y << ")";
+    }
+  }
+}
+
 TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
   WebView().Resize(WebSize(500, 300));
   WebView().SetDefaultPageScaleLimits(1.f, 4);
@@ -11887,16 +11962,10 @@ TEST_F(WebFrameSimTest, ScrollFocusedIntoViewClipped) {
   // In these cases, there's no way to scroll just the viewport to make the
   // input visible, we need to also scroll those clip/scroller elements  This
   // test ensures we do so. https://crbug.com/270018.
+  UseAndroidSettings();
   WebView().Resize(WebSize(400, 600));
-  WebView().SetDefaultPageScaleLimits(0.25f, 5);
   WebView().EnableFakePageScaleAnimationForTesting(true);
   WebView().GetPage()->GetSettings().SetTextAutosizingEnabled(false);
-  WebView().GetSettings()->SetViewportMetaEnabled(true);
-  WebView().GetSettings()->SetViewportEnabled(true);
-  WebView().GetSettings()->SetMainFrameResizesAreOrientationChanges(true);
-  WebView().GetSettings()->SetShrinksViewportContentToFit(true);
-  WebView().GetSettings()->SetViewportStyle(WebViewportStyle::kMobile);
-  WebView().GetSettings()->SetAutoZoomFocusedNodeToLegibleScale(true);
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -11983,17 +12052,11 @@ TEST_F(WebFrameSimTest, ScrollFocusedIntoViewClipped) {
 }
 
 TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
+  UseAndroidSettings();
   WebView().Resize(WebSize(490, 500));
-  WebView().SetDefaultPageScaleLimits(0.5f, 4);
   WebView().EnableFakePageScaleAnimationForTesting(true);
-
   WebView().GetSettings()->SetTextAutosizingEnabled(false);
-  WebView().GetSettings()->SetViewportMetaEnabled(true);
-  WebView().GetSettings()->SetViewportEnabled(true);
-  WebView().GetSettings()->SetMainFrameResizesAreOrientationChanges(true);
-  WebView().GetSettings()->SetShrinksViewportContentToFit(true);
-  WebView().GetSettings()->SetViewportStyle(WebViewportStyle::kMobile);
-  WebView().GetSettings()->SetAutoZoomFocusedNodeToLegibleScale(true);
+  WebView().SetDefaultPageScaleLimits(0.5f, 4);
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -12231,8 +12294,7 @@ TEST_F(WebFrameSimTest, NormalIFrameHasLayoutObjects) {
 }
 
 TEST_F(WebFrameSimTest, RtlInitialScrollOffsetWithViewport) {
-  WebView().GetSettings()->SetViewportEnabled(true);
-  WebView().GetSettings()->SetViewportMetaEnabled(true);
+  UseAndroidSettings();
 
   WebView().Resize(WebSize(400, 400));
   WebView().SetDefaultPageScaleLimits(0.25f, 2);
@@ -12251,8 +12313,7 @@ TEST_F(WebFrameSimTest, RtlInitialScrollOffsetWithViewport) {
 }
 
 TEST_F(WebFrameSimTest, LayoutViewportExceedsLayoutOverflow) {
-  WebView().GetSettings()->SetViewportEnabled(true);
-  WebView().GetSettings()->SetViewportMetaEnabled(true);
+  UseAndroidSettings();
 
   WebView().ResizeWithBrowserControls(WebSize(400, 540), 60, 0, true);
   WebView().SetDefaultPageScaleLimits(0.25f, 2);
@@ -12279,8 +12340,7 @@ TEST_F(WebFrameSimTest, LayoutViewportExceedsLayoutOverflow) {
 }
 
 TEST_F(WebFrameSimTest, LayoutViewLocalVisualRect) {
-  WebView().GetSettings()->SetViewportEnabled(true);
-  WebView().GetSettings()->SetViewportMetaEnabled(true);
+  UseAndroidSettings();
 
   WebView().Resize(WebSize(600, 400));
   WebView().SetDefaultPageScaleLimits(0.5f, 2);
