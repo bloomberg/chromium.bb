@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "xf86drm.h"
 #include "amdgpu_drm.h"
@@ -205,7 +206,7 @@ int amdgpu_device_initialize(int fd,
 			return r;
 		}
 		if ((flag_auth) && (!flag_authexist)) {
-			dev->flink_fd = dup(fd);
+			dev->flink_fd = fcntl(fd, F_DUPFD_CLOEXEC, 0);
 		}
 		*major_version = dev->major_version;
 		*minor_version = dev->minor_version;
@@ -239,7 +240,7 @@ int amdgpu_device_initialize(int fd,
 		goto cleanup;
 	}
 
-	dev->fd = dup(fd);
+	dev->fd = fcntl(fd, F_DUPFD_CLOEXEC, 0);
 	dev->flink_fd = dev->fd;
 	dev->major_version = version->version_major;
 	dev->minor_version = version->version_minor;
