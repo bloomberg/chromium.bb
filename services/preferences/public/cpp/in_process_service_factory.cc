@@ -57,11 +57,11 @@ class InProcessPrefServiceFactory::RegisteringDelegate
   void InitIncognitoUserPrefs(
       scoped_refptr<PersistentPrefStore> incognito_user_prefs_overlay,
       scoped_refptr<PersistentPrefStore> incognito_user_prefs_underlay,
-      const std::vector<const char*>& overlay_pref_names) override {
+      const std::vector<const char*>& persistent_perf_names) override {
     factory_->user_prefs_ = std::move(incognito_user_prefs_overlay);
     factory_->incognito_user_prefs_underlay_ =
         std::move(incognito_user_prefs_underlay);
-    factory_->overlay_pref_names_ = overlay_pref_names;
+    factory_->persistent_perf_names_ = persistent_perf_names;
   }
 
   void InitPrefRegistry(PrefRegistry* pref_registry) override {
@@ -104,7 +104,7 @@ InProcessPrefServiceFactory::CreatePrefService() {
       managed_prefs_.get(), supervised_user_prefs_.get(),
       extension_prefs_.get(), command_line_prefs_.get(), user_prefs_.get(),
       incognito_user_prefs_underlay_.get(), recommended_prefs_.get(),
-      pref_registry_.get(), std::move(overlay_pref_names_));
+      pref_registry_.get(), std::move(persistent_perf_names_));
   quit_closure_ = std::move(result.second);
   return std::move(result.first);
 }

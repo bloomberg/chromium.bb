@@ -44,7 +44,7 @@ class PrefStoreManagerImpl::ConnectorConnection
       if (owner_->incognito_persistent_pref_store_underlay_->initialized()) {
         connection->ProvideIncognitoPersistentPrefStoreUnderlay(
             owner_->incognito_persistent_pref_store_underlay_.get(),
-            owner_->overlay_pref_names_);
+            owner_->persistent_perf_names_);
       } else {
         owner_->pending_persistent_incognito_connections_.push_back(connection);
       }
@@ -66,7 +66,7 @@ PrefStoreManagerImpl::PrefStoreManagerImpl(
     PersistentPrefStore* incognito_user_prefs_underlay,
     PrefStore* recommended_prefs,
     PrefRegistry* pref_registry,
-    std::vector<const char*> overlay_pref_names)
+    std::vector<const char*> persistent_perf_names)
     : shared_pref_registry_(std::make_unique<SharedPrefRegistry>(
           base::WrapRefCounted(pref_registry))),
       weak_factory_(this) {
@@ -85,9 +85,9 @@ PrefStoreManagerImpl::PrefStoreManagerImpl(
             base::BindOnce(
                 &PrefStoreManagerImpl::OnIncognitoPersistentPrefStoreReady,
                 base::Unretained(this)));
-    overlay_pref_names_ = std::move(overlay_pref_names);
+    persistent_perf_names_ = std::move(persistent_perf_names);
   } else {
-    DCHECK(overlay_pref_names.empty());
+    DCHECK(persistent_perf_names.empty());
   }
   RegisterPrefStore(PrefValueStore::MANAGED_STORE, managed_prefs);
   RegisterPrefStore(PrefValueStore::SUPERVISED_USER_STORE,
@@ -133,7 +133,8 @@ void PrefStoreManagerImpl::OnIncognitoPersistentPrefStoreReady() {
   DVLOG(1) << "Incognito PersistentPrefStore ready";
   for (const auto& connection : pending_persistent_connections_)
     connection->ProvideIncognitoPersistentPrefStoreUnderlay(
-        incognito_persistent_pref_store_underlay_.get(), overlay_pref_names_);
+        incognito_persistent_pref_store_underlay_.get(),
+        persistent_perf_names_);
   pending_persistent_incognito_connections_.clear();
 }
 

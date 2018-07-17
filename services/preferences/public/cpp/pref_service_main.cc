@@ -18,11 +18,11 @@ CreatePrefService(PrefStore* managed_prefs,
                   PersistentPrefStore* incognito_user_prefs_underlay,
                   PrefStore* recommended_prefs,
                   PrefRegistry* pref_registry,
-                  std::vector<const char*> overlay_pref_names) {
+                  std::vector<const char*> persistent_perf_names) {
   auto service = std::make_unique<PrefStoreManagerImpl>(
       managed_prefs, supervised_user_prefs, extension_prefs, command_line_prefs,
       user_prefs, incognito_user_prefs_underlay, recommended_prefs,
-      pref_registry, std::move(overlay_pref_names));
+      pref_registry, std::move(persistent_perf_names));
   auto quit_closure = service->ShutDownClosure();
   return std::make_pair(std::move(service), std::move(quit_closure));
 }
