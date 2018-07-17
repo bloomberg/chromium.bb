@@ -47,7 +47,7 @@ struct FrameAvailableEvent_ImageReader
 ImageReaderGLOwner::ImageReaderGLOwner(GLuint texture_id)
     : current_image_(nullptr),
       texture_id_(texture_id),
-      loader_(AndroidImageReader::GetInstance()),
+      loader_(base::android::AndroidImageReader::GetInstance()),
       context_(gl::GLContext::GetCurrent()),
       surface_(gl::GLSurface::GetCurrent()),
       frame_available_event_(new FrameAvailableEvent_ImageReader()) {

@@ -2,27 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/android/android_image_reader_compat.h"
+#include "base/android/android_image_reader_compat.h"
 
 #include <stdint.h>
 #include <memory>
 
 #include "base/android/build_info.h"
 #include "base/test/scoped_feature_list.h"
-#include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace media {
+namespace base {
+namespace android {
 
 class AndroidImageReaderTest : public testing::Test {
  public:
-  AndroidImageReaderTest() {
-    scoped_feature_list_.InitAndEnableFeature(media::kAImageReaderVideoOutput);
-  }
+  AndroidImageReaderTest() = default;
   ~AndroidImageReaderTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Getting instance of AndroidImageReader will invoke AndroidImageReader
@@ -44,4 +39,5 @@ TEST_F(AndroidImageReaderTest, CompareImageReaderInstance) {
   ASSERT_EQ(&a1, &a2);
 }
 
-}  // namespace media
+}  // namespace android
+}  // namespace base

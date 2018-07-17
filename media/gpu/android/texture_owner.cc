@@ -4,8 +4,10 @@
 
 #include "media/gpu/android/texture_owner.h"
 
+#include "base/android/android_image_reader_compat.h"
+#include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/gpu/android/android_image_reader_compat.h"
+#include "media/base/media_switches.h"
 #include "media/gpu/android/image_reader_gl_owner.h"
 #include "media/gpu/android/surface_texture_gl_owner.h"
 #include "ui/gl/scoped_binders.h"
@@ -34,8 +36,9 @@ scoped_refptr<TextureOwner> TextureOwner::Create() {
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
-  if (AndroidImageReader::GetInstance().IsSupported()) {
-    // If image reader is supported, use it.
+  // If AImageReader is supported and is enabled by media flag, use it.
+  if (base::FeatureList::IsEnabled(media::kAImageReaderVideoOutput) &&
+      base::android::AndroidImageReader::GetInstance().IsSupported()) {
     return new ImageReaderGLOwner(texture_id);
   }
 
