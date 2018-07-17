@@ -101,6 +101,11 @@ DefaultGpuHost::~DefaultGpuHost() {
   }
 }
 
+void DefaultGpuHost::Shutdown() {
+  gpu_service_.reset();
+  gpu_bindings_.CloseAllBindings();
+}
+
 void DefaultGpuHost::Add(mojom::GpuRequest request) {
   AddInternal(std::move(request));
 }

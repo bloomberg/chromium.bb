@@ -40,7 +40,7 @@ namespace ui {
 class Gpu;
 class InputDeviceController;
 namespace gpu_host {
-class GpuHost;
+class DefaultGpuHost;
 }
 namespace ws2 {
 class HostContextFactory;
@@ -109,7 +109,7 @@ class ASH_EXPORT AshService : public service_manager::Service,
   std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;
 
-  std::unique_ptr<ui::gpu_host::GpuHost> gpu_host_;
+  std::unique_ptr<ui::gpu_host::DefaultGpuHost> gpu_host_;
 
   std::unique_ptr<viz::HostFrameSinkManager> host_frame_sink_manager_;
 

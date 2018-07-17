@@ -78,6 +78,11 @@ AshService::~AshService() {
   if (!base::FeatureList::IsEnabled(features::kMash))
     return;
 
+  // Shutdown part of GpuHost before deleting Shell. This is necessary to
+  // avoid a deadlock between the raster thread and main thread. GpuHost can't
+  // be deleted here as that causes other DCHECKs.
+  gpu_host_->Shutdown();
+
   Shell::DeleteInstance();
 
   statistics_provider_.reset();
