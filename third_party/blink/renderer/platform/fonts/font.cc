@@ -390,10 +390,11 @@ FloatRect Font::BoundingBox(const TextRun& run, int from, int to) const {
 
 int Font::OffsetForPosition(const TextRun& run,
                             float x_float,
-                            bool include_partial_glyphs) const {
+                            IncludePartialGlyphsOption partial_glyphs,
+                            BreakGlyphsOption break_glyphs) const {
   FontCachePurgePreventer purge_preventer;
   CachingWordShaper shaper(*this);
-  return shaper.OffsetForPosition(run, x_float, include_partial_glyphs);
+  return shaper.OffsetForPosition(run, x_float, partial_glyphs, break_glyphs);
 }
 
 ShapeCache* Font::GetShapeCache() const {

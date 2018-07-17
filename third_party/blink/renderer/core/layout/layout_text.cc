@@ -683,7 +683,9 @@ PositionWithAffinity LayoutText::PositionForPoint(
         if (LineDirectionPointFitsInBox(point_line_direction.ToInt(), box,
                                         should_affinity_be_downstream)) {
           return CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
-              box, box->OffsetForPosition(point_line_direction),
+              box,
+              box->OffsetForPosition(point_line_direction, IncludePartialGlyphs,
+                                     BreakGlyphs),
               should_affinity_be_downstream);
         }
       }
@@ -697,7 +699,9 @@ PositionWithAffinity LayoutText::PositionForPoint(
                                 should_affinity_be_downstream);
     return CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
         last_box,
-        last_box->OffsetForPosition(point_line_direction) + last_box->Start(),
+        last_box->OffsetForPosition(point_line_direction, IncludePartialGlyphs,
+                                    BreakGlyphs) +
+            last_box->Start(),
         should_affinity_be_downstream);
   }
   return CreatePositionWithAffinity(0);
