@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import convert_to_protocol_json
+import convert_protocol_to_json
 
 
 def main():
