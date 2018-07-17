@@ -40,7 +40,8 @@ public class MostVisitedSitesBridge
         mNativeMostVisitedSitesBridge = nativeInit(profile);
         // The first tile replaces is replaced with homepage tile if NTPButton is enabled. Setting
         // a homepage client to provide Java side information.
-        if (FeatureUtilities.isNewTabPageButtonEnabled()) {
+        if (FeatureUtilities.isNewTabPageButtonEnabled()
+                && FeatureUtilities.isHomepageTileEnabled()) {
             nativeSetHomepageClient(mNativeMostVisitedSitesBridge, new HomepageClient() {
                 @Override
                 public boolean isHomepageEnabled() {

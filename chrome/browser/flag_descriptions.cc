@@ -2353,8 +2353,15 @@ const char kGrantNotificationsToDSENameDescription[] =
 const char kHomePageButtonName[] = "Force Enable Home Page Button";
 const char kHomePageButtonDescription[] = "Displays a home button if enabled.";
 
+const char kHomepageTileName[] =
+    "Enable Homepage tile shown in Suggested Tiles";
+const char kHomepageTileDescription[] =
+    "When NTPButton is enabled, the first tile of the Suggested Tiles will be "
+    "used for homepage. It will not have an effect when NTPButton is disabled.";
+
 const char kInterestFeedContentSuggestionsDescription[] =
-    "Use the interest feed to render content suggestions. Currently content "
+    "Use the interest feed to render content suggestions. Currently "
+    "content "
     "suggestions are shown on the New Tab Page.";
 const char kInterestFeedContentSuggestionsName[] =
     "Interest Feed Content Suggestions";

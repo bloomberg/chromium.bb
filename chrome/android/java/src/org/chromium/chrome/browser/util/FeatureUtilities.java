@@ -49,6 +49,7 @@ public class FeatureUtilities {
     private static Boolean sIsSoleEnabled;
     private static Boolean sIsChromeModernDesignEnabled;
     private static Boolean sIsHomePageButtonForceEnabled;
+    private static Boolean sIsHomepageTileEnabled;
     private static Boolean sIsNewTabPageButtonEnabled;
     private static Boolean sIsBottomToolbarEnabled;
 
@@ -157,6 +158,7 @@ public class FeatureUtilities {
         FirstRunUtils.cacheFirstRunPrefs();
         cacheChromeModernDesignEnabled();
         cacheHomePageButtonForceEnabled();
+        cacheHomepageTileEnabled();
         cacheNewTabPageButtonEnabled();
         cacheBottomToolbarEnabled();
 
@@ -219,6 +221,29 @@ public class FeatureUtilities {
      */
     public static void resetHomePageButtonForceEnabledForTests() {
         sIsHomePageButtonForceEnabled = null;
+    }
+
+    /**
+     * Cache whether or not the new tab page button is enabled so on next startup, the value can
+     * be made available immediately.
+     */
+    public static void cacheHomepageTileEnabled() {
+        ChromePreferenceManager.getInstance().setHomepageTileEnabled(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.HOMEPAGE_TILE));
+    }
+
+    /**
+     * @return Whether or not the new tab page button is enabled.
+     */
+    public static boolean isHomepageTileEnabled() {
+        if (sIsHomepageTileEnabled == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                sIsHomepageTileEnabled = prefManager.isHomepageTileEnabled();
+            }
+        }
+        return sIsHomepageTileEnabled;
     }
 
     /**

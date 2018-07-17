@@ -106,6 +106,7 @@ public class ChromePreferenceManager {
 
     private static final String HOME_PAGE_BUTTON_FORCE_ENABLED_KEY =
             "home_page_button_force_enabled";
+    private static final String HOMEPAGE_TILE_ENABLED_KEY = "homepage_tile_enabled";
 
     private static final String NTP_BUTTON_ENABLED_KEY = "ntp_button_enabled";
 
@@ -466,6 +467,22 @@ public class ChromePreferenceManager {
      */
     public boolean isHomePageButtonForceEnabled() {
         return mSharedPreferences.getBoolean(HOME_PAGE_BUTTON_FORCE_ENABLED_KEY, false);
+    }
+
+    /**
+     * Set whether or not the homepage tile will be shown.
+     * @param isEnabled If homepage tile is enabled.
+     */
+    public void setHomepageTileEnabled(boolean isEnabled) {
+        writeBoolean(HOMEPAGE_TILE_ENABLED_KEY, isEnabled);
+    }
+
+    /**
+     * Get whether or not the homepage tile is enabled.
+     * @return True if the homepage tile is enabled.
+     */
+    public boolean isHomepageTileEnabled() {
+        return mSharedPreferences.getBoolean(HOMEPAGE_TILE_ENABLED_KEY, false);
     }
 
     /**
