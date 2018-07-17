@@ -3,6 +3,8 @@
 
 #include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 
+#include <algorithm>
+
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -133,6 +135,62 @@ ParsedFeaturePolicy ParseFeaturePolicy(
     }
   }
   return allowlists;
+}
+
+bool IsFeatureDeclared(mojom::FeaturePolicyFeature feature,
+                       const ParsedFeaturePolicy& policy) {
+  return std::any_of(policy.begin(), policy.end(),
+                     [feature](const auto& declaration) {
+                       return declaration.feature == feature;
+                     });
+}
+
+bool RemoveFeatureIfPresent(mojom::FeaturePolicyFeature feature,
+                            ParsedFeaturePolicy& policy) {
+  auto new_end = std::remove_if(policy.begin(), policy.end(),
+                                [feature](const auto& declaration) {
+                                  return declaration.feature == feature;
+                                });
+  if (new_end == policy.end())
+    return false;
+  policy.erase(new_end, policy.end());
+  return true;
+}
+
+bool DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature feature,
+                                 ParsedFeaturePolicy& policy) {
+  if (IsFeatureDeclared(feature, policy))
+    return false;
+  ParsedFeaturePolicyDeclaration allowlist;
+  allowlist.feature = feature;
+  allowlist.matches_all_origins = false;
+  allowlist.matches_opaque_src = false;
+  policy.push_back(allowlist);
+  return true;
+}
+
+bool AllowFeatureEverywhereIfNotPresent(mojom::FeaturePolicyFeature feature,
+                                        ParsedFeaturePolicy& policy) {
+  if (IsFeatureDeclared(feature, policy))
+    return false;
+  ParsedFeaturePolicyDeclaration allowlist;
+  allowlist.feature = feature;
+  allowlist.matches_all_origins = true;
+  allowlist.matches_opaque_src = true;
+  policy.push_back(allowlist);
+  return true;
+}
+
+void DisallowFeature(mojom::FeaturePolicyFeature feature,
+                     ParsedFeaturePolicy& policy) {
+  RemoveFeatureIfPresent(feature, policy);
+  DisallowFeatureIfNotPresent(feature, policy);
+}
+
+void AllowFeatureEverywhere(mojom::FeaturePolicyFeature feature,
+                            ParsedFeaturePolicy& policy) {
+  RemoveFeatureIfPresent(feature, policy);
+  AllowFeatureEverywhereIfNotPresent(feature, policy);
 }
 
 // This method defines the feature names which will be recognized by the parser

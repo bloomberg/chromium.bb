@@ -239,44 +239,21 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   // If allowfullscreen attribute is present and no fullscreen policy is set,
   // enable the feature for all origins.
   if (AllowFullscreen()) {
-    bool has_fullscreen_policy = false;
-    for (const auto& declaration : container_policy) {
-      if (declaration.feature == mojom::FeaturePolicyFeature::kFullscreen) {
-        has_fullscreen_policy = true;
-        if (messages) {
-          messages->push_back(
-              "allow attribute is overriding 'allowfullscreen'.");
-        }
-        break;
-      }
-    }
-    if (!has_fullscreen_policy) {
-      ParsedFeaturePolicyDeclaration whitelist;
-      whitelist.feature = mojom::FeaturePolicyFeature::kFullscreen;
-      whitelist.matches_all_origins = true;
-      container_policy.push_back(whitelist);
+    bool policy_changed = AllowFeatureEverywhereIfNotPresent(
+        mojom::FeaturePolicyFeature::kFullscreen, container_policy);
+    if (!policy_changed && messages) {
+      messages->push_back(
+          "Allow attribute will take precedence over 'allowfullscreen'.");
     }
   }
   // If the allowpaymentrequest attribute is present and no 'payment' policy is
   // set, enable the feature for all origins.
   if (AllowPaymentRequest()) {
-    bool has_payment_policy = false;
-    for (const auto& declaration : container_policy) {
-      if (declaration.feature == mojom::FeaturePolicyFeature::kPayment) {
-        has_payment_policy = true;
-        if (messages) {
-          messages->push_back(
-              "allow attribute is overriding 'allowpaymentrequest'.");
-        }
-        break;
-      }
-    }
-    if (!has_payment_policy) {
-      ParsedFeaturePolicyDeclaration whitelist;
-      whitelist.feature = mojom::FeaturePolicyFeature::kPayment;
-      whitelist.matches_all_origins = true;
-      whitelist.origins = std::vector<url::Origin>(0UL);
-      container_policy.push_back(whitelist);
+    bool policy_changed = AllowFeatureEverywhereIfNotPresent(
+        mojom::FeaturePolicyFeature::kPayment, container_policy);
+    if (!policy_changed && messages) {
+      messages->push_back(
+          "Allow attribute will take precedence over 'allowpaymentrequest'.");
     }
   }
 

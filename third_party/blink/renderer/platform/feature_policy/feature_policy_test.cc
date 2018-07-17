@@ -56,11 +56,11 @@ const char* const kInvalidPolicies[] = {
 
 }  // namespace
 
-class FeaturePolicyTest : public testing::Test {
+class FeaturePolicyParserTest : public testing::Test {
  protected:
-  FeaturePolicyTest() = default;
+  FeaturePolicyParserTest() = default;
 
-  ~FeaturePolicyTest() override = default;
+  ~FeaturePolicyParserTest() override = default;
 
   scoped_refptr<const SecurityOrigin> origin_a_ =
       SecurityOrigin::CreateFromString(ORIGIN_A);
@@ -79,7 +79,7 @@ class FeaturePolicyTest : public testing::Test {
       {"geolocation", blink::mojom::FeaturePolicyFeature::kGeolocation}};
 };
 
-TEST_F(FeaturePolicyTest, ParseValidPolicy) {
+TEST_F(FeaturePolicyParserTest, ParseValidPolicy) {
   Vector<String> messages;
   for (const char* policy_string : kValidPolicies) {
     messages.clear();
@@ -89,7 +89,7 @@ TEST_F(FeaturePolicyTest, ParseValidPolicy) {
   }
 }
 
-TEST_F(FeaturePolicyTest, ParseInvalidPolicy) {
+TEST_F(FeaturePolicyParserTest, ParseInvalidPolicy) {
   Vector<String> messages;
   for (const char* policy_string : kInvalidPolicies) {
     messages.clear();
@@ -99,7 +99,7 @@ TEST_F(FeaturePolicyTest, ParseInvalidPolicy) {
   }
 }
 
-TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
+TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectly) {
   Vector<String> messages;
 
   // Empty policy.
@@ -212,7 +212,7 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
       parsed_policy[2].origins[0].IsSameOriginWith(expected_url_origin_a_));
 }
 
-TEST_F(FeaturePolicyTest, PolicyParsedCorrectlyForOpaqueOrigins) {
+TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectlyForOpaqueOrigins) {
   Vector<String> messages;
 
   scoped_refptr<SecurityOrigin> opaque_origin =
@@ -289,6 +289,214 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectlyForOpaqueOrigins) {
   EXPECT_EQ(1UL, parsed_policy[0].origins.size());
   EXPECT_TRUE(
       parsed_policy[0].origins[0].IsSameOriginWith(expected_url_origin_b_));
+}
+
+// Test policy mutation methods
+class FeaturePolicyMutationTest : public testing::Test {
+ protected:
+  FeaturePolicyMutationTest() = default;
+
+  ~FeaturePolicyMutationTest() override = default;
+
+  url::Origin url_origin_a_ = url::Origin::Create(GURL(ORIGIN_A));
+  url::Origin url_origin_b_ = url::Origin::Create(GURL(ORIGIN_B));
+  url::Origin url_origin_c_ = url::Origin::Create(GURL(ORIGIN_C));
+
+  // Returns true if the policy contains a declaration for the feature which
+  // allows it in all origins.
+  bool IsFeatureAllowedEverywhere(mojom::FeaturePolicyFeature feature,
+                                  const ParsedFeaturePolicy& policy) {
+    const auto& result = std::find_if(policy.begin(), policy.end(),
+                                      [feature](const auto& declaration) {
+                                        return declaration.feature == feature;
+                                      });
+    if (result == policy.end())
+      return false;
+
+    return result->feature == feature && result->matches_all_origins &&
+           result->matches_opaque_src && result->origins.empty();
+  }
+
+  // Returns true if the policy contains a declaration for the feature which
+  // disallows it in all origins.
+  bool IsFeatureDisallowedEverywhere(mojom::FeaturePolicyFeature feature,
+                                     const ParsedFeaturePolicy& policy) {
+    const auto& result = std::find_if(policy.begin(), policy.end(),
+                                      [feature](const auto& declaration) {
+                                        return declaration.feature == feature;
+                                      });
+    if (result == policy.end())
+      return false;
+
+    return result->feature == feature && !result->matches_all_origins &&
+           !result->matches_opaque_src && result->origins.empty();
+  }
+
+  ParsedFeaturePolicy test_policy = {{mojom::FeaturePolicyFeature::kFullscreen,
+                                      false,
+                                      false,
+                                      {url_origin_a_, url_origin_b_}},
+                                     {mojom::FeaturePolicyFeature::kGeolocation,
+                                      false,
+                                      false,
+                                      {url_origin_a_}}};
+  ParsedFeaturePolicy empty_policy = {};
+};
+TEST_F(FeaturePolicyMutationTest, TestIsFeatureDeclared) {
+  EXPECT_TRUE(
+      IsFeatureDeclared(mojom::FeaturePolicyFeature::kFullscreen, test_policy));
+  EXPECT_TRUE(IsFeatureDeclared(mojom::FeaturePolicyFeature::kGeolocation,
+                                test_policy));
+  EXPECT_FALSE(
+      IsFeatureDeclared(mojom::FeaturePolicyFeature::kUsb, test_policy));
+  EXPECT_FALSE(
+      IsFeatureDeclared(mojom::FeaturePolicyFeature::kNotFound, test_policy));
+}
+
+TEST_F(FeaturePolicyMutationTest, TestIsFeatureDeclaredWithEmptyPolicy) {
+  EXPECT_FALSE(IsFeatureDeclared(mojom::FeaturePolicyFeature::kFullscreen,
+                                 empty_policy));
+  EXPECT_FALSE(
+      IsFeatureDeclared(mojom::FeaturePolicyFeature::kNotFound, empty_policy));
+}
+
+TEST_F(FeaturePolicyMutationTest, TestRemoveAbsentFeature) {
+  ASSERT_EQ(2UL, test_policy.size());
+  EXPECT_FALSE(
+      IsFeatureDeclared(mojom::FeaturePolicyFeature::kPayment, test_policy));
+  EXPECT_FALSE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kPayment,
+                                      test_policy));
+  ASSERT_EQ(2UL, test_policy.size());
+  EXPECT_FALSE(
+      IsFeatureDeclared(mojom::FeaturePolicyFeature::kPayment, test_policy));
+}
+
+TEST_F(FeaturePolicyMutationTest, TestRemoveFromEmptyPolicy) {
+  ASSERT_EQ(0UL, empty_policy.size());
+  EXPECT_FALSE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kPayment,
+                                      test_policy));
+  ASSERT_EQ(0UL, empty_policy.size());
+}
+
+TEST_F(FeaturePolicyMutationTest, TestRemoveFeatureIfPresent) {
+  ASSERT_EQ(2UL, test_policy.size());
+  EXPECT_TRUE(
+      IsFeatureDeclared(mojom::FeaturePolicyFeature::kFullscreen, test_policy));
+  EXPECT_TRUE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kFullscreen,
+                                     test_policy));
+  EXPECT_EQ(1UL, test_policy.size());
+  EXPECT_FALSE(
+      IsFeatureDeclared(mojom::FeaturePolicyFeature::kFullscreen, test_policy));
+
+  // Attempt to remove the feature again
+  EXPECT_FALSE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kFullscreen,
+                                      test_policy));
+  EXPECT_EQ(1UL, test_policy.size());
+  EXPECT_FALSE(
+      IsFeatureDeclared(mojom::FeaturePolicyFeature::kFullscreen, test_policy));
+}
+
+TEST_F(FeaturePolicyMutationTest, TestRemoveFeatureIfPresentOnSecondFeature) {
+  ASSERT_EQ(2UL, test_policy.size());
+  EXPECT_TRUE(IsFeatureDeclared(mojom::FeaturePolicyFeature::kGeolocation,
+                                test_policy));
+  EXPECT_TRUE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kGeolocation,
+                                     test_policy));
+  ASSERT_EQ(1UL, test_policy.size());
+  EXPECT_FALSE(IsFeatureDeclared(mojom::FeaturePolicyFeature::kGeolocation,
+                                 test_policy));
+
+  // Attempt to remove the feature again
+  EXPECT_FALSE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kGeolocation,
+                                      test_policy));
+  EXPECT_EQ(1UL, test_policy.size());
+  EXPECT_FALSE(IsFeatureDeclared(mojom::FeaturePolicyFeature::kGeolocation,
+                                 test_policy));
+}
+
+TEST_F(FeaturePolicyMutationTest, TestRemoveAllFeatures) {
+  ASSERT_EQ(2UL, test_policy.size());
+  EXPECT_TRUE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kFullscreen,
+                                     test_policy));
+  EXPECT_TRUE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kGeolocation,
+                                     test_policy));
+  EXPECT_EQ(0UL, test_policy.size());
+  EXPECT_FALSE(
+      IsFeatureDeclared(mojom::FeaturePolicyFeature::kFullscreen, test_policy));
+  EXPECT_FALSE(IsFeatureDeclared(mojom::FeaturePolicyFeature::kGeolocation,
+                                 test_policy));
+}
+
+TEST_F(FeaturePolicyMutationTest, TestDisallowIfNotPresent) {
+  ParsedFeaturePolicy copy = test_policy;
+  // Try to disallow a feature which already exists
+  EXPECT_FALSE(DisallowFeatureIfNotPresent(
+      mojom::FeaturePolicyFeature::kFullscreen, copy));
+  ASSERT_EQ(copy, test_policy);
+
+  // Disallow a new feature
+  EXPECT_TRUE(
+      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kPayment, copy));
+  EXPECT_EQ(3UL, copy.size());
+  // Verify that the feature is, in fact, now disallowed everywhere
+  EXPECT_TRUE(IsFeatureDisallowedEverywhere(
+      mojom::FeaturePolicyFeature::kPayment, copy));
+}
+
+TEST_F(FeaturePolicyMutationTest, TestAllowEverywhereIfNotPresent) {
+  ParsedFeaturePolicy copy = test_policy;
+  // Try to allow a feature which already exists
+  EXPECT_FALSE(AllowFeatureEverywhereIfNotPresent(
+      mojom::FeaturePolicyFeature::kFullscreen, copy));
+  ASSERT_EQ(copy, test_policy);
+
+  // Allow a new feature
+  EXPECT_TRUE(AllowFeatureEverywhereIfNotPresent(
+      mojom::FeaturePolicyFeature::kPayment, copy));
+  EXPECT_EQ(3UL, copy.size());
+  // Verify that the feature is, in fact, allowed everywhere
+  EXPECT_TRUE(
+      IsFeatureAllowedEverywhere(mojom::FeaturePolicyFeature::kPayment, copy));
+}
+
+TEST_F(FeaturePolicyMutationTest, TestDisallowUnconditionally) {
+  // Try to disallow a feature which already exists
+  DisallowFeature(mojom::FeaturePolicyFeature::kFullscreen, test_policy);
+  // Should not have changed the number of declarations
+  EXPECT_EQ(2UL, test_policy.size());
+  // Verify that the feature is, in fact, now disallowed everywhere
+  EXPECT_TRUE(IsFeatureDisallowedEverywhere(
+      mojom::FeaturePolicyFeature::kFullscreen, test_policy));
+}
+
+TEST_F(FeaturePolicyMutationTest, TestDisallowNewFeatureUnconditionally) {
+  // Try to disallow a feature which does not yet exist
+  DisallowFeature(mojom::FeaturePolicyFeature::kPayment, test_policy);
+  // Should have added a new declaration
+  EXPECT_EQ(3UL, test_policy.size());
+  // Verify that the feature is, in fact, now disallowed everywhere
+  EXPECT_TRUE(IsFeatureDisallowedEverywhere(
+      mojom::FeaturePolicyFeature::kPayment, test_policy));
+}
+
+TEST_F(FeaturePolicyMutationTest, TestAllowUnconditionally) {
+  // Try to allow a feature which already exists
+  AllowFeatureEverywhere(mojom::FeaturePolicyFeature::kFullscreen, test_policy);
+  // Should not have changed the number of declarations
+  EXPECT_EQ(2UL, test_policy.size());
+  // Verify that the feature is, in fact, now allowed everywhere
+  EXPECT_TRUE(IsFeatureAllowedEverywhere(
+      mojom::FeaturePolicyFeature::kFullscreen, test_policy));
+}
+
+TEST_F(FeaturePolicyMutationTest, TestAllowNewFeatureUnconditionally) {
+  // Try to allow a feature which does not yet exist
+  AllowFeatureEverywhere(mojom::FeaturePolicyFeature::kPayment, test_policy);
+  // Should have added a new declaration
+  EXPECT_EQ(3UL, test_policy.size());
+  // Verify that the feature is, in fact, now allowed everywhere
+  EXPECT_TRUE(IsFeatureAllowedEverywhere(mojom::FeaturePolicyFeature::kPayment,
+                                         test_policy));
 }
 
 }  // namespace blink
