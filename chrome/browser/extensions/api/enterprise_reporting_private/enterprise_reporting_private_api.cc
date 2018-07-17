@@ -126,12 +126,11 @@ void EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
 }
 
 void EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
-    OnResponded() {
-  cloud_policy_client_.reset();
-}
-
-void EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
     OnReportUploaded(bool status) {
+  // Schedule to delete |cloud_policy_client_| later, as we'll be deleted right
+  // after calling Respond but |cloud_policy_client_| is not done yet.
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, cloud_policy_client_.release());
   if (status) {
     VLOG(1) << "The enterprise report has been uploaded.";
     Respond(NoArguments());
