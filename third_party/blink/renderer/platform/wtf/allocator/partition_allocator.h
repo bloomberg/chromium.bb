@@ -105,6 +105,7 @@ class WTF_EXPORT PartitionAllocator {
 
   static bool IsAllocationAllowed() { return true; }
   static bool IsObjectResurrectionForbidden() { return false; }
+  static bool IsSweepForbidden() { return false; }
 
   static void EnterGCForbiddenScope() {}
   static void LeaveGCForbiddenScope() {}
