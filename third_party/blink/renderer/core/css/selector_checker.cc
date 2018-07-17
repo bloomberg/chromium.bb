@@ -306,14 +306,6 @@ static inline Element* ParentOrV0ShadowHostElement(const Element& element) {
   return element.ParentOrShadowHostElement();
 }
 
-static inline Element* ParentOrOpenShadowHostElement(const Element& element) {
-  if (element.parentNode() && element.parentNode()->IsShadowRoot()) {
-    if (ToShadowRoot(element.parentNode())->GetType() != ShadowRootType::kOpen)
-      return nullptr;
-  }
-  return element.ParentOrShadowHostElement();
-}
-
 SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
     const SelectorCheckingContext& context,
     MatchResult& result) const {
@@ -479,28 +471,6 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
           return match;
         if (NextSelectorExceedsScope(next_context))
           return kSelectorFailsCompletely;
-      }
-      return kSelectorFailsCompletely;
-    }
-
-    case CSSSelector::kShadowPiercingDescendant: {
-      DCHECK_EQ(mode_, kQueryingRules);
-      UseCounter::Count(context.element->GetDocument(),
-                        WebFeature::kCSSShadowPiercingDescendantCombinator);
-      // TODO(kochi): parentOrOpenShadowHostElement() is necessary because
-      // SelectorQuery can pass V0 shadow roots. All closed shadow roots are
-      // already filtered out, thus once V0 is removed this logic can use
-      // parentOrShadowHostElement() instead.
-      for (next_context.element =
-               ParentOrOpenShadowHostElement(*context.element);
-           next_context.element;
-           next_context.element =
-               ParentOrOpenShadowHostElement(*next_context.element)) {
-        MatchStatus match = MatchSelector(next_context, result);
-        if (match == kSelectorMatches || match == kSelectorFailsCompletely)
-          return match;
-        if (NextSelectorExceedsScope(next_context))
-          break;
       }
       return kSelectorFailsCompletely;
     }

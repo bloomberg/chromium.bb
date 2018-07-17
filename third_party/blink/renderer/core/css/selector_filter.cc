@@ -182,7 +182,6 @@ void SelectorFilter::CollectIdentifierHashes(
       case CSSSelector::kShadowPseudo:
       case CSSSelector::kShadowPart:
       case CSSSelector::kShadowDeep:
-      case CSSSelector::kShadowPiercingDescendant:
         skip_over_subselectors = false;
         CollectDescendantSelectorIdentifierHashes(*current, hash);
         break;

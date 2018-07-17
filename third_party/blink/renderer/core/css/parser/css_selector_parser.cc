@@ -662,25 +662,8 @@ CSSSelector::RelationType CSSSelectorParser::ConsumeCombinator(
       return CSSSelector::kIndirectAdjacent;
 
     case '>':
-      if (!RuntimeEnabledFeatures::
-              ShadowPiercingDescendantCombinatorEnabled() ||
-          context_->IsLiveProfile() ||
-          range.Peek(1).GetType() != kDelimiterToken ||
-          range.Peek(1).Delimiter() != '>') {
-        range.ConsumeIncludingWhitespace();
-        return CSSSelector::kChild;
-      }
-      range.Consume();
-
-      // Check the 3rd '>'.
-      if (range.Peek(1).GetType() != kDelimiterToken ||
-          range.Peek(1).Delimiter() != '>') {
-        // TODO: Treat '>>' as a CSSSelector::kDescendant here.
-        return CSSSelector::kChild;
-      }
-      range.Consume();
       range.ConsumeIncludingWhitespace();
-      return CSSSelector::kShadowPiercingDescendant;
+      return CSSSelector::kChild;
 
     case '/': {
       // Match /deep/

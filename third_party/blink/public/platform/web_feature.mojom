@@ -1191,7 +1191,6 @@ enum WebFeature {
   kV8Document_RootScroller_AttributeSetter = 1688,
   kCustomElementRegistryDefine = 1689,
   kLinkHeaderServiceWorker = 1690,
-  kCSSShadowPiercingDescendantCombinator = 1691,
   // The above items are available in M56 branch.
 
   kCSSFlexibleBox = 1692,

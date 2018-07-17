@@ -862,9 +862,6 @@ String CSSSelector::SelectorText() const {
       case kShadowDeepAsDescendant:
         result = " /deep/ " + builder.ToString() + result;
         break;
-      case kShadowPiercingDescendant:
-        result = " >>> " + builder.ToString() + result;
-        break;
       case kDirectAdjacent:
         result = " + " + builder.ToString() + result;
         break;
@@ -1085,7 +1082,6 @@ bool CSSSelector::HasDeepCombinatorOrShadowPseudo() const {
   return ForAnyInTagHistory(
       [](const CSSSelector& selector) -> bool {
         return selector.Relation() == CSSSelector::kShadowDeep ||
-               selector.Relation() == CSSSelector::kShadowPiercingDescendant ||
                selector.GetPseudoType() == CSSSelector::kPseudoShadow;
       },
       *this);
