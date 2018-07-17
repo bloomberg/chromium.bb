@@ -16,6 +16,7 @@
 
 namespace web {
 class WebState;
+struct FormActivityParams;
 }
 
 @protocol CRWWebViewProxy;

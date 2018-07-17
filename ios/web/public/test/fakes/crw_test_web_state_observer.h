@@ -40,11 +40,6 @@
 // Arguments passed to |webStateDidSuppressDialog:|.
 @property(nonatomic, readonly)
     web::TestDidSuppressDialogInfo* didSuppressDialogInfo;
-// Arguments passed to |webState:didSubmitDocumentWithFormNamed:userInitiated:|.
-@property(nonatomic, readonly) web::TestSubmitDocumentInfo* submitDocumentInfo;
-// Arguments passed to
-// |webState:didRegisterFormActivity:|.
-@property(nonatomic, readonly) web::TestFormActivityInfo* formActivityInfo;
 // Arguments passed to |webState:didUpdateFaviconURLCandidates|.
 @property(nonatomic, readonly)
     web::TestUpdateFaviconUrlCandidatesInfo* updateFaviconUrlCandidatesInfo;

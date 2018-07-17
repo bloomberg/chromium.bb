@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/web_state/navigation_context_impl.h"
 #include "net/http/http_response_headers.h"
@@ -50,12 +49,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
       _didChangeVisibleSecurityStateInfo;
   // Arguments passed to |webStateDidSuppressDialog:|.
   std::unique_ptr<web::TestDidSuppressDialogInfo> _didSuppressDialogInfo;
-  // Arguments passed to
-  // |webState:didSubmitDocumentWithFormNamed:userInitiated:|.
-  std::unique_ptr<web::TestSubmitDocumentInfo> _submitDocumentInfo;
-  // Arguments passed to
-  // |webState:didRegisterFormActivity:|.
-  std::unique_ptr<web::TestFormActivityInfo> _formActivityInfo;
   // Arguments passed to |webState:didUpdateFaviconURLCandidates|.
   std::unique_ptr<web::TestUpdateFaviconUrlCandidatesInfo>
       _updateFaviconUrlCandidatesInfo;
@@ -112,14 +105,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 
 - (web::TestDidSuppressDialogInfo*)didSuppressDialogInfo {
   return _didSuppressDialogInfo.get();
-}
-
-- (web::TestSubmitDocumentInfo*)submitDocumentInfo {
-  return _submitDocumentInfo.get();
-}
-
-- (web::TestFormActivityInfo*)formActivityInfo {
-  return _formActivityInfo.get();
 }
 
 - (web::TestUpdateFaviconUrlCandidatesInfo*)updateFaviconUrlCandidatesInfo {
@@ -229,24 +214,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 - (void)webStateDidSuppressDialog:(web::WebState*)webState {
   _didSuppressDialogInfo = std::make_unique<web::TestDidSuppressDialogInfo>();
   _didSuppressDialogInfo->web_state = webState;
-}
-
-- (void)webState:(web::WebState*)webState
-    didSubmitDocumentWithFormNamed:(const std::string&)formName
-                     userInitiated:(BOOL)userInitiated
-                       isMainFrame:(BOOL)isMainFrame {
-  _submitDocumentInfo = std::make_unique<web::TestSubmitDocumentInfo>();
-  _submitDocumentInfo->web_state = webState;
-  _submitDocumentInfo->form_name = formName;
-  _submitDocumentInfo->user_initiated = userInitiated;
-  _submitDocumentInfo->is_main_frame = isMainFrame;
-}
-
-- (void)webState:(web::WebState*)webState
-    didRegisterFormActivity:(const web::FormActivityParams&)params {
-  _formActivityInfo = std::make_unique<web::TestFormActivityInfo>();
-  _formActivityInfo->web_state = webState;
-  _formActivityInfo->form_activity = params;
 }
 
 - (void)webState:(web::WebState*)webState

@@ -13,6 +13,7 @@
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
+#include "components/autofill/ios/form_util/test_form_activity_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -140,7 +141,8 @@ FormSuggestionView* GetSuggestionView(UIView* parent) {
 // Test fixture for FormSuggestionController testing.
 class FormSuggestionControllerTest : public PlatformTest {
  public:
-  FormSuggestionControllerTest() {}
+  FormSuggestionControllerTest()
+      : test_form_activity_tab_helper_(&test_web_state_) {}
 
   void SetUp() override {
     PlatformTest::SetUp();
@@ -244,6 +246,9 @@ class FormSuggestionControllerTest : public PlatformTest {
   // The fake WebState to simulate navigation and JavaScript events.
   web::TestWebState test_web_state_;
 
+  // The fake form tracker to simulate form events.
+  autofill::TestFormActivityTabHelper test_form_activity_tab_helper_;
+
   DISALLOW_COPY_AND_ASSIGN(FormSuggestionControllerTest);
 };
 
@@ -281,7 +286,7 @@ TEST_F(FormSuggestionControllerTest,
   params.type = "type";
   params.value = "value";
   params.input_missing = false;
-  test_web_state_.OnFormActivity(params);
+  test_form_activity_tab_helper_.OnFormActivity(params);
   EXPECT_TRUE(GetSuggestionView(input_accessory_view_));
 
   // Trigger another page load. The suggestions accessory view should
@@ -300,7 +305,7 @@ TEST_F(FormSuggestionControllerTest, FormActivityBlurShouldBeIgnored) {
   params.type = "blur";  // blur!
   params.value = "value";
   params.input_missing = false;
-  test_web_state_.OnFormActivity(params);
+  test_form_activity_tab_helper_.OnFormActivity(params);
   EXPECT_FALSE(GetSuggestionView(input_accessory_view_));
 }
 
@@ -318,7 +323,7 @@ TEST_F(FormSuggestionControllerTest,
   params.type = "type";
   params.value = "value";
   params.input_missing = false;
-  test_web_state_.OnFormActivity(params);
+  test_form_activity_tab_helper_.OnFormActivity(params);
 
   // The suggestions accessory view should be empty.
   FormSuggestionView* suggestionView = GetSuggestionView(input_accessory_view_);
@@ -347,7 +352,7 @@ TEST_F(FormSuggestionControllerTest,
   params.type = "type";
   params.value = "value";
   params.input_missing = false;
-  test_web_state_.OnFormActivity(params);
+  test_form_activity_tab_helper_.OnFormActivity(params);
 
   // The providers should each be asked if they have suggestions for the
   // form in question.
@@ -397,7 +402,7 @@ TEST_F(FormSuggestionControllerTest,
   params.type = "type";
   params.value = "value";
   params.input_missing = false;
-  test_web_state_.OnFormActivity(params);
+  test_form_activity_tab_helper_.OnFormActivity(params);
 
   // Since the first provider has suggestions available, it and only it
   // should have been asked.
@@ -437,7 +442,7 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
   params.type = "type";
   params.value = "value";
   params.input_missing = false;
-  test_web_state_.OnFormActivity(params);
+  test_form_activity_tab_helper_.OnFormActivity(params);
 
   // Selecting a suggestion should notify the delegate.
   [suggestion_controller_ didSelectSuggestion:suggestions[0]];

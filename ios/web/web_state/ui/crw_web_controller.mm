@@ -64,7 +64,6 @@
 #import "ios/web/public/web_client.h"
 #include "ios/web/public/web_kit_constants.h"
 #import "ios/web/public/web_state/context_menu_params.h"
-#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/page_display_state.h"
@@ -810,14 +809,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Handles 'document.favicons' message.
 - (BOOL)handleDocumentFaviconsMessage:(base::DictionaryValue*)message
                               context:(NSDictionary*)context;
-// Handles 'document.submit' message.
-// TODO(crbug.com/823285): move this handler to components/autofill.
-- (BOOL)handleDocumentSubmitMessage:(base::DictionaryValue*)message
-                            context:(NSDictionary*)context;
-// Handles 'form.activity' message.
-// TODO(crbug.com/823285): move this handler to components/autofill.
-- (BOOL)handleFormActivityMessage:(base::DictionaryValue*)message
-                          context:(NSDictionary*)context;
 // Handles 'window.error' message.
 - (BOOL)handleWindowErrorMessage:(base::DictionaryValue*)message
                          context:(NSDictionary*)context;
@@ -2328,10 +2319,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     (*handlers)["console"] = @selector(handleConsoleMessage:context:);
     (*handlers)["document.favicons"] =
         @selector(handleDocumentFaviconsMessage:context:);
-    (*handlers)["document.submit"] =
-        @selector(handleDocumentSubmitMessage:context:);
-    (*handlers)["form.activity"] =
-        @selector(handleFormActivityMessage:context:);
     (*handlers)["window.error"] = @selector(handleWindowErrorMessage:context:);
     (*handlers)["window.hashchange"] =
         @selector(handleWindowHashChangeMessage:context:);
@@ -2487,44 +2474,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   if (!URLs.empty())
     _webStateImpl->OnFaviconUrlUpdated(URLs);
-  return YES;
-}
-
-- (BOOL)handleDocumentSubmitMessage:(base::DictionaryValue*)message
-                            context:(NSDictionary*)context {
-  std::string href;
-  if (!message->GetString("href", &href)) {
-    DLOG(WARNING) << "JS message parameter not found: href";
-    return NO;
-  }
-  std::string formName;
-  message->GetString("formName", &formName);
-  // We decide the form is user-submitted if the user has interacted with
-  // the main page (using logic from the popup blocker), or if the keyboard
-  // is visible.
-  BOOL submittedByUser = [context[kUserIsInteractingKey] boolValue] ||
-                         [_webViewProxy keyboardAccessory];
-  _webStateImpl->OnDocumentSubmitted(formName, submittedByUser,
-                                     [context[kIsMainFrame] boolValue]);
-  return YES;
-}
-
-- (BOOL)handleFormActivityMessage:(base::DictionaryValue*)message
-                          context:(NSDictionary*)context {
-  web::FormActivityParams params;
-  if (!message->GetString("formName", &params.form_name) ||
-      !message->GetString("fieldName", &params.field_name) ||
-      !message->GetString("fieldIdentifier", &params.field_identifier) ||
-      !message->GetString("fieldType", &params.field_type) ||
-      !message->GetString("type", &params.type) ||
-      !message->GetString("value", &params.value) ||
-      !message->GetBoolean("hasUserGesture", &params.has_user_gesture)) {
-    params.input_missing = true;
-  }
-
-  params.is_main_frame = [context[kIsMainFrame] boolValue];
-
-  _webStateImpl->OnFormActivityRegistered(params);
   return YES;
 }
 

@@ -20,20 +20,43 @@ source_set("form_util") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "test_form_activity_observer.h",
+    "test_form_activity_observer.mm",
+    "test_form_activity_tab_helper.h",
+    "test_form_activity_tab_helper.mm",
+  ]
+  deps = [
+    ":form_util",
+    "//base",
+    "//ios/web/public",
+    "//testing/gtest",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "fill_js_unittest.mm",
+    "form_activity_observer_bridge_unittest.mm",
+    "form_activity_tab_helper_unittest.mm",
     "form_unittest.mm",
   ]
   deps = [
     ":form_js",
+    ":form_util",
+    ":test_support",
     "//base",
+    "//base/test:test_support",
     "//ios/chrome/app:tests_fake_hook",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/tabs:tabs_internal",
     "//ios/chrome/browser/web:test_support",
+    "//ios/testing:ios_test_support",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//ios/web/web_state/js",
