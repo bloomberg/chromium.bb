@@ -184,8 +184,6 @@ DiagnosticsReporter::DiagnosticsReporter(
       diagnostic_.getCustomDiagID(getErrorLevel(), kClassRequiresTraceMethod);
   diag_base_requires_tracing_ =
       diagnostic_.getCustomDiagID(getErrorLevel(), kBaseRequiresTracing);
-  diag_base_requires_wrapper_tracing_ =
-      diagnostic_.getCustomDiagID(getErrorLevel(), kBaseRequiresWrapperTracing);
   diag_fields_require_tracing_ =
       diagnostic_.getCustomDiagID(getErrorLevel(), kFieldsRequireTracing);
   diag_fields_improperly_traced_ =
@@ -315,13 +313,6 @@ void DiagnosticsReporter::BaseRequiresTracing(
     CXXMethodDecl* trace,
     CXXRecordDecl* base) {
   ReportDiagnostic(trace->getLocStart(), diag_base_requires_tracing_)
-      << base << derived->record();
-}
-
-void DiagnosticsReporter::BaseRequiresWrapperTracing(RecordInfo* derived,
-                                                     CXXMethodDecl* trace,
-                                                     CXXRecordDecl* base) {
-  ReportDiagnostic(trace->getLocStart(), diag_base_requires_wrapper_tracing_)
       << base << derived->record();
 }
 
