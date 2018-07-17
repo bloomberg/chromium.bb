@@ -330,10 +330,6 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
 
   int64_t GetDiskUsage() const;
 
-  // Used to report histograms.
-  void RecordReadIsParallelizable(const SimpleEntryOperation& operation) const;
-  void RecordWriteDependencyType(const SimpleEntryOperation& operation) const;
-
   // Completes a read from the stream data kept in memory, logging metrics
   // and updating metadata. Returns the # of bytes read successfully.
   // This asumes the caller has already range-checked offset and buf_len
@@ -423,8 +419,6 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   base::queue<SimpleEntryOperation> pending_operations_;
 
   net::NetLogWithSource net_log_;
-
-  std::unique_ptr<SimpleEntryOperation> executing_operation_;
 
   // Unlike other streams, stream 0 data is read from the disk when the entry is
   // opened, and then kept in memory. All read/write operations on stream 0
