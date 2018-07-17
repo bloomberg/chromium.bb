@@ -51,8 +51,9 @@ interface Assistant {
 // contain untrusted third-party content. Subscriber implementations must be
 // sure to handle the response data appropriately.
 interface AssistantInteractionSubscriber {
-  // Assistant interaction has started.
-  OnInteractionStarted();
+  // Assistant interaction has started. In the event of a voice interaction,
+  // |is_voice_interaction| will be true. This implies that the mic is open.
+  OnInteractionStarted(bool is_voice_interaction);
 
   // Assistant interaction has ended with the specified |resolution|.
   OnInteractionFinished(AssistantInteractionResolution resolution);

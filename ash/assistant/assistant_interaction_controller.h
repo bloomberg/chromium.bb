@@ -70,7 +70,7 @@ class AssistantInteractionController
   void OnHighlighterEnabledChanged(HighlighterEnabledState state) override;
 
   // chromeos::assistant::mojom::AssistantInteractionSubscriber:
-  void OnInteractionStarted() override;
+  void OnInteractionStarted(bool is_voice_interaction) override;
   void OnInteractionFinished(
       AssistantInteractionResolution resolution) override;
   void OnHtmlResponse(const std::string& response) override;
