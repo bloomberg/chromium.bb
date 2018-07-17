@@ -11,6 +11,7 @@ import static org.chromium.chrome.browser.webapps.WebappActivity.ACTIVITY_TYPE_W
 
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -37,6 +38,7 @@ import android.view.Window;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -99,6 +101,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -158,7 +161,10 @@ public class CustomTabActivity extends ChromeActivity {
 
     private WebappCustomTabTimeSpentLogger mWebappTimeSpentLogger;
 
-    @Nullable private ActivityDelegate mActivityDelegate;
+    @Nullable private ActivityDelegate mModuleActivityDelegate;
+    @Nullable private Runnable mLoadModuleCancelRunnable;
+    private boolean mModuleOnStartPending;
+    private boolean mModuleOnResumePending;
     private boolean mHasSetOverlayView;
 
     private static class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
@@ -347,16 +353,15 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     /**
-     * Dynamically loads a module using the package and class names specified in the intent, if it
-     * is not loaded yet.
+     * Dynamically loads a module using the component name specified in the intent if the feature is
+     * enabled, the package is Google-signed, and it is not loaded yet.
      */
     private void maybeLoadModule() {
-        String packageName = mIntentDataProvider.getModulePackageName();
-        String className = mIntentDataProvider.getModuleClassName();
-        // Return early if these were not provided. It's important to do this before checking the
-        // feature experiment group, to avoid entering users into the experiment that do not even
-        // receive the intent extras for using the feature.
-        if (packageName == null || className == null) return;
+        ComponentName componentName = mIntentDataProvider.getModuleComponentName();
+        // Return early if no component name was provided. It's important to do this before checking
+        // the feature experiment group, to avoid entering users into the experiment that do not
+        // even receive the extras for using the feature.
+        if (componentName == null) return;
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
             Log.w(TAG, "The %s feature is disabled.", ChromeFeatureList.CCT_MODULE);
@@ -364,20 +369,66 @@ public class CustomTabActivity extends ChromeActivity {
             return;
         }
 
-        if (!ExternalAuthUtils.getInstance().isGoogleSigned(packageName)) {
-            Log.w(TAG, "The %s package is not Google-signed.", packageName);
+        if (!ExternalAuthUtils.getInstance().isGoogleSigned(componentName.getPackageName())) {
+            Log.w(TAG, "The %s package is not Google-signed.", componentName.getPackageName());
             ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_NOT_GOOGLE_SIGNED);
             return;
         }
 
-        // TODO(https://crbug.com/853728): Load the module in the background.
-        ModuleEntryPoint entryPoint = mConnection.loadModule(packageName, className);
+        mLoadModuleCancelRunnable =
+                mConnection.getModuleLoader(componentName).loadModule(new LoadModuleCallback(this));
+    }
+
+    private boolean isModuleLoading() {
+        return mLoadModuleCancelRunnable != null;
+    }
+
+    private static class LoadModuleCallback implements Callback<ModuleEntryPoint> {
+        private final WeakReference<CustomTabActivity> mActivity;
+
+        LoadModuleCallback(CustomTabActivity activity) {
+            mActivity = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void onResult(@Nullable ModuleEntryPoint entryPoint) {
+            CustomTabActivity activity = mActivity.get();
+            if (activity == null || activity.isActivityDestroyed()) return;
+            activity.onModuleLoaded(entryPoint);
+        }
+    }
+
+    /**
+     * Receives the entry point if it was loaded successfully, or null if there was a problem. This
+     * is always called on the UI thread.
+     */
+    private void onModuleLoaded(@Nullable ModuleEntryPoint entryPoint) {
+        mLoadModuleCancelRunnable = null;
         if (entryPoint == null) return;
 
         long createActivityDelegateStartTime = ModuleMetrics.now();
-        mActivityDelegate = entryPoint.createActivityDelegate(new ActivityHostImpl(this));
+        mModuleActivityDelegate = entryPoint.createActivityDelegate(new ActivityHostImpl(this));
         ModuleMetrics.recordCreateActivityDelegateTime(createActivityDelegateStartTime);
-        mActivityDelegate.onCreate(getSavedInstanceState());
+        mModuleActivityDelegate.onCreate(getSavedInstanceState());
+
+        if (mModuleOnStartPending) startModule();
+        if (mModuleOnResumePending) resumeModule();
+    }
+
+    private void startModule() {
+        assert mModuleActivityDelegate != null;
+
+        mModuleOnStartPending = false;
+        mModuleActivityDelegate.onStart();
+        mModuleActivityDelegate.onRestoreInstanceState(getSavedInstanceState());
+        mModuleActivityDelegate.onPostCreate(getSavedInstanceState());
+    }
+
+    private void resumeModule() {
+        assert mModuleActivityDelegate != null;
+
+        mModuleOnResumePending = false;
+        mModuleActivityDelegate.onResume();
     }
 
     public void setBottomBarContentView(View view) {
@@ -770,10 +821,11 @@ public class CustomTabActivity extends ChromeActivity {
         super.onStartWithNative();
         BrowserSessionContentUtils.setActiveContentHandler(mBrowserSessionContentHandler);
         if (mHasCreatedTabEarly && !mMainTab.isLoading()) postDeferredStartupIfNeeded();
-        if (mActivityDelegate != null) {
-            mActivityDelegate.onStart();
-            mActivityDelegate.onRestoreInstanceState(getSavedInstanceState());
-            mActivityDelegate.onPostCreate(getSavedInstanceState());
+
+        if (mModuleActivityDelegate != null) {
+            startModule();
+        } else if (isModuleLoading()) {
+            mModuleOnStartPending = true;
         }
     }
 
@@ -811,7 +863,12 @@ public class CustomTabActivity extends ChromeActivity {
         mWebappTimeSpentLogger = WebappCustomTabTimeSpentLogger.createInstanceAndStartTimer(
                 getIntent().getIntExtra(CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE,
                         ACTIVITY_TYPE_OTHER));
-        if (mActivityDelegate != null) mActivityDelegate.onResume();
+
+        if (mModuleActivityDelegate != null) {
+            resumeModule();
+        } else if (isModuleLoading()) {
+            mModuleOnResumePending = true;
+        }
     }
 
     @Override
@@ -820,14 +877,16 @@ public class CustomTabActivity extends ChromeActivity {
         if (mWebappTimeSpentLogger != null) {
             mWebappTimeSpentLogger.onPause();
         }
-        if (mActivityDelegate != null) mActivityDelegate.onPause();
+        if (mModuleActivityDelegate != null) mModuleActivityDelegate.onPause();
+        mModuleOnResumePending = false;
     }
 
     @Override
     public void onStopWithNative() {
         super.onStopWithNative();
         BrowserSessionContentUtils.setActiveContentHandler(null);
-        if (mActivityDelegate != null) mActivityDelegate.onStop();
+        if (mModuleActivityDelegate != null) mModuleActivityDelegate.onStop();
+        mModuleOnStartPending = false;
         if (mIsClosing) {
             getTabModelSelector().closeAllTabs(true);
             mTabPersistencePolicy.deleteMetadataStateFileAsync();
@@ -839,21 +898,30 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     protected void onDestroyInternal() {
         super.onDestroyInternal();
-        if (mActivityDelegate != null) mActivityDelegate.onDestroy();
-        mConnection.maybeUnloadModule(mIntentDataProvider.getModulePackageName(),
-                mIntentDataProvider.getModuleClassName());
+        if (mLoadModuleCancelRunnable != null) {
+            mLoadModuleCancelRunnable.run();
+            mLoadModuleCancelRunnable = null;
+        }
+        if (mModuleActivityDelegate != null) {
+            mModuleActivityDelegate.onDestroy();
+            mModuleActivityDelegate = null;
+        }
+        ComponentName moduleComponentName = mIntentDataProvider.getModuleComponentName();
+        if (moduleComponentName != null) {
+            mConnection.getModuleLoader(moduleComponentName).maybeUnloadModule();
+        }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mActivityDelegate != null) mActivityDelegate.onSaveInstanceState(outState);
+        if (mModuleActivityDelegate != null) mModuleActivityDelegate.onSaveInstanceState(outState);
     }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        if (mActivityDelegate != null) mActivityDelegate.onWindowFocusChanged(hasFocus);
+        if (mModuleActivityDelegate != null) mModuleActivityDelegate.onWindowFocusChanged(hasFocus);
     }
 
     /**
@@ -1023,7 +1091,7 @@ public class CustomTabActivity extends ChromeActivity {
 
         if (exitFullscreenIfShowing()) return true;
 
-        if (mActivityDelegate != null && mActivityDelegate.onBackPressed()) return true;
+        if (mModuleActivityDelegate != null && mModuleActivityDelegate.onBackPressed()) return true;
 
         if (!getToolbarManager().back()) {
             if (getCurrentTabModel().getCount() > 1) {
