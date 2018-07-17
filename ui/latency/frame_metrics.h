@@ -120,8 +120,6 @@ class FrameMetrics : public SkippedFrameTracker::Client {
   void AddFrameDisplayed(base::TimeTicks source_timestamp,
                          base::TimeTicks display_timestamp);
 
-  static bool RequestPresentationFeedbackEveryFrame();
-
  protected:
   void TraceStats() const;
 
