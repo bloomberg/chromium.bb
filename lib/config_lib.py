@@ -1032,6 +1032,12 @@ def DefaultSettings():
       image_test=False,
 
       # ==================================================================
+      # Workspace related options.
+
+      # Which branch should WorkspaceSyncStage checkout, if run.
+      workspace_branch=None,
+
+      # ==================================================================
       # The documentation associated with the config.
       doc=None,
 
