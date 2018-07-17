@@ -69,10 +69,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -204,26 +202,9 @@ public class VrShellDelegate
     // Gets run when the user exits VR mode by clicking the Gear button.
     private Runnable mSettingsButtonListener;
 
-    private static final List<VrModeObserver> sVrModeObservers = new ArrayList<>();
-
     protected boolean mTestWorkaroundDontCancelVrEntryOnResume;
 
     private long mNativeVrShellDelegate;
-
-    /**
-     * Used to observe changes to whether Chrome is currently being viewed in VR.
-     */
-    public static interface VrModeObserver {
-        /**
-         * Called when Chrome enters VR rendering mode.
-         */
-        void onEnterVr();
-
-        /**
-         * Called when Chrome exits VR rendering mode.
-         */
-        void onExitVr();
-    }
 
     private static final class VrLifecycleObserver
             implements ApplicationStatus.ActivityStateListener {
@@ -336,24 +317,6 @@ public class VrShellDelegate
         WeakReference<ChromeActivity> targetActivity() {
             return mTargetActivity;
         }
-    }
-
-    /**
-     * Registers the given {@link VrModeObserver}.
-     *
-     * @param observer The VrModeObserver to register.
-     */
-    public static void registerVrModeObserver(VrModeObserver observer) {
-        sVrModeObservers.add(observer);
-    }
-
-    /**
-     * Unregisters the given {@link VrModeObserver}.
-     *
-     * @param observer The VrModeObserver to remove.
-     */
-    public static void unregisterVrModeObserver(VrModeObserver observer) {
-        sVrModeObservers.remove(observer);
     }
 
     /**
@@ -1262,7 +1225,7 @@ public class VrShellDelegate
 
         maybeSetPresentResult(true);
 
-        for (VrModeObserver observer : sVrModeObservers) observer.onEnterVr();
+        VrModuleProvider.onEnterVr();
     }
 
     private void onVrIntentUnsupported() {
@@ -1855,7 +1818,7 @@ public class VrShellDelegate
         // prompt.
         if (mShowingExitVrPrompt) callOnExitVrRequestListener(true);
 
-        for (VrModeObserver observer : sVrModeObservers) observer.onExitVr();
+        VrModuleProvider.onExitVr();
     }
 
     private void callOnExitVrRequestListener(boolean success) {

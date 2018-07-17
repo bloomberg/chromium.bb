@@ -14,7 +14,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 
@@ -327,6 +327,6 @@ public class PermissionDialogController
 
     private static boolean useAppModalDialogView() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.MODAL_PERMISSION_DIALOG_VIEW)
-                || VrShellDelegate.isInVr();
+                || VrModuleProvider.getDelegate().isInVr();
     }
 }

@@ -42,7 +42,7 @@ import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.upgrade.UpgradeActivity;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.vr.VrIntentUtils;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappInfo;
@@ -146,7 +146,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         recordIntentMetrics();
 
-        mIsVrIntent = VrIntentUtils.isVrIntent(mIntent);
+        mIsVrIntent = VrModuleProvider.getIntentDelegate().isVrIntent(mIntent);
         mIsCustomTabIntent = isCustomTabIntent(mIntent);
     }
 
@@ -414,7 +414,9 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         // This system call is often modified by OEMs and not actionable. http://crbug.com/619646.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            Bundle options = mIsVrIntent ? VrIntentUtils.getVrIntentOptions(mActivity) : null;
+            Bundle options = mIsVrIntent
+                    ? VrModuleProvider.getIntentDelegate().getVrIntentOptions(mActivity)
+                    : null;
             mActivity.startActivity(newIntent, options);
         } catch (SecurityException ex) {
             if (isContentScheme) {

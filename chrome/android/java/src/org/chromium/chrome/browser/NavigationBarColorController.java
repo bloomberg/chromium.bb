@@ -23,8 +23,8 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.vr.VrShellDelegate;
-import org.chromium.chrome.browser.vr.VrShellDelegate.VrModeObserver;
+import org.chromium.chrome.browser.vr.VrModeObserver;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.ui.UiUtils;
 
 /**
@@ -95,7 +95,7 @@ public class NavigationBarColorController implements VrModeObserver {
 
         updateNavigationBarColor();
 
-        VrShellDelegate.registerVrModeObserver(this);
+        VrModuleProvider.registerVrModeObserver(this);
     }
 
     /**
@@ -104,7 +104,7 @@ public class NavigationBarColorController implements VrModeObserver {
     public void destroy() {
         mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
-        VrShellDelegate.unregisterVrModeObserver(this);
+        VrModuleProvider.unregisterVrModeObserver(this);
     }
 
     @Override

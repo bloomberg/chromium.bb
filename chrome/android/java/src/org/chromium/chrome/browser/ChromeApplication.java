@@ -35,8 +35,7 @@ import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
-import org.chromium.chrome.browser.vr.VrIntentUtils;
-import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 
 /**
  * Basic application functionality that should be shared among all browser applications that use
@@ -169,15 +168,16 @@ public class ChromeApplication extends Application {
 
     @Override
     public void startActivity(Intent intent, Bundle options) {
-        if (VrShellDelegate.canLaunch2DIntents() || VrIntentUtils.isVrIntent(intent)) {
+        if (VrModuleProvider.getDelegate().canLaunch2DIntents()
+                || VrModuleProvider.getIntentDelegate().isVrIntent(intent)) {
             super.startActivity(intent, options);
             return;
         }
 
-        VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
+        VrModuleProvider.getDelegate().requestToExitVr(new OnExitVrRequestListener() {
             @Override
             public void onSucceeded() {
-                if (!VrShellDelegate.canLaunch2DIntents()) {
+                if (!VrModuleProvider.getDelegate().canLaunch2DIntents()) {
                     throw new IllegalStateException("Still in VR after having exited VR.");
                 }
                 startActivity(intent, options);

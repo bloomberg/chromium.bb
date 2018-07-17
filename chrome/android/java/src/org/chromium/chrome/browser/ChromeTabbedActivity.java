@@ -132,8 +132,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.vr.VrIntentUtils;
-import org.chromium.chrome.browser.vr.VrShellDelegate;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -308,13 +307,13 @@ public class ChromeTabbedActivity
 
         @Override
         public boolean canShowBrowserControls() {
-            if (VrShellDelegate.isInVr()) return false;
+            if (VrModuleProvider.getDelegate().isInVr()) return false;
             return super.canShowBrowserControls();
         }
 
         @Override
         public boolean canAutoHideBrowserControls() {
-            if (VrShellDelegate.isInVr()) return true;
+            if (VrModuleProvider.getDelegate().isInVr()) return true;
             return super.canAutoHideBrowserControls();
         }
     }
@@ -581,11 +580,11 @@ public class ChromeTabbedActivity
             boolean isLegacyMultiWindow = MultiWindowUtils.getInstance().isLegacyMultiWindow(this);
             if (!isShowingPromo && !mIntentWithEffect && FirstRunStatus.getFirstRunFlowComplete()
                     && preferenceManager.getPromosSkippedOnFirstStart()
-                    && !VrShellDelegate.isInVr()
-                    // VrShellDelegate.isInVr may not return true at this point even though Chrome
-                    // is about to enter VR, so we need to also check whether we're launching into
-                    // VR.
-                    && !VrIntentUtils.isLaunchingIntoVr(this, getIntent())
+                    && !VrModuleProvider.getDelegate().isInVr()
+                    // VrModuleProvider.getDelegate().isInVr may not return true at this point even
+                    // though Chrome is about to enter VR, so we need to also check whether we're
+                    // launching into VR.
+                    && !VrModuleProvider.getIntentDelegate().isLaunchingIntoVr(this, getIntent())
                     && !isLegacyMultiWindow) {
                 // Data reduction promo should be temporarily suppressed if the sign in promo is
                 // shown to avoid nagging users too much.
@@ -1709,7 +1708,7 @@ public class ChromeTabbedActivity
             if (!currentModel.isIncognito()) currentModel.openMostRecentlyClosedTab();
             RecordUserAction.record("MobileTabClosedUndoShortCut");
         } else if (id == R.id.enter_vr_id) {
-            VrShellDelegate.enterVrIfNecessary();
+            VrModuleProvider.getDelegate().enterVrIfNecessary();
         } else {
             return super.onMenuOrKeyboardAction(id, fromMenu);
         }
@@ -2351,7 +2350,7 @@ public class ChromeTabbedActivity
 
     @Override
     public boolean supportsFullscreenActivity() {
-        return !VrShellDelegate.isInVr();
+        return !VrModuleProvider.getDelegate().isInVr();
     }
 
     @Override
