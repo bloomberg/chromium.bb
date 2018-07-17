@@ -2226,18 +2226,6 @@ ProbingResult QuicChromiumClientSession::StartProbeNetwork(
     return ProbingResult::DISABLED_BY_CONFIG;
   }
 
-  // TODO(zhongyi): migrate the session still, but reset non-migratable stream.
-  // TODO(zhongyi): migrate non-migrtable stream if moving from Cellular to
-  // wifi.
-  // Abort probing if there is stream marked as non-migratable.
-  if (HasNonMigratableStreams()) {
-    DVLOG(1) << "Clients disables probing network with non-migratable streams";
-    HistogramAndLogMigrationFailure(migration_net_log,
-                                    MIGRATION_STATUS_NON_MIGRATABLE_STREAM,
-                                    connection_id(), "Non-migratable stream");
-    return ProbingResult::DISABLED_BY_NON_MIGRABLE_STREAM;
-  }
-
   // Check if probing manager is probing the same path.
   if (probing_manager_.IsUnderProbing(
           network,
@@ -2751,16 +2739,6 @@ bool QuicChromiumClientSession::IsAuthorized(const std::string& hostname) {
   if (result)
     streams_pushed_count_++;
   return result;
-}
-
-bool QuicChromiumClientSession::HasNonMigratableStreams() const {
-  for (const auto& stream : dynamic_streams()) {
-    if (!static_cast<QuicChromiumClientStream*>(stream.second.get())
-             ->can_migrate()) {
-      return true;
-    }
-  }
-  return false;
 }
 
 bool QuicChromiumClientSession::HandlePromised(
