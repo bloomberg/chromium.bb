@@ -91,10 +91,8 @@ void SetCustomCursorOnResourceThread(
     scoped_refptr<base::SingleThreadTaskRunner> ui_service_task_runner_,
     base::WeakPtr<ThreadedImageCursors> threaded_image_cursors_weak_ptr) {
   if (image_cursors_weak_ptr) {
-    ui::PlatformCursor platform_cursor = cursor_factory->CreateAnimatedCursor(
-        cursor_data->cursor_frames(), cursor_data->hotspot_in_pixels(),
-        cursor_data->frame_delay().InMilliseconds(),
-        cursor_data->scale_factor());
+    ui::PlatformCursor platform_cursor =
+        cursor_data->ToNativeCursor().platform();
     // |platform_window| is owned by the UI Service thread, so setting the
     // cursor on it also needs to happen on that thread.
     ui_service_task_runner_->PostTask(
