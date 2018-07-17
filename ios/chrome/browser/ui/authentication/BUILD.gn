@@ -165,12 +165,17 @@ source_set("eg_test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "signin_earl_grey_ui.h",
+    "signin_earl_grey_ui.mm",
     "signin_earlgrey_utils.h",
     "signin_earlgrey_utils.mm",
   ]
   deps = [
+    ":authentication",
     ":authentication_ui",
-    "//components/signin/core/browser:browser",
+    "unified_consent",
+    "//components/signin/core/browser",
+    "//components/signin/core/browser:account_info",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/signin",
     "//ios/chrome/test/app:test_support",

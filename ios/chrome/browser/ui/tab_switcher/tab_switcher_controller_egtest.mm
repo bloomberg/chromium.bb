@@ -9,6 +9,7 @@
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/browser/chrome_switches.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_egtest_util.h"
 #include "ios/chrome/browser/ui/tab_switcher/tab_switcher_mode.h"
@@ -373,9 +374,8 @@ using web::test::HttpServer;
       selectElementWithMatcher:TabletTabSwitcherOtherDevicesPanelButton()]
       performAction:grey_tap()];
   // Check the sign-in promo view with cold state.
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState
-                          closeButton:NO];
+  [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState
+                                        closeButton:NO];
 }
 
 // Tests sign-in promo view in warm state.
@@ -397,9 +397,8 @@ using web::test::HttpServer;
       selectElementWithMatcher:TabletTabSwitcherOtherDevicesPanelButton()]
       performAction:grey_tap()];
   // Check the sign-in promo view with warm state.
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
-                          closeButton:NO];
+  [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
+                                        closeButton:NO];
 
   // Tap the secondary button.
   [[EarlGrey
@@ -411,9 +410,8 @@ using web::test::HttpServer;
   [[EarlGrey selectElementWithMatcher:grey_buttonTitle(@"UNDO")]
       performAction:grey_tap()];
   // Check the sign-in promo view with warm state.
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
-                          closeButton:NO];
+  [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
+                                        closeButton:NO];
 }
 
 // Tests to reload the other devices tab after sign-in.
@@ -439,13 +437,8 @@ using web::test::HttpServer;
   [[EarlGrey selectElementWithMatcher:TabletTabSwitcherCloseButton()]
       performAction:grey_tap()];
 
-  // Open the settings to sign-in.
+  [SigninEarlGreyUI signinWithIdentity:identity];
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI
-      tapSettingsMenuButton:chrome_test_util::PrimarySignInButton()];
-  [ChromeEarlGreyUI confirmSigninConfirmationDialog];
-  [ChromeEarlGreyUI
-      tapSettingsMenuButton:chrome_test_util::SettingsAccountButton()];
   // Sign-out.
   [ChromeEarlGreyUI
       tapSettingsMenuButton:chrome_test_util::SignOutAccountsButton()];
@@ -464,9 +457,8 @@ using web::test::HttpServer;
       performAction:grey_tap()];
 
   // Check the sign-in promo view with warm state.
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
-                          closeButton:NO];
+  [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
+                                        closeButton:NO];
 }
 
 @end

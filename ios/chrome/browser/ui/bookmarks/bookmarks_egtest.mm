@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
@@ -2823,14 +2824,14 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   }];
   // Check that sign-in promo view is visible.
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [SigninEarlGreyUtils
+  [SigninEarlGreyUI
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 
   // Go to child node.
   [BookmarksTestCase openMobileBookmarks];
 
   // Wait until promo is gone.
-  [SigninEarlGreyUtils checkSigninPromoNotVisible];
+  [SigninEarlGreyUI checkSigninPromoNotVisible];
 
   // Check that the promo already seen state is not updated.
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
@@ -2856,7 +2857,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   }];
   // Check that sign-in promo view is visible.
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [SigninEarlGreyUtils
+  [SigninEarlGreyUI
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 
   // Tap the dismiss button.
@@ -2865,7 +2866,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Wait until promo is gone.
-  [SigninEarlGreyUtils checkSigninPromoNotVisible];
+  [SigninEarlGreyUI checkSigninPromoNotVisible];
 
   // Check that the promo already seen state is updated.
   [BookmarksTestCase verifyPromoAlreadySeen:YES];
@@ -2879,7 +2880,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Check that sign-in promo view are visible.
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [SigninEarlGreyUtils
+  [SigninEarlGreyUI
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 
   // Tap the primary button.
@@ -2894,7 +2895,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Check that the bookmarks UI reappeared and the cell is still here.
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [SigninEarlGreyUtils
+  [SigninEarlGreyUI
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 }
 
@@ -2912,7 +2913,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Check that promo is visible.
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [SigninEarlGreyUtils
+  [SigninEarlGreyUI
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
 
   // Tap the Sign in button.
@@ -2929,7 +2930,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                      uppercaseString])] performAction:grey_tap()];
 
   // Check that the bookmarks UI reappeared and the cell is still here.
-  [SigninEarlGreyUtils
+  [SigninEarlGreyUI
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
 
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
@@ -2948,7 +2949,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Check that sign-in promo view are visible.
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [SigninEarlGreyUtils
+  [SigninEarlGreyUI
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
 
   // Tap the secondary button.
@@ -2965,7 +2966,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Check that the bookmarks UI reappeared and the cell is still here.
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [SigninEarlGreyUtils
+  [SigninEarlGreyUI
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
 }
 
@@ -2977,7 +2978,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   prefs->SetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount, 19);
   [BookmarksTestCase openBookmarks];
   // Check the sign-in promo view is visible.
-  [SigninEarlGreyUtils
+  [SigninEarlGreyUI
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
   // Check the sign-in promo already-seen state didn't change.
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
@@ -2990,7 +2991,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksTestCase openBookmarks];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   // Check that the sign-in promo is not visible anymore.
-  [SigninEarlGreyUtils checkSigninPromoNotVisible];
+  [SigninEarlGreyUI checkSigninPromoNotVisible];
 }
 
 @end

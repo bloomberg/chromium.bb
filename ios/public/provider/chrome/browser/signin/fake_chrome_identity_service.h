@@ -69,7 +69,8 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   // Adds the identities given their name.
   void AddIdentities(NSArray* identitiesNames);
 
-  // Adds |identity| to the available identities.
+  // Adds |identity| to the available identities. No-op if the identity
+  // is already added.
   void AddIdentity(ChromeIdentity* identity);
 
   // Removes |identity| from the available identities. No-op if the identity

@@ -13,6 +13,7 @@
 #include "components/ukm/ukm_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_egtest_util.h"
@@ -192,38 +193,6 @@ void UpdateMetricsConsent(bool new_state) {
       true);
 }
 
-// Signs in to sync.
-void SignIn() {
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
-
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
-  [ChromeEarlGreyUI signInToIdentityByEmail:identity.userEmail];
-  [ChromeEarlGreyUI confirmSigninConfirmationDialog];
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
-
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
-}
-
-// Signs in to sync by tapping the sign-in promo view.
-void SignInWithPromo() {
-  [ChromeEarlGreyUI openSettingsMenu];
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kSigninPromoPrimaryButtonId)]
-      performAction:grey_tap()];
-  [ChromeEarlGreyUI confirmSigninConfirmationDialog];
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
-
-  [SigninEarlGreyUtils
-      assertSignedInWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
-}
-
 // Signs out of sync.
 void SignOut() {
   [ChromeEarlGreyUI openSettingsMenu];
@@ -270,7 +239,7 @@ void SignOut() {
   AssertUKMEnabled(false);
 
   // Enable sync.
-  SignIn();
+  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   AssertSyncInitialized(true);
 
   // Grant metrics consent and update MetricsServicesManager.
@@ -381,7 +350,7 @@ void SignOut() {
   UpdateMetricsConsent(true);
   AssertUKMEnabled(false);
 
-  SignInWithPromo();
+  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   AssertUKMEnabled(true);
 }
 
@@ -471,7 +440,7 @@ void SignOut() {
   // Reset sync back to original state.
   SignOut();
   chrome_test_util::ClearSyncServerData();
-  SignInWithPromo();
+  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   AssertUKMEnabled(true);
 }
 
@@ -487,7 +456,7 @@ void SignOut() {
              @"Client ID was not reset.");
 
   original_client_id = metrics::UkmEGTestHelper::client_id();
-  SignInWithPromo();
+  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
 
   AssertUKMEnabled(true);
   // Client ID should not have been reset.

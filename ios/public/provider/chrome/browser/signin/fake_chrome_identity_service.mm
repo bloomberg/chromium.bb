@@ -252,7 +252,9 @@ void FakeChromeIdentityService::AddIdentities(NSArray* identitiesNames) {
 }
 
 void FakeChromeIdentityService::AddIdentity(ChromeIdentity* identity) {
-  [identities_ addObject:identity];
+  if (![identities_ containsObject:identity]) {
+    [identities_ addObject:identity];
+  }
   FireIdentityListChanged();
 }
 
