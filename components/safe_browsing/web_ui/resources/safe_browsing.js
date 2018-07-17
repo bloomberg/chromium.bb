@@ -1,6 +1,6 @@
 /* Copyright 2017 The Chromium Authors. All rights reserved.
-* Use of this source code is governed by a BSD-style license that can be
-* found in the LICENSE file. */
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
 cr.define('safe_browsing', function() {
   'use strict';
@@ -11,8 +11,8 @@ cr.define('safe_browsing', function() {
    * addPreferences() (below).
    */
   function initialize() {
-    cr.sendWithPromise('getExperiments', []).then((experiments) =>
-        addExperiments(experiments));
+    cr.sendWithPromise('getExperiments', [])
+        .then((experiments) => addExperiments(experiments));
     cr.sendWithPromise('getPrefs', []).then((prefs) => addPrefs(prefs));
     cr.sendWithPromise('getSavedPasswords', []).then((passwords) =>
         addSavedPasswords(passwords));
@@ -34,6 +34,17 @@ cr.define('safe_browsing', function() {
           addSentClientDownloadRequestsInfo(result);
         });
 
+    cr.sendWithPromise('getReceivedClientDownloadResponses', [])
+        .then(
+            (receivedClientDownloadResponses) => {
+                receivedClientDownloadResponses.forEach(function(cdr) {
+                  addReceivedClientDownloadResponseInfo(cdr);
+                })});
+    cr.addWebUIListener(
+        'received-client-download-responses-update', function(result) {
+          addReceivedClientDownloadResponseInfo(result);
+        });
+
     cr.sendWithPromise('getSentCSBRRs', [])
         .then((sentCSBRRs) => {sentCSBRRs.forEach(function(csbrr) {
                 addSentCSBRRsInfo(csbrr);
@@ -43,9 +54,7 @@ cr.define('safe_browsing', function() {
     });
 
     cr.sendWithPromise('getPGEvents', [])
-        .then(
-            (pgEvents) => {
-              pgEvents.forEach(function (pgEvent) {
+        .then((pgEvents) => {pgEvents.forEach(function(pgEvent) {
                 addPGEvent(pgEvent);
               })});
     cr.addWebUIListener('sent-pg-event', function(result) {
@@ -71,7 +80,7 @@ cr.define('safe_browsing', function() {
 
   function addExperiments(result) {
     var resLength = result.length;
-    var experimentsListFormatted = "";
+    var experimentsListFormatted = '';
 
     for (var i = 0; i < resLength; i += 2) {
       experimentsListFormatted += "<div><b>" + result[i + 1] +
@@ -125,6 +134,11 @@ cr.define('safe_browsing', function() {
 
   function addSentClientDownloadRequestsInfo(result) {
     var logDiv = $('sent-client-download-requests-list');
+    appendChildWithInnerText(logDiv, result);
+  }
+
+  function addReceivedClientDownloadResponseInfo(result) {
+    var logDiv = $('received-client-download-response-list');
     appendChildWithInnerText(logDiv, result);
   }
 
@@ -183,6 +197,8 @@ cr.define('safe_browsing', function() {
   return {
     addSentCSBRRsInfo: addSentCSBRRsInfo,
     addSentClientDownloadRequestsInfo: addSentClientDownloadRequestsInfo,
+    addReceivedClientDownloadResponseInfo:
+        addReceivedClientDownloadResponseInfo,
     addPGEvent: addPGEvent,
     addPGPing: addPGPing,
     addPGResponse: addPGResponse,

@@ -45,6 +45,10 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // currently open chrome://safe-browsing tab was opened.
   void GetSentClientDownloadRequests(const base::ListValue* args);
 
+  // Get the ClientDownloadReponses that have been collected since the oldest
+  // currently open chrome://safe-browsing tab was opened.
+  void GetReceivedClientDownloadResponses(const base::ListValue* args);
+
   // Get the ThreatDetails that have been collected since the oldest currently
   // open chrome://safe-browsing tab was opened.
   void GetSentCSBRRs(const base::ListValue* args);
@@ -71,6 +75,11 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // more WebUI tabs are open.
   void NotifyClientDownloadRequestJsListener(
       ClientDownloadRequest* client_download_request);
+
+  // Called when any new ClientDownloadResponse messages are received while one
+  // or more WebUI tabs are open.
+  void NotifyClientDownloadResponseJsListener(
+      ClientDownloadResponse* client_download_response);
 
   // Get the new ThreatDetails messages sent from ThreatDetails when a ping is
   // sent, while one or more WebUI tabs are opened.
@@ -123,6 +132,14 @@ class WebUIInfoSingleton {
   // Clear the list of the sent ClientDownloadRequest messages.
   void ClearClientDownloadRequestsSent();
 
+  // Add the new message in |client_download_responses_received_| and send it to
+  // all the open chrome://safe-browsing tabs.
+  void AddToClientDownloadResponsesReceived(
+      std::unique_ptr<ClientDownloadResponse> response);
+
+  // Clear the list of the received ClientDownloadResponse messages.
+  void ClearClientDownloadResponsesReceived();
+
   // Add the new message in |csbrrs_sent_| and send it to all the open
   // chrome://safe-browsing tabs.
   void AddToCSBRRsSent(std::unique_ptr<ClientSafeBrowsingReportRequest> csbrr);
@@ -162,6 +179,13 @@ class WebUIInfoSingleton {
   const std::vector<std::unique_ptr<ClientDownloadRequest>>&
   client_download_requests_sent() const {
     return client_download_requests_sent_;
+  }
+
+  // Get the list of the sent ClientDownloadResponses that have been collected
+  // since the oldest currently open chrome://safe-browsing tab was opened.
+  const std::vector<std::unique_ptr<ClientDownloadResponse>>&
+  client_download_responses_received() const {
+    return client_download_responses_received_;
   }
 
   // Get the list of the sent CSBRR reports that have been collected since the
@@ -206,6 +230,13 @@ class WebUIInfoSingleton {
   // that call AllowJavascript(), which is not marked const.
   std::vector<std::unique_ptr<ClientDownloadRequest>>
       client_download_requests_sent_;
+
+  // List of ClientDownloadResponses received since since the oldest currently
+  // open chrome://safe-browsing tab was opened. "ClientDownloadReponse" cannot
+  // be const, due to being used by functions that call AllowJavascript(), which
+  // is not marked const.
+  std::vector<std::unique_ptr<ClientDownloadResponse>>
+      client_download_responses_received_;
 
   // List of CSBRRs sent since since the oldest currently open
   // chrome://safe-browsing tab was opened.
