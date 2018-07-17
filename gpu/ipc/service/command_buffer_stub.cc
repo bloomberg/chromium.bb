@@ -72,6 +72,7 @@
     switch (context_type_) {                                               \
       case CONTEXT_TYPE_WEBGL1:                                            \
       case CONTEXT_TYPE_WEBGL2:                                            \
+      case CONTEXT_TYPE_WEBGL2_COMPUTE:                                    \
         UMA_HISTOGRAM_MEMORY_LARGE_MB("GPU.ContextMemory.WebGL." category, \
                                       mb_used);                            \
         break;                                                             \

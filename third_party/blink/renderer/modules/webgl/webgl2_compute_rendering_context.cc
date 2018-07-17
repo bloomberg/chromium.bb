@@ -63,13 +63,8 @@ CanvasRenderingContext* WebGL2ComputeRenderingContext::Factory::Create(
     const CanvasContextCreationAttributesCore& attrs) {
   bool using_gpu_compositing;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider(
-      // TODO(jiajia.qin@intel.com): Add a new ContextType
-      // 'kWebGL2ComputeContextType' to
-      // src/third_party/blink/public/platform/platform.h and use ContextType
-      // instead of 'unsigned web_gl_version' as the argument of
-      // CreateWebGraphicsContext3DProvider so that the correct OpenGL ES 3.1
-      // context underneath can be allocated.
-      CreateWebGraphicsContext3DProvider(host, attrs, 2,
+      CreateWebGraphicsContext3DProvider(host, attrs,
+                                         Platform::kWebGL2ComputeContextType,
                                          &using_gpu_compositing));
   if (!ShouldCreateWebGL2ComputeContext(context_provider.get(), host))
     return nullptr;

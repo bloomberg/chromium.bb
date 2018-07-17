@@ -13,6 +13,7 @@ bool IsWebGLContextType(ContextType context_type) {
   switch (context_type) {
     case CONTEXT_TYPE_WEBGL1:
     case CONTEXT_TYPE_WEBGL2:
+    case CONTEXT_TYPE_WEBGL2_COMPUTE:
       return true;
     case CONTEXT_TYPE_OPENGLES2:
     case CONTEXT_TYPE_OPENGLES3:
@@ -31,6 +32,7 @@ bool IsWebGL1OrES2ContextType(ContextType context_type) {
       return true;
     case CONTEXT_TYPE_WEBGL2:
     case CONTEXT_TYPE_OPENGLES3:
+    case CONTEXT_TYPE_WEBGL2_COMPUTE:
       return false;
   }
 
@@ -46,6 +48,7 @@ bool IsWebGL2OrES3ContextType(ContextType context_type) {
       return true;
     case CONTEXT_TYPE_WEBGL1:
     case CONTEXT_TYPE_OPENGLES2:
+    case CONTEXT_TYPE_WEBGL2_COMPUTE:
       return false;
   }
 

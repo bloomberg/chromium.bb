@@ -73,16 +73,15 @@ class WebGL2ComputeRenderingContext : public WebGL2ComputeRenderingContextBase {
   Member<WebGLLoseContext> webgl_lose_context_;
 };
 
-// TODO(jiajia.qin@intel.com): Change these comparisons by using ContextType
-// instead of unsigned int version number.
 DEFINE_TYPE_CASTS(WebGL2ComputeRenderingContext,
                   CanvasRenderingContext,
                   context,
                   context->Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(context) == 2,
+                      WebGLRenderingContextBase::GetWebGLVersion(context) ==
+                          Platform::kWebGL2ComputeContextType,
                   context.Is3d() &&
                       WebGLRenderingContextBase::GetWebGLVersion(&context) ==
-                          2);
+                          Platform::kWebGL2ComputeContextType);
 
 }  // namespace blink
 

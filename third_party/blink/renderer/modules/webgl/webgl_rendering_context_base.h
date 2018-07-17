@@ -144,11 +144,11 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   static std::unique_ptr<WebGraphicsContext3DProvider>
   CreateWebGraphicsContext3DProvider(CanvasRenderingContextHost*,
                                      const CanvasContextCreationAttributesCore&,
-                                     unsigned web_gl_version,
+                                     Platform::ContextType context_type,
                                      bool* using_gpu_compositing);
   static void ForceNextWebGLContextCreationToFail();
 
-  unsigned Version() const { return version_; }
+  Platform::ContextType ContextType() const { return context_type_; }
 
   int drawingBufferWidth() const;
   int drawingBufferHeight() const;
@@ -595,7 +595,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   scoped_refptr<StaticBitmapImage> GetImage(
       AccelerationHint = kPreferAcceleration) const override;
   void SetFilterQuality(SkFilterQuality) override;
-  bool IsWebGL2OrHigher() { return Version() >= 2; }
+  bool IsWebGL2OrHigher() {
+    return context_type_ == Platform::kWebGL2ContextType ||
+           context_type_ == Platform::kWebGL2ComputeContextType;
+  }
 
   void getHTMLOrOffscreenCanvas(HTMLCanvasElementOrOffscreenCanvas&) const;
 
@@ -639,7 +642,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
                             bool using_gpu_compositing,
                             const CanvasContextCreationAttributesCore&,
-                            unsigned);
+                            Platform::ContextType);
   scoped_refptr<DrawingBuffer> CreateDrawingBuffer(
       std::unique_ptr<WebGraphicsContext3DProvider>,
       bool using_gpu_compositing);
@@ -1677,12 +1680,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
                             bool using_gpu_compositing,
                             const CanvasContextCreationAttributesCore&,
-                            unsigned);
+                            Platform::ContextType);
   static bool SupportOwnOffscreenSurface(ExecutionContext*);
   static std::unique_ptr<WebGraphicsContext3DProvider>
   CreateContextProviderInternal(CanvasRenderingContextHost*,
                                 const CanvasContextCreationAttributesCore&,
-                                unsigned web_gl_version,
+                                Platform::ContextType context_type,
                                 bool* using_gpu_compositing);
   void TexImageCanvasByGPU(TexImageFunctionID,
                            HTMLCanvasElement*,
@@ -1698,7 +1701,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                            GLint,
                            const IntRect&);
 
-  const unsigned version_;
+  const Platform::ContextType context_type_;
 
   bool IsPaintable() const final { return GetDrawingBuffer(); }
 
