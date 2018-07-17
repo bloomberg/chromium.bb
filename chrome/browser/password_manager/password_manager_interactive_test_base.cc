@@ -36,6 +36,8 @@ void PasswordManagerInteractiveTestBase::FillElementWithValue(
                               ui::DomCodeToUsLayoutKeyboardCode(dom_code),
                               false, shift, false, false);
   }
+  // Execute an empty script to sync the pressed keys for an upcoming JS.
+  ASSERT_TRUE(content::ExecuteScript(RenderFrameHost(), ";"));
 }
 
 void PasswordManagerInteractiveTestBase::VerifyPasswordIsSavedAndFilled(
