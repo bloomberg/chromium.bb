@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 6409 tests; 6277 PASS, 132 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 6418 tests; 6286 PASS, 132 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["forwarddelete",""]] "foo[]": execCommand("forwarddelete", false, "") return value
 PASS [["forwarddelete",""]] "foo[]" checks for modifications to non-editable content
 PASS [["forwarddelete",""]] "foo[]" compare innerHTML
@@ -555,6 +555,15 @@ PASS [["defaultparagraphseparator","p"],["forwarddelete",""]] "foo{}<p>" queryCo
 PASS [["defaultparagraphseparator","p"],["forwarddelete",""]] "foo{}<p>" queryCommandIndeterm("forwarddelete") after
 PASS [["defaultparagraphseparator","p"],["forwarddelete",""]] "foo{}<p>" queryCommandState("forwarddelete") after
 PASS [["defaultparagraphseparator","p"],["forwarddelete",""]] "foo{}<p>" queryCommandValue("forwarddelete") after
+PASS [["forwarddelete",""]] "<table><tr><td>[]b</table>foo": execCommand("forwarddelete", false, "") return value
+PASS [["forwarddelete",""]] "<table><tr><td>[]b</table>foo" checks for modifications to non-editable content
+PASS [["forwarddelete",""]] "<table><tr><td>[]b</table>foo" compare innerHTML
+PASS [["forwarddelete",""]] "<table><tr><td>[]b</table>foo" queryCommandIndeterm("forwarddelete") before
+PASS [["forwarddelete",""]] "<table><tr><td>[]b</table>foo" queryCommandState("forwarddelete") before
+PASS [["forwarddelete",""]] "<table><tr><td>[]b</table>foo" queryCommandValue("forwarddelete") before
+PASS [["forwarddelete",""]] "<table><tr><td>[]b</table>foo" queryCommandIndeterm("forwarddelete") after
+PASS [["forwarddelete",""]] "<table><tr><td>[]b</table>foo" queryCommandState("forwarddelete") after
+PASS [["forwarddelete",""]] "<table><tr><td>[]b</table>foo" queryCommandValue("forwarddelete") after
 PASS [["forwarddelete",""]] "<table><tr><td>{}</table>foo": execCommand("forwarddelete", false, "") return value
 PASS [["forwarddelete",""]] "<table><tr><td>{}</table>foo" checks for modifications to non-editable content
 PASS [["forwarddelete",""]] "<table><tr><td>{}</table>foo" compare innerHTML

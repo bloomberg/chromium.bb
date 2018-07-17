@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 6742 tests; 6568 PASS, 174 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 6751 tests; 6577 PASS, 174 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["delete",""]] "foo[]bar": execCommand("delete", false, "") return value
 PASS [["delete",""]] "foo[]bar" checks for modifications to non-editable content
 PASS [["delete",""]] "foo[]bar" compare innerHTML
@@ -1118,6 +1118,15 @@ PASS [["delete",""]] "<div style=white-space:nowrap>foo  []bar</div>" queryComma
 PASS [["delete",""]] "<div style=white-space:nowrap>foo  []bar</div>" queryCommandIndeterm("delete") after
 PASS [["delete",""]] "<div style=white-space:nowrap>foo  []bar</div>" queryCommandState("delete") after
 PASS [["delete",""]] "<div style=white-space:nowrap>foo  []bar</div>" queryCommandValue("delete") after
+PASS [["delete",""]] "foo<table><tr><td>b[]</table>baz": execCommand("delete", false, "") return value
+PASS [["delete",""]] "foo<table><tr><td>b[]</table>baz" checks for modifications to non-editable content
+PASS [["delete",""]] "foo<table><tr><td>b[]</table>baz" compare innerHTML
+PASS [["delete",""]] "foo<table><tr><td>b[]</table>baz" queryCommandIndeterm("delete") before
+PASS [["delete",""]] "foo<table><tr><td>b[]</table>baz" queryCommandState("delete") before
+PASS [["delete",""]] "foo<table><tr><td>b[]</table>baz" queryCommandValue("delete") before
+PASS [["delete",""]] "foo<table><tr><td>b[]</table>baz" queryCommandIndeterm("delete") after
+PASS [["delete",""]] "foo<table><tr><td>b[]</table>baz" queryCommandState("delete") after
+PASS [["delete",""]] "foo<table><tr><td>b[]</table>baz" queryCommandValue("delete") after
 PASS [["delete",""]] "foo<table><tr><td>[]bar</table>baz": execCommand("delete", false, "") return value
 PASS [["delete",""]] "foo<table><tr><td>[]bar</table>baz" checks for modifications to non-editable content
 PASS [["delete",""]] "foo<table><tr><td>[]bar</table>baz" compare innerHTML

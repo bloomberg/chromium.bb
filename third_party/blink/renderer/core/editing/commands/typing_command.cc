@@ -208,14 +208,19 @@ void TypingCommand::DeleteSelectionIfRange(const VisibleSelection& selection,
                                            EditingState* editing_state) {
   if (!selection.IsRange())
     return;
-  ApplyCommandToComposite(DeleteSelectionCommand::Create(
-                              selection, DeleteSelectionOptions::Builder()
-                                             .SetSmartDelete(smart_delete_)
-                                             .SetMergeBlocksAfterDelete(true)
-                                             .SetExpandForSpecialElements(true)
-                                             .SetSanitizeMarkup(true)
-                                             .Build()),
-                          editing_state);
+  // Although the 'selection' to delete is indeed a Range, it may have been
+  // built from a Caret selection; in that case we don't want to expand so that
+  // the table structure is deleted as well.
+  bool expand_for_special = EndingSelection().IsRange();
+  ApplyCommandToComposite(
+      DeleteSelectionCommand::Create(
+          selection, DeleteSelectionOptions::Builder()
+                         .SetSmartDelete(smart_delete_)
+                         .SetMergeBlocksAfterDelete(true)
+                         .SetExpandForSpecialElements(expand_for_special)
+                         .SetSanitizeMarkup(true)
+                         .Build()),
+      editing_state);
 }
 
 void TypingCommand::DeleteKeyPressed(Document& document,
