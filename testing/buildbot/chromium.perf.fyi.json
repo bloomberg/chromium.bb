@@ -7,7 +7,7 @@
           "--browser=android-chromium",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=android_go_14_shard_map.json"
+          "--test-shard-map-filename=android_go_shard_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -36,7 +36,7 @@
           "hard_timeout": 25200,
           "ignore_task_failure": false,
           "io_timeout": 1800,
-          "shards": 14,
+          "shards": 19,
           "upload_test_results": true
         },
         "trigger_script": {
