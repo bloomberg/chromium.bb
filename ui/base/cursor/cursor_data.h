@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/native_widget_types.h"
 
 class SkBitmap;
 
@@ -71,6 +72,11 @@ class UI_BASE_EXPORT CursorData {
   // input data (but which weren't copied from each other) can have equal pixel
   // data, but different generation ids.
   bool IsSameAs(const CursorData& rhs) const;
+
+  // Until CursorData replaces Cursor, it's necessary to convert back to Cursor.
+  // Some code such as CursorWindowController still uses Cursor (and not its
+  // PlatformCursor).
+  gfx::NativeCursor ToNativeCursor() const;
 
  private:
   // A native type constant from cursor.h.

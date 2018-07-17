@@ -13,6 +13,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
 namespace ash {
 
@@ -83,6 +84,30 @@ TEST_F(CursorTest, Embedded) {
   GetWindowTreeTestHelper()->SetCursor(embed_root, not_allowed_cursor);
   EXPECT_EQ(ui::CursorType::kNotAllowed,
             ash::Shell::Get()->cursor_manager()->GetCursor().native_type());
+}
+
+TEST_F(CursorTest, Custom) {
+  // Create and hover a window.
+  std::unique_ptr<aura::Window> window =
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100));
+  EXPECT_EQ(0U, GetTestWindowTreeClient()->input_events().size());
+  ui::test::EventGenerator generator(window.get());
+  generator.MoveMouseToInHost(50, 50);
+
+  // Set a custom cursor.
+  SkBitmap bitmap = gfx::test::CreateBitmap(10, 10);
+  const ui::CursorData image_cursor(gfx::Point(1, 4), {bitmap}, 1.f,
+                                    base::TimeDelta());
+  GetWindowTreeTestHelper()->SetCursor(window.get(), image_cursor);
+
+  // Make sure it worked.
+  EXPECT_EQ(ui::CursorType::kCustom,
+            window->delegate()->GetCursor({}).native_type());
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(window->GetRootWindow());
+  EXPECT_EQ(ui::CursorType::kCustom, cursor_client->GetCursor().native_type());
+  EXPECT_EQ(bitmap.getGenerationID(),
+            cursor_client->GetCursor().GetBitmap().getGenerationID());
 }
 
 }  // namespace ash
