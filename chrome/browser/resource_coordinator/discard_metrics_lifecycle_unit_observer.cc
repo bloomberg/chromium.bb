@@ -19,7 +19,8 @@ DiscardMetricsLifecycleUnitObserver::~DiscardMetricsLifecycleUnitObserver() =
 
 void DiscardMetricsLifecycleUnitObserver::OnLifecycleUnitStateChanged(
     LifecycleUnit* lifecycle_unit,
-    LifecycleUnitState last_state) {
+    LifecycleUnitState last_state,
+    LifecycleUnitStateChangeReason reason) {
   if (lifecycle_unit->GetState() == LifecycleUnitState::DISCARDED)
     OnDiscard(lifecycle_unit);
   else if (last_state == LifecycleUnitState::DISCARDED)

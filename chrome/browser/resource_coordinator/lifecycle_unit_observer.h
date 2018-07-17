@@ -11,6 +11,7 @@
 namespace resource_coordinator {
 
 using ::mojom::LifecycleUnitState;
+using ::mojom::LifecycleUnitStateChangeReason;
 
 class LifecycleUnit;
 
@@ -20,8 +21,10 @@ class LifecycleUnitObserver {
   virtual ~LifecycleUnitObserver();
 
   // Invoked when the state of the observed LifecycleUnit changes.
-  virtual void OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit,
-                                           LifecycleUnitState last_state);
+  virtual void OnLifecycleUnitStateChanged(
+      LifecycleUnit* lifecycle_unit,
+      LifecycleUnitState last_state,
+      LifecycleUnitStateChangeReason reason);
 
   // Invoked when the visibility of the observed LifecyleUnit changes.
   virtual void OnLifecycleUnitVisibilityChanged(LifecycleUnit* lifecycle_unit,

@@ -1102,8 +1102,10 @@ base::TimeTicks TabManager::MaybeDiscardLifecycleUnit(
   return base::TimeTicks::Max();
 }
 
-void TabManager::OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit,
-                                             LifecycleUnitState last_state) {
+void TabManager::OnLifecycleUnitStateChanged(
+    LifecycleUnit* lifecycle_unit,
+    LifecycleUnitState last_state,
+    LifecycleUnitStateChangeReason reason) {
   LifecycleUnitState state = lifecycle_unit->GetState();
   bool was_discarded = (last_state == LifecycleUnitState::PENDING_DISCARD ||
                         last_state == LifecycleUnitState::DISCARDED);

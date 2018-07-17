@@ -22,8 +22,10 @@ class DiscardMetricsLifecycleUnitObserver : public LifecycleUnitObserver {
   ~DiscardMetricsLifecycleUnitObserver() override;
 
   // LifecycleUnitObserver:
-  void OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit,
-                                   LifecycleUnitState last_state) override;
+  void OnLifecycleUnitStateChanged(
+      LifecycleUnit* lifecycle_unit,
+      LifecycleUnitState last_state,
+      LifecycleUnitStateChangeReason reason) override;
   void OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) override;
 
  private:
