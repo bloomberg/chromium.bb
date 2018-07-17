@@ -17,6 +17,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
+#include "ui/views/border.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
@@ -156,7 +157,10 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, CorrectBoundsTest) {
                                  ->GetWidget()
                                  ->GetClientAreaBoundsInScreen()
                                  .origin();
+  // The expected origin is shifted to accomodate the border of the bubble.
   gfx::Point expected_point = bounds.origin();
+  gfx::Insets border = view_->GetWidget()->GetRootView()->border()->GetInsets();
+  expected_point.Offset(-border.left(), -border.top());
   EXPECT_EQ(expected_point, display_point);
 }
 

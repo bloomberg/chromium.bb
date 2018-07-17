@@ -169,9 +169,17 @@ int PasswordGenerationPopupControllerImpl::GetMinimumWidth() {
 void PasswordGenerationPopupControllerImpl::CalculateBounds() {
   gfx::Size bounds = view_->GetPreferredSizeOfPasswordView();
 
+  gfx::Rect new_element_bounds = gfx::ToEnclosingRect(element_bounds());
+  // Consider the element is |kElementBorderPadding| pixels larger at the top
+  // and at the bottom in order to reposition the dropdown, so that it doesn't
+  // look too close to the element.
+  constexpr int kElementBorderPadding = 1;
+  new_element_bounds.Inset(/*horizontal=*/0,
+                           /*vertical=*/-kElementBorderPadding);
+
   popup_bounds_ = view_common_.CalculatePopupBounds(
-      bounds.width(), bounds.height(), gfx::ToEnclosingRect(element_bounds()),
-      container_view(), IsRTL());
+      bounds.width(), bounds.height(), new_element_bounds, container_view(),
+      IsRTL());
 }
 
 void PasswordGenerationPopupControllerImpl::Show(GenerationState state) {

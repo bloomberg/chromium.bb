@@ -12,28 +12,22 @@
 #include "chrome/browser/ui/autofill/popup_view_common.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_features.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/scroll_view.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/layout/fill_layout.h"
 
 namespace autofill {
 
-namespace {
-
-// The minimum vertical space between the bottom of the autofill popup and the
-// bottom of the Chrome frame.
-// TODO(crbug.com/739978): Investigate if we should compute this distance
-// programmatically. 10dp may not be enough for windows with thick borders.
-const int kPopupBottomMargin = 10;
-
-// The thickness of the border for the autofill popup in dp.
-const int kPopupBorderThicknessDp = 1;
-
-}  // namespace
+int AutofillPopupBaseView::GetCornerRadius() {
+  return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MEDIUM);
+}
 
 AutofillPopupBaseView::AutofillPopupBaseView(
     AutofillPopupViewDelegate* delegate,
@@ -141,25 +135,42 @@ void AutofillPopupBaseView::RemoveObserver() {
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 }
 
-void AutofillPopupBaseView::AdjustBoundsForBorder(gfx::Rect* bounds) const {
-  DCHECK(bounds);
-  bounds->set_height(bounds->height() + 2 * kPopupBorderThicknessDp);
-  bounds->set_width(bounds->width() + 2 * kPopupBorderThicknessDp);
+// TODO(crbug.com/831603): Inline this function once AutofillPopupViewViews is
+// deleted.
+void AutofillPopupBaseView::AddExtraInitParams(
+    views::Widget::InitParams* params) {
+  // Ensure the bubble border is not painted on an opaque background.
+  params->opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
 }
 
 std::unique_ptr<views::View> AutofillPopupBaseView::CreateWrapperView() {
-  auto wrapper_view = std::make_unique<views::ScrollView>();
-  scroll_view_ = wrapper_view.get();
-  scroll_view_->set_hide_horizontal_scrollbar(true);
-  scroll_view_->SetContents(this);
+  // Create a wrapper view that contains the current view and will receive the
+  // bubble border. This is needed so that a clipping path can be later applied
+  // on the contents only and not affect the border.
+  auto wrapper_view = std::make_unique<views::View>();
+  wrapper_view->SetLayoutManager(std::make_unique<views::FillLayout>());
+  wrapper_view->AddChildView(this);
   return wrapper_view;
 }
 
 std::unique_ptr<views::Border> AutofillPopupBaseView::CreateBorder() {
-  return views::CreateSolidBorder(
-      kPopupBorderThicknessDp,
-      GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_UnfocusedBorderColor));
+  auto border = std::make_unique<views::BubbleBorder>(
+      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
+      SK_ColorWHITE);
+  border->SetCornerRadius(GetCornerRadius());
+  border->set_md_shadow_elevation(
+      ChromeLayoutProvider::Get()->GetShadowElevationMetric(
+          views::EMPHASIS_MEDIUM));
+  return border;
+}
+
+void AutofillPopupBaseView::SetClipPath() {
+  SkRect local_bounds = gfx::RectToSkRect(GetLocalBounds());
+  SkScalar radius = SkIntToScalar(GetCornerRadius());
+  gfx::Path clip_path;
+  clip_path.addRoundRect(local_bounds, radius, radius);
+  set_clip_path(clip_path);
 }
 
 void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
@@ -169,25 +180,25 @@ void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
 
   gfx::Rect clipping_bounds = CalculateClippingBounds();
 
-  int available_vertical_space = clipping_bounds.height() -
-                                 (bounds.y() - clipping_bounds.y()) -
-                                 kPopupBottomMargin;
+  int available_vertical_space =
+      clipping_bounds.height() - (bounds.y() - clipping_bounds.y());
 
-  if (available_vertical_space < bounds.height()) {
-    // The available space is not enough for the full popup so clamp the widget
-    // to what's available. Since the scroll view will show a scroll bar,
-    // increase the width so that the content isn't partially hidden.
-    const int extra_width =
-        scroll_view_ ? scroll_view_->GetScrollBarLayoutWidth() : 0;
-    bounds.set_width(bounds.width() + extra_width);
+  if (available_vertical_space < bounds.height())
     bounds.set_height(available_vertical_space);
-  }
 
   // Account for the scroll view's border so that the content has enough space.
-  AdjustBoundsForBorder(&bounds);
+  bounds.Inset(-GetWidget()->GetRootView()->border()->GetInsets());
   GetWidget()->SetBounds(bounds);
+  SetClipPath();
 
   SchedulePaint();
+}
+
+gfx::Rect AutofillPopupBaseView::CalculateClippingBounds() const {
+  if (parent_widget_)
+    return parent_widget_->GetClientAreaBoundsInScreen();
+
+  return PopupViewCommon().GetWindowBounds(delegate_->container_view());
 }
 
 void AutofillPopupBaseView::OnNativeFocusChanged(gfx::NativeView focused_now) {
@@ -312,13 +323,6 @@ void AutofillPopupBaseView::HideController() {
   // This will eventually result in the deletion of |this|, as the delegate
   // will hide |this|. See |DoHide| above for an explanation on why the precise
   // timing of that deletion is tricky.
-}
-
-gfx::Rect AutofillPopupBaseView::CalculateClippingBounds() const {
-  if (parent_widget_)
-    return parent_widget_->GetClientAreaBoundsInScreen();
-
-  return PopupViewCommon().GetWindowBounds(delegate_->container_view());
 }
 
 gfx::NativeView AutofillPopupBaseView::container_view() {
