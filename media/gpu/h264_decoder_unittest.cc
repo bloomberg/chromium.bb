@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::Args;
 using ::testing::Expectation;
 using ::testing::InSequence;
 using ::testing::Invoke;
@@ -47,6 +48,17 @@ MATCHER_P(DecryptConfigMatches, decrypt_config, "") {
   return pic->decrypt_config()->Matches(*decrypt_config);
 }
 
+MATCHER(SubsampleSizeMatches, "Verify subsample sizes match buffer size") {
+  const size_t buffer_size = ::testing::get<0>(arg);
+  const std::vector<SubsampleEntry>& subsamples = ::testing::get<1>(arg);
+  size_t subsample_total_size = 0;
+  for (const auto& sample : subsamples) {
+    subsample_total_size += sample.cypher_bytes;
+    subsample_total_size += sample.clear_bytes;
+  }
+  return subsample_total_size == buffer_size;
+}
+
 class MockH264Accelerator : public H264Decoder::H264Accelerator {
  public:
   MockH264Accelerator() = default;
@@ -61,24 +73,16 @@ class MockH264Accelerator : public H264Decoder::H264Accelerator {
                       const H264Picture::Vector& ref_pic_listb0,
                       const H264Picture::Vector& ref_pic_listb1,
                       const scoped_refptr<H264Picture>& pic));
+  MOCK_METHOD8(SubmitSlice,
+               Status(const H264PPS* pps,
+                      const H264SliceHeader* slice_hdr,
+                      const H264Picture::Vector& ref_pic_list0,
+                      const H264Picture::Vector& ref_pic_list1,
+                      const scoped_refptr<H264Picture>& pic,
+                      const uint8_t* data,
+                      size_t size,
+                      const std::vector<SubsampleEntry>& subsamples));
   MOCK_METHOD1(OutputPicture, bool(const scoped_refptr<H264Picture>& pic));
-
-  Status SubmitSlice(const H264PPS* pps,
-                     const H264SliceHeader* slice_hdr,
-                     const H264Picture::Vector& ref_pic_list0,
-                     const H264Picture::Vector& ref_pic_list1,
-                     const scoped_refptr<H264Picture>& pic,
-                     const uint8_t* data,
-                     size_t size,
-                     const std::vector<SubsampleEntry>& subsamples) override {
-    size_t subsample_total_size = 0;
-    for (const auto& sample : subsamples) {
-      subsample_total_size += sample.cypher_bytes;
-      subsample_total_size += sample.clear_bytes;
-    }
-    EXPECT_EQ(subsample_total_size, size);
-    return Status::kOk;
-  }
 
   void Reset() override {}
 };
@@ -123,6 +127,9 @@ void H264DecoderTest::SetUp() {
   ON_CALL(*accelerator_, SubmitDecode(_))
       .WillByDefault(Return(H264Decoder::H264Accelerator::Status::kOk));
   ON_CALL(*accelerator_, OutputPicture(_)).WillByDefault(Return(true));
+  ON_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _))
+      .With(Args<6, 7>(SubsampleSizeMatches()))
+      .WillByDefault(Return(H264Decoder::H264Accelerator::Status::kOk));
 }
 
 void H264DecoderTest::SetInputFrameFiles(
@@ -188,6 +195,8 @@ TEST_F(H264DecoderTest, DecodeSingleFrame) {
   {
     InSequence sequence;
     EXPECT_CALL(*accelerator_, CreateH264Picture());
+    EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _));
+    EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _));
     EXPECT_CALL(*accelerator_, SubmitDecode(_));
     EXPECT_CALL(*accelerator_, OutputPicture(_));
   }
@@ -203,6 +212,8 @@ TEST_F(H264DecoderTest, SkipNonIDRFrames) {
   {
     InSequence sequence;
     EXPECT_CALL(*accelerator_, CreateH264Picture());
+    EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _));
+    EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _));
     EXPECT_CALL(*accelerator_, SubmitDecode(_));
     EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0)));
   }
@@ -219,6 +230,9 @@ TEST_F(H264DecoderTest, DecodeProfileBaseline) {
   EXPECT_LE(9u, decoder_->GetRequiredNumOfPictures());
 
   EXPECT_CALL(*accelerator_, CreateH264Picture()).Times(4);
+  EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _)).Times(4);
+  EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _)).Times(4);
+
   Expectation decode_poc0, decode_poc2, decode_poc4, decode_poc6;
   {
     InSequence decode_order;
@@ -247,6 +261,9 @@ TEST_F(H264DecoderTest, DecodeProfileHigh) {
   // Two pictures will be kept in DPB for reordering. The first picture should
   // be outputted after feeding the third frame.
   EXPECT_CALL(*accelerator_, CreateH264Picture()).Times(4);
+  EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _)).Times(4);
+  EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _)).Times(4);
+
   Expectation decode_poc0, decode_poc2, decode_poc4, decode_poc6;
   {
     InSequence decode_order;
@@ -274,9 +291,11 @@ TEST_F(H264DecoderTest, SwitchBaselineToHigh) {
   EXPECT_EQ(gfx::Size(320, 192), decoder_->GetPicSize());
   EXPECT_LE(9u, decoder_->GetRequiredNumOfPictures());
 
-  EXPECT_CALL(*accelerator_, CreateH264Picture());
   {
     InSequence sequence;
+    EXPECT_CALL(*accelerator_, CreateH264Picture());
+    EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _));
+    EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _));
     EXPECT_CALL(*accelerator_, SubmitDecode(_));
     EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0)));
   }
@@ -287,6 +306,9 @@ TEST_F(H264DecoderTest, SwitchBaselineToHigh) {
   ASSERT_TRUE(Mock::VerifyAndClearExpectations(&*accelerator_));
 
   EXPECT_CALL(*accelerator_, CreateH264Picture()).Times(4);
+  EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _)).Times(4);
+  EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _)).Times(4);
+
   Expectation decode_poc0, decode_poc2, decode_poc4, decode_poc6;
   {
     InSequence decode_order;
@@ -315,9 +337,11 @@ TEST_F(H264DecoderTest, SwitchHighToBaseline) {
   EXPECT_EQ(gfx::Size(320, 192), decoder_->GetPicSize());
   EXPECT_LE(16u, decoder_->GetRequiredNumOfPictures());
 
-  EXPECT_CALL(*accelerator_, CreateH264Picture());
   {
     InSequence sequence;
+    EXPECT_CALL(*accelerator_, CreateH264Picture());
+    EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _));
+    EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _));
     EXPECT_CALL(*accelerator_, SubmitDecode(_));
     EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0)));
   }
@@ -328,6 +352,9 @@ TEST_F(H264DecoderTest, SwitchHighToBaseline) {
   ASSERT_TRUE(Mock::VerifyAndClearExpectations(&*accelerator_));
 
   EXPECT_CALL(*accelerator_, CreateH264Picture()).Times(4);
+  EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _)).Times(4);
+  EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _)).Times(4);
+
   Expectation decode_poc0, decode_poc2, decode_poc4, decode_poc6;
   {
     InSequence decode_order;
@@ -376,6 +403,123 @@ TEST_F(H264DecoderTest, SetEncryptedStream) {
   EXPECT_EQ(AcceleratedVideoDecoder::kAllocateNewSurfaces, decoder_->Decode());
   EXPECT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, decoder_->Decode());
   EXPECT_TRUE(decoder_->Flush());
+}
+
+TEST_F(H264DecoderTest, SubmitFrameMetadataRetry) {
+  SetInputFrameFiles({kBaselineFrame0});
+  ASSERT_EQ(AcceleratedVideoDecoder::kAllocateNewSurfaces, Decode());
+  EXPECT_EQ(gfx::Size(320, 192), decoder_->GetPicSize());
+  EXPECT_LE(9u, decoder_->GetRequiredNumOfPictures());
+
+  {
+    InSequence sequence;
+    EXPECT_CALL(*accelerator_, CreateH264Picture());
+    EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _))
+        .WillOnce(Return(H264Decoder::H264Accelerator::Status::kTryAgain));
+  }
+  ASSERT_EQ(AcceleratedVideoDecoder::kTryAgain, Decode());
+
+  // Try again, assuming key still not set. Only SubmitFrameMetadata()
+  // should be called again.
+  EXPECT_CALL(*accelerator_, CreateH264Picture()).Times(0);
+  EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _))
+      .WillOnce(Return(H264Decoder::H264Accelerator::Status::kTryAgain));
+  ASSERT_EQ(AcceleratedVideoDecoder::kTryAgain, Decode());
+
+  // Assume key has been provided now, next call to Decode() should proceed.
+  {
+    InSequence sequence;
+    EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _));
+    EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _));
+  }
+  ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
+
+  {
+    InSequence sequence;
+    EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(0)));
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0)));
+  }
+  ASSERT_TRUE(decoder_->Flush());
+}
+
+TEST_F(H264DecoderTest, SubmitSliceRetry) {
+  SetInputFrameFiles({kBaselineFrame0});
+  ASSERT_EQ(AcceleratedVideoDecoder::kAllocateNewSurfaces, Decode());
+  EXPECT_EQ(gfx::Size(320, 192), decoder_->GetPicSize());
+  EXPECT_LE(9u, decoder_->GetRequiredNumOfPictures());
+
+  {
+    InSequence sequence;
+    EXPECT_CALL(*accelerator_, CreateH264Picture());
+    EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _));
+    EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _))
+        .WillOnce(Return(H264Decoder::H264Accelerator::Status::kTryAgain));
+  }
+  ASSERT_EQ(AcceleratedVideoDecoder::kTryAgain, Decode());
+
+  // Try again, assuming key still not set. Only SubmitSlice() should be
+  // called again.
+  EXPECT_CALL(*accelerator_, CreateH264Picture()).Times(0);
+  EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _)).Times(0);
+  EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _))
+      .WillOnce(Return(H264Decoder::H264Accelerator::Status::kTryAgain));
+  ASSERT_EQ(AcceleratedVideoDecoder::kTryAgain, Decode());
+
+  // Assume key has been provided now, next call to Decode() should proceed.
+  EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _));
+  ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
+
+  {
+    InSequence sequence;
+    EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(0)));
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0)));
+  }
+  ASSERT_TRUE(decoder_->Flush());
+}
+
+TEST_F(H264DecoderTest, SubmitDecodeRetry) {
+  SetInputFrameFiles({kBaselineFrame0, kBaselineFrame1});
+  ASSERT_EQ(AcceleratedVideoDecoder::kAllocateNewSurfaces, Decode());
+  EXPECT_EQ(gfx::Size(320, 192), decoder_->GetPicSize());
+  EXPECT_LE(9u, decoder_->GetRequiredNumOfPictures());
+
+  {
+    InSequence sequence;
+    EXPECT_CALL(*accelerator_, CreateH264Picture());
+    EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _));
+    EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _));
+    EXPECT_CALL(*accelerator_, SubmitDecode(_))
+        .WillOnce(Return(H264Decoder::H264Accelerator::Status::kTryAgain));
+  }
+  ASSERT_EQ(AcceleratedVideoDecoder::kTryAgain, Decode());
+
+  // Try again, assuming key still not set. Only SubmitDecode() should be
+  // called again.
+  EXPECT_CALL(*accelerator_, CreateH264Picture()).Times(0);
+  EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _)).Times(0);
+  EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _)).Times(0);
+  EXPECT_CALL(*accelerator_, SubmitDecode(_))
+      .WillOnce(Return(H264Decoder::H264Accelerator::Status::kTryAgain));
+  ASSERT_EQ(AcceleratedVideoDecoder::kTryAgain, Decode());
+
+  // Assume key has been provided now, next call to Decode() should output
+  // the first frame.
+  {
+    InSequence sequence;
+    EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(0)));
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(0)));
+    EXPECT_CALL(*accelerator_, CreateH264Picture());
+    EXPECT_CALL(*accelerator_, SubmitFrameMetadata(_, _, _, _, _, _, _));
+    EXPECT_CALL(*accelerator_, SubmitSlice(_, _, _, _, _, _, _, _));
+  }
+  ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
+
+  {
+    InSequence sequence;
+    EXPECT_CALL(*accelerator_, SubmitDecode(WithPoc(2)));
+    EXPECT_CALL(*accelerator_, OutputPicture(WithPoc(2)));
+  }
+  ASSERT_TRUE(decoder_->Flush());
 }
 
 }  // namespace

@@ -260,7 +260,7 @@ void D3D11VideoDecoderImpl::DoDecode() {
       CreatePictureBuffers();
     } else if (result == media::AcceleratedVideoDecoder::kAllocateNewSurfaces) {
       CreatePictureBuffers();
-    } else if (result == media::AcceleratedVideoDecoder::kNoKey) {
+    } else if (result == media::AcceleratedVideoDecoder::kTryAgain) {
       state_ = State::kWaitingForNewKey;
       // Note that another DoDecode() task would be posted in NotifyNewKey().
       return;

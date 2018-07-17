@@ -55,8 +55,10 @@ class MEDIA_GPU_EXPORT AcceleratedVideoDecoder {
     kRanOutOfSurfaces,     // Waiting for the client to free up output surfaces.
     kNeedContextUpdate,    // Waiting for the client to update decoding context
                            // with data acquired from the accelerator.
-    kNoKey,  // The buffer is encrypted and could not be processed because the
-             // key for decryption is missing.
+    kTryAgain,  // The accelerator needs additional data (independently
+    // provided) in order to proceed. This may be a new key in order to decrypt
+    // encrypted data, or existing hardware resources freed so that they can be
+    // reused. Decoding can resume once the data has been provided.
   };
 
   // Try to decode more of the stream, returning decoded frames asynchronously.
