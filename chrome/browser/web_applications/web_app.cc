@@ -23,6 +23,8 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -134,14 +136,6 @@ void DeleteShortcutInfoOnUIThread(
 }  // namespace
 
 namespace web_app {
-
-// The following string is used to build the directory name for
-// shortcuts to chrome applications (the kind which are installed
-// from a CRX).  Application shortcuts to URLs use the {host}_{path}
-// for the name of this directory.  Hosts can't include an underscore.
-// By starting this string with an underscore, we ensure that there
-// are no naming conflicts.
-static const char kCrxAppPrefix[] = "_crx_";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kWebAppInstallForceList);
@@ -367,27 +361,6 @@ std::string GenerateApplicationNameFromInfo(const ShortcutInfo& shortcut_info) {
     return GenerateApplicationNameFromExtensionId(shortcut_info.extension_id);
   else
     return GenerateApplicationNameFromURL(shortcut_info.url);
-}
-
-std::string GenerateApplicationNameFromURL(const GURL& url) {
-  std::string t;
-  t.append(url.host());
-  t.append("_");
-  t.append(url.path());
-  return t;
-}
-
-std::string GenerateApplicationNameFromExtensionId(const std::string& id) {
-  std::string t(kCrxAppPrefix);
-  t.append(id);
-  return t;
-}
-
-std::string GetExtensionIdFromApplicationName(const std::string& app_name) {
-  std::string prefix(kCrxAppPrefix);
-  if (app_name.substr(0, prefix.length()) != prefix)
-    return std::string();
-  return app_name.substr(prefix.length());
 }
 
 void CreateShortcutsWithInfo(ShortcutCreationReason reason,

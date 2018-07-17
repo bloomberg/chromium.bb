@@ -10,9 +10,12 @@ source_set("extensions") {
   sources = [
     "pending_bookmark_app_manager.cc",
     "pending_bookmark_app_manager.h",
+    "web_app_extension_helpers.cc",
+    "web_app_extension_helpers.h",
   ]
 
   deps = [
+    "//base",
     "//chrome/browser/web_applications/components",
   ]
 }

@@ -12,7 +12,7 @@
 #include "chrome/browser/shell_integration_win.h"
 #include "chrome/browser/ui/views/apps/app_window_desktop_native_widget_aura_win.h"
 #include "chrome/browser/ui/views/apps/glass_app_window_frame_view_win.h"
-#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_helpers.h"
 #include "chrome/browser/web_applications/web_app_win.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"

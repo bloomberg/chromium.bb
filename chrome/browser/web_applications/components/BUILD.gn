@@ -3,5 +3,12 @@
 # found in the LICENSE file.
 
 source_set("components") {
-  # TODO(loyso): Add os_shortcuts component here.
+  sources = [
+    "web_app_helpers.cc",
+    "web_app_helpers.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
 }
