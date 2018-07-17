@@ -163,12 +163,12 @@ public class AppMenuHandler {
         if (mDelegate.shouldShowFooter(appRect.height())) {
             footerResourceId = mDelegate.getFooterResourceId();
         }
-        View headerView = null;
+        int headerResourceId = 0;
         if (mDelegate.shouldShowHeader(appRect.height())) {
-            headerView = mDelegate.getHeaderView();
+            headerResourceId = mDelegate.getHeaderResourceId();
         }
         mAppMenu.show(wrapper, anchorView, isByPermanentButton, rotation, appRect, pt.y,
-                footerResourceId, headerView, mHighlightMenuId, showFromBottom);
+                footerResourceId, headerResourceId, mHighlightMenuId, showFromBottom);
         mAppMenuDragHelper.onShow(startDragging);
         setMenuHighlight(null);
         RecordUserAction.record("MobileMenuShow");
@@ -235,10 +235,18 @@ public class AppMenuHandler {
     }
 
     /**
+     * A notification that the header view has been inflated.
+     * @param view The inflated view.
+     */
+    void onHeaderViewInflated(View view) {
+        if (mDelegate != null) mDelegate.onHeaderViewInflated(mAppMenu, view);
+    }
+
+    /**
      * A notification that the footer view has been inflated.
      * @param view The inflated view.
      */
-    void onFooterInflated(View view) {
+    void onFooterViewInflated(View view) {
         if (mDelegate != null) mDelegate.onFooterViewInflated(mAppMenu, view);
     }
 }
