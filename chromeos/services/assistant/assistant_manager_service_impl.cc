@@ -257,12 +257,12 @@ void AssistantManagerServiceImpl::DismissNotification(
       dismissed_interaction, "DismissNotification", options, [](auto) {});
 }
 
-void AssistantManagerServiceImpl::OnConversationTurnStarted() {
+void AssistantManagerServiceImpl::OnConversationTurnStarted(bool is_mic_open) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread,
-          weak_factory_.GetWeakPtr()));
+          weak_factory_.GetWeakPtr(), is_mic_open));
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnFinished(
@@ -560,7 +560,9 @@ void AssistantManagerServiceImpl::OnStartFinished() {
   RegisterFallbackMediaHandler();
 }
 
-void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread() {
+void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread(
+    bool is_mic_open) {
+  // TODO(dmblack): Pipe |is_mic_open| through the OnInteractionStarted event.
   interaction_subscribers_.ForAllPtrs(
       [](auto* ptr) { ptr->OnInteractionStarted(); });
 }
