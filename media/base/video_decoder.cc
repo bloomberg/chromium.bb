@@ -16,6 +16,10 @@ void VideoDecoder::Destroy() {
 
 VideoDecoder::~VideoDecoder() = default;
 
+bool VideoDecoder::IsPlatformDecoder() const {
+  return false;
+}
+
 bool VideoDecoder::NeedsBitstreamConversion() const {
   return false;
 }

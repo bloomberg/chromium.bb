@@ -55,6 +55,7 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // VideoDecoder implementation.
   std::string GetDisplayName() const override;
+  bool IsPlatformDecoder() const override;
   void Initialize(
       const VideoDecoderConfig& config,
       bool low_delay,

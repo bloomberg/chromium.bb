@@ -145,6 +145,10 @@ static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
   cb.Run(success);
 }
 
+bool GpuVideoDecoder::IsPlatformDecoder() const {
+  return true;
+}
+
 std::string GpuVideoDecoder::GetDisplayName() const {
   return kDecoderName;
 }

@@ -54,6 +54,12 @@ class MEDIA_EXPORT AudioDecoder {
   // TODO(xhwang): Rename this method since the name is not only for display.
   virtual std::string GetDisplayName() const = 0;
 
+  // Returns true if the implementation is expected to be implemented by the
+  // platform. The value should be available immediately after construction and
+  // should not change within the lifetime of a decoder instance. The value is
+  // used only for logging.
+  virtual bool IsPlatformDecoder() const;
+
   // Initializes an AudioDecoder with |config|, executing the |init_cb| upon
   // completion.
   //

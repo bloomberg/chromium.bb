@@ -331,6 +331,7 @@ class MediaInternals::MediaInternalsUMAHandler {
     std::string audio_codec_name;
     std::string video_codec_name;
     std::string video_decoder;
+    bool is_platform_video_decoder = false;
     GURL origin_url;
   };
 
@@ -419,6 +420,10 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
           player_info.video_decoder_changed = true;
         }
       }
+      if (event.params.HasKey("is_platform_video_decoder")) {
+        event.params.GetBoolean("is_platform_video_decoder",
+                                &player_info.is_platform_video_decoder);
+      }
       if (event.params.HasKey("video_dds")) {
         event.params.GetBoolean("video_dds", &player_info.video_dds);
       }
@@ -478,8 +483,10 @@ std::string MediaInternals::MediaInternalsUMAHandler::GetUMANameForAVStream(
     uma_name += "DDS.";
   }
 
-  if (player_info.video_decoder == media::GpuVideoDecoder::kDecoderName ||
-      player_info.video_decoder == "MojoVideoDecoder") {
+  // Note that HW essentailly means 'platform' anyway. MediaCodec has been
+  // reported as HW forever, regardless of the underlying platform
+  // implementation.
+  if (player_info.is_platform_video_decoder) {
     uma_name += "HW";
   } else {
     uma_name += "SW";

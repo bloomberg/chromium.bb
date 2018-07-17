@@ -44,6 +44,7 @@ class MojoVideoDecoder final : public VideoDecoder,
 
   // VideoDecoder implementation.
   std::string GetDisplayName() const final;
+  bool IsPlatformDecoder() const final;
   void Initialize(
       const VideoDecoderConfig& config,
       bool low_delay,
