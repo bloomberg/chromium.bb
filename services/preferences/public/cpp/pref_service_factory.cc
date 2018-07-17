@@ -104,9 +104,9 @@ void OnConnect(
         persistent_pref_store.get(),
         new PersistentPrefStoreClient(
             std::move(incognito_connection->pref_store_connection)));
-    for (const auto& overlay_pref_name :
-         incognito_connection->overlay_pref_names) {
-      overlay_pref_store->RegisterOverlayPref(overlay_pref_name);
+    for (const auto& persistent_pref_name :
+         incognito_connection->persistent_pref_names) {
+      overlay_pref_store->RegisterPersistentPref(persistent_pref_name);
     }
     persistent_pref_store = overlay_pref_store;
   }

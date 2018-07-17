@@ -43,7 +43,7 @@ class InProcessPrefServiceFactory : public KeyedService {
   scoped_refptr<PersistentPrefStore> incognito_user_prefs_underlay_;
   scoped_refptr<PrefStore> recommended_prefs_;
   scoped_refptr<PrefRegistry> pref_registry_;
-  std::vector<const char*> overlay_pref_names_;
+  std::vector<const char*> persistent_perf_names_;
 
   base::OnceClosure quit_closure_;
 

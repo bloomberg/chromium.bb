@@ -613,16 +613,16 @@ class IncognitoPrefServiceFactoryTest
         base::MakeRefCounted<InMemoryPrefStore>();
     scoped_refptr<PersistentPrefStore> underlay =
         base::MakeRefCounted<InMemoryPrefStore>();
-    const auto overlay_pref_names = GetOverlayPrefNames();
-    delegate->InitIncognitoUserPrefs(overlay, underlay, overlay_pref_names);
+    const auto persistent_pref_names = GetPersistentPrefNames();
+    delegate->InitIncognitoUserPrefs(overlay, underlay, persistent_pref_names);
     auto overlay_pref_store = base::MakeRefCounted<OverlayUserPrefStore>(
         overlay.get(), underlay.get());
-    for (auto* overlay_pref_name : overlay_pref_names)
-      overlay_pref_store->RegisterOverlayPref(overlay_pref_name);
+    for (auto* persistent_pref_name : persistent_pref_names)
+      overlay_pref_store->RegisterPersistentPref(persistent_pref_name);
     factory->set_user_prefs(std::move(overlay_pref_store));
   }
 
-  std::vector<const char*> GetOverlayPrefNames() {
+  std::vector<const char*> GetPersistentPrefNames() {
     if (GetParam())
       return {kInitialKey, kOtherInitialKey, kKey};
     return {};

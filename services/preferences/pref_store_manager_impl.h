@@ -46,7 +46,7 @@ class PrefStoreManagerImpl : public service_manager::Service {
                        PersistentPrefStore* incognito_user_prefs_underlay,
                        PrefStore* recommended_prefs,
                        PrefRegistry* pref_registry,
-                       std::vector<const char*> overlay_pref_names);
+                       std::vector<const char*> persistent_perf_names);
   ~PrefStoreManagerImpl() override;
 
   base::OnceClosure ShutDownClosure();
@@ -79,7 +79,7 @@ class PrefStoreManagerImpl : public service_manager::Service {
   std::unique_ptr<PersistentPrefStoreImpl> persistent_pref_store_;
   std::unique_ptr<PersistentPrefStoreImpl>
       incognito_persistent_pref_store_underlay_;
-  std::vector<const char*> overlay_pref_names_;
+  std::vector<const char*> persistent_perf_names_;
 
   const std::unique_ptr<SharedPrefRegistry> shared_pref_registry_;
 

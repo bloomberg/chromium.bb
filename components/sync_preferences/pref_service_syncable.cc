@@ -85,7 +85,7 @@ PrefServiceSyncable::~PrefServiceSyncable() {
 std::unique_ptr<PrefServiceSyncable>
 PrefServiceSyncable::CreateIncognitoPrefService(
     PrefStore* incognito_extension_pref_store,
-    const std::vector<const char*>& overlay_pref_names,
+    const std::vector<const char*>& persistent_pref_names,
     std::unique_ptr<PrefValueStore::Delegate> delegate) {
   pref_service_forked_ = true;
   auto pref_notifier = std::make_unique<PrefNotifierImpl>();
@@ -96,14 +96,14 @@ PrefServiceSyncable::CreateIncognitoPrefService(
   auto overlay = base::MakeRefCounted<InMemoryPrefStore>();
   if (delegate) {
     delegate->InitIncognitoUserPrefs(overlay, user_pref_store_,
-                                     overlay_pref_names);
+                                     persistent_pref_names);
     delegate->InitPrefRegistry(forked_registry.get());
   }
   auto incognito_pref_store = base::MakeRefCounted<OverlayUserPrefStore>(
       overlay.get(), user_pref_store_.get());
 
-  for (const char* overlay_pref_name : overlay_pref_names)
-    incognito_pref_store->RegisterOverlayPref(overlay_pref_name);
+  for (const char* persistent_pref_name : persistent_pref_names)
+    incognito_pref_store->RegisterPersistentPref(persistent_pref_name);
 
   auto pref_value_store = pref_value_store_->CloneAndSpecialize(
       nullptr,  // managed

@@ -20,18 +20,19 @@
 // PersistentPrefStore that directs all write operations into an in-memory
 // PrefValueMap. Read operations are first answered by the PrefValueMap.
 // If the PrefValueMap does not contain a value for the requested key,
-// the look-up is passed on to an underlying PersistentPrefStore |underlay_|.
+// the look-up is passed on to an underlying PersistentPrefStore
+// |persistent_user_pref_store_|.
 class COMPONENTS_PREFS_EXPORT OverlayUserPrefStore
     : public PersistentPrefStore {
  public:
-  explicit OverlayUserPrefStore(PersistentPrefStore* underlay);
-  // The |overlay| must already be initialized.
-  OverlayUserPrefStore(PersistentPrefStore* overlay,
-                       PersistentPrefStore* underlay);
+  explicit OverlayUserPrefStore(PersistentPrefStore* persistent);
+  // The |ephemeral| store must already be initialized.
+  OverlayUserPrefStore(PersistentPrefStore* ephemeral,
+                       PersistentPrefStore* persistent);
 
   // Returns true if a value has been set for the |key| in this
   // OverlayUserPrefStore, i.e. if it potentially overrides a value
-  // from the |underlay_|.
+  // from the |persistent_user_pref_store_|.
   virtual bool IsSetInOverlay(const std::string& key) const;
 
   // Methods of PrefStore.
@@ -60,7 +61,9 @@ class COMPONENTS_PREFS_EXPORT OverlayUserPrefStore
   void SchedulePendingLossyWrites() override;
   void ReportValueChanged(const std::string& key, uint32_t flags) override;
 
-  void RegisterOverlayPref(const std::string& key);
+  // Registers preferences that should be stored in the persistent preferences
+  // (|persistent_user_pref_store_|).
+  void RegisterPersistentPref(const std::string& key);
 
   void ClearMutableValues() override;
   void OnStoreDeletionFromDisk() override;
@@ -72,20 +75,20 @@ class COMPONENTS_PREFS_EXPORT OverlayUserPrefStore
   typedef std::set<std::string> NamesSet;
   class ObserverAdapter;
 
-  void OnPrefValueChanged(bool overlay, const std::string& key);
-  void OnInitializationCompleted(bool overlay, bool succeeded);
+  void OnPrefValueChanged(bool ephemeral, const std::string& key);
+  void OnInitializationCompleted(bool ephemeral, bool succeeded);
 
   // Returns true if |key| corresponds to a preference that shall be stored in
-  // an in-memory PrefStore that is not persisted to disk.
-  bool ShallBeStoredInOverlay(const std::string& key) const;
+  // persistent PrefStore.
+  bool ShallBeStoredInPersistent(const std::string& key) const;
 
   base::ObserverList<PrefStore::Observer, true> observers_;
-  std::unique_ptr<ObserverAdapter> overlay_observer_;
-  std::unique_ptr<ObserverAdapter> underlay_observer_;
-  scoped_refptr<PersistentPrefStore> overlay_;
-  scoped_refptr<PersistentPrefStore> underlay_;
-  NamesSet overlay_names_set_;
-  NamesSet written_overlay_names_;
+  std::unique_ptr<ObserverAdapter> ephemeral_pref_store_observer_;
+  std::unique_ptr<ObserverAdapter> persistent_pref_store_observer_;
+  scoped_refptr<PersistentPrefStore> ephemeral_user_pref_store_;
+  scoped_refptr<PersistentPrefStore> persistent_user_pref_store_;
+  NamesSet persistent_names_set_;
+  NamesSet written_ephemeral_names_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayUserPrefStore);
 };

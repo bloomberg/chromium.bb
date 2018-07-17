@@ -16,41 +16,42 @@
 // binding additional arguments).
 class OverlayUserPrefStore::ObserverAdapter : public PrefStore::Observer {
  public:
-  ObserverAdapter(bool overlay, OverlayUserPrefStore* parent)
-      : overlay_(overlay), parent_(parent) {}
+  ObserverAdapter(bool ephemeral, OverlayUserPrefStore* parent)
+      : ephemeral_user_pref_store_(ephemeral), parent_(parent) {}
 
   // Methods of PrefStore::Observer.
   void OnPrefValueChanged(const std::string& key) override {
-    parent_->OnPrefValueChanged(overlay_, key);
+    parent_->OnPrefValueChanged(ephemeral_user_pref_store_, key);
   }
   void OnInitializationCompleted(bool succeeded) override {
-    parent_->OnInitializationCompleted(overlay_, succeeded);
+    parent_->OnInitializationCompleted(ephemeral_user_pref_store_, succeeded);
   }
 
  private:
-  // Is the update for the overlay?
-  const bool overlay_;
+  // Is the update for the ephemeral?
+  const bool ephemeral_user_pref_store_;
   OverlayUserPrefStore* const parent_;
 };
 
-OverlayUserPrefStore::OverlayUserPrefStore(PersistentPrefStore* underlay)
-    : OverlayUserPrefStore(new InMemoryPrefStore(), underlay) {}
+OverlayUserPrefStore::OverlayUserPrefStore(PersistentPrefStore* persistent)
+    : OverlayUserPrefStore(new InMemoryPrefStore(), persistent) {}
 
-OverlayUserPrefStore::OverlayUserPrefStore(PersistentPrefStore* overlay,
-                                           PersistentPrefStore* underlay)
-    : overlay_observer_(
+OverlayUserPrefStore::OverlayUserPrefStore(PersistentPrefStore* ephemeral,
+                                           PersistentPrefStore* persistent)
+    : ephemeral_pref_store_observer_(
           std::make_unique<OverlayUserPrefStore::ObserverAdapter>(true, this)),
-      underlay_observer_(
+      persistent_pref_store_observer_(
           std::make_unique<OverlayUserPrefStore::ObserverAdapter>(false, this)),
-      overlay_(overlay),
-      underlay_(underlay) {
-  DCHECK(overlay->IsInitializationComplete());
-  overlay_->AddObserver(overlay_observer_.get());
-  underlay_->AddObserver(underlay_observer_.get());
+      ephemeral_user_pref_store_(ephemeral),
+      persistent_user_pref_store_(persistent) {
+  DCHECK(ephemeral->IsInitializationComplete());
+  ephemeral_user_pref_store_->AddObserver(ephemeral_pref_store_observer_.get());
+  persistent_user_pref_store_->AddObserver(
+      persistent_pref_store_observer_.get());
 }
 
 bool OverlayUserPrefStore::IsSetInOverlay(const std::string& key) const {
-  return overlay_->GetValue(key, nullptr);
+  return ephemeral_user_pref_store_->GetValue(key, nullptr);
 }
 
 void OverlayUserPrefStore::AddObserver(PrefStore::Observer* observer) {
@@ -66,27 +67,33 @@ bool OverlayUserPrefStore::HasObservers() const {
 }
 
 bool OverlayUserPrefStore::IsInitializationComplete() const {
-  return underlay_->IsInitializationComplete() &&
-         overlay_->IsInitializationComplete();
+  return persistent_user_pref_store_->IsInitializationComplete() &&
+         ephemeral_user_pref_store_->IsInitializationComplete();
 }
 
 bool OverlayUserPrefStore::GetValue(const std::string& key,
                                     const base::Value** result) const {
-  // If the |key| shall NOT be stored in the overlay store, there must not
+  // If the |key| shall NOT be stored in the ephemeral store, there must not
   // be an entry.
-  DCHECK(ShallBeStoredInOverlay(key) || !overlay_->GetValue(key, nullptr));
+  DCHECK(!ShallBeStoredInPersistent(key) ||
+         !ephemeral_user_pref_store_->GetValue(key, nullptr));
 
-  if (overlay_->GetValue(key, result))
+  if (ephemeral_user_pref_store_->GetValue(key, result))
     return true;
-  return underlay_->GetValue(key, result);
+  return persistent_user_pref_store_->GetValue(key, result);
 }
 
 std::unique_ptr<base::DictionaryValue> OverlayUserPrefStore::GetValues() const {
-  auto values = underlay_->GetValues();
-  auto overlay_values = overlay_->GetValues();
-  for (const auto& key : overlay_names_set_) {
+  auto values = ephemeral_user_pref_store_->GetValues();
+  auto persistent_values = persistent_user_pref_store_->GetValues();
+
+  // Output |values| are read from |ephemeral_user_pref_store_| (in-memory
+  // store). Then the values of preferences in |persistent_names_set_| are
+  // overwritten by the content of |persistent_user_pref_store_| (the persistent
+  // store).
+  for (const auto& key : persistent_names_set_) {
     std::unique_ptr<base::Value> out_value;
-    overlay_values->Remove(key, &out_value);
+    persistent_values->Remove(key, &out_value);
     if (out_value) {
       values->Set(key, std::move(out_value));
     }
@@ -96,56 +103,60 @@ std::unique_ptr<base::DictionaryValue> OverlayUserPrefStore::GetValues() const {
 
 bool OverlayUserPrefStore::GetMutableValue(const std::string& key,
                                            base::Value** result) {
-  if (!ShallBeStoredInOverlay(key))
-    return underlay_->GetMutableValue(key, result);
+  if (ShallBeStoredInPersistent(key))
+    return persistent_user_pref_store_->GetMutableValue(key, result);
 
-  written_overlay_names_.insert(key);
-  if (overlay_->GetMutableValue(key, result))
+  written_ephemeral_names_.insert(key);
+  if (ephemeral_user_pref_store_->GetMutableValue(key, result))
     return true;
 
-  // Try to create copy of underlay if the overlay does not contain a value.
-  base::Value* underlay_value = nullptr;
-  if (!underlay_->GetMutableValue(key, &underlay_value))
+  // Try to create copy of persistent if the ephemeral does not contain a value.
+  base::Value* persistent_value = nullptr;
+  if (!persistent_user_pref_store_->GetMutableValue(key, &persistent_value))
     return false;
 
-  *result = underlay_value->DeepCopy();
-  overlay_->SetValue(key, base::WrapUnique(*result),
-                     WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  *result = persistent_value->DeepCopy();
+  ephemeral_user_pref_store_->SetValue(
+      key, base::WrapUnique(*result),
+      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   return true;
 }
 
 void OverlayUserPrefStore::SetValue(const std::string& key,
                                     std::unique_ptr<base::Value> value,
                                     uint32_t flags) {
-  if (!ShallBeStoredInOverlay(key)) {
-    underlay_->SetValue(key, std::move(value), flags);
+  if (ShallBeStoredInPersistent(key)) {
+    persistent_user_pref_store_->SetValue(key, std::move(value), flags);
     return;
   }
 
-  written_overlay_names_.insert(key);
-  overlay_->SetValue(key, std::move(value), flags);
+  // TODO(https://crbug.com/861722): If we always store in in-memory storage
+  // and conditionally also stored in persistent one, we wouldn't have to do a
+  // complex merge in GetValues().
+  written_ephemeral_names_.insert(key);
+  ephemeral_user_pref_store_->SetValue(key, std::move(value), flags);
 }
 
 void OverlayUserPrefStore::SetValueSilently(const std::string& key,
                                             std::unique_ptr<base::Value> value,
                                             uint32_t flags) {
-  if (!ShallBeStoredInOverlay(key)) {
-    underlay_->SetValueSilently(key, std::move(value), flags);
+  if (ShallBeStoredInPersistent(key)) {
+    persistent_user_pref_store_->SetValueSilently(key, std::move(value), flags);
     return;
   }
 
-  written_overlay_names_.insert(key);
-  overlay_->SetValueSilently(key, std::move(value), flags);
+  written_ephemeral_names_.insert(key);
+  ephemeral_user_pref_store_->SetValueSilently(key, std::move(value), flags);
 }
 
 void OverlayUserPrefStore::RemoveValue(const std::string& key, uint32_t flags) {
-  if (!ShallBeStoredInOverlay(key)) {
-    underlay_->RemoveValue(key, flags);
+  if (ShallBeStoredInPersistent(key)) {
+    persistent_user_pref_store_->RemoveValue(key, flags);
     return;
   }
 
-  written_overlay_names_.insert(key);
-  overlay_->RemoveValue(key, flags);
+  written_ephemeral_names_.insert(key);
+  ephemeral_user_pref_store_->RemoveValue(key, flags);
 }
 
 bool OverlayUserPrefStore::ReadOnly() const {
@@ -158,7 +169,7 @@ PersistentPrefStore::PrefReadError OverlayUserPrefStore::GetReadError() const {
 
 PersistentPrefStore::PrefReadError OverlayUserPrefStore::ReadPrefs() {
   // We do not read intentionally.
-  OnInitializationCompleted(/* overlay */ false, true);
+  OnInitializationCompleted(/* ephemeral */ false, true);
   return PersistentPrefStore::PREF_READ_ERROR_NONE;
 }
 
@@ -166,16 +177,16 @@ void OverlayUserPrefStore::ReadPrefsAsync(
     ReadErrorDelegate* error_delegate_raw) {
   std::unique_ptr<ReadErrorDelegate> error_delegate(error_delegate_raw);
   // We do not read intentionally.
-  OnInitializationCompleted(/* overlay */ false, true);
+  OnInitializationCompleted(/* ephemeral */ false, true);
 }
 
 void OverlayUserPrefStore::CommitPendingWrite(base::OnceClosure done_callback) {
-  underlay_->CommitPendingWrite(std::move(done_callback));
+  persistent_user_pref_store_->CommitPendingWrite(std::move(done_callback));
   // We do not write our content intentionally.
 }
 
 void OverlayUserPrefStore::SchedulePendingLossyWrites() {
-  underlay_->SchedulePendingLossyWrites();
+  persistent_user_pref_store_->SchedulePendingLossyWrites();
 }
 
 void OverlayUserPrefStore::ReportValueChanged(const std::string& key,
@@ -184,39 +195,42 @@ void OverlayUserPrefStore::ReportValueChanged(const std::string& key,
     observer.OnPrefValueChanged(key);
 }
 
-void OverlayUserPrefStore::RegisterOverlayPref(const std::string& key) {
+void OverlayUserPrefStore::RegisterPersistentPref(const std::string& key) {
   DCHECK(!key.empty()) << "Key is empty";
-  DCHECK(overlay_names_set_.find(key) == overlay_names_set_.end())
-      << "Key already registered";
-  overlay_names_set_.insert(key);
+  DCHECK(persistent_names_set_.find(key) == persistent_names_set_.end())
+      << "Key already registered: " << key;
+  persistent_names_set_.insert(key);
 }
 
 void OverlayUserPrefStore::ClearMutableValues() {
-  for (const auto& key : written_overlay_names_) {
-    overlay_->RemoveValue(key, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  for (const auto& key : written_ephemeral_names_) {
+    ephemeral_user_pref_store_->RemoveValue(
+        key, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }
 
 void OverlayUserPrefStore::OnStoreDeletionFromDisk() {
-  underlay_->OnStoreDeletionFromDisk();
+  persistent_user_pref_store_->OnStoreDeletionFromDisk();
 }
 
 OverlayUserPrefStore::~OverlayUserPrefStore() {
-  overlay_->RemoveObserver(overlay_observer_.get());
-  underlay_->RemoveObserver(underlay_observer_.get());
+  ephemeral_user_pref_store_->RemoveObserver(
+      ephemeral_pref_store_observer_.get());
+  persistent_user_pref_store_->RemoveObserver(
+      persistent_pref_store_observer_.get());
 }
 
-void OverlayUserPrefStore::OnPrefValueChanged(bool overlay,
+void OverlayUserPrefStore::OnPrefValueChanged(bool ephemeral,
                                               const std::string& key) {
-  if (overlay) {
+  if (ephemeral) {
     ReportValueChanged(key, DEFAULT_PREF_WRITE_FLAGS);
   } else {
-    if (!overlay_->GetValue(key, nullptr))
+    if (!ephemeral_user_pref_store_->GetValue(key, nullptr))
       ReportValueChanged(key, DEFAULT_PREF_WRITE_FLAGS);
   }
 }
 
-void OverlayUserPrefStore::OnInitializationCompleted(bool overlay,
+void OverlayUserPrefStore::OnInitializationCompleted(bool ephemeral,
                                                      bool succeeded) {
   if (!IsInitializationComplete())
     return;
@@ -224,7 +238,7 @@ void OverlayUserPrefStore::OnInitializationCompleted(bool overlay,
     observer.OnInitializationCompleted(succeeded);
 }
 
-bool OverlayUserPrefStore::ShallBeStoredInOverlay(
+bool OverlayUserPrefStore::ShallBeStoredInPersistent(
     const std::string& key) const {
-  return overlay_names_set_.find(key) != overlay_names_set_.end();
+  return persistent_names_set_.find(key) != persistent_names_set_.end();
 }
