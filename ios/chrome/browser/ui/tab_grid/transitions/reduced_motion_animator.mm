@@ -49,24 +49,33 @@
   UIView* animatingView;
   CGFloat finalAnimatingViewAlpha;
   CGAffineTransform finalAnimatingViewTransform;
+  CGFloat finalAnimatingCornerRadius;
 
   if (self.presenting) {
     // If presenting, the appearing view (the tab view) animates in from 0%
-    // opacity and an 80% scale transform.
+    // opacity, 75% scale transform, and a 13px corner radius
     animatingView = appearingView;
     finalAnimatingViewAlpha = animatingView.alpha;
     animatingView.alpha = 0;
     finalAnimatingViewTransform = animatingView.transform;
     animatingView.transform =
-        CGAffineTransformScale(finalAnimatingViewTransform, 0.8, 0.8);
+        CGAffineTransformScale(finalAnimatingViewTransform, 0.75, 0.75);
+    finalAnimatingCornerRadius = 0;
+    animatingView.layer.cornerRadius = 26.0;
   } else {
     // If dismissing, the disappearing view (the tab view) animates out
-    // to 0% opacity and 80% scale.
+    // to 0% opacity, 75% scale, and 13px corner radius.
     animatingView = disappearingView;
     finalAnimatingViewAlpha = 0;
     finalAnimatingViewTransform =
-        CGAffineTransformScale(animatingView.transform, 0.8, 0.8);
+        CGAffineTransformScale(animatingView.transform, 0.75, 0.75);
+    finalAnimatingCornerRadius = 26.0;
   }
+
+  // Set clipsToBounds on the animating view so its corner radius will look
+  // right.
+  BOOL oldClipsToBounds = animatingView.clipsToBounds;
+  animatingView.clipsToBounds = YES;
 
   // Animate the animating view to final properties, then clean up by removing
   // the disappearing view.
@@ -76,8 +85,11 @@
       animations:^{
         animatingView.alpha = finalAnimatingViewAlpha;
         animatingView.transform = finalAnimatingViewTransform;
+        animatingView.layer.cornerRadius = finalAnimatingCornerRadius;
       }
       completion:^(BOOL finished) {
+        // Restore clipping state.
+        animatingView.clipsToBounds = oldClipsToBounds;
         // If the transition was cancelled, remove the disappearing view.
         // If not, remove the appearing view.
         if (transitionContext.transitionWasCancelled) {
