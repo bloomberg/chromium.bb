@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_HANDLER_CHROMEOS_H_
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_HANDLER_CHROMEOS_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 #include "chromeos/account_manager/account_manager.h"
@@ -17,7 +15,8 @@ namespace chromeos {
 
 class InlineLoginHandlerChromeOS : public InlineLoginHandler {
  public:
-  InlineLoginHandlerChromeOS();
+  explicit InlineLoginHandlerChromeOS(
+      const base::RepeatingClosure& close_dialog_closure);
   ~InlineLoginHandlerChromeOS() override;
 
   // InlineLoginHandler overrides.
@@ -25,6 +24,7 @@ class InlineLoginHandlerChromeOS : public InlineLoginHandler {
   void CompleteLogin(const base::ListValue* args) override;
 
  private:
+  base::RepeatingClosure close_dialog_closure_;
   DISALLOW_COPY_AND_ASSIGN(InlineLoginHandlerChromeOS);
 };
 

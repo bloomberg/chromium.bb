@@ -1368,6 +1368,16 @@
                    file="people_page/account_manager.js"
                    type="chrome_html"
                    preprocess="true" />
+        <structure
+            name="IDR_SETTINGS_PEOPLE_PAGE_ACCOUNT_MANAGER_BROWSER_PROXY_HTML"
+                   file="people_page/account_manager_browser_proxy.html"
+                   type="chrome_html"
+                   preprocess="true" />
+        <structure
+            name="IDR_SETTINGS_PEOPLE_PAGE_ACCOUNT_MANAGER_BROWSER_PROXY_JS"
+                   file="people_page/account_manager_browser_proxy.js"
+                   type="chrome_html"
+                   preprocess="true" />
         <structure name="IDR_SETTINGS_PEOPLE_PAGE_CHANGE_PICTURE_HTML"
                    file="people_page/change_picture.html"
                    type="chrome_html"

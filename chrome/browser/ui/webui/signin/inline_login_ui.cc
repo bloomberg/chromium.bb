@@ -63,13 +63,16 @@ content::WebUIDataSource* CreateWebUIDataSource() {
 
 InlineLoginUI::InlineLoginUI(content::WebUI* web_ui)
     : WebDialogUI(web_ui),
-      auth_extension_(Profile::FromWebUI(web_ui)) {
+      auth_extension_(Profile::FromWebUI(web_ui)),
+      weak_factory_(this) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateWebUIDataSource());
 
 #if defined(OS_CHROMEOS)
   web_ui->AddMessageHandler(
-      std::make_unique<chromeos::InlineLoginHandlerChromeOS>());
+      std::make_unique<chromeos::InlineLoginHandlerChromeOS>(
+          base::BindRepeating(&WebDialogUIBase::CloseDialog,
+                              weak_factory_.GetWeakPtr(), nullptr /* args */)));
 #else
   web_ui->AddMessageHandler(std::make_unique<InlineLoginHandlerImpl>());
 #endif  // defined(OS_CHROMEOS)

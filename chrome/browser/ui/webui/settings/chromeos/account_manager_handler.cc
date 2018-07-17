@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "chromeos/account_manager/account_manager_factory.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -29,14 +30,24 @@ AccountManagerUIHandler::AccountManagerUIHandler(
     AccountTrackerService* account_tracker_service)
     : account_manager_(account_manager),
       account_tracker_service_(account_tracker_service),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  account_manager_->AddObserver(this);
+  account_tracker_service_->AddObserver(this);
+}
 
-AccountManagerUIHandler::~AccountManagerUIHandler() = default;
+AccountManagerUIHandler::~AccountManagerUIHandler() {
+  account_manager_->RemoveObserver(this);
+  account_tracker_service_->RemoveObserver(this);
+}
 
 void AccountManagerUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getAccounts",
       base::BindRepeating(&AccountManagerUIHandler::HandleGetAccounts,
+                          weak_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "addAccount",
+      base::BindRepeating(&AccountManagerUIHandler::HandleAddAccount,
                           weak_factory_.GetWeakPtr()));
 }
 
@@ -71,6 +82,12 @@ void AccountManagerUIHandler::GetAccountsCallbackHandler(
         account_tracker_service_->FindAccountInfoByGaiaId(account_key.id);
     DCHECK(!account_info.IsEmpty());
 
+    if (account_info.full_name.empty()) {
+      // Account info has not been fully fetched yet from GAIA. Ignore this
+      // account.
+      continue;
+    }
+
     base::DictionaryValue account;
     account.SetString("fullName", account_info.full_name);
     account.SetString("email", account_info.email);
@@ -96,9 +113,52 @@ void AccountManagerUIHandler::GetAccountsCallbackHandler(
   ResolveJavascriptCallback(callback_id, accounts);
 }
 
+void AccountManagerUIHandler::HandleAddAccount(const base::ListValue* args) {
+  AllowJavascript();
+  InlineLoginHandlerDialogChromeOS::Show();
+}
+
 void AccountManagerUIHandler::OnJavascriptAllowed() {}
 
 void AccountManagerUIHandler::OnJavascriptDisallowed() {}
+
+// |AccountManager::Observer| overrides.
+// Note: We need to listen on |AccountManager| in addition to
+// |AccountTrackerService| because there is no guarantee that |AccountManager|
+// (our source of truth) will have a newly added account by the time
+// |AccountTrackerService| has it.
+void AccountManagerUIHandler::OnTokenUpserted(
+    const AccountManager::AccountKey& account_key) {
+  RefreshUI();
+}
+
+void AccountManagerUIHandler::OnAccountRemoved(
+    const AccountManager::AccountKey& account_key) {
+  RefreshUI();
+}
+
+// |AccountTrackerService::Observer| overrides.
+// For newly added accounts, |AccountTrackerService| may take some time to
+// fetch user's full name and account image. Whenever that is completed, we
+// may need to update the UI with this new set of information.
+// Note that we may be listening to |AccountTrackerService| but we still
+// consider |AccountManager| to be the source of truth for account list.
+void AccountManagerUIHandler::OnAccountUpdated(const AccountInfo& info) {
+  RefreshUI();
+}
+
+void AccountManagerUIHandler::OnAccountImageUpdated(
+    const std::string& account_id,
+    const gfx::Image& image) {
+  RefreshUI();
+}
+
+void AccountManagerUIHandler::OnAccountRemoved(const AccountInfo& account_key) {
+}
+
+void AccountManagerUIHandler::RefreshUI() {
+  FireWebUIListener("accounts-changed");
+}
 
 }  // namespace settings
 }  // namespace chromeos

@@ -7,6 +7,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   deps = [
     ":account_manager",
+    ":account_manager_browser_proxy",
     ":change_picture",
     ":change_picture_browser_proxy",
     ":easy_unlock_browser_proxy",
@@ -37,9 +38,17 @@ js_type_check("closure_compile") {
 
 js_library("account_manager") {
   deps = [
+    ":account_manager_browser_proxy",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:icon",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
+}
+
+js_library("account_manager_browser_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
   ]
 }
 

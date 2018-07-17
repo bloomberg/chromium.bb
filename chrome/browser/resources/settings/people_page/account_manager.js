@@ -8,27 +8,18 @@
  * list, add and delete Secondary Google Accounts.
  */
 
-/**
- * Information for an account managed by Chrome OS AccountManager.
- * @typedef {{
- *   fullName: string,
- *   email: string,
- *   pic: string,
- * }}
- */
-let Account;
-
 Polymer({
   is: 'settings-account-manager',
 
   behaviors: [
     I18nBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
     /**
      * List of Accounts.
-     * @type {!Array<Account>}
+     * @type {!Array<settings.Account>}
      */
     accounts_: {
       type: Array,
@@ -38,18 +29,43 @@ Polymer({
     },
   },
 
+  /** @private {?settings.AccountManagerBrowserProxy} */
+  browserProxy_: null,
+
+  /** @override */
+  attached: function() {
+    this.addWebUIListener('accounts-changed', this.refreshAccounts_.bind(this));
+  },
+
   /** @override */
   ready: function() {
-    cr.sendWithPromise('getAccounts').then(accounts => {
-      this.set('accounts_', accounts);
-    });
+    this.browserProxy_ = settings.AccountManagerBrowserProxyImpl.getInstance();
+    this.refreshAccounts_();
   },
 
   /**
    * @param {string} iconUrl
    * @return {string} A CSS image-set for multiple scale factors.
-   * @private */
+   * @private
+   */
   getIconImageSet_: function(iconUrl) {
     return cr.icon.getImage(iconUrl);
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  addAccount_: function(event) {
+    this.browserProxy_.addAccount();
+  },
+
+  /**
+   * @private
+   */
+  refreshAccounts_: function() {
+    this.browserProxy_.getAccounts().then(accounts => {
+      this.set('accounts_', accounts);
+    });
   },
 });

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/signin/inline_login_handler_chromeos.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -34,12 +36,14 @@ class SigninHelper : public GaiaAuthConsumer {
   SigninHelper(
       Profile* profile,
       chromeos::AccountManager* account_manager,
+      const base::RepeatingClosure& close_dialog_closure,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& gaia_id,
       const std::string& email,
       const std::string& auth_code)
       : profile_(profile),
         account_manager_(account_manager),
+        close_dialog_closure_(close_dialog_closure),
         email_(email),
         gaia_auth_fetcher_(this,
                            GaiaConstants::kChromeSource,
@@ -66,13 +70,13 @@ class SigninHelper : public GaiaAuthConsumer {
 
     account_manager_->UpsertToken(account_key_, result.refresh_token);
 
-    // TODO(sinhak): Close the dialog.
+    close_dialog_closure_.Run();
     base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   }
 
   void OnClientOAuthFailure(const GoogleServiceAuthError& error) override {
     // TODO(sinhak): Display an error.
-    // TODO(sinhak): Close the dialog.
+    close_dialog_closure_.Run();
     base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   }
 
@@ -81,6 +85,8 @@ class SigninHelper : public GaiaAuthConsumer {
   Profile* const profile_;
   // A non-owning pointer to Chrome OS AccountManager.
   chromeos::AccountManager* const account_manager_;
+  // A closure to close the hosting dialog window.
+  base::RepeatingClosure close_dialog_closure_;
   // The user's AccountKey for which |this| object has been created.
   chromeos::AccountManager::AccountKey account_key_;
   // The user's email for which |this| object has been created.
@@ -93,7 +99,9 @@ class SigninHelper : public GaiaAuthConsumer {
 
 }  // namespace
 
-InlineLoginHandlerChromeOS::InlineLoginHandlerChromeOS() = default;
+InlineLoginHandlerChromeOS::InlineLoginHandlerChromeOS(
+    const base::RepeatingClosure& close_dialog_closure)
+    : close_dialog_closure_(close_dialog_closure) {}
 
 InlineLoginHandlerChromeOS::~InlineLoginHandlerChromeOS() = default;
 
@@ -138,8 +146,8 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const base::ListValue* args) {
           ->GetAccountManager(profile->GetPath().value());
 
   // SigninHelper deletes itself after its work is done.
-  new SigninHelper(profile, account_manager, url_loader_factory, gaia_id, email,
-                   auth_code);
+  new SigninHelper(profile, account_manager, close_dialog_closure_,
+                   url_loader_factory, gaia_id, email, auth_code);
 }
 
 }  // namespace chromeos

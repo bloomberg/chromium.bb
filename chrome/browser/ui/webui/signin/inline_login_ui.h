@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_UI_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/signin/scoped_gaia_auth_extension.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
@@ -25,6 +26,7 @@ class InlineLoginUI : public ui::WebDialogUI {
  private:
   ScopedGaiaAuthExtension auth_extension_;
 
+  base::WeakPtrFactory<InlineLoginUI> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(InlineLoginUI);
 };
 
