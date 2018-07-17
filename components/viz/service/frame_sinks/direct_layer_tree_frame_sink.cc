@@ -46,7 +46,6 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
       use_viz_hit_test_(use_viz_hit_test),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  capabilities_.must_always_swap = true;
 }
 
 DirectLayerTreeFrameSink::~DirectLayerTreeFrameSink() {

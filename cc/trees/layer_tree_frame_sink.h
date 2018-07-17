@@ -44,17 +44,6 @@ class LayerTreeFrameSinkClient;
 class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
                                      public viz::ContextLostObserver {
  public:
-  struct Capabilities {
-    Capabilities() = default;
-
-    // True if we must always swap, even if there is no damage to the frame.
-    // Needed for both the browser compositor as well as layout tests.
-    // TODO(ericrk): This should be test-only for layout tests, but tab
-    // capture has issues capturing offscreen tabs whithout this. We should
-    // remove this dependency. crbug.com/680196
-    bool must_always_swap = false;
-  };
-
   // Constructor for GL-based and/or software resources.
   //
   // |compositor_task_runner| is used to post worker context lost callback and
@@ -91,8 +80,6 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
   virtual void DetachFromClient();
 
   bool HasClient() { return !!client_; }
-
-  const Capabilities& capabilities() const { return capabilities_; }
 
   // The viz::ContextProviders may be null if frames should be submitted with
   // software SharedMemory resources.
@@ -138,7 +125,6 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
 
   LayerTreeFrameSinkClient* client_ = nullptr;
 
-  struct LayerTreeFrameSink::Capabilities capabilities_;
   scoped_refptr<viz::ContextProvider> context_provider_;
   scoped_refptr<viz::RasterContextProvider> worker_context_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
