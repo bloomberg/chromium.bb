@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -131,8 +132,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     private final int mInitialBackgroundColor;
     private final boolean mDisableStar;
     private final boolean mDisableDownload;
-    @Nullable private final String mModulePackageName;
-    @Nullable private final String mModuleClassName;
+    @Nullable private final ComponentName mModuleComponentName;
 
     private int mToolbarColor;
     private int mBottomBarColor;
@@ -243,8 +243,15 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         mDisableStar = IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_STAR_BUTTON, false);
         mDisableDownload =
                 IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_DOWNLOAD_BUTTON, false);
-        mModulePackageName = IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_PACKAGE_NAME);
-        mModuleClassName = IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_CLASS_NAME);
+
+        String modulePackageName =
+                IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_PACKAGE_NAME);
+        String moduleClassName = IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_CLASS_NAME);
+        if (modulePackageName != null && moduleClassName != null) {
+            mModuleComponentName = new ComponentName(modulePackageName, moduleClassName);
+        } else {
+            mModuleComponentName = null;
+        }
     }
 
     /**
@@ -609,18 +616,10 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     }
 
     /**
-     * @return The APK package to load the module from, or null if not specified.
+     * @return The component name of the module entry point, or null if not specified.
      */
     @Nullable
-    String getModulePackageName() {
-        return mModulePackageName;
-    }
-
-    /**
-     * @return The class name of the module entry point, or null if not specified.
-     */
-    @Nullable
-    String getModuleClassName() {
-        return mModuleClassName;
+    ComponentName getModuleComponentName() {
+        return mModuleComponentName;
     }
 }

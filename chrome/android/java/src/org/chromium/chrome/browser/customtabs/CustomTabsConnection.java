@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.ActivityManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -23,7 +24,6 @@ import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
-import android.util.Pair;
 import android.widget.RemoteViews;
 
 import org.json.JSONException;
@@ -53,9 +53,7 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleEntryPoint;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleLoader;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.init.ChainedTasks;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -234,12 +232,7 @@ public class CustomTabsConnection {
 
     private volatile ChainedTasks mWarmupTasks;
 
-    /** The module package name and class name. */
-    private Pair<String, String> mModuleNames;
-    private int mModuleUseCount;
-
-    /** The module entry point. */
-    private ModuleEntryPoint mModuleEntryPoint;
+    private ModuleLoader mModuleLoader;
 
     /**
      * <strong>DO NOT CALL</strong>
@@ -1420,45 +1413,13 @@ public class CustomTabsConnection {
     private static native void nativeCreateAndStartDetachedResourceRequest(
             Profile profile, String url, String origin, @WebReferrerPolicy int referrerPolicy);
 
-    /**
-     * Dynamically loads the class {@code className} from the application identified by
-     * {@code packageName} and wraps it in a {@link ModuleEntryPoint}.
-     * @param packageName The package name of the application to load form.
-     * @param className The fully-qualified name of the class to load.
-     * @return The loaded class, cast to an AIDL interface and wrapped in a more user friendly form.
-     */
-    @Nullable
-    public ModuleEntryPoint loadModule(String packageName, String className) {
-        if (mModuleEntryPoint != null && mModuleNames != null) {
-            if ((!mModuleNames.first.equals(packageName)
-                    || !mModuleNames.second.equals(className))) {
-                throw new IllegalStateException("Only one module can be loaded at a time.");
-            }
-            mModuleUseCount++;
-            ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_SUCCESS_CACHED);
-            return mModuleEntryPoint;
+    public ModuleLoader getModuleLoader(ComponentName componentName) {
+        if (mModuleLoader == null) mModuleLoader = new ModuleLoader(componentName);
+        if (!componentName.equals(mModuleLoader.getComponentName())) {
+            throw new IllegalStateException("The given component name " + componentName
+                    + " does not match the initialized component name "
+                    + mModuleLoader.getComponentName());
         }
-
-        mModuleNames = new Pair<>(packageName, className);
-        mModuleEntryPoint = ModuleLoader.loadModule(packageName, className);
-        if (mModuleEntryPoint != null) {
-            mModuleUseCount++;
-            ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_SUCCESS_NEW);
-        }
-        return mModuleEntryPoint;
-    }
-
-    public void maybeUnloadModule(String packageName, String className) {
-        if (mModuleEntryPoint == null || mModuleNames == null) return;
-        if ((!mModuleNames.first.equals(packageName) || !mModuleNames.second.equals(className))) {
-            throw new IllegalStateException(
-                    "There is no module for package " + packageName + " and class " + className);
-        }
-        mModuleUseCount--;
-        if (mModuleUseCount == 0) {
-            mModuleEntryPoint.onDestroy();
-            mModuleEntryPoint = null;
-            mModuleNames = null;
-        }
+        return mModuleLoader;
     }
 }
