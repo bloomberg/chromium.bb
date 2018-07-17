@@ -65,14 +65,6 @@ class TestWebStateObserver : public WebStateObserver {
   web::TestDidSuppressDialogInfo* did_suppress_dialog_info() {
     return did_suppress_dialog_info_.get();
   }
-  // Arguments passed to |DocumentSubmitted|.
-  web::TestSubmitDocumentInfo* submit_document_info() {
-    return submit_document_info_.get();
-  }
-  // Arguments passed to |FormActivityRegistered|.
-  web::TestFormActivityInfo* form_activity_info() {
-    return form_activity_info_.get();
-  }
   // Arguments passed to |FaviconUrlUpdated|.
   web::TestUpdateFaviconUrlCandidatesInfo*
   update_favicon_url_candidates_info() {
@@ -114,12 +106,6 @@ class TestWebStateObserver : public WebStateObserver {
   void TitleWasSet(WebState* web_state) override;
   void DidChangeVisibleSecurityState(WebState* web_state) override;
   void DidSuppressDialog(WebState* web_state) override;
-  void DocumentSubmitted(WebState* web_state,
-                         const std::string& form_name,
-                         bool user_initiated,
-                         bool is_main_frame) override;
-  void FormActivityRegistered(WebState* web_state,
-                              const FormActivityParams& params) override;
   void FaviconUrlUpdated(WebState* web_state,
                          const std::vector<FaviconURL>& candidates) override;
   void RenderProcessGone(WebState* web_state) override;
@@ -147,8 +133,6 @@ class TestWebStateObserver : public WebStateObserver {
   std::unique_ptr<web::TestDidChangeVisibleSecurityStateInfo>
       did_change_visible_security_state_info_;
   std::unique_ptr<web::TestDidSuppressDialogInfo> did_suppress_dialog_info_;
-  std::unique_ptr<web::TestSubmitDocumentInfo> submit_document_info_;
-  std::unique_ptr<web::TestFormActivityInfo> form_activity_info_;
   std::unique_ptr<web::TestUpdateFaviconUrlCandidatesInfo>
       update_favicon_url_candidates_info_;
   std::unique_ptr<web::TestRenderProcessGoneInfo> render_process_gone_info_;

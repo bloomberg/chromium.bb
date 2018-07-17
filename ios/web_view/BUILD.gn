@@ -350,6 +350,7 @@ test("ios_web_view_unittests") {
     "//base/test:test_support",
     "//components/autofill/core/browser:test_support",
     "//components/autofill/ios/browser:test_support",
+    "//components/autofill/ios/form_util:test_support",
     "//components/prefs:test_support",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",

@@ -15,6 +15,8 @@
 #import "components/autofill/ios/browser/fake_js_autofill_manager.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
+#import "components/autofill/ios/form_util/form_activity_tab_helper.h"
+#import "components/autofill/ios/form_util/test_form_activity_tab_helper.h"
 #import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -71,6 +73,8 @@ class CWVAutofillControllerTest : public PlatformTest {
                                           autofillAgent:autofill_agent_
                                       JSAutofillManager:js_autofill_manager_
                                     JSSuggestionManager:js_suggestion_manager_];
+    test_form_activity_tab_helper_ =
+        std::make_unique<autofill::TestFormActivityTabHelper>(&web_state_);
   };
 
   web::WebClient web_client_;
@@ -80,6 +84,8 @@ class CWVAutofillControllerTest : public PlatformTest {
   CWVAutofillController* autofill_controller_;
   FakeAutofillAgent* autofill_agent_;
   FakeJSAutofillManager* js_autofill_manager_;
+  std::unique_ptr<autofill::TestFormActivityTabHelper>
+      test_form_activity_tab_helper_;
   id js_suggestion_manager_;
 };
 
@@ -208,7 +214,7 @@ TEST_F(CWVAutofillControllerTest, FocusCallback) {
       params.field_identifier = base::SysNSStringToUTF8(kTestFieldIdentifier);
       params.value = base::SysNSStringToUTF8(kTestFieldValue);
       params.type = "focus";
-      web_state_.OnFormActivity(params);
+      test_form_activity_tab_helper_->OnFormActivity(params);
 
       [delegate verify];
   }
@@ -235,7 +241,7 @@ TEST_F(CWVAutofillControllerTest, InputCallback) {
       params.field_identifier = base::SysNSStringToUTF8(kTestFieldIdentifier);
       params.value = base::SysNSStringToUTF8(kTestFieldValue);
       params.type = "input";
-      web_state_.OnFormActivity(params);
+      test_form_activity_tab_helper_->OnFormActivity(params);
 
       [delegate verify];
   }
@@ -261,7 +267,7 @@ TEST_F(CWVAutofillControllerTest, BlurCallback) {
     params.field_identifier = base::SysNSStringToUTF8(kTestFieldIdentifier);
     params.value = base::SysNSStringToUTF8(kTestFieldValue);
     params.type = "blur";
-    web_state_.OnFormActivity(params);
+    test_form_activity_tab_helper_->OnFormActivity(params);
 
     [delegate verify];
   }
@@ -280,18 +286,20 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
                             userInitiated:YES
                               isMainFrame:YES];
 
-    web_state_.OnDocumentSubmitted(base::SysNSStringToUTF8(kTestFormName),
-                                   /*user_initiated=*/true,
-                                   /*is_main_frame=*/true);
+    test_form_activity_tab_helper_->OnDocumentSubmitted(
+        base::SysNSStringToUTF8(kTestFormName),
+        /*user_initiated=*/true,
+        /*is_main_frame=*/true);
 
     [[delegate expect] autofillController:autofill_controller_
                     didSubmitFormWithName:kTestFormName
                             userInitiated:NO
                               isMainFrame:YES];
 
-    web_state_.OnDocumentSubmitted(base::SysNSStringToUTF8(kTestFormName),
-                                   /*user_initiated=*/false,
-                                   /*is_main_frame=*/true);
+    test_form_activity_tab_helper_->OnDocumentSubmitted(
+        base::SysNSStringToUTF8(kTestFormName),
+        /*user_initiated=*/false,
+        /*is_main_frame=*/true);
 
     [delegate verify];
   }

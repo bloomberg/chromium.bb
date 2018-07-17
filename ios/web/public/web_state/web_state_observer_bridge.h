@@ -59,16 +59,6 @@
 // Invoked by WebStateObserverBridge::DidSuppressDialog.
 - (void)webStateDidSuppressDialog:(web::WebState*)webState;
 
-// Invoked by WebStateObserverBridge::DocumentSubmitted.
-- (void)webState:(web::WebState*)webState
-    didSubmitDocumentWithFormNamed:(const std::string&)formName
-                     userInitiated:(BOOL)userInitiated
-                       isMainFrame:(BOOL)isMainFrame;
-
-// Invoked by WebStateObserverBridge::FormActivityRegistered.
-- (void)webState:(web::WebState*)webState
-    didRegisterFormActivity:(const web::FormActivityParams&)params;
-
 // Invoked by WebStateObserverBridge::FaviconUrlUpdated.
 - (void)webState:(web::WebState*)webState
     didUpdateFaviconURLCandidates:
@@ -119,12 +109,6 @@ class WebStateObserverBridge : public web::WebStateObserver {
   void TitleWasSet(web::WebState* web_state) override;
   void DidChangeVisibleSecurityState(web::WebState* web_state) override;
   void DidSuppressDialog(web::WebState* web_state) override;
-  void DocumentSubmitted(web::WebState* web_state,
-                         const std::string& form_name,
-                         bool user_initiated,
-                         bool is_main_frame) override;
-  void FormActivityRegistered(web::WebState* web_state,
-                              const FormActivityParams& params) override;
   void FaviconUrlUpdated(web::WebState* web_state,
                          const std::vector<FaviconURL>& candidates) override;
   void RenderProcessGone(web::WebState* web_state) override;

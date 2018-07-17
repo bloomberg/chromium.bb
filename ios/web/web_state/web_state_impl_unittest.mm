@@ -29,7 +29,6 @@
 #import "ios/web/public/test/fakes/test_web_state_observer.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/public/web_state/context_menu_params.h"
-#include "ios/web/public/web_state/form_activity_params.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_observer.h"
@@ -382,44 +381,6 @@ TEST_P(WebStateImplTest, ObserverTest) {
   web_state_->OnDialogSuppressed();
   ASSERT_TRUE(observer->did_suppress_dialog_info());
   EXPECT_EQ(web_state_.get(), observer->did_suppress_dialog_info()->web_state);
-
-  // Test that DocumentSubmitted() is called.
-  ASSERT_FALSE(observer->submit_document_info());
-  const std::string kTestFormName("form-name");
-  bool user_initiated = true;
-  bool is_main_frame = false;
-  web_state_->OnDocumentSubmitted(kTestFormName, user_initiated, is_main_frame);
-  ASSERT_TRUE(observer->submit_document_info());
-  EXPECT_EQ(web_state_.get(), observer->submit_document_info()->web_state);
-  EXPECT_EQ(kTestFormName, observer->submit_document_info()->form_name);
-  EXPECT_EQ(user_initiated, observer->submit_document_info()->user_initiated);
-  EXPECT_EQ(is_main_frame, observer->submit_document_info()->is_main_frame);
-
-  // Test that FormActivityRegistered() is called.
-  ASSERT_FALSE(observer->form_activity_info());
-  FormActivityParams params;
-  params.form_name = kTestFormName;
-  params.field_name = "field-name";
-  params.field_type = "field-type";
-  params.type = "type";
-  params.value = "value";
-  params.input_missing = true;
-  params.is_main_frame = false;
-  params.has_user_gesture = true;
-  web_state_->OnFormActivityRegistered(params);
-  ASSERT_TRUE(observer->form_activity_info());
-  EXPECT_EQ(web_state_.get(), observer->form_activity_info()->web_state);
-  EXPECT_EQ(params.form_name,
-            observer->form_activity_info()->form_activity.form_name);
-  EXPECT_EQ(params.field_name,
-            observer->form_activity_info()->form_activity.field_name);
-  EXPECT_EQ(params.field_type,
-            observer->form_activity_info()->form_activity.field_type);
-  EXPECT_EQ(params.type, observer->form_activity_info()->form_activity.type);
-  EXPECT_EQ(params.value, observer->form_activity_info()->form_activity.value);
-  EXPECT_TRUE(observer->form_activity_info()->form_activity.input_missing);
-  EXPECT_FALSE(observer->form_activity_info()->form_activity.is_main_frame);
-  EXPECT_TRUE(observer->form_activity_info()->form_activity.has_user_gesture);
 
   // Test that FaviconUrlUpdated() is called.
   ASSERT_FALSE(observer->update_favicon_url_candidates_info());

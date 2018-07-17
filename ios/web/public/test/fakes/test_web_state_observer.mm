@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ios/web/web_state/navigation_context_impl.h"
@@ -139,27 +138,6 @@ void TestWebStateObserver::DidSuppressDialog(WebState* web_state) {
   did_suppress_dialog_info_ =
       std::make_unique<web::TestDidSuppressDialogInfo>();
   did_suppress_dialog_info_->web_state = web_state;
-}
-
-void TestWebStateObserver::DocumentSubmitted(WebState* web_state,
-                                             const std::string& form_name,
-                                             bool user_initiated,
-                                             bool is_main_frame) {
-  ASSERT_EQ(web_state_, web_state);
-  submit_document_info_ = std::make_unique<web::TestSubmitDocumentInfo>();
-  submit_document_info_->web_state = web_state;
-  submit_document_info_->form_name = form_name;
-  submit_document_info_->user_initiated = user_initiated;
-  submit_document_info_->is_main_frame = is_main_frame;
-}
-
-void TestWebStateObserver::FormActivityRegistered(
-    WebState* web_state,
-    const FormActivityParams& params) {
-  ASSERT_EQ(web_state_, web_state);
-  form_activity_info_ = std::make_unique<web::TestFormActivityInfo>();
-  form_activity_info_->web_state = web_state;
-  form_activity_info_->form_activity = params;
 }
 
 void TestWebStateObserver::FaviconUrlUpdated(

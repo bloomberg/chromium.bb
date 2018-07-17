@@ -4,7 +4,6 @@
 
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
-#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -129,29 +128,6 @@ void WebStateObserverBridge::DidChangeVisibleSecurityState(
 void WebStateObserverBridge::DidSuppressDialog(web::WebState* web_state) {
   if ([observer_ respondsToSelector:@selector(webStateDidSuppressDialog:)]) {
     [observer_ webStateDidSuppressDialog:web_state];
-  }
-}
-
-void WebStateObserverBridge::DocumentSubmitted(web::WebState* web_state,
-                                               const std::string& form_name,
-                                               bool user_initiated,
-                                               bool is_main_frame) {
-  SEL selector = @selector
-      (webState:didSubmitDocumentWithFormNamed:userInitiated:isMainFrame:);
-  if ([observer_ respondsToSelector:selector]) {
-    [observer_ webState:web_state
-        didSubmitDocumentWithFormNamed:form_name
-                         userInitiated:user_initiated
-                           isMainFrame:is_main_frame];
-  }
-}
-
-void WebStateObserverBridge::FormActivityRegistered(
-    web::WebState* web_state,
-    const FormActivityParams& params) {
-  SEL selector = @selector(webState:didRegisterFormActivity:);
-  if ([observer_ respondsToSelector:selector]) {
-    [observer_ webState:web_state didRegisterFormActivity:params];
   }
 }
 

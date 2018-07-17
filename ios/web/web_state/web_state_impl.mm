@@ -266,24 +266,11 @@ void WebStateImpl::OnPageLoaded(const GURL& url, bool load_success) {
     observer.PageLoaded(this, load_completion_status);
 }
 
-void WebStateImpl::OnFormActivityRegistered(const FormActivityParams& params) {
-  for (auto& observer : observers_) {
-    observer.FormActivityRegistered(this, params);
-  }
-}
-
 void WebStateImpl::OnFaviconUrlUpdated(
     const std::vector<FaviconURL>& candidates) {
   cached_favicon_urls_ = candidates;
   for (auto& observer : observers_)
     observer.FaviconUrlUpdated(this, candidates);
-}
-
-void WebStateImpl::OnDocumentSubmitted(const std::string& form_name,
-                                       bool user_initiated,
-                                       bool is_main_frame) {
-  for (auto& observer : observers_)
-    observer.DocumentSubmitted(this, form_name, user_initiated, is_main_frame);
 }
 
 NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() {

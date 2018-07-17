@@ -373,7 +373,7 @@ var submitHandler_ = function(evt) {
     action = document.location.href;
   }
   __gCrWeb.message.invokeOnHost({
-    'command': 'document.submit',
+    'command': 'form.submit',
     'formName': __gCrWeb.form.getFormIdentifier(evt.srcElement),
     'href': getFullyQualifiedUrl_(action)
   });
