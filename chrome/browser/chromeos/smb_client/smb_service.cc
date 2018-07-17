@@ -136,7 +136,7 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
       mount_path, workgroup, username,
       temp_file_manager_->WritePasswordToFile(password),
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
-                     base::Passed(&callback), options, share_path,
+                     base::Passed(&callback), options, mount_path,
                      is_kerberos_chromad));
 }
 
