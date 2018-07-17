@@ -30,7 +30,8 @@ class DiscardMetricsLifecycleUnitObserver : public LifecycleUnitObserver {
 
  private:
   // Invoked when the LifecycleUnit is discarded.
-  void OnDiscard(LifecycleUnit* lifecycle_unit);
+  void OnDiscard(LifecycleUnit* lifecycle_unit,
+                 LifecycleUnitStateChangeReason reason);
 
   // Invoked when the LifecycleUnit is reloaded.
   void OnReload();
@@ -41,6 +42,10 @@ class DiscardMetricsLifecycleUnitObserver : public LifecycleUnitObserver {
 
   // The last time at which the LifecycleUnit was discarded.
   base::TimeTicks discard_time_;
+
+  // The last discard reason.
+  LifecycleUnitStateChangeReason discard_reason_ =
+      LifecycleUnitStateChangeReason::BROWSER_INITIATED;
 
   // The last time at which the LifecycleUnit was reloaded after being
   // discarded.
