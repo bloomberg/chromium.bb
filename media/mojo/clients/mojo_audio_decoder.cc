@@ -38,6 +38,10 @@ std::string MojoAudioDecoder::GetDisplayName() const {
   return "MojoAudioDecoder";
 }
 
+bool MojoAudioDecoder::IsPlatformDecoder() const {
+  return true;
+}
+
 void MojoAudioDecoder::Initialize(
     const AudioDecoderConfig& config,
     CdmContext* cdm_context,

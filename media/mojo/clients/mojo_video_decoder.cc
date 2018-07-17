@@ -127,6 +127,10 @@ MojoVideoDecoder::~MojoVideoDecoder() {
     request_overlay_info_cb_.Run(false, ProvideOverlayInfoCB());
 }
 
+bool MojoVideoDecoder::IsPlatformDecoder() const {
+  return true;
+}
+
 std::string MojoVideoDecoder::GetDisplayName() const {
   return "MojoVideoDecoder";
 }

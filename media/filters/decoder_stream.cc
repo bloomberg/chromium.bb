@@ -342,6 +342,9 @@ void DecoderStream<StreamType>::OnDecoderSelected(
                                  !!decrypting_demuxer_stream_);
   media_log_->SetStringProperty(GetStreamTypeString() + "_decoder",
                                 decoder_->GetDisplayName());
+  media_log_->SetBooleanProperty(
+      "is_platform_" + GetStreamTypeString() + "_decoder",
+      decoder_->IsPlatformDecoder());
 
   MEDIA_LOG(INFO, media_log_)
       << "Selected " << decoder_->GetDisplayName() << " for "

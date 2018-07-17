@@ -32,6 +32,7 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
 
   // AudioDecoder implementation.
   std::string GetDisplayName() const final;
+  bool IsPlatformDecoder() const final;
   void Initialize(
       const AudioDecoderConfig& config,
       CdmContext* cdm_context,
