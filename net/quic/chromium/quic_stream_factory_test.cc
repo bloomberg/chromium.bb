@@ -2572,6 +2572,10 @@ TEST_P(QuicStreamFactoryTest, MigrationTimeoutWithNoNewNetwork) {
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
+// This test verifies that connectivity probes will be sent even if there is
+// a non-migratable stream. However, when connection migrates to the
+// successfully probed path, any non-migratable stream will be reset. And if
+// the connection becomes idle then, close the connection.
 TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
@@ -2581,11 +2585,18 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
-  socket_data.AddWrite(
-      SYNCHRONOUS,
-      client_maker_.MakeRstPacket(2, true, GetNthClientInitiatedStreamId(0),
-                                  quic::QUIC_STREAM_CANCELLED));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  // Set up the second socket data provider that is used for probing.
+  MockQuicData quic_data1;
+  // Connectivity probe to be sent on the new path.
+  quic_data1.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeConnectivityProbingPacket(2, true, 1338));
+  quic_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+  // Connectivity probe to receive from the server.
+  quic_data1.AddRead(
+      ASYNC, server_maker_.MakeConnectivityProbingPacket(1, false, 1338));
+  quic_data1.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2611,17 +2622,26 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
 
-  // Trigger connection migration. Since there is a non-migratable stream,
-  // this should cause session to continue but be marked as going away.
+  // Trigger connection migration. Session will start to probe the alternative
+  // network. Although there is a non-migratable stream, session will still be
+  // active until probing is declared as successful.
   scoped_mock_network_change_notifier_->mock_network_change_notifier()
       ->NotifyNetworkMadeDefault(kNewNetworkForTests);
 
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
-  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
   EXPECT_EQ(1u, session->GetNumActiveStreams());
 
-  stream.reset();
+  // Resume data to read a connectivity probing response, which will cause
+  // non-migtable streams to be closed. As session becomes idle, connection will
+  // be closed.
+  quic_data1.Resume();
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(0u, session->GetNumActiveStreams());
 
+  EXPECT_TRUE(quic_data1.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data1.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
@@ -3938,6 +3958,9 @@ TEST_P(QuicStreamFactoryTest, MigrateOnPathDegradingWithNoNewNetwork) {
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
 }
 
+// This test verifies that session with non-migratable stream will probe the
+// alternate network on path degrading, and close the non-migratable streams
+// when probe is successful.
 TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
@@ -3947,11 +3970,18 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
-  socket_data.AddWrite(
-      SYNCHRONOUS,
-      client_maker_.MakeRstPacket(2, true, GetNthClientInitiatedStreamId(0),
-                                  quic::QUIC_STREAM_CANCELLED));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  // Set up the second socket data provider that is used for probing.
+  MockQuicData quic_data1;
+  // Connectivity probe to be sent on the new path.
+  quic_data1.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeConnectivityProbingPacket(2, true, 1338));
+  quic_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+  // Connectivity probe to receive from the server.
+  quic_data1.AddRead(
+      ASYNC, server_maker_.MakeConnectivityProbingPacket(1, false, 1338));
+  quic_data1.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -3989,8 +4019,15 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
   EXPECT_EQ(1u, session->GetNumActiveStreams());
 
-  stream.reset();
+  // Resume the data to read the connectivity probing response to declare probe
+  // as successful. Non-migratable streams will be closed.
+  quic_data1.Resume();
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(0u, session->GetNumActiveStreams());
 
+  EXPECT_TRUE(quic_data1.AllReadDataConsumed());
+  EXPECT_TRUE(quic_data1.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }

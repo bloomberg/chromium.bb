@@ -617,9 +617,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   bool IsAuthorized(const std::string& hostname) override;
 
-  // Returns true if session has one ore more streams marked as non-migratable.
-  bool HasNonMigratableStreams() const;
-
   bool HandlePromised(quic::QuicStreamId associated_id,
                       quic::QuicStreamId promised_id,
                       const spdy::SpdyHeaderBlock& headers) override;
