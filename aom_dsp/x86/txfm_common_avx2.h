@@ -179,9 +179,11 @@ static INLINE void flip_buf_avx2(__m256i *in, __m256i *out, int size) {
 
 static INLINE void round_shift_16bit_w16_avx2(__m256i *in, int size, int bit) {
   if (bit < 0) {
-    __m256i scale = _mm256_set1_epi16(1 << (bit + 15));
+    bit = -bit;
+    __m256i round = _mm256_set1_epi16(1 << (bit - 1));
     for (int i = 0; i < size; ++i) {
-      in[i] = _mm256_mulhrs_epi16(in[i], scale);
+      in[i] = _mm256_adds_epi16(in[i], round);
+      in[i] = _mm256_srai_epi16(in[i], bit);
     }
   } else if (bit > 0) {
     for (int i = 0; i < size; ++i) {
