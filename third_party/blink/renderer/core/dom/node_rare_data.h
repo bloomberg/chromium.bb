@@ -39,9 +39,7 @@ class NodeListsNodeData;
 class NodeMutationObserverData final
     : public GarbageCollected<NodeMutationObserverData> {
  public:
-  static NodeMutationObserverData* Create() {
-    return new NodeMutationObserverData;
-  }
+  static NodeMutationObserverData* Create();
 
   const HeapVector<TraceWrapperMember<MutationObserverRegistration>>&
   Registry() {
