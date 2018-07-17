@@ -152,6 +152,7 @@ void RunLoop::QuitWhenIdle() {
 base::Closure RunLoop::QuitClosure() {
   // TODO(gab): Fix bad usage and enable this check, http://crbug.com/715235.
   // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  allow_quit_current_deprecated_ = false;
 
   // Need to use ProxyToTaskRunner() as WeakPtrs vended from
   // |weak_factory_| may only be accessed on |origin_task_runner_|.
@@ -163,6 +164,7 @@ base::Closure RunLoop::QuitClosure() {
 base::Closure RunLoop::QuitWhenIdleClosure() {
   // TODO(gab): Fix bad usage and enable this check, http://crbug.com/715235.
   // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  allow_quit_current_deprecated_ = false;
 
   // Need to use ProxyToTaskRunner() as WeakPtrs vended from
   // |weak_factory_| may only be accessed on |origin_task_runner_|.
@@ -201,17 +203,29 @@ void RunLoop::RemoveNestingObserverOnCurrentThread(NestingObserver* observer) {
 // static
 void RunLoop::QuitCurrentDeprecated() {
   DCHECK(IsRunningOnCurrentThread());
-  tls_delegate.Get().Get()->active_run_loops_.top()->Quit();
+  Delegate* delegate = tls_delegate.Get().Get();
+  DCHECK(delegate->active_run_loops_.top()->allow_quit_current_deprecated_)
+      << "Please migrate off QuitCurrentDeprecated(), e.g. to QuitClosure().";
+  delegate->active_run_loops_.top()->Quit();
 }
 
 // static
 void RunLoop::QuitCurrentWhenIdleDeprecated() {
   DCHECK(IsRunningOnCurrentThread());
-  tls_delegate.Get().Get()->active_run_loops_.top()->QuitWhenIdle();
+  Delegate* delegate = tls_delegate.Get().Get();
+  DCHECK(delegate->active_run_loops_.top()->allow_quit_current_deprecated_)
+      << "Please migrate off QuitCurrentWhenIdleDeprecated(), e.g. to "
+         "QuitWhenIdleClosure().";
+  delegate->active_run_loops_.top()->QuitWhenIdle();
 }
 
 // static
 Closure RunLoop::QuitCurrentWhenIdleClosureDeprecated() {
+  // TODO(844016): Fix callsites and enable this check, or remove the API.
+  // Delegate* delegate = tls_delegate.Get().Get();
+  // DCHECK(delegate->active_run_loops_.top()->allow_quit_current_deprecated_)
+  //     << "Please migrate off QuitCurrentWhenIdleClosureDeprecated(), e.g to "
+  //        "QuitWhenIdleClosure().";
   return Bind(&RunLoop::QuitCurrentWhenIdleDeprecated);
 }
 
