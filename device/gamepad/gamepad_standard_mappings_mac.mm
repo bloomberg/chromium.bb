@@ -30,7 +30,7 @@ void MapperXbox360Gamepad(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
-void MapperXboxOneS2016Firmware(const Gamepad& input, Gamepad* mapped) {
+void MapperXboxOneS(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
   mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
@@ -44,15 +44,16 @@ void MapperXboxOneS2016Firmware(const Gamepad& input, Gamepad* mapped) {
   mapped->buttons[BUTTON_INDEX_START] = input.buttons[7];
   mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[8];
   mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[9];
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[10];
   mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[3];
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[4];
   DpadFromAxis(mapped, input.axes[9]);
 
-  mapped->buttons_length = BUTTON_INDEX_COUNT - 1; /* no meta */
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
-void MapperXboxOneS(const Gamepad& input, Gamepad* mapped) {
+void MapperXboxOneS2016Firmware(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
 
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
@@ -63,14 +64,15 @@ void MapperXboxOneS(const Gamepad& input, Gamepad* mapped) {
   mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
   mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[3]);
   mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[4]);
-  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = NullButton();
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[16];
   mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
   mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[13];
   mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[14];
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[15];
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
   DpadFromAxis(mapped, input.axes[9]);
 
-  mapped->buttons_length = BUTTON_INDEX_COUNT - 1; /* no meta */
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
@@ -296,6 +298,10 @@ void MapperADT1(const Gamepad& input, Gamepad* mapped) {
 }
 
 void MapperNvShield(const Gamepad& input, Gamepad* mapped) {
+  enum ShieldButtons {
+    SHIELD_BUTTON_CIRCLE = BUTTON_INDEX_COUNT,
+    SHIELD_BUTTON_COUNT
+  };
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
   mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
@@ -305,15 +311,16 @@ void MapperNvShield(const Gamepad& input, Gamepad* mapped) {
   mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
   mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[3]);
   mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[4]);
-  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = NullButton();
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[9];
   mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
   mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[13];
   mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[14];
-  mapped->buttons[BUTTON_INDEX_META] = input.buttons[8];
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[2];
+  mapped->buttons[SHIELD_BUTTON_CIRCLE] = input.buttons[5];
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
   DpadFromAxis(mapped, input.axes[9]);
 
-  mapped->buttons_length = BUTTON_INDEX_COUNT;
+  mapped->buttons_length = SHIELD_BUTTON_COUNT;
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
@@ -396,10 +403,10 @@ struct MappingData {
     {"045e", "028f", MapperXbox360Gamepad},      // Xbox 360 Wireless
     {"045e", "02d1", MapperXbox360Gamepad},      // Xbox One Wired
     {"045e", "02dd", MapperXbox360Gamepad},      // Xbox One Wired (2015 FW)
-    {"045e", "02e0", MapperXboxOneS2016Firmware},  // Xbox One S (Bluetooth)
+    {"045e", "02e0", MapperXboxOneS},            // Xbox One S (Bluetooth)
     {"045e", "02e3", MapperXbox360Gamepad},      // Xbox One Elite Wired
     {"045e", "02ea", MapperXbox360Gamepad},      // Xbox One S (USB)
-    {"045e", "02fd", MapperXboxOneS},            // Xbox One S (Bluetooth)
+    {"045e", "02fd", MapperXboxOneS2016Firmware},  // Xbox One S (Bluetooth)
     {"045e", "0719", MapperXbox360Gamepad},      // Xbox 360 Wireless
     {"046d", "c216", MapperDirectInputStyle},    // Logitech F310, D mode
     {"046d", "c218", MapperDirectInputStyle},    // Logitech F510, D mode
@@ -410,7 +417,7 @@ struct MappingData {
     {"054c", "0ba0", MapperDualshock4},          // Dualshock 4 USB receiver
     {"0583", "2060", MapperIBuffalo},            // iBuffalo Classic
     {"0925", "0005", MapperSmartJoyPLUS},        // SmartJoy PLUS Adapter
-    {"0955", "7210", MapperNvShield},            // Nvidia Shield gamepad
+    {"0955", "7210", MapperNvShield},            // Nvidia Shield gamepad (2015)
     {"0b05", "4500", MapperADT1},                // Nexus Player Controller
     {"0e8f", "0003", MapperXGEAR},             // XFXforce XGEAR PS2 Controller
     {"1532", "0900", MapperRazerServal},       // Razer Serval Controller
