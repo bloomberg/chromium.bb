@@ -1,8 +1,5 @@
 # Android Failures
 
-# GL initiazation failures. https://crbug.com/855554
--P/CompositorImplLowEndBrowserTest.CompositorImplDropsResourcesOnBackground/0
-
 # Flaky failures with incorrect Input event acks. https://crbug.com/855532
 -TouchInputBrowserTest.TouchHandlerConsume
 -TouchInputBrowserTest.TouchHandlerNoConsume
