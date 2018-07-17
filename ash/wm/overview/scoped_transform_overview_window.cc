@@ -8,6 +8,7 @@
 
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/overview_utils.h"
@@ -367,7 +368,10 @@ SkColor ScopedTransformOverviewWindow::GetTopColor() const {
       return SK_ColorTRANSPARENT;
     }
   }
-  return window_->GetProperty(aura::client::kTopViewColor);
+
+  return window_->GetProperty(wm::GetWindowState(window_)->IsActive()
+                                  ? kFrameActiveColorKey
+                                  : kFrameInactiveColorKey);
 }
 
 int ScopedTransformOverviewWindow::GetTopInset() const {

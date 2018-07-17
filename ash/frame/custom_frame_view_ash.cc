@@ -283,7 +283,6 @@ CustomFrameViewAsh::CustomFrameViewAsh(
   // |header_view_| is set as the non client view's overlay view so that it can
   // overlay the web contents in immersive fullscreen.
   frame->non_client_view()->SetOverlayView(overlay_view_);
-  frame_window->SetProperty(aura::client::kTopViewColor, kDefaultFrameColor);
 
   // A delegate for a more complex way of fullscreening the window may already
   // be set. This is the case for packaged apps.
@@ -312,7 +311,6 @@ void CustomFrameViewAsh::InitImmersiveFullscreenControllerForView(
 void CustomFrameViewAsh::SetFrameColors(SkColor active_frame_color,
                                         SkColor inactive_frame_color) {
   aura::Window* frame_window = frame_->GetNativeWindow();
-  frame_window->SetProperty(aura::client::kTopViewColor, inactive_frame_color);
   frame_window->SetProperty(ash::kFrameActiveColorKey, active_frame_color);
   frame_window->SetProperty(ash::kFrameInactiveColorKey, inactive_frame_color);
 }
