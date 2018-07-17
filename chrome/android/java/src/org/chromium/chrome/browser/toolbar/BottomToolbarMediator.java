@@ -58,8 +58,8 @@ class BottomToolbarMediator implements ContextualSearchObserver, FullscreenListe
      *                          controls.
      * @param resources Android {@link Resources} to pull dimensions from.
      */
-    public BottomToolbarMediator(BottomToolbarModel model,
-            ChromeFullscreenManager fullscreenManager, Resources resources) {
+    BottomToolbarMediator(BottomToolbarModel model, ChromeFullscreenManager fullscreenManager,
+            Resources resources) {
         mModel = model;
         mFullscreenManager = fullscreenManager;
         mFullscreenManager.addListener(this);
@@ -80,7 +80,7 @@ class BottomToolbarMediator implements ContextualSearchObserver, FullscreenListe
     /**
      * Clean up anything that needs to be when the bottom toolbar is destroyed.
      */
-    public void destroy() {
+    void destroy() {
         mFullscreenManager.removeListener(this);
         if (mContextualSearchManger != null) mContextualSearchManger.removeObserver(this);
         if (mOverviewModeBehavior != null) mOverviewModeBehavior.removeOverviewModeObserver(this);
@@ -135,7 +135,7 @@ class BottomToolbarMediator implements ContextualSearchObserver, FullscreenListe
         mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
     }
 
-    public void setSearchAcceleratorListener(OnClickListener searchAcceleratorListener) {
+    void setSearchAcceleratorListener(OnClickListener searchAcceleratorListener) {
         mModel.setValue(BottomToolbarModel.SEARCH_ACCELERATOR_LISTENER, searchAcceleratorListener);
     }
 
@@ -157,7 +157,7 @@ class BottomToolbarMediator implements ContextualSearchObserver, FullscreenListe
         }
     }
 
-    public void setLayoutManager(LayoutManager layoutManager) {
+    void setLayoutManager(LayoutManager layoutManager) {
         mModel.setValue(BottomToolbarModel.LAYOUT_MANAGER, layoutManager);
 
         layoutManager.addSceneChangeObserver(new SceneChangeObserver() {
@@ -181,28 +181,27 @@ class BottomToolbarMediator implements ContextualSearchObserver, FullscreenListe
         });
     }
 
-    public void setResourceManager(ResourceManager resourceManager) {
+    void setResourceManager(ResourceManager resourceManager) {
         mModel.setValue(BottomToolbarModel.RESOURCE_MANAGER, resourceManager);
     }
 
-    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+    void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
         mOverviewModeBehavior = overviewModeBehavior;
         mOverviewModeBehavior.addOverviewModeObserver(this);
     }
 
-    public void setContextualSearchManager(ContextualSearchManager contextualSearchManager) {
+    void setContextualSearchManager(ContextualSearchManager contextualSearchManager) {
         mContextualSearchManger = contextualSearchManager;
         if (mContextualSearchManger == null) return;
         mContextualSearchManger.addObserver(this);
     }
 
-    public void setToolbarSwipeLayout(ToolbarSwipeLayout layout) {
+    void setToolbarSwipeLayout(ToolbarSwipeLayout layout) {
         mModel.setValue(BottomToolbarModel.TOOLBAR_SWIPE_LAYOUT, layout);
     }
 
-    public void setWindowAndroid(WindowAndroid windowAndroid) {
+    void setWindowAndroid(WindowAndroid windowAndroid) {
         assert mWindowAndroid == null : "#setWindowAndroid should only be called once per toolbar.";
-
         // Watch for keyboard events so we can hide the bottom toolbar when the keyboard is showing.
         mWindowAndroid = windowAndroid;
         mWindowAndroid.addKeyboardVisibilityListener(this);
