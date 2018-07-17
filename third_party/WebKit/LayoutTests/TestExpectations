@@ -4552,7 +4552,6 @@ crbug.com/855816 [ Win7 ] virtual/stable/http/tests/navigation/rename-subframe-g
 crbug.com/856601 [ Linux ] external/wpt/FileAPI/idlharness.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/IndexedDB/interfaces.any.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/dom/nodes/Element-classlist.html [ Pass Timeout ]
-crbug.com/856601 [ Linux ] external/wpt/mediacapture-record/idlharness.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/presentation-api/controlling-ua/idlharness.https.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] fast/css/visited-link-hang.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] http/tests/devtools/elements/styles-4/styles-inline-element-style-changes-should-not-force-style-recalc.js [ Pass Timeout ]
