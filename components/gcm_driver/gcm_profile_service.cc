@@ -29,6 +29,7 @@
 #include "components/gcm_driver/gcm_desktop_utils.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #endif
 
@@ -37,7 +38,8 @@ namespace gcm {
 #if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
 // Identity observer only has actual work to do when the user is actually signed
 // in. It ensures that account tracker is taking
-class GCMProfileService::IdentityObserver : public SigninManagerBase::Observer {
+class GCMProfileService::IdentityObserver
+    : public identity::IdentityManager::Observer {
  public:
   IdentityObserver(identity::IdentityManager* identity_manager,
                    SigninManagerBase* signin_manager,
@@ -46,11 +48,10 @@ class GCMProfileService::IdentityObserver : public SigninManagerBase::Observer {
                    GCMDriver* driver);
   ~IdentityObserver() override;
 
-  // SigninManagerBase::Observer:
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  // identity::IdentityManager::Observer:
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
 
  private:
   void StartAccountTracker(net::URLRequestContextGetter* request_context);
@@ -81,34 +82,31 @@ GCMProfileService::IdentityObserver::IdentityObserver(
       signin_manager_(signin_manager),
       token_service_(token_service),
       weak_ptr_factory_(this) {
-  signin_manager_->AddObserver(this);
+  identity_manager_->AddObserver(this);
 
-  GoogleSigninSucceeded(signin_manager_->GetAuthenticatedAccountId(),
-                        signin_manager_->GetAuthenticatedAccountInfo().email);
+  OnPrimaryAccountSet(identity_manager_->GetPrimaryAccountInfo());
   StartAccountTracker(request_context);
 }
 
 GCMProfileService::IdentityObserver::~IdentityObserver() {
   if (gcm_account_tracker_)
     gcm_account_tracker_->Shutdown();
-  signin_manager_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
 }
 
-void GCMProfileService::IdentityObserver::GoogleSigninSucceeded(
-    const std::string& account_id,
-    const std::string& username) {
+void GCMProfileService::IdentityObserver::OnPrimaryAccountSet(
+    const AccountInfo& primary_account_info) {
   // This might be called multiple times when the password changes.
-  if (account_id == account_id_)
+  if (primary_account_info.account_id == account_id_)
     return;
-  account_id_ = account_id;
+  account_id_ = primary_account_info.account_id;
 
   // Still need to notify GCMDriver for UMA purpose.
   driver_->OnSignedIn();
 }
 
-void GCMProfileService::IdentityObserver::GoogleSignedOut(
-    const std::string& account_id,
-    const std::string& username) {
+void GCMProfileService::IdentityObserver::OnPrimaryAccountCleared(
+    const AccountInfo& previous_primary_account_info) {
   account_id_.clear();
 
   // Still need to notify GCMDriver for UMA purpose.
