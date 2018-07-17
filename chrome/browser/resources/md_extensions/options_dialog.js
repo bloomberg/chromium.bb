@@ -82,9 +82,9 @@ cr.define('extensions', function() {
         let preferredSize = null;
         this.extensionOptions_.onpreferredsizechanged = e => {
           preferredSize = e;
-          this.updateDialogSize_(preferredSize.width, preferredSize.height);
           if (!this.$.dialog.open)
             this.$.dialog.showModal();
+          this.updateDialogSize_(preferredSize.width, preferredSize.height);
         };
 
         this.boundResizeListener_ = () => {
