@@ -108,7 +108,7 @@ class AssistantManagerServiceImpl
   void OnSpeechLevelUpdated(float speech_level) override;
 
   // assistant_client::ConversationStateListener overrides:
-  void OnConversationTurnStarted() override;
+  void OnConversationTurnStarted(bool is_mic_open) override;
   void OnConversationTurnFinished(
       assistant_client::ConversationStateListener::Resolution resolution)
       override;
@@ -158,7 +158,7 @@ class AssistantManagerServiceImpl
       base::RepeatingCallback<void(const std::string&)> callback,
       const std::string& result);
 
-  void OnConversationTurnStartedOnMainThread();
+  void OnConversationTurnStartedOnMainThread(bool is_mic_open);
   void OnConversationTurnFinishedOnMainThread(
       assistant_client::ConversationStateListener::Resolution resolution);
   void OnShowHtmlOnMainThread(const std::string& html);
