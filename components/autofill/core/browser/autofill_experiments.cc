@@ -36,6 +36,8 @@ const base::Feature kAutofillScanCardholderName{
     "AutofillScanCardholderName", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardAblationExperiment{
     "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillCreditCardLocalCardMigration{
+    "AutofillCreditCardLocalCardMigration", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillDeleteDisusedAddresses{
     "AutofillDeleteDisusedAddresses", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillDeleteDisusedCreditCards{
@@ -100,6 +102,10 @@ bool IsAutofillCreditCardAssistEnabled() {
 #else
   return base::FeatureList::IsEnabled(kAutofillCreditCardAssist);
 #endif
+}
+
+bool IsAutofillCreditCardLocalCardMigrationExperimentEnabled() {
+  return base::FeatureList::IsEnabled(kAutofillCreditCardLocalCardMigration);
 }
 
 bool OfferStoreUnmaskedCards() {

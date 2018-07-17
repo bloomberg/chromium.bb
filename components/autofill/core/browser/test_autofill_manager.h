@@ -38,13 +38,15 @@ class TestAutofillManager : public AutofillManager {
   TestAutofillManager(AutofillDriver* driver,
                       AutofillClient* client,
                       TestPersonalDataManager* personal_data);
-  // Called by CreditCardSaveManagerTest.
+  // Called by CreditCardSaveManagerTest and LocalCardMigrationManagerTest.
   TestAutofillManager(
       AutofillDriver* driver,
       AutofillClient* client,
       TestPersonalDataManager* personal_data,
       std::unique_ptr<CreditCardSaveManager> credit_card_save_manager,
-      payments::TestPaymentsClient* payments_client);
+      payments::TestPaymentsClient* payments_client,
+      std::unique_ptr<LocalCardMigrationManager> local_card_migration_manager =
+          nullptr);
   ~TestAutofillManager() override;
 
   // AutofillManager overrides.

@@ -35,7 +35,8 @@ TestAutofillManager::TestAutofillManager(
     AutofillClient* client,
     TestPersonalDataManager* personal_data,
     std::unique_ptr<CreditCardSaveManager> credit_card_save_manager,
-    payments::TestPaymentsClient* payments_client)
+    payments::TestPaymentsClient* payments_client,
+    std::unique_ptr<LocalCardMigrationManager> local_card_migration_manager)
     : AutofillManager(driver, client, personal_data),
       personal_data_(personal_data),
       test_form_data_importer_(
@@ -43,7 +44,8 @@ TestAutofillManager::TestAutofillManager(
                                    payments_client,
                                    std::move(credit_card_save_manager),
                                    personal_data,
-                                   "en-US")),
+                                   "en-US",
+                                   std::move(local_card_migration_manager))),
       client_(client) {
   set_payments_client(payments_client);
   set_form_data_importer(test_form_data_importer_);

@@ -365,6 +365,11 @@ const char kEnableAutofillCreditCardLastUsedDateDisplayName[] =
 const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[] =
     "If enabled, display the last used date of a credit card in autofill.";
 
+const char kEnableAutofillCreditCardLocalCardMigrationName[] =
+    "Enable migrating local cards to Google Pay";
+const char kEnableAutofillCreditCardLocalCardMigrationDescription[] =
+    "If enabled, prompt migration of locally-saved credit cards to Google Pay.";
+
 const char kEnableAutofillCreditCardUploadEditableCardholderNameName[] =
     "Make cardholder name editable in dialog during credit card upload";
 const char kEnableAutofillCreditCardUploadEditableCardholderNameDescription[] =
