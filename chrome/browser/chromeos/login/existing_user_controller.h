@@ -56,13 +56,9 @@ namespace login {
 class NetworkStateHelper;
 }
 
-// ExistingUserController is used to handle login when someone has
-// already logged into the machine.
-// To use ExistingUserController create an instance of it and invoke Init.
-// When Init is called it creates LoginDisplay instance which encapsulates
-// all login UI implementation.
-// ExistingUserController maintains it's own life cycle and deletes itself when
-// the user logs in (or chooses to see other settings).
+// ExistingUserController is used to handle login when someone has already
+// logged into the machine. ExistingUserController is created and owned by
+// LoginDisplayHost.
 class ExistingUserController
     : public LoginDisplay::Delegate,
       public content::NotificationObserver,
@@ -71,14 +67,13 @@ class ExistingUserController
       public ArcKioskAppManager::ArcKioskAppManagerObserver,
       public policy::MinimumVersionPolicyHandler::Observer {
  public:
-  // All UI initialization is deferred till Init() call.
-  explicit ExistingUserController(LoginDisplayHost* host);
-  ~ExistingUserController() override;
+  // Returns the current existing user controller fetched from the current
+  // LoginDisplayHost instance.
+  static ExistingUserController* current_controller();
 
-  // Returns the current existing user controller if it has been created.
-  static ExistingUserController* current_controller() {
-    return current_controller_;
-  }
+  // All UI initialization is deferred till Init() call.
+  ExistingUserController();
+  ~ExistingUserController() override;
 
   // Creates and shows login UI for known users.
   void Init(const user_manager::UserList& users);
@@ -154,9 +149,6 @@ class ExistingUserController
   friend class MockLoginPerformerDelegate;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
-
-  // Login UI implementation instance.
-  LoginDisplay* GetLoginDisplay();
 
   void LoginAsGuest();
   void LoginAsPublicSession(const UserContext& user_context);
@@ -326,6 +318,9 @@ class ExistingUserController
   // Auto-login timeout, in milliseconds.
   int auto_login_delay_;
 
+  // True if a profile has been prepared.
+  bool profile_prepared_ = false;
+
   // AccountId for public session auto-login.
   AccountId public_session_auto_login_account_id_ = EmptyAccountId();
 
@@ -345,16 +340,9 @@ class ExistingUserController
   // Whether the last login attempt was an auto login.
   bool last_login_attempt_was_auto_login_ = false;
 
-  // OOBE/login display host.
-  LoginDisplayHost* host_;
-
   // Number of login attempts. Used to show help link when > 1 unsuccessful
   // logins for the same user.
   size_t num_login_attempts_ = 0;
-
-  // Pointer to the current instance of the controller to be used by
-  // automation tests.
-  static ExistingUserController* current_controller_;
 
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;

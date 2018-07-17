@@ -228,9 +228,12 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    existing_user_controller_.reset(
-        new ExistingUserController(mock_login_display_host_.get()));
+    existing_user_controller_ = std::make_unique<ExistingUserController>();
+    EXPECT_CALL(*mock_login_display_host_, GetExistingUserController())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(existing_user_controller_.get()));
     ASSERT_EQ(existing_user_controller(), existing_user_controller_.get());
+
     existing_user_controller_->Init(user_manager::UserList());
 
     chromeos::test::UserSessionManagerTestApi session_manager_test_api(

@@ -47,21 +47,21 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
         scoped_user_manager_(base::WrapUnique(mock_user_manager_)) {}
 
   void SetUp() override {
-    mock_login_display_host_ = std::make_unique<MockLoginDisplayHost>();
-    mock_login_display_ = std::make_unique<MockLoginDisplay>();
     arc_kiosk_app_manager_ = std::make_unique<ArcKioskAppManager>();
+    existing_user_controller_ = std::make_unique<ExistingUserController>();
+    mock_login_display_ = std::make_unique<MockLoginDisplay>();
+    mock_login_display_host_ = std::make_unique<MockLoginDisplayHost>();
 
     ON_CALL(*mock_login_display_host_, GetLoginDisplay())
         .WillByDefault(Return(mock_login_display_.get()));
+    ON_CALL(*mock_login_display_host_, GetExistingUserController())
+        .WillByDefault(Return(existing_user_controller_.get()));
 
     EXPECT_CALL(*mock_user_manager_, Shutdown()).Times(AnyNumber());
     EXPECT_CALL(*mock_user_manager_, FindUser(_)).WillRepeatedly(ReturnNull());
     EXPECT_CALL(*mock_user_manager_, FindUser(auto_login_account_id_))
         .WillRepeatedly(Return(mock_user_manager_->CreatePublicAccountUser(
             auto_login_account_id_)));
-
-    existing_user_controller_.reset(
-        new ExistingUserController(mock_login_display_host_.get()));
 
     std::unique_ptr<base::DictionaryValue> account(new base::DictionaryValue);
     account->SetKey(kAccountsPrefDeviceLocalAccountsKeyId,
@@ -80,11 +80,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
         .reset();
   }
 
-  const ExistingUserController* existing_user_controller() const {
-    return ExistingUserController::current_controller();
-  }
-
-  ExistingUserController* existing_user_controller() {
+  ExistingUserController* existing_user_controller() const {
     return ExistingUserController::current_controller();
   }
 

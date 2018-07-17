@@ -33,6 +33,10 @@ LoginDisplay* FakeLoginDisplayHost::GetLoginDisplay() {
   return nullptr;
 }
 
+ExistingUserController* FakeLoginDisplayHost::GetExistingUserController() {
+  return nullptr;
+}
+
 gfx::NativeWindow FakeLoginDisplayHost::GetNativeWindow() const {
   return nullptr;
 }

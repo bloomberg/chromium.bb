@@ -109,6 +109,10 @@ LoginDisplay* LoginDisplayHostMojo::GetLoginDisplay() {
   return login_display_.get();
 }
 
+ExistingUserController* LoginDisplayHostMojo::GetExistingUserController() {
+  return existing_user_controller_.get();
+}
+
 gfx::NativeWindow LoginDisplayHostMojo::GetNativeWindow() const {
   // We can't access the login widget because it's in ash, return the native
   // window of the dialog widget if it exists.
@@ -180,9 +184,7 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
     return;
   }
 
-  // There can only be one |ExistingUserController| instance at a time.
-  existing_user_controller_.reset();
-  existing_user_controller_ = std::make_unique<ExistingUserController>(this);
+  existing_user_controller_ = std::make_unique<ExistingUserController>();
   login_display_->set_delegate(existing_user_controller_.get());
 
   // We need auth attempt results to notify views-based lock screen.

@@ -309,22 +309,29 @@ bool IsActiveDirectoryManaged() {
       ->IsActiveDirectoryManaged();
 }
 
+LoginDisplayHost* GetLoginDisplayHost() {
+  return LoginDisplayHost::default_host();
+}
+
+LoginDisplay* GetLoginDisplay() {
+  return GetLoginDisplayHost()->GetLoginDisplay();
+}
+
 }  // namespace
 
 // static
-ExistingUserController* ExistingUserController::current_controller_ = nullptr;
+ExistingUserController* ExistingUserController::current_controller() {
+  auto* host = LoginDisplayHost::default_host();
+  return host ? host->GetExistingUserController() : nullptr;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, public:
 
-ExistingUserController::ExistingUserController(LoginDisplayHost* host)
-    : host_(host),
-      cros_settings_(CrosSettings::Get()),
+ExistingUserController::ExistingUserController()
+    : cros_settings_(CrosSettings::Get()),
       network_state_helper_(new login::NetworkStateHelper),
       weak_factory_(this) {
-  DCHECK(current_controller_ == nullptr);
-  current_controller_ = this;
-
   registrar_.Add(this, chrome::NOTIFICATION_USER_LIST_CHANGED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
@@ -416,7 +423,7 @@ void ExistingUserController::UpdateLoginDisplay(
   GetLoginDisplay()->set_parent_window(GetNativeWindow());
   GetLoginDisplay()->Init(filtered_users, show_guest, show_users_on_signin,
                           allow_new_user);
-  host_->OnPreferencesChanged();
+  GetLoginDisplayHost()->OnPreferencesChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -506,19 +513,13 @@ void ExistingUserController::OnMinimumVersionStateChanged() {
 ExistingUserController::~ExistingUserController() {
   UserSessionManager::GetInstance()->DelegateDeleted(this);
   minimum_version_policy_handler_->RemoveObserver(this);
-
-  if (current_controller_ == this) {
-    current_controller_ = nullptr;
-  } else {
-    NOTREACHED() << "More than one controller are alive.";
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, LoginDisplay::Delegate implementation:
 //
 void ExistingUserController::CompleteLogin(const UserContext& user_context) {
-  if (!host_) {
+  if (!GetLoginDisplayHost()) {
     // Complete login event was generated already from UI. Ignore notification.
     return;
   }
@@ -572,7 +573,7 @@ void ExistingUserController::PerformLogin(
   VLOG(1) << "Setting flow from PerformLogin";
   ChromeUserManager::Get()
       ->GetUserFlow(user_context.GetAccountId())
-      ->SetHost(host_);
+      ->SetHost(GetLoginDisplayHost());
 
   BootTimesRecorder::Get()->RecordLoginAttempted();
 
@@ -719,11 +720,11 @@ void ExistingUserController::SetDisplayAndGivenName(
 }
 
 void ExistingUserController::ShowWrongHWIDScreen() {
-  host_->StartWizard(OobeScreen::SCREEN_WRONG_HWID);
+  GetLoginDisplayHost()->StartWizard(OobeScreen::SCREEN_WRONG_HWID);
 }
 
 void ExistingUserController::ShowUpdateRequiredScreen() {
-  host_->StartWizard(OobeScreen::SCREEN_UPDATE_REQUIRED);
+  GetLoginDisplayHost()->StartWizard(OobeScreen::SCREEN_UPDATE_REQUIRED);
 }
 
 void ExistingUserController::Signout() {
@@ -767,29 +768,30 @@ void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
 }
 
 void ExistingUserController::ShowEnrollmentScreen() {
-  host_->StartWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
+  GetLoginDisplayHost()->StartWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
 }
 
 void ExistingUserController::ShowEnableDebuggingScreen() {
-  host_->StartWizard(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
+  GetLoginDisplayHost()->StartWizard(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
 }
 
 void ExistingUserController::ShowKioskEnableScreen() {
-  host_->StartWizard(OobeScreen::SCREEN_KIOSK_ENABLE);
+  GetLoginDisplayHost()->StartWizard(OobeScreen::SCREEN_KIOSK_ENABLE);
 }
 
 void ExistingUserController::ShowKioskAutolaunchScreen() {
-  host_->StartWizard(OobeScreen::SCREEN_KIOSK_AUTOLAUNCH);
+  GetLoginDisplayHost()->StartWizard(OobeScreen::SCREEN_KIOSK_AUTOLAUNCH);
 }
 
 void ExistingUserController::ShowEncryptionMigrationScreen(
     const UserContext& user_context,
     EncryptionMigrationMode migration_mode) {
-  host_->StartWizard(OobeScreen::SCREEN_ENCRYPTION_MIGRATION);
+  GetLoginDisplayHost()->StartWizard(OobeScreen::SCREEN_ENCRYPTION_MIGRATION);
 
   EncryptionMigrationScreen* migration_screen =
       static_cast<EncryptionMigrationScreen*>(
-          host_->GetWizardController()->current_screen());
+          WizardController::default_controller()->GetScreen(
+              OobeScreen::SCREEN_ENCRYPTION_MIGRATION));
   DCHECK(migration_screen);
   migration_screen->SetUserContext(user_context);
   migration_screen->SetMode(migration_mode);
@@ -972,8 +974,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
   // Reenable clicking on other windows and status area.
   GetLoginDisplay()->SetUIEnabled(true);
 
-  if (browser_launched)
-    host_ = nullptr;
+  profile_prepared_ = true;
 
   // Inform |auth_status_consumer_| about successful login.
   // TODO(nkostylev): Pass UserContext back crbug.com/424550
@@ -1190,7 +1191,7 @@ void ExistingUserController::ForceOnlineLoginForAccountId(
   // Save the necessity to sign-in online into UserManager in case the user
   // aborts the online flow.
   user_manager::UserManager::Get()->SaveForceOnlineSignin(account_id, true);
-  host_->OnPreferencesChanged();
+  GetLoginDisplayHost()->OnPreferencesChanged();
 
   // Start online sign-in UI for the user.
   is_login_in_progress_ = false;
@@ -1230,7 +1231,8 @@ void ExistingUserController::SetAuthFlowOffline(bool offline) {
 void ExistingUserController::DeviceSettingsChanged() {
   // If login was already completed, we should avoid any signin screen
   // transitions, see http://crbug.com/461604 for example.
-  if (host_ != nullptr && !GetLoginDisplay()->is_signin_completed()) {
+  if (!profile_prepared_ && GetLoginDisplay() &&
+      !GetLoginDisplay()->is_signin_completed()) {
     // Signed settings or user list changed. Notify views and update them.
     UpdateLoginDisplay(user_manager::UserManager::Get()->GetUsers());
     ConfigureAutoLogin();
@@ -1249,10 +1251,6 @@ bool ExistingUserController::password_changed() const {
     return login_performer_->password_changed();
 
   return password_changed_;
-}
-
-LoginDisplay* ExistingUserController::GetLoginDisplay() {
-  return host_->GetLoginDisplay();
 }
 
 void ExistingUserController::LoginAsGuest() {
@@ -1345,12 +1343,12 @@ void ExistingUserController::LoginAsPublicSession(
 
 void ExistingUserController::LoginAsKioskApp(const std::string& app_id,
                                              bool diagnostic_mode) {
-  const bool auto_start = false;
-  host_->StartAppLaunch(app_id, diagnostic_mode, auto_start);
+  constexpr bool kAutoStart = false;
+  GetLoginDisplayHost()->StartAppLaunch(app_id, diagnostic_mode, kAutoStart);
 }
 
 void ExistingUserController::LoginAsArcKioskApp(const AccountId& account_id) {
-  host_->StartArcKiosk(account_id);
+  GetLoginDisplayHost()->StartArcKiosk(account_id);
 }
 
 void ExistingUserController::ConfigureAutoLogin() {
@@ -1485,7 +1483,7 @@ void ExistingUserController::StartAutoLoginTimer() {
 }
 
 gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
-  return host_->GetNativeWindow();
+  return GetLoginDisplayHost()->GetNativeWindow();
 }
 
 void ExistingUserController::ShowError(int error_id,

@@ -63,12 +63,9 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
     return user_selection_screen_.get();
   }
 
-  ExistingUserController* existing_user_controller() {
-    return existing_user_controller_.get();
-  }
-
   // LoginDisplayHost:
   LoginDisplay* GetLoginDisplay() override;
+  ExistingUserController* GetExistingUserController() override;
   gfx::NativeWindow GetNativeWindow() const override;
   OobeUI* GetOobeUI() const override;
   content::WebContents* GetOobeWebContents() const override;
