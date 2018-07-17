@@ -74,15 +74,7 @@ class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
                      discardable_shared_memory_manager);
   ~DefaultGpuHost() override;
 
- private:
-  friend class test::GpuHostTest;
-
-  GpuClient* AddInternal(mojom::GpuRequest request);
-  void OnBadMessageFromGpu();
-
-  // TODO(crbug.com/611505): this goes away after the gpu proces split in mus.
-  void InitializeVizMain(viz::mojom::VizMainRequest request);
-  void DestroyVizMain();
+  void Shutdown();
 
   // GpuHost:
   void Add(mojom::GpuRequest request) override;
@@ -93,6 +85,16 @@ class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
 #if defined(OS_CHROMEOS)
   void AddArc(mojom::ArcRequest request) override;
 #endif  // defined(OS_CHROMEOS)
+
+ private:
+  friend class test::GpuHostTest;
+
+  GpuClient* AddInternal(mojom::GpuRequest request);
+  void OnBadMessageFromGpu();
+
+  // TODO(crbug.com/611505): this goes away after the gpu proces split in mus.
+  void InitializeVizMain(viz::mojom::VizMainRequest request);
+  void DestroyVizMain();
 
   // viz::mojom::GpuHost:
   void DidInitialize(const gpu::GPUInfo& gpu_info,
