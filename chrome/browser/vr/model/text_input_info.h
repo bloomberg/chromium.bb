@@ -20,6 +20,7 @@ struct VR_EXPORT TextInputInfo {
  public:
   TextInputInfo();
   explicit TextInputInfo(base::string16 t);
+  TextInputInfo(base::string16 t, int selection_start, int selection_end);
   TextInputInfo(base::string16 t,
                 int selection_start,
                 int selection_end,
