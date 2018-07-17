@@ -46,7 +46,6 @@ class OmniboxMatchCellView : public views::View {
   void LayoutNewStyleTwoLineSuggestion();
   void LayoutSplit(int icon_view_width, int text_indent);
 
-  bool is_definition_ = false;
   bool is_old_style_answer_;
   bool is_rich_suggestion_;
   bool is_search_type_;

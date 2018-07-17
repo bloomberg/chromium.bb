@@ -120,8 +120,9 @@ void OmniboxResultView::Invalidate() {
   }
 
   // Reapply the dim color to account for the highlight state.
-  suggestion_view_->separator()->Dim();
-  keyword_view_->separator()->Dim();
+  const OmniboxPart dim = OmniboxPart::RESULTS_TEXT_DIMMED;
+  suggestion_view_->separator()->ApplyTextColor(dim);
+  keyword_view_->separator()->ApplyTextColor(dim);
   if (suggestion_tab_switch_button_)
     suggestion_tab_switch_button_->UpdateBackground();
 
@@ -135,15 +136,33 @@ void OmniboxResultView::Invalidate() {
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
       GetColor(OmniboxPart::RESULTS_ICON)));
 
-  // The content text is set to the match text and calculated classifications.
   // Answers use their own styling for additional content text and the
   // description text, whereas non-answer suggestions use the match text and
   // calculated classifications for the description text.
-  suggestion_view_->content()->SetText(match_.contents, match_.contents_class);
   if (match_.answer) {
-    suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
-    suggestion_view_->description()->SetText(match_.answer->second_line());
+    if (OmniboxFieldTrial::IsReverseAnswersEnabled()) {
+      // Answers may swap the content and description fields to change emphasis.
+      // But even when fields swap, the font size and color changes should not.
+      OmniboxTextView* primary = suggestion_view_->content();
+      OmniboxTextView* secondary = suggestion_view_->description();
+      bool swap = !match_.IsExceptedFromLineReversal();
+      if (swap)
+        std::swap(primary, secondary);
+      primary->SetText(match_.contents, match_.contents_class, swap ? -1 : 0);
+      primary->AppendExtraText(match_.answer->first_line());
+      primary->ApplyTextColor(swap ? dim : OmniboxPart::RESULTS_TEXT_DEFAULT);
+      secondary->SetText(match_.answer->second_line(), swap ? 0 : -1);
+      secondary->ApplyTextColor(swap ? OmniboxPart::RESULTS_TEXT_DEFAULT : dim);
+    } else {
+      suggestion_view_->content()->SetText(match_.contents,
+                                           match_.contents_class);
+      suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
+      suggestion_view_->description()->SetText(match_.answer->second_line());
+    }
   } else {
+    // Content and description use match text and calculated classifications.
+    suggestion_view_->content()->SetText(match_.contents,
+                                         match_.contents_class);
     suggestion_view_->description()->SetText(match_.description,
                                              match_.description_class);
   }
@@ -157,7 +176,7 @@ void OmniboxResultView::Invalidate() {
                                       keyword_match->contents_class);
     keyword_view_->description()->SetText(keyword_match->description,
                                           keyword_match->description_class);
-    keyword_view_->description()->Dim();
+    keyword_view_->description()->ApplyTextColor(dim);
   }
 }
 

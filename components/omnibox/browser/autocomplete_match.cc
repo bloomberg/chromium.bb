@@ -775,6 +775,10 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   return res;
 }
 
+bool AutocompleteMatch::IsExceptedFromLineReversal() const {
+  return !!answer && answer->type() == SuggestionAnswer::ANSWER_TYPE_DICTIONARY;
+}
+
 #if DCHECK_IS_ON()
 void AutocompleteMatch::Validate() const {
   ValidateClassifications(contents, contents_class);
