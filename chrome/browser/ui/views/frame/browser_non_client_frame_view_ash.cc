@@ -72,6 +72,10 @@ namespace {
 // the Settings window.
 constexpr SkColor kMdWebUiFrameColor = SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
 
+// Color for the window title text.
+constexpr SkColor kNormalWindowTitleTextColor = SkColorSetRGB(40, 40, 40);
+constexpr SkColor kIncognitoWindowTitleTextColor = SK_ColorWHITE;
+
 bool IsMash() {
   return !features::IsAshInBrowserProcess();
 }
@@ -218,6 +222,8 @@ void BrowserNonClientFrameViewAsh::Init() {
 
   // TODO(estade): how much of the rest of this needs porting to Mash?
   if (IsMash()) {
+    frame()->GetNativeWindow()->SetProperty(ash::kFrameTextColorKey,
+                                            GetTitleColor());
     OnThemeChanged();
     return;
   }
@@ -689,6 +695,12 @@ void BrowserNonClientFrameViewAsh::ChildPreferredSizeChanged(
 ///////////////////////////////////////////////////////////////////////////////
 // ash::CustomFrameHeader::AppearanceProvider:
 
+SkColor BrowserNonClientFrameViewAsh::GetTitleColor() {
+  return browser_view()->IsRegularOrGuestSession()
+             ? kNormalWindowTitleTextColor
+             : kIncognitoWindowTitleTextColor;
+}
+
 SkColor BrowserNonClientFrameViewAsh::GetFrameHeaderColor(bool active) {
   DCHECK(!IsMash());
   return GetFrameColor(active);
@@ -827,8 +839,10 @@ void BrowserNonClientFrameViewAsh::OnSplitViewStateChanged(
 
 ///////////////////////////////////////////////////////////////////////////////
 // aura::WindowObserver:
+// TODO(estade): remove this interface. Ash handles it for us with HeaderView.
 
 void BrowserNonClientFrameViewAsh::OnWindowDestroying(aura::Window* window) {
+  DCHECK(!IsMash());
   DCHECK_EQ(frame()->GetNativeWindow(), window);
   window->RemoveObserver(this);
 }
@@ -836,6 +850,7 @@ void BrowserNonClientFrameViewAsh::OnWindowDestroying(aura::Window* window) {
 void BrowserNonClientFrameViewAsh::OnWindowPropertyChanged(aura::Window* window,
                                                            const void* key,
                                                            intptr_t old) {
+  DCHECK(!IsMash());
   DCHECK_EQ(frame()->GetNativeWindow(), window);
   if (key != aura::client::kShowStateKey)
     return;
@@ -974,8 +989,7 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
   Browser* browser = browser_view()->browser();
   if (!UsePackagedAppHeaderStyle(browser)) {
     header = std::make_unique<ash::CustomFrameHeader>(
-        frame(), this, this, !browser_view()->IsRegularOrGuestSession(),
-        caption_button_container_);
+        frame(), this, this, caption_button_container_);
   } else {
     auto default_frame_header = std::make_unique<ash::DefaultFrameHeader>(
         frame(), this, caption_button_container_);

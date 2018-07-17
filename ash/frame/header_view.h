@@ -81,9 +81,6 @@ class ASH_EXPORT HeaderView : public views::View,
 
   void SetWidthInPixels(int width_in_pixels);
 
-  // Called when the target widget show state changed.
-  void OnShowStateChanged(ui::WindowShowState show_state);
-
   // views::View:
   void Layout() override;
   void ChildPreferredSizeChanged(views::View* child) override;

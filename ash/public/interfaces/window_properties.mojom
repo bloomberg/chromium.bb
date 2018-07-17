@@ -31,6 +31,10 @@ const string kFrameImageOverlayInactive_Property =
 const string kFrameIsThemedByHostedApp_Property =
     "ash:frame-is-themed-by-hosted-app";
 
+// The color of the text drawn on the frame (i.e. the window title). Only used
+// for tabless browser windows.
+const string kFrameTextColor_Property = "ash:frame-text-color";
+
 // True if the shelf should be hidden when this window is put into fullscreen.
 // Exposed because some windows want to explicitly opt-out of this.
 const string kHideShelfWhenFullscreen_Property =
