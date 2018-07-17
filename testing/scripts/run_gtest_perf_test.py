@@ -32,6 +32,7 @@ import json
 import os
 import shutil
 import sys
+import time
 import tempfile
 import traceback
 
@@ -82,7 +83,7 @@ def main():
 
   args, rest_args = parser.parse_known_args()
 
-  rc, charts, output_json = execute_perf_test(args, rest_args)
+  rc, charts, output_json = execute_perf_test(args, rest_args, True)
 
   # TODO(eakuefner): Make isolated_script_test_perf_output mandatory after
   # flipping flag in swarming.
@@ -100,7 +101,7 @@ def main():
   return rc
 
 
-def execute_perf_test(args, rest_args):
+def execute_perf_test(args, rest_args, chromium_gtest):
   env = os.environ.copy()
   # Assume we want to set up the sandbox environment variables all the
   # time; doing so is harmless on non-Linux platforms and is needed
@@ -108,52 +109,94 @@ def execute_perf_test(args, rest_args):
   env[CHROME_SANDBOX_ENV] = CHROME_SANDBOX_PATH
 
   rc = 0
-  try:
-    executable = rest_args[0]
-    extra_flags = []
-    if len(rest_args) > 1:
-      extra_flags = rest_args[1:]
+  start_time = time.time()
+  test_results = {}
+  with common.temporary_file() as results_path:
+    try:
+      executable = rest_args[0]
+      extra_flags = []
+      if len(rest_args) > 1:
+        extra_flags = rest_args[1:]
 
-    # These flags are to make sure that test output perf metrics in the log.
-    if not '--verbose' in extra_flags:
-      extra_flags.append('--verbose')
-    if not '--test-launcher-print-test-stdio=always' in extra_flags:
-      extra_flags.append('--test-launcher-print-test-stdio=always')
-    if args.isolated_script_test_filter:
-      filter_list = common.extract_filter_list(
-        args.isolated_script_test_filter)
-      extra_flags.append('--gtest_filter=' + ':'.join(filter_list))
-
-    if IsWindows():
-      executable = '.\%s.exe' % executable
-    else:
-      executable = './%s' % executable
-    with common.temporary_file() as tempfile_path:
-      env['CHROME_HEADLESS'] = '1'
-      cmd = [executable] + extra_flags
-
-      if args.xvfb:
-        rc = xvfb.run_executable(cmd, env, stdoutfile=tempfile_path)
+      if chromium_gtest:
+        output_flag = '--test-launcher-summary-output'
+        output_file = results_path
       else:
-        rc = test_env.run_command_with_output(cmd, env=env,
-                                              stdoutfile=tempfile_path)
+        output_flag = '--gtest_output'
+        output_file = 'json:%s' % results_path
 
-      # Now get the correct json format from the stdout to write to the perf
-      # results file
-      results_processor = (
-          generate_legacy_perf_dashboard_json.LegacyResultsProcessor())
-      charts = results_processor.GenerateJsonResults(tempfile_path)
-  except Exception:
-    traceback.print_exc()
-    rc = 1
+      assert not any(output_flag in flag for flag in extra_flags), (
+          'Duplicate %s flag detected.' % output_flag)
+      extra_flags.append('%s=%s' % (output_flag, output_file))
 
-  valid = (rc == 0)
-  failures = [] if valid else ['(entire test suite)']
+      # These flags are to make sure that test output perf metrics in the log.
+      if not '--verbose' in extra_flags:
+        extra_flags.append('--verbose')
+      if not '--test-launcher-print-test-stdio=always' in extra_flags:
+        extra_flags.append('--test-launcher-print-test-stdio=always')
+      if args.isolated_script_test_filter:
+        filter_list = common.extract_filter_list(
+          args.isolated_script_test_filter)
+        extra_flags.append('--gtest_filter=' + ':'.join(filter_list))
+
+      if IsWindows():
+        executable = '.\%s.exe' % executable
+      else:
+        executable = './%s' % executable
+      with common.temporary_file() as tempfile_path:
+        env['CHROME_HEADLESS'] = '1'
+        cmd = [executable] + extra_flags
+
+        print ' '.join(cmd)
+        if args.xvfb:
+          rc = xvfb.run_executable(cmd, env, stdoutfile=tempfile_path)
+        else:
+          rc = test_env.run_command_with_output(cmd, env=env,
+                                                stdoutfile=tempfile_path)
+
+        # Now get the correct json format from the stdout to write to the perf
+        # results file
+        results_processor = (
+            generate_legacy_perf_dashboard_json.LegacyResultsProcessor())
+        charts = results_processor.GenerateJsonResults(tempfile_path)
+    except Exception:
+      traceback.print_exc()
+      rc = 1
+
+    if os.path.exists(results_path):
+      with open(results_path) as f:
+        if chromium_gtest:
+          func = common.get_chromium_gtest_summary_passes
+        else:
+          func = common.get_gtest_summary_passes
+        test_results = func(json.load(f))
+
   output_json = {
-      'valid': valid,
-      'failures': failures,
+    'version': 3,
+    'interrupted': False,
+    'path_delimiter': '/',
+    'seconds_since_epoch': start_time,
+    'num_failures_by_type': {
+      'PASS': sum(1 for success in test_results.values() if success),
+      'FAIL': sum(1 for success in test_results.values() if not success),
+    },
+    'tests': {
+        test: test_result_entry(success) for (
+            test, success) in test_results.items()
     }
+  }
+
   return rc, charts, output_json
+
+
+def test_result_entry(success):
+  test = {
+    'expected': 'PASS',
+    'actual': 'PASS' if success else 'FAIL',
+  }
+  if not success:
+    test['unexpected'] = True
+  return test
 
 # This is not really a "script test" so does not need to manually add
 # any additional compile targets.
