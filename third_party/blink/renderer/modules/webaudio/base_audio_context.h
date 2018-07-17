@@ -127,24 +127,12 @@ class MODULES_EXPORT BaseAudioContext
   AudioDestinationNode* destination() const;
 
   size_t CurrentSampleFrame() const {
-    // TODO(crbug.com/863951): |destination_node| is a GC-mananged object and
-    // should not be touched by the audio rendering thread.
-    return destination_node_ ? destination_node_->GetAudioDestinationHandler()
-                                   .CurrentSampleFrame()
-                             : 0;
+    return destination_handler_->CurrentSampleFrame();
   }
 
-  double currentTime() const {
-    // TODO(crbug.com/863951): |destination_node| is a GC-mananged object and
-    // should not be touched by the audio rendering thread.
-    return destination_node_
-               ? destination_node_->GetAudioDestinationHandler().CurrentTime()
-               : 0;
-  }
+  double currentTime() const { return destination_handler_->CurrentTime(); }
 
-  float sampleRate() const {
-    return destination_node_->GetAudioDestinationHandler().SampleRate();
-  }
+  float sampleRate() const { return destination_handler_->SampleRate(); }
 
   String state() const;
   AudioContextState ContextState() const { return context_state_; }
@@ -452,6 +440,9 @@ class MODULES_EXPORT BaseAudioContext
   enum { kMaxNumberOfChannels = 32 };
 
   AudioIOPosition output_position_;
+
+  // The handler associated with the above |destination_node_|.
+  scoped_refptr<AudioDestinationHandler> destination_handler_;
 
   Member<AudioWorklet> audio_worklet_;
 
