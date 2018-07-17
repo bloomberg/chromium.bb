@@ -41,6 +41,22 @@
 
 namespace blink {
 
+FindInPage::FindInPage(WebLocalFrameImpl& frame,
+                       InterfaceRegistry* interface_registry)
+    : ContextLifecycleObserver(
+          frame.GetFrame() ? frame.GetFrame()->GetDocument() : nullptr),
+      frame_(&frame),
+      binding_(this) {
+  // TODO(rakina): Use InterfaceRegistry of |frame| directly rather than passing
+  // both of them.
+  if (!interface_registry)
+    return;
+  // TODO(crbug.com/800641): Use InterfaceValidator when it works for associated
+  // interfaces.
+  interface_registry->AddAssociatedInterface(
+      WTF::BindRepeating(&FindInPage::BindToRequest, WrapWeakPersistent(this)));
+}
+
 void WebLocalFrameImpl::RequestFind(int identifier,
                                     const WebString& search_text,
                                     const WebFindOptions& options) {
@@ -284,6 +300,10 @@ void FindInPage::BindToRequest(
 }
 
 void FindInPage::Dispose() {
+  binding_.Close();
+}
+
+void FindInPage::ContextDestroyed(ExecutionContext* context) {
   binding_.Close();
 }
 
