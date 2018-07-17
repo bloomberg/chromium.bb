@@ -42,8 +42,6 @@ void InitPasswordFormFillData(
   username_field.name = form_on_page.username_element;
   username_field.value = preferred_match->username_value;
   username_field.unique_renderer_id = form_on_page.username_element_renderer_id;
-  result->username_may_use_prefilled_placeholder =
-      form_on_page.username_may_use_prefilled_placeholder;
   FormFieldData password_field;
   password_field.name = form_on_page.password_element;
   password_field.value = preferred_match->password_value;

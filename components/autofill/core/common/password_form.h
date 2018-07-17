@@ -177,11 +177,6 @@ struct PasswordForm {
   uint32_t username_element_renderer_id =
       FormFieldData::kNotSetFormControlRendererId;
 
-  // True if the server-side classification believes that the field may be
-  // pre-filled with a placeholder in the value attribute. It is set during
-  // form parsing and not persisted.
-  bool username_may_use_prefilled_placeholder = false;
-
   // Whether the |username_element| has an autocomplete=username attribute. This
   // is only used in parsed HTML forms.
   bool username_marked_by_site;

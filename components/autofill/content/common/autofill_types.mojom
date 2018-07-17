@@ -178,7 +178,6 @@ struct PasswordFormFillData {
   url.mojom.Url action;
   FormFieldData username_field;
   FormFieldData password_field;
-  bool username_may_use_prefilled_placeholder;
   string preferred_realm;
   map<mojo_base.mojom.String16, PasswordAndRealm> additional_logins;
   bool wait_for_username;
