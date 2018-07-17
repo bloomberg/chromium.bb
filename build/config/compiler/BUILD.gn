@@ -632,9 +632,13 @@ config("compiler") {
       ldflags += [ "-Wl,--lto-O0" ]
     }
 
-    cflags += [ "-fwhole-program-vtables" ]
-    if (!is_win) {
-      ldflags += [ "-fwhole-program-vtables" ]
+    # TODO(pcc): Re-enable this flag on Android. This will require libc++ to be
+    # built with ThinLTO (see https://crbug.com/767901) as well as the GVR shim.
+    if (!is_android) {
+      cflags += [ "-fwhole-program-vtables" ]
+      if (!is_win) {
+        ldflags += [ "-fwhole-program-vtables" ]
+      }
     }
 
     # Work-around for http://openradar.appspot.com/20356002
