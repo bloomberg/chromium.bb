@@ -120,6 +120,14 @@ void BaseAudioContext::Initialize() {
 
   if (destination_node_) {
     destination_node_->Handler().Initialize();
+    // TODO(crbug.com/863951).  The audio thread needs some things from the
+    // destination handler like the currentTime.  But the audio thread
+    // shouldn't access the |destination_node_| since it's an Oilpan object.
+    // Thus, get the destination handler, a non-oilpan object, so we can get
+    // the items directly from the handler instead of through the destination
+    // node.
+    destination_handler_ = &destination_node_->GetAudioDestinationHandler();
+
     // The AudioParams in the listener need access to the destination node, so
     // only create the listener if the destination node exists.
     listener_ = AudioListener::Create(*this);
