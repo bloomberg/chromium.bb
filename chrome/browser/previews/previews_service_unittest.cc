@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/default_clock.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/previews/content/previews_decider_impl.h"
@@ -37,7 +38,8 @@ class TestPreviewsDeciderImpl : public previews::PreviewsDeciderImpl {
             content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::UI),
             content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::UI)) {}
+                content::BrowserThread::UI),
+            base::DefaultClock::GetInstance()) {}
   ~TestPreviewsDeciderImpl() override {}
 
   void Initialize(

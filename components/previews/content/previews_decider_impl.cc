@@ -16,7 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/time/default_clock.h"
+#include "base/time/clock.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_experiments.h"
@@ -93,8 +93,10 @@ bool IsPreviewsBlacklistIgnoredViaFlag() {
 
 PreviewsDeciderImpl::PreviewsDeciderImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+    base::Clock* clock)
     : blacklist_ignored_(IsPreviewsBlacklistIgnoredViaFlag()),
+      clock_(clock),
       ui_task_runner_(ui_task_runner),
       io_task_runner_(io_task_runner),
       page_id_(1u),
@@ -148,9 +150,9 @@ void PreviewsDeciderImpl::InitializeOnIOThread(
     std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
     blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  previews_black_list_.reset(new PreviewsBlackList(
-      std::move(previews_opt_out_store), base::DefaultClock::GetInstance(),
-      this, std::move(allowed_previews)));
+  previews_black_list_.reset(
+      new PreviewsBlackList(std::move(previews_opt_out_store), clock_, this,
+                            std::move(allowed_previews)));
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&PreviewsUIService::SetIOData, previews_ui_service_,
@@ -194,6 +196,9 @@ void PreviewsDeciderImpl::AddPreviewNavigation(const GURL& url,
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   base::Time time =
       previews_black_list_->AddPreviewNavigation(url, opt_out, type);
+  if (opt_out) {
+    last_opt_out_time_ = time;
+  }
   LogPreviewNavigation(url, opt_out, type, time, page_id);
 }
 
@@ -243,7 +248,7 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
   uint64_t page_id = PreviewsUserData::GetData(request)->page_id();
   if (is_enabled_callback_.is_null() || !previews_black_list_) {
     LogPreviewDecisionMade(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
-                           request.url(), base::Time::Now(), type,
+                           request.url(), clock_->Now(), type,
                            std::move(passed_reasons), page_id);
     return false;
   }
@@ -252,7 +257,20 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
   if (!is_enabled_callback_.Run(type))
     return false;
 
-  if (!blacklist_ignored_) {
+  // In the case that the user has chosen to ignore the normal blacklist rules
+  // (flags or interventions-internals), a preview should still not be served
+  // for 5 seconds after the last opt out. This allows "show original" to
+  // function correctly as the start of that navigation will be within 5 seconds
+  // (we don't yet re-evaluate on redirects, so this is sufficient).
+  if (blacklist_ignored_) {
+    if (clock_->Now() < last_opt_out_time_ + base::TimeDelta::FromSeconds(5)) {
+      LogPreviewDecisionMade(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
+                             request.url(), clock_->Now(), type,
+                             std::move(passed_reasons), page_id);
+
+      return false;
+    }
+  } else {
     // The blacklist will disallow certain hosts for periods of time based on
     // user's opting out of the preview.
     PreviewsEligibilityReason status = previews_black_list_->IsLoadedAndAllowed(
@@ -264,7 +282,7 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
         PreviewsUserData::GetData(request)->set_black_listed_for_lite_page(
             true);
       }
-      LogPreviewDecisionMade(status, request.url(), base::Time::Now(), type,
+      LogPreviewDecisionMade(status, request.url(), clock_->Now(), type,
                              std::move(passed_reasons), page_id);
       return false;
     }
@@ -287,7 +305,7 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
         net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
       LogPreviewDecisionMade(
           PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE, request.url(),
-          base::Time::Now(), type, std::move(passed_reasons), page_id);
+          clock_->Now(), type, std::move(passed_reasons), page_id);
       return false;
     }
     passed_reasons.push_back(
@@ -296,7 +314,7 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
     if (observed_effective_connection_type >
         effective_connection_type_threshold) {
       LogPreviewDecisionMade(PreviewsEligibilityReason::NETWORK_NOT_SLOW,
-                             request.url(), base::Time::Now(), type,
+                             request.url(), clock_->Now(), type,
                              std::move(passed_reasons), page_id);
       return false;
     }
@@ -309,7 +327,7 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
       request.load_flags() &
           (net::LOAD_VALIDATE_CACHE | net::LOAD_BYPASS_CACHE)) {
     LogPreviewDecisionMade(PreviewsEligibilityReason::RELOAD_DISALLOWED,
-                           request.url(), base::Time::Now(), type,
+                           request.url(), clock_->Now(), type,
                            std::move(passed_reasons), page_id);
     return false;
   }
@@ -321,7 +339,7 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
                           request.url().host_piece())) {
     LogPreviewDecisionMade(
         PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER, request.url(),
-        base::Time::Now(), type, std::move(passed_reasons), page_id);
+        clock_->Now(), type, std::move(passed_reasons), page_id);
     return false;
   }
   passed_reasons.push_back(
@@ -334,7 +352,7 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
       PreviewsEligibilityReason status =
           IsPreviewAllowedByOptmizationHints(request, type, &passed_reasons);
       if (status != PreviewsEligibilityReason::ALLOWED) {
-        LogPreviewDecisionMade(status, request.url(), base::Time::Now(), type,
+        LogPreviewDecisionMade(status, request.url(), clock_->Now(), type,
                                std::move(passed_reasons), page_id);
         return false;
       }
@@ -343,7 +361,7 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
       // provided whitelist is available.
       LogPreviewDecisionMade(
           PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER,
-          request.url(), base::Time::Now(), type, std::move(passed_reasons),
+          request.url(), clock_->Now(), type, std::move(passed_reasons),
           page_id);
       return false;
     } else {
@@ -352,14 +370,14 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
       // but with qualified eligibility reason.
       LogPreviewDecisionMade(
           PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS,
-          request.url(), base::Time::Now(), type, std::move(passed_reasons),
+          request.url(), clock_->Now(), type, std::move(passed_reasons),
           page_id);
       return true;
     }
   }
 
   LogPreviewDecisionMade(PreviewsEligibilityReason::ALLOWED, request.url(),
-                         base::Time::Now(), type, std::move(passed_reasons),
+                         clock_->Now(), type, std::move(passed_reasons),
                          page_id);
   return true;
 }
@@ -379,7 +397,7 @@ bool PreviewsDeciderImpl::IsURLAllowedForPreview(const net::URLRequest& request,
         PreviewsUserData::GetData(request)->set_black_listed_for_lite_page(
             true);
       }
-      LogPreviewDecisionMade(status, request.url(), base::Time::Now(), type,
+      LogPreviewDecisionMade(status, request.url(), clock_->Now(), type,
                              std::move(passed_reasons),
                              PreviewsUserData::GetData(request)->page_id());
       return false;
@@ -393,7 +411,7 @@ bool PreviewsDeciderImpl::IsURLAllowedForPreview(const net::URLRequest& request,
       PreviewsEligibilityReason status =
           IsPreviewAllowedByOptmizationHints(request, type, &passed_reasons);
       if (status != PreviewsEligibilityReason::ALLOWED) {
-        LogPreviewDecisionMade(status, request.url(), base::Time::Now(), type,
+        LogPreviewDecisionMade(status, request.url(), clock_->Now(), type,
                                std::move(passed_reasons),
                                PreviewsUserData::GetData(request)->page_id());
         return false;

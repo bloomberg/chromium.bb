@@ -244,7 +244,6 @@ FrameMsg_Navigate_Type::Value GetNavigationType(
     case ReloadType::NORMAL:
       return FrameMsg_Navigate_Type::RELOAD;
     case ReloadType::BYPASSING_CACHE:
-    case ReloadType::DISABLE_PREVIEWS:
       return FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE;
     case ReloadType::ORIGINAL_REQUEST_URL:
       return FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
@@ -2543,15 +2542,12 @@ NavigationControllerImpl::CreateNavigationRequest(
     std::unique_ptr<NavigationUIData> navigation_ui_data) {
   GURL dest_url = frame_entry->url();
   Referrer dest_referrer = frame_entry->referrer();
-  if ((reload_type == ReloadType::ORIGINAL_REQUEST_URL ||
-       reload_type == ReloadType::DISABLE_PREVIEWS) &&
+  if (reload_type == ReloadType::ORIGINAL_REQUEST_URL &&
       entry.GetOriginalRequestURL().is_valid() && !entry.GetHasPostData()) {
     // We may have been redirected when navigating to the current URL.
     // Use the URL the user originally intended to visit as signaled by the
     // ReloadType, if it's valid and if a POST wasn't involved; the latter
-    // case avoids issues with sending data to the wrong page. The
-    // DISABLE_PREVIEWS case is triggered from a user action to view the
-    // original URL without any preview intervention treatment.
+    // case avoids issues with sending data to the wrong page.
     dest_url = entry.GetOriginalRequestURL();
     dest_referrer = Referrer();
   }
@@ -2589,9 +2585,6 @@ NavigationControllerImpl::CreateNavigationRequest(
                          ->root()
                          ->current_frame_host()
                          ->last_navigation_previews_state();
-  } else if (reload_type == ReloadType::DISABLE_PREVIEWS) {
-    // Disable LoFi when asked for it explicitly.
-    previews_state = PREVIEWS_NO_TRANSFORM;
   }
 
   // Give the delegate an opportunity to adjust the previews state.

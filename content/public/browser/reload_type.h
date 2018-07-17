@@ -19,10 +19,10 @@ enum class ReloadType {
   BYPASSING_CACHE,
   // Reloads the current entry using the original URL used to create it.  This
   // is used for cases where the user wants to refresh a page using a different
-  // user agent after following a redirect.
-  ORIGINAL_REQUEST_URL,
-  // Reloads the current entry with previews disabled.
-  DISABLE_PREVIEWS
+  // user agent after following a redirect. It is also used in the case of an
+  // intervention (i.e., preview) being served on the page and the user
+  // requesting the page without the intervention.
+  ORIGINAL_REQUEST_URL
 };
 
 }  // namespace content

@@ -28,6 +28,10 @@
 
 class GURL;
 
+namespace base {
+class Clock;
+}
+
 namespace blacklist {
 class OptOutStore;
 }
@@ -49,7 +53,8 @@ class PreviewsDeciderImpl : public PreviewsDecider,
  public:
   PreviewsDeciderImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      base::Clock* clock);
   ~PreviewsDeciderImpl() override;
 
   // blacklist::OptOutBlacklistDelegate:
@@ -146,6 +151,10 @@ class PreviewsDeciderImpl : public PreviewsDecider,
 
   std::unique_ptr<PreviewsBlackList> previews_black_list_;
 
+  // Only used when the blacklist has been disabled to allow "Show Original" to
+  // function as expected. The time of the most recent opt out event.
+  base::Time last_opt_out_time_;
+
   // Holds optimization guidance from the server.
   std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide_;
 
@@ -153,6 +162,8 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   // This can be changed by chrome://interventions-internals to test/debug the
   // behavior of Previews decisions.
   bool blacklist_ignored_;
+
+  base::Clock* clock_;
 
   // The UI and IO thread task runners. |ui_task_runner_| is used to post
   // tasks to |previews_ui_service_|, and |io_task_runner_| is used to post from

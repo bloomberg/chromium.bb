@@ -22,6 +22,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/android/android_theme_resources.h"
@@ -200,7 +201,8 @@ class PreviewsInfoBarDelegateUnitTest
     previews_logger_ = previews_logger.get();
     previews_decider_impl_ = std::make_unique<previews::PreviewsDeciderImpl>(
         base::MessageLoopCurrent::Get()->task_runner(),
-        base::MessageLoopCurrent::Get()->task_runner());
+        base::MessageLoopCurrent::Get()->task_runner(),
+        base::DefaultClock::GetInstance());
     previews_ui_service_ = std::make_unique<previews::PreviewsUIService>(
         previews_decider_impl_.get(),
         base::MessageLoopCurrent::Get()->task_runner(),
@@ -457,7 +459,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
           web_contents());
   simulator->Commit();
 
-  EXPECT_EQ(content::ReloadType::DISABLE_PREVIEWS,
+  EXPECT_EQ(content::ReloadType::ORIGINAL_REQUEST_URL,
             TestPreviewsWebContentsObserver::FromWebContents(web_contents())
                 ->last_navigation_reload_type());
 
@@ -601,7 +603,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
           web_contents());
   simulator->Commit();
 
-  EXPECT_EQ(content::ReloadType::DISABLE_PREVIEWS,
+  EXPECT_EQ(content::ReloadType::ORIGINAL_REQUEST_URL,
             TestPreviewsWebContentsObserver::FromWebContents(web_contents())
                 ->last_navigation_reload_type());
 
