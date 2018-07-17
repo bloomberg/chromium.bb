@@ -46,8 +46,14 @@ void TranslateEntry(LogType log_type,
   ::memcpy(dst->path, src.full_path.c_str(), dst->path_len + 1);
 }
 
+//------------------------------------------------------------------------------
+// Log
 // Class wrapper for internal logging events of module load attempts.
 // - A Log instance will either track 'block' events, or 'allow' events.
+//------------------------------------------------------------------------------
+class Log;
+Log& GetBlockedRecordLog();
+
 class Log {
  public:
   // Move constructor
@@ -69,9 +75,13 @@ class Log {
 
   // Add a LogEntryInternal to the log.  Take ownership of the argument.
   void AddEntry(LogEntryInternal&& entry) {
-    // Sanity checks.  If load blocked, do not add duplicate logs.
+    // Sanity checks.  If this is a block, do not add duplicate logs.  Check
+    // both the "permanent" block record Log, as well as this Log (which
+    // hasn't been drained yet).
     if (entries_.size() == kMaxLogEntries ||
-        (log_type_ == LogType::kBlocked && ContainsEntry(entry))) {
+        (log_type_ == LogType::kBlocked &&
+         (GetBlockedRecordLog().ContainsEntry(entry) ||
+          ContainsEntry(entry)))) {
       return;
     }
     entries_.push_back(std::move(entry));
@@ -107,8 +117,22 @@ class Log {
     return bytes_written;
   }
 
+  // Insert a block of log entries, silently and efficiently.
+  // - Intended for use with backing up logs to another Log object.  Normal
+  //   logging events should be added via AddEntry().
+  void InsertAtEnd(std::vector<LogEntryInternal>::iterator first_element,
+                   uint32_t count) {
+    uint32_t elements = (entries_.size() + count <= kMaxLogEntries)
+                            ? count
+                            : kMaxLogEntries - entries_.size();
+    assert(elements <= count);
+
+    if (elements)
+      entries_.insert(entries_.end(), first_element, first_element + elements);
+  }
+
   // Empty the log.
-  void Reset() { DequeueEntries(static_cast<uint32_t>(entries_.size())); }
+  void Reset() { entries_.clear(); }
 
  private:
   // Logs are currently unordered, so just loop.
@@ -128,8 +152,13 @@ class Log {
   // Remove |count| entries from start of log vector.
   // - More efficient to take a chunk off the vector once, instead of one entry
   //   at a time.
+  // - NOTE: use this function from Drain().
   void DequeueEntries(uint32_t count) {
     assert(count <= entries_.size());
+    if (log_type_ == LogType::kBlocked) {
+      // Backup block logs to the "permanent" record log.
+      GetBlockedRecordLog().InsertAtEnd(entries_.begin(), count);
+    }
     entries_.erase(entries_.begin(), entries_.begin() + count);
   }
 
@@ -141,17 +170,31 @@ class Log {
   Log& operator=(const Log&) = delete;
 };
 
+//------------------------------------------------------------------------------
+// The internal log structures
+//
 // NOTE: these "globals" are only initialized once during InitLogs().
 // NOTE: they are wrapped in functions to prevent exit-time dtors.
+//
 // *These returned Log instances must only be accessed under g_log_mutex.
+//------------------------------------------------------------------------------
+
+Log& GetAllowedLog() {
+  static Log* const allowed_log = new Log(LogType::kAllowed);
+  return *allowed_log;
+}
+
 Log& GetBlockedLog() {
   static Log* const blocked_log = new Log(LogType::kBlocked);
   return *blocked_log;
 }
 
-Log& GetAllowedLog() {
-  static Log* const allowed_log = new Log(LogType::kAllowed);
-  return *allowed_log;
+// This Log will hold kBlocked logs "permanently" across calls to Drain(), to
+// prevent spammy duplicates across drains.  This Log is internal only, and
+// is not drained itself.
+Log& GetBlockedRecordLog() {
+  static Log* const blocked_record_log = new Log(LogType::kBlocked);
+  return *blocked_record_log;
 }
 
 }  // namespace
@@ -206,6 +249,7 @@ void DeinitLogs() {
   g_log_mutex = nullptr;
 
   GetBlockedLog().Reset();
+  GetBlockedRecordLog().Reset();
   GetAllowedLog().Reset();
 }
 
