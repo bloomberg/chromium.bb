@@ -10,9 +10,9 @@ testcase.showMyFiles = function() {
 
   const expectedElementLabels = [
     'Recent: FakeItem',
-    'My Files: EntryListItem',
+    'My files: EntryListItem',
     'Downloads: SubDirectoryItem',
-    'Linux Files: FakeItem',
+    'Linux files: FakeItem',
     'Google Drive: DriveVolumeItem',
     'My Drive: SubDirectoryItem',
     'Shared with me: SubDirectoryItem',
@@ -59,7 +59,7 @@ testcase.showMyFiles = function() {
     },
     // Check that My Files is displayed on breadcrumbs.
     function(breadcrumbs) {
-      const expectedBreadcrumbs = 'My Files > Downloads';
+      const expectedBreadcrumbs = 'My files > Downloads';
       const resultBreadscrubms =
           breadcrumbs.map(crumb => crumb.text).join(' > ');
       chrome.test.assertEq(expectedBreadcrumbs, resultBreadscrubms);
@@ -104,7 +104,7 @@ testcase.hideSearchButton = function() {
     },
     // Select My Files folder.
     function() {
-      const myFilesQuery = '#directory-tree [entry-label="My Files"]';
+      const myFilesQuery = '#directory-tree [entry-label="My files"]';
       const isDriveQuery = false;
       remoteCall.callRemoteTestUtil(
           'selectInDirectoryTree', appId, [myFilesQuery, isDriveQuery],
@@ -183,7 +183,7 @@ testcase.myFilesDisplaysAndOpensEntries = function() {
     // Select My Files folder.
     function(results) {
       appId = results.windowId;
-      const myFilesQuery = '#directory-tree [entry-label="My Files"]';
+      const myFilesQuery = '#directory-tree [entry-label="My files"]';
       const isDriveQuery = false;
       remoteCall.callRemoteTestUtil(
           'selectInDirectoryTree', appId, [myFilesQuery, isDriveQuery],
@@ -193,7 +193,7 @@ testcase.myFilesDisplaysAndOpensEntries = function() {
     function(result) {
       chrome.test.assertTrue(result);
       const downloadsRow = ['Downloads', '--', 'Folder'];
-      const crostiniRow = ['Linux Files', '--', 'Folder'];
+      const crostiniRow = ['Linux files', '--', 'Folder'];
       remoteCall
           .waitForFiles(
               appId, [downloadsRow, crostiniRow],

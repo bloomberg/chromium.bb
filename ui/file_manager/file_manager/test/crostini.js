@@ -183,7 +183,7 @@ crostini.testErrorOpeningDownloadsWithCrostiniApp = (done) => {
         // Validate error messages, click 'OK' to close.  Ensure dialog closes.
         assertEquals(
             'To open files with Crostini App, ' +
-                'first copy to Linux Files folder.',
+                'first copy to Linux files folder.',
             document.querySelector('.cr-dialog-text').innerText);
         assertTrue(test.fakeMouseClick('button.cr-dialog-ok'));
         return test.waitForElementLost('.cr-dialog-container.shown');

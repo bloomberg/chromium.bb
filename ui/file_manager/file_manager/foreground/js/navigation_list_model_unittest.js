@@ -17,8 +17,8 @@ loadTimeData.data = {
   DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
   DRIVE_RECENT_COLLECTION_LABEL: 'Recents',
   DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
-  LINUX_FILES_ROOT_LABEL: 'Linux Files',
-  MY_FILES_ROOT_LABEL: 'My Files',
+  LINUX_FILES_ROOT_LABEL: 'Linux files',
+  MY_FILES_ROOT_LABEL: 'My files',
   RECENT_ROOT_LABEL: 'Recent',
   MEDIA_VIEW_IMAGES_ROOT_LABEL: 'Images',
   MEDIA_VIEW_VIDEOS_ROOT_LABEL: 'Videos',
@@ -222,10 +222,10 @@ function testOrderAndNestItems() {
   //  4.  media_view:audio_root
   //  5.  /root/shortcut
   //  6.  /root/shortcut2
-  //  7.  My-Files
+  //  7.  My files
   //        -> Downloads
-  //        -> Play Files
-  //        -> Linux Files
+  //        -> Play files
+  //        -> Linux files
   //  8.  removable:hoge
   //  9.  archive:a-rar  - mounted as archive
   // 10.  removable:fuga
@@ -250,7 +250,7 @@ function testOrderAndNestItems() {
 
   assertEquals('shortcut', model.item(4).label);
   assertEquals('shortcut2', model.item(5).label);
-  assertEquals('My Files', model.item(6).label);
+  assertEquals('My files', model.item(6).label);
 
   assertEquals('removable:hoge', model.item(7).label);
   assertEquals('archive:a-rar', model.item(8).label);
