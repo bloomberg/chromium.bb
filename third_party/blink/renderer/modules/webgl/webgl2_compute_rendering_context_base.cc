@@ -16,7 +16,8 @@ WebGL2ComputeRenderingContextBase::WebGL2ComputeRenderingContextBase(
     : WebGL2RenderingContextBase(host,
                                  std::move(context_provider),
                                  using_gpu_compositing,
-                                 requested_attributes) {}
+                                 requested_attributes,
+                                 Platform::kWebGL2ComputeContextType) {}
 
 void WebGL2ComputeRenderingContextBase::DestroyContext() {
   WebGL2RenderingContextBase::DestroyContext();

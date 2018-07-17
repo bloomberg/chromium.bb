@@ -815,6 +815,7 @@ void FeatureInfo::InitializeFeatures() {
         break;
       case CONTEXT_TYPE_WEBGL1:
       case CONTEXT_TYPE_WEBGL2:
+      case CONTEXT_TYPE_WEBGL2_COMPUTE:
         break;
     }
   }

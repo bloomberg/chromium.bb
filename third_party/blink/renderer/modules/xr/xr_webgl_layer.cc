@@ -142,7 +142,7 @@ XRWebGLLayer::~XRWebGLLayer() {
 
 void XRWebGLLayer::getXRWebGLRenderingContext(
     WebGLRenderingContextOrWebGL2RenderingContext& result) const {
-  if (webgl_context_->Version() == 2) {
+  if (webgl_context_->ContextType() == Platform::kWebGL2ContextType) {
     result.SetWebGL2RenderingContext(
         static_cast<WebGL2RenderingContext*>(webgl_context_.Get()));
   } else {

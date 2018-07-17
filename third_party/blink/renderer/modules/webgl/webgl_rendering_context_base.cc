@@ -663,15 +663,14 @@ std::unique_ptr<WebGraphicsContext3DProvider>
 WebGLRenderingContextBase::CreateContextProviderInternal(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attributes,
-    unsigned web_gl_version,
+    Platform::ContextType context_type,
     bool* using_gpu_compositing) {
   DCHECK(host);
   ExecutionContext* execution_context = host->GetTopExecutionContext();
   DCHECK(execution_context);
 
   Platform::ContextAttributes context_attributes = ToPlatformContextAttributes(
-      attributes, web_gl_version,
-      SupportOwnOffscreenSurface(execution_context));
+      attributes, context_type, SupportOwnOffscreenSurface(execution_context));
 
   Platform::GraphicsInfo gl_info;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider;
@@ -714,7 +713,7 @@ std::unique_ptr<WebGraphicsContext3DProvider>
 WebGLRenderingContextBase::CreateWebGraphicsContext3DProvider(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attributes,
-    unsigned webgl_version,
+    Platform::ContextType context_type,
     bool* using_gpu_compositing) {
   // The host might block creation of a new WebGL context despite the
   // page settings; in particular, if WebGL contexts were lost one or
@@ -726,15 +725,19 @@ WebGLRenderingContextBase::CreateWebGraphicsContext3DProvider(
         "Web page caused context loss and was blocked"));
     return nullptr;
   }
-  if ((webgl_version == 1 && !host->IsWebGL1Enabled()) ||
-      (webgl_version == 2 && !host->IsWebGL2Enabled())) {
+  if ((context_type == Platform::kWebGL1ContextType &&
+       !host->IsWebGL1Enabled()) ||
+      (context_type == Platform::kWebGL2ContextType &&
+       !host->IsWebGL2Enabled()) ||
+      (context_type == Platform::kWebGL2ComputeContextType &&
+       !host->IsWebGL2Enabled())) {
     host->HostDispatchEvent(WebGLContextEvent::Create(
         EventTypeNames::webglcontextcreationerror,
         "disabled by enterprise policy or commandline switch"));
     return nullptr;
   }
 
-  return CreateContextProviderInternal(host, attributes, webgl_version,
+  return CreateContextProviderInternal(host, attributes, context_type,
                                        using_gpu_compositing);
 }
 
@@ -985,7 +988,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     bool using_gpu_compositing,
     const CanvasContextCreationAttributesCore& requested_attributes,
-    unsigned version)
+    Platform::ContextType version)
     : WebGLRenderingContextBase(
           host,
           host->GetTopExecutionContext()->GetTaskRunner(TaskType::kWebGL),
@@ -1000,7 +1003,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     bool using_gpu_compositing,
     const CanvasContextCreationAttributesCore& requested_attributes,
-    unsigned version)
+    Platform::ContextType context_type)
     : CanvasRenderingContext(host, requested_attributes),
       context_group_(new WebGLContextGroup()),
       is_hidden_(false),
@@ -1027,7 +1030,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       is_web_gl_depth_texture_formats_types_added_(false),
       is_ext_srgb_formats_types_added_(false),
       is_ext_color_buffer_float_formats_added_(false),
-      version_(version) {
+      context_type_(context_type) {
   DCHECK(context_provider);
 
   Host()->RegisterContextToDispatch(this);
@@ -1093,10 +1096,12 @@ scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
       CreationAttributes().preserve_drawing_buffer ? DrawingBuffer::kPreserve
                                                    : DrawingBuffer::kDiscard;
   DrawingBuffer::WebGLVersion web_gl_version = DrawingBuffer::kWebGL1;
-  if (Version() == 1) {
+  if (context_type_ == Platform::kWebGL1ContextType) {
     web_gl_version = DrawingBuffer::kWebGL1;
-  } else if (Version() == 2) {
+  } else if (context_type_ == Platform::kWebGL2ContextType) {
     web_gl_version = DrawingBuffer::kWebGL2;
+  } else if (context_type_ == Platform::kWebGL2ComputeContextType) {
+    web_gl_version = DrawingBuffer::kWebGL2Compute;
   } else {
     NOTREACHED();
   }
@@ -1291,7 +1296,7 @@ unsigned WebGLRenderingContextBase::GetWebGLVersion(
     const CanvasRenderingContext* context) {
   if (!context->Is3d())
     return 0;
-  return static_cast<const WebGLRenderingContextBase*>(context)->Version();
+  return static_cast<const WebGLRenderingContextBase*>(context)->ContextType();
 }
 
 WebGLRenderingContextBase::~WebGLRenderingContextBase() {
@@ -7639,8 +7644,11 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
       return;
 
     Settings* settings = frame->GetSettings();
-    if (settings && ((version_ == 1 && !settings->GetWebGL1Enabled()) ||
-                     (version_ == 2 && !settings->GetWebGL2Enabled()))) {
+    if (settings && ((context_type_ == Platform::kWebGL1ContextType &&
+                      !settings->GetWebGL1Enabled()) ||
+                     ((context_type_ == Platform::kWebGL2ContextType ||
+                       context_type_ == Platform::kWebGL2ComputeContextType) &&
+                      !settings->GetWebGL2Enabled()))) {
       return;
     }
   }
@@ -7651,7 +7659,7 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
 
   auto* execution_context = Host()->GetTopExecutionContext();
   Platform::ContextAttributes attributes = ToPlatformContextAttributes(
-      CreationAttributes(), Version(),
+      CreationAttributes(), context_type_,
       SupportOwnOffscreenSurface(execution_context));
   Platform::GraphicsInfo gl_info;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider;

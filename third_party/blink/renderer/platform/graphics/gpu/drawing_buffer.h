@@ -108,6 +108,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   enum WebGLVersion {
     kWebGL1,
     kWebGL2,
+    kWebGL2Compute,
   };
 
   enum ChromiumImageUsage {

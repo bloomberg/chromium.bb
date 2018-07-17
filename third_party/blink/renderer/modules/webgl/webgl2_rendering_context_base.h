@@ -981,7 +981,8 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
       CanvasRenderingContextHost*,
       std::unique_ptr<WebGraphicsContext3DProvider>,
       bool using_gpu_compositing,
-      const CanvasContextCreationAttributesCore& requested_attributes);
+      const CanvasContextCreationAttributesCore& requested_attributes,
+      Platform::ContextType context_type);
 
   // DrawingBuffer::Client implementation.
   void DrawingBufferClientRestorePixelUnpackBufferBinding() override;
@@ -1148,10 +1149,11 @@ DEFINE_TYPE_CASTS(WebGL2RenderingContextBase,
                   CanvasRenderingContext,
                   context,
                   context->Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(context) >= 2,
+                      WebGLRenderingContextBase::GetWebGLVersion(context) ==
+                          Platform::kWebGL2ContextType,
                   context.Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(&context) >=
-                          2);
+                      WebGLRenderingContextBase::GetWebGLVersion(&context) ==
+                          Platform::kWebGL2ContextType);
 
 }  // namespace blink
 

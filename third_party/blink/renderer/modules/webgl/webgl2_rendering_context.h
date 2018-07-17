@@ -75,10 +75,11 @@ DEFINE_TYPE_CASTS(WebGL2RenderingContext,
                   CanvasRenderingContext,
                   context,
                   context->Is3d() &&
-                      WebGLRenderingContextBase::GetWebGLVersion(context) == 2,
+                      WebGLRenderingContextBase::GetWebGLVersion(context) ==
+                          Platform::kWebGL2ContextType,
                   context.Is3d() &&
                       WebGLRenderingContextBase::GetWebGLVersion(&context) ==
-                          2);
+                          Platform::kWebGL2ContextType);
 
 }  // namespace blink
 

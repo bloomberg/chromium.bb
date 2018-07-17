@@ -139,12 +139,13 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(
     CanvasRenderingContextHost* host,
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     bool using_gpu_compositing,
-    const CanvasContextCreationAttributesCore& requested_attributes)
+    const CanvasContextCreationAttributesCore& requested_attributes,
+    Platform::ContextType context_type)
     : WebGLRenderingContextBase(host,
                                 std::move(context_provider),
                                 using_gpu_compositing,
                                 requested_attributes,
-                                2) {
+                                context_type) {
   supported_internal_formats_storage_.insert(
       kSupportedInternalFormatsStorage,
       kSupportedInternalFormatsStorage +

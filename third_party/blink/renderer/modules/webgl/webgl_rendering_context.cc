@@ -92,8 +92,8 @@ CanvasRenderingContext* WebGLRenderingContext::Factory::Create(
     const CanvasContextCreationAttributesCore& attrs) {
   bool using_gpu_compositing;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider(
-      CreateWebGraphicsContext3DProvider(host, attrs, 1,
-                                         &using_gpu_compositing));
+      CreateWebGraphicsContext3DProvider(
+          host, attrs, Platform::kWebGL1ContextType, &using_gpu_compositing));
   if (!ShouldCreateContext(context_provider.get()))
     return nullptr;
 
@@ -126,7 +126,7 @@ WebGLRenderingContext::WebGLRenderingContext(
                                 std::move(context_provider),
                                 using_gpu_compositing,
                                 requested_attributes,
-                                1) {}
+                                Platform::kWebGL1ContextType) {}
 
 void WebGLRenderingContext::SetCanvasGetContextResult(
     RenderingContext& result) {
