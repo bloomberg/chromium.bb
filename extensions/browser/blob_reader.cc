@@ -72,6 +72,8 @@ void BlobReader::OnDataAvailable(const void* data, size_t num_bytes) {
 
 void BlobReader::OnDataComplete() {
   data_complete_ = true;
+  if (!blob_data_)
+    blob_data_ = std::make_unique<std::string>();
   if (blob_length_)
     Succeeded();
 }
