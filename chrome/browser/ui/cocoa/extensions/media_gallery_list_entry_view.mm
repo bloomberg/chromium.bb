@@ -18,7 +18,7 @@ ui::MenuModel* MediaGalleryListEntryController::GetContextMenu(
 }
 
 @interface MediaGalleryListEntry ()
-- (void)onCheckboxToggled:(id)sender;
+- (void)onCheckboxToggled:(MediaGalleryButton*)sender;
 - (void)onFolderViewerClicked:(id)sender;
 - (ui::MenuModel*)getContextMenu;
 - (void)layoutSubViews;
@@ -124,7 +124,7 @@ ui::MenuModel* MediaGalleryListEntryController::GetContextMenu(
   [checkbox_ setState:selected ? NSOnState : NSOffState];
 }
 
-- (void)onCheckboxToggled:(id)sender {
+- (void)onCheckboxToggled:(MediaGalleryButton*)sender {
   controller_->OnCheckboxToggled(prefId_, [sender state] == NSOnState);
 }
 
