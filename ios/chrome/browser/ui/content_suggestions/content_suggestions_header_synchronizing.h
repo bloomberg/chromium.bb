@@ -21,6 +21,9 @@
 // Unfocuses the omnibox.
 - (void)unfocusOmnibox;
 
+// Update any dynamic constraints.
+- (void)updateConstraints;
+
 // Returns the Y value to use for the scroll view's contentOffset when scrolling
 // the omnibox to the top of the screen.
 - (CGFloat)pinnedOffsetY;

@@ -135,10 +135,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
         if (IsSplitToolbarMode()) {
           [self.toolbarDelegate setScrollProgressForTabletOmnibox:1];
         }
-
-        // Update the doodle top margin to the new -doodleTopMargin value.
-        self.doodleTopMarginConstraint.constant =
-            content_suggestions::doodleTopMargin(YES);
+        [self updateConstraints];
       };
 
   [coordinator animateAlongsideTransition:transition completion:nil];
@@ -196,6 +193,12 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
 - (void)layoutHeader {
   [self.headerView layoutIfNeeded];
+}
+
+// Update the doodle top margin to the new -doodleTopMargin value.
+- (void)updateConstraints {
+  self.doodleTopMarginConstraint.constant =
+      content_suggestions::doodleTopMargin(YES);
 }
 
 - (CGFloat)pinnedOffsetY {
