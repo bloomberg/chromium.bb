@@ -57,6 +57,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkQualityTracker
   // is established) to the time when the response headers were received.
   base::TimeDelta GetHttpRTT() const;
 
+  // Returns the current transport-layer RTT estimate. The RTT at the transport
+  // layer provides an aggregate estimate of the transport RTT as computed by
+  // various underlying TCP and QUIC connections.
+  base::TimeDelta GetTransportRTT() const;
+
   // Returns the current downstream throughput estimate (in kilobits per
   // second).
   int32_t GetDownstreamThroughputKbps() const;
@@ -82,6 +87,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkQualityTracker
   void OnNetworkQualityChanged(
       net::EffectiveConnectionType effective_connection_type,
       base::TimeDelta http_rtt,
+      base::TimeDelta transport_rtt,
       int32_t downlink_bandwidth_kbps) override;
 
  private:
@@ -100,6 +106,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkQualityTracker
 
   net::EffectiveConnectionType effective_connection_type_;
   base::TimeDelta http_rtt_;
+  base::TimeDelta transport_rtt_;
   int32_t downlink_bandwidth_kbps_;
 
   base::ObserverList<EffectiveConnectionTypeObserver>

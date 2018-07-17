@@ -96,6 +96,7 @@ class TestNetworkQualityObserver
     return effective_connection_type_;
   }
   base::TimeDelta http_rtt() const { return tracker_->GetHttpRTT(); }
+  base::TimeDelta transport_rtt() const { return tracker_->GetTransportRTT(); }
   int32_t downlink_bandwidth_kbps() const {
     return tracker_->GetDownstreamThroughputKbps();
   }
@@ -182,6 +183,8 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityTrackerBrowserTest,
   // from net::NetworkQualityEstimatorParams.
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(450),
             network_quality_observer.http_rtt());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(400),
+            network_quality_observer.transport_rtt());
   EXPECT_EQ(400, network_quality_observer.downlink_bandwidth_kbps());
 }
 
@@ -206,6 +209,8 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityTrackerBrowserTest,
   // from net::NetworkQualityEstimatorParams.
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1800),
             network_quality_observer.http_rtt());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1500),
+            network_quality_observer.transport_rtt());
   EXPECT_EQ(75, network_quality_observer.downlink_bandwidth_kbps());
 }
 
@@ -241,6 +246,8 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityTrackerBrowserTest,
   // from net::NetworkQualityEstimatorParams.
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(450),
             network_quality_observer.http_rtt());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(400),
+            network_quality_observer.transport_rtt());
   EXPECT_EQ(400, network_quality_observer.downlink_bandwidth_kbps());
 
   SimulateNetworkServiceCrash();
@@ -256,6 +263,8 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityTrackerBrowserTest,
   EXPECT_LE(2u, network_quality_observer.num_notifications());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1800),
             network_quality_observer.http_rtt());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1500),
+            network_quality_observer.transport_rtt());
   EXPECT_EQ(75, network_quality_observer.downlink_bandwidth_kbps());
 }
 

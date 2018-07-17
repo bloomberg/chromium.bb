@@ -65,6 +65,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkQualityEstimatorManager
   mojo::InterfacePtrSet<mojom::NetworkQualityEstimatorManagerClient> clients_;
   net::EffectiveConnectionType effective_connection_type_;
   base::TimeDelta http_rtt_;
+  base::TimeDelta transport_rtt_;
   int32_t downstream_throughput_kbps_;
 
   SEQUENCE_CHECKER(sequence_checker_);
