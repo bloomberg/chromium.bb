@@ -33,7 +33,7 @@ class {{exported}}{{v8_class}} final : public CallbackInterfaceBase {
 
   ~{{v8_class}}() override = default;
 
-  // TraceWrapperBase overrides:
+  // NameClient overrides:
   const char* NameInHeapSnapshot() const override;
 
 {% for method in methods %}

@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_HTML_IMPORTS_CONTROLLER_H_
 
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -49,7 +49,7 @@ class KURL;
 
 class HTMLImportsController final
     : public GarbageCollected<HTMLImportsController>,
-      public TraceWrapperBase {
+      public NameClient {
  public:
   static HTMLImportsController* Create(Document& master) {
     return new HTMLImportsController(master);

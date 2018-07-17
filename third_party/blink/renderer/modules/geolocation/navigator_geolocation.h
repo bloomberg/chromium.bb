@@ -21,6 +21,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_NAVIGATOR_GEOLOCATION_H_
 
 #include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -33,7 +34,7 @@ class Navigator;
 class NavigatorGeolocation final
     : public GarbageCollected<NavigatorGeolocation>,
       public Supplement<Navigator>,
-      public TraceWrapperBase {
+      public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorGeolocation);
 
  public:

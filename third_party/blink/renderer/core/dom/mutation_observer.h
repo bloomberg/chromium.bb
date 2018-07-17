@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_options.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -78,7 +79,7 @@ class CORE_EXPORT MutationObserver final
   };
 
   class CORE_EXPORT Delegate : public GarbageCollectedFinalized<Delegate>,
-                               public TraceWrapperBase {
+                               public NameClient {
    public:
     virtual ~Delegate() = default;
     virtual ExecutionContext* GetExecutionContext() const = 0;

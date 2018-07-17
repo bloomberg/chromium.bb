@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_CALLBACK_FUNCTION_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_CALLBACK_FUNCTION_BASE_H_
 
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_base.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -25,7 +25,7 @@ class V8PersistentCallbackFunctionBase;
 // implement it.
 class PLATFORM_EXPORT CallbackFunctionBase
     : public GarbageCollectedFinalized<CallbackFunctionBase>,
-      public TraceWrapperBase {
+      public NameClient {
  public:
   virtual ~CallbackFunctionBase() = default;
 

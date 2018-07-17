@@ -10,8 +10,8 @@
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -28,7 +28,7 @@ class ImageResourceObserver;
 // types as well.
 class MODULES_EXPORT CSSPaintDefinition final
     : public GarbageCollectedFinalized<CSSPaintDefinition>,
-      public TraceWrapperBase {
+      public NameClient {
  public:
   static CSSPaintDefinition* Create(
       ScriptState*,

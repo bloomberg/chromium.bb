@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INTERSECTION_OBSERVER_INTERSECTION_OBSERVER_DELEGATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INTERSECTION_OBSERVER_INTERSECTION_OBSERVER_DELEGATE_H_
 
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -16,7 +16,7 @@ class IntersectionObserverEntry;
 
 class IntersectionObserverDelegate
     : public GarbageCollectedFinalized<IntersectionObserverDelegate>,
-      public TraceWrapperBase {
+      public NameClient {
  public:
   virtual ~IntersectionObserverDelegate() = default;
   virtual void Deliver(const HeapVector<Member<IntersectionObserverEntry>>&,

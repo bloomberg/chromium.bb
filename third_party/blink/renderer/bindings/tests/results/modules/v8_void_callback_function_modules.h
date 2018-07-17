@@ -27,7 +27,7 @@ class MODULES_EXPORT V8VoidCallbackFunctionModules final : public CallbackFuncti
 
   ~V8VoidCallbackFunctionModules() override = default;
 
-  // TraceWrapperBase overrides:
+  // NameClient overrides:
   const char* NameInHeapSnapshot() const override;
 
   // Performs "invoke".

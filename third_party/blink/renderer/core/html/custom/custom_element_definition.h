@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_descriptor.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"  // For TraceWrapperBase
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -27,7 +27,7 @@ class QualifiedName;
 
 class CORE_EXPORT CustomElementDefinition
     : public GarbageCollectedFinalized<CustomElementDefinition>,
-      public TraceWrapperBase {
+      public NameClient {
  public:
   // Each definition has an ID that is unique within the
   // CustomElementRegistry that created it.

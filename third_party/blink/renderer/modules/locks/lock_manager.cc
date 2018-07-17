@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/locks/lock_info.h"
 #include "third_party/blink/renderer/modules/locks/lock_manager_snapshot.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -50,7 +51,7 @@ HeapVector<LockInfo> ToLockInfos(
 
 class LockManager::LockRequestImpl final
     : public GarbageCollectedFinalized<LockRequestImpl>,
-      public TraceWrapperBase,
+      public NameClient,
       public mojom::blink::LockRequest {
   WTF_MAKE_NONCOPYABLE(LockRequestImpl);
   EAGERLY_FINALIZE();

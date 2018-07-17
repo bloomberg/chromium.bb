@@ -28,7 +28,7 @@
 
 #include "third_party/blink/renderer/modules/webgl/webgl_context_object.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_shared_object.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 
 namespace gpu {
 namespace gles2 {
@@ -46,7 +46,7 @@ class WebGLFramebuffer final : public WebGLContextObject {
 
  public:
   class WebGLAttachment : public GarbageCollected<WebGLAttachment>,
-                          public TraceWrapperBase {
+                          public NameClient {
    public:
     virtual WebGLSharedObject* Object() const = 0;
     virtual bool IsSharedObject(WebGLSharedObject*) const = 0;

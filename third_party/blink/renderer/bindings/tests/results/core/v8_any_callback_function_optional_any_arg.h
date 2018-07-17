@@ -27,7 +27,7 @@ class CORE_EXPORT V8AnyCallbackFunctionOptionalAnyArg final : public CallbackFun
 
   ~V8AnyCallbackFunctionOptionalAnyArg() override = default;
 
-  // TraceWrapperBase overrides:
+  // NameClient overrides:
   const char* NameInHeapSnapshot() const override;
 
   // Performs "invoke".

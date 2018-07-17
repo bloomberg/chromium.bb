@@ -28,7 +28,7 @@ class CORE_EXPORT V8VoidCallbackFunctionDictionaryArg final : public CallbackFun
 
   ~V8VoidCallbackFunctionDictionaryArg() override = default;
 
-  // TraceWrapperBase overrides:
+  // NameClient overrides:
   const char* NameInHeapSnapshot() const override;
 
   // Performs "invoke".

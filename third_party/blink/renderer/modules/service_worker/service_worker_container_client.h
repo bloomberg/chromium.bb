@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -22,7 +23,7 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
     : public GarbageCollectedFinalized<ServiceWorkerContainerClient>,
       public Supplement<Document>,
       public Supplement<WorkerClients>,
-      public TraceWrapperBase {
+      public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainerClient);
   WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
 

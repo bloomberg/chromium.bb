@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_WATCHERS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_WATCHERS_H_
 
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -13,7 +14,7 @@ namespace blink {
 class GeoNotifier;
 
 class GeolocationWatchers : public GarbageCollected<GeolocationWatchers>,
-                            public TraceWrapperBase {
+                            public NameClient {
  public:
   GeolocationWatchers() = default;
   void Trace(blink::Visitor*);

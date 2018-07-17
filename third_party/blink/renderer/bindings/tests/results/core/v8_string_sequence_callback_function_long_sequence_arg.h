@@ -27,7 +27,7 @@ class CORE_EXPORT V8StringSequenceCallbackFunctionLongSequenceArg final : public
 
   ~V8StringSequenceCallbackFunctionLongSequenceArg() override = default;
 
-  // TraceWrapperBase overrides:
+  // NameClient overrides:
   const char* NameInHeapSnapshot() const override;
 
   // Performs "invoke".

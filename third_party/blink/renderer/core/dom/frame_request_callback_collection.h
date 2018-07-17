@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_frame_request_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -16,7 +17,7 @@ namespace blink {
 class ExecutionContext;
 
 class GC_PLUGIN_IGNORE("crbug.com/841830")
-    CORE_EXPORT FrameRequestCallbackCollection final : public TraceWrapperBase {
+    CORE_EXPORT FrameRequestCallbackCollection final : public NameClient {
   DISALLOW_NEW();
 
  public:
@@ -28,7 +29,7 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
   // invoked when a script-based animation needs to be resampled.
   class CORE_EXPORT FrameCallback
       : public GarbageCollectedFinalized<FrameCallback>,
-        public TraceWrapperBase {
+        public NameClient {
    public:
     virtual void Trace(blink::Visitor* visitor) {}
     const char* NameInHeapSnapshot() const override { return "FrameCallback"; }

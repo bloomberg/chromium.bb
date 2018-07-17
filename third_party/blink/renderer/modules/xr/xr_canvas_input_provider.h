@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_CANVAS_INPUT_PROVIDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_CANVAS_INPUT_PROVIDER_H_
 
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -22,7 +22,7 @@ class XRSession;
 
 class XRCanvasInputProvider
     : public GarbageCollectedFinalized<XRCanvasInputProvider>,
-      public TraceWrapperBase {
+      public NameClient {
  public:
   XRCanvasInputProvider(XRSession*, HTMLCanvasElement*);
   virtual ~XRCanvasInputProvider();
