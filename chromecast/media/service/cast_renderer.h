@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "chromecast/common/mojom/multiroom.mojom.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/base/video_resolution_policy.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
@@ -73,6 +74,11 @@ class CastRenderer : public ::media::Renderer,
       ::media::RendererClient* client,
       const ::media::PipelineStatusCB& init_cb,
       const std::string& application_session_id);
+  void OnGetMultiroomInfo(::media::MediaResource* media_resource,
+                          ::media::RendererClient* client,
+                          const ::media::PipelineStatusCB& init_cb,
+                          const std::string& session_id,
+                          chromecast::mojom::MultiroomInfoPtr multiroom_info);
   void OnError(::media::PipelineStatus status);
   void OnEnded(Stream stream);
   void OnStatisticsUpdate(const ::media::PipelineStatistics& stats);
@@ -106,6 +112,7 @@ class CastRenderer : public ::media::Renderer,
 
   ::media::mojom::ApplicationSessionIdManagerPtr
       application_session_id_manager_ptr_;
+  chromecast::mojom::MultiroomManagerPtr multiroom_manager_;
 
   base::WeakPtrFactory<CastRenderer> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(CastRenderer);

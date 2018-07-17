@@ -10,5 +10,10 @@ mojom("mojom") {
     "media_caps.mojom",
     "media_load_deferrer.mojom",
     "memory_pressure.mojom",
+    "multiroom.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
   ]
 }

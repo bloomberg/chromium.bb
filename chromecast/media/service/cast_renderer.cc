@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/base/audio_device_ids.h"
@@ -36,6 +38,9 @@ namespace chromecast {
 namespace media {
 
 namespace {
+
+constexpr char kChromecastServiceName[] = "chromecast";
+
 // Maximum difference between audio frame PTS and video frame PTS
 // for frames read from the DemuxerStream.
 const base::TimeDelta kMaxDeltaFetcher(base::TimeDelta::FromMilliseconds(2000));
@@ -126,6 +131,37 @@ void CastRenderer::OnApplicationSessionIdReceived(
     const ::media::PipelineStatusCB& init_cb,
     const std::string& application_session_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  if (application_session_id.empty()) {
+    OnGetMultiroomInfo(media_resource, client, init_cb, application_session_id,
+                       chromecast::mojom::MultiroomInfo::New());
+    return;
+  }
+  connector_->BindInterface(kChromecastServiceName, &multiroom_manager_);
+  multiroom_manager_.set_connection_error_handler(
+      base::BindOnce(&CastRenderer::OnGetMultiroomInfo, base::Unretained(this),
+                     media_resource, client, init_cb, application_session_id,
+                     chromecast::mojom::MultiroomInfo::New()));
+  multiroom_manager_->GetMultiroomInfo(
+      application_session_id,
+      base::BindOnce(&CastRenderer::OnGetMultiroomInfo, base::Unretained(this),
+                     media_resource, client, init_cb, application_session_id));
+}
+
+void CastRenderer::OnGetMultiroomInfo(
+    ::media::MediaResource* media_resource,
+    ::media::RendererClient* client,
+    const ::media::PipelineStatusCB& init_cb,
+    const std::string& application_session_id,
+    chromecast::mojom::MultiroomInfoPtr multiroom_info) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(multiroom_info);
+  CMALOG(kLogControl) << __FUNCTION__ << ": " << this
+                      << " session_id=" << application_session_id
+                      << ", multiroom=" << multiroom_info->multiroom
+                      << ", audio_channel=" << multiroom_info->audio_channel;
+  // Close the MultiroomManager message pipe so that a connection error does not
+  // trigger a second call to this function.
+  multiroom_manager_.reset();
   // Create pipeline backend.
   media_resource_usage_.reset(
       new MediaResourceTracker::ScopedUsage(media_resource_tracker_));
@@ -147,9 +183,13 @@ void CastRenderer::OnApplicationSessionIdReceived(
   } else {
     content_type = AudioContentType::kMedia;
   }
-  MediaPipelineDeviceParams params(
-      sync_type, MediaPipelineDeviceParams::AudioStreamType::kAudioStreamNormal,
-      backend_task_runner_.get(), content_type, audio_device_id_, connector_);
+  MediaPipelineDeviceParams params(sync_type, backend_task_runner_.get(),
+                                   content_type, audio_device_id_);
+  params.connector = connector_;
+  params.session_id = application_session_id;
+  params.multiroom = multiroom_info->multiroom;
+  params.audio_channel = multiroom_info->audio_channel;
+  params.output_delay_us = multiroom_info->output_delay.InMicroseconds();
 
   if (audio_device_id_ == kTtsAudioDeviceId ||
       audio_device_id_ ==
