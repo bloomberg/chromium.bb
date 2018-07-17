@@ -150,7 +150,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
 }  // namespace
 
-@interface NSView (PrivateAPI)
+@interface NSView (PrivateTabStripControllerAPI)
 // Called by AppKit to check if dragging this view should move the window.
 // NSButton overrides this method in the same way so dragging window buttons
 // has no effect. NSView implementation returns NSZeroRect so the whole view

@@ -13,11 +13,11 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/views/widget/widget.h"
 
-@interface NSWindow (PrivateAPI)
+@interface NSWindow (PrivateBrowserNativeWidgetAPI)
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle;
 @end
 
-@interface NSThemeFrame (PrivateAPI)
+@interface NSThemeFrame (PrivateBrowserNativeWidgetAPI)
 - (CGFloat)_titlebarHeight;
 - (void)setStyleMask:(NSUInteger)styleMask;
 @end

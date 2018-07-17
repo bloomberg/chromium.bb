@@ -60,7 +60,7 @@ const CGFloat kMouseHoverWhiteValueIncongito = 0.3;
 // has moved less than the threshold, we want to close the tab.
 const CGFloat kRapidCloseDist = 2.5;
 
-@interface NSView (PrivateAPI)
+@interface NSView (PrivateTabViewAPI)
 // Called by AppKit to check if dragging this view should move the window.
 // NSButton overrides this method in the same way so dragging window buttons
 // has no effect. NSView implementation returns NSZeroRect so the whole view
