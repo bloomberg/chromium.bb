@@ -184,33 +184,26 @@ void LoginDisplayHostCommon::StartArcKiosk(const AccountId& account_id) {
 }
 
 void LoginDisplayHostCommon::CompleteLogin(const UserContext& user_context) {
-  ExistingUserController* controller =
-      ExistingUserController::current_controller();
-  if (controller)
-    controller->CompleteLogin(user_context);
+  if (GetExistingUserController())
+    GetExistingUserController()->CompleteLogin(user_context);
 }
 
 void LoginDisplayHostCommon::OnGaiaScreenReady() {
-  ExistingUserController* controller =
-      ExistingUserController::current_controller();
-  if (controller)
-    controller->OnGaiaScreenReady();
+  if (GetExistingUserController())
+    GetExistingUserController()->OnGaiaScreenReady();
 }
 
 void LoginDisplayHostCommon::SetDisplayEmail(const std::string& email) {
-  ExistingUserController* controller =
-      ExistingUserController::current_controller();
-  if (controller)
-    controller->SetDisplayEmail(email);
+  if (GetExistingUserController())
+    GetExistingUserController()->SetDisplayEmail(email);
 }
 
 void LoginDisplayHostCommon::SetDisplayAndGivenName(
     const std::string& display_name,
     const std::string& given_name) {
-  ExistingUserController* controller =
-      ExistingUserController::current_controller();
-  if (controller)
-    controller->SetDisplayAndGivenName(display_name, given_name);
+  if (GetExistingUserController())
+    GetExistingUserController()->SetDisplayAndGivenName(display_name,
+                                                        given_name);
 }
 
 void LoginDisplayHostCommon::LoadWallpaper(const AccountId& account_id) {
@@ -222,34 +215,26 @@ void LoginDisplayHostCommon::LoadSigninWallpaper() {
 }
 
 bool LoginDisplayHostCommon::IsUserWhitelisted(const AccountId& account_id) {
-  ExistingUserController* controller =
-      ExistingUserController::current_controller();
-  if (!controller)
+  if (!GetExistingUserController())
     return true;
-  return controller->IsUserWhitelisted(account_id);
+  return GetExistingUserController()->IsUserWhitelisted(account_id);
 }
 
 void LoginDisplayHostCommon::CancelPasswordChangedFlow() {
-  ExistingUserController* controller =
-      ExistingUserController::current_controller();
-  if (controller)
-    controller->CancelPasswordChangedFlow();
+  if (GetExistingUserController())
+    GetExistingUserController()->CancelPasswordChangedFlow();
 
   OnCancelPasswordChangedFlow();
 }
 
 void LoginDisplayHostCommon::MigrateUserData(const std::string& old_password) {
-  ExistingUserController* controller =
-      ExistingUserController::current_controller();
-  if (controller)
-    controller->MigrateUserData(old_password);
+  if (GetExistingUserController())
+    GetExistingUserController()->MigrateUserData(old_password);
 }
 
 void LoginDisplayHostCommon::ResyncUserData() {
-  ExistingUserController* controller =
-      ExistingUserController::current_controller();
-  if (controller)
-    controller->ResyncUserData();
+  if (GetExistingUserController())
+    GetExistingUserController()->ResyncUserData();
 }
 
 void LoginDisplayHostCommon::Observe(

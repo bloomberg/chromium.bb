@@ -535,6 +535,10 @@ LoginDisplay* LoginDisplayHostWebUI::GetLoginDisplay() {
   return login_display_.get();
 }
 
+ExistingUserController* LoginDisplayHostWebUI::GetExistingUserController() {
+  return existing_user_controller_.get();
+}
+
 gfx::NativeWindow LoginDisplayHostWebUI::GetNativeWindow() const {
   return login_window_ ? login_window_->GetNativeWindow() : nullptr;
 }
@@ -1127,9 +1131,7 @@ void LoginDisplayHostWebUI::OnLoginPromptVisible() {
 }
 
 void LoginDisplayHostWebUI::CreateExistingUserController() {
-  // There can only be one |ExistingUserController| instance at a time.
-  existing_user_controller_.reset();
-  existing_user_controller_.reset(new ExistingUserController(this));
+  existing_user_controller_ = std::make_unique<ExistingUserController>();
   login_display_->set_delegate(existing_user_controller_.get());
 }
 

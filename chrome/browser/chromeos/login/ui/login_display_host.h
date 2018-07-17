@@ -26,6 +26,7 @@ class WebContents;
 namespace chromeos {
 
 class AppLaunchController;
+class ExistingUserController;
 class LoginScreenContext;
 class OobeUI;
 class WebUILoginView;
@@ -56,8 +57,11 @@ class LoginDisplayHost {
   // Returns the default LoginDisplayHost instance if it has been created.
   static LoginDisplayHost* default_host() { return default_host_; }
 
-  // Returns an unowned pointer to the LoginDisplay* instance.
+  // Returns an unowned pointer to the LoginDisplay instance.
   virtual LoginDisplay* GetLoginDisplay() = 0;
+
+  // Returns an unowned pointer to the ExistingUserController instance.
+  virtual ExistingUserController* GetExistingUserController() = 0;
 
   // Returns corresponding native window.
   virtual gfx::NativeWindow GetNativeWindow() const = 0;

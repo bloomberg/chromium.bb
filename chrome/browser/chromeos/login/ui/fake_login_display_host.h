@@ -24,6 +24,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
 
   // chromeos::LoginDisplayHost:
   LoginDisplay* GetLoginDisplay() override;
+  ExistingUserController* GetExistingUserController() override;
   gfx::NativeWindow GetNativeWindow() const override;
   OobeUI* GetOobeUI() const override;
   content::WebContents* GetOobeWebContents() const override;
