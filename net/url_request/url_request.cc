@@ -1199,6 +1199,7 @@ void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
   }
   if (response_info().was_alpn_negotiated)
     details.protocol = response_info().alpn_negotiated_protocol;
+  details.method = method();
   details.elapsed_time =
       base::TimeTicks::Now() - load_timing_info_.request_start;
   details.type = status().ToNetError();

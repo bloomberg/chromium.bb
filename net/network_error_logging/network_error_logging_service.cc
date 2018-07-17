@@ -551,6 +551,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     body->SetDouble(kSamplingFractionKey, sampling_fraction);
     body->SetString(kServerIpKey, details.server_ip.ToString());
     body->SetString(kProtocolKey, details.protocol);
+    body->SetString(kMethodKey, details.method);
     body->SetInteger(kStatusCodeKey, details.status_code);
     body->SetInteger(kElapsedTimeKey, details.elapsed_time.InMilliseconds());
     body->SetString(kPhaseKey, phase);
@@ -591,6 +592,7 @@ const char NetworkErrorLoggingService::kSamplingFractionKey[] =
     "sampling_fraction";
 const char NetworkErrorLoggingService::kServerIpKey[] = "server_ip";
 const char NetworkErrorLoggingService::kProtocolKey[] = "protocol";
+const char NetworkErrorLoggingService::kMethodKey[] = "method";
 const char NetworkErrorLoggingService::kStatusCodeKey[] = "status_code";
 const char NetworkErrorLoggingService::kElapsedTimeKey[] = "elapsed_time";
 const char NetworkErrorLoggingService::kPhaseKey[] = "phase";
