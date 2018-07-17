@@ -432,7 +432,6 @@ crbug.com/714962 virtual/layout_ng/fast/inline/inline-focus-ring-under-absolute-
 crbug.com/714962 virtual/layout_ng/fast/inline/nested-text-descendants.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/out-of-flow-objects-and-whitespace-after-empty-inline.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/outline-continuations.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/inline/styledEmptyInlinesWithBRs.html [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/normal-flow/
 crbug.com/714962 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-valign-001.xht [ Failure ]
