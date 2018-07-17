@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 
+#include "content/public/common/renderer_preferences.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "url/gurl.h"
@@ -24,6 +25,7 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
   // worker when InstalledScriptsManager doesn't have the requested script. It
   // is a ServiceWorkerScriptLoaderFactory, which loads and installs the script.
   ServiceWorkerFetchContextImpl(
+      RendererPreferences renderer_preferences,
       const GURL& worker_script_url,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info,
@@ -51,6 +53,7 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
   CreateWebSocketHandshakeThrottle() override;
 
  private:
+  RendererPreferences renderer_preferences_;
   const GURL worker_script_url_;
   // Consumed on the worker thread to create |url_loader_factory_|.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;

@@ -175,6 +175,7 @@ class WebContentsViewDelegate;
 struct MainFunctionParams;
 struct OpenURLParams;
 struct Referrer;
+struct RendererPreferences;
 struct WebPreferences;
 
 CONTENT_EXPORT void OverrideOnBindInterface(
@@ -476,6 +477,14 @@ class CONTENT_EXPORT ContentBrowserClient {
                                  int render_frame_id);
 
   virtual bool IsDataSaverEnabled(BrowserContext* context);
+
+  // Updates the given prefs for Service Worker and Shared Worker. The prefs
+  // are to be sent to the renderer process when a worker is created. Note that
+  // We don't use this method for Dedicated Workers as they inherit preferences
+  // from their closest ancestor frame.
+  virtual void UpdateRendererPreferencesForWorker(
+      BrowserContext* browser_context,
+      RendererPreferences* out_prefs);
 
   // Allow the embedder to return additional headers that should be sent when
   // fetching |url| as well as add extra load flags.

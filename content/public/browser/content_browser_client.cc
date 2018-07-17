@@ -270,6 +270,10 @@ bool ContentBrowserClient::IsDataSaverEnabled(BrowserContext* context) {
   return false;
 }
 
+void ContentBrowserClient::UpdateRendererPreferencesForWorker(
+    BrowserContext* browser_context,
+    RendererPreferences* out_prefs) {}
+
 bool ContentBrowserClient::AllowGetCookie(const GURL& url,
                                           const GURL& first_party,
                                           const net::CookieList& cookie_list,

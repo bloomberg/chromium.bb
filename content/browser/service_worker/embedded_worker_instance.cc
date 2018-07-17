@@ -213,6 +213,11 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   devtools_proxy = std::make_unique<EmbeddedWorkerInstance::DevToolsProxy>(
       process_id, routing_id);
 
+  // TODO(crbug.com/862854): Support changes to RendererPreferences while the
+  // worker is running.
+  GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
+      process_manager->browser_context(), &params->renderer_preferences);
+
   // Continue to OnSetupCompleted on the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

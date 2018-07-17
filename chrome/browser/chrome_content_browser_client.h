@@ -167,6 +167,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   const gfx::ImageSkia* GetDefaultFavicon() override;
   bool IsDataSaverEnabled(content::BrowserContext* context) override;
+  void UpdateRendererPreferencesForWorker(
+      content::BrowserContext* browser_context,
+      content::RendererPreferences* out_prefs) override;
   void NavigationRequestStarted(
       int frame_tree_node_id,
       const GURL& url,
