@@ -24,53 +24,44 @@ public final class ModuleMetrics {
 
     /**
      * Possible results when loading a dynamic module. Keep in sync with the
-     * CustomTabs.DynamicModule.LoadResult enum in histograms.xml. Do not remove or change existing
-     * values other than LOAD_RESULT_BOUNDARY.
+     * CustomTabs.DynamicModule.LoadResult enum in histograms.xml. Do not remove
+     * or change existing values other than NUM_ENTRIES.
      */
-    @IntDef({LOAD_RESULT_SUCCESS_NEW, LOAD_RESULT_SUCCESS_CACHED, LOAD_RESULT_FEATURE_DISABLED,
-            LOAD_RESULT_NOT_GOOGLE_SIGNED, LOAD_RESULT_PACKAGE_NAME_NOT_FOUND_EXCEPTION,
-            LOAD_RESULT_CLASS_NOT_FOUND_EXCEPTION, LOAD_RESULT_INSTANTIATION_EXCEPTION,
-            LOAD_RESULT_INCOMPATIBLE_VERSION})
+    @IntDef({LoadResult.SUCCESS_NEW, LoadResult.SUCCESS_CACHED, LoadResult.FEATURE_DISABLED,
+            LoadResult.NOT_GOOGLE_SIGNED, LoadResult.PACKAGE_NAME_NOT_FOUND_EXCEPTION,
+            LoadResult.CLASS_NOT_FOUND_EXCEPTION, LoadResult.INSTANTIATION_EXCEPTION,
+            LoadResult.INCOMPATIBLE_VERSION})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface LoadResult {}
-
-    /** A new instance of the module was loaded successfully. */
-    public static final int LOAD_RESULT_SUCCESS_NEW = 0;
-
-    /** A cached instance of the module was used. */
-    public static final int LOAD_RESULT_SUCCESS_CACHED = 1;
-
-    /** The module could not be loaded because the feature is disabled. */
-    public static final int LOAD_RESULT_FEATURE_DISABLED = 2;
-
-    /** The module could not be loaded because the package is not Google-signed. */
-    public static final int LOAD_RESULT_NOT_GOOGLE_SIGNED = 3;
-
-    /** The module could not be loaded because the package name could not be found. */
-    public static final int LOAD_RESULT_PACKAGE_NAME_NOT_FOUND_EXCEPTION = 4;
-
-    /** The module could not be loaded because the entry point class could not be found. */
-    public static final int LOAD_RESULT_CLASS_NOT_FOUND_EXCEPTION = 5;
-
-    /** The module could not be loaded because the entry point class could not be instantiated. */
-    public static final int LOAD_RESULT_INSTANTIATION_EXCEPTION = 6;
-
-    /** The module was loaded but the host and module versions are incompatible. */
-    public static final int LOAD_RESULT_INCOMPATIBLE_VERSION = 7;
-
-    /** Upper bound for legal sample values - all sample values have to be strictly lower. */
-    private static final int LOAD_RESULT_BOUNDARY = 8;
+    public @interface LoadResult {
+        /** A new instance of the module was loaded successfully. */
+        int SUCCESS_NEW = 0;
+        /** A cached instance of the module was used. */
+        int SUCCESS_CACHED = 1;
+        /** The module could not be loaded because the feature is disabled. */
+        int FEATURE_DISABLED = 2;
+        /** The module could not be loaded because the package is not Google-signed. */
+        int NOT_GOOGLE_SIGNED = 3;
+        /** The module could not be loaded because the package name could not be found. */
+        int PACKAGE_NAME_NOT_FOUND_EXCEPTION = 4;
+        /** The module could not be loaded because the entry point class could not be found. */
+        int CLASS_NOT_FOUND_EXCEPTION = 5;
+        /** The module could not be loaded because the entry point class could not be instantiated.
+         */
+        int INSTANTIATION_EXCEPTION = 6;
+        /** The module was loaded but the host and module versions are incompatible. */
+        int INCOMPATIBLE_VERSION = 7;
+        /** Upper bound for legal sample values - all sample values have to be strictly lower. */
+        int NUM_ENTRIES = 8;
+    }
 
     /**
      * Records the result of attempting to load a dynamic module.
      * @param result result key, one of {@link LoadResult}'s values.
      */
     public static void recordLoadResult(@LoadResult int result) {
-        assert result >= 0;
-        assert result < LOAD_RESULT_BOUNDARY;
         RecordHistogram.recordEnumeratedHistogram(
-                "CustomTabs.DynamicModule.LoadResult", result, LOAD_RESULT_BOUNDARY);
-        if (result != LOAD_RESULT_SUCCESS_NEW && result != LOAD_RESULT_SUCCESS_CACHED) {
+                "CustomTabs.DynamicModule.LoadResult", result, LoadResult.NUM_ENTRIES);
+        if (result != LoadResult.SUCCESS_NEW && result != LoadResult.SUCCESS_CACHED) {
             Log.w(TAG, "Did not load module, result: %s", result);
         }
     }

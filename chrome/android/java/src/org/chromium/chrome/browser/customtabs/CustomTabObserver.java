@@ -8,6 +8,7 @@ import android.app.Application;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 
@@ -21,6 +22,8 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -39,10 +42,15 @@ class CustomTabObserver extends EmptyTabObserver {
     private long mPageLoadStartedTimestamp;
     private long mFirstCommitTimestamp;
 
-    private static final int STATE_RESET = 0;
-    private static final int STATE_WAITING_LOAD_START = 1;
-    private static final int STATE_WAITING_LOAD_FINISH = 2;
-    private int mCurrentState;
+    @IntDef({State.RESET, State.WAITING_LOAD_START, State.WAITING_LOAD_FINISH})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface State {
+        int RESET = 0;
+        int WAITING_LOAD_START = 1;
+        int WAITING_LOAD_FINISH = 2;
+    }
+
+    private @State int mCurrentState;
 
     public CustomTabObserver(
             Application application, CustomTabsSessionToken session, boolean openedByChrome) {
@@ -79,9 +87,9 @@ class CustomTabObserver extends EmptyTabObserver {
         mIntentReceivedTimestamp = timestamp;
         if (tab.isLoading()) {
             mPageLoadStartedTimestamp = -1;
-            mCurrentState = STATE_WAITING_LOAD_FINISH;
+            mCurrentState = State.WAITING_LOAD_FINISH;
         } else {
-            mCurrentState = STATE_WAITING_LOAD_START;
+            mCurrentState = State.WAITING_LOAD_START;
         }
     }
 
@@ -94,10 +102,10 @@ class CustomTabObserver extends EmptyTabObserver {
 
     @Override
     public void onPageLoadStarted(Tab tab, String url) {
-        if (mCurrentState == STATE_WAITING_LOAD_START) {
+        if (mCurrentState == State.WAITING_LOAD_START) {
             mPageLoadStartedTimestamp = SystemClock.elapsedRealtime();
-            mCurrentState = STATE_WAITING_LOAD_FINISH;
-        } else if (mCurrentState == STATE_WAITING_LOAD_FINISH) {
+            mCurrentState = State.WAITING_LOAD_FINISH;
+        } else if (mCurrentState == State.WAITING_LOAD_FINISH) {
             if (mCustomTabsConnection != null) {
                 mCustomTabsConnection.sendNavigationInfo(
                         mSession, tab.getUrl(), tab.getTitle(), (Uri) null);
@@ -119,7 +127,7 @@ class CustomTabObserver extends EmptyTabObserver {
     public void onPageLoadFinished(Tab tab) {
         long pageLoadFinishedTimestamp = SystemClock.elapsedRealtime();
 
-        if (mCurrentState == STATE_WAITING_LOAD_FINISH && mIntentReceivedTimestamp > 0) {
+        if (mCurrentState == State.WAITING_LOAD_FINISH && mIntentReceivedTimestamp > 0) {
             String histogramPrefix = mOpenedByChrome ? "ChromeGeneratedCustomTab" : "CustomTabs";
             long timeToPageLoadFinishedMs = pageLoadFinishedTimestamp - mIntentReceivedTimestamp;
             if (mPageLoadStartedTimestamp > 0) {
@@ -186,7 +194,7 @@ class CustomTabObserver extends EmptyTabObserver {
     }
 
     private void resetPageLoadTracking() {
-        mCurrentState = STATE_RESET;
+        mCurrentState = State.RESET;
         mIntentReceivedTimestamp = -1;
     }
 
