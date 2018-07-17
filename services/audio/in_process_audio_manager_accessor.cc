@@ -27,4 +27,9 @@ media::AudioManager* InProcessAudioManagerAccessor::GetAudioManager() {
   return audio_manager_;
 }
 
+void InProcessAudioManagerAccessor::SetAudioLogFactory(
+    media::AudioLogFactory* factory) {
+  NOTREACHED();
+}
+
 }  // namespace audio

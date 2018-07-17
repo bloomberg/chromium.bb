@@ -116,9 +116,13 @@ class CONTENT_EXPORT AudioServiceListener
   void BrowserChildProcessKilled(const ChildProcessData& data,
                                  const ChildProcessTerminationInfo& info) final;
 
+  void MaybeSetLogFactory();
+
   mojo::Binding<service_manager::mojom::ServiceManagerListener> binding_;
+  std::unique_ptr<service_manager::Connector> connector_;
   base::ProcessId process_id_ = base::kNullProcessId;
   Metrics metrics_;
+  bool log_factory_is_set_ = false;
   SEQUENCE_CHECKER(owning_sequence_);
 
   DISALLOW_COPY_AND_ASSIGN(AudioServiceListener);

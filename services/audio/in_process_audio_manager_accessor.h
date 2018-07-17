@@ -10,6 +10,7 @@
 
 namespace media {
 class AudioManager;
+class AudioLogFactory;
 }
 
 namespace audio {
@@ -24,6 +25,9 @@ class InProcessAudioManagerAccessor : public Service::AudioManagerAccessor {
 
   void Shutdown() final {}  // AudioManager must be shut down by its owner.
   media::AudioManager* GetAudioManager() final;
+
+  // Should not be called on this implementation.
+  void SetAudioLogFactory(media::AudioLogFactory* factory) final;
 
  private:
   media::AudioManager* const audio_manager_;

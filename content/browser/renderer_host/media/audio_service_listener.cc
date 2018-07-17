@@ -6,12 +6,16 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
+#include "content/browser/media/audio_log_factory.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_termination_info.h"
+#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/audio/public/mojom/constants.mojom.h"
+#include "services/audio/public/mojom/log_factory_manager.mojom.h"
 
 namespace content {
 
@@ -88,14 +92,15 @@ void AudioServiceListener::Metrics::LogServiceStartStatus(
 AudioServiceListener::AudioServiceListener(
     std::unique_ptr<service_manager::Connector> connector)
     : binding_(this),
+      connector_(std::move(connector)),
       metrics_(base::DefaultTickClock::GetInstance()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  if (!connector)
+  if (!connector_)
     return;  // Happens in unittests.
 
   service_manager::mojom::ServiceManagerPtr service_manager;
-  connector->BindInterface(service_manager::mojom::kServiceName,
-                           &service_manager);
+  connector_->BindInterface(service_manager::mojom::kServiceName,
+                            &service_manager);
   service_manager::mojom::ServiceManagerListenerPtr listener;
   service_manager::mojom::ServiceManagerListenerRequest request(
       mojo::MakeRequest(&listener));
@@ -123,6 +128,7 @@ void AudioServiceListener::OnInit(
     if (instance->identity.name() == audio::mojom::kServiceName) {
       process_id_ = instance->pid;
       metrics_.ServiceAlreadyRunning();
+      MaybeSetLogFactory();
       break;
     }
   }
@@ -134,6 +140,7 @@ void AudioServiceListener::OnServiceCreated(
   if (service->identity.name() != audio::mojom::kServiceName)
     return;
   metrics_.ServiceCreated();
+  MaybeSetLogFactory();
 }
 
 void AudioServiceListener::OnServiceStarted(
@@ -169,6 +176,7 @@ void AudioServiceListener::OnServiceStopped(
   if (identity.name() != audio::mojom::kServiceName)
     return;
   metrics_.ServiceStopped();
+  log_factory_is_set_ = false;
 }
 
 void AudioServiceListener::BrowserChildProcessHostDisconnected(
@@ -201,6 +209,22 @@ void AudioServiceListener::BrowserChildProcessKilled(
   process_id_ = base::kNullProcessId;
   metrics_.ServiceProcessTerminated(
       Metrics::ServiceProcessTerminationStatus::kKill);
+}
+
+void AudioServiceListener::MaybeSetLogFactory() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  if (!base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess) ||
+      !connector_ || log_factory_is_set_)
+    return;
+
+  media::mojom::AudioLogFactoryPtr audio_log_factory_ptr;
+  mojo::MakeStrongBinding(std::make_unique<AudioLogFactory>(),
+                          mojo::MakeRequest(&audio_log_factory_ptr));
+  audio::mojom::LogFactoryManagerPtr log_factory_manager_ptr;
+  connector_->BindInterface(audio::mojom::kServiceName,
+                            mojo::MakeRequest(&log_factory_manager_ptr));
+  log_factory_manager_ptr->SetLogFactory(std::move(audio_log_factory_ptr));
+  log_factory_is_set_ = true;
 }
 
 }  // namespace content
