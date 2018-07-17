@@ -32,6 +32,9 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
   using MFEnumDeviceSourcesFunc = decltype(&MFEnumDeviceSources);
   using DirectShowEnumDevicesFunc =
       base::RepeatingCallback<HRESULT(IEnumMoniker**)>;
+  using GetSupportedFormatsFunc =
+      base::RepeatingCallback<void(const VideoCaptureDeviceDescriptor&,
+                                   VideoCaptureFormats*)>;
 
   std::unique_ptr<VideoCaptureDevice> CreateDevice(
       const VideoCaptureDeviceDescriptor& device_descriptor) override;
@@ -55,6 +58,14 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
       DirectShowEnumDevicesFunc func) {
     direct_show_enum_devices_func_ = func;
   }
+  void set_mf_get_supported_formats_func_for_testing(
+      GetSupportedFormatsFunc func) {
+    mf_get_supported_formats_func_ = func;
+  }
+  void set_direct_show_get_supported_formats_func_for_testing(
+      GetSupportedFormatsFunc func) {
+    direct_show_get_supported_formats_func_ = func;
+  }
 
  private:
   void EnumerateDevicesUWP(
@@ -67,6 +78,20 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
   void DeviceInfoReady(
       std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
       DeviceDescriptorsCallback result_callback);
+  void GetDeviceDescriptorsMediaFoundation(
+      VideoCaptureDeviceDescriptors* device_descriptors);
+  void AugmentDescriptorListWithDirectShowOnlyDevices(
+      VideoCaptureDeviceDescriptors* device_descriptors);
+  bool EnumerateVideoDevicesMediaFoundation(
+      const std::vector<std::pair<GUID, GUID>>& attributes_data,
+      IMFActivate*** devices,
+      UINT32* count);
+  void GetDeviceDescriptorsDirectShow(
+      VideoCaptureDeviceDescriptors* device_descriptors);
+  int GetNumberOfSupportedFormats(const VideoCaptureDeviceDescriptor& device);
+  void GetApiSpecificSupportedFormats(
+      const VideoCaptureDeviceDescriptor& device,
+      VideoCaptureFormats* formats);
 
   bool use_media_foundation_;
   // In production code, when Media Foundation libraries are available,
@@ -74,6 +99,9 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
   // mock of Media Foundation API in unit tests.
   MFEnumDeviceSourcesFunc mf_enum_device_sources_func_ = nullptr;
   DirectShowEnumDevicesFunc direct_show_enum_devices_func_;
+
+  GetSupportedFormatsFunc mf_get_supported_formats_func_;
+  GetSupportedFormatsFunc direct_show_get_supported_formats_func_;
 
   // For calling WinRT methods on a COM initiated thread.
   base::Thread com_thread_;
