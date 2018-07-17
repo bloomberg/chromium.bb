@@ -48,6 +48,8 @@ cr.define('extension_options_dialog_tests', function() {
             const rect = dialogElement.getBoundingClientRect();
             assertGE(rect.width, extensions.OptionsDialogMinWidth);
             assertLE(rect.height, extensions.OptionsDialogMaxHeight);
+            // This is the header height with default font size.
+            assertGE(rect.height, 68);
 
             assertEquals(
                 data.name,
