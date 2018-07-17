@@ -49,6 +49,7 @@ class Progress(object):
 
     if text:
       text += ' ' + extra
+      text = text[:self.terminal_width()]  # Avoid wrapping
       spaces = max(self._width - len(text), 0)
       sys.stdout.write('%s%*s\r' % (text, spaces, ''))
       sys.stdout.flush()
@@ -73,3 +74,44 @@ class Progress(object):
     spaces = max(self._width - len(text), 0)
     sys.stdout.write('%s%*s\n' % (text, spaces, ''))
     sys.stdout.flush()
+
+  def terminal_width(self):
+    """Returns sys.maxsize if the width cannot be determined."""
+    try:
+      if not sys.stdout.isatty():
+        return sys.maxsize
+      if sys.platform == 'win32':
+        import ctypes
+        class CONSOLE_SCREEN_BUFFER_INFO(ctypes.Structure):
+          _fields_ = [
+            ('dwSize', ctypes.wintypes._COORD),
+            ('dwCursorPosition', ctypes.wintypes._COORD),
+            ('wAttributes', ctypes.c_ushort),
+            ('srWindow', ctypes.wintypes._SMALL_RECT),
+            ('dwMaximumWindowSize', ctypes.wintypes._COORD)
+          ]
+        # Get our own instance of the kernel lib since python
+        # libraries and python ports are known to manipulate
+        # ctypes.windll.kernel32. See
+        # https://github.com/pallets/click/issues/126
+        kernel32 = ctypes.WinDLL('kernel32')
+        handle = kernel32.GetStdHandle(-12)  # -12 == stderr
+        console_screen_buffer_info = CONSOLE_SCREEN_BUFFER_INFO()
+        if kernel32.GetConsoleScreenBufferInfo(
+            ctypes.c_ulong(handle),
+            ctypes.byref(console_screen_buffer_info)):
+          # Note that we return 1 less than the width since writing into
+          # the rightmost column automatically performs a line feed.
+          right = console_screen_buffer_info.srWindow.Right
+          left = console_screen_buffer_info.srWindow.Left
+          return right - left
+        return sys.maxsize
+      else:
+        import fcntl
+        import struct
+        import termios
+        packed = fcntl.ioctl(sys.stderr.fileno(), termios.TIOCGWINSZ, '\0' * 8)
+        _, columns, _, _ = struct.unpack('HHHH', packed)
+        return columns
+    except Exception:  # pylint: disable=broad-except
+      return sys.maxsize
