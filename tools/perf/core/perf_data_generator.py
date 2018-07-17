@@ -128,9 +128,9 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=android_go_14_shard_map.json',
+            '--test-shard-map-filename=android_go_shard_map.json',
           ],
-          'num_shards': 14
+          'num_shards': 19
         }
       ],
       'platform': 'android',
