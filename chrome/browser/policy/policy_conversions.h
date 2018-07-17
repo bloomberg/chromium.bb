@@ -17,10 +17,9 @@ namespace policy {
 // Returns a dictionary with the values of all set policies, with some values
 // converted to be shown in javascript, if it is specified.
 // |with_user_policies| governs if values with POLICY_SCOPE_USER are included.
-std::unique_ptr<base::DictionaryValue> GetAllPolicyValuesAsDictionary(
-    content::BrowserContext* context,
-    bool with_user_policies,
-    bool convert_values);
+base::Value GetAllPolicyValuesAsDictionary(content::BrowserContext* context,
+                                           bool with_user_policies,
+                                           bool convert_values);
 
 // Returns a JSON with the values of all set policies.
 // |with_user_policies| governs if values with POLICY_SCOPE_USER are included.
