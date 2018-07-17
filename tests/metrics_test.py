@@ -28,6 +28,7 @@ class TimeMock(object):
 
 class MetricsCollectorTest(unittest.TestCase):
   def setUp(self):
+    self.config_file = os.path.join(ROOT_DIR, 'metrics.cfg')
     self.collector = metrics.MetricsCollector()
 
     # Keep track of the URL requests, file reads/writes and subprocess spawned.
@@ -294,6 +295,38 @@ class MetricsCollectorTest(unittest.TestCase):
       fun()
     self.assertEqual(cm.exception.code, 123)
     self.assert_collects_metrics({'exit_code': 123})
+
+  def test_counts_down(self):
+    """Tests that the countdown works correctly."""
+    self.FileRead.side_effect = [
+        '{"is-googler": true, "countdown": 10, "opt-in": null}'
+    ]
+
+    # We define multiple functions to ensure it has no impact on countdown.
+    @self.collector.collect_metrics('fun')
+    def fun():
+      pass
+    @self.collector.collect_metrics('foon')
+    def _foon():
+      pass
+
+    # Assert that the countdown hasn't decrease yet.
+    self.assertFalse(self.FileWrite.called)
+    self.assertEqual(self.collector.config.countdown, 10)
+
+    fun()
+
+    # Assert that the countdown decreased by one, and the config file was
+    # updated.
+    self.assertEqual(self.collector.config.countdown, 9)
+    self.print_notice.assert_called_once_with(10)
+
+    self.assertEqual(len(self.FileWrite.mock_calls), 1)
+    config_file, config = self.FileWrite.mock_calls[0][1]
+
+    self.assertEqual(config_file, self.config_file)
+    self.assertEqual(json.loads(config),
+                     {'is-googler': True, 'countdown': 9, 'opt-in': None})
 
 
 if __name__ == '__main__':

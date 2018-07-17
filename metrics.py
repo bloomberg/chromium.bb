@@ -133,6 +133,15 @@ class MetricsCollector(object):
     p.stdin.write(json.dumps(self._reported_metrics))
 
   def _collect_metrics(self, func, command_name, *args, **kwargs):
+    # If the user hasn't opted in or out, and the countdown is not yet 0, just
+    # display the notice.
+    if self.config.opted_in == None and self.config.countdown > 0:
+      metrics_utils.print_notice(self.config.countdown)
+      self.config.decrease_countdown()
+      func(*args, **kwargs)
+      return
+
+    self._collecting_metrics = True
     self.add('command', command_name)
     try:
       start = time.time()
@@ -183,18 +192,11 @@ class MetricsCollector(object):
       # need to do anything.
       if self.config.opted_in == False or not self.config.is_googler:
         return func
-      # If the user hasn't opted in or out, and the countdown is not yet 0, just
-      # display the notice.
-      if self.config.opted_in == None and self.config.countdown > 0:
-        metrics_utils.print_notice(self.config.countdown)
-        self.config.decrease_countdown()
-        return func
       # Otherwise, collect the metrics.
       # Needed to preserve the __name__ and __doc__ attributes of func.
       @functools.wraps(func)
       def _inner(*args, **kwargs):
         self._collect_metrics(func, command_name, *args, **kwargs)
-      self._collecting_metrics = True
       return _inner
     return _decorator
 
