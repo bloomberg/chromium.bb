@@ -34,7 +34,12 @@ TouchIdContext::TouchIdContext()
       callback_(),
       weak_ptr_factory_(this) {}
 
-TouchIdContext::~TouchIdContext() = default;
+TouchIdContext::~TouchIdContext() {
+  // Invalidating the LAContext will dismiss any pending UI dialog (e.g. if the
+  // transaction was cancelled while we are waiting for a fingerprint). Simply
+  // releasing the LAContext does not have the same effect.
+  [context_ invalidate];
+}
 
 void TouchIdContext::PromptTouchId(std::string reason, Callback callback) {
   callback_ = std::move(callback);
