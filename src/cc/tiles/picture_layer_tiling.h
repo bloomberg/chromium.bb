@@ -201,7 +201,7 @@ class CC_EXPORT PictureLayerTiling {
       const gfx::Rect& skewport,
       const gfx::Rect& soon_border_rect,
       const gfx::Rect& eventually_rect) {
-    SetTilePriorityRects(1.f, visible_rect_in_content_space, skewport,
+    SetTilePriorityRects(gfx::SizeF(1.f, 1.f), visible_rect_in_content_space, skewport,
                          soon_border_rect, eventually_rect, Occlusion());
   }
 
@@ -303,7 +303,7 @@ class CC_EXPORT PictureLayerTiling {
   bool TilingMatchesTileIndices(const PictureLayerTiling* twin) const;
 
   // Save the required data for computing tile priorities later.
-  void SetTilePriorityRects(float content_to_screen_scale,
+  void SetTilePriorityRects(const gfx::SizeF& content_to_screen_scale,
                             const gfx::Rect& visible_rect_in_content_space,
                             const gfx::Rect& skewport,
                             const gfx::Rect& soon_border_rect,
@@ -378,7 +378,7 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Rect current_soon_border_rect_;
   gfx::Rect current_eventually_rect_;
   // Other properties used for tile iteration and prioritization.
-  float current_content_to_screen_scale_ = 0.f;
+  gfx::SizeF current_content_to_screen_scale_;
   Occlusion current_occlusion_in_layer_space_;
   float max_skewport_extent_in_screen_space_ = 0.f;
 
