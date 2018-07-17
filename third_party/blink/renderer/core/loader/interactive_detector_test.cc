@@ -34,12 +34,6 @@ int NetworkActivityCheckerForTest::GetActiveConnections() {
   return active_connections_;
 }
 
-struct TaskTiming {
-  double start;
-  double end;
-  TaskTiming(double start, double end) : start(start), end(end) {}
-};
-
 class InteractiveDetectorTest : public testing::Test {
  public:
   InteractiveDetectorTest() {
@@ -63,13 +57,13 @@ class InteractiveDetectorTest : public testing::Test {
   // Public because it's executed on a task queue.
   void DummyTaskWithDuration(double duration_seconds) {
     platform_->AdvanceClockSeconds(duration_seconds);
-    dummy_task_end_time_ = CurrentTimeTicksInSeconds();
+    dummy_task_end_time_ = CurrentTimeTicks();
   }
 
  protected:
   InteractiveDetector* GetDetector() { return detector_; }
 
-  double GetDummyTaskEndTime() { return dummy_task_end_time_; }
+  TimeTicks GetDummyTaskEndTime() { return dummy_task_end_time_; }
 
   NetworkActivityCheckerForTest* GetNetworkActivityChecker() {
     // We know in this test context that network_activity_checker_ is an
@@ -78,38 +72,36 @@ class InteractiveDetectorTest : public testing::Test {
         detector_->network_activity_checker_.get());
   }
 
-  void SimulateNavigationStart(double nav_start_time) {
+  void SimulateNavigationStart(TimeTicks nav_start_time) {
     RunTillTimestamp(nav_start_time);
-    detector_->SetNavigationStartTime(TimeTicksFromSeconds(nav_start_time));
+    detector_->SetNavigationStartTime(nav_start_time);
   }
 
-  void SimulateLongTask(double start, double end) {
-    CHECK(end - start >= 0.05);
+  void SimulateLongTask(TimeTicks start, TimeTicks end) {
+    CHECK(end - start >= TimeDelta::FromSecondsD(0.05));
     RunTillTimestamp(end);
-    detector_->OnLongTaskDetected(TimeTicksFromSeconds(start),
-                                  TimeTicksFromSeconds(end));
+    detector_->OnLongTaskDetected(start, end);
   }
 
-  void SimulateDOMContentLoadedEnd(double dcl_time) {
+  void SimulateDOMContentLoadedEnd(TimeTicks dcl_time) {
     RunTillTimestamp(dcl_time);
-    detector_->OnDomContentLoadedEnd(TimeTicksFromSeconds(dcl_time));
+    detector_->OnDomContentLoadedEnd(dcl_time);
   }
 
-  void SimulateFMPDetected(double fmp_time, double detection_time) {
+  void SimulateFMPDetected(TimeTicks fmp_time, TimeTicks detection_time) {
     RunTillTimestamp(detection_time);
     detector_->OnFirstMeaningfulPaintDetected(
-        TimeTicksFromSeconds(fmp_time),
-        FirstMeaningfulPaintDetector::kNoUserInput);
+        fmp_time, FirstMeaningfulPaintDetector::kNoUserInput);
   }
 
-  void SimulateInteractiveInvalidatingInput(double timestamp) {
+  void SimulateInteractiveInvalidatingInput(TimeTicks timestamp) {
     RunTillTimestamp(timestamp);
-    detector_->OnInvalidatingInputEvent(TimeTicksFromSeconds(timestamp));
+    detector_->OnInvalidatingInputEvent(timestamp);
   }
 
-  void RunTillTimestamp(double target_time) {
-    double current_time = CurrentTimeTicksInSeconds();
-    platform_->RunForPeriodSeconds(std::max(0.0, target_time - current_time));
+  void RunTillTimestamp(TimeTicks target_time) {
+    TimeTicks current_time = CurrentTimeTicks();
+    platform_->RunForPeriod(std::max(TimeDelta(), target_time - current_time));
   }
 
   int GetActiveConnections() {
@@ -120,23 +112,21 @@ class InteractiveDetectorTest : public testing::Test {
     GetNetworkActivityChecker()->SetActiveConnections(active_connections);
   }
 
-  void SimulateResourceLoadBegin(double load_begin_time) {
+  void SimulateResourceLoadBegin(TimeTicks load_begin_time) {
     RunTillTimestamp(load_begin_time);
-    detector_->OnResourceLoadBegin(TimeTicksFromSeconds(load_begin_time));
+    detector_->OnResourceLoadBegin(load_begin_time);
     // ActiveConnections is incremented after detector runs OnResourceLoadBegin;
     SetActiveConnections(GetActiveConnections() + 1);
   }
 
-  void SimulateResourceLoadEnd(double load_finish_time) {
+  void SimulateResourceLoadEnd(TimeTicks load_finish_time) {
     RunTillTimestamp(load_finish_time);
     int active_connections = GetActiveConnections();
     SetActiveConnections(active_connections - 1);
-    detector_->OnResourceLoadEnd(TimeTicksFromSeconds(load_finish_time));
+    detector_->OnResourceLoadEnd(load_finish_time);
   }
 
-  double GetInteractiveTime() {
-    return TimeTicksInSeconds(detector_->GetInteractiveTime());
-  }
+  TimeTicks GetInteractiveTime() { return detector_->GetInteractiveTime(); }
 
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
@@ -144,7 +134,7 @@ class InteractiveDetectorTest : public testing::Test {
  private:
   Persistent<InteractiveDetector> detector_;
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
-  double dummy_task_end_time_ = 0.0;
+  TimeTicks dummy_task_end_time_;
 };
 
 // Note: The tests currently assume kTimeToInteractiveWindowSeconds is 5
@@ -160,308 +150,374 @@ class InteractiveDetectorTest : public testing::Test {
 // The name shows the ordering of these events in the test.
 
 TEST_F(InteractiveDetectorTest, FMP_DCL_FmpDetect) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   // Network is forever quiet for this test.
   SetActiveConnections(1);
-  SimulateDOMContentLoadedEnd(t0 + 3.0);
-  SimulateFMPDetected(/* fmp_time */ t0 + 5.0, /* detection_time */ t0 + 7.0);
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(3));
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(5),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(7));
   // Run until 5 seconds after FMP.
-  RunTillTimestamp((t0 + 5.0) + 5.0 + 0.1);
+  RunTillTimestamp((t0 + TimeDelta::FromSeconds(5)) +
+                   TimeDelta::FromSecondsD(5.0 + 0.1));
   // Reached TTI at FMP.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 5.0);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSeconds(5));
 }
 
 TEST_F(InteractiveDetectorTest, DCL_FMP_FmpDetect) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   // Network is forever quiet for this test.
   SetActiveConnections(1);
-  SimulateDOMContentLoadedEnd(t0 + 5.0);
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 7.0);
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(5));
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(7));
   // Run until 5 seconds after FMP.
-  RunTillTimestamp((t0 + 3.0) + 5.0 + 0.1);
+  RunTillTimestamp((t0 + TimeDelta::FromSeconds(3)) +
+                   TimeDelta::FromSecondsD(5.0 + 0.1));
   // Reached TTI at DCL.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 5.0);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSeconds(5));
 }
 
 TEST_F(InteractiveDetectorTest, InstantDetectionAtFmpDetectIfPossible) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   // Network is forever quiet for this test.
   SetActiveConnections(1);
-  SimulateDOMContentLoadedEnd(t0 + 5.0);
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 10.0);
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(5));
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(10));
   // Although we just detected FMP, the FMP timestamp is more than
   // kTimeToInteractiveWindowSeconds earlier. We should instantaneously
   // detect that we reached TTI at DCL.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 5.0);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSeconds(5));
 }
 
 TEST_F(InteractiveDetectorTest, FmpDetectFiresAfterLateLongTask) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   // Network is forever quiet for this test.
   SetActiveConnections(1);
-  SimulateDOMContentLoadedEnd(t0 + 3.0);
-  SimulateLongTask(t0 + 9.0, t0 + 9.1);
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 10.0);
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(3));
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(9),
+                   t0 + TimeDelta::FromSecondsD(9.1));
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(10));
   // There is a 5 second quiet window after fmp_time - the long task is 6s
   // seconds after fmp_time. We should instantly detect we reached TTI at FMP.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 3.0);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSeconds(3));
 }
 
 TEST_F(InteractiveDetectorTest, FMP_FmpDetect_DCL) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   // Network is forever quiet for this test.
   SetActiveConnections(1);
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 5.0);
-  SimulateDOMContentLoadedEnd(t0 + 9.0);
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(5));
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(9));
   // TTI reached at DCL.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 9.0);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSeconds(9));
 }
 
 TEST_F(InteractiveDetectorTest, LongTaskBeforeFMPDoesNotAffectTTI) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   // Network is forever quiet for this test.
   SetActiveConnections(1);
-  SimulateDOMContentLoadedEnd(t0 + 3.0);
-  SimulateLongTask(t0 + 5.1, t0 + 5.2);
-  SimulateFMPDetected(/* fmp_time */ t0 + 8.0, /* detection_time */ t0 + 9.0);
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(3));
+  SimulateLongTask(t0 + TimeDelta::FromSecondsD(5.1),
+                   t0 + TimeDelta::FromSecondsD(5.2));
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(8),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(9));
   // Run till 5 seconds after FMP.
-  RunTillTimestamp((t0 + 8.0) + 5.0 + 0.1);
+  RunTillTimestamp((t0 + TimeDelta::FromSeconds(8)) +
+                   TimeDelta::FromSecondsD(5.0 + 0.1));
   // TTI reached at FMP.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 8.0);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSeconds(8));
 }
 
 TEST_F(InteractiveDetectorTest, DCLDoesNotResetTimer) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   // Network is forever quiet for this test.
   SetActiveConnections(1);
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 4.0);
-  SimulateLongTask(t0 + 5.0, t0 + 5.1);
-  SimulateDOMContentLoadedEnd(t0 + 8.0);
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(4));
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(5),
+                   t0 + TimeDelta::FromSecondsD(5.1));
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(8));
   // Run till 5 seconds after long task end.
-  RunTillTimestamp((t0 + 5.1) + 5.0 + 0.1);
+  RunTillTimestamp((t0 + TimeDelta::FromSecondsD(5.1)) +
+                   TimeDelta::FromSecondsD(5.0 + 0.1));
   // TTI Reached at DCL.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 8.0);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSeconds(8));
 }
 
 TEST_F(InteractiveDetectorTest, DCL_FMP_FmpDetect_LT) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   // Network is forever quiet for this test.
   SetActiveConnections(1);
-  SimulateDOMContentLoadedEnd(t0 + 3.0);
-  SimulateFMPDetected(/* fmp_time */ t0 + 4.0, /* detection_time */ t0 + 5.0);
-  SimulateLongTask(t0 + 7.0, t0 + 7.1);
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(3));
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(4),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(5));
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(7),
+                   t0 + TimeDelta::FromSecondsD(7.1));
   // Run till 5 seconds after long task end.
-  RunTillTimestamp((t0 + 7.1) + 5.0 + 0.1);
+  RunTillTimestamp((t0 + TimeDelta::FromSecondsD(7.1)) +
+                   TimeDelta::FromSecondsD(5.0 + 0.1));
   // TTI reached at long task end.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 7.1);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSecondsD(7.1));
 }
 
 TEST_F(InteractiveDetectorTest, DCL_FMP_LT_FmpDetect) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   // Network is forever quiet for this test.
   SetActiveConnections(1);
-  SimulateDOMContentLoadedEnd(t0 + 3.0);
-  SimulateLongTask(t0 + 7.0, t0 + 7.1);
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 5.0);
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(3));
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(7),
+                   t0 + TimeDelta::FromSecondsD(7.1));
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(5));
   // Run till 5 seconds after long task end.
-  RunTillTimestamp((t0 + 7.1) + 5.0 + 0.1);
+  RunTillTimestamp((t0 + TimeDelta::FromSecondsD(7.1)) +
+                   TimeDelta::FromSecondsD(5.0 + 0.1));
   // TTI reached at long task end.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 7.1);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSecondsD(7.1));
 }
 
 TEST_F(InteractiveDetectorTest, FMP_FmpDetect_LT_DCL) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   // Network is forever quiet for this test.
   SetActiveConnections(1);
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 4.0);
-  SimulateLongTask(t0 + 7.0, t0 + 7.1);
-  SimulateDOMContentLoadedEnd(t0 + 8.0);
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(4));
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(7),
+                   t0 + TimeDelta::FromSecondsD(7.1));
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(8));
   // Run till 5 seconds after long task end.
-  RunTillTimestamp((t0 + 7.1) + 5.0 + 0.1);
+  RunTillTimestamp((t0 + TimeDelta::FromSecondsD(7.1)) +
+                   TimeDelta::FromSecondsD(5.0 + 0.1));
   // TTI reached at DCL. Note that we do not need to wait for DCL + 5 seconds.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 8.0);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSeconds(8));
 }
 
 TEST_F(InteractiveDetectorTest, DclIsMoreThan5sAfterFMP) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   // Network is forever quiet for this test.
   SetActiveConnections(1);
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 4.0);
-  SimulateLongTask(t0 + 7.0, t0 + 7.1);  // Long task 1.
-  SimulateDOMContentLoadedEnd(t0 + 10.0);
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(4));
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(7),
+                   t0 + TimeDelta::FromSecondsD(7.1));  // Long task 1.
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(10));
   // Have not reached TTI yet.
-  EXPECT_EQ(GetInteractiveTime(), 0.0);
-  SimulateLongTask(t0 + 11.0, t0 + 11.1);  // Long task 2.
+  EXPECT_EQ(GetInteractiveTime(), TimeTicks());
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(11),
+                   t0 + TimeDelta::FromSecondsD(11.1));  // Long task 2.
   // Run till long task 2 end + 5 seconds.
-  RunTillTimestamp((t0 + 11.1) + 5.0 + 0.1);
+  RunTillTimestamp((t0 + TimeDelta::FromSecondsD(11.1)) +
+                   TimeDelta::FromSecondsD(5.0 + 0.1));
   // TTI reached at long task 2 end.
-  EXPECT_EQ(GetInteractiveTime(), (t0 + 11.1));
+  EXPECT_EQ(GetInteractiveTime(), (t0 + TimeDelta::FromSecondsD(11.1)));
 }
 
 TEST_F(InteractiveDetectorTest, NetworkBusyBlocksTTIEvenWhenMainThreadQuiet) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   SetActiveConnections(1);
-  SimulateDOMContentLoadedEnd(t0 + 2.0);
-  SimulateResourceLoadBegin(t0 + 3.4);  // Request 2 start.
-  SimulateResourceLoadBegin(t0 + 3.5);  // Request 3 start. Network busy.
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 4.0);
-  SimulateLongTask(t0 + 7.0, t0 + 7.1);  // Long task 1.
-  SimulateResourceLoadEnd(t0 + 12.2);    // Network quiet.
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(2));
+  SimulateResourceLoadBegin(t0 +
+                            TimeDelta::FromSecondsD(3.4));  // Request 2 start.
+  SimulateResourceLoadBegin(
+      t0 + TimeDelta::FromSecondsD(3.5));  // Request 3 start. Network busy.
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(4));
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(7),
+                   t0 + TimeDelta::FromSecondsD(7.1));  // Long task 1.
+  SimulateResourceLoadEnd(t0 +
+                          TimeDelta::FromSecondsD(12.2));  // Network quiet.
   // Network busy kept page from reaching TTI..
-  EXPECT_EQ(GetInteractiveTime(), 0.0);
-  SimulateLongTask(t0 + 13.0, t0 + 13.1);  // Long task 2.
+  EXPECT_EQ(GetInteractiveTime(), TimeTicks());
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(13),
+                   t0 + TimeDelta::FromSecondsD(13.1));  // Long task 2.
   // Run till 5 seconds after long task 2 end.
-  RunTillTimestamp((t0 + 13.1) + 5.0 + 0.1);
-  EXPECT_EQ(GetInteractiveTime(), (t0 + 13.1));
+  RunTillTimestamp((t0 + TimeDelta::FromSecondsD(13.1)) +
+                   TimeDelta::FromSecondsD(5.0 + 0.1));
+  EXPECT_EQ(GetInteractiveTime(), (t0 + TimeDelta::FromSecondsD(13.1)));
 }
 
 TEST_F(InteractiveDetectorTest, LongEnoughQuietWindowBetweenFMPAndFmpDetect) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   SetActiveConnections(1);
-  SimulateDOMContentLoadedEnd(t0 + 2.0);
-  SimulateLongTask(t0 + 2.1, t0 + 2.2);  // Long task 1.
-  SimulateLongTask(t0 + 8.2, t0 + 8.3);  // Long task 2.
-  SimulateResourceLoadBegin(t0 + 8.4);   // Request 2 start.
-  SimulateResourceLoadBegin(t0 + 8.5);   // Request 3 start. Network busy.
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 10.0);
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(2));
+  SimulateLongTask(t0 + TimeDelta::FromSecondsD(2.1),
+                   t0 + TimeDelta::FromSecondsD(2.2));  // Long task 1.
+  SimulateLongTask(t0 + TimeDelta::FromSecondsD(8.2),
+                   t0 + TimeDelta::FromSecondsD(8.3));  // Long task 2.
+  SimulateResourceLoadBegin(t0 +
+                            TimeDelta::FromSecondsD(8.4));  // Request 2 start.
+  SimulateResourceLoadBegin(
+      t0 + TimeDelta::FromSecondsD(8.5));  // Request 3 start. Network busy.
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(10));
   // Even though network is currently busy and we have long task finishing
   // recently, we should be able to detect that the page already achieved TTI at
   // FMP.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 3.0);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSeconds(3));
 }
 
 TEST_F(InteractiveDetectorTest, NetworkBusyEndIsNotTTI) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   SetActiveConnections(1);
-  SimulateDOMContentLoadedEnd(t0 + 2.0);
-  SimulateResourceLoadBegin(t0 + 3.4);  // Request 2 start.
-  SimulateResourceLoadBegin(t0 + 3.5);  // Request 3 start. Network busy.
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 4.0);
-  SimulateLongTask(t0 + 7.0, t0 + 7.1);    // Long task 1.
-  SimulateLongTask(t0 + 13.0, t0 + 13.1);  // Long task 2.
-  SimulateResourceLoadEnd(t0 + 14.0);      // Network quiet.
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(2));
+  SimulateResourceLoadBegin(t0 +
+                            TimeDelta::FromSecondsD(3.4));  // Request 2 start.
+  SimulateResourceLoadBegin(
+      t0 + TimeDelta::FromSecondsD(3.5));  // Request 3 start. Network busy.
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(4));
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(7),
+                   t0 + TimeDelta::FromSecondsD(7.1));  // Long task 1.
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(13),
+                   t0 + TimeDelta::FromSecondsD(13.1));      // Long task 2.
+  SimulateResourceLoadEnd(t0 + TimeDelta::FromSeconds(14));  // Network quiet.
   // Run till 5 seconds after network busy end.
-  RunTillTimestamp((t0 + 14.0) + 5.0 + 0.1);
+  RunTillTimestamp((t0 + TimeDelta::FromSeconds(14)) +
+                   TimeDelta::FromSecondsD(5.0 + 0.1));
   // TTI reached at long task 2 end, NOT at network busy end.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 13.1);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSecondsD(13.1));
 }
 
 TEST_F(InteractiveDetectorTest, LateLongTaskWithLateFMPDetection) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   SetActiveConnections(1);
-  SimulateDOMContentLoadedEnd(t0 + 2.0);
-  SimulateResourceLoadBegin(t0 + 3.4);     // Request 2 start.
-  SimulateResourceLoadBegin(t0 + 3.5);     // Request 3 start. Network busy.
-  SimulateLongTask(t0 + 7.0, t0 + 7.1);    // Long task 1.
-  SimulateResourceLoadEnd(t0 + 8.0);       // Network quiet.
-  SimulateLongTask(t0 + 14.0, t0 + 14.1);  // Long task 2.
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 20.0);
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(2));
+  SimulateResourceLoadBegin(t0 +
+                            TimeDelta::FromSecondsD(3.4));  // Request 2 start.
+  SimulateResourceLoadBegin(
+      t0 + TimeDelta::FromSecondsD(3.5));  // Request 3 start. Network busy.
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(7),
+                   t0 + TimeDelta::FromSecondsD(7.1));      // Long task 1.
+  SimulateResourceLoadEnd(t0 + TimeDelta::FromSeconds(8));  // Network quiet.
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(14),
+                   t0 + TimeDelta::FromSecondsD(14.1));  // Long task 2.
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(20));
   // TTI reached at long task 1 end, NOT at long task 2 end.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 7.1);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSecondsD(7.1));
 }
 
 TEST_F(InteractiveDetectorTest, IntermittentNetworkBusyBlocksTTI) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   SetActiveConnections(1);
-  SimulateDOMContentLoadedEnd(t0 + 2.0);
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 4.0);
-  SimulateLongTask(t0 + 7.0, t0 + 7.1);  // Long task 1.
-  SimulateResourceLoadBegin(t0 + 7.9);   // Active connections: 2
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(2));
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(4));
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(7),
+                   t0 + TimeDelta::FromSecondsD(7.1));  // Long task 1.
+  SimulateResourceLoadBegin(
+      t0 + TimeDelta::FromSecondsD(7.9));  // Active connections: 2
   // Network busy start.
-  SimulateResourceLoadBegin(t0 + 8.0);  // Active connections: 3.
+  SimulateResourceLoadBegin(
+      t0 + TimeDelta::FromSeconds(8));  // Active connections: 3.
   // Network busy end.
-  SimulateResourceLoadEnd(t0 + 8.5);  // Active connections: 2.
+  SimulateResourceLoadEnd(
+      t0 + TimeDelta::FromSecondsD(8.5));  // Active connections: 2.
   // Network busy start.
-  SimulateResourceLoadBegin(t0 + 11.0);  // Active connections: 3.
+  SimulateResourceLoadBegin(
+      t0 + TimeDelta::FromSeconds(11));  // Active connections: 3.
   // Network busy end.
-  SimulateResourceLoadEnd(t0 + 12.0);      // Active connections: 2.
-  SimulateLongTask(t0 + 14.0, t0 + 14.1);  // Long task 2.
+  SimulateResourceLoadEnd(
+      t0 + TimeDelta::FromSeconds(12));  // Active connections: 2.
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(14),
+                   t0 + TimeDelta::FromSecondsD(14.1));  // Long task 2.
   // Run till 5 seconds after long task 2 end.
-  RunTillTimestamp((t0 + 14.1) + 5.0 + 0.1);
+  RunTillTimestamp((t0 + TimeDelta::FromSecondsD(14.1)) +
+                   TimeDelta::FromSecondsD(5.0 + 0.1));
   // TTI reached at long task 2 end.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 14.1);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSecondsD(14.1));
 }
 
 TEST_F(InteractiveDetectorTest, InvalidatingUserInput) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   // Network is forever quiet for this test.
   SetActiveConnections(1);
-  SimulateDOMContentLoadedEnd(t0 + 2.0);
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 4.0);
-  SimulateInteractiveInvalidatingInput(t0 + 5.0);
-  SimulateLongTask(t0 + 7.0, t0 + 7.1);  // Long task 1.
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(2));
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(4));
+  SimulateInteractiveInvalidatingInput(t0 + TimeDelta::FromSeconds(5));
+  SimulateLongTask(t0 + TimeDelta::FromSeconds(7),
+                   t0 + TimeDelta::FromSecondsD(7.1));  // Long task 1.
   // Run till 5 seconds after long task 2 end.
-  RunTillTimestamp((t0 + 7.1) + 5.0 + 0.1);
+  RunTillTimestamp((t0 + TimeDelta::FromSecondsD(7.1)) +
+                   TimeDelta::FromSecondsD(5.0 + 0.1));
   // We still detect interactive time on the blink side even if there is an
   // invalidating user input. Page Load Metrics filters out this value in the
   // browser process for UMA reporting.
-  EXPECT_EQ(GetInteractiveTime(), t0 + 7.1);
-  EXPECT_EQ(TimeTicksInSeconds(GetDetector()->GetFirstInvalidatingInputTime()),
-            t0 + 5.0);
+  EXPECT_EQ(GetInteractiveTime(), t0 + TimeDelta::FromSecondsD(7.1));
+  EXPECT_EQ(GetDetector()->GetFirstInvalidatingInputTime(),
+            t0 + TimeDelta::FromSeconds(5));
 }
 
 TEST_F(InteractiveDetectorTest, InvalidatingUserInputClampedAtNavStart) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   // Network is forever quiet for this test.
   SetActiveConnections(1);
-  SimulateDOMContentLoadedEnd(t0 + 2.0);
-  SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 4.0);
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(2));
+  SimulateFMPDetected(/* fmp_time */ t0 + TimeDelta::FromSeconds(3),
+                      /* detection_time */ t0 + TimeDelta::FromSeconds(4));
   // Invalidating input timestamp is earlier than navigation start.
-  SimulateInteractiveInvalidatingInput(t0 - 10.0);
+  SimulateInteractiveInvalidatingInput(t0 - TimeDelta::FromSeconds(10));
   // Run till 5 seconds after FMP.
-  RunTillTimestamp((t0 + 7.1) + 5.0 + 0.1);
-  EXPECT_EQ(GetInteractiveTime(), t0 + 3.0);  // TTI at FMP.
+  RunTillTimestamp((t0 + TimeDelta::FromSecondsD(7.1)) +
+                   TimeDelta::FromSecondsD(5.0 + 0.1));
+  EXPECT_EQ(GetInteractiveTime(),
+            t0 + TimeDelta::FromSeconds(3));  // TTI at FMP.
   // Invalidating input timestamp is clamped at navigation start.
-  EXPECT_EQ(TimeTicksInSeconds(GetDetector()->GetFirstInvalidatingInputTime()),
-            t0);
+  EXPECT_EQ(GetDetector()->GetFirstInvalidatingInputTime(), t0);
 }
 
 TEST_F(InteractiveDetectorTest, InvalidatedFMP) {
-  double t0 = CurrentTimeTicksInSeconds();
+  TimeTicks t0 = CurrentTimeTicks();
   SimulateNavigationStart(t0);
   // Network is forever quiet for this test.
   SetActiveConnections(1);
-  SimulateInteractiveInvalidatingInput(t0 + 1.0);
-  SimulateDOMContentLoadedEnd(t0 + 2.0);
-  RunTillTimestamp(t0 + 4.0);  // FMP Detection time.
+  SimulateInteractiveInvalidatingInput(t0 + TimeDelta::FromSeconds(1));
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(2));
+  RunTillTimestamp(t0 + TimeDelta::FromSeconds(4));  // FMP Detection time.
   GetDetector()->OnFirstMeaningfulPaintDetected(
-      TimeTicksFromSeconds(t0 + 3.0),
+      t0 + TimeDelta::FromSeconds(3),
       FirstMeaningfulPaintDetector::kHadUserInput);
   // Run till 5 seconds after FMP.
-  RunTillTimestamp((t0 + 3.0) + 5.0 + 0.1);
+  RunTillTimestamp((t0 + TimeDelta::FromSeconds(3)) +
+                   TimeDelta::FromSecondsD(5.0 + 0.1));
   // Since FMP was invalidated, we do not have TTI or TTI Detection Time.
-  EXPECT_EQ(GetInteractiveTime(), 0.0);
+  EXPECT_EQ(GetInteractiveTime(), TimeTicks());
   EXPECT_EQ(TimeTicksInSeconds(GetDetector()->GetInteractiveDetectionTime()),
             0.0);
   // Invalidating input timestamp is available.
-  EXPECT_EQ(TimeTicksInSeconds(GetDetector()->GetFirstInvalidatingInputTime()),
-            t0 + 1.0);
+  EXPECT_EQ(GetDetector()->GetFirstInvalidatingInputTime(),
+            t0 + TimeDelta::FromSeconds(1));
 }
 
 TEST_F(InteractiveDetectorTest, TaskLongerThan5sBlocksTTI) {
-  double t0 = CurrentTimeTicksInSeconds();
-  GetDetector()->SetNavigationStartTime(TimeTicksFromSeconds(t0));
+  TimeTicks t0 = CurrentTimeTicks();
+  GetDetector()->SetNavigationStartTime(t0);
 
-  SimulateDOMContentLoadedEnd(t0 + 2.0);
-  SimulateFMPDetected(t0 + 3.0, t0 + 4.0);
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(2));
+  SimulateFMPDetected(t0 + TimeDelta::FromSeconds(3),
+                      t0 + TimeDelta::FromSeconds(4));
 
   // Post a task with 6 seconds duration.
   PostCrossThreadTask(
@@ -473,16 +529,16 @@ TEST_F(InteractiveDetectorTest, TaskLongerThan5sBlocksTTI) {
 
   // We should be able to detect TTI 5s after the end of long task.
   platform_->RunForPeriodSeconds(5.1);
-  EXPECT_EQ(TimeTicksInSeconds(GetDetector()->GetInteractiveTime()),
-            GetDummyTaskEndTime());
+  EXPECT_EQ(GetDetector()->GetInteractiveTime(), GetDummyTaskEndTime());
 }
 
 TEST_F(InteractiveDetectorTest, LongTaskAfterTTIDoesNothing) {
-  double t0 = CurrentTimeTicksInSeconds();
-  GetDetector()->SetNavigationStartTime(TimeTicksFromSeconds(t0));
+  TimeTicks t0 = CurrentTimeTicks();
+  GetDetector()->SetNavigationStartTime(t0);
 
-  SimulateDOMContentLoadedEnd(2.0);
-  SimulateFMPDetected(t0 + 3.0, t0 + 4.0);
+  SimulateDOMContentLoadedEnd(t0 + TimeDelta::FromSeconds(2));
+  SimulateFMPDetected(t0 + TimeDelta::FromSeconds(3),
+                      t0 + TimeDelta::FromSeconds(4));
 
   // Long task 1.
   PostCrossThreadTask(
@@ -492,11 +548,10 @@ TEST_F(InteractiveDetectorTest, LongTaskAfterTTIDoesNothing) {
 
   platform_->RunUntilIdle();
 
-  double long_task_1_end_time = GetDummyTaskEndTime();
+  TimeTicks long_task_1_end_time = GetDummyTaskEndTime();
   // We should be able to detect TTI 5s after the end of long task.
   platform_->RunForPeriodSeconds(5.1);
-  EXPECT_EQ(TimeTicksInSeconds(GetDetector()->GetInteractiveTime()),
-            long_task_1_end_time);
+  EXPECT_EQ(GetDetector()->GetInteractiveTime(), long_task_1_end_time);
 
   // Long task 2.
   PostCrossThreadTask(
@@ -508,8 +563,7 @@ TEST_F(InteractiveDetectorTest, LongTaskAfterTTIDoesNothing) {
   // Wait 5 seconds to see if TTI time changes.
   platform_->RunForPeriodSeconds(5.1);
   // TTI time should not change.
-  EXPECT_EQ(TimeTicksInSeconds(GetDetector()->GetInteractiveTime()),
-            long_task_1_end_time);
+  EXPECT_EQ(GetDetector()->GetInteractiveTime(), long_task_1_end_time);
 }
 
 }  // namespace blink
