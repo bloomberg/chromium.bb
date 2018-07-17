@@ -43,12 +43,13 @@ class CORE_EXPORT NGLineBreaker {
                 NGContainerFragmentBuilder* container_builder,
                 NGExclusionSpace*,
                 unsigned handled_float_index,
+                const NGLineLayoutOpportunity&,
                 const NGInlineBreakToken* = nullptr);
   ~NGLineBreaker();
 
   // Compute the next line break point and produces NGInlineItemResults for
   // the line.
-  void NextLine(const NGLineLayoutOpportunity& line_opportunity, NGLineInfo*);
+  void NextLine(NGLineInfo*);
 
   // Create an NGInlineBreakToken for the last line returned by NextLine().
   scoped_refptr<NGInlineBreakToken> CreateBreakToken(
@@ -62,47 +63,6 @@ class CORE_EXPORT NGLineBreaker {
                                    NGInlineItemResult*);
 
  private:
-  // This struct holds information for the current line.
-  struct LineData {
-    STACK_ALLOCATED();
-
-    LineData(NGInlineNode node, const NGInlineBreakToken* break_token);
-
-    // The current position from inline_start. Unlike NGInlineLayoutAlgorithm
-    // that computes position in visual order, this position in logical order.
-    LayoutUnit position;
-
-    NGLineLayoutOpportunity line_opportunity;
-
-    // True if this line is the "first formatted line".
-    // https://www.w3.org/TR/CSS22/selector.html#first-formatted-line
-    bool is_first_formatted_line;
-
-    bool use_first_line_style;
-
-    // Set when the line ended with a forced break. Used to setup the states for
-    // the next line.
-    bool is_after_forced_break = false;
-
-    // True if trailing collapsible spaces have been collapsed.
-    bool trailing_spaces_collapsed = false;
-
-    LayoutUnit AvailableWidth() const {
-      return line_opportunity.AvailableInlineSize();
-    }
-    LayoutUnit AvailableWidthToFit() const {
-      return AvailableWidth().AddEpsilon();
-    }
-    bool CanFit() const { return position <= AvailableWidthToFit(); }
-    bool CanFit(LayoutUnit extra) const {
-      return position + extra <= AvailableWidthToFit();
-    }
-    bool CanFloatFit(LayoutUnit extra) const {
-      return position + extra <=
-             line_opportunity.AvailableFloatInlineSize().AddEpsilon();
-    }
-  };
-
   const String& Text() const { return items_data_.text_content; }
   const Vector<NGInlineItem>& Items() const { return items_data_.items; }
 
@@ -115,7 +75,7 @@ class CORE_EXPORT NGLineBreaker {
 
   void BreakLine(NGLineInfo*);
 
-  void PrepareNextLine(const NGLineLayoutOpportunity&, NGLineInfo*);
+  void PrepareNextLine(NGLineInfo*);
 
   void UpdatePosition(const NGLineInfo&);
   void ComputeLineLocation(NGLineInfo*) const;
@@ -175,33 +135,20 @@ class CORE_EXPORT NGLineBreaker {
   void ComputeBaseDirection(const NGLineInfo&);
   bool IsTrailing(const NGInlineItem&, const NGLineInfo&) const;
 
-  LineData line_;
+  LayoutUnit AvailableWidth() const {
+    return line_opportunity_.AvailableInlineSize();
+  }
+  LayoutUnit AvailableWidthToFit() const {
+    return AvailableWidth().AddEpsilon();
+  }
+
   NGInlineNode node_;
-  const NGInlineItemsData& items_data_;
 
-  NGLineBreakerMode mode_;
-  const NGConstraintSpace& constraint_space_;
-  Vector<NGPositionedFloat>* positioned_floats_;
-  Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats_;
-  NGContainerFragmentBuilder* container_builder_; /* May be nullptr */
-  NGExclusionSpace* exclusion_space_;
-  scoped_refptr<const ComputedStyle> current_style_;
+  // True if this line is the "first formatted line".
+  // https://www.w3.org/TR/CSS22/selector.html#first-formatted-line
+  bool is_first_formatted_line_ = false;
 
-  unsigned item_index_ = 0;
-  unsigned offset_ = 0;
-  LazyLineBreakIterator break_iterator_;
-  HarfBuzzShaper shaper_;
-  ShapeResultSpacing<String> spacing_;
-  bool previous_line_had_forced_break_ = false;
-  const Hyphenation* hyphenation_ = nullptr;
-
-  // Keep track of handled float items. See HandleFloat().
-  unsigned handled_floats_end_item_index_;
-
-  // The current base direction for the bidi algorithm.
-  // This is copied from NGInlineNode, then updated after each forced line break
-  // if 'unicode-bidi: plaintext'.
-  TextDirection base_direction_;
+  bool use_first_line_style_ = false;
 
   // True when current box allows line wrapping.
   bool auto_wrap_ = false;
@@ -224,7 +171,46 @@ class CORE_EXPORT NGLineBreaker {
   // True when the line we are breaking has a list marker.
   bool has_list_marker_ = false;
 
+  // True if trailing collapsible spaces have been collapsed.
+  bool trailing_spaces_collapsed_ = false;
+
+  // Set when the line ended with a forced break. Used to setup the states for
+  // the next line.
+  bool is_after_forced_break_ = false;
+
   bool ignore_floats_ = false;
+
+  const NGInlineItemsData& items_data_;
+
+  NGLineBreakerMode mode_;
+  const NGConstraintSpace& constraint_space_;
+  Vector<NGPositionedFloat>* positioned_floats_;
+  Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats_;
+  NGContainerFragmentBuilder* container_builder_; /* May be nullptr */
+  NGExclusionSpace* exclusion_space_;
+  scoped_refptr<const ComputedStyle> current_style_;
+
+  unsigned item_index_ = 0;
+  unsigned offset_ = 0;
+  LazyLineBreakIterator break_iterator_;
+  HarfBuzzShaper shaper_;
+  ShapeResultSpacing<String> spacing_;
+  bool previous_line_had_forced_break_ = false;
+  const Hyphenation* hyphenation_ = nullptr;
+
+  // The current position from inline_start. Unlike NGInlineLayoutAlgorithm
+  // that computes position in visual order, this position in logical order.
+  LayoutUnit position_;
+
+  // Keep track of handled float items. See HandleFloat().
+  unsigned handled_floats_end_item_index_;
+
+  NGLineLayoutOpportunity line_opportunity_;
+
+  // The current base direction for the bidi algorithm.
+  // This is copied from NGInlineNode, then updated after each forced line break
+  // if 'unicode-bidi: plaintext'.
+  TextDirection base_direction_;
 };
 
 }  // namespace blink
