@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -176,6 +177,9 @@ class ArcPolicyBridge : public KeyedService,
   bool compliance_since_update_timing_reported_ = false;
 
   base::ObserverList<Observer, true /* check_empty */> observers_;
+
+  // Called when the ARC connection is ready.
+  base::OnceClosure on_arc_instance_ready_callback_;
 
   // Must be the last member.
   base::WeakPtrFactory<ArcPolicyBridge> weak_ptr_factory_;

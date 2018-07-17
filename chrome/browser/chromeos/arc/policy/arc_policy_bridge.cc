@@ -404,6 +404,10 @@ void ArcPolicyBridge::OnConnectionReady() {
   }
   policy_service_->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
   initial_policies_hash_ = GetPoliciesHash(GetCurrentJSONPolicies());
+
+  if (!on_arc_instance_ready_callback_.is_null()) {
+    std::move(on_arc_instance_ready_callback_).Run();
+  }
 }
 
 void ArcPolicyBridge::OnConnectionClosed() {
@@ -487,8 +491,19 @@ void ArcPolicyBridge::OnCommandReceived(
   VLOG(1) << "ArcPolicyBridge::OnCommandReceived";
   auto* const instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->policy(), OnCommandReceived);
-  if (!instance)
+
+  if (!instance) {
+    VLOG(1) << "ARC not ready yet, will retry remote command once it is ready.";
+    DCHECK(on_arc_instance_ready_callback_.is_null());
+
+    // base::Unretained is safe here since this class owns the callback's
+    // lifetime.
+    on_arc_instance_ready_callback_ =
+        base::BindOnce(&ArcPolicyBridge::OnCommandReceived,
+                       base::Unretained(this), command, std::move(callback));
+
     return;
+  }
 
   instance->OnCommandReceived(command, std::move(callback));
 }
