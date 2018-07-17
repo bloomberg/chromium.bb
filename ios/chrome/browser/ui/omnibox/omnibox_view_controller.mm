@@ -94,6 +94,12 @@ const CGFloat kClearButtonSize = 28.0f;
   [self.view setLeadingImage:icon];
 }
 
+#pragma mark - LocationBarOffsetProvider
+
+- (CGFloat)xOffsetForString:(NSString*)string {
+  return [self.textField offsetForString:string];
+}
+
 #pragma mark - private
 
 - (void)updateLeadingImageVisibility {

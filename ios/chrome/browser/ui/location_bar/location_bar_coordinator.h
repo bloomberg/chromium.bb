@@ -9,6 +9,7 @@
 
 // Location bar coordinator for the UI Refresh location bar.
 @interface LocationBarCoordinator : NSObject<LocationBarGenericCoordinator>
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_COORDINATOR_H_

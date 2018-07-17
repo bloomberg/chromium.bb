@@ -129,6 +129,7 @@ const int kLocationAuthorizationStatusCount = 4;
       setEditView:self.omniboxCoordinator.managedViewController.view];
   [self.omniboxCoordinator.managedViewController
       didMoveToParentViewController:self.viewController];
+  self.viewController.offsetProvider = [self.omniboxCoordinator offsetProvider];
 
   self.omniboxPopupCoordinator =
       [self.omniboxCoordinator createPopupCoordinator:self.popupPositioner];
@@ -169,6 +170,10 @@ const int kLocationAuthorizationStatusCount = 4;
 
 - (BOOL)isOmniboxFirstResponder {
   return [self.omniboxCoordinator isOmniboxFirstResponder];
+}
+
+- (id<LocationBarAnimatee>)locationBarAnimatee {
+  return self.viewController;
 }
 
 #pragma mark - LoadQueryCommands
@@ -223,7 +228,6 @@ const int kLocationAuthorizationStatusCount = 4;
 }
 
 - (void)focusOmnibox {
-  [self.viewController switchToEditing:YES];
   [self.omniboxCoordinator focusOmnibox];
 }
 
@@ -239,7 +243,6 @@ const int kLocationAuthorizationStatusCount = 4;
 
 - (void)locationBarHasResignedFirstResponder {
   [self.delegate locationBarDidResignFirstResponder];
-  [self.viewController switchToEditing:NO];
 }
 
 - (void)locationBarBeganEdit {

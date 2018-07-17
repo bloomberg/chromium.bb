@@ -122,6 +122,7 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/location_bar:constants",
     "//ios/chrome/browser/ui/omnibox/popup",
+    "//ios/chrome/browser/ui/orchestrator:orchestrator",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/public:feature_flags",

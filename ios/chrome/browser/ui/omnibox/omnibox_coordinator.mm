@@ -128,12 +128,15 @@
   return coordinator;
 }
 
-#pragma mark - private
-
-// Getter with proper type.
 - (UIViewController*)managedViewController {
   return self.viewController;
 }
+
+- (id<LocationBarOffsetProvider>)offsetProvider {
+  return self.viewController;
+}
+
+#pragma mark - private
 
 // Convenience accessor.
 - (OmniboxTextFieldIOS*)textField {

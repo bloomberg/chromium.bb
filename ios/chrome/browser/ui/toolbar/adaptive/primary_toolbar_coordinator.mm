@@ -79,6 +79,11 @@
 
   [self setUpLocationBar];
   self.viewController.locationBarView = self.locationBarCoordinator.view;
+  if ([self.locationBarCoordinator
+          respondsToSelector:@selector(locationBarAnimatee)]) {
+    self.orchestrator.locationBarAnimatee =
+        [self.locationBarCoordinator locationBarAnimatee];
+  }
   [super start];
 
   _fullscreenObserver =

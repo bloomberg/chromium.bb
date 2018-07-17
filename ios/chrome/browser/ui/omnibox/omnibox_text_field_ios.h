@@ -95,6 +95,11 @@ typedef enum {
                 completionAnimator:(UIViewPropertyAnimator*)completionAnimator;
 - (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator;
 
+// Returns an x offset for a given string. If no such string is found, returns
+// some default offset.
+// Used for focus/defocus animation.
+- (CGFloat)offsetForString:(NSString*)string;
+
 // Initial touch on the Omnibox triggers a "pre-edit" state. The current
 // URL is shown without any insertion point. First character typed replaces
 // the URL. A second touch turns on the insertion point. |preEditStaticLabel|

@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
+#import "ios/chrome/browser/ui/orchestrator/location_bar_offset_provider.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -63,6 +64,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
 @synthesize trailingButtonState = _trailingButtonState;
 @synthesize hideShareButtonWhileOnIncognitoNTP =
     _hideShareButtonWhileOnIncognitoNTP;
+@synthesize offsetProvider = _offsetProvider;
 
 #pragma mark - public
 
@@ -229,6 +231,69 @@ typedef NS_ENUM(int, TrailingButtonState) {
             attributes:@{NSForegroundColorAttributeName : placeholderColor}];
   }
   self.hideShareButtonWhileOnIncognitoNTP = isNTP;
+}
+
+#pragma mark - LocationBarAnimatee
+
+- (void)offsetEditViewToMatchSteadyView {
+  CGAffineTransform offsetTransform =
+      CGAffineTransformMakeTranslation([self targetOffset], 0);
+  self.editView.transform = offsetTransform;
+}
+
+- (void)resetEditViewOffsetAndOffsetSteadyViewToMatch {
+  self.locationBarSteadyView.transform =
+      CGAffineTransformMakeTranslation(-self.editView.transform.tx, 0);
+  self.editView.transform = CGAffineTransformIdentity;
+}
+
+- (void)offsetSteadyViewToMatchEditView {
+  CGAffineTransform offsetTransform =
+      CGAffineTransformMakeTranslation(-[self targetOffset], 0);
+  self.locationBarSteadyView.transform = offsetTransform;
+}
+
+- (void)resetSteadyViewOffsetAndOffsetEditViewToMatch {
+  self.editView.transform = CGAffineTransformMakeTranslation(
+      -self.locationBarSteadyView.transform.tx, 0);
+  self.locationBarSteadyView.transform = CGAffineTransformIdentity;
+}
+
+- (void)setSteadyViewFaded:(BOOL)hidden {
+  self.locationBarSteadyView.alpha = hidden ? 0 : 1;
+}
+
+- (void)setEditViewFaded:(BOOL)hidden {
+  self.editView.alpha = hidden ? 0 : 1;
+}
+
+- (void)setEditViewHidden:(BOOL)hidden {
+  self.editView.hidden = hidden;
+}
+- (void)setSteadyViewHidden:(BOOL)hidden {
+  self.locationBarSteadyView.hidden = hidden;
+}
+
+- (void)resetTransforms {
+  self.editView.transform = CGAffineTransformIdentity;
+  self.locationBarSteadyView.transform = CGAffineTransformIdentity;
+}
+
+#pragma mark animation helpers
+
+// Computes the target offset for the focus/defocus animation that allows to
+// visually match the position of edit and steady views.
+- (CGFloat)targetOffset {
+  CGFloat offset = [self.offsetProvider
+      xOffsetForString:self.locationBarSteadyView.locationLabel.text];
+
+  CGRect labelRect = [self.view
+      convertRect:self.locationBarSteadyView.locationLabel.frame
+         fromView:self.locationBarSteadyView.locationLabel.superview];
+  CGRect textFieldRect = self.editView.frame;
+
+  CGFloat targetOffset = labelRect.origin.x - textFieldRect.origin.x - offset;
+  return targetOffset;
 }
 
 #pragma mark - private
