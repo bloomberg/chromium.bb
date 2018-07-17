@@ -133,7 +133,6 @@ class CORE_EXPORT CSSSelector {
     kDirectAdjacent,    // + combinator
     kIndirectAdjacent,  // ~ combinator
     // Special cases for shadow DOM related selectors.
-    kShadowPiercingDescendant,  // >>> combinator
     kShadowDeep,                // /deep/ combinator
     kShadowDeepAsDescendant,    // /deep/ as an alias for descendant
     kShadowPseudo,              // ::shadow pseudo element
