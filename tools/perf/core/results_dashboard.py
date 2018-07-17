@@ -17,6 +17,7 @@ import os
 import subprocess
 import sys
 import traceback
+import time
 import tempfile
 import urllib
 import urllib2
@@ -71,6 +72,7 @@ def SendResults(data, url, tmp_dir,
     send_as_histograms: True if result is to be sent to /add_histograms.
     oauth_token: string; used for flushing oauth uploads from cache.
   """
+  start = time.time()
   results_json = json.dumps({
       'is_histogramset': send_as_histograms,
       'data': data
@@ -83,6 +85,8 @@ def SendResults(data, url, tmp_dir,
 
   # Send all the results from this run and the previous cache to the dashboard.
   fatal_error, errors = _SendResultsFromCache(cache_file_name, url, oauth_token)
+
+  print 'Time spent sending results to %s: %s' % (url, time.time() - start)
 
   # Print any errors; if there was a fatal error, it should be an exception.
   for error in errors:
