@@ -733,96 +733,6 @@ TEST_F(ResourceSchedulerTest, ThrottlesHeadWhenHeadDelayable) {
     EXPECT_TRUE(request->started());
 }
 
-TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyProxyWhenNotDelayable) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("",
-                                          kPrioritySupportedRequestsDelayable);
-
-  InitializeScheduler();
-
-  // Add more than max-per-host low-priority requests.
-  std::vector<std::unique_ptr<TestRequest>> requests;
-  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
-    requests.push_back(NewRequest("http://host/low", net::LOWEST));
-
-  // Now the scheduler realizes these requests are for a spdy proxy.
-  scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-
-  // No throttling.
-  for (const auto& request : requests)
-    EXPECT_TRUE(request->started());
-}
-
-TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyProxyWhenDelayable) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      kPrioritySupportedRequestsDelayable,
-      kHeadPrioritySupportedRequestsDelayable);
-
-  InitializeScheduler();
-
-  // Add more than max-per-host low-priority requests.
-  std::vector<std::unique_ptr<TestRequest>> requests;
-  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
-    requests.push_back(NewRequest("http://host/low", net::LOWEST));
-
-  // Now the scheduler realizes these requests are for a spdy proxy.
-  scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-
-  // Only kMaxNumDelayableRequestsPerHostPerClient in body.
-  for (size_t i = 0; i < requests.size(); ++i) {
-    if (i < kMaxNumDelayableRequestsPerHostPerClient)
-      EXPECT_TRUE(requests[i]->started());
-    else
-      EXPECT_FALSE(requests[i]->started());
-  }
-}
-
-TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyProxyWhenHeadDelayable) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      kHeadPrioritySupportedRequestsDelayable,
-      kPrioritySupportedRequestsDelayable);
-
-  InitializeScheduler();
-
-  // Add more than max-per-host low-priority requests.
-  std::vector<std::unique_ptr<TestRequest>> requests;
-  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
-    requests.push_back(NewRequest("http://host/low", net::LOWEST));
-
-  // Now the scheduler realizes these requests are for a spdy proxy.
-  scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-
-  // No throttling.
-  for (const auto& request : requests)
-    EXPECT_TRUE(request->started());
-}
-
-TEST_F(ResourceSchedulerTest, ThrottlesHeadForSpdyProxyWhenHeadDelayable) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      kHeadPrioritySupportedRequestsDelayable,
-      kPrioritySupportedRequestsDelayable);
-
-  InitializeScheduler();
-
-  // Add more than max-per-host low-priority requests.
-  std::vector<std::unique_ptr<TestRequest>> requests;
-  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
-    requests.push_back(NewRequest("http://host/low", net::LOWEST));
-
-  // Now the scheduler realizes these requests are for a spdy proxy.
-  scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-
-  // No throttling.
-  for (const auto& request : requests)
-    EXPECT_TRUE(request->started());
-}
 
 TEST_F(ResourceSchedulerTest, BackgroundRequestStartsImmediately) {
   const int route_id = 0;  // Indicates a background request.
@@ -1097,39 +1007,8 @@ TEST_F(ResourceSchedulerTest, SpdyProxySchedulesImmediately) {
   std::unique_ptr<TestRequest> request(
       NewRequest("http://host/req", net::IDLE));
   EXPECT_FALSE(request->started());
-
-  scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(request->started());
-
-  std::unique_ptr<TestRequest> after(
-      NewRequest("http://host/after", net::IDLE));
-  EXPECT_TRUE(after->started());
 }
 
-TEST_F(ResourceSchedulerTest, SpdyProxyDelayable) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(kPrioritySupportedRequestsDelayable,
-                                          "");
-  InitializeScheduler();
-  SetMaxDelayableRequests(1);
-
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-
-  std::unique_ptr<TestRequest> request(
-      NewRequest("http://host/req", net::IDLE));
-  EXPECT_FALSE(request->started());
-
-  scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(request->started());
-
-  std::unique_ptr<TestRequest> after(
-      NewRequest("http://host/after", net::IDLE));
-  EXPECT_FALSE(after->started());
-}
 
 TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
   base::test::ScopedFeatureList scoped_feature_list;
@@ -1690,68 +1569,6 @@ TEST_F(ResourceSchedulerTest, NumDelayableAtStartOfNonDelayableUMA) {
   histogram_tester->ExpectUniqueSample(
       "ResourceScheduler.NumDelayableRequestsInFlightAtStart.NonDelayable", 2,
       1);
-}
-
-TEST_F(ResourceSchedulerTest,
-       SpdyProxiesRequestsDelayableFeatureEnabled_DelaysSpdyProxyRequests) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("SpdyProxiesRequestsDelayable", "");
-  InitializeScheduler();
-  SetMaxDelayableRequests(1);
-
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-
-  std::unique_ptr<TestRequest> request(
-      NewRequest("http://host/req", net::IDLE));
-  EXPECT_FALSE(request->started());
-
-  scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(request->started());
-
-  // Low priority requests are not started even though the page is loaded from
-  // an H2 proxy.
-  std::unique_ptr<TestRequest> after(
-      NewRequest("http://host/after", net::IDLE));
-  EXPECT_FALSE(after->started());
-
-  // High priority requests should still be scheduled immediately.
-  std::unique_ptr<TestRequest> high_2(
-      NewRequest("http://host/high", net::HIGHEST));
-  EXPECT_TRUE(high_2->started());
-}
-
-TEST_F(
-    ResourceSchedulerTest,
-    SpdyProxiesRequestsDelayableFeatureDisabled_SpdyProxyRequestsScheduledImmediately) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("", "SpdyProxiesRequestsDelayable");
-  InitializeScheduler();
-  SetMaxDelayableRequests(1);
-
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-
-  std::unique_ptr<TestRequest> request(
-      NewRequest("http://host/req", net::IDLE));
-  EXPECT_FALSE(request->started());
-
-  scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(request->started());
-
-  // Low priority requests are started since the page is loaded from an H2
-  // proxy.
-  std::unique_ptr<TestRequest> after(
-      NewRequest("http://host/after", net::IDLE));
-  EXPECT_TRUE(after->started());
-
-  std::unique_ptr<TestRequest> high_2(
-      NewRequest("http://host/high", net::HIGHEST));
-  EXPECT_TRUE(high_2->started());
 }
 
 TEST_F(ResourceSchedulerTest, SchedulerEnabled) {
