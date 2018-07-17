@@ -26,8 +26,8 @@ namespace mojom {
 class GpuService;
 }
 
-// This GpuMemoryBufferManager implementation is for [de]allocating gpu memory
-// from the gpu process over the mojom.GpuService api.
+// This GpuMemoryBufferManager implementation is for [de]allocating GPU memory
+// from the GPU process over the mojom.GpuService api.
 class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
     : public gpu::GpuMemoryBufferManager,
       public base::trace_event::MemoryDumpProvider {
@@ -37,11 +37,22 @@ class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
   // gpu::GpuMemoryBufferManager implementation (which can be called from any
   // thread).
   ServerGpuMemoryBufferManager(
-      mojom::GpuService* gpu_service,
       int client_id,
       std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ServerGpuMemoryBufferManager() override;
+
+  // This is called whenever GPU service is started, or with nullptr value when
+  // GPU service is shut down (e.g. GPU process crashes). It will invalidate any
+  // allocated buffer. If |gpu_serivce| is non-nullptr, it will retry allocation
+  // requests for pending memory buffers; otherwise, the requests will be cached
+  // and retried when a GPU service is available.
+  void SetGpuService(mojom::GpuService* gpu_service);
+
+  // This is called when no new GPU service is going to be available. It would
+  // drop memory buffer allocation requests and call their callbacks with null
+  // handles indicating failure..
+  void DropPendingAllocationRequests();
 
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
@@ -72,31 +83,52 @@ class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
-  uint64_t ClientIdToTracingId(int client_id) const;
-  void OnGpuMemoryBufferAllocated(
-      int client_id,
-      size_t buffer_size_in_bytes,
-      base::OnceCallback<void(gfx::GpuMemoryBufferHandle)> callback,
-      gfx::GpuMemoryBufferHandle handle);
+  struct PendingBufferInfo {
+    PendingBufferInfo();
+    PendingBufferInfo(PendingBufferInfo&&);
+    ~PendingBufferInfo();
 
-  mojom::GpuService* gpu_service_;
-  const int client_id_;
-  int next_gpu_memory_id_ = 1;
+    gfx::Size size;
+    gfx::BufferFormat format;
+    gfx::BufferUsage usage;
+    gpu::SurfaceHandle surface_handle;
+    base::OnceCallback<void(gfx::GpuMemoryBufferHandle)> callback;
+  };
+  using PendingBuffers =
+      std::unordered_map<gfx::GpuMemoryBufferId,
+                         PendingBufferInfo,
+                         BASE_HASH_NAMESPACE::hash<gfx::GpuMemoryBufferId>>;
 
-  struct BufferInfo {
-    BufferInfo();
-    ~BufferInfo();
+  struct AllocatedBufferInfo {
+    AllocatedBufferInfo();
+    ~AllocatedBufferInfo();
+
     gfx::GpuMemoryBufferType type = gfx::EMPTY_BUFFER;
     size_t buffer_size_in_bytes = 0;
     base::UnguessableToken shared_memory_guid;
   };
-
   using AllocatedBuffers =
       std::unordered_map<gfx::GpuMemoryBufferId,
-                         BufferInfo,
+                         AllocatedBufferInfo,
                          BASE_HASH_NAMESPACE::hash<gfx::GpuMemoryBufferId>>;
+
+  uint64_t ClientIdToTracingId(int client_id) const;
+  void OnGpuMemoryBufferAllocated(int gpu_service_version,
+                                  int client_id,
+                                  gfx::GpuMemoryBufferId id,
+                                  gfx::GpuMemoryBufferHandle handle);
+
+  mojom::GpuService* gpu_service_ = nullptr;
+
+  // This is incremented every time |gpu_service_| is updated in order check
+  // whether a buffer is allocated by the most current GPU service or not.
+  int gpu_service_version_ = 0;
+
+  const int client_id_;
+  int next_gpu_memory_id_ = 1;
+
+  std::unordered_map<int, PendingBuffers> pending_buffers_;
   std::unordered_map<int, AllocatedBuffers> allocated_buffers_;
-  std::unordered_set<int> pending_buffers_;
 
   std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support_;
 
