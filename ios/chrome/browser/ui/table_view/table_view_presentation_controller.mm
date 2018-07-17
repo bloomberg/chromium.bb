@@ -64,18 +64,36 @@ const CGFloat kTableViewMaxWidth = 414.0;
 @synthesize tableViewContainer = _tableViewContainer;
 
 - (CGRect)frameOfPresentedViewInContainerView {
-  // The tableview container should be pinned to the top, bottom, and trailing
-  // edges of the screen, with a fixed margin on those sides.
-  CGFloat containerWidth = CGRectGetWidth(self.containerView.bounds);
-  CGFloat containerHeight = CGRectGetHeight(self.containerView.bounds);
+  CGRect safeAreaBounds = self.containerView.bounds;
+  UIEdgeInsets safeAreaInsets = UIEdgeInsetsZero;
+  if (@available(iOS 11, *)) {
+    safeAreaBounds = self.containerView.safeAreaLayoutGuide.layoutFrame;
+    safeAreaInsets = self.containerView.safeAreaInsets;
+  }
 
-  CGFloat maxAvailableWidth = containerWidth - 2 * kTableViewEdgeMargin;
+  CGFloat safeAreaWidth = CGRectGetWidth(safeAreaBounds);
+  CGFloat safeAreaHeight = CGRectGetHeight(safeAreaBounds);
+
+  CGFloat maxAvailableWidth = safeAreaWidth - 2 * kTableViewEdgeMargin;
   CGFloat tableWidth = std::min(maxAvailableWidth, kTableViewMaxWidth);
 
+  // The leading edge of the bubble, in direction-independent coordinates, is
+  // equal to the width of the containerView's bounds minus:
+  // 1) The width of the safe area on the trailing edge.
+  // 2) The table view edge margin.
+  // 3) The width of the table view itself.
+  CGFloat tableLeadingX = CGRectGetWidth(self.containerView.bounds) -
+                          UIEdgeInsetsGetTrailing(safeAreaInsets) -
+                          kTableViewEdgeMargin - tableWidth;
+  CGFloat containerWidth = CGRectGetWidth(self.containerView.bounds);
+  CGFloat tableOriginY = CGRectGetMinY(safeAreaBounds) + kTableViewTopMargin;
+  CGFloat tableHeight =
+      safeAreaHeight - kTableViewTopMargin - kTableViewEdgeMargin;
+
+  // The tableview container should be pinned to the top, bottom, and trailing
+  // edges of the safe area, with a fixed margin on those sides.
   LayoutRect tableLayoutRect = LayoutRectMake(
-      containerWidth - tableWidth - kTableViewEdgeMargin, containerWidth,
-      kTableViewTopMargin, tableWidth,
-      containerHeight - kTableViewTopMargin - kTableViewEdgeMargin);
+      tableLeadingX, containerWidth, tableOriginY, tableWidth, tableHeight);
   return LayoutRectGetRect(tableLayoutRect);
 }
 
