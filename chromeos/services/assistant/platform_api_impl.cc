@@ -77,9 +77,9 @@ PlatformApiImpl::PlatformApiImpl(
     service_manager::Connector* connector,
     device::mojom::BatteryMonitorPtr battery_monitor,
     bool enable_hotword)
-    : audio_input_provider_(connector),
+    : audio_input_provider_(connector, enable_hotword),
       audio_output_provider_(CreateLibAssistantConfig(!enable_hotword), this),
-      system_provider_(std::move(battery_monitor), !enable_hotword) {}
+      system_provider_(std::move(battery_monitor)) {}
 
 PlatformApiImpl::~PlatformApiImpl() = default;
 
@@ -109,6 +109,10 @@ ResourceProvider& PlatformApiImpl::GetResourceProvider() {
 
 SystemProvider& PlatformApiImpl::GetSystemProvider() {
   return system_provider_;
+}
+
+void PlatformApiImpl::SetMicState(bool mic_open) {
+  audio_input_provider_.SetMicState(mic_open);
 }
 
 }  // namespace assistant

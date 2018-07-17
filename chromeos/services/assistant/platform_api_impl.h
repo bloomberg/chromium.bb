@@ -48,6 +48,9 @@ class PlatformApiImpl : public assistant_client::PlatformApi {
   assistant_client::ResourceProvider& GetResourceProvider() override;
   assistant_client::SystemProvider& GetSystemProvider() override;
 
+  // Called when the mic state associated with the interaction is changed.
+  void SetMicState(bool mic_open);
+
  private:
   // ChromeOS does not use auth manager, so we don't yet need to implement a
   // real auth provider.

@@ -50,10 +50,12 @@ int AudioInputBufferImpl::GetFrameCount() const {
 }
 
 AudioInputImpl::AudioInputImpl(
-    std::unique_ptr<service_manager::Connector> connector)
+    std::unique_ptr<service_manager::Connector> connector,
+    bool default_on)
     : source_(audio::CreateInputDevice(
           std::move(connector),
           media::AudioDeviceDescription::kDefaultDeviceId)),
+      default_on_(default_on),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   DETACH_FROM_SEQUENCE(observer_sequence_checker_);
@@ -112,7 +114,7 @@ void AudioInputImpl::AddObserver(
     should_start = observers_.size() == 1;
   }
 
-  if (should_start) {
+  if (default_on_ && should_start) {
     // Post to main thread runner to start audio recording. Assistant thread
     // does not have thread context defined in //base and will fail sequence
     // check in AudioCapturerSource::Start().
@@ -138,6 +140,16 @@ void AudioInputImpl::RemoveObserver(
   }
 }
 
+void AudioInputImpl::SetMicState(bool mic_open) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (!default_on_) {
+    if (mic_open)
+      source_->Start();
+    else
+      source_->Stop();
+  }
+}
+
 void AudioInputImpl::StartRecording() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   source_->Start();
@@ -149,8 +161,9 @@ void AudioInputImpl::StopRecording() {
 }
 
 AudioInputProviderImpl::AudioInputProviderImpl(
-    service_manager::Connector* connector)
-    : audio_input_(connector->Clone()) {}
+    service_manager::Connector* connector,
+    bool default_on)
+    : audio_input_(connector->Clone(), default_on) {}
 
 AudioInputProviderImpl::~AudioInputProviderImpl() = default;
 
@@ -161,6 +174,10 @@ assistant_client::AudioInput& AudioInputProviderImpl::GetAudioInput() {
 int64_t AudioInputProviderImpl::GetCurrentAudioTime() {
   // TODO(xiaohuic): see if we can support real timestamp.
   return 0;
+}
+
+void AudioInputProviderImpl::SetMicState(bool mic_open) {
+  audio_input_.SetMicState(mic_open);
 }
 
 }  // namespace assistant

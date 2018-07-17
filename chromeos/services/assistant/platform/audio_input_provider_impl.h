@@ -49,8 +49,8 @@ class AudioInputBufferImpl : public assistant_client::AudioBuffer {
 class AudioInputImpl : public assistant_client::AudioInput,
                        public media::AudioCapturerSource::CaptureCallback {
  public:
-  explicit AudioInputImpl(
-      std::unique_ptr<service_manager::Connector> connector);
+  AudioInputImpl(std::unique_ptr<service_manager::Connector> connector,
+                 bool default_on);
   ~AudioInputImpl() override;
 
   // media::AudioCapturerSource::CaptureCallback overrides:
@@ -69,11 +69,17 @@ class AudioInputImpl : public assistant_client::AudioInput,
   void RemoveObserver(
       assistant_client::AudioInput::Observer* observer) override;
 
+  // Called when the mic state associated with the interaction is changed.
+  void SetMicState(bool mic_open);
+
  private:
   void StartRecording();
   void StopRecording();
 
   scoped_refptr<media::AudioCapturerSource> source_;
+
+  // Should audio input always recording actively.
+  const bool default_on_;
 
   // Guards observers_;
   base::Lock lock_;
@@ -92,12 +98,16 @@ class AudioInputImpl : public assistant_client::AudioInput,
 
 class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
  public:
-  explicit AudioInputProviderImpl(service_manager::Connector* connector);
+  explicit AudioInputProviderImpl(service_manager::Connector* connector,
+                                  bool default_on);
   ~AudioInputProviderImpl() override;
 
   // assistant_client::AudioInputProvider overrides:
   assistant_client::AudioInput& GetAudioInput() override;
   int64_t GetCurrentAudioTime() override;
+
+  // Called when the mic state associated with the interaction is changed.
+  void SetMicState(bool mic_open);
 
  private:
   AudioInputImpl audio_input_;

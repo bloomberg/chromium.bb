@@ -29,7 +29,8 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
-using assistant_client::ActionModule;
+using ActionModule = assistant_client::ActionModule;
+using Resolution = assistant_client::ConversationStateListener::Resolution;
 
 namespace api = ::assistant::api;
 
@@ -197,10 +198,12 @@ void AssistantManagerServiceImpl::RequestScreenContext(
 }
 
 void AssistantManagerServiceImpl::StartVoiceInteraction() {
+  platform_api_.SetMicState(true);
   assistant_manager_->StartAssistantInteraction();
 }
 
 void AssistantManagerServiceImpl::StopActiveInteraction() {
+  platform_api_.SetMicState(false);
   assistant_manager_->StopAssistantInteraction();
 }
 
@@ -263,7 +266,13 @@ void AssistantManagerServiceImpl::OnConversationTurnStarted() {
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnFinished(
-    assistant_client::ConversationStateListener::Resolution resolution) {
+    Resolution resolution) {
+  // TODO(updowndota): Find a better way to handle the edge cases.
+  if (resolution != Resolution::NORMAL_WITH_FOLLOW_ON &&
+      resolution != Resolution::CANCELLED &&
+      resolution != Resolution::BARGE_IN) {
+    platform_api_.SetMicState(false);
+  }
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -557,39 +566,37 @@ void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread() {
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
-    assistant_client::ConversationStateListener::Resolution resolution) {
+    Resolution resolution) {
   switch (resolution) {
     // Interaction ended normally.
     // Note that TIMEOUT here does not refer to server timeout, but rather mic
     // timeout due to speech inactivity. As this case does not require special
     // UI logic, it is treated here as a normal interaction completion.
-    case assistant_client::ConversationStateListener::Resolution::NORMAL:
-    case assistant_client::ConversationStateListener::Resolution::
-        NORMAL_WITH_FOLLOW_ON:
-    case assistant_client::ConversationStateListener::Resolution::TIMEOUT:
+    case Resolution::NORMAL:
+    case Resolution::NORMAL_WITH_FOLLOW_ON:
+    case Resolution::TIMEOUT:
       interaction_subscribers_.ForAllPtrs([](auto* ptr) {
         ptr->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kNormal);
       });
       break;
     // Interaction ended due to interruption.
-    case assistant_client::ConversationStateListener::Resolution::BARGE_IN:
-    case assistant_client::ConversationStateListener::Resolution::CANCELLED:
+    case Resolution::BARGE_IN:
+    case Resolution::CANCELLED:
       interaction_subscribers_.ForAllPtrs([](auto* ptr) {
         ptr->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kInterruption);
       });
       break;
     // Interaction ended due to multi-device hotword loss.
-    case assistant_client::ConversationStateListener::Resolution::NO_RESPONSE:
+    case Resolution::NO_RESPONSE:
       interaction_subscribers_.ForAllPtrs([](auto* ptr) {
         ptr->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kMultiDeviceHotwordLoss);
       });
       break;
     // Interaction ended due to error.
-    case assistant_client::ConversationStateListener::Resolution::
-        COMMUNICATION_ERROR:
+    case Resolution::COMMUNICATION_ERROR:
       interaction_subscribers_.ForAllPtrs([](auto* ptr) {
         ptr->OnInteractionFinished(
             mojom::AssistantInteractionResolution::kError);

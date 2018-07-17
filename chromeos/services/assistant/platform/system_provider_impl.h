@@ -16,8 +16,7 @@ namespace assistant {
 
 class SystemProviderImpl : public assistant_client::SystemProvider {
  public:
-  explicit SystemProviderImpl(device::mojom::BatteryMonitorPtr battery_monitor,
-                              bool muted);
+  explicit SystemProviderImpl(device::mojom::BatteryMonitorPtr battery_monitor);
   ~SystemProviderImpl() override;
 
   // assistant_client::SystemProvider implementation:
@@ -36,7 +35,6 @@ class SystemProviderImpl : public assistant_client::SystemProvider {
 
   device::mojom::BatteryMonitorPtr battery_monitor_;
   device::mojom::BatteryStatusPtr current_battery_status_;
-  const assistant_client::MicMuteState mic_mute_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemProviderImpl);
 };
