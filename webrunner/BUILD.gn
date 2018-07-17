@@ -13,24 +13,13 @@ config("webrunner_implementation") {
   defines = [ "WEBRUNNER_IMPLEMENTATION" ]
 }
 
-# Uber-target, used by buildbots and :gn_all for discovery of all buildable
-# webrunner code.
-group("webrunner") {
-  testonly = true
-  deps = [
-    ":runner_pkg",
-    ":service_pkg",
-    ":service_unittests",
-  ]
-}
-
-fuchsia_package("runner_pkg") {
-  binary = ":runner_exe"
+fuchsia_package("webrunner_pkg") {
+  binary = ":webrunner_exe"
   package_name_override = "web_runner"
 }
 
-fuchsia_package_runner("runner") {
-  package = ":runner_pkg"
+fuchsia_package_runner("webrunner") {
+  package = ":webrunner_pkg"
   package_name_override = "web_runner"
   package_deps = [ [
         ":service_pkg",
@@ -38,7 +27,7 @@ fuchsia_package_runner("runner") {
       ] ]
 }
 
-executable("runner_exe") {
+executable("webrunner_exe") {
   sources = [
     "app/component_controller_impl.cc",
     "app/component_controller_impl.h",
@@ -72,7 +61,7 @@ executable("service_exe") {
 
 fuchsia_package_runner("service_runner") {
   package = ":service_pkg"
-  package_name_override = "web_service"
+  package_name_override = "chromium"
 }
 
 component("service_lib") {
@@ -174,7 +163,7 @@ repack("service_pak") {
   output = "$root_out_dir/webrunner.pak"
 }
 
-test("service_unittests") {
+test("webrunner_unittests") {
   sources = [
     "service/context_provider_impl_unittest.cc",
   ]

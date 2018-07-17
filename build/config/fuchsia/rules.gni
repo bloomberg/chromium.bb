@@ -16,7 +16,8 @@ blobstore_qcow_path = "$root_out_dir/fvm.blk.qcow2"
 # Parameters:
 #   package: The package() target which will be run.
 #   package_name_override: Specifies the name of the generated package, if its
-#       name is different than the |package| target name.
+#       name is different than the |package| target name. This value must match
+#       package_name_override in the |package| target.
 #   package_deps: An array of [package, package_name_override] array pairs
 #       which specify additional dependency packages to be installed
 #       prior to execution.
