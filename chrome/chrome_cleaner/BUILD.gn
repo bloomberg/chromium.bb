@@ -12,10 +12,14 @@ test("chrome_cleaner_unittests") {
 
   deps = [
     "//chrome/chrome_cleaner/engines:resources",
+    "//chrome/chrome_cleaner/os:common_os",
+    "//chrome/chrome_cleaner/pup_data:pup_data_base",
+    "//chrome/chrome_cleaner/test:test_pup_data",
 
     # Tests from sub-directories.
     "//chrome/chrome_cleaner/http:unittest_sources",
     "//chrome/chrome_cleaner/os:unittest_sources",
+    "//chrome/chrome_cleaner/pup_data:unittest_sources",
     "//chrome/chrome_cleaner/settings:unittest_sources",
     "//chrome/chrome_cleaner/strings:unittest_sources",
 
