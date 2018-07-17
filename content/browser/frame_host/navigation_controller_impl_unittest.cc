@@ -1508,49 +1508,6 @@ TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
   EXPECT_FALSE(controller.CanGoForward());
 }
 
-TEST_F(NavigationControllerTest,
-       ReloadDisablePreviewReloadsOriginalRequestURL) {
-  NavigationControllerImpl& controller = controller_impl();
-
-  const GURL original_url("http://foo1");
-  const GURL final_url("http://foo2");
-  auto set_original_url_callback = base::Bind(SetOriginalURL, original_url);
-
-  // Load up the original URL, but get redirected.
-  controller.LoadURL(original_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
-                     std::string());
-  int entry_id = controller.GetPendingEntry()->GetUniqueID();
-  EXPECT_EQ(0U, navigation_entry_changed_counter_);
-  EXPECT_EQ(0U, navigation_list_pruned_counter_);
-  main_test_rfh()->PrepareForCommitWithServerRedirect(final_url);
-  main_test_rfh()->SendNavigateWithModificationCallback(
-      entry_id, true, final_url, std::move(set_original_url_callback));
-  EXPECT_EQ(1U, navigation_entry_committed_counter_);
-  navigation_entry_committed_counter_ = 0;
-  entry_id = controller.GetLastCommittedEntry()->GetUniqueID();
-
-  // The NavigationEntry should save both the original URL and the final
-  // redirected URL.
-  EXPECT_EQ(original_url,
-            controller.GetVisibleEntry()->GetOriginalRequestURL());
-  EXPECT_EQ(final_url, controller.GetVisibleEntry()->GetURL());
-
-  // Reload with previews disabled.
-  controller.Reload(ReloadType::DISABLE_PREVIEWS, false);
-  EXPECT_EQ(0U, navigation_entry_changed_counter_);
-  EXPECT_EQ(0U, navigation_list_pruned_counter_);
-
-  // The reload is pending.  The request should point to the original URL.
-  EXPECT_EQ(original_url, navigated_url());
-  EXPECT_EQ(controller.GetEntryCount(), 1);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
-  EXPECT_EQ(controller.GetPendingEntryIndex(), 0);
-  EXPECT_TRUE(controller.GetLastCommittedEntry());
-  EXPECT_TRUE(controller.GetPendingEntry());
-  EXPECT_TRUE(HasNavigationRequest());
-  EXPECT_EQ(content::PREVIEWS_NO_TRANSFORM, GetLastNavigationPreviewsState());
-}
-
 // Test that certain non-persisted NavigationEntryImpl values get reset after
 // commit.
 TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {

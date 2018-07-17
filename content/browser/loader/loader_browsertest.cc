@@ -818,25 +818,6 @@ IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest,
   CheckResourcesRequested(true);
 }
 
-// Test that reloading with Lo-Fi disabled doesn't call ShouldEnableLoFiMode and
-// already has LOFI_OFF.
-IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest,
-                       ShouldEnableLoFiModeReloadDisableLoFi) {
-  // Navigate with GetPreviewsState returning SERVER_LOFI_ON.
-  Reset(SERVER_LOFI_ON);
-  NavigateToURLBlockUntilNavigationsComplete(
-      shell(), embedded_test_server()->GetURL("/page_with_iframe.html"), 1);
-  CheckResourcesRequested(true);
-
-  // Reload with Lo-Fi disabled.
-  Reset(PREVIEWS_NO_TRANSFORM);
-  TestNavigationObserver tab_observer(shell()->web_contents(), 1);
-  shell()->web_contents()->GetController().Reload(ReloadType::DISABLE_PREVIEWS,
-                                                  true);
-  tab_observer.Wait();
-  CheckResourcesRequested(false);
-}
-
 namespace {
 
 struct RequestData {

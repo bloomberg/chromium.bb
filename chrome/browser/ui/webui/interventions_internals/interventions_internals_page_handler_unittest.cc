@@ -19,6 +19,7 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
@@ -214,7 +215,10 @@ class TestUINetworkQualityEstimatorService
 // A dummy class to setup PreviewsUIService.
 class TestPreviewsDeciderImpl : public previews::PreviewsDeciderImpl {
  public:
-  TestPreviewsDeciderImpl() : PreviewsDeciderImpl(nullptr, nullptr) {}
+  TestPreviewsDeciderImpl()
+      : PreviewsDeciderImpl(nullptr,
+                            nullptr,
+                            base::DefaultClock::GetInstance()) {}
 
   // previews::PreviewsDeciderImpl:
   void Initialize(

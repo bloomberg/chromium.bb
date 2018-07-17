@@ -23,6 +23,7 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -286,8 +287,9 @@ class TestPreviewsDeciderImpl : public PreviewsDeciderImpl {
  public:
   TestPreviewsDeciderImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
-      : PreviewsDeciderImpl(io_task_runner, ui_task_runner),
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+      base::Clock* clock)
+      : PreviewsDeciderImpl(io_task_runner, ui_task_runner, clock),
         initialized_(false) {}
   ~TestPreviewsDeciderImpl() override {}
 
@@ -348,12 +350,14 @@ class PreviewsDeciderImplTest : public testing::Test {
       : field_trial_list_(nullptr),
         previews_decider_impl_(std::make_unique<TestPreviewsDeciderImpl>(
             scoped_task_environment_.GetMainThreadTaskRunner(),
-            scoped_task_environment_.GetMainThreadTaskRunner())),
+            scoped_task_environment_.GetMainThreadTaskRunner(),
+            &clock_)),
         optimization_guide_service_(
             scoped_task_environment_.GetMainThreadTaskRunner()),
         context_(true) {
     context_.set_network_quality_estimator(&network_quality_estimator_);
     context_.Init();
+    clock_.SetNow(base::Time::Now());
 
     network_quality_estimator_.set_effective_connection_type(
         net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
@@ -368,7 +372,7 @@ class PreviewsDeciderImplTest : public testing::Test {
   void InitializeIOData() {
     previews_decider_impl_ = std::make_unique<TestPreviewsDeciderImpl>(
         scoped_task_environment_.GetMainThreadTaskRunner(),
-        scoped_task_environment_.GetMainThreadTaskRunner());
+        scoped_task_environment_.GetMainThreadTaskRunner(), &clock_);
   }
 
   void InitializeUIServiceWithoutWaitingForBlackList() {
@@ -422,6 +426,9 @@ class PreviewsDeciderImplTest : public testing::Test {
   net::TestNetworkQualityEstimator* network_quality_estimator() {
     return &network_quality_estimator_;
   }
+
+ protected:
+  base::SimpleTestClock clock_;
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -1382,6 +1389,38 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeBlacklistStatusesIgnore) {
     EXPECT_THAT(ui_service()->decision_types(),
                 ::testing::Contains(expected_type));
   }
+}
+
+TEST_F(PreviewsDeciderImplTest, IgnoreFlagStillHasFiveSecondRule) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kClientLoFi}, {});
+  InitializeUIService();
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  previews_decider_impl()->SetIgnorePreviewsBlacklistDecision(
+      true /* ignored */);
+
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::LOFI,
+      params::EffectiveConnectionTypeThresholdForClientLoFi(),
+      params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
+
+  previews_decider_impl()->AddPreviewNavigation(
+      GURL("http://wwww.somedomain.com"), true, PreviewsType::LOFI, 1);
+
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::LOFI,
+      params::EffectiveConnectionTypeThresholdForClientLoFi(),
+      params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
+
+  clock_.Advance(base::TimeDelta::FromSeconds(6));
+
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::LOFI,
+      params::EffectiveConnectionTypeThresholdForClientLoFi(),
+      params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
 }
 
 TEST_F(PreviewsDeciderImplTest, LogDecisionMadeNetworkQualityNotAvailable) {

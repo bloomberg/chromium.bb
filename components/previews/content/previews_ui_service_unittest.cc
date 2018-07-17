@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/default_clock.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/previews/content/previews_decider_impl.h"
 #include "components/previews/core/previews_black_list.h"
@@ -166,7 +167,9 @@ class TestPreviewsDeciderImpl : public PreviewsDeciderImpl {
   TestPreviewsDeciderImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-      : PreviewsDeciderImpl(ui_task_runner, io_task_runner),
+      : PreviewsDeciderImpl(ui_task_runner,
+                            io_task_runner,
+                            base::DefaultClock::GetInstance()),
         blacklist_ignored_(false) {}
 
   // PreviewsDeciderImpl:

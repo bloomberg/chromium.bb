@@ -19,6 +19,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -188,7 +189,8 @@ void ProfileImplIOData::Handle::Init(
   io_data_->set_previews_decider_impl(
       std::make_unique<previews::PreviewsDeciderImpl>(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+          base::DefaultClock::GetInstance()));
   PreviewsServiceFactory::GetForProfile(profile_)->Initialize(
       io_data_->previews_decider_impl(),
       g_browser_process->optimization_guide_service(),
