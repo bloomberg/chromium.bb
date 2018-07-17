@@ -169,40 +169,39 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
   // on UI affordances, such as buttons.
   min_size_ = kMinWindowSize;
 
-  // Initial size of the window is always 20% of the display width and height,
-  // constrained by the min and max sizes. Only explicitly update this the first
-  // time |window_size| is being calculated.
-  // Once |window_size| is calculated at least once, it should stay within the
-  // bounds of |min_size_| and |max_size_|.
   gfx::Size window_size;
-  if (!window_bounds_.size().IsEmpty()) {
+  gfx::Point origin;
+
+  if (is_initialized_) {
     window_size = window_bounds_.size();
+    origin = window_bounds_.origin();
   } else {
+    // Determine the initial window bounds:
+    // The initial window size is 20% of the |work_area| screen.
     window_size = gfx::Size(work_area.width() / 5, work_area.height() / 5);
     window_size.set_width(std::min(
         max_size_.width(), std::max(min_size_.width(), window_size.width())));
     window_size.set_height(
         std::min(max_size_.height(),
                  std::max(min_size_.height(), window_size.height())));
+
+    // Determine the initial origin point:
+    // The window is positioned on the bottom right of the |work_area| screen.
+    int window_diff_width = work_area.right() - window_size.width();
+    int window_diff_height = work_area.bottom() - window_size.height();
+
+    // There will be a margin between the edges of the Picture-in-Picture
+    // window and the |work_area| screen by taking 2% of the average of the
+    // window dimensions.
+    int margin = (window_diff_width + window_diff_height) / 2 * 0.02;
+
+    origin =
+        gfx::Point(window_diff_width - margin, window_diff_height - margin);
   }
 
-  // Determine the window size by fitting |natural_size_| within
-  // |window_size|, keeping to |natural_size_|'s aspect ratio.
-  if (!natural_size_.IsEmpty()) {
-    UpdateVideoLayerSizeWithAspectRatio(window_size);
-    window_size = video_bounds_.size();
-  }
+  UpdateVideoLayerSizeWithAspectRatio(window_size);
 
-  int window_diff_width = work_area.right() - window_size.width();
-  int window_diff_height = work_area.bottom() - window_size.height();
-
-  // Keep a margin distance of 2% the average of the two window size
-  // differences, keeping the margins consistent.
-  int buffer = (window_diff_width + window_diff_height) / 2 * 0.02;
-  window_bounds_ = gfx::Rect(
-      gfx::Point(window_diff_width - buffer, window_diff_height - buffer),
-      window_size);
-
+  window_bounds_ = gfx::Rect(origin, window_size);
   return window_bounds_;
 }
 
@@ -571,6 +570,13 @@ void OverlayWindowViews::OnNativeBlur() {
     UpdateControlsVisibility(false);
 
   views::Widget::OnNativeBlur();
+}
+
+void OverlayWindowViews::OnNativeWidgetMove() {
+  // Update the existing |window_bounds_| when the window moves. This allows
+  // the window to reappear with the same origin point when a new video is
+  // shown.
+  window_bounds_ = GetBounds();
 }
 
 void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
