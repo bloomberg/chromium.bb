@@ -830,7 +830,7 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       }
     }
 
-    av1_init_read_bit_buffer(pbi, &rb, data, data_end);
+    av1_init_read_bit_buffer(pbi, &rb, data, data + payload_size);
 
     switch (obu_header.type) {
       case OBU_TEMPORAL_DELIMITER:
@@ -892,7 +892,7 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
           return -1;
         }
-        if ((size_t)(data_end - data) < obu_payload_offset) {
+        if (obu_payload_offset > payload_size) {
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
           return -1;
         }
