@@ -180,6 +180,13 @@ class CompositorFrameRunLoop : public ui::WindowAndroidObserver {
 
 IN_PROC_BROWSER_TEST_P(CompositorImplLowEndBrowserTest,
                        CompositorImplDropsResourcesOnBackground) {
+  // This test makes invalid assumptions when surface synchronization is
+  // enabled. The compositor lock is obsolete, and inspecting frames
+  // from the CompositorImpl does not guarantee renderer CompositorFrames
+  // are ready.
+  if (features::IsSurfaceSynchronizationEnabled())
+    return;
+
   auto* rwhva = render_widget_host_view_android();
   auto* compositor = compositor_impl();
   auto context = GpuBrowsertestCreateContext(
