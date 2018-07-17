@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/history/history_transitioning_delegate.h"
 #include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -118,7 +119,7 @@
 }
 
 - (void)displayPrivacySettings {
-  if (experimental_flags::IsCollectionsUIRebootEnabled()) {
+  if (IsUIRefreshPhase1Enabled()) {
     self.historyClearBrowsingDataCoordinator =
         [[HistoryClearBrowsingDataCoordinator alloc]
             initWithBaseViewController:self.historyNavigationController

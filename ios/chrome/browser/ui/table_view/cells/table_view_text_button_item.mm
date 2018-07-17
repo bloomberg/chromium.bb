@@ -31,6 +31,7 @@ const CGFloat buttonCornerRadius = 8;
 }  // namespace
 
 @implementation TableViewTextButtonItem
+@synthesize buttonAccessibilityIdentifier = _buttonAccessibilityIdentifier;
 @synthesize buttonBackgroundColor = _buttonBackgroundColor;
 @synthesize buttonText = _buttonText;
 @synthesize text = _text;
@@ -50,6 +51,7 @@ const CGFloat buttonCornerRadius = 8;
       base::mac::ObjCCastStrict<TableViewTextButtonCell>(tableCell);
   cell.textLabel.text = self.text;
   [cell.button setTitle:self.buttonText forState:UIControlStateNormal];
+  cell.button.accessibilityIdentifier = self.buttonAccessibilityIdentifier;
   cell.button.backgroundColor = self.buttonBackgroundColor
                                     ? self.buttonBackgroundColor
                                     : UIColorFromRGB(blueHexColor);
