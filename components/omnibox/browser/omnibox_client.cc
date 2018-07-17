@@ -79,6 +79,10 @@ gfx::Image OmniboxClient::GetSizedIcon(const gfx::VectorIcon& vector_icon_type,
   return gfx::Image();
 }
 
+gfx::Image OmniboxClient::GetSizedIcon(const gfx::Image& icon) const {
+  return gfx::Image();
+}
+
 bool OmniboxClient::ProcessExtensionKeyword(
     const TemplateURL* template_url,
     const AutocompleteMatch& match,

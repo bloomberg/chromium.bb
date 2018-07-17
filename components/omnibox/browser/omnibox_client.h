@@ -100,6 +100,9 @@ class OmniboxClient {
   virtual gfx::Image GetSizedIcon(const gfx::VectorIcon& vector_icon_type,
                                   SkColor vector_icon_color) const;
 
+  // Returns the given |icon| with the correct size.
+  virtual gfx::Image GetSizedIcon(const gfx::Image& icon) const;
+
   // Checks whether |template_url| is an extension keyword; if so, asks the
   // ExtensionOmniboxEventRouter to process |match| for it and returns true.
   // Otherwise returns false. |observer| is the OmniboxNavigationObserver

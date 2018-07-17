@@ -288,8 +288,10 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
                                            SkColor vector_icon_color) {
   gfx::Image extension_icon =
       edit_model_->client()->GetIconIfExtensionMatch(match);
+  // Extension icons are the correct size for non-touch UI but need to be
+  // adjusted to be the correct size for touch mode.
   if (!extension_icon.IsEmpty())
-    return extension_icon;
+    return edit_model_->client()->GetSizedIcon(extension_icon);
 
   if (OmniboxFieldTrial::IsShowSuggestionFaviconsEnabled() &&
       !AutocompleteMatch::IsSearchType(match.type)) {
@@ -303,8 +305,10 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
         base::Bind(&OmniboxPopupModel::OnFaviconFetched,
                    weak_factory_.GetWeakPtr(), match.destination_url));
 
+    // Extension icons are the correct size for non-touch UI but need to be
+    // adjusted to be the correct size for touch mode.
     if (!favicon.IsEmpty())
-      return favicon;
+      return edit_model_->client()->GetSizedIcon(favicon);
   }
 
   const auto& vector_icon_type = AutocompleteMatch::TypeToVectorIcon(
