@@ -107,7 +107,12 @@ class DateOrderedListView {
 
             int availableWidth = getWidth() - mImagePaddingPx;
             int columnWidth = mImageWidthPx - mImagePaddingPx;
-            setSpanCount(Math.max(1, availableWidth / columnWidth));
+
+            int easyFitSpan = availableWidth / columnWidth;
+            double remaining =
+                    ((double) (availableWidth - easyFitSpan * columnWidth)) / columnWidth;
+            if (remaining > 0.5) easyFitSpan++;
+            setSpanCount(Math.max(1, easyFitSpan));
 
             super.onLayoutChildren(recycler, state);
         }
