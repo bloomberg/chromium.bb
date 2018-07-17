@@ -28,7 +28,6 @@ executable("top_domain_generator") {
   ]
   deps = [
     "//base",
-    "//build/config:exe_and_shlib_deps",
     "//net/tools/huffman_trie:huffman_trie_generator_sources",
   ]
   if (is_ios) {

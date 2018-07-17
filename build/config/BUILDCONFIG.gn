@@ -664,7 +664,7 @@ foreach(target_type,
         deps = []
       }
       if (!defined(invoker.no_default_deps) || !invoker.no_default_deps) {
-        deps += [ "//build/config:exe_and_shlib_deps" ]
+        deps += [ "//build/config:executable_and_loadable_module_and_shared_library_deps" ]
       }
     }
   }
