@@ -15,7 +15,6 @@
 #include "base/trace_event/trace_event.h"
 #include "components/download/public/common/download_stats.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
-#include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
@@ -371,13 +370,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
       bool was_request_intercepted) const {
-    // Temporary CHECKs for https://crbug.com/857005.
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    CHECK(started_);
-    CHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-    if (appcache_handle_core)
-      appcache_handle_core->AddDefaultFactoryRunToDebugLog(
-          was_request_intercepted);
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+    DCHECK(started_);
+
     return base::BindOnce(
         &URLLoaderRequestController::CreateNonNetworkServiceURLLoader,
         weak_factory_.GetWeakPtr(),
@@ -406,13 +402,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       AppCacheNavigationHandleCore* appcache_handle_core,
       network::mojom::URLLoaderRequest url_loader,
       network::mojom::URLLoaderClientPtr url_loader_client) {
-    // Temporary CHECKs for https://crbug.com/857005.
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    CHECK(started_);
-    CHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-
-    if (appcache_handle_core)
-      appcache_handle_core->AddCreateURLLoaderToDebugLog();
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+    DCHECK(started_);
 
     default_loader_used_ = true;
     if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
@@ -475,14 +467,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       AppCacheNavigationHandleCore* appcache_handle_core,
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data) {
-    // Temporary CHECKs for https://crbug.com/857005.
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    CHECK(!started_);
-    CHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-    if (appcache_handle_core)
-      appcache_handle_core->AddNavigationStartToDebugLog(
-          false /* network_service */);
-
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+    DCHECK(!started_);
     started_ = true;
     request_info_ = std::move(request_info);
     frame_tree_node_id_ = request_info_->frame_tree_node_id;
@@ -572,13 +559,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
       int frame_tree_node_id,
       std::unique_ptr<service_manager::Connector> connector) {
-    // Temporary CHECKs for https://crbug.com/857005.
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    CHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
-    CHECK(!started_);
-    if (appcache_handle_core)
-      appcache_handle_core->AddNavigationStartToDebugLog(
-          true /* network_service */);
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+    DCHECK(!started_);
     global_request_id_ = MakeGlobalRequestID();
     frame_tree_node_id_ = frame_tree_node_id;
     started_ = true;
@@ -703,10 +686,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   void MaybeStartLoader(
       NavigationLoaderInterceptor* interceptor,
       SingleRequestURLLoaderFactory::RequestHandler single_request_handler) {
-    // Temporary CHECKs for https://crbug.com/857005.
-    CHECK(IsLoaderInterceptionEnabled());
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    CHECK(started_);
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(IsLoaderInterceptionEnabled());
+    DCHECK(started_);
+
     if (single_request_handler) {
       // |interceptor| wants to handle the request with
       // |single_request_handler|.

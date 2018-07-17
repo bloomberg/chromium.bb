@@ -317,11 +317,10 @@ void ServiceWorkerControlleeRequestHandler::
 
   const bool need_to_update = !force_update_started_ && registration &&
                               context_->force_update_on_page_load();
+
   if (provider_host_ && !need_to_update)
     provider_host_->SetAllowAssociation(true);
   if (status != blink::ServiceWorkerStatusCode::kOk) {
-    int fallback_reason = 0;
-    base::debug::Alias(&fallback_reason);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
@@ -332,32 +331,26 @@ void ServiceWorkerControlleeRequestHandler::
   DCHECK(registration.get());
 
   if (!provider_host_) {
-    int fallback_reason = 1;
-    base::debug::Alias(&fallback_reason);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Status", blink::ServiceWorkerStatusToString(status));
+        url_job_.get(), "Info", "No Provider");
     return;
   }
 
   if (!context_) {
-    int fallback_reason = 2;
-    base::debug::Alias(&fallback_reason);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
-        url_job_.get(), "Status", blink::ServiceWorkerStatusToString(status));
+        url_job_.get(), "Info", "No Context");
     return;
   }
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
           registration->pattern(), provider_host_->topmost_frame_url(),
           resource_context_, provider_host_->web_contents_getter())) {
-    int fallback_reason = 3;
-    base::debug::Alias(&fallback_reason);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",
@@ -370,8 +363,6 @@ void ServiceWorkerControlleeRequestHandler::
   if (!provider_host_->IsContextSecureForServiceWorker()) {
     // TODO(falken): Figure out a way to surface in the page's DevTools
     // console that the service worker was blocked for security.
-    int fallback_reason = 4;
-    base::debug::Alias(&fallback_reason);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
@@ -422,8 +413,6 @@ void ServiceWorkerControlleeRequestHandler::
 
   if (!active_version.get() ||
       active_version->status() != ServiceWorkerVersion::ACTIVATED) {
-    int fallback_reason = 5;
-    base::debug::Alias(&fallback_reason);
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",
