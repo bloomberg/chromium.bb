@@ -64,6 +64,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         @Override
         public void onDisconnected(CameraDevice cameraDevice) {
+            Log.e(TAG, "cameraDevice was closed unexpectedly");
             cameraDevice.close();
             mCameraDevice = null;
             changeCameraStateAndNotify(CameraState.STOPPED);
@@ -71,6 +72,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         @Override
         public void onError(CameraDevice cameraDevice, int error) {
+            Log.e(TAG, "cameraDevice encountered an error");
             cameraDevice.close();
             mCameraDevice = null;
             changeCameraStateAndNotify(CameraState.STOPPED);
