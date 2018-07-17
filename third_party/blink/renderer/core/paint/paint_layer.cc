@@ -2326,11 +2326,7 @@ bool PaintLayer::HitTestContents(HitTestResult& result,
 }
 
 bool PaintLayer::IsReplacedNormalFlowStacking() const {
-  if (!GetLayoutObject().IsSVGForeignObject())
-    return false;
-  if (!GetLayoutObject().StyleRef().HasAutoZIndex())
-    return false;
-  return true;
+  return GetLayoutObject().IsSVGForeignObject();
 }
 
 void PaintLayer::SetNeedsCompositingLayerAssignment() {
