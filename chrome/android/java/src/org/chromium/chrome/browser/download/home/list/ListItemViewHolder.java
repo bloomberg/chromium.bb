@@ -60,7 +60,7 @@ abstract class ListItemViewHolder extends ViewHolder {
             case ListUtils.ViewType.VIDEO:
                 return new VideoViewHolder(parent);
             case ListUtils.ViewType.IMAGE:
-                return new ImageViewHolder(parent);
+                return ImageViewHolder.create(parent);
             case ListUtils.ViewType.CUSTOM_VIEW:
                 return new CustomViewHolder(parent);
             case ListUtils.ViewType.PREFETCH:
@@ -232,16 +232,34 @@ abstract class ListItemViewHolder extends ViewHolder {
     }
 
     /** A {@link ViewHolder} specifically meant to display an image {@code OfflineItem}. */
-    public static class ImageViewHolder extends ListItemViewHolder {
-        public ImageViewHolder(ViewGroup parent) {
-            super(new AppCompatTextView(parent.getContext()));
+    public static class ImageViewHolder extends ThumbnailAwareViewHolder {
+        public static ImageViewHolder create(ViewGroup parent) {
+            View view = LayoutInflater.from(parent.getContext())
+                                .inflate(R.layout.download_manager_image_item, null);
+            int imageSize = parent.getContext().getResources().getDimensionPixelSize(
+                    R.dimen.download_manager_image_width);
+            return new ImageViewHolder(view, imageSize);
         }
 
-        // ListItemViewHolder implementation.
+        public ImageViewHolder(View view, int thumbnailSizePx) {
+            super(view, thumbnailSizePx, thumbnailSizePx);
+        }
+
+        // ThumbnailAwareViewHolder implementation.
         @Override
         public void bind(ListPropertyModel properties, ListItem item) {
+            super.bind(properties, item);
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
-            ((TextView) itemView).setText(offlineItem.item.title);
+            View imageView = itemView.findViewById(R.id.thumbnail);
+            imageView.setContentDescription(offlineItem.item.title);
+
+            itemView.setOnClickListener(
+                    v -> properties.getOpenCallback().onResult(offlineItem.item));
+        }
+
+        @Override
+        void onVisualsChanged(ImageView view, OfflineItemVisuals visuals) {
+            view.setImageBitmap(visuals == null ? null : visuals.icon);
         }
     }
 
