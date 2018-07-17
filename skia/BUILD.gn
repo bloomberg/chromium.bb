@@ -238,6 +238,13 @@ source_set("skcms") {
     ]
   }
 
+  # LLVM automatically sets the equivalent of GCC's -mfp16-format=ieee on ARM
+  # builds by default, while GCC itself does not. We need it to enable support
+  # for half-precision floating point data types used by SKCMS on ARM.
+  if (is_linux && !is_clang && current_cpu == "arm") {
+    cflags += [ "-mfp16-format=ieee" ]
+  }
+
   public = [
     "//third_party/skia/third_party/skcms/skcms.h",
   ]
