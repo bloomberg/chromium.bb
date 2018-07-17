@@ -58,6 +58,13 @@ url_formatter::FormatUrlTypes GetVrFormatUrlTypes() {
          url_formatter::kFormatUrlOmitTrivialSubdomains;
 }
 
+VR_UI_EXPORT base::string16 FormatUrlForVr(const GURL& gurl,
+                                           url::Parsed* new_parsed) {
+  return url_formatter::FormatUrl(gurl, GetVrFormatUrlTypes(),
+                                  net::UnescapeRule::NORMAL, new_parsed,
+                                  nullptr, nullptr);
+}
+
 ElisionParameters GetElisionParameters(const GURL& gurl,
                                        const url::Parsed& parsed,
                                        gfx::RenderText* render_text,

@@ -93,9 +93,7 @@ void UrlText::SetDeemphasizedColor(const SkColor color) {
 }
 
 void UrlText::UpdateText() {
-  const base::string16 text = url_formatter::FormatUrl(
-      gurl_, GetVrFormatUrlTypes(), net::UnescapeRule::NORMAL, &url_parsed_,
-      nullptr, nullptr);
+  const base::string16 text = FormatUrlForVr(gurl_, &url_parsed_);
   SetText(text);
   SetFormatting(CreateUrlFormatting(text, url_parsed_, emphasized_color_,
                                     deemphasized_color_));

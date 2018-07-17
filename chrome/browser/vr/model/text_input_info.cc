@@ -38,6 +38,13 @@ TextInputInfo::TextInputInfo(base::string16 t)
                     kDefaultCompositionIndex,
                     kDefaultCompositionIndex) {}
 
+TextInputInfo::TextInputInfo(base::string16 t, int sel_start, int sel_end)
+    : TextInputInfo(t,
+                    sel_start,
+                    sel_end,
+                    kDefaultCompositionIndex,
+                    kDefaultCompositionIndex) {}
+
 TextInputInfo::TextInputInfo(base::string16 t,
                              int sel_start,
                              int sel_end,

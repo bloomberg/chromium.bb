@@ -2746,13 +2746,23 @@ void UiSceneCreator::CreateOmnibox() {
   parent->AddChild(std::move(scaler));
 
   // This binding must run whether or not the omnibox is visible.
-  parent->AddBinding(std::make_unique<Binding<bool>>(
+  parent->AddBinding(std::make_unique<Binding<std::pair<bool, base::string16>>>(
       VR_BIND_LAMBDA(
-          [](Model* m) { return m->has_mode_in_stack(kModeEditingOmnibox); },
+          [](Model* m) {
+            bool editing_omnibox = m->has_mode_in_stack(kModeEditingOmnibox);
+            base::string16 url_text =
+                FormatUrlForVr(m->toolbar_state.gurl, nullptr);
+            return std::make_pair(editing_omnibox, url_text);
+          },
           base::Unretained(model_)),
       VR_BIND_LAMBDA(
-          [](Model* m, const bool& unused) {
-            m->omnibox_text_field_info = EditedText();
+          [](Model* m, const std::pair<bool, base::string16>& value) {
+            if (value.first /* editing_omnibox */) {
+              m->omnibox_text_field_info.current =
+                  TextInputInfo(value.second, 0, value.second.size());
+            } else {
+              m->omnibox_text_field_info = EditedText();
+            }
           },
           base::Unretained(model_))));
 }

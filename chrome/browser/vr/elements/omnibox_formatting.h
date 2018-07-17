@@ -26,6 +26,9 @@ ConvertClassification(const ACMatchClassifications& classifications,
 
 VR_UI_EXPORT url_formatter::FormatUrlTypes GetVrFormatUrlTypes();
 
+VR_UI_EXPORT base::string16 FormatUrlForVr(const GURL& gurl,
+                                           url::Parsed* new_parsed);
+
 struct ElisionParameters {
   // The horizontal pixel offset to be applied to URL text, such that the right
   // edge of the domain (along with at least a small amount of path) is visible
