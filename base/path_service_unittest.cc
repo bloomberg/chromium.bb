@@ -30,7 +30,7 @@ bool ReturnsValidPath(int dir_type) {
   // Some paths might not exist on some platforms in which case confirming
   // |result| is true and !path.empty() is the best we can do.
   bool check_path_exists = true;
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
   // If chromium has never been started on this account, the cache path may not
   // exist.
   if (dir_type == DIR_CACHE)
@@ -117,7 +117,7 @@ TEST_F(PathServiceTest, Get) {
        ++key) {
     EXPECT_PRED1(ReturnsValidPath, key);
   }
-#elif defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#elif defined(OS_POSIX)
   for (int key = PATH_POSIX_START + 1; key < PATH_POSIX_END;
        ++key) {
     EXPECT_PRED1(ReturnsValidPath, key);

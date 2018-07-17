@@ -49,7 +49,7 @@ class UploadObserver {
   base::OnceClosure on_complete_callback_;
 };
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 void RemovePermissions(const base::FilePath& path, int removed_permissions) {
   int permissions;
   ASSERT_TRUE(base::GetPosixFilePermissions(path, &permissions));
@@ -70,7 +70,7 @@ void RemoveWritePermissions(const base::FilePath& path) {
                                     base::FILE_PERMISSION_WRITE_BY_OTHERS;
   RemovePermissions(path, write_permissions);
 }
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 }  // namespace
 
 class WebRtcEventLogUploaderImplTest : public ::testing::Test {
@@ -245,7 +245,7 @@ TEST_F(WebRtcEventLogUploaderImplTest, UnsuccessfulUploadReportedToObserver2) {
   EXPECT_FALSE(base::PathExists(log_file_));
 }
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 TEST_F(WebRtcEventLogUploaderImplTest, FailureToReadFileReportedToObserver) {
   UseFakeUrlFetcherFactory();
 
@@ -291,7 +291,7 @@ TEST_F(WebRtcEventLogUploaderImplTest, FailureToDeleteFileHandledGracefully) {
   // Cleaup
   ASSERT_TRUE(base::SetPosixFilePermissions(logs_dir, permissions));
 }
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 TEST_F(WebRtcEventLogUploaderImplTest, FilesUpToMaxSizeUploaded) {
   UseFakeUrlFetcherFactory();

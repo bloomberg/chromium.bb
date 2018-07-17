@@ -141,7 +141,7 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
     return nullptr;
 
   PlatformHandle handles[2];
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && \
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && \
     (!defined(OS_MACOSX) || defined(OS_IOS))
   if (serialized_state->access_mode ==
       MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_WRITABLE) {
@@ -251,7 +251,7 @@ MojoResult SharedBufferDispatcher::DuplicateBufferHandle(
     } else if (region_.GetMode() ==
                base::subtle::PlatformSharedMemoryRegion::Mode::kWritable) {
       auto handle = region_.PassPlatformHandle();
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && \
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && \
     (!defined(OS_MACOSX) || defined(OS_IOS))
       // On POSIX systems excluding Android, Fuchsia, and OSX, we explicitly
       // wipe out the secondary (read-only) FD from the platform handle to
@@ -312,7 +312,7 @@ void SharedBufferDispatcher::StartSerialize(uint32_t* num_bytes,
   *num_bytes = sizeof(SerializedState);
   *num_ports = 0;
   *num_platform_handles = 1;
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && \
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && \
     (!defined(OS_MACOSX) || defined(OS_IOS))
   if (region_.GetMode() ==
       base::subtle::PlatformSharedMemoryRegion::Mode::kWritable) {
@@ -352,7 +352,7 @@ bool SharedBufferDispatcher::EndSerialize(void* destination,
   serialized_state->padding = 0;
 
   auto region = std::move(region_);
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && \
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && \
     (!defined(OS_MACOSX) || defined(OS_IOS))
   if (region.GetMode() ==
       base::subtle::PlatformSharedMemoryRegion::Mode::kWritable) {

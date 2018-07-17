@@ -48,7 +48,7 @@ bool SetAddressSpaceLimit() {
 #if !defined(ARCH_CPU_64_BITS) || !defined(OS_POSIX)
   // 32 bits => address space is limited already.
   return true;
-#elif defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
   // macOS will accept, but not enforce, |RLIMIT_AS| changes. See
   // https://crbug.com/435269 and rdar://17576114.
   //

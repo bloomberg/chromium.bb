@@ -9,7 +9,7 @@
 #include <functional>
 #include <limits>
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 #include <sys/resource.h>
 #endif
 
@@ -78,7 +78,7 @@ void MaybeHistogramFdLimit() {
   int soft_fd_limit = 0;
   int hard_fd_limit = 0;
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
   struct rlimit nofile;
   if (!getrlimit(RLIMIT_NOFILE, &nofile)) {
     soft_fd_limit = nofile.rlim_cur;

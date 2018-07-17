@@ -543,7 +543,7 @@ TEST_F(FilePathWatcherTest, RecursiveWatch) {
   ASSERT_TRUE(WaitForEvents());
 }
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
 // Apps cannot create symlinks on Android in /sdcard as /sdcard uses the
 // "fuse" file system, while /data uses "ext4".  Running these tests in /data
 // would be preferable and allow testing file attributes and symlinks.
@@ -588,7 +588,7 @@ TEST_F(FilePathWatcherTest, RecursiveWithSymLink) {
   ASSERT_TRUE(WriteFile(target2_file, "content"));
   ASSERT_TRUE(WaitForEvents());
 }
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX) && !defined(OS_ANDROID)
 
 TEST_F(FilePathWatcherTest, MoveChild) {
   FilePathWatcher file_watcher;

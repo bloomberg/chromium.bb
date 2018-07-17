@@ -1190,7 +1190,7 @@ TEST_F(URLRequestTest, AllowFileURLs) {
   }
 }
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)  // Because of symbolic links.
+#if defined(OS_POSIX)  // Because of symbolic links.
 
 TEST_F(URLRequestTest, SymlinksToFiles) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -1312,7 +1312,7 @@ TEST_F(URLRequestTest, SymlinksToDirs) {
   }
 }
 
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 TEST_F(URLRequestTest, FileDirCancelTest) {
   // Put in mock resource provider.

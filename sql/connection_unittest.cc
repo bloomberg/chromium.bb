@@ -907,7 +907,7 @@ TEST_F(SQLConnectionTest, Delete) {
 }
 
 // This test manually sets on disk permissions, these don't exist on Fuchsia.
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 // Test that set_restrict_to_user() trims database permissions so that
 // only the owner (and root) can read.
 TEST_F(SQLConnectionTest, UserPermission) {
@@ -971,7 +971,7 @@ TEST_F(SQLConnectionTest, UserPermission) {
   EXPECT_TRUE(base::GetPosixFilePermissions(journal, &mode));
   ASSERT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
 }
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 // Test that errors start happening once Poison() is called.
 TEST_F(SQLConnectionTest, Poison) {

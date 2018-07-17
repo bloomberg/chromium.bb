@@ -905,7 +905,7 @@ class PeerConnectionTrackerProxyForTesting
   WebRtcEventLogManagerTestBase* const test_;
 };
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 void RemoveWritePermissionsFromDirectory(const base::FilePath& path) {
   int permissions;
   ASSERT_TRUE(base::GetPosixFilePermissions(path, &permissions));
@@ -915,7 +915,7 @@ void RemoveWritePermissionsFromDirectory(const base::FilePath& path) {
   permissions &= ~write_permissions;
   ASSERT_TRUE(base::SetPosixFilePermissions(path, permissions));
 }
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 // The factory for the following fake uploader produces a sequence of uploaders
 // which fail the test if given a file other than that which they expect. The
@@ -1468,7 +1468,7 @@ TEST_F(WebRtcEventLogManagerTest, LocalLogIllegalPath) {
   EXPECT_TRUE(base::IsDirectoryEmpty(local_logs_base_dir_.GetPath()));
 }
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 TEST_F(WebRtcEventLogManagerTest, LocalLogLegalPathWithoutPermissionsSanity) {
   RemoveWritePermissionsFromDirectory(local_logs_base_dir_.GetPath());
 
@@ -1496,7 +1496,7 @@ TEST_F(WebRtcEventLogManagerTest, LocalLogLegalPathWithoutPermissionsSanity) {
   EXPECT_TRUE(DisableLocalLogging());
   EXPECT_TRUE(base::IsDirectoryEmpty(local_logs_base_dir_.GetPath()));
 }
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 TEST_F(WebRtcEventLogManagerTest, LocalLogEmptyStringHandledGracefully) {
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
@@ -2109,7 +2109,7 @@ TEST_F(WebRtcEventLogManagerTest, RemoteLogFileClosedWhenCapacityReached) {
             std::make_pair(false, true));
 }
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 // TODO(crbug.com/775415): Add unit tests for lacking read permissions when
 // looking to upload the file.
 TEST_F(WebRtcEventLogManagerTest,
@@ -2174,7 +2174,7 @@ TEST_F(WebRtcEventLogManagerTest, GracefullyHandleFailureToStartRemoteLogFile) {
             std::make_pair(false, false));
   EXPECT_TRUE(base::IsDirectoryEmpty(remote_logs_path));
 }
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 TEST_F(WebRtcEventLogManagerTest, RemoteLogLimitActiveLogFiles) {
   for (int i = 0; i < kMaxActiveRemoteLogFiles + 1; ++i) {
@@ -2592,7 +2592,7 @@ TEST_F(WebRtcEventLogManagerTest, RemoteLogEmptyStringHandledGracefully) {
       std::accumulate(std::begin(logs), std::end(logs), std::string()));
 }
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 TEST_F(WebRtcEventLogManagerTest,
        UnopenedRemoteLogFilesNotCountedTowardsActiveLogsLimit) {
   TestingProfile* browser_contexts[2];
@@ -2632,7 +2632,7 @@ TEST_F(WebRtcEventLogManagerTest,
                                    GetUniqueId(with_permissions_key)));
   }
 }
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 TEST_F(WebRtcEventLogManagerTest,
        NoStartWebRtcSendingEventLogsWhenLocalEnabledWithoutPeerConnection) {

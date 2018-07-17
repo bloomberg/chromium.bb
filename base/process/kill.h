@@ -92,7 +92,7 @@ BASE_EXPORT bool KillProcessGroup(ProcessHandle process_group_id);
 BASE_EXPORT TerminationStatus GetTerminationStatus(ProcessHandle handle,
                                                    int* exit_code);
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
 // Send a kill signal to the process and then wait for the process to exit
 // and get the termination status.
 //
@@ -116,7 +116,7 @@ BASE_EXPORT TerminationStatus GetKnownDeadTerminationStatus(
 // and then reaps it.
 BASE_EXPORT void EnsureProcessGetsReaped(Process process);
 #endif  // defined(OS_LINUX)
-#endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 // Registers |process| to be asynchronously monitored for termination, forcibly
 // terminated if necessary, and reaped on exit. The caller should have signalled

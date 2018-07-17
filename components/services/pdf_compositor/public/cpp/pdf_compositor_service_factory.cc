@@ -14,7 +14,7 @@ namespace printing {
 
 std::unique_ptr<service_manager::Service> CreatePdfCompositorService(
     const std::string& creator) {
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
   content::UtilityThread::Get()->EnsureBlinkInitializedWithSandboxSupport();
 #else
   content::UtilityThread::Get()->EnsureBlinkInitialized();
