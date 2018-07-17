@@ -10,7 +10,8 @@ LifecycleUnitObserver::~LifecycleUnitObserver() = default;
 
 void LifecycleUnitObserver::OnLifecycleUnitStateChanged(
     LifecycleUnit* lifecycle_unit,
-    LifecycleUnitState last_state) {}
+    LifecycleUnitState last_state,
+    LifecycleUnitStateChangeReason reason) {}
 
 void LifecycleUnitObserver::OnLifecycleUnitVisibilityChanged(
     LifecycleUnit* lifecycle_unit,
