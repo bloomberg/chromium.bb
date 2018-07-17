@@ -28,6 +28,10 @@ template("generate_vm_runner_script") {
       invoker.generated_script,
     ]
 
+    deps = [
+      "//testing/buildbot/filters:chromeos_filters",
+    ]
+
     data = [
       # We use android test-runner's results libs to construct gtest output
       # json.
