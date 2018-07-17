@@ -67,10 +67,6 @@ class FileChooserClient : public GarbageCollectedMixin {
 
  protected:
   FileChooser* NewFileChooser(const WebFileChooserParams&);
-  bool HasConnectedFileChooser() const { return chooser_.get(); }
-
-  // This should be called if a user chose files or cancel the dialog.
-  void DisconnectFileChooser();
 
  private:
   scoped_refptr<FileChooser> chooser_;

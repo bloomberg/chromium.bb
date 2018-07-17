@@ -41,11 +41,6 @@ FileChooser* FileChooserClient::NewFileChooser(
   return chooser_.get();
 }
 
-void FileChooserClient::DisconnectFileChooser() {
-  DCHECK(HasConnectedFileChooser());
-  chooser_->DisconnectClient();
-}
-
 inline FileChooser::FileChooser(FileChooserClient* client,
                                 const WebFileChooserParams& params)
     : client_(client), params_(params) {}

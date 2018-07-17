@@ -266,7 +266,6 @@ Page* ChromeClientImpl::CreateWindow(LocalFrame* frame,
   if (!frame->GetPage() || frame->GetPage()->Paused())
     return nullptr;
 
-  NotifyPopupOpeningObservers();
   const AtomicString& frame_name =
       !EqualIgnoringASCIICase(r.FrameName(), "_blank") ? r.FrameName()
                                                        : g_empty_atom;
