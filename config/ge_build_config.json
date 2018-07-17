@@ -794,6 +794,18 @@
       ]
     },
     {
+      "name": "kukui",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": true,
+          "board_group": "",
+          "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "lakitu",
       "configs": [
         {

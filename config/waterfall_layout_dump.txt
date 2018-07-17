@@ -1941,6 +1941,7 @@ kukui-no-vmtest-pre-cq (gce_beefy)
 kukui-paladin-tryjob (gce_beefy)
 kukui-payloads (gce_beefy)
 kukui-pre-cq (gce_beefy)
+kukui-release (gce_beefy)
 kukui-release-afdo-generate-tryjob (gce_beefy)
 [kukui-release-afdo-tryjob] (gce_beefy)
   kukui-release-afdo-generate
