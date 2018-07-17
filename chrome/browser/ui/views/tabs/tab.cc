@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/grit/components_scaled_resources.h"
@@ -1477,6 +1478,20 @@ void Tab::UpdateIconVisibility() {
   if (height() < GetLayoutConstant(TAB_HEIGHT))
     return;
 
+  const bool has_favicon = data().show_icon;
+  const bool has_alert_icon =
+      (alert_indicator_button_ ? alert_indicator_button_->showing_alert_state()
+                               : data().alert_state) != TabAlertState::NONE;
+
+  if (data().pinned) {
+    // When the tab is pinned, we can show one of the two icons; the alert icon
+    // is given priority over the favicon. The close buton is never shown.
+    showing_alert_indicator_ = has_alert_icon;
+    showing_icon_ = has_favicon && !has_alert_icon;
+    showing_close_button_ = false;
+    return;
+  }
+
   int available_width = GetContentsBounds().width();
 
   const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
@@ -1489,80 +1504,62 @@ void Tab::UpdateIconVisibility() {
       close_button_->GetPreferredSize().width() -
       (is_touch_optimized ? close_button_->GetInsets().right()
                           : close_button_->GetInsets().width());
+  const bool large_enough_for_close_button =
+      available_width >= kMinimumContentsWidthForCloseButtons;
 
-  int extra_padding = MD::IsRefreshUi()
-                          ? kRefreshExtraLeftPaddingToBalanceCloseButtonPadding
-                          : kExtraLeftPaddingToBalanceCloseButtonPadding;
-
-  const bool is_pinned = data().pinned;
-  const bool is_active = IsActive();
-  const bool has_favicon = data().show_icon;
-  const bool has_alert_icon =
-      (alert_indicator_button_ ? alert_indicator_button_->showing_alert_state()
-                               : data().alert_state) != TabAlertState::NONE;
-
-  if (is_pinned) {
-    // When the tab is pinned, we can show one of the two icons. Alert icon
-    // is given priority over the favicon. We never show the close buton if the
-    // tab is pinned.
-    showing_alert_indicator_ = has_alert_icon;
-    showing_icon_ = has_favicon && !has_alert_icon;
-    showing_close_button_ = false;
-  } else {
-    showing_close_button_ = !controller_->ShouldHideCloseButtonForTab(this);
-    if (is_active) {
+  showing_close_button_ = !controller_->ShouldHideCloseButtonForTab(this);
+  if (IsActive()) {
+    // Close button is shown on active tabs regardless of the size.
+    if (showing_close_button_)
       available_width -= close_button_width;
 
-      showing_alert_indicator_ =
-          has_alert_icon && alert_icon_width <= available_width;
-      available_width -= showing_alert_indicator_ ? alert_icon_width : 0;
+    showing_alert_indicator_ =
+        has_alert_icon && alert_icon_width <= available_width;
+    if (showing_alert_indicator_)
+      available_width -= alert_icon_width;
 
-      // If all 3 icons are visible, we add an extra left padding for favicon.
-      // See comment for |extra_padding_before_content_|.
-      if (!showing_alert_indicator_)
-        extra_padding = 0;
+    showing_icon_ = has_favicon && favicon_width <= available_width;
+    if (showing_icon_)
+      available_width -= favicon_width;
+  } else {
+    showing_alert_indicator_ =
+        has_alert_icon && alert_icon_width <= available_width;
+    if (showing_alert_indicator_)
+      available_width -= alert_icon_width;
 
-      showing_icon_ =
-          has_favicon && favicon_width + extra_padding <= available_width;
-    } else {
-      showing_alert_indicator_ =
-          has_alert_icon && alert_icon_width <= available_width;
-      available_width -= showing_alert_indicator_ ? alert_icon_width : 0;
+    showing_icon_ = has_favicon && favicon_width <= available_width;
+    if (showing_icon_)
+      available_width -= favicon_width;
 
-      showing_icon_ = has_favicon && favicon_width <= available_width;
-      available_width -= showing_icon_ ? favicon_width : 0;
+    // Show the close button if it's allowed to show on hover, even if it's
+    // forced to be hidden normally.
+    const bool show_on_hover = controller_->ShouldShowCloseButtonOnHover();
+    showing_close_button_ |= show_on_hover && hover_controller_.ShouldDraw();
+    showing_close_button_ &= large_enough_for_close_button;
+    if (showing_close_button_ || show_on_hover)
+      available_width -= close_button_width;
 
-      // If all 3 icons are visible, we add an extra padding to the left of
-      // favicon. See comment for |extra_padding_before_content_|.
-      if (!showing_icon_ || !showing_alert_indicator_)
-        extra_padding = 0;
+    // If no other controls are visible, show favicon even though we
+    // don't have enough space. We'll clip the favicon in PaintChildren().
+    if (!showing_close_button_ && !showing_alert_indicator_ && !showing_icon_ &&
+        has_favicon) {
+      showing_icon_ = true;
 
-      // Show the close button if it's allowed to show on hover, even if it's
-      // forced to be hidden normally.
-      showing_close_button_ |= controller_->ShouldShowCloseButtonOnHover() &&
-                               hover_controller_.ShouldDraw();
-      // Always hide the close button if the total width can't accomodate all 3
-      // icons. When favicon or alert button is not visible, its space will be
-      // occupied by the title of this tab.
-      int title_width =
-          (!showing_icon_ + !showing_alert_indicator_) * favicon_width;
-      if (title_width + close_button_width + extra_padding > available_width)
-        showing_close_button_ = false;
-
-      // If no other controls are visible, show favicon even though we
-      // don't have enough space. We'll clip the favicon in PaintChildren().
-      if (!showing_close_button_ && !showing_alert_indicator_ &&
-          !showing_icon_ && has_favicon) {
-        showing_icon_ = true;
-
-        // See comments near top of function on why this conditional is here.
-        if (!closing_)
-          center_favicon_ = true;
-      }
+      // See comments near top of function on why this conditional is here.
+      if (!closing_)
+        center_favicon_ = true;
     }
-    extra_padding_before_content_ =
-        showing_close_button_ && showing_icon_ && showing_alert_indicator_;
   }
+
+  const int extra_padding =
+      MD::IsRefreshUi() ? kRefreshExtraLeftPaddingToBalanceCloseButtonPadding
+                        : kExtraLeftPaddingToBalanceCloseButtonPadding;
+  // The extra padding is intended to visually balance the close button, so only
+  // include it when the close button is shown or will be shown on hover. We
+  // also check this for active tabs so that the extra padding doesn't pop in
+  // and out as you switch tabs.
+  extra_padding_before_content_ =
+      large_enough_for_close_button && extra_padding <= available_width;
 }
 
 bool Tab::ShouldRenderAsNormalTab() const {

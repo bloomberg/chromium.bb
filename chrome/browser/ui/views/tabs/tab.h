@@ -58,6 +58,11 @@ class Tab : public gfx::AnimationDelegate,
   // right edges of the tab.
   static constexpr int kSeparatorThickness = 1;
 
+  // When the content's width of the tab shrinks to below this size we should
+  // hide the close button on inactive tabs. Any smaller and they're too easy
+  // to hit on accident.
+  static constexpr int kMinimumContentsWidthForCloseButtons = 68;
+
   Tab(TabController* controller, gfx::AnimationContainer* container);
   ~Tab() override;
 
@@ -351,14 +356,11 @@ class Tab : public gfx::AnimationDelegate,
   // detect when it changes and layout appropriately.
   bool showing_close_button_ = false;
 
-  // When the close button will be visible on inactive tabs, we add additional
-  // padding to the left of the favicon to balance the whitespace inside the
-  // non-hovered close button image; otherwise, the tab contents look too close
-  // to the left edge.  If the tab close button isn't visible on inactive tabs,
-  // we let the tab contents take the full width of the tab, to maximize visible
-  // content on tiny tabs.  We base the determination on the inactive tab close
-  // button state so that when a tab is activated its contents don't suddenly
-  // shift.
+  // If there's room, we add additional padding to the left of the favicon to
+  // balance the whitespace inside the non-hovered close button image;
+  // otherwise, the tab contents look too close to the left edge. Once the tabs
+  // get too small, we let the tab contents take the full width, to maximize
+  // visible area.
   bool extra_padding_before_content_ = false;
 
   // The current color of the alert indicator and close button icons.

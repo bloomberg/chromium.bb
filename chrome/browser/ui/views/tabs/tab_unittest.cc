@@ -17,6 +17,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
@@ -120,9 +121,13 @@ class TabTest : public ChromeViewsTestBase {
 
   static TabIcon* GetTabIcon(const Tab& tab) { return tab.icon_; }
 
+  static views::Label* GetTabTitle(const Tab& tab) { return tab.title_; }
+
   static int GetTitleWidth(const Tab& tab) {
     return tab.title_->bounds().width();
   }
+
+  static void EndTitleAnimation(Tab& tab) { tab.title_animation_.End(); }
 
   static void LayoutTab(Tab* tab) { tab->Layout(); }
 
@@ -563,4 +568,90 @@ TEST_F(TabTest, TitleHiddenWhenSmall) {
   EXPECT_GT(GetTitleWidth(tab), 0);
   tab.SetBounds(0, 0, 0, 50);
   EXPECT_EQ(0, GetTitleWidth(tab));
+}
+
+TEST_F(TabTest, FaviconDoesntMoveWhenShowingAlertIndicator) {
+  Widget widget;
+  InitWidget(&widget);
+
+  for (bool is_active_tab : {false, true}) {
+    FakeTabController controller;
+    controller.set_active_tab(is_active_tab);
+    Tab tab(&controller, nullptr);
+    widget.GetContentsView()->AddChildView(&tab);
+    tab.SizeToPreferredSize();
+
+    views::View* icon = GetTabIcon(tab);
+    int icon_x = icon->x();
+    TabRendererData data;
+    data.alert_state = TabAlertState::AUDIO_PLAYING;
+    tab.SetData(data);
+    EXPECT_EQ(icon_x, icon->x());
+  }
+}
+
+TEST_F(TabTest, SmallTabsHideCloseButton) {
+  Widget widget;
+  InitWidget(&widget);
+
+  FakeTabController controller;
+  controller.set_active_tab(false);
+  Tab tab(&controller, nullptr);
+  widget.GetContentsView()->AddChildView(&tab);
+  const int width = Tab::GetContentsInsets().width() +
+                    Tab::kMinimumContentsWidthForCloseButtons;
+  tab.SetBounds(0, 0, width, 50);
+  const views::View* close = GetCloseButton(tab);
+  EXPECT_TRUE(close->visible());
+
+  const views::View* icon = GetTabIcon(tab);
+  const int icon_x = icon->x();
+  // Shrink the tab. The close button should disappear.
+  tab.SetBounds(0, 0, width - 1, 50);
+  EXPECT_FALSE(close->visible());
+  // The favicon moves left because the extra padding disappears too.
+  EXPECT_LT(icon->x(), icon_x);
+}
+
+TEST_F(TabTest, ExtraPaddingNotShownOnSmallActiveTab) {
+  Widget widget;
+  InitWidget(&widget);
+
+  FakeTabController controller;
+  controller.set_active_tab(true);
+  Tab tab(&controller, nullptr);
+  widget.GetContentsView()->AddChildView(&tab);
+  tab.SetBounds(0, 0, 200, 50);
+  const views::View* close = GetCloseButton(tab);
+  EXPECT_TRUE(close->visible());
+
+  const views::View* icon = GetTabIcon(tab);
+  const int icon_x = icon->x();
+
+  tab.SetBounds(0, 0, 40, 50);
+  EXPECT_TRUE(close->visible());
+  // The favicon moves left because the extra padding disappears.
+  EXPECT_LT(icon->x(), icon_x);
+}
+
+TEST_F(TabTest, ExtraPaddingShownOnSiteWithoutFavicon) {
+  Widget widget;
+  InitWidget(&widget);
+
+  FakeTabController controller;
+  Tab tab(&controller, nullptr);
+  widget.GetContentsView()->AddChildView(&tab);
+
+  tab.SizeToPreferredSize();
+  const views::View* icon = GetTabIcon(tab);
+  const int icon_x = icon->x();
+
+  // Remove the favicon.
+  TabRendererData data;
+  data.show_icon = false;
+  tab.SetData(data);
+  EndTitleAnimation(tab);
+  EXPECT_FALSE(icon->visible());
+  // Title should be placed where the favicon was.
+  EXPECT_EQ(icon_x, GetTabTitle(tab)->x());
 }
