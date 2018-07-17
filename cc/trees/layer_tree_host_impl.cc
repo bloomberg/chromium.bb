@@ -1795,11 +1795,8 @@ void LayerTreeHostImpl::DidPresentCompositorFrame(
 
     // Update compositor frame latency and smoothness stats only for frames
     // that caused on-screen damage.
-    if (info->token == frame_token &&
-        (settings_.always_request_presentation_time ||
-         ui::FrameMetrics::RequestPresentationFeedbackEveryFrame())) {
+    if (info->token == frame_token)
       frame_metrics_.AddFrameDisplayed(info->cc_frame_time, feedback.timestamp);
-    }
 
     std::copy(std::make_move_iterator(info->callbacks.begin()),
               std::make_move_iterator(info->callbacks.end()),
@@ -1920,8 +1917,7 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   active_tree_->GetViewportSelection(&metadata.selection);
 
   if (active_tree_->has_presentation_callbacks() ||
-      settings_.always_request_presentation_time ||
-      ui::FrameMetrics::RequestPresentationFeedbackEveryFrame()) {
+      settings_.always_request_presentation_time) {
     metadata.request_presentation_feedback = true;
     frame_token_infos_.emplace_back(metadata.frame_token,
                                     CurrentBeginFrameArgs().frame_time,

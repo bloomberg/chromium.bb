@@ -8,7 +8,6 @@
 #include <limits>
 #include <vector>
 
-#include "base/feature_list.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 
@@ -164,9 +163,6 @@ const char* ToString(FrameMetricsCompileTarget target) {
   return "Unknown";
 }
 
-const base::Feature kPresentationFeedbackEveryFrame{
-    "FrameMetricsPresentationFeedback", base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace
 
 void FrameMetricsSettings::AsValueInto(
@@ -215,10 +211,6 @@ double LatencyAccelerationClient::TransformResult(double result) const {
 }
 
 }  // namespace frame_metrics
-
-bool FrameMetrics::RequestPresentationFeedbackEveryFrame() {
-  return base::FeatureList::IsEnabled(kPresentationFeedbackEveryFrame);
-}
 
 FrameMetrics::FrameMetrics(FrameMetricsSettings settings)
     : settings_(settings),
