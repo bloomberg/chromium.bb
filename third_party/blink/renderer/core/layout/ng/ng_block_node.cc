@@ -42,34 +42,28 @@ inline LayoutMultiColumnFlowThread* GetFlowThread(const LayoutBox& box) {
   return ToLayoutBlockFlow(box).MultiColumnFlowThread();
 }
 
-#define WITH_ALGORITHM(ret, func, argdecl, args)                             \
-  ret func##WithAlgorithm(NGBlockNode node, const NGConstraintSpace& space,  \
-                          NGBreakToken* break_token, argdecl) {              \
-    auto* token = ToNGBlockBreakToken(break_token);                          \
-    const ComputedStyle& style = node.Style();                               \
-    if (style.IsDisplayFlexibleBox())                                        \
-      return NGFlexLayoutAlgorithm(node, space, token).func args;            \
-    /* If there's a legacy layout box, we can only do block fragmentation if \
-     * we would have done block fragmentation with the legacy engine.        \
-     * Otherwise writing data back into the legacy tree will fail. Look for  \
-     * the flow thread. */                                                   \
-    if (GetFlowThread(*node.GetLayoutBox())) {                               \
-      if (style.IsOverflowPaged())                                           \
-        return NGPageLayoutAlgorithm(node, space, token).func args;          \
-      if (style.SpecifiesColumns())                                          \
-        return NGColumnLayoutAlgorithm(node, space, token).func args;        \
-      NOTREACHED();                                                          \
-    }                                                                        \
-    return NGBlockLayoutAlgorithm(node, space, token).func args;             \
+scoped_refptr<NGLayoutResult> LayoutWithAlgorithm(
+    const ComputedStyle& style,
+    NGBlockNode node,
+    LayoutBox* box,
+    const NGConstraintSpace& space,
+    NGBreakToken* break_token) {
+  auto* token = ToNGBlockBreakToken(break_token);
+  if (style.IsDisplayFlexibleBox())
+    return NGFlexLayoutAlgorithm(node, space, token).Layout();
+  // If there's a legacy layout box, we can only do block fragmentation if we
+  // would have done block fragmentation with the legacy engine. Otherwise
+  // writing data back into the legacy tree will fail. Look for the flow
+  // thread.
+  if (!box || GetFlowThread(*box)) {
+    if (style.IsOverflowPaged())
+      return NGPageLayoutAlgorithm(node, space, token).Layout();
+    if (style.SpecifiesColumns())
+      return NGColumnLayoutAlgorithm(node, space, token).Layout();
+    NOTREACHED();
   }
-
-WITH_ALGORITHM(scoped_refptr<NGLayoutResult>, Layout, void*, ())
-WITH_ALGORITHM(base::Optional<MinMaxSize>,
-               ComputeMinMaxSize,
-               MinMaxSizeInput input,
-               (input))
-
-#undef WITH_ALGORITHM
+  return NGBlockLayoutAlgorithm(node, space, token).Layout();
+}
 
 bool IsFloatFragment(const NGPhysicalFragment& fragment) {
   const LayoutObject* layout_object = fragment.GetLayoutObject();
@@ -241,8 +235,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
     box_->ComputePreferredLogicalWidths();
   }
 
-  layout_result = LayoutWithAlgorithm(*this, constraint_space, break_token,
-                                      /* ignored */ nullptr);
+  layout_result =
+      LayoutWithAlgorithm(Style(), *this, box_, constraint_space, break_token);
   if (block_flow) {
     block_flow->SetCachedLayoutResult(constraint_space, break_token,
                                       layout_result);
@@ -285,7 +279,16 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   // if we're outside of layout, we can't do that. This can happen on Mac.
   if (!CanUseNewLayout() ||
       (is_orthogonal_flow_root && !box_->GetFrameView()->IsInPerformLayout())) {
-    return ComputeMinMaxSizeFromLegacy();
+    // TODO(layout-ng): This could be somewhat optimized by directly calling
+    // computeIntrinsicLogicalWidths, but that function is currently private.
+    // Consider doing that if this becomes a performance issue.
+    sizes.min_size = box_->ComputeLogicalWidthUsing(
+        kMainOrPreferredSize, Length(kMinContent), LayoutUnit(),
+        box_->ContainingBlock());
+    sizes.max_size = box_->ComputeLogicalWidthUsing(
+        kMainOrPreferredSize, Length(kMaxContent), LayoutUnit(),
+        box_->ContainingBlock());
+    return sizes;
   }
 
   scoped_refptr<NGConstraintSpace> zero_constraint_space =
@@ -310,17 +313,12 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     return sizes;
   }
 
+  // TODO(layout-ng): We need to make sure to use the right algorithm
+  NGBlockLayoutAlgorithm minmax_algorithm(*this, *constraint_space);
   base::Optional<MinMaxSize> maybe_sizes =
-      ComputeMinMaxSizeWithAlgorithm(*this, *constraint_space,
-                                     /* break token */ nullptr, input);
+      minmax_algorithm.ComputeMinMaxSize(input);
   if (maybe_sizes.has_value())
     return *maybe_sizes;
-
-  if (!box_->GetFrameView()->IsInPerformLayout()) {
-    // We can't synthesize these using Layout() if we're not in PerformLayout.
-    // This situation can happen on mac. Fall back to legacy instead.
-    return ComputeMinMaxSizeFromLegacy();
-  }
 
   // Have to synthesize this value.
   scoped_refptr<NGLayoutResult> layout_result = Layout(*zero_constraint_space);
@@ -341,20 +339,6 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
       container_writing_mode,
       ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
   sizes.max_size = max_fragment.Size().inline_size;
-  return sizes;
-}
-
-MinMaxSize NGBlockNode::ComputeMinMaxSizeFromLegacy() const {
-  // TODO(layout-ng): This could be somewhat optimized by directly calling
-  // computeIntrinsicLogicalWidths, but that function is currently private.
-  // Consider doing that if this becomes a performance issue.
-  MinMaxSize sizes;
-  sizes.min_size =
-      box_->ComputeLogicalWidthUsing(kMainOrPreferredSize, Length(kMinContent),
-                                     LayoutUnit(), box_->ContainingBlock());
-  sizes.max_size =
-      box_->ComputeLogicalWidthUsing(kMainOrPreferredSize, Length(kMaxContent),
-                                     LayoutUnit(), box_->ContainingBlock());
   return sizes;
 }
 
