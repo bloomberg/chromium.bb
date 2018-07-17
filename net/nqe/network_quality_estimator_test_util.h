@@ -107,7 +107,8 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
       base::TimeDelta* transport_rtt,
       base::TimeDelta* end_to_end_rtt,
       int32_t* downstream_throughput_kbps,
-      size_t* observations_count) const override;
+      size_t* observations_count,
+      size_t* end_to_end_rtt_observation_count) const override;
 
   void NotifyObserversOfRTTOrThroughputComputed() const override;
 

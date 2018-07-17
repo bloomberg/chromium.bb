@@ -291,7 +291,8 @@ class NET_EXPORT NetworkQualityEstimator
       base::TimeDelta* transport_rtt,
       base::TimeDelta* end_to_end_rtt,
       int32_t* downstream_throughput_kbps,
-      size_t* transport_rtt_observation_count) const;
+      size_t* transport_rtt_observation_count,
+      size_t* end_to_end_rtt_observation_count) const;
 
   // Notifies |this| of a new transport layer RTT. Called by socket watchers.
   // Protected for testing.
@@ -397,6 +398,8 @@ class NET_EXPORT NetworkQualityEstimator
       TestComputeIncreaseInTransportRTTPartialHostsOverlap);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            ObservationDiscardedIfCachedEstimateAvailable);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
+                           TestRttThroughputObservers);
 
   // Defines how a metric (e.g, transport RTT) should be used when computing
   // the effective connection type.
@@ -484,7 +487,8 @@ class NET_EXPORT NetworkQualityEstimator
       base::TimeDelta* transport_rtt,
       base::TimeDelta* end_to_end_rtt,
       int32_t* downstream_throughput_kbps,
-      size_t* transport_rtt_observation_count) const;
+      size_t* transport_rtt_observation_count,
+      size_t* end_to_end_rtt_observation_count) const;
 
   // Returns true if the cached network quality estimate was successfully read.
   bool ReadCachedNetworkQualityEstimate();
@@ -598,6 +602,7 @@ class NET_EXPORT NetworkQualityEstimator
 
   // Number of transport RTT samples available when the ECT was last computed.
   size_t transport_rtt_observation_count_last_ect_computation_;
+  size_t end_to_end_rtt_observation_count_at_last_ect_computation_;
 
   // Number of RTT observations received since the effective connection type was
   // last computed.
@@ -609,6 +614,7 @@ class NET_EXPORT NetworkQualityEstimator
 
   // Current estimate of the network quality.
   nqe::internal::NetworkQuality network_quality_;
+  base::Optional<base::TimeDelta> end_to_end_rtt_;
 
   // Current estimate of the bandwidth delay product (BDP) in kilobits.
   base::Optional<int32_t> bandwidth_delay_product_kbits_;

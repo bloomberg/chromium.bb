@@ -236,6 +236,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       rtt_observations_size_at_last_ect_computation_(0),
       throughput_observations_size_at_last_ect_computation_(0),
       transport_rtt_observation_count_last_ect_computation_(0),
+      end_to_end_rtt_observation_count_at_last_ect_computation_(0),
       new_rtt_observations_since_last_ect_computation_(0),
       new_throughput_observations_since_last_ect_computation_(0),
       increase_in_transport_rtt_updater_posted_(false),
@@ -695,6 +696,7 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   min_signal_strength_since_connection_change_.reset();
   max_signal_strength_since_connection_change_.reset();
   network_quality_ = nqe::internal::NetworkQuality();
+  end_to_end_rtt_ = base::nullopt;
   effective_connection_type_ = EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   effective_connection_type_at_last_main_frame_ =
       EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
@@ -703,6 +705,7 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   new_rtt_observations_since_last_ect_computation_ = 0;
   new_throughput_observations_since_last_ect_computation_ = 0;
   transport_rtt_observation_count_last_ect_computation_ = 0;
+  end_to_end_rtt_observation_count_at_last_ect_computation_ = 0;
   last_socket_watcher_rtt_notification_ = base::TimeTicks();
   estimated_quality_at_last_main_frame_ = nqe::internal::NetworkQuality();
   cached_estimate_applied_ = false;
@@ -1023,7 +1026,8 @@ void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
       GetRecentEffectiveConnectionTypeAndNetworkQuality(
           base::TimeTicks(), &http_rtt, &transport_rtt, &end_to_end_rtt,
           &downstream_throughput_kbps,
-          &transport_rtt_observation_count_last_ect_computation_);
+          &transport_rtt_observation_count_last_ect_computation_,
+          &end_to_end_rtt_observation_count_at_last_ect_computation_);
 
   network_quality_ = nqe::internal::NetworkQuality(http_rtt, transport_rtt,
                                                    downstream_throughput_kbps);
@@ -1045,6 +1049,9 @@ void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
   if (end_to_end_rtt != nqe::internal::InvalidRTT()) {
     UMA_HISTOGRAM_TIMES("NQE.EndToEndRTT.OnECTComputation", end_to_end_rtt);
   }
+  end_to_end_rtt_ = base::nullopt;
+  if (end_to_end_rtt != nqe::internal::InvalidRTT())
+    end_to_end_rtt_ = end_to_end_rtt;
 
   if (network_quality_.downstream_throughput_kbps() !=
       nqe::internal::INVALID_RTT_THROUGHPUT) {
@@ -1089,7 +1096,7 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionType(
 
   return GetRecentEffectiveConnectionTypeAndNetworkQuality(
       start_time, &http_rtt, &transport_rtt, &end_to_end_rtt,
-      &downstream_throughput_kbps, nullptr);
+      &downstream_throughput_kbps, nullptr, nullptr);
 }
 
 EffectiveConnectionType
@@ -1099,7 +1106,8 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
     base::TimeDelta* transport_rtt,
     base::TimeDelta* end_to_end_rtt,
     int32_t* downstream_throughput_kbps,
-    size_t* transport_rtt_observation_count) const {
+    size_t* transport_rtt_observation_count,
+    size_t* end_to_end_rtt_observation_count) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   return GetRecentEffectiveConnectionTypeUsingMetrics(
@@ -1110,7 +1118,7 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
       NetworkQualityEstimator::MetricUsage::
           USE_IF_AVAILABLE /* downstream_throughput_kbps_metric */,
       http_rtt, transport_rtt, end_to_end_rtt, downstream_throughput_kbps,
-      transport_rtt_observation_count);
+      transport_rtt_observation_count, end_to_end_rtt_observation_count);
 }
 
 EffectiveConnectionType
@@ -1123,7 +1131,8 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
     base::TimeDelta* transport_rtt,
     base::TimeDelta* end_to_end_rtt,
     int32_t* downstream_throughput_kbps,
-    size_t* transport_rtt_observation_count) const {
+    size_t* transport_rtt_observation_count,
+    size_t* end_to_end_rtt_observation_count) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   *http_rtt = nqe::internal::InvalidRTT();
@@ -1161,7 +1170,7 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
   }
 
   if (!GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_END_TO_END, start_time,
-                    end_to_end_rtt, nullptr)) {
+                    end_to_end_rtt, end_to_end_rtt_observation_count)) {
     *end_to_end_rtt = nqe::internal::InvalidRTT();
   }
 
