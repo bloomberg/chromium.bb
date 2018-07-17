@@ -350,6 +350,10 @@ struct AutocompleteMatch {
   // See base/trace_event/memory_usage_estimator.h for more info.
   size_t EstimateMemoryUsage() const;
 
+  // Some types of matches (answers for dictionary definitions, e.g.) do not
+  // follow the common rules for reversing lines.
+  bool IsExceptedFromLineReversal() const;
+
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
   // no provider (or memory of the user's selection).

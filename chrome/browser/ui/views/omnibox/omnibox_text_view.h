@@ -36,9 +36,11 @@ class OmniboxTextView : public views::View {
   int GetHeightForWidth(int width) const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
-  // Dims the text (i.e. makes it gray). This is used for secondary text (so
-  // that the non-dimmed text stands out more).
-  void Dim();
+  // Applies given part's theme color to underlying render text. Using
+  // OmniboxPart::RESULTS_TEXT_DIMMED gives the gray used by Dim() in the past.
+  // This is called Apply* instead of Set* because the only state kept is in
+  // render_text, so call this after setting text with methods below.
+  void ApplyTextColor(OmniboxPart part);
 
   // Returns the render text, or an empty string if there is none.
   const base::string16& text() const;
@@ -46,10 +48,13 @@ class OmniboxTextView : public views::View {
   // Sets the render text with default rendering for the given |text|. The
   // |classifications| are used to style the text. An ImageLine incorporates
   // both the text and the styling.
-  void SetText(const base::string16& text);
+  // The size_delta is specified here so it can be known in advance of creating
+  // the render text. Applying later would kill bold (clear weights BreakList).
+  void SetText(const base::string16& text, int size_delta = 0);
   void SetText(const base::string16& text,
-               const ACMatchClassifications& classifications);
-  void SetText(const SuggestionAnswer::ImageLine& line);
+               const ACMatchClassifications& classifications,
+               int font_size_delta = 0);
+  void SetText(const SuggestionAnswer::ImageLine& line, int size_delta = 0);
 
   // Adds the "additional" and "status" text from |line|, if any.
   void AppendExtraText(const SuggestionAnswer::ImageLine& line);
@@ -76,6 +81,9 @@ class OmniboxTextView : public views::View {
 
   // Font settings for this view.
   int font_height_;
+
+  // Delta (in px) from default font size.
+  int font_size_delta_;
 
   // Whether to wrap lines if the width is too narrow for the whole string.
   bool wrap_text_lines_;

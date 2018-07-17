@@ -246,7 +246,7 @@ SkColor GetOmniboxColor(OmniboxPart part,
           gfx::ToRoundedInt(GetOmniboxStateAlpha(state) * 0xff));
     case OmniboxPart::LOCATION_BAR_TEXT_DEFAULT:
     case OmniboxPart::RESULTS_TEXT_DEFAULT:
-      return dark ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
+      return dark ? gfx::kGoogleGrey100 : gfx::kGoogleGrey900;
 
     case OmniboxPart::LOCATION_BAR_TEXT_DIMMED:
     case OmniboxPart::RESULTS_ICON:
