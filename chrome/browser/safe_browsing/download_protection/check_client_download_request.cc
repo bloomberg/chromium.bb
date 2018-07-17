@@ -259,6 +259,13 @@ void CheckClientDownloadRequest::OnURLLoaderComplete(
       }
     }
 
+    BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
+            &WebUIInfoSingleton::AddToClientDownloadResponsesReceived,
+            base::Unretained(WebUIInfoSingleton::GetInstance()),
+            std::make_unique<ClientDownloadResponse>(response)));
+
     if (!token.empty())
       DownloadProtectionService::SetDownloadPingToken(item_, token);
 
