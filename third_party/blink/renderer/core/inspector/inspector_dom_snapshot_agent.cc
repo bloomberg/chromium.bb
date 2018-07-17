@@ -361,7 +361,8 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
   int index = dom_nodes_->length();
   dom_nodes_->addItem(std::move(owned_value));
 
-  int layoutNodeIndex = VisitLayoutTreeNode(node, index);
+  int layoutNodeIndex =
+      VisitLayoutTreeNode(node->GetLayoutObject(), node, index);
   if (layoutNodeIndex != -1)
     value->setLayoutNodeIndex(layoutNodeIndex);
 
@@ -430,10 +431,12 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
       if (InspectorDOMAgent::GetPseudoElementType(element->GetPseudoId(),
                                                   &pseudo_type)) {
         value->setPseudoType(pseudo_type);
+        VisitPseudoLayoutChildren(node, node->GetLayoutObject(), index);
       }
     } else {
-      value->setPseudoElementIndexes(VisitPseudoElements(
-          element, include_event_listeners, include_user_agent_shadow_tree));
+      value->setPseudoElementIndexes(
+          VisitPseudoElements(element, index, include_event_listeners,
+                              include_user_agent_shadow_tree));
     }
 
     HTMLImageElement* image_element = ToHTMLImageElementOrNull(node);
@@ -586,7 +589,7 @@ int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
   nodes->getNodeValue(nullptr)->addItem(AddString(node_value));
   nodes->getBackendNodeId(nullptr)->addItem(backend_node_id);
   nodes->getAttributes(nullptr)->addItem(BuildArrayForElementAttributes2(node));
-  BuildLayoutTreeNode(node, index);
+  BuildLayoutTreeNode(node->GetLayoutObject(), node, index);
 
   if (origin_url_map_ && origin_url_map_->Contains(backend_node_id)) {
     String origin_url = origin_url_map_->at(backend_node_id);
@@ -636,6 +639,7 @@ int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
       if (InspectorDOMAgent::GetPseudoElementType(element->GetPseudoId(),
                                                   &pseudo_type)) {
         SetRare(nodes->getPseudoType(nullptr), index, pseudo_type);
+        VisitPseudoLayoutChildren2(node, node->GetLayoutObject(), index);
       }
     } else {
       VisitPseudoElements2(element, index);
@@ -722,45 +726,66 @@ void InspectorDOMSnapshotAgent::VisitContainerChildren2(Node* container,
   }
 }
 
+void InspectorDOMSnapshotAgent::VisitPseudoLayoutChildren(
+    Node* pseudo_node,
+    LayoutObject* layout_object,
+    int index) {
+  for (LayoutObject* child = layout_object->SlowFirstChild(); child;
+       child = child->NextSibling()) {
+    VisitLayoutTreeNode(child, pseudo_node, index);
+  }
+}
+
+void InspectorDOMSnapshotAgent::VisitPseudoLayoutChildren2(
+    Node* pseudo_node,
+    LayoutObject* layout_object,
+    int index) {
+  for (LayoutObject* child = layout_object->SlowFirstChild(); child;
+       child = child->NextSibling()) {
+    BuildLayoutTreeNode(child, pseudo_node, index);
+  }
+}
+
 std::unique_ptr<protocol::Array<int>>
 InspectorDOMSnapshotAgent::VisitPseudoElements(
     Element* parent,
+    int index,
     bool include_event_listeners,
     bool include_user_agent_shadow_tree) {
-  if (!parent->GetPseudoElement(kPseudoIdBefore) &&
+  if (!parent->GetPseudoElement(kPseudoIdFirstLetter) &&
+      !parent->GetPseudoElement(kPseudoIdBefore) &&
       !parent->GetPseudoElement(kPseudoIdAfter)) {
     return nullptr;
   }
 
   auto pseudo_elements = protocol::Array<int>::create();
-
-  if (parent->GetPseudoElement(kPseudoIdBefore)) {
-    pseudo_elements->addItem(
-        VisitNode(parent->GetPseudoElement(kPseudoIdBefore),
-                  include_event_listeners, include_user_agent_shadow_tree));
+  PseudoId pseudo_types[] = {kPseudoIdFirstLetter, kPseudoIdBefore,
+                             kPseudoIdAfter};
+  for (PseudoId pseudo_id : pseudo_types) {
+    if (parent->GetPseudoElement(pseudo_id)) {
+      Node* pseudo_node = parent->GetPseudoElement(pseudo_id);
+      pseudo_elements->addItem(VisitNode(pseudo_node, include_event_listeners,
+                                         include_user_agent_shadow_tree));
+    }
   }
-  if (parent->GetPseudoElement(kPseudoIdAfter)) {
-    pseudo_elements->addItem(VisitNode(parent->GetPseudoElement(kPseudoIdAfter),
-                                       include_event_listeners,
-                                       include_user_agent_shadow_tree));
-  }
-
   return pseudo_elements;
 }
 
 void InspectorDOMSnapshotAgent::VisitPseudoElements2(Element* parent,
                                                      int parent_index) {
-  if (!parent->GetPseudoElement(kPseudoIdBefore) &&
+  if (!parent->GetPseudoElement(kPseudoIdFirstLetter) &&
+      !parent->GetPseudoElement(kPseudoIdBefore) &&
       !parent->GetPseudoElement(kPseudoIdAfter)) {
     return;
   }
-
-  auto pseudo_elements = protocol::Array<int>::create();
-
-  if (parent->GetPseudoElement(kPseudoIdBefore))
-    VisitNode2(parent->GetPseudoElement(kPseudoIdBefore), parent_index);
-  if (parent->GetPseudoElement(kPseudoIdAfter))
-    VisitNode2(parent->GetPseudoElement(kPseudoIdAfter), parent_index);
+  PseudoId pseudo_types[] = {kPseudoIdFirstLetter, kPseudoIdBefore,
+                             kPseudoIdAfter};
+  for (PseudoId i : pseudo_types) {
+    if (parent->GetPseudoElement(i)) {
+      Node* pseudo_node = parent->GetPseudoElement(i);
+      VisitNode2(pseudo_node, parent_index);
+    }
+  }
 }
 
 std::unique_ptr<protocol::Array<protocol::DOMSnapshot::NameValue>>
@@ -792,8 +817,9 @@ InspectorDOMSnapshotAgent::BuildArrayForElementAttributes2(Node* node) {
   return result;
 }
 
-int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(Node* node, int node_index) {
-  LayoutObject* layout_object = node->GetLayoutObject();
+int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
+                                                   Node* node,
+                                                   int node_index) {
   if (!layout_object)
     return -1;
 
@@ -846,8 +872,9 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(Node* node, int node_index) {
   return index;
 }
 
-int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(Node* node, int node_index) {
-  LayoutObject* layout_object = node->GetLayoutObject();
+int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
+                                                   Node* node,
+                                                   int node_index) {
   if (!layout_object)
     return -1;
   auto* layout_tree_snapshot = document_->getLayout();
