@@ -19,3 +19,5 @@ being recognized as a pinch gesture.
 
 See [issue 289887](https://crbug.com/289887) for the discussion on offering
 wheel events for touchpad pinch.
+
+Touchpad pinch zoom [design doc](https://docs.google.com/document/d/1cYdt9r9stHLA2lbJ2I-Ucl_djhdSyngYFbmufZaLRHE/edit?usp=sharing).
