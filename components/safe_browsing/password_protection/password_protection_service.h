@@ -103,6 +103,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
     PASSWORD_ALERT_MODE = 18,
     // No request is event sent if the admin turns off password protection.
     TURNED_OFF_BY_ADMIN = 19,
+    // Safe Browsing is disabled.
+    SAFE_BROWSING_DISABLED = 20,
     MAX_OUTCOME
   };
 
