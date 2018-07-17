@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//chromeos/assistant/assistant.gni")
+import("//chromeos/services/ime/public/features.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
@@ -40,6 +41,10 @@ service_test("chromeos_services_unittests") {
     deps += [ "//chromeos/services/assistant:tests" ]
   }
 
+  if (enable_cros_ime_service) {
+    deps += [ "//chromeos/services/ime:unit_tests" ]
+  }
+
   catalog = ":chromeos_services_unittests_catalog"
 }
 
@@ -50,5 +55,9 @@ catalog("chromeos_services_unittests_catalog") {
 
   if (enable_cros_assistant) {
     catalog_deps += [ "//chromeos/services/assistant:tests_catalog" ]
+  }
+
+  if (enable_cros_ime_service) {
+    catalog_deps += [ "//chromeos/services/ime:tests_catalog" ]
   }
 }
