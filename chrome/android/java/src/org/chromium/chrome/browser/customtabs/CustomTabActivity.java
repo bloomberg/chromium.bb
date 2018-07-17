@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_DEFAULT;
-import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_INFO_PAGE;
 import static org.chromium.chrome.browser.webapps.WebappActivity.ACTIVITY_TYPE_OTHER;
 import static org.chromium.chrome.browser.webapps.WebappActivity.ACTIVITY_TYPE_WEBAPK;
 
@@ -23,6 +21,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.Browser;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsSessionToken;
@@ -101,6 +100,8 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -113,18 +114,28 @@ public class CustomTabActivity extends ChromeActivity {
     private static final String LAST_URL_PREF = "pref_last_custom_tab_url";
 
     // For CustomTabs.WebContentsStateOnLaunch, see histograms.xml. Append only.
-    private static final int WEBCONTENTS_STATE_NO_WEBCONTENTS = 0;
-    private static final int WEBCONTENTS_STATE_PRERENDERED_WEBCONTENTS = 1;
-    private static final int WEBCONTENTS_STATE_SPARE_WEBCONTENTS = 2;
-    private static final int WEBCONTENTS_STATE_TRANSFERRED_WEBCONTENTS = 3;
-    private static final int WEBCONTENTS_STATE_MAX = 4;
+    @IntDef({WebContentsState.NO_WEBCONTENTS, WebContentsState.PRERENDERED_WEBCONTENTS,
+            WebContentsState.SPARE_WEBCONTENTS, WebContentsState.TRANSFERRED_WEBCONTENTS})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface WebContentsState {
+        int NO_WEBCONTENTS = 0;
+        int PRERENDERED_WEBCONTENTS = 1;
+        int SPARE_WEBCONTENTS = 2;
+        int TRANSFERRED_WEBCONTENTS = 3;
+        int NUM_ENTRIES = 4;
+    }
 
     // For CustomTabs.ConnectionStatusOnReturn, see histograms.xml. Append only.
-    private static final int CONNECTION_STATUS_DISCONNECTED = 0;
-    private static final int CONNECTION_STATUS_DISCONNECTED_KEEP_ALIVE = 1;
-    private static final int CONNECTION_STATUS_CONNECTED = 2;
-    private static final int CONNECTION_STATUS_CONNECTED_KEEP_ALIVE = 3;
-    private static final int CONNECTION_STATUS_MAX = 4;
+    @IntDef({ConnectionStatus.DISCONNECTED, ConnectionStatus.DISCONNECTED_KEEP_ALIVE,
+            ConnectionStatus.CONNECTED, ConnectionStatus.CONNECTED_KEEP_ALIVE})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface ConnectionStatus {
+        int DISCONNECTED = 0;
+        int DISCONNECTED_KEEP_ALIVE = 1;
+        int CONNECTED = 2;
+        int CONNECTED_KEEP_ALIVE = 3;
+        int NUM_ENTRIES = 4;
+    }
 
     private CustomTabIntentDataProvider mIntentDataProvider;
     private CustomTabsSessionToken mSession;
@@ -161,8 +172,10 @@ public class CustomTabActivity extends ChromeActivity {
 
     private WebappCustomTabTimeSpentLogger mWebappTimeSpentLogger;
 
-    @Nullable private ActivityDelegate mModuleActivityDelegate;
-    @Nullable private Runnable mLoadModuleCancelRunnable;
+    @Nullable
+    private ActivityDelegate mModuleActivityDelegate;
+    @Nullable
+    private Runnable mLoadModuleCancelRunnable;
     private boolean mModuleOnStartPending;
     private boolean mModuleOnResumePending;
     private boolean mHasSetOverlayView;
@@ -219,6 +232,7 @@ public class CustomTabActivity extends ChromeActivity {
         public void onLoadEventStart(WebContents webContents, long navigationId,
                 long navigationStartTick, long loadEventStartMs) {
             if (webContents != mTab.getWebContents()) return;
+
             mConnection.notifySinglePageLoadMetric(mSession, PageLoadMetrics.LOAD_EVENT_START,
                     navigationStartTick, loadEventStartMs);
         }
@@ -365,13 +379,13 @@ public class CustomTabActivity extends ChromeActivity {
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
             Log.w(TAG, "The %s feature is disabled.", ChromeFeatureList.CCT_MODULE);
-            ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_FEATURE_DISABLED);
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.FEATURE_DISABLED);
             return;
         }
 
         if (!ExternalAuthUtils.getInstance().isGoogleSigned(componentName.getPackageName())) {
             Log.w(TAG, "The %s package is not Google-signed.", componentName.getPackageName());
-            ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_NOT_GOOGLE_SIGNED);
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.NOT_GOOGLE_SIGNED);
             return;
         }
 
@@ -632,8 +646,8 @@ public class CustomTabActivity extends ChromeActivity {
             public boolean updateRemoteViews(RemoteViews remoteViews, int[] clickableIDs,
                     PendingIntent pendingIntent) {
                 if (mBottomBarDelegate == null) return false;
-                return mBottomBarDelegate.updateRemoteViews(remoteViews, clickableIDs,
-                        pendingIntent);
+                return mBottomBarDelegate.updateRemoteViews(
+                        remoteViews, clickableIDs, pendingIntent);
             }
 
             @Override
@@ -693,7 +707,7 @@ public class CustomTabActivity extends ChromeActivity {
         mUsingHiddenTab = tab != null;
         if (!mUsingHiddenTab) return null;
         RecordHistogram.recordEnumeratedHistogram("CustomTabs.WebContentsStateOnLaunch",
-                WEBCONTENTS_STATE_PRERENDERED_WEBCONTENTS, WEBCONTENTS_STATE_MAX);
+                WebContentsState.PRERENDERED_WEBCONTENTS, WebContentsState.NUM_ENTRIES);
         tab.setAppAssociatedWith(mConnection.getClientPackageNameForSession(mSession));
         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
             tab.enableEmbeddedMediaExperience(true);
@@ -736,26 +750,26 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     private WebContents takeWebContents() {
-        int webContentsStateOnLaunch = WEBCONTENTS_STATE_PRERENDERED_WEBCONTENTS;
+        int webContentsStateOnLaunch = WebContentsState.PRERENDERED_WEBCONTENTS;
 
         WebContents webContents = takeAsyncWebContents();
         if (webContents != null) {
-            webContentsStateOnLaunch = WEBCONTENTS_STATE_TRANSFERRED_WEBCONTENTS;
+            webContentsStateOnLaunch = WebContentsState.TRANSFERRED_WEBCONTENTS;
             webContents.resumeLoadingCreatedWebContents();
         } else {
             webContents = WarmupManager.getInstance().takeSpareWebContents(
                     mIntentDataProvider.isIncognito(), false);
             if (webContents != null) {
-                webContentsStateOnLaunch = WEBCONTENTS_STATE_SPARE_WEBCONTENTS;
+                webContentsStateOnLaunch = WebContentsState.SPARE_WEBCONTENTS;
             } else {
                 webContents = WebContentsFactory.createWebContentsWithWarmRenderer(
                         mIntentDataProvider.isIncognito(), false);
-                webContentsStateOnLaunch = WEBCONTENTS_STATE_NO_WEBCONTENTS;
+                webContentsStateOnLaunch = WebContentsState.NO_WEBCONTENTS;
             }
         }
 
         RecordHistogram.recordEnumeratedHistogram("CustomTabs.WebContentsStateOnLaunch",
-                webContentsStateOnLaunch, WEBCONTENTS_STATE_MAX);
+                webContentsStateOnLaunch, WebContentsState.NUM_ENTRIES);
 
         mConnection.resetPostMessageHandlerForSession(mSession, webContents);
 
@@ -1119,25 +1133,25 @@ public class CustomTabActivity extends ChromeActivity {
         int status = -1;
         if (isConnected) {
             if (mIsKeepAlive) {
-                status = CONNECTION_STATUS_CONNECTED_KEEP_ALIVE;
+                status = ConnectionStatus.CONNECTED_KEEP_ALIVE;
             } else {
-                status = CONNECTION_STATUS_CONNECTED;
+                status = ConnectionStatus.CONNECTED;
             }
         } else {
             if (mIsKeepAlive) {
-                status = CONNECTION_STATUS_DISCONNECTED_KEEP_ALIVE;
+                status = ConnectionStatus.DISCONNECTED_KEEP_ALIVE;
             } else {
-                status = CONNECTION_STATUS_DISCONNECTED;
+                status = ConnectionStatus.DISCONNECTED;
             }
         }
         assert status >= 0;
 
         if (GSAState.isGsaPackageName(packageName)) {
-            RecordHistogram.recordEnumeratedHistogram(
-                    "CustomTabs.ConnectionStatusOnReturn.GSA", status, CONNECTION_STATUS_MAX);
+            RecordHistogram.recordEnumeratedHistogram("CustomTabs.ConnectionStatusOnReturn.GSA",
+                    status, ConnectionStatus.NUM_ENTRIES);
         } else {
-            RecordHistogram.recordEnumeratedHistogram(
-                    "CustomTabs.ConnectionStatusOnReturn.NonGSA", status, CONNECTION_STATUS_MAX);
+            RecordHistogram.recordEnumeratedHistogram("CustomTabs.ConnectionStatusOnReturn.NonGSA",
+                    status, ConnectionStatus.NUM_ENTRIES);
         }
     }
 
@@ -1409,7 +1423,8 @@ public class CustomTabActivity extends ChromeActivity {
         Intent intent = LaunchIntentDispatcher.createCustomTabActivityIntent(
                 context, customTabIntent.intent);
         intent.setPackage(context.getPackageName());
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CUSTOM_TABS_UI_TYPE_INFO_PAGE);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
+                CustomTabIntentDataProvider.CustomTabsUiType.INFO_PAGE);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
         if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         IntentHandler.addTrustedIntentExtras(intent);
@@ -1422,8 +1437,8 @@ public class CustomTabActivity extends ChromeActivity {
         // Custom Tabs can be used to open Chrome help pages before the ToS has been accepted.
         if (IntentHandler.isIntentChromeOrFirstParty(intent)
                 && IntentUtils.safeGetIntExtra(intent, CustomTabIntentDataProvider.EXTRA_UI_TYPE,
-                           CUSTOM_TABS_UI_TYPE_DEFAULT)
-                        == CUSTOM_TABS_UI_TYPE_INFO_PAGE) {
+                           CustomTabIntentDataProvider.CustomTabsUiType.DEFAULT)
+                        == CustomTabIntentDataProvider.CustomTabsUiType.INFO_PAGE) {
             return false;
         }
 

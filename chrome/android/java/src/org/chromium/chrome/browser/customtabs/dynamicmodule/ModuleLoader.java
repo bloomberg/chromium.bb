@@ -25,7 +25,8 @@ public class ModuleLoader {
     /** Specifies the module package name and entry point class name. */
     private final ComponentName mComponentName;
     private int mModuleUseCount;
-    @Nullable private ModuleEntryPoint mModuleEntryPoint;
+    @Nullable
+    private ModuleEntryPoint mModuleEntryPoint;
 
     /**
      * Instantiates a new {@link ModuleLoader}.
@@ -55,7 +56,7 @@ public class ModuleLoader {
     public Runnable loadModule(Callback<ModuleEntryPoint> callback) {
         if (mModuleEntryPoint != null) {
             mModuleUseCount++;
-            ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_SUCCESS_CACHED);
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.SUCCESS_CACHED);
             callback.onResult(mModuleEntryPoint);
             return null;
         }
@@ -124,7 +125,7 @@ public class ModuleLoader {
                 return clazz;
             } catch (ClassNotFoundException e) {
                 Log.e(TAG, "Could not find class %s", mComponentName.getClassName(), e);
-                ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_CLASS_NOT_FOUND_EXCEPTION);
+                ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.CLASS_NOT_FOUND_EXCEPTION);
             } finally {
                 Process.setThreadPriority(oldPriority);
             }
@@ -155,13 +156,13 @@ public class ModuleLoader {
                                     + "minimum required entry point version %s.",
                             moduleHost.getHostVersion(), entryPoint.getMinimumHostVersion(),
                             entryPoint.getModuleVersion(), moduleHost.getMinimumModuleVersion());
-                    ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_INCOMPATIBLE_VERSION);
+                    ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.INCOMPATIBLE_VERSION);
                     mCallback.onResult(null);
                     return;
                 }
 
                 entryPoint.init(moduleHost);
-                ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_SUCCESS_NEW);
+                ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.SUCCESS_NEW);
                 mModuleEntryPoint = entryPoint;
                 mModuleUseCount = 1;
                 mCallback.onResult(entryPoint);
@@ -170,7 +171,7 @@ public class ModuleLoader {
                 // No multi-catch below API level 19 for reflection exceptions.
                 // This catches InstantiationException and IllegalAccessException.
                 Log.e(TAG, "Could not instantiate class %s", mComponentName.getClassName(), e);
-                ModuleMetrics.recordLoadResult(ModuleMetrics.LOAD_RESULT_INSTANTIATION_EXCEPTION);
+                ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.INSTANTIATION_EXCEPTION);
             }
             mCallback.onResult(null);
         }
@@ -189,7 +190,7 @@ public class ModuleLoader {
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Could not create package context for %s", packageName, e);
             ModuleMetrics.recordLoadResult(
-                    ModuleMetrics.LOAD_RESULT_PACKAGE_NAME_NOT_FOUND_EXCEPTION);
+                    ModuleMetrics.LoadResult.PACKAGE_NAME_NOT_FOUND_EXCEPTION);
         }
         return null;
     }

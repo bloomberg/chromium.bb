@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsService;
@@ -36,6 +37,8 @@ import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,24 +52,53 @@ import java.util.concurrent.TimeUnit;
 /** Manages the clients' state for Custom Tabs. This class is threadsafe. */
 class ClientManager {
     // Values for the "CustomTabs.MayLaunchUrlType" UMA histogram. Append-only.
-    @VisibleForTesting static final int NO_MAY_LAUNCH_URL = 0;
-    @VisibleForTesting static final int LOW_CONFIDENCE = 1;
-    @VisibleForTesting static final int HIGH_CONFIDENCE = 2;
-    @VisibleForTesting static final int BOTH = 3;  // LOW + HIGH.
-    private static final int MAY_LAUNCH_URL_TYPE_COUNT = 4;
+    @IntDef({MayLaunchUrlType.NO_MAY_LAUNCH_URL, MayLaunchUrlType.LOW_CONFIDENCE,
+            MayLaunchUrlType.HIGH_CONFIDENCE, MayLaunchUrlType.BOTH})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface MayLaunchUrlType {
+        @VisibleForTesting
+        int NO_MAY_LAUNCH_URL = 0;
+        @VisibleForTesting
+        int LOW_CONFIDENCE = 1;
+        @VisibleForTesting
+        int HIGH_CONFIDENCE = 2;
+        @VisibleForTesting
+        int BOTH = 3; // LOW + HIGH.
+        int NUM_ENTRIES = 4;
+    }
 
     // Values for the "CustomTabs.PredictionStatus" UMA histogram. Append-only.
-    @VisibleForTesting static final int NO_PREDICTION = 0;
-    @VisibleForTesting static final int GOOD_PREDICTION = 1;
-    @VisibleForTesting static final int BAD_PREDICTION = 2;
-    private static final int PREDICTION_STATUS_COUNT = 3;
+    @IntDef({PredictionStatus.NONE, PredictionStatus.GOOD, PredictionStatus.BAD})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface PredictionStatus {
+        @VisibleForTesting
+        int NONE = 0;
+        @VisibleForTesting
+        int GOOD = 1;
+        @VisibleForTesting
+        int BAD = 2;
+        int NUM_ENTRIES = 3;
+    }
+
     // Values for the "CustomTabs.CalledWarmup" UMA histogram. Append-only.
-    @VisibleForTesting static final int NO_SESSION_NO_WARMUP = 0;
-    @VisibleForTesting static final int NO_SESSION_WARMUP = 1;
-    @VisibleForTesting static final int SESSION_NO_WARMUP_ALREADY_CALLED = 2;
-    @VisibleForTesting static final int SESSION_NO_WARMUP_NOT_CALLED = 3;
-    @VisibleForTesting static final int SESSION_WARMUP = 4;
-    @VisibleForTesting static final int SESSION_WARMUP_COUNT = 5;
+    @IntDef({CalledWarmup.NO_SESSION_NO_WARMUP, CalledWarmup.NO_SESSION_WARMUP,
+            CalledWarmup.SESSION_NO_WARMUP_ALREADY_CALLED,
+            CalledWarmup.SESSION_NO_WARMUP_NOT_CALLED, CalledWarmup.SESSION_WARMUP})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface CalledWarmup {
+        @VisibleForTesting
+        int NO_SESSION_NO_WARMUP = 0;
+        @VisibleForTesting
+        int NO_SESSION_WARMUP = 1;
+        @VisibleForTesting
+        int SESSION_NO_WARMUP_ALREADY_CALLED = 2;
+        @VisibleForTesting
+        int SESSION_NO_WARMUP_NOT_CALLED = 3;
+        @VisibleForTesting
+        int SESSION_WARMUP = 4;
+        @VisibleForTesting
+        int NUM_ENTRIES = 5;
+    }
 
     /** To be called when a client gets disconnected. */
     public interface DisconnectCallback { public void run(CustomTabsSessionToken session); }
@@ -300,49 +332,53 @@ class ClientManager {
     }
 
     @VisibleForTesting
-    synchronized int getWarmupState(CustomTabsSessionToken session) {
+    synchronized @CalledWarmup int getWarmupState(CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         boolean hasValidSession = params != null;
         boolean hasUidCalledWarmup = hasValidSession && mUidHasCalledWarmup.get(params.uid);
-        int result = mWarmupHasBeenCalled ? NO_SESSION_WARMUP : NO_SESSION_NO_WARMUP;
+        int result = mWarmupHasBeenCalled ? CalledWarmup.NO_SESSION_WARMUP
+                                          : CalledWarmup.NO_SESSION_NO_WARMUP;
         if (hasValidSession) {
             if (hasUidCalledWarmup) {
-                result = SESSION_WARMUP;
+                result = CalledWarmup.SESSION_WARMUP;
             } else {
-                result = mWarmupHasBeenCalled ? SESSION_NO_WARMUP_ALREADY_CALLED
-                                              : SESSION_NO_WARMUP_NOT_CALLED;
+                result = mWarmupHasBeenCalled ? CalledWarmup.SESSION_NO_WARMUP_ALREADY_CALLED
+                                              : CalledWarmup.SESSION_NO_WARMUP_NOT_CALLED;
             }
         }
         return result;
     }
 
     /**
-     * @return the prediction outcome. NO_PREDICTION if mSessionParams.get(session) returns null.
+     * @return the prediction outcome. PredictionStatus.NONE if mSessionParams.get(session) returns
+     * null.
      */
     @VisibleForTesting
-    synchronized int getPredictionOutcome(CustomTabsSessionToken session, String url) {
+    synchronized @PredictionStatus int getPredictionOutcome(
+            CustomTabsSessionToken session, String url) {
         SessionParams params = mSessionParams.get(session);
-        if (params == null) return NO_PREDICTION;
+        if (params == null) return PredictionStatus.NONE;
 
         String predictedUrl = params.getPredictedUrl();
-        if (predictedUrl == null) return NO_PREDICTION;
+        if (predictedUrl == null) return PredictionStatus.NONE;
 
         boolean urlsMatch = TextUtils.equals(predictedUrl, url)
                 || (params.mIgnoreFragments
                         && UrlUtilities.urlsMatchIgnoringFragments(predictedUrl, url));
-        return urlsMatch ? GOOD_PREDICTION : BAD_PREDICTION;
+        return urlsMatch ? PredictionStatus.GOOD : PredictionStatus.BAD;
     }
 
     /**
      * Registers that a client has launched a URL inside a Custom Tab.
      */
     public synchronized void registerLaunch(CustomTabsSessionToken session, String url) {
+        @PredictionStatus
         int outcome = getPredictionOutcome(session, url);
         RecordHistogram.recordEnumeratedHistogram(
-                "CustomTabs.PredictionStatus", outcome, PREDICTION_STATUS_COUNT);
+                "CustomTabs.PredictionStatus", outcome, PredictionStatus.NUM_ENTRIES);
 
         SessionParams params = mSessionParams.get(session);
-        if (outcome == GOOD_PREDICTION) {
+        if (outcome == PredictionStatus.GOOD) {
             long elapsedTimeMs = SystemClock.elapsedRealtime()
                     - params.getLastMayLaunchUrlTimestamp();
             RequestThrottler.getForUid(mContext, params.uid).registerSuccess(
@@ -350,15 +386,16 @@ class ClientManager {
             RecordHistogram.recordCustomTimesHistogram("CustomTabs.PredictionToLaunch",
                     elapsedTimeMs, 1, TimeUnit.MINUTES.toMillis(3), TimeUnit.MILLISECONDS, 100);
         }
-        RecordHistogram.recordEnumeratedHistogram(
-                "CustomTabs.WarmupStateOnLaunch", getWarmupState(session), SESSION_WARMUP_COUNT);
+        RecordHistogram.recordEnumeratedHistogram("CustomTabs.WarmupStateOnLaunch",
+                getWarmupState(session), CalledWarmup.NUM_ENTRIES);
 
         if (params == null) return;
 
-        int value = (params.lowConfidencePrediction ? LOW_CONFIDENCE : 0)
-                + (params.highConfidencePrediction ? HIGH_CONFIDENCE : 0);
+        @MayLaunchUrlType
+        int value = (params.lowConfidencePrediction ? MayLaunchUrlType.LOW_CONFIDENCE : 0)
+                + (params.highConfidencePrediction ? MayLaunchUrlType.HIGH_CONFIDENCE : 0);
         RecordHistogram.recordEnumeratedHistogram(
-                "CustomTabs.MayLaunchUrlType", value, MAY_LAUNCH_URL_TYPE_COUNT);
+                "CustomTabs.MayLaunchUrlType", value, MayLaunchUrlType.NUM_ENTRIES);
         params.resetPredictionMetrics();
     }
 
