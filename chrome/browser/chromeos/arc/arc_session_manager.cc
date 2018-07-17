@@ -976,20 +976,21 @@ void ArcSessionManager::StartArc() {
   std::string preferred_lanaguages;
   GetLocaleAndPreferredLanguages(profile_, &locale, &preferred_lanaguages);
 
-  chromeos::DemoSession* demo_session = chromeos::DemoSession::Get();
-  base::FilePath demo_session_apps_path;
-  if (demo_session && demo_session->started()) {
+  ArcSession::UpgradeParams params;
+
+  const chromeos::DemoSession* demo_session = chromeos::DemoSession::Get();
+  params.is_demo_session = demo_session && demo_session->started();
+  if (params.is_demo_session) {
     DCHECK(demo_session->offline_resources_loaded());
-    demo_session_apps_path = demo_session->GetDemoAppsPath();
+    base::FilePath demo_session_apps_path;
+    params.demo_session_apps_path = demo_session->GetDemoAppsPath();
   }
 
-  ArcSession::UpgradeParams params;
   params.is_child = profile_->IsChild();
   params.locale = locale;
   // Empty |preferred_lanaguages| is converted to empty array.
   params.preferred_languages = base::SplitString(
       preferred_lanaguages, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  params.demo_session_apps_path = demo_session_apps_path;
 
   arc_session_runner_->RequestUpgrade(std::move(params));
 }
