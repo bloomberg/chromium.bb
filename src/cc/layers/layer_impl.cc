@@ -166,7 +166,8 @@ void LayerImpl::PopulateScaledSharedQuadState(viz::SharedQuadState* state,
 
 void LayerImpl::PopulateTransformedSharedQuadState(
     viz::SharedQuadState* state,
-    const gfx::AxisTransform2d& transform) const {
+    const gfx::AxisTransform2d& transform,
+    bool contents_opaque) const {
   gfx::Transform scaled_draw_transform =
       draw_properties_.target_space_transform;
   scaled_draw_transform.Scale(SK_MScalar1 / transform.scale().width(),
@@ -182,7 +183,7 @@ void LayerImpl::PopulateTransformedSharedQuadState(
 
   state->SetAll(scaled_draw_transform, gfx::Rect(scaled_bounds),
                 scaled_visible_layer_rect, draw_properties().clip_rect,
-                draw_properties().is_clipped, draw_properties().opacity,
+                draw_properties().is_clipped, contents_opaque, draw_properties().opacity,
                 SkBlendMode::kSrcOver, GetSortingContextId());
 }
 

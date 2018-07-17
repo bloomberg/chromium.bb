@@ -306,7 +306,8 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       shared_quad_state,
       gfx::AxisTransform2d(max_contents_scale,
                            max_contents_scale * scale_aspect_ratio_,
-                           raster_translation));
+                           raster_translation),
+      contents_opaque());
   Occlusion scaled_occlusion;
   if (mask_type_ == Layer::LayerMaskType::NOT_MASK) {
     scaled_occlusion =

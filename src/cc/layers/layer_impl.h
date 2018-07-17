@@ -134,7 +134,8 @@ class CC_EXPORT LayerImpl {
 
   void PopulateTransformedSharedQuadState(
       viz::SharedQuadState* state,
-      const gfx::AxisTransform2d& transform) const;
+      const gfx::AxisTransform2d& transform,
+      bool contents_opaque) const;
 
   // WillDraw must be called before AppendQuads. If WillDraw returns false,
   // AppendQuads and DidDraw will not be called. If WillDraw returns true,
