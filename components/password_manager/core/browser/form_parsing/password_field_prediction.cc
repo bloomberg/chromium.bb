@@ -42,19 +42,12 @@ CredentialFieldType DeriveFromServerFieldType(ServerFieldType type) {
 
 FormPredictions ConvertToFormPredictions(const FormStructure& form_structure) {
   FormPredictions result;
+
   for (const auto& field : form_structure) {
     ServerFieldType server_type = field->server_type();
-    if (IsCredentialRelatedPrediction(server_type)) {
-      bool may_use_prefilled_placeholder = false;
-      for (const auto& predictions : field->server_predictions()) {
-        may_use_prefilled_placeholder |=
-            predictions.may_use_prefilled_placeholder();
-      }
-
-      result[field->unique_renderer_id] = PasswordFieldPrediction{
-          .type = server_type,
-          .may_use_prefilled_placeholder = may_use_prefilled_placeholder};
-    }
+    if (IsCredentialRelatedPrediction(server_type))
+      result[field->unique_renderer_id] =
+          PasswordFieldPrediction{.type = server_type};
   }
 
   return result;

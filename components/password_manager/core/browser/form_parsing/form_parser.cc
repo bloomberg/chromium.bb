@@ -576,33 +576,15 @@ const FormFieldData* FindUsernameInPredictions(
   return nullptr;
 }
 
-// Return true if |significant_fields| has an username field and
-// |form_predictions| has |may_use_prefilled_placeholder| == true for the
-// username field.
-bool GetMayUsePrefilledPlaceholder(
-    const FormPredictions* form_predictions,
-    const SignificantFields& significant_fields) {
-  if (!form_predictions || !significant_fields.username)
-    return false;
-
-  uint32_t username_id = significant_fields.username->unique_renderer_id;
-  auto it = form_predictions->find(username_id);
-  if (it == form_predictions->end())
-    return false;
-  return it->second.may_use_prefilled_placeholder;
-}
-
 // Puts together a PasswordForm, the result of the parsing, based on the
 // |form_data| description of the form metadata (e.g., action), the already
 // parsed information about what are the |significant_fields|, and the list
 // |all_possible_passwords| of all non-empty password values and associated
-// element names which occurred in the form. |form_predictions| is used to find
-// fields that may have preffilled placeholders.
+// element names which occurred in the form.
 std::unique_ptr<PasswordForm> AssemblePasswordForm(
     const autofill::FormData& form_data,
     const SignificantFields* significant_fields,
-    autofill::ValueElementVector all_possible_passwords,
-    const FormPredictions* form_predictions) {
+    autofill::ValueElementVector all_possible_passwords) {
   if (!significant_fields || !significant_fields->HasPasswords())
     return nullptr;
 
@@ -617,8 +599,6 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
   result->preferred = false;
   result->blacklisted_by_user = false;
   result->type = PasswordForm::TYPE_MANUAL;
-  result->username_may_use_prefilled_placeholder =
-      GetMayUsePrefilledPlaceholder(form_predictions, *significant_fields);
 
   // Set data related to specific fields.
   SetFields(*significant_fields, result.get());
@@ -670,8 +650,7 @@ std::unique_ptr<PasswordForm> ParseFormData(
   ParseUsingBaseHeuristics(processed_fields, mode, significant_fields.get());
 
   return AssemblePasswordForm(form_data, significant_fields.get(),
-                              std::move(all_possible_passwords),
-                              form_predictions);
+                              std::move(all_possible_passwords));
 }
 
 }  // namespace password_manager
