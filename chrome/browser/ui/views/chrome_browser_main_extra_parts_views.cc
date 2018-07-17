@@ -150,24 +150,17 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
 void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
   DCHECK(connection);
-#if defined(USE_AURA)
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL)
-    return;
-
 #if defined(OS_CHROMEOS)
-  // Start up the window service and the ash system UI service.
-  if (!features::IsAshInBrowserProcess()) {
-    connection->GetConnector()->StartService(
-        service_manager::Identity(ui::mojom::kServiceName));
-    connection->GetConnector()->StartService(
-        service_manager::Identity(ash::mojom::kServiceName));
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL ||
+      features::IsAshInBrowserProcess()) {
+    return;
   }
-#endif
 
-#if defined(OS_CHROMEOS)
-  if (features::IsAshInBrowserProcess())
-    return;
-#endif
+  // Start up the window service and the ash system UI service.
+  connection->GetConnector()->StartService(
+      service_manager::Identity(ui::mojom::kServiceName));
+  connection->GetConnector()->StartService(
+      service_manager::Identity(ash::mojom::kServiceName));
 
   views::MusClient::InitParams params;
   params.connector = connection->GetConnector();
@@ -175,8 +168,9 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
       content::BrowserThread::IO);
   // WMState is owned as a member, so don't have MusClient create it.
   params.create_wm_state = false;
+  params.wtc_config = aura::WindowTreeClient::Config::kMus2;
   mus_client_ = std::make_unique<views::MusClient>(params);
-#endif  // defined(USE_AURA)
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ChromeBrowserMainExtraPartsViews::PostBrowserStart() {
