@@ -57,6 +57,7 @@ class AppSearchProvider : public SearchProvider {
       const base::flat_map<std::string, uint16_t>& id_to_app_list_index);
   void UpdateQueriedResults();
 
+  Profile* profile_;
   AppListControllerDelegate* const list_controller_;
   base::string16 query_;
   Apps apps_;

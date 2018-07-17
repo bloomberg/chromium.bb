@@ -7,11 +7,14 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <cstring>
 #include <set>
 #include <string>
 #include <unordered_set>
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/app_list/tokenized_string.h"
 #include "ash/public/cpp/app_list/tokenized_string_match.h"
 #include "base/bind.h"
@@ -148,6 +151,9 @@ class AppSearchProvider::App {
   bool recommendable() const { return recommendable_; }
   void set_recommendable(bool recommendable) { recommendable_ = recommendable; }
 
+  bool searchable() const { return searchable_; }
+  void set_searchable(bool searchable) { searchable_ = searchable; }
+
   const base::string16& searchable_text() const { return searchable_text_; }
   void set_searchable_text(const base::string16& searchable_text) {
     searchable_text_ = searchable_text;
@@ -167,6 +173,7 @@ class AppSearchProvider::App {
   const base::Time last_launch_time_;
   const base::Time install_time_;
   bool recommendable_ = true;
+  bool searchable_ = true;
   base::string16 searchable_text_;
   bool require_exact_match_ = false;
 
@@ -344,11 +351,17 @@ class InternalDataSource : public AppSearchProvider::DataSource {
   void AddApps(AppSearchProvider::Apps* apps) override {
     const base::Time time;
     for (const auto& internal_app : GetInternalAppList()) {
+      if (!std::strcmp(internal_app.app_id, kInternalAppIdContinueReading) &&
+          !features::IsContinueReadingEnabled()) {
+        continue;
+      }
+
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
           this, internal_app.app_id,
           l10n_util::GetStringUTF8(internal_app.name_string_resource_id), time,
           time));
       apps->back()->set_recommendable(internal_app.recommendable);
+      apps->back()->set_searchable(internal_app.searchable);
       if (internal_app.searchable_string_resource_id != 0) {
         apps->back()->set_searchable_text(l10n_util::GetStringUTF16(
             internal_app.searchable_string_resource_id));
@@ -433,7 +446,8 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
                                      AppListControllerDelegate* list_controller,
                                      base::Clock* clock,
                                      AppListModelUpdater* model_updater)
-    : list_controller_(list_controller),
+    : profile_(profile),
+      list_controller_(list_controller),
       model_updater_(model_updater),
       clock_(clock),
       update_results_factory_(this) {
@@ -481,24 +495,37 @@ void AppSearchProvider::UpdateRecommendedResults(
     if (!app->recommendable())
       continue;
 
+    base::string16 title = app->name();
+    if (app->id() == kInternalAppIdContinueReading) {
+      if (HasRecommendableForeignTab(profile_, &title, nullptr))
+        app->set_searchable_text(title);
+      else
+        continue;
+    }
+
     std::unique_ptr<AppResult> result =
         app->data_source()->CreateResult(app->id(), list_controller_, true);
-    result->SetTitle(app->name());
+    result->SetTitle(title);
 
     // Use the app list order to tiebreak apps that have never been
     // launched. The apps that have been installed or launched recently
     // should be more relevant than other apps.
+    // If it is |kInternalAppIdContinueReading|, always show it as the first
+    // result.
     const base::Time time = app->GetLastActivityTime();
     if (time.is_null()) {
-      const auto& it = id_to_app_list_index.find(app->id());
-      // If it's in a folder, it won't be in |id_to_app_list_index|.
-      // Rank those as if they are at the end of the list.
-      const size_t app_list_index = (it == id_to_app_list_index.end())
-                                        ? apps_size
-                                        : std::min(apps_size, it->second);
-
-      result->set_relevance(kUnlaunchedAppRelevanceStepSize *
-                            (apps_size - app_list_index));
+      double relevance = 1.0;
+      if (app->id() != kInternalAppIdContinueReading) {
+        const auto& it = id_to_app_list_index.find(app->id());
+        // If it's in a folder, it won't be in |id_to_app_list_index|.
+        // Rank those as if they are at the end of the list.
+        const size_t app_list_index = (it == id_to_app_list_index.end())
+                                          ? apps_size
+                                          : std::min(apps_size, it->second);
+        relevance =
+            kUnlaunchedAppRelevanceStepSize * (apps_size - app_list_index);
+      }
+      result->set_relevance(relevance);
     } else {
       result->UpdateFromLastLaunchedOrInstalledTime(clock_->Now(), time);
     }
@@ -517,8 +544,9 @@ void AppSearchProvider::UpdateQueriedResults() {
 
   const TokenizedString query_terms(query_);
   for (auto& app : apps_) {
-    if (app->require_exact_match() &&
-        !base::EqualsCaseInsensitiveASCII(query_, app->name())) {
+    if (!app->searchable() ||
+        (app->require_exact_match() &&
+         !base::EqualsCaseInsensitiveASCII(query_, app->name()))) {
       continue;
     }
 

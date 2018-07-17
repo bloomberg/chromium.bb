@@ -9,16 +9,32 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
+#include "components/favicon_base/favicon_types.h"
+#include "components/sync/driver/sync_service_observer.h"
+#include "url/gurl.h"
 
 class AppListControllerDelegate;
 class Profile;
+
+namespace favicon {
+class LargeIconService;
+}  // namespace favicon
+
+namespace favicon_base {
+struct LargeIconImageResult;
+}  // namespace favicon_base
+
+namespace syncer {
+class SyncService;
+}  // namespace syncer
 
 namespace app_list {
 
 class AppContextMenu;
 
-class InternalAppResult : public AppResult {
+class InternalAppResult : public AppResult, syncer::SyncServiceObserver {
  public:
   InternalAppResult(Profile* profile,
                     const std::string& app_id,
@@ -37,7 +53,30 @@ class InternalAppResult : public AppResult {
   // ChromeSearchResult overrides:
   AppContextMenu* GetAppContextMenu() override;
 
+  // syncer::SyncServiceObserver overrides:
+  void OnForeignSessionUpdated(syncer::SyncService* sync) override;
+
+  // Get large icon image from servers and update icon for continue reading.
+  // If there is no cache hit on LargeIconService and
+  // |continue_to_google_server| is true, will try to download the icon from
+  // Google favicon server.
+  void UpdateContinueReadingFavicon(bool continue_to_google_server);
+  void OnGetFaviconFromCacheFinished(
+      bool continue_to_google_server,
+      const favicon_base::LargeIconImageResult& image);
+  void OnGetFaviconFromGoogleServerFinished(
+      favicon_base::GoogleFaviconServerRequestStatus status);
+
   std::unique_ptr<AppContextMenu> context_menu_;
+
+  base::CancelableTaskTracker task_tracker_;
+
+  // The url of recommendable foreign tab, which is invalid if there is no
+  // recommendation.
+  GURL url_for_continuous_reading_;
+
+  // Used to fetch the favicon of the website |url_for_continuous_reading_|.
+  favicon::LargeIconService* large_icon_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(InternalAppResult);
 };

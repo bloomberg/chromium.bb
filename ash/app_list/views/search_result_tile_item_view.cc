@@ -323,6 +323,7 @@ void SearchResultTileItemView::PaintButtonContents(gfx::Canvas* canvas) {
 
 void SearchResultTileItemView::OnMetadataChanged() {
   SetIcon(item_->icon());
+  SetTitle(item_->title());
   SetBadgeIcon(item_->badge_icon());
   SetRating(item_->rating());
   SetPrice(item_->formatted_price());
