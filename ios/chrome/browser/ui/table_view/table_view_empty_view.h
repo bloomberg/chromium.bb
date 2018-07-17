@@ -10,10 +10,17 @@
 // Displays an UIImage on top of a message over a clearBackground.
 @interface TableViewEmptyView : UIView
 
-// Designated initializer.
+// Designated initializer for a view that displays |message| with default
+// styling and |image| above the message.
 - (instancetype)initWithFrame:(CGRect)frame
                       message:(NSString*)message
                         image:(UIImage*)image NS_DESIGNATED_INITIALIZER;
+// Designated initializer for a view that displays an attributed |message| and
+// |image| above the message.
+- (instancetype)initWithFrame:(CGRect)frame
+            attributedMessage:(NSAttributedString*)message
+                        image:(UIImage*)image NS_DESIGNATED_INITIALIZER;
+
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 
