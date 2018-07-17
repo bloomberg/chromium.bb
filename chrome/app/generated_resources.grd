@@ -4431,40 +4431,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You have no recently captured WebRTC logs.
       </message>
 
-      <if expr="is_win">
-        <!-- Conflicts page -->
-        <message name="IDS_CONFLICTS_CHECK_PAGE_TABLE_TITLE_SUFFIX_ONE" desc="What gets appended after the page title if no conflicts were found.">
-          Modules (<ph name="TOTAL_COUNT">$1<ex>50</ex></ph>) - No conflicts detected
-        </message>
-        <message name="IDS_CONFLICTS_EXPLANATION_TEXT" desc="The text blurb explaining what the compatibility page is.">
-          This page lists all modules loaded into the main process and modules registered to load at a later point.
-        </message>
-        <message name="IDS_CONFLICTS_CHECK_INVESTIGATING" desc="A label on the compatibility page saying we are investigating.">
-          We are currently investigating this issue.
-        </message>
-        <message name="IDS_CONFLICTS_NO_MODULES_LOADED" desc="Error message for when no modules were found in the process">
-          Unable to detect any modules loaded.
-        </message>
-        <message name="IDS_CONFLICTS_HEADER_SOFTWARE" desc="The 'Software' header for each module item in the list">
-          Software
-        </message>
-        <message name="IDS_CONFLICTS_HEADER_SIGNED_BY" desc="The 'Signed by' header for each module item in the list">
-          Signed by
-        </message>
-        <message name="IDS_CONFLICTS_HEADER_LOCATION" desc="The 'Location' header for each module item in the list" meaning="File location">
-          Location
-        </message>
-        <message name="IDS_CONFLICTS_HEADER_VERSION" desc="The 'Version' header for each module item in the list">
-          Version
-        </message>
-        <message name="IDS_CONFLICTS_HEADER_HELP_TIP" desc="The 'Help tip:' header for each module item in the list">
-          Help tip
-        </message>
-        <message name="IDS_CONFLICTS_LOADING_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
-          Loading...
-        </message>
-      </if> <!-- is_win -->
-
       <!-- Plugin placeholders -->
       <message name="IDS_PLUGIN_HIDE" desc="The tooltip for hiding a blocked plugin, displayed in the click to play UI.">
         Hide this plugin
