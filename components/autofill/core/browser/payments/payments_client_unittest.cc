@@ -28,6 +28,7 @@
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -67,7 +68,7 @@ class PaymentsClientTest : public testing::Test,
     factory()->SetInterceptor(base::BindLambdaForTesting(
         [&](const network::ResourceRequest& request) {
           intercepted_headers_ = request.headers;
-          intercepted_body_ = GetBodyFromRequest(request);
+          intercepted_body_ = network::GetUploadData(request);
         }));
     test_shared_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -162,17 +163,6 @@ class PaymentsClientTest : public testing::Test,
   }
 
   network::TestURLLoaderFactory* factory() { return &test_url_loader_factory_; }
-
-  std::string GetBodyFromRequest(const network::ResourceRequest& request) {
-    auto body = request.request_body;
-    if (!body)
-      return std::string();
-
-    CHECK_EQ(1u, body->elements()->size());
-    auto& element = body->elements()->at(0);
-    CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
-    return std::string(element.bytes(), element.length());
-  }
 
   const std::string& GetUploadData() { return intercepted_body_; }
 

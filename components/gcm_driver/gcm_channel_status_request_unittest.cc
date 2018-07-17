@@ -11,6 +11,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -36,7 +37,6 @@ class GCMChannelStatusRequestTest : public testing::Test {
                                   const std::string& response_body);
   void SetResponseProtoData(GCMStatus status, int poll_interval_seconds);
   void StartRequest();
-  std::string GetBodyFromRequest(const network::ResourceRequest& request);
   void OnRequestCompleted(bool update_received,
                           bool enabled,
                           int poll_interval_seconds);
@@ -103,18 +103,6 @@ void GCMChannelStatusRequestTest::StartRequest() {
   run_loop.RunUntilIdle();
 }
 
-std::string GCMChannelStatusRequestTest::GetBodyFromRequest(
-    const network::ResourceRequest& request) {
-  auto body = request.request_body;
-  if (!body)
-    return std::string();
-
-  CHECK_EQ(1u, body->elements()->size());
-  auto& element = body->elements()->at(0);
-  CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
-  return std::string(element.bytes(), element.length());
-}
-
 void GCMChannelStatusRequestTest::OnRequestCompleted(
     bool update_received, bool enabled, int poll_interval_seconds) {
   request_callback_invoked_ = true;
@@ -138,7 +126,7 @@ TEST_F(GCMChannelStatusRequestTest, RequestData) {
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
         intercepted_url = request.url;
         intercepted_headers = request.headers;
-        upload_data = GetBodyFromRequest(request);
+        upload_data = network::GetUploadData(request);
       }));
   StartRequest();
 
