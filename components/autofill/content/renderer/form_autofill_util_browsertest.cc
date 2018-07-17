@@ -411,42 +411,19 @@ TEST_F(FormAutofillUtilsTest, IsFocusable) {
                                  .GetElementById("name2")
                                  .To<blink::WebFormControlElement>());
 
-  // Computing visibility only happens if causing a layout in Blink is
-  // acceptable. The first block below checks the "layout acceptable"
-  // situation, the one after it the "layout to be avoided" situation.
-  {
-    EXPECT_TRUE(autofill::form_util::IsWebElementVisible(control_elements[0]));
-    EXPECT_FALSE(autofill::form_util::IsWebElementVisible(control_elements[1]));
+  EXPECT_TRUE(autofill::form_util::IsWebElementVisible(control_elements[0]));
+  EXPECT_FALSE(autofill::form_util::IsWebElementVisible(control_elements[1]));
 
-    autofill::FormData target;
-    EXPECT_TRUE(
-        autofill::form_util::UnownedPasswordFormElementsAndFieldSetsToFormData(
-            dummy_fieldsets, control_elements, nullptr,
-            web_frame->GetDocument(), nullptr,
-            autofill::form_util::EXTRACT_NONE, &target, nullptr));
-    ASSERT_EQ(2u, target.fields.size());
-    EXPECT_EQ(base::UTF8ToUTF16("name1"), target.fields[0].name);
-    EXPECT_TRUE(target.fields[0].is_focusable);
-    EXPECT_EQ(base::UTF8ToUTF16("name2"), target.fields[1].name);
-    EXPECT_FALSE(target.fields[1].is_focusable);
-  }
-  {
-    autofill::form_util::ScopedLayoutPreventer preventer;
-    EXPECT_TRUE(autofill::form_util::IsWebElementVisible(control_elements[0]));
-    EXPECT_TRUE(autofill::form_util::IsWebElementVisible(control_elements[1]));
-
-    autofill::FormData target;
-    EXPECT_TRUE(
-        autofill::form_util::UnownedPasswordFormElementsAndFieldSetsToFormData(
-            dummy_fieldsets, control_elements, nullptr,
-            web_frame->GetDocument(), nullptr,
-            autofill::form_util::EXTRACT_NONE, &target, nullptr));
-    ASSERT_EQ(2u, target.fields.size());
-    EXPECT_EQ(base::UTF8ToUTF16("name1"), target.fields[0].name);
-    EXPECT_TRUE(target.fields[0].is_focusable);
-    EXPECT_EQ(base::UTF8ToUTF16("name2"), target.fields[1].name);
-    EXPECT_TRUE(target.fields[1].is_focusable);
-  }
+  autofill::FormData target;
+  EXPECT_TRUE(
+      autofill::form_util::UnownedPasswordFormElementsAndFieldSetsToFormData(
+          dummy_fieldsets, control_elements, nullptr, web_frame->GetDocument(),
+          nullptr, autofill::form_util::EXTRACT_NONE, &target, nullptr));
+  ASSERT_EQ(2u, target.fields.size());
+  EXPECT_EQ(base::UTF8ToUTF16("name1"), target.fields[0].name);
+  EXPECT_TRUE(target.fields[0].is_focusable);
+  EXPECT_EQ(base::UTF8ToUTF16("name2"), target.fields[1].name);
+  EXPECT_FALSE(target.fields[1].is_focusable);
 }
 
 TEST_F(FormAutofillUtilsTest, FindFormByUniqueId) {

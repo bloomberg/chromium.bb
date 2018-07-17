@@ -82,10 +82,6 @@ enum FieldFilterMask {
                                      FILTER_NON_FOCUSABLE_ELEMENTS,
 };
 
-// If true, operations causing layout computation should be avoided. Set by
-// ScopedLayoutPreventer.
-bool g_prevent_layout = false;
-
 void TruncateString(base::string16* str, size_t max_length) {
   if (str->length() > max_length)
     str->resize(max_length);
@@ -880,9 +876,6 @@ void ForEachMatchingFormFieldCommon(
              base::i18n::ToLower(element->Value().Utf16())))
       continue;
 
-    DCHECK(!g_prevent_layout || !(filters & FILTER_NON_FOCUSABLE_ELEMENTS))
-        << "The callsite of this code wanted to both prevent layout and check "
-           "isFocusable. Pick one.";
     if (((filters & FILTER_DISABLED_ELEMENTS) && !element->IsEnabled()) ||
         ((filters & FILTER_READONLY_ELEMENTS) && element->IsReadOnly()) ||
         // See description for FILTER_NON_FOCUSABLE_ELEMENTS.
@@ -1285,18 +1278,6 @@ bool ScriptModifiedUsernameAcceptable(
 
 }  // namespace
 
-ScopedLayoutPreventer::ScopedLayoutPreventer() {
-  DCHECK(!g_prevent_layout) << "Is any other instance of ScopedLayoutPreventer "
-                               "alive in the same process?";
-  g_prevent_layout = true;
-}
-
-ScopedLayoutPreventer::~ScopedLayoutPreventer() {
-  DCHECK(g_prevent_layout) << "Is any other instance of ScopedLayoutPreventer "
-                              "alive in the same process?";
-  g_prevent_layout = false;
-}
-
 GURL StripAuthAndParams(const GURL& gurl) {
   GURL::Replacements rep;
   rep.ClearUsername();
@@ -1449,11 +1430,6 @@ const base::string16 GetFormIdentifier(const WebFormElement& form) {
 }
 
 bool IsWebElementVisible(const blink::WebElement& element) {
-  // Testing anything related to visibility is likely to trigger layout. If that
-  // should not happen, all elements are suspected of being visible. This is
-  // consistent with the default value of FormFieldData::is_focusable.
-  if (g_prevent_layout)
-    return true;
   return element.IsFocusable();
 }
 
