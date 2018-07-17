@@ -146,7 +146,7 @@ void WaylandClientTest::SetUpOnUIThread(base::WaitableEvent* event) {
 
   wm_helper_ = std::make_unique<WMHelper>();
   WMHelper::SetInstance(wm_helper_.get());
-  display_ = std::make_unique<Display>(nullptr, nullptr);
+  display_ = std::make_unique<Display>(nullptr, nullptr, nullptr);
   wayland_server_ = exo::wayland::Server::Create(display_.get());
   DCHECK(wayland_server_);
   wayland_watcher_ = std::make_unique<WaylandWatcher>(wayland_server_.get());

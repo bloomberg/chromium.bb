@@ -240,7 +240,7 @@ class TestFileHelper : public FileHelper {
 
 TEST_F(DisplayTest, CreateDataDevice) {
   TestDataDeviceDelegate device_delegate;
-  Display display(nullptr, std::make_unique<TestFileHelper>());
+  Display display(nullptr, nullptr, std::make_unique<TestFileHelper>());
 
   std::unique_ptr<DataDevice> device =
       display.CreateDataDevice(&device_delegate);

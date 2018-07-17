@@ -15,6 +15,8 @@
 #include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/data_device.h"
 #include "components/exo/file_helper.h"
+#include "components/exo/input_method_surface.h"
+#include "components/exo/input_method_surface_manager.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/notification_surface_manager.h"
 #include "components/exo/shared_memory.h"
@@ -40,11 +42,13 @@ namespace exo {
 ////////////////////////////////////////////////////////////////////////////////
 // Display, public:
 
-Display::Display() : Display(nullptr, std::unique_ptr<FileHelper>()) {}
+Display::Display() : Display(nullptr, nullptr, std::unique_ptr<FileHelper>()) {}
 
 Display::Display(NotificationSurfaceManager* notification_surface_manager,
+                 InputMethodSurfaceManager* input_method_surface_manager,
                  std::unique_ptr<FileHelper> file_helper)
     : notification_surface_manager_(notification_surface_manager),
+      input_method_surface_manager_(input_method_surface_manager),
       file_helper_(std::move(file_helper))
 #if defined(USE_OZONE)
       ,
@@ -200,6 +204,26 @@ std::unique_ptr<NotificationSurface> Display::CreateNotificationSurface(
 std::unique_ptr<DataDevice> Display::CreateDataDevice(
     DataDeviceDelegate* delegate) {
   return std::make_unique<DataDevice>(delegate, &seat_, file_helper_.get());
+}
+
+std::unique_ptr<InputMethodSurface> Display::CreateInputMethodSurface(
+    Surface* surface,
+    double default_device_scale_factor) {
+  TRACE_EVENT1("exo", "Display::CreateInputMethodSurface", "surface",
+               surface->AsTracedValue());
+
+  if (!input_method_surface_manager_) {
+    DLOG(ERROR) << "Input method surface cannot be registered";
+    return nullptr;
+  }
+
+  if (surface->HasSurfaceDelegate()) {
+    DLOG(ERROR) << "Surface has already been assigned a role";
+    return nullptr;
+  }
+
+  return std::make_unique<InputMethodSurface>(
+      input_method_surface_manager_, surface, default_device_scale_factor);
 }
 
 }  // namespace exo
