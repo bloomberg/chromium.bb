@@ -2308,5 +2308,15 @@ TEST_F(NGBlockLayoutAlgorithmTest, RootFragmentOffsetInsideLegacy) {
   //          fragment->Offset());
 }
 
+// TODO(dgrogan): Move this to ng_flex_layout_algorithm_test.cc if there ever is
+// one.
+TEST_F(NGBlockLayoutAlgorithmTest, DetailsFlexDoesntCrash) {
+  SetBodyInnerHTML(R"HTML(
+    <details style="display:flex"></details>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  // No crash is good.
+}
+
 }  // namespace
 }  // namespace blink

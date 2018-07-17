@@ -49,7 +49,8 @@ scoped_refptr<NGLayoutResult> LayoutWithAlgorithm(
     const NGConstraintSpace& space,
     NGBreakToken* break_token) {
   auto* token = ToNGBlockBreakToken(break_token);
-  if (style.IsDisplayFlexibleBox())
+  // TODO(dgrogan): Check display value instead of Layout node type?
+  if (box->IsLayoutNGFlexibleBox())
     return NGFlexLayoutAlgorithm(node, space, token).Layout();
   // If there's a legacy layout box, we can only do block fragmentation if we
   // would have done block fragmentation with the legacy engine. Otherwise
