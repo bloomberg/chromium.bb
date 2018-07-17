@@ -30,6 +30,7 @@
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_version_info.h"
@@ -298,6 +299,8 @@ void GpuChannelManager::OnBackgroundCleanup() {
     raster_decoder_context_state_->context_lost = true;
     raster_decoder_context_state_.reset();
   }
+
+  SkGraphics::PurgeAllCaches();
 }
 #endif
 
@@ -307,6 +310,9 @@ void GpuChannelManager::OnApplicationBackgrounded() {
         base::MemoryPressureListener::MemoryPressureLevel::
             MEMORY_PRESSURE_LEVEL_CRITICAL);
   }
+
+  // Release all skia caching when the application is backgrounded.
+  SkGraphics::PurgeAllCaches();
 }
 
 void GpuChannelManager::HandleMemoryPressure(
