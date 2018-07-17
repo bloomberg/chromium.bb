@@ -179,16 +179,15 @@ html[dir=rtl] .bg-option-text {
   height: 284px;
   overflow-y: scroll;
   padding-left: 8px;
-  width: 100%;
+}
+
+#bg-sel-tiles::-webkit-scrollbar-track {
+  display: none;
 }
 
 html[dir=rtl] #bg-sel-tiles {
   padding-left: auto;
   padding-right: 8px;
-}
-
-#bg-sel-tiles::-webkit-scrollbar {
-    display: none;
 }
 
 #bg-sel-title-bar {
