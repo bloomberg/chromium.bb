@@ -82,3 +82,10 @@ void PopupOpenerTabHelper::DidGetUserInteraction(
     const blink::WebInputEvent::Type type) {
   has_opened_popup_since_last_user_gesture_ = false;
 }
+
+void PopupOpenerTabHelper::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // Treat browser-initiated navigations as user interactions.
+  if (!navigation_handle->IsRendererInitiated())
+    has_opened_popup_since_last_user_gesture_ = false;
+}

@@ -118,6 +118,8 @@ class SafeBrowsingNavigationObserver : public base::SupportsUserData::Data,
                              std::unique_ptr<NavigationEvent>>
       NavigationHandleMap;
 
+  void OnUserInteraction();
+
   // content::WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;

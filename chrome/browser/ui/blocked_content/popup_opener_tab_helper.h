@@ -57,6 +57,8 @@ class PopupOpenerTabHelper
 
   // content::WebContentsObserver:
   void OnVisibilityChanged(content::Visibility visibility) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
 
   // Visible time for this tab until a tab-under is detected. At which point it

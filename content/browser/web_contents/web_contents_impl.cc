@@ -240,6 +240,25 @@ RenderFrameHostImpl* FindOpenerRFH(const WebContents::CreateParams& params) {
   return opener_rfh;
 }
 
+// Returns |true| if |type| is the kind of user input that should trigger the
+// user interaction observers.
+bool IsUserInteractionInputType(blink::WebInputEvent::Type type) {
+  // Ideally, this list would be based more off of
+  // https://whatwg.org/C/interaction.html#triggered-by-user-activation.
+  return type == blink::WebInputEvent::kMouseDown ||
+         type == blink::WebInputEvent::kGestureScrollBegin ||
+         type == blink::WebInputEvent::kTouchStart ||
+         type == blink::WebInputEvent::kRawKeyDown;
+}
+
+// Returns |true| if |type| is the kind of user input that should be used as
+// a user gesture signal for resource load dispatches.
+bool IsResourceLoadUserInteractionInputType(blink::WebInputEvent::Type type) {
+  return type == blink::WebInputEvent::kMouseDown ||
+         type == blink::WebInputEvent::kTouchStart ||
+         type == blink::WebInputEvent::kRawKeyDown;
+}
+
 // Ensures that OnDialogClosed is only called once.
 class CloseDialogCallbackWrapper
     : public base::RefCountedThreadSafe<CloseDialogCallbackWrapper> {
@@ -3784,7 +3803,7 @@ void WebContentsImpl::SystemDragEnded(RenderWidgetHost* source_rwh) {
 }
 
 void WebContentsImpl::NavigatedByUser() {
-  OnUserInteraction(blink::WebInputEvent::kUndefined);
+  SendUserGestureForResourceDispatchHost();
 }
 
 void WebContentsImpl::SetClosedByUserGesture(bool value) {
@@ -5812,12 +5831,7 @@ bool WebContentsImpl::DidAddMessageToConsole(int32_t level,
 void WebContentsImpl::DidReceiveInputEvent(
     RenderWidgetHostImpl* render_widget_host,
     const blink::WebInputEvent::Type type) {
-  // Ideally, this list would be based more off of
-  // https://whatwg.org/C/interaction.html#triggered-by-user-activation.
-  if (type != blink::WebInputEvent::kMouseDown &&
-      type != blink::WebInputEvent::kGestureScrollBegin &&
-      type != blink::WebInputEvent::kTouchStart &&
-      type != blink::WebInputEvent::kRawKeyDown)
+  if (!IsUserInteractionInputType(type))
     return;
 
   // Ignore unless the widget is currently in the frame tree.
@@ -5827,7 +5841,11 @@ void WebContentsImpl::DidReceiveInputEvent(
   if (type != blink::WebInputEvent::kGestureScrollBegin)
     last_interactive_input_event_time_ = ui::EventTimeForNow();
 
-  OnUserInteraction(type);
+  for (auto& observer : observers_)
+    observer.DidGetUserInteraction(type);
+
+  if (IsResourceLoadUserInteractionInputType(type))
+    SendUserGestureForResourceDispatchHost();
 }
 
 void WebContentsImpl::FocusOwningWebContents(
@@ -6215,17 +6233,11 @@ void WebContentsImpl::OnPreferredSizeChanged(const gfx::Size& old_size) {
     delegate_->UpdatePreferredSize(this, new_size);
 }
 
-void WebContentsImpl::OnUserInteraction(const blink::WebInputEvent::Type type) {
-  for (auto& observer : observers_)
-    observer.DidGetUserInteraction(type);
-
-  // TODO(https://crbug.com/827659): This used to check if type != kMouseWheel.
-  // However, due to the caller already filtering event types, this would never
-  // be called with type == kMouseWheel so checking for that here is pointless.
-  // However, mouse wheel events *also* generate a kGestureScrollBegin event...
-  // which is *not* filtered out. Maybe they should be?
+void WebContentsImpl::SendUserGestureForResourceDispatchHost() {
+  // This is null in unittests. =(
   ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-  if (rdh)  // null in unittests. =(
+
+  if (rdh)
     rdh->OnUserGesture();
 }
 

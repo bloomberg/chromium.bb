@@ -147,9 +147,6 @@ void SiteEngagementService::Helper::InputTracker::DidGetUserInteraction(
     case blink::WebInputEvent::kGestureScrollBegin:
       helper()->RecordUserInput(SiteEngagementService::ENGAGEMENT_SCROLL);
       break;
-    case blink::WebInputEvent::kUndefined:
-      // Explicitly ignore browser-initiated navigation input.
-      break;
     default:
       NOTREACHED();
   }

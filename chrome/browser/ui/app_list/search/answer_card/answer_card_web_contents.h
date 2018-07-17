@@ -45,6 +45,8 @@ class AnswerCardWebContents : public AnswerCardContents,
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
   // content::WebContentsObserver overrides:
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidStopLoading() override;

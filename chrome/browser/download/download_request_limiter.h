@@ -126,8 +126,6 @@ class DownloadRequestLimiter
         content::NavigationHandle* navigation_handle) override;
     void DidFinishNavigation(
         content::NavigationHandle* navigation_handle) override;
-    // Invoked when a user gesture occurs (mouse click, mouse scroll, tap, or
-    // key down). This may result in invoking Remove on DownloadRequestLimiter.
     void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
     void WebContentsDestroyed() override;
 
@@ -152,6 +150,9 @@ class DownloadRequestLimiter
     // we have an outstanding weak pointer--weak pointers are only
     // given to the info bar delegate or permission bubble request.
     bool is_showing_prompt() const;
+
+    // This may result in invoking Remove on DownloadRequestLimiter.
+    void OnUserInteraction();
 
     // content_settings::Observer overrides.
     void OnContentSettingChanged(

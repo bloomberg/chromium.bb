@@ -247,6 +247,12 @@ bool AnswerCardWebContents::HandleContextMenu(
   return true;
 }
 
+void AnswerCardWebContents::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsRendererInitiated())
+    base::RecordAction(base::UserMetricsAction("SearchAnswer_UserInteraction"));
+}
+
 void AnswerCardWebContents::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   bool has_answer_card = false;

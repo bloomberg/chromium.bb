@@ -710,9 +710,7 @@ class WebContents : public PageNavigator,
   virtual void SystemDragEnded(RenderWidgetHost* source_rwh) = 0;
 
   // The user initiated navigation to this page (as opposed to a navigation that
-  // could have been triggered without user interaction). Used to avoid
-  // uninitiated user downloads (aka carpet bombing), see DownloadRequestLimiter
-  // for details.
+  // could have been triggered without user interaction).
   virtual void NavigatedByUser() = 0;
 
   // Indicates if this tab was explicitly closed by the user (control-w, close

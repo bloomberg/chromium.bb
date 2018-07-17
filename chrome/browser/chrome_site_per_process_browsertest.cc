@@ -44,7 +44,9 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/display/display_switches.h"
+#include "ui/gfx/geometry/point.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -707,7 +709,9 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // This test technically performs a tab-under navigation. This will be blocked
   // if the tab-under blocking feature is enabled. Simulate clicking the opener
   // here to avoid that behavior.
-  opener_contents->NavigatedByUser();
+  content::SimulateMouseClickAt(opener_contents, 0 /* modifiers */,
+                                blink::WebMouseEvent::Button::kLeft,
+                                gfx::Point(50, 50));
 
   // From the popup, start a navigation in the opener to b.com, but don't
   // commit.

@@ -114,11 +114,22 @@ SafeBrowsingNavigationObserver::SafeBrowsingNavigationObserver(
 
 SafeBrowsingNavigationObserver::~SafeBrowsingNavigationObserver() {}
 
+void SafeBrowsingNavigationObserver::OnUserInteraction() {
+  last_user_gesture_timestamp_ = base::Time::Now();
+  has_user_gesture_ = true;
+  manager_->RecordUserGestureForWebContents(web_contents(),
+                                            last_user_gesture_timestamp_);
+}
+
 // Called when a navigation starts in the WebContents. |navigation_handle|
 // parameter is unique to this navigation, which will appear in the following
 // DidRedirectNavigation, and DidFinishNavigation too.
 void SafeBrowsingNavigationObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  // Treat a browser-initiated navigation as a user interaction.
+  if (!navigation_handle->IsRendererInitiated())
+    OnUserInteraction();
+
   // Ignores navigation caused by back/forward.
   if (navigation_handle->GetPageTransition() &
       ui::PAGE_TRANSITION_FORWARD_BACK) {
@@ -253,10 +264,7 @@ void SafeBrowsingNavigationObserver::DidFinishNavigation(
 
 void SafeBrowsingNavigationObserver::DidGetUserInteraction(
     const blink::WebInputEvent::Type type) {
-  last_user_gesture_timestamp_ = base::Time::Now();
-  has_user_gesture_ = true;
-  manager_->RecordUserGestureForWebContents(web_contents(),
-                                            last_user_gesture_timestamp_);
+  OnUserInteraction();
 }
 
 void SafeBrowsingNavigationObserver::WebContentsDestroyed() {
@@ -290,7 +298,7 @@ void SafeBrowsingNavigationObserver::OnContentSettingChanged(
   if (web_contents() &&
       primary_pattern.Matches(web_contents()->GetLastCommittedURL()) &&
       PageInfoUI::ContentSettingsTypeInPageInfo(content_type)) {
-    DidGetUserInteraction(blink::WebInputEvent::kMouseDown);
+    OnUserInteraction();
   }
 }
 
