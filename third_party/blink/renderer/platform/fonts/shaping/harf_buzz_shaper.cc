@@ -48,7 +48,6 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
 #include "third_party/blink/renderer/platform/fonts/small_caps_iterator.h"
 #include "third_party/blink/renderer/platform/fonts/utf16_text_iterator.h"
-#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -338,13 +337,10 @@ void HarfBuzzShaper::CommitGlyphs(RangeData* range_data,
   // Here we need to specify glyph positions.
   BufferSlice next_slice;
   for (const BufferSlice* current_slice = &slice;;) {
-    Vector<unsigned> graphemes;
-    GraphemesClusterList(text_, current_slice->start_character_index,
-                         current_slice->num_characters, &graphemes);
     ShapeResult::RunInfo* run = new ShapeResult::RunInfo(
         current_font, direction, canvas_rotation, script,
         current_slice->start_character_index, current_slice->num_glyphs,
-        current_slice->num_characters, graphemes);
+        current_slice->num_characters);
     shape_result->InsertRun(base::WrapUnique(run),
                             current_slice->start_glyph_index,
                             current_slice->num_glyphs, range_data->buffer);

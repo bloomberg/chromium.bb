@@ -424,10 +424,7 @@ LayoutUnit InlineTextBox::PlaceEllipsisBox(bool flow_is_ltr,
     // more accurate position in rtl text.
     // TODO(crbug.com/722043: This doesn't always give the best results.
     bool ltr = IsLeftToRightDirection();
-    int offset = OffsetForPosition(ellipsis_x,
-                                   ltr ? OnlyFullGlyphs : IncludePartialGlyphs,
-                                   DontBreakGlyphs);
-
+    int offset = OffsetForPosition(ellipsis_x, !ltr);
     // Full truncation is only necessary when we're flowing left-to-right.
     if (flow_is_ltr && offset == 0 && ltr == flow_is_ltr) {
       // No characters should be laid out.  Set ourselves to full truncation and
@@ -628,8 +625,7 @@ LayoutUnit InlineTextBox::TextPos() const {
 }
 
 int InlineTextBox::OffsetForPosition(LayoutUnit line_offset,
-                                     IncludePartialGlyphsOption partial_glyphs,
-                                     BreakGlyphsOption break_glyphs) const {
+                                     bool include_partial_glyphs) const {
   if (IsLineBreak())
     return 0;
 
@@ -643,7 +639,7 @@ int InlineTextBox::OffsetForPosition(LayoutUnit line_offset,
   const Font& font = style.GetFont();
   return font.OffsetForPosition(ConstructTextRun(style),
                                 (line_offset - LogicalLeft()).ToFloat(),
-                                partial_glyphs, break_glyphs);
+                                include_partial_glyphs);
 }
 
 LayoutUnit InlineTextBox::PositionForOffset(int offset) const {

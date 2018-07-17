@@ -53,7 +53,8 @@ unsigned NumGraphemeClusters(const String& string) {
   return num;
 }
 
-void GraphemesClusterList(String text,
+void GraphemesClusterList(const UChar* text,
+                          unsigned text_length,
                           unsigned start,
                           unsigned length,
                           Vector<unsigned>* graphemes) {
@@ -61,8 +62,8 @@ void GraphemesClusterList(String text,
   if (!length)
     return;
 
-  String substring = text.Substring(start, length);
-  NonSharedCharacterBreakIterator it(substring);
+  DCHECK_LE(static_cast<unsigned>(start + length), text_length);
+  NonSharedCharacterBreakIterator it(&text[start], length);
 
   int cursor_pos = it.Next();
   unsigned count = 0;

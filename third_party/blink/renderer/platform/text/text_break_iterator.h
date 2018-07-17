@@ -365,7 +365,8 @@ PLATFORM_EXPORT unsigned LengthOfGraphemeCluster(const String&, unsigned = 0);
 
 // Returns a list of graphemes cluster at each character using character break
 // rules.
-PLATFORM_EXPORT void GraphemesClusterList(String text,
+PLATFORM_EXPORT void GraphemesClusterList(const UChar* text,
+                                          unsigned text_length,
                                           unsigned start,
                                           unsigned length,
                                           Vector<unsigned>* graphemes);
