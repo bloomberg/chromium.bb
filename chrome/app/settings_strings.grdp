@@ -4204,10 +4204,10 @@
     <message name="IDS_SETTINGS_MULTIDEVICE_INSTANT_TETHERING" desc="Name of a feature. This feature automatically offers the user to tether to their phone if their Chromebook is offline and their phone supports tethering.">
       Instant Tethering
     </message>
-    <message name="IDS_SETTINGS_MULTIDEVICE_SMS_CONNECT" desc="Name of a feature. This feature lets the user read and reply to text messages from their Chromebook. New text messages will appear as notifications.">
-      SMS Connect
+    <message name="IDS_SETTINGS_MULTIDEVICE_ANDROID_MESSAGES" desc="Name of a feature. This feature lets the user read and reply to text messages from their Chromebook. New text messages will appear as notifications.">
+      Android Messages
     </message>
-    <message name="IDS_SETTINGS_MULTIDEVICE_SMS_CONNECT_SUMMARY" desc="Description of for the 'SMS Connect' setting. This feature lets the user read and reply to text messages from their Chromebook. New text messages will appear as notifications.">
+    <message name="IDS_SETTINGS_MULTIDEVICE_ANDROID_MESSAGES_SUMMARY" desc="Description of for the 'Android Messages' setting. This feature lets the user read and reply to text messages from their Chromebook. New text messages will appear as notifications.">
       Send and receive text messages from your Chromebook
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE" desc="Header for a clickable menu item that makes the Chromebook forget the user's phone. This means they will no longer have access to multidevice features.">
