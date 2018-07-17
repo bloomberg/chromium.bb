@@ -274,6 +274,44 @@ bool EnumTraits<media::mojom::VideoCaptureBufferType,
 }
 
 // static
+media::mojom::VideoFacingMode
+EnumTraits<media::mojom::VideoFacingMode, media::VideoFacingMode>::ToMojom(
+    media::VideoFacingMode input) {
+  switch (input) {
+    case media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE:
+      return media::mojom::VideoFacingMode::NONE;
+    case media::VideoFacingMode::MEDIA_VIDEO_FACING_USER:
+      return media::mojom::VideoFacingMode::USER;
+    case media::VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT:
+      return media::mojom::VideoFacingMode::ENVIRONMENT;
+    case media::VideoFacingMode::NUM_MEDIA_VIDEO_FACING_MODES:
+      NOTREACHED();
+      return media::mojom::VideoFacingMode::NONE;
+  }
+  NOTREACHED();
+  return media::mojom::VideoFacingMode::NONE;
+}
+
+// static
+bool EnumTraits<media::mojom::VideoFacingMode, media::VideoFacingMode>::
+    FromMojom(media::mojom::VideoFacingMode input,
+              media::VideoFacingMode* output) {
+  switch (input) {
+    case media::mojom::VideoFacingMode::NONE:
+      *output = media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
+      return true;
+    case media::mojom::VideoFacingMode::USER:
+      *output = media::VideoFacingMode::MEDIA_VIDEO_FACING_USER;
+      return true;
+    case media::mojom::VideoFacingMode::ENVIRONMENT:
+      *output = media::VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
 media::mojom::VideoCaptureApi
 EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi>::ToMojom(
     media::VideoCaptureApi input) {
@@ -440,6 +478,8 @@ bool StructTraits<media::mojom::VideoCaptureDeviceDescriptorDataView,
   if (!data.ReadDeviceId(&(output->device_id)))
     return false;
   if (!data.ReadModelId(&(output->model_id)))
+    return false;
+  if (!data.ReadFacingMode(&(output->facing)))
     return false;
   if (!data.ReadCaptureApi(&(output->capture_api)))
     return false;
