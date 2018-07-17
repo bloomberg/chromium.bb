@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chromeos/login/auth/login_performer.h"
 #include "chromeos/network/network_connection_observer.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 
 namespace chromeos {
 

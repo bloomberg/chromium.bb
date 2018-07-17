@@ -1173,6 +1173,12 @@ void LoginDisplayHostWebUI::ShowFeedback() {
   NOTREACHED();
 }
 
+// This is handled differently in webui.
+void LoginDisplayHostWebUI::ShowDialogForCaptivePortal() {}
+
+// This is handled differently in webui.
+void LoginDisplayHostWebUI::HideDialogForCaptivePortal() {}
+
 void LoginDisplayHostWebUI::OnCancelPasswordChangedFlow() {}
 
 ////////////////////////////////////////////////////////////////////////////////

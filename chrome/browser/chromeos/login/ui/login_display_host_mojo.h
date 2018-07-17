@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "chrome/browser/chromeos/login/ui/kiosk_app_menu_updater.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
+#include "chrome/browser/chromeos/login/ui/oobe_ui_dialog_delegate.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 
@@ -91,6 +92,8 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   const user_manager::UserList GetUsers() override;
   void OnCancelPasswordChangedFlow() override;
   void ShowFeedback() override;
+  void ShowDialogForCaptivePortal() override;
+  void HideDialogForCaptivePortal() override;
 
   // LoginScreenClient::Delegate:
   void HandleAuthenticateUser(const AccountId& account_id,
