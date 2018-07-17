@@ -523,8 +523,10 @@ bool ChromePasswordProtectionService::IsIncognito() {
 bool ChromePasswordProtectionService::IsPingingEnabled(
     LoginReputationClientRequest::TriggerType trigger_type,
     RequestOutcome* reason) {
-  if (!IsSafeBrowsingEnabled())
+  if (!IsSafeBrowsingEnabled()) {
+    *reason = SAFE_BROWSING_DISABLED;
     return false;
+  }
 
   if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT) {
     PasswordProtectionTrigger trigger_level =
@@ -761,6 +763,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
     case PasswordProtectionService::SERVICE_DESTROYED:
     case PasswordProtectionService::DISABLED_DUE_TO_FEATURE_DISABLED:
     case PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION:
+    case PasswordProtectionService::SAFE_BROWSING_DISABLED:
     case PasswordProtectionService::MAX_OUTCOME:
       MaybeLogPasswordReuseLookupResult(web_contents,
                                         PasswordReuseLookup::REQUEST_FAILURE);
