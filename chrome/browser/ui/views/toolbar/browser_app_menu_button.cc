@@ -280,6 +280,15 @@ BrowserAppMenuButton::CreateDefaultBorder() const {
   return border;
 }
 
+void BrowserAppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
+  if (focus_ring()) {
+    focus_ring()->SetPath(CreateToolbarFocusRingPath(
+        this, gfx::Insets(0, 0, 0, margin_trailing_)));
+  }
+  AppMenuButton::OnBoundsChanged(previous_bounds);
+}
+
 gfx::Rect BrowserAppMenuButton::GetThemePaintRect() const {
   gfx::Rect rect(MenuButton::GetThemePaintRect());
   rect.Inset(0, 0, margin_trailing_, 0);

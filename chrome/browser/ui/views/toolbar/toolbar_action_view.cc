@@ -91,6 +91,14 @@ ToolbarActionView::~ToolbarActionView() {
   view_controller_->SetDelegate(nullptr);
 }
 
+void ToolbarActionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
+  if (focus_ring()) {
+    focus_ring()->SetPath(CreateToolbarFocusRingPath(this, gfx::Insets()));
+  }
+  MenuButton::OnBoundsChanged(previous_bounds);
+}
+
 void ToolbarActionView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::MenuButton::GetAccessibleNodeData(node_data);
   node_data->role = ax::mojom::Role::kButton;

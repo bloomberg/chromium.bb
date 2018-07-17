@@ -119,9 +119,8 @@ bool ToolbarButton::IsMenuShowing() const {
 
 void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (focus_ring()) {
-    SkPath path;
-    path.addOval(gfx::RectToSkRect(GetLocalBounds()));
-    focus_ring()->SetPath(path);
+    focus_ring()->SetPath(CreateToolbarFocusRingPath(
+        this, gfx::Insets(0, leading_margin_, 0, 0)));
   }
   UpdateHighlightBackgroundAndInsets();
   LabelButton::OnBoundsChanged(previous_bounds);
