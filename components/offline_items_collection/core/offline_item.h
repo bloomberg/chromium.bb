@@ -86,6 +86,9 @@ struct OfflineItem {
 
   bool operator==(const OfflineItem& offline_item) const;
 
+  // Note: please update test_support/offline_item_test_support.cc
+  // when adding members here.
+
   // The id of this OfflineItem.  Used to identify this item across all relevant
   // systems.
   ContentId id;
@@ -185,6 +188,9 @@ struct OfflineItem {
   // validation from user.
   bool is_dangerous;
 };
+
+// Implemented for test-only. See test_support/offline_item_test_support.cc.
+std::ostream& operator<<(std::ostream& os, const OfflineItem& item);
 
 // This struct holds any potentially expensive visuals for an OfflineItem.  If
 // the front end requires the visuals it will ask for them through the

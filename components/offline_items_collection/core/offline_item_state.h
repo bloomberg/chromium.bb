@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OFFLINE_ITEMS_COLLECTION_CORE_OFFLINE_ITEM_STATE_H_
 #define COMPONENTS_OFFLINE_ITEMS_COLLECTION_CORE_OFFLINE_ITEM_STATE_H_
 
+#include <iosfwd>
+
 namespace offline_items_collection {
 
 // A Java counterpart will be generated for this enum.
@@ -20,6 +22,9 @@ enum OfflineItemState {
            // downloads resumption.
   MAX_DOWNLOAD_STATE,
 };
+
+// Implemented for testing only. See test_support/offline_item_test_support.cc.
+std::ostream& operator<<(std::ostream& os, const OfflineItemState& state);
 
 }  // namespace offline_items_collection
 

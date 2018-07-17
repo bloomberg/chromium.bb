@@ -2,14 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("test_support") {
-  visibility = [ "//components/offline_items_collection/core:unit_tests" ]
-
+static_library("test_support") {
   testonly = true
 
   sources = [
     "mock_offline_content_provider.cc",
     "mock_offline_content_provider.h",
+    "offline_item_test_support.cc",
     "scoped_mock_offline_content_provider.cc",
     "scoped_mock_offline_content_provider.h",
   ]

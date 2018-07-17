@@ -17,6 +17,9 @@ enum class FailState {
                         // connection.
 };
 
+// Implemented for testing only. See test_support/offline_item_test_support.cc.
+std::ostream& operator<<(std::ostream& os, FailState state);
+
 }  // namespace offline_items_collection
 
 #endif  // COMPONENTS_OFFLINE_ITEMS_COLLECTION_CORE_FAIL_STATE_H_
