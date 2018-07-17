@@ -49,6 +49,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   bool IsAutofillWalletImportEnabled() const override;
   bool ShouldSuggestServerCards() const override;
   std::string CountryCodeForCurrentTimezone() const override;
+  void ClearAllLocalData() override;
   bool IsDataLoaded() const override;
 
   // Unique to TestPersonalDataManager:
