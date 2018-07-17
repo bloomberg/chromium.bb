@@ -4305,7 +4305,7 @@
   <message name="IDS_AD_OU_DOES_NOT_EXIST" desc="Admin-facing alert message.  Admin entered the name of the organizational unit incorrectly.">
     Can’t find an organizational unit with that name. Please try again.
   </message>
-  <message name="IDS_AD_OU_ACCESS_DENIED" desc="Admin-facing alert message. The admin is using an account that doesn’t have privileges to add devices to the organizational unit.">
+  <message name="IDS_AD_OU_ACCESS_DENIED" desc="Admin-facing alert message. The admin is using an account that doesn’t have privileges to add devices to the organizational unit.">
     Can't join the device to the domain. Check your account to make sure you have privileges to add devices.
   </message>
   <message name="IDS_AD_OU_SETTING_FAILED" desc="Admin-facing alert message. Settings for the organizational unit are incorrect.">
@@ -4992,6 +4992,9 @@
   </message>
   <message name="IDS_INTERNAL_APP_SETTINGS" desc="The name of Settings.">
     Settings
+  </message>
+  <message name="IDS_INTERNAL_APP_CONTINUOUS_READING" desc="The default title of Chrome browser to allow users to seamlessly continue reading a web page when they switch from phones or tablets to Chromebook.">
+    Continue reading in Chrome
   </message>
 
   <!-- Launcher Settings shortcuts -->

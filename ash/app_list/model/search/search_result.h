@@ -49,7 +49,7 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   void SetBadgeIcon(const gfx::ImageSkia& badge_icon);
 
   const base::string16& title() const { return metadata_->title; }
-  void set_title(const base::string16& title) { metadata_->title = title; }
+  void set_title(const base::string16& title);
 
   const Tags& title_tags() const { return metadata_->title_tags; }
   void set_title_tags(const Tags& tags) { metadata_->title_tags = tags; }

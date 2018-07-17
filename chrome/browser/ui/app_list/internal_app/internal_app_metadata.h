@@ -11,6 +11,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 class Profile;
+class GURL;
 
 namespace app_list {
 
@@ -27,6 +28,9 @@ struct InternalApp {
 
   // Can show as a suggested app.
   bool recommendable;
+
+  // Can be searched.
+  bool searchable;
 
   // Can show in launcher apps grid.
   bool show_in_launcher;
@@ -60,6 +64,15 @@ void OpenInternalApp(const std::string& app_id, Profile* profile);
 // Returns empty ImageSkia if |resource_id| is 0;
 // |resource_size_in_dip| is the preferred size of the icon.
 gfx::ImageSkia GetIconForResourceId(int resource_id, int resource_size_in_dip);
+
+// Returns true if there is a recommendable foreign tab.
+// If |title| is not nullptr, it will be replaced with the title of the foreign
+// tab's last navigation.
+// If |url| is not nullptr, it will be replaced with the url of the foreign
+// tab's last navigation.
+bool HasRecommendableForeignTab(Profile* profile,
+                                base::string16* title,
+                                GURL* url);
 
 // Returns the number of internal apps which can show in launcher.
 // If |apps_name| is not nullptr, it will be the concatenated string of these
