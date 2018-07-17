@@ -276,6 +276,10 @@ class DriveIntegrationService::DriveFsHolder
         ->GetAccountId();
   }
 
+  void OnMountFailed(base::Optional<base::TimeDelta> remount_delay) override {
+    on_drivefs_unmounted_.Run(std::move(remount_delay));
+  }
+
   void OnMounted(const base::FilePath& path) override {
     on_drivefs_mounted_.Run();
   }

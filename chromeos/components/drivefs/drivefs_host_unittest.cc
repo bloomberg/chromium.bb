@@ -119,6 +119,7 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate {
 
   // DriveFsHost::Delegate:
   MOCK_METHOD1(OnMounted, void(const base::FilePath&));
+  MOCK_METHOD1(OnMountFailed, void(base::Optional<base::TimeDelta>));
   MOCK_METHOD1(OnUnmounted, void(base::Optional<base::TimeDelta>));
 
  private:
@@ -300,7 +301,11 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
     delegate_ptr_->OnUnmounted(std::move(delay));
   }
 
-  void DoMount() {
+  void SendMountFailed(base::Optional<base::TimeDelta> delay) {
+    delegate_ptr_->OnMountFailed(std::move(delay));
+  }
+
+  void EstablishConnection() {
     auto token = StartMount();
     DispatchMountSuccessEvent(token);
 
@@ -310,6 +315,10 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
       bootstrap_binding_.set_connection_error_handler(run_loop.QuitClosure());
       run_loop.Run();
     }
+  }
+
+  void DoMount() {
+    EstablishConnection();
     base::RunLoop run_loop;
     base::OnceClosure quit_closure = run_loop.QuitClosure();
     EXPECT_CALL(*host_delegate_,
@@ -373,6 +382,39 @@ TEST_F(DriveFsHostTest, OnMountedBeforeMountEvent) {
 
   ASSERT_TRUE(host_->IsMounted());
   EXPECT_EQ(base::FilePath("/media/drivefsroot/g-ID"), host_->GetMountPath());
+}
+
+TEST_F(DriveFsHostTest, OnMountFailedFromMojo) {
+  ASSERT_FALSE(host_->IsMounted());
+
+  ASSERT_NO_FATAL_FAILURE(EstablishConnection());
+  base::RunLoop run_loop;
+  base::OnceClosure quit_closure = run_loop.QuitClosure();
+  EXPECT_CALL(*host_delegate_, OnMountFailed(_))
+      .WillOnce(RunQuitClosure(&quit_closure));
+  SendMountFailed({});
+  run_loop.Run();
+  ASSERT_FALSE(host_->IsMounted());
+}
+
+TEST_F(DriveFsHostTest, OnMountFailedFromDbus) {
+  ASSERT_FALSE(host_->IsMounted());
+
+  auto token = StartMount();
+
+  base::RunLoop run_loop;
+  base::OnceClosure quit_closure = run_loop.QuitClosure();
+  EXPECT_CALL(*host_delegate_, OnMountFailed(_))
+      .WillOnce(RunQuitClosure(&quit_closure));
+  DispatchMountEvent(chromeos::disks::DiskMountManager::MOUNTING,
+                     chromeos::MOUNT_ERROR_INVALID_MOUNT_OPTIONS,
+                     {base::StrCat({"drivefs://", token}),
+                      "/media/drivefsroot/g-ID",
+                      chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+                      {}});
+  run_loop.Run();
+
+  ASSERT_FALSE(host_->IsMounted());
 }
 
 TEST_F(DriveFsHostTest, UnmountAfterMountComplete) {

@@ -148,13 +148,12 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
       return true;
     }
     if (error_code != chromeos::MOUNT_ERROR_NONE) {
+      host_->delegate_->OnMountFailed({});
       return false;
     }
-    mount_path_ = base::FilePath(mount_info.mount_path);
     DCHECK(!mount_info.mount_path.empty());
-    if (mounted()) {
-      NotifyDelegateOnMounted();
-    }
+    mount_path_ = base::FilePath(mount_info.mount_path);
+    MaybeNotifyDelegateOnMounted();
     return true;
   }
 
@@ -181,21 +180,25 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
   void OnMounted() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     drivefs_has_mounted_ = true;
-    if (mounted()) {
-      NotifyDelegateOnMounted();
-    }
+    MaybeNotifyDelegateOnMounted();
+  }
+
+  void OnMountFailed(base::Optional<base::TimeDelta> remount_delay) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    drivefs_has_mounted_ = false;
+    host_->delegate_->OnMountFailed(std::move(remount_delay));
+  }
+
+  void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    drivefs_has_mounted_ = false;
+    host_->delegate_->OnUnmounted(std::move(remount_delay));
   }
 
   void OnSyncingStatusUpdate(mojom::SyncingStatusPtr status) override {
     for (auto& observer : host_->observers_) {
       observer.OnSyncingStatusUpdate(*status);
     }
-  }
-
-  void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    drivefs_has_mounted_ = false;
-    NotifyDelegateOnUnmounted(std::move(remount_delay));
   }
 
   void OnFilesChanged(std::vector<mojom::FileChangePtr> changes) override {
@@ -209,11 +212,10 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     }
   }
 
-  void NotifyDelegateOnMounted() { host_->delegate_->OnMounted(mount_path()); }
-
-  void NotifyDelegateOnUnmounted(
-      base::Optional<base::TimeDelta> remount_delay) {
-    host_->delegate_->OnUnmounted(std::move(remount_delay));
+  void MaybeNotifyDelegateOnMounted() {
+    if (mounted()) {
+      host_->delegate_->OnMounted(mount_path());
+    }
   }
 
   void AccountReady(const AccountInfo& info,
@@ -346,6 +348,7 @@ void DriveFsHost::OnMountEvent(
   if (!mount_state_) {
     return;
   }
+
   if (!mount_state_->OnMountEvent(event, error_code, mount_info)) {
     Unmount();
   }

@@ -69,6 +69,8 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
 
     virtual void OnMounted(const base::FilePath& mount_path) = 0;
     virtual void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) = 0;
+    virtual void OnMountFailed(
+        base::Optional<base::TimeDelta> remount_delay) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
