@@ -817,7 +817,9 @@ PaintResult PaintLayerPainter::PaintSingleFragment(
     PaintLayerFlags paint_flags,
     const PaintLayerFragment& fragment,
     const LayoutSize& subpixel_accumulation) {
-  // Now do a paint with the root layer shifted to be us.
+  // Now do a paint with the root layer shifted to be us. The cull rect
+  // is infinite to simplify invalidation of clip property node changes across
+  // transform boundaries.
   PaintLayerPaintingInfo new_paint_info(
       &paint_layer_, LayoutRect(LayoutRect::InfiniteIntRect()),
       painting_info.GetGlobalPaintFlags(), subpixel_accumulation);
