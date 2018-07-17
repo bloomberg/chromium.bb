@@ -1916,6 +1916,7 @@ class CipdDependency(Dependency):
 
 
 @subcommand.usage('[command] [args ...]')
+@metrics.collector.collect_metrics('gclient recurse')
 def CMDrecurse(parser, args):
   """Operates [command args ...] on all the dependencies.
 
@@ -1960,6 +1961,7 @@ def CMDrecurse(parser, args):
 
 
 @subcommand.usage('[args ...]')
+@metrics.collector.collect_metrics('gclient fetch')
 def CMDfetch(parser, args):
   """Fetches upstream commits for all modules.
 
@@ -2123,6 +2125,7 @@ class Flattener(object):
         self._flatten_dep(d)
 
 
+@metrics.collector.collect_metrics('gclient flatten')
 def CMDflatten(parser, args):
   """Flattens the solutions into a single DEPS file."""
   parser.add_option('--output-deps', help='Path to the output DEPS file')
@@ -2291,6 +2294,7 @@ def _VarsToLines(variables):
   return s
 
 
+@metrics.collector.collect_metrics('gclient grep')
 def CMDgrep(parser, args):
   """Greps through git repos managed by gclient.
 
@@ -2320,6 +2324,7 @@ def CMDgrep(parser, args):
                   'git', 'grep', '--null', '--color=Always'] + args)
 
 
+@metrics.collector.collect_metrics('gclient root')
 def CMDroot(parser, args):
   """Outputs the solution root (or current dir if there isn't one)."""
   (options, args) = parser.parse_args(args)
@@ -2331,6 +2336,7 @@ def CMDroot(parser, args):
 
 
 @subcommand.usage('[url]')
+@metrics.collector.collect_metrics('gclient config')
 def CMDconfig(parser, args):
   """Creates a .gclient file in the current directory.
 
@@ -2416,6 +2422,7 @@ def CMDconfig(parser, args):
   gclient pack > patch.txt
     generate simple patch for configured client and dependences
 """)
+@metrics.collector.collect_metrics('gclient pack')
 def CMDpack(parser, args):
   """Generates a patch which can be applied at the root of the tree.
 
@@ -2440,6 +2447,7 @@ def CMDpack(parser, args):
   return client.RunOnDeps('pack', args)
 
 
+@metrics.collector.collect_metrics('gclient status')
 def CMDstatus(parser, args):
   """Shows modification status for every dependencies."""
   parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
@@ -2480,6 +2488,7 @@ os_deps, etc.)
   }
 }
 """)
+@metrics.collector.collect_metrics('gclient sync')
 def CMDsync(parser, args):
   """Checkout/update all modules."""
   parser.add_option('-f', '--force', action='store_true',
@@ -2611,6 +2620,7 @@ def CMDsync(parser, args):
 CMDupdate = CMDsync
 
 
+@metrics.collector.collect_metrics('gclient validate')
 def CMDvalidate(parser, args):
   """Validates the .gclient and DEPS syntax."""
   options, args = parser.parse_args(args)
@@ -2624,6 +2634,7 @@ def CMDvalidate(parser, args):
   return rv
 
 
+@metrics.collector.collect_metrics('gclient diff')
 def CMDdiff(parser, args):
   """Displays local diff for every dependencies."""
   parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
@@ -2639,6 +2650,7 @@ def CMDdiff(parser, args):
   return client.RunOnDeps('diff', args)
 
 
+@metrics.collector.collect_metrics('gclient revert')
 def CMDrevert(parser, args):
   """Reverts all modifications in every dependencies.
 
@@ -2671,6 +2683,7 @@ def CMDrevert(parser, args):
   return client.RunOnDeps('revert', args)
 
 
+@metrics.collector.collect_metrics('gclient runhooks')
 def CMDrunhooks(parser, args):
   """Runs hooks for files that have been modified in the local working copy."""
   parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
@@ -2690,6 +2703,7 @@ def CMDrunhooks(parser, args):
   return client.RunOnDeps('runhooks', args)
 
 
+@metrics.collector.collect_metrics('gclient revinfo')
 def CMDrevinfo(parser, args):
   """Outputs revision info mapping for the client and its dependencies.
 
@@ -2725,6 +2739,7 @@ def CMDrevinfo(parser, args):
   return 0
 
 
+@metrics.collector.collect_metrics('gclient getdep')
 def CMDgetdep(parser, args):
   """Gets revision information and variable values from a DEPS file."""
   parser.add_option('--var', action='append',
@@ -2765,6 +2780,7 @@ def CMDgetdep(parser, args):
       print(gclient_eval.GetRevision(local_scope, name))
 
 
+@metrics.collector.collect_metrics('gclient setdep')
 def CMDsetdep(parser, args):
   """Modifies dependency revisions and variable values in a DEPS file"""
   parser.add_option('--var', action='append',
@@ -2828,6 +2844,7 @@ def CMDsetdep(parser, args):
     f.write(gclient_eval.RenderDEPSFile(local_scope))
 
 
+@metrics.collector.collect_metrics('gclient verify')
 def CMDverify(parser, args):
   """Verifies the DEPS file deps are only from allowed_hosts."""
   (options, args) = parser.parse_args(args)
@@ -2852,6 +2869,7 @@ def CMDverify(parser, args):
 
 @subcommand.epilog("""For more information on what metrics are we collecting and
 why, please read metrics.README.md or visit https://bit.ly/2ufRS4p""")
+@metrics.collector.collect_metrics('gclient metrics')
 def CMDmetrics(parser, args):
   """Reports, and optionally modifies, the status of metric collection."""
   parser.add_option('--opt-in', action='store_true', dest='enable_metrics',
@@ -2910,9 +2928,21 @@ class OptionParser(optparse.OptionParser):
         '--no-nag-max', default=False, action='store_true',
         help='Ignored for backwards compatibility.')
 
-  def parse_args(self, args=None, values=None):
+  def parse_args(self, args=None, _values=None):
     """Integrates standard options processing."""
-    options, args = optparse.OptionParser.parse_args(self, args, values)
+    # Create an optparse.Values object that will store only the actual passed
+    # options, without the defaults.
+    actual_options = optparse.Values()
+    _, args = optparse.OptionParser.parse_args(self, args, actual_options)
+    # Create an optparse.Values object with the default options.
+    options = optparse.Values(self.get_default_values().__dict__)
+    # Update it with the options passed by the user.
+    options._update_careful(actual_options.__dict__)
+    # Store the options passed by the user in an _actual_options attribute.
+    # We store only the keys, and not the values, since the values can contain
+    # arbitrary information, which might be PII.
+    metrics.collector.add('arguments', actual_options.__dict__.keys())
+
     levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
     logging.basicConfig(
         level=levels[min(options.verbose, len(levels) - 1)],

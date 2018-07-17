@@ -80,6 +80,7 @@ class MetricsCollectorTest(unittest.TestCase):
     # Assert we collected the right metrics.
     write_call = self.Popen.return_value.stdin.write.call_args
     collected_metrics = json.loads(write_call[0][0])
+    self.assertTrue(self.collector.collecting_metrics)
     self.assertEqual(collected_metrics, expected_metrics)
 
 
@@ -134,6 +135,7 @@ class MetricsCollectorTest(unittest.TestCase):
 
     fun()
 
+    self.assertFalse(self.collector.collecting_metrics)
     # We shouldn't have tried to read the config file.
     self.assertFalse(self.FileRead.called)
     # Nor tried to upload any metrics.
@@ -150,6 +152,7 @@ class MetricsCollectorTest(unittest.TestCase):
 
     fun()
 
+    self.assertFalse(self.collector.collecting_metrics)
     self.assertFalse(self.collector.config.is_googler)
     self.assertIsNone(self.collector.config.opted_in)
     self.assertEqual(self.collector.config.countdown, 0)
@@ -167,6 +170,7 @@ class MetricsCollectorTest(unittest.TestCase):
 
     fun()
 
+    self.assertFalse(self.collector.collecting_metrics)
     self.assertTrue(self.collector.config.is_googler)
     self.assertFalse(self.collector.config.opted_in)
     self.assertEqual(self.collector.config.countdown, 0)
@@ -184,6 +188,7 @@ class MetricsCollectorTest(unittest.TestCase):
 
     fun()
 
+    self.assertFalse(self.collector.collecting_metrics)
     self.assertTrue(self.collector.config.is_googler)
     self.assertFalse(self.collector.config.opted_in)
     # The countdown should've decreased after the invocation.

@@ -108,12 +108,19 @@ class MetricsCollector(object):
     self._metrics_lock = threading.Lock()
     self._reported_metrics = {}
     self._config = _Config()
+    self._collecting_metrics = False
 
   @property
   def config(self):
     return self._config
 
+  @property
+  def collecting_metrics(self):
+    return self._collecting_metrics
+
   def add(self, name, value):
+    if not self.collecting_metrics:
+      return
     with self._metrics_lock:
       self._reported_metrics[name] = value
 
@@ -187,6 +194,7 @@ class MetricsCollector(object):
       @functools.wraps(func)
       def _inner(*args, **kwargs):
         self._collect_metrics(func, command_name, *args, **kwargs)
+      self._collecting_metrics = True
       return _inner
     return _decorator
 
