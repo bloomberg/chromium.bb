@@ -360,9 +360,6 @@ shared_library("hook_util_test_dll") {
     "hook_util/test/hook_util_test_dll.cc",
     "hook_util/test/hook_util_test_dll.h",
   ]
-  deps = [
-    "//build/config:exe_and_shlib_deps",
-  ]
 }
 
 shared_library("main_unittest_dll_1") {
