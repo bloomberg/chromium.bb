@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 
+#include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -33,6 +35,9 @@
                                  RecentTabsHandsetViewControllerCommand>
 // Superclass property specialized for the class that this coordinator uses.
 @property(nonatomic, weak) TabGridViewController* mainViewController;
+// Pointer to the masking view used to prevent the main view controller from
+// being shown at launch.
+@property(nonatomic, strong) UIView* launchMaskView;
 // Commad dispatcher used while this coordinator's view controller is active.
 // (for compatibility with the TabSwitcher protocol).
 @property(nonatomic, strong) CommandDispatcher* dispatcher;
@@ -64,6 +69,7 @@
 @synthesize regularTabModel = _regularTabModel;
 @synthesize incognitoTabModel = _incognitoTabModel;
 // Private properties.
+@synthesize launchMaskView = _launchMaskView;
 @synthesize dispatcher = _dispatcher;
 @synthesize adaptor = _adaptor;
 @synthesize bvcContainer = _bvcContainer;
@@ -203,6 +209,17 @@
   mainViewController.remoteTabsViewController.loader = self.URLLoader;
   mainViewController.remoteTabsViewController.presentationDelegate = self;
 
+  // Insert the launch screen view in front of this view to hide it until after
+  // launch. This should happen before |mainViewController| is made the window's
+  // root view controller.
+  NSBundle* mainBundle = base::mac::FrameworkBundle();
+  NSArray* topObjects =
+      [mainBundle loadNibNamed:@"LaunchScreen" owner:self options:nil];
+  UIViewController* launchScreenController =
+      base::mac::ObjCCastStrict<UIViewController>([topObjects lastObject]);
+  self.launchMaskView = launchScreenController.view;
+  [mainViewController.view addSubview:self.launchMaskView];
+
   // TODO(crbug.com/850387) : Currently, consumer calls from the mediator
   // prematurely loads the view in |RecentTabsTableViewController|. Fix this so
   // that the view is loaded only by an explicit placement in the view
@@ -296,16 +313,22 @@
   self.bvcContainer.currentBVC = viewController;
   self.bvcContainer.transitioningDelegate = self.transitionHandler;
   BOOL animated = !self.animationsDisabledForTesting;
+  // Never animate if the launch mask is in place.
+  if (self.launchMaskView)
+    animated = NO;
 
-  // Extened |completion| to also signal the tab switcher delegate
+  // Extened |completion| to signal the tab switcher delegate
   // that the animated "tab switcher dismissal" (that is, presenting something
   // on top of the tab switcher) transition has completed.
+  // Finally, the launch mask view should be removed.
   ProceduralBlock extendedCompletion = ^{
     [self.tabSwitcher.delegate
         tabSwitcherDismissTransitionDidEnd:self.tabSwitcher];
     if (completion) {
       completion();
     }
+    [self.launchMaskView removeFromSuperview];
+    self.launchMaskView = nil;
   };
 
   [self.mainViewController presentViewController:self.bvcContainer
