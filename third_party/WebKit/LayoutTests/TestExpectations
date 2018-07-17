@@ -3733,9 +3733,6 @@ crbug.com/681468 [ Win ] virtual/scalefactor200/fast/hidpi/static/data-suggestio
 
 crbug.com/683800 [ Win7 Debug ] external/wpt/selection/ [ Failure Pass ]
 
-# CQ and Rebaseline-cl for crrev.com/2626973005 does not include this
-crbug.com/680407 [ Mac ] fast/forms/select/menulist-appearance-basic.html [ NeedsManualRebaseline ]
-
 # Importing 'fetch' tests from WPT.
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 crbug.com/705490 virtual/outofblink-cors/external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
