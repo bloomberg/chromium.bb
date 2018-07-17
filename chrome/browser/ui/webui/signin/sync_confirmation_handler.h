@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "components/consent_auditor/consent_auditor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -27,7 +28,8 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   // mapped to their GRD IDs.
   explicit SyncConfirmationHandler(
       Browser* browser,
-      const std::unordered_map<std::string, int>& string_to_grd_id_map);
+      const std::unordered_map<std::string, int>& string_to_grd_id_map,
+      consent_auditor::Feature consent_feature);
   ~SyncConfirmationHandler() override;
 
   // content::WebUIMessageHandler:
@@ -92,6 +94,9 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   // Mapping between strings displayed in the UI corresponding to this handler
   // and their respective GRD IDs.
   std::unordered_map<std::string, int> string_to_grd_id_map_;
+
+  // Contains the features to use when the user consent decision is recorded.
+  consent_auditor::Feature consent_feature_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandler);
 };

@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
@@ -31,11 +32,13 @@ const int kProfileImageSize = 128;
 
 SyncConfirmationHandler::SyncConfirmationHandler(
     Browser* browser,
-    const std::unordered_map<std::string, int>& string_to_grd_id_map)
+    const std::unordered_map<std::string, int>& string_to_grd_id_map,
+    consent_auditor::Feature consent_feature)
     : profile_(browser->profile()),
       browser_(browser),
       did_user_explicitly_interact(false),
-      string_to_grd_id_map_(string_to_grd_id_map) {
+      string_to_grd_id_map_(string_to_grd_id_map),
+      consent_feature_(consent_feature) {
   DCHECK(profile_);
   DCHECK(browser_);
   BrowserList::AddObserver(this);
@@ -119,8 +122,8 @@ void SyncConfirmationHandler::RecordConsent(const base::ListValue* args) {
   ConsentAuditorFactory::GetForProfile(profile_)->RecordGaiaConsent(
       SigninManagerFactory::GetForProfile(profile_)
           ->GetAuthenticatedAccountId(),
-      consent_auditor::Feature::CHROME_SYNC, consent_text_ids,
-      consent_confirmation_id, consent_auditor::ConsentStatus::GIVEN);
+      consent_feature_, consent_text_ids, consent_confirmation_id,
+      consent_auditor::ConsentStatus::GIVEN);
 }
 
 void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
