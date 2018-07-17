@@ -25,7 +25,8 @@ TransceiverStateSurfacer::TransceiverStateSurfacer(
     : main_task_runner_(other.main_task_runner_),
       signaling_task_runner_(other.signaling_task_runner_),
       is_initialized_(other.is_initialized_),
-      states_obtained_(other.states_obtained_) {
+      states_obtained_(other.states_obtained_),
+      transceiver_states_(std::move(other.transceiver_states_)) {
   // Explicitly null |other|'s task runners for use in destructor.
   other.main_task_runner_ = nullptr;
   other.signaling_task_runner_ = nullptr;
@@ -42,6 +43,7 @@ TransceiverStateSurfacer& TransceiverStateSurfacer::operator=(
   main_task_runner_ = other.main_task_runner_;
   signaling_task_runner_ = other.signaling_task_runner_;
   states_obtained_ = other.states_obtained_;
+  transceiver_states_ = std::move(other.transceiver_states_);
   // Explicitly null |other|'s task runners for use in destructor.
   other.main_task_runner_ = nullptr;
   other.signaling_task_runner_ = nullptr;

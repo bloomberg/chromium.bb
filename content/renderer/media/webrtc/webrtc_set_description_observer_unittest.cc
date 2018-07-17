@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_set_remote_description_observer.h"
+#include "content/renderer/media/webrtc/webrtc_set_description_observer.h"
 
 #include <memory>
 #include <utility>
@@ -28,35 +28,40 @@ using ::testing::Return;
 
 namespace content {
 
-class WebRtcSetRemoteDescriptionObserverForTest
-    : public WebRtcSetRemoteDescriptionObserver {
+class WebRtcSetDescriptionObserverForTest
+    : public WebRtcSetDescriptionObserver {
  public:
-  bool called() const { return states_or_error_.has_value(); }
-  bool result() const { return states_or_error_->ok(); }
+  bool called() const { return called_; }
 
-  const WebRtcSetRemoteDescriptionObserver::States& states() const {
-    DCHECK(called() && result());
-    return states_or_error_->value();
+  const WebRtcSetDescriptionObserver::States& states() const {
+    DCHECK(called_);
+    return states_;
   }
   const webrtc::RTCError& error() const {
-    DCHECK(called() && !result());
-    return states_or_error_->error();
+    DCHECK(called_);
+    return error_;
   }
 
-  // WebRtcSetRemoteDescriptionObserver implementation.
-  void OnSetRemoteDescriptionComplete(
-      webrtc::RTCErrorOr<States> states_or_error) override {
-    states_or_error_ = std::move(states_or_error);
+  // WebRtcSetDescriptionObserver implementation.
+  void OnSetDescriptionComplete(
+      webrtc::RTCError error,
+      WebRtcSetDescriptionObserver::States states) override {
+    called_ = true;
+    error_ = std::move(error);
+    states_ = std::move(states);
   }
 
  private:
-  ~WebRtcSetRemoteDescriptionObserverForTest() override {}
+  ~WebRtcSetDescriptionObserverForTest() override {}
 
-  base::Optional<webrtc::RTCErrorOr<WebRtcSetRemoteDescriptionObserver::States>>
-      states_or_error_;
-  WebRtcSetRemoteDescriptionObserver::States states_;
+  bool called_ = false;
+  webrtc::RTCError error_;
+  WebRtcSetDescriptionObserver::States states_;
 };
 
+// TODO(hbos): This only tests WebRtcSetRemoteDescriptionObserverHandler,
+// parameterize the test to make it also test
+// WebRtcSetLocalDescriptionObserverHandler.
 class WebRtcSetRemoteDescriptionObserverHandlerTest : public ::testing::Test {
  public:
   void SetUp() override {
@@ -68,7 +73,7 @@ class WebRtcSetRemoteDescriptionObserverHandlerTest : public ::testing::Test {
     scoped_refptr<WebRtcMediaStreamTrackAdapterMap> map =
         new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get(),
                                              main_thread_);
-    observer_ = new WebRtcSetRemoteDescriptionObserverForTest();
+    observer_ = new WebRtcSetDescriptionObserverForTest();
     observer_handler_ = WebRtcSetRemoteDescriptionObserverHandler::Create(
         main_thread_, dependency_factory_->GetWebRtcSignalingThread(), pc_, map,
         observer_);
@@ -104,7 +109,7 @@ class WebRtcSetRemoteDescriptionObserverHandlerTest : public ::testing::Test {
   scoped_refptr<webrtc::MockPeerConnection> pc_;
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  scoped_refptr<WebRtcSetRemoteDescriptionObserverForTest> observer_;
+  scoped_refptr<WebRtcSetDescriptionObserverForTest> observer_;
   scoped_refptr<WebRtcSetRemoteDescriptionObserverHandler> observer_handler_;
 
   std::vector<rtc::scoped_refptr<webrtc::RtpReceiverInterface>> receivers_;
@@ -122,15 +127,23 @@ TEST_F(WebRtcSetRemoteDescriptionObserverHandlerTest, OnSuccess) {
               {added_stream.get()})));
 
   receivers_.push_back(added_receiver.get());
+  EXPECT_CALL(*pc_, signaling_state())
+      .WillRepeatedly(Return(webrtc::PeerConnectionInterface::kStable));
   EXPECT_CALL(*pc_, GetReceivers()).WillRepeatedly(Return(receivers_));
 
   InvokeOnSetRemoteDescriptionComplete(webrtc::RTCError::OK());
   EXPECT_TRUE(observer_->called());
-  EXPECT_TRUE(observer_->result());
+  EXPECT_TRUE(observer_->error().ok());
 
-  EXPECT_EQ(1u, observer_->states().receiver_states.size());
-  const RtpReceiverState& receiver_state =
-      observer_->states().receiver_states[0];
+  EXPECT_EQ(webrtc::PeerConnectionInterface::kStable,
+            observer_->states().signaling_state);
+
+  EXPECT_EQ(1u, observer_->states().transceiver_states.size());
+  const RtpTransceiverState& transceiver_state =
+      observer_->states().transceiver_states[0];
+  EXPECT_FALSE(transceiver_state.sender_state());
+  EXPECT_TRUE(transceiver_state.receiver_state());
+  const RtpReceiverState& receiver_state = *transceiver_state.receiver_state();
   EXPECT_EQ(added_receiver, receiver_state.webrtc_receiver());
   EXPECT_EQ(added_track, receiver_state.track_ref()->webrtc_track());
   EXPECT_EQ(1u, receiver_state.stream_ids().size());
@@ -138,11 +151,41 @@ TEST_F(WebRtcSetRemoteDescriptionObserverHandlerTest, OnSuccess) {
 }
 
 TEST_F(WebRtcSetRemoteDescriptionObserverHandlerTest, OnFailure) {
-  webrtc::RTCError error(webrtc::RTCErrorType::INVALID_PARAMETER, "Oh noes!");
-  InvokeOnSetRemoteDescriptionComplete(std::move(error));
+  scoped_refptr<MockWebRtcAudioTrack> added_track =
+      MockWebRtcAudioTrack::Create("added_track");
+  scoped_refptr<webrtc::MediaStreamInterface> added_stream(
+      new rtc::RefCountedObject<MockMediaStream>("added_stream"));
+  scoped_refptr<webrtc::RtpReceiverInterface> added_receiver(
+      new rtc::RefCountedObject<FakeRtpReceiver>(
+          added_track.get(),
+          std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>>(
+              {added_stream.get()})));
+
+  receivers_.push_back(added_receiver.get());
+  EXPECT_CALL(*pc_, signaling_state())
+      .WillRepeatedly(Return(webrtc::PeerConnectionInterface::kStable));
+  EXPECT_CALL(*pc_, GetReceivers()).WillRepeatedly(Return(receivers_));
+
+  InvokeOnSetRemoteDescriptionComplete(
+      webrtc::RTCError(webrtc::RTCErrorType::INVALID_PARAMETER, "Oh noes!"));
   EXPECT_TRUE(observer_->called());
-  EXPECT_FALSE(observer_->result());
+  EXPECT_FALSE(observer_->error().ok());
   EXPECT_EQ(std::string("Oh noes!"), observer_->error().message());
+
+  // Verify states were surfaced even though we got an error.
+  EXPECT_EQ(webrtc::PeerConnectionInterface::kStable,
+            observer_->states().signaling_state);
+
+  EXPECT_EQ(1u, observer_->states().transceiver_states.size());
+  const RtpTransceiverState& transceiver_state =
+      observer_->states().transceiver_states[0];
+  EXPECT_FALSE(transceiver_state.sender_state());
+  EXPECT_TRUE(transceiver_state.receiver_state());
+  const RtpReceiverState& receiver_state = *transceiver_state.receiver_state();
+  EXPECT_EQ(added_receiver, receiver_state.webrtc_receiver());
+  EXPECT_EQ(added_track, receiver_state.track_ref()->webrtc_track());
+  EXPECT_EQ(1u, receiver_state.stream_ids().size());
+  EXPECT_EQ(added_stream->id(), receiver_state.stream_ids()[0]);
 }
 
 }  // namespace content
