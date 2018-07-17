@@ -345,61 +345,29 @@ class GitWrapper(SCMWrapper):
               self.Print('FAILED to break lock: %s: %s' % (to_break, ex))
               raise
 
-  def _GetBranchForCommit(self, commit):
-    """Get the remote branch a commit is part of."""
-    if scm.GIT.IsAncestor(self.checkout_path, commit,
-                          'refs/remotes/origin/master'):
-      return 'refs/remotes/origin/master'
-    remote_refs = self._Capture(
-        ['for-each-ref', 'refs/remotes/%s/*' % self.remote,
-         '--format=%(refname)']).splitlines()
-    for ref in remote_refs:
-      if scm.GIT.IsAncestor(self.checkout_path, commit, ref):
-        return ref
-    self.Print('Failed to find a remote ref that contains %s. '
-               'Candidate refs were %s.' % (commit, remote_refs))
-    # Fallback to the commit we got.
-    # This means that apply_path_ref will try to find the merge-base between the
-    # patch and the commit (which is most likely the commit) and cherry-pick
-    # everything in between.
-    return commit
-
   def apply_patch_ref(self, patch_repo, patch_ref, options, file_list):
     base_rev = self._Capture(['rev-parse', 'HEAD'])
-    branch_rev = self._GetBranchForCommit(base_rev)
     self.Print('===Applying patch ref===')
-    self.Print('Repo is %r @ %r, ref is %r (%r), root is %r' % (
-        patch_repo, patch_ref, base_rev, branch_rev, self.checkout_path))
+    self.Print('Repo is %r @ %r, ref is %r, root is %r' % (
+        patch_repo, patch_ref, base_rev, self.checkout_path))
     self._Capture(['reset', '--hard'])
     self._Capture(['fetch', patch_repo, patch_ref])
-    patch_rev = self._Capture(['rev-parse', 'FETCH_HEAD'])
+    if file_list is not None:
+      file_list.extend(self._GetDiffFilenames('FETCH_HEAD'))
+    self._Capture(['checkout', 'FETCH_HEAD'])
 
-    try:
-      if not options.rebase_patch_ref:
-        self._Capture(['checkout', patch_rev])
-      else:
-        # Find the merge-base between the branch_rev and patch_rev to find out
-        # the changes we need to cherry-pick on top of base_rev.
-        merge_base = self._Capture(['merge-base', branch_rev, patch_rev])
-        self.Print('Merge base of %s and %s is %s' % (
-            branch_rev, patch_rev, merge_base))
-        if merge_base == patch_rev:
-          # IF the merge-base is patch_rev, it means patch_rev is already part
-          # of the history, so just check it out.
-          self._Capture(['checkout', patch_rev])
-        else:
-          self._Capture(['cherry-pick', merge_base + '..' + patch_rev])
-
-      if file_list is not None:
-        file_list.extend(self._GetDiffFilenames(base_rev))
-
-    except subprocess2.CalledProcessError as e:
-      self.Print('Failed to apply %r @ %r to %r at %r' % (
-              patch_repo, patch_ref, base_rev, self.checkout_path))
-      self.Print('git returned non-zero exit status %s:\n%s' % (
-          e.returncode, e.stderr))
-      raise
-
+    if options.rebase_patch_ref:
+      try:
+        # TODO(ehmaldonado): Look into cherry-picking to avoid an expensive
+        # checkout + rebase.
+        self._Capture(['rebase', base_rev])
+      except subprocess2.CalledProcessError as e:
+        self.Print('Failed to apply %r @ %r to %r at %r' % (
+                patch_repo, patch_ref, base_rev, self.checkout_path))
+        self.Print('git returned non-zero exit status %s:\n%s' % (
+            e.returncode, e.stderr))
+        self._Capture(['rebase', '--abort'])
+        raise
     if options.reset_patch_ref:
       self._Capture(['reset', '--soft', base_rev])
 
