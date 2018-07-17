@@ -359,8 +359,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-list-changed-before-la
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling4.html [ Crash Pass ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-reparent-during-detach-crash.html [ Crash Pass ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-do-not-overhang-from-block-formatting-context.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/floats-offset-image-strict-line-height.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/floats-offset-inline-block-strict-line-height.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/intruding-painted-twice.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/line-break-after-white-space-crash.html [ Pass Crash Timeout ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/negative-margin-on-element-avoiding-floats-with-margin-on-parent.html [ Failure ]
