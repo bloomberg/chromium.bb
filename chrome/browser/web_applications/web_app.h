@@ -140,17 +140,6 @@ base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
 // Compute a deterministic name based on data in the shortcut_info.
 std::string GenerateApplicationNameFromInfo(const ShortcutInfo& shortcut_info);
 
-// Compute a deterministic name based on the URL. We use this pseudo name
-// as a key to store window location per application URLs in Browser and
-// as app id for BrowserWindow, shortcut and jump list.
-std::string GenerateApplicationNameFromURL(const GURL& url);
-
-// Compute a deterministic name based on an extension/apps's id.
-std::string GenerateApplicationNameFromExtensionId(const std::string& id);
-
-// Extracts the extension id from the app name.
-std::string GetExtensionIdFromApplicationName(const std::string& app_name);
-
 // Create shortcuts for web application based on given shortcut data.
 // |shortcut_info| contains information about the shortcuts to create, and
 // |locations| contains information about where to create them.

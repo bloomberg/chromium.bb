@@ -1753,9 +1753,13 @@ split_static_library("ui") {
       sources += [ "media_router/cloud_services_dialog.cc" ]
     }
 
-    # TODO(loyso): Rework these dependencies. http://crbug.com/862049
     if (enable_extensions) {
-      deps += [ "//chrome/browser/web_applications" ]
+      deps += [
+        # TODO(loyso): Remove the first dependency. http://crbug.com/862049
+        "//chrome/browser/web_applications",
+        "//chrome/browser/web_applications/components",
+        "//chrome/browser/web_applications/extensions",
+      ]
     }
   }
 
