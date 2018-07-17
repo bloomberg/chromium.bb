@@ -29,6 +29,7 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "content/public/test/test_utils.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -413,6 +414,9 @@ IN_PROC_BROWSER_TEST_P(RoundedOmniboxPopupContentsViewTest,
 
   generator.ClickLeftButton();
   ASSERT_TRUE(GetPopupWidget());
+
+  // Instantly finish all queued animations.
+  GetPopupWidget()->GetLayer()->GetAnimator()->StopAnimating();
   EXPECT_TRUE(GetPopupWidget()->IsClosed());
 }
 
