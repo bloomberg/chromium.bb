@@ -85,8 +85,12 @@
   CGRect finalRect =
       [NamedGuide guideWithName:kContentAreaGuide view:viewWithNamedGuides]
           .layoutFrame;
-  layout.expandedRect =
-      [proxyContainer convertRect:finalRect fromView:viewWithNamedGuides];
+
+  [layout.activeItem populateWithSnapshotsFromView:viewWithNamedGuides
+                                        middleRect:finalRect];
+
+  layout.expandedRect = [proxyContainer convertRect:viewWithNamedGuides.frame
+                                           fromView:presentedView];
 
   NSTimeInterval duration = [self transitionDuration:transitionContext];
   // Create the animation view and insert it.

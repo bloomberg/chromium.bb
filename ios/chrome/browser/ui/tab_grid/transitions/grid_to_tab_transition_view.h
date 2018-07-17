@@ -7,17 +7,35 @@
 
 #import <UIKit/UIKit.h>
 
-// A protocol to be adopted by a view that will be provided for the transition
-// animation. This view will need to be animated between 'cell' and 'tab'
-// states, and will need to have a number of properties available for that
-// purpose.
+// An collection of properties and methods a view must support in order to be
+// used to animate the transition between a grid cell and a browser tab.
 @protocol GridToTabTransitionView
 
 // The subview at the top of the view in 'cell' state.
 @property(nonatomic, strong) UIView* topCellView;
 
+// The subview at the top of the view in 'tab' state.
+@property(nonatomic, strong) UIView* topTabView;
+
+// The subview containing the main content in 'cell' state.
+@property(nonatomic, strong) UIView* mainCellView;
+
+// The subview containing the main content in 'tab' state.
+@property(nonatomic, strong) UIView* mainTabView;
+
+// The subview at the bottom of the view in 'tab' state.
+@property(nonatomic, strong) UIView* bottomTabView;
+
 // The corner radius of the view.
 @property(nonatomic) CGFloat cornerRadius;
+
+// Tells the view to scale and position its subviews for the "tab" layout. This
+// must be able to be called inside an animation block.
+- (void)positionTabViews;
+
+// Tells the view to scale and position its subviews for the "cell" layout. This
+// must be able to be called inside an animation block.
+- (void)positionCellViews;
 
 @end
 

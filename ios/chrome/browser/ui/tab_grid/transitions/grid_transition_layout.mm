@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
 
+#import "ios/chrome/browser/ui/tab_grid/transitions/grid_to_tab_transition_view.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -69,6 +71,34 @@
   GridTransitionActiveItem* item = [self itemWithCell:cell center:center];
   item.size = size;
   return item;
+}
+
+- (void)populateWithSnapshotsFromView:(UIView*)view middleRect:(CGRect)rect {
+  self.cell.mainTabView = [view resizableSnapshotViewFromRect:rect
+                                           afterScreenUpdates:YES
+                                                withCapInsets:UIEdgeInsetsZero];
+  CGSize viewSize = view.bounds.size;
+  if (rect.origin.y > 0) {
+    // |rect| starts below the top of |view|, so section off the top part of
+    // |view|.
+    CGRect topRect = CGRectMake(0, 0, viewSize.width, rect.origin.y);
+    self.cell.topTabView =
+        [view resizableSnapshotViewFromRect:topRect
+                         afterScreenUpdates:YES
+                              withCapInsets:UIEdgeInsetsZero];
+  }
+  CGFloat middleRectBottom = CGRectGetMaxY(rect);
+  if (middleRectBottom < viewSize.height) {
+    // |rect| ends above the bottom of |view|, so section off the bottom part of
+    // |view|.
+    CGFloat bottomHeight = viewSize.height - middleRectBottom;
+    CGRect bottomRect =
+        CGRectMake(0, middleRectBottom, viewSize.width, bottomHeight);
+    self.cell.bottomTabView =
+        [view resizableSnapshotViewFromRect:bottomRect
+                         afterScreenUpdates:YES
+                              withCapInsets:UIEdgeInsetsZero];
+  }
 }
 
 @end

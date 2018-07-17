@@ -137,6 +137,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self setupTopToolbar];
   [self setupBottomToolbar];
   [self setupFloatingButton];
+
+  // Hide the toolbars and the floating button, so they can fade in the first
+  // time there's a transition into this view controller.
+  [self hideToolbars];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -702,18 +706,20 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       kTabGridCloseAllButtonIdentifier;
 }
 
-// Shows (by setting the alpha to 1.0) the two toolbar views. Suitable for use
-// in animations.
+// Shows (by setting the alpha to 1.0) the two toolbar views and the floating
+// button. Suitable for use in animations.
 - (void)showToolbars {
   self.topToolbar.alpha = 1.0;
   self.bottomToolbar.alpha = 1.0;
+  self.floatingButton.alpha = 1.0;
 }
 
-// Hides (by setting the alpha to 0.0) the two toolbar views. Suitable for use
-// in animations.
+// Hides (by setting the alpha to 0.0) the two toolbar views and the floating
+// button. Suitable for use in animations.
 - (void)hideToolbars {
   self.topToolbar.alpha = 0.0;
   self.bottomToolbar.alpha = 0.0;
+  self.floatingButton.alpha = 0.0;
 }
 
 // Translates the toolbar views offscreen and then animates them back in using
