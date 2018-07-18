@@ -30,9 +30,6 @@ component("sql") {
     "vfs_wrapper.h",
   ]
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
   defines = [ "SQL_IMPLEMENTATION" ]
 
   deps = [
@@ -103,9 +100,6 @@ test("sql_unittests") {
   data = [
     "test/data/",
   ]
-
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
     ":sql",
