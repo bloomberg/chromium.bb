@@ -103,6 +103,7 @@ void DialogPlate::InitLayout() {
   input_modality_layout_container->SetLayoutManager(
       std::make_unique<views::FillLayout>());
   input_modality_layout_container->SetPaintToLayer();
+  input_modality_layout_container->layer()->SetFillsBoundsOpaquely(false);
   input_modality_layout_container->layer()->SetMasksToBounds(true);
 
   InitKeyboardLayoutContainer(input_modality_layout_container);
