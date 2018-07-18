@@ -324,6 +324,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Returns true if scroll events should be ignored.
   bool ShouldIgnoreScrollEvents();
 
+  // Updates corner radius of the app list background.
+  void UpdateBackgroundRadius();
+
   AppListViewDelegate* delegate_;    // Weak. Owned by AppListService.
   AppListModel* const model_;        // Not Owned.
   SearchModel* const search_model_;  // Not Owned.
@@ -340,6 +343,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Owned by the app list's widget. Null if the fullscreen app list is not
   // enabled.
   views::View* app_list_background_shield_ = nullptr;
+
+  // The mask layer to create rounded corner of the app list background.
+  std::unique_ptr<ui::LayerOwner> app_list_background_mask_ = nullptr;
+
   // Whether tablet mode is active.
   bool is_tablet_mode_ = false;
   // Whether the shelf is oriented on the side.
@@ -403,6 +410,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Whether the home launcher feature is enabled.
   const bool is_home_launcher_enabled_;
+
+  // True if new style launcher feature is enabled.
+  const bool is_new_style_launcher_enabled_;
 
   base::WeakPtrFactory<AppListView> weak_ptr_factory_;
 
