@@ -1042,6 +1042,20 @@ TEST(FormParserTest, Interactability) {
               {.form_control_type = "text", .is_focusable = true, .value = ""},
           },
       },
+      {
+          "Interactability also matters for HTML classifier.",
+          {
+              {.form_control_type = "text",
+               .is_focusable = false,
+               .predicted_username = 0},
+              {.role = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .is_focusable = true},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .is_focusable = true},
+          },
+      },
   });
 }
 
