@@ -119,6 +119,7 @@ extern const char kFastStart[];
 extern const char kForceAndroidAppMode[];
 extern const char kForceAppMode[];
 extern const char kForceDesktopIOSPromotion[];
+extern const char kForceDevToolsAvailable[];
 extern const char kForceFirstRun[];
 extern const char kForceFirstRunDialog[];
 extern const char kForceLocalNtp[];
