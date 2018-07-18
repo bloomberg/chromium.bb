@@ -97,8 +97,10 @@ enum ErrorType {
   ERROR_KDC_DOES_NOT_SUPPORT_ENCRYPTION_TYPE = 36;
   // Kpasswd exited with unspecified error.
   ERROR_KPASSWD_FAILED = 37;
+  // Setting computer organizational unit failed with constraint violation.
+  ERROR_OU_CONSTRAINT_VIOLATION = 38;
   // Should be the last.
-  ERROR_COUNT = 38;
+  ERROR_COUNT = 39;
 }
 
 // Message sent to Chrome by authpolicyd as a response of a successful
