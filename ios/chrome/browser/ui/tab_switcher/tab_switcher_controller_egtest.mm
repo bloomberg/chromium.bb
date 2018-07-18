@@ -439,6 +439,8 @@ using web::test::HttpServer;
 
   [SigninEarlGreyUI signinWithIdentity:identity];
   [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:chrome_test_util::SettingsAccountButton()];
   // Sign-out.
   [ChromeEarlGreyUI
       tapSettingsMenuButton:chrome_test_util::SignOutAccountsButton()];
