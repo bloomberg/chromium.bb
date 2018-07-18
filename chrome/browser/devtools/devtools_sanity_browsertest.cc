@@ -1948,41 +1948,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityExtensionTest,
   ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
 }
 
-class DevToolsAllowedByCommandLineSwitch
-    : public extensions::ExtensionBrowserTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kForceDevToolsAvailable);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(DevToolsAllowedByCommandLineSwitch,
-                       SwitchOverridesPolicy) {
-  browser()->profile()->GetPrefs()->SetInteger(
-      prefs::kDevToolsAvailability,
-      static_cast<int>(policy::DeveloperToolsPolicyHandler::Availability::
-                           kDisallowedForForceInstalledExtensions));
-
-  base::FilePath crx_path;
-  base::PathService::Get(chrome::DIR_TEST_DATA, &crx_path);
-  crx_path = crx_path.AppendASCII("devtools")
-                 .AppendASCII("extensions")
-                 .AppendASCII("options.crx");
-  const Extension* extension = InstallExtension(
-      crx_path, 1, extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
-  ASSERT_TRUE(extension);
-
-  GURL url("chrome-extension://" + extension->id() + "/options.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetWebContentsAt(0);
-
-  DevToolsWindow::OpenDevToolsWindow(web_contents);
-  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
-  ASSERT_TRUE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
-}
-
 class DevToolsPixelOutputTests : public DevToolsSanityTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
