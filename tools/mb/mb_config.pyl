@@ -594,6 +594,7 @@
       'linux-blink-heap-incremental-marking': 'debug_trybot_enable_blink_heap_incremental_marking',
       'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification',
       'linux-dcheck-off-rel': 'release_trybot_dcheck_off',
+      'linux-goma-rbe-staging-rel': 'gpu_tests_release_trybot_no_symbols',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
       'linux-jumbo-rel': 'jumbo_release_bot_minimal_symbols',
       'linux-ozone-rel': 'ozone_linux_release_trybot',
