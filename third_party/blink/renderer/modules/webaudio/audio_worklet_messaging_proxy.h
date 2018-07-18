@@ -28,7 +28,7 @@ class AudioWorkletMessagingProxy final : public ThreadedWorkletMessagingProxy {
 
   // Since the creation of AudioWorkletProcessor needs to be done in the
   // different thread, this method is a wrapper for cross-thread task posting.
-  void CreateProcessor(AudioWorkletHandler*,
+  void CreateProcessor(scoped_refptr<AudioWorkletHandler>,
                        MessagePortChannel,
                        scoped_refptr<SerializedScriptValue> node_options);
 
@@ -36,7 +36,7 @@ class AudioWorkletMessagingProxy final : public ThreadedWorkletMessagingProxy {
   // AudioWorkletProcessor.
   void CreateProcessorOnRenderingThread(
       WorkerThread*,
-      AudioWorkletHandler*,
+      scoped_refptr<AudioWorkletHandler>,
       const String& name,
       MessagePortChannel,
       scoped_refptr<SerializedScriptValue> node_options);

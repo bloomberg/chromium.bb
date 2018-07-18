@@ -99,8 +99,6 @@ class AudioWorkletNode final : public AudioNode,
                                   const AudioWorkletNodeOptions&,
                                   ExceptionState&);
 
-  AudioWorkletHandler& GetWorkletHandler() const;
-
   // ActiveScriptWrappable
   bool HasPendingActivity() const final;
 
@@ -119,6 +117,8 @@ class AudioWorkletNode final : public AudioNode,
                    const AudioWorkletNodeOptions&,
                    const Vector<CrossThreadAudioParamInfo>,
                    MessagePort* node_port);
+
+  scoped_refptr<AudioWorkletHandler> GetWorkletHandler() const;
 
   Member<AudioParamMap> parameter_map_;
   Member<MessagePort> node_port_;

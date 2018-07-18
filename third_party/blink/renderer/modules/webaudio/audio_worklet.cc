@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_messaging_proxy.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_node.h"
 #include "third_party/blink/renderer/modules/webaudio/cross_thread_audio_worklet_processor_info.h"
 
 namespace blink {
@@ -23,12 +24,12 @@ AudioWorklet::AudioWorklet(BaseAudioContext* context)
     : Worklet(ToDocument(context->GetExecutionContext())), context_(context) {}
 
 void AudioWorklet::CreateProcessor(
-    AudioWorkletHandler* handler,
+    scoped_refptr<AudioWorkletHandler> handler,
     MessagePortChannel message_port_channel,
     scoped_refptr<SerializedScriptValue> node_options) {
   DCHECK(IsMainThread());
   DCHECK(GetMessagingProxy());
-  GetMessagingProxy()->CreateProcessor(handler,
+  GetMessagingProxy()->CreateProcessor(std::move(handler),
                                        std::move(message_port_channel),
                                        std::move(node_options));
 }

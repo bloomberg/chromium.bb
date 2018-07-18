@@ -23,7 +23,7 @@ AudioWorkletMessagingProxy::AudioWorkletMessagingProxy(
     : ThreadedWorkletMessagingProxy(execution_context), worklet_(worklet) {}
 
 void AudioWorkletMessagingProxy::CreateProcessor(
-    AudioWorkletHandler* handler,
+    scoped_refptr<AudioWorkletHandler> handler,
     MessagePortChannel message_port_channel,
     scoped_refptr<SerializedScriptValue> node_options) {
   DCHECK(IsMainThread());
@@ -33,7 +33,7 @@ void AudioWorkletMessagingProxy::CreateProcessor(
           &AudioWorkletMessagingProxy::CreateProcessorOnRenderingThread,
           WrapCrossThreadPersistent(this),
           CrossThreadUnretained(GetWorkerThread()),
-          CrossThreadUnretained(handler),
+          handler,
           handler->Name(),
           std::move(message_port_channel),
           std::move(node_options)));
@@ -41,7 +41,7 @@ void AudioWorkletMessagingProxy::CreateProcessor(
 
 void AudioWorkletMessagingProxy::CreateProcessorOnRenderingThread(
     WorkerThread* worker_thread,
-    AudioWorkletHandler* handler,
+    scoped_refptr<AudioWorkletHandler> handler,
     const String& name,
     MessagePortChannel message_port_channel,
     scoped_refptr<SerializedScriptValue> node_options) {
