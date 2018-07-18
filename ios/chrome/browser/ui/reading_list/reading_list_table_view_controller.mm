@@ -649,6 +649,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     [self batchEditDidFinish];
   };
   [self performBatchTableViewUpdates:updates completion:completion];
+  [self removeEmptySections];
 }
 
 // Moves the ListItem within self.tableViewModel at |modelIndex| and the

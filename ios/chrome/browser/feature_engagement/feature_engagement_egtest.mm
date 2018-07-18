@@ -12,11 +12,13 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/feature_engagement/test/test_tracker.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_egtest_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_mode.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -248,8 +250,15 @@ void EnableNewTabTipTriggering(base::test::ScopedFeatureList& feature_list) {
   }
 
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() showReadingList];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Done")]
-      performAction:grey_tap()];
+  if (experimental_flags::IsReadingListUIRebootEnabled()) {
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityID(
+                                     kTableViewNavigationDismissButtonId)]
+        performAction:grey_tap()];
+  } else {
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Done")]
+        performAction:grey_tap()];
+  }
 
   [ChromeEarlGreyUI openToolsMenu];
 

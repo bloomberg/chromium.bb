@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/legacy_reading_list_toolbar_button.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_identifiers.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -85,28 +86,34 @@ const CGFloat kHorizontalSpacing = 8.0f;
         initWithText:l10n_util::GetNSString(IDS_IOS_READING_LIST_DELETE_BUTTON)
          destructive:YES
             position:Leading];
+    _deleteButton.accessibilityIdentifier = kReadingListToolbarDeleteButtonID;
 
     _deleteAllButton = [[LegacyReadingListToolbarButton alloc]
         initWithText:l10n_util::GetNSString(
                          IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON)
          destructive:YES
             position:Leading];
+    _deleteAllButton.accessibilityIdentifier =
+        kReadingListToolbarDeleteAllReadButtonID;
 
     _markButton = [[LegacyReadingListToolbarButton alloc]
         initWithText:l10n_util::GetNSString(
                          IDS_IOS_READING_LIST_MARK_ALL_BUTTON)
          destructive:NO
             position:Centered];
+    _markButton.accessibilityIdentifier = kReadingListToolbarMarkButtonID;
 
     _cancelButton = [[LegacyReadingListToolbarButton alloc]
         initWithText:l10n_util::GetNSString(IDS_IOS_READING_LIST_CANCEL_BUTTON)
          destructive:NO
             position:Trailing];
+    _cancelButton.accessibilityIdentifier = kReadingListToolbarCancelButtonID;
 
     _editButton = [[LegacyReadingListToolbarButton alloc]
         initWithText:l10n_util::GetNSString(IDS_IOS_READING_LIST_EDIT_BUTTON)
          destructive:NO
             position:Trailing];
+    _editButton.accessibilityIdentifier = kReadingListToolbarEditButtonID;
 
     [_editButton addTarget:nil
                     action:@selector(enterEditingModePressed)

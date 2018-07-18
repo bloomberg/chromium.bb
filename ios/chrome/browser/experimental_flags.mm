@@ -135,7 +135,7 @@ bool IsBookmarksUIRebootEnabled() {
 }
 
 bool IsReadingListUIRebootEnabled() {
-  return base::FeatureList::IsEnabled(kCollectionsUIReboot);
+  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
 }
 
 bool IsCollectionsUIRebootEnabled() {

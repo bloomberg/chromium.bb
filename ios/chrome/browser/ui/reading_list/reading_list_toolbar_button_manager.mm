@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_commands.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_identifiers.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -71,12 +72,14 @@ NSString* GetMarkButtonTitleForSelectionState(ReadingListSelectionState state) {
                 style:UIBarButtonItemStylePlain
                target:nil
                action:@selector(enterReadingListEditMode)];
+    _editButton.accessibilityIdentifier = kReadingListToolbarEditButtonID;
 
     _deleteButton = [[UIBarButtonItem alloc]
         initWithTitle:l10n_util::GetNSString(IDS_IOS_READING_LIST_DELETE_BUTTON)
                 style:UIBarButtonItemStylePlain
                target:nil
                action:@selector(deleteSelectedReadingListItems)];
+    _deleteButton.accessibilityIdentifier = kReadingListToolbarDeleteButtonID;
     _deleteButton.tintColor = [UIColor redColor];
 
     _deleteAllReadButton = [[UIBarButtonItem alloc]
@@ -85,6 +88,8 @@ NSString* GetMarkButtonTitleForSelectionState(ReadingListSelectionState state) {
                 style:UIBarButtonItemStylePlain
                target:nil
                action:@selector(deleteAllReadReadingListItems)];
+    _deleteAllReadButton.accessibilityIdentifier =
+        kReadingListToolbarDeleteAllReadButtonID;
     _deleteAllReadButton.tintColor = [UIColor redColor];
 
     _cancelButton = [[UIBarButtonItem alloc]
@@ -92,12 +97,14 @@ NSString* GetMarkButtonTitleForSelectionState(ReadingListSelectionState state) {
                 style:UIBarButtonItemStyleDone
                target:nil
                action:@selector(exitReadingListEditMode)];
+    _cancelButton.accessibilityIdentifier = kReadingListToolbarCancelButtonID;
 
     _markButton = [[UIBarButtonItem alloc]
         initWithTitle:GetMarkButtonTitleForSelectionState(self.selectionState)
                 style:UIBarButtonItemStylePlain
                target:self
                action:@selector(markButtonWasTapped)];
+    _markButton.accessibilityIdentifier = kReadingListToolbarMarkButtonID;
   }
   return self;
 }

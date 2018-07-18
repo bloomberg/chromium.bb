@@ -22,6 +22,10 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_cell.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_table_view_controller.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_identifiers.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_url_cell_favicon_badge_view.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_empty_view.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -113,70 +117,109 @@ ReadingListModel* GetReadingListModel() {
   return model;
 }
 
+// The ancestor class of toolbar buttons.
+Class ToolbarButtonAncestorClass() {
+  return experimental_flags::IsReadingListUIRebootEnabled()
+             ? [UIToolbar class]
+             : [LegacyReadingListToolbarButton class];
+}
+
+// The class displaying the reading list cells.
+Class ReadingListCellClass() {
+  return experimental_flags::IsReadingListUIRebootEnabled()
+             ? [TableViewURLCell class]
+             : [ReadingListCell class];
+}
+
+// The class displaying the reading list.
+Class ReadingListViewControllerClass() {
+  return experimental_flags::IsReadingListUIRebootEnabled()
+             ? [ReadingListTableViewController class]
+             : [ReadingListCollectionViewController class];
+}
+
 // Scroll to the top of the Reading List.
 void ScrollToTop() {
   NSError* error = nil;
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          [ReadingListCollectionViewController
+                                          [ReadingListViewControllerClass()
                                               accessibilityIdentifier])]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)
+      performAction:grey_scrollToContentEdgeWithStartPoint(kGREYContentEdgeTop,
+                                                           0.5, 0.5)
               error:&error];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
-// Asserts the |button_id| button is not visible.
-void AssertButtonNotVisibleWithID(int button_id) {
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
-                                button_id),
-                            grey_ancestor(grey_kindOfClass(
-                                [LegacyReadingListToolbarButton class])),
-                            nil)] assertWithMatcher:grey_notVisible()];
+// Asserts that the "mark" toolbar button is visible and has the a11y label of
+// |a11y_label_id|.
+void AssertToolbarMarkButtonText(int a11y_label_id) {
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              grey_accessibilityID(kReadingListToolbarMarkButtonID),
+              grey_ancestor(grey_kindOfClass(ToolbarButtonAncestorClass())),
+              chrome_test_util::ButtonWithAccessibilityLabelId(a11y_label_id),
+              nil)] assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Assert the |button_id| button is visible.
-void AssertButtonVisibleWithID(int button_id) {
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
-                                button_id),
-                            grey_ancestor(grey_kindOfClass(
-                                [LegacyReadingListToolbarButton class])),
-                            nil)] assertWithMatcher:grey_sufficientlyVisible()];
+// Asserts the |button_id| toolbar button is not visible.
+void AssertToolbarButtonNotVisibleWithID(NSString* button_id) {
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(button_id),
+                                          grey_ancestor(grey_kindOfClass(
+                                              ToolbarButtonAncestorClass())),
+                                          nil)]
+      assertWithMatcher:grey_notVisible()];
 }
 
-// Taps the |button_id| button.
-void TapButtonWithID(int button_id) {
+// Assert the |button_id| toolbar button is visible.
+void AssertToolbarButtonVisibleWithID(NSString* button_id) {
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(button_id),
+                                          grey_ancestor(grey_kindOfClass(
+                                              ToolbarButtonAncestorClass())),
+                                          nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Taps the |button_id| toolbar button.
+void TapToolbarButtonWithID(NSString* button_id) {
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(button_id)]
+      performAction:grey_tap()];
+}
+
+// Taps the context menu button with the a11y label of |a11y_label_id|.
+void TapContextMenuButtonWithA11yLabelID(int a11y_label_id) {
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   button_id)] performAction:grey_tap()];
+                                   a11y_label_id)] performAction:grey_tap()];
 }
 
 // Performs |action| on the entry with the title |entryTitle|. The view can be
 // scrolled down to find the entry.
-void performActionOnEntry(const std::string& entryTitle,
+void PerformActionOnEntry(const std::string& entryTitle,
                           id<GREYAction> action) {
   ScrollToTop();
   id<GREYMatcher> matcher =
       grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
                      base::SysUTF8ToNSString(entryTitle)),
-                 grey_ancestor(grey_kindOfClass([ReadingListCell class])),
+                 grey_ancestor(grey_kindOfClass(ReadingListCellClass())),
                  grey_sufficientlyVisible(), nil);
   [[[EarlGrey selectElementWithMatcher:matcher]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 100)
       onElementWithMatcher:grey_accessibilityID(
-                               [ReadingListCollectionViewController
-                                   accessibilityIdentifier])]
+                               ReadingListViewControllerClass())]
       performAction:action];
 }
 
 // Taps the entry with the title |entryTitle|.
 void TapEntry(const std::string& entryTitle) {
-  performActionOnEntry(entryTitle, grey_tap());
+  PerformActionOnEntry(entryTitle, grey_tap());
 }
 
 // Long-presses the entry with the title |entryTitle|.
 void LongPressEntry(const std::string& entryTitle) {
-  performActionOnEntry(entryTitle,
+  PerformActionOnEntry(entryTitle,
                        grey_longPressWithDuration(kLongPressDuration));
 }
 
@@ -187,11 +230,11 @@ void AssertEntryVisible(const std::string& entryTitle) {
       selectElementWithMatcher:
           grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
                          base::SysUTF8ToNSString(entryTitle)),
-                     grey_ancestor(grey_kindOfClass([ReadingListCell class])),
+                     grey_ancestor(grey_kindOfClass(ReadingListCellClass())),
                      grey_sufficientlyVisible(), nil)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 100)
       onElementWithMatcher:grey_accessibilityID(
-                               [ReadingListCollectionViewController
+                               [ReadingListViewControllerClass()
                                    accessibilityIdentifier])]
       assertWithMatcher:grey_notNil()];
 }
@@ -220,11 +263,11 @@ void AssertEntryNotVisible(std::string title) {
       selectElementWithMatcher:
           grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
                          base::SysUTF8ToNSString(title)),
-                     grey_ancestor(grey_kindOfClass([ReadingListCell class])),
+                     grey_ancestor(grey_kindOfClass(ReadingListCellClass())),
                      grey_sufficientlyVisible(), nil)]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 100)
       onElementWithMatcher:grey_accessibilityID(
-                               [ReadingListCollectionViewController
+                               [ReadingListViewControllerClass()
                                    accessibilityIdentifier])]
       assertWithMatcher:grey_notNil()
                   error:&error];
@@ -233,6 +276,8 @@ void AssertEntryNotVisible(std::string title) {
 
 // Asserts |header| is visible.
 void AssertHeaderNotVisible(std::string header) {
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  ScrollToTop();
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           StaticTextWithAccessibilityLabel(
                                               base::SysUTF8ToNSString(header))]
@@ -260,7 +305,7 @@ void AddEntriesAndEnterEdit() {
                   reading_list::ADDED_VIA_CURRENT_APP);
   OpenReadingList();
 
-  TapButtonWithID(IDS_IOS_READING_LIST_EDIT_BUTTON);
+  TapToolbarButtonWithID(kReadingListToolbarEditButtonID);
 }
 
 // Computes the number of read entries in the model.
@@ -303,7 +348,10 @@ void AddCurrentPageToReadingList() {
         addToReadingList:command];
   } else {
     [ChromeEarlGreyUI openShareMenu];
-    TapButtonWithID(IDS_IOS_SHARE_MENU_READING_LIST_ACTION);
+    [[EarlGrey selectElementWithMatcher:
+                   chrome_test_util::ButtonWithAccessibilityLabelId(
+                       IDS_IOS_SHARE_MENU_READING_LIST_ACTION)]
+        performAction:grey_tap()];
   }
 
   // Wait for the snackbar to appear.
@@ -340,11 +388,13 @@ void AddCurrentPageToReadingList() {
 
 // Wait until one element is distilled.
 void WaitForDistillation() {
+  NSString* a11y_id =
+      experimental_flags::IsReadingListUIRebootEnabled()
+          ? [TableViewURLCellFaviconBadgeView accessibilityIdentifier]
+          : @"Reading List Item distillation date";
   ConditionBlock wait_for_distillation_date = ^{
     NSError* error = nil;
-    [[EarlGrey
-        selectElementWithMatcher:grey_accessibilityID(
-                                     @"Reading List Item distillation date")]
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(a11y_id)]
         assertWithMatcher:grey_notNil()
                     error:&error];
     return error == nil;
@@ -480,7 +530,7 @@ void AssertIsShowingDistillablePage(bool online) {
   AddEntriesAndEnterEdit();
   // In edit mode.
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
-  TapButtonWithID(IDS_IOS_READING_LIST_CANCEL_BUTTON);
+  TapToolbarButtonWithID(kReadingListToolbarCancelButtonID);
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
@@ -521,7 +571,8 @@ void AssertIsShowingDistillablePage(bool online) {
 
   // Long press the entry, and open it offline.
   LongPressEntry(pageTitle);
-  TapButtonWithID(IDS_IOS_READING_LIST_CONTENT_CONTEXT_OFFLINE);
+  TapContextMenuButtonWithA11yLabelID(
+      IDS_IOS_READING_LIST_CONTENT_CONTEXT_OFFLINE);
   AssertIsShowingDistillablePage(false);
 
   // Tap the Omnibox' Info Bubble to open the Page Info.
@@ -695,14 +746,11 @@ void AssertIsShowingDistillablePage(bool online) {
                                   reading_list::ADDED_VIA_CURRENT_APP);
   OpenReadingList();
 
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_DELETE_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_READ_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_ALL_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_CANCEL_BUTTON);
-  AssertButtonVisibleWithID(IDS_IOS_READING_LIST_EDIT_BUTTON);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarDeleteButtonID);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarDeleteAllReadButtonID);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarMarkButtonID);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarCancelButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarEditButtonID);
 }
 
 // Tests that only the "Cancel", "Delete All Read" and "Mark All…" buttons are
@@ -710,14 +758,11 @@ void AssertIsShowingDistillablePage(bool online) {
 - (void)testVisibleButtonsEditingModeEmptySelection {
   AddEntriesAndEnterEdit();
 
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_DELETE_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_READ_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_EDIT_BUTTON);
-  AssertButtonVisibleWithID(IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON);
-  AssertButtonVisibleWithID(IDS_IOS_READING_LIST_MARK_ALL_BUTTON);
-  AssertButtonVisibleWithID(IDS_IOS_READING_LIST_CANCEL_BUTTON);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarDeleteButtonID);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarEditButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarDeleteAllReadButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarCancelButtonID);
+  AssertToolbarMarkButtonText(IDS_IOS_READING_LIST_MARK_ALL_BUTTON);
 }
 
 // Tests that only the "Cancel", "Delete" and "Mark Unread" buttons are showing
@@ -726,14 +771,11 @@ void AssertIsShowingDistillablePage(bool online) {
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
 
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_READ_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_EDIT_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_ALL_BUTTON);
-  AssertButtonVisibleWithID(IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON);
-  AssertButtonVisibleWithID(IDS_IOS_READING_LIST_DELETE_BUTTON);
-  AssertButtonVisibleWithID(IDS_IOS_READING_LIST_CANCEL_BUTTON);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarDeleteAllReadButtonID);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarEditButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarDeleteButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarCancelButtonID);
+  AssertToolbarMarkButtonText(IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON);
 }
 
 // Tests that only the "Cancel", "Delete" and "Mark Read" buttons are showing
@@ -742,14 +784,10 @@ void AssertIsShowingDistillablePage(bool online) {
   AddEntriesAndEnterEdit();
   TapEntry(kUnreadTitle);
 
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_EDIT_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_ALL_BUTTON);
-  AssertButtonVisibleWithID(IDS_IOS_READING_LIST_MARK_READ_BUTTON);
-  AssertButtonVisibleWithID(IDS_IOS_READING_LIST_DELETE_BUTTON);
-  AssertButtonVisibleWithID(IDS_IOS_READING_LIST_CANCEL_BUTTON);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarDeleteAllReadButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarDeleteButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarCancelButtonID);
+  AssertToolbarMarkButtonText(IDS_IOS_READING_LIST_MARK_READ_BUTTON);
 }
 
 // Tests that only the "Cancel", "Delete" and "Mark…" buttons are showing when
@@ -759,14 +797,11 @@ void AssertIsShowingDistillablePage(bool online) {
   TapEntry(kReadTitle);
   TapEntry(kUnreadTitle);
 
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_READ_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_EDIT_BUTTON);
-  AssertButtonNotVisibleWithID(IDS_IOS_READING_LIST_MARK_ALL_BUTTON);
-  AssertButtonVisibleWithID(IDS_IOS_READING_LIST_MARK_BUTTON);
-  AssertButtonVisibleWithID(IDS_IOS_READING_LIST_DELETE_BUTTON);
-  AssertButtonVisibleWithID(IDS_IOS_READING_LIST_CANCEL_BUTTON);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarDeleteAllReadButtonID);
+  AssertToolbarButtonNotVisibleWithID(kReadingListToolbarEditButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarDeleteButtonID);
+  AssertToolbarButtonVisibleWithID(kReadingListToolbarCancelButtonID);
+  AssertToolbarMarkButtonText(IDS_IOS_READING_LIST_MARK_BUTTON);
 }
 
 // Tests the deletion of selected entries.
@@ -775,7 +810,7 @@ void AssertIsShowingDistillablePage(bool online) {
 
   TapEntry(kReadTitle2);
 
-  TapButtonWithID(IDS_IOS_READING_LIST_DELETE_BUTTON);
+  TapToolbarButtonWithID(kReadingListToolbarDeleteButtonID);
 
   AssertEntryVisible(kReadTitle);
   AssertEntryNotVisible(kReadTitle2);
@@ -789,7 +824,7 @@ void AssertIsShowingDistillablePage(bool online) {
 - (void)testDeleteAllReadEntries {
   AddEntriesAndEnterEdit();
 
-  TapButtonWithID(IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON);
+  TapToolbarButtonWithID(kReadingListToolbarDeleteAllReadButtonID);
 
   AssertEntryNotVisible(kReadTitle);
   AssertEntryNotVisible(kReadTitle2);
@@ -804,12 +839,19 @@ void AssertIsShowingDistillablePage(bool online) {
 - (void)testMarkAllRead {
   AddEntriesAndEnterEdit();
 
-  TapButtonWithID(IDS_IOS_READING_LIST_MARK_ALL_BUTTON);
+  AssertToolbarMarkButtonText(IDS_IOS_READING_LIST_MARK_ALL_BUTTON);
+  TapToolbarButtonWithID(kReadingListToolbarMarkButtonID);
 
   // Tap the action sheet.
-  TapButtonWithID(IDS_IOS_READING_LIST_MARK_ALL_READ_ACTION);
+  TapContextMenuButtonWithA11yLabelID(
+      IDS_IOS_READING_LIST_MARK_ALL_READ_ACTION);
 
-  AssertHeaderNotVisible(kUnreadHeader);
+  if (@available(iOS 11, *)) {
+    // On iOS10, removing UITableView sections don't remove their header text
+    // from the hierarchy.
+    AssertHeaderNotVisible(kUnreadHeader);
+  }
+
   AssertAllEntriesVisible();
   XCTAssertEqual(kNumberUnreadEntries + kNumberReadEntries,
                  ModelReadSize(GetReadingListModel()));
@@ -820,10 +862,12 @@ void AssertIsShowingDistillablePage(bool online) {
 - (void)testMarkAllUnread {
   AddEntriesAndEnterEdit();
 
-  TapButtonWithID(IDS_IOS_READING_LIST_MARK_ALL_BUTTON);
+  AssertToolbarMarkButtonText(IDS_IOS_READING_LIST_MARK_ALL_BUTTON);
+  TapToolbarButtonWithID(kReadingListToolbarMarkButtonID);
 
   // Tap the action sheet.
-  TapButtonWithID(IDS_IOS_READING_LIST_MARK_ALL_UNREAD_ACTION);
+  TapContextMenuButtonWithA11yLabelID(
+      IDS_IOS_READING_LIST_MARK_ALL_UNREAD_ACTION);
 
   AssertHeaderNotVisible(kReadHeader);
   AssertAllEntriesVisible();
@@ -837,7 +881,8 @@ void AssertIsShowingDistillablePage(bool online) {
   AddEntriesAndEnterEdit();
   TapEntry(kUnreadTitle);
 
-  TapButtonWithID(IDS_IOS_READING_LIST_MARK_READ_BUTTON);
+  AssertToolbarMarkButtonText(IDS_IOS_READING_LIST_MARK_READ_BUTTON);
+  TapToolbarButtonWithID(kReadingListToolbarMarkButtonID);
 
   AssertAllEntriesVisible();
   XCTAssertEqual(kNumberReadEntries + 1, ModelReadSize(GetReadingListModel()));
@@ -850,7 +895,8 @@ void AssertIsShowingDistillablePage(bool online) {
   AddEntriesAndEnterEdit();
   TapEntry(kReadTitle);
 
-  TapButtonWithID(IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON);
+  AssertToolbarMarkButtonText(IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON);
+  TapToolbarButtonWithID(kReadingListToolbarMarkButtonID);
 
   AssertAllEntriesVisible();
   XCTAssertEqual(kNumberReadEntries - 1, ModelReadSize(GetReadingListModel()));
@@ -864,10 +910,11 @@ void AssertIsShowingDistillablePage(bool online) {
   TapEntry(kReadTitle);
   TapEntry(kUnreadTitle);
 
-  TapButtonWithID(IDS_IOS_READING_LIST_MARK_BUTTON);
+  AssertToolbarMarkButtonText(IDS_IOS_READING_LIST_MARK_BUTTON);
+  TapToolbarButtonWithID(kReadingListToolbarMarkButtonID);
 
   // Tap the action sheet.
-  TapButtonWithID(IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON);
+  TapContextMenuButtonWithA11yLabelID(IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON);
 
   AssertAllEntriesVisible();
   XCTAssertEqual(kNumberReadEntries - 1, ModelReadSize(GetReadingListModel()));
@@ -881,10 +928,11 @@ void AssertIsShowingDistillablePage(bool online) {
   TapEntry(kReadTitle);
   TapEntry(kUnreadTitle);
 
-  TapButtonWithID(IDS_IOS_READING_LIST_MARK_BUTTON);
+  AssertToolbarMarkButtonText(IDS_IOS_READING_LIST_MARK_BUTTON);
+  TapToolbarButtonWithID(kReadingListToolbarMarkButtonID);
 
   // Tap the action sheet.
-  TapButtonWithID(IDS_IOS_READING_LIST_MARK_READ_BUTTON);
+  TapContextMenuButtonWithA11yLabelID(IDS_IOS_READING_LIST_MARK_READ_BUTTON);
 
   AssertAllEntriesVisible();
   XCTAssertEqual(kNumberReadEntries + 1, ModelReadSize(GetReadingListModel()));
@@ -909,8 +957,8 @@ void AssertIsShowingDistillablePage(bool online) {
   OpenReadingList();
   [[EarlGrey selectElementWithMatcher:EmptyBackground()]
       assertWithMatcher:grey_nil()];
-  TapButtonWithID(IDS_IOS_READING_LIST_EDIT_BUTTON);
-  TapButtonWithID(IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON);
+  TapToolbarButtonWithID(kReadingListToolbarEditButtonID);
+  TapToolbarButtonWithID(kReadingListToolbarDeleteAllReadButtonID);
 
   // Verify the background string is displayed.
   [[EarlGrey selectElementWithMatcher:EmptyBackground()]

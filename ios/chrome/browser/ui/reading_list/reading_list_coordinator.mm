@@ -8,9 +8,12 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/feature_engagement/public/event_constants.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -134,6 +137,11 @@
   [self.baseViewController presentViewController:self.navigationController
                                         animated:YES
                                       completion:nil];
+
+  // Send the "Viewed Reading List" event to the feature_engagement::Tracker
+  // when the user opens their reading list.
+  feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
+      ->NotifyEvent(feature_engagement::events::kViewedReadingList);
 
   [super start];
   self.started = YES;

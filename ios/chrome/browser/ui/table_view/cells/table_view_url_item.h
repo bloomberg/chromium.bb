@@ -11,6 +11,7 @@
 
 class GURL;
 @class FaviconViewNew;
+@class TableViewURLCellFaviconBadgeView;
 
 // TableViewURLItem contains the model data for a TableViewURLCell.
 @interface TableViewURLItem : TableViewItem
@@ -45,7 +46,8 @@ class GURL;
 @property(nonatomic, readonly, strong) UIImageView* faviconContainerView;
 
 // The image view used to display the favicon badge.
-@property(nonatomic, readonly, strong) UIImageView* faviconBadgeView;
+@property(nonatomic, readonly, strong)
+    TableViewURLCellFaviconBadgeView* faviconBadgeView;
 
 // The cell title.
 @property(nonatomic, readonly, strong) UILabel* titleLabel;
