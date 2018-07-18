@@ -147,6 +147,12 @@ class PLATFORM_EXPORT KURL {
 
   String Protocol() const;
   String Host() const;
+
+  // Returns 0 when there is no port or the default port was specified, or the
+  // URL is invalid.
+  //
+  // We treat URLs with out-of-range port numbers as invalid URLs, and they
+  // will be rejected by the canonicalizer.
   unsigned short Port() const;
   bool HasPort() const;
   String User() const;
