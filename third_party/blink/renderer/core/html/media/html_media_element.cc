@@ -789,6 +789,11 @@ void HTMLMediaElement::SetSrc(const AtomicString& url) {
   setAttribute(srcAttr, url);
 }
 
+void HTMLMediaElement::SetSrc(const USVStringOrTrustedURL& stringOrURL,
+                              ExceptionState& exception_state) {
+  setAttribute(srcAttr, stringOrURL, exception_state);
+}
+
 void HTMLMediaElement::SetSrcObject(MediaStreamDescriptor* src_object) {
   BLINK_MEDIA_LOG << "setSrcObject(" << (void*)this << ")";
   src_object_ = src_object;
