@@ -7,8 +7,6 @@
 
 #include <memory>
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 
 namespace content {
 
@@ -42,7 +40,7 @@ class ChromeAppCacheService;
 //      update the RequestNavigationParams based on the id from the
 //      AppCacheNavigationHandle.
 //
-//   6. The commit leads to AppCache registrations happening from the renderer.
+//   6) The commit leads to AppCache registrations happening from the renderer.
 //      This is via the IPC message AppCacheHostMsg_RegisterHost. The
 //      AppCacheDispatcherHost class which handles these IPCs will be informed
 //      about these hosts when the navigation commits. It will ignore the
@@ -52,24 +50,19 @@ class ChromeAppCacheService;
 
 //   7) When the navigation finishes, the AppCacheNavigationHandle is
 //      destroyed. The destructor of the AppCacheNavigationHandle posts a
-//      task to destroy the AppacheNavigationHandleCore on the IO thread.
+//      task to destroy the AppCacheNavigationHandleCore on the IO thread.
 
 class AppCacheNavigationHandle {
  public:
-  AppCacheNavigationHandle(ChromeAppCacheService* appcache_service);
+  explicit AppCacheNavigationHandle(ChromeAppCacheService* appcache_service);
   ~AppCacheNavigationHandle();
 
   int appcache_host_id() const { return appcache_host_id_; }
   AppCacheNavigationHandleCore* core() const { return core_.get(); }
 
-  // Called when a navigation is committed. The |process_id| parameter is
-  // is the process id of the renderer.
-  void CommitNavigation(int process_id);
-
  private:
-  int appcache_host_id_;
+  const int appcache_host_id_;
   std::unique_ptr<AppCacheNavigationHandleCore> core_;
-  base::WeakPtrFactory<AppCacheNavigationHandle> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheNavigationHandle);
 };
