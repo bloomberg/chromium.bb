@@ -63,7 +63,7 @@ class DownloadManagerCoordinatorImpl
         mSelectionDelegate = new SelectionDelegate<ListItem>();
         mListCoordinator = new DateOrderedListCoordinator(mActivity, offTheRecord,
                 OfflineContentAggregatorFactory.forProfile(profile),
-                mDeleteCoordinator::showSnackbar, this ::notifyFilterChanged);
+                mDeleteCoordinator::showSnackbar, mSelectionDelegate, this ::notifyFilterChanged);
 
         mMainView =
                 (ViewGroup) LayoutInflater.from(mActivity).inflate(R.layout.download_main, null);
@@ -138,6 +138,7 @@ class DownloadManagerCoordinatorImpl
     }
 
     private void notifyFilterChanged(@FilterType int filter) {
+        mSelectionDelegate.clearSelection();
         if (mMuteFilterChanges) return;
 
         String url = Filters.toUrl(filter);

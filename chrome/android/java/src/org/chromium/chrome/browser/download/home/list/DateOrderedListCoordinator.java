@@ -11,6 +11,7 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 
@@ -58,11 +59,13 @@ public class DateOrderedListCoordinator {
      */
     public DateOrderedListCoordinator(Context context, Boolean offTheRecord,
             OfflineContentProvider provider, DeleteController deleteController,
+            SelectionDelegate<ListItem> selectionDelegate,
             FilterCoordinator.Observer filterObserver) {
         ListItemModel model = new ListItemModel();
         DecoratedListItemModel decoratedModel = new DecoratedListItemModel(model);
         mView = new DateOrderedListView(context, decoratedModel);
-        mMediator = new DateOrderedListMediator(offTheRecord, provider, deleteController, model);
+        mMediator = new DateOrderedListMediator(
+                offTheRecord, provider, deleteController, selectionDelegate, model);
 
         // Hook up the FilterCoordinator with our mediator.
         mFilterCoordinator = new FilterCoordinator(context, mMediator.getFilterSource());
