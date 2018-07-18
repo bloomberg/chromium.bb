@@ -702,6 +702,7 @@ void V4GetHashProtocolManager::ParseMetadata(const ThreatMatch& match,
 void V4GetHashProtocolManager::ResetGetHashErrors() {
   gethash_error_count_ = 0;
   gethash_back_off_mult_ = 1;
+  next_gethash_time_ = base::Time();
 }
 
 void V4GetHashProtocolManager::SetClockForTests(base::Clock* clock) {
