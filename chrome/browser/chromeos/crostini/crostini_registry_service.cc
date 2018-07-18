@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 
+#include <map>
+#include <string>
+
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -52,6 +55,15 @@ constexpr char kAppLastLaunchTimeKey[] = "last_launch_time";
 
 constexpr char kCrostiniAppsInstalledHistogram[] =
     "Crostini.AppsInstalledAtLogin";
+
+// A hard-coded mapping from WMClass to app names.
+// This is used to deal with the Linux apps that don't specify the correct
+// WMClass in their desktop files so that their aura windows can be identified
+// with their respective app IDs.
+const std::map<std::string, std::string> wmclass_to_name = {
+    {"Octave-gui", "GNU Octave"},
+    {"MuseScore2", "MuseScore 2"},
+    {"XnViewMP", "XnView Multi Platform"}};
 
 std::string GenerateAppId(const std::string& desktop_file_id,
                           const std::string& vm_name,
@@ -387,6 +399,13 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
     return app_id;
 
   if (FindAppId(apps, kAppNameKey, key, &app_id,
+                false /* require_startup_notification */,
+                true /* need_display */) == FindAppIdResult::UniqueMatch)
+    return app_id;
+
+  auto it = wmclass_to_name.find(key.as_string());
+  if (it != wmclass_to_name.end() &&
+      FindAppId(apps, kAppNameKey, it->second, &app_id,
                 false /* require_startup_notification */,
                 true /* need_display */) == FindAppIdResult::UniqueMatch)
     return app_id;
