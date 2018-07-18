@@ -27,11 +27,20 @@ namespace usersPrivate {
     boolean isChild;
   };
 
+  dictionary LoginStatusDict {
+    // True if a user is logged in (including guest, public session, etc).
+    boolean isLoggedIn;
+
+    // True if the screen is locked.
+    boolean isScreenLocked;
+  };
+
   callback UsersCallback = void (User[] users);
   callback UserAddedCallback = void (boolean success);
   callback UserRemovedCallback = void (boolean success);
   callback ManagedCallback = void (boolean managed);
   callback UserCallback = void (User user);
+  callback LoginStatusCallback = void (LoginStatusDict status);
 
   interface Functions {
     // Gets a list of the currently whitelisted users.
@@ -54,5 +63,8 @@ namespace usersPrivate {
 
     // Returns the current user.
     static void getCurrentUser(UserCallback callback);
+
+    // Get login status.
+    static void getLoginStatus(LoginStatusCallback callback);
   };
 };

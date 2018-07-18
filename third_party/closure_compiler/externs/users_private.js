@@ -29,6 +29,14 @@ chrome.usersPrivate = {};
 chrome.usersPrivate.User;
 
 /**
+ * @typedef {{
+ *   isLoggedIn: boolean,
+ *   isScreenLocked: boolean
+ * }}
+ */
+chrome.usersPrivate.LoginStatusDict;
+
+/**
  * Gets a list of the currently whitelisted users.
  * @param {function(!Array<!chrome.usersPrivate.User>):void} callback
  */
@@ -64,3 +72,9 @@ chrome.usersPrivate.isWhitelistManaged = function(callback) {};
  * @param {function(!chrome.usersPrivate.User):void} callback
  */
 chrome.usersPrivate.getCurrentUser = function(callback) {};
+
+/**
+ * Get login status.
+ * @param {function(!chrome.usersPrivate.LoginStatusDict):void} callback
+ */
+chrome.usersPrivate.getLoginStatus = function(callback) {};

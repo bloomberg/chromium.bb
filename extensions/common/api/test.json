@@ -65,6 +65,23 @@
                     "type": "boolean",
                     "optional": true,
                     "description": "Whether native extension bindings are enabled."
+                  },
+                  "loginStatus": {
+                    "type": "object",
+                    "optional": true,
+                    "description": "Login status.",
+                    "properties": {
+                      "isLoggedIn": {
+                        "type": "boolean",
+                        "optional": true,
+                        "description": "Whether there's a logged-in user."
+                      },
+                      "isScreenLocked": {
+                        "type": "boolean",
+                        "optional": true,
+                        "description": "Whether the screen is locked."
+                      }
+                    }
                   }
                 }
               }

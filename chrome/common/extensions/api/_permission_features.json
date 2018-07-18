@@ -814,8 +814,12 @@
   },
   "usersPrivate": {
     "channel": "trunk",
+    "platforms": ["chromeos"],
     "extension_types": ["extension", "platform_app"],
-    "location": "component"
+    "whitelist": [
+      // ChromeOS Autotest extension.
+      "0D209B5E4401BB8E7873B5AB5B1346A1CB067015"
+    ]
   },
   "wallpaper": {
     "channel": "stable",

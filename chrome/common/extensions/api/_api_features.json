@@ -753,7 +753,8 @@
   },
   "usersPrivate": [{
     "dependencies": ["permission:usersPrivate"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension"],
+    "platforms": ["chromeos"]
   }, {
     "channel": "stable",
     "contexts": ["webui"],

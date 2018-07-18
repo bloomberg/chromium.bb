@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/users_private.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -276,6 +277,27 @@ ExtensionFunction::ResponseAction UsersPrivateGetCurrentUserFunction::Run() {
                     CreateApiUser(user->GetAccountId().GetUserEmail(), *user)
                         .ToValue()))
               : RespondNow(Error("No Current User"));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// UsersPrivateGetLoginStatusFunction
+
+UsersPrivateGetLoginStatusFunction::UsersPrivateGetLoginStatusFunction() =
+    default;
+UsersPrivateGetLoginStatusFunction::~UsersPrivateGetLoginStatusFunction() =
+    default;
+
+ExtensionFunction::ResponseAction UsersPrivateGetLoginStatusFunction::Run() {
+  const user_manager::UserManager* user_manager =
+      user_manager::UserManager::Get();
+  const bool is_logged_in = user_manager && user_manager->IsUserLoggedIn();
+  const bool is_screen_locked =
+      session_manager::SessionManager::Get()->IsScreenLocked();
+
+  auto result = std::make_unique<base::DictionaryValue>();
+  result->SetKey("isLoggedIn", base::Value(is_logged_in));
+  result->SetKey("isScreenLocked", base::Value(is_screen_locked));
+  return RespondNow(OneArgument(std::move(result)));
 }
 
 }  // namespace extensions

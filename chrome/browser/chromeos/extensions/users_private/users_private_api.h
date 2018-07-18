@@ -110,6 +110,21 @@ class UsersPrivateGetCurrentUserFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(UsersPrivateGetCurrentUserFunction);
 };
 
+class UsersPrivateGetLoginStatusFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("usersPrivate.getLoginStatus",
+                             USERSPRIVATE_GETLOGINSTATUS)
+  UsersPrivateGetLoginStatusFunction();
+
+ private:
+  ~UsersPrivateGetLoginStatusFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(UsersPrivateGetLoginStatusFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_USERS_PRIVATE_USERS_PRIVATE_API_H_

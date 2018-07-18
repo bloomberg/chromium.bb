@@ -16077,6 +16077,7 @@ Called by update_net_error_codes.py.-->
   <int value="1259" label="SYSTEM_POWER_SOURCE_GETPOWERSOURCEINFO"/>
   <int value="1260" label="SYSTEM_POWER_SOURCE_REQUESTSTATUSUPDATE"/>
   <int value="1261" label="INPUTMETHODPRIVATE_GETSURROUNDINGTEXT"/>
+  <int value="1262" label="USERSPRIVATE_GETLOGINSTATUS"/>
 </enum>
 
 <enum name="ExtensionIconState">
