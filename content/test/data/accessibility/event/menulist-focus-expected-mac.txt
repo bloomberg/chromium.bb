@@ -1,1 +1,2 @@
-AXFocusedUIElementChanged on AXPopUpButton AXValue="Apple"
+AXFocusedUIElementChanged on AXMenuItem AXValue="Apple"
+AXMenuItemSelected on AXMenuItem AXValue="Apple"
