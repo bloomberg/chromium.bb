@@ -15,7 +15,7 @@ class SadTabCocoa : public SadTab {
       : SadTab(web_contents, kind) {
     NSView* web_contents_view = web_contents->GetNativeView();
     sad_tab_view_ =
-        [[SabTabViewCocoa alloc] initWithFrame:web_contents_view.bounds
+        [[SadTabViewCocoa alloc] initWithFrame:web_contents_view.bounds
                                         sadTab:this];
     [web_contents_view addSubview:sad_tab_view_];
     [sad_tab_view_ release];
@@ -25,7 +25,7 @@ class SadTabCocoa : public SadTab {
 
  private:
   // Owned by web_contents
-  SabTabViewCocoa* sad_tab_view_;
+  SadTabViewCocoa* sad_tab_view_;
 };
 
 }  // namespace

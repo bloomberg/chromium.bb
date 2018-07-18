@@ -43,10 +43,10 @@ const CGFloat kMaxTopMargin = 130;
 }
 @end
 
-@interface SabTabViewCocoa ()<NSTextViewDelegate>
+@interface SadTabViewCocoa ()<NSTextViewDelegate>
 @end
 
-@implementation SabTabViewCocoa {
+@implementation SadTabViewCocoa {
   NSView* container_;
   NSTextView* message_;
   HyperlinkTextView* help_;
