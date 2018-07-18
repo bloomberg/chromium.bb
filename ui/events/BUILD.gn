@@ -151,13 +151,6 @@ component("events_base") {
       "Carbon.framework",
     ]
   }
-
-  if (is_chromecast && !is_android) {
-    sources += [
-      "chromecast/scroller.cc",
-      "chromecast/scroller.h",
-    ]
-  }
 }
 
 component("events") {

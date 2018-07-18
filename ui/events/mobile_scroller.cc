@@ -159,7 +159,9 @@ base::LazyInstance<SplineConstants>::Leaky g_spline_constants =
 }  // namespace
 
 MobileScroller::Config::Config()
-    : fling_friction(kDefaultFriction), flywheel_enabled(false) {}
+    : fling_friction(kDefaultFriction),
+      flywheel_enabled(false),
+      chromecast_optimized(false) {}
 
 MobileScroller::MobileScroller(const Config& config)
     : mode_(UNDEFINED),
@@ -185,7 +187,8 @@ MobileScroller::MobileScroller(const Config& config)
       distance_(0),
       fling_friction_(config.fling_friction),
       deceleration_(ComputeDeceleration(fling_friction_)),
-      tuning_coeff_(ComputeDeceleration(0.84f)) {}
+      tuning_coeff_(
+          ComputeDeceleration(config.chromecast_optimized ? 0.9f : 0.84f)) {}
 
 MobileScroller::~MobileScroller() {}
 
