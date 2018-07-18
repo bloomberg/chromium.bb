@@ -415,7 +415,6 @@ camera.views.Browser.prototype.onPictureDeleted = function(picture) {
  */
 camera.views.Browser.prototype.addPictureToDOM = function(picture) {
   var browser = document.querySelector('#browser .padder');
-  var boundsPadder = browser.querySelector('.bounds-padder');
   var wrapper = document.createElement('div');
   wrapper.className = 'media-wrapper';
   wrapper.id = 'browser-picture-' + (this.lastPictureIndex_++);
@@ -429,13 +428,20 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
     this.updateElementSize(wrapper);
   }.bind(this);
   img.src = picture.thumbnailURL;
-
   wrapper.appendChild(img);
-  browser.insertBefore(wrapper, boundsPadder.nextSibling);
 
-  // Add to the collection.
+  // Insert the picture's DOM element in a sorted timestamp order.
+  for (var index = this.pictures.length - 1; index >= 0; index--) {
+    if (picture.timestamp >= this.pictures[index].picture.timestamp) {
+      break;
+    }
+  }
+  var nextSibling = (index >= 0) ? this.pictures[index].element :
+      browser.lastElementChild;
+  browser.insertBefore(wrapper, nextSibling);
+
   var domPicture = new camera.views.GalleryBase.DOMPicture(picture, wrapper);
-  this.pictures.push(domPicture);
+  this.pictures.splice(index + 1, 0, domPicture);
   this.updateScrollbarThumb_();
 
   wrapper.addEventListener('mousedown', function(event) {

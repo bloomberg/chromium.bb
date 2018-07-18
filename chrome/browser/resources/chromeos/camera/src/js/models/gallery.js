@@ -333,8 +333,13 @@ camera.models.Gallery.prototype.savePicture = function(
     return this.wrapPicture_(pictureEntry);
   });
   Promise.all([this.loaded_, saved]).then(([pictures, picture]) => {
-    // TODO(yuli): Avoid async saved-pictures out of order here.
-    pictures.push(picture);
+    // Insert the picture into the sorted pictures' model.
+    for (var index = pictures.length - 1; index >= 0; index--) {
+      if (picture.timestamp >= pictures[index].timestamp) {
+        break;
+      }
+    }
+    pictures.splice(index + 1, 0, picture);
     this.notifyObservers_('onPictureAdded', picture);
   }).catch(onFailure);
 };

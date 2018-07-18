@@ -352,8 +352,7 @@ camera.views.GalleryBase.prototype.onPictureAdded = function(picture) {
 
 /**
  * Adds the picture to DOM. Should be overriden by inheriting classes.
- * @param {camera.models.Gallery.Picture} picture Model of the picture to be
- *     added.
+ * @param {camera.models.Gallery.Picture} picture Model's picture to be added.
  * @protected
  */
 camera.views.GalleryBase.prototype.addPictureToDOM = function(picture) {
