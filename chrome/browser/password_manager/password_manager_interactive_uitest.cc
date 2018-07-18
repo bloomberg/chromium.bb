@@ -281,7 +281,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
 // Tests that if a site embeds the login and signup forms into one <form>, the
 // login form still gets autofilled.
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
-                       AutofillLoginSignupForm) {
+                       DISABLED_AutofillLoginSignupForm) {
   std::string submit = "document.getElementById('submit').click();";
   VerifyPasswordIsSavedAndFilled("/password/login_signup_form.html", "username",
                                  "password", submit);
@@ -291,7 +291,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
 // Tests that password suggestions still work if the fields have the
 // "autocomplete" attribute set to off.
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
-                       AutofillPasswordFormWithAutocompleteOff) {
+                       DISABLED_AutofillPasswordFormWithAutocompleteOff) {
   std::string submit = "document.getElementById('submit').click();";
   VerifyPasswordIsSavedAndFilled(
       "/password/password_autocomplete_off_test.html", "username", "password",
@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
 
 // Disabled for flakiness crbug.com/849582.
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
-                       AutofillPasswordNoFormElement) {
+                       DISABLED_AutofillPasswordNoFormElement) {
   VerifyPasswordIsSavedAndFilled("/password/no_form_element.html",
                                  "username_field", "password_field",
                                  "send_xhr();");
@@ -310,7 +310,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
 // Check that we can fill in cases where <base href> is set and the action of
 // the form is not set. Regression test for https://crbug.com/360230.
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
-                       AutofillBaseTagWithNoActionTest) {
+                       DISABLED_AutofillBaseTagWithNoActionTest) {
   std::string submit = "document.getElementById('submit_button').click();";
   VerifyPasswordIsSavedAndFilled("/password/password_xhr_submit.html",
                                  "username_field", "password_field", submit);
