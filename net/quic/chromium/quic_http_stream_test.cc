@@ -713,14 +713,14 @@ TEST_P(QuicHttpStreamTest, CanReuseConnection) {
 }
 
 TEST_P(QuicHttpStreamTest, DisableConnectionMigrationForStream) {
-  request_.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  request_.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION_TO_CELLULAR;
   Initialize();
   EXPECT_EQ(OK,
             stream_->InitializeStream(&request_, false, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
   QuicChromiumClientStream::Handle* client_stream =
       QuicHttpStreamPeer::GetQuicChromiumClientStream(stream_.get());
-  EXPECT_FALSE(client_stream->can_migrate());
+  EXPECT_FALSE(client_stream->can_migrate_to_cellular_network());
 }
 
 TEST_P(QuicHttpStreamTest, GetRequest) {

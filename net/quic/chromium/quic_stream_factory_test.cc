@@ -2611,7 +2611,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
 
   // Cause QUIC stream to be created, but marked as non-migratable.
   HttpRequestInfo request_info;
-  request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION_TO_CELLULAR;
   request_info.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
@@ -2732,7 +2732,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNonMigratableStream) {
 
   // Cause QUIC stream to be created, but marked as non-migratable.
   HttpRequestInfo request_info;
-  request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION_TO_CELLULAR;
   request_info.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
@@ -3996,7 +3996,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
 
   // Cause QUIC stream to be created, but marked as non-migratable.
   HttpRequestInfo request_info;
-  request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION_TO_CELLULAR;
   request_info.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
@@ -4775,7 +4775,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMixedStreams(
 
   HttpRequestInfo request_info2;
   request_info2.method = "GET";
-  request_info2.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  request_info2.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION_TO_CELLULAR;
   request_info2.url = GURL("https://www.example.org/");
   request_info2.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -4913,7 +4913,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMixedStreams2(
 
   HttpRequestInfo request_info2;
   request_info2.method = "GET";
-  request_info2.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  request_info2.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION_TO_CELLULAR;
   request_info2.url = GURL("https://www.example.org/");
   request_info2.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -4992,7 +4992,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNonMigratableStream(
 
   // Cause QUIC stream to be created, but marked as non-migratable.
   HttpRequestInfo request_info;
-  request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION_TO_CELLULAR;
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
   request_info.traffic_annotation =

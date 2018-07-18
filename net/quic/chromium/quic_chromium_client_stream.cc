@@ -249,9 +249,10 @@ void QuicChromiumClientStream::Handle::OnFinRead() {
     stream_->OnFinRead();
 }
 
-void QuicChromiumClientStream::Handle::DisableConnectionMigration() {
+void QuicChromiumClientStream::Handle::
+    DisableConnectionMigrationToCellularNetwork() {
   if (stream_)
-    stream_->DisableConnectionMigration();
+    stream_->DisableConnectionMigrationToCellularNetwork();
 }
 
 void QuicChromiumClientStream::Handle::SetPriority(
@@ -340,10 +341,10 @@ void QuicChromiumClientStream::Handle::OnPromiseHeaderList(
   stream_->OnPromiseHeaderList(promised_id, frame_len, header_list);
 }
 
-bool QuicChromiumClientStream::Handle::can_migrate() {
+bool QuicChromiumClientStream::Handle::can_migrate_to_cellular_network() {
   if (!stream_)
     return false;
-  return stream_->can_migrate();
+  return stream_->can_migrate_to_cellular_network();
 }
 
 const NetLogWithSource& QuicChromiumClientStream::Handle::net_log() const {
@@ -407,7 +408,7 @@ QuicChromiumClientStream::QuicChromiumClientStream(
       headers_delivered_(false),
       initial_headers_sent_(false),
       session_(session),
-      can_migrate_(true),
+      can_migrate_to_cellular_network_(true),
       initial_headers_frame_len_(0),
       trailing_headers_frame_len_(0),
       weak_factory_(this) {}
@@ -676,8 +677,8 @@ void QuicChromiumClientStream::NotifyHandleOfDataAvailable() {
     handle_->OnDataAvailable();
 }
 
-void QuicChromiumClientStream::DisableConnectionMigration() {
-  can_migrate_ = false;
+void QuicChromiumClientStream::DisableConnectionMigrationToCellularNetwork() {
+  can_migrate_to_cellular_network_ = false;
 }
 
 bool QuicChromiumClientStream::IsFirstStream() {

@@ -550,8 +550,9 @@ int QuicHttpStream::DoRequestStreamComplete(int rv) {
     return GetResponseStatus();
   }
 
-  if (request_info_->load_flags & LOAD_DISABLE_CONNECTION_MIGRATION) {
-    stream_->DisableConnectionMigration();
+  if (request_info_->load_flags &
+      LOAD_DISABLE_CONNECTION_MIGRATION_TO_CELLULAR) {
+    stream_->DisableConnectionMigrationToCellularNetwork();
   }
 
   if (response_info_) {
