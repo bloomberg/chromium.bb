@@ -378,9 +378,8 @@ void Connection::CloseInternal(bool forced) {
   DCHECK(forced || open_statements_.empty());
 
   // Deactivate any outstanding statements so sqlite3_close() works.
-  for (StatementRefSet::iterator i = open_statements_.begin();
-       i != open_statements_.end(); ++i)
-    (*i)->Close(forced);
+  for (StatementRef* statement_ref : open_statements_)
+    statement_ref->Close(forced);
   open_statements_.clear();
 
   if (db_) {
@@ -1404,15 +1403,15 @@ bool Connection::HasCachedStatement(const StatementID& id) const {
 scoped_refptr<Connection::StatementRef> Connection::GetCachedStatement(
     const StatementID& id,
     const char* sql) {
-  CachedStatementMap::iterator i = statement_cache_.find(id);
-  if (i != statement_cache_.end()) {
+  auto it = statement_cache_.find(id);
+  if (it != statement_cache_.end()) {
     // Statement is in the cache. It should still be active (we're the only
     // one invalidating cached statements, and we'll remove it from the cache
     // if we do that. Make sure we reset it before giving out the cached one in
     // case it still has some stuff bound.
-    DCHECK(i->second->is_valid());
-    sqlite3_reset(i->second->stmt());
-    return i->second;
+    DCHECK(it->second->is_valid());
+    sqlite3_reset(it->second->stmt());
+    return it->second;
   }
 
   scoped_refptr<StatementRef> statement = GetUniqueStatement(sql);
@@ -1837,16 +1836,15 @@ void Connection::DoRollback() {
 }
 
 void Connection::StatementRefCreated(StatementRef* ref) {
-  DCHECK(open_statements_.find(ref) == open_statements_.end());
+  DCHECK(!open_statements_.count(ref))
+      << __func__ << " already called with this statement";
   open_statements_.insert(ref);
 }
 
 void Connection::StatementRefDeleted(StatementRef* ref) {
-  StatementRefSet::iterator i = open_statements_.find(ref);
-  if (i == open_statements_.end())
-    DLOG(DCHECK) << "Could not find statement";
-  else
-    open_statements_.erase(i);
+  DCHECK(open_statements_.count(ref))
+      << __func__ << " called with non-existing statement";
+  open_statements_.erase(ref);
 }
 
 void Connection::set_histogram_tag(const std::string& tag) {

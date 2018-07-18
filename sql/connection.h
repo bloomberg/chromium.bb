@@ -166,7 +166,7 @@ class SQL_EXPORT Connection {
   //
   // If no callback is set, the default action is to crash in debug
   // mode or return failure in release mode.
-  typedef base::RepeatingCallback<void(int, Statement*)> ErrorCallback;
+  using ErrorCallback = base::RepeatingCallback<void(int, Statement*)>;
   void set_error_callback(const ErrorCallback& callback) {
     error_callback_ = callback;
   }
@@ -563,7 +563,7 @@ class SQL_EXPORT Connection {
 
   // Accessors for global error-expecter, for injecting behavior during tests.
   // See test/scoped_error_expecter.h.
-  typedef base::RepeatingCallback<bool(int)> ErrorExpecterCallback;
+  using ErrorExpecterCallback = base::RepeatingCallback<bool(int)>;
   static ErrorExpecterCallback* current_expecter_cb_;
   static void SetErrorExpecter(ErrorExpecterCallback* expecter);
   static void ResetErrorExpecter();
@@ -619,7 +619,10 @@ class SQL_EXPORT Connection {
 
     // Check whether the current thread is allowed to make IO calls, but only
     // if database wasn't open in memory.
-    void AssertIOAllowed() { if (connection_) connection_->AssertIOAllowed(); }
+    void AssertIOAllowed() const {
+      if (connection_)
+        connection_->AssertIOAllowed();
+    }
 
    private:
     friend class base::RefCounted<StatementRef>;
@@ -764,18 +767,17 @@ class SQL_EXPORT Connection {
   bool exclusive_locking_;
   bool restrict_to_user_;
 
-  // All cached statements. Keeping a reference to these statements means that
-  // they'll remain active. Using flat_map here because number of cached
-  // statements is expected to be small, see //base/containers/README.md.
-  typedef base::flat_map<StatementID, scoped_refptr<StatementRef>>
-      CachedStatementMap;
-  CachedStatementMap statement_cache_;
+  // Holds references to all cached statements so they remain active.
+  //
+  // flat_map is appropriate here because the codebase has ~400 cached
+  // statements, and each statement is at most one insertion in the map
+  // throughout a process' lifetime.
+  base::flat_map<StatementID, scoped_refptr<StatementRef>> statement_cache_;
 
   // A list of all StatementRefs we've given out. Each ref must register with
   // us when it's created or destroyed. This allows us to potentially close
   // any open statements when we encounter an error.
-  typedef std::set<StatementRef*> StatementRefSet;
-  StatementRefSet open_statements_;
+  std::set<StatementRef*> open_statements_;
 
   // Number of currently-nested transactions.
   int transaction_nesting_;
