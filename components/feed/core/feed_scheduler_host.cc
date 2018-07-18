@@ -10,8 +10,11 @@
 #include <vector>
 
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/feed/core/pref_names.h"
@@ -45,41 +48,32 @@ const base::FeatureParam<std::string> kDisableTriggerTypes{
 // default value.
 ParamPair LookupParam(UserClass user_class, TriggerType trigger) {
   switch (user_class) {
-    case UserClass::RARE_NTP_USER:
+    case UserClass::kRareNtpUser:
       switch (trigger) {
-        case TriggerType::NTP_SHOWN:
+        case TriggerType::kNtpShown:
           return {"ntp_shown_hours_rare_ntp_user", 4.0};
-        case TriggerType::FOREGROUNDED:
+        case TriggerType::kForegrounded:
           return {"foregrounded_hours_rare_ntp_user", 24.0};
-        case TriggerType::FIXED_TIMER:
+        case TriggerType::kFixedTimer:
           return {"fixed_timer_hours_rare_ntp_user", 96.0};
-        case TriggerType::COUNT:
-          NOTREACHED();
-          return {"", 0.0};
       }
-    case UserClass::ACTIVE_NTP_USER:
+    case UserClass::kActiveNtpUser:
       switch (trigger) {
-        case TriggerType::NTP_SHOWN:
+        case TriggerType::kNtpShown:
           return {"ntp_shown_hours_active_ntp_user", 4.0};
-        case TriggerType::FOREGROUNDED:
+        case TriggerType::kForegrounded:
           return {"foregrounded_hours_active_ntp_user", 24.0};
-        case TriggerType::FIXED_TIMER:
+        case TriggerType::kFixedTimer:
           return {"fixed_timer_hours_active_ntp_user", 48.0};
-        case TriggerType::COUNT:
-          NOTREACHED();
-          return {"", 0.0};
       }
-    case UserClass::ACTIVE_SUGGESTIONS_CONSUMER:
+    case UserClass::kActiveSuggestionsConsumer:
       switch (trigger) {
-        case TriggerType::NTP_SHOWN:
+        case TriggerType::kNtpShown:
           return {"ntp_shown_hours_active_suggestions_consumer", 1.0};
-        case TriggerType::FOREGROUNDED:
+        case TriggerType::kForegrounded:
           return {"foregrounded_hours_active_suggestions_consumer", 12.0};
-        case TriggerType::FIXED_TIMER:
+        case TriggerType::kFixedTimer:
           return {"fixed_timer_hours_active_suggestions_consumer", 24.0};
-        case TriggerType::COUNT:
-          NOTREACHED();
-          return {"", 0.0};
       }
   }
 }
@@ -87,15 +81,15 @@ ParamPair LookupParam(UserClass user_class, TriggerType trigger) {
 // Coverts from base::StringPiece to TriggerType and adds it to the set if the
 // trigger is recognized. Otherwise it is ignored.
 void TryAddTriggerType(base::StringPiece trigger_as_string_piece,
-                       std::set<TriggerType>* set) {
-  static_assert(static_cast<unsigned int>(TriggerType::COUNT) == 3,
+                       std::set<TriggerType>* trigger_set) {
+  static_assert(static_cast<unsigned int>(TriggerType::kMaxValue) == 2,
                 "New TriggerTypes must be handled below.");
   if (trigger_as_string_piece == "ntp_shown") {
-    set->insert(TriggerType::NTP_SHOWN);
+    trigger_set->insert(TriggerType::kNtpShown);
   } else if (trigger_as_string_piece == "foregrounded") {
-    set->insert(TriggerType::FOREGROUNDED);
+    trigger_set->insert(TriggerType::kForegrounded);
   } else if (trigger_as_string_piece == "fixed_timer") {
-    set->insert(TriggerType::FIXED_TIMER);
+    trigger_set->insert(TriggerType::kFixedTimer);
   }
 }
 
@@ -120,6 +114,35 @@ void TryRun(base::OnceClosure closure) {
   if (closure) {
     std::move(closure).Run();
   }
+}
+
+// Converts UserClassifier::UserClass to a string that corresponds to the
+// entries in histogram suffix "UserClasses".
+std::string UserClassToHistogramSuffix(UserClassifier::UserClass user_class) {
+  switch (user_class) {
+    case UserClassifier::UserClass::kRareNtpUser:
+      return "RareNTPUser";
+    case UserClassifier::UserClass::kActiveNtpUser:
+      return "ActiveNTPUser";
+    case UserClassifier::UserClass::kActiveSuggestionsConsumer:
+      return "ActiveSuggestionsConsumer";
+  }
+}
+
+// This has a small performance penalty because it is looking up the histogram
+// dynamically, which avoids a significantly amount of boilerplate code for the
+// various |qualified_trigger| and user class strings. This is reasonable
+// because this method is only called as a result of a direct user interaction,
+// like opening the NTP or foregrounding the browser.
+void ReportAgeWithSuffix(const std::string& qualified_trigger,
+                         UserClassifier::UserClass user_class,
+                         base::TimeDelta sample) {
+  std::string name = base::StringPrintf(
+      "NewTabPage.ContentSuggestions.%s.%s", qualified_trigger.c_str(),
+      UserClassToHistogramSuffix(user_class).c_str());
+  base::UmaHistogramCustomTimes(name, sample, base::TimeDelta::FromSeconds(1),
+                                base::TimeDelta::FromDays(7),
+                                /*bucket_count=*/50);
 }
 
 }  // namespace
@@ -162,7 +185,7 @@ void FeedSchedulerHost::Initialize(
 
   base::TimeDelta old_period =
       profile_prefs_->GetTimeDelta(prefs::kBackgroundRefreshPeriod);
-  base::TimeDelta new_period = GetTriggerThreshold(TriggerType::FIXED_TIMER);
+  base::TimeDelta new_period = GetTriggerThreshold(TriggerType::kFixedTimer);
   if (old_period != new_period) {
     ScheduleFixedTimerWakeUp(new_period);
   }
@@ -183,35 +206,35 @@ NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
   tracking_oustanding_request_ |= has_outstanding_request;
 
   NativeRequestBehavior behavior;
-  if (ShouldRefresh(TriggerType::NTP_SHOWN)) {
+  if (ShouldRefresh(TriggerType::kNtpShown)) {
     if (!has_content) {
-      behavior = REQUEST_WITH_WAIT;
+      behavior = kRequestWithWait;
     } else if (IsContentStale(content_creation_date_time)) {
-      behavior = REQUEST_WITH_TIMEOUT;
+      behavior = kRequestWithTimeout;
     } else {
-      behavior = REQUEST_WITH_CONTENT;
+      behavior = kRequestWithContent;
     }
   } else {
-    // Note that NO_REQUEST_WITH_WAIT is used to show a blank article section
+    // Note that kNoRequestWithWait is used to show a blank article section
     // even when no request is being made. The user will be given the ability to
     // force a refresh but this scheduler is not driving it.
     if (!has_content) {
-      behavior = NO_REQUEST_WITH_WAIT;
+      behavior = kNoRequestWithWait;
     } else if (IsContentStale(content_creation_date_time) &&
                has_outstanding_request) {
       // This needs to check |has_outstanding_request|, it does not make sense
       // to use a timeout when no request is being made. Just show the stale
       // content, since nothing better is on the way.
-      behavior = NO_REQUEST_WITH_TIMEOUT;
+      behavior = kNoRequestWithTimeout;
     } else {
-      behavior = NO_REQUEST_WITH_CONTENT;
+      behavior = kNoRequestWithContent;
     }
   }
 
-  // TODO(skym): Record requested behavior into histogram.
-  user_classifier_.OnEvent(UserClassifier::Event::NTP_OPENED);
+  user_classifier_.OnEvent(UserClassifier::Event::kNtpOpened);
   DVLOG(2) << "Specifying NativeRequestBehavior of "
            << static_cast<int>(behavior);
+  UMA_HISTOGRAM_ENUMERATION("Feed.Scheduler.RequestBehavior", behavior);
   return behavior;
 }
 
@@ -220,26 +243,33 @@ void FeedSchedulerHost::OnReceiveNewContent(
   profile_prefs_->SetTime(prefs::kLastFetchAttemptTime,
                           content_creation_date_time);
   TryRun(std::move(fixed_timer_completion_));
-  ScheduleFixedTimerWakeUp(GetTriggerThreshold(TriggerType::FIXED_TIMER));
+  ScheduleFixedTimerWakeUp(GetTriggerThreshold(TriggerType::kFixedTimer));
   tracking_oustanding_request_ = false;
+  time_until_first_shown_trigger_reported_ = false;
+  time_until_first_foregrounded_trigger_reported_ = false;
+  DVLOG(2) << "Received OnReceiveNewContent with time "
+           << content_creation_date_time;
 }
 
 void FeedSchedulerHost::OnRequestError(int network_response_code) {
   profile_prefs_->SetTime(prefs::kLastFetchAttemptTime, clock_->Now());
   TryRun(std::move(fixed_timer_completion_));
   tracking_oustanding_request_ = false;
+  time_until_first_shown_trigger_reported_ = false;
+  time_until_first_foregrounded_trigger_reported_ = false;
+  DVLOG(2) << "Received OnRequestError with code " << network_response_code;
 }
 
 void FeedSchedulerHost::OnForegrounded() {
   DCHECK(refresh_callback_);
-  if (ShouldRefresh(TriggerType::FOREGROUNDED)) {
+  if (ShouldRefresh(TriggerType::kForegrounded)) {
     refresh_callback_.Run();
   }
 }
 
 void FeedSchedulerHost::OnFixedTimer(base::OnceClosure on_completion) {
   DCHECK(refresh_callback_);
-  if (ShouldRefresh(TriggerType::FIXED_TIMER)) {
+  if (ShouldRefresh(TriggerType::kFixedTimer)) {
     // There shouldn't typically be anything in |fixed_timer_completion_| right
     // now, but if there was, run it before we replace it.
     TryRun(std::move(fixed_timer_completion_));
@@ -254,11 +284,11 @@ void FeedSchedulerHost::OnFixedTimer(base::OnceClosure on_completion) {
 }
 
 void FeedSchedulerHost::OnTaskReschedule() {
-  ScheduleFixedTimerWakeUp(GetTriggerThreshold(TriggerType::FIXED_TIMER));
+  ScheduleFixedTimerWakeUp(GetTriggerThreshold(TriggerType::kFixedTimer));
 }
 
 void FeedSchedulerHost::OnSuggestionConsumed() {
-  user_classifier_.OnEvent(UserClassifier::Event::SUGGESTIONS_USED);
+  user_classifier_.OnEvent(UserClassifier::Event::kSuggestionsUsed);
 }
 
 void FeedSchedulerHost::OnHistoryCleared() {
@@ -277,8 +307,6 @@ void FeedSchedulerHost::OnEulaAccepted() {
 }
 
 bool FeedSchedulerHost::ShouldRefresh(TriggerType trigger) {
-  // TODO(skym): Record metrics throughout this method per design.
-
   if (tracking_oustanding_request_) {
     DVLOG(2) << "Outstanding request stopped refresh from trigger "
              << static_cast<int>(trigger);
@@ -303,28 +331,58 @@ bool FeedSchedulerHost::ShouldRefresh(TriggerType trigger) {
     return false;
   }
 
+  base::TimeDelta attempt_age =
+      clock_->Now() - profile_prefs_->GetTime(prefs::kLastFetchAttemptTime);
+  UserClassifier::UserClass user_class = user_classifier_.GetUserClass();
+
+  if (trigger == TriggerType::kNtpShown &&
+      !time_until_first_shown_trigger_reported_) {
+    time_until_first_shown_trigger_reported_ = true;
+    ReportAgeWithSuffix("TimeUntilFirstShownTrigger", user_class, attempt_age);
+  }
+
+  if (trigger == TriggerType::kForegrounded &&
+      !time_until_first_foregrounded_trigger_reported_) {
+    time_until_first_foregrounded_trigger_reported_ = true;
+    ReportAgeWithSuffix("TimeUntilFirstStartupTrigger", user_class,
+                        attempt_age);
+  }
+
   if (clock_->Now() < suppress_refreshes_until_) {
     DVLOG(2) << "Refresh suppression until " << suppress_refreshes_until_
              << " stopped refresh from trigger " << static_cast<int>(trigger);
     return false;
   }
 
-  base::TimeDelta attempt_age =
-      clock_->Now() - profile_prefs_->GetTime(prefs::kLastFetchAttemptTime);
   if (attempt_age < GetTriggerThreshold(trigger)) {
     DVLOG(2) << "Last attempt age of " << attempt_age
              << " stopped refresh from trigger " << static_cast<int>(trigger);
     return false;
   }
 
+  // TODO(skym): Check with throttler.
+
+  switch (trigger) {
+    case TriggerType::kNtpShown:
+      ReportAgeWithSuffix("TimeUntilSoftFetch", user_class, attempt_age);
+      break;
+    case TriggerType::kForegrounded:
+      ReportAgeWithSuffix("TimeUntilStartupFetch", user_class, attempt_age);
+      break;
+    case TriggerType::kFixedTimer:
+      ReportAgeWithSuffix("TimeUntilPersistentFetch", user_class, attempt_age);
+      break;
+  }
+
   DVLOG(2) << "Requesting refresh from trigger " << static_cast<int>(trigger);
+  UMA_HISTOGRAM_ENUMERATION("Feed.Scheduler.RefreshTrigger", trigger);
   tracking_oustanding_request_ = true;
   return true;
 }
 
 bool FeedSchedulerHost::IsContentStale(base::Time content_creation_date_time) {
   return (clock_->Now() - content_creation_date_time) >
-         GetTriggerThreshold(TriggerType::FOREGROUNDED);
+         GetTriggerThreshold(TriggerType::kForegrounded);
 }
 
 base::TimeDelta FeedSchedulerHost::GetTriggerThreshold(TriggerType trigger) {

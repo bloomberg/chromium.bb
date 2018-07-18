@@ -4,10 +4,12 @@
 
 #include "components/feed/core/feed_scheduler_host.h"
 
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "components/feed/core/pref_names.h"
 #include "components/feed/core/time_serialization.h"
@@ -73,13 +75,13 @@ class FeedSchedulerHostTest : public ::testing::Test {
   // Note: Time will be advanced.
   void ClassifyAsRareNtpUser() {
     // By moving time forward from initial seed events, the user will be moved
-    // into RARE_NTP_USER classification.
+    // into kRareNtpUser classification.
     test_clock()->Advance(TimeDelta::FromDays(7));
   }
 
   // Note: Time will be advanced.
   void ClassifyAsActiveSuggestionsConsumer() {
-    // Click on some articles to move the user into ACTIVE_SUGGESTIONS_CONSUMER
+    // Click on some articles to move the user into kActiveSuggestionsConsumer
     // classification. Separate by at least 30 minutes for different sessions.
     scheduler()->OnSuggestionConsumed();
     test_clock()->Advance(TimeDelta::FromMinutes(31));
@@ -153,9 +155,9 @@ TEST_F(FeedSchedulerHostTest, GetTriggerThreshold) {
   // Make sure that there is no missing configuration in the Cartesian product
   // of states between TriggerType and UserClass.
   std::vector<FeedSchedulerHost::TriggerType> triggers = {
-      FeedSchedulerHost::TriggerType::NTP_SHOWN,
-      FeedSchedulerHost::TriggerType::FOREGROUNDED,
-      FeedSchedulerHost::TriggerType::FIXED_TIMER};
+      FeedSchedulerHost::TriggerType::kNtpShown,
+      FeedSchedulerHost::TriggerType::kForegrounded,
+      FeedSchedulerHost::TriggerType::kFixedTimer};
 
   // Classification starts out as an active NTP user.
   for (FeedSchedulerHost::TriggerType trigger : triggers) {
@@ -174,7 +176,7 @@ TEST_F(FeedSchedulerHostTest, GetTriggerThreshold) {
 }
 
 TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataSimple) {
-  // For an ACTIVE_NTP_USER, refreshes on NTP_OPEN should be triggered after 4
+  // For an kActiveNtpUser, refreshes on NTP_OPEN should be triggered after 4
   // hours, and staleness should be at 24 hours. Each case tests a range of
   // values.
   Time no_refresh_large = test_clock()->Now() - TimeDelta::FromHours(3);
@@ -182,70 +184,69 @@ TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataSimple) {
   Time refresh_only_large = test_clock()->Now() - TimeDelta::FromHours(23);
   Time stale_small = test_clock()->Now() - TimeDelta::FromHours(25);
 
-  EXPECT_EQ(REQUEST_WITH_WAIT,
+  EXPECT_EQ(kRequestWithWait,
             ShouldSessionRequestData(
                 /*has_content*/ false, /*content_creation_date_time*/ Time(),
                 /*has_outstanding_request*/ false));
 
-  EXPECT_EQ(REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kRequestWithContent,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ refresh_only_small,
                 /*has_outstanding_request*/ false));
-  EXPECT_EQ(REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kRequestWithContent,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ refresh_only_large,
                 /*has_outstanding_request*/ false));
 
-  EXPECT_EQ(
-      REQUEST_WITH_TIMEOUT,
-      ShouldSessionRequestData(
-          /*has_content*/ true, /*content_creation_date_time*/ stale_small,
-          /*has_outstanding_request*/ false));
-  EXPECT_EQ(REQUEST_WITH_TIMEOUT,
+  EXPECT_EQ(kRequestWithTimeout, ShouldSessionRequestData(
+                                     /*has_content*/ true,
+                                     /*content_creation_date_time*/ stale_small,
+                                     /*has_outstanding_request*/ false));
+  EXPECT_EQ(kRequestWithTimeout,
             ShouldSessionRequestData(
                 /*has_content*/ true, /*content_creation_date_time*/ Time(),
                 /*has_outstanding_request*/ false));
 
   // |content_creation_date_time| should be ignored when |has_content| is false.
-  EXPECT_EQ(NO_REQUEST_WITH_WAIT,
+  EXPECT_EQ(kNoRequestWithWait,
             ShouldSessionRequestData(
                 /*has_content*/ false,
                 /*content_creation_date_time*/ test_clock()->Now(),
                 /*has_outstanding_request*/ true));
-  EXPECT_EQ(NO_REQUEST_WITH_WAIT,
+  EXPECT_EQ(kNoRequestWithWait,
             ShouldSessionRequestData(
                 /*has_content*/ false, /*content_creation_date_time*/ Time(),
                 /*has_outstanding_request*/ true));
 
-  EXPECT_EQ(NO_REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kNoRequestWithContent,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now(),
                 /*has_outstanding_request*/ false));
-  EXPECT_EQ(NO_REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kNoRequestWithContent,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ no_refresh_large,
                 /*has_outstanding_request*/ false));
-  EXPECT_EQ(NO_REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kNoRequestWithContent,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now(),
                 /*has_outstanding_request*/ true));
-  EXPECT_EQ(NO_REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kNoRequestWithContent,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ refresh_only_large,
                 /*has_outstanding_request*/ true));
 
   EXPECT_EQ(
-      NO_REQUEST_WITH_TIMEOUT,
+      kNoRequestWithTimeout,
       ShouldSessionRequestData(
           /*has_content*/ true, /*content_creation_date_time*/ stale_small,
           /*has_outstanding_request*/ true));
-  EXPECT_EQ(NO_REQUEST_WITH_TIMEOUT,
+  EXPECT_EQ(kNoRequestWithTimeout,
             ShouldSessionRequestData(
                 /*has_content*/ true, /*content_creation_date_time*/ Time(),
                 /*has_outstanding_request*/ true));
@@ -258,7 +259,7 @@ TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataDivergentTimes) {
   // |content_creation_date_time|, but because staleness uses a bigger threshold
   // than NTP_OPEN, this will not affect much.
 
-  // Like above case, the user is an ACTIVE_NTP_USER, staleness at 24 hours and
+  // Like above case, the user is an kActiveNtpUser, staleness at 24 hours and
   // refresh at 4.
   Time refresh = test_clock()->Now() - TimeDelta::FromHours(5);
   Time no_refresh = test_clock()->Now() - TimeDelta::FromHours(3);
@@ -266,28 +267,28 @@ TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataDivergentTimes) {
   Time not_stale = test_clock()->Now() - TimeDelta::FromHours(23);
 
   ResetRefreshState(no_refresh);
-  EXPECT_EQ(NO_REQUEST_WITH_CONTENT, scheduler()->ShouldSessionRequestData(
-                                         /*has_content*/ true,
-                                         /*content_creation_date_time*/ stale,
-                                         /*has_outstanding_request*/ false));
+  EXPECT_EQ(kNoRequestWithContent, scheduler()->ShouldSessionRequestData(
+                                       /*has_content*/ true,
+                                       /*content_creation_date_time*/ stale,
+                                       /*has_outstanding_request*/ false));
 
   ResetRefreshState(refresh);
-  EXPECT_EQ(REQUEST_WITH_CONTENT, scheduler()->ShouldSessionRequestData(
-                                      /*has_content*/ true,
-                                      /*content_creation_date_time*/ not_stale,
-                                      /*has_outstanding_request*/ false));
+  EXPECT_EQ(kRequestWithContent, scheduler()->ShouldSessionRequestData(
+                                     /*has_content*/ true,
+                                     /*content_creation_date_time*/ not_stale,
+                                     /*has_outstanding_request*/ false));
 
   ResetRefreshState(refresh);
-  EXPECT_EQ(REQUEST_WITH_TIMEOUT, scheduler()->ShouldSessionRequestData(
-                                      /*has_content*/ true,
-                                      /*content_creation_date_time*/ stale,
-                                      /*has_outstanding_request*/ false));
+  EXPECT_EQ(kRequestWithTimeout, scheduler()->ShouldSessionRequestData(
+                                     /*has_content*/ true,
+                                     /*content_creation_date_time*/ stale,
+                                     /*has_outstanding_request*/ false));
 
   // This shouldn't be possible, since last attempt is farther back than
   // |content_creation_date_time| which updates on success, but verify scheduler
   // handles it reasonably.
   ResetRefreshState(Time());
-  EXPECT_EQ(REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kRequestWithContent,
             scheduler()->ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now(),
@@ -300,7 +301,7 @@ TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataDivergentTimes) {
       {kInterestFeedContentSuggestions.name});
 
   ResetRefreshState(Time());
-  EXPECT_EQ(REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kRequestWithContent,
             scheduler()->ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
@@ -308,7 +309,7 @@ TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataDivergentTimes) {
                 /*has_outstanding_request*/ false));
 
   ResetRefreshState(Time());
-  EXPECT_EQ(REQUEST_WITH_TIMEOUT,
+  EXPECT_EQ(kRequestWithTimeout,
             scheduler()->ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
@@ -322,14 +323,14 @@ TEST_F(FeedSchedulerHostTest, NtpShownActiveNtpUser) {
       {{"ntp_shown_hours_active_ntp_user", "2.5"}},
       {kInterestFeedContentSuggestions.name});
 
-  EXPECT_EQ(NO_REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kNoRequestWithContent,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
                     TimeDelta::FromHours(2),
                 /*has_outstanding_request*/ false));
 
-  EXPECT_EQ(REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kRequestWithContent,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
@@ -345,7 +346,7 @@ TEST_F(FeedSchedulerHostTest, NtpShownRareNtpUser) {
 
   ClassifyAsRareNtpUser();
 
-  EXPECT_EQ(NO_REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kNoRequestWithContent,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
@@ -356,7 +357,7 @@ TEST_F(FeedSchedulerHostTest, NtpShownRareNtpUser) {
   // the classifier, so push the timer out to keep classification.
   ClassifyAsRareNtpUser();
 
-  EXPECT_EQ(REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kRequestWithContent,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
@@ -367,14 +368,14 @@ TEST_F(FeedSchedulerHostTest, NtpShownRareNtpUser) {
 TEST_F(FeedSchedulerHostTest, NtpShownActiveSuggestionsConsumer) {
   ClassifyAsActiveSuggestionsConsumer();
 
-  EXPECT_EQ(NO_REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kNoRequestWithContent,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
                     TimeDelta::FromMinutes(59),
                 /*has_outstanding_request*/ false));
 
-  EXPECT_EQ(REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kRequestWithContent,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
@@ -386,14 +387,14 @@ TEST_F(FeedSchedulerHostTest, NtpShownActiveSuggestionsConsumer) {
       {{"ntp_shown_hours_active_suggestions_consumer", "7.5"}},
       {kInterestFeedContentSuggestions.name});
 
-  EXPECT_EQ(NO_REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kNoRequestWithContent,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
                     TimeDelta::FromHours(7),
                 /*has_outstanding_request*/ false));
 
-  EXPECT_EQ(REQUEST_WITH_CONTENT,
+  EXPECT_EQ(kRequestWithContent,
             ShouldSessionRequestData(
                 /*has_content*/ true,
                 /*content_creation_date_time*/ test_clock()->Now() -
@@ -683,7 +684,7 @@ TEST_F(FeedSchedulerHostTest, DisableOneTrigger) {
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(1, refresh_call_count());
 
-  EXPECT_EQ(REQUEST_WITH_WAIT,
+  EXPECT_EQ(kRequestWithWait,
             ShouldSessionRequestData(
                 /*has_content*/ false, /*content_creation_date_time*/ Time(),
                 /*has_outstanding_request*/ false));
@@ -702,7 +703,7 @@ TEST_F(FeedSchedulerHostTest, DisableAllTriggers) {
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(0, refresh_call_count());
 
-  EXPECT_EQ(NO_REQUEST_WITH_WAIT,
+  EXPECT_EQ(kNoRequestWithWait,
             ShouldSessionRequestData(
                 /*has_content*/ false, /*content_creation_date_time*/ Time(),
                 /*has_outstanding_request*/ false));
@@ -723,7 +724,7 @@ TEST_F(FeedSchedulerHostTest, DisableBogusTriggers) {
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(2, refresh_call_count());
 
-  EXPECT_EQ(REQUEST_WITH_WAIT,
+  EXPECT_EQ(kRequestWithWait,
             ShouldSessionRequestData(
                 /*has_content*/ false, /*content_creation_date_time*/ Time(),
                 /*has_outstanding_request*/ false));
@@ -743,7 +744,7 @@ TEST_F(FeedSchedulerHostTest, OnHistoryCleared) {
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(0, refresh_call_count());
 
-  EXPECT_EQ(NO_REQUEST_WITH_WAIT,
+  EXPECT_EQ(kNoRequestWithWait,
             ShouldSessionRequestData(
                 /*has_content*/ false, /*content_creation_date_time*/ Time(),
                 /*has_outstanding_request*/ false));
@@ -784,7 +785,7 @@ TEST_F(FeedSchedulerHostTest, OustandingRequest) {
   scheduler()->OnForegrounded();
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(1, refresh_call_count());
-  EXPECT_EQ(NO_REQUEST_WITH_WAIT,
+  EXPECT_EQ(kNoRequestWithWait,
             scheduler()->ShouldSessionRequestData(
                 /*has_content*/ false, /*content_creation_date_time*/ Time(),
                 /*has_outstanding_request*/ true));
@@ -822,7 +823,7 @@ TEST_F(FeedSchedulerHostTest, OustandingRequest) {
 }
 
 TEST_F(FeedSchedulerHostTest, IncorporatesExternalOustandingRequest) {
-  EXPECT_EQ(NO_REQUEST_WITH_WAIT,
+  EXPECT_EQ(kNoRequestWithWait,
             scheduler()->ShouldSessionRequestData(
                 /*has_content*/ false, /*content_creation_date_time*/ Time(),
                 /*has_outstanding_request*/ true));
@@ -833,6 +834,44 @@ TEST_F(FeedSchedulerHostTest, IncorporatesExternalOustandingRequest) {
   // prevent the OnForegrounded() from requesting a refresh.
   scheduler()->OnForegrounded();
   EXPECT_EQ(0, refresh_call_count());
+}
+
+TEST_F(FeedSchedulerHostTest, TimeUntilFirstMetrics) {
+  base::HistogramTester histogram_tester;
+  std::string ntpOpenedHistogram =
+      "NewTabPage.ContentSuggestions.TimeUntilFirstShownTrigger.ActiveNTPUser";
+  std::string forgroundedHistogram =
+      "NewTabPage.ContentSuggestions.TimeUntilFirstStartupTrigger"
+      ".ActiveNTPUser";
+  Time now = test_clock()->Now();
+  profile_prefs()->SetTime(prefs::kLastFetchAttemptTime, now);
+  EXPECT_EQ(0U, histogram_tester.GetAllSamples(ntpOpenedHistogram).size());
+  EXPECT_EQ(0U, histogram_tester.GetAllSamples(forgroundedHistogram).size());
+
+  scheduler()->ShouldSessionRequestData(
+      /*has_content*/ false, now, /*has_outstanding_request*/ false);
+  EXPECT_EQ(1, histogram_tester.GetBucketCount(ntpOpenedHistogram, 0));
+  EXPECT_EQ(0U, histogram_tester.GetAllSamples(forgroundedHistogram).size());
+
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(1, histogram_tester.GetBucketCount(ntpOpenedHistogram, 0));
+  EXPECT_EQ(1, histogram_tester.GetBucketCount(forgroundedHistogram, 0));
+
+  scheduler()->ShouldSessionRequestData(
+      /*has_content*/ false, now, /*has_outstanding_request*/ false);
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(1, histogram_tester.GetBucketCount(ntpOpenedHistogram, 0));
+  EXPECT_EQ(1, histogram_tester.GetBucketCount(forgroundedHistogram, 0));
+
+  // OnRequestError() should reset the flags, allowing these metrics to be
+  // reported again.
+  scheduler()->OnRequestError(0);
+
+  scheduler()->ShouldSessionRequestData(
+      /*has_content*/ false, now, /*has_outstanding_request*/ false);
+  scheduler()->OnForegrounded();
+  EXPECT_EQ(2, histogram_tester.GetBucketCount(ntpOpenedHistogram, 0));
+  EXPECT_EQ(2, histogram_tester.GetBucketCount(forgroundedHistogram, 0));
 }
 
 }  // namespace feed

@@ -59,7 +59,7 @@ class FeedUserClassifierTest : public testing::Test {
 TEST_F(FeedUserClassifierTest, ShouldBeActiveNtpUserInitially) {
   UserClassifier* user_classifier = CreateUserClassifier();
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::ACTIVE_NTP_USER));
+              Eq(UserClassifier::UserClass::kActiveNtpUser));
 }
 
 TEST_F(FeedUserClassifierTest,
@@ -67,17 +67,17 @@ TEST_F(FeedUserClassifierTest,
   UserClassifier* user_classifier = CreateUserClassifier();
 
   // After one click still only an active user.
-  user_classifier->OnEvent(UserClassifier::Event::SUGGESTIONS_USED);
+  user_classifier->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::ACTIVE_NTP_USER));
+              Eq(UserClassifier::UserClass::kActiveNtpUser));
 
   // After a few more clicks, become an active consumer.
   for (int i = 0; i < 5; i++) {
     test_clock()->Advance(base::TimeDelta::FromHours(1));
-    user_classifier->OnEvent(UserClassifier::Event::SUGGESTIONS_USED);
+    user_classifier->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   }
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::ACTIVE_SUGGESTIONS_CONSUMER));
+              Eq(UserClassifier::UserClass::kActiveSuggestionsConsumer));
 }
 
 TEST_F(FeedUserClassifierTest,
@@ -91,17 +91,17 @@ TEST_F(FeedUserClassifierTest,
   UserClassifier* user_classifier = CreateUserClassifier();
 
   // After two clicks still only an active user.
-  user_classifier->OnEvent(UserClassifier::Event::SUGGESTIONS_USED);
+  user_classifier->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   test_clock()->Advance(base::TimeDelta::FromHours(1));
-  user_classifier->OnEvent(UserClassifier::Event::SUGGESTIONS_USED);
+  user_classifier->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::ACTIVE_NTP_USER));
+              Eq(UserClassifier::UserClass::kActiveNtpUser));
 
   // One more click to become an active consumer.
   test_clock()->Advance(base::TimeDelta::FromHours(1));
-  user_classifier->OnEvent(UserClassifier::Event::SUGGESTIONS_USED);
+  user_classifier->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::ACTIVE_SUGGESTIONS_CONSUMER));
+              Eq(UserClassifier::UserClass::kActiveSuggestionsConsumer));
 }
 
 TEST_F(FeedUserClassifierTest, ShouldBecomeRareNtpUserByNoActivity) {
@@ -110,12 +110,12 @@ TEST_F(FeedUserClassifierTest, ShouldBecomeRareNtpUserByNoActivity) {
   // After two days of waiting still an active user.
   test_clock()->Advance(base::TimeDelta::FromDays(2));
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::ACTIVE_NTP_USER));
+              Eq(UserClassifier::UserClass::kActiveNtpUser));
 
   // Two more days to become a rare user.
   test_clock()->Advance(base::TimeDelta::FromDays(2));
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::RARE_NTP_USER));
+              Eq(UserClassifier::UserClass::kRareNtpUser));
 }
 
 TEST_F(FeedUserClassifierTest,
@@ -130,17 +130,18 @@ TEST_F(FeedUserClassifierTest,
   // After one days of waiting still an active user.
   test_clock()->Advance(base::TimeDelta::FromDays(1));
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::ACTIVE_NTP_USER));
+              Eq(UserClassifier::UserClass::kActiveNtpUser));
 
   // One more day to become a rare user.
   test_clock()->Advance(base::TimeDelta::FromDays(1));
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::RARE_NTP_USER));
+              Eq(UserClassifier::UserClass::kRareNtpUser));
 }
 
 class FeedUserClassifierEventTest
     : public FeedUserClassifierTest,
-      public ::testing::WithParamInterface<UserClassifier::Event> {
+      public ::testing::WithParamInterface<
+          std::pair<UserClassifier::Event, std::string>> {
  public:
   FeedUserClassifierEventTest() {}
 
@@ -149,7 +150,7 @@ class FeedUserClassifierEventTest
 };
 
 TEST_P(FeedUserClassifierEventTest, ShouldDecreaseEstimateAfterEvent) {
-  UserClassifier::Event event = GetParam();
+  UserClassifier::Event event = GetParam().first;
   UserClassifier* user_classifier = CreateUserClassifier();
 
   // The initial event. does not decrease the estimate.
@@ -163,8 +164,18 @@ TEST_P(FeedUserClassifierEventTest, ShouldDecreaseEstimateAfterEvent) {
   }
 }
 
+TEST_P(FeedUserClassifierEventTest, ShouldReportToUmaOnEvent) {
+  UserClassifier::Event event = GetParam().first;
+  const std::string& histogram_name = GetParam().second;
+  base::HistogramTester histogram_tester;
+  UserClassifier* user_classifier = CreateUserClassifier();
+
+  user_classifier->OnEvent(event);
+  EXPECT_THAT(histogram_tester.GetAllSamples(histogram_name), SizeIs(1));
+}
+
 TEST_P(FeedUserClassifierEventTest, ShouldConvergeTowardsPattern) {
-  UserClassifier::Event event = GetParam();
+  UserClassifier::Event event = GetParam().first;
   UserClassifier* user_classifier = CreateUserClassifier();
 
   // Have the pattern of an event every five hours and start changing it towards
@@ -189,7 +200,7 @@ TEST_P(FeedUserClassifierEventTest, ShouldConvergeTowardsPattern) {
 }
 
 TEST_P(FeedUserClassifierEventTest, ShouldIgnoreSubsequentEventsForHalfAnHour) {
-  UserClassifier::Event event = GetParam();
+  UserClassifier::Event event = GetParam().first;
   UserClassifier* user_classifier = CreateUserClassifier();
 
   // The initial event.
@@ -210,7 +221,7 @@ TEST_P(FeedUserClassifierEventTest, ShouldIgnoreSubsequentEventsForHalfAnHour) {
 
 TEST_P(FeedUserClassifierEventTest,
        ShouldIgnoreSubsequentEventsWithIncreasedLimit) {
-  UserClassifier::Event event = GetParam();
+  UserClassifier::Event event = GetParam().first;
   // Increase the min_hours to 1.0, i.e. 60 minutes.
   variations::testing::VariationParamsManager variation_params(
       kInterestFeedContentSuggestions.name,
@@ -235,7 +246,7 @@ TEST_P(FeedUserClassifierEventTest,
 }
 
 TEST_P(FeedUserClassifierEventTest, ShouldCapDelayBetweenEvents) {
-  UserClassifier::Event event = GetParam();
+  UserClassifier::Event event = GetParam().first;
   UserClassifier* user_classifier = CreateUserClassifier();
 
   // The initial event.
@@ -258,7 +269,7 @@ TEST_P(FeedUserClassifierEventTest, ShouldCapDelayBetweenEvents) {
 
 TEST_P(FeedUserClassifierEventTest,
        ShouldCapDelayBetweenEventsWithDecreasedLimit) {
-  UserClassifier::Event event = GetParam();
+  UserClassifier::Event event = GetParam().first;
   // Decrease the max_hours to 72, i.e. 3 days.
   variations::testing::VariationParamsManager variation_params(
       kInterestFeedContentSuggestions.name,
@@ -288,9 +299,12 @@ INSTANTIATE_TEST_CASE_P(
     ,  // An empty prefix for the parametrized tests names (no need to
        // distinguish the only instance we make here).
     FeedUserClassifierEventTest,
-    testing::Values(UserClassifier::Event::NTP_OPENED,
-                    UserClassifier::Event::SUGGESTIONS_USED));
-
+    testing::Values(
+        std::make_pair(UserClassifier::Event::kNtpOpened,
+                       "NewTabPage.UserClassifier.AverageHoursToOpenNTP"),
+        std::make_pair(
+            UserClassifier::Event::kSuggestionsUsed,
+            "NewTabPage.UserClassifier.AverageHoursToUseSuggestions")));
 }  // namespace
 
 }  // namespace feed

@@ -40332,6 +40332,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Increment"/>
 </enum>
 
+<enum name="RefreshTrigger">
+  <int value="0" label="NTP shown"/>
+  <int value="1" label="Foregrounded"/>
+  <int value="2" label="Fixed timer"/>
+</enum>
+
 <enum name="RelaunchNotificationShowResult">
   <int value="0" label="Shown"/>
   <int value="1" label="Not shown for unknown reason"/>
@@ -40852,6 +40858,16 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="MODIFY_REQUEST_HEADERS"/>
   <int value="3" label="MODIFY_RESPONSE_HEADERS"/>
   <int value="4" label="SET_AUTH_CREDENTIALS"/>
+</enum>
+
+<enum name="RequestBehavior">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Request with wait"/>
+  <int value="2" label="Request with content"/>
+  <int value="3" label="Request with timeout"/>
+  <int value="4" label="No request with wait"/>
+  <int value="5" label="No request with content"/>
+  <int value="6" label="No request with timeout"/>
 </enum>
 
 <enum name="RequestedImageMimeType">
