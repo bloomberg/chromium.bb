@@ -45,7 +45,7 @@ UploadState GetUploadToGoogleState(const SyncService* sync_service,
     case SyncService::State::WAITING_FOR_START_REQUEST:
     case SyncService::State::START_DEFERRED:
     case SyncService::State::INITIALIZING:
-    case SyncService::State::WAITING_FOR_CONSENT:
+    case SyncService::State::PENDING_DESIRED_CONFIGURATION:
     case SyncService::State::CONFIGURING:
       return UploadState::INITIALIZING;
 

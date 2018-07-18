@@ -214,7 +214,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
             sync_service()->GetDisableReasons());
   EXPECT_FALSE(sync_service()->IsSyncActive());
-  EXPECT_EQ(syncer::SyncService::State::WAITING_FOR_CONSENT,
+  EXPECT_EQ(syncer::SyncService::State::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetState());
 
   // Setup is already in progress, so confirmation still isn't needed.
@@ -229,7 +229,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   ASSERT_FALSE(sync_service()->IsSetupInProgress());
   EXPECT_TRUE(sync_service()->IsSyncConfirmationNeeded());
   EXPECT_FALSE(sync_service()->IsSyncActive());
-  EXPECT_EQ(syncer::SyncService::State::WAITING_FOR_CONSENT,
+  EXPECT_EQ(syncer::SyncService::State::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetState());
 
   // Marking first setup complete will let ProfileSyncService configure the
@@ -605,15 +605,16 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
       syncer::ModelTypeSet(), syncer::WeakHandle<syncer::JsBackend>(),
       syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(), "test-guid",
       /*success=*/true);
-  EXPECT_EQ(syncer::SyncService::State::WAITING_FOR_CONSENT,
+  ASSERT_TRUE(sync_service()->IsEngineInitialized());
+  EXPECT_EQ(syncer::SyncService::State::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetState());
 
   // Once the user finishes the initial setup, the service can actually start
-  // configuring the data types. It won't actually call the DataTypeManager yet
-  // though, because setup is still considered in progress (we haven't released
-  // the setup-in-progress handle).
+  // configuring the data types. Just marking the initial setup as complete
+  // isn't enough though, because setup is still considered in progress (we
+  // haven't released the setup-in-progress handle).
   sync_service()->SetFirstSetupComplete();
-  EXPECT_EQ(syncer::SyncService::State::CONFIGURING,
+  EXPECT_EQ(syncer::SyncService::State::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetState());
 
   // Releasing the setup in progress handle lets the service actually configure

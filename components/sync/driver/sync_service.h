@@ -122,9 +122,12 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     START_DEFERRED,
     // The Sync engine is in the process of initializing.
     INITIALIZING,
-    // The Sync engine is initialized, but the user hasn't completed the initial
-    // Sync setup yet, so we won't actually configure the data types.
-    WAITING_FOR_CONSENT,
+    // The Sync engine is initialized, but the process of configuring the data
+    // types hasn't been started yet. This usually occurs if the user hasn't
+    // completed the initial Sync setup yet (i.e. IsFirstSetupComplete() is
+    // false), but it can also occur if a (non-initial) Sync setup happens to be
+    // ongoing while the Sync service is starting up.
+    PENDING_DESIRED_CONFIGURATION,
     // The Sync engine itself is up and running, but the individual data types
     // are being (re)configured. GetActiveDataTypes() will still be empty.
     CONFIGURING,

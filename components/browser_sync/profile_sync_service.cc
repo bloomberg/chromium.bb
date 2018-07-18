@@ -805,27 +805,26 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
   // The DataTypeManager gets created once the engine is initialized.
   DCHECK(data_type_manager_);
 
-  if (!IsFirstSetupComplete()) {
-    DCHECK(data_type_manager_->state() != DataTypeManager::CONFIGURED);
-    return State::WAITING_FOR_CONSENT;
+  // At this point we should usually be able to configure our data types (and
+  // once the data types can be configured, they must actually get configured).
+  // However, if the initial setup hasn't been completed, then we can't
+  // configure the data types. Also if a later (non-initial) setup happens to be
+  // in progress, we won't configure them right now.
+  if (data_type_manager_->state() == DataTypeManager::STOPPED) {
+    DCHECK(!CanConfigureDataTypes());
+    return State::PENDING_DESIRED_CONFIGURATION;
   }
 
-#if DCHECK_IS_ON()
-  // At this point we should generally be able to configure our data types,
-  // except if a setup is currently in progress (i.e. the Sync settings UI is
-  // being shown). Note that if a setup is started after the data types have
-  // been configured, then they'll stay configured even though
-  // CanConfigureDataTypes will be false.
-  if (!IsSetupInProgress()) {
-    DCHECK(CanConfigureDataTypes());
-    // After data types *can* be configured, they must actually get configured,
-    // so the DataTypeManager should have gotten out of the initial STOPPED
-    // state. It can only go back to STOPPED in case of unrecoverable errors,
-    // for which we already checked above.
-    DCHECK_NE(data_type_manager_->state(), DataTypeManager::STOPPED);
-    DCHECK(IsSyncActive());
-  }
-#endif  // DCHECK_IS_ON()
+  // The DataTypeManager shouldn't get configured (i.e. leave the STOPPED state)
+  // before the initial setup is complete.
+  DCHECK(IsFirstSetupComplete());
+
+  // Note that if a setup is started after the data types have been configured,
+  // then they'll stay configured even though CanConfigureDataTypes will be
+  // false.
+  DCHECK(CanConfigureDataTypes() || IsSetupInProgress());
+
+  DCHECK(IsSyncActive());
 
   if (data_type_manager_->state() != DataTypeManager::CONFIGURED) {
     return State::CONFIGURING;

@@ -55,7 +55,7 @@ syncer::SyncService::State FakeSyncService::GetState() const {
     return State::INITIALIZING;
   }
   if (!IsFirstSetupComplete()) {
-    return State::WAITING_FOR_CONSENT;
+    return State::PENDING_DESIRED_CONFIGURATION;
   }
   DCHECK(IsSyncActive());
   if (!configuration_done_) {

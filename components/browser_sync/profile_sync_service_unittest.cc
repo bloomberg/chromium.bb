@@ -385,14 +385,14 @@ TEST_F(ProfileSyncServiceTest, NeedsConfirmation) {
   // Note: At this point the engine *can* start, but nothing has kicked it off
   // (usually that happens via getting and then releasing a
   // SyncSetupInProgressHandle), so the state is still WAITING_FOR_START_REQUEST
-  // and not WAITING_FOR_CONSENT.
+  // and not PENDING_DESIRED_CONFIGURATION.
   EXPECT_EQ(syncer::SyncService::State::WAITING_FOR_START_REQUEST,
             service()->GetState());
 
   // Once we kick off initialization by getting and releasing a setup handle,
-  // the state goes to WAITING_FOR_CONSENT.
+  // the state goes to PENDING_DESIRED_CONFIGURATION.
   service()->GetSetupInProgressHandle();
-  EXPECT_EQ(syncer::SyncService::State::WAITING_FOR_CONSENT,
+  EXPECT_EQ(syncer::SyncService::State::PENDING_DESIRED_CONFIGURATION,
             service()->GetState());
 
   // The last sync time shouldn't be cleared.
