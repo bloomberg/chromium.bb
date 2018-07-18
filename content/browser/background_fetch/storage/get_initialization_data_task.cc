@@ -106,23 +106,27 @@ class GetTitleTask : public InitializationSubTask {
   base::WeakPtrFactory<GetTitleTask> weak_factory_;  // Keep as last.
 };
 
-// Fills the BackgroundFetchInitializationData with the number of completed
-// requests.
-class GetCompletedRequestsTask : public InitializationSubTask {
+// Gets the number of completed fetches, the number of active fetches,
+// and deletes inconsistencies in state transitions.
+// 1. Get all completed requests.
+// 2. Delete matching active requests.
+// 3. Get active requests.
+// 4. Delete matching pending requests.
+class GetRequestsTask : public InitializationSubTask {
  public:
-  GetCompletedRequestsTask(DatabaseTaskHost* host,
-                           const SubTaskInit& sub_task_init,
-                           base::OnceClosure done_closure)
+  GetRequestsTask(DatabaseTaskHost* host,
+                  const SubTaskInit& sub_task_init,
+                  base::OnceClosure done_closure)
       : InitializationSubTask(host, sub_task_init, std::move(done_closure)),
         weak_factory_(this) {}
 
-  ~GetCompletedRequestsTask() override = default;
+  ~GetRequestsTask() override = default;
 
   void Start() override {
     service_worker_context()->GetRegistrationUserDataByKeyPrefix(
         sub_task_init().service_worker_registration_id,
         CompletedRequestKeyPrefix(sub_task_init().unique_id),
-        base::BindOnce(&GetCompletedRequestsTask::DidGetCompletedRequests,
+        base::BindOnce(&GetRequestsTask::DidGetCompletedRequests,
                        weak_factory_.GetWeakPtr()));
   }
 
@@ -139,36 +143,34 @@ class GetCompletedRequestsTask : public InitializationSubTask {
     }
 
     sub_task_init().initialization_data->num_completed_requests = data.size();
-    FinishWithError(blink::mojom::BackgroundFetchError::NONE);
-  }
 
-  base::WeakPtrFactory<GetCompletedRequestsTask>
-      weak_factory_;  // Keep as last.
-};
+    std::vector<std::string> active_requests_to_delete;
+    active_requests_to_delete.reserve(data.size());
+    for (const std::string& serialized_completed_request : data) {
+      proto::BackgroundFetchCompletedRequest completed_request;
+      if (!completed_request.ParseFromString(serialized_completed_request) ||
+          sub_task_init().unique_id != completed_request.unique_id()) {
+        *sub_task_init().error =
+            blink::mojom::BackgroundFetchError::STORAGE_ERROR;
+        continue;
+      }
+      active_requests_to_delete.push_back(ActiveRequestKey(
+          completed_request.unique_id(), completed_request.request_index()));
+    }
 
-// Fills the BackgroundFetchInitializationData with the guids of active
-// (previously started) requests.
-class GetActiveRequestsTask : public InitializationSubTask {
- public:
-  GetActiveRequestsTask(DatabaseTaskHost* host,
-                        const SubTaskInit& sub_task_init,
-                        base::OnceClosure done_closure)
-      : InitializationSubTask(host, sub_task_init, std::move(done_closure)),
-        weak_factory_(this) {}
+    if (active_requests_to_delete.empty()) {
+      DidClearActiveRequests(blink::ServiceWorkerStatusCode::kOk);
+      return;
+    }
 
-  ~GetActiveRequestsTask() override = default;
-
-  void Start() override {
-    service_worker_context()->GetRegistrationUserDataByKeyPrefix(
+    service_worker_context()->ClearRegistrationUserData(
         sub_task_init().service_worker_registration_id,
-        ActiveRequestKeyPrefix(sub_task_init().unique_id),
-        base::BindOnce(&GetActiveRequestsTask::DidGetActiveRequests,
+        std::move(active_requests_to_delete),
+        base::BindOnce(&GetRequestsTask::DidClearActiveRequests,
                        weak_factory_.GetWeakPtr()));
   }
 
- private:
-  void DidGetActiveRequests(const std::vector<std::string>& data,
-                            blink::ServiceWorkerStatusCode status) {
+  void DidClearActiveRequests(blink::ServiceWorkerStatusCode status) {
     switch (ToDatabaseStatus(status)) {
       case DatabaseStatus::kFailed:
         FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
@@ -178,6 +180,26 @@ class GetActiveRequestsTask : public InitializationSubTask {
         break;
     }
 
+    service_worker_context()->GetRegistrationUserDataByKeyPrefix(
+        sub_task_init().service_worker_registration_id,
+        ActiveRequestKeyPrefix(sub_task_init().unique_id),
+        base::BindOnce(&GetRequestsTask::DidGetRemainingActiveRequests,
+                       weak_factory_.GetWeakPtr()));
+  }
+
+  void DidGetRemainingActiveRequests(const std::vector<std::string>& data,
+                                     blink::ServiceWorkerStatusCode status) {
+    switch (ToDatabaseStatus(status)) {
+      case DatabaseStatus::kFailed:
+        FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+        return;
+      case DatabaseStatus::kNotFound:
+      case DatabaseStatus::kOk:
+        break;
+    }
+
+    std::vector<std::string> pending_requests_to_delete;
+    pending_requests_to_delete.reserve(data.size());
     for (const std::string& serialized_active_request : data) {
       proto::BackgroundFetchActiveRequest active_request;
       if (!active_request.ParseFromString(serialized_active_request)) {
@@ -188,14 +210,38 @@ class GetActiveRequestsTask : public InitializationSubTask {
       DCHECK_EQ(sub_task_init().unique_id, active_request.unique_id());
       sub_task_init().initialization_data->active_fetch_guids.push_back(
           active_request.download_guid());
+      pending_requests_to_delete.push_back(PendingRequestKey(
+          active_request.unique_id(), active_request.request_index()));
+    }
+
+    if (pending_requests_to_delete.empty()) {
+      DidClearPendingRequests(blink::ServiceWorkerStatusCode::kOk);
+      return;
+    }
+
+    service_worker_context()->ClearRegistrationUserData(
+        sub_task_init().service_worker_registration_id,
+        std::move(pending_requests_to_delete),
+        base::BindOnce(&GetRequestsTask::DidClearPendingRequests,
+                       weak_factory_.GetWeakPtr()));
+  }
+
+  void DidClearPendingRequests(blink::ServiceWorkerStatusCode status) {
+    switch (ToDatabaseStatus(status)) {
+      case DatabaseStatus::kFailed:
+        FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+        return;
+      case DatabaseStatus::kNotFound:
+      case DatabaseStatus::kOk:
+        break;
     }
 
     FinishWithError(blink::mojom::BackgroundFetchError::NONE);
   }
 
-  base::WeakPtrFactory<GetActiveRequestsTask> weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<GetRequestsTask> weak_factory_;  // Keep as last.
 
-  DISALLOW_COPY_AND_ASSIGN(GetActiveRequestsTask);
+  DISALLOW_COPY_AND_ASSIGN(GetRequestsTask);
 };
 
 // Deserializes the icon and creates an SkBitmap from it.
@@ -371,25 +417,21 @@ class FillBackgroundFetchInitializationDataTask : public InitializationSubTask {
   void Start() override {
     // We need 3 queries to get the initialization data. These are wrapped
     // in a BarrierClosure to avoid querying them serially.
-    // 1. Metadata
-    // 2. Active Requests
-    // 3. Completed Requests
-    // 4. UI Title
+    // 1. Metadata (+ icon deserialization)
+    // 2. Request statuses and state sanitization
+    // 3. UI Title
     base::RepeatingClosure barrier_closure = base::BarrierClosure(
-        4u,
+        3u,
         base::BindOnce(
             [](base::WeakPtr<FillBackgroundFetchInitializationDataTask> task) {
               if (task)
                 task->FinishWithError(*task->sub_task_init().error);
             },
             weak_factory_.GetWeakPtr()));
-
     AddSubTask(std::make_unique<FillFromMetadataTask>(this, sub_task_init(),
                                                       barrier_closure));
-    AddSubTask(std::make_unique<GetCompletedRequestsTask>(this, sub_task_init(),
-                                                          barrier_closure));
-    AddSubTask(std::make_unique<GetActiveRequestsTask>(this, sub_task_init(),
-                                                       barrier_closure));
+    AddSubTask(std::make_unique<GetRequestsTask>(this, sub_task_init(),
+                                                 barrier_closure));
     AddSubTask(
         std::make_unique<GetTitleTask>(this, sub_task_init(), barrier_closure));
   }
