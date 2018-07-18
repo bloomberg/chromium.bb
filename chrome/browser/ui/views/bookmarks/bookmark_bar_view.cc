@@ -128,7 +128,7 @@ static const int kMaxButtonWidth = 150;
 // Margins around the content.
 static const int kDetachedTopMargin = 1;  // When attached, we use 0 and let the
                                           // toolbar above serve as the margin.
-static const int kBottomMargin = 2;
+static const int kBottomMargin = 4;
 static const int kHorizontalMargin = 8;
 
 // Padding between buttons.
