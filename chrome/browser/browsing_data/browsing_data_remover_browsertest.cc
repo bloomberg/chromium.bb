@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -59,6 +60,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/re2/src/re2/re2.h"
 
 using content::BrowserThread;
@@ -108,6 +110,37 @@ bool CheckUserDirectoryForString(const std::string& hostname,
         LOG(WARNING) << "Found file name: " << file;
       }
     }
+
+    // Check leveldb content.
+    if (path.BaseName().AsUTF8Unsafe() == "CURRENT") {
+      // LevelDB instances consist of a folder where most files have variable
+      // names that contain a revision number.
+      // All leveldb folders have a "CURRENT" file that points to the current
+      // manifest. We consider all folders with a CURRENT file to be leveldb
+      // instances and try to open them.
+      std::unique_ptr<leveldb::DB> db;
+      std::string db_file = path.DirName().AsUTF8Unsafe();
+      auto status = leveldb_env::OpenDB(leveldb_env::Options(), db_file, &db);
+      if (status.ok()) {
+        std::unique_ptr<leveldb::Iterator> it(
+            db->NewIterator(leveldb::ReadOptions()));
+        for (it->SeekToFirst(); it->Valid(); it->Next()) {
+          std::string entry =
+              it->key().ToString() + ":" + it->value().ToString();
+          if (entry.find(hostname) != std::string::npos) {
+            LOG(WARNING) << "Found leveldb entry: " << file << " " << entry;
+            found++;
+          }
+        }
+      } else {
+        // TODO(crbug.com/846297): Some databases are already open and the LOCK
+        // prevents us from accessing them.
+        LOG(INFO) << "Could not open: " << file << " " << status.ToString();
+      }
+    }
+
+    // TODO(crbug.com/846297): Add support for sqlite and other formats that
+    // possibly contain non-plaintext data.
 
     // Check file content.
     if (enumerator.GetInfo().IsDirectory())
@@ -762,9 +795,10 @@ const std::vector<std::string> kStorageTypes{
 // Test that storage doesn't leave any traces on disk.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        PRE_PRE_StorageRemovedFromDisk) {
+  ASSERT_EQ(0, CheckUserDirectoryForString(kLocalHost, {}));
   ASSERT_EQ(0, GetSiteDataCount());
   ExpectCookieTreeModelCount(0);
-  ASSERT_EQ(0, CheckUserDirectoryForString(kLocalHost, {}));
+
   // To use secure-only features on a host name, we need an https server.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(
