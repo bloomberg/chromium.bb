@@ -4639,4 +4639,4 @@ crbug.com/864891 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/scrol
 
 # Sheriff 2018-07-18
 crbug.com/863067 [ Win10 ] fast/dom/Window/window-focus-self.html [ Failure Pass ]
-crbug.com/864994 [ Mac ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-decode-ksc_5601.html [ Failure Pass ]
+crbug.com/864994 [ Mac ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-decode-ksc_5601.html [ Timeout Failure Pass ]
