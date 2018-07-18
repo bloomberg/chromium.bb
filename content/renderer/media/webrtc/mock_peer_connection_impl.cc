@@ -489,11 +489,6 @@ bool MockPeerConnectionImpl::AddIceCandidate(
   return candidate->ToString(&ice_sdp_);
 }
 
-void MockPeerConnectionImpl::RegisterUMAObserver(
-    webrtc::UMAObserver* observer) {
-  NOTIMPLEMENTED();
-}
-
 webrtc::RTCError MockPeerConnectionImpl::SetBitrate(
     const webrtc::BitrateSettings& bitrate) {
   NOTIMPLEMENTED();

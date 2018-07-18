@@ -216,7 +216,6 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   bool SetConfiguration(const RTCConfiguration& configuration,
                         webrtc::RTCError* error) override;
   bool AddIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
-  void RegisterUMAObserver(webrtc::UMAObserver* observer) override;
 
   webrtc::RTCError SetBitrate(const webrtc::BitrateSettings& bitrate) override;
 
