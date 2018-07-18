@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/fileapi/file.h"
 
 #include <memory>
+
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/fileapi/file_property_bag.h"
@@ -69,6 +70,11 @@ static std::unique_ptr<BlobData> CreateBlobDataForFileWithType(
 static std::unique_ptr<BlobData> CreateBlobDataForFile(
     const String& path,
     File::ContentTypeLookupPolicy policy) {
+  if (path.IsEmpty()) {
+    std::unique_ptr<BlobData> blob_data = BlobData::Create();
+    blob_data->SetContentType("application/octet-stream");
+    return blob_data;
+  }
   return CreateBlobDataForFileWithType(
       path, GetContentTypeFromFileName(path, policy));
 }
