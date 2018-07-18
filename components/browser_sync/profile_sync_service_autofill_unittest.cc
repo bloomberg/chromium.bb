@@ -369,6 +369,7 @@ class ProfileSyncServiceAutofillTest
     EXPECT_CALL(personal_data_manager(), LoadCreditCards());
 
     personal_data_manager_->Init(web_data_service_,
+                                 /*account_database=*/nullptr,
                                  profile_sync_service_bundle()->pref_service(),
                                  /*identity_manager=*/nullptr,
                                  /*is_off_the_record=*/false);

@@ -38,6 +38,7 @@ namespace autofill {
 class AutofillInteractiveTest;
 class PersonalDataManagerObserver;
 class PersonalDataManagerFactory;
+class PersonalDatabaseHelper;
 }  // namespace autofill
 
 namespace autofill_helper {
@@ -71,10 +72,16 @@ class PersonalDataManager : public KeyedService,
   ~PersonalDataManager() override;
 
   // Kicks off asynchronous loading of profiles and credit cards.
-  // |pref_service| must outlive this instance.  |is_off_the_record| informs
-  // this instance whether the user is currently operating in an off-the-record
+  // |profile_database| is a profile-scoped database that will be used to save
+  // local cards. |account_database| is scoped to the currently signed-in
+  // account, and is wiped on signout and browser exit. This can be a nullptr
+  // if personal_data_manager should use |profile_database| for all data.
+  // If passed in, the |account_database| is used by default for server cards.
+  // |pref_service| must outlive this instance. |is_off_the_record| informs this
+  // instance whether the user is currently operating in an off-the-record
   // context.
-  void Init(scoped_refptr<AutofillWebDataService> database,
+  void Init(scoped_refptr<AutofillWebDataService> profile_database,
+            scoped_refptr<AutofillWebDataService> account_database,
             PrefService* pref_service,
             identity::IdentityManager* identity_manager,
             bool is_off_the_record);
@@ -85,6 +92,13 @@ class PersonalDataManager : public KeyedService,
   // Called once the sync service is known to be instantiated. Note that it may
   // not be started, but it's preferences can be queried.
   virtual void OnSyncServiceInitialized(syncer::SyncService* sync_service);
+
+  // Set whether this should use the passed in account storage for server
+  // cards. If false, this will use the profile_storage.
+  // It's an error to call this if no account storage was passed in at
+  // initialization time.
+  void SetUseAccountStorageForServerCards(
+      bool use_account_storage_for_server_cards);
 
   // WebDataServiceConsumer:
   void OnWebDataServiceRequestDone(
@@ -312,6 +326,9 @@ class PersonalDataManager : public KeyedService,
   // Notifies test observers that personal data has changed.
   void NotifyPersonalDataChangedForTest() { NotifyPersonalDataChanged(); }
 
+  // Cancels any pending queries to the server web database.
+  void CancelPendingServerQueries();
+
   // This function assumes |credit_card| contains the full PAN. Returns |true|
   // if the card number of |credit_card| is equal to any local card or any
   // unmasked server card known by the browser, or |TypeAndLastFourDigits| of
@@ -437,9 +454,13 @@ class PersonalDataManager : public KeyedService,
   // Loads the saved credit cards from the web database.
   virtual void LoadCreditCards();
 
-  // Cancels a pending query to the web database.  |handle| is a pointer to the
-  // query handle.
-  void CancelPendingQuery(WebDataServiceBase::Handle* handle);
+  // Cancels a pending query to the local web database.  |handle| is a pointer
+  // to the query handle.
+  void CancelPendingLocalQuery(WebDataServiceBase::Handle* handle);
+
+  // Cancels a pending query to the server web database.  |handle| is a pointer
+  // to the query handle.
+  void CancelPendingServerQuery(WebDataServiceBase::Handle* handle);
 
   // Notifies observers that personal data has changed.
   void NotifyPersonalDataChanged();
@@ -479,12 +500,8 @@ class PersonalDataManager : public KeyedService,
   void ClearProfileNonSettingsOrigins();
   void ClearCreditCardNonSettingsOrigins();
 
-  void set_database(scoped_refptr<AutofillWebDataService> database) {
-    database_ = database;
-  }
-
-  // The backing database that this PersonalDataManager uses.
-  scoped_refptr<AutofillWebDataService> database_;
+  // Decides which database type to use for server and local cards.
+  std::unique_ptr<PersonalDatabaseHelper> database_helper_;
 
   // True if personal data has been loaded from the web database.
   bool is_data_loaded_;

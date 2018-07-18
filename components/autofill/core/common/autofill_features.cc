@@ -27,6 +27,11 @@ const base::Feature kAutofillDownstreamUseGooglePayBrandingOniOS{
 const base::Feature kAutofillDynamicForms{"AutofillDynamicForms",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether the server credit cards are saved only in the ephemeral
+// account-based storage, instead of the persistent local storage.
+const base::Feature kAutofillEnableAccountWalletStorage{
+    "AutofillEnableAccountWalletStorage", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the server credit cards are offered to be filled and
 // uploaded to Google Pay if the sync service is in auth error.
 const base::Feature kAutofillEnablePaymentsInteractionsOnAuthError{

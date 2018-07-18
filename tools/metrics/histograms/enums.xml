@@ -27752,6 +27752,7 @@ from previous Chrome versions.
   <int value="-1426150007" label="ignore-previews-blacklist"/>
   <int value="-1426034869" label="NoCreditCardAbort:enabled"/>
   <int value="-1423348289" label="NupPrinting:disabled"/>
+  <int value="-1420542268" label="AutofillEnableAccountWalletStorage:disabled"/>
   <int value="-1419788257" label="enable-experimental-hotwording"/>
   <int value="-1417122729"
       label="AutofillCreditCardAblationExperiment:disabled"/>
@@ -28408,6 +28409,7 @@ from previous Chrome versions.
   <int value="-35388407" label="AshNewSystemMenu:disabled"/>
   <int value="-30966385" label="enable-hardware-overlays"/>
   <int value="-29847483" label="MemoryAblation:enabled"/>
+  <int value="-28295905" label="AutofillEnableAccountWalletStorage:enabled"/>
   <int value="-23804418"
       label="NTPArticleSuggestionsExpandableHeader:disabled"/>
   <int value="-23090520" label="disable-search-button-in-omnibox"/>

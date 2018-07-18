@@ -118,7 +118,7 @@ class FormDataImporterTestBase {
     personal_data_manager_.reset(new PersonalDataManager("en"));
     personal_data_manager_->Init(
         scoped_refptr<AutofillWebDataService>(autofill_database_service_),
-        prefs_.get(), nullptr, is_incognito);
+        nullptr, prefs_.get(), nullptr, is_incognito);
     personal_data_manager_->AddObserver(&personal_data_observer_);
     personal_data_manager_->OnSyncServiceInitialized(nullptr);
 
