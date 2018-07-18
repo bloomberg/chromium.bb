@@ -106,8 +106,7 @@ class MostVisitedSites : public history::TopSitesObserver,
         base::OnceCallback<void(const base::Optional<base::string16>& title)>;
 
     virtual ~HomepageClient() = default;
-    virtual bool IsHomepageEnabled() const = 0;
-    virtual bool IsNewTabPageUsedAsHomepage() const = 0;
+    virtual bool IsHomepageTileEnabled() const = 0;
     virtual GURL GetHomepageUrl() const = 0;
     // TODO(https://crbug.com/862753): Extract this to another interface.
     virtual void QueryHomepageTitle(TitleCallback title_callback) = 0;
