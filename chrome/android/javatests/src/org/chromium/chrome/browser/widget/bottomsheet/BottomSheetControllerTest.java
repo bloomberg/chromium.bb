@@ -72,8 +72,8 @@ public class BottomSheetControllerTest {
             ScrimView scrim = new ScrimView(mActivityTestRule.getActivity(), null, coordinator);
 
             mSheetController = new BottomSheetController(activity, activity.getTabModelSelector(),
-                    activity.getCompositorViewHolder().getLayoutManager(), scrim,
-                    activity.getContextualSearchManager(), mBottomSheet);
+                    activity.getCompositorViewHolder().getLayoutManager(), scrim, mBottomSheet,
+                    activity.getContextualSearchManager(), true);
 
             mLowPriorityContent = new TestBottomSheetContent(
                     mActivityTestRule.getActivity(), ContentPriority.LOW);
