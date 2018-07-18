@@ -5,6 +5,7 @@
 #ifndef WEBRUNNER_SERVICE_WEBRUNNER_MAIN_DELEGATE_H_
 #define WEBRUNNER_SERVICE_WEBRUNNER_MAIN_DELEGATE_H_
 
+#include <lib/zx/channel.h>
 #include <memory>
 
 #include "base/macros.h"
@@ -20,7 +21,7 @@ namespace webrunner {
 class WEBRUNNER_EXPORT WebRunnerMainDelegate
     : public content::ContentMainDelegate {
  public:
-  WebRunnerMainDelegate();
+  explicit WebRunnerMainDelegate(zx::channel context_channel);
   ~WebRunnerMainDelegate() override;
 
   // ContentMainDelegate implementation.
@@ -34,6 +35,8 @@ class WEBRUNNER_EXPORT WebRunnerMainDelegate
  private:
   std::unique_ptr<content::ContentClient> content_client_;
   std::unique_ptr<content::ContentBrowserClient> browser_client_;
+
+  zx::channel context_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRunnerMainDelegate);
 };

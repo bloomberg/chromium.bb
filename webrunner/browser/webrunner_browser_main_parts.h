@@ -20,7 +20,7 @@ class WebRunnerScreen;
 
 class WebRunnerBrowserMainParts : public content::BrowserMainParts {
  public:
-  WebRunnerBrowserMainParts();
+  explicit WebRunnerBrowserMainParts(zx::channel context_channel);
   ~WebRunnerBrowserMainParts() override;
 
   // content::BrowserMainParts overrides.
@@ -28,6 +28,8 @@ class WebRunnerBrowserMainParts : public content::BrowserMainParts {
   void PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) override;
 
  private:
+  zx::channel context_channel_;
+
   std::unique_ptr<WebRunnerScreen> screen_;
   std::unique_ptr<WebRunnerBrowserContext> browser_context_;
 
