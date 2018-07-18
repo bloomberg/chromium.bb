@@ -199,16 +199,6 @@ public class ContentSettingsResources {
     }
 
     /**
-     * Creates a {@link Drawable} for the given content type with the correct tint applied.
-     */
-    public static Drawable getTintedIcon(int contentType, Resources resources) {
-        Drawable icon = ApiCompatibilityUtils.getDrawable(resources, getIcon(contentType));
-        icon.setColorFilter(ApiCompatibilityUtils.getColor(resources, R.color.default_icon_color),
-                PorterDuff.Mode.SRC_IN);
-        return icon;
-    }
-
-    /**
      * Returns the Drawable object of the icon for a content type with a disabled tint.
      */
     public static Drawable getDisabledIcon(int contentType, Resources resources) {

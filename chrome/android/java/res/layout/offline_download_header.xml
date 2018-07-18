@@ -47,7 +47,7 @@
                     android:layout_weight="0"
                     android:visibility="gone" />
 
-                <ImageView
+                <org.chromium.chrome.browser.widget.TintedImageView
                     android:id="@+id/expand_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -55,7 +55,8 @@
                     android:layout_gravity="center_vertical|end"
                     android:paddingEnd="16dp"
                     tools:ignore="ContentDescription"
-                    android:src="@drawable/ic_expand_more_black_24dp" />
+                    android:src="@drawable/ic_expand_more_black_24dp"
+                    app:chrometint="@color/dark_mode_tint" />
             </LinearLayout>
 
             <TextView

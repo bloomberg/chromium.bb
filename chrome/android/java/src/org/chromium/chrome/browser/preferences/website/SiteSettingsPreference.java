@@ -5,18 +5,18 @@
 package org.chromium.chrome.browser.preferences.website;
 
 import android.content.Context;
-import android.preference.Preference;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 
 /**
  * A custom preference for drawing Site Settings entries.
  */
-public class SiteSettingsPreference extends Preference {
+public class SiteSettingsPreference extends ChromeBasePreference {
     /**
      * Constructor for inflating from XML.
      */
