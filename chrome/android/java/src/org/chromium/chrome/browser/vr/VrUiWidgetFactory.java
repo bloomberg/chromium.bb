@@ -36,7 +36,7 @@ public class VrUiWidgetFactory extends UiWidgetFactory {
 
     @Override
     public AlertDialog createAlertDialog(Context context) {
-        return new VrAlertDialog(context, mVrShell, mModalDialogManager);
+        return new VrAlertDialog(context, mModalDialogManager);
     }
 
     @Override
