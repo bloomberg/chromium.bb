@@ -421,4 +421,13 @@ void HostDrmDevice::OnGpuServiceLaunchedCompositor(
   drm_device_ptr_compositor_ = std::move(drm_device_ptr_compositor);
 }
 
+void HostDrmDevice::OnGpuServiceLost() {
+  cursor_proxy_.reset();
+  connected_ = false;
+  drm_device_ptr_.reset();
+  // TODO(rjkroege): OnGpuThreadRetired is not currently used.
+  for (GpuThreadObserver& observer : gpu_thread_observers_)
+    observer.OnGpuThreadRetired();
+}
+
 }  // namespace ui

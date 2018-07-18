@@ -55,6 +55,9 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   void OnGpuServiceLaunchedCompositor(
       ui::ozone::mojom::DrmDevicePtr drm_device_ptr_compositor);
 
+  // Invoked by DrmDeviceConnector on loss of GPU service.
+  void OnGpuServiceLost();
+
   // GpuThreadAdapter
   void AddGpuThreadObserver(GpuThreadObserver* observer) override;
   void RemoveGpuThreadObserver(GpuThreadObserver* observer) override;
@@ -143,6 +146,7 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
 
   // When running under mus, this is the UI thread specific DrmDevice ptr for
   // use by the compositor.
+  // TODO(rjkroege): When mash is removed, this code can also be removed.
   ui::ozone::mojom::DrmDevicePtr drm_device_ptr_compositor_;
 
   DrmDisplayHostManager* display_manager_;  // Not owned.
