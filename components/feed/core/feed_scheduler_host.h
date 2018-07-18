@@ -28,17 +28,19 @@ namespace feed {
 
 // The enum values and names are kept in sync with SchedulerApi.RequestBehavior
 // through Java unit tests, new values however must be manually added. If any
-// new values are added, also update FeedSchedulerBridgeTest.java.
+// new values are added, also update FeedSchedulerBridgeTest.java as well as
+// the corresponding definition in enums.xml.
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.feed
 enum NativeRequestBehavior {
-  UNKNOWN = 0,
-  REQUEST_WITH_WAIT,
-  REQUEST_WITH_CONTENT,
-  REQUEST_WITH_TIMEOUT,
-  NO_REQUEST_WITH_WAIT,
-  NO_REQUEST_WITH_CONTENT,
-  NO_REQUEST_WITH_TIMEOUT
+  kUnknown = 0,
+  kRequestWithWait = 1,
+  kRequestWithContent = 2,
+  kRequestWithTimeout = 3,
+  kNoRequestWithWait = 4,
+  kNoRequestWithContent = 5,
+  kNoRequestWithTimeout = 6,
+  kMaxValue = kNoRequestWithTimeout
 };
 
 // Implementation of the Feed Scheduler Host API. The scheduler host decides
@@ -47,8 +49,14 @@ enum NativeRequestBehavior {
 class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
  public:
   // The TriggerType enum specifies values for the events that can trigger
-  // refreshing articles.
-  enum class TriggerType { NTP_SHOWN, FOREGROUNDED, FIXED_TIMER, COUNT };
+  // refreshing articles. When adding values, be certain to also update the
+  // corresponding definition in enums.xml.
+  enum class TriggerType {
+    kNtpShown = 0,
+    kForegrounded = 1,
+    kFixedTimer = 2,
+    kMaxValue = kFixedTimer
+  };
 
   FeedSchedulerHost(PrefService* profile_prefs,
                     PrefService* local_state,
@@ -167,6 +175,11 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   // May hold a nullptr if the platform does not show the user a EULA. Will only
   // notify if IsEulaAccepted() is called and it returns false.
   std::unique_ptr<web_resource::EulaAcceptedNotifier> eula_accepted_notifier_;
+
+  // Variables to allow metrics to be reported the first time a given trigger
+  // occurs after a refresh.
+  bool time_until_first_shown_trigger_reported_ = false;
+  bool time_until_first_foregrounded_trigger_reported_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FeedSchedulerHost);
 };

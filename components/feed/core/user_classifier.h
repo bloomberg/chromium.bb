@@ -27,9 +27,9 @@ class UserClassifier {
   // Different groupings of usage. A user will belong to exactly one of these at
   // any given point in time. Can change at runtime.
   enum class UserClass {
-    RARE_NTP_USER,                // Almost never opens the NTP.
-    ACTIVE_NTP_USER,              // Uses NTP but not articles.
-    ACTIVE_SUGGESTIONS_CONSUMER,  // Frequently opens news articles.
+    kRareNtpUser,                // Almost never opens the NTP.
+    kActiveNtpUser,              // Uses NTP but not articles.
+    kActiveSuggestionsConsumer,  // Frequently opens news articles.
   };
 
   // For estimating the average length of the intervals between two successive
@@ -44,11 +44,11 @@ class UserClassifier {
   // NOTE: if you add any element, add it also in the static arrays in .cc and
   // create another histogram.
   enum class Event {
-    NTP_OPENED,  // When the user opens a new NTP - this indicates potential
-                 // use of content suggestions.
-    SUGGESTIONS_USED,  // When the user clicks on some suggestions or on some
-                       // "More" button.
-    COUNT              // Keep this as the last element.
+    kNtpOpened = 0,  // When the user opens a new NTP - this indicates potential
+                     // use of content suggestions.
+    kSuggestionsUsed = 1,  // When the user clicks on some suggestions or on
+                           // some "More" button.
+    kMaxValue = kSuggestionsUsed
   };
 
   // The provided |pref_service| may be nullptr in unit-tests.
