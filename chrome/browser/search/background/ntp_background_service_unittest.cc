@@ -58,6 +58,12 @@ class NtpBackgroundServiceTest : public testing::Test {
     test_url_loader_factory_.AddResponse(load_url.spec(), response);
   }
 
+  // This can be used to revoke a token issued by
+  // SetAutomaticIssueOfAccessTokens above.
+  void RemoveRefreshTokenForPrimaryAccount() {
+    identity_env_.RemoveRefreshTokenForPrimaryAccount();
+  }
+
   void SetUpResponseWithNetworkError(const GURL& load_url) {
     test_url_loader_factory_.AddResponse(
         load_url, network::ResourceResponseHead(), std::string(),
@@ -242,6 +248,46 @@ TEST_F(NtpBackgroundServiceTest, AlbumInfoNetworkError) {
   EXPECT_TRUE(service()->album_info().empty());
 }
 
+TEST_F(NtpBackgroundServiceTest, AlbumInfoAuthError) {
+  RemoveRefreshTokenForPrimaryAccount();
+
+  ASSERT_TRUE(service()->album_info().empty());
+
+  service()->FetchAlbumInfo();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(service()->album_info().empty());
+}
+
+TEST_F(NtpBackgroundServiceTest, AlbumInfoAuthErrorClearsCache) {
+  ntp::background::AlbumMetaData album;
+  album.set_album_id(12345);
+  album.set_album_name("Travel");
+  album.set_banner_image_url("https://wallpapers.co/some_image");
+  album.set_photo_container_id("AnIdentifierForThePhotoContainer");
+  ntp::background::PersonalAlbumsResponse response;
+  *response.add_album_meta_data() = album;
+  std::string response_string;
+  response.SerializeToString(&response_string);
+
+  SetUpResponseWithData(service()->GetAlbumsURLForTesting(), response_string);
+
+  ASSERT_TRUE(service()->album_info().empty());
+
+  service()->FetchAlbumInfo();
+  base::RunLoop().RunUntilIdle();
+
+  RemoveRefreshTokenForPrimaryAccount();
+
+  // Stale data fetched with previous token.
+  ASSERT_FALSE(service()->album_info().empty());
+
+  service()->FetchAlbumInfo();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(service()->album_info().empty());
+}
+
 TEST_F(NtpBackgroundServiceTest, BadAlbumsResponse) {
   SetUpResponseWithData(service()->GetAlbumsURLForTesting(),
                         "bad serialized PersonalAlbumsResponse");
@@ -287,6 +333,45 @@ TEST_F(NtpBackgroundServiceTest, AlbumPhotosNetworkError) {
       "album_id", "photo_container_id"));
 
   ASSERT_TRUE(service()->album_photos().empty());
+
+  service()->FetchAlbumPhotos("album_id", "photo_container_id");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(service()->album_photos().empty());
+}
+
+TEST_F(NtpBackgroundServiceTest, AlbumPhotosAuthError) {
+  RemoveRefreshTokenForPrimaryAccount();
+
+  ASSERT_TRUE(service()->album_info().empty());
+
+  service()->FetchAlbumPhotos("album_id", "photo_container_id");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(service()->album_info().empty());
+}
+
+TEST_F(NtpBackgroundServiceTest, AlbumPhotosAuthErrorClearsCache) {
+  ntp::background::SettingPreviewResponse::Preview preview;
+  preview.set_preview_url("https://wallpapers.co/some_image");
+  ntp::background::SettingPreviewResponse response;
+  *response.add_preview() = preview;
+  std::string response_string;
+  response.SerializeToString(&response_string);
+
+  SetUpResponseWithData(service()->GetAlbumPhotosApiUrlForTesting(
+                            "album_id", "photo_container_id"),
+                        response_string);
+
+  ASSERT_TRUE(service()->album_photos().empty());
+
+  service()->FetchAlbumPhotos("album_id", "photo_container_id");
+  base::RunLoop().RunUntilIdle();
+
+  RemoveRefreshTokenForPrimaryAccount();
+
+  // Stale data fetched with previous token.
+  ASSERT_FALSE(service()->album_photos().empty());
 
   service()->FetchAlbumPhotos("album_id", "photo_container_id");
   base::RunLoop().RunUntilIdle();

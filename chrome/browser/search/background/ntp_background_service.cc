@@ -273,6 +273,10 @@ void NtpBackgroundService::FetchAlbumInfo() {
   if (token_fetcher_ || albums_loader_)
     return;
 
+  // Clear any stale data that may have been fetched with a previous token.
+  // This is particularly important if the current token fetch results in an
+  // auth error because the user has since signed out.
+  album_info_.clear();
   OAuth2TokenService::ScopeSet scopes{kScopePhotos};
   token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
       "ntp_backgrounds_service", identity_manager_, scopes,
@@ -342,7 +346,6 @@ void NtpBackgroundService::GetAccessTokenForAlbumCallback(
 
 void NtpBackgroundService::OnAlbumInfoFetchComplete(
     std::unique_ptr<std::string> response_body) {
-  album_info_.clear();
   // The loader will be deleted when the request is handled.
   std::unique_ptr<network::SimpleURLLoader> loader_deleter(
       std::move(albums_loader_));
@@ -378,6 +381,10 @@ void NtpBackgroundService::FetchAlbumPhotos(
   if (token_fetcher_ || albums_photo_info_loader_)
     return;
 
+  // Clear any stale data that may have been fetched with a previous token.
+  // This is particularly important if the current token fetch results in an
+  // auth error because the user has since signed out.
+  album_photos_.clear();
   requested_album_id_ = album_id;
   requested_photo_container_id_ = photo_container_id;
   OAuth2TokenService::ScopeSet scopes{kScopePhotos};
@@ -449,7 +456,6 @@ void NtpBackgroundService::GetAccessTokenForPhotosCallback(
 
 void NtpBackgroundService::OnAlbumPhotosFetchComplete(
     std::unique_ptr<std::string> response_body) {
-  album_photos_.clear();
   // The loader will be deleted when the request is handled.
   std::unique_ptr<network::SimpleURLLoader> loader_deleter(
       std::move(albums_photo_info_loader_));
