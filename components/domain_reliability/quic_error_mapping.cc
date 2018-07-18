@@ -242,6 +242,9 @@ const struct QuicErrorMapping {
     // Network changed, but error was encountered on the alternative network.
     {quic::QUIC_CONNECTION_MIGRATION_INTERNAL_ERROR,
      "quic.connection_migration_internal_error"},
+    // Network changed, but error was encountered on the alternative network.
+    {quic::QUIC_CONNECTION_MIGRATION_HANDSHAKE_UNCONFIRMED,
+     "quic.connection_migration_handshake_unconfirmed"},
 
     // Stream frame overlaps with buffered data.
     {quic::QUIC_OVERLAPPING_STREAM_DATA, "quic.overlapping_stream_data"},
