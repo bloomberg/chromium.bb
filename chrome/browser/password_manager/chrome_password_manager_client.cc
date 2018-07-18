@@ -957,7 +957,8 @@ void ChromePasswordManagerClient::ShowPasswordSuggestions(
           password_manager_driver_bindings_.GetCurrentTargetFrame());
   driver->GetPasswordAutofillManager()->OnShowPasswordSuggestions(
       key, text_direction, typed_username, options,
-      TransformToRootCoordinates(bounds));
+      TransformToRootCoordinates(
+          password_manager_driver_bindings_.GetCurrentTargetFrame(), bounds));
 }
 
 void ChromePasswordManagerClient::RecordSavePasswordProgress(
@@ -1040,11 +1041,20 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
   auto* driver = driver_factory_->GetDriverForFrame(
       password_manager_client_bindings_.GetCurrentTargetFrame());
   DCHECK(driver);
+  // Autofill drop-down and password generation use different coordinates.
+  gfx::RectF element_bounds_in_screen_space = TransformToRootCoordinates(
+      password_manager_client_bindings_.GetCurrentTargetFrame(),
+      ui_data.bounds);
+  if (!is_manually_triggered &&
+      driver->GetPasswordAutofillManager()
+          ->MaybeShowPasswordSuggestionsWithGeneration(
+              element_bounds_in_screen_space))
+    return;
+
+  element_bounds_in_screen_space = GetBoundsInScreenSpace(ui_data.bounds);
   password_manager_.SetGenerationElementAndReasonForForm(
       driver, ui_data.password_form, ui_data.generation_element,
       is_manually_triggered);
-  gfx::RectF element_bounds_in_screen_space =
-      GetBoundsInScreenSpace(ui_data.bounds);
 
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
       popup_controller_, element_bounds_in_screen_space, ui_data.password_form,
@@ -1079,9 +1089,9 @@ ChromePasswordManagerClient::GetPasswordManager() {
 }
 
 gfx::RectF ChromePasswordManagerClient::TransformToRootCoordinates(
+    content::RenderFrameHost* frame_host,
     const gfx::RectF& bounds_in_frame_coordinates) {
-  content::RenderWidgetHostView* rwhv =
-      password_manager_driver_bindings_.GetCurrentTargetFrame()->GetView();
+  content::RenderWidgetHostView* rwhv = frame_host->GetView();
   if (!rwhv)
     return bounds_in_frame_coordinates;
   return gfx::RectF(rwhv->TransformPointToRootCoordSpaceF(
