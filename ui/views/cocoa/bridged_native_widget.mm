@@ -727,6 +727,14 @@ void BridgedNativeWidget::ToggleDesiredFullscreenState(bool async) {
 }
 
 void BridgedNativeWidget::OnSizeChanged() {
+  const gfx::Rect new_bounds = native_widget_mac_->GetWindowBoundsInScreen();
+  if (new_bounds.origin() != last_window_frame_origin_) {
+    native_widget_mac_->GetWidget()->OnNativeWidgetMove();
+    last_window_frame_origin_ = new_bounds.origin();
+  }
+
+  // Note we can't use new_bounds.size(), since it includes the titlebar for the
+  // purposes of detecting a window move.
   gfx::Size new_size = GetClientAreaSize();
   native_widget_mac_->GetWidget()->OnNativeWidgetSizeChanged(new_size);
   if (layer()) {
@@ -737,6 +745,13 @@ void BridgedNativeWidget::OnSizeChanged() {
 }
 
 void BridgedNativeWidget::OnPositionChanged() {
+  // When a window grows vertically, the AppKit origin changes, but as far as
+  // tookit-views is concerned, the window hasn't moved. Suppress these.
+  const gfx::Rect new_bounds = native_widget_mac_->GetWindowBoundsInScreen();
+  if (new_bounds.origin() == last_window_frame_origin_)
+    return;
+
+  last_window_frame_origin_ = new_bounds.origin();
   native_widget_mac_->GetWidget()->OnNativeWidgetMove();
 }
 
