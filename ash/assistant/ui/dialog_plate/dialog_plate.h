@@ -16,10 +16,6 @@
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
 
-namespace views {
-class ImageButton;
-}  // namespace views
-
 namespace ash {
 
 class AssistantController;
@@ -92,18 +88,17 @@ class DialogPlate : public views::View,
 
  private:
   void InitLayout();
-  void InitKeyboardLayoutContainer();
-  void InitVoiceLayoutContainer();
+  void InitKeyboardLayoutContainer(
+      views::View* input_modality_layout_container);
+  void InitVoiceLayoutContainer(views::View* input_modality_layout_container);
 
   void OnButtonPressed(DialogPlateButtonId id);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
-  views::ImageButton* keyboard_input_toggle_;        // Owned by view hierarchy.
   views::View* keyboard_layout_container_;           // Owned by view hierarchy.
-  views::Textfield* textfield_;                      // Owned by view hierarchy.
-  views::ImageButton* voice_input_toggle_;           // Owned by view hierarchy.
   views::View* voice_layout_container_;              // Owned by view hierarchy.
+  views::Textfield* textfield_;                      // Owned by view hierarchy.
 
   base::ObserverList<DialogPlateObserver> observers_;
 
