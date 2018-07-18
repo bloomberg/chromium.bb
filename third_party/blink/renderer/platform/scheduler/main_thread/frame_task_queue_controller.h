@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace base {
 namespace sequence_manager {
@@ -68,6 +69,17 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   base::sequence_manager::TaskQueue::QueueEnabledVoter* GetQueueEnabledVoter(
       const scoped_refptr<MainThreadTaskQueue>&);
 
+  scoped_refptr<MainThreadTaskQueue> NewResourceLoadingTaskQueue();
+
+  // Remove a resource loading task queue that FrameTaskQueueController created,
+  // along with its QueueEnabledVoter, if one exists. Returns true if the task
+  // queue was found and erased and false otherwise.
+  //
+  // Removes are linear in the total number of task queues since
+  // |all_task_queues_and_voters_| needs to be updated.
+  bool RemoveResourceLoadingTaskQueue(
+      const scoped_refptr<MainThreadTaskQueue>&);
+
  private:
   friend class FrameTaskQueueControllerTest;
 
@@ -106,6 +118,10 @@ class PLATFORM_EXPORT FrameTaskQueueController {
 
   // Map of all non-loading TaskQueues, indexed by QueueTraits.
   NonLoadingTaskQueueMap non_loading_task_queues_;
+
+  // Set of all resource loading task queues.
+  WTF::HashSet<scoped_refptr<MainThreadTaskQueue>>
+      resource_loading_task_queues_;
 
   using TaskQueueEnabledVoterMap = WTF::HashMap<
       scoped_refptr<MainThreadTaskQueue>,
