@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/time/default_clock.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -84,7 +85,8 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
       std::move(image_fetcher), std::move(image_database));
 
   auto scheduler_host = std::make_unique<FeedSchedulerHost>(
-      profile->GetPrefs(), base::DefaultClock::GetInstance());
+      profile->GetPrefs(), g_browser_process->local_state(),
+      base::DefaultClock::GetInstance());
 
   auto storage_database = std::make_unique<FeedStorageDatabase>(feed_dir);
 

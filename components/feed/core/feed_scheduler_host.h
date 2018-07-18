@@ -5,11 +5,15 @@
 #ifndef COMPONENTS_FEED_CORE_FEED_SCHEDULER_HOST_H_
 #define COMPONENTS_FEED_CORE_FEED_SCHEDULER_HOST_H_
 
+#include <memory>
+#include <set>
+
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/feed/core/user_classifier.h"
+#include "components/web_resource/eula_accepted_notifier.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -37,19 +41,19 @@ enum NativeRequestBehavior {
   NO_REQUEST_WITH_TIMEOUT
 };
 
-enum class TriggerType;
-
 // Implementation of the Feed Scheduler Host API. The scheduler host decides
 // what content is allowed to be shown, based on its age, and when to fetch new
 // content.
-class FeedSchedulerHost {
+class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
  public:
   // The TriggerType enum specifies values for the events that can trigger
   // refreshing articles.
-  enum class TriggerType { NTP_SHOWN = 0, FOREGROUNDED = 1, FIXED_TIMER = 2 };
+  enum class TriggerType { NTP_SHOWN, FOREGROUNDED, FIXED_TIMER, COUNT };
 
-  FeedSchedulerHost(PrefService* pref_service, base::Clock* clock);
-  ~FeedSchedulerHost();
+  FeedSchedulerHost(PrefService* profile_prefs,
+                    PrefService* local_state,
+                    base::Clock* clock);
+  ~FeedSchedulerHost() override;
 
   using ScheduleBackgroundTaskCallback =
       base::RepeatingCallback<void(base::TimeDelta)>;
@@ -94,12 +98,20 @@ class FeedSchedulerHost {
   // scheduler should be optimizing for.
   void OnSuggestionConsumed();
 
+  // When the user clears history, the scheduler will clear out some stored data
+  // and stop requesting refreshes for a period of time.
+  void OnHistoryCleared();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(FeedSchedulerHostTest, GetTriggerThreshold);
 
+  // web_resource::EulaAcceptedNotifier::Observer:
+  void OnEulaAccepted() override;
+
   // Determines whether a refresh should be performed for the given |trigger|.
   // If this method is called and returns true we presume the refresh will
-  // happen, therefore we report metrics respectively.
+  // happen, therefore we report metrics respectively and update
+  // |tracking_oustanding_request_|.
   bool ShouldRefresh(TriggerType trigger);
 
   // Decides if content whose age is the difference between now and
@@ -115,7 +127,7 @@ class FeedSchedulerHost {
   void ScheduleFixedTimerWakeUp(base::TimeDelta period);
 
   // Non-owning reference to pref service providing durable storage.
-  PrefService* pref_service_;
+  PrefService* profile_prefs_;
 
   // Non-owning reference to clock to get current time.
   base::Clock* clock_;
@@ -134,6 +146,27 @@ class FeedSchedulerHost {
   // will be valid and holds a way to inform the task driving this wake up that
   // the refresh has completed. Is called on refresh success or failure.
   base::OnceClosure fixed_timer_completion_;
+
+  // Set of triggers that should be ignored. By default this is empty.
+  std::set<TriggerType> disabled_triggers_;
+
+  // In some circumstances, such as when history is cleared, the scheduler will
+  // stop requesting refreshes for a given period. During this time, only direct
+  // user interaction with the NTP (and outside of the scheduler's control)
+  // should cause a refresh to occur.
+  base::Time suppress_refreshes_until_;
+
+  // Whether the scheduler is aware of an outstanding refresh or not. There are
+  // cases where a refresh may be occurring without the scheduler knowing about
+  // it, such as user interaction with UI on the NTP. If this field holds a
+  // value of true, it is expected that either OnReceiveNewContent or
+  // OnRequestError will be called eventually, somewhere on the order of seconds
+  // from now, assuming the browser does not shut down.
+  bool tracking_oustanding_request_ = false;
+
+  // May hold a nullptr if the platform does not show the user a EULA. Will only
+  // notify if IsEulaAccepted() is called and it returns false.
+  std::unique_ptr<web_resource::EulaAcceptedNotifier> eula_accepted_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedSchedulerHost);
 };

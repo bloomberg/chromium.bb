@@ -7,9 +7,11 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
+#include "base/strings/string_split.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/feed/core/pref_names.h"
@@ -17,6 +19,8 @@
 #include "components/feed/feed_feature_list.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/web_resource/web_resource_pref_names.h"
+#include "net/base/network_change_notifier.h"
 
 namespace feed {
 
@@ -29,6 +33,11 @@ struct ParamPair {
   std::string name;
   double default_value;
 };
+
+const base::FeatureParam<int> kSuppressRefreshDurationMinutes{
+    &kInterestFeedContentSuggestions, "suppress_refresh_duration_minutes", 30};
+const base::FeatureParam<std::string> kDisableTriggerTypes{
+    &kInterestFeedContentSuggestions, "disable_trigger_types", ""};
 
 // The Cartesian product of TriggerType and UserClass each need a different
 // param name in case we decide to change it via a config change. This nested
@@ -44,6 +53,9 @@ ParamPair LookupParam(UserClass user_class, TriggerType trigger) {
           return {"foregrounded_hours_rare_ntp_user", 24.0};
         case TriggerType::FIXED_TIMER:
           return {"fixed_timer_hours_rare_ntp_user", 96.0};
+        case TriggerType::COUNT:
+          NOTREACHED();
+          return {"", 0.0};
       }
     case UserClass::ACTIVE_NTP_USER:
       switch (trigger) {
@@ -53,6 +65,9 @@ ParamPair LookupParam(UserClass user_class, TriggerType trigger) {
           return {"foregrounded_hours_active_ntp_user", 24.0};
         case TriggerType::FIXED_TIMER:
           return {"fixed_timer_hours_active_ntp_user", 48.0};
+        case TriggerType::COUNT:
+          NOTREACHED();
+          return {"", 0.0};
       }
     case UserClass::ACTIVE_SUGGESTIONS_CONSUMER:
       switch (trigger) {
@@ -62,8 +77,42 @@ ParamPair LookupParam(UserClass user_class, TriggerType trigger) {
           return {"foregrounded_hours_active_suggestions_consumer", 12.0};
         case TriggerType::FIXED_TIMER:
           return {"fixed_timer_hours_active_suggestions_consumer", 24.0};
+        case TriggerType::COUNT:
+          NOTREACHED();
+          return {"", 0.0};
       }
   }
+}
+
+// Coverts from base::StringPiece to TriggerType and adds it to the set if the
+// trigger is recognized. Otherwise it is ignored.
+void TryAddTriggerType(base::StringPiece trigger_as_string_piece,
+                       std::set<TriggerType>* set) {
+  static_assert(static_cast<unsigned int>(TriggerType::COUNT) == 3,
+                "New TriggerTypes must be handled below.");
+  if (trigger_as_string_piece == "ntp_shown") {
+    set->insert(TriggerType::NTP_SHOWN);
+  } else if (trigger_as_string_piece == "foregrounded") {
+    set->insert(TriggerType::FOREGROUNDED);
+  } else if (trigger_as_string_piece == "fixed_timer") {
+    set->insert(TriggerType::FIXED_TIMER);
+  }
+}
+
+// Generates a set of disabled triggers.
+std::set<TriggerType> GetDisabledTriggerTypes() {
+  std::set<TriggerType> disabled_triggers;
+
+  // Do not in-line FeatureParam::Get(), |param_value| must stay alive while
+  // StringPieces reference segments.
+  std::string param_value = kDisableTriggerTypes.Get();
+
+  for (auto token :
+       base::SplitStringPiece(param_value, ",", base::TRIM_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
+    TryAddTriggerType(token, &disabled_triggers);
+  }
+  return disabled_triggers;
 }
 
 // Run the given closure if it is valid.
@@ -75,11 +124,19 @@ void TryRun(base::OnceClosure closure) {
 
 }  // namespace
 
-FeedSchedulerHost::FeedSchedulerHost(PrefService* pref_service,
+FeedSchedulerHost::FeedSchedulerHost(PrefService* profile_prefs,
+                                     PrefService* local_state,
                                      base::Clock* clock)
-    : pref_service_(pref_service),
+    : profile_prefs_(profile_prefs),
       clock_(clock),
-      user_classifier_(pref_service, clock) {}
+      user_classifier_(profile_prefs, clock),
+      disabled_triggers_(GetDisabledTriggerTypes()),
+      eula_accepted_notifier_(
+          web_resource::EulaAcceptedNotifier::Create(local_state)) {
+  if (eula_accepted_notifier_) {
+    eula_accepted_notifier_->Init(this);
+  }
+}
 
 FeedSchedulerHost::~FeedSchedulerHost() = default;
 
@@ -104,7 +161,7 @@ void FeedSchedulerHost::Initialize(
       std::move(schedule_background_task_callback);
 
   base::TimeDelta old_period =
-      pref_service_->GetTimeDelta(prefs::kBackgroundRefreshPeriod);
+      profile_prefs_->GetTimeDelta(prefs::kBackgroundRefreshPeriod);
   base::TimeDelta new_period = GetTriggerThreshold(TriggerType::FIXED_TIMER);
   if (old_period != new_period) {
     ScheduleFixedTimerWakeUp(new_period);
@@ -115,8 +172,18 @@ NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
     bool has_content,
     base::Time content_creation_date_time,
     bool has_outstanding_request) {
+  // The scheduler may not always know of outstanding requests, but the Feed
+  // should know about them all, and the scheduler should be notified upon
+  // completion of all requests. We should never encounter a scenario where only
+  // the scheduler thinks there is an outstanding request.
+
+  // TODO(skym): Resolve ambiguity around this expectation.
+  // DCHECK(has_outstanding_request || !tracking_oustanding_request_);
+
+  tracking_oustanding_request_ |= has_outstanding_request;
+
   NativeRequestBehavior behavior;
-  if (!has_outstanding_request && ShouldRefresh(TriggerType::NTP_SHOWN)) {
+  if (ShouldRefresh(TriggerType::NTP_SHOWN)) {
     if (!has_content) {
       behavior = REQUEST_WITH_WAIT;
     } else if (IsContentStale(content_creation_date_time)) {
@@ -143,20 +210,24 @@ NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
 
   // TODO(skym): Record requested behavior into histogram.
   user_classifier_.OnEvent(UserClassifier::Event::NTP_OPENED);
+  DVLOG(2) << "Specifying NativeRequestBehavior of "
+           << static_cast<int>(behavior);
   return behavior;
 }
 
 void FeedSchedulerHost::OnReceiveNewContent(
     base::Time content_creation_date_time) {
-  pref_service_->SetTime(prefs::kLastFetchAttemptTime,
-                         content_creation_date_time);
+  profile_prefs_->SetTime(prefs::kLastFetchAttemptTime,
+                          content_creation_date_time);
   TryRun(std::move(fixed_timer_completion_));
   ScheduleFixedTimerWakeUp(GetTriggerThreshold(TriggerType::FIXED_TIMER));
+  tracking_oustanding_request_ = false;
 }
 
 void FeedSchedulerHost::OnRequestError(int network_response_code) {
-  pref_service_->SetTime(prefs::kLastFetchAttemptTime, clock_->Now());
+  profile_prefs_->SetTime(prefs::kLastFetchAttemptTime, clock_->Now());
   TryRun(std::move(fixed_timer_completion_));
+  tracking_oustanding_request_ = false;
 }
 
 void FeedSchedulerHost::OnForegrounded() {
@@ -190,11 +261,65 @@ void FeedSchedulerHost::OnSuggestionConsumed() {
   user_classifier_.OnEvent(UserClassifier::Event::SUGGESTIONS_USED);
 }
 
+void FeedSchedulerHost::OnHistoryCleared() {
+  // Due to privacy, we should not fetch for a while (unless the user explicitly
+  // asks for new suggestions) to give sync the time to propagate the changes in
+  // history to the server.
+  suppress_refreshes_until_ =
+      clock_->Now() +
+      base::TimeDelta::FromMinutes(kSuppressRefreshDurationMinutes.Get());
+  // After that time elapses, we should fetch as soon as possible.
+  profile_prefs_->ClearPref(prefs::kLastFetchAttemptTime);
+}
+
+void FeedSchedulerHost::OnEulaAccepted() {
+  OnForegrounded();
+}
+
 bool FeedSchedulerHost::ShouldRefresh(TriggerType trigger) {
-  // TODO(skym): Check various other criteria are met, record metrics.
-  return (clock_->Now() -
-          pref_service_->GetTime(prefs::kLastFetchAttemptTime)) >
-         GetTriggerThreshold(trigger);
+  // TODO(skym): Record metrics throughout this method per design.
+
+  if (tracking_oustanding_request_) {
+    DVLOG(2) << "Outstanding request stopped refresh from trigger "
+             << static_cast<int>(trigger);
+    return false;
+  }
+
+  if (base::ContainsKey(disabled_triggers_, trigger)) {
+    DVLOG(2) << "Disabled trigger stopped refresh from trigger "
+             << static_cast<int>(trigger);
+    return false;
+  }
+
+  if (net::NetworkChangeNotifier::IsOffline()) {
+    DVLOG(2) << "Network is offline stopped refresh from trigger "
+             << static_cast<int>(trigger);
+    return false;
+  }
+
+  if (eula_accepted_notifier_ && !eula_accepted_notifier_->IsEulaAccepted()) {
+    DVLOG(2) << "EULA not being accepted stopped refresh from trigger "
+             << static_cast<int>(trigger);
+    return false;
+  }
+
+  if (clock_->Now() < suppress_refreshes_until_) {
+    DVLOG(2) << "Refresh suppression until " << suppress_refreshes_until_
+             << " stopped refresh from trigger " << static_cast<int>(trigger);
+    return false;
+  }
+
+  base::TimeDelta attempt_age =
+      clock_->Now() - profile_prefs_->GetTime(prefs::kLastFetchAttemptTime);
+  if (attempt_age < GetTriggerThreshold(trigger)) {
+    DVLOG(2) << "Last attempt age of " << attempt_age
+             << " stopped refresh from trigger " << static_cast<int>(trigger);
+    return false;
+  }
+
+  DVLOG(2) << "Requesting refresh from trigger " << static_cast<int>(trigger);
+  tracking_oustanding_request_ = true;
+  return true;
 }
 
 bool FeedSchedulerHost::IsContentStale(base::Time content_creation_date_time) {
@@ -213,7 +338,7 @@ base::TimeDelta FeedSchedulerHost::GetTriggerThreshold(TriggerType trigger) {
 }
 
 void FeedSchedulerHost::ScheduleFixedTimerWakeUp(base::TimeDelta period) {
-  pref_service_->SetTimeDelta(prefs::kBackgroundRefreshPeriod, period);
+  profile_prefs_->SetTimeDelta(prefs::kBackgroundRefreshPeriod, period);
   schedule_background_task_callback_.Run(period);
 }
 

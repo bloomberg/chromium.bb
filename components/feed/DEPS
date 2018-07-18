@@ -6,6 +6,7 @@ include_rules = [
   "+components/prefs",
   "+components/variations",
   "+components/version_info",
+  "+components/web_resource",
   "+net/base",
   "+net/http",
   "+net/traffic_annotation",

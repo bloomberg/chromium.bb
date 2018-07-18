@@ -19,6 +19,7 @@ class EulaAcceptedNotifier {
   // Observes EULA accepted state changes.
   class Observer {
    public:
+    virtual ~Observer() {}
     virtual void OnEulaAccepted() = 0;
   };
 

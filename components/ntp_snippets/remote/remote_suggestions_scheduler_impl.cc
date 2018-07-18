@@ -358,7 +358,7 @@ class EulaState final : public web_resource::EulaAcceptedNotifier::Observer {
     eula_notifier_->Init(this);
   }
 
-  ~EulaState() = default;
+  ~EulaState() override = default;
 
   bool IsEulaAccepted() {
     if (!eula_notifier_) {
