@@ -72,6 +72,16 @@ FrameTaskQueueController::NewLoadingControlTaskQueue() {
 }
 
 scoped_refptr<MainThreadTaskQueue>
+FrameTaskQueueController::NewResourceLoadingTaskQueue() {
+  scoped_refptr<MainThreadTaskQueue> task_queue =
+      main_thread_scheduler_impl_->NewLoadingTaskQueue(
+          MainThreadTaskQueue::QueueType::kFrameLoading, frame_scheduler_impl_);
+  TaskQueueCreated(task_queue);
+  resource_loading_task_queues_.insert(task_queue);
+  return task_queue;
+}
+
+scoped_refptr<MainThreadTaskQueue>
 FrameTaskQueueController::NewNonLoadingTaskQueue(QueueTraits queue_traits) {
   DCHECK(!GetNonLoadingTaskQueue(queue_traits));
 
@@ -118,6 +128,29 @@ FrameTaskQueueController::GetQueueEnabledVoter(
   if (it == task_queue_enabled_voters_.end())
     return nullptr;
   return it->value.get();
+}
+
+bool FrameTaskQueueController::RemoveResourceLoadingTaskQueue(
+    const scoped_refptr<MainThreadTaskQueue>& task_queue) {
+  DCHECK(task_queue);
+
+  if (!resource_loading_task_queues_.Contains(task_queue))
+    return false;
+  resource_loading_task_queues_.erase(task_queue);
+  DCHECK(task_queue_enabled_voters_.Contains(task_queue));
+  task_queue_enabled_voters_.erase(task_queue);
+
+  bool found_task_queue = false;
+  for (auto it = all_task_queues_and_voters_.begin();
+       it != all_task_queues_and_voters_.end(); ++it) {
+    if (it->first == task_queue.get()) {
+      found_task_queue = true;
+      all_task_queues_and_voters_.erase(it);
+      break;
+    }
+  }
+  DCHECK(found_task_queue);
+  return true;
 }
 
 // static
