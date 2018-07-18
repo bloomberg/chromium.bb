@@ -336,7 +336,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 16,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=android_nexus6_webview_16_shard_map.json',
+              '--test-shard-map-filename=android_nexus6_webview_shard_map.json',
               '--assert-gpu-compositing',
           ],
         }
