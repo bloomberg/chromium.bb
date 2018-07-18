@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/reading_list/core/reading_list_model.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
@@ -21,6 +22,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_cell.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_empty_view.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -274,8 +276,11 @@ size_t ModelReadSize(ReadingListModel* model) {
 
 // Returns a match for the Reading List Empty Collection Background.
 id<GREYMatcher> EmptyBackground() {
-  return grey_accessibilityID(
-      [EmptyReadingListBackgroundView accessibilityIdentifier]);
+  Class empty_background_class =
+      experimental_flags::IsReadingListUIRebootEnabled()
+          ? [TableViewEmptyView class]
+          : [EmptyReadingListBackgroundView class];
+  return grey_accessibilityID([empty_background_class accessibilityIdentifier]);
 }
 
 // Adds the current page to the Reading List.

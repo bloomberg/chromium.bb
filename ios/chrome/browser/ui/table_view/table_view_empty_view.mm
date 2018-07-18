@@ -61,6 +61,14 @@ NSAttributedString* GetAttributedMessage(NSString* message) {
   return self;
 }
 
+#pragma mark - Public
+
++ (NSString*)accessibilityIdentifier {
+  return @"TableViewEmptyView";
+}
+
+#pragma mark - UIView
+
 - (void)willMoveToSuperview:(UIView*)newSuperview {
   // Return if the subviews have already been created and added.
   if (!(self.subviews.count == 0))
