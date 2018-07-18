@@ -88,7 +88,7 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   if (!read_only_)
     flags |= ZX_VM_FLAG_PERM_WRITE;
   uintptr_t addr;
-  zx_status_t status = zx::vmar::root_self().map(
+  zx_status_t status = zx::vmar::root_self()->map(
       0, *zx::unowned_vmo(shm_.GetHandle()), offset, bytes, flags, &addr);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_vmar_map";
@@ -109,7 +109,7 @@ bool SharedMemory::Unmap() {
   SharedMemoryTracker::GetInstance()->DecrementMemoryUsage(*this);
 
   uintptr_t addr = reinterpret_cast<uintptr_t>(memory_);
-  zx_status_t status = zx::vmar::root_self().unmap(addr, mapped_size_);
+  zx_status_t status = zx::vmar::root_self()->unmap(addr, mapped_size_);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_vmar_unmap";
     return false;
