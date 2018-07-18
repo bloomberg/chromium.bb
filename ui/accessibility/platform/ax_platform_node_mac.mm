@@ -909,6 +909,11 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
   return attributedString.autorelease();
 }
 
+- (NSString*)description {
+  return [NSString stringWithFormat:@"%@ - %@ (%@)", [super description],
+                                    [self AXTitle], [self AXRole]];
+}
+
 @end
 
 namespace ui {
