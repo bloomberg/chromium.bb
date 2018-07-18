@@ -33,9 +33,9 @@ class PaymentMethodData {
   // true if the required values are present.
   bool FromDictionaryValue(const base::DictionaryValue& value);
 
-  // Payment method identifiers for payment methods that the merchant web site
+  // Payment method identifier for payment method that the merchant web site
   // accepts.
-  std::vector<std::string> supported_methods;
+  std::string supported_method;
 
   // A JSON-serialized object that provides optional information that might be
   // needed by the supported payment methods.

@@ -318,7 +318,7 @@ const PaymentDetailsModifier* PaymentRequest::GetApplicableModifier(
         &unused_payment_method_identifiers);
 
     if (selected_instrument->IsValidForModifier(
-            modifier.method_data.supported_methods,
+            modifier.method_data.supported_method,
             !modifier.method_data.supported_networks.empty(),
             supported_card_networks_set,
             !modifier.method_data.supported_types.empty(),
@@ -492,9 +492,8 @@ void PaymentRequest::RecordUseStats() {
 void PaymentRequest::ParsePaymentMethodData() {
   for (const PaymentMethodData& method_data_entry :
        web_payment_request_.method_data) {
-    for (const std::string& method : method_data_entry.supported_methods) {
-      stringified_method_data_[method].insert(method_data_entry.data);
-    }
+    stringified_method_data_[method_data_entry.supported_method].insert(
+        method_data_entry.data);
   }
 
   std::set<std::string> unused_payment_method_identifiers;

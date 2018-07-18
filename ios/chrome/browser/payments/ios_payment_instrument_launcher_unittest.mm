@@ -119,25 +119,30 @@ TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
        PopulatedStringifiedMethodDataDictionary) {
   WebPaymentRequest web_payment_request;
   PaymentMethodData method_datum1;
-  method_datum1.supported_methods.push_back("https://jefpay.com");
-  method_datum1.supported_methods.push_back("https://bobpay.com");
+  method_datum1.supported_method = "https://jefpay.com";
+  PaymentMethodData method_datum2;
+  method_datum2.supported_method = "https://bobpay.com";
   std::unique_ptr<base::DictionaryValue> data =
       std::make_unique<base::DictionaryValue>();
   data->SetString("Some data", "Some stringified data");
   std::string stringified_data;
   base::JSONWriter::Write(*data, &stringified_data);
   method_datum1.data = stringified_data;
+  method_datum2.data = stringified_data;
   web_payment_request.method_data.push_back(method_datum1);
-  PaymentMethodData method_datum2;
-  method_datum2.supported_methods.push_back("https://alicepay.com");
   web_payment_request.method_data.push_back(method_datum2);
   PaymentMethodData method_datum3;
-  method_datum3.supported_methods.push_back("https://jefpay.com");
+  method_datum3.supported_method = "https://alicepay.com";
   web_payment_request.method_data.push_back(method_datum3);
   PaymentMethodData method_datum4;
-  method_datum4.supported_methods.push_back("https://alicepay.com");
-  method_datum4.supported_methods.push_back("https://bobpay.com");
+  method_datum4.supported_method = "https://jefpay.com";
   web_payment_request.method_data.push_back(method_datum4);
+  PaymentMethodData method_datum5;
+  method_datum5.supported_method = "https://alicepay.com";
+  PaymentMethodData method_datum6;
+  method_datum6.supported_method = "https://bobpay.com";
+  web_payment_request.method_data.push_back(method_datum5);
+  web_payment_request.method_data.push_back(method_datum6);
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,

@@ -97,7 +97,7 @@ std::string GetBasicCardNetworkName(const mojom::BasicCardNetwork& network) {
 PaymentMethodData ConvertPaymentMethodData(
     const mojom::PaymentMethodDataPtr& method_data_entry) {
   PaymentMethodData method_data;
-  method_data.supported_methods = method_data_entry->supported_methods;
+  method_data.supported_method = method_data_entry->supported_method;
 
   // Transfer the supported basic card networks (visa, amex) and types
   // (credit, debit).

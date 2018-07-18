@@ -47,7 +47,7 @@ PaymentMethodData::PaymentMethodData(const PaymentMethodData& other) = default;
 PaymentMethodData::~PaymentMethodData() = default;
 
 bool PaymentMethodData::operator==(const PaymentMethodData& other) const {
-  return supported_methods == other.supported_methods && data == other.data &&
+  return supported_method == other.supported_method && data == other.data &&
          supported_networks == other.supported_networks &&
          supported_types == other.supported_types;
 }
@@ -58,34 +58,14 @@ bool PaymentMethodData::operator!=(const PaymentMethodData& other) const {
 
 bool PaymentMethodData::FromDictionaryValue(
     const base::DictionaryValue& value) {
-  supported_methods.clear();
   supported_networks.clear();
   supported_types.clear();
 
-  // The value of supportedMethods can be an array or a string.
-  const base::ListValue* supported_methods_list = nullptr;
-  if (value.GetList(kSupportedMethods, &supported_methods_list)) {
-    for (size_t i = 0; i < supported_methods_list->GetSize(); ++i) {
-      std::string supported_method;
-      if (!supported_methods_list->GetString(i, &supported_method) ||
-          !base::IsStringASCII(supported_method)) {
-        return false;
-      }
-      if (!supported_method.empty())
-        supported_methods.push_back(supported_method);
-    }
-  } else {
-    std::string supported_method;
-    if (!value.GetString(kSupportedMethods, &supported_method) ||
-        !base::IsStringASCII(supported_method) || supported_method.empty()) {
-      return false;
-    }
-    supported_methods.push_back(supported_method);
-  }
-
-  // At least one supported method is required.
-  if (supported_methods.empty())
+  // The value of supportedMethods should be a string.
+  if (!value.GetString(kSupportedMethods, &supported_method) ||
+      !base::IsStringASCII(supported_method) || supported_method.empty()) {
     return false;
+  }
 
   // Data is optional, but if a dictionary is present, save a stringified
   // version and attempt to parse supportedNetworks/supportedTypes.

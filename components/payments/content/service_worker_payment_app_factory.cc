@@ -67,7 +67,7 @@ bool AppSupportsAtLeastOneRequestedMethodData(
     const std::vector<mojom::PaymentMethodDataPtr>& requests) {
   for (const auto& enabled_method : app.enabled_methods) {
     for (const auto& request : requests) {
-      if (base::ContainsValue(request->supported_methods, enabled_method)) {
+      if (enabled_method == request->supported_method) {
         if (enabled_method != "basic-card" ||
             BasicCardCapabilitiesMatch(app.capabilities, request)) {
           return true;

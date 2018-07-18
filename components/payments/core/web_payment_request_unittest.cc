@@ -66,9 +66,7 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   expected_request.details.error = "Error in details";
 
   PaymentMethodData method_data;
-  std::vector<std::string> supported_methods;
-  supported_methods.push_back("Visa");
-  method_data.supported_methods = supported_methods;
+  method_data.supported_method = "Visa";
   expected_request.method_data.push_back(method_data);
 
   // Add the same values to the dictionary to be parsed.
@@ -86,9 +84,7 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
 
   auto method_data_list = std::make_unique<base::ListValue>();
   auto method_data_dict = std::make_unique<base::DictionaryValue>();
-  auto supported_methods_list = std::make_unique<base::ListValue>();
-  supported_methods_list->AppendString("Visa");
-  method_data_dict->Set("supportedMethods", std::move(supported_methods_list));
+  method_data_dict->SetString("supportedMethods", "Visa");
   method_data_list->Append(std::move(method_data_dict));
   request_dict.Set("methodData", std::move(method_data_list));
   request_dict.SetString("id", "123456789");

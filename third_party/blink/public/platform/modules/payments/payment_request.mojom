@@ -109,7 +109,7 @@ enum BasicCardType {
 };
 
 struct PaymentMethodData {
-  array<string> supported_methods;
+  string supported_method;
 
   // A JSON string built by the renderer from a JavaScript object that the
   // merchant website provides. The renderer uses

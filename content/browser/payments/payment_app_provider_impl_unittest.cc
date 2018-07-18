@@ -159,7 +159,7 @@ TEST_F(PaymentAppProviderTest, CanMakePaymentTest) {
       payments::mojom::CanMakePaymentEventData::New();
   payments::mojom::PaymentMethodDataPtr methodData =
       payments::mojom::PaymentMethodData::New();
-  methodData->supported_methods.push_back("test-method");
+  methodData->supported_method = "test-method";
   event_data->method_data.push_back(std::move(methodData));
 
   bool can_make_payment = false;

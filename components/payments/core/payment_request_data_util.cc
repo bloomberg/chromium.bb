@@ -109,64 +109,60 @@ void ParseSupportedMethods(
   std::set<GURL> url_payment_method_identifiers;
 
   for (const PaymentMethodData& method_data_entry : method_data) {
-    if (method_data_entry.supported_methods.empty())
+    if (method_data_entry.supported_method.empty())
       return;
 
-    out_payment_method_identifiers->insert(
-        method_data_entry.supported_methods.begin(),
-        method_data_entry.supported_methods.end());
+    out_payment_method_identifiers->insert(method_data_entry.supported_method);
 
-    for (const std::string& method : method_data_entry.supported_methods) {
-      if (method.empty())
-        continue;
-
-      const char kBasicCardMethodName[] = "basic-card";
-      // If a card network is specified right in "supportedMethods", add it.
-      auto card_it = remaining_card_networks.find(method);
-      if (card_it != remaining_card_networks.end()) {
-        out_supported_networks->push_back(method);
-        // |method| removed from |remaining_card_networks| so that it is not
-        // doubly added to |out_supported_networks|.
-        remaining_card_networks.erase(card_it);
-      } else if (method == kBasicCardMethodName) {
-        // For the "basic-card" method, check "supportedNetworks".
-        if (method_data_entry.supported_networks.empty()) {
-          // Empty |supported_networks| means all networks are supported.
-          out_supported_networks->insert(out_supported_networks->end(),
-                                         remaining_card_networks.begin(),
-                                         remaining_card_networks.end());
-          out_basic_card_specified_networks->insert(kBasicCardNetworks.begin(),
-                                                    kBasicCardNetworks.end());
-          // Clear the set so that no further networks are added to
-          // |out_supported_networks|.
-          remaining_card_networks.clear();
-        } else {
-          // The merchant has specified a few basic card supported networks. Use
-          // the mapping to transform to known basic-card types.
-          for (const std::string& supported_network :
-               method_data_entry.supported_networks) {
-            // Make sure that the network was not already added to
-            // |out_supported_networks|. If it's still in
-            // |remaining_card_networks| it's fair game.
-            auto it = remaining_card_networks.find(supported_network);
-            if (it != remaining_card_networks.end()) {
-              out_supported_networks->push_back(supported_network);
-              remaining_card_networks.erase(it);
-            }
-            if (kBasicCardNetworks.find(supported_network) !=
-                kBasicCardNetworks.end()) {
-              out_basic_card_specified_networks->insert(supported_network);
-            }
+    const char kBasicCardMethodName[] = "basic-card";
+    // If a card network is specified right in "supportedMethods", add it.
+    auto card_it =
+        remaining_card_networks.find(method_data_entry.supported_method);
+    if (card_it != remaining_card_networks.end()) {
+      out_supported_networks->push_back(method_data_entry.supported_method);
+      // |method| removed from |remaining_card_networks| so that it is not
+      // doubly added to |out_supported_networks|.
+      remaining_card_networks.erase(card_it);
+    } else if (method_data_entry.supported_method == kBasicCardMethodName) {
+      // For the "basic-card" method, check "supportedNetworks".
+      if (method_data_entry.supported_networks.empty()) {
+        // Empty |supported_networks| means all networks are supported.
+        out_supported_networks->insert(out_supported_networks->end(),
+                                       remaining_card_networks.begin(),
+                                       remaining_card_networks.end());
+        out_basic_card_specified_networks->insert(kBasicCardNetworks.begin(),
+                                                  kBasicCardNetworks.end());
+        // Clear the set so that no further networks are added to
+        // |out_supported_networks|.
+        remaining_card_networks.clear();
+      } else {
+        // The merchant has specified a few basic card supported networks. Use
+        // the mapping to transform to known basic-card types.
+        for (const std::string& supported_network :
+             method_data_entry.supported_networks) {
+          // Make sure that the network was not already added to
+          // |out_supported_networks|. If it's still in
+          // |remaining_card_networks| it's fair game.
+          auto it = remaining_card_networks.find(supported_network);
+          if (it != remaining_card_networks.end()) {
+            out_supported_networks->push_back(supported_network);
+            remaining_card_networks.erase(it);
+          }
+          if (kBasicCardNetworks.find(supported_network) !=
+              kBasicCardNetworks.end()) {
+            out_basic_card_specified_networks->insert(supported_network);
           }
         }
+      }
       } else {
-        // Here |method| could be a repeated deprecated supported network (e.g.,
-        // "visa"), some invalid string or a URL Payment Method Identifier.
-        // Capture this last category if the URL is valid. A valid URL must have
-        // an https scheme and its username and password must be empty:
+        // Here |method_data_entry.supported_method| could be a deprecated
+        // supported network (e.g., "visa"), some invalid string or a URL
+        // Payment Method Identifier. Capture this last category if the URL
+        // is valid. A valid URL must have an https scheme and its username and
+        // password must be empty:
         // https://www.w3.org/TR/payment-method-id/#dfn-validate-a-url-based-payment-method-identifier
         // Avoid duplicate URLs.
-        GURL url(method);
+        GURL url(method_data_entry.supported_method);
         if (url.is_valid() && url.SchemeIs(url::kHttpsScheme) &&
             !url.has_username() && !url.has_password()) {
           const auto result = url_payment_method_identifiers.insert(url);
@@ -174,7 +170,6 @@ void ParseSupportedMethods(
             out_url_payment_method_identifiers->push_back(url);
         }
       }
-    }
   }
 }
 
@@ -184,9 +179,8 @@ void ParseSupportedCardTypes(
   DCHECK(out_supported_card_types_set->empty());
 
   for (const PaymentMethodData& method_data_entry : method_data) {
-    // Ignore |supported_types| if |supported_methods| does not contain
-    // "basic_card".
-    if (!base::ContainsValue(method_data_entry.supported_methods, "basic-card"))
+    // Ignore |supported_types| if |supported_method| is not "basic-card".
+    if (method_data_entry.supported_method != "basic-card")
       continue;
 
     for (const autofill::CreditCard::CardType& card_type :

@@ -302,24 +302,22 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     }
 
     /**
-     * Adds accepted payment methods to the editor, if they are recognized credit card types.
+     * Adds accepted payment method to the editor, if they are recognized credit card types.
      *
-     * @param data Supported methods and method specific data. Should not be null.
+     * @param data Supported method and method specific data. Should not be null.
      */
-    public void addAcceptedPaymentMethodsIfRecognized(PaymentMethodData data) {
+    public void addAcceptedPaymentMethodIfRecognized(PaymentMethodData data) {
         assert data != null;
-        for (int i = 0; i < data.supportedMethods.length; i++) {
-            String method = data.supportedMethods[i];
-            if (mCardIssuerNetworks.containsKey(method)) {
-                addAcceptedNetwork(method);
-            } else if (BasicCardUtils.BASIC_CARD_METHOD_NAME.equals(method)) {
-                Set<String> basicCardNetworks = BasicCardUtils.convertBasicCardToNetworks(data);
-                mAcceptedBasicCardIssuerNetworks.addAll(basicCardNetworks);
-                for (String network : basicCardNetworks) {
-                    addAcceptedNetwork(network);
-                }
-                mAcceptedBasicCardTypes.addAll(BasicCardUtils.convertBasicCardToTypes(data));
+        String method = data.supportedMethod;
+        if (mCardIssuerNetworks.containsKey(method)) {
+            addAcceptedNetwork(method);
+        } else if (BasicCardUtils.BASIC_CARD_METHOD_NAME.equals(method)) {
+            Set<String> basicCardNetworks = BasicCardUtils.convertBasicCardToNetworks(data);
+            mAcceptedBasicCardIssuerNetworks.addAll(basicCardNetworks);
+            for (String network : basicCardNetworks) {
+                addAcceptedNetwork(network);
             }
+            mAcceptedBasicCardTypes.addAll(BasicCardUtils.convertBasicCardToTypes(data));
         }
     }
 

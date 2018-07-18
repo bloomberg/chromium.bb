@@ -278,8 +278,8 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     @CalledByNative
-    private static String[] getSupportedMethodsFromMethodData(PaymentMethodData data) {
-        return data.supportedMethods;
+    private static String getSupportedMethodFromMethodData(PaymentMethodData data) {
+        return data.supportedMethod;
     }
 
     @CalledByNative

@@ -121,13 +121,13 @@ base::string16 AutofillPaymentInstrument::GetSublabel() const {
 }
 
 bool AutofillPaymentInstrument::IsValidForModifier(
-    const std::vector<std::string>& methods,
+    const std::string& method,
     bool supported_networks_specified,
     const std::set<std::string>& supported_networks,
     bool supported_types_specified,
     const std::set<autofill::CreditCard::CardType>& supported_types) const {
   // This instrument only matches basic-card.
-  if (!base::ContainsValue(methods, "basic-card"))
+  if (method != "basic-card")
     return false;
 
   // If supported_types is not specified and this instrument matches the method,

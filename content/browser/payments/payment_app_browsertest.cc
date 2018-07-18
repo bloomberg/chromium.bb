@@ -183,7 +183,7 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     event_data->payment_request_origin = GURL("https://example.com");
 
     event_data->method_data.push_back(PaymentMethodData::New());
-    event_data->method_data[0]->supported_methods = {supported_method};
+    event_data->method_data[0]->supported_method = supported_method;
 
     PaymentDetailsModifierPtr modifier = PaymentDetailsModifier::New();
     modifier->total = PaymentItem::New();
@@ -191,7 +191,7 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     modifier->total->amount->currency = "USD";
     modifier->total->amount->value = "55";
     modifier->method_data = PaymentMethodData::New();
-    modifier->method_data->supported_methods = {supported_method};
+    modifier->method_data->supported_method = supported_method;
     event_data->modifiers.push_back(std::move(modifier));
 
     return event_data;
@@ -209,7 +209,7 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     event_data->payment_request_id = "payment-request-id";
 
     event_data->method_data.push_back(PaymentMethodData::New());
-    event_data->method_data[0]->supported_methods = {supported_method};
+    event_data->method_data[0]->supported_method = supported_method;
 
     event_data->total = PaymentCurrencyAmount::New();
     event_data->total->currency = "USD";
@@ -221,7 +221,7 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     modifier->total->amount->currency = "USD";
     modifier->total->amount->value = "55";
     modifier->method_data = PaymentMethodData::New();
-    modifier->method_data->supported_methods = {supported_method};
+    modifier->method_data->supported_method = supported_method;
     event_data->modifiers.push_back(std::move(modifier));
 
     event_data->instrument_key = instrument_key;

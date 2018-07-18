@@ -20,10 +20,12 @@ namespace payment_request_test_util {
 
 payments::WebPaymentRequest CreateTestWebPaymentRequest() {
   payments::WebPaymentRequest web_payment_request;
-  payments::PaymentMethodData method_datum;
-  method_datum.supported_methods.push_back("visa");
-  method_datum.supported_methods.push_back("amex");
-  web_payment_request.method_data.push_back(method_datum);
+  payments::PaymentMethodData method_datum1;
+  method_datum1.supported_method = "visa";
+  payments::PaymentMethodData method_datum2;
+  method_datum2.supported_method = "amex";
+  web_payment_request.method_data.push_back(method_datum1);
+  web_payment_request.method_data.push_back(method_datum2);
   web_payment_request.details.total = std::make_unique<payments::PaymentItem>();
   web_payment_request.details.total->label = "Total";
   web_payment_request.details.total->amount->value = "1.00";

@@ -168,29 +168,16 @@ ServiceWorkerPaymentInstrument::CreateCanMakePaymentEventData() {
   event_data->payment_request_origin = frame_origin_;
 
   for (const auto& modifier : spec_->details().modifiers) {
-    std::vector<std::string>::const_iterator it =
-        modifier->method_data->supported_methods.begin();
-    for (; it != modifier->method_data->supported_methods.end(); it++) {
-      if (supported_url_methods.find(*it) != supported_url_methods.end())
-        break;
+    if (base::ContainsKey(supported_url_methods,
+                          modifier->method_data->supported_method)) {
+      event_data->modifiers.emplace_back(modifier.Clone());
     }
-    if (it == modifier->method_data->supported_methods.end())
-      continue;
-
-    event_data->modifiers.emplace_back(modifier.Clone());
   }
 
   for (const auto& data : spec_->method_data()) {
-    std::vector<std::string>::const_iterator it =
-        data->supported_methods.begin();
-    for (; it != data->supported_methods.end(); it++) {
-      if (supported_url_methods.find(*it) != supported_url_methods.end())
-        break;
+    if (base::ContainsKey(supported_url_methods, data->supported_method)) {
+      event_data->method_data.push_back(data.Clone());
     }
-    if (it == data->supported_methods.end())
-      continue;
-
-    event_data->method_data.push_back(data.Clone());
   }
 
   return event_data;
@@ -252,29 +239,16 @@ ServiceWorkerPaymentInstrument::CreatePaymentRequestEventData() {
                              stored_payment_app_info_->enabled_methods.end());
   }
   for (const auto& modifier : spec_->details().modifiers) {
-    std::vector<std::string>::const_iterator it =
-        modifier->method_data->supported_methods.begin();
-    for (; it != modifier->method_data->supported_methods.end(); it++) {
-      if (supported_methods.find(*it) != supported_methods.end())
-        break;
+    if (base::ContainsKey(supported_methods,
+                          modifier->method_data->supported_method)) {
+      event_data->modifiers.emplace_back(modifier.Clone());
     }
-    if (it == modifier->method_data->supported_methods.end())
-      continue;
-
-    event_data->modifiers.emplace_back(modifier.Clone());
   }
 
   for (const auto& data : spec_->method_data()) {
-    std::vector<std::string>::const_iterator it =
-        data->supported_methods.begin();
-    for (; it != data->supported_methods.end(); it++) {
-      if (supported_methods.find(*it) != supported_methods.end())
-        break;
+    if (base::ContainsKey(supported_methods, data->supported_method)) {
+      event_data->method_data.push_back(data.Clone());
     }
-    if (it == data->supported_methods.end())
-      continue;
-
-    event_data->method_data.push_back(data.Clone());
   }
 
   return event_data;
@@ -338,31 +312,22 @@ base::string16 ServiceWorkerPaymentInstrument::GetSublabel() const {
 }
 
 bool ServiceWorkerPaymentInstrument::IsValidForModifier(
-    const std::vector<std::string>& methods,
+    const std::string& method,
     bool supported_networks_specified,
     const std::set<std::string>& supported_networks,
     bool supported_types_specified,
     const std::set<autofill::CreditCard::CardType>& supported_types) const {
   // Payment app that needs installation only supports url based payment
   // methods.
-  if (needs_installation_) {
-    return base::ContainsValue(methods, installable_enabled_method_);
-  }
+  if (needs_installation_)
+    return installable_enabled_method_ == method;
 
-  std::vector<std::string> matched_methods;
-  for (const auto& modifier_supported_method : methods) {
-    if (base::ContainsValue(stored_payment_app_info_->enabled_methods,
-                            modifier_supported_method)) {
-      matched_methods.emplace_back(modifier_supported_method);
-    }
-  }
-
-  if (matched_methods.empty())
+  if (!base::ContainsValue(stored_payment_app_info_->enabled_methods, method))
     return false;
 
   // Return true if 'basic-card' is not the only matched payment method. This
   // assumes that there is no duplicated payment methods.
-  if (matched_methods.size() > 1U || matched_methods[0] != "basic-card")
+  if (method != "basic-card")
     return true;
 
   // Checking the capabilities of this instrument against the modifier.

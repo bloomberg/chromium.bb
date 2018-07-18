@@ -528,11 +528,11 @@ public class AndroidPaymentApp
         }
         // }}} total
 
+        // TODO(https://crbug.com/754779): The supportedMethods field was already changed from array
+        // to string but we should keep backward-compatibility for now.
         // supportedMethods {{{
         json.name("supportedMethods").beginArray();
-        for (String method : modifier.methodData.supportedMethods) {
-            json.value(method);
-        }
+        json.value(modifier.methodData.supportedMethod);
         json.endArray();
         // }}} supportedMethods
 

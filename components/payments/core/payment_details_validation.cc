@@ -88,8 +88,8 @@ bool ValidatePaymentDetailsModifiers(
   }
 
   for (const auto& modifier : modifiers) {
-    if (modifier.method_data.supported_methods.empty()) {
-      *error_message = "Must specify at least one payment method identifier";
+    if (modifier.method_data.supported_method.empty()) {
+      *error_message = "Must specify payment method identifier";
       return false;
     }
 

@@ -124,7 +124,9 @@ const char kPaymentMethodIdentifierPage[] =
 
   web::test::ExecuteJavaScript(GetCurrentWebState(),
                                "buyHelper([{"
-                               "  supportedMethods: ['visa', 'basic-card']"
+                               "  supportedMethods: 'visa'"
+                               "}, {"
+                               "  supportedMethods: 'basic-card'"
                                "}]);");
 
   const payments::PaymentRequestCache::PaymentRequestSet& requests =
@@ -155,7 +157,9 @@ const char kPaymentMethodIdentifierPage[] =
   web::test::ExecuteJavaScript(
       GetCurrentWebState(),
       "buyHelper([{"
-      "  supportedMethods: ['mastercard', 'visa']"
+      "  supportedMethods: 'mastercard'"
+      "}, {"
+      "  supportedMethods: 'visa'"
       "}, {"
       "  supportedMethods: 'basic-card',"
       "  data: {"
@@ -204,13 +208,14 @@ const char kPaymentMethodIdentifierPage[] =
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)];
 
-  web::test::ExecuteJavaScript(
-      GetCurrentWebState(),
-      "buyHelper([{"
-      "  supportedMethods: ['https://bobpay.xyz', 'http://bobpay.xyz']"
-      "}, {"
-      "  supportedMethods: 'basic-card'"
-      "}]);");
+  web::test::ExecuteJavaScript(GetCurrentWebState(),
+                               "buyHelper([{"
+                               "  supportedMethods: 'https://bobpay.xyz'"
+                               "}, {"
+                               "  supportedMethods: 'http://bobpay.xyz'"
+                               "}, {"
+                               "  supportedMethods: 'basic-card'"
+                               "}]);");
 
   [self waitForWebViewContainingTexts:{"RangeError",
                                        "A payment method identifier must "

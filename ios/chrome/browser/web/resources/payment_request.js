@@ -298,31 +298,15 @@ var SerializedPaymentResponse;
    */
   __gCrWeb['paymentRequestManager'].validateSupportedMethods = function(
       supportedMethods, data) {
-    var hasBasicCardMethod = false;
+    // The |supportedMethods| was changed from array to string, but the name was
+    // left as a plural to maintain compatibility with existing content on the
+    // Web. So, if it is an array type, we only supports when its length is 1
+    // for backward-compatibility.
+    if (supportedMethods instanceof Array && supportedMethods.length == 1) {
+      supportedMethods = supportedMethods.toString();
+    }
 
-    if (supportedMethods instanceof Array) {
-      if (supportedMethods.length == 0) {
-        throw new TypeError(
-            'Each payment method needs to include at least one payment ' +
-            'method identifier');
-      }
-      if (supportedMethods.length >
-          __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE) {
-        throw new TypeError(
-            'At most' + __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE +
-            ' payment method identifiers are supported');
-      }
-      for (var i = 0; i < supportedMethods.length; i++) {
-        if (typeof supportedMethods[i] !== 'string') {
-          throw new TypeError('A payment method identifier must be a string');
-        }
-        __gCrWeb['paymentRequestManager'].validatePaymentMethodIdentifier(
-            supportedMethods[i]);
-
-        hasBasicCardMethod =
-            hasBasicCardMethod || supportedMethods[i] == 'basic-card';
-      }
-    } else if (typeof supportedMethods !== 'string') {
+    if (typeof supportedMethods !== 'string') {
       throw new TypeError('A payment method identifier must be a string');
     } else {
       __gCrWeb['paymentRequestManager'].validatePaymentMethodIdentifier(
@@ -344,7 +328,7 @@ var SerializedPaymentResponse;
     }
 
     // Validate basic-card data.
-    if (hasBasicCardMethod || supportedMethods == 'basic-card') {
+    if (supportedMethods == 'basic-card') {
       // Validate basic-card supportedNetworks.
       if (data.supportedNetworks) {
         if (!(data.supportedNetworks instanceof Array)) {
