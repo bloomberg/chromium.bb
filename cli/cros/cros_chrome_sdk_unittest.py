@@ -180,14 +180,14 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
       'CXXFLAGS': '-O2',
   }
 
-  def SetupCommandMock(self, extra_args=None):
+  def SetupCommandMock(self, extra_args=None, default_cache_dir=False):
     cmd_args = ['--board', SDKFetcherMock.BOARD, '--chrome-src',
                 self.chrome_src_dir, 'true']
     if extra_args:
       cmd_args.extend(extra_args)
 
-    self.cmd_mock = MockChromeSDKCommand(
-        cmd_args, base_args=['--cache-dir', self.tempdir])
+    base_args = None if default_cache_dir else ['--cache-dir', self.tempdir]
+    self.cmd_mock = MockChromeSDKCommand(cmd_args, base_args=base_args)
     self.StartPatcher(self.cmd_mock)
     self.cmd_mock.UnMockAttr('Run')
 
@@ -361,6 +361,26 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     out_dir = os.path.join(self.chrome_src_dir, 'out_%s' % SDKFetcherMock.BOARD)
 
     self.assertEquals(out_dir, self.cmd_mock.env['CHROMIUM_OUT_DIR'])
+
+  def testClearSDKCache(self):
+    """Verifies cache directories are removed with --clear-sdk-cache."""
+    # Ensure we have checkout type GCLIENT.
+    self.PatchObject(os, 'getcwd', return_value=self.chrome_root)
+
+    # Use the default cache location.
+    self.SetupCommandMock(extra_args=['--clear-sdk-cache'],
+                          default_cache_dir=True)
+    # Old chrome cache location.
+    old_chrome_cache = os.path.join(self.chrome_root, '.cros_cache')
+    chrome_cache = os.path.join(self.chrome_src_dir, 'build/cros_cache')
+    osutils.SafeMakedirs(old_chrome_cache)
+    self.assertFalse(os.path.exists(chrome_cache))
+
+    self.cmd_mock.inst.Run()
+    # Old chrome cache should be gone and the new one should now exist.
+    self.assertFalse(os.path.exists(old_chrome_cache))
+    self.assertTrue(os.path.exists(chrome_cache))
+
 
 class GomaTest(cros_test_lib.MockTempDirTestCase,
                cros_test_lib.LoggingTestCase):

@@ -21,6 +21,7 @@ from chromite.lib import osutils
 
 GENERAL_CACHE_DIR = '.cache'
 CHROME_CACHE_DIR = 'cros_cache'
+OLD_CHROME_CACHE_DIR = '.cros_cache'
 
 CHECKOUT_TYPE_UNKNOWN = 'unknown'
 CHECKOUT_TYPE_GCLIENT = 'gclient'
@@ -283,7 +284,7 @@ def FindCacheDir():
   elif checkout.type == CHECKOUT_TYPE_GCLIENT:
     path = os.path.join(checkout.chrome_src_dir, 'build', CHROME_CACHE_DIR)
     # Notify the user that the previous location is no longer used.
-    old_path = os.path.join(checkout.root, '.cros_cache')
+    old_path = os.path.join(checkout.root, OLD_CHROME_CACHE_DIR)
     if os.path.exists(old_path):
       logging.warning(
           "The location of Chrome's cache dir has changed. The old path at %s "

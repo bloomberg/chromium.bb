@@ -117,6 +117,7 @@ class SDKFetcher(object):
     if clear_cache:
       logging.warning('Clearing the SDK cache.')
       osutils.RmDir(self.cache_base, ignore_missing=True)
+      self._RemoveOldCacheDir()
     self.tarball_cache = cache.TarballCache(
         os.path.join(self.cache_base, self.TARBALL_CACHE))
     self.misc_cache = cache.DiskCache(
@@ -141,6 +142,13 @@ class SDKFetcher(object):
 
     if self.toolchain_path is None:
       self.toolchain_path = 'gs://%s' % constants.SDK_GS_BUCKET
+
+  def _RemoveOldCacheDir(self):
+    """Deletes old cache directory."""
+    checkout = path_util.DetermineCheckout(os.getcwd())
+    if checkout.type == path_util.CHECKOUT_TYPE_GCLIENT:
+      old_path = os.path.join(checkout.root, path_util.OLD_CHROME_CACHE_DIR)
+      osutils.RmDir(old_path, ignore_missing=True)
 
   def _UpdateTarball(self, url, ref):
     """Worker function to fetch tarballs"""
