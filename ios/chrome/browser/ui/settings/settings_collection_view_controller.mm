@@ -63,6 +63,7 @@
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/unified_consent/feature.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -379,7 +380,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     [model addItem:[self accountCellItem]
         toSectionWithIdentifier:SectionIdentifierSignIn];
   }
-  if (base::FeatureList::IsEnabled(signin::kUnifiedConsent)) {
+  if (IsUnifiedConsentEnabled()) {
     [model addItem:[self googleServicesCellItem]
         toSectionWithIdentifier:SectionIdentifierSignIn];
   }

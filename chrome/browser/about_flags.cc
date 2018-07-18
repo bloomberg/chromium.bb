@@ -98,6 +98,7 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_ranker_impl.h"
+#include "components/unified_consent/feature.h"
 #include "components/version_info/version_info.h"
 #include "components/viz/common/features.h"
 #include "content/public/common/buildflags.h"
@@ -1099,7 +1100,7 @@ const FeatureEntry::FeatureVariation kWebXrRenderPathVariations[] = {
 #endif  // defined(OS_ANDROID) && BUILDFLAG(ENABLE_VR)
 
 const FeatureEntry::FeatureParam kUnifiedConsentShowBump[] = {
-    {signin::kUnifiedConsentShowBumpParameter, "true"}};
+    {unified_consent::kUnifiedConsentShowBumpParameter, "true"}};
 const FeatureEntry::FeatureVariation kUnifiedConsentVariations[] = {
     {"(with consent bump)", kUnifiedConsentShowBump,
      arraysize(kUnifiedConsentShowBump), nullptr}};
@@ -3687,7 +3688,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"unified-consent", flag_descriptions::kUnifiedConsentName,
      flag_descriptions::kUnifiedConsentDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(signin::kUnifiedConsent,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(unified_consent::kUnifiedConsent,
                                     kUnifiedConsentVariations,
                                     "UnifiedConsentVariations")},
 

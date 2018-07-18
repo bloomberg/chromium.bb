@@ -105,6 +105,7 @@ source_set("browser") {
     "//components/strings",
     "//components/sync",
     "//components/translate/core/browser",
+    "//components/unified_consent",
     "//components/url_formatter",
     "//components/variations",
     "//components/variations/service",

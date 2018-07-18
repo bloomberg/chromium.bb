@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/unified_consent/feature.h"
 #include "ios/chrome/browser/unified_consent/unified_consent_service_client_impl.h"
 
 UnifiedConsentServiceFactory::UnifiedConsentServiceFactory()
@@ -47,8 +48,7 @@ UnifiedConsentServiceFactory* UnifiedConsentServiceFactory::GetInstance() {
 std::unique_ptr<KeyedService>
 UnifiedConsentServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  if (signin::GetUnifiedConsentFeatureState() ==
-      signin::UnifiedConsentFeatureState::kDisabled)
+  if (!IsUnifiedConsentEnabled())
     return nullptr;
 
   ios::ChromeBrowserState* browser_state =

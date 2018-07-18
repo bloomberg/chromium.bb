@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/scoped_unified_consent.h"
+#include "components/unified_consent/scoped_unified_consent.h"
 
 #include <map>
 #include <string>
@@ -12,29 +12,32 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/sync/driver/sync_driver_switches.h"
 
-namespace signin {
+namespace unified_consent {
 
 ScopedUnifiedConsent::ScopedUnifiedConsent(UnifiedConsentFeatureState state) {
+  sync_user_consent_separate_type_feature_list_.InitAndEnableFeature(
+      switches::kSyncUserConsentSeparateType);
   switch (state) {
     case UnifiedConsentFeatureState::kDisabled:
-      scoped_feature_list_.InitAndDisableFeature(kUnifiedConsent);
+      unified_consent_feature_list_.InitAndDisableFeature(kUnifiedConsent);
       break;
     case UnifiedConsentFeatureState::kEnabledNoBump:
-      scoped_feature_list_.InitAndEnableFeature(kUnifiedConsent);
+      unified_consent_feature_list_.InitAndEnableFeature(kUnifiedConsent);
       break;
     case UnifiedConsentFeatureState::kEnabledWithBump: {
       std::map<std::string, std::string> feature_params;
       feature_params[kUnifiedConsentShowBumpParameter] = "true";
-      scoped_feature_list_.InitAndEnableFeatureWithParameters(kUnifiedConsent,
-                                                              feature_params);
+      unified_consent_feature_list_.InitAndEnableFeatureWithParameters(
+          kUnifiedConsent, feature_params);
       break;
     }
   }
 
-  DCHECK_EQ(state, GetUnifiedConsentFeatureState());
+  DCHECK_EQ(state, internal::GetUnifiedConsentFeatureState());
 }
 
 ScopedUnifiedConsent::~ScopedUnifiedConsent() {}
 
-}  // namespace signin
+}  // namespace unified_consent

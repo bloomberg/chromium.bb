@@ -83,6 +83,7 @@ include_rules = [
   "+components/undo",
   "+components/unified_consent",
   "+components/update_client",
+  "+components/unified_consent",
   "+components/upload_list",
   "+components/url_formatter",
   "+components/variations",

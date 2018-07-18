@@ -44,6 +44,7 @@
 #import "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
+#include "ios/chrome/browser/unified_consent/feature.h"
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -198,8 +199,7 @@ enum AuthenticationState {
                           dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super init];
   if (self) {
-    _unifiedConsentEnabled =
-        base::FeatureList::IsEnabled(signin::kUnifiedConsent);
+    _unifiedConsentEnabled = IsUnifiedConsentEnabled();
     _browserState = browserState;
     _accessPoint = accessPoint;
     _promoAction = promoAction;

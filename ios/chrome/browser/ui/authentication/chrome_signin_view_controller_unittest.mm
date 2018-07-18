@@ -14,6 +14,8 @@
 #include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
+#include "components/unified_consent/feature.h"
+#include "components/unified_consent/scoped_unified_consent.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -94,15 +96,17 @@ static std::unique_ptr<KeyedService> CreateFakeConsentAuditor(
 class ChromeSigninViewControllerTest
     : public PlatformTest,
       public ::testing::WithParamInterface<bool> {
+ public:
+  ChromeSigninViewControllerTest()
+      : unified_consent_enabled_(GetParam()),
+        scoped_unified_consent_(
+            unified_consent_enabled_
+                ? unified_consent::UnifiedConsentFeatureState::kEnabledNoBump
+                : unified_consent::UnifiedConsentFeatureState::kDisabled) {}
+
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
-    if (GetParam()) {
-      unified_consent_enabled_ = true;
-      scoped_feature_list_.InitAndEnableFeature(signin::kUnifiedConsent);
-    } else {
-      unified_consent_enabled_ = false;
-    }
     identity_ = [FakeChromeIdentity identityWithEmail:@"foo1@gmail.com"
                                                gaiaID:@"foo1ID"
                                                  name:@"Fake Foo 1"];
@@ -352,6 +356,7 @@ class ChromeSigninViewControllerTest
   }
 
   bool unified_consent_enabled_;
+  unified_consent::ScopedUnifiedConsent scoped_unified_consent_;
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> context_;
   FakeChromeIdentity* identity_;
@@ -359,7 +364,6 @@ class ChromeSigninViewControllerTest
   ChromeSigninViewController* vc_;
   consent_auditor::FakeConsentAuditor* fake_consent_auditor_;
   AccountTrackerService* account_tracker_service_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::MockOneShotTimer* mock_timer_ptr_ = nullptr;
   FakeChromeSigninViewControllerDelegate* vc_delegate_;
 };

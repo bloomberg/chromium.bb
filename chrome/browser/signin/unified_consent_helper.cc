@@ -8,29 +8,36 @@
 #include "build/buildflag.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "components/signin/core/browser/signin_buildflags.h"
+#include "components/unified_consent/feature.h"
 
-signin::UnifiedConsentFeatureState GetUnifiedConsentFeatureState(
+namespace {
+
+unified_consent::UnifiedConsentFeatureState GetUnifiedConsentFeatureState(
     Profile* profile) {
   DCHECK(profile);
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // On Dice platforms, unified consent requires Dice to be enabled first.
   if (!AccountConsistencyModeManager::IsDiceEnabledForProfile(profile))
-    return signin::UnifiedConsentFeatureState::kDisabled;
+    return unified_consent::UnifiedConsentFeatureState::kDisabled;
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
-  return signin::GetUnifiedConsentFeatureState();
+  return unified_consent::internal::GetUnifiedConsentFeatureState();
 }
+
+}  // namespace
 
 bool IsUnifiedConsentEnabled(Profile* profile) {
   DCHECK(profile);
-  signin::UnifiedConsentFeatureState feature_state =
+  unified_consent::UnifiedConsentFeatureState feature_state =
       GetUnifiedConsentFeatureState(profile);
-  return feature_state != signin::UnifiedConsentFeatureState::kDisabled;
+  return feature_state !=
+         unified_consent::UnifiedConsentFeatureState::kDisabled;
 }
 
 bool IsUnifiedConsentBumpEnabled(Profile* profile) {
   DCHECK(profile);
-  signin::UnifiedConsentFeatureState feature_state =
+  unified_consent::UnifiedConsentFeatureState feature_state =
       GetUnifiedConsentFeatureState(profile);
-  return feature_state == signin::UnifiedConsentFeatureState::kEnabledWithBump;
+  return feature_state ==
+         unified_consent::UnifiedConsentFeatureState::kEnabledWithBump;
 }

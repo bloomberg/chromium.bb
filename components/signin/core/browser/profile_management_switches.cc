@@ -23,12 +23,6 @@ bool AccountConsistencyMethodGreaterOrEqual(AccountConsistencyMethod a,
 
 }  // namespace
 
-// base::Feature definitions.
-
-const base::Feature kUnifiedConsent{"UnifiedConsent",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const char kUnifiedConsentShowBumpParameter[] = "show_consent_bump";
-
 bool DiceMethodGreaterOrEqual(AccountConsistencyMethod a,
                               AccountConsistencyMethod b) {
   DCHECK_NE(AccountConsistencyMethod::kMirror, a);
@@ -45,16 +39,6 @@ bool IsExtensionsMultiAccount() {
 
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kExtensionsMultiAccount);
-}
-
-UnifiedConsentFeatureState GetUnifiedConsentFeatureState() {
-  if (!base::FeatureList::IsEnabled(signin::kUnifiedConsent))
-    return UnifiedConsentFeatureState::kDisabled;
-
-  std::string show_bump = base::GetFieldTrialParamValueByFeature(
-      kUnifiedConsent, kUnifiedConsentShowBumpParameter);
-  return show_bump.empty() ? UnifiedConsentFeatureState::kEnabledNoBump
-                           : UnifiedConsentFeatureState::kEnabledWithBump;
 }
 
 }  // namespace signin
