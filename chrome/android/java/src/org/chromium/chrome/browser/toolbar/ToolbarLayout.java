@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -149,6 +148,17 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
                 getContext(), getProgressBarHeight(), getProgressBarTopMargin(), false);
     }
 
+    /**
+     * Disable the menu button. This removes the view from the hierarchy and nulls the related
+     * instance vars.
+     */
+    protected void disableMenuButton() {
+        UiUtils.removeViewFromParent(mMenuButtonWrapper);
+        mMenuButtonWrapper = null;
+        mMenuButton = null;
+        mMenuBadge = null;
+    }
+
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -156,12 +166,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         mMenuButton = (TintedImageButton) findViewById(R.id.menu_button);
         mMenuBadge = (ImageView) findViewById(R.id.menu_badge);
         mMenuButtonWrapper = findViewById(R.id.menu_button_wrapper);
-        if (FeatureUtilities.isBottomToolbarEnabled()) {
-            UiUtils.removeViewFromParent(mMenuButtonWrapper);
-            mMenuButtonWrapper = null;
-            mMenuButton = null;
-            mMenuBadge = null;
-        }
 
         // Initialize the provider to an empty version to avoid null checking everywhere.
         mToolbarDataProvider = new ToolbarDataProvider() {

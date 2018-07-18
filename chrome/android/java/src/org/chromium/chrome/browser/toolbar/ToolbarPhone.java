@@ -383,9 +383,12 @@ public class ToolbarPhone extends ToolbarLayout
             mToolbarButtonsContainer = (ViewGroup) findViewById(R.id.toolbar_buttons);
 
             mHomeButton = (TintedImageButton) findViewById(R.id.home_button);
-            if (FeatureUtilities.isBottomToolbarEnabled() && mHomeButton != null) {
-                UiUtils.removeViewFromParent(mHomeButton);
-                mHomeButton = null;
+            if (FeatureUtilities.isBottomToolbarEnabled()) {
+                disableMenuButton();
+                if (mHomeButton != null) {
+                    UiUtils.removeViewFromParent(mHomeButton);
+                    mHomeButton = null;
+                }
             }
 
             mUrlBar = (TextView) findViewById(R.id.url_bar);
