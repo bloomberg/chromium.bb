@@ -4636,3 +4636,6 @@ crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ 
 crbug.com/864887 [ Linux ] fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Failure Pass ]
 crbug.com/864888 [ Mac ] editing/selection/offset-from-point-complex-scripts.html [ Failure Pass ]
 crbug.com/864891 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scroll-customization-property.html [ Timeout Pass ]
+
+# Sheriff 2018-07-18
+crbug.com/863067 [ Win10 ] fast/dom/Window/window-focus-self.html [ Failure Pass ]
