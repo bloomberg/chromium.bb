@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/shapedetection/detected_face.h"
 
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
-#include "third_party/blink/renderer/modules/shapedetection/landmark.h"
 
 namespace blink {
 

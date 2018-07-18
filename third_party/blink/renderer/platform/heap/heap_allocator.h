@@ -505,12 +505,37 @@ class HeapHashCountedSet
 template <typename T, size_t inlineCapacity = 0>
 class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
   IS_GARBAGE_COLLECTED_TYPE();
+  using Base = Vector<T, inlineCapacity, HeapAllocator>;
 
  public:
   HeapVector() {
     static_assert(WTF::IsTraceable<T>::value,
                   "For vectors without traceable elements, use Vector<> "
                   "instead of HeapVector<>");
+  }
+
+  void* operator new(size_t size) {
+    static_assert(
+        inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
+        "on-heap HeapVector<Persistent<>> should not have an inline capacity");
+    return Base::operator new(size);
+  }
+  void operator delete(void* p) { return Base::operator delete(p); };
+  void* operator new[](size_t size) {
+    static_assert(
+        inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
+        "on-heap HeapVector<Persistent<>> should not have an inline capacity");
+    return Base::operator new[](size);
+  }
+  void operator delete[](void* p) { return Base::operator delete[](p); };
+  void* operator new(size_t size, NotNullTag null_tag, void* location) {
+    static_assert(
+        inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
+        "on-heap HeapVector<Persistent<>> should not have an inline capacity");
+    return Base::operator new(size, null_tag, location);
+  }
+  void* operator new(size_t size, void* location) {
+    return Base::operator new(size, location);
   }
 
   explicit HeapVector(size_t size)
@@ -527,12 +552,37 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
 template <typename T, size_t inlineCapacity = 0>
 class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
   IS_GARBAGE_COLLECTED_TYPE();
+  using Base = Deque<T, inlineCapacity, HeapAllocator>;
 
  public:
   HeapDeque() {
     static_assert(WTF::IsTraceable<T>::value,
                   "For vectors without traceable elements, use Deque<> instead "
                   "of HeapDeque<>");
+  }
+
+  void* operator new(size_t size) {
+    static_assert(
+        inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
+        "on-heap HeapDeque<Persistent<>> should not have an inline capacity");
+    return Base::operator new(size);
+  }
+  void operator delete(void* p) { return Base::operator delete(p); };
+  void* operator new[](size_t size) {
+    static_assert(
+        inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
+        "on-heap HeapDequer<Persistent<>> should not have an inline capacity");
+    return Base::operator new[](size);
+  }
+  void operator delete[](void* p) { return Base::operator delete[](p); };
+  void* operator new(size_t size, NotNullTag null_tag, void* location) {
+    static_assert(
+        inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
+        "on-heap HeapDeque<Persistent<>> should not have an inline capacity");
+    return Base::operator new(size, null_tag, location);
+  }
+  void* operator new(size_t size, void* location) {
+    return Base::operator new(size, location);
   }
 
   explicit HeapDeque(size_t size)
