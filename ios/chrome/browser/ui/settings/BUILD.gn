@@ -186,6 +186,7 @@ source_set("settings") {
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/table_view/cells/resources:table_view_cell_check_mark",
+    "//ios/chrome/browser/unified_consent",
     "//ios/chrome/browser/voice",
     "//ios/chrome/browser/web:web",
     "//ios/chrome/common",
