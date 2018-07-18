@@ -12,15 +12,23 @@ import "url/mojom/origin.mojom";
 // Structure describing immutable properties for the current watch time report.
 // If any of these properties change a new WatchTimeRecorder will be requested.
 struct PlaybackProperties {
-  AudioCodec audio_codec;  // Note: We may not know the codec during all
-  VideoCodec video_codec;  // playbacks (HLS, remoting, etc).
-  bool has_audio;          // Note: Due to the above, we also need these
-  bool has_video;          // booleans for audio and video presence.
-  bool is_background;      // Is report for playback in the background?
-  bool is_muted;           // Is report for muted playback?
+  bool has_audio;
+  bool has_video;
+  bool is_background;  // Is report for playback in the background?
+  bool is_muted;       // Is report for muted playback?
   bool is_mse;
   bool is_eme;
   bool is_embedded_media_experience;  // Playback from 'Downloads' on Android.
+};
+
+// Structure describing mutable properties for the current watch time report.
+// The WatchTimeRecorder will use changes of these properties only for UKM
+// reporting and will not interrupt UMA reporting for changes.
+struct SecondaryPlaybackProperties {
+  AudioCodec audio_codec;  // Note: We may not know the codec during all
+  VideoCodec video_codec;  // playbacks (HLS, remoting, etc).
+  string audio_decoder_name;
+  string video_decoder_name;
   gfx.mojom.Size natural_size;  // Size of video frame; (0, 0) if audio only.
 };
 
@@ -55,14 +63,9 @@ interface WatchTimeRecorder {
   // finalizing UKM watch time.
   OnError(PipelineStatus status);
 
-  // Lazily sets the audio or video decoder name respectively. Must only be
-  // called once. If these values change, a new recorder should be created.
-  //
-  // Note: We have setters for these instead of putting them in the properties
-  // structure because we don't know decoder name for cast/remoting/hls and we
-  // don't have a convenient hook to tell us those cases are engaged
-  SetAudioDecoderName(string name);
-  SetVideoDecoderName(string name);
+  // Updates properties that the recorder will create a new UKM BasicPlayback
+  // record for, but for which UMA will continue accruing.
+  UpdateSecondaryProperties(SecondaryPlaybackProperties secondary_properties);
 
   // Lazily sets the autoplay status of the player. Must not be called multiple
   // times with different values.

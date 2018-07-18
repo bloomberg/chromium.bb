@@ -80,6 +80,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // TODO(dalecurtis): Should we only report when rate == 1.0? Should we scale
   // the elapsed media time instead?
   WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
+                    const gfx::Size& initial_natural_size,
                     GetMediaTimeCB get_media_time_cb,
                     mojom::MediaMetricsProvider* provider,
                     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -132,11 +133,11 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   void OnDisplayTypeFullscreen();
   void OnDisplayTypePictureInPicture();
 
-  // Sets the audio and video decoder names for reporting. Similar to OnError(),
-  // this value is always sent to the recorder regardless of whether we're
-  // currently reporting watch time or not. Must only be set once.
-  void SetAudioDecoderName(const std::string& name);
-  void SetVideoDecoderName(const std::string& name);
+  // Mutates various properties that may change over the lifetime of a playback
+  // but for which we don't want to interrupt reporting for. UMA watch time will
+  // not be interrupted by changes to these properties, while UKM will.
+  void UpdateSecondaryProperties(
+      mojom::SecondaryPlaybackPropertiesPtr secondary_properties);
 
   // Notifies the autoplay status of the playback. Must not be called multiple
   // times with different values.
@@ -149,6 +150,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
                     bool is_background,
                     bool is_muted,
+                    const gfx::Size& initial_natural_size,
                     GetMediaTimeCB get_media_time_cb,
                     mojom::MediaMetricsProvider* provider,
                     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -168,6 +170,9 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   enum class FinalizeTime { IMMEDIATELY, ON_NEXT_UPDATE };
   void MaybeFinalizeWatchTime(FinalizeTime finalize_time);
   void RestartTimerForHysteresis();
+
+  // UpdateWatchTime() both records watch time and processes any finalize event.
+  void RecordWatchTime();
   void UpdateWatchTime();
 
   // Helper methods for creating the components that make up the watch time
@@ -185,6 +190,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   const mojom::PlaybackPropertiesPtr properties_;
   const bool is_background_;
   const bool is_muted_;
+  const gfx::Size initial_natural_size_;
   const GetMediaTimeCB get_media_time_cb_;
   mojom::WatchTimeRecorderPtr recorder_;
 
