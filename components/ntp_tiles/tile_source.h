@@ -19,6 +19,8 @@ enum class TileSource {
   POPULAR,
   // Tile is a popular site baked into the binary.
   POPULAR_BAKED_IN,
+  // Tile is a custom link.
+  CUSTOM_LINKS,
   // Tile is on a custodian-managed whitelist.
   WHITELIST,
   // Tile containing the user-set home page is replacing the home page button.

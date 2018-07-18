@@ -24,6 +24,7 @@
 #include "base/strings/string16.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites_observer.h"
+#include "components/ntp_tiles/custom_links_manager.h"
 #include "components/ntp_tiles/ntp_tile.h"
 #include "components/ntp_tiles/popular_sites.h"
 #include "components/ntp_tiles/section_type.h"
@@ -115,12 +116,13 @@ class MostVisitedSites : public history::TopSitesObserver,
   // Construct a MostVisitedSites instance.
   //
   // |prefs| and |suggestions| are required and may not be null. |top_sites|,
-  // |popular_sites|, |supervisor| and |homepage_client| are optional and if
-  // null, the associated features will be disabled.
+  // |popular_sites|, |custom_links|, |supervisor| and |homepage_client| are
+  //  optional and if null, the associated features will be disabled.
   MostVisitedSites(PrefService* prefs,
                    scoped_refptr<history::TopSites> top_sites,
                    suggestions::SuggestionsService* suggestions,
                    std::unique_ptr<PopularSites> popular_sites,
+                   std::unique_ptr<CustomLinksManager> custom_links,
                    std::unique_ptr<IconCacher> icon_cacher,
                    std::unique_ptr<MostVisitedSitesSupervisor> supervisor);
 
@@ -156,6 +158,21 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   // Forces a rebuild of the current tiles to update the pinned homepage.
   void RefreshHomepageTile();
+
+  // Initializes custom links, which "freezes" the current MV tiles and converts
+  // them to custom links. Once custom links is initialized, MostVisitedSites
+  // will return only custom links. If the Most Visited tiles have not been
+  // loaded yet, does nothing.
+  void InitializeCustomLinks();
+  // Uninitializes custom links and reverts back to regular MV tiles. The
+  // current custom links will be deleted.
+  void UninitializeCustomLinks();
+  // Adds a custom link. If the number of current links is maxed, does nothing.
+  // Custom links must be enabled.
+  void AddCustomLink(const GURL& url, const base::string16& title);
+  // Deletes the custom link with the specified |url|. If |url| does not exist
+  // in the custom link list, does nothing. Custom links must be enabled.
+  void DeleteCustomLink(const GURL& url);
 
   void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
   void ClearBlacklistedUrls();
@@ -229,14 +246,22 @@ class MostVisitedSites : public history::TopSitesObserver,
       const std::set<std::string>& hosts_to_skip,
       size_t num_max_tiles);
 
+  // Creates tiles for |links| up to |max_num_sites_|. |links| will never exceed
+  // a certain maximum.
+  void BuildCustomLinks(const std::vector<CustomLinksManager::Link>& links);
+
   // Initiates a query for the homepage tile if needed and calls
   // |SaveTilesAndNotify| in the end.
   void InitiateNotificationForNewTiles(NTPTilesVector new_tiles);
 
   // Takes the personal tiles, creates and merges in whitelist and popular tiles
-  // if appropriate, and saves the new tiles. Notifies the observer if the tiles
-  // were actually changed.
-  void SaveTilesAndNotify(NTPTilesVector personal_tiles);
+  // if appropriate. Calls |SaveTilesAndNotify| at the end.
+  void MergeMostVisitedTiles(NTPTilesVector personal_tiles);
+
+  // Saves the new tiles and notifies the observer if the tiles were actually
+  // changed.
+  void SaveTilesAndNotify(NTPTilesVector new_tiles,
+                          std::map<SectionType, NTPTilesVector> sections);
 
   void OnPopularSitesDownloaded(bool success);
 
@@ -269,6 +294,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   scoped_refptr<history::TopSites> top_sites_;
   suggestions::SuggestionsService* suggestions_service_;
   std::unique_ptr<PopularSites> const popular_sites_;
+  std::unique_ptr<CustomLinksManager> const custom_links_;
   std::unique_ptr<IconCacher> const icon_cacher_;
   std::unique_ptr<MostVisitedSitesSupervisor> supervisor_;
   std::unique_ptr<HomepageClient> homepage_client_;
@@ -276,7 +302,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   Observer* observer_;
 
   // The maximum number of most visited sites to return.
-  size_t num_sites_;
+  size_t max_num_sites_;
 
   std::unique_ptr<
       suggestions::SuggestionsService::ResponseCallbackList::Subscription>

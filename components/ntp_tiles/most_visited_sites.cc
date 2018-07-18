@@ -91,16 +91,18 @@ MostVisitedSites::MostVisitedSites(
     scoped_refptr<history::TopSites> top_sites,
     SuggestionsService* suggestions,
     std::unique_ptr<PopularSites> popular_sites,
+    std::unique_ptr<CustomLinksManager> custom_links,
     std::unique_ptr<IconCacher> icon_cacher,
     std::unique_ptr<MostVisitedSitesSupervisor> supervisor)
     : prefs_(prefs),
       top_sites_(top_sites),
       suggestions_service_(suggestions),
       popular_sites_(std::move(popular_sites)),
+      custom_links_(std::move(custom_links)),
       icon_cacher_(std::move(icon_cacher)),
       supervisor_(std::move(supervisor)),
       observer_(nullptr),
-      num_sites_(0u),
+      max_num_sites_(0u),
       top_sites_observer_(this),
       mv_source_(TileSource::TOP_SITES),
       top_sites_weak_ptr_factory_(this) {
@@ -144,6 +146,8 @@ bool MostVisitedSites::DoesSourceExist(TileSource source) const {
       return homepage_client_ != nullptr;
     case TileSource::WHITELIST:
       return supervisor_ != nullptr;
+    case TileSource::CUSTOM_LINKS:
+      return custom_links_ != nullptr;
   }
   NOTREACHED();
   return false;
@@ -159,11 +163,11 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
                                                   size_t num_sites) {
   DCHECK(observer);
   observer_ = observer;
-  num_sites_ = num_sites;
+  max_num_sites_ = num_sites;
 
   // The order for this condition is important, ShouldShowPopularSites() should
   // always be called last to keep metrics as relevant as possible.
-  if (popular_sites_ && NeedPopularSites(prefs_, num_sites_) &&
+  if (popular_sites_ && NeedPopularSites(prefs_, max_num_sites_) &&
       ShouldShowPopularSites()) {
     popular_sites_->MaybeStartFetch(
         false, base::Bind(&MostVisitedSites::OnPopularSitesDownloaded,
@@ -200,6 +204,38 @@ void MostVisitedSites::Refresh() {
 
 void MostVisitedSites::RefreshHomepageTile() {
   BuildCurrentTiles();
+}
+
+void MostVisitedSites::InitializeCustomLinks() {
+  if (!custom_links_ || !current_tiles_.has_value())
+    return;
+
+  custom_links_->Initialize(current_tiles_.value());
+  BuildCurrentTiles();
+}
+
+void MostVisitedSites::UninitializeCustomLinks() {
+  if (!custom_links_)
+    return;
+
+  custom_links_->Uninitialize();
+  BuildCurrentTiles();
+  Refresh();
+}
+
+void MostVisitedSites::AddCustomLink(const GURL& url,
+                                     const base::string16& title) {
+  if (!custom_links_)
+    return;
+
+  custom_links_->AddLink(url, title);
+}
+
+void MostVisitedSites::DeleteCustomLink(const GURL& url) {
+  if (!custom_links_)
+    return;
+
+  custom_links_->DeleteLink(url);
 }
 
 void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
@@ -280,7 +316,7 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
   }
 
   NTPTilesVector tiles;
-  size_t num_tiles = std::min(visited_list.size(), num_sites_);
+  size_t num_tiles = std::min(visited_list.size(), max_num_sites_);
   for (size_t i = 0; i < num_tiles; ++i) {
     const history::MostVisitedURL& visited = visited_list[i];
     if (visited.url.is_empty())
@@ -316,6 +352,11 @@ void MostVisitedSites::OnSuggestionsProfileChanged(
 }
 
 void MostVisitedSites::BuildCurrentTiles() {
+  if (custom_links_ && custom_links_->IsInitialized()) {
+    BuildCustomLinks(custom_links_->GetLinks());
+    return;
+  }
+
   BuildCurrentTilesGivenSuggestionsProfile(
       suggestions_service_->GetSuggestionsDataFromCache().value_or(
           SuggestionsProfile()));
@@ -331,8 +372,8 @@ void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
     InitiateTopSitesQuery();
     return;
   }
-  if (num_sites_ < num_tiles)
-    num_tiles = num_sites_;
+  if (max_num_sites_ < num_tiles)
+    num_tiles = max_num_sites_;
 
   const base::Time profile_timestamp =
       base::Time::UnixEpoch() +
@@ -376,7 +417,7 @@ NTPTilesVector MostVisitedSites::CreateWhitelistEntryPointTiles(
 
   NTPTilesVector whitelist_tiles;
   for (const auto& whitelist : supervisor_->GetWhitelists()) {
-    if (whitelist_tiles.size() + num_actual_tiles >= num_sites_)
+    if (whitelist_tiles.size() + num_actual_tiles >= max_num_sites_)
       break;
 
     // Skip blacklisted sites.
@@ -424,15 +465,16 @@ MostVisitedSites::CreatePopularSitesSections(
     SectionType type = section_type_and_sites.first;
     const PopularSites::SitesVector& sites = section_type_and_sites.second;
     if (type == SectionType::PERSONALIZED) {
-      size_t num_required_tiles = num_sites_ - num_actual_tiles;
+      size_t num_required_tiles = max_num_sites_ - num_actual_tiles;
       sections[type] =
           CreatePopularSitesTiles(/*popular_sites=*/sites,
                                   /*hosts_to_skip=*/used_hosts,
                                   /*num_max_tiles=*/num_required_tiles);
     } else {
-      sections[type] = CreatePopularSitesTiles(/*popular_sites=*/sites,
-                                               /*hosts_to_skip=*/no_hosts,
-                                               /*num_max_tiles=*/num_sites_);
+      sections[type] =
+          CreatePopularSitesTiles(/*popular_sites=*/sites,
+                                  /*hosts_to_skip=*/no_hosts,
+                                  /*num_max_tiles=*/max_num_sites_);
     }
   }
   return sections;
@@ -481,21 +523,21 @@ void MostVisitedSites::OnHomepageTitleDetermined(
   if (!title.has_value())
     return;  // If there is no title, the most recent tile was already sent out.
 
-  SaveTilesAndNotify(InsertHomeTile(std::move(tiles), title.value()));
+  MergeMostVisitedTiles(InsertHomeTile(std::move(tiles), title.value()));
 }
 
 NTPTilesVector MostVisitedSites::InsertHomeTile(
     NTPTilesVector tiles,
     const base::string16& title) const {
   DCHECK(homepage_client_);
-  DCHECK_GT(num_sites_, 0u);
+  DCHECK_GT(max_num_sites_, 0u);
 
   const GURL& homepage_url = homepage_client_->GetHomepageUrl();
   NTPTilesVector new_tiles;
   bool homepage_tile_added = false;
 
   for (auto& tile : tiles) {
-    if (new_tiles.size() >= num_sites_) {
+    if (new_tiles.size() >= max_num_sites_) {
       break;
     }
 
@@ -512,7 +554,7 @@ NTPTilesVector MostVisitedSites::InsertHomeTile(
 
   if (!homepage_tile_added) {
     // Make room for the homepage tile.
-    if (new_tiles.size() >= num_sites_) {
+    if (new_tiles.size() >= max_num_sites_) {
       new_tiles.pop_back();
     }
     NTPTile homepage_tile;
@@ -526,6 +568,30 @@ NTPTilesVector MostVisitedSites::InsertHomeTile(
     new_tiles.insert(new_tiles.begin(), std::move(homepage_tile));
   }
   return new_tiles;
+}
+
+void MostVisitedSites::BuildCustomLinks(
+    const std::vector<CustomLinksManager::Link>& links) {
+  DCHECK(IsMDCustomLinksEnabled());
+
+  NTPTilesVector tiles;
+  size_t num_tiles = std::min(links.size(), max_num_sites_);
+  for (size_t i = 0; i < num_tiles; ++i) {
+    const CustomLinksManager::Link& link = links.at(i);
+    if (supervisor_ && supervisor_->IsBlocked(link.url))
+      continue;
+
+    NTPTile tile;
+    tile.title = link.title;
+    tile.url = link.url;
+    tile.source = TileSource::CUSTOM_LINKS;
+    // TODO(crbug.com/773278): Populate |data_generation_time| here in order to
+    // log UMA metrics of age.
+    tiles.push_back(std::move(tile));
+  }
+
+  mv_source_ = TileSource::CUSTOM_LINKS;
+  SaveTilesAndNotify(std::move(tiles), std::map<SectionType, NTPTilesVector>());
 }
 
 void MostVisitedSites::InitiateNotificationForNewTiles(
@@ -544,10 +610,10 @@ void MostVisitedSites::InitiateNotificationForNewTiles(
     // copy of new tiles.
     new_tiles = InsertHomeTile(std::move(new_tiles), base::string16());
   }
-  SaveTilesAndNotify(std::move(new_tiles));
+  MergeMostVisitedTiles(std::move(new_tiles));
 }
 
-void MostVisitedSites::SaveTilesAndNotify(NTPTilesVector personal_tiles) {
+void MostVisitedSites::MergeMostVisitedTiles(NTPTilesVector personal_tiles) {
   std::set<std::string> used_hosts;
   size_t num_actual_tiles = 0u;
   AddToHostsAndTotalCount(personal_tiles, &used_hosts, &num_actual_tiles);
@@ -564,12 +630,16 @@ void MostVisitedSites::SaveTilesAndNotify(NTPTilesVector personal_tiles) {
   NTPTilesVector new_tiles =
       MergeTiles(std::move(personal_tiles), std::move(whitelist_tiles),
                  std::move(sections[SectionType::PERSONALIZED]));
-  if (current_tiles_.has_value() && (*current_tiles_ == new_tiles)) {
-    return;
-  }
 
+  SaveTilesAndNotify(std::move(new_tiles), std::move(sections));
+}
+
+void MostVisitedSites::SaveTilesAndNotify(
+    NTPTilesVector new_tiles,
+    std::map<SectionType, NTPTilesVector> sections) {
+  if (current_tiles_.has_value() && (*current_tiles_ == new_tiles))
+    return;
   current_tiles_.emplace(std::move(new_tiles));
-  DCHECK_EQ(num_actual_tiles, current_tiles_->size());
 
   int num_personal_tiles = 0;
   for (const auto& tile : *current_tiles_) {
@@ -629,7 +699,7 @@ void MostVisitedSites::TopSitesChanged(TopSites* top_sites,
 }
 
 bool MostVisitedSites::ShouldAddHomeTile() const {
-  return num_sites_ > 0u &&
+  return max_num_sites_ > 0u &&
          homepage_client_ &&  // No platform-specific implementation - no tile.
          homepage_client_->IsHomepageEnabled() &&
          !homepage_client_->IsNewTabPageUsedAsHomepage() &&
@@ -645,7 +715,7 @@ void MostVisitedSites::AddToHostsAndTotalCount(const NTPTilesVector& new_tiles,
     hosts->insert(tile.url.host());
   }
   *total_tile_count += new_tiles.size();
-  DCHECK_LE(*total_tile_count, num_sites_);
+  DCHECK_LE(*total_tile_count, max_num_sites_);
 }
 
 }  // namespace ntp_tiles

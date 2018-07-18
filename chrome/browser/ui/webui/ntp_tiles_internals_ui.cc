@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
@@ -18,6 +19,7 @@
 #include "components/grit/components_resources.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
+#include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/icon_cacher.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/webui/ntp_tiles_internals_message_handler.h"
@@ -85,6 +87,8 @@ bool ChromeNTPTilesInternalsMessageHandlerClient::DoesSourceExist(
 #else
       return false;
 #endif
+    case ntp_tiles::TileSource::CUSTOM_LINKS:
+      return ntp_tiles::IsMDCustomLinksEnabled();
   }
   NOTREACHED();
   return false;

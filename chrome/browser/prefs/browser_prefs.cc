@@ -309,6 +309,10 @@
 #include "chrome/browser/ui/browser_view_prefs.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "components/ntp_tiles/custom_links_manager_impl.h"
+#endif
+
 namespace {
 
 #if defined(OS_ANDROID)
@@ -643,6 +647,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   InstantService::RegisterProfilePrefs(registry);
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(registry);
   gcm::RegisterProfilePrefs(registry);
+  ntp_tiles::CustomLinksManagerImpl::RegisterProfilePrefs(registry);
   StartupBrowserCreator::RegisterProfilePrefs(registry);
 #endif
 

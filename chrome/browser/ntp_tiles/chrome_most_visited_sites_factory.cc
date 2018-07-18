@@ -9,9 +9,11 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
+#include "chrome/browser/ntp_tiles/chrome_custom_links_manager_factory.h"
 #include "chrome/browser/ntp_tiles/chrome_popular_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
@@ -119,6 +121,11 @@ ChromeMostVisitedSitesFactory::NewForProfile(Profile* profile) {
       SuggestionsServiceFactory::GetForProfile(profile),
 #if defined(OS_ANDROID)
       ChromePopularSitesFactory::NewForProfile(profile),
+#else
+      nullptr,
+#endif
+#if !defined(OS_ANDROID)
+      ChromeCustomLinksManagerFactory::NewForProfile(profile),
 #else
       nullptr,
 #endif
