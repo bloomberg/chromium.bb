@@ -110,9 +110,9 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 135
+TOTAL_TESTS = 133
 TOTAL_WONTFIX = 3
-TOTAL_SKIPS = 21 + TOTAL_WONTFIX
+TOTAL_SKIPS = 20 + TOTAL_WONTFIX
 TOTAL_CRASHES = 76
 
 UNEXPECTED_PASSES = 1
@@ -127,7 +127,6 @@ def unit_test_list():
     tests.add('failures/expected/device_failure.html', device_failure=True)
     tests.add('failures/expected/timeout.html', timeout=True)
     tests.add('failures/expected/leak.html', leak=True)
-    tests.add('failures/expected/needsmanualrebaseline.html', actual_text='needsmanualrebaseline text')
     tests.add('failures/expected/image.html',
               actual_image='image_fail-pngtEXtchecksum\x00checksum_fail',
               expected_image='image-pngtEXtchecksum\x00checksum-png')
@@ -306,7 +305,6 @@ Bug(test) failures/expected/image_checksum.html [ Failure ]
 Bug(test) failures/expected/keyboard.html [ Crash ]
 Bug(test) failures/expected/leak.html [ Leak ]
 Bug(test) failures/expected/mismatch.html [ Failure ]
-Bug(test) failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]
 Bug(test) failures/expected/newlines_leading.html [ Failure ]
 Bug(test) failures/expected/newlines_trailing.html [ Failure ]
 Bug(test) failures/expected/newlines_with_excess_CR.html [ Failure ]

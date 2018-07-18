@@ -54,19 +54,15 @@ class Base(unittest.TestCase):
         return ['failures/expected/text.html',
                 'failures/expected/image_checksum.html',
                 'failures/expected/crash.html',
-                'failures/expected/needsmanualrebaseline.html',
                 'failures/expected/image.html',
                 'failures/expected/timeout.html',
                 'passes/text.html',
-                'reftests/failures/expected/needsmanualrebaseline.html',
-                'reftests/failures/expected/needsmanualrebaseline_with_txt.html',
                 'reftests/failures/expected/has_unused_expectation.html']
 
     def get_basic_expectations(self):
         return """
 Bug(test) failures/expected/text.html [ Failure ]
 Bug(test) failures/expected/crash.html [ Crash ]
-Bug(test) failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]
 Bug(test) failures/expected/image_checksum.html [ Crash ]
 Bug(test) failures/expected/image.html [ Crash Mac ]
 """
@@ -196,49 +192,6 @@ class MiscTests(Base):
         test_set = self._exp.get_test_set(CRASH)
         self.assertEqual(test_set, set(['failures/expected/crash.html', 'failures/expected/image_checksum.html']))
 
-    def test_needs_rebaseline_reftest(self):
-        try:
-            filesystem = self._port.host.filesystem
-            filesystem.write_text_file(
-                filesystem.join(
-                    self._port.layout_tests_dir(),
-                    'reftests/failures/expected/needsmanualrebaseline.html'),
-                'content')
-            filesystem.write_text_file(
-                filesystem.join(
-                    self._port.layout_tests_dir(),
-                    'reftests/failures/expected/needsmanualrebaseline-expected.html'),
-                'content')
-            filesystem.write_text_file(
-                filesystem.join(
-                    self._port.layout_tests_dir(),
-                    'reftests/failures/expected/needsmanualrebaseline_with_txt.html'),
-                'content')
-            filesystem.write_text_file(
-                filesystem.join(
-                    self._port.layout_tests_dir(),
-                    'reftests/failures/expected/needsmanualrebaseline_with_txt.html'),
-                'content')
-            filesystem.write_text_file(
-                filesystem.join(
-                    self._port.layout_tests_dir(),
-                    'reftests/failures/expected/needsmanualrebaseline_with_txt-expected.html'),
-                'content')
-            filesystem.write_text_file(
-                filesystem.join(
-                    self._port.layout_tests_dir(),
-                    'reftests/failures/expected/needsmanualrebaseline_with_txt-expected.txt'),
-                'content')
-            self.parse_exp(
-                'Bug(user) reftests/failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]\n'
-                'Bug(user) reftests/failures/expected/needsmanualrebaseline_with_txt.html [ NeedsManualRebaseline ]\n',
-                is_lint_mode=True)
-            self.assertFalse(True, "ParseError wasn't raised")
-        except ParseError as error:
-            warnings = ('expectations:1 A reftest without text expectation cannot be marked as '
-                        'NeedsManualRebaseline reftests/failures/expected/needsmanualrebaseline.html')
-            self.assertEqual(str(error), warnings)
-
     def test_parse_warning(self):
         try:
             filesystem = self._port.host.filesystem
@@ -308,8 +261,6 @@ class MiscTests(Base):
         self.assertFalse(match('failures/expected/image_checksum.html', PASS, True))
         self.assertFalse(match('failures/expected/image_checksum.html', PASS, False))
         self.assertFalse(match('failures/expected/crash.html', PASS, False))
-        self.assertTrue(match('failures/expected/needsmanualrebaseline.html', TEXT, True))
-        self.assertFalse(match('failures/expected/needsmanualrebaseline.html', CRASH, True))
         self.assertTrue(match('passes/text.html', PASS, False))
 
     def test_sanitizer_flag(self):
@@ -629,25 +580,6 @@ Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
         self.assertEqual("""Bug(x) [ Linux Win10 Release ] failures/expected/foo.html [ Failure ]
 Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 """, actual_expectations)
-
-    def test_remove_needs_manual_rebaseline(self):
-        host = MockHost()
-        test_port = host.port_factory.get('test-win-win7', None)
-        test_port.test_exists = lambda test: True
-        test_port.test_isfile = lambda test: True
-
-        test_config = test_port.test_configuration()
-        test_port.expectations_dict = lambda: {
-            'expectations': 'Bug(x) [ Win ] failures/expected/foo.html [ NeedsManualRebaseline ]\n'
-        }
-        expectations = TestExpectations(test_port, self.get_basic_tests())
-
-        actual_expectations = expectations.remove_configurations([('failures/expected/foo.html', test_config)])
-
-        self.assertEqual(
-            'Bug(x) [ Win7 Debug ] failures/expected/foo.html [ NeedsManualRebaseline ]\n'
-            'Bug(x) [ Win10 ] failures/expected/foo.html [ NeedsManualRebaseline ]\n',
-            actual_expectations)
 
     def test_remove_multiple_configurations(self):
         host = MockHost()
