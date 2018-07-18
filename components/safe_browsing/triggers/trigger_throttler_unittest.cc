@@ -303,19 +303,20 @@ TEST_F(TriggerThrottlerTestFinch, AdSamplerDefaultQuota) {
 }
 
 TEST_F(TriggerThrottlerTestFinch, SuspiciousSiteTriggerDefaultQuota) {
-  // Ensure that suspicious site trigger is disabled by default.
+  // Ensure that suspicious site trigger is enabled with default quota.
   TriggerThrottler throttler_default(nullptr);
-  EXPECT_EQ(0u, GetDailyQuotaForTrigger(throttler_default,
-                                        TriggerType::SUSPICIOUS_SITE));
-  EXPECT_FALSE(throttler_default.TriggerCanFire(TriggerType::SUSPICIOUS_SITE));
+  EXPECT_EQ(
+      kSuspiciousSiteTriggerDefaultQuota,
+      GetDailyQuotaForTrigger(throttler_default, TriggerType::SUSPICIOUS_SITE));
+  EXPECT_TRUE(throttler_default.TriggerCanFire(TriggerType::SUSPICIOUS_SITE));
 
   base::FieldTrialList field_trial_list(nullptr);
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatureList(
       SetupQuotaInFinch(TriggerType::SUSPICIOUS_SITE,
-                        "Group_SuspiciousSiteTriggerDefaultQuota", 5));
+                        "Group_SuspiciousSiteTriggerDefaultQuota", 7));
   TriggerThrottler throttler_finch(nullptr);
-  EXPECT_EQ(5u, GetDailyQuotaForTrigger(throttler_finch,
+  EXPECT_EQ(7u, GetDailyQuotaForTrigger(throttler_finch,
                                         TriggerType::SUSPICIOUS_SITE));
 }
 

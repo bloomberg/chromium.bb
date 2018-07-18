@@ -19,6 +19,9 @@ namespace safe_browsing {
 // Default quota for ad sampler trigger.
 extern const size_t kAdSamplerTriggerDefaultQuota;
 
+// Default quota for suspicious site trigger.
+extern const size_t kSuspiciousSiteTriggerDefaultQuota;
+
 // Param name of the finch param containing the quota for the suspicious site
 // trigger.
 extern const char kSuspiciousSiteTriggerQuotaParam[];
