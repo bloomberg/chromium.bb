@@ -819,9 +819,9 @@ void Page::ReportIntervention(const String& text) {
   }
 }
 
-void Page::RequestBeginMainFrameNotExpected(bool new_state) {
+bool Page::RequestBeginMainFrameNotExpected(bool new_state) {
   if (!main_frame_ || !main_frame_->IsLocalFrame())
-    return;
+    return false;
 
   base::debug::StackTrace main_frame_created_trace =
       main_frame_->CreateStackForDebugging();
@@ -834,8 +834,10 @@ void Page::RequestBeginMainFrameNotExpected(bool new_state) {
     if (WebLayerTreeView* layer_tree_view =
             chrome_client_->GetWebLayerTreeView(main_frame)) {
       layer_tree_view->RequestBeginMainFrameNotExpected(new_state);
+      return true;
     }
   }
+  return false;
 }
 
 ukm::UkmRecorder* Page::GetUkmRecorder() {

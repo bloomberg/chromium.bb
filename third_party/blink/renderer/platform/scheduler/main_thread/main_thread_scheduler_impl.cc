@@ -2297,15 +2297,17 @@ void MainThreadSchedulerImpl::DispatchRequestBeginMainFrameNotExpected(
   if (has_tasks ==
       main_thread_only().compositor_will_send_main_frame_not_expected.get())
     return;
-  main_thread_only().compositor_will_send_main_frame_not_expected = has_tasks;
 
   TRACE_EVENT1(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
       "MainThreadSchedulerImpl::DispatchRequestBeginMainFrameNotExpected",
       "has_tasks", has_tasks);
+  bool success = false;
   for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
-    page_scheduler->RequestBeginMainFrameNotExpected(has_tasks);
+    success |= page_scheduler->RequestBeginMainFrameNotExpected(has_tasks);
   }
+  main_thread_only().compositor_will_send_main_frame_not_expected =
+      success && has_tasks;
 }
 
 std::unique_ptr<base::SingleSampleMetric>
