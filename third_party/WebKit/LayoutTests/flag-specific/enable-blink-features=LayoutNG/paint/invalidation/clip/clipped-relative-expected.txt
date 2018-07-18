@@ -32,6 +32,10 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV id='i'",
+      "reason": "subtree"
+    },
+    {
       "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV id='inner'",
       "reason": "subtree"
     },

@@ -32,7 +32,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutNGBlockFlow DIV id='container' class='fixed blue'",
+      "object": "LayoutNGBlockFlow BODY",
+      "reason": "style change"
+    },
+    {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='container' class='fixed blue'",
       "reason": "style change"
     },
     {

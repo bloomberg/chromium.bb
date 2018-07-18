@@ -20,34 +20,46 @@
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
           "rect": [100, 200, 100, 100],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
           "rect": [100, 100, 100, 100],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "NGPhysicalTextFragment 'Target'",
           "rect": [100, 200, 41, 19],
-          "reason": "geometry"
+          "reason": "subtree"
         },
         {
           "object": "NGPhysicalTextFragment 'Target'",
           "rect": [100, 100, 41, 19],
-          "reason": "geometry"
+          "reason": "subtree"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV id='great-grandparent'",
+      "reason": "subtree"
+    },
+    {
       "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
-      "reason": "geometry"
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
+      "reason": "subtree"
+    },
+    {
+      "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
+      "reason": "subtree"
     },
     {
       "object": "NGPhysicalTextFragment 'Target'",
-      "reason": "geometry"
+      "reason": "subtree"
     }
   ]
 }
