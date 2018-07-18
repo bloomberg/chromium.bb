@@ -2943,6 +2943,26 @@
       "features": [
         "clear_pixel_unpack_buffer_before_copyteximage"
       ]
+    },
+    {
+      "id": 271,
+      "cr_bugs": [860418],
+      "description": "Frequent crashes in glClear on Mali-T7xx on N with driver 12.1.01alp0",
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "8.0"
+        }
+      },
+      "driver_version": {
+        "op": "=",
+        "value": "12.1.01alp0"
+      },
+      "gl_renderer": ".*Mali-T7.*",
+      "features": [
+        "gl_clear_broken"
+      ]
     }
   ]
 }
