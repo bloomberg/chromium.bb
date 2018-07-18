@@ -1158,9 +1158,8 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   hider->SetTransitionedProperties({OPACITY});
   hider->SetTransitionDuration(base::TimeDelta::FromMilliseconds(
       kSpeechRecognitionOpacityAnimationDurationMs));
-  VR_BIND_VISIBILITY(hider,
-                     model->get_last_opaque_mode() == kModeBrowsing ||
-                         model->get_last_opaque_mode() == kModeFullscreen);
+  VR_BIND_VISIBILITY(
+      hider, model->default_browsing_enabled() || model->fullscreen_enabled());
   scene_->AddUiElement(k2dBrowsingRepositioner, std::move(hider));
 
   auto fader = Create<UiElement>(k2dBrowsingVisibiltyFader, kPhaseNone);
@@ -1188,8 +1187,6 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   element->SetTransitionedProperties({OPACITY});
   element->SetTransitionDuration(base::TimeDelta::FromMilliseconds(
       kSpeechRecognitionOpacityAnimationDurationMs));
-  VR_BIND_VISIBILITY(element, model->default_browsing_enabled() ||
-                                  model->fullscreen_enabled());
   scene_->AddUiElement(k2dBrowsingVisibiltyFader, std::move(element));
 
   element = Create<UiElement>(k2dBrowsingContentGroup, kPhaseNone);
