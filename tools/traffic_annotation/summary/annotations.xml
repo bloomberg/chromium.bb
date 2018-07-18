@@ -147,7 +147,6 @@ Refer to README.md for content description and update process.
  <item id="network_location_provider" hash_code="23472048" type="1" second_id="96590038" content_hash_code="41087976" os_list="linux,windows" semantics_fields="1" policy_fields="3,4" file_path="services/device/geolocation/network_location_provider.cc"/>
  <item id="network_location_request" hash_code="96590038" type="2" content_hash_code="59824433" os_list="linux,windows" semantics_fields="2,3,4,5" policy_fields="-1" file_path="services/device/geolocation/network_location_request.cc"/>
  <item id="network_time_component" hash_code="46188932" type="0" content_hash_code="28051857" os_list="linux,windows" file_path="components/network_time/network_time_tracker.cc"/>
- <item id="notification_image_reporter" hash_code="70126372" type="0" content_hash_code="29754543" os_list="linux,windows" file_path="chrome/browser/safe_browsing/notification_image_reporter.cc"/>
  <item id="ntp_contextual_suggestions_fetch" hash_code="95711309" type="0" content_hash_code="107035434" os_list="linux,windows" file_path="components/ntp_snippets/contextual/contextual_suggestions_fetch.cc"/>
  <item id="ntp_icon_source" hash_code="29197139" type="0" content_hash_code="16399294" os_list="linux,windows" file_path="chrome/browser/search/ntp_icon_source.cc"/>
  <item id="ntp_snippets_fetch" hash_code="15418154" type="0" content_hash_code="10078959" os_list="linux,windows" file_path="components/ntp_snippets/remote/json_request.cc"/>
@@ -212,7 +211,7 @@ Refer to README.md for content description and update process.
  <item id="safe_browsing_chunk_backup_request" hash_code="79957943" type="0" content_hash_code="133850277" os_list="linux,windows" file_path="chrome/browser/safe_browsing/protocol_manager.cc"/>
  <item id="safe_browsing_client_side_malware_detector" hash_code="102935425" type="0" content_hash_code="79591279" os_list="linux,windows" file_path="chrome/browser/safe_browsing/client_side_detection_service.cc"/>
  <item id="safe_browsing_client_side_phishing_detector" hash_code="1313982" type="0" content_hash_code="50199143" os_list="linux,windows" file_path="chrome/browser/safe_browsing/client_side_detection_service.cc"/>
- <item id="safe_browsing_extended_reporting" hash_code="42848942" type="0" content_hash_code="50089173" os_list="linux,windows" file_path="components/safe_browsing/base_ping_manager.cc"/>
+ <item id="safe_browsing_extended_reporting" hash_code="42848942" type="0" content_hash_code="50089173" os_list="linux,windows" file_path="components/safe_browsing/ping_manager.cc"/>
  <item id="safe_browsing_feedback" hash_code="44583821" type="0" content_hash_code="114076664" os_list="linux,windows" file_path="chrome/browser/safe_browsing/download_protection/download_feedback.cc"/>
  <item id="safe_browsing_g4_update" hash_code="75153841" type="0" content_hash_code="112049516" os_list="linux,windows" file_path="components/safe_browsing/db/v4_update_protocol_manager.cc"/>
  <item id="safe_browsing_get_full_hash" hash_code="68745894" type="0" content_hash_code="21739198" os_list="linux,windows" file_path="chrome/browser/safe_browsing/protocol_manager.cc"/>

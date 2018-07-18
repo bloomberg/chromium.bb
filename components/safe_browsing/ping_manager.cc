@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_browsing/base_ping_manager.h"
+#include "components/safe_browsing/ping_manager.h"
 
 #include <utility>
 
@@ -71,14 +71,13 @@ namespace safe_browsing {
 // SafeBrowsingPingManager implementation ----------------------------------
 
 // static
-std::unique_ptr<BasePingManager> BasePingManager::Create(
+std::unique_ptr<PingManager> PingManager::Create(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const SafeBrowsingProtocolConfig& config) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return base::WrapUnique(new BasePingManager(url_loader_factory, config));
+  return base::WrapUnique(new PingManager(url_loader_factory, config));
 }
 
-BasePingManager::BasePingManager(
+PingManager::PingManager(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const SafeBrowsingProtocolConfig& config)
     : client_name_(config.client_name),
@@ -89,12 +88,12 @@ BasePingManager::BasePingManager(
   version_ = ProtocolManagerHelper::Version();
 }
 
-BasePingManager::~BasePingManager() {}
+PingManager::~PingManager() {}
 
 // net::URLFetcherDelegate implementation ----------------------------------
 
 // All SafeBrowsing request responses are handled here.
-void BasePingManager::OnURLLoaderComplete(
+void PingManager::OnURLLoaderComplete(
     network::SimpleURLLoader* source,
     std::unique_ptr<std::string> response_body) {
   auto it = std::find_if(
@@ -107,7 +106,7 @@ void BasePingManager::OnURLLoaderComplete(
 }
 
 // Sends a SafeBrowsing "hit" report.
-void BasePingManager::ReportSafeBrowsingHit(
+void PingManager::ReportSafeBrowsingHit(
     const safe_browsing::HitReport& hit_report) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   GURL report_url = SafeBrowsingHitUrl(hit_report);
@@ -124,13 +123,13 @@ void BasePingManager::ReportSafeBrowsingHit(
 
   report_ptr->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
-      base::BindOnce(&BasePingManager::OnURLLoaderComplete,
-                     base::Unretained(this), report_ptr.get()));
+      base::BindOnce(&PingManager::OnURLLoaderComplete, base::Unretained(this),
+                     report_ptr.get()));
   safebrowsing_reports_.insert(std::move(report_ptr));
 }
 
 // Sends threat details for users who opt-in.
-void BasePingManager::ReportThreatDetails(const std::string& report) {
+void PingManager::ReportThreatDetails(const std::string& report) {
   GURL report_url = ThreatDetailsUrl();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -145,12 +144,12 @@ void BasePingManager::ReportThreatDetails(const std::string& report) {
 
   loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
-      base::BindOnce(&BasePingManager::OnURLLoaderComplete,
-                     base::Unretained(this), loader.get()));
+      base::BindOnce(&PingManager::OnURLLoaderComplete, base::Unretained(this),
+                     loader.get()));
   safebrowsing_reports_.insert(std::move(loader));
 }
 
-GURL BasePingManager::SafeBrowsingHitUrl(
+GURL PingManager::SafeBrowsingHitUrl(
     const safe_browsing::HitReport& hit_report) const {
   DCHECK(hit_report.threat_type == SB_THREAT_TYPE_URL_MALWARE ||
          hit_report.threat_type == SB_THREAT_TYPE_URL_PHISHING ||
@@ -235,7 +234,7 @@ GURL BasePingManager::SafeBrowsingHitUrl(
       hit_report.is_metrics_reporting_active, user_population_comp.c_str()));
 }
 
-GURL BasePingManager::ThreatDetailsUrl() const {
+GURL PingManager::ThreatDetailsUrl() const {
   std::string url = base::StringPrintf(
       "%s/clientreport/malware?client=%s&appver=%s&pver=1.0",
       url_prefix_.c_str(), client_name_.c_str(), version_.c_str());

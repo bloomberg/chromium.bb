@@ -27,7 +27,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -411,16 +410,6 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
     notification.set_type(message_center::NOTIFICATION_TYPE_IMAGE);
     notification.set_image(
         gfx::Image::CreateFrom1xBitmap(notification_resources.image));
-    // n.b. this should only be posted once per notification.
-    if (g_browser_process->safe_browsing_service() &&
-        g_browser_process->safe_browsing_service()->enabled_by_prefs()) {
-      g_browser_process->safe_browsing_service()
-          ->ping_manager()
-          ->ReportNotificationImage(
-              profile,
-              g_browser_process->safe_browsing_service()->database_manager(),
-              origin, notification_resources.image);
-    }
   }
 
   // Badges are only supported on Android, primarily because it's the only

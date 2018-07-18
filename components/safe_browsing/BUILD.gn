@@ -27,8 +27,8 @@ source_set("safe_browsing") {
     "//components/security_interstitials/content:security_interstitial_page",
   ]
   deps = [
-    ":base_ping_manager",
     ":features",
+    ":ping_manager",
     "//base:base",
     "//base:i18n",
     "//components/safe_browsing/common:common",
@@ -42,10 +42,10 @@ source_set("safe_browsing") {
   ]
 }
 
-static_library("base_ping_manager") {
+static_library("ping_manager") {
   sources = [
-    "base_ping_manager.cc",
-    "base_ping_manager.h",
+    "ping_manager.cc",
+    "ping_manager.h",
   ]
 
   public_deps = [
@@ -62,14 +62,14 @@ static_library("base_ping_manager") {
   ]
 }
 
-source_set("base_ping_manager_unittest") {
+source_set("ping_manager_unittest") {
   testonly = true
   sources = [
-    "base_ping_manager_unittest.cc",
+    "ping_manager_unittest.cc",
   ]
 
   deps = [
-    ":base_ping_manager",
+    ":ping_manager",
     "//base:base",
     "//net:net",
     "//net:test_support",
