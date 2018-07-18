@@ -13,13 +13,15 @@ test(() => assert_selection(
       'ghi^jk',
     '</div>'
   ].join(''),
+  // 'delete' command adjusted selection to "|ghi^jk" so it will only delete ghi in the end.
   'delete',
   [
     '<div contenteditable>',
       '<table contenteditable="false"><tbody><tr>',
-        '<td contenteditable>foo|jk</td>',
-        '<td contenteditable></td>',
+        '<td contenteditable>foobar</td>',
+        '<td contenteditable>baz<span contenteditable="false">abc</span>def</td>',
       '</tr></tbody></table>',
+      '|jk',
     '</div>'
   ].join('')),
   'Delete selected editable nodes that are not in both the start and end editable roots');

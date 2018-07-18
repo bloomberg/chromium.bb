@@ -5895,9 +5895,7 @@ TEST_F(WebFrameTest, SelectRangeCanMoveSelectionStart) {
   EXPECT_EQ("Editable 2.", SelectionAsString(frame));
   frame->SelectRange(BottomRightMinusOne(ElementBounds(frame, "editable_2")),
                      TopLeft(ElementBounds(frame, "header_2")));
-  // positionForPoint returns the wrong values for contenteditable spans. See
-  // http://crbug.com/238334.
-  // EXPECT_EQ("[ Editable 1. Editable 2.", selectionAsString(frame));
+  EXPECT_EQ("[ Editable 1. Editable 2.", SelectionAsString(frame));
 }
 
 TEST_F(WebFrameTest, SelectRangeCanMoveSelectionEnd) {
@@ -5951,9 +5949,7 @@ TEST_F(WebFrameTest, SelectRangeCanMoveSelectionEnd) {
   EXPECT_EQ("Editable 1.", SelectionAsString(frame));
   frame->SelectRange(TopLeft(ElementBounds(frame, "editable_1")),
                      BottomRightMinusOne(ElementBounds(frame, "footer_1")));
-  // positionForPoint returns the wrong values for contenteditable spans. See
-  // http://crbug.com/238334.
-  // EXPECT_EQ("Editable 1. Editable 2. ]", selectionAsString(frame));
+  EXPECT_EQ("Editable 1. Editable 2. ]", SelectionAsString(frame));
 }
 
 TEST_F(WebFrameTest, MoveRangeSelectionExtent) {

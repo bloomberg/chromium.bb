@@ -4610,6 +4610,9 @@ crbug.com/862643 http/tests/serviceworker/navigation_preload/use-counter.html [ 
 # Sheriff 2018-7-12
 crbug.com/863067 [ Win10 ] virtual/user-activation-v2/fast/dom/Window/window-focus-self.html [ Failure Pass ]
 
+# crrev/c/1102157 exposed this DCHECK violation is an unwanted behavior.
+crbug.com/863651 fast/forms/search/search-cancel-button-mouseup.html [ Crash Pass ]
+
 # Sheriff 2018-7-13
 crbug.com/863599 [ Linux Debug ] external/wpt/requestidlecallback/callback-iframe.html [ Pass Timeout ]
 

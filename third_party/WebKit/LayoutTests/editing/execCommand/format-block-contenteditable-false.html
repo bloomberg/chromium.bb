@@ -14,8 +14,10 @@ selection_test(
   'formatblock <h1>',
   [
     '<div contenteditable>',
-    '<h1><i>^foo</i><br><i>baz|</i></h1>',
-    '<div contenteditable="false">bar</div>',
+      '<h1><i>^foo</i><br><i>baz</i></h1>',
+      // TODO(crbug.com/855207): This should be
+      // '|<div contenteditable="false">bar</div>'
+      '<div contenteditable="false">|bar</div>',
     '</div>',
   ],
   'formatBlock with uneditable');

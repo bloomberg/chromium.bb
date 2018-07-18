@@ -9,10 +9,12 @@
               '<tr><td>foo</td><td contenteditable>bar|</td><td>baz</td></tr>',
           '</tbody></table>',
       '</div>'],
+    // 'Delete' command adjusts selection to ^|<table contenteditable="false">,
+    // so "Delete" did nothing in the end.
     'Delete',
     [ '<div contenteditable id="div">',
           '|<table contenteditable="false"><tbody>',
-              '<tr><td>foo</td><td contenteditable></td><td>baz</td></tr>',
+              '<tr><td>foo</td><td contenteditable>bar</td><td>baz</td></tr>',
           '</tbody></table>',
       '</div>'],
     'Deleting a selection that starts just before a table and ends inside the'
