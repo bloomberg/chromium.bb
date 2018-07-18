@@ -585,7 +585,7 @@
       'closure_compilation': 'closure_compilation',
       'fuchsia_arm64': 'release_trybot_fuchsia_arm64',
       'fuchsia_arm64_cast_audio': 'release_trybot_fuchsia_arm64_cast_audio',
-      'fucshia-fyi-x64-dbg': 'debug_trybot_fuchsia',
+      'fuchsia-fyi-x64-dbg': 'debug_trybot_fuchsia',
       'fuchsia_x64': 'release_trybot_fuchsia',
       'fuchsia_x64_cast_audio': 'release_trybot_fuchsia_cast_audio',
       'layout_test_leak_detection': 'release_trybot',
