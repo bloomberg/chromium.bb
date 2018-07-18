@@ -854,13 +854,11 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewLoadingTaskQueue(
     FrameSchedulerImpl* frame_scheduler) {
   DCHECK_EQ(MainThreadTaskQueue::QueueClassForQueueType(queue_type),
             MainThreadTaskQueue::QueueClass::kLoading);
-  return NewTaskQueue(
-      MainThreadTaskQueue::QueueCreationParams(queue_type)
-          .SetCanBePaused(true)
-          .SetCanBeFrozen(
-              RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled())
-          .SetCanBeDeferred(true)
-          .SetFrameScheduler(frame_scheduler));
+  return NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(queue_type)
+                          .SetCanBePaused(true)
+                          .SetCanBeFrozen(true)
+                          .SetCanBeDeferred(true)
+                          .SetFrameScheduler(frame_scheduler));
 }
 
 scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTimerTaskQueue(

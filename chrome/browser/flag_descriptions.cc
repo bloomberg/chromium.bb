@@ -1709,11 +1709,6 @@ const char kStopInBackgroundDescription[] =
     "Stop scheduler task queues, in the background, "
     " after a grace period.";
 
-const char kStopLoadingInBackgroundName[] = "Stop loading in background";
-const char kStopLoadingInBackgroundDescription[] =
-    "Stop loading tasks and loading "
-    "resources, in the background, after certain grace time.";
-
 const char kStopNonTimersInBackgroundName[] =
     "Stop non-timer task queues background";
 const char kStopNonTimersInBackgroundDescription[] =

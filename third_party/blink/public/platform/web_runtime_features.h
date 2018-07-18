@@ -190,7 +190,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableAutomationControlled(bool);
   BLINK_PLATFORM_EXPORT static void EnableWorkStealingInScriptRunner(bool);
   BLINK_PLATFORM_EXPORT static void EnableStopInBackground(bool);
-  BLINK_PLATFORM_EXPORT static void EnableStopLoadingInBackground(bool);
   BLINK_PLATFORM_EXPORT static void EnableStopNonTimersInBackground(bool);
   BLINK_PLATFORM_EXPORT static void EnablePWAFullCodeCache(bool);
   BLINK_PLATFORM_EXPORT static void EnableOffMainThreadWebSocket(bool);

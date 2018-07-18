@@ -720,8 +720,7 @@ SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
   if (!parent_page_scheduler_)
     return SchedulingLifecycleState::kNotThrottled;
 
-  if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled() &&
-      parent_page_scheduler_->IsFrozen() &&
+  if (parent_page_scheduler_->IsFrozen() &&
       !parent_page_scheduler_->KeepActive()) {
     DCHECK(!parent_page_scheduler_->IsPageVisible());
     return SchedulingLifecycleState::kStopped;

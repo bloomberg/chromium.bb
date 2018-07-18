@@ -334,7 +334,6 @@ TEST_F(FrameSchedulerImplTest, PauseAndResume) {
 }
 
 TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagEnabled) {
-  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
   ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(true);
   int counter = 0;
   LoadingTaskQueue()->PostTask(
@@ -365,7 +364,6 @@ TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagEnabled) {
 }
 
 TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
-  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(false);
   ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(false);
   int counter = 0;
   LoadingTaskQueue()->PostTask(
@@ -384,19 +382,18 @@ TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
 
   EXPECT_EQ(0, counter);
   base::RunLoop().RunUntilIdle();
-  // throttleable tasks are frozen, other tasks continue to run.
-  EXPECT_EQ(4, counter);
+  // throttleable tasks and loading tasks are frozen, others continue to run.
+  EXPECT_EQ(3, counter);
 
   page_scheduler_->SetPageFrozen(false);
 
-  EXPECT_EQ(4, counter);
+  EXPECT_EQ(3, counter);
   // Same as RunUntilIdle but also advances the clock if necessary.
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(5, counter);
 }
 
 TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
-  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
   ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(false);
   std::vector<std::string> tasks;
   LoadingTaskQueue()->PostTask(
@@ -455,7 +452,6 @@ TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
 }
 
 TEST_F(FrameSchedulerImplTest, PageFreezeAndPageVisible) {
-  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
   ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(true);
   int counter = 0;
   LoadingTaskQueue()->PostTask(

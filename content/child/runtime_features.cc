@@ -418,9 +418,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kStopInBackground))
     WebRuntimeFeatures::EnableStopInBackground(true);
 
-  if (base::FeatureList::IsEnabled(features::kStopLoadingInBackground))
-    WebRuntimeFeatures::EnableStopLoadingInBackground(true);
-
   if (base::FeatureList::IsEnabled(features::kStopNonTimersInBackground))
     WebRuntimeFeatures::EnableStopNonTimersInBackground(true);
 

@@ -520,10 +520,6 @@ void WebRuntimeFeatures::EnableStopInBackground(bool enable) {
   RuntimeEnabledFeatures::SetStopInBackgroundEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableStopLoadingInBackground(bool enable) {
-  RuntimeEnabledFeatures::SetStopLoadingInBackgroundEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableStopNonTimersInBackground(bool enable) {
   RuntimeEnabledFeatures::SetStopNonTimersInBackgroundEnabled(enable);
 }

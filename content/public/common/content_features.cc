@@ -393,11 +393,6 @@ const base::Feature kStopInBackground {
 #endif
 };
 
-// Stop loading tasks and loading of resources in background, on Android,
-// after allowed grace time. Launch bug: https://crbug.com/775761.
-const base::Feature kStopLoadingInBackground{"stop-loading-in-background",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Stop non-timer task queues in background, on Android,
 // after allowed grace time. Launch bug: https://crbug.com/822954.
 const base::Feature kStopNonTimersInBackground{

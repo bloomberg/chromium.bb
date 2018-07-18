@@ -129,7 +129,6 @@ class PageSchedulerImplTest : public testing::Test {
   // set the page as visible or unfreezes it while still hidden (depending on
   // the argument), and verifies that tasks can run.
   void TestFreeze(bool make_page_visible) {
-    ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
     ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(true);
 
     int counter = 0;
@@ -1330,8 +1329,6 @@ TEST_F(PageSchedulerImplTest, KeepActiveSetForNewPages) {
 }
 
 TEST_F(PageSchedulerImplTest, TestPageBackgroundedTimerSuspension) {
-  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
-
   int counter = 0;
   ThrottleableTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
@@ -1383,8 +1380,6 @@ TEST_F(PageSchedulerImplTest, TestPageBackgroundedTimerSuspension) {
 }
 
 TEST_F(PageSchedulerImplTest, PageFrozenOnlyWhileAudioSilent) {
-  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
-
   page_scheduler_->AudioStateChanged(true);
   page_scheduler_->SetPageVisible(false);
   EXPECT_TRUE(page_scheduler_->IsAudioPlaying());
@@ -1414,8 +1409,6 @@ TEST_F(PageSchedulerImplTest, PageFrozenOnlyWhileAudioSilent) {
 }
 
 TEST_F(PageSchedulerImplTest, PageFrozenOnlyWhileNotVisible) {
-  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
-
   page_scheduler_->SetPageVisible(true);
   EXPECT_FALSE(ShouldFreezePage());
   EXPECT_FALSE(page_scheduler_->IsFrozen());
@@ -1485,8 +1478,6 @@ class PageSchedulerImplPageTransitionTest : public PageSchedulerImplTest {
 
 TEST_F(PageSchedulerImplPageTransitionTest,
        PageLifecycleStateTransitionMetric) {
-  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
-
   typedef PageSchedulerImpl::PageLifecycleStateTransition Transition;
 
   base::HistogramTester histogram_tester_;
