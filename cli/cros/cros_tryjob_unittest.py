@@ -331,11 +331,18 @@ class TryjobTestAdjustOptions(TryjobTest):
     self.assertEqual(options.git_cache_dir, '/git-cache')
 
 
+class PromptException(Exception):
+  """Raise this in tests, instead of using an interactive prompt."""
+
 class TryjobTestVerifyOptions(TryjobTest):
   """Test cros_tryjob.VerifyOptions."""
 
   def setUp(self):
     self.site_config = config_lib.GetConfig()
+
+    # Raise an exception instead of blocking the test on a prompt.
+    self.PatchObject(cros_build_lib, 'BooleanPrompt',
+                     side_effect=PromptException)
 
   def testEmpty(self):
     """Test option verification with no options."""
@@ -450,6 +457,58 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--production',
         'eve-pre-cq', 'eve-release'
     ])
+
+    cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
+
+  def testUnknownConfig(self):
+    """Test option verification with production configs on branches."""
+
+    # We have no way of knowing if the config is production or not on a branch,
+    # so don't prompt at all
+    self.SetupCommandMock([
+        'bogus-config'
+    ])
+
+    with self.assertRaises(PromptException):
+      cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
+
+  def testBranchUnknownConfig(self):
+    """Test option verification with production configs on branches."""
+
+    # We have no way of knowing if the config is production or not on a branch,
+    # so don't prompt at all
+    self.SetupCommandMock([
+        '--branch', 'old_branch',
+        '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
+        'bogus-config'
+    ])
+
+    cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
+
+  def testBranchProductionUnknownConfig(self):
+    """Test option verification with production configs on branches."""
+
+    # We have no way of knowing if the config is production or not on a branch,
+    # so don't prompt at all
+    self.SetupCommandMock([
+        '--branch', 'old_branch',
+        '--production',
+        'bogus-config'
+    ])
+
+    cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
+
+  def testBranchProductionConfigTryjob(self):
+    """Test option verification with production configs on branches."""
+
+    # We have no way of knowing if the config is production or not on a branch,
+    # so don't prompt at all
+    self.SetupCommandMock([
+        '--branch', 'old_branch',
+        '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
+        'eve-release'
+    ])
+
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
 
   def testProductionPatches(self):

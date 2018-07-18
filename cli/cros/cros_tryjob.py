@@ -380,16 +380,19 @@ def VerifyOptions(options, site_config):
   if not options.build_configs:
     cros_build_lib.Die('At least one build_config is required.')
 
-  unknown_build_configs = [b for b in options.build_configs
-                           if b not in site_config]
-  if unknown_build_configs and not options.yes:
-    prompt = ('Unknown build configs; are you sure you want to schedule '
-              'for %s?' % ', '.join(unknown_build_configs))
-    if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
-      cros_build_lib.Die('No confirmation.')
+  on_branch = options.branch != 'master'
+
+  if not (options.yes or on_branch):
+    unknown_build_configs = [b for b in options.build_configs
+                             if b not in site_config]
+    if unknown_build_configs:
+      prompt = ('Unknown build configs; are you sure you want to schedule '
+                'for %s?' % ', '.join(unknown_build_configs))
+      if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
+        cros_build_lib.Die('No confirmation.')
 
   # Ensure that production configs are only run with --production.
-  if not (options.production or options.where == CBUILDBOT):
+  if not (on_branch or options.production or options.where == CBUILDBOT):
     # We can't know if branched configs are tryjob safe.
     # It should always be safe to run a tryjob config with --production.
     prod_configs = []
