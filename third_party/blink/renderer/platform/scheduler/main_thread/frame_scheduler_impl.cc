@@ -428,14 +428,16 @@ FrameSchedulerImpl::CreateResourceLoadingTaskRunnerHandleImpl() {
 
 void FrameSchedulerImpl::DidChangeResourceLoadingPriority(
     scoped_refptr<MainThreadTaskQueue> task_queue,
-    TaskQueue::QueuePriority priority) {
+    net::RequestPriority priority) {
   // This check is done since in some cases (when kUseResourceFetchPriority
   // feature isn't enabled) we use |loading_task_queue_| for resource loading
   // and the priority of this queue shouldn't be affected by resource
   // priorities.
   auto queue_metadata_pair = resource_loading_task_queues_.find(task_queue);
   if (queue_metadata_pair != resource_loading_task_queues_.end()) {
-    queue_metadata_pair->value.priority = priority;
+    queue_metadata_pair->value.priority =
+        main_thread_scheduler_->scheduling_settings()
+            .net_to_blink_priority[priority];
     UpdateQueuePolicy(task_queue.get(), queue_metadata_pair->value.voter.get());
   }
 }

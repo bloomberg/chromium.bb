@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/test/scoped_feature_list.h"
@@ -119,10 +120,11 @@ class FrameSchedulerImplTest : public testing::Test {
 
   void DidChangeResourceLoadingPriority(
       scoped_refptr<MainThreadTaskQueue> task_queue,
-      TaskQueue::QueuePriority priority) {
+      net::RequestPriority priority) {
     frame_scheduler_->DidChangeResourceLoadingPriority(task_queue, priority);
   }
 
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList feature_list_;
   base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
@@ -1334,7 +1336,18 @@ TEST_F(BestEffortPriorityAdFrameDuringLoadingExperimentTest,
 class ResourceFetchPriorityExperimentTest : public FrameSchedulerImplTest {
  public:
   ResourceFetchPriorityExperimentTest()
-      : FrameSchedulerImplTest({kUseResourceFetchPriority}, {}) {}
+      : FrameSchedulerImplTest({kUseResourceFetchPriority}, {}) {
+    std::map<std::string, std::string> params{
+        {"HIGHEST", "HIGH"}, {"MEDIUM", "NORMAL"}, {"LOW", "NORMAL"},
+        {"LOWEST", "LOW"},   {"IDLE", "LOW"},      {"THROTTLED", "LOW"}};
+
+    const char kStudyName[] = "BlinkSchedulerResourceFetchPriority";
+    const char kGroupName[] = "GroupName";
+
+    field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
+    base::AssociateFieldTrialParams(kStudyName, kGroupName, params);
+    base::FieldTrialList::CreateFieldTrial(kStudyName, kGroupName);
+  }
 };
 
 TEST_F(ResourceFetchPriorityExperimentTest, DidChangePriority) {
@@ -1345,13 +1358,11 @@ TEST_F(ResourceFetchPriorityExperimentTest, DidChangePriority) {
   TaskQueue::QueuePriority priority = task_queue->GetQueuePriority();
   EXPECT_EQ(priority, TaskQueue::QueuePriority::kNormalPriority);
 
-  DidChangeResourceLoadingPriority(task_queue,
-                                   TaskQueue::QueuePriority::kLowPriority);
+  DidChangeResourceLoadingPriority(task_queue, net::RequestPriority::LOWEST);
   EXPECT_EQ(task_queue->GetQueuePriority(),
             TaskQueue::QueuePriority::kLowPriority);
 
-  DidChangeResourceLoadingPriority(task_queue,
-                                   TaskQueue::QueuePriority::kHighPriority);
+  DidChangeResourceLoadingPriority(task_queue, net::RequestPriority::HIGHEST);
   EXPECT_EQ(task_queue->GetQueuePriority(),
             TaskQueue::QueuePriority::kHighPriority);
 }
@@ -1368,12 +1379,10 @@ TEST_F(
 
   TaskQueue::QueuePriority priority = task_queue->GetQueuePriority();
 
-  DidChangeResourceLoadingPriority(task_queue,
-                                   TaskQueue::QueuePriority::kLowPriority);
+  DidChangeResourceLoadingPriority(task_queue, net::RequestPriority::LOW);
   EXPECT_EQ(task_queue->GetQueuePriority(), priority);
 
-  DidChangeResourceLoadingPriority(task_queue,
-                                   TaskQueue::QueuePriority::kHighPriority);
+  DidChangeResourceLoadingPriority(task_queue, net::RequestPriority::HIGHEST);
   EXPECT_EQ(task_queue->GetQueuePriority(), priority);
 }
 

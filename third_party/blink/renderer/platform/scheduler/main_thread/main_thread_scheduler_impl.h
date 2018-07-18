@@ -108,6 +108,12 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // (crbug.com/860545).
     bool use_resource_fetch_priority;
 
+    // Contains a mapping from net::RequestPriority to TaskQueue::QueuePriority
+    // when use_resource_fetch_priority is enabled.
+    std::array<base::sequence_manager::TaskQueue::QueuePriority,
+               net::RequestPrioritySize::NUM_PRIORITIES>
+        net_to_blink_priority;
+
     // Turn on relevant experiments during the loading phase.
     bool experiment_only_when_loading;
   };
