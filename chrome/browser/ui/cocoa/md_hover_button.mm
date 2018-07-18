@@ -14,9 +14,9 @@
 #include "ui/gfx/paint_vector_icon.h"
 
 namespace {
-constexpr int kDefaultIconSize = 16;
-constexpr SkAlpha kIconAlpha = 0x8A;
-constexpr CGFloat kHoverAnimationDuration = 0.25;
+constexpr int kMDHoverButtonDefaultIconSize = 16;
+constexpr SkAlpha kMDHoverButtonIconAlpha = 0x8A;
+constexpr CGFloat kMDHoverButtonHoverAnimationDuration = 0.25;
 
 NSColor* GetHoveringColor(BOOL dark_theme) {
   return [NSColor colorWithWhite:dark_theme ? 1 : 0 alpha:0.08];
@@ -37,7 +37,7 @@ NSColor* GetActiveColor(BOOL dark_theme) {
 
 - (instancetype)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
-    iconSize_ = kDefaultIconSize;
+    iconSize_ = kMDHoverButtonDefaultIconSize;
     self.bezelStyle = NSRoundedBezelStyle;
     self.bordered = NO;
     self.wantsLayer = YES;
@@ -67,7 +67,7 @@ NSColor* GetActiveColor(BOOL dark_theme) {
     return gfx::kPlaceholderColor;
   return SkColorSetA(
       [[self window] hasDarkTheme] ? SK_ColorWHITE : SK_ColorBLACK,
-      provider->ShouldIncreaseContrast() ? 0xFF : kIconAlpha);
+      provider->ShouldIncreaseContrast() ? 0xFF : kMDHoverButtonIconAlpha);
 }
 
 - (void)updateIcon {
@@ -102,7 +102,7 @@ NSColor* GetActiveColor(BOOL dark_theme) {
     return;
   }
   [NSAnimationContext runAnimationGroup:^(NSAnimationContext* context) {
-    context.duration = kHoverAnimationDuration;
+    context.duration = kMDHoverButtonHoverAnimationDuration;
     CABasicAnimation* animation =
         [CABasicAnimation animationWithKeyPath:@"backgroundColor"];
     self.layer.backgroundColor = targetBackgroundColor;
@@ -113,7 +113,7 @@ NSColor* GetActiveColor(BOOL dark_theme) {
 
 // HoverButtonCocoa overrides.
 
-- (void)setHoverState:(HoverState)state {
+- (void)setHoverState:(CloseButtonHoverState)state {
   if (state == hoverState_)
     return;
   const BOOL animated =

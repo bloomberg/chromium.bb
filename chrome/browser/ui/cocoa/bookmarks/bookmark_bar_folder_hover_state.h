@@ -32,7 +32,7 @@
   // |hoverButton_| using this state information.  This serialization is to
   // avoid race conditions where one hover button is being opened while another
   // is closing.
-  enum HoverState {
+  enum BookmarkBarButtonHoverState {
     kHoverStateClosed = 0,
     kHoverStateOpening = 1,
     kHoverStateOpen = 2,
@@ -47,7 +47,7 @@
   // We model hover state as a state machine with specific allowable
   // transitions.  |hoverState_| is the state of this machine at any
   // given time.
-  HoverState hoverState_;
+  BookmarkBarButtonHoverState hoverState_;
 }
 
 // Designated initializer.
@@ -77,7 +77,7 @@
 @interface BookmarkBarFolderHoverState(TestingAPI)
 // Accessors and setters for button and hover state.
 - (BookmarkButton*)hoverButton;
-- (HoverState)hoverState;
+- (BookmarkBarButtonHoverState)hoverState;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_FOLDER_HOVER_STATE_H_

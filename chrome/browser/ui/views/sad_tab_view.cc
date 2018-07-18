@@ -107,7 +107,7 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
                               unrelated_vertical_spacing_large);
   layout->AddView(title_, 2, 1.0);
 
-  message_ = CreateFormattedLabel(l10n_util::GetStringUTF16(GetMessage()));
+  message_ = CreateFormattedLabel(l10n_util::GetStringUTF16(GetInfoMessage()));
   layout->StartRowWithPadding(views::GridLayout::kFixedSize, column_set_id,
                               views::GridLayout::kFixedSize,
                               kTitleBottomSpacing);

@@ -30,7 +30,7 @@ NSString* const kBrowserActionsContainerKeyEventKey =
     @"BrowserActionsContainerKeyEventKey";
 
 namespace {
-const CGFloat kAnimationDuration = 0.2;
+const CGFloat kBrowserActionsResizeAnimationDuration = 0.2;
 const CGFloat kGrippyWidth = 3.0;
 }  // namespace
 
@@ -59,7 +59,7 @@ const CGFloat kGrippyWidth = 3.0;
     resizable_ = YES;
 
     resizeAnimation_.reset([[NSViewAnimation alloc] init]);
-    [resizeAnimation_ setDuration:kAnimationDuration];
+    [resizeAnimation_ setDuration:kBrowserActionsResizeAnimationDuration];
     [resizeAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
     [resizeAnimation_ setDelegate:self];
 

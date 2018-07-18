@@ -10,7 +10,7 @@
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 
-const CGFloat kCheckboxMargin = 10;
+const CGFloat kGalleryEntryCheckboxMargin = 10;
 
 ui::MenuModel* MediaGalleryListEntryController::GetContextMenu(
     MediaGalleryPrefId pref_id) {
@@ -147,13 +147,13 @@ ui::MenuModel* MediaGalleryListEntryController::GetContextMenu(
   [details_ sizeToFit];
 
   // Auto size everything and lay it out horizontally.
-  CGFloat xPos = kCheckboxMargin;
+  CGFloat xPos = kGalleryEntryCheckboxMargin;
   for (NSView* view in [self subviews]) {
     NSRect viewFrame = [view frame];
     viewFrame.origin.x = xPos;
     viewFrame.size.height = std::min(NSHeight(bounds), NSHeight(viewFrame));
     [view setFrame:viewFrame];
-    xPos = NSMaxX([view frame]) + kCheckboxMargin;
+    xPos = NSMaxX([view frame]) + kGalleryEntryCheckboxMargin;
   }
 
   // Size the views. If all the elements don't naturally fit, the checkbox
@@ -161,16 +161,16 @@ ui::MenuModel* MediaGalleryListEntryController::GetContextMenu(
   // squish too much so it gets at least half of the max width and the details
   // text should elide as well in that case.
   if (xPos > NSWidth(bounds)) {
-    CGFloat maxRHSContent = NSWidth(bounds) / 2 - kCheckboxMargin;
+    CGFloat maxRHSContent = NSWidth(bounds) / 2 - kGalleryEntryCheckboxMargin;
     NSRect detailsFrame = [details_ frame];
     NSRect checkboxFrame = [checkbox_ frame];
 
     if (NSMaxX(detailsFrame) - NSMaxX(checkboxFrame) > maxRHSContent) {
       detailsFrame.size.width = std::max(
           maxRHSContent - (NSMinX(detailsFrame) - NSMaxX(checkboxFrame)),
-          NSWidth(bounds) - kCheckboxMargin - NSMinX(detailsFrame));
+          NSWidth(bounds) - kGalleryEntryCheckboxMargin - NSMinX(detailsFrame));
       [details_ setFrameSize:detailsFrame.size];
-      xPos = NSMaxX(detailsFrame) + kCheckboxMargin;
+      xPos = NSMaxX(detailsFrame) + kGalleryEntryCheckboxMargin;
     }
     CGFloat overflow = xPos - NSWidth(bounds);
     if (overflow > 0) {
@@ -188,7 +188,7 @@ ui::MenuModel* MediaGalleryListEntryController::GetContextMenu(
     for (NSView* view in [self subviews]) {
       frame = NSUnionRect(frame, [view frame]);
     }
-    frame.size.width += kCheckboxMargin;
+    frame.size.width += kGalleryEntryCheckboxMargin;
     [super setFrameSize:frame.size];
   }
 }

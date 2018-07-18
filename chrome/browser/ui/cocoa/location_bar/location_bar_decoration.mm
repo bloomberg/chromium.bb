@@ -19,10 +19,11 @@
 namespace {
 
 // Layout and color values for the vertical divider.
-const CGFloat kDividerHeight = 16.0;
-const CGFloat kDividerPadding = 6.0;  // Between the divider and label.
-const CGFloat kDividerGray = 0xFFA6A6A6;
-const CGFloat kDividerGrayIncognito = 0xFFCCCCCC;
+const CGFloat kDecorationDividerHeight = 16.0;
+const CGFloat kDecorationDividerPadding =
+    6.0;  // Between the divider and label.
+const CGFloat kDecorationDividerGray = 0xFFA6A6A6;
+const CGFloat kDecorationDividerGrayIncognito = 0xFFCCCCCC;
 
 // Color values for the hover and pressed background.
 const SkColor kHoverBackgroundColor = 0x14000000;
@@ -165,7 +166,7 @@ LocationBarDecoration::~LocationBarDecoration() {
 }
 
 CGFloat LocationBarDecoration::DividerPadding() const {
-  return kDividerPadding;
+  return kDecorationDividerPadding;
 }
 
 bool LocationBarDecoration::IsVisible() const {
@@ -469,7 +470,7 @@ void LocationBarDecoration::DrawDivider(NSView* control_view,
   // the line between the label and URL.
   divider_origin.x -= line_width / 2.;
   CGFloat divider_y_frame_offset =
-      (NSHeight(decoration_frame) - kDividerHeight) / 2.0;
+      (NSHeight(decoration_frame) - kDecorationDividerHeight) / 2.0;
   divider_origin.y = NSMinY(decoration_frame) + divider_y_frame_offset;
   // Adjust the divider origin by 1/2 a point to visually center the
   // divider vertically on Retina.
@@ -477,15 +478,15 @@ void LocationBarDecoration::DrawDivider(NSView* control_view,
     divider_origin.y -= 0.5;
   }
   [line moveToPoint:divider_origin];
-  [line relativeLineToPoint:NSMakePoint(0, kDividerHeight)];
+  [line relativeLineToPoint:NSMakePoint(0, kDecorationDividerHeight)];
 
   NSColor* divider_color = nil;
   bool location_bar_is_dark =
       [[control_view window] inIncognitoModeWithSystemTheme];
   if (location_bar_is_dark) {
-    divider_color = skia::SkColorToSRGBNSColor(kDividerGrayIncognito);
+    divider_color = skia::SkColorToSRGBNSColor(kDecorationDividerGrayIncognito);
   } else {
-    divider_color = skia::SkColorToSRGBNSColor(kDividerGray);
+    divider_color = skia::SkColorToSRGBNSColor(kDecorationDividerGray);
   }
 
   if (alpha < 1) {

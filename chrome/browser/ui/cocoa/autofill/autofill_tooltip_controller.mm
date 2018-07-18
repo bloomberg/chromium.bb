@@ -58,7 +58,7 @@ CGFloat kTooltipInset = 10;
                     hints:nil];
 }
 
-- (void)setHoverState:(HoverState)state {
+- (void)setHoverState:(CloseButtonHoverState)state {
   [super setHoverState:state];
   [tooltipController_ updateTooltipDisplayState];
 }

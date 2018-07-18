@@ -22,8 +22,7 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
-const CGFloat kAnimationDuration = 0.2;
-
+const CGFloat kResizeAnimationDuration = 0.2;
 }
 
 @implementation AutocompleteTextField
@@ -45,7 +44,7 @@ const CGFloat kAnimationDuration = 0.2;
   [[self cell] setLineBreakMode:NSLineBreakByTruncatingTail];
   currentToolTips_.reset([[NSMutableArray alloc] init]);
   resizeAnimation_.reset([[NSViewAnimation alloc] init]);
-  [resizeAnimation_ setDuration:kAnimationDuration];
+  [resizeAnimation_ setDuration:kResizeAnimationDuration];
   [resizeAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
   [self setAlignment:cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
                          ? NSRightTextAlignment

@@ -46,7 +46,7 @@ class SadTab {
   // different for each sad tab. (Right now, the first sad tab in a session
   // suggests reloading and subsequent ones suggest sending feedback.)
   int GetTitle();
-  int GetMessage();
+  int GetInfoMessage();
   int GetButtonTitle();
   int GetHelpLinkTitle();
 

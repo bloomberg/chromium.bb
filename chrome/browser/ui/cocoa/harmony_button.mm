@@ -13,7 +13,7 @@
 
 namespace {
 
-NSColor* GetBackgroundColor(HoverState state, BOOL dark_theme) {
+NSColor* GetBackgroundColor(CloseButtonHoverState state, BOOL dark_theme) {
   if (dark_theme) {
     switch (state) {
       case kHoverStateNone:
@@ -43,28 +43,28 @@ NSColor* GetShadowColor() {
   return NSColor.blackColor;
 }
 
-constexpr CGFloat kFontSize = 12;
+constexpr CGFloat kHarmonyButtonFontSize = 12;
 
-constexpr CGFloat kTextAlpha = 0x8A / (CGFloat)0xFF;
+constexpr CGFloat kHarmonyButtonTextAlpha = 0x8A / (CGFloat)0xFF;
 
-constexpr CGSize kNormalShadowOffset{0, 0};
-constexpr CGSize kMouseOverShadowOffset{0, 1};
+constexpr CGSize kHarmonyButtonNormalShadowOffset{0, 0};
+constexpr CGSize kHarmonyButtonMouseOverShadowOffset{0, 1};
 
-constexpr CGFloat kNormalShadowOpacity = 0;
-constexpr CGFloat kMouseOverShadowOpacity = 0.1;
+constexpr CGFloat kHarmonyButtonNormalShadowOpacity = 0;
+constexpr CGFloat kHarmonyButtonMouseOverShadowOpacity = 0.1;
 
-constexpr CGFloat kNormalShadowRadius = 0;
-constexpr CGFloat kMouseOverShadowRadius = 2;
+constexpr CGFloat kHarmonyButtonNormalShadowRadius = 0;
+constexpr CGFloat kHarmonyButtonMouseOverShadowRadius = 2;
 
-constexpr CGFloat kCornerRadius = 3;
-constexpr CGFloat kXPadding = 16;
-constexpr CGFloat kMinWidth = 64;
-constexpr CGFloat kHeight = 28;
+constexpr CGFloat kHarmonyButtonCornerRadius = 3;
+constexpr CGFloat kHarmonyButtonXPadding = 16;
+constexpr CGFloat kHarmonyButtonMinWidth = 64;
+constexpr CGFloat kHarmonyButtonHeight = 28;
 
 // The text is a bit too low by default; offset the title rect to center it.
-constexpr CGFloat kTextYOffset = 1;
+constexpr CGFloat kHarmonyButtonTextYOffset = 1;
 
-constexpr NSTimeInterval kTransitionDuration = 0.25;
+constexpr NSTimeInterval kHarmonyButtonTransitionDuration = 0.25;
 
 }  // namespace
 
@@ -73,7 +73,7 @@ constexpr NSTimeInterval kTransitionDuration = 0.25;
 
 @implementation HarmonyButtonCell
 - (NSRect)titleRectForBounds:(NSRect)rect {
-  rect.origin.y -= kTextYOffset;
+  rect.origin.y -= kHarmonyButtonTextYOffset;
   return rect;
 }
 @end
@@ -102,7 +102,7 @@ constexpr NSTimeInterval kTransitionDuration = 0.25;
     self.wantsLayer = YES;
     CALayer* layer = self.layer;
     layer.shadowColor = GetShadowColor().CGColor;
-    layer.cornerRadius = kCornerRadius;
+    layer.cornerRadius = kHarmonyButtonCornerRadius;
     [self updateBorderWidth];
     [self updateHoverButtonAppearanceAnimated:NO];
   }
@@ -125,22 +125,22 @@ constexpr NSTimeInterval kTransitionDuration = 0.25;
     [NSAnimationContext beginGrouping];
     NSAnimationContext* context = [NSAnimationContext currentContext];
     context.allowsImplicitAnimation = YES;
-    context.duration = kTransitionDuration;
+    context.duration = kHarmonyButtonTransitionDuration;
   } else {
     [layer removeAllAnimations];
   }
 
   switch (self.hoverState) {
     case kHoverStateNone:
-      layer.shadowOffset = kNormalShadowOffset;
-      layer.shadowOpacity = kNormalShadowOpacity;
-      layer.shadowRadius = kNormalShadowRadius;
+      layer.shadowOffset = kHarmonyButtonNormalShadowOffset;
+      layer.shadowOpacity = kHarmonyButtonNormalShadowOpacity;
+      layer.shadowRadius = kHarmonyButtonNormalShadowRadius;
       break;
     case kHoverStateMouseOver:
     case kHoverStateMouseDown:
-      layer.shadowOffset = kMouseOverShadowOffset;
-      layer.shadowOpacity = kMouseOverShadowOpacity;
-      layer.shadowRadius = kMouseOverShadowRadius;
+      layer.shadowOffset = kHarmonyButtonMouseOverShadowOffset;
+      layer.shadowOpacity = kHarmonyButtonMouseOverShadowOpacity;
+      layer.shadowRadius = kHarmonyButtonMouseOverShadowRadius;
       break;
   }
 
@@ -158,7 +158,7 @@ constexpr NSTimeInterval kTransitionDuration = 0.25;
 
 // HoverButtonCocoa overrides.
 
-- (void)setHoverState:(HoverState)state {
+- (void)setHoverState:(CloseButtonHoverState)state {
   if (state == hoverState_) {
     return;
   }
@@ -175,18 +175,19 @@ constexpr NSTimeInterval kTransitionDuration = 0.25;
   if (const ui::ThemeProvider* themeProvider = [self.window themeProvider]) {
     textColor = themeProvider->GetNSColor(ThemeProperties::COLOR_TAB_TEXT);
     if (!themeProvider->ShouldIncreaseContrast())
-      textColor = [textColor colorWithAlphaComponent:kTextAlpha];
+      textColor = [textColor colorWithAlphaComponent:kHarmonyButtonTextAlpha];
   } else {
     textColor = [NSColor controlTextColor];
   }
 
   NSFont* font;
   if (@available(macOS 10.11, *)) {
-    font = [NSFont systemFontOfSize:kFontSize weight:NSFontWeightMedium];
+    font = [NSFont systemFontOfSize:kHarmonyButtonFontSize
+                             weight:NSFontWeightMedium];
   } else {
     font = [[NSFontManager sharedFontManager]
         convertWeight:YES
-               ofFont:[NSFont systemFontOfSize:kFontSize]];
+               ofFont:[NSFont systemFontOfSize:kHarmonyButtonFontSize]];
   }
 
   base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
@@ -208,12 +209,14 @@ constexpr NSTimeInterval kTransitionDuration = 0.25;
 
 - (void)sizeToFit {
   NSSize size = self.attributedTitle.size;
-  size.width += kXPadding * 2;
+  size.width += kHarmonyButtonXPadding * 2;
   size = [self backingAlignedRect:NSMakeRect(0, 0, size.width, size.height)
                           options:NSAlignAllEdgesOutward]
              .size;
-  [self setFrameSize:NSMakeSize(size.width > kMinWidth ? size.width : kMinWidth,
-                                kHeight)];
+  [self setFrameSize:NSMakeSize(size.width > kHarmonyButtonMinWidth
+                                    ? size.width
+                                    : kHarmonyButtonMinWidth,
+                                kHarmonyButtonHeight)];
 }
 
 // NSView overrides.

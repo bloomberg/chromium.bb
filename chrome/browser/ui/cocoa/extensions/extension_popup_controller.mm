@@ -37,7 +37,7 @@ using extensions::ExtensionViewHost;
 namespace {
 
 // The duration for any animations that might be invoked by this controller.
-const NSTimeInterval kAnimationDuration = 0.2;
+const NSTimeInterval kPopupAnimationDuration = 0.2;
 
 // There should only be one extension popup showing at one time. Keep a
 // reference to it here.
@@ -378,7 +378,7 @@ class ExtensionPopupNotificationBridge :
       ([animator alphaValue] != targetAlpha ||
        !NSEqualRects([window frame], [animator frame]))) {
     [NSAnimationContext beginGrouping];
-    [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
+    [[NSAnimationContext currentContext] setDuration:kPopupAnimationDuration];
     [animator setAlphaValue:targetAlpha];
     [animator setFrame:frame display:YES];
     [NSAnimationContext endGrouping];
