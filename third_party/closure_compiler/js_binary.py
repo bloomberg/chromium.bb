@@ -77,6 +77,8 @@ def main():
                       'Do not include leading dashes')
   parser.add_argument('-e', '--externs', nargs='*', default=[],
                       help='A list of extern files to pass to the compiler')
+  parser.add_argument('-co', '--checks-only', action='store_true',
+                      help='Only performs checks and writes an empty output')
 
   args = parser.parse_args()
   sources, externs = CrawlDepsTree(args.deps, args.sources, args.externs)
@@ -92,6 +94,10 @@ def main():
     compiler_args += [args.bootstrap]
   compiler_args += args.config
   compiler_args += sources
+
+  if args.checks_only:
+    compiler_args += ['--checks-only']
+    open(args.output, 'w').close()
 
   returncode, errors = compile2.Checker().run_jar(args.compiler, compiler_args)
   if returncode != 0:
