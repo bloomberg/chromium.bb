@@ -467,7 +467,7 @@ RenderViewImpl::RenderViewImpl(
 
 void RenderViewImpl::Initialize(
     mojom::CreateViewParamsPtr params,
-    const RenderWidget::ShowCallback& show_callback,
+    RenderWidget::ShowCallback show_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   bool was_created_by_renderer = !show_callback.is_null();
 #if defined(OS_ANDROID)
@@ -488,7 +488,7 @@ void RenderViewImpl::Initialize(
                       is_hidden() ? blink::mojom::PageVisibilityState::kHidden
                                   : blink::mojom::PageVisibilityState::kVisible,
                       opener_frame ? opener_frame->View() : nullptr);
-  RenderWidget::Init(show_callback, webview_->GetWidget());
+  RenderWidget::Init(std::move(show_callback), webview_->GetWidget());
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
@@ -997,7 +997,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 RenderViewImpl* RenderViewImpl::Create(
     CompositorDependencies* compositor_deps,
     mojom::CreateViewParamsPtr params,
-    const RenderWidget::ShowCallback& show_callback,
+    RenderWidget::ShowCallback show_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(params->view_id != MSG_ROUTING_NONE);
   DCHECK(params->main_frame_widget_routing_id != MSG_ROUTING_NONE);
@@ -1007,7 +1007,7 @@ RenderViewImpl* RenderViewImpl::Create(
   else
     render_view = new RenderViewImpl(compositor_deps, *params, task_runner);
 
-  render_view->Initialize(std::move(params), show_callback,
+  render_view->Initialize(std::move(params), std::move(show_callback),
                           std::move(task_runner));
   return render_view;
 }
@@ -1348,8 +1348,8 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   // Unretained() is safe here because our calling function will also call
   // show().
   RenderWidget::ShowCallback show_callback =
-      base::Bind(&RenderFrameImpl::ShowCreatedWindow,
-                 base::Unretained(creator_frame), opened_by_user_gesture);
+      base::BindOnce(&RenderFrameImpl::ShowCreatedWindow,
+                     base::Unretained(creator_frame), opened_by_user_gesture);
 
   RenderViewImpl* view = RenderViewImpl::Create(
       compositor_deps_, std::move(view_params), std::move(show_callback),

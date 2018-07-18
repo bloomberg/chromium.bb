@@ -32,7 +32,7 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
  public:
   static RenderWidgetFullscreenPepper* Create(
       int32_t routing_id,
-      const RenderWidget::ShowCallback& show_callback,
+      RenderWidget::ShowCallback show_callback,
       CompositorDependencies* compositor_deps,
       PepperPluginInstanceImpl* plugin,
       const GURL& active_url,

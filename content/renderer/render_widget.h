@@ -140,6 +140,11 @@ class CONTENT_EXPORT RenderWidget
       public base::RefCounted<RenderWidget>,
       public MainThreadEventQueueClient {
  public:
+  using ShowCallback =
+      base::OnceCallback<void(RenderWidget* widget_to_show,
+                              blink::WebNavigationPolicy policy,
+                              const gfx::Rect& initial_rect)>;
+
   // Creates a new RenderWidget for a popup. |opener| is the RenderView that
   // this widget lives inside.
   static RenderWidget* CreateForPopup(
@@ -166,9 +171,6 @@ class CONTENT_EXPORT RenderWidget
                                                        bool,
                                                        bool);
   using RenderWidgetInitializedCallback = void (*)(RenderWidget*);
-  using ShowCallback = base::Callback<void(RenderWidget* widget_to_show,
-                                           blink::WebNavigationPolicy policy,
-                                           const gfx::Rect& initial_rect)>;
   static void InstallCreateHook(
       CreateRenderWidgetFunction create_render_widget,
       RenderWidgetInitializedCallback render_widget_initialized_callback);
@@ -547,7 +549,7 @@ class CONTENT_EXPORT RenderWidget
   // Called by Create() functions and subclasses to finish initialization.
   // |show_callback| will be invoked once WebWidgetClient::show() occurs, and
   // should be null if show() won't be triggered for this widget.
-  void Init(const ShowCallback& show_callback, blink::WebWidget* web_widget);
+  void Init(ShowCallback show_callback, blink::WebWidget* web_widget);
 
   // Allows the process to exit once the unload handler has finished, if there
   // are no other active RenderWidgets.
@@ -957,7 +959,7 @@ class CONTENT_EXPORT RenderWidget
   bool for_oopif_;
 
   // A callback into the creator/opener of this widget, to be executed when
-  // WebWidgetClient::show() occurs.
+  // WebWidgetClient::Show() occurs.
   ShowCallback show_callback_;
 
 #if defined(OS_MACOSX)
