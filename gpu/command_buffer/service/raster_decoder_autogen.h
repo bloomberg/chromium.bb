@@ -20,11 +20,12 @@ error::Error RasterDecoderImpl::HandleDeleteTexturesImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
     return error::kOutOfBounds;
   }
-  volatile const GLuint* textures = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+  volatile const GLuint* textures =
+      gles2::GetImmediateDataAs<volatile const GLuint*>(c, data_size,
+                                                        immediate_data_size);
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
@@ -101,18 +102,18 @@ error::Error RasterDecoderImpl::HandleGenQueriesEXTImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
     return error::kOutOfBounds;
   }
-  volatile GLuint* queries =
-      GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  volatile GLuint* queries = gles2::GetImmediateDataAs<volatile GLuint*>(
+      c, data_size, immediate_data_size);
   if (queries == NULL) {
     return error::kOutOfBounds;
   }
   auto queries_copy = std::make_unique<GLuint[]>(n);
   GLuint* queries_safe = queries_copy.get();
   std::copy(queries, queries + n, queries_safe);
-  if (!CheckUniqueAndNonNullIds(n, queries_safe) ||
+  if (!gles2::CheckUniqueAndNonNullIds(n, queries_safe) ||
       !GenQueriesEXTHelper(n, queries_safe)) {
     return error::kInvalidArguments;
   }
@@ -127,11 +128,12 @@ error::Error RasterDecoderImpl::HandleDeleteQueriesEXTImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
     return error::kOutOfBounds;
   }
-  volatile const GLuint* queries = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+  volatile const GLuint* queries =
+      gles2::GetImmediateDataAs<volatile const GLuint*>(c, data_size,
+                                                        immediate_data_size);
   if (queries == NULL) {
     return error::kOutOfBounds;
   }
@@ -335,14 +337,14 @@ error::Error RasterDecoderImpl::HandleProduceTextureDirectImmediate(
           cmd_data);
   GLuint texture = static_cast<GLuint>(c.texture);
   uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
+  if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
     return error::kOutOfBounds;
   }
   if (data_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
-  volatile GLbyte* mailbox =
-      GetImmediateDataAs<volatile GLbyte*>(c, data_size, immediate_data_size);
+  volatile GLbyte* mailbox = gles2::GetImmediateDataAs<volatile GLbyte*>(
+      c, data_size, immediate_data_size);
   if (mailbox == NULL) {
     return error::kOutOfBounds;
   }
@@ -361,14 +363,15 @@ error::Error RasterDecoderImpl::HandleCreateAndConsumeTextureINTERNALImmediate(
   gfx::BufferUsage buffer_usage = static_cast<gfx::BufferUsage>(c.buffer_usage);
   viz::ResourceFormat format = static_cast<viz::ResourceFormat>(c.format);
   uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
+  if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
     return error::kOutOfBounds;
   }
   if (data_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
-  volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
-      c, data_size, immediate_data_size);
+  volatile const GLbyte* mailbox =
+      gles2::GetImmediateDataAs<volatile const GLbyte*>(c, data_size,
+                                                        immediate_data_size);
   if (!validators_->gfx_buffer_usage.IsValid(buffer_usage)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glCreateAndConsumeTextureINTERNAL",
                                     buffer_usage, "buffer_usage");

@@ -44,8 +44,6 @@ using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 
-using namespace gpu::gles2;
-
 namespace gpu {
 namespace raster {
 
@@ -185,10 +183,10 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   ::gl::MockGLInterface::SetGLInterface(gl_.get());
 
   GpuFeatureInfo gpu_feature_info;
-  scoped_refptr<FeatureInfo> feature_info =
-      new FeatureInfo(init.workarounds, gpu_feature_info);
+  scoped_refptr<gles2::FeatureInfo> feature_info =
+      new gles2::FeatureInfo(init.workarounds, gpu_feature_info);
 
-  group_ = scoped_refptr<ContextGroup>(new ContextGroup(
+  group_ = scoped_refptr<gles2::ContextGroup>(new gles2::ContextGroup(
       gpu_preferences_, false, &mailbox_manager_, memory_tracker_,
       &shader_translator_cache_, &framebuffer_completeness_cache_, feature_info,
       bind_generates_resource, &image_manager_, nullptr /* image_factory */,
@@ -208,8 +206,8 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
 
   context_->GLContextStub::MakeCurrent(surface_.get());
 
-  TestHelper::SetupContextGroupInitExpectations(
-      gl_.get(), DisallowedFeatures(), all_extensions.c_str(),
+  gles2::TestHelper::SetupContextGroupInitExpectations(
+      gl_.get(), gles2::DisallowedFeatures(), all_extensions.c_str(),
       init.gl_version.c_str(), context_type, bind_generates_resource);
 
   // We initialize the ContextGroup with a MockRasterDecoder so that
@@ -219,7 +217,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   mock_decoder_.reset(new MockRasterDecoder(command_buffer_service_.get()));
 
   EXPECT_EQ(group_->Initialize(mock_decoder_.get(), context_type,
-                               DisallowedFeatures()),
+                               gles2::DisallowedFeatures()),
             gpu::ContextResult::kSuccess);
 
   scoped_refptr<gpu::Buffer> buffer =
@@ -249,14 +247,15 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   AddExpectationsForBindVertexArrayOES();
 
   bool use_default_textures = bind_generates_resource;
-  for (GLint tt = 0; tt < TestHelper::kNumTextureUnits; ++tt) {
+  for (GLint tt = 0; tt < gles2::TestHelper::kNumTextureUnits; ++tt) {
     EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0 + tt))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D,
-                                  use_default_textures
-                                      ? TestHelper::kServiceDefaultTexture2dId
-                                      : 0))
+    EXPECT_CALL(*gl_,
+                BindTexture(GL_TEXTURE_2D,
+                            use_default_textures
+                                ? gles2::TestHelper::kServiceDefaultTexture2dId
+                                : 0))
         .Times(1)
         .RetiresOnSaturation();
   }
@@ -275,11 +274,11 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   decoder_->SetIgnoreCachedStateForTest(ignore_cached_state_for_test_);
   decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
 
-  copy_texture_manager_ = new MockCopyTextureResourceManager();
+  copy_texture_manager_ = new gles2::MockCopyTextureResourceManager();
   decoder_->SetCopyTextureResourceManagerForTest(copy_texture_manager_);
 
-  ASSERT_EQ(decoder_->Initialize(surface_, context_, true, DisallowedFeatures(),
-                                 attribs),
+  ASSERT_EQ(decoder_->Initialize(surface_, context_, true,
+                                 gles2::DisallowedFeatures(), attribs),
             gpu::ContextResult::kSuccess);
 
   EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(true));
