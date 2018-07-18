@@ -2484,7 +2484,7 @@ static void DragAndDropURL(WebViewImpl* web_view, const std::string& url) {
   widget->DragTargetDragEnter(drag_data, client_point, screen_point,
                               kWebDragOperationCopy, 0);
   widget->DragTargetDrop(drag_data, client_point, screen_point, 0);
-  FrameTestHelpers::PumpPendingRequestsForFrameToLoad(web_view->MainFrame());
+  FrameTestHelpers::PumpPendingRequestsForFrameToLoad();
 }
 
 TEST_F(WebViewTest, DragDropURL) {

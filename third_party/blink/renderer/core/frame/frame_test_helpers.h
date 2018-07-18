@@ -111,7 +111,7 @@ void ReloadFrameBypassingCache(WebLocalFrame*);
 
 // Pumps pending resource requests while waiting for a frame to load. Consider
 // using one of the above helper methods whenever possible.
-void PumpPendingRequestsForFrameToLoad(WebFrame*);
+void PumpPendingRequestsForFrameToLoad();
 
 WebMouseEvent CreateMouseEvent(WebInputEvent::Type,
                                WebMouseEvent::Button,

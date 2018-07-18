@@ -120,14 +120,14 @@ void LoadFrame(WebLocalFrame* frame, const std::string& url) {
         blink::WebHistoryItem(), false, base::UnguessableToken::Create(),
         nullptr, BuildDummyWebNavigationTimings());
   }
-  PumpPendingRequestsForFrameToLoad(frame);
+  PumpPendingRequestsForFrameToLoad();
 }
 
 void LoadHTMLString(WebLocalFrame* frame,
                     const std::string& html,
                     const WebURL& base_url) {
   frame->LoadHTMLString(WebData(html.data(), html.size()), base_url);
-  PumpPendingRequestsForFrameToLoad(frame);
+  PumpPendingRequestsForFrameToLoad();
 }
 
 void LoadHistoryItem(WebLocalFrame* frame,
@@ -139,20 +139,20 @@ void LoadHistoryItem(WebLocalFrame* frame,
       WebFrameLoadType::kBackForward, item,
       /*is_client_redirect=*/false, base::UnguessableToken::Create(), nullptr,
       BuildDummyWebNavigationTimings());
-  PumpPendingRequestsForFrameToLoad(frame);
+  PumpPendingRequestsForFrameToLoad();
 }
 
 void ReloadFrame(WebLocalFrame* frame) {
   frame->StartReload(WebFrameLoadType::kReload);
-  PumpPendingRequestsForFrameToLoad(frame);
+  PumpPendingRequestsForFrameToLoad();
 }
 
 void ReloadFrameBypassingCache(WebLocalFrame* frame) {
   frame->StartReload(WebFrameLoadType::kReloadBypassingCache);
-  PumpPendingRequestsForFrameToLoad(frame);
+  PumpPendingRequestsForFrameToLoad();
 }
 
-void PumpPendingRequestsForFrameToLoad(WebFrame* frame) {
+void PumpPendingRequestsForFrameToLoad() {
   Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&RunServeAsyncRequestsTask));
   test::EnterRunLoop();
