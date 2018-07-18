@@ -187,6 +187,12 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
   // TODO: Adjust the minimum height for the find bar.
 
   gfx::Size contents_size(contents_container_->GetMinimumSize());
+  // Prevent having a 0x0 sized-contents as this can allow the window to be
+  // resized down such that it's invisible and can no longer accept events.
+  // Use a very small 1x1 size to allow the user and the web contents to be able
+  // to resize the window as small as possible without introducing bugs.
+  // https://crbug.com/847179.
+  contents_size.SetToMax(gfx::Size(1, 1));
 
   int min_height = delegate_->GetTopInsetInBrowserView(false) +
       tabstrip_size.height() + toolbar_size.height() +
