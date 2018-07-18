@@ -4,10 +4,13 @@
 
 #include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_callback.h"
 
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_check_test_base.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -178,6 +181,30 @@ TEST_F(IdleSpellCheckCallbackTest, DetachWhenColdModeRequested) {
 
   TransitTo(State::kColdModeRequested);
   GetDocument().Shutdown();
+  EXPECT_EQ(State::kInactive, IdleChecker().GetState());
+}
+
+// crbug.com/863784
+TEST_F(IdleSpellCheckCallbackTest, ColdModeRangeCrossesShadow) {
+  ScopedIdleTimeColdModeSpellCheckingForTest cold_mode_scope(true);
+  SetBodyContent(
+      "<div contenteditable style=\"width:800px\">"
+      "foo"
+      "<menu style=\"all: initial\">1127</menu>"
+      "<object><optgroup></optgroup></object>"
+      "</div>");
+  ToHTMLObjectElement(GetDocument().QuerySelector("object"))
+      ->RenderFallbackContent();
+  GetDocument().QuerySelector("div")->focus();
+  UpdateAllLifecyclePhases();
+
+  // Advance to cold mode invocation
+  IdleChecker().ForceInvocationForTesting();
+  IdleChecker().SkipColdModeTimerForTesting();
+  ASSERT_EQ(State::kColdModeRequested, IdleChecker().GetState());
+
+  // Shouldn't crash
+  IdleChecker().ForceInvocationForTesting();
   EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
