@@ -86,18 +86,27 @@ public class ChromeBrowserInitializer {
 
     /**
      * This class is an application specific object that orchestrates the app initialization.
-     * @param context The context to get the application context from.
      * @return The singleton instance of {@link ChromeBrowserInitializer}.
      */
-    public static ChromeBrowserInitializer getInstance(Context context) {
+    public static ChromeBrowserInitializer getInstance() {
         if (sChromeBrowserInitializer == null) {
-            sChromeBrowserInitializer = new ChromeBrowserInitializer(context);
+            sChromeBrowserInitializer = new ChromeBrowserInitializer();
         }
         return sChromeBrowserInitializer;
     }
 
-    private ChromeBrowserInitializer(Context context) {
-        mApplication = (ChromeApplication) context.getApplicationContext();
+    /**
+     * This class is an application specific object that orchestrates the app initialization.
+     * @deprecated Use getInstance with no arguments instead.
+     * @param context The context to get the application context from.
+     * @return The singleton instance of {@link ChromeBrowserInitializer}.
+     */
+    public static ChromeBrowserInitializer getInstance(Context context) {
+        return getInstance();
+    }
+
+    private ChromeBrowserInitializer() {
+        mApplication = (ChromeApplication) ContextUtils.getApplicationContext();
         mHandler = new Handler(Looper.getMainLooper());
         initLeakCanary();
     }

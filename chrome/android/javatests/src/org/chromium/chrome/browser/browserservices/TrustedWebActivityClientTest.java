@@ -116,7 +116,7 @@ public class TrustedWebActivityClientTest {
     @Before
     public void setUp() throws TimeoutException, RemoteException, InterruptedException {
         mTargetContext = InstrumentationRegistry.getTargetContext();
-        mClient = new TrustedWebActivityClient(mTargetContext);
+        mClient = new TrustedWebActivityClient();
 
         // TestTrustedWebActivityService is in the test support apk.
         TrustedWebActivityClient.registerClient(mTargetContext, ORIGIN, TEST_SUPPORT_PACKAGE);

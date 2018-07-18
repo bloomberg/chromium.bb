@@ -132,7 +132,7 @@ public class NotificationPlatformBridge {
             mNotificationManager = new NotificationManagerProxyImpl(
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
         }
-        mTwaClient = new TrustedWebActivityClient(context);
+        mTwaClient = new TrustedWebActivityClient();
     }
 
     /**
@@ -237,17 +237,16 @@ public class NotificationPlatformBridge {
      * from the gear button on a flipped notification, this launches the site specific preferences
      * screen.
      *
-     * @param context The context that received the intent.
      * @param incomingIntent The received intent.
      */
-    public static void launchNotificationPreferences(Context context, Intent incomingIntent) {
+    public static void launchNotificationPreferences(Intent incomingIntent) {
         // This method handles an intent fired by the Android system. There is no guarantee that the
         // native library is loaded at this point. The native library is needed for the preferences
         // activity, and it loads the library, but there are some native calls even before that
         // activity is started: from RecordUserAction.record and (indirectly) from
         // UrlFormatter.formatUrlForSecurityDisplay.
         try {
-            ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
+            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
         } catch (ProcessInitException e) {
             Log.e(TAG, "Failed to start browser process.", e);
             // The library failed to initialize and nothing in the application can work, so kill
@@ -258,7 +257,7 @@ public class NotificationPlatformBridge {
 
         // Use the application context because it lives longer. When using the given context, it
         // may be stopped before the preferences intent is handled.
-        Context applicationContext = context.getApplicationContext();
+        Context applicationContext = ContextUtils.getApplicationContext();
 
         // If we can read an origin from the intent, use it to open the settings screen for that
         // origin.
