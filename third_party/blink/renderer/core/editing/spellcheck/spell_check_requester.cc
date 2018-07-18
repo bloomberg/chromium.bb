@@ -88,7 +88,6 @@ SpellCheckRequest::SpellCheckRequest(Range* checking_range,
       request_number_(request_number) {
   DCHECK(checking_range_);
   DCHECK(checking_range_->IsConnected());
-  DCHECK(root_editable_element_);
 }
 
 SpellCheckRequest::~SpellCheckRequest() = default;
@@ -123,7 +122,15 @@ SpellCheckRequest* SpellCheckRequest::Create(
 
   Range* checking_range_object = CreateRange(checking_range);
 
-  return new SpellCheckRequest(checking_range_object, text, request_number);
+  SpellCheckRequest* request =
+      new SpellCheckRequest(checking_range_object, text, request_number);
+  if (request->RootEditableElement())
+    return request;
+
+  // We may reach here if |checking_range| crosses shadow boundary, in which
+  // case we don't want spellchecker to crash renderer.
+  request->Dispose();
+  return nullptr;
 }
 
 bool SpellCheckRequest::IsValid() const {
