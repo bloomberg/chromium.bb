@@ -239,6 +239,14 @@ TabLifecycleUnitSource::TabLifecycleUnit::TabLifecycleUnit(
   DCHECK(observers_);
   DCHECK(GetWebContents());
   DCHECK(tab_strip_model_);
+
+  // Visible tabs are treated as having been immediately focused, while
+  // non-visible tabs have their focus set to the last active time (the time at
+  // which they stopped being the active tab in a tabstrip).
+  if (GetVisibility() == content::Visibility::VISIBLE)
+    last_focused_time_ = NowTicks();
+  else
+    last_focused_time_ = web_contents->GetLastActiveTime();
 }
 
 TabLifecycleUnitSource::TabLifecycleUnit::~TabLifecycleUnit() {

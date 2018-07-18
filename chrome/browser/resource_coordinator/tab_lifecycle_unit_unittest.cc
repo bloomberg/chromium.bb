@@ -93,10 +93,11 @@ class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
     std::unique_ptr<content::WebContents> test_web_contents =
         CreateTestWebContents();
     web_contents_ = test_web_contents.get();
+    auto* tester = content::WebContentsTester::For(web_contents_);
+    tester->SetLastActiveTime(NowTicks());
     ResourceCoordinatorTabHelper::CreateForWebContents(web_contents_);
     // Commit an URL to allow discarding.
-    content::WebContentsTester::For(web_contents_)
-        ->NavigateAndCommit(GURL("https://www.example.com"));
+    tester->NavigateAndCommit(GURL("https://www.example.com"));
 
     tab_strip_model_ =
         std::make_unique<TabStripModel>(&tab_strip_model_delegate_, profile());

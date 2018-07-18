@@ -172,13 +172,14 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   int discard_count_ = 0;
 
   // Last time at which this tab was focused, or TimeTicks::Max() if it is
-  // currently focused.
-  //
-  // TODO(fdoray): To keep old behavior (sort order and protection of recently
-  // focused tabs), this is initialized with NowTicks(). Consider initializing
-  // this with a null TimeTicks when the tab isn't initially focused.
-  // https://crbug.com/800885
-  base::TimeTicks last_focused_time_ = NowTicks();
+  // currently focused. For tabs that aren't currently focused this is
+  // initialized using WebContents::GetLastActiveTime, which causes use times
+  // from previous browsing sessions to persist across session restore
+  // events.
+  // TODO(chrisha): Migrate |last_active_time| to actually track focus time,
+  // instead of the time that focus was lost. This is a more meaninful number
+  // for all of the clients of |last_active_time|.
+  base::TimeTicks last_focused_time_;
 
   // When this is false, CanDiscard() always returns false.
   bool auto_discardable_ = true;
