@@ -119,7 +119,8 @@ void PageActionIconView::Layout() {
     focus_ring_->Layout();
     if (LocationBarView::IsRounded()) {
       SkPath path;
-      path.addOval(gfx::RectToSkRect(GetLocalBounds()));
+      const float radius = height() / 2.f;
+      path.addRoundRect(gfx::RectToSkRect(GetLocalBounds()), radius, radius);
       focus_ring_->SetPath(path);
     }
   }
