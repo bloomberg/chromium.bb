@@ -3101,11 +3101,13 @@ size_t QuicFramer::GetIetfAckFrameSize(const QuicAckFrame& frame) {
   // Account for the remaining Intervals, if any.
   while (ack_block_count != 0) {
     QuicPacketNumber gap_size = ack_block_smallest - itr->max();
-    size_t size_of_gap_size = QuicDataWriter::GetVarInt62Len(gap_size);
+    // Decrement per the protocol specification
+    size_t size_of_gap_size = QuicDataWriter::GetVarInt62Len(gap_size - 1);
     ack_frame_size += size_of_gap_size;
 
     QuicPacketNumber block_size = itr->max() - itr->min();
-    size_t size_of_block_size = QuicDataWriter::GetVarInt62Len(block_size);
+    // Decrement per the protocol specification
+    size_t size_of_block_size = QuicDataWriter::GetVarInt62Len(block_size - 1);
     ack_frame_size += size_of_block_size;
 
     ack_block_smallest = itr->min();
