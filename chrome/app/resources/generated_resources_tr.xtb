@@ -66,7 +66,6 @@
 <translation id="109758035718544977">Sitelerin Sesini Aç</translation>
 <translation id="1097658378307015415">Oturum açmadan önce <ph name="NETWORK_ID" /> ağını etkinleştirmek için lütfen Misafir olarak giriş yapın</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> dilini daima çevir</translation>
-<translation id="1108164192735968833">SMS Bağlantısı</translation>
 <translation id="1108600514891325577">D&amp;urdur</translation>
 <translation id="1110155001042129815">Bekle</translation>
 <translation id="1112420131909513020">Arka plan sekmesi Bluetooth bağlantısını kullanıyor</translation>
@@ -456,7 +455,6 @@
 <translation id="1658424621194652532">Bu sayfa mikrofonunuza erişiyor.</translation>
 <translation id="1660204651932907780">Sitelerin ses çalmasına izin ver (önerilir)</translation>
 <translation id="1661156625580498328">AES şifrelemesini uygula (önerilir).</translation>
-<translation id="1661245713600520330">Bu sayfada, ana işleme yüklenen tüm modüller ve ilerideki bir noktada yüklenmek için kaydedilmiş modüller listelenir.</translation>
 <translation id="166179487779922818">Şifre çok kısa.</translation>
 <translation id="1661867754829461514">PIN eksik</translation>
 <translation id="16620462294541761">Maalesef, şifreniz doğrulanamadı. Lütfen tekrar deneyin.</translation>
@@ -607,7 +605,6 @@
 <translation id="1877520246462554164">Kimlik doğrulama jetonu alınamadı. Tekrar denemek için lütfen oturumu kapatıp sonra yeniden oturum açın.</translation>
 <translation id="1878302395768190018">Bunu istediğiniz zaman Chrome Ayarlarından özelleştirebilirsiniz</translation>
 <translation id="1880905663253319515">"<ph name="CERTIFICATE_NAME" />" sertifikası silinsin mi?</translation>
-<translation id="1883903952484604915">Dosyalarım</translation>
 <translation id="1886996562706621347">Sitelerin, protokoller için varsayılan işleyiciler olmasını sormasına izin ver (önerilir)</translation>
 <translation id="1887442540531652736">Oturum açma hatası</translation>
 <translation id="1887850431809612466">Donanım düzeltmesi</translation>
@@ -744,7 +741,6 @@
 <translation id="21133533946938348">Sekmeyi İğnele</translation>
 <translation id="2113479184312716848">&amp;Dosya Aç...</translation>
 <translation id="2113921862428609753">Yetkili Bilgi Erişimi</translation>
-<translation id="2114224913786726438">Modüller (<ph name="TOTAL_COUNT" />) - Çakışma algılanmadı</translation>
 <translation id="2114326799768592691">&amp;Çerçeveyi Yeniden Yükle</translation>
 <translation id="2114896190328250491">Fotoğrafı çeken: <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Telefona gönder</translation>
@@ -1130,7 +1126,6 @@
 <translation id="268053382412112343">Geç&amp;miş</translation>
 <translation id="2683638487103917598">Klasör sıralandı</translation>
 <translation id="2684004000387153598">Devam etmek için Tamam'ı tıklayın, ardından Kişi Ekle'yi tıklayıp e-posta adresiniz için yeni profil oluşturun.</translation>
-<translation id="2686759344028411998">Yüklü bir modül bulunamadı.</translation>
 <translation id="2688196195245426394">Cihaz sunucuya kaydedilirken hata oluştu: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Dil seçeneklerini göster</translation>
 <translation id="2691385045260836588">Model</translation>
@@ -1512,7 +1507,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="329838636886466101">Onar</translation>
 <translation id="3298789223962368867">Geçersiz URL girildi.</translation>
 <translation id="32991397311664836">Cihazlar:</translation>
-<translation id="3300394989536077382">İmzalayan:</translation>
 <translation id="33022249435934718">GDI İşleyicileri</translation>
 <translation id="3303260552072730022">Bir uzantı tam ekranı etkinleştirdi.</translation>
 <translation id="3303818374450886607">Kopya</translation>
@@ -2242,6 +2236,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4467100756425880649">Chrome Web Mağazası Galerisi</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> klasörünü genişlet</translation>
 <translation id="447252321002412580">Chrome'un özelliklerini ve performansını iyileştirmeye yardımcı olun</translation>
+<translation id="4472575034687746823">Başlayın</translation>
 <translation id="4474155171896946103">Tüm sekmelere yer işareti koy...</translation>
 <translation id="4475552974751346499">İndirilenlerde ara</translation>
 <translation id="4476590490540813026">Sporcu</translation>
@@ -3094,7 +3089,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5751545372099101699">Raf öğesi 4</translation>
 <translation id="5752453871435543420">Chrome OS Bulut yedekleme</translation>
 <translation id="5756163054456765343">Y&amp;ardım merkezi</translation>
-<translation id="5758823144991844964">Play Dosyaları</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> aracılığıyla yazdırılmaları için gönderdiğiniz dokümanlar <ph name="APP_NAME" /> tarafından okunabilir.</translation>
 <translation id="5763751966069581670">USB cihazı bulunamadı</translation>
 <translation id="5764483294734785780">Sesi farklı kay&amp;det...</translation>
@@ -3882,6 +3876,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6985607387932385770">Yazıcılar</translation>
 <translation id="6990081529015358884">Boş yeriniz kalmadı</translation>
 <translation id="6990778048354947307">Koyu Renkli Tema</translation>
+<translation id="6991128190741664836">Daha sonra</translation>
 <translation id="6991665348624301627">Bir hedef seç</translation>
 <translation id="6997707937646349884">Cihazlarınızda:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> klasör seçildi</translation>
@@ -4303,6 +4298,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7662283695561029522">Yapılandırmak için dokunun</translation>
 <translation id="7663719505383602579">Alıcı: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Desteklenmeyen Bluetooth cihazı: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="7665369617277396874">Hesap ekle</translation>
 <translation id="7671130400130574146">Sistemin başlık çubuğunu ve kenarlıklarını kullan</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, <ph name="PAGE_TITLE" /> sayfasında.</translation>
 <translation id="7681095912841365527">Site, Bluetooth'u kullanabilir</translation>
@@ -4526,7 +4522,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7973962044839454485">Yanlış kullanıcı adı veya şifreden dolayı PPP kimlik doğrulaması başarısız oldu</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" /> uzantısını kullanmayı yeniden dene</translation>
 <translation id="7974936243149753750">Fazla tarama</translation>
-<translation id="7976555937380554094"><ph name="PEPPER_PLUGIN_DOMAIN" /> alanındaki <ph name="PEPPER_PLUGIN_NAME" /> eklentisi cihazınıza erişmek istiyor</translation>
 <translation id="7977551819349545646">Chromebox güncelleniyor...</translation>
 <translation id="7978412674231730200">Özel anahtar</translation>
 <translation id="7979036127916589816">Senkronizasyon Hatası</translation>
@@ -4602,7 +4597,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="806812017500012252">Başlığa göre yeniden sırala</translation>
 <translation id="8068253693380742035">Oturum açmak için dokunun</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
-<translation id="806972267388474605">Linux Dosyaları</translation>
 <translation id="8071432093239591881">Resim olarak yazdır</translation>
 <translation id="8072033737676488034">Telefonunuzu kaldırın ve Better Together'ı devre dışı bırakın</translation>
 <translation id="8072988827236813198">Sekmeleri Sabitle</translation>
@@ -4671,7 +4665,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8184318863960255706">Daha fazla bilgi</translation>
 <translation id="8185331656081929126">Ağ üzerinde yeni yazıcılar algılandığında bildirim göster</translation>
 <translation id="8186609076106987817">Sunucu dosyayı bulamadı.</translation>
-<translation id="8186706823560132848">Yazılım</translation>
 <translation id="8188120771410500975">&amp;Metin alanlarında yazım denetimi yap</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" /> ağına bağlanılıyor</translation>
 <translation id="8191230140820435481">Uygulamalarınızı, uzantılarınızı ve temalarınızı yönetme</translation>
@@ -4697,7 +4690,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8227119283605456246">Dosya ekle</translation>
 <translation id="8234795456569844941">Lütfen mühendislerimizin bu sorunu çözmesine yardımcı olun. Profil hata mesajını almadan hemen önce ne yaptığınızı belirtin:</translation>
 <translation id="8234989666557591529"><ph name="DEVICE_TYPE" /> cihazınızın kilidini açmak için bir telefon seçin</translation>
-<translation id="8238649969398088015">Yardım ipucu</translation>
 <translation id="8239020549147958415"><ph name="FULL_NAME" /> olarak senkronize et</translation>
 <translation id="8241040075392580210">Parçalı Bulutlu</translation>
 <translation id="8241806945692107836">Cihaz yapılandırması belirleniyor...</translation>
@@ -5147,7 +5139,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8957423540740801332">sağ</translation>
 <translation id="895944840846194039">JavaScript Belleği</translation>
 <translation id="8959810181433034287">Denetlenen kullanıcının oturum açmak için bu şifreyi kullanması gerekecektir. Bu nedenle güvenli bir şifre seçin ve bunu, denetlenen kullanıcıya söylemeyi unutmayın.</translation>
-<translation id="8960795431111723921">Şu anda bu konuyu araştırıyoruz.</translation>
 <translation id="8962083179518285172">Ayrıntıları Gizle</translation>
 <translation id="8962918469425892674">Bu site hareket veya ışık sensörlerini kullanıyor.</translation>
 <translation id="8965037249707889821">Eski şifreyi girin</translation>

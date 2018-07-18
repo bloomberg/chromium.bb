@@ -193,7 +193,7 @@
 <translation id="2501278716633472235">חזור</translation>
 <translation id="2512222046227390255">מילוי אוטומטי של טפסים</translation>
 <translation id="2513403576141822879">‏אפשר למצוא הגדרות נוספות בנושא פרטיות, אבטחה ואיסוף נתונים בדף <ph name="BEGIN_LINK" />סנכרון ושירותי Google<ph name="END_LINK" /></translation>
-<translation id="2523184218357549926">‏שולח ל-Google כתובות אתרים של דפים שבהם ביקרת</translation>
+<translation id="2523184218357549926">‏שליחת כתובות אתרים של דפים שבהם ביקרת ל-Google</translation>
 <translation id="2526148617758225454">‏חוסך הנתונים (Data Saver) פועל. תוכל לנהל אותו ב'הגדרות'.</translation>
 <translation id="2532336938189706096">תצוגת אינטרנט</translation>
 <translation id="2536728043171574184">מציג העתק לא מקוון של עמוד זה</translation>
@@ -256,7 +256,7 @@
 <translation id="3089395242580810162">פתח בכרטיסיית גלישה בסתר</translation>
 <translation id="311456632243022227">‏קישורים מרובים נפתחו ב-Chrome</translation>
 <translation id="3115898365077584848">הצג פרטים</translation>
-<translation id="3129938255108848489">מציג הצעות לדפים דומים אם דף מסוים לא נמצא</translation>
+<translation id="3129938255108848489">הצגת הצעות לדפים דומים אם דף מסוים לא נמצא</translation>
 <translation id="3137521801621304719">צא ממצב גלישה בסתר</translation>
 <translation id="3148434565183091099">‏כדי שהסימניות שלך יופיעו בכל המכשירים, היכנס ל-Chrome.</translation>
 <translation id="3157842584138209013">בעזרת הלחצן 'אפשרויות נוספות' אפשר לבדוק את החיסכון בצריכת נתונים</translation>
@@ -858,7 +858,7 @@
 <translation id="8105951947646329362">הצעת דפים קשורים</translation>
 <translation id="8116925261070264013">מושתקים</translation>
 <translation id="813082847718468539">הצג נתוני אתר</translation>
-<translation id="8160722851663543621">‏שליחת חיפושים משורת כתובת האתר ותיבת החיפוש אל מנוע החיפוש שהגדרת כברירת מחדל יחד עם קובצי cookie מסוימים</translation>
+<translation id="8160722851663543621">‏שליחת חיפושים משורת כתובת האתר ותיבת החיפוש אל מנוע החיפוש שהגדרת כברירת מחדל, יחד עם קובצי cookie מסוימים</translation>
 <translation id="8168435359814927499">תוכן</translation>
 <translation id="8186512483418048923">נותרו עוד <ph name="FILES" /> קבצים</translation>
 <translation id="8190358571722158785">נותר יום אחד</translation>

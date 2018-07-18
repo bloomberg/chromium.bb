@@ -66,7 +66,6 @@
 <translation id="109758035718544977">ಸೈಟ್‌ಗಳನ್ನು ಅನ್‌ಮ್ಯೂಟ್‌ ಮಾಡಿ</translation>
 <translation id="1097658378307015415">ಸೈನ್ ಇನ್ ಮಾಡುವ ಮುನ್ನ, <ph name="NETWORK_ID" /> ನೆಟ್‌ವರ್ಕ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲು ಅತಿಥಿಯಾಗಿ ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="1103523840287552314">ಯಾವಾಗಲೂ ಅನುವಾದಿಸಿ <ph name="LANGUAGE" /></translation>
-<translation id="1108164192735968833">ಎಸ್‌ಎಂಎಸ್‌ ಸಂಪರ್ಕ</translation>
 <translation id="1108600514891325577">&amp;ನಿಲ್ಲಿಸು</translation>
 <translation id="1110155001042129815">ಕಾಯಿರಿ</translation>
 <translation id="1112420131909513020">ಹಿನ್ನೆಲೆ ಟ್ಯಾಬ್ ಬ್ಲೂಟೂತ್ ಅನ್ನು ಬಳಸುತ್ತಿದೆ</translation>
@@ -453,7 +452,6 @@
 <translation id="1658424621194652532">ಈ ಪುಟವು ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್ ಪ್ರವೇಶಿಸುತ್ತಿದೆ.</translation>
 <translation id="1660204651932907780">ಧ್ವನಿಯನ್ನು ಪ್ಲೇ ಮಾಡಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="1661156625580498328">AES ಎನ್‌ಕ್ರಿಪ್ಶನ್‌‌ ಅನ್ನು ಜಾರಿಗೊಳಿಸಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ).</translation>
-<translation id="1661245713600520330">ಮುಖ್ಯ ಪ್ರಕ್ರಿಯೆಯಲ್ಲಿ ಲೋಡ್ ಮಾಡಲಾದ ಎಲ್ಲ ಮಾಡ್ಯೂಲ್‌ಗಳು ಮತ್ತು ನಂತರದ ಸ್ಥಿತಿಯಲ್ಲಿ ಲೋಡ್ ಮಾಡಲು ನೋಂದಾಯಿಸಲಾದ ಮಾಡ್ಯೂಲ್‌ಗಳನ್ನು ಈ ಪುಟವು ಪಟ್ಟಿಮಾಡುತ್ತದೆ.</translation>
 <translation id="166179487779922818">ಪಾಸ್‌ವರ್ಡ್ ತುಂಬಾ ಚಿಕ್ಕದಾಗಿದೆ.</translation>
 <translation id="1661867754829461514">PIN ಕಾಣೆಯಾಗಿದೆ</translation>
 <translation id="16620462294541761">ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಪರಿಶೀಲಿಸಲಾಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -604,7 +602,6 @@
 <translation id="1877520246462554164">ದೃಢೀಕರಣ ಟೋಕನ್ ಪಡೆಯಲು ವಿಫಲವಾಗಿದೆ. ಸೈನ್ ಔಟ್ ಆಗಿ ಮತ್ತೆ ಸೈನ್ ಇನ್ ಆಗಿ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="1878302395768190018">Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಇದನ್ನು ನೀವು ಯಾವುದೇ ಸಮಯದಲ್ಲಿ ಬೇಕಾದರೂ ಕಸ್ಟಮೈಸ್ ಮಾಡಬಹುದು</translation>
 <translation id="1880905663253319515">"<ph name="CERTIFICATE_NAME" />" ಪ್ರಮಾಣಪತ್ರವನ್ನು ಅಳಿಸುವುದೆ?</translation>
-<translation id="1883903952484604915">ನನ್ನ ಫೈಲ್‌ಗಳು</translation>
 <translation id="1886996562706621347">ಪ್ರೊಟೋಕಾಲ್‌ಗಳಿಗಾಗಿ ಡಿಫಾಲ್ಟ್ ಹ್ಯಾಂಡ್ಲರ್‌‌ಗಳಾಗಲು ಸೈಟ್‌ಗಳನ್ನು ಅನುಮತಿಸಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="1887442540531652736">ಸೈನ್‌ ಇನ್‌ ದೋಷ</translation>
 <translation id="1887850431809612466">ಹಾರ್ಡ್‌ವೇರ್ ಪರಿಷ್ಕರಣೆ</translation>
@@ -741,7 +738,6 @@
 <translation id="21133533946938348">ಪಿನ್ ಟ್ಯಾಬ್</translation>
 <translation id="2113479184312716848">&amp;ಫೈಲ್ ತೆರೆಯಿರಿ...</translation>
 <translation id="2113921862428609753">ಅಧಿಕಾರ ಮಾಹಿತಿ ಪ್ರವೇಶ</translation>
-<translation id="2114224913786726438">ಮಾಡ್ಯೂಲ್‌ಗಳು  (<ph name="TOTAL_COUNT" />) - ಯಾವುದೇ ಘರ್ಷಣೆಯನ್ನು ಪತ್ತೆಹಚ್ಚಿಲ್ಲ</translation>
 <translation id="2114326799768592691">ರೀಲೋಡ್ &amp;ಫ್ರೇಮ್</translation>
 <translation id="2114896190328250491"><ph name="NAME" /> ಅವರಿಂದ ಫೋಟೋ</translation>
 <translation id="2115103655317273167">ಫೋನ್‌ಗೆ ಕಳುಹಿಸಿ</translation>
@@ -1127,7 +1123,6 @@
 <translation id="268053382412112343">&amp;ಇತಿಹಾಸ</translation>
 <translation id="2683638487103917598">ಫೋಲ್ಡರ್ ವಿಂಗಡಿಸಲಾಗಿದೆ</translation>
 <translation id="2684004000387153598">ಮುಂದುವರಿಸಲು, ಸರಿ ಎಂಬುದನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ. ಆಮೇಲೆ, ನಿಮ್ಮ ಇಮೇಲ್ ವಿಳಾಸಕ್ಕಾಗಿ ಹೊಸ ಪ್ರೊಫೈಲ್ ಅನ್ನು ರಚಿಸಲು, ವ್ಯಕ್ತಿಯನ್ನು ಸೇರಿಸಿ ಎಂಬುದನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
-<translation id="2686759344028411998">ಯಾವುದೇ ಲೋಡ್ ಮಾಡಿದ ಮಾಡ್ಯೂಲ್‌ಗಳನ್ನು ಕಂಡು ಹಿಡಿಯಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="2688196195245426394">ಸರ್ವರ್‌ನೊಂದಿಗೆ ಸಾಧನವನ್ನು ನೋಂದಾಯಿಸುವಾಗ ದೋಷ: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">ಭಾಷೆ ಆಯ್ಕೆಗಳನ್ನು ತೋರಿಸು</translation>
 <translation id="2691385045260836588">ಮಾದರಿ</translation>
@@ -1509,7 +1504,6 @@
 <translation id="329838636886466101">ರಿಪೇರ್</translation>
 <translation id="3298789223962368867">ಅಮಾನ್ಯ URL ನಮೂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="32991397311664836">ಸಾಧನಗಳು:</translation>
-<translation id="3300394989536077382">ಅವರಿಂದ ರುಜುಮಾಡಲಾಗಿದೆ</translation>
 <translation id="33022249435934718">GDI ನಿರ್ವಹಣೆಗಳು</translation>
 <translation id="3303260552072730022">ವಿಸ್ತರಣೆಯು ಪೂರ್ಣ ಪರದೆಯನ್ನು ಟ್ರಿಗ್ಗರ್ ಮಾಡಿದೆ.</translation>
 <translation id="3303818374450886607">ಪ್ರತಿಗಳು</translation>
@@ -2239,6 +2233,7 @@
 <translation id="4467100756425880649">Chrome ವೆಬ್‌ ಸ್ಟೋರ್‌ ಗ್ಯಾಲರಿ</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> ವಿಸ್ತರಿಸಿ</translation>
 <translation id="447252321002412580">Chrome ನ ವೈಶಿಷ್ಟ್ಯಗಳು ಹಾಗೂ ಕೆಲಸ ನಿರ್ವಹಣೆಯನ್ನು ಸುಧಾರಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
+<translation id="4472575034687746823">ಪ್ರಾರಂಭ</translation>
 <translation id="4474155171896946103">ಎಲ್ಲಾ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡು...</translation>
 <translation id="4475552974751346499">ಡೌನ್‌ಲೋಡ್‌ಗಳು ಹುಡುಕಿ</translation>
 <translation id="4476590490540813026">ಕ್ರೀಡಾಪಟು</translation>
@@ -3091,7 +3086,6 @@
 <translation id="5751545372099101699">ಶೆಲ್ಫ್ ಐಟಂ 4</translation>
 <translation id="5752453871435543420">Chrome OS ಮೇಘ ಬ್ಯಾಕಪ್</translation>
 <translation id="5756163054456765343">ಸ&amp;ಹಾಯ ಕೇಂದ್ರ</translation>
-<translation id="5758823144991844964">ಪ್ಲೇ ಫೈಲ್‌ಗಳು</translation>
 <translation id="5759728514498647443">ನೀವು <ph name="APP_NAME" /> ಮೂಲಕ ಪ್ರಿಂಟ್ ಮಾಡಲು ಕಳುಹಿಸುವ ಡಾಕ್ಯುಮೆಂಟ್‌ಗಳನ್ನು <ph name="APP_NAME" /> ಮೂಲಕ ಓದಬಹುದಾಗಿದೆ.</translation>
 <translation id="5763751966069581670">ಯಾವುದೇ USB ಸಾಧನಗಳು ಕಂಡುಬಂದಿಲ್ಲ</translation>
 <translation id="5764483294734785780">ಇದರಂತೆ ಆಡಿಯೋ ಉ&amp;ಳಿಸಿ...</translation>
@@ -3877,6 +3871,7 @@
 <translation id="6985607387932385770">ಪ್ರಿಂಟರ್‌ಗಳು</translation>
 <translation id="6990081529015358884">ನಿಮ್ಮ ಬಳಿ ಇದ್ದ ಸ್ಥಳ ಖಾಲಿಯಾಗಿದೆ</translation>
 <translation id="6990778048354947307">ಗಾಢ ಥೀಮ್</translation>
+<translation id="6991128190741664836">ನಂತರ</translation>
 <translation id="6991665348624301627">ಗಮ್ಯಸ್ಥಾನವನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="6997707937646349884">ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> ಫೋಲ್ಡರ್‌ಗಳನ್ನು ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
@@ -4297,6 +4292,7 @@
 <translation id="7662283695561029522">ಕಾನ್ಫಿಗರ್ ಮಾಡಲು ಟ್ಯಾಪ್‌ ಮಾಡಿ</translation>
 <translation id="7663719505383602579">ರಿಸೀವರ್: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">ಬೆಂಬಲಿಸದಿರುವ ಬ್ಲೂಟೂತ್‌ ಸಾಧನ: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="7665369617277396874">ಖಾತೆಯನ್ನು ಸೇರಿಸು</translation>
 <translation id="7671130400130574146">ಸಿಸ್ಟಂ ಶೀರ್ಷಿಕೆ ಪಟ್ಟಿ ಮತ್ತು ಅಂಚುಗಳನ್ನು ಬಳಸಿ</translation>
 <translation id="7672520070349703697"><ph name="PAGE_TITLE" /> ನಲ್ಲಿ <ph name="HUNG_IFRAME_URL" /></translation>
 <translation id="7681095912841365527">ಬ್ಲೂಟೂತ್ ಅನ್ನು ಸೈಟ್‌ ಬಳಸಬಹುದು</translation>
@@ -4516,7 +4512,6 @@
 <translation id="7973962044839454485">ತಪ್ಪಾದ ಬಳಕೆದಾರ ಹೆಸರು ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದಾಗಿ PPP ದೃಢೀಕರಣ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" /> ಬಳಸುವ ಮೂಲಕ ಮರುಪ್ರಯತ್ನಿಸು</translation>
 <translation id="7974936243149753750">ಓವರ್‌ಸ್ಕ್ಯಾನ್</translation>
-<translation id="7976555937380554094"><ph name="PEPPER_PLUGIN_NAME" /> ನಲ್ಲಿ ಇರುವ <ph name="PEPPER_PLUGIN_DOMAIN" /> ನಿಮ್ಮ ಸಾಧನವನ್ನು ಪ್ರವೇಶಿಸಲು ಬಯಸುತ್ತದೆ</translation>
 <translation id="7977551819349545646">Chromebox ನವೀಕರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="7978412674231730200">ಖಾಸಗಿ ಕೀಲಿ</translation>
 <translation id="7979036127916589816">ಸಿಂಕ್ ದೋಷ</translation>
@@ -4590,7 +4585,6 @@
 <translation id="806812017500012252">ಶೀರ್ಷಿಕೆ ಪ್ರಕಾರ ಮರುಕ್ರಮಗೊಳಿಸಿ</translation>
 <translation id="8068253693380742035">ಸೈನ್ ಇನ್ ಮಾಡಲು ಸ್ಪರ್ಶಿಸಿ</translation>
 <translation id="8069615408251337349">Google ಮೇಘ ಮುದ್ರಣ</translation>
-<translation id="806972267388474605">Linux ಫೈಲ್‌ಗಳು</translation>
 <translation id="8071432093239591881">ಚಿತ್ರದಂತೆ ಪ್ರಿಂಟ್ ಮಾಡಿ</translation>
 <translation id="8072033737676488034">ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ ಮತ್ತು Better Together ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="8072988827236813198">ಪಿನ್ ಟ್ಯಾಬ್‌ಗಳು</translation>
@@ -4659,7 +4653,6 @@
 <translation id="8184318863960255706">ಹೆಚ್ಚಿನ ಮಾಹಿತಿ</translation>
 <translation id="8185331656081929126">ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿರುವ ಹೊಸ ಪ್ರಿಂಟರ್‌ಗಳನ್ನು ಪತ್ತೆ ಮಾಡಿದಾಗ ಅಧಿಸೂಚನೆಗಳನ್ನು ತೋರಿಸು</translation>
 <translation id="8186609076106987817">ಸರ್ವರ್‌ಗೆ ಫೈಲ್ ಅನ್ನು ಕಂಡುಹಿಡಿಯಲಾಗಲಿಲ್ಲ.</translation>
-<translation id="8186706823560132848">ಸಾಫ್ಟ್‌ವೇರ್</translation>
 <translation id="8188120771410500975">&amp;ಪಠ್ಯ ಕ್ಷೇತ್ರಗಳ ಕಾಗುಣಿತ ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" /> ಗೆ ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="8191230140820435481">ನಿಮ್ಮ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು, ವಿಸ್ತರಣೆಗಳು, ಮತ್ತು ಥೀಮ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
@@ -4685,7 +4678,6 @@
 <translation id="8227119283605456246">ಫೈಲ್‌‎ ಲಗತ್ತಿಸಿ</translation>
 <translation id="8234795456569844941">ಈ ಸಮಸ್ಯೆಯನ್ನು ಸರಿಪಡಿಸಲು ನಮ್ಮ ಇಂಜಿನಿಯರ್‌ಗಳಿಗೆ ಸಹಾಯ ಮಾಡಿ. ಪ್ರೊಫೈಲ್ ದೋಷ ಸಂದೇಶವನ್ನು ಪಡೆಯುವುದಕ್ಕೆ ಸ್ವಲ್ಪ ಮೊದಲು ಏನಾಯಿತು ಎಂದು ನಮಗೆ ತಿಳಿಸಿ:</translation>
 <translation id="8234989666557591529">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಅನ್‌ಲಾಕ್‌ ಮಾಡಲು ಫೋನ್‌ ಆಯ್ಕೆಮಾಡಿ</translation>
-<translation id="8238649969398088015">ಸಹಾಯ ಸಲಹೆ</translation>
 <translation id="8239020549147958415"><ph name="FULL_NAME" /> ಎಂಬುದಾಗಿ ಸಿಂಕ್ ಮಾಡಿ</translation>
 <translation id="8241040075392580210">ಶಾಡಿ</translation>
 <translation id="8241806945692107836">ಸಾಧನದ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು ನಿರ್ಧರಿಸಲಾಗುತ್ತಿದೆ...</translation>
@@ -5138,7 +5130,6 @@
 <translation id="8957423540740801332">ಬಲಕ್ಕೆ</translation>
 <translation id="895944840846194039">JavaScript ಸ್ಮರಣೆ</translation>
 <translation id="8959810181433034287">ಸೈನ್ ಇನ್ ಮಾಡಬೇಕಾದರೆ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡುವ ಬಳಕೆದಾರರು ಈ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಬಳಸಬೇಕಾದ ಅಗತ್ಯವಿದೆ, ಹಾಗಾಗಿ ಸುರಕ್ಷಿತ ಪಾಸ್‌ವರ್ಡ್ ಆರಿಸಿಕೊಳ್ಳಿ ಹಾಗೂ ಇದನ್ನು ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡುವ ಬಳಕೆದಾರರೊಂದಿಗೆ ಚರ್ಚಿಸಲು ಮರೆಯದಿರಿ.</translation>
-<translation id="8960795431111723921">ಈ ಸಮಸ್ಯೆಯನ್ನು ನಾವು ಪ್ರಸ್ತುತ ತನಿಖೆ ಮಾಡುತ್ತಿದ್ದೇವೆ.</translation>
 <translation id="8962083179518285172">ವಿವರಗಳನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="8962918469425892674">ಈ ಸೈಟ್ ಚಲನೆ ಅಥವಾ ಲೈಟ್ ಸೆನ್ಸರ್‌ಗಳನ್ನು ಬಳಸುತ್ತಿದೆ.</translation>
 <translation id="8965037249707889821">ಹಳೆಯ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ</translation>

@@ -1902,7 +1902,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6810445994095397827">Bloqueja JavaScript en aquests llocs</translation>
 <translation id="681446116407619279">Esquemes d'autenticació compatibles</translation>
 <translation id="6832455357698286434">
-      La política especifica una llista d'orígens (URLs) o de patrons de nom d'amfitrió (com ara "*.example.com")que s'han de tractar com a contexts segurs. La intenció és permetre que les organitzacions configurin un servidor de fases per als desenvolupaments web interns, de manera que els desenvolupadors puguin provar funcions que requereixin contexts segurs sense haver d'implementar TLS al servidor de fases.
+      La política especifica una llista d'orígens (URLs) o de patrons de nom d'amfitrió (com ara "*.example.com") que s'han de tractar com a contexts segurs. La intenció és permetre que les organitzacions configurin un servidor de fases per als desenvolupaments web interns, de manera que els desenvolupadors puguin provar funcions que requereixin contexts segurs sense haver d'implementar TLS al servidor de fases.
       Definir una llista d'URL d'aquesta política té el mateix efecte que assignar la marca de la línia d'ordres "--unsafely-treat-insecure-origin-as-secure" a una llista d'URL separats per comes. Si la política es defineix, substituirà la marca de la línia d'ordres.
       Per obtenir més informació sobre els contexts segurs, ves a https://www.w3.org/TR/secure-contexts/.
       </translation>

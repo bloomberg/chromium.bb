@@ -688,6 +688,20 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="2877225735001246144">Deaktiver CNAME-oppslag under forhandling om Kerberos-godkjenning</translation>
 <translation id="2893546967669465276">Send systemlogger til administrasjonstjeneren</translation>
 <translation id="2899002520262095963">Android-apper kan bruke nettverkskonfigurasjoner og CA-sertifikater som angis via denne regelen, men de har ikke tilgang til alle konfigurasjonsalternativene.</translation>
+<translation id="290002216614278247">Lar deg låse brukerens økt basert på klienttiden eller dagens brukskvote.
+
+          |time_limit_window| spesifiser et dagligvindu der brukerens økt kan låses. Vi støtter kun en regel for hver dag i uken, derfor kan det hende at |entries| matrisen kan variere fra 0-7 i størrelse. |starts_at| og |ends_at| er begynnelsen og slutten på vindusbegrensningen, når |ends_at| er mindre enn |starts_at|, betyr dette at |time_limit_window| slutter neste dag. |last_updated_millis| er UTC tidsstempel for den siste oppdaterte inntredelsen var sendt som en streng, på grunn av at tidstempelet ville ikke passe inn i et heltall.
+
+
+           |time_usage_limit| spesifiserer en dagligskjermkvote, slik at brukerens økt låses når brukeren når denne kvoten. Det er en plass for hver dag i uken, og denne skal kun stilles inn hvis det er en aktiv kvote for den dagen. |usage_quota_mins| er hvor mye tid den styrte enheten kan bruke iløpet av en dag og |reset_at| er tiden der den brukte kvoten fornyes. Standard verdien for |reset_at| er midnatt({'hour': 0, 'minute': 0}). |last_updated_millis| er UTC tidsstempel for den siste oppdaterte inntredelsen, som ble sendt som en streng på grunn av at tidsstempelet ikke passet inn i et heltall.
+
+          |overrides| er gitt for å midlertidig ugyldiggjøre en eller flere av de forrige reglene.
+          * Hvis ingen av time_window_limit eller time_usage_limit er aktiv, kan |LOCK| brukes til å låse enheten.
+          * |LOCK| låser midlertidig en brukerøkt frem til neste gang time_window_limit eller time_usage_limit starter.
+          * |UNLOCK| låser opp brukerøkten som ble låst av time_window_limit eller time_usage_limit.
+          |created_time_millis| er UTC tidststempelet som overstyre etableringen, den er sendt som en streng på grunn av at tidsstempelet ikke passer inn i et heltall. Det er brukt for å bestemme om overstyringen fortsatt skal gjelde. Hvis den nåværende aktive tidsbegrensningsfunksjonen (tidsbrukbegrensning eller tidsvindubegrensning) starter etter at overstyringen ble lagd, ingenting skal gjøres. Også hvis overstyringen ble lagd før den siste endringen i det aktive time_window_limit eller time_usage_window skal det ikke gjelde.
+
+          Flere overstyringen kan sendes, vil den nyeste gjeldende innskrivningen være den som benyttes.</translation>
 <translation id="2906874737073861391">Liste over AppPack-utvidelser</translation>
 <translation id="2907992746861405243">Styrer hvilke av skriverne fra <ph name="BULK_PRINTERS_POLICY" /> som er tilgjengelige for brukerne.
 
@@ -1783,6 +1797,12 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="6155936611791017817">Angi standard tilstand for stor musepeker på påloggingssiden</translation>
 <translation id="6157537876488211233">Kommadelt liste over regler for å omgå proxy-tjener</translation>
 <translation id="6158324314836466367">Navn på bedriftens nettbutikk (avviklet)</translation>
+<translation id="6164955668342404660">Utdatert i M69. Bruk OverrideSecurityRestrictionsOnInsecureOrigin i sted.
+
+      Denne policyen spesifiserer en liste med opprinnelser (URL) som blir behandlet som et sikkerhetsinnhold. Hensikten er å tillate organisasjoner å sette opp en oppstartsserver for intern webutvikling, slik at utviklerne kan teste ut funksjoner som krever sikre sammenhenger uten å måtte distribuere TLS på staging-serveren.
+      Innstilling av en liste over nettadresser i denne policyen har samme effekt som å angi kommandolinjeflagget "--unsafely-treat-unsecure-origin-as-secure" til en kommaseparert liste over de samme nettadressene. Hvis policyen er angitt, vil den overstyre kommandolinjemarkeringen.
+      For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6181608880636987460">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder hvor <ph name="FLASH_PLUGIN_NAME" />-programtillegget ikke skal kunne kjøres automatisk.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder. Denne verdien hentes fra «DefaultPluginsSetting»-regelen hvis den er angitt, eller fra brukerens personlige konfigurasjon hvis den ikke er angitt.</translation>
@@ -1958,6 +1978,11 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="6786967369487349613">Angir katalogen for roamingprofiler</translation>
 <translation id="6810445994095397827">Blokkér JavaScript på disse nettstedene</translation>
 <translation id="681446116407619279">Støttede autentiseringssystemer</translation>
+<translation id="6832455357698286434">
+      Policyen spesifiserer en liste med opprinnelser (URL) eller vertsnavnmønster (som "*.example.com"=) som blir behandlet som sikkert innhold. Hensikten er å tillate organisasjoner å sette opp en oppstartsserver for intern webutvikling, slik at utviklerne kan teste ut funksjoner som krever sikre sammenhenger uten å måtte distribuere TLS på staging-serveren.
+      Innstilling av en liste over nettadresser i denne policyen har samme effekt som å angi kommandolinjeflagget "--unsafely-treat-unsecure-origin-as-secure" til en kommaseparert liste over de samme nettadressene. Hvis policyen er angitt, vil den overstyre kommandolinjemarkeringen.
+     For mer informasjon om sikkert innhold, se jhttps://www.w3.org/TR/secure-contexts/
+      </translation>
 <translation id="6835883744948188639">Vis brukeren en gjentakende melding om at omstart anbefales</translation>
 <translation id="6838056959556423778">Overstyrer reglene for valg av standardskriver i <ph name="PRODUCT_NAME" />.
 
@@ -2311,6 +2336,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7617319494457709698">Med denne retningslinjen kan du spesifisere hvilke utvidelser som kan bruke <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-funksjonen <ph name="CHALLENGE_USER_KEY_FUNCTION" /> til ekstern attestering. Utvidelser må legges til i denne listen for å kunne bruke API-et.
 
           Hvis en utvidelse ikke er på listen, eller hvis listen ikke er angitt, kan ikke API-et kalles opp – i stedet vises en feilkode.</translation>
+<translation id="7620300057302654932">Opprinnelser eller vertsnavnmønstre skal behandles som sikkert innhold.</translation>
 <translation id="7625444193696794922">Angir den frigivende kanalen som denne enheten skal låses til.</translation>
 <translation id="7632724434767231364">Navn på GSSAPI-bibliotek</translation>
 <translation id="7635471475589566552">Konfigurerer programmets språk i <ph name="PRODUCT_NAME" />, og hindrer brukeren i å endre på språket.

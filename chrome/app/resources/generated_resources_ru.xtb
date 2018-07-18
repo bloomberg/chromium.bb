@@ -66,7 +66,6 @@
 <translation id="109758035718544977">Включить звук на сайтах</translation>
 <translation id="1097658378307015415">Сначала войдите как гость, чтобы активировать работу сети <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">Всегда переводить <ph name="LANGUAGE" /></translation>
-<translation id="1108164192735968833">SMS Connect</translation>
 <translation id="1108600514891325577">&amp;Остановить</translation>
 <translation id="1110155001042129815">Подождать</translation>
 <translation id="1112420131909513020">На фоновой вкладке используется Bluetooth.</translation>
@@ -455,7 +454,6 @@
 <translation id="1658424621194652532">Этой странице разрешен доступ к вашему микрофону</translation>
 <translation id="1660204651932907780">Разрешить сайтам воспроизводить звуки (рекомендуется)</translation>
 <translation id="1661156625580498328">Использовать шифрование по алгоритму AES (рекомендуется).</translation>
-<translation id="1661245713600520330">На этой странице перечислены все модули, подключенные к основному процессу, а также модули, которые будут подключены позднее.</translation>
 <translation id="166179487779922818">Слишком короткий пароль.</translation>
 <translation id="1661867754829461514">PIN-код отсутствует</translation>
 <translation id="16620462294541761">К сожалению, не удалось подтвердить пароль. Повторите попытку.</translation>
@@ -606,7 +604,6 @@
 <translation id="1877520246462554164">Не удалось получить токен аутентификации. Чтобы повторить попытку, выйдите из аккаунта и войдите снова.</translation>
 <translation id="1878302395768190018">Выбрать нужные вам параметры можно будет в настройках Chrome в любое время</translation>
 <translation id="1880905663253319515">Удалить сертификат <ph name="CERTIFICATE_NAME" />?</translation>
-<translation id="1883903952484604915">Скачанные</translation>
 <translation id="1886996562706621347">Разрешить запросы на установку обработчиков протоколов (рекомендуется)</translation>
 <translation id="1887442540531652736">Ошибка входа</translation>
 <translation id="1887850431809612466">Версия оборудования</translation>
@@ -743,7 +740,6 @@
 <translation id="21133533946938348">Закрепить вкладку</translation>
 <translation id="2113479184312716848">Открыть &amp;файл...</translation>
 <translation id="2113921862428609753">Доступ к информации о полномочиях</translation>
-<translation id="2114224913786726438">Модули (<ph name="TOTAL_COUNT" />) – Конфликтов не обнаружено</translation>
 <translation id="2114326799768592691">Перезагрузить &amp;фрейм</translation>
 <translation id="2114896190328250491">Фото: <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Отправить на телефон</translation>
@@ -1131,7 +1127,6 @@
 <translation id="268053382412112343">&amp;История</translation>
 <translation id="2683638487103917598">Содержимое папки отсортировано</translation>
 <translation id="2684004000387153598">Чтобы продолжить, нажмите "OK". Затем создайте другой профиль для своего адреса электронной почты, выбрав "Добавить пользователя".</translation>
-<translation id="2686759344028411998">Не удается обнаружить загруженные модули.</translation>
 <translation id="2688196195245426394">Ошибка при регистрации устройства на сервере: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Показать языковые настройки</translation>
 <translation id="2691385045260836588">Модель</translation>
@@ -1513,7 +1508,6 @@
 <translation id="329838636886466101">Восстановить</translation>
 <translation id="3298789223962368867">Введен недопустимый URL.</translation>
 <translation id="32991397311664836">Устройства:</translation>
-<translation id="3300394989536077382">Подписано:</translation>
 <translation id="33022249435934718">GDI-дескрипторы</translation>
 <translation id="3303260552072730022">Неизвестное расширение запустило полноэкранный режим.</translation>
 <translation id="3303818374450886607">Копии</translation>
@@ -2243,6 +2237,7 @@
 <translation id="4467100756425880649">Галерея Интернет-магазина Chrome</translation>
 <translation id="4467101674048705704">Развернуть папку <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Помогите улучшить Chrome и его функции</translation>
+<translation id="4472575034687746823">Начало работы</translation>
 <translation id="4474155171896946103">Добавить все вкладки в закладки…</translation>
 <translation id="4475552974751346499">Искать в скачанных файлах</translation>
 <translation id="4476590490540813026">Спортсмен</translation>
@@ -3094,7 +3089,6 @@
 <translation id="5751545372099101699">4-й объект на панели запуска</translation>
 <translation id="5752453871435543420">Резервное копирование в облаке Chrome</translation>
 <translation id="5756163054456765343">Справочный &amp;центр</translation>
-<translation id="5758823144991844964">Файлы Google Play</translation>
 <translation id="5759728514498647443">"<ph name="APP_NAME" />" может читать документы, отправленные на печать через приложение "<ph name="APP_NAME" />".</translation>
 <translation id="5763751966069581670">USB-устройства не найдены</translation>
 <translation id="5764483294734785780">Со&amp;хранить аудио как...</translation>
@@ -3882,6 +3876,7 @@
 <translation id="6985607387932385770">Принтеры</translation>
 <translation id="6990081529015358884">Недостаточно свободного места</translation>
 <translation id="6990778048354947307">Темная тема</translation>
+<translation id="6991128190741664836">Не сейчас</translation>
 <translation id="6991665348624301627">Выбор места назначения</translation>
 <translation id="6997707937646349884">На ваших устройствах:</translation>
 <translation id="6998711733709403587">Выбрано папок: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
@@ -4303,6 +4298,7 @@
 <translation id="7662283695561029522">Нажмите, чтобы настроить.</translation>
 <translation id="7663719505383602579">Получатель: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Устройство Bluetooth "<ph name="DEVICE_NAME" />" не поддерживается.</translation>
+<translation id="7665369617277396874">Добавить аккаунт</translation>
 <translation id="7671130400130574146">Использовать системные рамки и строку заголовка</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> на странице <ph name="PAGE_TITLE" />.</translation>
 <translation id="7681095912841365527">Сайт может использовать Bluetooth</translation>
@@ -4527,7 +4523,6 @@
 <translation id="7973962044839454485">Не удалось выполнить аутентификацию PPP: неверное имя пользователя или пароль</translation>
 <translation id="7974566588408714340">Подключиться через <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Каемка экрана</translation>
-<translation id="7976555937380554094">Плагин <ph name="PEPPER_PLUGIN_NAME" /> в домене <ph name="PEPPER_PLUGIN_DOMAIN" /> пытается получить доступ к вашему устройству</translation>
 <translation id="7977551819349545646">Обновление Chromebox...</translation>
 <translation id="7978412674231730200">Закрытый ключ</translation>
 <translation id="7979036127916589816">Ошибка синхронизации</translation>
@@ -4603,7 +4598,6 @@
 <translation id="806812017500012252">Упорядочить по заголовкам</translation>
 <translation id="8068253693380742035">Нажмите, чтобы войти</translation>
 <translation id="8069615408251337349">Виртуальный принтер Google</translation>
-<translation id="806972267388474605">Файлы Linux</translation>
 <translation id="8071432093239591881">Печатать как изображение</translation>
 <translation id="8072033737676488034">Телефон будет удален, а режим Better Together отключен.</translation>
 <translation id="8072988827236813198">Закрепить вкладки</translation>
@@ -4672,7 +4666,6 @@
 <translation id="8184318863960255706">Подробнее</translation>
 <translation id="8185331656081929126">Показывать уведомления о новых принтерах в сети</translation>
 <translation id="8186609076106987817">Этот файл отсутствует на сервере.</translation>
-<translation id="8186706823560132848">Программное обеспечение</translation>
 <translation id="8188120771410500975">Проверка правописания &amp;в текстовых полях</translation>
 <translation id="8190193592390505034">Соединение с <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Управление приложениями, расширениями и темами</translation>
@@ -4698,7 +4691,6 @@
 <translation id="8227119283605456246">Прикрепить файл</translation>
 <translation id="8234795456569844941">Чтобы нашим разработчикам было проще решить проблему, опишите, что произошло перед появлением сообщения об ошибке в профиле:</translation>
 <translation id="8234989666557591529">Выберите телефон для разблокировки устройства <ph name="DEVICE_TYPE" /></translation>
-<translation id="8238649969398088015">Совет</translation>
 <translation id="8239020549147958415">Синхронизировать с аккаунтом (<ph name="FULL_NAME" />)</translation>
 <translation id="8241040075392580210">Тучка</translation>
 <translation id="8241806945692107836">Определение конфигурации устройства…</translation>
@@ -5148,7 +5140,6 @@
 <translation id="8957423540740801332">вправо</translation>
 <translation id="895944840846194039">Память JavaScript</translation>
 <translation id="8959810181433034287">Этот пароль будет использоваться контролируемым пользователем для входа. Выберите надежный пароль и сообщите его пользователю.</translation>
-<translation id="8960795431111723921">Мы изучаем этот вопрос.</translation>
 <translation id="8962083179518285172">Скрыть детали</translation>
 <translation id="8962918469425892674">Этот сайт использует датчики движения и освещенности</translation>
 <translation id="8965037249707889821">Введите старый пароль</translation>

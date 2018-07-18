@@ -36,9 +36,11 @@
 <translation id="2397416548179033562">Vis Chrome-menyen</translation>
 <translation id="2424073332829844142">Slå Caps Lock av og på</translation>
 <translation id="2441202986792279177">Bytt raskt mellom vinduer</translation>
+<translation id="2454251766545114447">Skjerm zoom ut</translation>
 <translation id="2478303094958140141">Slå ChromeVox (taletilbakemelding) på eller av</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Rull ned på nettsiden</translation>
+<translation id="2574014812750545982">Tilbakestill zoomnivået på siden</translation>
 <translation id="2596078834055697711">Ta en skjermdump av vinduet</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og så <ph name="TAB" /> eller <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Bytt til inndatametoden for neste språk</translation>
@@ -65,6 +67,7 @@
 <translation id="344577624355799426"><ph name="ALT" /> eller <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Lagre alle åpne sider i det aktive vinduet som bokmerker i en ny mappe</translation>
 <translation id="355103131818127604">Åpne linken i en ny fane i bakgrunnen</translation>
+<translation id="3622741593887335780">Zoom inn (når dokket ELLER fullskjerm forstørrelse aktivert)</translation>
 <translation id="3649256019230929621">Minimerer vinduet</translation>
 <translation id="3655154169297074232">Faner og vinduer</translation>
 <translation id="3668361878347172356">Utfør forrige handling likevel</translation>
@@ -76,6 +79,7 @@
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 til og med 8</translation>
 <translation id="3837047332182291558">Øk lysstyrken på tastaturlyset (bare for tastaturer med bakgrunnslys)</translation>
 <translation id="3976863468609830880">Klikk på det siste ikonet på hyllen</translation>
+<translation id="3994783594793697310">Tilbakestill skjerm zoomnivå</translation>
 <translation id="4026843240379844265">Flytt det aktive vinduet mellom skjermer</translation>
 <translation id="4035482366624727273">Merk alt på siden</translation>
 <translation id="4060703249685950734">Åpne den siste fanen eller det siste vinduet du lukket, på nytt</translation>
@@ -125,12 +129,14 @@
 <translation id="6228457605945141550">Skru ned lysstyrken</translation>
 <translation id="6276708887952587684">Se sidekilden</translation>
 <translation id="6321940490215594447">Åpne loggsiden</translation>
+<translation id="6340769215862220182">Skjerm zoom inn</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Merk teksten til slutten av linjen</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> eller <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
 <translation id="6425378783626925378">Klikk på ikon 1–8 på hyllen</translation>
 <translation id="6435207348963613811">Fremhev det forrige elementet på hyllen</translation>
 <translation id="6445033640292336367">Flytt fanen tilbake til den opprinnelige plasseringen</translation>
+<translation id="6474744297082284761">Zoom ut (når dokket ELLER fullskjerm forstørrelse aktivert)</translation>
 <translation id="649811797655257835">Velg en fil og trykk på <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Åpne vinduet som har vært ubrukt lengst</translation>
 <translation id="666343722268997814">Åpne høyreklikkmenyen for elementet som er fremhevet</translation>

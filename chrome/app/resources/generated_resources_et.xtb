@@ -66,7 +66,6 @@
 <translation id="109758035718544977">Tühista saitide vaigistus</translation>
 <translation id="1097658378307015415">Enne sisselogimist sisenege võrgu <ph name="NETWORK_ID" /> aktiveerimiseks külastajana</translation>
 <translation id="1103523840287552314">Tõlgi alati: <ph name="LANGUAGE" /></translation>
-<translation id="1108164192735968833">SMS Connect</translation>
 <translation id="1108600514891325577">&amp;Peata</translation>
 <translation id="1110155001042129815">Oota</translation>
 <translation id="1112420131909513020">Taustal töötav rakendus kasutab Bluetoothi</translation>
@@ -456,7 +455,6 @@
 <translation id="1658424621194652532">See leht pääseb teie mikrofoni juurde.</translation>
 <translation id="1660204651932907780">Saitidel lubatakse esitada heli (soovitatav)</translation>
 <translation id="1661156625580498328">AES-krüpteerimise jõustamine (soovitatud).</translation>
-<translation id="1661245713600520330">Sellel lehel on loetletud kõik põhiprotsessi laaditud moodulid ja hilisemaks laadimiseks registreeritud moodulid.</translation>
 <translation id="166179487779922818">Parool on liiga lühike.</translation>
 <translation id="1661867754829461514">PIN-kood puudub</translation>
 <translation id="16620462294541761">Kahjuks ei õnnestunud teie parooli kinnitada. Proovige uuesti.</translation>
@@ -607,7 +605,6 @@
 <translation id="1877520246462554164">Autentimismärgi hankimine ebaõnnestus. Uuesti proovimiseks logige välja ja seejärel uuesti sisse.</translation>
 <translation id="1878302395768190018">Seda saate Chrome'i seadetes igal ajal kohandada</translation>
 <translation id="1880905663253319515">Kas kustutada sertifikaat „<ph name="CERTIFICATE_NAME" />”?</translation>
-<translation id="1883903952484604915">Minu failid</translation>
 <translation id="1886996562706621347">Võimalda saitidel küsida luba protokollide vaikimisi töötlemiseks (soovitatav)</translation>
 <translation id="1887442540531652736">Viga sisselogimisel</translation>
 <translation id="1887850431809612466">Riistvara redaktsioon</translation>
@@ -744,7 +741,6 @@
 <translation id="21133533946938348">Kinnita vaheleht</translation>
 <translation id="2113479184312716848">Ava &amp;fail ...</translation>
 <translation id="2113921862428609753">Juurdepääs keskuseteabele</translation>
-<translation id="2114224913786726438">Moodulid (<ph name="TOTAL_COUNT" />) – vastuolusid ei tuvastatud</translation>
 <translation id="2114326799768592691">Laadi &amp;raam uuesti</translation>
 <translation id="2114896190328250491">Foto autor: <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Saada telefoni</translation>
@@ -1130,7 +1126,6 @@
 <translation id="268053382412112343">&amp;Ajalugu</translation>
 <translation id="2683638487103917598">Kaust on sorditud</translation>
 <translation id="2684004000387153598">Jätkamiseks klõpsake nupul OK, seejärel klõpsake valikul Inimese lisamine, et luua oma e-posti aadressi jaoks uus profiil.</translation>
-<translation id="2686759344028411998">Laaditud mooduleid ei saanud tuvastada.</translation>
 <translation id="2688196195245426394">Seadme serveris registreerimisel ilmnes viga: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Kuva keelevalikud</translation>
 <translation id="2691385045260836588">Mudel</translation>
@@ -1512,7 +1507,6 @@
 <translation id="329838636886466101">Paranda</translation>
 <translation id="3298789223962368867">Sisestati vale URL.</translation>
 <translation id="32991397311664836">Seadmed:</translation>
-<translation id="3300394989536077382">Autor:</translation>
 <translation id="33022249435934718">GDI pidemed</translation>
 <translation id="3303260552072730022">Laiendus aktiveeris täisekraanrežiimi.</translation>
 <translation id="3303818374450886607">Koopiad</translation>
@@ -2242,6 +2236,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4467100756425880649">Chrome'i veebipoe galerii</translation>
 <translation id="4467101674048705704">Laienda kausta <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Aidake täiustada Chrome'i funktsioone ja toimivust</translation>
+<translation id="4472575034687746823">Alustamine</translation>
 <translation id="4474155171896946103">Lisa kõik vahelehed järjehoidjatesse...</translation>
 <translation id="4475552974751346499">Otsi allalaadimisi</translation>
 <translation id="4476590490540813026">Sportlane</translation>
@@ -3093,7 +3088,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5751545372099101699">Riiuliüksus 4</translation>
 <translation id="5752453871435543420">Chrome OS-i pilvepõhine varundus</translation>
 <translation id="5756163054456765343">A&amp;bikeskus</translation>
-<translation id="5758823144991844964">Esitatavad failid</translation>
 <translation id="5759728514498647443">Rakenduse <ph name="APP_NAME" /> kaudu printimiseks saadetud dokumente saab lugeda rakenduse <ph name="APP_NAME" /> järgi.</translation>
 <translation id="5763751966069581670">USB-seadmeid ei leitud</translation>
 <translation id="5764483294734785780">Sa&amp;lvesta heli nimega ...</translation>
@@ -3881,6 +3875,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6985607387932385770">Printerid</translation>
 <translation id="6990081529015358884">Ruum sai otsa</translation>
 <translation id="6990778048354947307">Tume teema</translation>
+<translation id="6991128190741664836">Hiljem</translation>
 <translation id="6991665348624301627">Valige sihtkoht</translation>
 <translation id="6997707937646349884">Teie seadmetes:</translation>
 <translation id="6998711733709403587">Valitud on <ph name="SELCTED_FOLDERS_COUNT" /> kausta</translation>
@@ -4302,6 +4297,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7662283695561029522">Puudutage seadistamiseks</translation>
 <translation id="7663719505383602579">Saaja: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Toetamata Bluetooth-seade: „<ph name="DEVICE_NAME" />”.</translation>
+<translation id="7665369617277396874">Konto lisamine</translation>
 <translation id="7671130400130574146">Kasutage süsteemi pealkirjariba ja ääriseid</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> lehel <ph name="PAGE_TITLE" />.</translation>
 <translation id="7681095912841365527">Sait saab kasutada Bluetoothi</translation>
@@ -4526,7 +4522,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7973962044839454485">PPP autentimine ebaõnnestus vale kasutajanime või parooli tõttu</translation>
 <translation id="7974566588408714340">Proovi uuesti, kasutades laiendust <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Üleskannimine</translation>
-<translation id="7976555937380554094"><ph name="PEPPER_PLUGIN_NAME" /> domeenil <ph name="PEPPER_PLUGIN_DOMAIN" /> soovib juurdepääsu teie seadmele</translation>
 <translation id="7977551819349545646">Chromeboxi värskendamine ...</translation>
 <translation id="7978412674231730200">Privaatvõti</translation>
 <translation id="7979036127916589816">Sünkroonimise viga</translation>
@@ -4602,7 +4597,6 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="806812017500012252">Järjesta pealkirja alusel uuesti</translation>
 <translation id="8068253693380742035">Puudutage sisselogimiseks</translation>
 <translation id="8069615408251337349">Google'i pilvprintimine</translation>
-<translation id="806972267388474605">Linuxi failid</translation>
 <translation id="8071432093239591881">Prindi kujutisena</translation>
 <translation id="8072033737676488034">Eemaldage oma telefon ja keelake Better Together</translation>
 <translation id="8072988827236813198">Kinnita vahelehed</translation>
@@ -4671,7 +4665,6 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="8184318863960255706">Lisateave</translation>
 <translation id="8185331656081929126">Kuva märguanne, kui võrgus tuvastatakse mõni uus printer</translation>
 <translation id="8186609076106987817">Server ei leidnud faili.</translation>
-<translation id="8186706823560132848">Tarkvara</translation>
 <translation id="8188120771410500975">&amp;Kontrolli tekstiväljade õigekirja</translation>
 <translation id="8190193592390505034">Ühendamine võrku <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Teie rakenduste, laienduste ja teemade haldamine</translation>
@@ -4697,7 +4690,6 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="8227119283605456246">Manusta fail</translation>
 <translation id="8234795456569844941">Aidake meie spetsialistidel probleemi lahendada. Andke meile teada, mis toimus vahetult enne profiili veateate ilmumist.</translation>
 <translation id="8234989666557591529">Valige seadme <ph name="DEVICE_TYPE" /> avamiseks telefon</translation>
-<translation id="8238649969398088015">Abinõuanne</translation>
 <translation id="8239020549147958415">Sünkrooni kasutajana <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">Pilvine</translation>
 <translation id="8241806945692107836">Seadme konfiguratsiooni määramine ...</translation>
@@ -5148,7 +5140,6 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="8957423540740801332">paremale</translation>
 <translation id="895944840846194039">JavaScripti mälu</translation>
 <translation id="8959810181433034287">Valvatav kasutaja peab kasutama seda parooli sisselogimiseks, nii et valige turvaline parool ja rääkige sellest kindlasti ka valvatava kasutajaga.</translation>
-<translation id="8960795431111723921">Tegeleme praegu selle probleemi uurimisega.</translation>
 <translation id="8962083179518285172">Üksikasjade peitmine</translation>
 <translation id="8962918469425892674">Sait kasutab liikumis- või valgusandureid.</translation>
 <translation id="8965037249707889821">Sisestage vana parool</translation>

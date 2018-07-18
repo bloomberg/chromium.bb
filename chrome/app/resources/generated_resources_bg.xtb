@@ -66,7 +66,6 @@
 <translation id="109758035718544977">Включване на звука за сайтовете</translation>
 <translation id="1097658378307015415">Преди да влезете в профила си, моля, влезте като гост, за да активирате мрежата <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">Винаги да се превежда от <ph name="LANGUAGE" /></translation>
-<translation id="1108164192735968833">Известия за SMS</translation>
 <translation id="1108600514891325577">&amp;Стоп</translation>
 <translation id="1110155001042129815">Изчакване</translation>
 <translation id="1112420131909513020">Раздел на заден план използва Bluetooth</translation>
@@ -453,7 +452,6 @@
 <translation id="1658424621194652532">Тази страница осъществява достъп до микрофона ви.</translation>
 <translation id="1660204651932907780">Разрешаване на сайтовете да възпроизвеждат звук (препоръчително)</translation>
 <translation id="1661156625580498328">Задължително прилагане на AES шифроване (препоръчително).</translation>
-<translation id="1661245713600520330">Тази страница посочва всички модули, заредени в основния процес, и модулите, регистрирани за зареждане по-късно.</translation>
 <translation id="166179487779922818">Паролата е твърде кратка.</translation>
 <translation id="1661867754829461514">Липсва PIN</translation>
 <translation id="16620462294541761">За съжаление паролата ви не можа да бъде потвърдена. Моля, опитайте отново.</translation>
@@ -604,7 +602,6 @@
 <translation id="1877520246462554164">Получаването на означение за удостоверяване не бе успешно. Моля, излезте от профила си и влезте отново в него, за да опитате пак.</translation>
 <translation id="1878302395768190018">Можете да персонализирате това по всяко време от настройките на Chrome</translation>
 <translation id="1880905663253319515">Да се изтрие ли сертификатът „<ph name="CERTIFICATE_NAME" />“?</translation>
-<translation id="1883903952484604915">Моите файлове</translation>
 <translation id="1886996562706621347">Разрешаване на питания от сайтове дали да са манипулаторите по подразбиране за протоколите (препоръчително)</translation>
 <translation id="1887442540531652736">Грешка при влизането</translation>
 <translation id="1887850431809612466">Версия на хардуера</translation>
@@ -741,7 +738,6 @@
 <translation id="21133533946938348">Фиксиране на раздела</translation>
 <translation id="2113479184312716848">&amp;Отваряне на файл...</translation>
 <translation id="2113921862428609753">Достъп до информация за органа</translation>
-<translation id="2114224913786726438">Модули (<ph name="TOTAL_COUNT" />) – Няма открити конфликти</translation>
 <translation id="2114326799768592691">Презареждане на рамката</translation>
 <translation id="2114896190328250491">Снимка от <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Изпращане до телефона</translation>
@@ -1127,7 +1123,6 @@
 <translation id="268053382412112343">&amp;Хронология</translation>
 <translation id="2683638487103917598">Папката е сортирана</translation>
 <translation id="2684004000387153598">За да продължите, кликнете върху „OK“ и след това – върху „Добавяне на човек“, така че да създадете нов потребителски профил за имейл адреса си.</translation>
-<translation id="2686759344028411998">Не могат да бъдат открити никакви заредени модули.</translation>
 <translation id="2688196195245426394">Грешка при регистрирането на устройството в сървъра: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Показване на езиковите опции</translation>
 <translation id="2691385045260836588">Модел</translation>
@@ -1509,7 +1504,6 @@
 <translation id="329838636886466101">Поправяне</translation>
 <translation id="3298789223962368867">Въведен е невалиден URL адрес.</translation>
 <translation id="32991397311664836">Устройства:</translation>
-<translation id="3300394989536077382">Подписано от</translation>
 <translation id="33022249435934718">Манипулатори за GDI обекти</translation>
 <translation id="3303260552072730022">Разширение задейства цял екран.</translation>
 <translation id="3303818374450886607">Копия</translation>
@@ -2241,6 +2235,7 @@
 <translation id="4467100756425880649">Галерия на уеб магазина на Chrome</translation>
 <translation id="4467101674048705704">Разгъване на „<ph name="FOLDER_NAME" />“</translation>
 <translation id="447252321002412580">Помощ за подобряването на функциите и ефективността на Chrome</translation>
+<translation id="4472575034687746823">Първи стъпки</translation>
 <translation id="4474155171896946103">Запазване на отметки към всички раздели…</translation>
 <translation id="4475552974751346499">Търсене във файловете за изтегляне</translation>
 <translation id="4476590490540813026">Спортист</translation>
@@ -3093,7 +3088,6 @@
 <translation id="5751545372099101699">Елемент 4 в лавицата</translation>
 <translation id="5752453871435543420">Резервни копия в облака на Chrome OS</translation>
 <translation id="5756163054456765343">П&amp;омощен център</translation>
-<translation id="5758823144991844964">Файлове в Google Play</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> може да чете документите, които изпращате за отпечатване чрез <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Няма намерени USB устройства</translation>
 <translation id="5764483294734785780">&amp;Запазване на аудиоклипа като...</translation>
@@ -3881,6 +3875,7 @@
 <translation id="6985607387932385770">Принтери</translation>
 <translation id="6990081529015358884">Нямате свободно място</translation>
 <translation id="6990778048354947307">Тъмна тема</translation>
+<translation id="6991128190741664836">По-късно</translation>
 <translation id="6991665348624301627">Избиране на местоназначение</translation>
 <translation id="6997707937646349884">На устройствата си:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> избрани папки</translation>
@@ -4302,6 +4297,7 @@
 <translation id="7662283695561029522">Докоснете, за да конфигурирате</translation>
 <translation id="7663719505383602579">Приемник: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Неподдържано устройство с Bluetooth: <ph name="DEVICE_NAME" />.</translation>
+<translation id="7665369617277396874">Добавяне на профил</translation>
 <translation id="7671130400130574146">Използване на системната заглавна лента и контурите</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, в страницата „<ph name="PAGE_TITLE" />“.</translation>
 <translation id="7681095912841365527">Сайтът може да използва Bluetooth</translation>
@@ -4526,7 +4522,6 @@
 <translation id="7973962044839454485">Удостоверяването през PPP не бе успешно поради неправилно потребителско име или парола</translation>
 <translation id="7974566588408714340">Нов опит посредством <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Допълнителна област</translation>
-<translation id="7976555937380554094"><ph name="PEPPER_PLUGIN_NAME" /> от <ph name="PEPPER_PLUGIN_DOMAIN" /> иска да осъществи достъп до устройството ви</translation>
 <translation id="7977551819349545646">Chromebox се актуализира...</translation>
 <translation id="7978412674231730200">Личен ключ</translation>
 <translation id="7979036127916589816">Грешка при синхронизирането</translation>
@@ -4602,7 +4597,6 @@
 <translation id="806812017500012252">Подреждане по азбучен ред</translation>
 <translation id="8068253693380742035">Докоснете за вход в профила си</translation>
 <translation id="8069615408251337349">Google Отпечатване в облак</translation>
-<translation id="806972267388474605">Файлове за Linux</translation>
 <translation id="8071432093239591881">Отпечатване като изображение</translation>
 <translation id="8072033737676488034">Премахване на телефона ви и деактивиране на По-добре заедно</translation>
 <translation id="8072988827236813198">Фиксиране на разделите</translation>
@@ -4671,7 +4665,6 @@
 <translation id="8184318863960255706">Още информация</translation>
 <translation id="8185331656081929126">Показване на известия, когато в мрежата бъдат открити нови принтери</translation>
 <translation id="8186609076106987817">Сървърът не можа да намери файла.</translation>
-<translation id="8186706823560132848">Софтуер</translation>
 <translation id="8188120771410500975">&amp;Проверка на правописа на текстовите полета</translation>
 <translation id="8190193592390505034">Осъществява се връзка с: <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Управление на вашите приложения, разширения и теми</translation>
@@ -4697,7 +4690,6 @@
 <translation id="8227119283605456246">Прикачване на файл</translation>
 <translation id="8234795456569844941">Моля, помогнете на инженерите ни да отстранят този проблем. Кажете ни какво се случи, точно преди да получите съобщението за грешка в потребителския профил:</translation>
 <translation id="8234989666557591529">Избиране на телефон за отключване на вашия <ph name="DEVICE_TYPE" /></translation>
-<translation id="8238649969398088015">Помощен съвет</translation>
 <translation id="8239020549147958415">Синхронизиране като <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">Бяло облаче</translation>
 <translation id="8241806945692107836">Конфигурацията на устройството се определя...</translation>
@@ -5147,7 +5139,6 @@
 <translation id="8957423540740801332">надясно</translation>
 <translation id="895944840846194039">Памет за JavaScript</translation>
 <translation id="8959810181433034287">Контролираният потребител ще трябва да влиза с тази парола, затова я изберете надеждна и не забравяйте да я споделите с него.</translation>
-<translation id="8960795431111723921">Понастоящем проучваме този проблем.</translation>
 <translation id="8962083179518285172">Скриване на подробностите</translation>
 <translation id="8962918469425892674">Този сайт използва сензорите за движение или светлина.</translation>
 <translation id="8965037249707889821">Въведете старата парола</translation>
