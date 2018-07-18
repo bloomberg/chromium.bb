@@ -131,7 +131,11 @@ static void GetAudioDeviceInfo(bool is_input,
   std::vector<AudioObjectID> device_ids =
       core_audio_mac::GetAllAudioDeviceIDs();
   for (AudioObjectID device_id : device_ids) {
-    if (core_audio_mac::GetNumStreams(device_id, is_input) == 0)
+    const bool is_valid_for_direction =
+        (is_input ? core_audio_mac::IsInputDevice(device_id)
+                  : core_audio_mac::IsOutputDevice(device_id));
+
+    if (!is_valid_for_direction)
       continue;
 
     base::Optional<std::string> unique_id =
