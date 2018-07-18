@@ -326,6 +326,10 @@ FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in) {
 ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
   DCHECK(!IsRoot(sync_entity));  // Root shouldn't ever go over the wire.
 
+  // Backwards compatibility with old (pre-specifics) protocol.
+  if (sync_entity.has_bookmarkdata())
+    return BOOKMARKS;
+
   ModelType specifics_type = GetModelTypeFromSpecifics(sync_entity.specifics());
   if (specifics_type != UNSPECIFIED)
     return specifics_type;
