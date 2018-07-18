@@ -8,6 +8,7 @@
 
 #include "chrome/browser/vr/ui.h"
 
+#include "base/numerics/math_constants.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/vr/content_input_delegate.h"
@@ -35,8 +36,15 @@
 
 namespace vr {
 
-UiInitialState::UiInitialState() = default;
-UiInitialState::UiInitialState(const UiInitialState& other) = default;
+namespace {
+
+float Clamp(float value, float min, float max) {
+  return std::max(min, std::min(value, max));
+}
+
+constexpr float kMargin = 1.f * base::kPiFloat / 180;
+
+}  // namespace
 
 Ui::Ui(UiBrowserInterface* browser,
        PlatformInputHandler* content_input_forwarder,
@@ -368,6 +376,10 @@ void Ui::OnKeyboardHidden() {
   input_manager_->OnKeyboardHidden();
 }
 
+void Ui::OnPause() {
+  input_manager_->OnPause();
+}
+
 void Ui::OnAppButtonClicked() {
   // App button clicks should be a no-op when browsing mode is disabled.
   if (model_->browsing_disabled)
@@ -617,6 +629,17 @@ gfx::Transform Ui::GetContentWorldSpaceTransform() {
   return GetContentElement()->world_space_transform();
 }
 
+std::vector<TabModel>::iterator Ui::FindTab(int id,
+                                            std::vector<TabModel>* tabs) {
+  return std::find_if(tabs->begin(), tabs->end(),
+                      [id](const TabModel& tab) { return tab.id == id; });
+}
+
+bool Ui::OnBeginFrame(const base::TimeTicks& current_time,
+                      const gfx::Transform& head_pose) {
+  return scene_->OnBeginFrame(current_time, head_pose);
+}
+
 bool Ui::SceneHasDirtyTextures() const {
   return scene_->HasDirtyTextures();
 }
@@ -625,10 +648,125 @@ void Ui::UpdateSceneTextures() {
   scene_->UpdateTextures();
 }
 
-std::vector<TabModel>::iterator Ui::FindTab(int id,
-                                            std::vector<TabModel>* tabs) {
-  return std::find_if(tabs->begin(), tabs->end(),
-                      [id](const TabModel& tab) { return tab.id == id; });
+void Ui::Draw(const vr::RenderInfo& info) {
+  ui_renderer_->Draw(info);
+}
+
+void Ui::DrawWebVrOverlayForeground(const vr::RenderInfo& info) {
+  ui_renderer_->DrawWebVrOverlayForeground(info);
+}
+
+UiScene::Elements Ui::GetWebVrOverlayElementsToDraw() {
+  return scene_->GetWebVrOverlayElementsToDraw();
+}
+
+gfx::Rect Ui::CalculatePixelSpaceRect(const gfx::Size& texture_size,
+                                      const gfx::RectF& texture_rect) {
+  const gfx::RectF rect =
+      ScaleRect(texture_rect, static_cast<float>(texture_size.width()),
+                static_cast<float>(texture_size.height()));
+  return gfx::Rect(rect.x(), rect.y(), rect.width(), rect.height());
+}
+
+void Ui::HandleInput(base::TimeTicks current_time,
+                     const RenderInfo& render_info,
+                     const ControllerModel& controller_model,
+                     ReticleModel* reticle_model,
+                     InputEventList* input_event_list) {
+  input_manager_->HandleInput(current_time, render_info, controller_model,
+                              reticle_model, input_event_list);
+}
+
+Ui::FovRectangle Ui::GetMinimalFov(
+    const gfx::Transform& view_matrix,
+    const std::vector<const UiElement*>& elements,
+    const Ui::FovRectangle& fov_recommended,
+    float z_near) {
+  // Calculate boundary of Z near plane in view space.
+  float z_near_left =
+      -z_near * std::tan(fov_recommended.left * base::kPiFloat / 180);
+  float z_near_right =
+      z_near * std::tan(fov_recommended.right * base::kPiFloat / 180);
+  float z_near_bottom =
+      -z_near * std::tan(fov_recommended.bottom * base::kPiFloat / 180);
+  float z_near_top =
+      z_near * std::tan(fov_recommended.top * base::kPiFloat / 180);
+
+  float left = z_near_right;
+  float right = z_near_left;
+  float bottom = z_near_top;
+  float top = z_near_bottom;
+
+  bool has_visible_element = false;
+
+  for (const auto* element : elements) {
+    gfx::Point3F left_bottom{-0.5, -0.5, 0};
+    gfx::Point3F left_top{-0.5, 0.5, 0};
+    gfx::Point3F right_bottom{0.5, -0.5, 0};
+    gfx::Point3F right_top{0.5, 0.5, 0};
+
+    gfx::Transform transform = element->world_space_transform();
+    transform.ConcatTransform(view_matrix);
+
+    // Transform to view space.
+    transform.TransformPoint(&left_bottom);
+    transform.TransformPoint(&left_top);
+    transform.TransformPoint(&right_bottom);
+    transform.TransformPoint(&right_top);
+
+    // Project point to Z near plane in view space.
+    left_bottom.Scale(-z_near / left_bottom.z());
+    left_top.Scale(-z_near / left_top.z());
+    right_bottom.Scale(-z_near / right_bottom.z());
+    right_top.Scale(-z_near / right_top.z());
+
+    // Find bounding box on z near plane.
+    float bounds_left = std::min(
+        {left_bottom.x(), left_top.x(), right_bottom.x(), right_top.x()});
+    float bounds_right = std::max(
+        {left_bottom.x(), left_top.x(), right_bottom.x(), right_top.x()});
+    float bounds_bottom = std::min(
+        {left_bottom.y(), left_top.y(), right_bottom.y(), right_top.y()});
+    float bounds_top = std::max(
+        {left_bottom.y(), left_top.y(), right_bottom.y(), right_top.y()});
+
+    // Ignore non visible elements.
+    if (bounds_left >= z_near_right || bounds_right <= z_near_left ||
+        bounds_bottom >= z_near_top || bounds_top <= z_near_bottom ||
+        bounds_left == bounds_right || bounds_bottom == bounds_top) {
+      continue;
+    }
+
+    // Clamp to Z near plane's boundary.
+    bounds_left = Clamp(bounds_left, z_near_left, z_near_right);
+    bounds_right = Clamp(bounds_right, z_near_left, z_near_right);
+    bounds_bottom = Clamp(bounds_bottom, z_near_bottom, z_near_top);
+    bounds_top = Clamp(bounds_top, z_near_bottom, z_near_top);
+
+    left = std::min(bounds_left, left);
+    right = std::max(bounds_right, right);
+    bottom = std::min(bounds_bottom, bottom);
+    top = std::max(bounds_top, top);
+    has_visible_element = true;
+  }
+
+  if (!has_visible_element) {
+    return Ui::FovRectangle{0.f, 0.f, 0.f, 0.f};
+  }
+
+  // Add a small margin to fix occasional border clipping due to precision.
+  const float margin = std::tan(kMargin) * z_near;
+  left = std::max(left - margin, z_near_left);
+  right = std::min(right + margin, z_near_right);
+  bottom = std::max(bottom - margin, z_near_bottom);
+  top = std::min(top + margin, z_near_top);
+
+  float left_degrees = std::atan(-left / z_near) * 180 / base::kPiFloat;
+  float right_degrees = std::atan(right / z_near) * 180 / base::kPiFloat;
+  float bottom_degrees = std::atan(-bottom / z_near) * 180 / base::kPiFloat;
+  float top_degrees = std::atan(top / z_near) * 180 / base::kPiFloat;
+  return Ui::FovRectangle{left_degrees, right_degrees, bottom_degrees,
+                          top_degrees};
 }
 
 }  // namespace vr
