@@ -544,7 +544,6 @@ bool MockConnectionManager::ProcessGetUpdates(
   const GetUpdatesMessage& gu = csm->get_updates();
   num_get_updates_requests_++;
   EXPECT_FALSE(gu.has_from_timestamp());
-  EXPECT_FALSE(gu.has_requested_types());
 
   if (fail_non_periodic_get_updates_) {
     EXPECT_EQ(sync_pb::SyncEnums::PERIODIC, gu.get_updates_origin());
@@ -554,7 +553,6 @@ bool MockConnectionManager::ProcessGetUpdates(
   // the types requested by the client.  If this fails, it probably indicates
   // a test bug.
   EXPECT_TRUE(gu.fetch_folders());
-  EXPECT_FALSE(gu.has_requested_types());
   if (update_queue_.empty()) {
     GetUpdateResponse();
   }

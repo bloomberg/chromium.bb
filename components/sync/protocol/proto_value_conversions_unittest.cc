@@ -43,59 +43,76 @@ namespace syncer {
 namespace {
 
 // Keep this file in sync with the .proto files in this directory.
-class ProtoValueConversionsTest : public testing::Test {
- protected:
-  template <class T>
-  void TestSpecificsToValue(
-      std::unique_ptr<base::DictionaryValue> (*specifics_to_value)(const T&)) {
-    const T& specifics(T::default_instance());
-    std::unique_ptr<base::DictionaryValue> value =
-        specifics_to_value(specifics);
-    // We can't do much but make sure that this doesn't crash.
-  }
-};
 
-static_assert(42 == syncer::MODEL_TYPE_COUNT,
-              "When adding a new type, add a unit test for "
-              "{NewType}SpecificsToValue below.");
+#define DEFINE_SPECIFICS_TO_VALUE_TEST(Key)                         \
+  TEST(ProtoValueConversionsTest, Proto_##Key##_SpecificsToValue) { \
+    sync_pb::EntitySpecifics specifics;                             \
+    specifics.mutable_##Key();                                      \
+    std::unique_ptr<base::DictionaryValue> value(                   \
+        EntitySpecificsToValue(specifics));                         \
+    EXPECT_EQ(1, static_cast<int>(value->size()));                  \
+  }
 
 // We'd also like to check if we changed any field in our messages. However,
 // that's hard to do: sizeof could work, but it's platform-dependent.
 // default_instance().ByteSize() won't change for most changes, since most of
 // our fields are optional. So we just settle for comments in the proto files.
 
-TEST_F(ProtoValueConversionsTest, EncryptedDataToValue) {
-  TestSpecificsToValue(EncryptedDataToValue);
-}
+DEFINE_SPECIFICS_TO_VALUE_TEST(encrypted);
 
-TEST_F(ProtoValueConversionsTest, SessionHeaderToValue) {
-  TestSpecificsToValue(SessionHeaderToValue);
-}
+static_assert(42 == syncer::MODEL_TYPE_COUNT,
+              "When adding a new field, add a DEFINE_SPECIFICS_TO_VALUE_TEST "
+              "for your field below, and optionally a test for the specific "
+              "conversions.");
 
-TEST_F(ProtoValueConversionsTest, SessionTabToValue) {
-  TestSpecificsToValue(SessionTabToValue);
-}
+DEFINE_SPECIFICS_TO_VALUE_TEST(app);
+DEFINE_SPECIFICS_TO_VALUE_TEST(app_list);
+DEFINE_SPECIFICS_TO_VALUE_TEST(app_notification);
+DEFINE_SPECIFICS_TO_VALUE_TEST(app_setting);
+DEFINE_SPECIFICS_TO_VALUE_TEST(arc_package);
+DEFINE_SPECIFICS_TO_VALUE_TEST(article);
+DEFINE_SPECIFICS_TO_VALUE_TEST(autofill);
+DEFINE_SPECIFICS_TO_VALUE_TEST(autofill_profile);
+DEFINE_SPECIFICS_TO_VALUE_TEST(autofill_wallet);
+DEFINE_SPECIFICS_TO_VALUE_TEST(bookmark);
+DEFINE_SPECIFICS_TO_VALUE_TEST(device_info);
+DEFINE_SPECIFICS_TO_VALUE_TEST(dictionary);
+DEFINE_SPECIFICS_TO_VALUE_TEST(experiments);
+DEFINE_SPECIFICS_TO_VALUE_TEST(extension);
+DEFINE_SPECIFICS_TO_VALUE_TEST(extension_setting);
+DEFINE_SPECIFICS_TO_VALUE_TEST(favicon_image);
+DEFINE_SPECIFICS_TO_VALUE_TEST(favicon_tracking);
+DEFINE_SPECIFICS_TO_VALUE_TEST(history_delete_directive);
+DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user);
+DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_setting);
+DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_shared_setting);
+DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_whitelist);
+DEFINE_SPECIFICS_TO_VALUE_TEST(mountain_share);
+DEFINE_SPECIFICS_TO_VALUE_TEST(nigori);
+DEFINE_SPECIFICS_TO_VALUE_TEST(password);
+DEFINE_SPECIFICS_TO_VALUE_TEST(preference);
+DEFINE_SPECIFICS_TO_VALUE_TEST(printer);
+DEFINE_SPECIFICS_TO_VALUE_TEST(priority_preference);
+DEFINE_SPECIFICS_TO_VALUE_TEST(reading_list);
+DEFINE_SPECIFICS_TO_VALUE_TEST(search_engine);
+DEFINE_SPECIFICS_TO_VALUE_TEST(session);
+DEFINE_SPECIFICS_TO_VALUE_TEST(synced_notification);
+DEFINE_SPECIFICS_TO_VALUE_TEST(synced_notification_app_info);
+DEFINE_SPECIFICS_TO_VALUE_TEST(theme);
+DEFINE_SPECIFICS_TO_VALUE_TEST(typed_url);
+DEFINE_SPECIFICS_TO_VALUE_TEST(user_consent);
+DEFINE_SPECIFICS_TO_VALUE_TEST(user_event);
+DEFINE_SPECIFICS_TO_VALUE_TEST(wallet_metadata);
+DEFINE_SPECIFICS_TO_VALUE_TEST(wifi_credential);
 
-TEST_F(ProtoValueConversionsTest, SessionWindowToValue) {
-  TestSpecificsToValue(SessionWindowToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, TabNavigationToValue) {
-  TestSpecificsToValue(TabNavigationToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, NavigationRedirectToValue) {
-  TestSpecificsToValue(NavigationRedirectToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, PasswordSpecifics) {
+TEST(ProtoValueConversionsTest, PasswordSpecifics) {
   sync_pb::PasswordSpecifics specifics;
   specifics.mutable_client_only_encrypted_data();
   auto value = PasswordSpecificsToValue(specifics);
   EXPECT_FALSE(value->Get("client_only_encrypted_data", nullptr));
 }
 
-TEST_F(ProtoValueConversionsTest, PasswordSpecificsData) {
+TEST(ProtoValueConversionsTest, PasswordSpecificsData) {
   sync_pb::PasswordSpecificsData specifics;
   specifics.set_password_value("secret");
   std::unique_ptr<base::DictionaryValue> value(
@@ -106,15 +123,7 @@ TEST_F(ProtoValueConversionsTest, PasswordSpecificsData) {
   EXPECT_EQ("<redacted>", password_value);
 }
 
-TEST_F(ProtoValueConversionsTest, AppListSpecificsToValue) {
-  TestSpecificsToValue(AppListSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, AppNotificationToValue) {
-  TestSpecificsToValue(AppNotificationToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, AppSettingSpecificsToValue) {
+TEST(ProtoValueConversionsTest, AppSettingSpecificsToValue) {
   sync_pb::AppNotificationSettings specifics;
   specifics.set_disabled(true);
   specifics.set_oauth_client_id("some_id_value");
@@ -129,27 +138,7 @@ TEST_F(ProtoValueConversionsTest, AppSettingSpecificsToValue) {
   EXPECT_EQ("some_id_value", oauth_client_id_value);
 }
 
-TEST_F(ProtoValueConversionsTest, AppSpecificsToValue) {
-  TestSpecificsToValue(AppSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, ArcPackageSpecificsToValue) {
-  TestSpecificsToValue(ArcPackageSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, ArticleSpecificsToValue) {
-  TestSpecificsToValue(ArticleSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, AutofillSpecificsToValue) {
-  TestSpecificsToValue(AutofillSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, AutofillProfileSpecificsToValue) {
-  TestSpecificsToValue(AutofillProfileSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, AutofillWalletSpecificsToValue) {
+TEST(ProtoValueConversionsTest, AutofillWalletSpecificsToValue) {
   sync_pb::AutofillWalletSpecifics specifics;
   specifics.mutable_masked_card()->set_name_on_card("Igloo");
   specifics.mutable_address()->set_recipient_name("John");
@@ -170,15 +159,7 @@ TEST_F(ProtoValueConversionsTest, AutofillWalletSpecificsToValue) {
   EXPECT_TRUE(value->Get("address", nullptr));
 }
 
-TEST_F(ProtoValueConversionsTest, WalletMetadataSpecificsToValue) {
-  TestSpecificsToValue(WalletMetadataSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, BookmarkSpecificsToValue) {
-  TestSpecificsToValue(BookmarkSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, BookmarkSpecificsData) {
+TEST(ProtoValueConversionsTest, BookmarkSpecificsData) {
   const base::Time creation_time(base::Time::Now());
   const std::string icon_url = "http://www.google.com/favicon.ico";
   sync_pb::BookmarkSpecifics specifics;
@@ -218,23 +199,7 @@ TEST_F(ProtoValueConversionsTest, BookmarkSpecificsData) {
   EXPECT_EQ("value2", meta_value);
 }
 
-TEST_F(ProtoValueConversionsTest, LinkedAppIconInfoToValue) {
-  TestSpecificsToValue(LinkedAppIconInfoToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, PriorityPreferenceSpecificsToValue) {
-  TestSpecificsToValue(PriorityPreferenceSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, DeviceInfoSpecificsToValue) {
-  TestSpecificsToValue(DeviceInfoSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, DictionarySpecificsToValue) {
-  TestSpecificsToValue(DictionarySpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, ExperimentsSpecificsToValue) {
+TEST(ProtoValueConversionsTest, ExperimentsSpecificsToValue) {
 #define TEST_EXPERIMENT_ENABLED_FIELD(field) \
   { \
     sync_pb::ExperimentsSpecifics specifics; \
@@ -252,173 +217,17 @@ TEST_F(ProtoValueConversionsTest, ExperimentsSpecificsToValue) {
     EXPECT_FALSE(field_enabled); \
   }
 
-  TEST_EXPERIMENT_ENABLED_FIELD(keystore_encryption)
-  TEST_EXPERIMENT_ENABLED_FIELD(history_delete_directives)
-  TEST_EXPERIMENT_ENABLED_FIELD(autofill_culling)
-  TEST_EXPERIMENT_ENABLED_FIELD(pre_commit_update_avoidance)
-  TEST_EXPERIMENT_ENABLED_FIELD(gcm_channel)
-  TEST_EXPERIMENT_ENABLED_FIELD(gcm_invalidations)
+  TEST_EXPERIMENT_ENABLED_FIELD(keystore_encryption);
+  TEST_EXPERIMENT_ENABLED_FIELD(history_delete_directives);
+  TEST_EXPERIMENT_ENABLED_FIELD(autofill_culling);
+  TEST_EXPERIMENT_ENABLED_FIELD(pre_commit_update_avoidance);
+  TEST_EXPERIMENT_ENABLED_FIELD(gcm_channel);
+  TEST_EXPERIMENT_ENABLED_FIELD(gcm_invalidations);
 
 #undef TEST_EXPERIMENT_ENABLED_FIELD
 }
 
-TEST_F(ProtoValueConversionsTest, ExtensionSettingSpecificsToValue) {
-  TestSpecificsToValue(ExtensionSettingSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, ExtensionSpecificsToValue) {
-  TestSpecificsToValue(ExtensionSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, FaviconImageSpecificsToValue) {
-  TestSpecificsToValue(FaviconImageSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, FaviconTrackingSpecificsToValue) {
-  TestSpecificsToValue(FaviconTrackingSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, HistoryDeleteDirectiveSpecificsToValue) {
-  TestSpecificsToValue(HistoryDeleteDirectiveSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, ManagedUserSettingSpecificsToValue) {
-  TestSpecificsToValue(ManagedUserSettingSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, ManagedUserSpecificsToValue) {
-  TestSpecificsToValue(ManagedUserSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, ManagedUserSharedSettingSpecificsToValue) {
-  TestSpecificsToValue(ManagedUserSharedSettingSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, ManagedUserWhitelistSpecificsToValue) {
-  TestSpecificsToValue(ManagedUserWhitelistSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, MountainShareSpecificsToValue) {
-  TestSpecificsToValue(MountainShareSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, NigoriSpecificsToValue) {
-  TestSpecificsToValue(NigoriSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, PasswordSpecificsToValue) {
-  TestSpecificsToValue(PasswordSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, PreferenceSpecificsToValue) {
-  TestSpecificsToValue(PreferenceSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, PrinterSpecificsToValue) {
-  TestSpecificsToValue(PrinterSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, ReadingListSpecificsToValue) {
-  TestSpecificsToValue(ReadingListSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, SearchEngineSpecificsToValue) {
-  TestSpecificsToValue(SearchEngineSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, SessionSpecificsToValue) {
-  TestSpecificsToValue(SessionSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, SyncedNotificationAppInfoSpecificsToValue) {
-  TestSpecificsToValue(SyncedNotificationAppInfoSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, SyncedNotificationSpecificsToValue) {
-  TestSpecificsToValue(SyncedNotificationSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, ThemeSpecificsToValue) {
-  TestSpecificsToValue(ThemeSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, TypedUrlSpecificsToValue) {
-  TestSpecificsToValue(TypedUrlSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, UserConsentSpecificsToValue) {
-  TestSpecificsToValue(UserConsentSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, UserEventSpecificsToValue) {
-  TestSpecificsToValue(UserEventSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, WifiCredentialSpecificsToValue) {
-  TestSpecificsToValue(WifiCredentialSpecificsToValue);
-}
-
-// TODO(akalin): Figure out how to better test EntitySpecificsToValue.
-
-TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
-  static_assert(42 == syncer::MODEL_TYPE_COUNT,
-                "When adding a new type, add its field below.");
-
-  sync_pb::EntitySpecifics specifics;
-// Touch the extensions to make sure it shows up in the generated
-// value.
-#define SET_FIELD(key) (void)specifics.mutable_##key()
-
-  SET_FIELD(app);
-  SET_FIELD(app_list);
-  SET_FIELD(app_notification);
-  SET_FIELD(app_setting);
-  SET_FIELD(arc_package);
-  SET_FIELD(article);
-  SET_FIELD(autofill);
-  SET_FIELD(autofill_profile);
-  SET_FIELD(autofill_wallet);
-  SET_FIELD(bookmark);
-  SET_FIELD(device_info);
-  SET_FIELD(dictionary);
-  SET_FIELD(experiments);
-  SET_FIELD(extension);
-  SET_FIELD(extension_setting);
-  SET_FIELD(favicon_image);
-  SET_FIELD(favicon_tracking);
-  SET_FIELD(history_delete_directive);
-  SET_FIELD(managed_user);
-  SET_FIELD(managed_user_setting);
-  SET_FIELD(managed_user_shared_setting);
-  SET_FIELD(managed_user_whitelist);
-  SET_FIELD(mountain_share);
-  SET_FIELD(nigori);
-  SET_FIELD(password);
-  SET_FIELD(preference);
-  SET_FIELD(printer);
-  SET_FIELD(priority_preference);
-  SET_FIELD(reading_list);
-  SET_FIELD(search_engine);
-  SET_FIELD(session);
-  SET_FIELD(synced_notification);
-  SET_FIELD(synced_notification_app_info);
-  SET_FIELD(theme);
-  SET_FIELD(typed_url);
-  SET_FIELD(user_consent);
-  SET_FIELD(user_event);
-  SET_FIELD(wallet_metadata);
-  SET_FIELD(wifi_credential);
-
-#undef SET_FIELD
-
-  std::unique_ptr<base::DictionaryValue> value(
-      EntitySpecificsToValue(specifics));
-  EXPECT_EQ(MODEL_TYPE_COUNT - FIRST_REAL_MODEL_TYPE -
-                (LAST_PROXY_TYPE - FIRST_PROXY_TYPE + 1),
-            static_cast<int>(value->size()));
-}
-
-TEST_F(ProtoValueConversionsTest, UniquePositionToValue) {
+TEST(ProtoValueConversionsTest, UniquePositionToValue) {
   sync_pb::SyncEntity entity;
   entity.mutable_unique_position()->set_custom_compressed_v1("test");
 
@@ -431,7 +240,7 @@ TEST_F(ProtoValueConversionsTest, UniquePositionToValue) {
   EXPECT_EQ(expected_unique_position, unique_position);
 }
 
-TEST_F(ProtoValueConversionsTest, SyncEntityToValueIncludeSpecifics) {
+TEST(ProtoValueConversionsTest, SyncEntityToValueIncludeSpecifics) {
   sync_pb::SyncEntity entity;
   entity.mutable_specifics();
 
@@ -463,7 +272,7 @@ bool ValueHasSpecifics(const base::DictionaryValue& value,
 
 // Create a ClientToServerMessage with an EntitySpecifics.  Converting it to
 // a value should respect the |include_specifics| flag.
-TEST_F(ProtoValueConversionsTest, ClientToServerMessageToValue) {
+TEST(ProtoValueConversionsTest, ClientToServerMessageToValue) {
   sync_pb::ClientToServerMessage message;
   sync_pb::CommitMessage* commit_message = message.mutable_commit();
   sync_pb::SyncEntity* entity = commit_message->add_entries();
@@ -484,7 +293,7 @@ TEST_F(ProtoValueConversionsTest, ClientToServerMessageToValue) {
 
 // Create a ClientToServerResponse with an EntitySpecifics.  Converting it to
 // a value should respect the |include_specifics| flag.
-TEST_F(ProtoValueConversionsTest, ClientToServerResponseToValue) {
+TEST(ProtoValueConversionsTest, ClientToServerResponseToValue) {
   sync_pb::ClientToServerResponse message;
   sync_pb::GetUpdatesResponse* response = message.mutable_get_updates();
   sync_pb::SyncEntity* entity = response->add_entries();

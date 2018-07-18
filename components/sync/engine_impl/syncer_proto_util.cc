@@ -364,7 +364,6 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
     ModelTypeSet* partial_failure_data_types) {
   DCHECK(response);
   DCHECK(!msg->get_updates().has_from_timestamp());   // Deprecated.
-  DCHECK(!msg->get_updates().has_requested_types());  // Deprecated.
 
   // Add must-have fields.
   SetProtocolVersion(msg);
