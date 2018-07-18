@@ -127,6 +127,7 @@ class BaseGitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
       self.patch_ref = None
       self.patch_repo = None
       self.rebase_patch_ref = True
+      self.reset_patch_ref = True
 
   sample_git_import = """blob
 mark :1
@@ -1011,12 +1012,18 @@ class GerritChangesFakeRepo(fake_repos.FakeReposBase):
   def populateGit(self):
     # Creates a tree that looks like this:
     #
-    #           6 refs/changes/35/1235/1
-    #          /
-    #         5 refs/changes/34/1234/1
-    #        /
+    #       6 refs/changes/35/1235/1
+    #       |
+    #       5 refs/changes/34/1234/1
+    #       |
     # 1--2--3--4 refs/heads/master
-
+    #    |  |
+    #    |  11(5)--12 refs/heads/master-with-5
+    #    |
+    #    7--8--9 refs/heads/feature
+    #       |
+    #       10 refs/changes/36/1236/1
+    #
 
     self._commit_git('repo_1', {'commit 1': 'touched'})
     self._commit_git('repo_1', {'commit 2': 'touched'})
@@ -1035,6 +1042,30 @@ class GerritChangesFakeRepo(fake_repos.FakeReposBase):
                       'change': '1235'})
     self._create_ref('repo_1', 'refs/changes/35/1235/1', 6)
 
+    # Create a refs/heads/feature branch on top of commit 2, consisting of three
+    # commits.
+    self._commit_git('repo_1', {'commit 7': 'touched'}, base=2)
+    self._commit_git('repo_1', {'commit 8': 'touched'})
+    self._commit_git('repo_1', {'commit 9': 'touched'})
+    self._create_ref('repo_1', 'refs/heads/feature', 9)
+
+    # Create a change of top of commit 8.
+    self._commit_git('repo_1',
+                     {'commit 10': 'touched',
+                      'change': '1236'},
+                     base=8)
+    self._create_ref('repo_1', 'refs/changes/36/1236/1', 10)
+
+    # Create a refs/heads/master-with-5 on top of commit 3 which is a branch
+    # where refs/changes/34/1234/1 (commit 5) has already landed as commit 11.
+    self._commit_git('repo_1',
+                     # This is really commit 11, but has the changes of commit 5
+                     {'commit 5': 'touched',
+                      'change': '1234'},
+                     base=3)
+    self._commit_git('repo_1', {'commit 12': 'touched'})
+    self._create_ref('repo_1', 'refs/heads/master-with-5', 12)
+
 
 class GerritChangesTest(fake_repos.FakeReposTestBase):
   FAKE_REPOS_CLASS = GerritChangesFakeRepo
@@ -1051,6 +1082,18 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
     git_cache.Mirror.SetCachePath(self.mirror)
     self.addCleanup(rmtree, self.mirror)
     self.addCleanup(git_cache.Mirror.SetCachePath, None)
+
+  def assertCommits(self, commits):
+    """Check that all, and only |commits| are present in the current checkout.
+    """
+    for i in commits:
+      name = os.path.join(self.root_dir, 'commit ' + str(i))
+      self.assertTrue(os.path.exists(name))
+
+    all_commits = set(range(1, len(self.FAKE_REPOS.git_hashes['repo_1'])))
+    for i in all_commits - set(commits):
+      name = os.path.join(self.root_dir, 'commit ' + str(i))
+      self.assertFalse(os.path.exists(name))
 
   def testCanCloneGerritChange(self):
     scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
@@ -1079,6 +1122,179 @@ class GerritChangesTest(fake_repos.FakeReposTestBase):
   def testCanSyncToGerritChangeMirror(self):
     self.setUpMirror()
     self.testCanSyncToGerritChange()
+
+  def testAppliesPatchOnTopOfMasterByDefault(self):
+    """Test the default case, where we apply a patch on top of master."""
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
+    file_list = []
+
+    # Make sure we don't specify a revision.
+    self.options.revision = None
+    scm.update(self.options, None, file_list)
+    self.assertEqual(self.githash('repo_1', 4), self.gitrevparse(self.root_dir))
+
+    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', self.options,
+                        file_list)
+
+    self.assertCommits([1, 2, 3, 4, 5, 6])
+    self.assertEqual(self.githash('repo_1', 4), self.gitrevparse(self.root_dir))
+
+  def testCheckoutOlderThanPatchBase(self):
+    """Test applying a patch on an old checkout.
+
+    We first checkout commit 1, and try to patch refs/changes/35/1235/1, which
+    contains commits 5 and 6, and is based on top of commit 3.
+    The final result should contain commits 1, 5 and 6, but not commits 2 or 3.
+    """
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
+    file_list = []
+
+    # Sync to commit 1
+    self.options.revision = self.githash('repo_1', 1)
+    scm.update(self.options, None, file_list)
+    self.assertEqual(self.githash('repo_1', 1), self.gitrevparse(self.root_dir))
+
+    # Apply the change on top of that.
+    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', self.options,
+                        file_list)
+
+    self.assertCommits([1, 5, 6])
+    self.assertEqual(self.githash('repo_1', 1), self.gitrevparse(self.root_dir))
+
+  def testCheckoutOriginFeature(self):
+    """Tests that we can apply a patch on a branch other than master."""
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
+    file_list = []
+
+    # Sync to origin/feature
+    self.options.revision = 'origin/feature'
+    scm.update(self.options, None, file_list)
+    self.assertEqual(self.githash('repo_1', 9), self.gitrevparse(self.root_dir))
+
+    # Apply the change on top of that.
+    scm.apply_patch_ref(self.url, 'refs/changes/36/1236/1', self.options,
+                        file_list)
+
+    self.assertCommits([1, 2, 7, 8, 9, 10])
+    self.assertEqual(self.githash('repo_1', 9), self.gitrevparse(self.root_dir))
+
+  def testCheckoutOriginFeatureOnOldRevision(self):
+    """Tests that we can apply a patch on an old checkout, on a branch other
+    than master."""
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
+    file_list = []
+
+    # Sync to origin/feature on an old revision
+    self.options.revision = self.githash('repo_1', 7)
+    scm.update(self.options, None, file_list)
+    self.assertEqual(self.githash('repo_1', 7), self.gitrevparse(self.root_dir))
+
+    # Apply the change on top of that.
+    scm.apply_patch_ref(self.url, 'refs/changes/36/1236/1', self.options,
+                        file_list)
+
+    # We shouldn't have rebased on top of 2 (which is the merge base between
+    # origin/master and the change) but on top of 7 (which is the merge base
+    # between origin/feature and the change).
+    self.assertCommits([1, 2, 7, 10])
+    self.assertEqual(self.githash('repo_1', 7), self.gitrevparse(self.root_dir))
+
+
+  def testDoesntRebasePatchMaster(self):
+    """Tests that we can apply a patch without rebasing it.
+    """
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
+    file_list = []
+
+    self.options.rebase_patch_ref = False
+    scm.update(self.options, None, file_list)
+    self.assertEqual(self.githash('repo_1', 4), self.gitrevparse(self.root_dir))
+
+    # Apply the change on top of that.
+    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', self.options,
+                        file_list)
+
+    self.assertCommits([1, 2, 3, 5, 6])
+    self.assertEqual(self.githash('repo_1', 4), self.gitrevparse(self.root_dir))
+
+  def testDoesntRebasePatchOldCheckout(self):
+    """Tests that we can apply a patch without rebasing it on an old checkout.
+    """
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
+    file_list = []
+
+    # Sync to commit 1
+    self.options.revision = self.githash('repo_1', 1)
+    self.options.rebase_patch_ref = False
+    scm.update(self.options, None, file_list)
+    self.assertEqual(self.githash('repo_1', 1), self.gitrevparse(self.root_dir))
+
+    # Apply the change on top of that.
+    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', self.options,
+                        file_list)
+
+    self.assertCommits([1, 2, 3, 5, 6])
+    self.assertEqual(self.githash('repo_1', 1), self.gitrevparse(self.root_dir))
+
+  def testDoesntSoftResetIfNotAskedTo(self):
+    """Test that we can apply a patch without doing a soft reset."""
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
+    file_list = []
+
+    self.options.reset_patch_ref = False
+    scm.update(self.options, None, file_list)
+    self.assertEqual(self.githash('repo_1', 4), self.gitrevparse(self.root_dir))
+
+    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', self.options,
+                        file_list)
+
+    self.assertCommits([1, 2, 3, 4, 5, 6])
+    # The commit hash after cherry-picking is not known, but it must be
+    # different from what the repo was synced at before patching.
+    self.assertNotEqual(self.githash('repo_1', 4),
+                        self.gitrevparse(self.root_dir))
+
+  def testRecoversAfterPatchFailure(self):
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
+    file_list = []
+
+    self.options.revision = 'refs/changes/34/1234/1'
+    scm.update(self.options, None, file_list)
+    self.assertEqual(self.githash('repo_1', 5), self.gitrevparse(self.root_dir))
+
+    # Checkout 'refs/changes/34/1234/1' modifies the 'change' file, so trying to
+    # patch 'refs/changes/36/1236/1' creates a patch failure.
+    with self.assertRaises(subprocess2.CalledProcessError) as cm:
+      scm.apply_patch_ref(self.url, 'refs/changes/36/1236/1', self.options,
+                          file_list)
+    self.assertEqual(cm.exception.cmd[:2], ['git', 'cherry-pick'])
+    self.assertIn('error: could not apply', cm.exception.stderr)
+
+    # Try to apply 'refs/changes/35/1235/1', which doesn't have a merge
+    # conflict.
+    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', self.options,
+                        file_list)
+    self.assertCommits([1, 2, 3, 5, 6])
+    self.assertEqual(self.githash('repo_1', 5), self.gitrevparse(self.root_dir))
+
+  def testIgnoresAlreadyMergedCommits(self):
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, '.')
+    file_list = []
+
+    self.options.revision = 'refs/heads/master-with-5'
+    scm.update(self.options, None, file_list)
+    self.assertEqual(self.githash('repo_1', 12),
+                     self.gitrevparse(self.root_dir))
+
+    # When we try 'refs/changes/35/1235/1' on top of 'refs/heads/feature',
+    # 'refs/changes/34/1234/1' will be an empty commit, since the changes were
+    # already present in the tree as commit 11.
+    # Make sure we deal with this gracefully.
+    scm.apply_patch_ref(self.url, 'refs/changes/35/1235/1', self.options,
+                        file_list)
+    self.assertCommits([1, 2, 3, 5, 6, 12])
+    self.assertEqual(self.githash('repo_1', 12),
+                     self.gitrevparse(self.root_dir))
 
 
 if __name__ == '__main__':
