@@ -26,7 +26,6 @@
 <translation id="1881322772814446296">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Chromium. I tuoi dati di Chromium, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME" />. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account. Se preferisci puoi creare un nuovo profilo per mantenere separati i dati di Chromium esistenti. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium non risponde. Riavviarlo ora?</translation>
 <translation id="1966382378801805537">Chromium non è in grado di determinare o impostare il browser predefinito</translation>
-<translation id="1967743265616885482">Un modulo con lo stesso nome risulta in conflitto con Chromium.</translation>
 <translation id="2008474315282236005">Verrà eliminato 1 elemento da questo dispositivo. Per recuperare i dati in un secondo momento, accedi a Chromium come <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">L'amministratore ti chiede di riavviare Chromium per installare questo aggiornamento</translation>
 <translation id="2119636228670142020">Informazioni su &amp;Chromium OS</translation>
@@ -92,7 +91,6 @@
 <translation id="4260985389288095068">Rilevato software dannoso sul computer. Chromium può rimuoverlo e ripristinare le tue impostazioni per ristabilire il normale funzionamento del browser.</translation>
 <translation id="4271805377592243930">Ricevi assistenza per Chromium</translation>
 <translation id="4285930937574705105">Installazione non riuscita a causa di un errore imprecisato. Se Chromium è in esecuzione, chiudilo e riprova.</translation>
-<translation id="4330585738697551178">Questo modulo risulta in conflitto con Chromium.</translation>
 <translation id="4407044323746248786">Vuoi uscire comunque da Chromium?</translation>
 <translation id="4415566066719264597">Lascia Chromium in esecuzione in background</translation>
 <translation id="4421155425831608516">L'accesso a Chromium è disattivato dall'amministratore del dispositivo.</translation>
@@ -173,7 +171,6 @@ Alcune funzioni potrebbero non essere disponibili. Specifica un'altra directory 
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiata in Chromium)</translation>
 <translation id="6893813176749746474">Chromium è stato aggiornato ma non lo utilizzi da almeno 30 giorni.</translation>
-<translation id="6944967875980567883">Moduli caricati in Chromium</translation>
 <translation id="6964305034639999644">Apri link in una finestra di navigazione in inco&amp;gnito di Chromium</translation>
 <translation id="6970811910055250180">Aggiornamento del dispositivo in corso...</translation>
 <translation id="6990124437352146030">Per questo sito Chromium ha bisogno dell'autorizzazione ad accedere al microfono</translation>

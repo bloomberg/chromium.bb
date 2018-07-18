@@ -66,7 +66,6 @@
 <translation id="109758035718544977">Activar sonido de sitios web</translation>
 <translation id="1097658378307015415">Antes de iniciar sesión, entra como invitado para activar la red <ph name="NETWORK_ID" />.</translation>
 <translation id="1103523840287552314">Traducir siempre el <ph name="LANGUAGE" /></translation>
-<translation id="1108164192735968833">Conexión SMS</translation>
 <translation id="1108600514891325577">&amp;Detener</translation>
 <translation id="1110155001042129815">Esperar</translation>
 <translation id="1112420131909513020">La pestaña en segundo plano está usando el Bluetooth</translation>
@@ -456,7 +455,6 @@
 <translation id="1658424621194652532">Esta página está accediendo al micrófono</translation>
 <translation id="1660204651932907780">Permitir que los sitios web reproduzcan sonidos (recomendado)</translation>
 <translation id="1661156625580498328">Fuerza el cifrado AES (recomendado).</translation>
-<translation id="1661245713600520330">En esta página, se incluyen todos los módulos cargados en el proceso principal y los módulos registrados para cargarse más adelante.</translation>
 <translation id="166179487779922818">La contraseña es demasiado corta.</translation>
 <translation id="1661867754829461514">Falta el PIN.</translation>
 <translation id="16620462294541761">La contraseña no se ha podido verificar. Vuelve a intentarlo.</translation>
@@ -607,7 +605,6 @@
 <translation id="1877520246462554164">No se ha podido obtener el token de autenticación. Cierra la sesión y vuelve a iniciarla para intentarlo de nuevo.</translation>
 <translation id="1878302395768190018">Puedes personalizarla en cualquier momento en la configuración de Chrome</translation>
 <translation id="1880905663253319515">¿Quieres eliminar el certificado "<ph name="CERTIFICATE_NAME" />"?</translation>
-<translation id="1883903952484604915">Mis archivos</translation>
 <translation id="1886996562706621347">Permitir que los sitios web se conviertan en controladores de protocolos predeterminados (recomendado)</translation>
 <translation id="1887442540531652736">No se ha podido iniciar sesión</translation>
 <translation id="1887850431809612466">Revisión de hardware</translation>
@@ -744,7 +741,6 @@
 <translation id="21133533946938348">Fijar pestaña</translation>
 <translation id="2113479184312716848">Abrir &amp;archivo...</translation>
 <translation id="2113921862428609753">Acceso a la información de la entidad emisora</translation>
-<translation id="2114224913786726438">Módulos (<ph name="TOTAL_COUNT" />): sin conflictos detectados</translation>
 <translation id="2114326799768592691">Volver a cargar &amp;marco</translation>
 <translation id="2114896190328250491">Foto de <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Enviar al teléfono</translation>
@@ -1130,7 +1126,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="268053382412112343">Hi&amp;storial</translation>
 <translation id="2683638487103917598">Carpeta ordenada</translation>
 <translation id="2684004000387153598">Para continuar, haz clic en Aceptar y, a continuación, en Añadir perfil para crear un perfil con tu dirección de correo electrónico.</translation>
-<translation id="2686759344028411998">No se ha podido detectar ninguno de los módulos cargados.</translation>
 <translation id="2688196195245426394">Error al registrar el dispositivo en el servidor (<ph name="CLIENT_ERROR" />)</translation>
 <translation id="2690024944919328218">Mostrar opciones de idioma</translation>
 <translation id="2691385045260836588">Modelo</translation>
@@ -1512,7 +1507,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="329838636886466101">Reparar</translation>
 <translation id="3298789223962368867">URL introducida no válida</translation>
 <translation id="32991397311664836">Dispositivos:</translation>
-<translation id="3300394989536077382">Firmado por</translation>
 <translation id="33022249435934718">GDI administra</translation>
 <translation id="3303260552072730022">Una extensión ha activado el modo de pantalla completa.</translation>
 <translation id="3303818374450886607">Copias</translation>
@@ -2239,6 +2233,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4467100756425880649">Galería de Chrome Web Store</translation>
 <translation id="4467101674048705704">Mostrar <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Ayudar a mejorar las funciones y el rendimiento de Chrome</translation>
+<translation id="4472575034687746823">Empezar</translation>
 <translation id="4474155171896946103">Añadir todas las pestañas a marcadores...</translation>
 <translation id="4475552974751346499">Buscar descargas</translation>
 <translation id="4476590490540813026">Atleta</translation>
@@ -3089,7 +3084,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5751545372099101699">Elemento 4 de la estantería</translation>
 <translation id="5752453871435543420">Copia de seguridad en la nube de Chrome OS</translation>
 <translation id="5756163054456765343">C&amp;entro de ayuda</translation>
-<translation id="5758823144991844964">Reproducir archivos</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> puede leer los documentos que envías para imprimirse a través de <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">No se ha encontrado ningún dispositivo USB</translation>
 <translation id="5764483294734785780">G&amp;uardar audio como...</translation>
@@ -3876,6 +3870,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6985607387932385770">Impresoras</translation>
 <translation id="6990081529015358884">Te has quedado sin espacio.</translation>
 <translation id="6990778048354947307">Tema oscuro</translation>
+<translation id="6991128190741664836">Más tarde</translation>
 <translation id="6991665348624301627">Seleccionar un destino</translation>
 <translation id="6997707937646349884">En tus dispositivos:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> carpetas seleccionadas</translation>
@@ -3951,7 +3946,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7099337801055912064">No se pueden cargar archivos PPD grandes. El tamaño máximo es 250 kB.</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> elementos seleccionados</translation>
 <translation id="7102687220333134671">Las actualizaciones automáticas están activadas</translation>
-<translation id="7102832101143475489">Se ha agotado el tiempo de espera de la petición</translation>
+<translation id="7102832101143475489">Se ha agotado el tiempo de espera de la solicitud</translation>
 <translation id="7106346894903675391">Comprar más almacenamiento...</translation>
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> quiere utilizar la cámara</translation>
@@ -4297,6 +4292,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7662283695561029522">Toca para configurar</translation>
 <translation id="7663719505383602579">Receptor: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Dispositivo Bluetooth no compatible: <ph name="DEVICE_NAME" /></translation>
+<translation id="7665369617277396874">Añadir cuenta</translation>
 <translation id="7671130400130574146">Utilizar bordes y barra de título</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> en <ph name="PAGE_TITLE" />.</translation>
 <translation id="7681095912841365527">El sitio web puede usar el Bluetooth</translation>
@@ -4521,7 +4517,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7973962044839454485">Se ha producido un error en la autenticación de PPP porque la contraseña o el nombre de usuario son incorrectos</translation>
 <translation id="7974566588408714340">Intentar de nuevo con <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Reajuste</translation>
-<translation id="7976555937380554094">El complemento <ph name="PEPPER_PLUGIN_NAME" /> de <ph name="PEPPER_PLUGIN_DOMAIN" /> quiere acceder a tu dispositivo</translation>
 <translation id="7977551819349545646">Actualizando Chromebox…</translation>
 <translation id="7978412674231730200">Clave privada</translation>
 <translation id="7979036127916589816">Error de sincronización</translation>
@@ -4597,7 +4592,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="806812017500012252">Reordenar por título</translation>
 <translation id="8068253693380742035">Toca para iniciar sesión</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
-<translation id="806972267388474605">Archivos de Linux</translation>
 <translation id="8071432093239591881">Imprimir como imagen</translation>
 <translation id="8072033737676488034">Quitar tu teléfono e inhabilitar Better Together</translation>
 <translation id="8072988827236813198">Fijar pestañas</translation>
@@ -4666,7 +4660,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8184318863960255706">Más información</translation>
 <translation id="8185331656081929126">Mostrar notificaciones cuando se detecten nuevas impresoras en la red</translation>
 <translation id="8186609076106987817">El servidor no ha podido encontrar el archivo.</translation>
-<translation id="8186706823560132848">Software</translation>
 <translation id="8188120771410500975">&amp;Comprobar la ortografía de los campos de texto</translation>
 <translation id="8190193592390505034">Conectando con <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Administrar tus aplicaciones, extensiones y temas</translation>
@@ -4692,7 +4685,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8227119283605456246">Adjuntar archivo</translation>
 <translation id="8234795456569844941">Ayuda a nuestros ingenieros a solucionar este problema. Indícanos lo que ha ocurrido justo antes de que apareciera el mensaje de error del perfil:</translation>
 <translation id="8234989666557591529">Elige un teléfono para desbloquear tu <ph name="DEVICE_TYPE" /></translation>
-<translation id="8238649969398088015">Sugerencia de ayuda</translation>
 <translation id="8239020549147958415">Sincronizar como <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">Nublado</translation>
 <translation id="8241806945692107836">Determinando la configuración del dispositivo...</translation>
@@ -5142,7 +5134,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8957423540740801332">derecha</translation>
 <translation id="895944840846194039">Memoria de JavaScript</translation>
 <translation id="8959810181433034287">El usuario supervisado deberá utilizar esta contraseña para iniciar sesión, por lo que debes seleccionar una contraseña segura que deberás comunicar al usuario supervisado.</translation>
-<translation id="8960795431111723921">En este momento, estamos investigando el error.</translation>
 <translation id="8962083179518285172">Ocultar detalles</translation>
 <translation id="8962918469425892674">Este sitio web está usando los sensores de luz o movimiento.</translation>
 <translation id="8965037249707889821">Introducir contraseña anterior</translation>

@@ -66,7 +66,6 @@
 <translation id="109758035718544977">Slå lyden til på websites</translation>
 <translation id="1097658378307015415">Før du logger ind, skal du logge ind som gæst for at aktivere netværket <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">Oversæt altid <ph name="LANGUAGE" /></translation>
-<translation id="1108164192735968833">Sms-synkronisering</translation>
 <translation id="1108600514891325577">&amp;Stop</translation>
 <translation id="1110155001042129815">Vent</translation>
 <translation id="1112420131909513020">En fane i baggrunden anvender Bluetooth</translation>
@@ -453,7 +452,6 @@
 <translation id="1658424621194652532">Denne side har adgang til din mikrofon.</translation>
 <translation id="1660204651932907780">Tillad, at websites afspiller lyd (anbefales)</translation>
 <translation id="1661156625580498328">Gennemtving AES-kryptering (anbefalet).</translation>
-<translation id="1661245713600520330">Denne side angiver alle moduler, der er indlæst i hovedprocessen, og moduler, der er registreret til at blive indlæst på et senere tidspunkt.</translation>
 <translation id="166179487779922818">Adgangskoden er for kort.</translation>
 <translation id="1661867754829461514">Pinkode mangler</translation>
 <translation id="16620462294541761">Din adgangskode blev ikke bekræftet. Prøv igen.</translation>
@@ -604,7 +602,6 @@
 <translation id="1877520246462554164">Der kunne ikke hentes noget godkendelsestoken. Log ud, og log derefter ind igen for at prøve igen.</translation>
 <translation id="1878302395768190018">Du kan til enhver tid tilpasse dette i Chrome-indstillingerne</translation>
 <translation id="1880905663253319515">Slet certifikatet "<ph name="CERTIFICATE_NAME" />"?</translation>
-<translation id="1883903952484604915">Mine filer</translation>
 <translation id="1886996562706621347">Tillad, at websites må bede om at håndtere protokoller som standard (anbefales)</translation>
 <translation id="1887442540531652736">Loginfejl</translation>
 <translation id="1887850431809612466">Hardwarerevision</translation>
@@ -741,7 +738,6 @@
 <translation id="21133533946938348">Fastgør fane</translation>
 <translation id="2113479184312716848">Åbn &amp;fil...</translation>
 <translation id="2113921862428609753">Adgang til autoritetsoplysninger</translation>
-<translation id="2114224913786726438">Moduler (<ph name="TOTAL_COUNT" />) – Ingen registrerede konflikter</translation>
 <translation id="2114326799768592691">Genindlæs &amp;ramme</translation>
 <translation id="2114896190328250491">Foto af <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Send til telefon</translation>
@@ -1128,7 +1124,6 @@
 <translation id="268053382412112343">Over&amp;sigt</translation>
 <translation id="2683638487103917598">Mappen er sorteret</translation>
 <translation id="2684004000387153598">Hvis du vil fortsætte, skal du klikke på OK og derefter klikke på Tilføj person for at oprette en ny profil til din mailadresse.</translation>
-<translation id="2686759344028411998">Der blev ikke registreret nogen indlæste moduler.</translation>
 <translation id="2688196195245426394">Fejl ved registrering af enheden med serveren: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Vis sprogindstillinger</translation>
 <translation id="2691385045260836588">Model</translation>
@@ -1510,7 +1505,6 @@
 <translation id="329838636886466101">Reparer</translation>
 <translation id="3298789223962368867">Den indtastede webadresse er ugyldig.</translation>
 <translation id="32991397311664836">Enheder:</translation>
-<translation id="3300394989536077382">Underskrevet af</translation>
 <translation id="33022249435934718">GDI-håndtag</translation>
 <translation id="3303260552072730022">En udvidelse har aktiveret fuld skærm.</translation>
 <translation id="3303818374450886607">Kopier</translation>
@@ -2240,6 +2234,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4467100756425880649">Chrome Webshop Galleri</translation>
 <translation id="4467101674048705704">Udvid <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Vær med til at forbedre Chromes funktioner og ydeevne</translation>
+<translation id="4472575034687746823">Kom godt i gang</translation>
 <translation id="4474155171896946103">Tilføj alle faner som bogmærker...</translation>
 <translation id="4475552974751346499">Søg i downloads</translation>
 <translation id="4476590490540813026">Atlet</translation>
@@ -3091,7 +3086,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5751545372099101699">Hyldeelement 4</translation>
 <translation id="5752453871435543420">Sikkerhedskopiering i skyen for Chrome OS</translation>
 <translation id="5756163054456765343">H&amp;jælp</translation>
-<translation id="5758823144991844964">Play-filer</translation>
 <translation id="5759728514498647443">De dokumenter, du sender til udskrift via <ph name="APP_NAME" />, kan læses af <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Der blev ikke fundet nogen USB-enheder</translation>
 <translation id="5764483294734785780">&amp;Gem lyd som...</translation>
@@ -3880,6 +3874,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6985607387932385770">Printere</translation>
 <translation id="6990081529015358884">Der er ikke mere plads</translation>
 <translation id="6990778048354947307">Mørkt tema</translation>
+<translation id="6991128190741664836">Senere</translation>
 <translation id="6991665348624301627">Vælg en destination</translation>
 <translation id="6997707937646349884">På dine enheder:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> filer er valgt</translation>
@@ -4301,6 +4296,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7662283695561029522">Tryk for at konfigurere</translation>
 <translation id="7663719505383602579">Modtager: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Ikke-understøttet Bluetooth-enhed: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="7665369617277396874">Tilføj konto</translation>
 <translation id="7671130400130574146">Brug systemets titellinje og rammer</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> på <ph name="PAGE_TITLE" />.</translation>
 <translation id="7681095912841365527">Websitet kan anvende Bluetooth</translation>
@@ -4524,7 +4520,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7973962044839454485">PPP-godkendelsen mislykkedes på grund af forkert brugernavn eller adgangskode</translation>
 <translation id="7974566588408714340">Prøv igen ved hjælp af <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Overscan</translation>
-<translation id="7976555937380554094"><ph name="PEPPER_PLUGIN_NAME" /> på <ph name="PEPPER_PLUGIN_DOMAIN" /> anmoder om adgang til din enhed</translation>
 <translation id="7977551819349545646">Chromebox opdateres...</translation>
 <translation id="7978412674231730200">Privat nøgle</translation>
 <translation id="7979036127916589816">Synkroniseringsfejl</translation>
@@ -4600,7 +4595,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="806812017500012252">Omorganiser efter titel</translation>
 <translation id="8068253693380742035">Tryk for at logge ind</translation>
 <translation id="8069615408251337349">Google Cloudprinter</translation>
-<translation id="806972267388474605">Linux-filer</translation>
 <translation id="8071432093239591881">Udskriv i billedformat</translation>
 <translation id="8072033737676488034">Fjern din telefon, og deaktiver Better Together</translation>
 <translation id="8072988827236813198">Fastgør faner</translation>
@@ -4669,7 +4663,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8184318863960255706">Flere oplysninger</translation>
 <translation id="8185331656081929126">Vis underretninger, når der registreres nye printere på netværket</translation>
 <translation id="8186609076106987817">Serveren kunne ikke finde filen.</translation>
-<translation id="8186706823560132848">Software</translation>
 <translation id="8188120771410500975">&amp;Kontrollér stavning i tekstfelter</translation>
 <translation id="8190193592390505034">Forbinder til <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Administrere dine apps, udvidelser og temaer</translation>
@@ -4695,7 +4688,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8227119283605456246">Vedhæft fil</translation>
 <translation id="8234795456569844941">Hjælp vores softwareudviklere med at løse dette problem. Fortæl os, hvad der skete, lige før du fik fejlmeddelelsen for profilen:</translation>
 <translation id="8234989666557591529">Vælg en telefon for at låse din <ph name="DEVICE_TYPE" /> op</translation>
-<translation id="8238649969398088015">Hjælpetip</translation>
 <translation id="8239020549147958415">Synkroniser som <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">Voldborg</translation>
 <translation id="8241806945692107836">Enhedskonfigurationen fastslås…</translation>
@@ -5146,7 +5138,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8957423540740801332">højre</translation>
 <translation id="895944840846194039">JavaScript-hukommelse</translation>
 <translation id="8959810181433034287">Den administrerede bruger skal bruge denne adgangskode ved login, så vælg en sikker adgangskode, og husk at informere den administrerede bruger.</translation>
-<translation id="8960795431111723921">Vi undersøger i øjeblikket problemet.</translation>
 <translation id="8962083179518285172">Skjul detaljer</translation>
 <translation id="8962918469425892674">Dette website anvender bevægelses- og lyssensorer.</translation>
 <translation id="8965037249707889821">Angiv den gamle adgangskode</translation>

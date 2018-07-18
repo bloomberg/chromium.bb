@@ -26,7 +26,6 @@
 <translation id="1881322772814446296">Jūs pierakstāties ar pārvaldītu kontu, kura administrators var kontrolēt jūsu profilu. Jūsu Chromium dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi, tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME" />. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet šos datus saistīt ar citu kontu. Ja vēlaties, varat izveidot jaunu profilu, lai atsevišķi glabātu Chromium datus. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium nereaģē. Vai restartēt to tūlīt?</translation>
 <translation id="1966382378801805537">Chromium nevar noteikt vai iestatīt noklusējuma pārlūku.</translation>
-<translation id="1967743265616885482">Ir zināms, ka modulis ar tādu pašu nosaukumu konfliktē ar Chromium.</translation>
 <translation id="2008474315282236005">Veicot šo darbību, no šīs ierīces tiks dzēsts 1 vienums. Lai vēlāk izgūtu datus, pierakstieties pārlūkā Chromium kā <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Lai lietotu šo atjauninājumu, administrators lūdz restartēt pārlūku Chromium.</translation>
 <translation id="2119636228670142020">Par &amp;Chromium OS</translation>
@@ -92,7 +91,6 @@
 <translation id="4260985389288095068">Jūsu datorā ir kaitīga programmatūra. Chromium var to noņemt un atjaunot jūsu iestatījumus, lai pārlūks atkal darbotos, kā paredzēts.</translation>
 <translation id="4271805377592243930">Saņemt palīdzību par Chromium</translation>
 <translation id="4285930937574705105">Instalācija neizdevās nenoteiktas kļūdas dēļ. Ja Chromium šobrīd darbojas, aizveriet to un mēģiniet vēlreiz.</translation>
-<translation id="4330585738697551178">Ir zināms, ka šis modulis konfliktē ar Chromium.</translation>
 <translation id="4407044323746248786">Vai tik un tā aizvērt pārlūku Chromium?</translation>
 <translation id="4415566066719264597">Ļaut pārlūkam Chromium darboties fonā</translation>
 <translation id="4421155425831608516">Šīs ierīces administrators ir atspējojis pierakstīšanos pārlūkā Chromium.</translation>
@@ -173,7 +171,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="6857782730669500492">Chromium — <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopēts pārlūkā Chromium)</translation>
 <translation id="6893813176749746474">Pārlūks Chromium ir atjaunināts, bet jūs neesat to izmantojis vismaz 30 dienas.</translation>
-<translation id="6944967875980567883">Pārlūkā Chromium ielādētie moduļi</translation>
 <translation id="6964305034639999644">Atvērt saiti inko&amp;gnito režīma logā</translation>
 <translation id="6970811910055250180">Notiek ierīces atjaunināšana...</translation>
 <translation id="6990124437352146030">Pārlūkam Chromium ir nepieciešama atļauja piekļūt jūsu mikrofonam šajā vietnē.</translation>

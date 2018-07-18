@@ -26,7 +26,6 @@
 <translation id="1881322772814446296">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Chromium. Datele Chromium, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. Aveți opțiunea de a crea un profil nou, pentru a păstra separat datele Chromium existente. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium nu mai răspunde. Îl reporniți acum?</translation>
 <translation id="1966382378801805537">Chromium nu poate determina sau seta browserul prestabilit</translation>
-<translation id="1967743265616885482">Despre un modul cu același nume se cunoaște că intră în conflict cu Chromium.</translation>
 <translation id="2008474315282236005">Astfel, se va șterge 1 element de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chromium ca <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Administratorul solicită să relansezi Chromium pentru a aplica această actualizare</translation>
 <translation id="2119636228670142020">Despre sistemul de operare &amp;Chromium</translation>
@@ -92,7 +91,6 @@
 <translation id="4260985389288095068">Ai software dăunător pe computer. Chromium poate să-l elimine și să restabilească setările pentru ca browserul să funcționeze normal din nou.</translation>
 <translation id="4271805377592243930">Obține ajutor privind Chromium</translation>
 <translation id="4285930937574705105">Instalarea a eșuat din cauza unei erori necunoscute. Dacă Chromium rulează în acest moment, închideți-l și încercați din nou.</translation>
-<translation id="4330585738697551178">Despre acest modul se cunoaște că intră în conflict cu Chromium.</translation>
 <translation id="4407044323746248786">Ieși din Chromium oricum?</translation>
 <translation id="4415566066719264597">Permite Chromium să ruleze în fundal</translation>
 <translation id="4421155425831608516">Conectarea la Chromium este dezactivată de administratorul acestui dispozitiv.</translation>
@@ -160,7 +158,7 @@
 <translation id="6475912303565314141">Stabilește și ce pagină se afișează când porniți Chromium.</translation>
 <translation id="6485906693002546646">În prezent, folosiți <ph name="PROFILE_EMAIL" /> pentru a sincroniza datele Chromium. Pentru a actualiza preferințele de sincronizare sau pentru a folosi Chromium fără un Cont Google, accesați <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Dezinstalați Chromium</translation>
-<translation id="6570579332384693436">Pentru a corecta erorile de ortografie, Chromium trimite la Google textul pe care îl introduci în câmpurile de text</translation>
+<translation id="6570579332384693436">Pentru a corecta erorile de scriere, Chromium trimite la Google textul pe care îl introduci în câmpurile de text</translation>
 <translation id="6598877126913850652">Accesează setările pentru notificări Chromium</translation>
 <translation id="6664239887951090350">{0,plural, =0{Chromium se va relansa acum}=1{Chromium se va relansa într-o secundă}few{Chromium se va relansa în # secunde}other{Chromium se va relansa în # de secunde}}</translation>
 <translation id="6676384891291319759">Accesează internetul</translation>
@@ -173,7 +171,6 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiat în Chromium)</translation>
 <translation id="6893813176749746474">Chromium a fost actualizat, dar nu l-ați utilizat de cel puțin 30 de zile.</translation>
-<translation id="6944967875980567883">Module încărcate în Chromium</translation>
 <translation id="6964305034639999644">Deschide linkul într-o fereastră Chromium inco&amp;gnito</translation>
 <translation id="6970811910055250180">Se actualizează dispozitivul...</translation>
 <translation id="6990124437352146030">Chromium are nevoie de permisiune ca să acceseze microfonul pentru acest site</translation>

@@ -66,7 +66,6 @@
 <translation id="109758035718544977">إلغاء تجاهل المواقع</translation>
 <translation id="1097658378307015415">قبل تسجيل الدخول، يُرجى الدخول كضيف لتفعيل الشبكة <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">ترجمة اللغة <ph name="LANGUAGE" /> دائمًا</translation>
-<translation id="1108164192735968833">‏ربط الرسائل القصيرة SMS</translation>
 <translation id="1108600514891325577">إي&amp;قاف</translation>
 <translation id="1110155001042129815">انتظار</translation>
 <translation id="1112420131909513020">هناك علامة تبويب خلفية تستخدم البلوتوث</translation>
@@ -456,7 +455,6 @@
 <translation id="1658424621194652532">هذه الصفحة تحاول الدخول إلى الميكروفون.</translation>
 <translation id="1660204651932907780">السماح للمواقع بتشغيل الصوت (مُقترح)</translation>
 <translation id="1661156625580498328">‏فرض تشفير AES (مستحسن)</translation>
-<translation id="1661245713600520330">تدرج هذه الصفحة جميع الوحدات التي تم تحميلها في العملية الرئيسية والوحدات المسجلة للتحميل في وقت لاحق.</translation>
 <translation id="166179487779922818">كلمة المرور أقصر مما يجب.</translation>
 <translation id="1661867754829461514">رقم التعريف الشخصي غير موجود</translation>
 <translation id="16620462294541761">عذرًا، ولكن تعذر التحقق من كلمة المرور. يُرجى المحاولة مرة أخرى.</translation>
@@ -607,7 +605,6 @@
 <translation id="1877520246462554164">تعذّر الحصول على الرمز المميز للمصادقة. يُرجى الخروج ثم تسجيل الدخول مرّة أخرى لإعادة المحاولة.</translation>
 <translation id="1878302395768190018">‏يمكنك تخصيص هذا في أي وقت في إعدادات Chrome.</translation>
 <translation id="1880905663253319515">هل تريد حذف الشهادة "<ph name="CERTIFICATE_NAME" />"؟</translation>
-<translation id="1883903952484604915">ملفاتي</translation>
 <translation id="1886996562706621347">السماح للمواقع بأن تطلب أن تصبح معالجات تلقائية للبروتوكولات (مستحسن)</translation>
 <translation id="1887442540531652736">خطأ في تسجيل الدخول</translation>
 <translation id="1887850431809612466">مراجعة الأجهزة</translation>
@@ -744,7 +741,6 @@
 <translation id="21133533946938348">تثبيت علامة التبويب</translation>
 <translation id="2113479184312716848">فتح &amp;ملف...</translation>
 <translation id="2113921862428609753">الدخول إلى معلومات الصلاحية</translation>
-<translation id="2114224913786726438">الوحدات (<ph name="TOTAL_COUNT" />) - لم يتم اكتشاف أي تعارضات</translation>
 <translation id="2114326799768592691">إعادة تحميل الإطار</translation>
 <translation id="2114896190328250491">صورة <ph name="NAME" /></translation>
 <translation id="2115103655317273167">إرسال إلى هاتف</translation>
@@ -983,7 +979,7 @@
 <translation id="248861575772995840">‏تعذّر العثور على هاتفك. تأكد من تشغيل البلوتوث لجهاز <ph name="DEVICE_TYPE" />. &lt;a&gt;مزيد من المعلومات&lt;/a&gt;</translation>
 <translation id="2489918096470125693">إضافة &amp;مجلد...</translation>
 <translation id="249113932447298600">عذرًا، لا يتوفر الجهاز <ph name="DEVICE_LABEL" /> في الوقت الحالي.</translation>
-<translation id="2492040222276243256">يمكنك الضغط مع الاستمرار على الزر في مفتاح الأمان لمدة لا تقل عن 5 ثوانٍ.</translation>
+<translation id="2492040222276243256">اضغط مع الاستمرار على الزر في مفتاح الأمان لمدة لا تقل عن 5 ثوانٍ.</translation>
 <translation id="2493021387995458222">تحديد "كلمة تلو الأخرى"</translation>
 <translation id="249303669840926644">تعذر إكمال التسجيل</translation>
 <translation id="2495777824269688114">اسكتشاف المزيد من الميزات أو الحصول على إجابات. اختر "؟" للحصول على مساعدة.</translation>
@@ -1087,7 +1083,7 @@
 <translation id="2633199387167390344"><ph name="NAME" /> يستخدم <ph name="USAGE" /> ميغابايت من مساحة القرص.</translation>
 <translation id="2633212996805280240">هل تريد إزالة "<ph name="EXTENSION_NAME" />"؟</translation>
 <translation id="263325223718984101">تعذر على <ph name="PRODUCT_NAME" /> إكمال التثبيت، ولكن ستتم متابعة تشغيله من صورته على القرص.</translation>
-<translation id="2633326789677284179">العثور على الاسم المطبوع على الجزء الخلفي من مفتاحك</translation>
+<translation id="2633326789677284179">ارجِع إلى الاسم المطبوع على الجزء الخلفي من مفتاحك</translation>
 <translation id="2635276683026132559">التوقيع</translation>
 <translation id="2636625531157955190">‏لا يستطيع Chrome الدخول إلى الصورة.</translation>
 <translation id="2638087589890736295">عبارة المرور مطلوبة لبدء المزامنة</translation>
@@ -1129,7 +1125,6 @@
 <translation id="268053382412112343">ال&amp;سجل</translation>
 <translation id="2683638487103917598">تم تصنيف المجلد</translation>
 <translation id="2684004000387153598">للمتابعة، انقر على "موافقة" ثم انقر على "إضافة شخص" لإنشاء ملف شخصي جديد لعنوان بريدك الإلكتروني.</translation>
-<translation id="2686759344028411998">يتعذر اكتشاف أي وحدات محملة.</translation>
 <translation id="2688196195245426394">حدث خطأ عند تسجيل الجهاز مع الخادم: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">عرض خيارات اللغة</translation>
 <translation id="2691385045260836588">الطراز</translation>
@@ -1361,7 +1356,7 @@
 <translation id="3031601332414921114">استئناف الطباعة</translation>
 <translation id="303198083543495566">الجغرافيا</translation>
 <translation id="3036546437875325427">‏تفعيل Flash</translation>
-<translation id="3037754279345160234">يتعذَّر تحليل الإعداد للانضمام إلى النطاق. يُرجى الاتصال بمشرفك.</translation>
+<translation id="3037754279345160234">يتعذَّر تحليل الإعداد لضمّ النطاق. يُرجى الاتصال بمشرفك.</translation>
 <translation id="3038612606416062604">إضافة طابعة يدويًا</translation>
 <translation id="3038675903128704560">عدم السماح لأي موقع ويب باستخدام مكوّنات إضافية للوصول إلى جهاز الكمبيوتر</translation>
 <translation id="3039828483675273919">جارٍ نقل $1 من العناصر...</translation>
@@ -1511,7 +1506,6 @@
 <translation id="329838636886466101">الإصلاح</translation>
 <translation id="3298789223962368867">‏تم إدخال عنوان URL غير صحيح.</translation>
 <translation id="32991397311664836">الأجهزة:</translation>
-<translation id="3300394989536077382">توقيع</translation>
 <translation id="33022249435934718">معالجات واجهة الجهاز الرسومية</translation>
 <translation id="3303260552072730022">تم تبديل إضافة إلى ملء الشاشة.</translation>
 <translation id="3303818374450886607">النسخ</translation>
@@ -2237,6 +2231,7 @@
 <translation id="4467100756425880649">‏معرض سوق Chrome الإلكتروني</translation>
 <translation id="4467101674048705704">توسيع <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">‏المساعدة في تحسين ميزات Chrome وأدائه</translation>
+<translation id="4472575034687746823">الخطوات الأولى</translation>
 <translation id="4474155171896946103">وضع إشارات على كل علامات التبويب...</translation>
 <translation id="4475552974751346499">البحث في التنزيلات</translation>
 <translation id="4476590490540813026">رياضي</translation>
@@ -2494,7 +2489,7 @@
 <translation id="4880827082731008257">سجلّ البحث</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4882473678324857464">تركيز الإشارات المرجعية</translation>
-<translation id="4882831918239250449">التحكُّم في كيفية استخدام سِجل التصفُّح لتخصيص البحث والإعلانات والمزيد</translation>
+<translation id="4882831918239250449">التحكُّم في كيفية استخدامنا لسِجل التصفُّح الخاص بك لتخصيص البحث والإعلانات والمزيد</translation>
 <translation id="4883178195103750615">‏تصدير الإشارات المرجعية إلى ملف HTML...</translation>
 <translation id="4883436287898674711">جميع مواقع <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;مدير المهام</translation>
@@ -3087,7 +3082,6 @@
 <translation id="5751545372099101699">بند الرف 4</translation>
 <translation id="5752453871435543420">‏النسخ الاحتياطي في السحاب عبر نظام التشغيل Chrome</translation>
 <translation id="5756163054456765343">مركز المساعدة</translation>
-<translation id="5758823144991844964">‏ملفات Play</translation>
 <translation id="5759728514498647443">يمكن قراءة المستندات التي ترسلها إلى الطباعة عبر <ph name="APP_NAME" /> بواسطة <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">‏لم يتم العثور على أي أجهزة USB</translation>
 <translation id="5764483294734785780">حف&amp;ظ ملف الصوت باسم...</translation>
@@ -3141,7 +3135,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - تسجيل الكاميرا أو الميكروفون</translation>
 <translation id="5835754902560991078">قصير للغاية (0.6 ثانية)</translation>
 <translation id="5838456317242088717">جلسة التصفح المتخفي الحالية</translation>
-<translation id="5842053879378944309">‏استخدام مفتاح أمان USB مع تطبيق <ph name="APP_NAME" /></translation>
+<translation id="5842053879378944309">‏استخدام مفتاح أمان USB مع التطبيق <ph name="APP_NAME" /></translation>
 <translation id="5842497610951477805">تفعيل البلوتوث</translation>
 <translation id="5843250171025351504">لم يعد جهازك متوافقًا مع الحد الأدنى لإصدار البرنامج المحدد من قِبل مشرفك. يُرجى التحديث لتسجيل الدخول.</translation>
 <translation id="5846929185714966548">علامة التبويب 4</translation>
@@ -3203,7 +3197,7 @@
 <translation id="5924047253200400718">الحصول على مساعدة<ph name="SCANNING_STATUS" /></translation>
 <translation id="5924527146239595929">‏يمكنك التقاط صورة جديدة أو اختيار رمز أو صورة حالية.
     <ph name="LINE_BREAK" />
-    ستظهر هذه الصورة على قفل الشاشة وشاشة تسجيل الدخول في جهاز Chromebook.</translation>
+    ستظهر هذه الصورة على شاشة التأمين وشاشة تسجيل الدخول في جهاز Chromebook.</translation>
 <translation id="5925147183566400388">مؤشر بيان تطبيق الشهادة</translation>
 <translation id="592880897588170157">‏تنزيل ملفات PDF بدلاً من فتحها تلقائيًا في Chrome</translation>
 <translation id="5931146425219109062">قراءة جميع بياناتك وتغييرها على مواقع الويب التي تزورها</translation>
@@ -3300,7 +3294,7 @@
 <translation id="6078752646384677957">الرجاء التحقق من الميكروفون ومستويات الصوت.</translation>
 <translation id="6080515710685820702">هل تستخدم جهاز كمبيوتر مشتركًا؟ جرِّب فتح نافذة للتصفُّح المتخفي.</translation>
 <translation id="6080689532560039067">تحقق من وقت النظام</translation>
-<translation id="6082111513049964958">كلمة مرور لإلغاء القفل</translation>
+<translation id="6082111513049964958">كلمة المرور لإلغاء القفل</translation>
 <translation id="6082651258230788217">العرض في شريط الأدوات</translation>
 <translation id="6086846494333236931">تم التثبيت من قبل مشرفك</translation>
 <translation id="6087960857463881712">وجه رائع</translation>
@@ -3876,6 +3870,7 @@
 <translation id="6985607387932385770">الطابعات</translation>
 <translation id="6990081529015358884">لقد نفدت المساحة</translation>
 <translation id="6990778048354947307">مظهر معتم</translation>
+<translation id="6991128190741664836">لاحقًا</translation>
 <translation id="6991665348624301627">تحديد وجهة</translation>
 <translation id="6997707937646349884">على أجهزتك:</translation>
 <translation id="6998711733709403587">تم تحديد <ph name="SELCTED_FOLDERS_COUNT" /> من المجلدات</translation>
@@ -3951,7 +3946,7 @@
 <translation id="7099337801055912064">‏يتعذّر تحميل ملف PPD كبير الحجم. الحد الأقصى للحجم هو 250 كيلوبايت.</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> من العناصر المحددة</translation>
 <translation id="7102687220333134671">تم تشغيل التحديثات التلقائية</translation>
-<translation id="7102832101143475489">انتهاء مهلة الطلب</translation>
+<translation id="7102832101143475489">انتهت مهلة الطلب</translation>
 <translation id="7106346894903675391">شراء المزيد من سعة التخزين...</translation>
 <translation id="7108338896283013870">إخفاء</translation>
 <translation id="7108634116785509031">يريد <ph name="HOST" /> استخدام الكاميرا.</translation>
@@ -4298,6 +4293,7 @@
 <translation id="7662283695561029522">النقر للتهيئة</translation>
 <translation id="7663719505383602579">المتلقي: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">جهاز بلوتوث غير متوافق: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="7665369617277396874">إضافة حساب</translation>
 <translation id="7671130400130574146">استخدام شريط عناوين النظام والحدود</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />، في <ph name="PAGE_TITLE" />.</translation>
 <translation id="7681095912841365527">يمكن لموقع الويب استخدام البلوتوث.</translation>
@@ -4522,7 +4518,6 @@
 <translation id="7973962044839454485">‏تعذّرت مصادقة PPP نظرًا لوجود خطأ في اسم المستخدم أو كلمة المرور</translation>
 <translation id="7974566588408714340">إعادة المحاولة باستخدام <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">الخروج عن إطار الشاشة</translation>
-<translation id="7976555937380554094">يريد <ph name="PEPPER_PLUGIN_NAME" /> الموجود على <ph name="PEPPER_PLUGIN_DOMAIN" /> الوصول إلى جهازك.</translation>
 <translation id="7977551819349545646">‏جارٍ تحديث جهاز Chromebox...</translation>
 <translation id="7978412674231730200">مفتاح خاص</translation>
 <translation id="7979036127916589816">حدث خطأ في المزامنة</translation>
@@ -4598,7 +4593,6 @@
 <translation id="806812017500012252">إعادة الترتيب بحسب العنوان</translation>
 <translation id="8068253693380742035">المس لتسجيل الدخول</translation>
 <translation id="8069615408251337349">‏الطباعة السحابية من Google</translation>
-<translation id="806972267388474605">‏ملفات نظام التشغيل Linux</translation>
 <translation id="8071432093239591881">الطباعة كصورة</translation>
 <translation id="8072033737676488034">‏إزالة هاتفك وإيقاف خدمة Better Together</translation>
 <translation id="8072988827236813198">تثبيت علامات التبويب</translation>
@@ -4667,7 +4661,6 @@
 <translation id="8184318863960255706">مزيد من المعلومات</translation>
 <translation id="8185331656081929126">عرض إشعارات عند اكتشاف طابعات جديدة على الشبكة</translation>
 <translation id="8186609076106987817">تعذر على الخادم العثور على الملف.</translation>
-<translation id="8186706823560132848">البرامج</translation>
 <translation id="8188120771410500975">&amp;مراجعة حقول النص إملائيًا</translation>
 <translation id="8190193592390505034">جارٍ الاتصال بـ <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">إدارة التطبيقات والإضافات والمظاهر</translation>
@@ -4693,7 +4686,6 @@
 <translation id="8227119283605456246">إرفاق ملف</translation>
 <translation id="8234795456569844941">يُرجى مساعدة مهندسينا في حل هذه المشكلة. أخبرنا بما حدث مباشرة قبل ظهور رسالة خطأ الملف الشخصي:</translation>
 <translation id="8234989666557591529">اختيار هاتف لإلغاء قفل جهاز <ph name="DEVICE_TYPE" /></translation>
-<translation id="8238649969398088015">نصيحة مساعدة</translation>
 <translation id="8239020549147958415">المزامنة كـ <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">الظلال</translation>
 <translation id="8241806945692107836">جارِ تحديد تكوين الجهاز...</translation>
@@ -5143,7 +5135,6 @@
 <translation id="8957423540740801332">لليمين</translation>
 <translation id="895944840846194039">ذاكرة جافا سكريبت</translation>
 <translation id="8959810181433034287">سيحتاج المستخدم الذي يخضع للإشراف إلى استخدام كلمة المرور هذه لتسجيل الدخول، لذا يُرجى اختيار كلمة مرور آمنة ولا تنس طرح الأمر للنقاش مع المستخدم الخاضع للإشراف.</translation>
-<translation id="8960795431111723921">نحن نحقق في هذه المشكلة حاليًا.</translation>
 <translation id="8962083179518285172">إخفاء التفاصيل</translation>
 <translation id="8962918469425892674">تم السماح لهذا الموقع باستخدام أجهزة استشعار الإضاءة أو الحركة.</translation>
 <translation id="8965037249707889821">إدخال كلمة المرور القديمة</translation>
@@ -5162,7 +5153,7 @@
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - تعطُّل</translation>
 <translation id="8983677657449185470">المساعدة في تحسين التصفُّح الآمن</translation>
 <translation id="8984654317541110628">‏عنوان URL لخادم مشاركة الملفات</translation>
-<translation id="8984872292925913496">يمكنك البحث عن رقم التعريف الشخصي المكوَّن من 6 أرقام في الجزء الخلفي من المفتاح</translation>
+<translation id="8984872292925913496">ارجِع إلى رقم التعريف الشخصي المكوَّن من 6 أرقام في الجزء الخلفي من المفتاح</translation>
 <translation id="8986362086234534611">حذف</translation>
 <translation id="8986494364107987395">‏إرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا</translation>
 <translation id="8987927404178983737">شهر</translation>

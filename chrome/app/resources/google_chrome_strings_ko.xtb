@@ -104,7 +104,6 @@
 <translation id="3479552764303398839">나중에</translation>
 <translation id="3503306920980160878">이 사이트와 위치를 공유하려면 Chrome에 내 위치 액세스 권한이 있어야 합니다</translation>
 <translation id="3582972582564653026">모든 기기에서 Chrome을 동기화하고 맞춤설정하세요.</translation>
-<translation id="3612333635265770873">같은 이름의 모듈이 Chrome과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="3622797965165704966">이제 Google 계정으로 공유 컴퓨터에서 Chrome을 손쉽게 사용할 수 있습니다.</translation>
 <translation id="3637702109597584617">Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />서비스 약관<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3716182511346448902">페이지에서 너무 많은 메모리를 사용하므로 Chrome에서 페이지를 일시중지했습니다.</translation>
@@ -166,12 +165,10 @@
 <translation id="5204098752394657250">Chrome <ph name="TERMS_OF_SERVICE_LINK" />서비스 약관<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">손님으로 사용 기록을 남기지 않고 Chrome을 사용할 수 있습니다.</translation>
 <translation id="532046782124376502">경고: Chrome에서는 확장 프로그램에 인터넷 사용 기록이 저장될 수 있습니다. 시크릿 모드에서 이 확장 프로그램을 사용 중지하려면 옵션을 선택 취소하세요.</translation>
-<translation id="5334545119300433702">이 모듈은 Chrome과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="5386244825306882791">또한 Chrome을 시작하거나 검색주소창에서 검색할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="5430073640787465221">환경설정 파일이 손상되었거나 잘못되었습니다.
 
 Chrome에서 설정을 복구할 수 없습니다.</translation>
-<translation id="5495581687705680288">Chrome에 로드된 모듈</translation>
 <translation id="556024056938947818">Chrome에서 비밀번호를 표시하려고 합니다.</translation>
 <translation id="5566025111015594046">Chrome(mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" />은(는) 위험할 수 있으므로 Chrome에서 차단했습니다.</translation>

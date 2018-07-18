@@ -66,7 +66,6 @@
 <translation id="109758035718544977">Unmute Sites</translation>
 <translation id="1097658378307015415">Before signing in, please enter as Guest to activate the network <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">Always translate <ph name="LANGUAGE" /></translation>
-<translation id="1108164192735968833">SMS Connect</translation>
 <translation id="1108600514891325577">&amp;Stop</translation>
 <translation id="1110155001042129815">Wait</translation>
 <translation id="1112420131909513020">Background tab is using Bluetooth</translation>
@@ -456,7 +455,6 @@
 <translation id="1658424621194652532">This page is accessing your microphone.</translation>
 <translation id="1660204651932907780">Allow sites to play sound (recommended)</translation>
 <translation id="1661156625580498328">Enforce AES encryption (recommended).</translation>
-<translation id="1661245713600520330">This page lists all modules loaded into the main process and modules registered to be loaded at a later point.</translation>
 <translation id="166179487779922818">Password is too short.</translation>
 <translation id="1661867754829461514">PIN missing</translation>
 <translation id="16620462294541761">Sorry, your password could not be verified. Please try again.</translation>
@@ -607,7 +605,6 @@
 <translation id="1877520246462554164">Failed to get authentication token. Please sign out then sign in again to try again.</translation>
 <translation id="1878302395768190018">You can customise this at any time in Chrome Settings</translation>
 <translation id="1880905663253319515">Delete certificate "<ph name="CERTIFICATE_NAME" />"?</translation>
-<translation id="1883903952484604915">My files</translation>
 <translation id="1886996562706621347">Allow sites to ask to become default handlers for protocols (recommended)</translation>
 <translation id="1887442540531652736">Sign-In Error</translation>
 <translation id="1887850431809612466">Hardware revision</translation>
@@ -744,7 +741,6 @@
 <translation id="21133533946938348">Pin Tab</translation>
 <translation id="2113479184312716848">Open &amp;File...</translation>
 <translation id="2113921862428609753">Authority Information Access</translation>
-<translation id="2114224913786726438">Modules (<ph name="TOTAL_COUNT" />) - No conflicts detected</translation>
 <translation id="2114326799768592691">Reload &amp;Frame</translation>
 <translation id="2114896190328250491">Photo by <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Send to phone</translation>
@@ -1129,7 +1125,6 @@
 <translation id="268053382412112343">Hi&amp;story</translation>
 <translation id="2683638487103917598">Folder sorted</translation>
 <translation id="2684004000387153598">To continue, click OK, then click Add Person to create a new profile for your email address.</translation>
-<translation id="2686759344028411998">Unable to detect any modules loaded.</translation>
 <translation id="2688196195245426394">Error when registering the device with the server: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Show language options</translation>
 <translation id="2691385045260836588">Model</translation>
@@ -1511,7 +1506,6 @@
 <translation id="329838636886466101">Repair</translation>
 <translation id="3298789223962368867">Invalid URL entered.</translation>
 <translation id="32991397311664836">Devices:</translation>
-<translation id="3300394989536077382">Signed by</translation>
 <translation id="33022249435934718">GDI Handles</translation>
 <translation id="3303260552072730022">An extension triggered full screen.</translation>
 <translation id="3303818374450886607">Copies</translation>
@@ -2241,6 +2235,7 @@
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
 <translation id="4467101674048705704">Expand <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Help improve Chrome's features and performance</translation>
+<translation id="4472575034687746823">Get started</translation>
 <translation id="4474155171896946103">Bookmark all tabs...</translation>
 <translation id="4475552974751346499">Search downloads</translation>
 <translation id="4476590490540813026">Athlete</translation>
@@ -3092,7 +3087,6 @@
 <translation id="5751545372099101699">Shelf item 4</translation>
 <translation id="5752453871435543420">Chrome OS Cloud backup</translation>
 <translation id="5756163054456765343">Help centre</translation>
-<translation id="5758823144991844964">Play files</translation>
 <translation id="5759728514498647443">Documents that you send to print via <ph name="APP_NAME" /> can be read by <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">No USB devices found</translation>
 <translation id="5764483294734785780">Sa&amp;ve audio as...</translation>
@@ -3880,6 +3874,7 @@
 <translation id="6985607387932385770">Printers</translation>
 <translation id="6990081529015358884">You have run out of space</translation>
 <translation id="6990778048354947307">Dark Theme</translation>
+<translation id="6991128190741664836">Later</translation>
 <translation id="6991665348624301627">Select a destination</translation>
 <translation id="6997707937646349884">On your devices:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folders selected</translation>
@@ -4301,6 +4296,7 @@
 <translation id="7662283695561029522">Tap to configure</translation>
 <translation id="7663719505383602579">Receiver: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Unsupported Bluetooth device: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="7665369617277396874">Add account</translation>
 <translation id="7671130400130574146">Use system title bar and borders</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, in <ph name="PAGE_TITLE" />.</translation>
 <translation id="7681095912841365527">Site can use Bluetooth</translation>
@@ -4525,7 +4521,6 @@
 <translation id="7973962044839454485">PPP authentication failed due to an incorrect username or password</translation>
 <translation id="7974566588408714340">Retry using <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Overscan</translation>
-<translation id="7976555937380554094"><ph name="PEPPER_PLUGIN_NAME" /> on <ph name="PEPPER_PLUGIN_DOMAIN" /> wants to access your device</translation>
 <translation id="7977551819349545646">Updating Chromebox...</translation>
 <translation id="7978412674231730200">Private key</translation>
 <translation id="7979036127916589816">Sync Error</translation>
@@ -4601,7 +4596,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="806812017500012252">Reorder by title</translation>
 <translation id="8068253693380742035">Touch to sign in</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
-<translation id="806972267388474605">Linux Files</translation>
 <translation id="8071432093239591881">Print as image</translation>
 <translation id="8072033737676488034">Remove your phone and disable Better Together</translation>
 <translation id="8072988827236813198">Pin Tabs</translation>
@@ -4670,7 +4664,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8184318863960255706">More info</translation>
 <translation id="8185331656081929126">Show notifications when new printers are detected on the network</translation>
 <translation id="8186609076106987817">The server could not find the file.</translation>
-<translation id="8186706823560132848">Software</translation>
 <translation id="8188120771410500975">&amp;Check the spelling of text fields</translation>
 <translation id="8190193592390505034">Connecting to <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Manage your apps, extensions, and themes</translation>
@@ -4696,7 +4689,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8227119283605456246">Attach file</translation>
 <translation id="8234795456569844941">Please help our engineers fix this problem. Tell us what happened right before you got the profile error message:</translation>
 <translation id="8234989666557591529">Choose a phone to unlock your <ph name="DEVICE_TYPE" /></translation>
-<translation id="8238649969398088015">Help tip</translation>
 <translation id="8239020549147958415">Sync as <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">Cloudy</translation>
 <translation id="8241806945692107836">Determining device configuration...</translation>
@@ -5146,7 +5138,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8957423540740801332">right</translation>
 <translation id="895944840846194039">JavaScript Memory</translation>
 <translation id="8959810181433034287">The supervised user will need to use this password to sign in, so choose a safe password and remember to discuss it with the supervised user.</translation>
-<translation id="8960795431111723921">We are currently investigating this issue.</translation>
 <translation id="8962083179518285172">Hide Details</translation>
 <translation id="8962918469425892674">This site is using motion or light sensors.</translation>
 <translation id="8965037249707889821">Enter old password</translation>

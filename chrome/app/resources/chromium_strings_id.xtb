@@ -26,7 +26,6 @@
 <translation id="1881322772814446296">Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Chromium Anda. Data Chromium Anda, seperti aplikasi, bookmark, histori, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME" />. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain. Secara opsional, Anda dapat membuat profil untuk menjaga data Chromium Anda yang sudah ada tetap terpisah. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium tidak merespons. Luncurkan ulang sekarang?</translation>
 <translation id="1966382378801805537">Chromium tidak dapat menentukan atau menyetel browser default</translation>
-<translation id="1967743265616885482">Modul dengan nama yang sama biasanya konflik dengan Chromium.</translation>
 <translation id="2008474315282236005">Tindakan ini akan menghapus 1 item dari perangkat. Untuk mengambil data nanti, login ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Administrator meminta Anda meluncurkan ulang Chromium untuk menerapkan update ini</translation>
 <translation id="2119636228670142020">Tentang &amp;Chromium OS</translation>
@@ -92,7 +91,6 @@
 <translation id="4260985389288095068">Ada software berbahaya di komputer. Chrome dapat menghapusnya dan akan memulihkan setelan agar browser berfungsi normal lagi.</translation>
 <translation id="4271805377592243930">Dapatkan bantuan Chromium</translation>
 <translation id="4285930937574705105">Pemasangan gagal karena kesalahan yang tidak diketahui. Jika Chromium sedang berjalan, tutup, lalu ulang kembali.</translation>
-<translation id="4330585738697551178">Modul ini biasanya konflik dengan Chromium.</translation>
 <translation id="4407044323746248786">Tetap keluar dari Chromium?</translation>
 <translation id="4415566066719264597">Jalankan Chromium di Background</translation>
 <translation id="4421155425831608516">Login ke Chromium dinonaktifkan oleh administrator perangkat ini.</translation>
@@ -173,7 +171,6 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (disalin ke Chromium)</translation>
 <translation id="6893813176749746474">Chromium telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
-<translation id="6944967875980567883">Modul dimuat ke dalam Chromium</translation>
 <translation id="6964305034639999644">Buka link di jendela sa&amp;maran Chromium</translation>
 <translation id="6970811910055250180">Memperbarui perangkat Anda...</translation>
 <translation id="6990124437352146030">Chromium memerlukan izin akses ke mikrofon untuk situs ini</translation>

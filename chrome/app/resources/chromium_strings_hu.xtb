@@ -26,7 +26,6 @@
 <translation id="1881322772814446296">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chromium-profiljához. Chromium-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. Létrehozhat egy új profilt is meglévő Chromium-adatainak elkülönített tárolásához. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">A Chromium nem válaszol. Újraindítja most?</translation>
 <translation id="1966382378801805537">A Chromium problémába ütközött az alapértelmezett böngésző megállapításakor vagy beállításakor</translation>
-<translation id="1967743265616885482">Egy ugyanilyen nevű modul ismereteink szerint ütközik a Chromiummal.</translation>
 <translation id="2008474315282236005">Ezzel egyetlen elemet töröl erről az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba a következő e-mail-címmel: <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Rendszergazdája arra kéri, hogy indítsa újra a Chromiumot a frissítés alkalmazásához</translation>
 <translation id="2119636228670142020">A &amp;Chromium OS névjegye</translation>
@@ -92,7 +91,6 @@
 <translation id="4260985389288095068">Kártékony szoftver található a számítógépen. A Chromium képes a szoftver eltávolítására, és arra, hogy visszaállítsa a beállításokat, így a böngésző újra a megszokott módon működhet.</translation>
 <translation id="4271805377592243930">Segítség a Chromium használatával kapcsolatban</translation>
 <translation id="4285930937574705105">A telepítés váratlan hiba miatt nem sikerült. Ha a Chromium jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
-<translation id="4330585738697551178">Ismereteink szerint ez a modul ütközik a Chromiummal.</translation>
 <translation id="4407044323746248786">Biztosan kilép a Chromiumból?</translation>
 <translation id="4415566066719264597">A Chromium futhat a háttérben</translation>
 <translation id="4421155425831608516">A Chromium böngészőbe való bejelentkezést letiltotta az eszköz rendszergazdája.</translation>
@@ -171,7 +169,6 @@
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (a Chromiumba másolva)</translation>
 <translation id="6893813176749746474">A Chromium frissítése megtörtént, de nem használta a böngészőt legalább 30 napja.</translation>
-<translation id="6944967875980567883">A Chromiumba betöltött modulok</translation>
 <translation id="6964305034639999644">Link megnyitása Chromium-inko&amp;gnitóablakban</translation>
 <translation id="6970811910055250180">Az eszköz frissítése folyamatban van...</translation>
 <translation id="6990124437352146030">A Chromiumnak engedélyre van szüksége ahhoz, hogy hozzáférjen a mikrofonhoz ennél a webhelynél</translation>

@@ -66,7 +66,6 @@
 <translation id="109758035718544977">เปิดเสียงเว็บไซต์</translation>
 <translation id="1097658378307015415">ก่อนที่จะลงชื่อเข้าใช้ โปรดเข้าใช้ในฐานะผู้มาเยือนเพื่อเปิดใช้งานเครือข่าย <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">แปลภาษา<ph name="LANGUAGE" />ทุกครั้ง</translation>
-<translation id="1108164192735968833">SMS Connect</translation>
 <translation id="1108600514891325577">&amp;หยุด</translation>
 <translation id="1110155001042129815">รอ</translation>
 <translation id="1112420131909513020">แท็บพื้นหลังกำลังใช้บลูทูธ</translation>
@@ -456,7 +455,6 @@
 <translation id="1658424621194652532">หน้านี้กำลังเข้าถึงไมโครโฟนของคุณ</translation>
 <translation id="1660204651932907780">อนุญาตให้ไซต์เล่นเสียง (แนะนำ)</translation>
 <translation id="1661156625580498328">บังคับใช้การเข้ารหัส AES (แนะนำ)</translation>
-<translation id="1661245713600520330">หน้าเว็บนี้แสดงรายการโมดูลทั้งหมดที่โหลดเข้ากระบวนการหลักและโมดูลที่ลงทะเบียนเพื่อโหลดในภายหลัง</translation>
 <translation id="166179487779922818">รหัสผ่านสั้นเกินไป</translation>
 <translation id="1661867754829461514">ไม่พบ PIN</translation>
 <translation id="16620462294541761">ขออภัย ไม่สามารถยืนยันรหัสผ่านของคุณได้ โปรดลองอีกครั้ง</translation>
@@ -607,7 +605,6 @@
 <translation id="1877520246462554164">ไม่ได้รับโทเค็นการตรวจสอบสิทธิ์ โปรดออกจากระบบแล้วลงชื่อเข้าใช้อีกครั้งเพื่อลองอีกครั้ง</translation>
 <translation id="1878302395768190018">ปรับแต่งการตั้งค่านี้ได้ทุกเมื่อในการตั้งค่า Chrome</translation>
 <translation id="1880905663253319515">ลบใบรับรอง "<ph name="CERTIFICATE_NAME" />" หรือไม่</translation>
-<translation id="1883903952484604915">ไฟล์ของฉัน</translation>
 <translation id="1886996562706621347">อนุญาตให้ไซต์แจ้งขอเป็นเครื่องจัดการเริ่มต้นสำหรับโปรโตคอล (แนะนำ)</translation>
 <translation id="1887442540531652736">ข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
 <translation id="1887850431809612466">การแก้ไขฮาร์ดแวร์</translation>
@@ -744,7 +741,6 @@
 <translation id="21133533946938348">ตรึงแท็บ</translation>
 <translation id="2113479184312716848">เปิดไ&amp;ฟล์...</translation>
 <translation id="2113921862428609753">การเข้าถึงข้อมูลผู้ออกใบรับรอง</translation>
-<translation id="2114224913786726438">โมดูล (<ph name="TOTAL_COUNT" />) - ไม่พบความขัดแย้ง</translation>
 <translation id="2114326799768592691">โหลดเ&amp;ฟรมซ้ำ</translation>
 <translation id="2114896190328250491">รูปภาพจาก <ph name="NAME" /></translation>
 <translation id="2115103655317273167">ส่งไปที่โทรศัพท์</translation>
@@ -1130,7 +1126,6 @@
 <translation id="268053382412112343">ประวั&amp;ติ</translation>
 <translation id="2683638487103917598">จัดเรียงโฟลเดอร์แล้ว</translation>
 <translation id="2684004000387153598">หากต้องการดำเนินการต่อ ให้คลิก "ตกลง" จากนั้นคลิก "เพิ่มบุคคล" เพื่อสร้างโปรไฟล์ใหม่สำหรับที่อยู่อีเมล</translation>
-<translation id="2686759344028411998">ตรวจไม่พบโมดูลที่โหลด</translation>
 <translation id="2688196195245426394">เกิดข้อผิดพลาดขณะลงทะเบียนอุปกรณ์กับเซิร์ฟเวอร์: <ph name="CLIENT_ERROR" /></translation>
 <translation id="2690024944919328218">แสดงตัวเลือกภาษา</translation>
 <translation id="2691385045260836588">รุ่น</translation>
@@ -1512,7 +1507,6 @@
 <translation id="329838636886466101">ซ่อม</translation>
 <translation id="3298789223962368867">URL ที่ป้อนไม่ถูกต้อง</translation>
 <translation id="32991397311664836">อุปกรณ์:</translation>
-<translation id="3300394989536077382">ลงชื่อโดย</translation>
 <translation id="33022249435934718">GDI จัดการ</translation>
 <translation id="3303260552072730022">มีส่วนขยายหนึ่งเรียกใช้หน้าจอแบบเต็ม</translation>
 <translation id="3303818374450886607">จำนวนชุด</translation>
@@ -1884,7 +1878,7 @@
 <translation id="3839516600093027468">บล็อก <ph name="HOST" /> ไม่ให้ดูคลิปบอร์ดเสมอ</translation>
 <translation id="3840053866656739575">ขาดการเชื่อมต่อกับ Chromebox โปรดเข้าใกล้อุปกรณ์ หรือตรวจสอบอุปกรณ์ของคุณขณะที่เราพยายามเชื่อมต่อใหม่</translation>
 <translation id="3842552989725514455">แบบอักษร Serif</translation>
-<translation id="3846116211488856547">รับเครื่องมือสำหรับพัฒนาเว็บไซต์, แอป Android และอื่นๆ การติดตั้ง Linux จะดาวน์โหลดข้อมูล <ph name="DOWNLOAD_SIZE" /></translation>
+<translation id="3846116211488856547">รับเครื่องมือสำหรับพัฒนาเว็บไซต์, แอป Android และอื่นๆ การติดตั้ง Linux จะดาวน์โหลดข้อมูลขนาด <ph name="DOWNLOAD_SIZE" /></translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3851428669031642514">โหลดสคริปต์ที่ไม่ปลอดภัย</translation>
 <translation id="3855441664322950881">แพคส่วนขยาย</translation>
@@ -2242,6 +2236,7 @@
 <translation id="4467100756425880649">แกลเลอรี Chrome เว็บสโตร์</translation>
 <translation id="4467101674048705704">ขยาย <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">ช่วยปรับปรุงฟีเจอร์และประสิทธิภาพของ Chrome</translation>
+<translation id="4472575034687746823">เริ่มต้น</translation>
 <translation id="4474155171896946103">บุ๊กมาร์กแท็บทั้งหมด...</translation>
 <translation id="4475552974751346499">ค้นสิ่งที่ดาวน์โหลดไว้</translation>
 <translation id="4476590490540813026">นักกีฬา</translation>
@@ -3093,7 +3088,6 @@
 <translation id="5751545372099101699">รายการชั้นวาง 4</translation>
 <translation id="5752453871435543420">ข้อมูลสำรองในระบบคลาวด์ของ Chrome OS</translation>
 <translation id="5756163054456765343">ศู&amp;นย์ช่วยเหลือ</translation>
-<translation id="5758823144991844964">ไฟล์ Play</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> สามารถอ่านเอกสารที่คุณส่งไปพิมพ์ผ่าน <ph name="APP_NAME" /> ได้</translation>
 <translation id="5763751966069581670">ไม่พบอุปกรณ์ USB</translation>
 <translation id="5764483294734785780">บั&amp;นทึกวิดีโอเป็น...</translation>
@@ -3881,6 +3875,7 @@
 <translation id="6985607387932385770">เครื่องพิมพ์</translation>
 <translation id="6990081529015358884">คุณไม่มีพื้นที่เหลือแล้ว</translation>
 <translation id="6990778048354947307">ธีมสีเข้ม</translation>
+<translation id="6991128190741664836">ในภายหลัง</translation>
 <translation id="6991665348624301627">เลือกปลายทาง</translation>
 <translation id="6997707937646349884">บนอุปกรณ์ของคุณ:</translation>
 <translation id="6998711733709403587">เลือก <ph name="SELCTED_FOLDERS_COUNT" /> โฟลเดอร์</translation>
@@ -4302,6 +4297,7 @@
 <translation id="7662283695561029522">แตะเพื่อกำหนดค่า</translation>
 <translation id="7663719505383602579">เครื่องรับ: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">อุปกรณ์บลูทูธที่ไม่สนับสนุน: "<ph name="DEVICE_NAME" />"</translation>
+<translation id="7665369617277396874">เพิ่มบัญชี</translation>
 <translation id="7671130400130574146">ใช้แถบชื่อและเส้นขอบของระบบ</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> ใน <ph name="PAGE_TITLE" /></translation>
 <translation id="7681095912841365527">เว็บไซต์ใช้บลูทูธได้</translation>
@@ -4526,7 +4522,6 @@
 <translation id="7973962044839454485">การตรวจสอบสิทธิ์ PPP ล้มเหลวเนื่องจากชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</translation>
 <translation id="7974566588408714340">ลองอีกครั้งโดยใช้ <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">โอเวอร์สแกน</translation>
-<translation id="7976555937380554094"><ph name="PEPPER_PLUGIN_NAME" /> ใน <ph name="PEPPER_PLUGIN_DOMAIN" /> ต้องการเข้าถึงอุปกรณ์ของคุณ</translation>
 <translation id="7977551819349545646">กำลังอัปเดต Chromebox...</translation>
 <translation id="7978412674231730200">กุญแจส่วนตัว</translation>
 <translation id="7979036127916589816">เกิดข้อผิดพลาดในการทำให้ข้อมูลตรงกัน</translation>
@@ -4602,7 +4597,6 @@
 <translation id="806812017500012252">จัดลำดับใหม่ตามชื่อ</translation>
 <translation id="8068253693380742035">แตะเพื่อลงชื่อเข้าใช้</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
-<translation id="806972267388474605">ไฟล์ Linux</translation>
 <translation id="8071432093239591881">พิมพ์เป็นรูปภาพ</translation>
 <translation id="8072033737676488034">นำโทรศัพท์ออกและปิดใช้ Better Together</translation>
 <translation id="8072988827236813198">ตรึงแท็บ</translation>
@@ -4671,7 +4665,6 @@
 <translation id="8184318863960255706">ข้อมูลเพิ่มเติม</translation>
 <translation id="8185331656081929126">แสดงการแจ้งเตือนเมื่อตรวจพบเครื่องพิมพ์ใหม่บนเครือข่าย</translation>
 <translation id="8186609076106987817">เซิร์ฟเวอร์ไม่พบไฟล์</translation>
-<translation id="8186706823560132848">ซอฟต์แวร์</translation>
 <translation id="8188120771410500975">&amp;ตรวจการสะกดคำในช่องข้อความ</translation>
 <translation id="8190193592390505034">กำลังเชื่อมต่อกับ <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">จัดการแอปพลิเคชัน ส่วนขยาย และธีมของคุณ</translation>
@@ -4697,7 +4690,6 @@
 <translation id="8227119283605456246">แนบไฟล์</translation>
 <translation id="8234795456569844941">โปรดช่วยวิศวกรของเราแก้ปัญหานี้ แจ้งให้เราทราบถึงสิ่งที่เกิดขึ้นก่อนที่คุณจะได้รับข้อความแสดงข้อผิดพลาดของโปรไฟล์</translation>
 <translation id="8234989666557591529">เลือกโทรศัพท์เพื่อปลดล็อก <ph name="DEVICE_TYPE" /></translation>
-<translation id="8238649969398088015">เคล็ดลับวิธีใช้</translation>
 <translation id="8239020549147958415">ซิงค์จาก <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">เชดดี้</translation>
 <translation id="8241806945692107836">กำลังกำหนดการกำหนดค่าอุปกรณ์...</translation>
@@ -5147,7 +5139,6 @@
 <translation id="8957423540740801332">ด้านขวา</translation>
 <translation id="895944840846194039">หน่วยความจำ JavaScript</translation>
 <translation id="8959810181433034287">ผู้ใช้ภายใต้การดูแลจะต้องใช้รหัสผ่านนี้ในการลงชื่อเข้าใช้ ดังนั้น เลือกรหัสผ่านที่ปลอดภัยและหารือเกี่ยวกับรหัสผ่านกับผู้ใช้ภายใต้การดูแล</translation>
-<translation id="8960795431111723921">เรากำลังตรวจสอบปัญหานี้อยู่</translation>
 <translation id="8962083179518285172">ซ่อนรายละเอียด</translation>
 <translation id="8962918469425892674">เว็บไซต์นี้ใช้เซ็นเซอร์ตรวจจับการเคลื่อนไหวหรือแสงอยู่</translation>
 <translation id="8965037249707889821">ป้อนรหัสผ่านเก่า</translation>

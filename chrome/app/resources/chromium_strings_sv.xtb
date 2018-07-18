@@ -28,7 +28,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1881322772814446296">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Chromium-profil. Dina uppgifter i Chromium, t.ex. dina appar, bokmärken, din historik, ditt lösenord och andra inställningar, kopplas då permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dem till något annat konto. Du kan skapa en ny profil om du vill hålla dina befintliga Chromium-uppgifter separata. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium svarar inte. Vill du starta om?</translation>
 <translation id="1966382378801805537">Chromium kan inte fastställa eller ange standardwebbläsaren</translation>
-<translation id="1967743265616885482">En modul med samma namn har tidigare varit i konflikt med Chromium.</translation>
 <translation id="2008474315282236005">Ett objekt tas bort från enheten. Logga in i Chromium som <ph name="USER_EMAIL" /> om du vill kunna återställa datan senare.</translation>
 <translation id="2117378023188580026">Administratören meddelar att du bör starta om Chromium så att uppdateringen tillämpas</translation>
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
@@ -94,7 +93,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4260985389288095068">Det finns skadlig programvara på datorn. Chromium tar bort den och återställer inställningarna så att webbläsaren fungerar som den ska igen.</translation>
 <translation id="4271805377592243930">Få hjälp med Chromium</translation>
 <translation id="4285930937574705105">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Chromium om det är igång och försök sedan igen.</translation>
-<translation id="4330585738697551178">Den här modulen har tidigare varit i konflikt med Chromium.</translation>
 <translation id="4407044323746248786">Vill du avsluta Chromium ändå?</translation>
 <translation id="4415566066719264597">Låt Chromium köras i bakgrunden</translation>
 <translation id="4421155425831608516">Inloggning i Chromium har inaktiverats av enhetens administratör.</translation>
@@ -175,7 +173,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (har kopierats till Chromium)</translation>
 <translation id="6893813176749746474">Chromium har uppdaterats men du har inte använt det på över 30 dagar.</translation>
-<translation id="6944967875980567883">Moduler som är inlästa i Chromium</translation>
 <translation id="6964305034639999644">Öppna länken i ett inko&amp;gnitofönster i Chromium.</translation>
 <translation id="6970811910055250180">Enheten uppdateras ...</translation>
 <translation id="6990124437352146030">Du behöver ge Chromium behörighet att använda mikrofonen på webbplatsen</translation>

@@ -28,7 +28,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1881322772814446296">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chromium data separate. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium is unresponsive. Relaunch now?</translation>
 <translation id="1966382378801805537">Chromium cannot determine or set the default browser</translation>
-<translation id="1967743265616885482">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="2008474315282236005">This will delete 1 item from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Your administrator asks that you relaunch Chromium to apply this update</translation>
 <translation id="2119636228670142020">About &amp;Chromium OS</translation>
@@ -94,7 +93,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4260985389288095068">There's harmful software on your computer. Chromium can remove it and restore your settings to make your browser work normally again.</translation>
 <translation id="4271805377592243930">Get help with Chromium</translation>
 <translation id="4285930937574705105">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
-<translation id="4330585738697551178">This module is known to conflict with Chromium.</translation>
 <translation id="4407044323746248786">Exit Chromium anyway?</translation>
 <translation id="4415566066719264597">Let Chromium Run in the Background</translation>
 <translation id="4421155425831608516">Sign in to Chromium is disabled by the administrator of this device.</translation>
@@ -175,7 +173,6 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copied to Chromium)</translation>
 <translation id="6893813176749746474">Chromium has been updated, but you haven't used it for 30 days or more.</translation>
-<translation id="6944967875980567883">Modules loaded into Chromium</translation>
 <translation id="6964305034639999644">Open link in Chromium inco&amp;gnito window</translation>
 <translation id="6970811910055250180">Updating your device...</translation>
 <translation id="6990124437352146030">Chromium needs permission to access your microphone for this site</translation>

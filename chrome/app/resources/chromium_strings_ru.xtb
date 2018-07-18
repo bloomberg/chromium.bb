@@ -26,7 +26,6 @@
 <translation id="1881322772814446296">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Chromium. Ваши данные Chromium (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME" />. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. Чтобы сохранить данные Chromium отдельно, создайте новый профиль. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium не отвечает. Перезапустить сейчас?</translation>
 <translation id="1966382378801805537">Chromium не удалось определить или задать браузер по умолчанию</translation>
-<translation id="1967743265616885482">Известно, что модуль с таким названием конфликтует с Chromium.</translation>
 <translation id="2008474315282236005">С устройства будет удален 1 объект. Чтобы восстановить данные позже, войдите в Chromium как <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Администратор просит перезапустить Chromium для установки обновления</translation>
 <translation id="2119636228670142020">О &amp;Chromium OS</translation>
@@ -90,7 +89,6 @@
 <translation id="4260985389288095068">На компьютере обнаружено вредоносное ПО. Chromium может удалить его и восстановить настройки, чтобы вернуть браузер в обычное состояние.</translation>
 <translation id="4271805377592243930">Справка Chromium</translation>
 <translation id="4285930937574705105">Установка не удалась из-за неизвестной ошибки. Если Chromium продолжает работать, закройте его и повторите попытку.</translation>
-<translation id="4330585738697551178">Известно, что модуль с таким названием конфликтует с Chromium.</translation>
 <translation id="4407044323746248786">Закрыть Chromium?</translation>
 <translation id="4415566066719264597">Разрешить Chromium работать в фоновом режиме</translation>
 <translation id="4421155425831608516">Вход в Chromium отключен администратором устройства.</translation>
@@ -171,7 +169,6 @@
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (скопирована в Chromium)</translation>
 <translation id="6893813176749746474">Chromium был обновлен, однако вы не использовали его в течение последних 30 дней.</translation>
-<translation id="6944967875980567883">Модули, загруженные в Chromium</translation>
 <translation id="6964305034639999644">Открыть ссылку в режиме инкогнито браузера Chromium</translation>
 <translation id="6970811910055250180">Обновление операционной системы…</translation>
 <translation id="6990124437352146030">Для этого сайта Chromium запрашивает доступ к микрофону.</translation>

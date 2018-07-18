@@ -100,7 +100,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="3479552764303398839">Ara no</translation>
 <translation id="3503306920980160878">Chrome necessita accedir a la teva ubicació per compartir-la amb aquest lloc web</translation>
 <translation id="3582972582564653026">Sincronitza i personalitza Chrome en tots els teus dispositius</translation>
-<translation id="3612333635265770873">Se sap que un mòdul amb el mateix nom entra en conflicte amb Google Chrome.</translation>
 <translation id="3622797965165704966">Ara resulta més fàcil utilitzar Chrome amb el vostre compte de Google i en ordinadors compartits.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Condicions del servei<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome OS</translation>
 <translation id="3716182511346448902">Com que aquesta pàgina fa servir massa memòria, Chrome l'ha posat en pausa.</translation>
@@ -160,10 +159,8 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Termes i condicions<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome</translation>
 <translation id="5251420635869119124">Els convidats poden utilitzar Chrome sense deixar-hi rastre.</translation>
 <translation id="532046782124376502">Advertiment: Google Chrome no pot impedir que les extensions registrin el teu historial de navegació. Per desactivar aquesta extensió en mode d'incògnit, desselecciona aquesta opció.</translation>
-<translation id="5334545119300433702">Se sap que aquest mòdul entra en conflicte amb Google Chrome.</translation>
 <translation id="5386244825306882791">També controla la pàgina que es mostra quan inicieu Chrome o quan feu una cerca des de l'omnibox.</translation>
 <translation id="5430073640787465221">El fitxer de preferències està malmès o no és vàlid. Google Chrome no pot recuperar la configuració.</translation>
-<translation id="5495581687705680288">Mòduls carregats a Google Chrome</translation>
 <translation id="556024056938947818">Google Chrome està provant de mostrar les contrasenyes.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Chrome ha bloquejat <ph name="FILE_NAME" /> perquè pot ser perillós.</translation>

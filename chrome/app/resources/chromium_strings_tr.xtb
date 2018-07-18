@@ -26,7 +26,6 @@
 <translation id="1881322772814446296">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chromium profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chromium verileriniz kalıcı olarak <ph name="USER_NAME" /> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. İsterseniz mevcut Chromium verilerinizi ayrı tutmak için yeni bir profil oluşturabilirsiniz. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium yanıt vermiyor. Şimdi yeniden başlatılsın mı?</translation>
 <translation id="1966382378801805537">Chromium, varsayılan tarayıcıyı tespit edemiyor veya ayarlayamıyor</translation>
-<translation id="1967743265616885482">Aynı isme sahip bir modülün Chromium'la çakıştığı bilinmektedir.</translation>
 <translation id="2008474315282236005">Bu işlem 1 öğeyi bu cihazdan silecektir. Verilerinizi daha sonra geri almak için Chromium'da <ph name="USER_EMAIL" /> hesabıyla oturum açın.</translation>
 <translation id="2117378023188580026">Yöneticiniz bu güncellemeyi uygulamak için Chromium'u yeniden başlatmanızı istiyor</translation>
 <translation id="2119636228670142020">&amp;Chromium OS hakkında</translation>
@@ -90,7 +89,6 @@
 <translation id="4260985389288095068">Bilgisayarınızda zararlı yazılım var. Chromium bu yazılımı kaldırabilir ve tarayıcınızın tekrar normal şekilde çalışması için ayarlarınızı geri yükleyebilir.</translation>
 <translation id="4271805377592243930">Chromium'la ilgili yardım alın</translation>
 <translation id="4285930937574705105">Belirlenemeyen bir hata nedeniyle yükleme başarısız oldu. Chromium şu anda çalışır durumdaysa kapatıp yeniden deneyin.</translation>
-<translation id="4330585738697551178">Bu modülün Chromium'la çakıştığı biliniyor.</translation>
 <translation id="4407044323746248786">Yine de Chromium'dan çıkılsın mı?</translation>
 <translation id="4415566066719264597">Chromium'un Arka Planda Çalışmasına İzin Ver</translation>
 <translation id="4421155425831608516">Chromium'da oturum açma işlevi, bu cihazın yöneticisi tarafından devre dışı bırakılmıştır.</translation>
@@ -171,7 +169,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium'a kopyalandı)</translation>
 <translation id="6893813176749746474">Chromium güncellendi, ancak programı en azından 30 gündür kullanmıyorsunuz.</translation>
-<translation id="6944967875980567883">Chromium'a yüklenen modüller</translation>
 <translation id="6964305034639999644">Bağlantıyı Chromium &amp;gizli penceresinde aç</translation>
 <translation id="6970811910055250180">Cihazınız güncelleniyor...</translation>
 <translation id="6990124437352146030">Chromium'un bu sitede mikrofonunuza erişmesi için izin gerekiyor</translation>

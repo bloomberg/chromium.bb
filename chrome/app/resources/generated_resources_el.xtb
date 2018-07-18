@@ -66,7 +66,6 @@
 <translation id="109758035718544977">Κατάργηση σίγασης ιστοτόπων</translation>
 <translation id="1097658378307015415">Προτού συνδεθείτε, πραγματοποιήστε είσοδο ως επισκέπτης για να ενεργοποιηθεί το δίκτυο <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">Να μεταφράζονται πάντα τα <ph name="LANGUAGE" /></translation>
-<translation id="1108164192735968833">SMS Connect</translation>
 <translation id="1108600514891325577">&amp;Διακοπή</translation>
 <translation id="1110155001042129815">Αναμονή</translation>
 <translation id="1112420131909513020">Μια καρτέλα παρασκηνίου χρησιμοποιεί Bluetooth</translation>
@@ -456,7 +455,6 @@
 <translation id="1658424621194652532">Αυτή η σελίδα έχει πρόσβαση στο μικρόφωνό σας.</translation>
 <translation id="1660204651932907780">Να επιτρέπεται στους ιστοτόπους να αναπαράγουν ήχο (συνιστάται)</translation>
 <translation id="1661156625580498328">Επιβολή κρυπτογράφησης AES (συνιστάται).</translation>
-<translation id="1661245713600520330">Σε αυτήν τη σελίδα αναφέρονται όλες οι λειτουργικές μονάδες που φορτώθηκαν στην κύρια διαδικασία και οι λειτουργικές μονάδες που εγγράφηκαν για φόρτωση αργότερα.</translation>
 <translation id="166179487779922818">Ο κωδικός πρόσβασης είναι πολύ σύντομος.</translation>
 <translation id="1661867754829461514">Απουσιάζει το PIN </translation>
 <translation id="16620462294541761">Λυπούμαστε, δεν ήταν δυνατή η επαλήθευση του κωδικού πρόσβασής σας. Δοκιμάστε ξανά.</translation>
@@ -607,7 +605,6 @@
 <translation id="1877520246462554164">Απέτυχε η λήψη του διακριτικού ελέγχου ταυτότητας. Αποσυνδεθείτε και συνδεθείτε εκ νέου για να προσπαθήσετε ξανά.</translation>
 <translation id="1878302395768190018">Μπορείτε να προσαρμόσετε την επιλογή ανά πάσα στιγμή από τις ρυθμίσεις του Chrome</translation>
 <translation id="1880905663253319515">Να διαγραφεί το πιστοποιητικό "<ph name="CERTIFICATE_NAME" />";</translation>
-<translation id="1883903952484604915">Τα αρχεία μου</translation>
 <translation id="1886996562706621347">Να επιτρέπεται σε ιστότοπους να ζητούν να γίνονται προεπιλεγμένα προγράμματα χειρισμού για πρωτόκολλα (συνιστάται)</translation>
 <translation id="1887442540531652736">Σφάλμα σύνδεσης</translation>
 <translation id="1887850431809612466">Έκδοση υλικού</translation>
@@ -744,7 +741,6 @@
 <translation id="21133533946938348">Καρφίτσωμα καρτέλας</translation>
 <translation id="2113479184312716848">Άνοιγμα αρχείου...</translation>
 <translation id="2113921862428609753">Πρόσβαση σε πληροφορίες αρχής</translation>
-<translation id="2114224913786726438">Λειτουργικές μονάδες (<ph name="TOTAL_COUNT" />) - Δεν εντοπίστηκαν διενέξεις</translation>
 <translation id="2114326799768592691">Επαναφόρτωση &amp;πλαισίου</translation>
 <translation id="2114896190328250491">Φωτογραφία από <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Αποστολή στο τηλέφωνο</translation>
@@ -1130,7 +1126,6 @@
 <translation id="268053382412112343">Ιστορικό</translation>
 <translation id="2683638487103917598">Ο φάκελος είναι ταξινομημένος</translation>
 <translation id="2684004000387153598">Για να συνεχίσετε, κάντε κλικ στο κουμπί OK και, στη συνέχεια, κάντε κλικ στην επιλογή "Προσθήκη ατόμου" για να δημιουργήσετε ένα νέο προφίλ για τη διεύθυνση ηλεκτρονικού ταχυδρομείου σας.</translation>
-<translation id="2686759344028411998">Δεν είναι δυνατός ο εντοπισμός των λειτουργικών μονάδων που φορτώθηκαν.</translation>
 <translation id="2688196195245426394">Σφάλμα εγγραφής της συσκευής στο διακομιστή: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Εμφάνιση επιλογών γλώσσας</translation>
 <translation id="2691385045260836588">Μοντέλο</translation>
@@ -1512,7 +1507,6 @@
 <translation id="329838636886466101">Επισκευή</translation>
 <translation id="3298789223962368867">Καταχωρήθηκε μη έγκυρη διεύθυνση URL.</translation>
 <translation id="32991397311664836">Συσκευές:</translation>
-<translation id="3300394989536077382">Υπογραφή από</translation>
 <translation id="33022249435934718">Χειρισμοί GDI</translation>
 <translation id="3303260552072730022">Μια επέκταση ενεργοποίησε τη λειτουργία πλήρους οθόνης.</translation>
 <translation id="3303818374450886607">Αντίγραφα</translation>
@@ -2242,6 +2236,7 @@
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
 <translation id="4467101674048705704">Ανάπτυξη <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Συμβάλλετε στη βελτίωση των λειτουργιών και της απόδοσης του Chrome</translation>
+<translation id="4472575034687746823">Έναρξη</translation>
 <translation id="4474155171896946103">Δημιουργία σελιδοδείκτη για όλες τις καρτέλες...</translation>
 <translation id="4475552974751346499">Αναζήτηση λήψεων</translation>
 <translation id="4476590490540813026">Αθλήτρια</translation>
@@ -3094,7 +3089,6 @@
 <translation id="5751545372099101699">Στοιχείο ραφιού 4</translation>
 <translation id="5752453871435543420">Αντίγραφο ασφαλείας στο cloud για το Chrome OS</translation>
 <translation id="5756163054456765343">Κέντρο βοήθειας</translation>
-<translation id="5758823144991844964">Αρχεία Play</translation>
 <translation id="5759728514498647443">Είναι δυνατή η ανάγνωση των εγγράφων που στέλνετε για εκτύπωση μέσω <ph name="APP_NAME" /> με την εφαρμογή <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Δεν βρέθηκαν συσκευές USB</translation>
 <translation id="5764483294734785780">Αποθή&amp;κευση ήχου ως...</translation>
@@ -3882,6 +3876,7 @@
 <translation id="6985607387932385770">Εκτυπωτές</translation>
 <translation id="6990081529015358884">Δεν υπάρχει ελεύθερος χώρος</translation>
 <translation id="6990778048354947307">Σκούρο θέμα</translation>
+<translation id="6991128190741664836">Αργότερα</translation>
 <translation id="6991665348624301627">Επιλογή προορισμού</translation>
 <translation id="6997707937646349884">Στις συσκευές σας:</translation>
 <translation id="6998711733709403587">Έχουν επιλεγεί <ph name="SELCTED_FOLDERS_COUNT" /> φάκελοι</translation>
@@ -4303,6 +4298,7 @@
 <translation id="7662283695561029522">Πατήστε για διαμόρφωση</translation>
 <translation id="7663719505383602579">Δέκτης: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Μη υποστηριζόμενη συσκευή Bluetooth: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="7665369617277396874">Προσθήκη λογαριασμού</translation>
 <translation id="7671130400130574146">Χρήση της γραμμής τίτλου συστήματος και των περιγραμμάτων.</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> στη σελίδα <ph name="PAGE_TITLE" />.</translation>
 <translation id="7681095912841365527">Ο ιστότοπος μπορεί να χρησιμοποιεί bluetooth</translation>
@@ -4527,7 +4523,6 @@
 <translation id="7973962044839454485">Αποτυχία ελέγχου ταυτότητας PPP λόγω εσφαλμένου ονόματος χρήστη ή κωδικού πρόσβασης</translation>
 <translation id="7974566588408714340">Επανάληψη προσπάθειας με χρήση <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Υπερσάρωση</translation>
-<translation id="7976555937380554094">Η προσθήκη <ph name="PEPPER_PLUGIN_NAME" /> στον τομέα <ph name="PEPPER_PLUGIN_DOMAIN" /> επιθυμεί να αποκτήσει πρόσβαση στη συσκευή σας</translation>
 <translation id="7977551819349545646">Ενημέρωση του Chromebox…</translation>
 <translation id="7978412674231730200">Ιδιωτικό κλειδί</translation>
 <translation id="7979036127916589816">Σφάλμα συγχρονισμού</translation>
@@ -4603,7 +4598,6 @@
 <translation id="806812017500012252">Αναδιάταξη ανά τίτλο</translation>
 <translation id="8068253693380742035">Αγγίξτε για να συνδεθείτε</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
-<translation id="806972267388474605">Αρχεία Linux</translation>
 <translation id="8071432093239591881">Εκτύπωση ως εικόνα</translation>
 <translation id="8072033737676488034">Διαγράψτε το τηλέφωνό σας και απενεργοποιήστε τη λειτουργία Better Together</translation>
 <translation id="8072988827236813198">Καρφίτσωμα καρτελων </translation>
@@ -4672,7 +4666,6 @@
 <translation id="8184318863960255706">Περισσότερες πληροφορίες</translation>
 <translation id="8185331656081929126">Εμφάνιση ειδοποιήσεων κατά τον εντοπισμό νέων εκτυπωτών στο δίκτυο</translation>
 <translation id="8186609076106987817">Δεν ήταν δυνατός ο εντοπισμός του αρχείου από τον διακομιστή.</translation>
-<translation id="8186706823560132848">Λογισμικό</translation>
 <translation id="8188120771410500975">&amp;Ορθογραφικός έλεγχος στα πεδία κειμένου</translation>
 <translation id="8190193592390505034">Σύνδεση με <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Διαχείριση των εφαρμογών, των επεκτάσεων και των θεμάτων σας</translation>
@@ -4698,7 +4691,6 @@
 <translation id="8227119283605456246">Επισύναψη αρχείου</translation>
 <translation id="8234795456569844941">Βοηθήστε τους μηχανικούς μας να επιδιορθώσουν αυτό το πρόβλημα. Πείτε μας τι συνέβη ακριβώς πριν από τη λήψη του μηνύματος σφάλματος προφίλ:</translation>
 <translation id="8234989666557591529">Επιλέξτε ένα τηλέφωνο για το ξεκλείδωμα του <ph name="DEVICE_TYPE" /></translation>
-<translation id="8238649969398088015">Συμβουλή βοήθειας</translation>
 <translation id="8239020549147958415">Συγχρονισμός ως <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">Συννεφιασμένος</translation>
 <translation id="8241806945692107836">Καθορισμός διαμόρφωσης συσκευής…</translation>
@@ -5146,7 +5138,6 @@
 <translation id="8957423540740801332">δεξιά</translation>
 <translation id="895944840846194039">Μνήμη JavaScript</translation>
 <translation id="8959810181433034287">Ο εποπτευόμενος χρήστης θα πρέπει να χρησιμοποιεί αυτόν τον κωδικό πρόσβασης για να συνδέεται, επομένως επιλέξτε έναν ασφαλή κωδικό πρόσβαση και φροντίστε να συζητήσετε τυχόν θέματα ασφαλείας με τον εποπτευόμενο χρήστη.</translation>
-<translation id="8960795431111723921">Αυτήν τη στιγμή, ερευνούμε το συγκεκριμένο πρόβλημα.</translation>
 <translation id="8962083179518285172">Απόκρυψη λεπτομερειών</translation>
 <translation id="8962918469425892674">Αυτός ο ιστότοπος χρησιμοποιεί αισθητήρες κίνησης και φωτός.</translation>
 <translation id="8965037249707889821">Εισαγάγετε τον προηγούμενο κωδικό πρόσβασης</translation>

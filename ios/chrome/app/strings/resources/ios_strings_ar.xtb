@@ -224,12 +224,12 @@
 <translation id="4860895144060829044">اتصال</translation>
 <translation id="4875622588773761625">هل تريد تحديث كلمة مرورك لهذا الموقع من خلال <ph name="PASSWORD_MANAGER_BRAND" />؟</translation>
 <translation id="4881695831933465202">فتح</translation>
-<translation id="4882831918239250449">التحكُّم في كيفية استخدام سِجل التصفُّح لتخصيص البحث والإعلانات والمزيد</translation>
+<translation id="4882831918239250449">التحكُّم في كيفية استخدامنا لسِجل التصفُّح الخاص بك لتخصيص البحث والإعلانات والمزيد</translation>
 <translation id="4904877109095351937">وضع علامة كمقروءة</translation>
 <translation id="4930268273022498155">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">عذرًا، حدثت مشكلة أثناء مشاركة العنصر.</translation>
 <translation id="4979397965658815378">‏سجّل الدخول إلى حسابك في Google لمزامنة الإشارات المرجعية وكلمات المرور والسجل والإعدادات الأخرى واستخدامها على جميع أجهزتك</translation>
-<translation id="5004416275253351869">‏عناصر التحكم في النشاط من Google</translation>
+<translation id="5004416275253351869">‏عناصر التحكم بالنشاط على Google</translation>
 <translation id="5005498671520578047">نسخ كلمة المرور</translation>
 <translation id="5010803260590204777">افتح علامة تبويب تصفح متخفي لتصفّح الويب بخصوصية تامّة.</translation>
 <translation id="5011684439661633295">مرحبًا <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -348,7 +348,7 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">علامات التبويب الأخيرة</translation>
 <translation id="7006788746334555276">إعدادات المحتوى</translation>
-<translation id="7017968314960951695">يستخدم المحتوى في المواقع الإلكترونية التي تزورها وفي نشاط المتصفّح وتفاعلات للتخصيص.</translation>
+<translation id="7017968314960951695">يستخدم محتوى المواقع الإلكترونية التي تزورها ونشاط وتفاعلات المتصفّح للتخصيص.</translation>
 <translation id="7029809446516969842">كلمات المرور</translation>
 <translation id="7031882061095297553">مزامنة لـ</translation>
 <translation id="7053983685419859001">منع</translation>

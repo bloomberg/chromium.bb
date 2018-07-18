@@ -66,7 +66,6 @@
 <translation id="109758035718544977">साइटें अनम्यूट करें</translation>
 <translation id="1097658378307015415">प्रवेश करने से पहले, कृपया <ph name="NETWORK_ID" /> नेटवर्क सक्रिय करने के लिए अतिथि के रूप में प्रविष्ट हों</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> का हमेशा अनुवाद करें</translation>
-<translation id="1108164192735968833">मैसेज (एसएमएस) कनेक्ट</translation>
 <translation id="1108600514891325577">&amp;रोकें</translation>
 <translation id="1110155001042129815">प्रतीक्षा करें</translation>
 <translation id="1112420131909513020">बैकग्राउंड टैब ब्लूटूथ का इस्तेमाल कर रहा है</translation>
@@ -456,7 +455,6 @@
 <translation id="1658424621194652532">यह पेज आपका माइक्रोफ़ोन एक्सेस कर रहा है.</translation>
 <translation id="1660204651932907780">साइटों को आवाज़ चलाने दें (सुझाया गया)</translation>
 <translation id="1661156625580498328">AES सुरक्षा लागू करें (सुझाया गया).</translation>
-<translation id="1661245713600520330">यह पृष्‍ठ मुख्‍य प्रक्रिया में लोड किए गए सभी मॉड्यूल और बाद में किसी समय लोड होने के लिए पंजीकृत मॉड्यूल की सूची बनाता है.</translation>
 <translation id="166179487779922818">पासवर्ड बहुत छोटा है.</translation>
 <translation id="1661867754829461514">पिन गुम</translation>
 <translation id="16620462294541761">क्षमा करें, आपका पासवर्ड सत्‍यापित नहीं हो सका. कृपया फिर से प्रयास करें.</translation>
@@ -607,7 +605,6 @@
 <translation id="1877520246462554164">प्रमाणीकरण टोकन नहीं पा सके. दोबारा कोशिश करने के लिए कृपया साइन आउट करें उसके बाद फिर से प्रवेश करें.</translation>
 <translation id="1878302395768190018">आप किसी भी समय Chrome सेटिंग में जाकर इसे अपनी पसंद के मुताबिक बना सकते हैं</translation>
 <translation id="1880905663253319515">प्रमाणपत्र "<ph name="CERTIFICATE_NAME" />" हटाएं?</translation>
-<translation id="1883903952484604915">मेरी फ़ाइलें</translation>
 <translation id="1886996562706621347">साइटों को प्रोटोकॉल के लिए डिफ़ॉल्‍ट हैंडलर बनने के लिए पूछने देने की अनुमति दें (सुझाव)</translation>
 <translation id="1887442540531652736">साइन-इन गड़बड़ी</translation>
 <translation id="1887850431809612466">हार्डवेयर पुनरीक्षण</translation>
@@ -744,7 +741,6 @@
 <translation id="21133533946938348">टैब छोटा करें</translation>
 <translation id="2113479184312716848">&amp;फ़ाइल खोलें...</translation>
 <translation id="2113921862428609753">प्राधिकारी जानकारी पहुंच</translation>
-<translation id="2114224913786726438">मॉड्यूल (<ph name="TOTAL_COUNT" />) - कोई विरोध नहीं मिले</translation>
 <translation id="2114326799768592691">&amp;फ़्रेम फिर लोड करें</translation>
 <translation id="2114896190328250491"><ph name="NAME" /> की फ़ोटो</translation>
 <translation id="2115103655317273167">फ़ोन पर भेजें</translation>
@@ -1130,7 +1126,6 @@
 <translation id="268053382412112343">इति&amp;हास</translation>
 <translation id="2683638487103917598">फ़ोल्डर क्रमबद्ध किया गया</translation>
 <translation id="2684004000387153598">जारी रखने के लिए, ठीक पर क्लिक करें, फिर व्‍यक्ति जोड़ें पर क्लिक करें, ताकि आप अपने ईमेल पते के लिए नई प्रोफ़ाइल बना सकें.</translation>
-<translation id="2686759344028411998">लोड किए गए किसी भी मॉड्यूल का पता लगाने में असमर्थ है.</translation>
 <translation id="2688196195245426394">डिवाइस को सर्वर के साथ पंजीकृत करते समय गड़बड़ी: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">भाषा के विकल्प दिखाएं</translation>
 <translation id="2691385045260836588">मॉडल</translation>
@@ -1512,7 +1507,6 @@
 <translation id="329838636886466101">ठीक करें</translation>
 <translation id="3298789223962368867">गलत यूआरएल डाला गया.</translation>
 <translation id="32991397311664836">डिवाइस:</translation>
-<translation id="3300394989536077382">हस्ताक्षरकर्ता</translation>
 <translation id="33022249435934718">GDI हैंडल</translation>
 <translation id="3303260552072730022">किसी एक्‍सटेंशन ने पूर्ण स्‍क्रीन ट्रिगर किया है.</translation>
 <translation id="3303818374450886607">प्रतियां</translation>
@@ -2241,6 +2235,7 @@
 <translation id="4467100756425880649">Chrome वेब स्‍टोर गैलरी</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> विस्तृत करें</translation>
 <translation id="447252321002412580">Chrome के फ़ीचर और परफ़ॉर्मेंस को बेहतर बनाने में सहायता करें</translation>
+<translation id="4472575034687746823">आरंभ करें</translation>
 <translation id="4474155171896946103">सभी टैब बुकमार्क करें...</translation>
 <translation id="4475552974751346499">डाउनलोड खोजें</translation>
 <translation id="4476590490540813026">एथलीट</translation>
@@ -3092,7 +3087,6 @@
 <translation id="5751545372099101699">अलमारी आइटम 4</translation>
 <translation id="5752453871435543420">Chrome OS क्‍लाउड बैकअप</translation>
 <translation id="5756163054456765343">&amp;सहायता केंद्र</translation>
-<translation id="5758823144991844964">Play की फ़ाइलें</translation>
 <translation id="5759728514498647443">आपके द्वारा <ph name="APP_NAME" /> के माध्‍यम से प्रिंट करने के लिए भेजे जाने वाले दस्‍तावेज़ <ph name="APP_NAME" /> द्वारा पढ़े जा सकते हैं.</translation>
 <translation id="5763751966069581670">कोई USB डिवाइस नहीं मि‍ला</translation>
 <translation id="5764483294734785780">इस रूप में ऑडियो स&amp;हेजें...</translation>
@@ -3880,6 +3874,7 @@
 <translation id="6985607387932385770">प्रिंटर</translation>
 <translation id="6990081529015358884">अब आपके पास और स्‍थान शेष नहीं है</translation>
 <translation id="6990778048354947307">गहरे रंग की थीम</translation>
+<translation id="6991128190741664836">बाद में</translation>
 <translation id="6991665348624301627">गंतव्य को चुनें</translation>
 <translation id="6997707937646349884">आपके इन डिवाइस पर:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> फ़ोल्‍डर चयनित</translation>
@@ -4301,6 +4296,7 @@
 <translation id="7662283695561029522">कॉन्फ़िगर करने के लिए टैप करें</translation>
 <translation id="7663719505383602579">प्राप्तकर्ता: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">असमर्थित ब्लूटूथ डिवाइस: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="7665369617277396874">खाता जोड़ें</translation>
 <translation id="7671130400130574146">सिस्टम शीर्षक बार और बॉर्डर का उपयोग करें</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, <ph name="PAGE_TITLE" /> में.</translation>
 <translation id="7681095912841365527">साइट ब्लूटूथ का इस्तेमाल कर सकती है</translation>
@@ -4525,7 +4521,6 @@
 <translation id="7973962044839454485">किसी गलत उपयोगकर्ता नाम या पासवर्ड के कारण PPP प्रमाणीकरण विफल रहा</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" /> का उपयोग करके पुन: प्रयास करें</translation>
 <translation id="7974936243149753750">ओवरस्कैन</translation>
-<translation id="7976555937380554094"><ph name="PEPPER_PLUGIN_DOMAIN" /> पर <ph name="PEPPER_PLUGIN_NAME" /> आपका डिवाइस एक्सेस करना चाहता है</translation>
 <translation id="7977551819349545646">Chromebox अपडेट कर रहा है...</translation>
 <translation id="7978412674231730200">निजी कुंजी</translation>
 <translation id="7979036127916589816">समन्वयन गड़बड़ी</translation>
@@ -4601,7 +4596,6 @@
 <translation id="806812017500012252">शीर्षक द्वारा फिर से क्रमित करें</translation>
 <translation id="8068253693380742035">प्रवेश करने के लिए स्पर्श करें</translation>
 <translation id="8069615408251337349">Google क्लाउड प्रिंट</translation>
-<translation id="806972267388474605">Linux की फ़ाइलें</translation>
 <translation id="8071432093239591881">चित्र के रूप में प्रिंट करें</translation>
 <translation id="8072033737676488034">अपना फ़ोन हटाएं और Better Together सुविधा बंद करें</translation>
 <translation id="8072988827236813198">टैब छोटा करें</translation>
@@ -4670,7 +4664,6 @@
 <translation id="8184318863960255706">अधिक जानकारी</translation>
 <translation id="8185331656081929126">नेटवर्क पर नए प्रिंटर का पता लगाए जाने पर सूचनाएं दिखाएं</translation>
 <translation id="8186609076106987817">सर्वर को फ़ाइल नहीं मिल सकी.</translation>
-<translation id="8186706823560132848">सॉफ़्टवेयर</translation>
 <translation id="8188120771410500975">&amp;लेख फ़ील्ड की वर्तनी जाँचें</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" /> से कनेक्‍ट हो रहा है</translation>
 <translation id="8191230140820435481">अपने ऐप्स , एक्सटेंशन, और थीम प्रबंधित करें</translation>
@@ -4696,7 +4689,6 @@
 <translation id="8227119283605456246">फ़ाइल अटैच करें</translation>
 <translation id="8234795456569844941">कृपया इस समस्या को ठीक करने में हमारे इंजीनियरों की सहायता करें. हमें बताएं कि प्रोफ़ाइल से जुड़ी गड़बड़ी का संदेश मिलने से ठीक पहले क्या हुआ था:</translation>
 <translation id="8234989666557591529">अपना <ph name="DEVICE_TYPE" /> अनलॉक करने के लिए कोई फ़ोन चुनें</translation>
-<translation id="8238649969398088015">सहायता युक्ति</translation>
 <translation id="8239020549147958415"><ph name="FULL_NAME" /> के रूप में सिंक करें</translation>
 <translation id="8241040075392580210">शेडी</translation>
 <translation id="8241806945692107836">डिवाइस कॉन्फ़िगरेशन निर्धारित किया जा रहा है...</translation>
@@ -5146,7 +5138,6 @@
 <translation id="8957423540740801332">दाईं</translation>
 <translation id="895944840846194039">JavaScript मेमोरी</translation>
 <translation id="8959810181433034287">'निगरानी में रखे गए उपयोगकर्ता' को साइन इन करने के लिए इस पासवर्ड की ज़रूरत होगी इसलिए एक सुरक्षित पासवर्ड चुनें. यह पासवर्ड 'निगरानी में रखे गए उपयोगकर्ता' को बताना न भूलें.</translation>
-<translation id="8960795431111723921">वर्तमान में हम इस समस्‍या की जाँच कर रहे हैं.</translation>
 <translation id="8962083179518285172">विवरण छुपाएं</translation>
 <translation id="8962918469425892674">यह साइट गति या रोशनी के सेंसर का इस्तेमाल कर रही है.</translation>
 <translation id="8965037249707889821">पुराना पासवर्ड डालें</translation>

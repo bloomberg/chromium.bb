@@ -104,7 +104,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="3479552764303398839">Hindi ngayon</translation>
 <translation id="3503306920980160878">Kailangan ng Chrome ng access sa iyong lokasyon upang ibahagi ang lokasyon mo sa site na ito</translation>
 <translation id="3582972582564653026">I-sync at i-personalize ang Chrome sa lahat ng iyong device</translation>
-<translation id="3612333635265770873">Ang module na may parehong pangalan ay kilalang salungat sa Google Chrome.</translation>
 <translation id="3622797965165704966">Ngayon, mas madali nang gamitin ang Chrome sa iyong Google Account at sa mga nakabahaging computer.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Mga Tuntunin ng Serbisyo<ph name="END_TERMS_OF_SERVICE_LINK" /> ng Google Chrome OS</translation>
 <translation id="3716182511346448902">Masyadong malaki ang ginagamit na memory ng page na ito kaya na-pause ito ng Chrome.</translation>
@@ -166,12 +165,10 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Mga Tuntunin ng Serbisyo<ph name="END_TERMS_OF_SERVICE_LINK" /> ng Google Chrome</translation>
 <translation id="5251420635869119124">Makakagamit ng Chrome ang mga bisita nang hindi nag-iiwan ng anumang bakas.</translation>
 <translation id="532046782124376502">Babala: Hindi mapipigilan ng Google Chrome ang pagtatala ng mga extension sa iyong history ng pag-browse. Upang i-disable ang extension na ito sa incognito mode, alisin sa pagkakapili ang opsyong ito.</translation>
-<translation id="5334545119300433702">Ang module na ito ay kilala bilang salungat sa Google Chrome.</translation>
 <translation id="5386244825306882791">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chrome o naghanap mula sa Omnibox.</translation>
 <translation id="5430073640787465221">Sira o di-wasto ang iyong file ng mga kagustuhan.
 
 Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
-<translation id="5495581687705680288">Mga module na na-load sa Google Chrome</translation>
 <translation id="556024056938947818">Sinusubukan ng Google Chrome na magpakita ng mga password.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Maaaring mapanganib ang <ph name="FILE_NAME" />, kaya na-block ito ng Chrome.</translation>

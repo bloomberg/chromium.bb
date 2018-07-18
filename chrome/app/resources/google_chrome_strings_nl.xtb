@@ -104,7 +104,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="3479552764303398839">Niet nu</translation>
 <translation id="3503306920980160878">Chrome heeft toegang tot je locatie nodig om je locatie met deze site te delen</translation>
 <translation id="3582972582564653026">Chrome op al je apparaten synchroniseren en personaliseren</translation>
-<translation id="3612333635265770873">Van een module met dezelfde naam is bekend dat deze conflicteert met Google Chrome.</translation>
 <translation id="3622797965165704966">Het is nu gemakkelijker om Chrome met je Google-account en op gedeelde computers te gebruiken.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Servicevoorwaarden<ph name="END_TERMS_OF_SERVICE_LINK" /> voor Google Chrome OS</translation>
 <translation id="3716182511346448902">Omdat deze pagina te veel geheugen gebruikt, heeft Chrome de pagina onderbroken.</translation>
@@ -166,10 +165,8 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Servicevoorwaarden<ph name="END_TERMS_OF_SERVICE_LINK" /> van Google Chrome</translation>
 <translation id="5251420635869119124">Gasten kunnen Chrome gebruiken zonder iets achter te laten.</translation>
 <translation id="532046782124376502">Waarschuwing: Google Chrome kan niet voorkomen dat extensies je browsegeschiedenis registreren. Als je deze extensie in de incognitomodus wilt uitschakelen, verwijder je het vinkje bij deze optie.</translation>
-<translation id="5334545119300433702">Van deze module is bekend dat deze conflicteert met Google Chrome.</translation>
 <translation id="5386244825306882791">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chrome start of vanuit de omnibox zoekt.</translation>
 <translation id="5430073640787465221">Je bestand met voorkeuren is beschadigd of ongeldig. Google Chrome kan je instellingen niet herstellen.</translation>
-<translation id="5495581687705680288">Modules die in Google Chrome zijn geladen</translation>
 <translation id="556024056938947818">Google Chrome probeert wachtwoorden weer te geven.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan gevaarlijk zijn en is daarom door Chrome geblokkeerd.</translation>

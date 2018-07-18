@@ -66,7 +66,6 @@
 <translation id="109758035718544977">Stummschaltung für Websites aufheben</translation>
 <translation id="1097658378307015415">Melden Sie vor der Anmeldung als Gast an, um das Netzwerk <ph name="NETWORK_ID" /> zu aktivieren.</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> immer übersetzen</translation>
-<translation id="1108164192735968833">SMS Connect</translation>
 <translation id="1108600514891325577">&amp;Anhalten</translation>
 <translation id="1110155001042129815">Warten</translation>
 <translation id="1112420131909513020">Tab im Hintergrund verwendet Bluetooth</translation>
@@ -453,7 +452,6 @@
 <translation id="1658424621194652532">Diese Seite greift auf Ihr Mikrofon zu.</translation>
 <translation id="1660204651932907780">Wiedergabe von Ton auf Websites zulassen (empfohlen)</translation>
 <translation id="1661156625580498328">AES-Verschlüsselung durchsetzen (empfohlen).</translation>
-<translation id="1661245713600520330">Auf dieser Seite werden alle Module aufgelistet, die im Hauptprozess geladen werden, sowie Module, die zu einem späteren Zeitpunkt geladen werden.</translation>
 <translation id="166179487779922818">Das Passwort ist zu kurz.</translation>
 <translation id="1661867754829461514">PIN fehlt</translation>
 <translation id="16620462294541761">Ihr Passwort konnte nicht bestätigt werden. Bitte versuchen Sie es erneut.</translation>
@@ -604,7 +602,6 @@
 <translation id="1877520246462554164">Authentifizierungs-Token konnte nicht abgerufen werden. Bitte melden Sie sich ab und dann wieder an, um es noch einmal zu versuchen.</translation>
 <translation id="1878302395768190018">Diese Option lässt sich jederzeit in den Chrome-Einstellungen anpassen</translation>
 <translation id="1880905663253319515">Zertifikat "<ph name="CERTIFICATE_NAME" />" löschen?</translation>
-<translation id="1883903952484604915">Meine Dateien</translation>
 <translation id="1886996562706621347">Registrierung von Websites als Standard-Handler für Protokolle zulassen (empfohlen)</translation>
 <translation id="1887442540531652736">Fehler bei der Anmeldung</translation>
 <translation id="1887850431809612466">Hardware-Version</translation>
@@ -741,7 +738,6 @@
 <translation id="21133533946938348">Tab anheften</translation>
 <translation id="2113479184312716848">&amp;Datei öffnen...</translation>
 <translation id="2113921862428609753">Zugriff auf Zertifizierungsstelleninformationen</translation>
-<translation id="2114224913786726438">Module (<ph name="TOTAL_COUNT" />) - keine Konflikte erkannt</translation>
 <translation id="2114326799768592691">&amp;Frame neu laden</translation>
 <translation id="2114896190328250491">Foto von <ph name="NAME" /></translation>
 <translation id="2115103655317273167">An Smartphone senden</translation>
@@ -1126,7 +1122,6 @@
 <translation id="268053382412112343">Ve&amp;rlauf</translation>
 <translation id="2683638487103917598">Ordner sortiert</translation>
 <translation id="2684004000387153598">Um fortzufahren, klicken Sie auf OK. Klicken Sie dann auf "Person hinzufügen", um ein neues Profil für Ihre E-Mail-Adresse zu erstellen.</translation>
-<translation id="2686759344028411998">Es konnten keine geladenen Module erkannt werden.</translation>
 <translation id="2688196195245426394">Fehler bei der Registrierung des Geräts auf dem Server: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Sprachoptionen anzeigen</translation>
 <translation id="2691385045260836588">Modell</translation>
@@ -1508,7 +1503,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="329838636886466101">Reparieren</translation>
 <translation id="3298789223962368867">Die eingegebene URL ist ungültig.</translation>
 <translation id="32991397311664836">Geräte:</translation>
-<translation id="3300394989536077382">Unterzeichnet von</translation>
 <translation id="33022249435934718">GDI-Handles</translation>
 <translation id="3303260552072730022">Eine Erweiterung hat den Vollbildmodus ausgelöst.</translation>
 <translation id="3303818374450886607">Kopien</translation>
@@ -2238,6 +2232,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4467100756425880649">Chrome Web Store-Galerie</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> maximieren</translation>
 <translation id="447252321002412580">Ich möchte dabei helfen, die Funktionen und die Leistung von Chrome zu verbessern</translation>
+<translation id="4472575034687746823">Jetzt starten</translation>
 <translation id="4474155171896946103">Alle Tabs als Lesezeichen speichern...</translation>
 <translation id="4475552974751346499">In Downloads suchen</translation>
 <translation id="4476590490540813026">Athletin</translation>
@@ -3089,7 +3084,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5751545372099101699">Ablageartikel 4</translation>
 <translation id="5752453871435543420">Chrome OS-Cloud-Sicherung</translation>
 <translation id="5756163054456765343">H&amp;ilfe</translation>
-<translation id="5758823144991844964">Google Play-Dateien</translation>
 <translation id="5759728514498647443">Dokumente, die Sie über <ph name="APP_NAME" /> zum Druck senden, können von <ph name="APP_NAME" /> gelesen werden.</translation>
 <translation id="5763751966069581670">Keine USB-Geräte gefunden</translation>
 <translation id="5764483294734785780">Audio &amp;speichern unter...</translation>
@@ -3877,6 +3871,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6985607387932385770">Drucker</translation>
 <translation id="6990081529015358884">Sie haben keinen freien Speicherplatz mehr.</translation>
 <translation id="6990778048354947307">Dunkles Design</translation>
+<translation id="6991128190741664836">Später</translation>
 <translation id="6991665348624301627">Ziel auswählen</translation>
 <translation id="6997707937646349884">Auf Ihren Geräten:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> Ordner ausgewählt</translation>
@@ -4298,6 +4293,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7662283695561029522">Zum Konfigurieren tippen</translation>
 <translation id="7663719505383602579">Empfänger: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Nicht unterstütztes Bluetooth-Gerät: "<ph name="DEVICE_NAME" />"</translation>
+<translation id="7665369617277396874">Konto hinzufügen</translation>
 <translation id="7671130400130574146">Titelleiste und Ränder des Systems verwenden</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> auf <ph name="PAGE_TITLE" />.</translation>
 <translation id="7681095912841365527">Website kann Bluetooth verwenden</translation>
@@ -4522,7 +4518,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7973962044839454485">Fehler bei PPP-Authentifizierung aufgrund eines falschen Nutzernamens oder Passworts</translation>
 <translation id="7974566588408714340">Über <ph name="EXTENSIONNAME" /> erneut versuchen</translation>
 <translation id="7974936243149753750">Overscan</translation>
-<translation id="7976555937380554094">Das Plug-in <ph name="PEPPER_PLUGIN_NAME" /> auf <ph name="PEPPER_PLUGIN_DOMAIN" /> möchte auf Ihr Gerät zugreifen</translation>
 <translation id="7977551819349545646">Chromebox wird aktualisiert...</translation>
 <translation id="7978412674231730200">Privater Schlüssel</translation>
 <translation id="7979036127916589816">Synchronisierungsfehler</translation>
@@ -4598,7 +4593,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="806812017500012252">Neu sortieren nach Titel</translation>
 <translation id="8068253693380742035">Zum Anmelden tippen</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
-<translation id="806972267388474605">Linux-Dateien</translation>
 <translation id="8071432093239591881">Als Bild drucken</translation>
 <translation id="8072033737676488034">Smartphone entfernen und Better Together deaktivieren</translation>
 <translation id="8072988827236813198">Tabs anheften</translation>
@@ -4667,7 +4661,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8184318863960255706">Weitere Informationen</translation>
 <translation id="8185331656081929126">Benachrichtigung anzeigen, wenn neue Drucker im Netzwerk gefunden werden</translation>
 <translation id="8186609076106987817">Die Datei konnte nicht gefunden werden.</translation>
-<translation id="8186706823560132848">Software</translation>
 <translation id="8188120771410500975">&amp;Rechtschreibung in allen Textfeldern prüfen</translation>
 <translation id="8190193592390505034">Verbindung zu <ph name="PROVIDER_NAME" /> wird hergestellt.</translation>
 <translation id="8191230140820435481">Apps, Erweiterungen und Designs verwalten</translation>
@@ -4693,7 +4686,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8227119283605456246">Datei anhängen</translation>
 <translation id="8234795456569844941">Bitte helfen Sie unseren Entwicklern bei der Lösung dieses Problems. Beschreiben Sie genau, was passiert ist, bevor Sie die Profilfehlermeldung erhalten haben:</translation>
 <translation id="8234989666557591529">Smartphone für das Entsperren Ihres <ph name="DEVICE_TYPE" />s auswählen</translation>
-<translation id="8238649969398088015">Hilfe</translation>
 <translation id="8239020549147958415">Mit <ph name="FULL_NAME" /> synchronisieren</translation>
 <translation id="8241040075392580210">Heiter bis wolkig</translation>
 <translation id="8241806945692107836">Gerätekonfiguration wird abgerufen...</translation>
@@ -5144,7 +5136,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8957423540740801332">Rechts</translation>
 <translation id="895944840846194039">JavaScript-Speicher</translation>
 <translation id="8959810181433034287">Der betreute Nutzer benötigt dieses Passwort für die Anmeldung. Achten Sie darauf, ein sicheres Passwort auszuwählen und es dem betreuten Nutzer mitzuteilen.</translation>
-<translation id="8960795431111723921">Wir untersuchen dieses Problem gerade.</translation>
 <translation id="8962083179518285172">Details ausblenden</translation>
 <translation id="8962918469425892674">Diese Website nutzt Bewegungs- oder Lichtsensoren.</translation>
 <translation id="8965037249707889821">Altes Passwort eingeben</translation>

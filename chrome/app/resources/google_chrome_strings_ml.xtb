@@ -104,7 +104,6 @@
 <translation id="3479552764303398839">ഇപ്പോഴല്ല</translation>
 <translation id="3503306920980160878">ഈ സൈറ്റുമായി ലൊക്കേഷൻ പങ്കിടാൻ Chrome-ന് നിങ്ങളുടെ ലൊക്കേഷനിലേക്കുള്ള ആക്‌സസ് ആവശ്യമാണ്</translation>
 <translation id="3582972582564653026">നിങ്ങളുടെ ഉപകരണങ്ങളിലുടനീളം Chrome സമന്വയിപ്പിച്ച് വ്യക്തിഗതമാക്കുക</translation>
-<translation id="3612333635265770873">സമാന നാമമുള്ള ഒരു മൊഡ്യൂളിന് Google Chrome മായി വൈരുദ്ധ്യമുണ്ടെന്ന് അറിഞ്ഞു.</translation>
 <translation id="3622797965165704966">ഇപ്പോൾ നിങ്ങളുടെ Google അക്കൗണ്ട് ഉപയോഗിച്ച്, പങ്കിട്ട കമ്പ്യൂട്ടറുകളിൽ Chromium ഉപയോഗിക്കാൻ എളുപ്പമാണ്.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />സേവന നിബന്ധനകള്‍<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3716182511346448902">ഈ പേജ് ഒരുപാട് മെമ്മറി ഉപയോഗിക്കുന്നു, അതിനാൽ Chrome ഇത് താൽക്കാലികമായി അവസാനിപ്പിച്ചു.</translation>
@@ -166,12 +165,10 @@
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />സേവനനിബന്ധനകൾ<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">അതിഥികൾക്ക് ഒന്നും ശേഷിപ്പിക്കാതെ തന്നെ Chrome ഉപയോഗിക്കാനാവും.</translation>
 <translation id="532046782124376502">മുന്നറിയിപ്പ്: നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം റെക്കോർഡ് ചെയ്യുന്നതിൽ നിന്ന് വിപുലീകരണങ്ങളെ തടയാൻ Google Chrome-ന് കഴിയില്ല. അദൃശ്യ മോഡിൽ ഈ വിപുലീകരണം പ്രവർത്തനരഹിതമാക്കാൻ, ഈ ഓപ്‌ഷൻ തിരഞ്ഞെടുത്തത് മാറ്റുക.</translation>
-<translation id="5334545119300433702">ഈ മൊഡ്യൂള്‍ Google Chrome മായി പൊരുത്തക്കേടിലാണെന്ന് അറിയപ്പെടുന്നു.</translation>
 <translation id="5386244825306882791">നിങ്ങൾ Chrome ആരംഭിയ്ക്കുമ്പോഴോ ഓമ്‌നിബോക്‌സിൽ നിന്ന് തിരയുമ്പോഴോ ദൃശ്യമാകുന്ന പേജും അത് നിയന്ത്രിയ്ക്കുന്നു.</translation>
 <translation id="5430073640787465221">നിങ്ങളുടെ മുൻഗണനാ ഫയൽ കേടായതാണ് അല്ലെങ്കിൽ അസാധുവാണ്.
 
 നിങ്ങളുടെ ക്രമീകരണം വീണ്ടെടുക്കാൻ Google Chrome-ന് കഴിയില്ല.</translation>
-<translation id="5495581687705680288">മൊഡ്യൂളുകള്‍ Google Chrome ലേയ്ക്ക് ലോഡുചെയ്തു</translation>
 <translation id="556024056938947818">Google Chrome പാസ്‌വേഡുകൾ ദൃശ്യമാക്കാൻ ശ്രമിക്കുന്നു.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> അപകടകരമാകാൻ ഇടയുള്ളതിനാൽ, Chrome ഇതിനെ ബ്ലോക്കുചെയ്‌തു.</translation>

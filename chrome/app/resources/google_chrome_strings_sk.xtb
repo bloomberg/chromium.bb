@@ -102,7 +102,6 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="3479552764303398839">Teraz nie</translation>
 <translation id="3503306920980160878">Chrome potrebuje prístup k vašej polohe, aby ju mohol zdieľať s týmto webom</translation>
 <translation id="3582972582564653026">Synchronizujte a prispôsobte si Chrome v rôznych zariadeniach</translation>
-<translation id="3612333635265770873">Zistilo sa, že modul s rovnakým názvom spôsobuje konflikt s aplikáciou Google Chrome.</translation>
 <translation id="3622797965165704966">Teraz je používanie prehliadača Chrome s účtom Google a na zdieľaných počítačoch oveľa ľahšie.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Zmluvné podmienky<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome OS</translation>
 <translation id="3716182511346448902">Táto stránka využíva príliš veľa pamäte, a preto ju Chrome pozastavil.</translation>
@@ -164,12 +163,10 @@ Niektoré funkcie môžu byť nedostupné. Zadajte iný adresár profilu alebo p
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Zmluvné podmienky<ph name="END_TERMS_OF_SERVICE_LINK" /> prehliadača Google Chrome</translation>
 <translation id="5251420635869119124">Hostia môžu používať prehliadač Chrome bez toho, aby po sebe zanechali akékoľvek informácie.</translation>
 <translation id="532046782124376502">Upozornenie: Google Chrome nemôže zabrániť rozšíreniam v zaznamenávaní vašej histórie prehliadania. Ak chcete dané rozšírenie v režime inkognito zakázať, zrušte výber tejto možnosti.</translation>
-<translation id="5334545119300433702">Tento modul zvykne spôsobovať konflikt s prehliadačom Google Chrome.</translation>
 <translation id="5386244825306882791">Tiež určuje, ktorá stránka sa zobrazí pri spustení prehliadača Chrome alebo pri vyhľadávaní pomocou všeobecného poľa.</translation>
 <translation id="5430073640787465221">Súbor predvolieb je poškodený alebo neplatný. 
 
 Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
-<translation id="5495581687705680288">Moduly načítané do prehliadača Google Chrome</translation>
 <translation id="556024056938947818">Prehliadač Google Chrome sa snaží zobraziť heslá.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Súbor <ph name="FILE_NAME" /> môže byť nebezpečný, a preto ho Chrome zablokoval.</translation>

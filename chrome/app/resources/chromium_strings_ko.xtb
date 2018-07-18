@@ -28,7 +28,6 @@
 <translation id="1881322772814446296">관리 계정으로 로그인하고 Chromium 프로필에 대한 관리자 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정 등 Chromium 데이터가 <ph name="USER_NAME" /> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. 기존 Chromium 데이터를 유지하려면 새 프로필을 만드는 방법이 있습니다. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium이 응답하지 않습니다. 다시 시작하시겠습니까?</translation>
 <translation id="1966382378801805537">Chromium에서 기본 브라우저를 확인하거나 설정할 수 없습니다.</translation>
-<translation id="1967743265616885482">같은 이름의 모듈이 Chromium과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="2008474315282236005">항목 1개가 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chromium에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
 <translation id="2117378023188580026">관리자가 이 업데이트를 적용하려면 사용자가 Chromium을 다시 시작하도록 설정했습니다.</translation>
 <translation id="2119636228670142020">Chromium OS 정보</translation>
@@ -94,7 +93,6 @@
 <translation id="4260985389288095068">컴퓨터에 유해한 소프트웨어가 있습니다. Chromium에서 이 소프트웨어를 삭제하고 설정을 복원하여 브라우저가 다시 정상적으로 작동하도록 할 수 있습니다.</translation>
 <translation id="4271805377592243930">Chromium 도움말 보기</translation>
 <translation id="4285930937574705105">확인되지 않은 오류로 설치에 실패했습니다. Chromium이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
-<translation id="4330585738697551178">이 모듈은 Chromium과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="4407044323746248786">Chromium을 종료하시겠습니까?</translation>
 <translation id="4415566066719264597">백그라운드에서 Chromium을 실행</translation>
 <translation id="4421155425831608516">이 기기의 관리자에 의해 Chromium 로그인이 사용 중지되었습니다.</translation>
@@ -175,7 +173,6 @@
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay(Chromium에 복사됨)</translation>
 <translation id="6893813176749746474">Chromium이 업데이트되었지만, 최소 30일 동안 사용하지 않았습니다.</translation>
-<translation id="6944967875980567883">Chromium에 로드된 모듈</translation>
 <translation id="6964305034639999644">Chromium 시크릿 창에서 링크 열기(&amp;G)</translation>
 <translation id="6970811910055250180">기기를 업데이트하는 중...</translation>
 <translation id="6990124437352146030">이 사이트에서 마이크에 액세스하려면 Chromium에 권한이 필요합니다</translation>

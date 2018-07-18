@@ -66,7 +66,6 @@
 <translation id="109758035718544977">複数のサイトのミュートを解除</translation>
 <translation id="1097658378307015415">ログインする前に、ゲスト セッションを開始して <ph name="NETWORK_ID" /> ネットワークを有効にしてください</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" />を常に翻訳</translation>
-<translation id="1108164192735968833">SMS コネクト</translation>
 <translation id="1108600514891325577">停止(&amp;S)</translation>
 <translation id="1110155001042129815">待機</translation>
 <translation id="1112420131909513020">バックグラウンドのタブで Bluetooth が使用されています</translation>
@@ -456,7 +455,6 @@
 <translation id="1658424621194652532">このページはマイクにアクセスしています。</translation>
 <translation id="1660204651932907780">音声の再生をサイトに許可する（推奨）</translation>
 <translation id="1661156625580498328">AES 暗号化を適用します（推奨）。</translation>
-<translation id="1661245713600520330">このページには、メイン プロセスに読み込まれているすべてのモジュールと、後で読み込むために登録されているモジュールが表示されます。</translation>
 <translation id="166179487779922818">パスワードが短すぎます。</translation>
 <translation id="1661867754829461514">PIN がありません</translation>
 <translation id="16620462294541761">パスワードを確認できませんでした。もう一度お試しください。</translation>
@@ -607,7 +605,6 @@
 <translation id="1877520246462554164">認証トークンを取得できませんでした。いったんログアウトして再度ログインし、もう一度お試しください。</translation>
 <translation id="1878302395768190018">この設定は Chrome の [設定] ページでいつでもカスタマイズできます</translation>
 <translation id="1880905663253319515">証明書「<ph name="CERTIFICATE_NAME" />」を削除しますか？</translation>
-<translation id="1883903952484604915">マイファイル</translation>
 <translation id="1886996562706621347">サイトからのプロトコルのデフォルト ハンドラとしての登録要求を許可する（推奨）</translation>
 <translation id="1887442540531652736">ログインエラー</translation>
 <translation id="1887850431809612466">ハードウェア リビジョン</translation>
@@ -744,7 +741,6 @@
 <translation id="21133533946938348">タブを固定</translation>
 <translation id="2113479184312716848">ファイルを開く（&amp;F）...</translation>
 <translation id="2113921862428609753">認証局アクセス情報</translation>
-<translation id="2114224913786726438">モジュール（<ph name="TOTAL_COUNT" />） - 競合は検出されませんでした</translation>
 <translation id="2114326799768592691">フレームを再読み込み(&amp;F)</translation>
 <translation id="2114896190328250491">撮影者: <ph name="NAME" /></translation>
 <translation id="2115103655317273167">モバイル端末に送信</translation>
@@ -1130,7 +1126,6 @@
 <translation id="268053382412112343">履歴(&amp;S)</translation>
 <translation id="2683638487103917598">フォルダが並べ替えられました</translation>
 <translation id="2684004000387153598">利用を続けるには、[OK]、[ユーザーを追加] の順にクリックして、お使いのメールアドレス用の新しいプロフィールを作成してください。</translation>
-<translation id="2686759344028411998">モジュールが読み込まれていません。</translation>
 <translation id="2688196195245426394">デバイスをサーバーに登録するときにエラーが発生しました: <ph name="CLIENT_ERROR" />。</translation>
 <translation id="2690024944919328218">言語オプションを表示</translation>
 <translation id="2691385045260836588">機種</translation>
@@ -1512,7 +1507,6 @@
 <translation id="329838636886466101">修復</translation>
 <translation id="3298789223962368867">入力された URL が無効です。</translation>
 <translation id="32991397311664836">デバイス:</translation>
-<translation id="3300394989536077382">署名</translation>
 <translation id="33022249435934718">GDI ハンドル</translation>
 <translation id="3303260552072730022">拡張機能によって自動的に全画面表示になりました。</translation>
 <translation id="3303818374450886607">部数</translation>
@@ -2242,6 +2236,7 @@
 <translation id="4467100756425880649">Chrome ウェブストア ギャラリー</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> を展開します</translation>
 <translation id="447252321002412580">Chrome の機能と動作の改善に協力する</translation>
+<translation id="4472575034687746823">利用を開始</translation>
 <translation id="4474155171896946103">すべてのタブをブックマークに追加...</translation>
 <translation id="4475552974751346499">ダウンロード検索</translation>
 <translation id="4476590490540813026">競技選手</translation>
@@ -3093,7 +3088,6 @@
 <translation id="5751545372099101699">シェルフ アイテム 4</translation>
 <translation id="5752453871435543420">Chrome OS のクラウド バックアップ</translation>
 <translation id="5756163054456765343">ヘルプセンター(&amp;E)</translation>
-<translation id="5758823144991844964">再生ファイル</translation>
 <translation id="5759728514498647443">「<ph name="APP_NAME" />」を使用して印刷に送信したドキュメントは「<ph name="APP_NAME" />」で読めます。</translation>
 <translation id="5763751966069581670">USB デバイスが見つかりませんでした</translation>
 <translation id="5764483294734785780">名前を付けてオーディオを保存(&amp;V)...</translation>
@@ -3881,6 +3875,7 @@
 <translation id="6985607387932385770">プリンタ</translation>
 <translation id="6990081529015358884">空き容量が不足しています</translation>
 <translation id="6990778048354947307">暗色系テーマ</translation>
+<translation id="6991128190741664836">後で確認</translation>
 <translation id="6991665348624301627">送信先の選択</translation>
 <translation id="6997707937646349884">端末で次の操作を行います。</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> 個のフォルダを選択しました</translation>
@@ -4303,6 +4298,7 @@
 <translation id="7662283695561029522">設定するにはタップします</translation>
 <translation id="7663719505383602579">レシーバー: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">サポートされていない Bluetooth デバイス: 「<ph name="DEVICE_NAME" />」</translation>
+<translation id="7665369617277396874">アカウントを追加</translation>
 <translation id="7671130400130574146">システム タイトル バーと枠線の使用</translation>
 <translation id="7672520070349703697"><ph name="PAGE_TITLE" /> 内の <ph name="HUNG_IFRAME_URL" /> が停止しています。</translation>
 <translation id="7681095912841365527">サイトに Bluetooth の使用が許可されています</translation>
@@ -4527,7 +4523,6 @@
 <translation id="7973962044839454485">ユーザー名またはパスワードが正しくないため、PPP 認証に失敗しました</translation>
 <translation id="7974566588408714340">「<ph name="EXTENSIONNAME" />」で再試行</translation>
 <translation id="7974936243149753750">オーバースキャン</translation>
-<translation id="7976555937380554094"><ph name="PEPPER_PLUGIN_DOMAIN" /> の <ph name="PEPPER_PLUGIN_NAME" /> プラグインから、端末へのアクセス許可を求められています</translation>
 <translation id="7977551819349545646">Chromebox を更新中...</translation>
 <translation id="7978412674231730200">秘密鍵</translation>
 <translation id="7979036127916589816">同期エラー</translation>
@@ -4603,7 +4598,6 @@
 <translation id="806812017500012252">タイトルで並べ替え</translation>
 <translation id="8068253693380742035">タップしてログイン</translation>
 <translation id="8069615408251337349">Google クラウド プリント</translation>
-<translation id="806972267388474605">Linux ファイル</translation>
 <translation id="8071432093239591881">画像として印刷する</translation>
 <translation id="8072033737676488034">スマートフォンを削除して Better Together を無効にする</translation>
 <translation id="8072988827236813198">複数のタブを固定</translation>
@@ -4672,7 +4666,6 @@
 <translation id="8184318863960255706">詳細</translation>
 <translation id="8185331656081929126">ネットワーク上で新しいプリンタが検出されたときに通知を表示する</translation>
 <translation id="8186609076106987817">お探しのファイルはサーバーにはありません。</translation>
-<translation id="8186706823560132848">ソフトウェア</translation>
 <translation id="8188120771410500975">テキスト フィールドのスペルチェック(&amp;C)</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" /> に接続中</translation>
 <translation id="8191230140820435481">アプリ、拡張機能、テーマを管理する</translation>
@@ -4698,7 +4691,6 @@
 <translation id="8227119283605456246">添付ファイル</translation>
 <translation id="8234795456569844941">問題解決の手がかりとして、具体的にどのような操作を行ったときにプロフィール エラーのメッセージが表示されたかをお知らせください。</translation>
 <translation id="8234989666557591529"><ph name="DEVICE_TYPE" /> のロック解除に使用するスマートフォンを選択してください</translation>
-<translation id="8238649969398088015">ヘルプのヒント</translation>
 <translation id="8239020549147958415">「<ph name="FULL_NAME" />」として同期</translation>
 <translation id="8241040075392580210">シェイディ</translation>
 <translation id="8241806945692107836">デバイスの設定を確認しています...</translation>
@@ -5148,7 +5140,6 @@
 <translation id="8957423540740801332">右</translation>
 <translation id="895944840846194039">JavaScript メモリ</translation>
 <translation id="8959810181433034287">監視対象ユーザーは、ログインするときにこのパスワードを使用する必要があります。そのため、安全なパスワードを選んでください。また、必ず監視対象ユーザー本人にも相談してください。</translation>
-<translation id="8960795431111723921">この問題については現在調査中です。</translation>
 <translation id="8962083179518285172">詳細を非表示</translation>
 <translation id="8962918469425892674">このサイトはモーション センサーまたは光センサーを使用しています。</translation>
 <translation id="8965037249707889821">古いパスワードを入力</translation>

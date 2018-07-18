@@ -725,7 +725,7 @@
 <translation id="7022756207310403729">在浏览器中打开</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="7031882061095297553">同步到</translation>
-<translation id="7032663816368481562">当您在地址栏中点按“更多类似内容”图标 <ph name="ICON" /> 时，系统会显示指向相关页面的快速链接。您所访问的网页的网址均会被发送给 Google。</translation>
+<translation id="7032663816368481562">当您在地址栏中点按“更多类似内容”图标 <ph name="ICON" /> 时，系统会显示指向相关页面的快速链接。您所访问的网页的网址会被发送给 Google。</translation>
 <translation id="7034608350006174882">Google Pay 中存储的卡片和地址信息</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7055152154916055070">已阻止重定向：</translation>
@@ -893,7 +893,7 @@
 <translation id="8497726226069778601">目前还未列出任何网页…</translation>
 <translation id="8503559462189395349">Chrome 密码</translation>
 <translation id="8503813439785031346">用户名</translation>
-<translation id="8504988642345501642">当您向上滚动屏幕时，系统会显示指向相关页面的快速链接。您所访问的网页的网址均会被发送给 Google。</translation>
+<translation id="8504988642345501642">当您向上滚动屏幕时，系统会显示指向相关页面的快速链接。您所访问的网页的网址会被发送给 Google。</translation>
 <translation id="8514477925623180633">导出存储在 Chrome 中的密码</translation>
 <translation id="8514577642972634246">进入隐身模式</translation>
 <translation id="851751545965956758">禁止网站连接到设备</translation>

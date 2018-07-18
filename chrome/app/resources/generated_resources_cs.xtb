@@ -66,7 +66,6 @@
 <translation id="109758035718544977">Zapnout zvuk webů</translation>
 <translation id="1097658378307015415">Chcete-li aktivovat síť <ph name="NETWORK_ID" />, vstupte prosím před přihlášením jako host</translation>
 <translation id="1103523840287552314">Vždy překládat jazyk <ph name="LANGUAGE" /></translation>
-<translation id="1108164192735968833">Propojení SMS</translation>
 <translation id="1108600514891325577">&amp;Zastavit</translation>
 <translation id="1110155001042129815">Počkat</translation>
 <translation id="1112420131909513020">Karta na pozadí používá Bluetooth</translation>
@@ -456,7 +455,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1658424621194652532">Tato stránka používá váš mikrofon.</translation>
 <translation id="1660204651932907780">Povolit webům přehrávat zvuky (doporučeno)</translation>
 <translation id="1661156625580498328">Vynutit šifrování AES (doporučeno).</translation>
-<translation id="1661245713600520330">Tato stránka uvádí všechny moduly načtené v hlavním procesu a moduly registrované k pozdějšímu načtení.</translation>
 <translation id="166179487779922818">Heslo je příliš krátké.</translation>
 <translation id="1661867754829461514">Chybí kód PIN</translation>
 <translation id="16620462294541761">Litujeme, heslo nelze ověřit. Zkuste to prosím znovu.</translation>
@@ -607,7 +605,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1877520246462554164">Nepodařilo se získat ověřovací token. Chcete-li to zkusit znovu, odhlaste se a poté se znovu přihlaste.</translation>
 <translation id="1878302395768190018">Toto nastavení můžete kdykoliv upravit v nastavení Chromu</translation>
 <translation id="1880905663253319515">Smazat certifikát <ph name="CERTIFICATE_NAME" />?</translation>
-<translation id="1883903952484604915">Moje soubory</translation>
 <translation id="1886996562706621347">Povolit dotazy stránek, zda je chcete použít jako výchozí obslužný nástroj protokolů (doporučeno)</translation>
 <translation id="1887442540531652736">Chyba přihlášení</translation>
 <translation id="1887850431809612466">Revize hardwaru</translation>
@@ -744,7 +741,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="21133533946938348">Připnout kartu</translation>
 <translation id="2113479184312716848">&amp;Otevřít soubor...</translation>
 <translation id="2113921862428609753">Přístup k informacím autority</translation>
-<translation id="2114224913786726438">Moduly (<ph name="TOTAL_COUNT" />) – žádné zjištěné konflikty</translation>
 <translation id="2114326799768592691">Znovu načíst &amp;rámec</translation>
 <translation id="2114896190328250491">Autor fotografie: <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Odeslat na telefon</translation>
@@ -1130,7 +1126,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="268053382412112343">&amp;Historie</translation>
 <translation id="2683638487103917598">Složka je seřazena</translation>
 <translation id="2684004000387153598">Chcete-li pokračovat, klikněte na OK a poté kliknutím na Přidat uživatele vytvořte nový profil pro svou novou e-mailovou adresu.</translation>
-<translation id="2686759344028411998">Nebyly zjištěny žádné načtené moduly.</translation>
 <translation id="2688196195245426394">Při registraci zařízení na serveru došlo k chybě: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Zobrazit jazykové možnosti</translation>
 <translation id="2691385045260836588">Model</translation>
@@ -1512,7 +1507,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="329838636886466101">Opravit</translation>
 <translation id="3298789223962368867">Byla zadána neplatná adresa URL.</translation>
 <translation id="32991397311664836">Zařízení:</translation>
-<translation id="3300394989536077382">Podpis:</translation>
 <translation id="33022249435934718">Popisovače – GDI</translation>
 <translation id="3303260552072730022">Rozšíření spustilo režim celé obrazovky.</translation>
 <translation id="3303818374450886607">Kopie</translation>
@@ -2239,6 +2233,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4467100756425880649">Galerie Internetového obchodu Chrome</translation>
 <translation id="4467101674048705704">Rozbalit složku <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Pomoci s vylepšováním funkcí a výkonu prohlížeče Chrome</translation>
+<translation id="4472575034687746823">Začít</translation>
 <translation id="4474155171896946103">Přidat do záložek všechny karty...</translation>
 <translation id="4475552974751346499">Hledat stažené soubory</translation>
 <translation id="4476590490540813026">Sportovkyně</translation>
@@ -2367,7 +2362,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4681930562518940301">Otevřít původní &amp;obrázek na nové kartě</translation>
 <translation id="4682551433947286597">Tapety se zobrazí na přihlašovací obrazovce.</translation>
 <translation id="4684427112815847243">Synchronizovat vše</translation>
-<translation id="4689235506267737042">Zvolte ukázkové předvolby</translation>
+<translation id="4689235506267737042">Zvolte předvolby ukázkového režimu</translation>
 <translation id="4689421377817139245">Synchronizujte tuto záložku do svého iPhonu</translation>
 <translation id="4690091457710545971">&lt;Čtyři soubory vygenerované firmwarem Wi-Fi od společnosti Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. První tři jsou binární soubory s výpisy z registru a společnost Intel o nich prohlašuje, že neobsahují žádné informace umožňující identifikaci osob ani zařízení. Poslední soubor obsahuje trasovací informace z firmwaru Intel. Byly z něj odstraněny všechny informace umožňující identifikaci osob nebo zařízení, ale je příliš velký na to, aby jej zde bylo možné zobrazit. Tyto soubory byly vygenerovány v reakci na nedávné problémy se sítí Wi-Fi ve vašem zařízení a budou poskytnuty společnosti Intel, aby tyto problémy mohla odstranit.&gt;</translation>
 <translation id="4692302215262324251">Vaše zařízení <ph name="DEVICE_TYPE" /> bylo úspěšně zaregistrováno do podnikové správy v doméně <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
@@ -3089,7 +3084,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5751545372099101699">Položka č. 4 v poličce</translation>
 <translation id="5752453871435543420">Zálohování Chrome OS do cloudu</translation>
 <translation id="5756163054456765343">C&amp;entrum nápovědy</translation>
-<translation id="5758823144991844964">Soubory Play</translation>
 <translation id="5759728514498647443">Dokumenty odeslané k tisku prostřednictvím aplikace <ph name="APP_NAME" /> lze číst v aplikaci <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Nebyla nalezena žádná zařízení USB</translation>
 <translation id="5764483294734785780">Uložit &amp;zvuk jako...</translation>
@@ -3877,6 +3871,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6985607387932385770">Tiskárny</translation>
 <translation id="6990081529015358884">Došlo vám místo</translation>
 <translation id="6990778048354947307">Tmavý motiv</translation>
+<translation id="6991128190741664836">Později</translation>
 <translation id="6991665348624301627">Vybrat cíl</translation>
 <translation id="6997707937646349884">Ve vašich zařízeních:</translation>
 <translation id="6998711733709403587">Vybrané soubory: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
@@ -4296,6 +4291,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7662283695561029522">Klepnutím zahájíte konfiguraci</translation>
 <translation id="7663719505383602579">Příjemce: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Nepodporované zařízení Bluetooth: <ph name="DEVICE_NAME" />.</translation>
+<translation id="7665369617277396874">Přidat účet</translation>
 <translation id="7671130400130574146">Použít systémové záhlaví a okraje okna</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> na stránce <ph name="PAGE_TITLE" />.</translation>
 <translation id="7681095912841365527">Web může použít Bluetooth</translation>
@@ -4520,7 +4516,6 @@ V zařízení se systémem Chrome OS můžete aktivovat funkce ladění, abyste
 <translation id="7973962044839454485">Ověření PPP se nezdařilo kvůli nesprávnému uživatelskému jménu nebo heslu</translation>
 <translation id="7974566588408714340">Zkusit znovu pomocí rozšíření <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Přesah obrazu</translation>
-<translation id="7976555937380554094">Plugin <ph name="PEPPER_PLUGIN_NAME" /> v doméně <ph name="PEPPER_PLUGIN_DOMAIN" /> chce získat přístup k vašemu zařízení</translation>
 <translation id="7977551819349545646">Aktualizace zařízení Chromebox...</translation>
 <translation id="7978412674231730200">Soukromý klíč</translation>
 <translation id="7979036127916589816">Chyba synchronizace</translation>
@@ -4596,7 +4591,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="806812017500012252">Seřadit podle abecedy</translation>
 <translation id="8068253693380742035">Klepnutím se přihlásíte</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
-<translation id="806972267388474605">Soubory systému Linux</translation>
 <translation id="8071432093239591881">Vytisknout jako obrázek</translation>
 <translation id="8072033737676488034">Odpojte telefon a vypněte funkci Společně ještě lepší</translation>
 <translation id="8072988827236813198">Připnout karty</translation>
@@ -4665,7 +4659,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8184318863960255706">Další informace</translation>
 <translation id="8185331656081929126">Zobrazit oznámení, když budou v síti zjištěny nové tiskárny</translation>
 <translation id="8186609076106987817">Serveru se nepodařilo soubor najít.</translation>
-<translation id="8186706823560132848">Software</translation>
 <translation id="8188120771410500975">&amp;Kontrolovat pravopis v textových polích</translation>
 <translation id="8190193592390505034">Připojování k síti poskytovatele <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Spravovat aplikace, rozšíření a motivy</translation>
@@ -4691,7 +4684,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8227119283605456246">Přiložit soubor</translation>
 <translation id="8234795456569844941">Pomozte našim technikům opravit tento problém. Sdělte nám, co se stalo těsně před zobrazením zprávy o chybě profilu:</translation>
 <translation id="8234989666557591529">Zvolte telefon k odemykání zařízení <ph name="DEVICE_TYPE" /></translation>
-<translation id="8238649969398088015">Tip nápovědy</translation>
 <translation id="8239020549147958415">Synchronizovat jako <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">Mráček</translation>
 <translation id="8241806945692107836">Zjišťování konfigurace zařízení...</translation>
@@ -5141,7 +5133,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8957423540740801332">vpravo</translation>
 <translation id="895944840846194039">Paměť JavaScriptu</translation>
 <translation id="8959810181433034287">Dozorovaný uživatel se pomocí tohoto hesla bude přihlašovat. Vyberte proto bezpečné heslo a nezapomeňte je s daným uživatelem prodiskutovat.</translation>
-<translation id="8960795431111723921">Právě se této záležitosti snažíme přijít na kloub.</translation>
 <translation id="8962083179518285172">Skrýt podrobnosti</translation>
 <translation id="8962918469425892674">Tento web používá senzory pohybu nebo osvětlení.</translation>
 <translation id="8965037249707889821">Zadat staré heslo</translation>

@@ -104,7 +104,6 @@
 <translation id="3479552764303398839">Не сада</translation>
 <translation id="3503306920980160878">Chrome тражи приступ вашој локацији да бисте је делили са овим сајтом</translation>
 <translation id="3582972582564653026">Синхронизујте и персонализујте Chrome на свим уређајима</translation>
-<translation id="3612333635265770873">Модул истог назива се већ сукобљавао са Google Chrome прегледачем.</translation>
 <translation id="3622797965165704966">Сада можете лакше да користите Chrome са Google налогом и на дељеним рачунарима.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />Услови коришћења<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3716182511346448902">Ова страница користи превише меморије, па ју је Chrome паузирао.</translation>
@@ -166,12 +165,10 @@
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />услови коришћења услуге<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">Гости могу да користе Chrome а да не остављају никакве трагове.</translation>
 <translation id="532046782124376502">Упозорење: Google Chrome не може да спречи додатке да снимају вашу историју прегледања. Да бисте онемогућили овај додатак у режиму без архивирања, опозовите избор ове опције.</translation>
-<translation id="5334545119300433702">За овај модул је познато да се сукобљава са Google Chrome прегледачем.</translation>
 <translation id="5386244825306882791">Контролише и страницу која се приказује када покренете Chrome или претражујете из омнибокса.</translation>
 <translation id="5430073640787465221">Датотека подешавања је оштећена или неважећа.
 
 Google Chrome не може да врати подешавања.</translation>
-<translation id="5495581687705680288">Модули учитани у Google Chrome</translation>
 <translation id="556024056938947818">Google Chrome покушава да прикаже лозинке.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Датотека <ph name="FILE_NAME" /> је можда опасна, па ју је Chrome блокирао.</translation>

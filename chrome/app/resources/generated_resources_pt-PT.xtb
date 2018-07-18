@@ -66,7 +66,6 @@
 <translation id="109758035718544977">Reativar som dos sites</translation>
 <translation id="1097658378307015415">Antes de iniciar sessão, entre como Convidado para ativar a rede <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">Traduzir sempre <ph name="LANGUAGE" /></translation>
-<translation id="1108164192735968833">SMS Connect</translation>
 <translation id="1108600514891325577">&amp;Parar</translation>
 <translation id="1110155001042129815">Esperar</translation>
 <translation id="1112420131909513020">O separador em segundo plano está a utilizar o Bluetooth.</translation>
@@ -456,7 +455,6 @@
 <translation id="1658424621194652532">Esta página está a aceder ao seu microfone.</translation>
 <translation id="1660204651932907780">Permitir que os sites reproduzam som (recomendado)</translation>
 <translation id="1661156625580498328">Aplicar Encriptação AES (recomendado).</translation>
-<translation id="1661245713600520330">Esta página lista todos os módulos carregados no processo principal e os módulos registados para serem carregados mais tarde.</translation>
 <translation id="166179487779922818">A palavra-passe é demasiado curta.</translation>
 <translation id="1661867754829461514">Falta o PIN</translation>
 <translation id="16620462294541761">Lamentamos, mas não foi possível confirmar a sua palavra-passe. Tente novamente.</translation>
@@ -607,7 +605,6 @@
 <translation id="1877520246462554164">Falha ao obter o símbolo de autenticação. Termine e inicie sessão novamente para tentar de novo.</translation>
 <translation id="1878302395768190018">Pode personalizar em qualquer altura nas Definições do Chrome</translation>
 <translation id="1880905663253319515">Eliminar o certificado "<ph name="CERTIFICATE_NAME" />"?</translation>
-<translation id="1883903952484604915">Os meus ficheiros</translation>
 <translation id="1886996562706621347">Permitir que os Web sites peçam para se tornarem os processadores de protocolos predefinidos (recomendado)</translation>
 <translation id="1887442540531652736">Erro de início de sessão</translation>
 <translation id="1887850431809612466">Revisão de hardware</translation>
@@ -744,7 +741,6 @@
 <translation id="21133533946938348">Fixar Separador</translation>
 <translation id="2113479184312716848">Abrir &amp;Ficheiro...</translation>
 <translation id="2113921862428609753">Acesso a informações sobre autoridade</translation>
-<translation id="2114224913786726438">Módulos (<ph name="TOTAL_COUNT" />) – Nenhum conflito detectado</translation>
 <translation id="2114326799768592691">Atualizar &amp;frame</translation>
 <translation id="2114896190328250491">Foto de <ph name="NAME" /></translation>
 <translation id="2115103655317273167">Enviar para telemóvel</translation>
@@ -917,7 +913,7 @@
 <translation id="2367199180085172140">Adicionar partilha de ficheiros</translation>
 <translation id="2367972762794486313">Mostrar aplicações</translation>
 <translation id="2369536625682139252">Todos os dados armazenados pelo site <ph name="SITE" /> serão eliminados, exceto os cookies.</translation>
-<translation id="237058345584060620">Sincronize a sua chave com este dispositivo para a poder utilizar para iniciar sessão na sua conta.</translation>
+<translation id="237058345584060620">Sincronize a sua chave com este dispositivo para a poder utilizar ao iniciar sessão na sua conta.</translation>
 <translation id="2371076942591664043">Abrir quando estiver concluí&amp;do</translation>
 <translation id="2376559921867170420">Quando o Chromebook estiver configurado, prima o botão do Assistente ou diga "Ok Google" para obter ajuda do Assistente a qualquer momento.</translation>
 <translation id="2377319039870049694">Mudar para a vista de lista</translation>
@@ -1130,7 +1126,6 @@
 <translation id="268053382412112343">&amp;Histórico</translation>
 <translation id="2683638487103917598">Pasta ordenada</translation>
 <translation id="2684004000387153598">Para continuar, clique em OK e, de seguida, clique em Adicionar pessoa para criar um novo perfil para o seu endereço de email.</translation>
-<translation id="2686759344028411998">Não é possível detectar nenhum módulo carregado.</translation>
 <translation id="2688196195245426394">Erro ao registar o dispositivo no servidor: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Mostrar opções de idioma</translation>
 <translation id="2691385045260836588">Modelo</translation>
@@ -1513,7 +1508,6 @@ Pretende pará-lo?</translation>
 <translation id="329838636886466101">Reparar</translation>
 <translation id="3298789223962368867">Introduzido um URL inválido.</translation>
 <translation id="32991397311664836">Dispositivos:</translation>
-<translation id="3300394989536077382">Assinado por</translation>
 <translation id="33022249435934718">Identificadores de GDI</translation>
 <translation id="3303260552072730022">Uma extensão acionou o ecrã inteiro.</translation>
 <translation id="3303818374450886607">Cópias</translation>
@@ -2243,6 +2237,7 @@ Pretende pará-lo?</translation>
 <translation id="4467100756425880649">Galeria da Web Store do Chrome</translation>
 <translation id="4467101674048705704">Expandir a pasta <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Ajudar a melhorar as funcionalidades e o desempenho do Chrome</translation>
+<translation id="4472575034687746823">Começar</translation>
 <translation id="4474155171896946103">Adicionar todos os separadores aos marcadores...</translation>
 <translation id="4475552974751346499">Pesquisar transferências</translation>
 <translation id="4476590490540813026">Atleta</translation>
@@ -3044,7 +3039,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5669267381087807207">A activar</translation>
 <translation id="5669691691057771421">Introduzir o novo PIN</translation>
 <translation id="5671641761787789573">Imagens bloqueadas</translation>
-<translation id="5673076758299428095">Encerrar Linux</translation>
+<translation id="5673076758299428095">Encerrar o Linux</translation>
 <translation id="5677503058916217575">Idioma da página:</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5678550637669481956">Autorização para ler e escrever em <ph name="VOLUME_NAME" /> concedidas.</translation>
@@ -3095,7 +3090,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5751545372099101699">Artigo de prateleira 4</translation>
 <translation id="5752453871435543420">Cópia de segurança na nuvem do Chrome OS</translation>
 <translation id="5756163054456765343">C&amp;entro de Ajuda</translation>
-<translation id="5758823144991844964">Ficheiros do Google Play</translation>
 <translation id="5759728514498647443">Os documentos enviados para impressão através de <ph name="APP_NAME" /> podem ser lidos por <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Não foram encontrados dispositivos USB</translation>
 <translation id="5764483294734785780">Gua&amp;rdar áudio como...</translation>
@@ -3883,6 +3877,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6985607387932385770">Impressoras</translation>
 <translation id="6990081529015358884">Já não tem espaço</translation>
 <translation id="6990778048354947307">Tema Escuro</translation>
+<translation id="6991128190741664836">Mais tarde</translation>
 <translation id="6991665348624301627">Selecione um destino</translation>
 <translation id="6997707937646349884">Nos seus dispositivos:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> pastas selecionadas</translation>
@@ -4304,6 +4299,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7662283695561029522">Toque para configurar</translation>
 <translation id="7663719505383602579">Recetor: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Dispositivo Bluetooth não suportado: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="7665369617277396874">Adicionar conta</translation>
 <translation id="7671130400130574146">Utilizar os limites e a barra de título do sistema</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, em <ph name="PAGE_TITLE" />.</translation>
 <translation id="7681095912841365527">O site pode utilizar o Bluetooth.</translation>
@@ -4528,7 +4524,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7973962044839454485">Falha na autenticação PPP devido a um nome de utilizador ou palavra-passe incorretos</translation>
 <translation id="7974566588408714340">Tente novamente com <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Overscan</translation>
-<translation id="7976555937380554094">O <ph name="PEPPER_PLUGIN_NAME" /> em <ph name="PEPPER_PLUGIN_DOMAIN" /> pretende aceder ao seu dispositivo.</translation>
 <translation id="7977551819349545646">A atualizar o Chromebox...</translation>
 <translation id="7978412674231730200">Chave privada</translation>
 <translation id="7979036127916589816">Erro de sincronização</translation>
@@ -4604,7 +4599,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="806812017500012252">Reordenar por título</translation>
 <translation id="8068253693380742035">Toque para iniciar sessão</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
-<translation id="806972267388474605">Ficheiros Linux</translation>
 <translation id="8071432093239591881">Imprimir como imagem</translation>
 <translation id="8072033737676488034">Remover o telemóvel e desativar o Melhores em conjunto</translation>
 <translation id="8072988827236813198">Fixar Separadores</translation>
@@ -4673,7 +4667,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8184318863960255706">Mais informações</translation>
 <translation id="8185331656081929126">Mostrar notificações quando forem detetadas novas impressoras na rede</translation>
 <translation id="8186609076106987817">O servidor não conseguiu encontrar o ficheiro.</translation>
-<translation id="8186706823560132848">Software</translation>
 <translation id="8188120771410500975">&amp;Verificar a ortografia dos campos de texto</translation>
 <translation id="8190193592390505034">A ligar a <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Gerir as suas aplicações, extensões e temas</translation>
@@ -4699,7 +4692,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8227119283605456246">Anexar ficheiro</translation>
 <translation id="8234795456569844941">Ajude os nossos engenheiros a resolver este problema. Diga-nos o que aconteceu imediatamente antes de ter recebido a mensagem de erro do perfil:</translation>
 <translation id="8234989666557591529">Escolher um telemóvel para desbloquear o <ph name="DEVICE_TYPE" /></translation>
-<translation id="8238649969398088015">Sugestão de ajuda</translation>
 <translation id="8239020549147958415">Sincronizar como <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">Sombra</translation>
 <translation id="8241806945692107836">A determinar a configuração do dispositivo...</translation>
@@ -5149,7 +5141,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8957423540740801332">direita</translation>
 <translation id="895944840846194039">Memória JavaScript</translation>
 <translation id="8959810181433034287">O utilizador supervisionado vai precisar de utilizar esta palavra-passe para iniciar sessão, logo, escolha uma palavra-passe segura e não se esqueça de a transmitir ao utilizador supervisionado.</translation>
-<translation id="8960795431111723921">Estamos a investigar atualmente este problema.</translation>
 <translation id="8962083179518285172">Ocultar Detalhes</translation>
 <translation id="8962918469425892674">Este site está a utilizar sensores de movimento ou de luz.</translation>
 <translation id="8965037249707889821">Introduzir palavra-passe antiga</translation>

@@ -66,7 +66,6 @@
 <translation id="109758035718544977">בטל השתקת אתרים</translation>
 <translation id="1097658378307015415">לפני הכניסה לחשבון, היכנס כאורח כדי להפעיל את הרשת <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">תרגם <ph name="LANGUAGE" /> תמיד</translation>
-<translation id="1108164192735968833">SMS Connect</translation>
 <translation id="1108600514891325577">&amp;הפסק</translation>
 <translation id="1110155001042129815">המתן</translation>
 <translation id="1112420131909513020">‏כרטיסיית הרקע משתמשת ב-Bluetooth</translation>
@@ -453,7 +452,6 @@
 <translation id="1658424621194652532">דף זה ניגש למיקרופון שלך.</translation>
 <translation id="1660204651932907780">מתן הרשאה לאתרים להשמיע צלילים (מומלץ)</translation>
 <translation id="1661156625580498328">‏אכיפה של הצפנת AES (מומלץ).</translation>
-<translation id="1661245713600520330">דף זה מפרט את כל המודולים שנטענו בתהליך הראשי ואת המודולים הרשומים לטעינה בשלב מאוחר יותר.</translation>
 <translation id="166179487779922818">הסיסמה קצרה מדי.</translation>
 <translation id="1661867754829461514">‏חסר PIN</translation>
 <translation id="16620462294541761">מצטערים, לא ניתן לאמת את הסיסמה שלך. נסה שוב.</translation>
@@ -604,7 +602,6 @@
 <translation id="1877520246462554164">לא ניתן לקבל אסימון אימות. צא לאחר מכן היכנס מחדש כדי לנסות שוב.</translation>
 <translation id="1878302395768190018">‏אפשר תמיד להתאים אישית דרך הגדרות Chrome</translation>
 <translation id="1880905663253319515">למחוק את האישור "<ph name="CERTIFICATE_NAME" />"?</translation>
-<translation id="1883903952484604915">הקבצים שלי</translation>
 <translation id="1886996562706621347">אפשר לאתרים לבקש להפוך למטפלי ברירת המחדל עבור פרוטוקולים (מומלץ)</translation>
 <translation id="1887442540531652736">שגיאת כניסה</translation>
 <translation id="1887850431809612466">שכתוב חומרה</translation>
@@ -741,7 +738,6 @@
 <translation id="21133533946938348">הצמד כרטיסייה</translation>
 <translation id="2113479184312716848">פתח &amp;קובץ...</translation>
 <translation id="2113921862428609753">גישה לפרטי רשות</translation>
-<translation id="2114224913786726438">מודולים (<ph name="TOTAL_COUNT" />) - לא נמצאו התנגשויות</translation>
 <translation id="2114326799768592691">טען מחדש את ה&amp;מסגרת</translation>
 <translation id="2114896190328250491">צילום מאת <ph name="NAME" /></translation>
 <translation id="2115103655317273167">שלח לטלפון</translation>
@@ -914,7 +910,7 @@
 <translation id="2367199180085172140">הוספת שיתוף קובץ</translation>
 <translation id="2367972762794486313">הצג יישומים</translation>
 <translation id="2369536625682139252">‏כל הנתונים שאוחסנו על-ידי <ph name="SITE" /> יימחקו, מלבד קובצי ה-Cookie.</translation>
-<translation id="237058345584060620">צריך להתאים את המפתח למכשיר זה כדי שניתן יהיה להשתמש בו כדי להיכנס לחשבון שלך</translation>
+<translation id="237058345584060620">צריך להתאים את המפתח למכשיר זה כדי שניתן יהיה להשתמש בו לכניסה לחשבון</translation>
 <translation id="2371076942591664043">פתח &amp;בסיום</translation>
 <translation id="2376559921867170420">‏אחרי הגדרת ה-Chromebook, כדי לקבל עזרה מה-Assistant אפשר ללחוץ על לחצן ה-Assistant או לומר "OK Google".</translation>
 <translation id="2377319039870049694">מעבר לתצוגת רשימה</translation>
@@ -980,7 +976,7 @@
 <translation id="248861575772995840">‏לא ניתן למצוא את הטלפון שלך. יש לוודא שה-Bluetooth מופעל ב-<ph name="DEVICE_TYPE" />. &lt;a&gt;מידע נוסף&lt;/a&gt;</translation>
 <translation id="2489918096470125693">הוסף &amp;תיקיה...</translation>
 <translation id="249113932447298600">מצטערים, המכשיר <ph name="DEVICE_LABEL" /> אינו נתמך בשלב זה.</translation>
-<translation id="2492040222276243256">עליך ללחוץ לחיצה ארוכה על הלחצן במפתח האבטחה במשך 5 שניות לפחות</translation>
+<translation id="2492040222276243256">צריך ללחוץ על הלחצן שבמפתח האבטחה לחיצה ארוכה, של 5 שניות לפחות</translation>
 <translation id="2493021387995458222">בחר "מילה אחת בכל פעם"</translation>
 <translation id="249303669840926644">לא ניתן היה להשלים את הרישום</translation>
 <translation id="2495777824269688114">הכר תכונות נוספות או קבל תשובות לשאלות. בחר '?' כדי לגשת לעזרה.</translation>
@@ -1008,7 +1004,7 @@
 <translation id="2520644704042891903">ממתין לחיבור זמין...</translation>
 <translation id="252219247728877310">הרכיב לא עודכן</translation>
 <translation id="2522791476825452208">קרוב מאוד</translation>
-<translation id="2523184218357549926">‏שולח ל-Google כתובות אתרים של דפים שבהם ביקרת</translation>
+<translation id="2523184218357549926">‏שליחת כתובות אתרים של דפים שבהם ביקרת ל-Google</translation>
 <translation id="2525250408503682495">‏קריפטונייט! לא ניתן היה לטעון את ה-Cryptohome עבור יישום הקיוסק.</translation>
 <translation id="2526277209479171883">התקנה והמשך</translation>
 <translation id="2526590354069164005">שולחן עבודה</translation>
@@ -1127,7 +1123,6 @@
 <translation id="268053382412112343">הי&amp;סטוריה</translation>
 <translation id="2683638487103917598">התיקיה מוינה</translation>
 <translation id="2684004000387153598">כדי להמשיך יש ללחוץ על 'אישור' ולאחר מכן ללחוץ על 'הוספת משתמש' כדי ליצור פרופיל חדש בשביל כתובת האימייל שלך.</translation>
-<translation id="2686759344028411998">לא ניתן לזהות מודולים שנטענו.</translation>
 <translation id="2688196195245426394">אירעה שגיאה בעת רישום המכשיר בשרת: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">הצג אפשרויות שפה</translation>
 <translation id="2691385045260836588">דגם</translation>
@@ -1509,7 +1504,6 @@
 <translation id="329838636886466101">תיקון</translation>
 <translation id="3298789223962368867">הוזנה כתובת אתר לא חוקית.</translation>
 <translation id="32991397311664836">מכשירים:</translation>
-<translation id="3300394989536077382">נחתם על ידי</translation>
 <translation id="33022249435934718">‏מזהים ייחודיים של GDI</translation>
 <translation id="3303260552072730022">תוסף הפעיל מסך מלא.</translation>
 <translation id="3303818374450886607">עותקים</translation>
@@ -2239,6 +2233,7 @@
 <translation id="4467100756425880649">‏הגלריה של חנות האינטרנט של Chrome</translation>
 <translation id="4467101674048705704">הרחבה של <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">‏עזרה בשיפור התכונות והביצועים של Chrome</translation>
+<translation id="4472575034687746823">תחילת העבודה</translation>
 <translation id="4474155171896946103">צור סימניה לכל הכרטיסיות...</translation>
 <translation id="4475552974751346499">חפש בהורדות</translation>
 <translation id="4476590490540813026">ספורטאית</translation>
@@ -2496,7 +2491,7 @@
 <translation id="4880827082731008257">חפש בהיסטוריה</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="4882473678324857464">התמקד בסימניות</translation>
-<translation id="4882831918239250449">הגדרת אופן השימוש בהיסטוריית הגלישה לההתאמה האישית של חיפוש, מודעות ועוד</translation>
+<translation id="4882831918239250449">הגדרת השימוש בהיסטוריית הגלישה לצורך התאמה אישית של החיפוש, המודעות ועוד</translation>
 <translation id="4883178195103750615">‏יצוא סימניות לקובץ HTML...</translation>
 <translation id="4883436287898674711">כל אתרי <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;מנהל המשימות</translation>
@@ -3091,7 +3086,6 @@
 <translation id="5751545372099101699">פריט מדף 4</translation>
 <translation id="5752453871435543420">‏גיבוי בענן של מערכת ההפעלה של Chrome</translation>
 <translation id="5756163054456765343">מרכז עזרה</translation>
-<translation id="5758823144991844964">‏קובצי Play</translation>
 <translation id="5759728514498647443">תוכל להשתמש ב-<ph name="APP_NAME" /> כדי לקרוא מסמכים שתשלח להדפסה באמצעות <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">‏לא נמצאו התקני USB</translation>
 <translation id="5764483294734785780">ש&amp;מור שמע כ...</translation>
@@ -3205,7 +3199,7 @@
 <translation id="5920835625712313205">‏כותב תמונת המערכת של Chrome OS</translation>
 <translation id="5921745308587794300">סיבוב החלון</translation>
 <translation id="5924047253200400718">קבל עזרה<ph name="SCANNING_STATUS" /></translation>
-<translation id="5924527146239595929">‏אפשר לצלם תמונה חדשה או לבחור תמונה או סמל קיימים.
+<translation id="5924527146239595929">‏אפשר לצלם תמונה חדשה, או לבחור תמונה או סמל קיימים.
     <ph name="LINE_BREAK" />
     התמונה תופיע במסך הכניסה ובמסך הנעילה ב-Chromebook.</translation>
 <translation id="5925147183566400388">מצביע על הצהרת הליכי אישור</translation>
@@ -3879,6 +3873,7 @@
 <translation id="6985607387932385770">מדפסות</translation>
 <translation id="6990081529015358884">לא נשאר לך מקום פנוי</translation>
 <translation id="6990778048354947307">עיצוב כהה</translation>
+<translation id="6991128190741664836">מאוחר יותר</translation>
 <translation id="6991665348624301627">בחר יעד</translation>
 <translation id="6997707937646349884">במכשירים שלך:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> תיקיות נבחרו</translation>
@@ -4298,6 +4293,7 @@
 <translation id="7662283695561029522">הקש כדי להגדיר</translation>
 <translation id="7663719505383602579">מקבל: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">‏מכשיר Bluetooth שאינו נתמך: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="7665369617277396874">הוסף חשבון</translation>
 <translation id="7671130400130574146">השתמש בגבולות ובשורת הכותרת של המערכת</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, ב-<ph name="PAGE_TITLE" />.</translation>
 <translation id="7681095912841365527">‏האתר רשאי להשתמש ב-Bluetooth</translation>
@@ -4521,7 +4517,6 @@
 <translation id="7973962044839454485">‏אימות PPP נכשל בשל שם משתמש או סיסמה שגויים</translation>
 <translation id="7974566588408714340">נסה שוב באמצעות <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">סריקת יתר</translation>
-<translation id="7976555937380554094"><ph name="PEPPER_PLUGIN_NAME" /> ב-<ph name="PEPPER_PLUGIN_DOMAIN" /> רוצה גישה למכשיר שלך</translation>
 <translation id="7977551819349545646">‏מעדכן את Chromebox...</translation>
 <translation id="7978412674231730200">מפתח פרטי</translation>
 <translation id="7979036127916589816">שגיאת סנכרון</translation>
@@ -4597,7 +4592,6 @@
 <translation id="806812017500012252">סדר מחדש לפי כותרת</translation>
 <translation id="8068253693380742035">גע כדי להיכנס</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
-<translation id="806972267388474605">‏קובצי Linux</translation>
 <translation id="8071432093239591881">הדפסה כתמונה</translation>
 <translation id="8072033737676488034">‏הסרת הטלפון שלך והשבתת Better Together</translation>
 <translation id="8072988827236813198">הצמד כרטיסיות</translation>
@@ -4666,7 +4660,6 @@
 <translation id="8184318863960255706">מידע נוסף</translation>
 <translation id="8185331656081929126">הצג הודעות כאשר מזוהות מדפסות חדשות ברשת</translation>
 <translation id="8186609076106987817">השרת לא הצליח למצוא את הקובץ.</translation>
-<translation id="8186706823560132848">תוכנה</translation>
 <translation id="8188120771410500975">בדוק את האיות של &amp;שדות הטקסט</translation>
 <translation id="8190193592390505034">מתחבר אל <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">לנהל את היישומים, התוספים והעיצובים שלך</translation>
@@ -4692,7 +4685,6 @@
 <translation id="8227119283605456246">צרף קובץ</translation>
 <translation id="8234795456569844941">עזור למהנדסים שלנו לפתור את הבעיה הזו. ספר לנו מה קרה לפני שהוצגה לך הודעת השגיאה לגבי הפרופיל:</translation>
 <translation id="8234989666557591529">יש לבחור טלפון לביטול הנעילה של <ph name="DEVICE_TYPE" /></translation>
-<translation id="8238649969398088015">טיפ עזרה</translation>
 <translation id="8239020549147958415">סינכרון בשם <ph name="FULL_NAME" /></translation>
 <translation id="8241040075392580210">מוצל</translation>
 <translation id="8241806945692107836">קובע את תצורת המכשיר...</translation>
@@ -5142,7 +5134,6 @@
 <translation id="8957423540740801332">ימין</translation>
 <translation id="895944840846194039">‏זיכרון JavaScript</translation>
 <translation id="8959810181433034287">המשתמש בפיקוח יצטרך להשתמש בסיסמה זו כדי להיכנס, לכן בחר סיסמה בטוחה וזכור ליידע את המשתמש בפיקוח.</translation>
-<translation id="8960795431111723921">אנו בודקים בעיה זו כעת.</translation>
 <translation id="8962083179518285172">הסתר פרטים</translation>
 <translation id="8962918469425892674">האתר הזה משתמש בחיישני תנועה או תאורה.</translation>
 <translation id="8965037249707889821">הזן את הסיסמה הישנה</translation>

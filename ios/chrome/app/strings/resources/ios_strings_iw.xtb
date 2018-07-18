@@ -89,7 +89,7 @@
 <translation id="2386793615875593361">נבחרה תמונה אחת</translation>
 <translation id="2435457462613246316">הצג סיסמה</translation>
 <translation id="2481538920734869610">הוספת חשבון</translation>
-<translation id="2523184218357549926">‏שולח ל-Google כתובות אתרים של דפים שבהם ביקרת</translation>
+<translation id="2523184218357549926">‏שליחת כתובות אתרים של דפים שבהם ביקרת ל-Google</translation>
 <translation id="2523363575747517183">האתר הזה מנסה שוב ושוב לפתוח אפליקציה אחרת.</translation>
 <translation id="2529021024822217800">פתח הכול</translation>
 <translation id="2572712655377361602">הגישה לתמונות שלך נחסמה עקב מדיניות שהוגדרה למכשיר</translation>
@@ -224,7 +224,7 @@
 <translation id="4860895144060829044">התקשר</translation>
 <translation id="4875622588773761625">האם תרצה ש-<ph name="PASSWORD_MANAGER_BRAND" /> יעדכן את הסיסמה שלך בשביל האתר הזה?</translation>
 <translation id="4881695831933465202">פתח</translation>
-<translation id="4882831918239250449">הגדרת אופן השימוש בהיסטוריית הגלישה לההתאמה האישית של חיפוש, מודעות ועוד</translation>
+<translation id="4882831918239250449">הגדרת השימוש בהיסטוריית הגלישה לצורך התאמה אישית של החיפוש, המודעות ועוד</translation>
 <translation id="4904877109095351937">סמן כ'נקרא'</translation>
 <translation id="4930268273022498155">מחק נתונים קיימים. כדי לאחזר אותם, חזור אל <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">מצטערים, אירעה בעיה בשיתוף הפריט שלך.</translation>
@@ -410,7 +410,7 @@
 <translation id="8076014560081431679">הגדרות אתרים שנשמרו לא יימחקו ועשויות לשקף את הרגלי הגלישה שלך. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">סגור את כל הכרטיסיות</translation>
 <translation id="8114753159095730575">יש קובץ זמין להורדה. האפשרויות זמינות בחלק התחתון של המסך.</translation>
-<translation id="8160722851663543621">‏שליחת חיפושים משורת כתובת האתר ותיבת החיפוש אל מנוע החיפוש שהגדרת כברירת מחדל יחד עם קובצי cookie מסוימים</translation>
+<translation id="8160722851663543621">‏שליחת חיפושים משורת כתובת האתר ותיבת החיפוש אל מנוע החיפוש שהגדרת כברירת מחדל, יחד עם קובצי cookie מסוימים</translation>
 <translation id="8205564605687841303">בטל</translation>
 <translation id="8225985093977202398">תמונות וקבצים במטמון</translation>
 <translation id="8261506727792406068">מחיקה</translation>

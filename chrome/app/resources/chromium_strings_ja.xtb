@@ -26,7 +26,6 @@
 <translation id="1881322772814446296">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chromium データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium が応答しません。今すぐ再起動しますか？</translation>
 <translation id="1966382378801805537">Chromium では既定のブラウザを判定または設定できません</translation>
-<translation id="1967743265616885482">同じ名前のモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="2008474315282236005">この端末から 1 件の項目を削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="2117378023188580026">管理者が、このアップデートを適用するために Chromium を再起動するよう求めています</translation>
 <translation id="2119636228670142020">Chromium OS について(&amp;C)</translation>
@@ -92,7 +91,6 @@
 <translation id="4260985389288095068">お使いのパソコンに有害なソフトウェアが見つかりました。Chromium ではこのソフトウェアを削除し、ブラウザを正常な動作に戻すために設定を復元することができます。</translation>
 <translation id="4271805377592243930">Chromium のヘルプを見る</translation>
 <translation id="4285930937574705105">原因不明のエラーによりインストールが失敗しました。実行中の Chromium を終了してからもう一度お試しください。</translation>
-<translation id="4330585738697551178">このモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="4407044323746248786">今すぐ Chromium を終了しますか？</translation>
 <translation id="4415566066719264597">Chromium をバックグラウンドで実行する</translation>
 <translation id="4421155425831608516">Chromium へのログインは、この端末の管理者によって無効にされています。</translation>
@@ -173,7 +171,6 @@
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay（Chromium にコピー）</translation>
 <translation id="6893813176749746474">Chromium が更新されましたが、30 日以上使用されていません。</translation>
-<translation id="6944967875980567883">Chromium に読み込まれているモジュール</translation>
 <translation id="6964305034639999644">Chromium のシークレット ウインドウでリンクを開く(&amp;G)</translation>
 <translation id="6970811910055250180">お使いの端末を更新しています...</translation>
 <translation id="6990124437352146030">このサイトを利用するには、Chromium でマイクの使用を許可する必要があります</translation>

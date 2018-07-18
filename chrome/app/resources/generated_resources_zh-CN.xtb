@@ -66,7 +66,6 @@
 <translation id="109758035718544977">将多个网站取消静音</translation>
 <translation id="1097658378307015415">登录前，请先以访客身份进入，以便激活“<ph name="NETWORK_ID" />”网络。</translation>
 <translation id="1103523840287552314">一律翻译<ph name="LANGUAGE" /></translation>
-<translation id="1108164192735968833">短信连接</translation>
 <translation id="1108600514891325577">停止(&amp;S)</translation>
 <translation id="1110155001042129815">等待</translation>
 <translation id="1112420131909513020">背景标签页正在使用蓝牙</translation>
@@ -453,7 +452,6 @@
 <translation id="1658424621194652532">此网页正在使用您的麦克风。</translation>
 <translation id="1660204651932907780">允许网站播放声音（推荐）</translation>
 <translation id="1661156625580498328">强制执行 AES 加密（推荐）。</translation>
-<translation id="1661245713600520330">此网页列出了已加载主进程中的所有模块以及稍后要加载的模块。</translation>
 <translation id="166179487779922818">密码太短。</translation>
 <translation id="1661867754829461514">缺少 PIN</translation>
 <translation id="16620462294541761">抱歉，无法验证您的密码，请重试。</translation>
@@ -538,7 +536,7 @@
 <translation id="1782530111891678861">更改触摸 HUD 模式</translation>
 <translation id="1784849162047402014">设备磁盘空间不足</translation>
 <translation id="1786636458339910689">团队云端硬盘</translation>
-<translation id="1792161662640298233">正在验证您的安全密钥</translation>
+<translation id="1792161662640298233">验证您的安全密钥</translation>
 <translation id="1792619191750875668">扩展显示屏</translation>
 <translation id="1794791083288629568">发送反馈，以协助我们解决此问题。</translation>
 <translation id="1795214765651529549">使用经典主题背景</translation>
@@ -604,7 +602,6 @@
 <translation id="1877520246462554164">未能获取身份验证令牌。请退出并重新登录，然后重试。</translation>
 <translation id="1878302395768190018">您可以随时在 Chrome 设置中自定义此设置</translation>
 <translation id="1880905663253319515">要删除证书“<ph name="CERTIFICATE_NAME" />”吗？</translation>
-<translation id="1883903952484604915">我的文件</translation>
 <translation id="1886996562706621347">允许网站要求成为协议的默认处理程序（推荐）</translation>
 <translation id="1887442540531652736">登录错误</translation>
 <translation id="1887850431809612466">硬件版本</translation>
@@ -741,7 +738,6 @@
 <translation id="21133533946938348">固定标签页</translation>
 <translation id="2113479184312716848">打开文件(&amp;F)...</translation>
 <translation id="2113921862428609753">授权中心信息访问权限</translation>
-<translation id="2114224913786726438">模块数 (<ph name="TOTAL_COUNT" />) - 未检测到冲突</translation>
 <translation id="2114326799768592691">重新加载框架(&amp;F)</translation>
 <translation id="2114896190328250491">照片提供者：<ph name="NAME" /></translation>
 <translation id="2115103655317273167">发送至手机</translation>
@@ -1126,7 +1122,6 @@
 <translation id="268053382412112343">历史记录(&amp;S)</translation>
 <translation id="2683638487103917598">文件夹内容已排序</translation>
 <translation id="2684004000387153598">要想继续，请点击“确定”，然后点击“添加用户”为您的电子邮件地址创建一份新个人资料。</translation>
-<translation id="2686759344028411998">未检测到任何已加载的模块。</translation>
 <translation id="2688196195245426394">向服务器注册设备时出错：<ph name="CLIENT_ERROR" />。</translation>
 <translation id="2690024944919328218">显示语言选项</translation>
 <translation id="2691385045260836588">型号</translation>
@@ -1508,7 +1503,6 @@
 <translation id="329838636886466101">修复</translation>
 <translation id="3298789223962368867">输入的网址无效。</translation>
 <translation id="32991397311664836">设备：</translation>
-<translation id="3300394989536077382">签名方：</translation>
 <translation id="33022249435934718">GDI 句柄</translation>
 <translation id="3303260552072730022">某个扩展程序触发了全屏模式。</translation>
 <translation id="3303818374450886607">份数</translation>
@@ -2235,6 +2229,7 @@
 <translation id="4467100756425880649">Chrome 网上应用店扩展程序列表</translation>
 <translation id="4467101674048705704">展开“<ph name="FOLDER_NAME" />”</translation>
 <translation id="447252321002412580">帮助我们改进 Chrome 的功能和性能</translation>
+<translation id="4472575034687746823">开始使用</translation>
 <translation id="4474155171896946103">为所有标签页添加书签...</translation>
 <translation id="4475552974751346499">搜索下载内容</translation>
 <translation id="4476590490540813026">运动员</translation>
@@ -3080,7 +3075,6 @@
 <translation id="5751545372099101699">栏中第 4 项</translation>
 <translation id="5752453871435543420">Chrome 操作系统云端备份</translation>
 <translation id="5756163054456765343">帮助中心(&amp;E)</translation>
-<translation id="5758823144991844964">Play 文件</translation>
 <translation id="5759728514498647443">您通过“<ph name="APP_NAME" />”发送以进行打印的文档可由“<ph name="APP_NAME" />”读取。</translation>
 <translation id="5763751966069581670">未找到任何 USB 设备</translation>
 <translation id="5764483294734785780">音频另存为(&amp;V)...</translation>
@@ -3867,6 +3861,7 @@
 <translation id="6985607387932385770">打印机</translation>
 <translation id="6990081529015358884">空间不足</translation>
 <translation id="6990778048354947307">黑暗主题</translation>
+<translation id="6991128190741664836">以后再说</translation>
 <translation id="6991665348624301627">选择目标打印机</translation>
 <translation id="6997707937646349884">在您的设备上：</translation>
 <translation id="6998711733709403587">已选择 <ph name="SELCTED_FOLDERS_COUNT" /> 个文件夹</translation>
@@ -4286,6 +4281,7 @@
 <translation id="7662283695561029522">点按即可配置</translation>
 <translation id="7663719505383602579">接收器：<ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">不支持的蓝牙设备：“<ph name="DEVICE_NAME" />”。</translation>
+<translation id="7665369617277396874">添加帐号</translation>
 <translation id="7671130400130574146">使用系统标题栏和边框</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />（在 <ph name="PAGE_TITLE" /> 中）。</translation>
 <translation id="7681095912841365527">该网站可能会使用蓝牙</translation>
@@ -4510,7 +4506,6 @@
 <translation id="7973962044839454485">用户名或密码不正确，导致 PPP 身份验证失败</translation>
 <translation id="7974566588408714340">使用“<ph name="EXTENSIONNAME" />”重试</translation>
 <translation id="7974936243149753750">过扫描</translation>
-<translation id="7976555937380554094"><ph name="PEPPER_PLUGIN_DOMAIN" /> 上的“<ph name="PEPPER_PLUGIN_NAME" />”想访问您的设备</translation>
 <translation id="7977551819349545646">正在更新 Chromebox…</translation>
 <translation id="7978412674231730200">私有密钥</translation>
 <translation id="7979036127916589816">同步错误</translation>
@@ -4586,7 +4581,6 @@
 <translation id="806812017500012252">按标题重新排序</translation>
 <translation id="8068253693380742035">触摸以登录</translation>
 <translation id="8069615408251337349">Google 云打印</translation>
-<translation id="806972267388474605">Linux 文件</translation>
 <translation id="8071432093239591881">以图片形式打印</translation>
 <translation id="8072033737676488034">移除您的手机并停用 Better Together 功能</translation>
 <translation id="8072988827236813198">固定标签页</translation>
@@ -4655,7 +4649,6 @@
 <translation id="8184318863960255706">更多信息</translation>
 <translation id="8185331656081929126">在网络中检测到新打印机时显示通知</translation>
 <translation id="8186609076106987817">服务器找不到该文件。</translation>
-<translation id="8186706823560132848">软件</translation>
 <translation id="8188120771410500975">检查文本字段的拼写(&amp;C)</translation>
 <translation id="8190193592390505034">正在连接到<ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">管理您的应用、扩展程序和主题背景</translation>
@@ -4681,7 +4674,6 @@
 <translation id="8227119283605456246">附上文件</translation>
 <translation id="8234795456569844941">请告诉我们在您收到个人资料错误消息之前发生的情况，以帮助我们的工程师解决此问题：</translation>
 <translation id="8234989666557591529">选择一部手机，以用来解锁您的 <ph name="DEVICE_TYPE" /></translation>
-<translation id="8238649969398088015">帮助提示</translation>
 <translation id="8239020549147958415">与“<ph name="FULL_NAME" />”同步</translation>
 <translation id="8241040075392580210">晴间多云</translation>
 <translation id="8241806945692107836">正在确定设备配置…</translation>
@@ -5131,7 +5123,6 @@
 <translation id="8957423540740801332">向右</translation>
 <translation id="895944840846194039">JavaScript 使用的内存</translation>
 <translation id="8959810181433034287">受监管用户必须使用此密码才能登录，因此请选择一个安全密码，同时务必将此密码告诉相应的受监管用户。</translation>
-<translation id="8960795431111723921">我们当前正在调查此问题。</translation>
 <translation id="8962083179518285172">隐藏详细信息</translation>
 <translation id="8962918469425892674">此网站正在使用动态传感器或光传感器。</translation>
 <translation id="8965037249707889821">输入旧密码</translation>

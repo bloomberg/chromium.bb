@@ -28,7 +28,6 @@
 <translation id="1881322772814446296">በሚተዳደር መለያ እየገቡ ነው፣ እና አስተዳዳሪው በእርስዎ Chromium መገለጫ ላይ ቁጥጥር እየሰጡት ነው። እንደ እርስዎ መተግበሪያዎች፣ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች ያሉ የእርስዎ Chromium ውሂብ እስከ መጨረሻው ከ<ph name="USER_NAME" /> ጋር የተያያዙ ይሆናሉ። ይህን ውሂብ በGoogle የመለያዎች Dashboard አማካኝነት ሊሰርዙት ይችላሉ፣ ነገር ግን ይህን ውሂብ ከሌላ መለያ ጋር ሊያጎዳኙት አይችሉም። ነባሩ የእርስዎ Chromium ውሂብ ለይተው ለማስቀመጥም አዲስ መገለጫ እንደ አማራጭ መፍጠር ይችላሉ። <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium መልስ አይሰጥም። አሁን ዳግም ይጀምር?</translation>
 <translation id="1966382378801805537">Chromium ነባሪ አሳሹን ማወቅ ወይም ማቀናበር አልቻለም</translation>
-<translation id="1967743265616885482">ተመሳሳይ ስም ያለው ሞዱል ከChromium ጋር የሚጋጭ መሆኑ ይታወቃል።</translation>
 <translation id="2008474315282236005">ይሄ 1 ንጥል ከዚህ መሣሪያ ይሰርዛል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ <ph name="USER_EMAIL" /> ሆነው ወደ Chromium ይግቡ።</translation>
 <translation id="2117378023188580026">ይህን ዝማኔ ለመተግበር አስተዳዳሪዎ Chromiumን ዳግም እንዲያስጀምሩ ይጠይቀዎታል</translation>
 <translation id="2119636228670142020">&amp;ስለChromium ስርዓተ ክወና</translation>
@@ -94,7 +93,6 @@
 <translation id="4260985389288095068">በእርስዎ ኮምፒውተር ላይ ጎጂ ሶፍትዌር አለ። Chromium የእርስዎን አሰሳ እንደገና በጤናማነት እንዲሠራ ለማድረግ ሊያስወግደው እና የእርስዎን ቅንብሮች እንደነበሩ ሊመልሳቸውይችላል።</translation>
 <translation id="4271805377592243930">Chromium ላይ እገዛ ያግኙ</translation>
 <translation id="4285930937574705105">ተለይቶ ባልታወቀ ስህተት ምክንያት ጭነት ከሽፏል። Chromium አሁን እያሄደ ከሆነ እባክዎ ይዝጉትና እንደገና ይሞክሩ።</translation>
-<translation id="4330585738697551178">ይህ ሞዱል ከChromium ጋር የሚጋጭ መሆኑ ይታወቃል።</translation>
 <translation id="4407044323746248786">የሆነው ሆኖ ከChromium ይወጣ?</translation>
 <translation id="4415566066719264597">Chromium በበስተጀርባ ላይ ያሂድ</translation>
 <translation id="4421155425831608516">ወደ Chromium መግባት በዚህ መሣሪያ አስተዳዳሪ ተሰናክሏል።</translation>
@@ -175,7 +173,6 @@
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (ወደ Chromium ተቀድቷል)</translation>
 <translation id="6893813176749746474">Chromium ተዘምኗል፣ ግን ቢያንስ ለ30 ቀኖች አልተጠቀሙበትም።</translation>
-<translation id="6944967875980567883">Chromium ላይ የተጫኑ ሞዱሎች</translation>
 <translation id="6964305034639999644">አገናኙን በChromium ማን&amp;ነትን በማያሳውቅ መስኮት ውስጥ ክፈት</translation>
 <translation id="6970811910055250180">መሣሪያዎን በማዘመን ላይ...</translation>
 <translation id="6990124437352146030">Chromium ለዚህ ጣቢያ የእርስዎን ማይክሮፎን ለመድረስ ፈቃድ ያስፈልገዋል</translation>
