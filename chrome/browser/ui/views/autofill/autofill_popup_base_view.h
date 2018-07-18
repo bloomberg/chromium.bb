@@ -89,7 +89,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   void OnWidgetDestroying(views::Widget* widget) override;
 
   // Stop observing the widget.
-  void RemoveObserver();
+  void RemoveWidgetObservers();
 
   void SetSelection(const gfx::Point& point);
   void AcceptSelection(const gfx::Point& point);
