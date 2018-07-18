@@ -40,7 +40,7 @@ AutofillPopupBaseView::~AutofillPopupBaseView() {
   if (delegate_) {
     delegate_->ViewDestroyed();
 
-    RemoveObserver();
+    RemoveWidgetObservers();
   }
 }
 
@@ -65,6 +65,7 @@ void AutofillPopupBaseView::DoShow() {
     widget->Init(params);
 
     widget->SetContentsView(CreateWrapperView().release());
+    widget->AddObserver(this);
 
     // No animation for popup appearance (too distracting).
     widget->SetVisibilityAnimationTransition(views::Widget::ANIMATE_HIDE);
@@ -93,7 +94,7 @@ void AutofillPopupBaseView::DoHide() {
   // The controller is no longer valid after it hides us.
   delegate_ = NULL;
 
-  RemoveObserver();
+  RemoveWidgetObservers();
 
   if (GetWidget()) {
     // Don't call CloseNow() because some of the functions higher up the stack
@@ -108,17 +109,22 @@ void AutofillPopupBaseView::DoHide() {
 
 void AutofillPopupBaseView::OnWidgetBoundsChanged(views::Widget* widget,
                                                   const gfx::Rect& new_bounds) {
-  DCHECK_EQ(widget, parent_widget_);
+  DCHECK(widget == parent_widget_ || widget == GetWidget());
+  if (widget != parent_widget_)
+    return;
+
   HideController();
 }
 
 void AutofillPopupBaseView::OnWidgetDestroying(views::Widget* widget) {
-  DCHECK_EQ(widget, parent_widget_);
+  // On Windows, widgets can be destroyed in any order. Regardless of which
+  // widget is destroyed first, remove all observers and hide the popup.
+  DCHECK(widget == parent_widget_ || widget == GetWidget());
 
   // Normally this happens at destruct-time or hide-time, but because it depends
   // on |parent_widget_| (which is about to go away), it needs to happen sooner
   // in this case.
-  RemoveObserver();
+  RemoveWidgetObservers();
 
   // Because the parent widget is about to be destroyed, we null out the weak
   // reference to it and protect against possibly accessing it during
@@ -128,9 +134,10 @@ void AutofillPopupBaseView::OnWidgetDestroying(views::Widget* widget) {
   HideController();
 }
 
-void AutofillPopupBaseView::RemoveObserver() {
+void AutofillPopupBaseView::RemoveWidgetObservers() {
   if (parent_widget_)
     parent_widget_->RemoveObserver(this);
+  GetWidget()->RemoveObserver(this);
 
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 }
