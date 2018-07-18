@@ -210,8 +210,6 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient,
   void GetWindowManager(
       mojo::AssociatedInterfaceRequest<ui::mojom::WindowManager> internal)
       override;
-  void GetScreenProviderObserver(
-      ui::mojom::ScreenProviderObserverAssociatedRequest observer) override;
 
   const int routing_id_;
   ui::Id root_window_id_ = 0u;

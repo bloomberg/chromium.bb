@@ -487,9 +487,6 @@ void TestWindowTreeClient::RequestClose(Id window_id) {}
 void TestWindowTreeClient::GetWindowManager(
     mojo::AssociatedInterfaceRequest<mojom::WindowManager> internal) {}
 
-void TestWindowTreeClient::GetScreenProviderObserver(
-    mojom::ScreenProviderObserverAssociatedRequest observer) {}
-
 // TestWindowTreeBinding ------------------------------------------------------
 
 TestWindowTreeBinding::TestWindowTreeBinding(

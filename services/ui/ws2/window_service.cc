@@ -43,9 +43,7 @@ WindowService::WindowService(
 
 WindowService::~WindowService() {
   // WindowTreeFactory owns WindowTrees created by way of WindowTreeFactory.
-  // Deleting it should ensure there are no WindowTrees left. Additionally,
-  // WindowTree makes use of ScreenProvider, so we need to ensure all the
-  // WindowTrees are destroyed before ScreenProvider.
+  // Deleting it should ensure there are no WindowTrees left.
   window_tree_factory_.reset();
   DCHECK(window_trees_.empty());
 }
@@ -97,11 +95,6 @@ void WindowService::RequestClose(aura::Window* window) {
   server_window->owning_window_tree()->RequestClose(server_window);
 }
 
-void WindowService::OnDisplayMetricsChanged(const display::Display& display,
-                                            uint32_t changed_metrics) {
-  screen_provider_->DisplayMetricsChanged(display, changed_metrics);
-}
-
 std::string WindowService::GetIdForDebugging(aura::Window* window) {
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   if (!server_window)
@@ -114,6 +107,8 @@ void WindowService::OnStart() {
 
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindClipboardHostRequest, base::Unretained(this)));
+  registry_.AddInterface(base::BindRepeating(
+      &WindowService::BindScreenProviderRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindImeRegistrarRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
@@ -147,6 +142,11 @@ void WindowService::BindClipboardHostRequest(
   if (!clipboard_host_)
     clipboard_host_ = std::make_unique<ClipboardHost>();
   clipboard_host_->AddBinding(std::move(request));
+}
+
+void WindowService::BindScreenProviderRequest(
+    mojom::ScreenProviderRequest request) {
+  screen_provider_->AddBinding(std::move(request));
 }
 
 void WindowService::BindImeRegistrarRequest(

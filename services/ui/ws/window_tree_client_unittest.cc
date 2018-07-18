@@ -477,11 +477,6 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
             this, std::move(internal));
     tree_->GetWindowManagerClient(MakeRequest(&window_manager_client_));
   }
-  void GetScreenProviderObserver(
-      mojom::ScreenProviderObserverAssociatedRequest observer) override {
-    // GetScreenProviderObserver() is only called in ws2.
-    NOTREACHED();
-  }
 
   // mojom::WindowManager:
   void OnConnect() override {}
