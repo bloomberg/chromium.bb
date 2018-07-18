@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_CONSENT_AUDITOR_CONSENT_AUDITOR_FACTORY_H_
-#define IOS_CHROME_BROWSER_CONSENT_AUDITOR_CONSENT_AUDITOR_FACTORY_H_
+#ifndef IOS_CHROME_BROWSER_SYNC_CONSENT_AUDITOR_FACTORY_H_
+#define IOS_CHROME_BROWSER_SYNC_CONSENT_AUDITOR_FACTORY_H_
+
+// TODO(crbug.com/850428): Move this and .cc back to
+// ios/chrome/browser/consent_auditor, when it does not depend on
+// UserEventService anymore. Currently this is not possible due to a BUILD.gn
+// depedency.
 
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
@@ -42,4 +47,4 @@ class ConsentAuditorFactory : public BrowserStateKeyedServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(ConsentAuditorFactory);
 };
 
-#endif  // IOS_CHROME_BROWSER_CONSENT_AUDITOR_CONSENT_AUDITOR_FACTORY_H_
+#endif  // IOS_CHROME_BROWSER_SYNC_CONSENT_AUDITOR_FACTORY_H_

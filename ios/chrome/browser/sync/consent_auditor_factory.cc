@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
+// TODO(crbug.com/850428): Move this and .h back to
+// ios/chrome/browser/consent_auditor, when it does not depend on
+// UserEventService anymore. Currently this is not possible due to a BUILD.gn
+// depedency.
+
+#include "ios/chrome/browser/sync/consent_auditor_factory.h"
 
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"

@@ -5,6 +5,12 @@
 source_set("sync") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    # TODO(crbug.com/850428): Move consent_auditor_factory.* back to
+    # ios/chrome/browser/consent_auditor, when it does not depend on
+    # UserEventService anymore. Currently this is not possible due to a
+    # BUILD.gn depedency.
+    "consent_auditor_factory.cc",
+    "consent_auditor_factory.h",
     "ios_chrome_sync_client.h",
     "ios_chrome_sync_client.mm",
     "ios_chrome_synced_tab_delegate.h",
@@ -26,6 +32,7 @@ source_set("sync") {
     "//base",
     "//components/autofill/core/browser",
     "//components/browser_sync",
+    "//components/consent_auditor",
     "//components/dom_distiller/core",
     "//components/history/core/browser",
     "//components/invalidation/impl",
@@ -34,6 +41,7 @@ source_set("sync") {
     "//components/network_time",
     "//components/password_manager/core/browser",
     "//components/password_manager/sync/browser",
+    "//components/pref_registry",
     "//components/prefs",
     "//components/reading_list/core",
     "//components/search_engines",
@@ -42,6 +50,7 @@ source_set("sync") {
     "//components/sync",
     "//components/sync_preferences",
     "//components/sync_sessions",
+    "//components/version_info",
     "//google_apis",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
