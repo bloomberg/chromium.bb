@@ -69,6 +69,7 @@ struct VR_EXPORT EditedText {
  public:
   EditedText();
   EditedText(const EditedText& other);
+  explicit EditedText(const TextInputInfo& current);
   EditedText(const TextInputInfo& current, const TextInputInfo& previous);
   explicit EditedText(base::string16 t);
 

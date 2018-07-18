@@ -36,6 +36,8 @@ class VR_UI_EXPORT TextInput : public UiElement {
 
   void OnButtonDown(const gfx::PointF& position,
                     base::TimeTicks timestamp) override;
+  void OnTouchMove(const gfx::PointF& position,
+                   base::TimeTicks timestamp) override;
   void OnButtonUp(const gfx::PointF& position,
                   base::TimeTicks timestamp) override;
   void OnFocusChanged(bool focused) override;
