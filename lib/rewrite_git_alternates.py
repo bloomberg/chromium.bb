@@ -61,11 +61,25 @@ def _CleanAlternates(projects, alt_root):
 
 
 def _UpdateAlternatesDir(alternates_root, reference_maps, projects):
+  is_mirror = {}
+  for reference in reference_maps:
+    base = os.path.join(reference, '.repo', 'manifests.git')
+    result = git.RunGit(base, ['config', '--local', '--get', 'repo.mirror'],
+                        error_code_ok=True)
+    is_mirror[reference] = (result.returncode == 0 and
+                            result.output.strip() == 'true')
+
   for project in projects:
     alt_path = os.path.join(alternates_root, project)
     paths = []
     for k, v in reference_maps.iteritems():
-      suffix = os.path.join('.repo', 'project-objects', project, 'objects')
+      if is_mirror[k]:
+        # The layout when the reference is a repo mirror (--mirror).
+        suffix = os.path.join(project, 'objects')
+      else:
+        # The layout when the reference is a normal repo checkout.
+        suffix = os.path.join('.repo', 'project-objects', project, 'objects')
+
       if os.path.exists(os.path.join(k, suffix)):
         paths.append(os.path.join(v, suffix))
 
