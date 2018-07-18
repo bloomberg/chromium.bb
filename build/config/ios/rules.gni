@@ -1809,7 +1809,11 @@ template("ios_xctest_test") {
         [ "$_ios_platform_library/Frameworks/XCTest.framework" ]
 
     # TODO: Remove this once support for Xcode 9.x is dropped.
-    if (xcode_version_int < 1000) {
+    if (xcode_version_int >= 1000) {
+      extra_system_frameworks += [
+        "$ios_sdk_platform_path/Developer/usr/lib/libXCTestBundleInject.dylib",
+      ]
+    } else {
       extra_system_frameworks += [
         "$_ios_platform_library/PrivateFrameworks/IDEBundleInjection.framework",
       ]

@@ -243,12 +243,15 @@ def InstallSystemFramework(framework_path, bundle_path, args):
   installed_framework_path = os.path.join(
       bundle_path, 'Frameworks', os.path.basename(framework_path))
 
-  if os.path.exists(installed_framework_path):
-    shutil.rmtree(installed_framework_path)
+  if os.path.isfile(framework_path):
+    shutil.copy(framework_path, installed_framework_path)
+  elif os.path.isdir(framework_path):
+    if os.path.exists(installed_framework_path):
+      shutil.rmtree(installed_framework_path)
+    shutil.copytree(framework_path, installed_framework_path)
 
-  shutil.copytree(framework_path, installed_framework_path)
   CodeSignBundle(installed_framework_path, args.identity,
-      ['--deep', '--preserve-metadata=identifier,entitlements'])
+      ['--deep', '--preserve-metadata=identifier,entitlements,flags'])
 
 
 def GenerateEntitlements(path, provisioning_profile, bundle_identifier):
