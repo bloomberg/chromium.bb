@@ -4629,3 +4629,5 @@ crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/color-space/canvas-createImageB
 crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-color-over-pattern.html [ Timeout Pass ]
 crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-pattern.html [ Timeout Pass ]
 crbug.com/860706 [ Mac ] virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Timeout Pass ]
+
+crbug.com/864887 [ Linux ] fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Failure Pass ]
