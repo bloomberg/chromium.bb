@@ -46,12 +46,14 @@ class XRSession final : public EventTargetWithInlineData {
 
   XRSession(XRDevice*,
             bool immersive,
+            bool environment_integration,
             XRPresentationContext* output_context,
             EnvironmentBlendMode environment_blend_mode);
   ~XRSession() override = default;
 
   XRDevice* device() const { return device_; }
   bool immersive() const { return immersive_; }
+  bool environmentIntegration() const { return environment_integration_; }
   XRPresentationContext* outputContext() const { return output_context_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
 
@@ -163,6 +165,7 @@ class XRSession final : public EventTargetWithInlineData {
 
   const Member<XRDevice> device_;
   const bool immersive_;
+  const bool environment_integration_;
   const Member<XRPresentationContext> output_context_;
   String blend_mode_string_;
   Member<XRLayer> base_layer_;

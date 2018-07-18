@@ -184,6 +184,15 @@ void XRFrameProvider::RequestFrame(XRSession* session) {
   ScheduleNonImmersiveFrame();
 }
 
+bool XRFrameProvider::HasARSession() {
+  for (unsigned i = 0; i < requesting_sessions_.size(); ++i) {
+    XRSession* session = requesting_sessions_.at(i).Get();
+    if (session->environmentIntegration())
+      return true;
+  }
+  return false;
+}
+
 void XRFrameProvider::ScheduleImmersiveFrame() {
   TRACE_EVENT0("gpu", __FUNCTION__);
   if (pending_immersive_vsync_)
@@ -228,8 +237,7 @@ void XRFrameProvider::ScheduleNonImmersiveFrame() {
   // with pass-through technology.
 
   // TODO(http://crbug.com/856257) Remove the special casing for AR and non-AR.
-  if (!device_->xrDisplayInfoPtr()
-           ->capabilities->can_provide_pass_through_images) {
+  if (!HasARSession()) {
     doc->RequestAnimationFrame(new XRFrameProviderRequestCallback(this));
   }
 }
@@ -310,8 +318,7 @@ void XRFrameProvider::OnNonImmersiveFrameData(
 
   double timestamp = frame_data->time_delta.InSecondsF();
 
-  if (device_->xrDisplayInfoPtr()
-          ->capabilities->can_provide_pass_through_images) {
+  if (HasARSession()) {
     Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,

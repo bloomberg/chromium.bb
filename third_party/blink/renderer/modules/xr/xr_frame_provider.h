@@ -57,6 +57,8 @@ class XRFrameProvider final
   void ProcessScheduledFrame(device::mojom::blink::XRFrameDataPtr frame_data,
                              double timestamp);
 
+  bool HasARSession();
+
   const Member<XRDevice> device_;
   Member<XRSession> immersive_session_;
   Member<XRFrameTransport> frame_transport_;

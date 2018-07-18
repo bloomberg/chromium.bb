@@ -59,30 +59,12 @@ const char* XRDevice::checkSessionSupport(
     }
   }
 
-  // TODO(https://crbug.com/828321): Use session options instead of the flag.
-  bool is_ar = RuntimeEnabledFeatures::WebXRHitTestEnabled();
-  if (is_ar) {
-    if (!supports_ar_) {
-      return kSessionNotSupported;
-    }
+  if (options.environmentIntegration() && !supports_ar_) {
+    return kSessionNotSupported;
+  }
 
-    // Exclusive AR sessions aren't supported, but we could do exclusive without
-    // AR.  Since is_ar isn't based on options, assume for now that non-ar was
-    // desired.
-    // TODO(https://crbug.com/828321): Actually use options to check for AR.
-    if (options.immersive()) {
-      return nullptr;
-    }
-  } else {
-    // TODO(https://crbug.com/828321): Remove this check when properly
-    // supporting multiple VRDevice registration.
-    if (supports_ar_) {
-      // We don't expect to get an AR-capable device, but it can happen in
-      // layout tests, due to mojo mocking. For now just reject the session
-      // request.
-      return kSessionNotSupported;
-    }
-    // TODO(https://crbug.com/828321): Check that VR is supported.
+  if (options.immersive() && !supports_immersive_) {
+    return kSessionNotSupported;
   }
 
   return nullptr;
@@ -178,8 +160,7 @@ ScriptPromise XRDevice::requestSession(
   }
 
   // All AR sessions require a user gesture.
-  // TODO(https://crbug.com/828321): Use session options instead.
-  if (RuntimeEnabledFeatures::WebXRHitTestEnabled()) {
+  if (options.environmentIntegration()) {
     if (!has_user_activation) {
       return ScriptPromise::RejectWithDOMException(
           script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
@@ -194,8 +175,7 @@ ScriptPromise XRDevice::requestSession(
       device::mojom::blink::XRSessionOptions::New();
   session_options->immersive = options.immersive();
   session_options->provide_passthrough_camera =
-      RuntimeEnabledFeatures::WebXRHitTestEnabled() &&
-      !session_options->immersive;
+      options.environmentIntegration();
   session_options->has_user_activation = has_user_activation;
 
   // TODO(offenwanger): Once device activation is sorted out for WebXR, either
@@ -228,13 +208,13 @@ void XRDevice::OnRequestSessionReturned(
   }
 
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
-  // TODO(https://crbug.com/828321): Use session options instead of the flag.
-  if (RuntimeEnabledFeatures::WebXRHitTestEnabled()) {
+  if (options.environmentIntegration()) {
     blend_mode = XRSession::kBlendModeAlphaBlend;
   }
 
   XRSession* session =
-      new XRSession(this, options.immersive(), output_context, blend_mode);
+      new XRSession(this, options.immersive(), options.environmentIntegration(),
+                    output_context, blend_mode);
   sessions_.insert(session);
 
   if (options.immersive()) {
