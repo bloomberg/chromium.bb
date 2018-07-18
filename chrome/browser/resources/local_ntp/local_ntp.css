@@ -758,3 +758,56 @@ input:checked + .toggle::before {
   transform: translateX(26px);
 }
 
+#message-box-container {
+  bottom: -50px;
+  margin-bottom: 16px;
+  position: fixed;
+  transition: bottom 400ms;
+  vertical-align: middle;
+  visibility: hidden;
+  width: 100%;
+}
+
+#message-box {
+  background-color: white;
+  border: 1px solid rgb(218, 220, 224);
+  border-radius: 16px;
+  color: rgb(255, 0, 0);
+  font-family: 'Roboto', arial, sans-serif;
+  font-size: 12px;
+  height: 32px;
+  left: 50%;
+  margin: 0 auto;
+  padding: 0 16px 0 4px;
+  text-align: center;
+  visibility: visible;
+  width: fit-content;
+}
+
+#message-box-container.float-up {
+  bottom: 0;
+}
+
+#message-box-container.message-box-hide {
+  display: none;
+}
+
+#message-box-icon {
+  background: url(../../../../ui/webui/resources/images/error.svg) no-repeat center;
+  height: 18px;
+  margin-right: 4px;
+  width: 18px;
+}
+
+#message-box-link.has-link {
+  color: rgb(66, 133, 244);
+  margin-left: 6px;
+}
+
+#message-box-message,
+#message-box-link,
+#message-box-icon {
+  vertical-align: middle;
+  display: inline-block;
+  line-height: 32px;
+}

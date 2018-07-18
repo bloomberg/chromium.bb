@@ -86,6 +86,24 @@ class NtpBackgroundService : public KeyedService {
     return collection_images_;
   }
 
+  // Returns the error info associated with the collections request.
+  const ErrorInfo& collection_error_info() const {
+    return collection_error_info_;
+  }
+
+  // Returns the error info associated with the collection images request.
+  const ErrorInfo& collection_images_error_info() const {
+    return collection_images_error_info_;
+  }
+
+  // Returns the error info associated with the albums request.
+  const ErrorInfo& album_error_info() const { return album_error_info_; }
+
+  // Returns the error info associated with the album photos request.
+  const ErrorInfo& album_photos_error_info() const {
+    return album_photos_error_info_;
+  }
+
   // Returns the currently cached AlbumInfo, if any.
   const std::vector<AlbumInfo>& album_info() const { return album_info_; }
 
@@ -158,6 +176,7 @@ class NtpBackgroundService : public KeyedService {
     // Indicates that asynchronous fetch of AlbumPhotos has completed.
     ALBUM_PHOTOS
   };
+
   void NotifyObservers(FetchComplete fetch_complete);
   GURL GetAlbumPhotosApiUrl() const;
   GURL FormatAlbumPhotosBaseApiUrl(const std::string& album_id,
@@ -173,6 +192,11 @@ class NtpBackgroundService : public KeyedService {
   std::vector<AlbumPhoto> album_photos_;
   std::string requested_album_id_;
   std::string requested_photo_container_id_;
+
+  ErrorInfo album_error_info_;
+  ErrorInfo album_photos_error_info_;
+  ErrorInfo collection_error_info_;
+  ErrorInfo collection_images_error_info_;
 
   DISALLOW_COPY_AND_ASSIGN(NtpBackgroundService);
 };

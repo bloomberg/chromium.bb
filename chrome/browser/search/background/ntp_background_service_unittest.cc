@@ -92,6 +92,8 @@ TEST_F(NtpBackgroundServiceTest, CollectionInfoNetworkError) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->collection_info().empty());
+  EXPECT_EQ(service()->collection_error_info().error_type,
+            ErrorType::NET_ERROR);
 }
 
 TEST_F(NtpBackgroundServiceTest, BadCollectionsResponse) {
@@ -104,6 +106,8 @@ TEST_F(NtpBackgroundServiceTest, BadCollectionsResponse) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->collection_info().empty());
+  EXPECT_EQ(service()->collection_error_info().error_type,
+            ErrorType::SERVICE_ERROR);
 }
 
 TEST_F(NtpBackgroundServiceTest, GoodCollectionsResponse) {
@@ -131,6 +135,7 @@ TEST_F(NtpBackgroundServiceTest, GoodCollectionsResponse) {
 
   EXPECT_FALSE(service()->collection_info().empty());
   EXPECT_THAT(service()->collection_info().at(0), Eq(collection_info));
+  EXPECT_EQ(service()->collection_error_info().error_type, ErrorType::NONE);
 }
 
 TEST_F(NtpBackgroundServiceTest, CollectionImagesNetworkError) {
@@ -142,6 +147,8 @@ TEST_F(NtpBackgroundServiceTest, CollectionImagesNetworkError) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->collection_images().empty());
+  EXPECT_EQ(service()->collection_images_error_info().error_type,
+            ErrorType::NET_ERROR);
 }
 
 TEST_F(NtpBackgroundServiceTest, BadCollectionImagesResponse) {
@@ -154,6 +161,8 @@ TEST_F(NtpBackgroundServiceTest, BadCollectionImagesResponse) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->collection_images().empty());
+  EXPECT_EQ(service()->collection_images_error_info().error_type,
+            ErrorType::SERVICE_ERROR);
 }
 
 TEST_F(NtpBackgroundServiceTest, GoodCollectionImagesResponse) {
@@ -184,6 +193,8 @@ TEST_F(NtpBackgroundServiceTest, GoodCollectionImagesResponse) {
 
   EXPECT_FALSE(service()->collection_images().empty());
   EXPECT_THAT(service()->collection_images().at(0), Eq(collection_image));
+  EXPECT_EQ(service()->collection_images_error_info().error_type,
+            ErrorType::NONE);
 }
 
 TEST_F(NtpBackgroundServiceTest, MultipleRequests) {
@@ -246,6 +257,7 @@ TEST_F(NtpBackgroundServiceTest, AlbumInfoNetworkError) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->album_info().empty());
+  EXPECT_EQ(service()->album_error_info().error_type, ErrorType::NET_ERROR);
 }
 
 TEST_F(NtpBackgroundServiceTest, AlbumInfoAuthError) {
@@ -298,6 +310,7 @@ TEST_F(NtpBackgroundServiceTest, BadAlbumsResponse) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->album_info().empty());
+  EXPECT_EQ(service()->album_error_info().error_type, ErrorType::SERVICE_ERROR);
 }
 
 TEST_F(NtpBackgroundServiceTest, GoodAlbumsResponse) {
@@ -326,6 +339,7 @@ TEST_F(NtpBackgroundServiceTest, GoodAlbumsResponse) {
 
   EXPECT_FALSE(service()->album_info().empty());
   EXPECT_THAT(service()->album_info().at(0), Eq(album_info));
+  EXPECT_EQ(service()->album_error_info().error_type, ErrorType::NONE);
 }
 
 TEST_F(NtpBackgroundServiceTest, AlbumPhotosNetworkError) {
@@ -338,6 +352,8 @@ TEST_F(NtpBackgroundServiceTest, AlbumPhotosNetworkError) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->album_photos().empty());
+  EXPECT_EQ(service()->album_photos_error_info().error_type,
+            ErrorType::NET_ERROR);
 }
 
 TEST_F(NtpBackgroundServiceTest, AlbumPhotosAuthError) {
@@ -390,6 +406,8 @@ TEST_F(NtpBackgroundServiceTest, BadAlbumPhotosResponse) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->album_photos().empty());
+  EXPECT_EQ(service()->album_photos_error_info().error_type,
+            ErrorType::SERVICE_ERROR);
 }
 
 TEST_F(NtpBackgroundServiceTest, AlbumPhotoErrorResponse) {
@@ -409,6 +427,8 @@ TEST_F(NtpBackgroundServiceTest, AlbumPhotoErrorResponse) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->album_photos().empty());
+  EXPECT_EQ(service()->album_photos_error_info().error_type,
+            ErrorType::SERVICE_ERROR);
 }
 
 TEST_F(NtpBackgroundServiceTest, GoodAlbumPhotosResponse) {
@@ -433,4 +453,5 @@ TEST_F(NtpBackgroundServiceTest, GoodAlbumPhotosResponse) {
               StartsWith(preview.preview_url()));
   EXPECT_THAT(service()->album_photos().at(0).photo_url.spec(),
               StartsWith(preview.preview_url()));
+  EXPECT_EQ(service()->album_photos_error_info().error_type, ErrorType::NONE);
 }

@@ -10,6 +10,20 @@
 #include "chrome/browser/search/background/ntp_background.pb.h"
 #include "url/gurl.h"
 
+enum class ErrorType {
+  // Data retrieved successfully.
+  NONE,
+
+  // Network error occurred.
+  NET_ERROR,
+
+  // Response from backend couldn't be read.
+  SERVICE_ERROR,
+
+  // Unable to authenticate with Google Photos (INVALID_GAIA_CREDENTIALS).
+  AUTH_ERROR
+};
+
 // Background images are organized into collections, according to a theme. This
 // struct contains the data required to display information about a collection,
 // including a representative image. The complete set of CollectionImages must
@@ -134,5 +148,25 @@ struct AlbumPhoto {
 
 bool operator==(const AlbumPhoto& lhs, const AlbumPhoto& rhs);
 bool operator!=(const AlbumPhoto& lhs, const AlbumPhoto& rhs);
+
+// Represents errors that occur when communicating with the Backdrop service and
+// Google Photos.
+struct ErrorInfo {
+  ErrorInfo();
+  ErrorInfo(const ErrorInfo&);
+  ErrorInfo(ErrorInfo&&);
+  ~ErrorInfo();
+
+  ErrorInfo& operator=(const ErrorInfo&);
+  ErrorInfo& operator=(ErrorInfo&&);
+
+  void ClearError();
+
+  // Network error number, listed at chrome://network-errors.
+  int net_error;
+
+  // Category of error that occured.
+  ErrorType error_type;
+};
 
 #endif  // CHROME_BROWSER_SEARCH_BACKGROUND_NTP_BACKGROUND_DATA_H_

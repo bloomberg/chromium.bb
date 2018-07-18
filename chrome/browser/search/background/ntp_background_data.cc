@@ -134,3 +134,16 @@ bool operator==(const AlbumPhoto& lhs, const AlbumPhoto& rhs) {
 bool operator!=(const AlbumPhoto& lhs, const AlbumPhoto& rhs) {
   return !(lhs == rhs);
 }
+
+ErrorInfo::ErrorInfo() : net_error(0), error_type(ErrorType::NONE) {}
+ErrorInfo::ErrorInfo(const ErrorInfo&) = default;
+ErrorInfo::ErrorInfo(ErrorInfo&&) = default;
+ErrorInfo::~ErrorInfo() = default;
+
+ErrorInfo& ErrorInfo::operator=(const ErrorInfo&) = default;
+ErrorInfo& ErrorInfo::operator=(ErrorInfo&&) = default;
+
+void ErrorInfo::ClearError() {
+  error_type = ErrorType::NONE;
+  net_error = 0;
+}

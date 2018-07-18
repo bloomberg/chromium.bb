@@ -34,6 +34,10 @@ customBackgrounds.IDS = {
   DONE: 'bg-sel-footer-done',
   EDIT_BG: 'edit-bg',
   EDIT_BG_DIALOG: 'edit-bg-dialog',
+  MSG_BOX: 'message-box',
+  MSG_BOX_MSG: 'message-box-message',
+  MSG_BOX_LINK: 'message-box-link',
+  MSG_BOX_CONTAINER: 'message-box-container',
   MENU: 'bg-sel-menu',
   OPTIONS_TITLE: 'edit-bg-title',
   RESTORE_DEFAULT: 'edit-bg-restore-default',
@@ -57,11 +61,15 @@ customBackgrounds.CLASSES = {
   COLLECTION_TILE: 'bg-sel-tile',  // Preview tile for background customization
   COLLECTION_TITLE: 'bg-sel-tile-title',  // Title of a background image
   DONE_AVAILABLE: 'done-available',
+  FLOAT_UP: 'float-up',
+  HAS_LINK: 'has-link',
   IMAGE_DIALOG: 'is-img-sel',
   KEYBOARD_NAV: 'using-keyboard-nav',
+  PLUS_ICON: 'plus-icon',
   SELECTED_BORDER: 'selected-border',
   SELECTED_CHECK: 'selected-check',
   SELECTED_CIRCLE: 'selected-circle',
+  HIDE_MSG_BOX: 'message-box-hide',
 };
 
 /**
@@ -78,6 +86,11 @@ customBackgrounds.SOURCES = {
 
 customBackgrounds.CUSTOM_BACKGROUND_OVERLAY =
     'linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2))';
+
+// These shound match the corresponding values in local_ntp.js, that control the
+// mv-notice element.
+customBackgrounds.delayedHideNotification = -1;
+customBackgrounds.NOTIFICATION_TIMEOUT = 10000;
 
 /* Tile that was selected by the user.
  * @type {HTMLElement}
@@ -155,6 +168,20 @@ customBackgrounds.createAlbumTile = function(data) {
   return tile;
 };
 
+customBackgrounds.createAlbumPlusTile = function() {
+  var tile = document.createElement('div');
+  var plusIcon = document.createElement('div');
+  tile.classList.add(customBackgrounds.CLASSES.COLLECTION_TILE);
+  plusIcon.classList.add(customBackgrounds.CLASSES.PLUS_ICON);
+  tile.appendChild(plusIcon);
+  tile.onclick = function() {
+    window.open('https://photos.google.com/albums', '_blank');
+    customBackgrounds.closeCollectionDialog($(customBackgrounds.IDS.MENU));
+  };
+  tile.id = 'coll_tile_0';
+  return tile;
+};
+
 /**
  * Show dialog for selecting either a Chrome background collection or Google
  * Photo album. Draw data from either coll or albums.
@@ -188,6 +215,9 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
     $(customBackgrounds.IDS.TITLE).textContent =
         configData.translatedStrings.selectGooglePhotoAlbum;
     collData = albums;
+    if (albums.length == 0) {
+      tileContainer.appendChild(customBackgrounds.createAlbumPlusTile());
+    }
   }
   menu.classList.add(customBackgrounds.CLASSES.COLLECTION_DIALOG);
   menu.classList.remove(customBackgrounds.CLASSES.IMAGE_DIALOG);
@@ -251,7 +281,11 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
         if (imageDataLoaded) {
           customBackgrounds.showImageSelectionDialog(tile.dataset.name);
         } else {
+          let source = customBackgrounds.dialogCollectionsSource;
           customBackgrounds.closeCollectionDialog(menu);
+
+          let errors = source ? coll_img_errors : photos_errors;
+          customBackgrounds.handleError(errors);
         }
       };
     };
@@ -391,7 +425,6 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
 /**
  * Load the NTPBackgroundCollections script. It'll create a global
  * variable name "coll" which is a dict of background collections data.
- * TODO(kmilka): add error UI as part of crbug.com/848981.
  * @private
  */
 customBackgrounds.loadCollections = function() {
@@ -467,8 +500,7 @@ customBackgrounds.initCustomBackgrounds = function() {
     customBackgrounds.networkStateChanged(false);
   }
 
-  // TODO(kmilka): files should be validated and have errors shown as needed.
-  // crbug.com/848981.
+  // Interactions with the "Upload an image" option.
   var uploadImageInteraction = function(event) {
     window.chrome.embeddedSearch.newTabPage.selectLocalBackgroundImage();
   };
@@ -529,6 +561,8 @@ customBackgrounds.initCustomBackgrounds = function() {
     if (typeof coll != 'undefined' && coll.length > 0) {
       customBackgrounds.showCollectionSelectionDialog(
           customBackgrounds.SOURCES.CHROME_BACKGROUNDS);
+    } else {
+      customBackgrounds.handleError(coll_errors);
     }
   };
   $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).onclick =
@@ -542,9 +576,12 @@ customBackgrounds.initCustomBackgrounds = function() {
   // Interactions with the Google Photos option.
   var googlePhotosInteraction = function(event) {
     editDialog.close();
-    if (typeof albums != 'undefined' && albums.length > 0) {
+    if (typeof albums != 'undefined' && !albums_errors.auth_error &&
+        !albums.net_error && !albums.service_error) {
       customBackgrounds.showCollectionSelectionDialog(
           customBackgrounds.SOURCES.GOOGLE_PHOTOS);
+    } else {
+      customBackgrounds.handleError(albums_errors);
     }
   };
   $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).onclick =
@@ -628,4 +665,75 @@ customBackgrounds.initCustomBackgrounds = function() {
     $(customBackgrounds.IDS.DONE)
         .classList.add(customBackgrounds.CLASSES.DONE_AVAILABLE);
   };
+};
+
+customBackgrounds.hideMessageBox = function() {
+  let message = $(customBackgrounds.IDS.MSG_BOX_CONTAINER);
+  if (!message.classList.contains(customBackgrounds.CLASSES.FLOAT_UP)) {
+    return;
+  }
+  window.clearTimeout(customBackgrounds.delayedHideNotification);
+  message.classList.remove(customBackgrounds.CLASSES.FLOAT_UP);
+
+  let afterHide = (event) => {
+    if (event.propertyName == 'bottom') {
+      $(IDS.MSG_BOX).classList.add(customBackgrounds.CLASSES.HIDE_MSG_BOX);
+      $(IDS.MSG_BOX).classList.remove(customBackgrounds.CLASSES.HAS_LINK);
+      notification.removeEventListener('transitionend', afterHide);
+    }
+  };
+};
+
+customBackgrounds.showMessageBox = function() {
+  $(customBackgrounds.IDS.MSG_BOX_CONTAINER)
+      .classList.remove(customBackgrounds.CLASSES.HIDE_MSG_BOX);
+  // Timeout is required for the "float up" transition to work. Modifying the
+  // "display" property prevents transitions from activating.
+  window.setTimeout(() => {
+    $(customBackgrounds.IDS.MSG_BOX_CONTAINER)
+        .classList.add(customBackgrounds.CLASSES.FLOAT_UP);
+  }, 20);
+
+  // Automatically hide the notification after a period of time.
+  customBackgrounds.delayedHideNotification = window.setTimeout(() => {
+    customBackgrounds.hideMessageBox();
+  }, customBackgrounds.NOTIFICATION_TIMEOUT);
+};
+
+customBackgrounds.handleError = function(errors) {
+  var msgBox = $(customBackgrounds.IDS.MSG_BOX_MSG);
+  var msgBoxLink = $(customBackgrounds.IDS.MSG_BOX_LINK);
+  var unavailableString = configData.translatedStrings.backgroundsUnavailable;
+
+  if (errors != 'undefined') {
+    // Network errors.
+    if (errors.net_error) {
+      if (errors.net_error_no != 0) {
+        msgBox.textContent = configData.translatedStrings.connectionError;
+        msgBoxLink.textContent = configData.translatedStrings.moreInfo;
+        msgBoxLink.classList.add(customBackgrounds.CLASSES.HAS_LINK);
+        msgBoxLink.onclick = function() {
+          window.open(
+              'https://chrome://network-error/' + errors.net_error_no,
+              '_blank');
+        };
+      } else {
+        msgBox.textContent =
+            configData.translatedStrings.connectionErrorNoPeriod;
+      }
+      customBackgrounds.showMessageBox();
+      // Auth errors (Google Photos only).
+    } else if (errors.auth_error) {
+      window.open('https://photos.google.com/login', '_blank');
+      // Service errors.
+    } else if (errors.service_error) {
+      msgBox.textContent = unavailableString;
+      customBackgrounds.showMessageBox();
+    }
+    return;
+  }
+
+  // Generic error when we can't tell what went wrong.
+  msgBox.textContent = unavailableString;
+  customBackgrounds.showMessageBox();
 };
