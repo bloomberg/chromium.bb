@@ -58,8 +58,7 @@ void DrmDeviceConnector::OnGpuProcessLaunched(
 }
 
 void DrmDeviceConnector::OnChannelDestroyed(int host_id) {
-  // TODO(rjkroege): Handle Viz restarting.
-  NOTIMPLEMENTED();
+  host_drm_device_->OnGpuServiceLost();
 }
 
 void DrmDeviceConnector::OnGpuServiceLaunched(
