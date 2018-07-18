@@ -22,9 +22,7 @@ dictionary RequestInit {
     DOMString integrity;
     boolean keepalive;
     [RuntimeEnabled=PriorityHints] RequestImportance importance;
-    // TODO(domfarolino): use AbortSignal? type for signal member once
-    // http://crrev.com/c/1113176 is merged.
-    any signal;
+    AbortSignal? signal;
     // TODO(domfarolino): add support for RequestInit window member.
     //any window; // can only be set to null
 };

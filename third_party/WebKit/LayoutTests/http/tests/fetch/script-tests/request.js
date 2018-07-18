@@ -746,17 +746,22 @@ test(() => {
 
 
 test(() => {
-  // At the time of writing this test, an `any` type is used to represent
-  // RequestInit's signal member instead of AbortSignal due to a bug in the IDL
-  // compiler; see https://crbug.com/855968. This test ensures that that we
-  // treat the `any` member exactly as an AbortSignal member would be treated.
+  // This is to test that a TypeError is thrown when RequestInit's signal
+  // member does not implement the AbortSignal interface. We test this because
+  // we used to use an `any` IDL type to represent RequestInit's signal member
+  // instead of `AbortSignal` due to a bug in the IDL compiler, and performed
+  // conversions manually. This test ensures that conversion were carried out
+  // properly.
   const e = TypeError();
   assert_throws(e, () => {
-    new Request('/', {signal: {}})}, 'signal');
+    new Request('/', {signal: {}})},
+    'An empty object as RequestInit\'s signal member should fail type conversion');
   assert_throws(e, () => {
-    new Request('/', {signal: new Request('/')})}, 'signal');
+    new Request('/', {signal: new Request('/')})},
+    'A Request object as RequestInit\'s signal member should fail type conversion');
   assert_throws(e, () => {
-    new Request('/', {signal: new Response('/')})}, 'signal');
+    new Request('/', {signal: new Response('/')})},
+    'A Response object as RequestInit\'s signal member should fail type conversion');
 }, 'TypeError should be thrown when RequestInit\'s signal member does not implement the AbortSignal interface');
 
 promise_test(function() {
