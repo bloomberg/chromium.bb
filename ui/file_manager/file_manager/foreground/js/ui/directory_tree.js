@@ -1631,7 +1631,7 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
       // them to re-draw. It only needs to update the first level of children,
       // so it doesn't need to be recursive.
       if (currentItem instanceof EntryListItem)
-        currentItem.updateSubDirectories(false);
+        currentItem.updateSubDirectories(true);
     } else {
       var modelItem = this.dataModel.item(modelIndex);
       if (modelItem) {
