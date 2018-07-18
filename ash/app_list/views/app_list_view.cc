@@ -98,6 +98,13 @@ constexpr float kAppListAnimationDurationFromFullscreenMs = 250;
 // The app list opacity when the tablet mode is enabled.
 constexpr float kAppListOpacityInTabletMode = 0.1;
 
+// The background corner radius in peeking and fullscreen state.
+constexpr int kAppListPeekingBackgroundRadius = 28;
+constexpr int kAppListFullscreenBackgroundRadius = 0;
+
+// The threshold beyond which the background radius starts transition.
+constexpr int kAppListBackgroundTransitionThreshold = 156;
+
 // Set animation durations to 0 for testing.
 static bool short_animations_for_testing;
 
@@ -279,6 +286,7 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       state_animation_metrics_reporter_(
           std::make_unique<StateAnimationMetricsReporter>()),
       is_home_launcher_enabled_(app_list::features::IsHomeLauncherEnabled()),
+      is_new_style_launcher_enabled_(features::IsNewStyleLauncherEnabled()),
       weak_ptr_factory_(this) {
   CHECK(delegate);
 
@@ -1062,6 +1070,7 @@ void AppListView::Layout() {
 
   contents_view->Layout();
   app_list_background_shield_->SetBoundsRect(contents_bounds);
+  UpdateBackgroundRadius();
 }
 
 void AppListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -1495,6 +1504,38 @@ bool AppListView::ShouldIgnoreScrollEvents() {
   // changes or transtions.
   return fullscreen_widget_->GetLayer()->GetAnimator()->is_animating() ||
          GetRootAppsGridView()->pagination_model()->has_transition();
+}
+
+void AppListView::UpdateBackgroundRadius() {
+  if (!is_new_style_launcher_enabled_)
+    return;
+
+  const int current_height = GetCurrentAppListHeight();
+  const int fullscreen_height = GetDisplayNearestView().size().height();
+  const int threshold_height =
+      fullscreen_height - kAppListBackgroundTransitionThreshold;
+  int background_radius = kAppListPeekingBackgroundRadius;
+  if (current_height > threshold_height) {
+    background_radius = gfx::Tween::IntValueBetween(
+        static_cast<double>(current_height - threshold_height) /
+            kAppListBackgroundTransitionThreshold,
+        kAppListPeekingBackgroundRadius, kAppListFullscreenBackgroundRadius);
+  }
+
+  // Resetting mask layer is heavy operation, so avoid doing so if radius does
+  // not change.
+  static int previous_background_radius = -1;
+  if (previous_background_radius == background_radius)
+    return;
+
+  app_list_background_mask_ = views::Painter::CreatePaintedLayer(
+      views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
+                                                  background_radius));
+  app_list_background_mask_->layer()->SetFillsBoundsOpaquely(false);
+  app_list_background_mask_->layer()->SetBounds(GetContentsBounds());
+  app_list_background_shield_->layer()->SetMaskLayer(
+      app_list_background_mask_->layer());
+  previous_background_radius = background_radius;
 }
 
 }  // namespace app_list
