@@ -301,14 +301,21 @@ webrtc::RtpTransceiverDirection RTCRtpReceiverOnlyTransceiver::Direction()
   return webrtc::RtpTransceiverDirection::kSendOnly;
 }
 
+void RTCRtpReceiverOnlyTransceiver::SetDirection(
+    webrtc::RtpTransceiverDirection direction) {
+  NOTREACHED();
+}
+
 base::Optional<webrtc::RtpTransceiverDirection>
 RTCRtpReceiverOnlyTransceiver::CurrentDirection() const {
   NOTREACHED();
   return webrtc::RtpTransceiverDirection::kSendOnly;
 }
 
-void RTCRtpReceiverOnlyTransceiver::Stop() {
+base::Optional<webrtc::RtpTransceiverDirection>
+RTCRtpReceiverOnlyTransceiver::FiredDirection() const {
   NOTREACHED();
+  return webrtc::RtpTransceiverDirection::kSendOnly;
 }
 
 }  // namespace content

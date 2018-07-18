@@ -101,7 +101,8 @@ void TransceiverStateSurfacer::Initialize(
         std::move(sender_state), std::move(receiver_state),
         ToBaseOptional(webrtc_transceiver->mid()),
         webrtc_transceiver->stopped(), webrtc_transceiver->direction(),
-        ToBaseOptional(webrtc_transceiver->current_direction())));
+        ToBaseOptional(webrtc_transceiver->current_direction()),
+        ToBaseOptional(webrtc_transceiver->fired_direction())));
   }
   is_initialized_ = true;
 }
