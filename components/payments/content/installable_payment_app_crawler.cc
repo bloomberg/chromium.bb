@@ -52,13 +52,11 @@ void InstallablePaymentAppCrawler::Start(
 
   std::set<GURL> manifests_to_download;
   for (const auto& method_data : requested_method_data) {
-    for (const auto& method_name : method_data->supported_methods) {
-      if (!base::IsStringUTF8(method_name))
-        continue;
-      GURL url = GURL(method_name);
-      if (url.is_valid()) {
-        manifests_to_download.insert(url);
-      }
+    if (!base::IsStringUTF8(method_data->supported_method))
+      continue;
+    GURL url = GURL(method_data->supported_method);
+    if (url.is_valid()) {
+      manifests_to_download.insert(url);
     }
   }
 

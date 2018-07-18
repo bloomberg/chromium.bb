@@ -27,7 +27,7 @@
                    "content=\"width=device-width, initial-scale=1, "
                    "maximum-scale=1\"></head><body><button id=\"buy\" "
                    "onclick=\"try { (new PaymentRequest([{supportedMethods: "
-                   "['basic-card']}], {total: {label: 'Total',  amount: "
+                   "'basic-card'}], {total: {label: 'Total',  amount: "
                    "{currency: 'USD', value: "
                    "'1.00'}}})).show(); } "
                    "catch(e) { document.getElementById('result').innerHTML = "

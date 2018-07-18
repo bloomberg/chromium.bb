@@ -123,8 +123,10 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
         ->SetDownloaderAndIgnorePortInAppScopeForTesting(std::move(downloader));
 
     std::vector<mojom::PaymentMethodDataPtr> method_data;
-    method_data.emplace_back(mojom::PaymentMethodData::New());
-    method_data.back()->supported_methods = payment_method_identifiers;
+    for (const auto& identifier : payment_method_identifiers) {
+      method_data.emplace_back(mojom::PaymentMethodData::New());
+      method_data.back()->supported_method = identifier;
+    }
 
     base::RunLoop run_loop;
     ServiceWorkerPaymentAppFactory::GetInstance()->GetAllPaymentApps(

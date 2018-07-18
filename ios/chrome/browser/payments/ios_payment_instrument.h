@@ -56,7 +56,7 @@ class IOSPaymentInstrument : public PaymentInstrument {
   void RecordUse() override;
   base::string16 GetLabel() const override;
   base::string16 GetSublabel() const override;
-  bool IsValidForModifier(const std::vector<std::string>& methods,
+  bool IsValidForModifier(const std::string& method,
                           bool supported_networks_specified,
                           const std::set<std::string>& supported_networks,
                           bool supported_types_specified,

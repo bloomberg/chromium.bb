@@ -15,9 +15,7 @@ namespace payments {
 TEST(PaymentRequestTest, EmptyPaymentDetailsModifierDictionary) {
   base::DictionaryValue expected_value;
 
-  std::unique_ptr<base::ListValue> supported_methods_list =
-      std::make_unique<base::ListValue>();
-  expected_value.SetList("supportedMethods", std::move(supported_methods_list));
+  expected_value.SetString("supportedMethods", "");
   expected_value.SetString("data", "");
 
   PaymentDetailsModifier payment_details_modifier;
@@ -30,11 +28,7 @@ TEST(PaymentRequestTest, EmptyPaymentDetailsModifierDictionary) {
 TEST(PaymentRequestTest, PopulatedDetailsModifierDictionary) {
   base::DictionaryValue expected_value;
 
-  std::unique_ptr<base::ListValue> supported_methods_list =
-      std::make_unique<base::ListValue>();
-  supported_methods_list->GetList().emplace_back("basic-card");
-  supported_methods_list->GetList().emplace_back("amex");
-  expected_value.SetList("supportedMethods", std::move(supported_methods_list));
+  expected_value.SetString("supportedMethods", "basic-card");
   expected_value.SetString("data",
                            "{\"supportedNetworks\":[\"visa\",\"mastercard\"]}");
   std::unique_ptr<base::DictionaryValue> item_dict =
@@ -49,9 +43,7 @@ TEST(PaymentRequestTest, PopulatedDetailsModifierDictionary) {
   expected_value.SetDictionary("total", std::move(item_dict));
 
   PaymentDetailsModifier payment_details_modifier;
-  payment_details_modifier.method_data.supported_methods.push_back(
-      "basic-card");
-  payment_details_modifier.method_data.supported_methods.push_back("amex");
+  payment_details_modifier.method_data.supported_method = "basic-card";
   payment_details_modifier.method_data.data =
       "{\"supportedNetworks\":[\"visa\",\"mastercard\"]}";
   payment_details_modifier.total = std::make_unique<PaymentItem>();
@@ -72,16 +64,13 @@ TEST(PaymentRequestTest, PaymentDetailsModifierEquality) {
   PaymentDetailsModifier details_modifier2;
   EXPECT_EQ(details_modifier1, details_modifier2);
 
-  std::vector<std::string> supported_methods1;
-  supported_methods1.push_back("China UnionPay");
-  supported_methods1.push_back("BobPay");
-  details_modifier1.method_data.supported_methods = supported_methods1;
+  details_modifier1.method_data.supported_method = "BobPay";
   EXPECT_NE(details_modifier1, details_modifier2);
-  std::vector<std::string> supported_methods2;
-  supported_methods2.push_back("BobPay");
-  details_modifier2.method_data.supported_methods = supported_methods2;
+
+  details_modifier2.method_data.supported_method = "China UnionPay";
   EXPECT_NE(details_modifier1, details_modifier2);
-  details_modifier2.method_data.supported_methods = supported_methods1;
+
+  details_modifier2.method_data.supported_method = "BobPay";
   EXPECT_EQ(details_modifier1, details_modifier2);
 
   details_modifier1.method_data.data =

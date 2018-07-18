@@ -704,11 +704,9 @@ void EmbeddedWorkerTestHelper::OnCanMakePaymentEvent(
         callback) {
   bool can_make_payment = false;
   for (const auto& method_data : event_data->method_data) {
-    for (const auto& method : method_data->supported_methods) {
-      if (method == "test-method") {
-        can_make_payment = true;
-        break;
-      }
+    if (method_data->supported_method == "test-method") {
+      can_make_payment = true;
+      break;
     }
   }
   response_callback->OnResponseForCanMakePayment(can_make_payment,

@@ -55,10 +55,8 @@ void PopulateValidatedMethodData(
   method_data_vector.reserve(method_data_mojom.size());
   for (const mojom::PaymentMethodDataPtr& method_data_entry :
        method_data_mojom) {
-    for (const std::string& method : method_data_entry->supported_methods) {
-      (*stringified_method_data)[method].insert(
-          method_data_entry->stringified_data);
-    }
+    (*stringified_method_data)[method_data_entry->supported_method].insert(
+        method_data_entry->stringified_data);
 
     method_data_vector.push_back(ConvertPaymentMethodData(method_data_entry));
   }
@@ -237,7 +235,7 @@ PaymentRequestSpec::GetApplicableModifier(
         &payment_method_identifiers_set, &stringified_method_data);
 
     if (selected_instrument->IsValidForModifier(
-            modifier->method_data->supported_methods,
+            modifier->method_data->supported_method,
             !modifier->method_data->supported_networks.empty(),
             supported_card_networks_set,
             !modifier->method_data->supported_types.empty(), supported_types)) {

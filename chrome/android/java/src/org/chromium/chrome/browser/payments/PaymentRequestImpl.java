@@ -706,18 +706,12 @@ public class PaymentRequestImpl
         if (methodData == null || methodData.length == 0) return null;
         Map<String, PaymentMethodData> result = new ArrayMap<>();
         for (int i = 0; i < methodData.length; i++) {
-            String[] methods = methodData[i].supportedMethods;
+            String method = methodData[i].supportedMethod;
 
-            // Payment methods are required.
-            if (methods == null || methods.length == 0) return null;
+            if (TextUtils.isEmpty(method)) return null;
+            result.put(method, methodData[i]);
 
-            for (int j = 0; j < methods.length; j++) {
-                // Payment methods should be non-empty.
-                if (TextUtils.isEmpty(methods[j])) return null;
-                result.put(methods[j], methodData[i]);
-            }
-
-            paymentMethodsCollector.addAcceptedPaymentMethodsIfRecognized(methodData[i]);
+            paymentMethodsCollector.addAcceptedPaymentMethodIfRecognized(methodData[i]);
         }
 
         return Collections.unmodifiableMap(result);
@@ -918,11 +912,9 @@ public class PaymentRequestImpl
 
         for (int i = 0; i < details.modifiers.length; i++) {
             PaymentDetailsModifier modifier = details.modifiers[i];
-            String[] methods = modifier.methodData.supportedMethods;
-            for (int j = 0; j < methods.length; j++) {
-                if (mModifiers == null) mModifiers = new ArrayMap<>();
-                mModifiers.put(methods[j], modifier);
-            }
+            String method = modifier.methodData.supportedMethod;
+            if (mModifiers == null) mModifiers = new ArrayMap<>();
+            mModifiers.put(method, modifier);
         }
 
         updateInstrumentModifiedTotals();

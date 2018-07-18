@@ -265,7 +265,7 @@ INSTANTIATE_TEST_CASE_P(TestCases,
         "amount": {"currency": "USD", "value": "-0.01"}
     }],
     "modifiers": [{
-      "supportedMethods": ["basic-card"],
+      "supportedMethods": "basic-card",
       "data": {
         "supportedTypes": ["debit"]
       },
@@ -278,7 +278,7 @@ INSTANTIATE_TEST_CASE_P(TestCases,
         "amount": {"currency": "USD", "value": "-0.20"}
       }]
     }, {
-      "supportedMethods": ["basic-card"],
+      "supportedMethods": "basic-card",
       "data": {
         "supportedTypes": ["mastercard"]
       },
@@ -304,7 +304,7 @@ INSTANTIATE_TEST_CASE_P(TestCases,
         "amount": {"currency": "USD", "value": "-0.01"}
     }],
     "modifiers": [{
-      "supportedMethods": ["basic-card"],
+      "supportedMethods": "basic-card",
       "data": {
         "supportedTypes": ["debit"]
       },
@@ -330,7 +330,7 @@ INSTANTIATE_TEST_CASE_P(TestCases,
         "amount": {"currency": "USD", "value": "-0.01"}
     }],
     "modifiers": [{
-      "supportedMethods": ["basic-card"],
+      "supportedMethods": "basic-card",
       "data": {
         "supportedTypes": ["debit"]
       },
@@ -356,7 +356,7 @@ INSTANTIATE_TEST_CASE_P(TestCases,
         "amount": {"currency": "USD", "value": "-0.01"}
     }],
     "modifiers": [{
-      "supportedMethods": ["basic-card"],
+      "supportedMethods": "basic-card",
       "data": {
         "supportedTypes": ["debit"]
       },
@@ -382,7 +382,7 @@ INSTANTIATE_TEST_CASE_P(TestCases,
         "amount": {"currency": "USD", "value": "-0.01"}
     }],
     "modifiers": [{
-      "supportedMethods": ["basic-card"],
+      "supportedMethods": "basic-card",
       "data": {
         "supportedTypes": ["debit"]
       },
@@ -408,7 +408,7 @@ INSTANTIATE_TEST_CASE_P(TestCases,
         "amount": {"currency": "USD", "value": "-0.01"}
     }],
     "modifiers": [{
-      "supportedMethods": ["basic-card"],
+      "supportedMethods": "basic-card",
       "data": {
         "supportedTypes": ["debit"]
       },

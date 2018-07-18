@@ -90,19 +90,12 @@ base::string16 IOSPaymentInstrument::GetSublabel() const {
 }
 
 bool IOSPaymentInstrument::IsValidForModifier(
-    const std::vector<std::string>& methods,
+    const std::string& method,
     bool supported_networks_specified,
     const std::set<std::string>& supported_networks,
     bool supported_types_specified,
     const std::set<autofill::CreditCard::CardType>& supported_types) const {
-  // This instrument only matches url-based payment method identifiers that
-  // are equal to the instrument's method name.
-  if (std::find(methods.begin(), methods.end(), method_name_) == methods.end())
-    return false;
-
-  // TODO(crbug.com/602666): Determine if the native payment app supports
-  // 'basic-card' if 'basic-card' is the specified modifier.
-  return true;
+  return method_name_ == method;
 }
 
 }  // namespace payments
