@@ -90,3 +90,10 @@ void FakeMojoPasswordManagerDriver::ShowManualFallbackForSaving(
 void FakeMojoPasswordManagerDriver::HideManualFallbackForSaving() {
   called_show_manual_fallback_for_saving_count_ = 0;
 }
+
+void FakeMojoPasswordManagerDriver::FocusedInputChanged(
+    bool is_fillable,
+    bool is_password_field) {
+  last_focused_element_was_fillable_ = is_fillable;
+  last_focused_input_was_password_ = is_password_field;
+}

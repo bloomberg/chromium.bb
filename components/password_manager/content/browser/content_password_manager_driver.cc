@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/callback.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -104,8 +105,10 @@ void ContentPasswordManagerDriver::FillSuggestion(
 
 void ContentPasswordManagerDriver::FillIntoFocusedField(
     bool is_password,
-    const base::string16& credential) {
-  GetPasswordAutofillAgent()->FillIntoFocusedField(is_password, credential);
+    const base::string16& credential,
+    base::OnceCallback<void(autofill::FillingStatus)> compeleted_callback) {
+  GetPasswordAutofillAgent()->FillIntoFocusedField(
+      is_password, credential, std::move(compeleted_callback));
 }
 
 void ContentPasswordManagerDriver::PreviewSuggestion(

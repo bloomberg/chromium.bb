@@ -11,7 +11,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/common/filling_status.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/native_widget_types.h"
@@ -55,9 +57,6 @@ class PasswordAccessoryController
           best_matches,
       const GURL& origin);
 
-  // Send empty suggestions and default options to the view.
-  void DidNavigateMainFrame();
-
   // Notifies the view that automatic password generation status changed.
   void OnAutomaticGenerationStatusChanged(
       bool available,
@@ -67,8 +66,7 @@ class PasswordAccessoryController
 
   // Called by the UI code to request that |textToFill| is to be filled into the
   // currently focused field.
-  void OnFillingTriggered(bool is_password,
-                          const base::string16& textToFill) const;
+  void OnFillingTriggered(bool is_password, const base::string16& textToFill);
 
   // Called by the UI code because a user triggered the |selectedOption|.
   void OnOptionSelected(const base::string16& selectedOption) const;
@@ -86,6 +84,17 @@ class PasswordAccessoryController
   // Called from the modal dialog when the user taps on the link contained
   // in the explanation text that leads to the saved passwords.
   void OnSavedPasswordsLinkClicked();
+
+  // Compeletes a filling attempt by recording metrics, giving feedback to the
+  // user and dismissing the accessory sheet.
+  void OnFilledIntoFocusedField(autofill::FillingStatus status);
+
+  // Makes sure, that all shown suggestions are appropriate for the currently
+  // focused field.
+  void RefreshSuggestionsForField(bool is_fillable, bool is_password_field);
+
+  // Remove stale suggestions by sending empty or recent suggestions to the UI.
+  void ClearSuggestions();
 
   // The web page view containing the focused field.
   gfx::NativeView container_view() const;
@@ -138,6 +147,8 @@ class PasswordAccessoryController
 
   // Creation callback for the modal dialog view meant to facilitate testing.
   CreateDialogFactory create_dialog_factory_;
+
+  base::WeakPtrFactory<PasswordAccessoryController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAccessoryController);
 };

@@ -87,7 +87,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void FillPasswordForm(int key,
                         const PasswordFormFillData& form_data) override;
   void FillIntoFocusedField(bool is_password,
-                            const base::string16& credential) override;
+                            const base::string16& credential,
+                            FillIntoFocusedFieldCallback callback) override;
   void SetLoggingState(bool active) override;
   void AutofillUsernameAndPasswordDataReceived(
       const FormsPredictionsMap& predictions) override;
@@ -246,6 +247,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void WillCommitProvisionalLoad() override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_document_navigation) override;
+  void FocusedNodeChanged(const blink::WebNode& node) override;
   void OnDestruct() override;
 
   // Scans the given frame for password forms and sends them up to the browser.
@@ -389,6 +391,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   FieldValueAndPropertiesMaskMap field_value_and_properties_map_;
 
   PasswordValueGatekeeper gatekeeper_;
+
+  // The currently focused input field. Not null if its a valid input that can
+  // be filled with a suggestions.
+  blink::WebInputElement focused_input_element_;
 
   // True indicates that user debug information should be logged.
   bool logging_state_active_;
