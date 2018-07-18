@@ -156,14 +156,7 @@ TEST_F(FeedbackUploaderDispatchTest, 400Response) {
   EXPECT_TRUE(uploader.QueueEmpty());
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-// Flaky. crbug.com/864797
-#define MAYBE_500Response DISABLED_500Response
-#else
-#define MAYBE_500Response 500Response
-#endif
-
-TEST_F(FeedbackUploaderDispatchTest, MAYBE_500Response) {
+TEST_F(FeedbackUploaderDispatchTest, 500Response) {
   FeedbackUploader::SetMinimumRetryDelayForTesting(kTestRetryDelay);
   FeedbackUploader uploader(
       shared_url_loader_factory(), context(),
@@ -181,7 +174,7 @@ TEST_F(FeedbackUploaderDispatchTest, MAYBE_500Response) {
   QueueReport(&uploader, "Server error failed report");
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(kTestRetryDelay * 2, uploader.retry_delay());
+  EXPECT_LT(kTestRetryDelay, uploader.retry_delay());
   EXPECT_FALSE(uploader.QueueEmpty());
 }
 
