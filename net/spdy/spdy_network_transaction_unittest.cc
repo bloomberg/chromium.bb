@@ -2743,6 +2743,55 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushSingleDataFrame) {
   EXPECT_EQ("HTTP/1.1 200", response2.headers->GetStatusLine());
 }
 
+// When server push is disabled by
+// HttpNetworkSession::initial_settings[SETTINGS_ENABLE_PUSH] = 0, verify that
+// such a setting is sent out in the initial SETTINGS frame, and if the server
+// creates a pushed stream despite of this, it is immediately reset.
+TEST_F(SpdyNetworkTransactionTest, ServerPushDisabled) {
+  spdy::SpdySerializedFrame preface(
+      const_cast<char*>(spdy::kHttp2ConnectionHeaderPrefix),
+      spdy::kHttp2ConnectionHeaderPrefixSize,
+      /* owns_buffer = */ false);
+
+  spdy::SettingsMap initial_settings;
+  initial_settings[spdy::SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
+  initial_settings[spdy::SETTINGS_ENABLE_PUSH] = 0;
+  initial_settings[spdy::SETTINGS_MAX_CONCURRENT_STREAMS] =
+      kSpdyMaxConcurrentPushedStreams;
+  spdy::SpdySerializedFrame initial_settings_frame(
+      spdy_util_.ConstructSpdySettings(initial_settings));
+
+  spdy::SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
+  spdy::SpdySerializedFrame rst(
+      spdy_util_.ConstructSpdyRstStream(2, spdy::ERROR_CODE_REFUSED_STREAM));
+
+  MockWrite writes[] = {CreateMockWrite(preface, 0),
+                        CreateMockWrite(initial_settings_frame, 1),
+                        CreateMockWrite(req, 2), CreateMockWrite(rst, 5)};
+
+  spdy::SpdySerializedFrame reply(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame push(
+      spdy_util_.ConstructSpdyPush(nullptr, 0, 2, 1, kPushedUrl));
+  spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockRead reads[] = {CreateMockRead(reply, 3), CreateMockRead(push, 4),
+                      CreateMockRead(body, 6), MockRead(ASYNC, OK, 7)};
+
+  SequencedSocketData data(reads, writes);
+
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+  session_deps->http2_settings[spdy::SETTINGS_ENABLE_PUSH] = 0;
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+
+  SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
+  SpdySessionPoolPeer pool_peer(spdy_session_pool);
+  pool_peer.SetEnableSendingInitialData(true);
+
+  helper.RunToCompletion(&data);
+}
+
 TEST_F(SpdyNetworkTransactionTest, ServerPushHeadMethod) {
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
