@@ -53,15 +53,9 @@ void QuietModeFeaturePodController::OnIconPressed() {
   MessageCenter* message_center = MessageCenter::Get();
   bool is_quiet_mode = message_center->IsQuietMode();
   message_center->SetQuietMode(!is_quiet_mode);
-
-  // If quiet mode was disabled, show notifier settings as well as enabling
-  // quiet mode.
-  if (!is_quiet_mode)
-    tray_controller_->ShowNotifierSettingsView();
 }
 
 void QuietModeFeaturePodController::OnLabelPressed() {
-  MessageCenter::Get()->SetQuietMode(true);
   tray_controller_->ShowNotifierSettingsView();
 }
 

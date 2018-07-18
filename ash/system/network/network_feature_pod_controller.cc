@@ -20,7 +20,8 @@ namespace ash {
 
 namespace {
 
-void SetNetworkEnabled(bool enabled) {
+// Returns true if the network is actually toggled.
+bool SetNetworkEnabled(bool enabled) {
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
           NetworkTypePattern::NonVirtual());
@@ -31,22 +32,23 @@ void SetNetworkEnabled(bool enabled) {
     NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
         NetworkTypePattern::Cellular(), false,
         chromeos::network_handler::ErrorCallback());
-    return;
+    return true;
   }
 
   if (!enabled && network && network->Matches(NetworkTypePattern::Tether())) {
     NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
         NetworkTypePattern::Tether(), false,
         chromeos::network_handler::ErrorCallback());
-    return;
+    return true;
   }
 
   if (network && !network->Matches(NetworkTypePattern::WiFi()))
-    return;
+    return false;
 
   NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), enabled,
       chromeos::network_handler::ErrorCallback());
+  return true;
 }
 
 }  // namespace
@@ -65,16 +67,17 @@ FeaturePodButton* NetworkFeaturePodController::CreateButton() {
 
 void NetworkFeaturePodController::OnIconPressed() {
   bool was_enabled = button_->IsToggled();
-  SetNetworkEnabled(!was_enabled);
+  bool can_toggle = SetNetworkEnabled(!was_enabled);
 
   // If network was disabled, show network list as well as enabling network.
-  if (!was_enabled)
-    tray_controller_->ShowNetworkDetailedView();
+  // Also, if the network could not be toggled e.g. Ethernet, show network list.
+  if (!was_enabled || !can_toggle)
+    tray_controller_->ShowNetworkDetailedView(!can_toggle /* force */);
 }
 
 void NetworkFeaturePodController::OnLabelPressed() {
   SetNetworkEnabled(true);
-  tray_controller_->ShowNetworkDetailedView();
+  tray_controller_->ShowNetworkDetailedView(true /* force */);
 }
 
 SystemTrayItemUmaType NetworkFeaturePodController::GetUmaType() const {
