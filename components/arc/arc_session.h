@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/arc/arc_stop_reason.h"
+#include "components/arc/arc_supervision_transition.h"
 
 namespace base {
 class FilePath;
@@ -56,6 +57,12 @@ class ArcSession {
 
     // Whether the account is a child.
     bool is_child;
+
+    // The supervision transition state for this account. Indicates whether
+    // child account should become regular, regular account should become child
+    // or neither.
+    ArcSupervisionTransition supervision_transition =
+        ArcSupervisionTransition::NO_TRANSITION;
 
     // Define language configuration set during Android container boot.
     // |preferred_languages| may be empty.

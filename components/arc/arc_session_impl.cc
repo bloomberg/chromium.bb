@@ -105,6 +105,27 @@ ArcStopReason GetArcStopReason(bool low_disk_space, bool stop_requested) {
   return ArcStopReason::GENERIC_BOOT_FAILURE;
 }
 
+// Converts ArcSupervisionTransition into
+// login_manager::UpgradeArcContainerRequest_SupervisionTransition.
+login_manager::UpgradeArcContainerRequest_SupervisionTransition
+ToLoginManagerSupervisionTransition(ArcSupervisionTransition transition) {
+  switch (transition) {
+    case ArcSupervisionTransition::NO_TRANSITION:
+      return login_manager::
+          UpgradeArcContainerRequest_SupervisionTransition_NONE;
+    case ArcSupervisionTransition::CHILD_TO_REGULAR:
+      return login_manager::
+          UpgradeArcContainerRequest_SupervisionTransition_CHILD_TO_REGULAR;
+    case ArcSupervisionTransition::REGULAR_TO_CHILD:
+      return login_manager::
+          UpgradeArcContainerRequest_SupervisionTransition_REGULAR_TO_CHILD;
+    default:
+      NOTREACHED() << "Invalid transition " << transition;
+      return login_manager::
+          UpgradeArcContainerRequest_SupervisionTransition_NONE;
+  }
+}
+
 // Real Delegate implementation to connect Mojo.
 class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
  public:
@@ -367,6 +388,8 @@ void ArcSessionImpl::DoUpgrade() {
   }
 
   request.set_is_child(upgrade_params_.is_child);
+  request.set_supervision_transition(ToLoginManagerSupervisionTransition(
+      upgrade_params_.supervision_transition));
   request.set_locale(upgrade_params_.locale);
   for (const std::string& language : upgrade_params_.preferred_languages)
     request.add_preferred_languages(language);
