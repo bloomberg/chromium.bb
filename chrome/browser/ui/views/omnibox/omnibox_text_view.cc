@@ -320,7 +320,12 @@ std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateRenderText(
   if (font_size_delta_ == 0) {
     render_text->SetFontList(font);
   } else {
-    render_text->SetFontList(font.DeriveWithSizeDelta(font_size_delta_));
+    const gfx::FontList& omnibox_font =
+        views::style::GetFont(CONTEXT_OMNIBOX_PRIMARY, kTextStyle);
+    render_text->SetFontList(
+        ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
+            omnibox_font.GetFontSize() - gfx::FontList().GetFontSize() +
+            font_size_delta_));
   }
   render_text->SetText(text);
   return render_text;
