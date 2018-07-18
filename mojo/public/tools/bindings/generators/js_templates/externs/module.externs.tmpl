@@ -5,11 +5,26 @@
 {%  for declaration in module.namespace|namespace_declarations -%}
 /** @const */
 {%-   if loop.first %}
-let {{declaration}} = {};
+var {{declaration}} = {};
 {%    else %}
 {{declaration}} = {};
 {%    endif -%}
 {%- endfor -%}
+
+{#--- Constant definitions #}
+{%- for constant in module.constants %}
+/** @type { {{constant.kind|closure_type_with_nullability }} } */
+{{module.namespace}}.{{constant.name}};
+{%- endfor %}
+
+{#--- Enum definitions #}
+{% for enum in enums %}
+/** @enum {number} */
+{{module.namespace}}.{{enum.name}} = {};
+{%-   for field in enum.fields %}
+{{module.namespace}}.{{enum.name}}.{{field.name}};
+{%-   endfor %}
+{%- endfor %}
 
 {#--- Interface definitions #}
 {%- for interface in interfaces -%}
