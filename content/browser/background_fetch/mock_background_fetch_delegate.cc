@@ -130,7 +130,8 @@ void MockBackgroundFetchDelegate::DownloadUrl(
             &BackgroundFetchDelegate::Client::OnDownloadComplete, client(),
             job_unique_id, guid,
             std::make_unique<BackgroundFetchResult>(
-                base::Time::Now(), response_path, test_response->data.size())));
+                base::Time::Now(), response_path,
+                base::nullopt /* blob_handle */, test_response->data.size())));
   } else {
     PostAbortCheckingTask(
         job_unique_id,

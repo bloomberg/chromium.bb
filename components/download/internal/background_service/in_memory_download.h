@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -17,6 +18,8 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+
+class GURL;
 
 namespace net {
 struct NetworkTrafficAnnotationTag;
@@ -102,12 +105,13 @@ class InMemoryDownload {
   State state() const { return state_; }
   bool paused() const { return paused_; }
   const base::Time& completion_time() const { return completion_time_; }
+  const std::vector<GURL>& url_chain() const { return url_chain_; }
   scoped_refptr<const net::HttpResponseHeaders> response_headers() const {
     return response_headers_;
   }
 
  protected:
-  InMemoryDownload(const std::string& guid);
+  InMemoryDownload(const std::string& guid, const GURL& url);
 
   // GUID of the download.
   const std::string guid_;
@@ -119,6 +123,11 @@ class InMemoryDownload {
 
   // Completion time of download when data is saved as blob.
   base::Time completion_time_;
+
+  // The URL request chain of this download.
+  // TODO(crbug.com/863949): Update the URL chain once all redirects in the
+  // request have been identified.
+  std::vector<GURL> url_chain_;
 
   // HTTP response headers.
   scoped_refptr<const net::HttpResponseHeaders> response_headers_;

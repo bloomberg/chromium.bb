@@ -35,6 +35,7 @@ DriverEntry CreateDriverEntry(const InMemoryDownload& download) {
   entry.done = entry.state == DriverEntry::State::COMPLETE ||
                entry.state == DriverEntry::State::CANCELLED;
   entry.bytes_downloaded = download.bytes_downloaded();
+  entry.url_chain = download.url_chain();
   entry.response_headers = download.response_headers();
   if (entry.response_headers) {
     entry.expected_total_size = entry.response_headers->GetContentLength();

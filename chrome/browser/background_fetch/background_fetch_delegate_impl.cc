@@ -355,8 +355,8 @@ void BackgroundFetchDelegateImpl::OnDownloadSucceeded(
   if (client()) {
     client()->OnDownloadComplete(
         job_unique_id, download_guid,
-        std::make_unique<content::BackgroundFetchResult>(base::Time::Now(),
-                                                         path, size));
+        std::make_unique<content::BackgroundFetchResult>(
+            base::Time::Now(), path, base::nullopt /* blob_handle */, size));
   }
 
   job_details.current_download_guids.erase(

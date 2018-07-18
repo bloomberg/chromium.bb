@@ -11,20 +11,23 @@ BackgroundFetchResponse::BackgroundFetchResponse(
     const scoped_refptr<const net::HttpResponseHeaders>& headers)
     : url_chain(url_chain), headers(headers) {}
 
-BackgroundFetchResponse::~BackgroundFetchResponse() {}
+BackgroundFetchResponse::~BackgroundFetchResponse() = default;
 
 BackgroundFetchResult::BackgroundFetchResult(base::Time response_time,
                                              FailureReason failure_reason)
     : response_time(response_time), failure_reason(failure_reason) {}
 
-BackgroundFetchResult::BackgroundFetchResult(base::Time response_time,
-                                             const base::FilePath& path,
-                                             uint64_t file_size)
+BackgroundFetchResult::BackgroundFetchResult(
+    base::Time response_time,
+    const base::FilePath& path,
+    base::Optional<storage::BlobDataHandle> blob_handle,
+    uint64_t file_size)
     : response_time(response_time),
       file_path(path),
+      blob_handle(blob_handle),
       file_size(file_size),
       failure_reason(FailureReason::NONE) {}
 
-BackgroundFetchResult::~BackgroundFetchResult() {}
+BackgroundFetchResult::~BackgroundFetchResult() = default;
 
 }  // namespace content
