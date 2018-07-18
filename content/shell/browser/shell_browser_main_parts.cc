@@ -36,8 +36,8 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
+#include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/child_process_crash_observer_android.h"
-#include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 #endif
@@ -174,12 +174,12 @@ int ShellBrowserMainParts::PreCreateThreads() {
 #if defined(OS_ANDROID)
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  breakpad::CrashDumpObserver::Create();
+  crash_reporter::ChildExitObserver::Create();
   if (command_line->HasSwitch(switches::kEnableCrashReporter)) {
     base::FilePath crash_dumps_dir =
         command_line->GetSwitchValuePath(switches::kCrashDumpsDir);
-    breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
-        std::make_unique<breakpad::ChildProcessCrashObserver>(
+    crash_reporter::ChildExitObserver::GetInstance()->RegisterClient(
+        std::make_unique<crash_reporter::ChildProcessCrashObserver>(
             crash_dumps_dir, kAndroidMinidumpDescriptor));
   }
 #endif

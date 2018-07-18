@@ -34,9 +34,8 @@ void ReportCrashCount(CrashMetricsReporter::ProcessedCrashCounts crash_type,
   counts->insert(crash_type);
 }
 
-void ReportLegacyCrashUma(
-    const breakpad::CrashDumpObserver::TerminationInfo& info,
-    bool has_valid_dump) {
+void ReportLegacyCrashUma(const ChildExitObserver::TerminationInfo& info,
+                          bool has_valid_dump) {
   // TODO(wnwen): If these numbers match up to TabWebContentsObserver's
   //     TabRendererCrashStatus histogram, then remove that one as this is more
   //     accurate with more detail.
@@ -110,7 +109,7 @@ void CrashMetricsReporter::RemoveObserver(
 }
 
 void CrashMetricsReporter::CrashDumpProcessed(
-    const breakpad::CrashDumpObserver::TerminationInfo& info,
+    const ChildExitObserver::TerminationInfo& info,
     breakpad::CrashDumpManager::CrashDumpStatus status) {
   ReportedCrashTypeSet reported_counts;
   if (status == breakpad::CrashDumpManager::CrashDumpStatus::kMissingDump) {

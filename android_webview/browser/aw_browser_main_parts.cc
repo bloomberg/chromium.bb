@@ -26,8 +26,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
+#include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
-#include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "components/heap_profiling/supervisor.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "content/public/browser/android/synchronous_compositor.h"
@@ -103,7 +103,7 @@ int AwBrowserMainParts::PreCreateThreads() {
 
   base::android::MemoryPressureListenerAndroid::Initialize(
       base::android::AttachCurrentThread());
-  breakpad::CrashDumpObserver::Create();
+  ::crash_reporter::ChildExitObserver::Create();
 
   // We need to create the safe browsing specific directory even if the
   // AwSafeBrowsingConfigHelper::GetSafeBrowsingEnabled() is false
@@ -127,7 +127,7 @@ int AwBrowserMainParts::PreCreateThreads() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kWebViewSandboxedRenderer)) {
     // Create the renderers crash manager on the UI thread.
-    breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
+    ::crash_reporter::ChildExitObserver::GetInstance()->RegisterClient(
         std::make_unique<AwBrowserTerminator>(crash_dir));
   }
 

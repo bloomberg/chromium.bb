@@ -8,8 +8,8 @@
 #include <map>
 
 #include "base/synchronization/lock.h"
+#include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
-#include "components/crash/content/browser/crash_dump_observer_android.h"
 
 namespace base {
 class SyncSocket;
@@ -25,20 +25,20 @@ namespace android_webview {
 // processes of the browser, it can't access the exit code. Instead, the browser
 // uses a dedicated pipe in order to receive the information about the renderer
 // crash status.
-class AwBrowserTerminator : public breakpad::CrashDumpObserver::Client {
+class AwBrowserTerminator : public crash_reporter::ChildExitObserver::Client {
  public:
   AwBrowserTerminator(base::FilePath crash_dump_dir);
   ~AwBrowserTerminator() override;
 
-  // breakpad::CrashDumpObserver::Client implementation.
+  // crash_reporter::ChildExitObserver::Client implementation.
   void OnChildStart(int process_host_id,
                     content::PosixFileDescriptorInfo* mappings) override;
   void OnChildExit(
-      const breakpad::CrashDumpObserver::TerminationInfo& info) override;
+      const crash_reporter::ChildExitObserver::TerminationInfo& info) override;
 
  private:
   static void OnChildExitAsync(
-      const breakpad::CrashDumpObserver::TerminationInfo& info,
+      const crash_reporter::ChildExitObserver::TerminationInfo& info,
       base::FilePath crash_dump_dir,
       std::unique_ptr<base::SyncSocket> pipe);
 

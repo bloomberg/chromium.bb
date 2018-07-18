@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/crash/content/browser/crash_dump_observer_android.h"
+#include "components/crash/content/browser/child_exit_observer_android.h"
 
 #include <unistd.h>
 
@@ -18,16 +18,16 @@
 
 using content::BrowserThread;
 
-namespace breakpad {
+namespace crash_reporter {
 
 namespace {
 
-base::LazyInstance<CrashDumpObserver>::DestructorAtExit g_instance =
+base::LazyInstance<ChildExitObserver>::DestructorAtExit g_instance =
     LAZY_INSTANCE_INITIALIZER;
 
 void PopulateTerminationInfo(
     const content::ChildProcessTerminationInfo& content_info,
-    CrashDumpObserver::TerminationInfo* info) {
+    ChildExitObserver::TerminationInfo* info) {
   info->binding_state = content_info.binding_state;
   info->was_killed_intentionally_by_browser =
       content_info.was_killed_intentionally_by_browser;
@@ -43,29 +43,29 @@ void PopulateTerminationInfo(
 
 }  // namespace
 
-CrashDumpObserver::TerminationInfo::TerminationInfo() = default;
-CrashDumpObserver::TerminationInfo::TerminationInfo(
+ChildExitObserver::TerminationInfo::TerminationInfo() = default;
+ChildExitObserver::TerminationInfo::TerminationInfo(
     const TerminationInfo& other) = default;
-CrashDumpObserver::TerminationInfo& CrashDumpObserver::TerminationInfo::
+ChildExitObserver::TerminationInfo& ChildExitObserver::TerminationInfo::
 operator=(const TerminationInfo& other) = default;
 
 // static
-void CrashDumpObserver::Create() {
+void ChildExitObserver::Create() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If this DCHECK fails in a unit test then a previously executing
-  // test that makes use of CrashDumpObserver forgot to create a
+  // test that makes use of ChildExitObserver forgot to create a
   // ShadowingAtExitManager.
   DCHECK(!g_instance.IsCreated());
   g_instance.Get();
 }
 
 // static
-CrashDumpObserver* CrashDumpObserver::GetInstance() {
+ChildExitObserver* ChildExitObserver::GetInstance() {
   DCHECK(g_instance.IsCreated());
   return g_instance.Pointer();
 }
 
-CrashDumpObserver::CrashDumpObserver() {
+ChildExitObserver::ChildExitObserver() {
   notification_registrar_.Add(this,
                               content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                               content::NotificationService::AllSources());
@@ -78,17 +78,17 @@ CrashDumpObserver::CrashDumpObserver() {
   BrowserChildProcessObserver::Add(this);
 }
 
-CrashDumpObserver::~CrashDumpObserver() {
+ChildExitObserver::~ChildExitObserver() {
   BrowserChildProcessObserver::Remove(this);
 }
 
-void CrashDumpObserver::RegisterClient(std::unique_ptr<Client> client) {
+void ChildExitObserver::RegisterClient(std::unique_ptr<Client> client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock auto_lock(registered_clients_lock_);
   registered_clients_.push_back(std::move(client));
 }
 
-void CrashDumpObserver::OnChildExit(const TerminationInfo& info) {
+void ChildExitObserver::OnChildExit(const TerminationInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<Client*> registered_clients_copy;
   {
@@ -101,7 +101,7 @@ void CrashDumpObserver::OnChildExit(const TerminationInfo& info) {
   }
 }
 
-void CrashDumpObserver::BrowserChildProcessStarted(
+void ChildExitObserver::BrowserChildProcessStarted(
     int process_host_id,
     content::PosixFileDescriptorInfo* mappings) {
   std::vector<Client*> registered_clients_copy;
@@ -115,7 +115,7 @@ void CrashDumpObserver::BrowserChildProcessStarted(
   }
 }
 
-void CrashDumpObserver::BrowserChildProcessHostDisconnected(
+void ChildExitObserver::BrowserChildProcessHostDisconnected(
     const content::ChildProcessData& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TerminationInfo info;
@@ -133,7 +133,7 @@ void CrashDumpObserver::BrowserChildProcessHostDisconnected(
   OnChildExit(info);
 }
 
-void CrashDumpObserver::BrowserChildProcessKilled(
+void ChildExitObserver::BrowserChildProcessKilled(
     const content::ChildProcessData& data,
     const content::ChildProcessTerminationInfo& content_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -148,7 +148,7 @@ void CrashDumpObserver::BrowserChildProcessKilled(
   // Subsequent BrowserChildProcessHostDisconnected will call OnChildExit.
 }
 
-void CrashDumpObserver::Observe(int type,
+void ChildExitObserver::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -199,4 +199,4 @@ void CrashDumpObserver::Observe(int type,
   OnChildExit(info);
 }
 
-}  // namespace breakpad
+}  // namespace crash_reporter

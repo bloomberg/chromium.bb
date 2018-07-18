@@ -12,7 +12,7 @@
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 
-namespace breakpad {
+namespace crash_reporter {
 
 ChildProcessCrashObserver::ChildProcessCrashObserver(
     const base::FilePath crash_dump_dir,
@@ -28,23 +28,23 @@ void ChildProcessCrashObserver::OnChildStart(
     return;
 
   base::ScopedFD file(
-      CrashDumpManager::GetInstance()->CreateMinidumpFileForChild(
+      breakpad::CrashDumpManager::GetInstance()->CreateMinidumpFileForChild(
           process_host_id));
   if (file.is_valid())
     mappings->Transfer(descriptor_id_, std::move(file));
 }
 
 void ChildProcessCrashObserver::OnChildExit(
-    const CrashDumpObserver::TerminationInfo& info) {
+    const ChildExitObserver::TerminationInfo& info) {
   // This might be called twice for a given child process, with a
   // NOTIFICATION_RENDERER_PROCESS_TERMINATED and then with
   // NOTIFICATION_RENDERER_PROCESS_CLOSED.
 
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&CrashDumpManager::ProcessMinidumpFileFromChild,
-                 base::Unretained(CrashDumpManager::GetInstance()),
+      base::Bind(&breakpad::CrashDumpManager::ProcessMinidumpFileFromChild,
+                 base::Unretained(breakpad::CrashDumpManager::GetInstance()),
                  crash_dump_dir_, info));
 }
 
-}  // namespace breakpad
+}  // namespace crash_reporter

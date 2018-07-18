@@ -43,8 +43,8 @@
 #if defined(OS_ANDROID)
 #include "chrome/common/descriptors_android.h"
 #include "components/crash/content/browser/child_process_crash_observer_android.h"
+#include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
-#include "components/crash/content/browser/crash_dump_observer_android.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -150,11 +150,11 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
     ChromeRenderViewHostTestHarness::SetUp();
     EXPECT_NE(content::ChildProcessHost::kInvalidUniqueID, process()->GetID());
 #if defined(OS_ANDROID)
-    breakpad::CrashDumpObserver::Create();
+    crash_reporter::ChildExitObserver::Create();
     base::FilePath crash_dump_dir;
     base::PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
-    breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
-        std::make_unique<breakpad::ChildProcessCrashObserver>(
+    crash_reporter::ChildExitObserver::GetInstance()->RegisterClient(
+        std::make_unique<crash_reporter::ChildProcessCrashObserver>(
             crash_dump_dir, kAndroidMinidumpDescriptor));
 #endif
 

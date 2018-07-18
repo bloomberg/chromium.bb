@@ -15,7 +15,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "components/crash/content/browser/crash_dump_observer_android.h"
+#include "components/crash/content/browser/child_exit_observer_android.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/process_type.h"
 
@@ -62,7 +62,7 @@ class CrashDumpManager {
 
   void ProcessMinidumpFileFromChild(
       base::FilePath crash_dump_dir,
-      const CrashDumpObserver::TerminationInfo& info);
+      const crash_reporter::ChildExitObserver::TerminationInfo& info);
 
   base::ScopedFD CreateMinidumpFileForChild(int process_host_id);
 
@@ -81,7 +81,7 @@ class CrashDumpManager {
 
   CrashDumpStatus ProcessMinidumpFileFromChildInternal(
       base::FilePath crash_dump_dir,
-      const CrashDumpObserver::TerminationInfo& info);
+      const crash_reporter::ChildExitObserver::TerminationInfo& info);
 
   typedef std::map<int, base::FilePath> ChildProcessIDToMinidumpPath;
 
