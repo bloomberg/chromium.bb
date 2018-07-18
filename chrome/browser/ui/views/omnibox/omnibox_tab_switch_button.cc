@@ -31,7 +31,6 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
       result_view_(result_view),
       initialized_(false),
       animation_(new gfx::SlideAnimation(this)) {
-  // TODO(krb): SetTooltipText(text);
   SetBgColorOverride(GetBackgroundColor());
   SetImage(STATE_NORMAL,
            gfx::CreateVectorIcon(omnibox::kSwitchIcon,
@@ -48,6 +47,7 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
   } else {
     SetText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT));
   }
+  SetTooltipText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT));
   set_corner_radius(CalculatePreferredSize().height() / 2.f);
   animation_->SetSlideDuration(500);
   SetElideBehavior(gfx::FADE_TAIL);
