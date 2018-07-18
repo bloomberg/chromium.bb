@@ -55,6 +55,9 @@ class SyncedBookmarkTracker {
       return bookmark_node_;
     }
 
+    // Used in local deletions to mark and entity as a tommstone.
+    void clear_bookmark_node() { bookmark_node_ = nullptr; }
+
     const sync_pb::EntityMetadata* metadata() const { return metadata_.get(); }
     sync_pb::EntityMetadata* metadata() { return metadata_.get(); }
 
@@ -62,7 +65,8 @@ class SyncedBookmarkTracker {
     // Check whether |specifics| matches the stored specifics_hash.
     bool MatchesSpecificsHash(const sync_pb::EntitySpecifics& specifics) const;
 
-    const bookmarks::BookmarkNode* const bookmark_node_;
+    // Null for tombstones.
+    const bookmarks::BookmarkNode* bookmark_node_;
 
     // Serializable Sync metadata.
     std::unique_ptr<sync_pb::EntityMetadata> metadata_;
@@ -70,7 +74,8 @@ class SyncedBookmarkTracker {
     DISALLOW_COPY_AND_ASSIGN(Entity);
   };
 
-  // |model_type_state| must not be null.
+  // |model_type_state| must not be null. null nodes in |nodes_metadata| can be
+  // used to represent local tombstones.
   SyncedBookmarkTracker(
       std::vector<NodeMetadataPair> nodes_metadata,
       std::unique_ptr<sync_pb::ModelTypeState> model_type_state);
@@ -99,6 +104,11 @@ class SyncedBookmarkTracker {
               base::Time modification_time,
               const sync_pb::UniquePosition& unique_position,
               const sync_pb::EntitySpecifics& specifics);
+
+  // This class maintains the order of calls to this method and the same order
+  // is gauaranteed when returning local changes in
+  // GetEntitiesWithLocalChanges() as well as in BuildBookmarkModelMetadata().
+  void MarkDeleted(const std::string& sync_id);
 
   // Removes the entry coressponding to the |sync_id| from
   // |sync_id_to_entities_map_|.
@@ -148,6 +158,12 @@ class SyncedBookmarkTracker {
   // first initialized in the constructor.
   std::map<const bookmarks::BookmarkNode*, Entity*>
       bookmark_node_to_entities_map_;
+
+  // A list of pending local bookmark deletions. They should be sent to the
+  // server in the same order as stored in the list. The same order should also
+  // be maintained across browser restarts (i.e. across calls to the ctor() and
+  // BuildBookmarkModelMetadata().
+  std::vector<Entity*> ordered_local_tombstones_;
 
   // The model metadata (progress marker, initial sync done, etc).
   std::unique_ptr<sync_pb::ModelTypeState> model_type_state_;

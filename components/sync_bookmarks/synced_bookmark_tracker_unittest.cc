@@ -139,6 +139,130 @@ TEST(SyncedBookmarkTrackerTest, ShouldUpdateUponCommitResponseWithNewId) {
   EXPECT_THAT(entity->metadata()->server_version(), Eq(kNewServerVersion));
 }
 
+TEST(SyncedBookmarkTrackerTest,
+     ShouldMaintainTombstoneOrderBetweenCtorAndBuildBookmarkModelMetadata) {
+  // Feed a metadata batch of 5 entries to the constructor of the tracker.
+  // First 2 are for node, and the last 4 are for tombstones.
+
+  // Server ids.
+  const std::string kId0 = "id0";
+  const std::string kId1 = "id1";
+  const std::string kId2 = "id2";
+  const std::string kId3 = "id3";
+  const std::string kId4 = "id4";
+
+  const GURL kUrl("http://www.foo.com");
+  bookmarks::BookmarkNode node0(/*id=*/0, kUrl);
+  bookmarks::BookmarkNode node1(/*id=*/1, kUrl);
+
+  auto metadata0 = std::make_unique<sync_pb::EntityMetadata>();
+  metadata0->set_server_id(kId0);
+
+  auto metadata1 = std::make_unique<sync_pb::EntityMetadata>();
+  metadata1->set_server_id(kId1);
+
+  auto metadata2 = std::make_unique<sync_pb::EntityMetadata>();
+  metadata2->set_server_id(kId2);
+  metadata2->set_is_deleted(true);
+
+  auto metadata3 = std::make_unique<sync_pb::EntityMetadata>();
+  metadata3->set_server_id(kId3);
+  metadata3->set_is_deleted(true);
+
+  auto metadata4 = std::make_unique<sync_pb::EntityMetadata>();
+  metadata4->set_server_id(kId4);
+  metadata4->set_is_deleted(true);
+
+  std::vector<NodeMetadataPair> node_metadata_pairs;
+  node_metadata_pairs.emplace_back(&node0, std::move(metadata0));
+  node_metadata_pairs.emplace_back(&node1, std::move(metadata1));
+  node_metadata_pairs.emplace_back(nullptr, std::move(metadata2));
+  node_metadata_pairs.emplace_back(nullptr, std::move(metadata3));
+  node_metadata_pairs.emplace_back(nullptr, std::move(metadata4));
+
+  SyncedBookmarkTracker tracker(std::move(node_metadata_pairs),
+                                std::make_unique<sync_pb::ModelTypeState>());
+
+  sync_pb::BookmarkModelMetadata bookmark_model_metadata =
+      tracker.BuildBookmarkModelMetadata();
+
+  // Tombstones should be the last 3 entries in the metadata and in the same
+  // order as given to the constructor.
+  ASSERT_THAT(bookmark_model_metadata.bookmarks_metadata().size(), Eq(5));
+  EXPECT_THAT(
+      bookmark_model_metadata.bookmarks_metadata(2).metadata().server_id(),
+      Eq(kId2));
+  EXPECT_THAT(
+      bookmark_model_metadata.bookmarks_metadata(3).metadata().server_id(),
+      Eq(kId3));
+  EXPECT_THAT(
+      bookmark_model_metadata.bookmarks_metadata(4).metadata().server_id(),
+      Eq(kId4));
+}
+
+TEST(SyncedBookmarkTrackerTest,
+     ShouldMaintainOrderOfMarkDeletedCallsWhenBuildBookmarkModelMetadata) {
+  // Server ids.
+  const std::string kId0 = "id0";
+  const std::string kId1 = "id1";
+  const std::string kId2 = "id2";
+  const std::string kId3 = "id3";
+  const std::string kId4 = "id4";
+
+  const GURL kUrl("http://www.foo.com");
+  bookmarks::BookmarkNode node0(/*id=*/0, kUrl);
+  bookmarks::BookmarkNode node1(/*id=*/1, kUrl);
+  bookmarks::BookmarkNode node2(/*id=*/2, kUrl);
+  bookmarks::BookmarkNode node3(/*id=*/3, kUrl);
+  bookmarks::BookmarkNode node4(/*id=*/4, kUrl);
+
+  auto metadata0 = std::make_unique<sync_pb::EntityMetadata>();
+  metadata0->set_server_id(kId0);
+
+  auto metadata1 = std::make_unique<sync_pb::EntityMetadata>();
+  metadata1->set_server_id(kId1);
+
+  auto metadata2 = std::make_unique<sync_pb::EntityMetadata>();
+  metadata2->set_server_id(kId2);
+
+  auto metadata3 = std::make_unique<sync_pb::EntityMetadata>();
+  metadata3->set_server_id(kId3);
+
+  auto metadata4 = std::make_unique<sync_pb::EntityMetadata>();
+  metadata4->set_server_id(kId4);
+
+  std::vector<NodeMetadataPair> node_metadata_pairs;
+  node_metadata_pairs.emplace_back(&node0, std::move(metadata0));
+  node_metadata_pairs.emplace_back(&node1, std::move(metadata1));
+  node_metadata_pairs.emplace_back(&node2, std::move(metadata2));
+  node_metadata_pairs.emplace_back(&node3, std::move(metadata3));
+  node_metadata_pairs.emplace_back(&node4, std::move(metadata4));
+
+  SyncedBookmarkTracker tracker(std::move(node_metadata_pairs),
+                                std::make_unique<sync_pb::ModelTypeState>());
+
+  // Mark entities deleted in that order kId2, kId4, kId1
+  tracker.MarkDeleted(kId2);
+  tracker.MarkDeleted(kId4);
+  tracker.MarkDeleted(kId1);
+
+  sync_pb::BookmarkModelMetadata bookmark_model_metadata =
+      tracker.BuildBookmarkModelMetadata();
+
+  // Tombstones should be the last 3 entries in the metadata and in the same as
+  // calling MarkDeleted().
+  ASSERT_THAT(bookmark_model_metadata.bookmarks_metadata().size(), Eq(5));
+  EXPECT_THAT(
+      bookmark_model_metadata.bookmarks_metadata(2).metadata().server_id(),
+      Eq(kId2));
+  EXPECT_THAT(
+      bookmark_model_metadata.bookmarks_metadata(3).metadata().server_id(),
+      Eq(kId4));
+  EXPECT_THAT(
+      bookmark_model_metadata.bookmarks_metadata(4).metadata().server_id(),
+      Eq(kId1));
+}
+
 }  // namespace
 
 }  // namespace sync_bookmarks

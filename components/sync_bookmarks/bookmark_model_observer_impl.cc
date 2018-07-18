@@ -137,13 +137,25 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
   nudge_for_commit_closure_.Run();
 }
 
+void BookmarkModelObserverImpl::OnWillRemoveBookmarks(
+    bookmarks::BookmarkModel* model,
+    const bookmarks::BookmarkNode* parent,
+    int old_index,
+    const bookmarks::BookmarkNode* node) {
+  // TODO(crbug.com/516866): continue only if
+  // model->client()->CanSyncNode(node).
+  ProcessDelete(parent, node);
+  nudge_for_commit_closure_.Run();
+}
+
 void BookmarkModelObserverImpl::BookmarkNodeRemoved(
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* parent,
     int old_index,
     const bookmarks::BookmarkNode* node,
     const std::set<GURL>& removed_urls) {
-  NOTIMPLEMENTED();
+  // All the work should have already been done in OnWillRemoveBookmarks.
+  DCHECK(bookmark_tracker_->GetEntityForBookmarkNode(node) == nullptr);
 }
 
 void BookmarkModelObserverImpl::BookmarkAllUserNodesRemoved(
@@ -288,6 +300,25 @@ syncer::UniquePosition BookmarkModelObserverImpl::ComputePosition(
       syncer::UniquePosition::FromProto(
           successor_entity->metadata()->unique_position()),
       suffix);
+}
+
+void BookmarkModelObserverImpl::ProcessDelete(
+    const bookmarks::BookmarkNode* parent,
+    const bookmarks::BookmarkNode* node) {
+  // If not a leaf node, process all children first.
+  for (int i = 0; i < node->child_count(); ++i) {
+    const bookmarks::BookmarkNode* child = node->GetChild(i);
+    ProcessDelete(node, child);
+  }
+  // Process the current node.
+  const SyncedBookmarkTracker::Entity* entity =
+      bookmark_tracker_->GetEntityForBookmarkNode(node);
+  // Shouldn't try to delete untracked entities.
+  DCHECK(entity);
+  const std::string& sync_id = entity->metadata()->server_id();
+  bookmark_tracker_->MarkDeleted(sync_id);
+  // Mark the entity that it needs to be committed.
+  bookmark_tracker_->IncrementSequenceNumber(sync_id);
 }
 
 }  // namespace sync_bookmarks
