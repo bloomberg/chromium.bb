@@ -61,7 +61,8 @@ class WebRtcSetDescriptionObserverForTest
 
 // TODO(hbos): This only tests WebRtcSetRemoteDescriptionObserverHandler,
 // parameterize the test to make it also test
-// WebRtcSetLocalDescriptionObserverHandler.
+// WebRtcSetLocalDescriptionObserverHandler and with "surface_receivers_only" as
+// both true and false. https://crbug.com/865006
 class WebRtcSetRemoteDescriptionObserverHandlerTest : public ::testing::Test {
  public:
   void SetUp() override {
@@ -76,7 +77,7 @@ class WebRtcSetRemoteDescriptionObserverHandlerTest : public ::testing::Test {
     observer_ = new WebRtcSetDescriptionObserverForTest();
     observer_handler_ = WebRtcSetRemoteDescriptionObserverHandler::Create(
         main_thread_, dependency_factory_->GetWebRtcSignalingThread(), pc_, map,
-        observer_);
+        observer_, true /* surface_receivers_only*/);
   }
 
   void TearDown() override { blink::WebHeap::CollectAllGarbageForTesting(); }

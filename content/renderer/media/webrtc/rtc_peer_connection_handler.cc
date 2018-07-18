@@ -1247,7 +1247,8 @@ void RTCPeerConnectionHandler::SetLocalDescription(
   scoped_refptr<webrtc::SetSessionDescriptionObserver> webrtc_observer(
       WebRtcSetLocalDescriptionObserverHandler::Create(
           task_runner_, signaling_thread(), native_peer_connection_,
-          track_adapter_map_, content_observer)
+          track_adapter_map_, content_observer,
+          true /* surface_receivers_only*/)
           .get());
 
   signaling_thread()->PostTask(
@@ -1314,7 +1315,7 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
       webrtc_observer(WebRtcSetRemoteDescriptionObserverHandler::Create(
                           task_runner_, signaling_thread(),
                           native_peer_connection_, track_adapter_map_,
-                          content_observer)
+                          content_observer, true /* surface_receivers_only*/)
                           .get());
 
   signaling_thread()->PostTask(
