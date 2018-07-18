@@ -2981,21 +2981,21 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
     case UIA_ExpandCollapsePatternId:
       if (SupportsExpandCollapse(data.role)) {
         AddRef();
-        *result = static_cast<IRawElementProviderSimple*>(this);
+        *result = static_cast<IExpandCollapseProvider*>(this);
       }
       break;
 
     case UIA_GridPatternId:
       if (IsTableLikeRole(data.role)) {
         AddRef();
-        *result = static_cast<IRawElementProviderSimple*>(this);
+        *result = static_cast<IGridProvider*>(this);
       }
       break;
 
     case UIA_GridItemPatternId:
       if (IsCellOrTableHeaderRole(data.role)) {
         AddRef();
-        *result = static_cast<IRawElementProviderSimple*>(this);
+        *result = static_cast<IGridItemProvider*>(this);
       }
       break;
 
@@ -3003,16 +3003,16 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       break;
 
     case UIA_RangeValuePatternId:
-      *result = static_cast<IRawElementProviderSimple*>(this);
       AddRef();
+      *result = static_cast<IRangeValueProvider*>(this);
       break;
 
     case UIA_ScrollPatternId:
       break;
 
     case UIA_ScrollItemPatternId:
-      *result = static_cast<IRawElementProviderSimple*>(this);
       AddRef();
+      *result = static_cast<IScrollItemProvider*>(this);
       break;
 
     case UIA_SynchronizedInputPatternId:
@@ -3021,14 +3021,14 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
     case UIA_TablePatternId:
       if (IsTableLikeRole(data.role)) {
         AddRef();
-        *result = static_cast<IRawElementProviderSimple*>(this);
+        *result = static_cast<ITableProvider*>(this);
       }
       break;
 
     case UIA_TableItemPatternId:
       if (IsCellOrTableHeaderRole(data.role)) {
         AddRef();
-        *result = static_cast<IRawElementProviderSimple*>(this);
+        *result = static_cast<ITableItemProvider*>(this);
       }
       break;
 
@@ -3042,27 +3042,27 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
     case UIA_SelectionItemPatternId:
       if (IsUIASelectable(data.role)) {
         AddRef();
-        *result = static_cast<IRawElementProviderSimple*>(this);
+        *result = static_cast<ISelectionItemProvider*>(this);
       }
       break;
 
     case UIA_SelectionPatternId:
       if (IsContainerWithSelectableChildrenRole(data.role)) {
         AddRef();
-        *result = static_cast<IRawElementProviderSimple*>(this);
+        *result = static_cast<ISelectionProvider*>(this);
       }
       break;
 
     case UIA_TogglePatternId:
       if (SupportsToggle(data.role)) {
         AddRef();
-        *result = static_cast<IRawElementProviderSimple*>(this);
+        *result = static_cast<IToggleProvider*>(this);
       }
       break;
 
     case UIA_ValuePatternId:
-      *result = static_cast<IRawElementProviderSimple*>(this);
       AddRef();
+      *result = static_cast<IValueProvider*>(this);
       break;
 
     case UIA_WindowPatternId:
