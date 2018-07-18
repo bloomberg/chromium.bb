@@ -110,11 +110,11 @@ policy::DeviceMode GetDeviceMode() {
 }
 
 GaiaScreenMode GetGaiaScreenMode(const std::string& email, bool use_offline) {
-  if (GetDeviceMode() == policy::DEVICE_MODE_ENTERPRISE_AD)
-    return GAIA_SCREEN_MODE_AD;
-
   if (use_offline)
     return GAIA_SCREEN_MODE_OFFLINE;
+
+  if (GetDeviceMode() == policy::DEVICE_MODE_ENTERPRISE_AD)
+    return GAIA_SCREEN_MODE_AD;
 
   int authentication_behavior = 0;
   CrosSettings::Get()->GetInteger(kLoginAuthenticationBehavior,
