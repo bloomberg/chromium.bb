@@ -53,6 +53,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
                                const MinMaxSizeInput&,
                                const NGConstraintSpace* = nullptr);
 
+  MinMaxSize ComputeMinMaxSizeFromLegacy() const;
+
   NGBoxStrut GetScrollbarSizes() const;
 
   NGLayoutInputNode FirstChild() const;
