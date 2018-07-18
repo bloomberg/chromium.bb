@@ -81,17 +81,10 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
 
   bubble_view_ = new views::TrayBubbleView(init_params);
 
-  // TODO(yamaguchi): Reconsider this formula. The y-position of the top edge
-  // still differes by few pixels between the horizontal and vertical shelf
-  // modes.
-  int free_space_height_above_anchor =
-      tray->shelf()->GetSystemTrayAnchor()->GetBoundsInScreen().y() -
-      tray->shelf()->GetUserWorkAreaBounds().y();
-  int max_height = free_space_height_above_anchor - kPaddingFromScreenTop -
-                   bubble_view_->GetBorderInsets().height();
   unified_view_ = controller_->CreateView();
   time_to_click_recorder_ =
       std::make_unique<TimeToClickRecorder>(this, unified_view_);
+  int max_height = CalculateMaxHeight();
   unified_view_->SetMaxHeight(max_height);
   bubble_view_->SetMaxHeight(max_height);
   bubble_view_->AddChildView(new ContainerView(unified_view_));
@@ -214,6 +207,21 @@ views::Widget* UnifiedSystemTrayBubble::GetBubbleWidget() const {
   return bubble_widget_;
 }
 
+int UnifiedSystemTrayBubble::CalculateMaxHeight() const {
+  // TODO(yamaguchi): Reconsider this formula. The y-position of the top edge
+  // still differes by few pixels between the horizontal and vertical shelf
+  // modes.
+  int free_space_height_above_anchor =
+      tray_->shelf()->GetSystemTrayAnchor()->GetBoundsInScreen().y() -
+      tray_->shelf()->GetUserWorkAreaBounds().y();
+  return free_space_height_above_anchor - kPaddingFromScreenTop -
+         bubble_view_->GetBorderInsets().height();
+}
+
+void UnifiedSystemTrayBubble::OnDisplayConfigurationChanged() {
+  UpdateBubbleBounds();
+}
+
 void UnifiedSystemTrayBubble::OnWidgetDestroying(views::Widget* widget) {
   CHECK_EQ(bubble_widget_, widget);
   bubble_widget_->RemoveObserver(this);
@@ -241,6 +249,9 @@ void UnifiedSystemTrayBubble::OnTabletModeEnded() {
 }
 
 void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
+  int max_height = CalculateMaxHeight();
+  unified_view_->SetMaxHeight(max_height);
+  bubble_view_->SetMaxHeight(max_height);
   // If the bubble is open while switching to and from tablet mode, change the
   // bubble anchor if needed. The new anchor view may also have a translation
   // applied to it so shift the bubble bounds so that it appears in the correct
