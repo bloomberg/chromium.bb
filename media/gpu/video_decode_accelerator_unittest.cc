@@ -702,7 +702,10 @@ void GLRenderingVDAClient::NotifyResetDone() {
     case DONE_RESET_AFTER_FIRST_CONFIG_INFO:
     case MID_STREAM_RESET:
       reset_point_ = END_OF_STREAM_RESET;
-      DecodeNextFragment();
+      // Because VDA::Decode() is executed if |reset_point_| is
+      // MID_STREAM_RESET or RESET_AFTER_FIRST_CONFIG_INFO,
+      // NotifyEndOfBitstreamBuffer() will be invoked. Next VDA::Decode() is
+      // triggered from NotifyEndOfBitstreamBuffer().
       return;
     case START_OF_STREAM_RESET:
       EXPECT_EQ(num_decoded_frames_, 0u);
@@ -772,6 +775,8 @@ void GLRenderingVDAClient::FinishInitialization() {
   initialize_done_ticks_ = base::TimeTicks::Now();
   EXPECT_EQ(encoded_data_helper_->AtHeadOfStream(), true);
   num_decoded_frames_ = 0;
+  if (decoder_deleted())
+    return;
 
   if (reset_point_ == START_OF_STREAM_RESET) {
     decoder_->Reset();
@@ -780,7 +785,7 @@ void GLRenderingVDAClient::FinishInitialization() {
 
   for (size_t i = 0; i < config_.num_in_flight_decodes; ++i)
     DecodeNextFragment();
-  DCHECK_EQ(outstanding_decodes_, config_.num_in_flight_decodes);
+  EXPECT_EQ(outstanding_decodes_, config_.num_in_flight_decodes);
 }
 
 void GLRenderingVDAClient::DeleteDecoder() {
@@ -854,6 +859,12 @@ void GLRenderingVDAClient::DecodeNextFragment() {
         FROM_HERE,
         base::Bind(&GLRenderingVDAClient::DecodeNextFragment, AsWeakPtr()),
         base::TimeDelta::FromSeconds(1) / config_.decode_calls_per_second);
+  } else {
+    // Unless DecodeNextFragment() is posted from the above PostDelayedTask(),
+    // all the DecodeNextFragment() will be executed from
+    // NotifyEndOfBitstreamBuffer(). The number of Decode()s in flight must be
+    // less than or equal to the specified times.
+    EXPECT_LE(outstanding_decodes_, config_.num_in_flight_decodes);
   }
 }
 
