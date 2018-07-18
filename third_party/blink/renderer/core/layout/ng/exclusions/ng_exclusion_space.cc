@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion.h"
 
 namespace blink {
@@ -197,13 +198,36 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
   //
   // NOTE: This could potentially be done lazily when we query the exclusion
   // space for a layout opportunity.
-  for (size_t i = 0; i < shelves_.size();) {
+  for (size_t i = 0; i < shelves_.size(); ++i) {
+    // Check if we need to insert a new shelf between two other shelves. E.g.
+    //
+    //    0 1 2 3 4 5 6 7 8
+    // 0  +-----+X----X+---+
+    //    |xxxxx|      |xxx|
+    // 10 +-----+      |xxx|
+    //      +---+      |xxx|
+    // 20   |NEW|      |xxx|
+    //    X-----------X|xxx|
+    // 30              |xxx|
+    //    X----------------X
+    //
+    // In the above example the "NEW" left exclusion creates a shelf between
+    // the two other shelves drawn.
+    //
+    // NOTE: We calculate this upfront as we may remove the shelf we need to
+    // check against.
+    //
+    // NOTE: If there is no "next" shelf, we consider this between shelves.
+    bool is_between_shelves =
+        exclusion_end_offset >= shelves_[i].block_offset &&
+        (i + 1 >= shelves_.size() ||
+         exclusion_end_offset < shelves_[i + 1].block_offset);
+
     // We modify the current shelf in-place. However we need to keep a copy of
     // the shelf if we need to insert a new shelf later in the loop.
-    NGShelf shelf_copy(shelves_[i]);
-
-    bool is_between_shelves;
-    bool removed_shelf = false;
+    base::Optional<NGShelf> shelf_copy;
+    if (is_between_shelves)
+      shelf_copy = shelves_[i];
 
     // A new scope is created as shelf may be removed.
     {
@@ -303,31 +327,6 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
       bool is_intersecting =
           !is_below && exclusion_end_offset > shelf.block_offset;
 
-      // Check if we need to insert a new shelf between two other shelves. E.g.
-      // two other shelves. E.g.
-      //
-      //    0 1 2 3 4 5 6 7 8
-      // 0  +-----+X----X+---+
-      //    |xxxxx|      |xxx|
-      // 10 +-----+      |xxx|
-      //      +---+      |xxx|
-      // 20   |NEW|      |xxx|
-      //    X-----------X|xxx|
-      // 30              |xxx|
-      //    X----------------X
-      //
-      // In the above example the "NEW" left exclusion creates a shelf between
-      // the two other shelves drawn.
-      //
-      // NOTE: We calculate this before we need it as the next if-statement
-      // block may remove the shelf that we need to check against.
-      //
-      // NOTE: If there is no "next" shelf, we consider this between shelves.
-      is_between_shelves =
-          exclusion_end_offset >= shelf.block_offset &&
-          (i + 1 >= shelves_.size() ||
-           exclusion_end_offset < shelves_[i + 1].block_offset);
-
       // We need to reduce the size of the shelf.
       if (is_below || is_intersecting) {
         if (exclusion->type == EFloat::kLeft) {
@@ -382,7 +381,7 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
             shelf.line_right == shelves_[i - 1].line_right;
         if (is_same_as_previous) {
           shelves_.EraseAt(i);
-          removed_shelf = true;
+          --i;
         }
       }
     }
@@ -392,37 +391,34 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
       DCHECK(!inserted);
       inserted = true;
 #endif
+      DCHECK(shelf_copy.has_value());
 
       // We only want to add the shelf if it's at a different block offset.
-      if (exclusion_end_offset != shelf_copy.block_offset) {
+      if (exclusion_end_offset != shelf_copy->block_offset) {
         NGShelf new_shelf(/* block_offset */ exclusion_end_offset);
 
-        CollectSolidEdges(shelf_copy.line_left_edges, new_shelf.block_offset,
+        CollectSolidEdges(shelf_copy->line_left_edges, new_shelf.block_offset,
                           &new_shelf.line_left_edges);
 
-        CollectSolidEdges(shelf_copy.line_right_edges, new_shelf.block_offset,
+        CollectSolidEdges(shelf_copy->line_right_edges, new_shelf.block_offset,
                           &new_shelf.line_right_edges);
 
         // If we didn't find any edges, the line_left/line_right of the shelf
         // are pushed out to be the minimum/maximum.
         new_shelf.line_left = new_shelf.line_left_edges.IsEmpty()
                                   ? LayoutUnit::Min()
-                                  : shelf_copy.line_left;
+                                  : shelf_copy->line_left;
         new_shelf.line_right = new_shelf.line_right_edges.IsEmpty()
                                    ? LayoutUnit::Max()
-                                   : shelf_copy.line_right;
+                                   : shelf_copy->line_right;
 
-        size_t insert_index = removed_shelf ? i : i + 1;
-        shelves_.insert(insert_index, new_shelf);
+        shelves_.insert(i + 1, new_shelf);
       }
 
       // It's safe to early exit out of this loop now. This exclusion won't
       // have any effect on subsequent shelves.
       break;
     }
-
-    if (!removed_shelf)
-      ++i;
   }
 
 #if DCHECK_IS_ON()
