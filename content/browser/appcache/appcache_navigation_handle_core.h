@@ -29,7 +29,6 @@ class ChromeAppCacheService;
 class AppCacheNavigationHandleCore : public AppCacheFrontend {
  public:
   AppCacheNavigationHandleCore(
-      base::WeakPtr<AppCacheNavigationHandle> ui_handle,
       ChromeAppCacheService* appcache_service,
       int appcache_host_id);
   ~AppCacheNavigationHandleCore() override;
@@ -73,7 +72,6 @@ class AppCacheNavigationHandleCore : public AppCacheFrontend {
   std::unique_ptr<AppCacheHost> precreated_host_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   int appcache_host_id_;
-  base::WeakPtr<AppCacheNavigationHandle> ui_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheNavigationHandleCore);
 };

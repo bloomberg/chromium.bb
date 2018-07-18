@@ -28,14 +28,10 @@ base::LazyInstance<AppCacheHandleMap>::DestructorAtExit g_appcache_handle_map =
 
 namespace content {
 
-
 AppCacheNavigationHandleCore::AppCacheNavigationHandleCore(
-    base::WeakPtr<AppCacheNavigationHandle> ui_handle,
     ChromeAppCacheService* appcache_service,
     int appcache_host_id)
-    : appcache_service_(appcache_service),
-      appcache_host_id_(appcache_host_id),
-      ui_handle_(ui_handle) {
+    : appcache_service_(appcache_service), appcache_host_id_(appcache_host_id) {
   // The AppCacheNavigationHandleCore is created on the UI thread but
   // should only be accessed from the IO thread afterwards.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

@@ -25,8 +25,8 @@ AppCacheNavigationHandle::AppCacheNavigationHandle(
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   appcache_host_id_ = g_next_appcache_host_id--;
-  core_.reset(new AppCacheNavigationHandleCore(
-      weak_factory_.GetWeakPtr(), appcache_service, appcache_host_id_));
+  core_ = std::make_unique<AppCacheNavigationHandleCore>(appcache_service,
+                                                         appcache_host_id_);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&AppCacheNavigationHandleCore::Initialize,
