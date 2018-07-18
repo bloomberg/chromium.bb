@@ -67,6 +67,7 @@
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 #include "media/video/h264_parser.h"
+#include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gl/gl_image.h"
@@ -1591,6 +1592,8 @@ class VDATestSuite : public base::TestSuite {
 
   int Run() {
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
+    mojo::core::Init();  // Required only for Win7 tests.
+
     // For windows the decoding thread initializes the media foundation decoder
     // which uses COM. We need the thread to be a UI thread.
     // On Ozone, the backend initializes the event system using a UI

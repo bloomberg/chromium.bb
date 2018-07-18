@@ -387,6 +387,7 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
         "video_decode_accelerator_unittest.cc",
       ]
       deps += [
+        "//mojo/core/embedder",
         "//ui/display",
         "//ui/display/types",
         "//ui/platform_window",
