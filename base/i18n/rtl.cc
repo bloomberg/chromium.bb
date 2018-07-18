@@ -154,6 +154,11 @@ bool IsRTL() {
   return ICUIsRTL();
 }
 
+void SetRTLForTesting(bool rtl) {
+  SetICUDefaultLocale(rtl ? "he" : "en");
+  DCHECK_EQ(rtl, IsRTL());
+}
+
 bool ICUIsRTL() {
   if (g_icu_text_direction == UNKNOWN_DIRECTION) {
     const icu::Locale& locale = icu::Locale::getDefault();

@@ -23,17 +23,6 @@
 namespace base {
 namespace i18n {
 
-namespace {
-
-// A test utility function to set the application default text direction.
-void SetRTL(bool rtl) {
-  // Override the current locale/direction.
-  SetICUDefaultLocale(rtl ? "he" : "en");
-  EXPECT_EQ(rtl, IsRTL());
-}
-
-}  // namespace
-
 class RTLTest : public PlatformTest {
 };
 
@@ -314,7 +303,7 @@ TEST_F(RTLTest, WrapString) {
   test::ScopedRestoreICUDefaultLocale restore_locale;
   for (size_t i = 0; i < 2; ++i) {
     // Toggle the application default text direction (to try each direction).
-    SetRTL(!IsRTL());
+    SetRTLForTesting(!IsRTL());
 
     string16 empty;
     WrapStringWithLTRFormatting(&empty);
@@ -362,7 +351,7 @@ TEST_F(RTLTest, GetDisplayStringInLTRDirectionality) {
   test::ScopedRestoreICUDefaultLocale restore_locale;
   for (size_t i = 0; i < 2; ++i) {
     // Toggle the application default text direction (to try each direction).
-    SetRTL(!IsRTL());
+    SetRTLForTesting(!IsRTL());
     for (size_t i = 0; i < arraysize(cases); ++i) {
       string16 input = WideToUTF16(cases[i].path);
       string16 output = GetDisplayStringInLTRDirectionality(input);
@@ -449,7 +438,7 @@ TEST_F(RTLTest, UnadjustStringForLocaleDirection) {
   test::ScopedRestoreICUDefaultLocale restore_locale;
   for (size_t i = 0; i < 2; ++i) {
     // Toggle the application default text direction (to try each direction).
-    SetRTL(!IsRTL());
+    SetRTLForTesting(!IsRTL());
 
     for (size_t i = 0; i < arraysize(cases); ++i) {
       string16 test_case = WideToUTF16(cases[i]);
@@ -500,7 +489,7 @@ TEST_F(RTLTest, EnsureTerminatedDirectionalFormatting) {
   test::ScopedRestoreICUDefaultLocale restore_locale;
   for (size_t i = 0; i < 2; ++i) {
     // Toggle the application default text direction (to try each direction).
-    SetRTL(!IsRTL());
+    SetRTLForTesting(!IsRTL());
     for (size_t i = 0; i < arraysize(cases); ++i) {
       string16 unsanitized_text = WideToUTF16(cases[i].unformated_text);
       string16 sanitized_text = WideToUTF16(cases[i].formatted_text);
