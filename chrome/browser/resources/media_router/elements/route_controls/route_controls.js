@@ -254,7 +254,8 @@ Polymer({
    * @private
    */
   getMuteUnmuteIcon_: function(routeStatus) {
-    return routeStatus.isMuted ? 'av:volume-off' : 'av:volume-up';
+    return routeStatus.isMuted ? 'route-controls:volume-off' :
+                                 'route-controls:volume-up';
   },
 
   /**
@@ -274,8 +275,8 @@ Polymer({
    */
   getPlayPauseIcon_: function(routeStatus) {
     return routeStatus.playState === media_router.PlayState.PAUSED ?
-        'av:play-arrow' :
-        'av:pause';
+        'route-controls:play-arrow' :
+        'route-controls:pause';
   },
 
   /**
