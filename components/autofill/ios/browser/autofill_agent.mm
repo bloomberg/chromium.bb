@@ -137,7 +137,7 @@ void GetFormAndField(autofill::FormData* form,
 // Rearranges and filters the suggestions to move profile or credit card
 // suggestions to the front if the user has selected one recently and remove
 // key/value suggestions if the user hasn't started typing.
-- (NSArray*)processSuggestions:(NSArray*)suggestions;
+- (NSArray*)processSuggestions:(NSArray<FormSuggestion*>*)suggestions;
 
 // Sends the the |formData| to the JavaScript manager of |webState_| to actually
 // fill the data.
@@ -166,10 +166,6 @@ void GetFormAndField(autofill::FormData* form,
   // focused form element in order to force filling of the currently selected
   // form element, even if it's non-empty.
   base::string16 pendingAutocompleteField_;
-  // The identifier of the most recent suggestion accepted by the user. Only
-  // used to reorder future suggestion lists, placing matching suggestions first
-  // in the list.
-  NSInteger mostRecentSelectedIdentifier_;
 
   // Suggestions state:
   // The most recent form suggestions.
@@ -308,27 +304,11 @@ void GetFormAndField(autofill::FormData* form,
                              }];
 }
 
-- (NSArray*)processSuggestions:(NSArray*)suggestions {
+- (NSArray*)processSuggestions:(NSArray<FormSuggestion*>*)suggestions {
   // The suggestion array is cloned (to claim ownership) and to slightly
   // reorder; a future improvement is to base order on text typed in other
   // fields by users as well as accepted suggestions (crbug.com/245261).
-  NSMutableArray* suggestionsCopy = [suggestions mutableCopy];
-
-  // If the most recently selected suggestion was a profile or credit card
-  // suggestion, move it to the front of the suggestions.
-  if (mostRecentSelectedIdentifier_ > 0) {
-    NSUInteger idx = [suggestionsCopy
-        indexOfObjectPassingTest:^BOOL(id obj, NSUInteger, BOOL*) {
-          FormSuggestion* suggestion = obj;
-          return suggestion.identifier == mostRecentSelectedIdentifier_;
-        }];
-
-    if (idx != NSNotFound) {
-      FormSuggestion* suggestion = suggestionsCopy[idx];
-      [suggestionsCopy removeObjectAtIndex:idx];
-      [suggestionsCopy insertObject:suggestion atIndex:0];
-    }
-  }
+  NSMutableArray<FormSuggestion*>* suggestionsCopy = [suggestions mutableCopy];
 
   // Filter out any key/value suggestions if the user hasn't typed yet.
   if ([typedValue_ length] == 0) {
@@ -341,12 +321,17 @@ void GetFormAndField(autofill::FormData* form,
   }
 
   // If "clear form" entry exists then move it to the front of the suggestions.
+  // If "GPay branding" icon is present, it remains as the first suggestion.
   for (NSInteger idx = [suggestionsCopy count] - 1; idx > 0; idx--) {
     FormSuggestion* suggestion = suggestionsCopy[idx];
     if (suggestion.identifier == autofill::POPUP_ITEM_ID_CLEAR_FORM) {
-      FormSuggestion* suggestionToMove = suggestionsCopy[idx];
+      BOOL hasGPayBranding = suggestionsCopy[0].identifier ==
+                             autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING;
+
+      FormSuggestion* clearFormSuggestion = suggestionsCopy[idx];
       [suggestionsCopy removeObjectAtIndex:idx];
-      [suggestionsCopy insertObject:suggestionToMove atIndex:0];
+      [suggestionsCopy insertObject:clearFormSuggestion
+                            atIndex:hasGPayBranding ? 1 : 0];
       break;
     }
   }
@@ -354,7 +339,7 @@ void GetFormAndField(autofill::FormData* form,
   return suggestionsCopy;
 }
 
-- (void)onSuggestionsReady:(NSArray*)suggestions
+- (void)onSuggestionsReady:(NSArray<FormSuggestion*>*)suggestions
              popupDelegate:
                  (const base::WeakPtr<autofill::AutofillPopupDelegate>&)
                      delegate {
@@ -482,7 +467,6 @@ void GetFormAndField(autofill::FormData* form,
           completionHandler:(SuggestionHandledCompletion)completion {
   [[UIDevice currentDevice] playInputClick];
   suggestionHandledCompletion_ = [completion copy];
-  mostRecentSelectedIdentifier_ = suggestion.identifier;
 
   if (suggestion.identifier > 0) {
     pendingAutocompleteField_ = base::SysNSStringToUTF16(fieldIdentifier);

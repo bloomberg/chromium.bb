@@ -39,7 +39,7 @@ class WebState;
 - (instancetype)init NS_UNAVAILABLE;
 
 // Callback by AutofillController when suggestions are ready.
-- (void)onSuggestionsReady:(NSArray*)suggestions
+- (void)onSuggestionsReady:(NSArray<FormSuggestion*>*)suggestions
              popupDelegate:
                  (const base::WeakPtr<autofill::AutofillPopupDelegate>&)
                      delegate;
