@@ -115,12 +115,18 @@ void ImageTransportSurfaceOverlayMac::ApplyBackpressure(
 
     // If we have gotten more than one frame ahead of GL, wait for the previous
     // frame to complete.
+    bool fence_context_changed = true;
     if (previous_frame_fence_) {
-      TRACE_EVENT1("gpu", "ClientWait", "context switch",
-                   fence_context_obj_.get() != CGLGetCurrentContext());
+      fence_context_changed =
+          fence_context_obj_.get() != CGLGetCurrentContext();
+      TRACE_EVENT0("gpu", "ClientWait");
 
       // Ensure we are using the context with which the fence was created.
-      gl::ScopedCGLSetCurrentContext scoped_set_current(fence_context_obj_);
+      base::Optional<gl::ScopedCGLSetCurrentContext> scoped_set_current;
+      if (fence_context_changed) {
+        TRACE_EVENT0("gpu", "SetCurrentContext");
+        scoped_set_current.emplace(fence_context_obj_);
+      }
 
       // While we could call GLFence::ClientWait, this performs a busy wait on
       // Mac, leading to high CPU usage. Instead we poll with a 1ms delay. This
@@ -130,29 +136,39 @@ void ImageTransportSurfaceOverlayMac::ApplyBackpressure(
       // Note that on some platforms (10.9), fences appear to sometimes get
       // lost and will never pass. Add a 32ms timout to prevent these
       // situations from causing a GPU process hang. crbug.com/618075
-      {
-        TRACE_EVENT0("gpu", "Fence poll");
-        int timeout_msec = 32;
-        while (!previous_frame_fence_->HasCompleted() && timeout_msec > 0) {
-          --timeout_msec;
+      bool fence_completed = false;
+      for (int poll_iter = 0; !fence_completed && poll_iter < 32; ++poll_iter) {
+        if (poll_iter > 0) {
           base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
         }
+        {
+          TRACE_EVENT0("gpu", "GLFence::HasCompleted");
+          fence_completed = previous_frame_fence_->HasCompleted();
+        }
       }
-      if (!previous_frame_fence_->HasCompleted()) {
+      if (!fence_completed) {
         TRACE_EVENT0("gpu", "Finish");
         // We timed out waiting for the above fence, just issue a glFinish.
         glFinish();
       }
-    }
 
+      // Ensure that the GLFence object be destroyed while its context is
+      // current, lest we crash.
+      // https://crbug.com/863817
+      previous_frame_fence_.reset();
+    }
+    // Save the context that we will be using for the GLFence object we will
+    // create (or just leave the previously saved one, if it is unchanged).
+    if (fence_context_changed) {
+      fence_context_obj_.reset(CGLGetCurrentContext(),
+                               base::scoped_policy::RETAIN);
+    }
     *before_flush_time = base::TimeTicks::Now();
 
-    // Create a fence for the current frame's work and save the context.
+    // Create a fence for the current frame's work.
     {
       TRACE_EVENT0("gpu", "Create GLFence");
       previous_frame_fence_ = gl::GLFence::Create();
-      fence_context_obj_.reset(CGLGetCurrentContext(),
-                               base::scoped_policy::RETAIN);
     }
 
     // A glFlush is necessary to ensure correct content appears.
