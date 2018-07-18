@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/profile_management_switches.h"
@@ -337,14 +338,16 @@ class IdentityManagerTest : public testing::Test {
   IdentityManagerTest()
       : signin_client_(&pref_service_),
 #if defined(OS_CHROMEOS)
-        signin_manager_(&signin_client_, &account_tracker_)
+        signin_manager_(&signin_client_, &account_tracker_),
 #else
         signin_manager_(&signin_client_,
                         &token_service_,
                         &account_tracker_,
-                        nullptr)
+                        nullptr),
 #endif
-  {
+        gaia_cookie_manager_service_(&token_service_,
+                                     "identity_manager_unittest",
+                                     &signin_client_) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
     SigninManagerBase::RegisterPrefs(pref_service_.registry());
@@ -380,8 +383,9 @@ class IdentityManagerTest : public testing::Test {
     identity_manager_diagnostics_observer_.reset();
     identity_manager_.reset();
 
-    identity_manager_.reset(new IdentityManager(
-        &signin_manager_, &token_service_, &account_tracker_));
+    identity_manager_.reset(
+        new IdentityManager(&signin_manager_, &token_service_,
+                            &account_tracker_, &gaia_cookie_manager_service_));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
     identity_manager_diagnostics_observer_.reset(
@@ -395,6 +399,7 @@ class IdentityManagerTest : public testing::Test {
   TestSigninClient signin_client_;
   SigninManagerForTest signin_manager_;
   CustomFakeProfileOAuth2TokenService token_service_;
+  FakeGaiaCookieManagerService gaia_cookie_manager_service_;
   std::unique_ptr<IdentityManager> identity_manager_;
   std::unique_ptr<TestIdentityManagerObserver> identity_manager_observer_;
   std::unique_ptr<TestIdentityManagerDiagnosticsObserver>

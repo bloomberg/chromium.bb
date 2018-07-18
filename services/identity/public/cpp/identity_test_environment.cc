@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/profile_management_switches.h"
@@ -42,6 +43,7 @@ class IdentityTestEnvironmentInternal {
   TestSigninClient signin_client_;
   SigninManagerForTest signin_manager_;
   FakeProfileOAuth2TokenService token_service_;
+  FakeGaiaCookieManagerService gaia_cookie_manager_service_;
   std::unique_ptr<IdentityManager> identity_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityTestEnvironmentInternal);
@@ -50,14 +52,28 @@ class IdentityTestEnvironmentInternal {
 IdentityTestEnvironmentInternal::IdentityTestEnvironmentInternal()
     : signin_client_(&pref_service_),
 #if defined(OS_CHROMEOS)
-      signin_manager_(&signin_client_, &account_tracker_)
+      signin_manager_(&signin_client_, &account_tracker_),
 #else
       signin_manager_(&signin_client_,
                       &token_service_,
                       &account_tracker_,
-                      nullptr)
+                      nullptr),
 #endif
-{
+      // NOTE: Some unittests set up their own TestURLFetcherFactory. In these
+      // contexts FakeGaiaCookieManagerService can't set up its own
+      // FakeURLFetcherFactory, as {Test, Fake}URLFetcherFactory allow only one
+      // instance to be alive at a time. If some users of
+      // IdentityTestEnvironment require that GaiaCookieManagerService have a
+      // FakeURLFetcherFactory, we'll need to pass a config param in to
+      // IdentityTestEnvironment to specify this. If some users want that
+      // behavior while *also* having their own FakeURLFetcherFactory, we'll
+      // need to pass the actual object in and have GaiaCookieManagerService
+      // have a reference to the object (or figure out the sharing some other
+      // way). Contact blundell@chromium.org if you come up against this issue.
+      gaia_cookie_manager_service_(&token_service_,
+                                   "identity_test_environment",
+                                   &signin_client_,
+                                   /*use_fake_url_fetcher=*/false) {
   AccountTrackerService::RegisterPrefs(pref_service_.registry());
   SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterPrefs(pref_service_.registry());
@@ -65,7 +81,8 @@ IdentityTestEnvironmentInternal::IdentityTestEnvironmentInternal()
   account_tracker_.Initialize(&signin_client_);
 
   identity_manager_.reset(new IdentityManager(&signin_manager_, &token_service_,
-                                              &account_tracker_));
+                                              &account_tracker_,
+                                              &gaia_cookie_manager_service_));
 }
 
 IdentityTestEnvironmentInternal::~IdentityTestEnvironmentInternal() {}

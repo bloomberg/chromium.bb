@@ -14,6 +14,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
@@ -172,6 +173,7 @@ class ProfileSyncServiceBundle {
   AccountTrackerService account_tracker_;
   FakeSigninManagerType signin_manager_;
   FakeProfileOAuth2TokenService auth_service_;
+  FakeGaiaCookieManagerService gaia_cookie_manager_service_;
   identity::IdentityManager identity_manager_;
   testing::NiceMock<syncer::SyncApiComponentFactoryMock> component_factory_;
   std::unique_ptr<sync_sessions::LocalSessionEventRouter>

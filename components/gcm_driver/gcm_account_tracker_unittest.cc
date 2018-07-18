@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
@@ -217,6 +218,8 @@ class GCMAccountTrackerTest : public testing::Test {
   std::unique_ptr<TestSigninClient> test_signin_client_;
   std::unique_ptr<SigninManagerForTest> fake_signin_manager_;
   std::unique_ptr<FakeProfileOAuth2TokenService> fake_token_service_;
+  std::unique_ptr<FakeGaiaCookieManagerService>
+      fake_gaia_cookie_manager_service_;
   std::unique_ptr<identity::IdentityManager> identity_manager_;
   std::unique_ptr<GCMAccountTracker> tracker_;
 };
@@ -234,6 +237,9 @@ GCMAccountTrackerTest::GCMAccountTrackerTest() {
       &account_tracker_service_, nullptr));
 #endif
 
+  fake_gaia_cookie_manager_service_.reset(new FakeGaiaCookieManagerService(
+      fake_token_service_.get(), "gcm_account_tracker_unittest",
+      test_signin_client_.get()));
   AccountTrackerService::RegisterPrefs(pref_service_.registry());
   SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterPrefs(pref_service_.registry());
@@ -241,7 +247,7 @@ GCMAccountTrackerTest::GCMAccountTrackerTest() {
 
   identity_manager_ = std::make_unique<identity::IdentityManager>(
       fake_signin_manager_.get(), fake_token_service_.get(),
-      &account_tracker_service_);
+      &account_tracker_service_, fake_gaia_cookie_manager_service_.get());
 
   std::unique_ptr<AccountTracker> gaia_account_tracker(new AccountTracker(
       fake_signin_manager_.get(), fake_token_service_.get(),

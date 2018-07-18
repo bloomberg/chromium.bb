@@ -25,12 +25,15 @@ const char kSupervisedUserPseudoGaiaID[] = "managed_user_gaia_id";
 
 }  // namespace
 
-IdentityManager::IdentityManager(SigninManagerBase* signin_manager,
-                                 ProfileOAuth2TokenService* token_service,
-                                 AccountTrackerService* account_tracker_service)
+IdentityManager::IdentityManager(
+    SigninManagerBase* signin_manager,
+    ProfileOAuth2TokenService* token_service,
+    AccountTrackerService* account_tracker_service,
+    GaiaCookieManagerService* gaia_cookie_manager_service)
     : signin_manager_(signin_manager),
       token_service_(token_service),
-      account_tracker_service_(account_tracker_service) {
+      account_tracker_service_(account_tracker_service),
+      gaia_cookie_manager_service_(gaia_cookie_manager_service) {
   // Initialize the state of the primary account.
   primary_account_info_ = signin_manager_->GetAuthenticatedAccountInfo();
 
