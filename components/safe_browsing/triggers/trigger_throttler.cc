@@ -16,6 +16,7 @@
 
 namespace safe_browsing {
 const size_t kAdSamplerTriggerDefaultQuota = 10;
+const size_t kSuspiciousSiteTriggerDefaultQuota = 5;
 const char kSuspiciousSiteTriggerQuotaParam[] = "suspicious_site_trigger_quota";
 const char kTriggerTypeAndQuotaParam[] = "trigger_type_and_quota_csv";
 
@@ -42,7 +43,8 @@ void ParseTriggerTypeAndQuotaParam(
 
   // First, handle the trigger-specific features.
   int suspicious_site_quota = base::GetFieldTrialParamByFeatureAsInt(
-      kSuspiciousSiteTriggerQuotaFeature, kSuspiciousSiteTriggerQuotaParam, 0);
+      kSuspiciousSiteTriggerQuotaFeature, kSuspiciousSiteTriggerQuotaParam,
+      kSuspiciousSiteTriggerDefaultQuota);
   if (suspicious_site_quota > 0) {
     trigger_type_and_quota_list->push_back(
         std::make_pair(TriggerType::SUSPICIOUS_SITE, suspicious_site_quota));
