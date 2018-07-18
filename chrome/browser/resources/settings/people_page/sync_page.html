@@ -91,6 +91,40 @@
       </settings-sync-account-control>
     </template>
 </if>
+
+    <template is="dom-if" if="[[shouldShowExistingPassphraseBelowAccount_(
+      unifiedConsentEnabled, syncPrefs.passphraseRequired)]]">
+      <div id="existingPassphrase" class="list-frame">
+        <div id="existingPassphraseTitle" class="list-item">
+            <div class="start">
+              <div>$i18n{existingPassphraseTitle}</div>
+              <div class="secondary">
+                [[enterPassphrasePrompt_(syncPrefs.passphraseTypeIsCustom)]]
+                <a href="$i18nRaw{syncErrorHelpUrl}" target="_blank">
+                  $i18n{learnMore}
+                </a>
+              </div>
+            </div>
+        </div>
+        <div id="existingPassphraseContainer" class="list-item">
+          <cr-input id="existingPassphraseInput" type="password"
+              value="{{existingPassphrase_}}"
+              placeholder="$i18n{passphrasePlaceholder}"
+              error-message="$i18n{incorrectPassphraseError}"
+              on-keypress="onSubmitExistingPassphraseTap_">
+            <paper-button id="submitExistingPassphrase" slot="suffix"
+                on-click="onSubmitExistingPassphraseTap_"
+                class="action-button" disabled="[[!existingPassphrase_]]">
+              $i18n{submitPassphraseButton}
+            </paper-button>
+          </cr-input>
+        </div>
+        <div id="passphraseRecoverHint" class="list-item">
+          <span>$i18nRaw{passphraseRecover}</span>
+        </div>
+      </div>
+    </template>
+
      <!-- A change of the unified consent toggle state is automatically handled
           in the C++ code after a change in the pref is observed. -->
     <settings-toggle-button id="unifiedConsentToggle" class="first"
@@ -125,7 +159,10 @@
       </div>
       <div id="[[pages_.CONFIGURE]]"
           hidden$="[[!isStatus_(pages_.CONFIGURE, pageStatus_)]]">
-        <template is="dom-if" if="[[syncPrefs.passphraseRequired]]">
+        <!-- TODO(http://crbug.com/862983) Remove this section once the Unified
+             Consent feature is launched. -->
+        <template is="dom-if" if="[[shouldShowExistingPassphraseInSyncSection_(
+            unifiedConsentEnabled, syncPrefs.passphraseRequired)]]">
           <div id="existingPassphrase" class="list-frame">
             <div class="list-item">
               <span>
