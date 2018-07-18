@@ -70,16 +70,16 @@ source_set("unit_tests") {
 
   deps = [
     ":core",
-    "//base",
+    "//base/test:test_support",
     "//components/autofill/core/browser:browser",
     "//components/history/core/test:test",
     "//components/password_manager/core/browser:test_support",
-    "//components/signin/core/browser:test_support",
+    "//components/prefs:test_support",
     "//components/sync",
     "//components/sync:test_support_driver",
     "//components/sync_preferences:test_support",
     "//components/version_info:version_info",
-    "//net",
+    "//net:test_support",
     "//testing/gtest",
   ]
 }
