@@ -307,30 +307,41 @@ TEST_F(SQLConnectionTest, IsSQLValidTest) {
   ASSERT_FALSE(db().IsSQLValid("SELECT no_exist FROM foo"));
 }
 
-TEST_F(SQLConnectionTest, DoesStuffExist) {
-  // Test DoesTableExist and DoesIndexExist.
+TEST_F(SQLConnectionTest, DoesTableExist) {
   EXPECT_FALSE(db().DoesTableExist("foo"));
-  ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
-  ASSERT_TRUE(db().Execute("CREATE INDEX foo_a ON foo (a)"));
-  EXPECT_FALSE(db().DoesIndexExist("foo"));
-  EXPECT_TRUE(db().DoesTableExist("foo"));
-  EXPECT_TRUE(db().DoesIndexExist("foo_a"));
-  EXPECT_FALSE(db().DoesTableExist("foo_a"));
+  EXPECT_FALSE(db().DoesTableExist("foo_index"));
 
-  // Test DoesViewExist.  The CREATE VIEW is an older form because some iOS
-  // versions use an earlier version of SQLite, and the difference isn't
-  // relevant for this test.
+  ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
+  ASSERT_TRUE(db().Execute("CREATE INDEX foo_index ON foo (a)"));
+  EXPECT_TRUE(db().DoesTableExist("foo"));
+  EXPECT_FALSE(db().DoesTableExist("foo_index"));
+}
+
+TEST_F(SQLConnectionTest, DoesIndexExist) {
+  ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
+  EXPECT_FALSE(db().DoesIndexExist("foo"));
+  EXPECT_FALSE(db().DoesIndexExist("foo_ubdex"));
+
+  ASSERT_TRUE(db().Execute("CREATE INDEX foo_index ON foo (a)"));
+  EXPECT_TRUE(db().DoesIndexExist("foo_index"));
+  EXPECT_FALSE(db().DoesIndexExist("foo"));
+}
+
+TEST_F(SQLConnectionTest, DoesViewExist) {
   EXPECT_FALSE(db().DoesViewExist("voo"));
-  ASSERT_TRUE(db().Execute("CREATE VIEW voo AS SELECT 1"));
+  ASSERT_TRUE(db().Execute("CREATE VIEW voo (a) AS SELECT 1"));
   EXPECT_FALSE(db().DoesIndexExist("voo"));
   EXPECT_FALSE(db().DoesTableExist("voo"));
   EXPECT_TRUE(db().DoesViewExist("voo"));
+}
 
-  // Test DoesColumnExist.
+TEST_F(SQLConnectionTest, DoesColumnExist) {
+  ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
+
   EXPECT_FALSE(db().DoesColumnExist("foo", "bar"));
   EXPECT_TRUE(db().DoesColumnExist("foo", "a"));
 
-  // Testing for a column on a nonexistent table.
+  ASSERT_FALSE(db().DoesTableExist("bar"));
   EXPECT_FALSE(db().DoesColumnExist("bar", "b"));
 
   // Names are not case sensitive.
@@ -661,11 +672,6 @@ TEST_F(SQLConnectionTest, RazeNOTADB) {
   // statements that access the database.
   {
     sql::test::ScopedErrorExpecter expecter;
-
-    // Old SQLite versions returned a different error code.
-    ASSERT_GE(expecter.SQLiteLibVersionNumber(), 3014000)
-        << "Chrome ships with SQLite 3.22.0+. The system SQLite version is "
-        << "only supported on iOS 10+, which ships with SQLite 3.14.0+";
     expecter.ExpectError(SQLITE_NOTADB);
 
     EXPECT_TRUE(db().Open(db_path()));

@@ -188,10 +188,6 @@ TEST_F(SQLiteFeaturesTest, NoMmap) {
   // disable mmap support.  Alternately, sqlite3_config() could be used.  In
   // that case, the pragma will run successfully, but the size will always be 0.
   //
-  // Historical note: The SQLite version bundled with iOS 9 and below does not
-  // have mmap support. Chrome now requires iOS 10 and above. This is only
-  // relevant when USE_SYSTEM_SQLITE is defined.
-  //
   // MojoVFS implements a no-op for xFileControl().  PRAGMA mmap_size is
   // implemented in terms of SQLITE_FCNTL_MMAP_SIZE.  In that case, the pragma
   // will succeed but with no effect.
@@ -213,10 +209,6 @@ TEST_F(SQLiteFeaturesTest, Mmap) {
   ignore_result(db().Execute("PRAGMA mmap_size = 1048576"));
   {
     sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
-
-    // Historical note: The SQLite version bundled with iOS 9 and below does
-    // not have mmap support. Chrome now requires iOS 10 and above. This is
-    // only relevant when USE_SYSTEM_SQLITE is defined.
 
     ASSERT_TRUE(s.Step());
     ASSERT_GT(s.ColumnInt64(0), 0);
