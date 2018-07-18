@@ -260,7 +260,7 @@ void PositionView(UIView* view, CGPoint point) {
     [titleLabel.centerYAnchor constraintEqualToAnchor:topBar.centerYAnchor],
     [titleLabel.trailingAnchor
         constraintLessThanOrEqualToAnchor:closeIconView.leadingAnchor
-                                 constant:kGridCellCloseButtonContentInset],
+                                 constant:-kGridCellTitleLabelContentInset],
     [closeIconView.topAnchor constraintEqualToAnchor:topBar.topAnchor],
     [closeIconView.bottomAnchor constraintEqualToAnchor:topBar.bottomAnchor],
     [closeIconView.trailingAnchor
