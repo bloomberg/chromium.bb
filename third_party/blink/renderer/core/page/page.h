@@ -310,7 +310,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   // PageScheduler::Delegate implementation.
   void ReportIntervention(const String& message) override;
-  void RequestBeginMainFrameNotExpected(bool new_state) override;
+  bool RequestBeginMainFrameNotExpected(bool new_state) override;
   void SetLifecycleState(PageLifecycleState) override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   int64_t GetUkmSourceId() override;

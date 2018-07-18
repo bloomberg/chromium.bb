@@ -73,7 +73,9 @@ class FakePageScheduler final : public PageScheduler {
   void SetMaxVirtualTimeTaskStarvationCount(int count) override {}
   void AudioStateChanged(bool is_audio_playing) override {}
   bool HasActiveConnectionForTest() const override { return false; }
-  void RequestBeginMainFrameNotExpected(bool new_state) override {}
+  bool RequestBeginMainFrameNotExpected(bool new_state) override {
+    return false;
+  }
 
  private:
   bool is_audio_playing_;

@@ -2992,7 +2992,7 @@ class PageSchedulerImplForTest : public PageSchedulerImpl {
     return interventions_;
   }
 
-  MOCK_METHOD1(RequestBeginMainFrameNotExpected, void(bool));
+  MOCK_METHOD1(RequestBeginMainFrameNotExpected, bool(bool));
 
  private:
   std::vector<std::string> interventions_;
@@ -3819,14 +3819,17 @@ TEST_F(MainThreadSchedulerImplTest, RequestBeginMainFrameNotExpected) {
   scheduler_->AddPageScheduler(page_scheduler.get());
 
   scheduler_->OnPendingTasksChanged(true);
-  EXPECT_CALL(*page_scheduler, RequestBeginMainFrameNotExpected(true)).Times(1);
+  EXPECT_CALL(*page_scheduler, RequestBeginMainFrameNotExpected(true))
+      .Times(1)
+      .WillRepeatedly(testing::Return(true));
   base::RunLoop().RunUntilIdle();
 
   Mock::VerifyAndClearExpectations(page_scheduler.get());
 
   scheduler_->OnPendingTasksChanged(false);
   EXPECT_CALL(*page_scheduler, RequestBeginMainFrameNotExpected(false))
-      .Times(1);
+      .Times(1)
+      .WillRepeatedly(testing::Return(true));
   base::RunLoop().RunUntilIdle();
 
   Mock::VerifyAndClearExpectations(page_scheduler.get());
@@ -3841,7 +3844,9 @@ TEST_F(MainThreadSchedulerImplTest,
   scheduler_->OnPendingTasksChanged(true);
   scheduler_->OnPendingTasksChanged(true);
   // Multiple calls should result in only one call.
-  EXPECT_CALL(*page_scheduler, RequestBeginMainFrameNotExpected(true)).Times(1);
+  EXPECT_CALL(*page_scheduler, RequestBeginMainFrameNotExpected(true))
+      .Times(1)
+      .WillRepeatedly(testing::Return(true));
   base::RunLoop().RunUntilIdle();
 
   Mock::VerifyAndClearExpectations(page_scheduler.get());

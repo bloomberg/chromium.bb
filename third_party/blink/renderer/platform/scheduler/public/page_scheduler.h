@@ -26,7 +26,9 @@ class PLATFORM_EXPORT PageScheduler {
     virtual ~Delegate() = default;
 
     virtual void ReportIntervention(const WTF::String& message) = 0;
-    virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
+    // Returns true if the request has been succcessfully relayed to the
+    // compositor.
+    virtual bool RequestBeginMainFrameNotExpected(bool new_state) = 0;
     virtual void SetLifecycleState(PageLifecycleState) = 0;
     virtual ukm::UkmRecorder* GetUkmRecorder() = 0;
     virtual int64_t GetUkmSourceId() = 0;
@@ -150,7 +152,9 @@ class PLATFORM_EXPORT PageScheduler {
 
   virtual bool HasActiveConnectionForTest() const = 0;
 
-  virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
+  // Returns true if the request has been succcessfully relayed to the
+  // compositor.
+  virtual bool RequestBeginMainFrameNotExpected(bool new_state) = 0;
 };
 
 }  // namespace blink
