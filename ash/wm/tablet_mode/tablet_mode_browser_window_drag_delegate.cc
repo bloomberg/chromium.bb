@@ -174,17 +174,6 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
 
 void TabletModeBrowserWindowDragDelegate::UpdateScrim(
     const gfx::Point& location_in_screen) {
-  // If overview mode is active, do not show the scrim on the overview side of
-  // the screen.
-  if (Shell::Get()->window_selector_controller()->IsSelecting()) {
-    WindowGrid* window_grid = GetWindowSelector()->GetGridWithRootWindow(
-        dragged_window_->GetRootWindow());
-    if (window_grid && window_grid->bounds().Contains(location_in_screen)) {
-      scrim_.reset();
-      return;
-    }
-  }
-
   const gfx::Rect work_area_bounds =
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(dragged_window_)
@@ -197,23 +186,19 @@ void TabletModeBrowserWindowDragDelegate::UpdateScrim(
     return;
   }
 
-  SplitViewController::SnapPosition snap_position =
-      GetSnapPosition(location_in_screen);
-
-  bool should_show_blurred_scrim = false;
-  if (location_in_screen.y() >=
-      GetMaximizeVerticalThreshold(work_area_bounds)) {
-    if (split_view_controller_->IsSplitViewModeActive() !=
-        (snap_position == SplitViewController::NONE)) {
-      should_show_blurred_scrim = true;
+  // If overview mode is active, do not show the scrim on the overview side of
+  // the screen.
+  if (Shell::Get()->window_selector_controller()->IsSelecting()) {
+    WindowGrid* window_grid = GetWindowSelector()->GetGridWithRootWindow(
+        dragged_window_->GetRootWindow());
+    if (window_grid && window_grid->bounds().Contains(location_in_screen)) {
+      scrim_.reset();
+      return;
     }
   }
 
-  if (!should_show_blurred_scrim) {
-    scrim_.reset();
-    return;
-  }
-
+  SplitViewController::SnapPosition snap_position =
+      GetSnapPosition(location_in_screen);
   gfx::Rect expected_bounds(work_area_bounds);
   if (split_view_controller_->IsSplitViewModeActive()) {
     expected_bounds = split_view_controller_->GetSnappedWindowBoundsInScreen(
@@ -223,7 +208,21 @@ void TabletModeBrowserWindowDragDelegate::UpdateScrim(
                           kHighlightScreenEdgePaddingDp);
   }
 
-  ShowScrim(kScrimOpacity, kScrimBlur, expected_bounds);
+  bool should_show_blurred_scrim = false;
+  if (location_in_screen.y() >=
+      TabletModeWindowDragDelegate::GetMaximizeVerticalThreshold(
+          work_area_bounds)) {
+    if (split_view_controller_->IsSplitViewModeActive() !=
+        (snap_position == SplitViewController::NONE)) {
+      should_show_blurred_scrim = true;
+    }
+  }
+  // When the event is between |indicators_vertical_threshold| and
+  // |maximize_vertical_threshold|, the scrim is still shown but is invisible
+  // to the user (transparent). It's needed to prevent the dragged window to
+  // merge into the scaled down source window.
+  ShowScrim(should_show_blurred_scrim ? kScrimOpacity : 0.f,
+            should_show_blurred_scrim ? kScrimBlur : 0.f, expected_bounds);
 }
 
 void TabletModeBrowserWindowDragDelegate::ShowScrim(
