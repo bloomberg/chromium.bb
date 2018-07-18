@@ -167,4 +167,6 @@ gen_config_files linux/arm64 "${toolchain}/arm64-linux-gcc.cmake ${all_platforms
 cd "${SRC}"
 update_readme
 
+git cl format &> /dev/null || echo "ERROR: Run 'git cl format' manually."
+
 clean
