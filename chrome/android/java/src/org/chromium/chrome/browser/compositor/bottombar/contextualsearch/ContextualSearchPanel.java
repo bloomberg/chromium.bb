@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
-import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -117,8 +116,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     @Override
     protected void initializeUiState() {
         mUseGenericSheetUx = mActivity.supportsContextualSuggestionsBottomSheet()
-                && FeatureUtilities.areContextualSuggestionsEnabled(
-                           DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity));
+                && FeatureUtilities.areContextualSuggestionsEnabled(mActivity);
     }
 
     @Override
