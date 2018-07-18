@@ -733,14 +733,6 @@ bool BrowserNonClientFrameViewAsh::IsTabletMode() const {
 void BrowserNonClientFrameViewAsh::OnOverviewModeStarting() {
   DCHECK(!IsMash());
   in_overview_mode_ = true;
-
-  // Update the window icon if needed so that overview mode can grab the icon
-  // from kAppIconKey or kWindowIconKey to display.
-  if (!frame()->GetNativeWindow()->GetProperty(
-          aura::client::kHasOverviewIcon)) {
-    frame()->UpdateWindowIcon();
-  }
-
   OnOverviewOrSplitviewModeChanged();
 }
 
@@ -931,10 +923,6 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
     return false;
   }
 
-  return ShouldShowIconAndBackButton();
-}
-
-bool BrowserNonClientFrameViewAsh::ShouldShowIconAndBackButton() const {
   return !in_overview_mode_ ||
          IsSnappedInSplitView(frame()->GetNativeWindow(), split_view_state_);
 }
@@ -973,12 +961,6 @@ void BrowserNonClientFrameViewAsh::OnOverviewOrSplitviewModeChanged() {
   DCHECK(!IsMash());
 
   caption_button_container_->SetVisible(ShouldShowCaptionButtons());
-
-  const bool visibility = ShouldShowIconAndBackButton();
-  if (window_icon_)
-    window_icon_->SetVisible(visibility);
-  if (back_button_)
-    back_button_->SetVisible(visibility);
 
   // Schedule a paint to show or hide the header.
   SchedulePaint();

@@ -128,6 +128,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -705,7 +706,7 @@ StatusBubble* BrowserView::GetStatusBubble() {
 
 void BrowserView::UpdateTitleBar() {
   frame_->UpdateWindowTitle();
-  if (ShouldShowWindowIcon() && !loading_animation_timer_.IsRunning())
+  if (!loading_animation_timer_.IsRunning())
     frame_->UpdateWindowIcon();
 }
 
@@ -1768,15 +1769,23 @@ gfx::ImageSkia BrowserView::GetWindowIcon() {
   if (app_controller)
     return app_controller->GetWindowIcon();
 
-  if (browser_->is_app() || browser_->is_type_popup())
-    return browser_->GetCurrentPageIcon().AsImageSkia();
-
 #if defined(OS_CHROMEOS)
   if (browser_->is_type_tabbed()) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     return rb.GetImageNamed(IDR_PRODUCT_LOGO_32).AsImageSkia();
   }
+
+  // For the settings window, use whatever icon was previously set.
+  if (!browser_->is_app() && browser_->is_trusted_source() &&
+      GetNativeWindow()) {
+    auto* image = GetNativeWindow()->GetProperty(aura::client::kWindowIconKey);
+    if (image)
+      return *image;
+  }
 #endif
+
+  if (browser_->is_app() || browser_->is_type_popup())
+    return browser_->GetCurrentPageIcon().AsImageSkia();
 
   return gfx::ImageSkia();
 }

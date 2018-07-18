@@ -77,10 +77,6 @@ AURA_EXPORT extern const WindowProperty<bool>* const kDrawAttentionKey;
 // A property key to store the focus client on the window.
 AURA_EXPORT extern const WindowProperty<FocusClient*>* const kFocusClientKey;
 
-// A bool property key to specify if the window has a icon set for displaying in
-// overivew mode.
-AURA_EXPORT extern const WindowProperty<bool>* const kHasOverviewIcon;
-
 // A property key to store the host window of a window. This lets
 // WebContentsViews find the windows that should constrain NPAPI plugins.
 AURA_EXPORT extern const WindowProperty<Window*>* const kHostWindowKey;
