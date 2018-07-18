@@ -44,6 +44,10 @@ class BookmarkModelObserverImpl : public bookmarks::BookmarkModelObserver {
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* parent,
                          int index) override;
+  void OnWillRemoveBookmarks(bookmarks::BookmarkModel* model,
+                             const bookmarks::BookmarkNode* parent,
+                             int old_index,
+                             const bookmarks::BookmarkNode* node) override;
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const bookmarks::BookmarkNode* parent,
                            int old_index,
@@ -65,6 +69,13 @@ class BookmarkModelObserverImpl : public bookmarks::BookmarkModelObserver {
   syncer::UniquePosition ComputePosition(const bookmarks::BookmarkNode& parent,
                                          int index,
                                          const std::string& sync_id);
+
+  // Processes the deletion of a bookmake node and updates the
+  // |bookmark_tracker_| accordingly. If |node| is a bookmark, it gets marked
+  // as deleted and that it requires a commit. If it's a folder, it recurses
+  // over all children before processing the folder itself.
+  void ProcessDelete(const bookmarks::BookmarkNode* parent,
+                     const bookmarks::BookmarkNode* node);
 
   // Points to the tracker owned by the processor. It keeps the mapping between
   // bookmark nodes and corresponding sync server entities.
