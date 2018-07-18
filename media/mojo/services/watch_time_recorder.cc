@@ -115,6 +115,15 @@ static void RecordRebuffersCount(base::StringPiece key, int underflow_count) {
   base::UmaHistogramCounts100(key.as_string(), underflow_count);
 }
 
+WatchTimeRecorder::WatchTimeUkmRecord::WatchTimeUkmRecord(
+    mojom::SecondaryPlaybackPropertiesPtr properties)
+    : secondary_properties(std::move(properties)) {}
+
+WatchTimeRecorder::WatchTimeUkmRecord::WatchTimeUkmRecord(
+    WatchTimeUkmRecord&& record) = default;
+
+WatchTimeRecorder::WatchTimeUkmRecord::~WatchTimeUkmRecord() = default;
+
 WatchTimeRecorder::WatchTimeRecorder(mojom::PlaybackPropertiesPtr properties,
                                      const url::Origin& untrusted_top_origin,
                                      bool is_top_frame,
@@ -184,7 +193,8 @@ void WatchTimeRecorder::FinalizeWatchTime(
     }
 
     // At finalize, update the aggregate entry.
-    aggregate_watch_time_info_[kv.first] += kv.second;
+    if (!ukm_records_.empty())
+      ukm_records_.back().aggregate_watch_time_info[kv.first] += kv.second;
   }
 
   // If we're not finalizing everything, we're done after removing keys.
@@ -213,7 +223,8 @@ void WatchTimeRecorder::FinalizeWatchTime(
   }
 
   // Ensure values are cleared in case the reporter is reused.
-  total_underflow_count_ += underflow_count_;
+  if (!ukm_records_.empty())
+    ukm_records_.back().total_underflow_count += underflow_count_;
   underflow_count_ = 0;
   watch_time_info_.clear();
 }
@@ -222,14 +233,76 @@ void WatchTimeRecorder::OnError(PipelineStatus status) {
   pipeline_status_ = status;
 }
 
-void WatchTimeRecorder::SetAudioDecoderName(const std::string& name) {
-  DCHECK(audio_decoder_name_.empty());
-  audio_decoder_name_ = name;
-}
+void WatchTimeRecorder::UpdateSecondaryProperties(
+    mojom::SecondaryPlaybackPropertiesPtr secondary_properties) {
+  bool last_record_was_unfinalized = false;
+  if (!ukm_records_.empty()) {
+    auto& last_record = ukm_records_.back();
 
-void WatchTimeRecorder::SetVideoDecoderName(const std::string& name) {
-  DCHECK(video_decoder_name_.empty());
-  video_decoder_name_ = name;
+    // Skip unchanged property updates.
+    if (secondary_properties->Equals(*last_record.secondary_properties))
+      return;
+
+    // If a property just changes from an unknown to a known value, allow the
+    // update without creating a whole new record.
+    if (last_record.secondary_properties->audio_codec == kUnknownAudioCodec ||
+        last_record.secondary_properties->video_codec == kUnknownVideoCodec ||
+        last_record.secondary_properties->audio_decoder_name.empty() ||
+        last_record.secondary_properties->video_decoder_name.empty()) {
+      auto temp_props = last_record.secondary_properties.Clone();
+      if (last_record.secondary_properties->audio_codec == kUnknownAudioCodec)
+        temp_props->audio_codec = secondary_properties->audio_codec;
+      if (last_record.secondary_properties->video_codec == kUnknownVideoCodec)
+        temp_props->video_codec = secondary_properties->video_codec;
+      if (last_record.secondary_properties->audio_decoder_name.empty()) {
+        temp_props->audio_decoder_name =
+            secondary_properties->audio_decoder_name;
+      }
+      if (last_record.secondary_properties->video_decoder_name.empty()) {
+        temp_props->video_decoder_name =
+            secondary_properties->video_decoder_name;
+      }
+      if (temp_props->Equals(*secondary_properties)) {
+        last_record.secondary_properties = std::move(temp_props);
+        return;
+      }
+    }
+
+    // Flush any existing watch time for the current UKM record. The client is
+    // responsible for ensuring recent watch time has been reported before
+    // updating the secondary properties.
+    for (auto& kv : watch_time_info_)
+      last_record.aggregate_watch_time_info[kv.first] += kv.second;
+    last_record.total_underflow_count += underflow_count_;
+
+    // If we flushed any watch time or underflow counts which hadn't been
+    // finalized we'll need to ensure the eventual Finalize() correctly accounts
+    // for those values at the time of the secondary property update.
+    last_record_was_unfinalized = !watch_time_info_.empty() || underflow_count_;
+  }
+  ukm_records_.emplace_back(std::move(secondary_properties));
+
+  // We're still in the middle of ongoing watch time updates. So offset the
+  // future records by their current values; this is done by setting the initial
+  // value of each unfinalized record to the negative of its current value.
+  //
+  // These values will be made positive by the next Finalize() call; which is
+  // guaranteed to be called at least one more time; either at destruction or by
+  // the client. This ensures we report the correct amount of watch time that
+  // has elapsed since the secondary properties were updated.
+  //
+  // E.g., consider the case where there's a pending watch time entry for
+  // kAudioAll=10s and the next RecordWatchTime() call would be kAudioAll=25s.
+  // Without offsetting, if UpdateSecondaryProperties() is called before the
+  // next RecordWatchTime() we'll end up recording kAudioAll=25s as the amount
+  // of watch time for the new set of secondary properties, which isn't correct.
+  // We instead want to report kAudioAll = 25s - 10s = 15s.
+  if (last_record_was_unfinalized) {
+    auto& last_record = ukm_records_.back();
+    last_record.total_underflow_count = -underflow_count_;
+    for (auto& kv : watch_time_info_)
+      last_record.aggregate_watch_time_info[kv.first] = -kv.second;
+  }
 }
 
 void WatchTimeRecorder::SetAutoplayInitiated(bool value) {
@@ -249,108 +322,118 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
   if (!ukm_recorder)
     return;
 
-  const int32_t source_id = ukm_recorder->GetNewSourceID();
+  for (auto& ukm_record : ukm_records_) {
+    const int32_t source_id = ukm_recorder->GetNewSourceID();
 
-  // TODO(crbug.com/787209): Stop getting origin from the renderer.
-  ukm_recorder->UpdateSourceURL(source_id, untrusted_top_origin_.GetURL());
-  ukm::builders::Media_BasicPlayback builder(source_id);
+    // TODO(crbug.com/787209): Stop getting origin from the renderer.
+    ukm_recorder->UpdateSourceURL(source_id, untrusted_top_origin_.GetURL());
+    ukm::builders::Media_BasicPlayback builder(source_id);
 
-  builder.SetIsTopFrame(is_top_frame_);
-  builder.SetIsBackground(properties_->is_background);
-  builder.SetIsMuted(properties_->is_muted);
-  builder.SetPlayerID(player_id_);
+    builder.SetIsTopFrame(is_top_frame_);
+    builder.SetIsBackground(properties_->is_background);
+    builder.SetIsMuted(properties_->is_muted);
+    builder.SetPlayerID(player_id_);
 
-  bool recorded_all_metric = false;
-  for (auto& kv : aggregate_watch_time_info_) {
-    if (kv.first == WatchTimeKey::kAudioAll ||
-        kv.first == WatchTimeKey::kAudioBackgroundAll ||
-        kv.first == WatchTimeKey::kAudioVideoAll ||
-        kv.first == WatchTimeKey::kAudioVideoMutedAll ||
-        kv.first == WatchTimeKey::kAudioVideoBackgroundAll ||
-        kv.first == WatchTimeKey::kVideoAll ||
-        kv.first == WatchTimeKey::kVideoBackgroundAll) {
-      // Only one of these keys should be present.
-      DCHECK(!recorded_all_metric);
-      recorded_all_metric = true;
+    bool recorded_all_metric = false;
+    for (auto& kv : ukm_record.aggregate_watch_time_info) {
+      DCHECK_GE(kv.second, base::TimeDelta());
 
-      builder.SetWatchTime(kv.second.InMilliseconds());
-      if (total_underflow_count_) {
-        builder.SetMeanTimeBetweenRebuffers(
-            (kv.second / total_underflow_count_).InMilliseconds());
+      if (kv.first == WatchTimeKey::kAudioAll ||
+          kv.first == WatchTimeKey::kAudioBackgroundAll ||
+          kv.first == WatchTimeKey::kAudioVideoAll ||
+          kv.first == WatchTimeKey::kAudioVideoMutedAll ||
+          kv.first == WatchTimeKey::kAudioVideoBackgroundAll ||
+          kv.first == WatchTimeKey::kVideoAll ||
+          kv.first == WatchTimeKey::kVideoBackgroundAll) {
+        // Only one of these keys should be present.
+        DCHECK(!recorded_all_metric);
+        recorded_all_metric = true;
+
+        builder.SetWatchTime(kv.second.InMilliseconds());
+        if (ukm_record.total_underflow_count) {
+          builder.SetMeanTimeBetweenRebuffers(
+              (kv.second / ukm_record.total_underflow_count).InMilliseconds());
+        }
+      } else if (kv.first == WatchTimeKey::kAudioAc ||
+                 kv.first == WatchTimeKey::kAudioBackgroundAc ||
+                 kv.first == WatchTimeKey::kAudioVideoAc ||
+                 kv.first == WatchTimeKey::kAudioVideoMutedAc ||
+                 kv.first == WatchTimeKey::kAudioVideoBackgroundAc ||
+                 kv.first == WatchTimeKey::kVideoAc ||
+                 kv.first == WatchTimeKey::kVideoBackgroundAc) {
+        builder.SetWatchTime_AC(kv.second.InMilliseconds());
+      } else if (kv.first == WatchTimeKey::kAudioBattery ||
+                 kv.first == WatchTimeKey::kAudioBackgroundBattery ||
+                 kv.first == WatchTimeKey::kAudioVideoBattery ||
+                 kv.first == WatchTimeKey::kAudioVideoMutedBattery ||
+                 kv.first == WatchTimeKey::kAudioVideoBackgroundBattery ||
+                 kv.first == WatchTimeKey::kVideoBattery ||
+                 kv.first == WatchTimeKey::kVideoBackgroundBattery) {
+        builder.SetWatchTime_Battery(kv.second.InMilliseconds());
+      } else if (kv.first == WatchTimeKey::kAudioNativeControlsOn ||
+                 kv.first == WatchTimeKey::kAudioVideoNativeControlsOn ||
+                 kv.first == WatchTimeKey::kAudioVideoMutedNativeControlsOn ||
+                 kv.first == WatchTimeKey::kVideoNativeControlsOn) {
+        builder.SetWatchTime_NativeControlsOn(kv.second.InMilliseconds());
+      } else if (kv.first == WatchTimeKey::kAudioNativeControlsOff ||
+                 kv.first == WatchTimeKey::kAudioVideoNativeControlsOff ||
+                 kv.first == WatchTimeKey::kAudioVideoMutedNativeControlsOff ||
+                 kv.first == WatchTimeKey::kVideoNativeControlsOff) {
+        builder.SetWatchTime_NativeControlsOff(kv.second.InMilliseconds());
+      } else if (kv.first == WatchTimeKey::kAudioVideoDisplayFullscreen ||
+                 kv.first == WatchTimeKey::kAudioVideoMutedDisplayFullscreen ||
+                 kv.first == WatchTimeKey::kVideoDisplayFullscreen) {
+        builder.SetWatchTime_DisplayFullscreen(kv.second.InMilliseconds());
+      } else if (kv.first == WatchTimeKey::kAudioVideoDisplayInline ||
+                 kv.first == WatchTimeKey::kAudioVideoMutedDisplayInline ||
+                 kv.first == WatchTimeKey::kVideoDisplayInline) {
+        builder.SetWatchTime_DisplayInline(kv.second.InMilliseconds());
+      } else if (kv.first == WatchTimeKey::kAudioVideoDisplayPictureInPicture ||
+                 kv.first ==
+                     WatchTimeKey::kAudioVideoMutedDisplayPictureInPicture ||
+                 kv.first == WatchTimeKey::kVideoDisplayPictureInPicture) {
+        builder.SetWatchTime_DisplayPictureInPicture(
+            kv.second.InMilliseconds());
       }
-    } else if (kv.first == WatchTimeKey::kAudioAc ||
-               kv.first == WatchTimeKey::kAudioBackgroundAc ||
-               kv.first == WatchTimeKey::kAudioVideoAc ||
-               kv.first == WatchTimeKey::kAudioVideoMutedAc ||
-               kv.first == WatchTimeKey::kAudioVideoBackgroundAc ||
-               kv.first == WatchTimeKey::kVideoAc ||
-               kv.first == WatchTimeKey::kVideoBackgroundAc) {
-      builder.SetWatchTime_AC(kv.second.InMilliseconds());
-    } else if (kv.first == WatchTimeKey::kAudioBattery ||
-               kv.first == WatchTimeKey::kAudioBackgroundBattery ||
-               kv.first == WatchTimeKey::kAudioVideoBattery ||
-               kv.first == WatchTimeKey::kAudioVideoMutedBattery ||
-               kv.first == WatchTimeKey::kAudioVideoBackgroundBattery ||
-               kv.first == WatchTimeKey::kVideoBattery ||
-               kv.first == WatchTimeKey::kVideoBackgroundBattery) {
-      builder.SetWatchTime_Battery(kv.second.InMilliseconds());
-    } else if (kv.first == WatchTimeKey::kAudioNativeControlsOn ||
-               kv.first == WatchTimeKey::kAudioVideoNativeControlsOn ||
-               kv.first == WatchTimeKey::kAudioVideoMutedNativeControlsOn ||
-               kv.first == WatchTimeKey::kVideoNativeControlsOn) {
-      builder.SetWatchTime_NativeControlsOn(kv.second.InMilliseconds());
-    } else if (kv.first == WatchTimeKey::kAudioNativeControlsOff ||
-               kv.first == WatchTimeKey::kAudioVideoNativeControlsOff ||
-               kv.first == WatchTimeKey::kAudioVideoMutedNativeControlsOff ||
-               kv.first == WatchTimeKey::kVideoNativeControlsOff) {
-      builder.SetWatchTime_NativeControlsOff(kv.second.InMilliseconds());
-    } else if (kv.first == WatchTimeKey::kAudioVideoDisplayFullscreen ||
-               kv.first == WatchTimeKey::kAudioVideoMutedDisplayFullscreen ||
-               kv.first == WatchTimeKey::kVideoDisplayFullscreen) {
-      builder.SetWatchTime_DisplayFullscreen(kv.second.InMilliseconds());
-    } else if (kv.first == WatchTimeKey::kAudioVideoDisplayInline ||
-               kv.first == WatchTimeKey::kAudioVideoMutedDisplayInline ||
-               kv.first == WatchTimeKey::kVideoDisplayInline) {
-      builder.SetWatchTime_DisplayInline(kv.second.InMilliseconds());
-    } else if (kv.first == WatchTimeKey::kAudioVideoDisplayPictureInPicture ||
-               kv.first ==
-                   WatchTimeKey::kAudioVideoMutedDisplayPictureInPicture ||
-               kv.first == WatchTimeKey::kVideoDisplayPictureInPicture) {
-      builder.SetWatchTime_DisplayPictureInPicture(kv.second.InMilliseconds());
     }
+
+    // See note in mojom::PlaybackProperties about why we have both of these.
+    builder.SetAudioCodec(ukm_record.secondary_properties->audio_codec);
+    builder.SetVideoCodec(ukm_record.secondary_properties->video_codec);
+    builder.SetHasAudio(properties_->has_audio);
+    builder.SetHasVideo(properties_->has_video);
+
+    // We convert decoder names to a hash and then translate that hash to a zero
+    // valued enum to avoid burdening the rest of the decoder code base. This
+    // was the simplest and most effective solution for the following reasons:
+    //
+    // - We can't report hashes to UKM since the privacy team worries they may
+    //   end up as hashes of user data.
+    // - Given that decoders are defined and implemented all over the code base
+    //   it's unwieldly to have a single location which defines all decoder
+    //   names.
+    // - Due to the above, no single media/ location has access to all names.
+    //
+    builder.SetAudioDecoderName(
+        static_cast<int64_t>(ConvertAudioDecoderNameToEnum(
+            ukm_record.secondary_properties->audio_decoder_name)));
+    builder.SetVideoDecoderName(
+        static_cast<int64_t>(ConvertVideoDecoderNameToEnum(
+            ukm_record.secondary_properties->video_decoder_name)));
+
+    builder.SetIsEME(properties_->is_eme);
+    builder.SetIsMSE(properties_->is_mse);
+    builder.SetLastPipelineStatus(pipeline_status_);
+    builder.SetRebuffersCount(ukm_record.total_underflow_count);
+    builder.SetVideoNaturalWidth(
+        ukm_record.secondary_properties->natural_size.width());
+    builder.SetVideoNaturalHeight(
+        ukm_record.secondary_properties->natural_size.height());
+    builder.SetAutoplayInitiated(autoplay_initiated_.value_or(false));
+    builder.Record(ukm_recorder);
   }
 
-  // See note in mojom::PlaybackProperties about why we have both of these.
-  builder.SetAudioCodec(properties_->audio_codec);
-  builder.SetVideoCodec(properties_->video_codec);
-  builder.SetHasAudio(properties_->has_audio);
-  builder.SetHasVideo(properties_->has_video);
-
-  // We convert decoder names to a hash and then translate that hash to a zero
-  // valued enum to avoid burdening the rest of the decoder code base. This was
-  // the simplest and most effective solution for the following reasons:
-  //
-  // - We can't report hashes to UKM since the privacy team worries they may
-  //   end up as hashes of user data.
-  // - Given that decoders are defined and implemented all over the code base
-  //   it's unwieldly to have a single location which defines all decoder names.
-  // - Due to the above, no single media/ location has access to all names.
-  //
-  builder.SetAudioDecoderName(
-      static_cast<int64_t>(ConvertAudioDecoderNameToEnum(audio_decoder_name_)));
-  builder.SetVideoDecoderName(
-      static_cast<int64_t>(ConvertVideoDecoderNameToEnum(video_decoder_name_)));
-
-  builder.SetIsEME(properties_->is_eme);
-  builder.SetIsMSE(properties_->is_mse);
-  builder.SetLastPipelineStatus(pipeline_status_);
-  builder.SetRebuffersCount(total_underflow_count_);
-  builder.SetVideoNaturalWidth(properties_->natural_size.width());
-  builder.SetVideoNaturalHeight(properties_->natural_size.height());
-  builder.SetAutoplayInitiated(autoplay_initiated_.value_or(false));
-  builder.Record(ukm_recorder);
-
-  aggregate_watch_time_info_.clear();
+  ukm_records_.clear();
 }
 
 WatchTimeRecorder::ExtendedMetricsKeyMap::ExtendedMetricsKeyMap(

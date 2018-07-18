@@ -22,8 +22,9 @@ class WatchTimeInterceptor : public mojom::WatchTimeRecorder {
   MOCK_METHOD1(FinalizeWatchTime, void(const std::vector<WatchTimeKey>&));
   MOCK_METHOD1(OnError, void(PipelineStatus));
   MOCK_METHOD1(UpdateUnderflowCount, void(int32_t count));
-  MOCK_METHOD1(SetAudioDecoderName, void(const std::string&));
-  MOCK_METHOD1(SetVideoDecoderName, void(const std::string&));
+  MOCK_METHOD1(
+      UpdateSecondaryProperties,
+      void(mojom::SecondaryPlaybackPropertiesPtr secondary_properties));
   MOCK_METHOD1(SetAutoplayInitiated, void(bool));
 };
 

@@ -461,6 +461,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool IsPrerollAttemptNeeded();
 
   void CreateWatchTimeReporter();
+  void UpdateSecondaryProperties();
 
   void CreateVideoDecodeStatsReporter();
 

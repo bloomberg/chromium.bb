@@ -25,6 +25,7 @@ namespace media {
 constexpr gfx::Size kSizeJustRight = gfx::Size(201, 201);
 
 using blink::WebMediaPlayer;
+using testing::_;
 
 #define EXPECT_WATCH_TIME(key, value)                                          \
   do {                                                                         \
@@ -195,16 +196,13 @@ class WatchTimeReporterTest
 
     void OnError(PipelineStatus status) override { parent_->OnError(status); }
 
+    void UpdateSecondaryProperties(
+        mojom::SecondaryPlaybackPropertiesPtr secondary_properties) override {
+      parent_->OnUpdateSecondaryProperties(std::move(secondary_properties));
+    }
+
     void UpdateUnderflowCount(int32_t count) override {
       parent_->OnUnderflowUpdate(count);
-    }
-
-    void SetAudioDecoderName(const std::string& name) override {
-      parent_->OnSetAudioDecoderName(name);
-    }
-
-    void SetVideoDecoderName(const std::string& name) override {
-      parent_->OnSetVideoDecoderName(name);
     }
 
     void SetAutoplayInitiated(bool value) override {
@@ -272,9 +270,9 @@ class WatchTimeReporterTest
       EXPECT_WATCH_TIME_FINALIZED();
 
     wtr_.reset(new WatchTimeReporter(
-        mojom::PlaybackProperties::New(
-            kUnknownAudioCodec, kUnknownVideoCodec, has_audio_, has_video_,
-            false, false, is_mse, is_encrypted, false, initial_video_size),
+        mojom::PlaybackProperties::New(has_audio_, has_video_, false, false,
+                                       is_mse, is_encrypted, false),
+        initial_video_size,
         base::BindRepeating(&WatchTimeReporterTest::GetCurrentMediaTime,
                             base::Unretained(this)),
         &fake_metrics_provider_,
@@ -579,8 +577,8 @@ class WatchTimeReporterTest
   MOCK_METHOD2(OnWatchTimeUpdate, void(WatchTimeKey, base::TimeDelta));
   MOCK_METHOD1(OnUnderflowUpdate, void(int));
   MOCK_METHOD1(OnError, void(PipelineStatus));
-  MOCK_METHOD1(OnSetAudioDecoderName, void(const std::string&));
-  MOCK_METHOD1(OnSetVideoDecoderName, void(const std::string&));
+  MOCK_METHOD1(OnUpdateSecondaryProperties,
+               void(mojom::SecondaryPlaybackPropertiesPtr));
   MOCK_METHOD1(OnSetAutoplayInitiated, void(bool));
 
   const bool has_video_;
@@ -756,24 +754,32 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterUnderflow) {
   wtr_.reset();
 }
 
-TEST_P(WatchTimeReporterTest, WatchTimeReporterDecoderNames) {
+// Verify secondary properties pass through correctly.
+TEST_P(WatchTimeReporterTest, WatchTimeReporterSecondaryProperties) {
   Initialize(true, true, kSizeJustRight);
 
-  // Setup the initial decoder names; these should be sent immediately as soon
-  // they're called. Each should be called thrice, once for foreground, once for
-  // background, and once for muted reporting.
-  const std::string kAudioDecoderName = "FirstAudioDecoder";
-  const std::string kVideoDecoderName = "FirstVideoDecoder";
-  if (has_audio_) {
-    EXPECT_CALL(*this, OnSetAudioDecoderName(kAudioDecoderName))
-        .Times((has_audio_ && has_video_) ? 3 : 2);
-    wtr_->SetAudioDecoderName(kAudioDecoderName);
-  }
-  if (has_video_) {
-    EXPECT_CALL(*this, OnSetVideoDecoderName(kVideoDecoderName))
-        .Times((has_audio_ && has_video_) ? 3 : 2);
-    wtr_->SetVideoDecoderName(kVideoDecoderName);
-  }
+  auto properties = mojom::SecondaryPlaybackProperties::New(
+      has_audio_ ? kCodecAAC : kUnknownAudioCodec,
+      has_video_ ? kCodecH264 : kUnknownVideoCodec,
+      has_audio_ ? "FirstAudioDecoder" : "",
+      has_video_ ? "FirstVideoDecoder" : "",
+      has_video_ ? gfx::Size(800, 600) : gfx::Size());
+
+  // Get a pointer to our original properties since we're not allowed to use
+  // lambda capture for movable types in Chromium C++ yet.
+  auto* properies_ptr = properties.get();
+
+  // Muted watch time is only reported for audio+video.
+  EXPECT_CALL(*this, OnUpdateSecondaryProperties(_))
+      .Times((has_audio_ && has_video_) ? 3 : 2)
+      .WillRepeatedly([properies_ptr](auto secondary_properties) {
+        ASSERT_TRUE(properies_ptr->Equals(*secondary_properties));
+      });
+  wtr_->UpdateSecondaryProperties(properties.Clone());
+  CycleReportingTimer();
+
+  // Ensure expectations are met before |properies| goes out of scope.
+  testing::Mock::VerifyAndClearExpectations(this);
 }
 
 TEST_P(WatchTimeReporterTest, WatchTimeReporterAutoplayInitiated) {

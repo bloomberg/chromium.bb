@@ -40,6 +40,7 @@ PropertyAction HandlePropertyChange(T new_value,
 
 WatchTimeReporter::WatchTimeReporter(
     mojom::PlaybackPropertiesPtr properties,
+    const gfx::Size& initial_natural_size,
     GetMediaTimeCB get_media_time_cb,
     mojom::MediaMetricsProvider* provider,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -47,6 +48,7 @@ WatchTimeReporter::WatchTimeReporter(
     : WatchTimeReporter(std::move(properties),
                         false /* is_background */,
                         false /* is_muted */,
+                        initial_natural_size,
                         std::move(get_media_time_cb),
                         provider,
                         task_runner,
@@ -56,6 +58,7 @@ WatchTimeReporter::WatchTimeReporter(
     mojom::PlaybackPropertiesPtr properties,
     bool is_background,
     bool is_muted,
+    const gfx::Size& initial_natural_size,
     GetMediaTimeCB get_media_time_cb,
     mojom::MediaMetricsProvider* provider,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -63,6 +66,7 @@ WatchTimeReporter::WatchTimeReporter(
     : properties_(std::move(properties)),
       is_background_(is_background),
       is_muted_(is_muted),
+      initial_natural_size_(initial_natural_size),
       get_media_time_cb_(std::move(get_media_time_cb)),
       reporting_timer_(tick_clock) {
   DCHECK(!get_media_time_cb_.is_null());
@@ -107,7 +111,8 @@ WatchTimeReporter::WatchTimeReporter(
   prop_copy->is_background = true;
   background_reporter_.reset(new WatchTimeReporter(
       std::move(prop_copy), true /* is_background */, false /* is_muted */,
-      get_media_time_cb_, provider, task_runner, tick_clock));
+      initial_natural_size_, get_media_time_cb_, provider, task_runner,
+      tick_clock));
 
   // Muted watch time is only reported for audio+video playback.
   if (!properties_->has_video || !properties_->has_audio)
@@ -119,7 +124,8 @@ WatchTimeReporter::WatchTimeReporter(
   prop_copy->is_muted = true;
   muted_reporter_.reset(new WatchTimeReporter(
       std::move(prop_copy), false /* is_background */, true /* is_muted */,
-      get_media_time_cb_, provider, task_runner, tick_clock));
+      initial_natural_size_, get_media_time_cb_, provider, task_runner,
+      tick_clock));
 }
 
 WatchTimeReporter::~WatchTimeReporter() {
@@ -257,22 +263,20 @@ void WatchTimeReporter::OnDisplayTypePictureInPicture() {
   OnDisplayTypeChanged(DisplayType::kPictureInPicture);
 }
 
-void WatchTimeReporter::SetAudioDecoderName(const std::string& name) {
-  DCHECK(properties_->has_audio);
-  recorder_->SetAudioDecoderName(name);
-  if (background_reporter_)
-    background_reporter_->SetAudioDecoderName(name);
-  if (muted_reporter_)
-    muted_reporter_->SetAudioDecoderName(name);
-}
+void WatchTimeReporter::UpdateSecondaryProperties(
+    mojom::SecondaryPlaybackPropertiesPtr secondary_properties) {
+  // Flush any unrecorded watch time before updating the secondary properties to
+  // ensure the UKM record is finalized with up-to-date watch time information.
+  if (reporting_timer_.IsRunning())
+    RecordWatchTime();
 
-void WatchTimeReporter::SetVideoDecoderName(const std::string& name) {
-  DCHECK(properties_->has_video);
-  recorder_->SetVideoDecoderName(name);
-  if (background_reporter_)
-    background_reporter_->SetVideoDecoderName(name);
+  recorder_->UpdateSecondaryProperties(secondary_properties.Clone());
+  if (background_reporter_) {
+    background_reporter_->UpdateSecondaryProperties(
+        secondary_properties.Clone());
+  }
   if (muted_reporter_)
-    muted_reporter_->SetVideoDecoderName(name);
+    muted_reporter_->UpdateSecondaryProperties(std::move(secondary_properties));
 }
 
 void WatchTimeReporter::SetAutoplayInitiated(bool autoplay_initiated) {
@@ -316,9 +320,8 @@ void WatchTimeReporter::OnDisplayTypeChanged(DisplayType display_type) {
 bool WatchTimeReporter::ShouldReportWatchTime() {
   // Report listen time or watch time for videos of sufficient size.
   return properties_->has_video
-             ? (properties_->natural_size.height() >=
-                    kMinimumVideoSize.height() &&
-                properties_->natural_size.width() >= kMinimumVideoSize.width())
+             ? (initial_natural_size_.height() >= kMinimumVideoSize.height() &&
+                initial_natural_size_.width() >= kMinimumVideoSize.width())
              : properties_->has_audio;
 }
 
@@ -385,9 +388,7 @@ void WatchTimeReporter::RestartTimerForHysteresis() {
                          &WatchTimeReporter::UpdateWatchTime);
 }
 
-void WatchTimeReporter::UpdateWatchTime() {
-  DCHECK(ShouldReportWatchTime());
-
+void WatchTimeReporter::RecordWatchTime() {
   // If we're finalizing, use the media time at time of finalization.
   const base::TimeDelta current_timestamp =
       base_component_->NeedsFinalize() ? base_component_->end_timestamp()
@@ -417,10 +418,16 @@ void WatchTimeReporter::UpdateWatchTime() {
     display_type_component_->RecordWatchTime(current_timestamp);
   if (controls_component_)
     controls_component_->RecordWatchTime(current_timestamp);
+}
 
+void WatchTimeReporter::UpdateWatchTime() {
+  DCHECK(ShouldReportWatchTime());
+
+  // First record watch time.
+  RecordWatchTime();
+
+  // Second, process any pending finalize events.
   std::vector<WatchTimeKey> keys_to_finalize;
-
-  // Then finalize subcomponents.
   if (power_component_->NeedsFinalize())
     power_component_->Finalize(&keys_to_finalize);
   if (display_type_component_ && display_type_component_->NeedsFinalize())

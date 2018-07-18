@@ -1875,7 +1875,7 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
     return;
 
   pipeline_metadata_.natural_size = rotated_size;
-  CreateWatchTimeReporter();
+  UpdateSecondaryProperties();
 
   if (video_decode_stats_reporter_)
     video_decode_stats_reporter_->OnNaturalSizeChanged(rotated_size);
@@ -1913,7 +1913,7 @@ void WebMediaPlayerImpl::OnAudioConfigChange(const AudioDecoderConfig& config) {
     observer_->OnMetadataChanged(pipeline_metadata_);
 
   if (codec_change)
-    CreateWatchTimeReporter();
+    UpdateSecondaryProperties();
 }
 
 void WebMediaPlayerImpl::OnVideoConfigChange(const VideoDecoderConfig& config) {
@@ -1934,7 +1934,7 @@ void WebMediaPlayerImpl::OnVideoConfigChange(const VideoDecoderConfig& config) {
     video_decode_stats_reporter_->OnVideoConfigChanged(config);
 
   if (codec_change)
-    CreateWatchTimeReporter();
+    UpdateSecondaryProperties();
 }
 
 void WebMediaPlayerImpl::OnVideoAverageKeyframeDistanceUpdate() {
@@ -1945,34 +1945,26 @@ void WebMediaPlayerImpl::OnAudioDecoderChange(const std::string& name) {
   if (name == audio_decoder_name_)
     return;
 
-  const bool is_decoder_change = !audio_decoder_name_.empty();
   audio_decoder_name_ = name;
 
   // If there's no current reporter, there's nothing to be done.
   if (!watch_time_reporter_)
     return;
 
-  if (is_decoder_change)
-    CreateWatchTimeReporter();
-  else
-    watch_time_reporter_->SetAudioDecoderName(name);
+  UpdateSecondaryProperties();
 }
 
 void WebMediaPlayerImpl::OnVideoDecoderChange(const std::string& name) {
   if (name == video_decoder_name_)
     return;
 
-  const bool is_decoder_change = !video_decoder_name_.empty();
   video_decoder_name_ = name;
 
   // If there's no current reporter, there's nothing to be done.
   if (!watch_time_reporter_)
     return;
 
-  if (is_decoder_change)
-    CreateWatchTimeReporter();
-  else
-    watch_time_reporter_->SetVideoDecoderName(name);
+  UpdateSecondaryProperties();
 }
 
 void WebMediaPlayerImpl::OnFrameHidden() {
@@ -2843,12 +2835,11 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
 
   // Create the watch time reporter and synchronize its initial state.
   watch_time_reporter_.reset(new WatchTimeReporter(
-      mojom::PlaybackProperties::New(
-          pipeline_metadata_.audio_decoder_config.codec(),
-          pipeline_metadata_.video_decoder_config.codec(),
-          pipeline_metadata_.has_audio, pipeline_metadata_.has_video, false,
-          false, !!chunk_demuxer_, is_encrypted_,
-          embedded_media_experience_enabled_, pipeline_metadata_.natural_size),
+      mojom::PlaybackProperties::New(pipeline_metadata_.has_audio,
+                                     pipeline_metadata_.has_video, false, false,
+                                     !!chunk_demuxer_, is_encrypted_,
+                                     embedded_media_experience_enabled_),
+      pipeline_metadata_.natural_size,
       base::BindRepeating(&WebMediaPlayerImpl::GetCurrentTimeInternal,
                           base::Unretained(this)),
       media_metrics_provider_.get(),
@@ -2865,11 +2856,6 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
   else
     watch_time_reporter_->OnNativeControlsDisabled();
 
-  if (!audio_decoder_name_.empty())
-    watch_time_reporter_->SetAudioDecoderName(audio_decoder_name_);
-  if (!video_decoder_name_.empty())
-    watch_time_reporter_->SetVideoDecoderName(video_decoder_name_);
-
   switch (client_->DisplayType()) {
     case WebMediaPlayer::DisplayType::kInline:
       watch_time_reporter_->OnDisplayTypeInline();
@@ -2881,6 +2867,16 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
       watch_time_reporter_->OnDisplayTypePictureInPicture();
       break;
   }
+
+  UpdateSecondaryProperties();
+}
+
+void WebMediaPlayerImpl::UpdateSecondaryProperties() {
+  watch_time_reporter_->UpdateSecondaryProperties(
+      mojom::SecondaryPlaybackProperties::New(
+          pipeline_metadata_.audio_decoder_config.codec(),
+          pipeline_metadata_.video_decoder_config.codec(), audio_decoder_name_,
+          video_decoder_name_, pipeline_metadata_.natural_size));
 }
 
 bool WebMediaPlayerImpl::IsHidden() const {
