@@ -1661,12 +1661,6 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
   }
 
   current_connection_migration_cause_ = ON_WRITE_ERROR;
-  LogHandshakeStatusOnConnectionMigrationSignal();
-  const NetLogWithSource migration_net_log = NetLogWithSource::Make(
-      net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
-  migration_net_log.BeginEvent(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
-      base::Bind(&NetLogQuicConnectionMigrationTriggerCallback, "WriteError"));
 
   if (!IsSessionMigratable(/*close_session_if_not_migratable*/ false)) {
     // Close the connection if migration failed. Do not cause a
@@ -1676,6 +1670,14 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
                                   quic::ConnectionCloseBehavior::SILENT_CLOSE);
     return;
   }
+
+  LogHandshakeStatusOnConnectionMigrationSignal();
+
+  const NetLogWithSource migration_net_log = NetLogWithSource::Make(
+      net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
+  migration_net_log.BeginEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
+      base::Bind(&NetLogQuicConnectionMigrationTriggerCallback, "WriteError"));
 
   NetworkChangeNotifier::NetworkHandle new_network =
       stream_factory_->FindAlternateNetwork(
@@ -1853,8 +1855,6 @@ void QuicChromiumClientSession::OnNetworkConnected(
     current_connection_migration_cause_ = ON_NETWORK_CONNECTED;
   }
 
-  LogHandshakeStatusOnConnectionMigrationSignal();
-
   if (wait_for_new_network_) {
     wait_for_new_network_ = false;
     // |wait_for_new_network_| is true, there was no working network previously.
@@ -1891,6 +1891,8 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
   }
 
   current_connection_migration_cause_ = ON_NETWORK_DISCONNECTED;
+  LogHandshakeStatusOnConnectionMigrationSignal();
+
   // Attempt to find alternative network.
   NetworkChangeNotifier::NetworkHandle new_network =
       stream_factory_->FindAlternateNetwork(disconnected_network);
@@ -1899,8 +1901,6 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
     OnNoNewNetwork();
     return;
   }
-
-  LogHandshakeStatusOnConnectionMigrationSignal();
 
   // Current network is being disconnected, migrate immediately to the
   // alternative network.
@@ -1923,9 +1923,8 @@ void QuicChromiumClientSession::OnNetworkMadeDefault(
   current_connection_migration_cause_ = ON_NETWORK_MADE_DEFAULT;
   current_migrations_to_non_default_network_on_path_degrading_ = 0;
 
-  // Connection migration v2.
-  // If we are already on the new network, simply cancel the timer to migrate
-  // back to the default network.
+  // Simply cancel the timer to migrate back to the default network if session
+  // is already on the default network.
   if (GetDefaultSocket()->GetBoundNetwork() == new_network) {
     CancelMigrateBackToDefaultNetworkTimer();
     HistogramAndLogMigrationFailure(
@@ -2019,50 +2018,52 @@ void QuicChromiumClientSession::OnPathDegrading() {
   if (most_recent_path_degrading_timestamp_ == base::TimeTicks())
     most_recent_path_degrading_timestamp_ = base::TimeTicks::Now();
 
-  if (stream_factory_) {
-    const NetLogWithSource migration_net_log = NetLogWithSource::Make(
-        net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
-    migration_net_log.BeginEvent(
-        NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
-        base::Bind(&NetLogQuicConnectionMigrationTriggerCallback,
-                   "PathDegrading"));
-    if (migrate_session_early_v2_) {
-      NetworkChangeNotifier::NetworkHandle alternate_network =
-          stream_factory_->FindAlternateNetwork(
-              GetDefaultSocket()->GetBoundNetwork());
-      current_connection_migration_cause_ = ON_PATH_DEGRADING;
-      if (alternate_network != NetworkChangeNotifier::kInvalidNetworkHandle) {
-        if (GetDefaultSocket()->GetBoundNetwork() == default_network_ &&
-            current_migrations_to_non_default_network_on_path_degrading_ >=
-                max_migrations_to_non_default_network_on_path_degrading_) {
-          HistogramAndLogMigrationFailure(
-              migration_net_log, MIGRATION_STATUS_ON_PATH_DEGRADING_DISABLED,
-              connection_id(),
-              "Exceeds maximum number of migrations on path degrading");
-        } else {
-          LogHandshakeStatusOnConnectionMigrationSignal();
+  if (!stream_factory_)
+    return;
 
-          // Probe alternative network, session will migrate to the probed
-          // network and decide whether it wants to migrate back to the default
-          // network on success.
-          StartProbeNetwork(
-              alternate_network,
-              connection()->peer_address().impl().socket_address(),
-              migration_net_log);
-        }
-      } else {
+  const NetLogWithSource migration_net_log = NetLogWithSource::Make(
+      net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
+  migration_net_log.BeginEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
+      base::Bind(&NetLogQuicConnectionMigrationTriggerCallback,
+                 "PathDegrading"));
+
+  if (migrate_session_early_v2_) {
+    NetworkChangeNotifier::NetworkHandle alternate_network =
+        stream_factory_->FindAlternateNetwork(
+            GetDefaultSocket()->GetBoundNetwork());
+    current_connection_migration_cause_ = ON_PATH_DEGRADING;
+    if (alternate_network != NetworkChangeNotifier::kInvalidNetworkHandle) {
+      if (GetDefaultSocket()->GetBoundNetwork() == default_network_ &&
+          current_migrations_to_non_default_network_on_path_degrading_ >=
+              max_migrations_to_non_default_network_on_path_degrading_) {
         HistogramAndLogMigrationFailure(
-            migration_net_log, MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
-            connection_id(), "No alternative network on path degrading");
+            migration_net_log, MIGRATION_STATUS_ON_PATH_DEGRADING_DISABLED,
+            connection_id(),
+            "Exceeds maximum number of migrations on path degrading");
+      } else {
+        LogHandshakeStatusOnConnectionMigrationSignal();
+
+        // Probe alternative network, session will migrate to the probed
+        // network and decide whether it wants to migrate back to the default
+        // network on success.
+        StartProbeNetwork(
+            alternate_network,
+            connection()->peer_address().impl().socket_address(),
+            migration_net_log);
       }
     } else {
       HistogramAndLogMigrationFailure(
-          migration_net_log, MIGRATION_STATUS_PATH_DEGRADING_NOT_ENABLED,
-          connection_id(), "Migration on path degrading not enabled");
+          migration_net_log, MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
+          connection_id(), "No alternative network on path degrading");
     }
-    migration_net_log.EndEvent(
-        NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
+  } else {
+    HistogramAndLogMigrationFailure(
+        migration_net_log, MIGRATION_STATUS_PATH_DEGRADING_NOT_ENABLED,
+        connection_id(), "Migration on path degrading not enabled");
   }
+  migration_net_log.EndEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
 }
 
 bool QuicChromiumClientSession::HasOpenDynamicStreams() const {
@@ -2463,6 +2464,15 @@ void QuicChromiumClientSession::LogHandshakeStatusOnConnectionMigrationSignal()
     const {
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.HandshakeStatusOnConnectionMigration",
                         IsCryptoHandshakeConfirmed());
+
+  const std::string histogram_name =
+      "Net.QuicSession.HandshakeStatusOnConnectionMigration." +
+      ConnectionMigrationCauseToString(current_connection_migration_cause_);
+  STATIC_HISTOGRAM_POINTER_GROUP(
+      histogram_name, current_connection_migration_cause_,
+      MIGRATION_CAUSE_MAX, AddBoolean(IsCryptoHandshakeConfirmed()),
+      base::BooleanHistogram::FactoryGet(
+          histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
 void QuicChromiumClientSession::HistogramAndLogMigrationFailure(
