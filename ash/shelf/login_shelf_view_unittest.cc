@@ -61,7 +61,7 @@ class LoginShelfViewTest : public LoginTestBase {
         &action_background_controller_factory_);
 
     LoginTestBase::SetUp();
-    login_shelf_view_ = GetPrimaryShelf()->GetLoginShelfViewForTesting();
+    login_shelf_view_ = GetPrimaryShelf()->shelf_widget()->login_shelf_view();
     Shell::Get()->tray_action()->SetClient(
         tray_action_client_.CreateInterfacePtrAndBind(),
         mojom::TrayActionState::kNotAvailable);
@@ -265,6 +265,29 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterKioskAppsLoaded) {
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
                                  LoginShelfView::kBrowseAsGuest,
                                  LoginShelfView::kAddUser}));
+}
+
+TEST_F(LoginShelfViewTest, SetAllowLoginByGuest) {
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
+                                 LoginShelfView::kBrowseAsGuest,
+                                 LoginShelfView::kAddUser}));
+
+  // SetAllowLoginAsGuest(false) always hides the guest button.
+  login_shelf_view_->SetAllowLoginAsGuest(false /*allow_guest*/);
+  EXPECT_TRUE(
+      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kAddUser}));
+
+  // SetAllowLoginAsGuest(true) brings the guest button back.
+  login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
+                                 LoginShelfView::kBrowseAsGuest,
+                                 LoginShelfView::kAddUser}));
+
+  // However, SetAllowLoginAsGuest(true) does not mean that the guest button is
+  // always visible.
+  login_shelf_view_->SetLoginDialogVisible(true);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 }
 
 TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogVisibilityChange) {

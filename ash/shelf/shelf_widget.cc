@@ -11,7 +11,6 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_button.h"
@@ -374,15 +373,6 @@ BackButton* ShelfWidget::GetBackButton() const {
 app_list::ApplicationDragAndDropHost*
 ShelfWidget::GetDragAndDropHostForAppList() {
   return shelf_view_;
-}
-
-void ShelfWidget::SetLoginKioskApps(
-    std::vector<mojom::KioskAppInfoPtr> kiosk_apps) {
-  login_shelf_view_->SetKioskApps(std::move(kiosk_apps));
-}
-
-void ShelfWidget::SetLoginDialogVisible(bool visible) {
-  login_shelf_view_->SetLoginDialogVisible(visible);
 }
 
 void ShelfWidget::set_default_last_focusable_child(

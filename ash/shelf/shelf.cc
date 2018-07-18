@@ -324,10 +324,6 @@ ShelfView* Shelf::GetShelfViewForTesting() {
   return shelf_widget_->shelf_view_for_testing();
 }
 
-LoginShelfView* Shelf::GetLoginShelfViewForTesting() {
-  return shelf_widget_->login_shelf_view_for_testing();
-}
-
 void Shelf::WillDeleteShelfLayoutManager() {
   // Clear event handlers that might forward events to the destroyed instance.
   auto_hide_event_handler_.reset();

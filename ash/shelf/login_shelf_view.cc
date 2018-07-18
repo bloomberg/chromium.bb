@@ -403,6 +403,11 @@ void LoginShelfView::SetLoginDialogVisible(bool visible) {
   UpdateUi();
 }
 
+void LoginShelfView::SetAllowLoginAsGuest(bool allow_guest) {
+  allow_guest_ = allow_guest;
+  UpdateUi();
+}
+
 void LoginShelfView::OnLockScreenNoteStateChanged(
     mojom::TrayActionState state) {
   UpdateUi();
@@ -457,7 +462,8 @@ void LoginShelfView::UpdateUi() {
   // TODO(agawronska): Implement full list of conditions for buttons visibility,
   // when views based shelf if enabled during OOBE. https://crbug.com/798869
   bool is_login_primary = (session_state == SessionState::LOGIN_PRIMARY);
-  GetViewByID(kBrowseAsGuest)->SetVisible(!dialog_visible_ && is_login_primary);
+  GetViewByID(kBrowseAsGuest)
+      ->SetVisible(allow_guest_ && !dialog_visible_ && is_login_primary);
   GetViewByID(kAddUser)->SetVisible(!dialog_visible_ && is_login_primary);
   kiosk_apps_button_->SetVisible(
       !dialog_visible_ && kiosk_apps_button_->HasApps() && is_login_primary);
