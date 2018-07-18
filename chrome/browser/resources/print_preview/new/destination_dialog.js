@@ -5,7 +5,7 @@
 Polymer({
   is: 'print-preview-destination-dialog',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, ListPropertyUpdateBehavior],
 
   properties: {
     /** @type {?print_preview.DestinationStore} */
@@ -149,9 +149,15 @@ Polymer({
     if (this.userInfo.loggedIn)
       this.showCloudPrintPromo = false;
 
-    this.destinations_ = this.userInfo ?
-        this.destinationStore.destinations(this.userInfo.activeUser) :
-        [];
+    if (this.userInfo) {
+      this.updateList(
+          'destinations_',
+          destination => destination.origin + '/' + destination.id,
+          this.destinationStore.destinations(this.userInfo.activeUser));
+    } else {
+      this.destinations_ = [];
+    }
+
     this.loadingDestinations_ =
         this.destinationStore.isPrintDestinationSearchInProgress;
   },

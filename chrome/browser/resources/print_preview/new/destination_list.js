@@ -12,10 +12,7 @@ Polymer({
 
   properties: {
     /** @type {Array<!print_preview.Destination>} */
-    destinations: {
-      type: Array,
-      observer: 'destinationsChanged_',
-    },
+    destinations: Array,
 
     /** @type {boolean} */
     hasActionLink: {
@@ -57,8 +54,15 @@ Polymer({
     },
   },
 
+  observers: [
+    'destinationsChanged_(destinations.*)',
+  ],
+
   /** @private {boolean} */
   newDestinations_: false,
+
+  /** @private {boolean} */
+  initializedDestinations_: false,
 
   /** @private {!Array<!Node>} */
   highlights_: [],
@@ -68,9 +72,10 @@ Polymer({
    * @param {?Array<!print_preview.Destination>} previous
    * @private
    */
-  destinationsChanged_: function(current, previous) {
-    if (previous == undefined) {
+  destinationsChanged_: function() {
+    if (!this.initializedDestinations_) {
       this.matchingDestinationsCount_ = this.destinations.length;
+      this.initializedDestinations_ = true;
     } else {
       this.newDestinations_ = true;
     }
