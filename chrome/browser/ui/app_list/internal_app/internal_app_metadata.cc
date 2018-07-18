@@ -115,6 +115,7 @@ void ShowCameraApp(const std::string& app_id,
   if (arc_enabled && (!extension || media_consolidated)) {
     // Open ARC++ camera app.
     arc::LaunchApp(profile, kAndroidCameraAppId, event_flags,
+                   arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
                    controller->GetAppListDisplayId());
   } else if (extension) {
     // Open Chrome camera app.

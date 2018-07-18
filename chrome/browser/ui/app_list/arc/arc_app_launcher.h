@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 
 namespace content {
 class BrowserContext;
@@ -25,7 +26,8 @@ class ArcAppLauncher : public ArcAppListPrefs::Observer {
                  const std::string& app_id,
                  const base::Optional<std::string>& launch_intent,
                  bool deferred_launch_allowed,
-                 int64_t display_id);
+                 int64_t display_id,
+                 arc::UserInteractionType interaction);
   ~ArcAppLauncher() override;
 
   bool app_launched() const { return app_launched_; }
@@ -34,6 +36,10 @@ class ArcAppLauncher : public ArcAppListPrefs::Observer {
   void OnAppRegistered(const std::string& app_id,
                        const ArcAppListPrefs::AppInfo& app_info) override;
   void OnAppReadyChanged(const std::string& app_id, bool ready) override;
+
+  // Launches the app if ready to launch, recording the input user interaction.
+  // If not ready to launch,
+  void LaunchAppIfReady(arc::UserInteractionType interaction);
 
  private:
   void LaunchApp();
@@ -53,6 +59,8 @@ class ArcAppLauncher : public ArcAppListPrefs::Observer {
   const int64_t display_id_;
   // Flag indicating that ARC app was launched.
   bool app_launched_ = false;
+  // Enum that indicates what type of metric to record to UMA on launch.
+  arc::UserInteractionType interaction_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppLauncher);
 };

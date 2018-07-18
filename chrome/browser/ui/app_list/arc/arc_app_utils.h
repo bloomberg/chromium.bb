@@ -79,6 +79,55 @@ class Intent {
   DISALLOW_COPY_AND_ASSIGN(Intent);
 };
 
+// Defines ARC App user interaction types to track how users use ARC apps.
+// These enums are used to define the buckets for an enumerated UMA histogram
+// and need to be synced with tools/metrics/histograms/enums.xml.
+enum class UserInteractionType {
+  // Default to not user-initiated.
+  // Can be used temporarily for a new action path or to denote an action
+  // that was not directly user-initiated.
+  NOT_USER_INITIATED = 0,
+
+  // User started an app from the launcher.
+  APP_STARTED_FROM_LAUNCHER = 1,
+
+  // User started an app from a context menu click in the launcher.
+  APP_STARTED_FROM_LAUNCHER_CONTEXT_MENU = 2,
+
+  // User started an app from a launcher search result.
+  APP_STARTED_FROM_LAUNCHER_SEARCH = 3,
+
+  // User started an app from a a context menu click on a search result.
+  APP_STARTED_FROM_LAUNCHER_SEARCH_CONTEXT_MENU = 4,
+
+  // User started a suggested app in the launcher.
+  APP_STARTED_FROM_LAUNCHER_SUGGESTED_APP = 5,
+
+  // User started a suggested app using the context menu in the launcher.
+  APP_STARTED_FROM_LAUNCHER_SUGGESTED_APP_CONTEXT_MENU = 6,
+
+  // User started an app from the shelf.
+  APP_STARTED_FROM_SHELF = 7,
+
+  // User started an app from the shelf using the context menu.
+  // TODO(crbug.com/862901): Record this separately from APP_STARTED_FROM_SHELF
+  APP_STARTED_FROM_SHELF_CONTEXT_MENU = 8,
+
+  // User started an app from settings.
+  APP_STARTED_FROM_SETTINGS = 9,
+
+  // User interacted with an ARC++ notification.
+  // TODO(crbug.com/862001): Record this.
+  NOTIFICATION_INTERACTION = 10,
+
+  // User interacted with the content window.
+  // TODO(crbug.com/855381): Record this.
+  APP_CONTENT_WINDOW_INTERACTION = 11,
+
+  // The size of this enum; keep last.
+  SIZE,
+};
+
 // Checks if a given app should be hidden in launcher.
 bool ShouldShowInLauncher(const std::string& app_id);
 
@@ -93,16 +142,19 @@ bool LaunchPlayStoreWithUrl(const std::string& url);
 // Launches an ARC app.
 bool LaunchApp(content::BrowserContext* context,
                const std::string& app_id,
-               int event_flags);
+               int event_flags,
+               UserInteractionType user_action);
 bool LaunchApp(content::BrowserContext* context,
                const std::string& app_id,
                int event_flags,
+               UserInteractionType user_action,
                int64_t display_id);
 
 bool LaunchAppWithIntent(content::BrowserContext* context,
                          const std::string& app_id,
                          const base::Optional<std::string>& launch_intent,
                          int event_flags,
+                         UserInteractionType user_action,
                          int64_t display_id);
 
 // Launches App Shortcut that was published by Android's ShortcutManager.
