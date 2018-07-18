@@ -102,11 +102,11 @@ void AvatarToolbarButton::UpdateText() {
   base::string16 text;
   switch (GetSyncState()) {
     case SyncState::kError:
-      color = gfx::kGoogleRed700;
+      color = gfx::kGoogleRed600;
       text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR);
       break;
     case SyncState::kPaused:
-      color = gfx::kGoogleBlue500;
+      color = gfx::kGoogleBlue600;
       text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
       break;
     case SyncState::kNormal:
